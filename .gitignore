@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+.vscode/
+/venv
+/print/*.conf
+/static/images/print/STE_Signature.png
+geomapshark/static/images/print/STE_Signature.png
+env.yaml

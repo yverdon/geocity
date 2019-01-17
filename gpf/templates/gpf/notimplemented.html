@@ -1,0 +1,8 @@
+{% extends "base_generic.html" %}
+{% load bootstrap4 %}
+{% block content %}
+<form method="post">{% csrf_token %}
+    <p>Cette fonction est en cours de développement...</p>
+    {% bootstrap_button "Annuler" button_type="submit" button_class="btn-primary" value="Annuler" href="/gpf"%}
+</form>
+{% endblock %}

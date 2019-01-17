@@ -1,0 +1,356 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-12-06 16:14+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: .\geomapshark\settings.py:161
+msgid "French"
+msgstr "Français"
+
+#: .\geomapshark\settings.py:163
+msgid "English"
+msgstr "Anglais"
+
+#: .\gpf\models.py:9
+msgid "name"
+msgstr "Nom"
+
+#: .\gpf\models.py:10
+msgid "firstname"
+msgstr "Prénom"
+
+#: .\gpf\models.py:11
+msgid "company_name"
+msgstr "Raison sociale"
+
+#: .\gpf\models.py:12
+msgid "vat_number"
+msgstr "Numéro IDE d'entreprise"
+
+#: .\gpf\models.py:13 .\gpf\models.py:81
+msgid "address"
+msgstr "Adresse"
+
+#: .\gpf\models.py:14 .\gpf\models.py:82
+msgid "zipcode"
+msgstr "NPA"
+
+#: .\gpf\models.py:15 .\gpf\models.py:83
+msgid "city"
+msgstr "Ville"
+
+#: .\gpf\models.py:16
+msgid "phone_fixed"
+msgstr "Télephone fixe"
+
+#: .\gpf\models.py:17
+msgid "phone_mobile"
+msgstr "Télephone mobile"
+
+#: .\gpf\models.py:18
+msgid "email"
+msgstr "Email"
+
+#: .\gpf\models.py:22
+msgid "actor"
+msgstr "Requérant"
+
+#: .\gpf\models.py:30
+msgid "email_content"
+msgstr "Contenu de l'email"
+
+#: .\gpf\models.py:31
+msgid "is_validator"
+msgstr "Validateur"
+
+#: .\gpf\models.py:32
+msgid "is_admin"
+msgstr "Administrateur"
+
+#: .\gpf\models.py:33
+msgid "is_archeologist"
+msgstr "Archéologue"
+
+#: .\gpf\models.py:36
+msgid "department"
+msgstr "Service"
+
+#: .\gpf\models.py:44 .\gpf\models.py:78
+msgid "description"
+msgstr "Description"
+
+#: .\gpf\models.py:47 .\gpf\models.py:77
+msgid "sitetype"
+msgstr "Type de site"
+
+#: .\gpf\models.py:54
+msgid "creditor_name"
+msgstr "Type de créditeur"
+
+#: .\gpf\models.py:56
+msgid "creditortype"
+msgstr "Type de créditeur"
+
+#: .\gpf\models.py:62
+msgid "amount"
+msgstr "Montant facture"
+
+#: .\gpf\models.py:63
+msgid "payed"
+msgstr "Payé"
+
+#: .\gpf\models.py:64
+msgid "is_valid"
+msgstr "Validation définitive"
+
+#: .\gpf\models.py:65
+msgid "sent"
+msgstr "Permis envoyé"
+
+#: .\gpf\models.py:66
+msgid "ended"
+msgstr "Fouille terminée"
+
+#: .\gpf\models.py:67
+msgid "date_start"
+msgstr "Date de début"
+
+#: .\gpf\models.py:68
+msgid "date_end"
+msgstr "Date de fin"
+
+#: .\gpf\models.py:69
+msgid "date_effective_end"
+msgstr "Date de fin effective"
+
+#: .\gpf\models.py:70
+msgid "length"
+msgstr "Longueur"
+
+#: .\gpf\models.py:71
+msgid "with"
+msgstr "Largeur"
+
+#: .\gpf\models.py:72
+msgid "road_marking_damaged"
+msgstr "Endommagement de la chaussée"
+
+#: .\gpf\models.py:73
+msgid "is_green_area"
+msgstr "Espace vert"
+
+#: .\gpf\models.py:74
+msgid "invoice_to"
+msgstr "Facture"
+
+#: .\gpf\models.py:75
+msgid "company"
+msgstr "Entreprise"
+
+#: .\gpf\models.py:76
+msgid "project_owner"
+msgstr "Maître d'ouvrage"
+
+#: .\gpf\models.py:79
+msgid "has_archeology"
+msgstr "Zone archéologique"
+
+#: .\gpf\models.py:80
+msgid "has_existing_archeology"
+msgstr "Zone archéologique existante"
+
+#: .\gpf\models.py:84
+msgid "date_end_work"
+msgstr "Date de fin de travaux"
+
+#: .\gpf\models.py:85
+msgid "date_end_work_announcement"
+msgstr "Date annonce fin de travaux par l'entreprise"
+
+#: .\gpf\models.py:86
+msgid "date_request_created"
+msgstr "Date de la demande"
+
+#: .\gpf\models.py:87 .\gpf\models.py:167
+msgid "geom"
+msgstr "Localisation"
+
+#: .\gpf\models.py:90
+msgid "permitrequest"
+msgstr "Demandes de permis"
+
+#: .\gpf\models.py:109
+msgid "accepted"
+msgstr "Accepté"
+
+#: .\gpf\models.py:110
+msgid "comment"
+msgstr "Commentaire"
+
+#: .\gpf\models.py:113
+msgid "validation"
+msgstr "Validations"
+
+#: .\gpf\models.py:121
+msgid "file_path"
+msgstr "Chemin du fichier"
+
+#: .\gpf\models.py:122
+#, fuzzy
+#| msgid "firstname"
+msgid "file_name"
+msgstr "Prénom"
+
+#: .\gpf\models.py:125
+msgid "document"
+msgstr "Document"
+
+#: .\gpf\models.py:132
+msgid "mail_type"
+msgstr "Contenu de l'email"
+
+#: .\gpf\models.py:133
+msgid "recipients"
+msgstr "Destinataires"
+
+#: .\gpf\models.py:134
+msgid "subject"
+msgstr "Sujet"
+
+#: .\gpf\models.py:135
+msgid "body"
+msgstr "Message"
+
+#: .\gpf\models.py:138
+msgid "mail"
+msgstr "Email"
+
+#: .\gpf\models.py:144
+msgid "fiche"
+msgstr "Fiche"
+
+#: .\gpf\models.py:145
+msgid "commune"
+msgstr "Commune"
+
+#: .\gpf\models.py:146
+msgid "descriptio"
+msgstr "Description"
+
+#: .\gpf\models.py:147
+msgid "note_carto"
+msgstr "Note cartographique"
+
+#: .\gpf\models.py:148
+msgid "annee_revi"
+msgstr "Année de révision"
+
+#: .\gpf\models.py:149
+msgid "id_per"
+msgstr "Idendifiant personnel"
+
+#: .\gpf\models.py:150
+msgid "lien_img"
+msgstr "Lien image"
+
+#: .\gpf\models.py:151
+msgid "note_detai"
+msgstr "Note détail"
+
+#: .\gpf\models.py:152
+msgid "shape_len"
+msgstr "Longueur"
+
+#: .\gpf\models.py:153
+msgid "date_maj"
+msgstr "Date de mise à jour"
+
+#: .\gpf\models.py:154
+msgid "guid"
+msgstr "GUID"
+
+#: .\gpf\models.py:155
+msgid "mention"
+msgstr "Mention"
+
+#: .\gpf\models.py:156
+msgid "fme_feat"
+msgstr "FME"
+
+#: .\gpf\models.py:157
+msgid "autre_ment"
+msgstr "Autre mention"
+
+#: .\gpf\models.py:158
+msgid "multi_read"
+msgstr "Multi"
+
+#: .\gpf\models.py:159
+msgid "autre_mesu"
+msgstr "Autre mesure"
+
+#: .\gpf\models.py:160
+msgid "shape_area"
+msgstr "Surface"
+
+#: .\gpf\models.py:161
+msgid "objectid"
+msgstr "OID"
+
+#: .\gpf\models.py:162
+msgid "date_mesur"
+msgstr "Date de mesure"
+
+#: .\gpf\models.py:163
+msgid "eca"
+msgstr "ECA"
+
+#: .\gpf\models.py:164
+msgid "url_recens"
+msgstr "URL recensement"
+
+#: .\gpf\models.py:165
+msgid "mesure"
+msgstr "Mesure"
+
+#: .\gpf\models.py:166
+msgid "import_date"
+msgstr "Date d'import"
+
+#: .\gpf\models.py:170
+msgid "archelogy"
+msgstr "Zone archéologique"
+
+#: .\gpf\templates\openlayers\openlayers.html:16
+msgid "Debugging window (serialized value)"
+msgstr ""
+
+#~ msgid "address_permit"
+#~ msgstr "Adresse de la fouille"
+
+#~ msgid "person_in_charge"
+#~ msgstr "Personne responsable"
+
+#~ msgid "done"
+#~ msgstr "Terminé"
+
+#~ msgid "title"
+#~ msgstr "Titre"
+
+#~ msgid "Delete all Features"
+#~ msgstr "Supprimer toutes les entités"

@@ -1,0 +1,36 @@
+{% extends "base_generic.html" %}
+{% load static %}
+{% block navbartitle %}<a class="navbar-brand" href="#">Ville d'Yverdon: applications techniques du territoire</a>
+{% block stylesheets%}
+  {% load fontawesome %}
+  {% fontawesome_stylesheet %}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/gpf.css' %}">
+{% endblock %}
+{% endblock %}
+
+
+{% block sidebar %}
+    <ul class="sidebar-nav app-list" style="margin-top: 50px; margin-left: 45%; width: 300px;">
+        {% if user.groups.all.0.name == "extern" %}
+
+          <li><a class="btn btn-primary" href="{% url 'gpf:listexterns' %}?sort=id"><i class="fa fa-road"></i>&nbsp;Gestion des permis de fouille</a></li>
+          <li><a class="btn btn-primary" href="{{apps.mapnv}}" target="_blank"><i class="fa fa-map"></i>&nbsp;mapnv: Géoportail</a></li>
+          <li><a class="btn btn-primary" href="/lidar" target="_blank"><i class="fa fa-cube"></i>&nbsp;mapn: Géoportail 3D (LiDAR)</a></li>
+        {% else %}
+          <li><a href="{% url 'gpf:list' %}?sort=id">Gestion des permis de fouille</a></li>
+          <li><a href="https://pro.mapnv.ch/admin" target="_blank">Interface d'administration des applications du territoire</a></li>
+          <li><a href="{{apps.mapnv}}" target="_blank">MAPNV: Géoportail</a></li>
+          <li><a href="/lidar" target="_blank">MAPNV: Géoportail 3D (LiDAR)</a></li>
+          <li><a href="{{apps.yvent}}" target="_blank">YVENT: gestion des événements</a></li>
+          <li><a href="{{apps.signalez}}" target="_blank">SIGNALEZ: gestion participative</a></li>
+          <li><a href="https://mapnv.ch/cs" target="_blank">PDF du cadastre souterrain</a></li>
+          <li><a href="https://mapnv.ch/evenementiel/evenementiel.php" target="_blank">Liste de sites d'événements</a></li>
+          <li><a href="https://mapnv.ch/php/liste_rues.php" target="_blank">Liste de rues</a></li>
+          <li><a href="https://mapnv.ch/php/sgn_liste.php" target="_blank">Liste de panneaux de signalisation</a></li>
+          <li><a href="https://mapnv.ch/cyclotouriste" target="_blank">Rally Cyclotouriste (SPO)</a></li>
+          <li><a href="https://mapnv.ch/batiments" target="_blank">Armoire à plans (BAT)</a></li>
+          <li><a href="https://mapnv.ch/cityplan" target="_blank">QR Code vers les info touristiques</a></li>
+          <li><a href="https://mapnv.ch/nona" target="_blank">Nonagénaires</a></li>
+        {% endif %}
+    </ul>
+{% endblock %}
