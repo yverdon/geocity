@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    {% block title %}<title>Applications du territoire</title>{% endblock %}
+    {% load static %}
+    {% load bootstrap4 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript jquery='full' %}
+    {% block script%}{% endblock %}
+    {% block stylesheets%}
+      {% load fontawesome %}
+      {% fontawesome_stylesheet %}
+    {% endblock %}
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    {% block navbartitle %}<a class="navbar-brand" href="#">Applications du territoire</a>{% endblock %}
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    {% if user.is_authenticated %}
+
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <ul class="navbar-nav">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fa fa-user"></i> {% block connected_user %}<b>{{ user.get_username }}</b>{% endblock %}
+          </a>
+          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
+            <a class="dropdown-item" href="{% url 'login' %}">Se connecter</a>
+            <a class="dropdown-item" href="{% url 'logout' %}">Se déconnecter</a>
+            <a class="dropdown-item" href="{% url 'password_change' %}">Changer son mot de passe</a>
+          </div>
+        </li>
+      </ul>
+      {% block navbar %}
+      {% endblock %}
+    </div>
+    {% endif %}
+
+  <img src="/static/images/logo.svg" width="50" height="50" alt="" class="d-inline-block align-right" alt="">
+
+  </nav>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-2">
+                {% block sidebar %}{% endblock %}
+            </div>
+        </div>
+    <div class="col-sm-10">
+        {% block content %}{% endblock %}
+    </div>
+    </div>
+</body>
+</html>

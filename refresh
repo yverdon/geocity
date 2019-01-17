@@ -1,0 +1,3 @@
+
+docker-compose up d
+wget "http://localhost:9050/?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities"

@@ -1,0 +1,40 @@
+.required label {
+  font-weight: bold;
+}
+
+.app-list li {
+  margin: 0 0 15px 0;
+  list-style-type: none;
+}
+
+.highlight-edit{
+  box-shadow: 0 0 5px rgba(252, 200, 70, 1);
+  border: 2px solid rgba(252, 200, 70, 1);
+}
+
+.info-messages {
+  margin-top: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 5px;
+  min-height: 15px;
+  color: #155760;
+  display: inline-block;
+  background-color: #d4edda;
+  border: 2px solid #c3e6cb;
+  border-radius: 5px;
+}
+
+.print-info-messages {
+  margin-top: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-top: 5px;
+  min-height: 15px;
+  color: #155760;
+  display: inline-block;
+  background-color: #d4edda;
+  border: 2px solid #c3e6cb;
+  border-radius: 5px;
+  /* visibility: hidden; */
+}

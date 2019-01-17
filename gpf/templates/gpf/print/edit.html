@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+      <meta charset="UTF-8">
+      {% load static %}
+  </head>
+
+  <body>
+    <div id=header>
+        <img id="banner_left" src="{{root_url}}{% static 'images/print/STE.png' %}" height=100>
+        <img id="banner_right" src="{{root_url}}{% static 'images/print/ylb_etroit_noir.png' %}">
+        <div class="banner_center">Autorisation de fouille sur les voies publiques</div>
+    </div>
+    <div id="permit_number">
+      Demande N°{{permit.id}}
+    </div>
+    {% if not permit.validated %}
+      <div id="non-valid-warning">
+        Attention, ce permis n'est pas encore validé par les services !
+      </div>
+      <br>
+    {% endif %}
+
+      <table>
+         <caption>Intervenants</caption>
+        <tr>
+          <th>Entreprise</th>
+          <th>Maître d'ouvrage</th>
+        </tr>
+        <tr>
+          <td>
+            <table class="first-column-dual">
+              <tr>
+                <td>{{form_actor.fields.firstname.label}}</td>
+                <td>{{permit.company.firstname|default_if_none:"/"}}</td>
+              </tr>
+              <tr>
+                <td>{{form_actor.fields.name.label}}</td>
+                <td>{{permit.company.name|default_if_none:"/"}}</td>
+              </tr>
+              <tr>
+                <td>{{form_actor.fields.company_name.label}}</td>
+                <td>{{permit.company.company_name|default_if_none:"/"}}</td>
+              </tr>
+              <tr>
+                <td>{{form_actor.fields.address.label}}</td>
+                <td>{{permit.company.address|default_if_none:"/"}}</td>
+              </tr>
+              <tr>
+                <td>{{form_actor.fields.zipcode.label}}</td>
+                <td>{{permit.company.zipcode|default_if_none:"/"}}</td>
+              </tr>
+              <tr>
+                <td>{{form_actor.fields.city.label}}</td>
+                <td>{{permit.company.city|default_if_none:"/"}}</td>
+              </tr>
+              <tr>
+                <td>{{form_actor.fields.phone_fixed.label}}</td>
+                <td>{{permit.company.phone_fixed|default_if_none:"/"}}</td>
+              </tr>
+              <tr>
+                <td >{{form_actor.fields.phone_mobile.label}}</td>
+                <td>{{permit.company.phone_mobile|default_if_none:"/"}}</td>
+              </tr>
+              <tr>
+                <td>{{form_actor.fields.email.label}}</td>
+                <td>{{permit.company.email|default_if_none:"/"}}</td>
+              </tr>
+            </table>
+          </td>
+          <td>
+            <table class="first-column-dual">
+              <tr>
+                <td>{{form_actor.fields.firstname.label}}</td>
+                <td>{{permit.project_owner.firstname|default_if_none:"/"}}</td>
+              </tr>
+              <tr>
+                <td>{{form_actor.fields.name.label}}</td>
+                <td>{{permit.project_owner.name|default_if_none:"/"}}</td>
+              </tr>
+              <tr>
+                <td>{{form_actor.fields.company_name.label}}</td>
+                <td>{{permit.project_owner.company_name|default_if_none:"/"}}</td>
+              </tr>
+              <tr>
+                <td>{{form_actor.fields.address.label}}</td>
+                <td>{{permit.project_owner.address|default_if_none:"/"}}</td>
+              </tr>
+              <tr>
+                <td>{{form_actor.fields.zipcode.label}}</td>
+                <td>{{permit.project_owner.zipcode|default_if_none:"/"}}</td>
+              </tr>
+              <tr>
+                <td>{{form_actor.fields.city.label}}</td>
+                <td>{{permit.project_owner.city|default_if_none:"/"}}</td>
+              </tr>
+              <tr>
+                <td>{{form_actor.fields.phone_fixed.label}}</td>
+                <td>{{permit.project_owner.phone_fixed|default_if_none:"/"}}</td>
+              </tr>
+              <tr>
+                <td class="controlled-line-height">{{form_actor.fields.phone_mobile.label}}</td>
+                <td>{{permit.project_owner.phone_mobile|default_if_none:"/"}}</td>
+              </tr>
+              <tr>
+                <td>{{form_actor.fields.email.label}}</td>
+                <td>{{permit.project_owner.email|default_if_none:"/"}}</td>
+              </tr>
+            </table>
+          </td>
+      </tr>
+    </table>
+    <br>
+    <div id="permit">
+      <table class="first-column-single">
+        <caption>Description de la demande</caption>
+        <tr>
+          <td>{{form_permit.fields.description.label}}</td>
+          <td class="controlled-line-height">{{permit.description|default_if_none:"/"}}</td>
+        </tr>
+        <tr>
+          <td class="controlled-line-height">{{form_permit.fields.address.label}}</td>
+          <td class="controlled-line-height">{{permit.address|default_if_none:"/"}}</td>
+        </tr>
+      </table>
+      <br>
+      <table class="first-column-single">
+        <caption>Détails</caption>
+        <tr>
+          <td>{{form_permit.fields.date_start.label}}</td>
+          <td>{{permit.date_start|default_if_none:"/"}}</td>
+          <td>{{form_permit.fields.date_end.label}}</td>
+          <td>{{permit.date_end|default_if_none:"/"}}</td>
+        </tr>
+        <tr>
+          <td>{{form_permit.fields.length.label}}</td>
+          <td>{{permit.length|default_if_none:"/"}}m</td>
+          <td>{{form_permit.fields.width.label}}</td>
+          <td>{{permit.width|default_if_none:"/"}}m</td>
+        </tr>
+        <tr>
+          <td class="controlled-line-height">{{form_permit.fields.road_marking_damaged.label}}</td>
+          <td >{{permit.road_marking_damaged|yesno:"Oui,Non"}}</td>
+          <td>{{form_permit.fields.is_green_area.label}}</td>
+          <td>{{permit.is_green_area|yesno:"Oui,Non"}}</td>
+        </tr>
+        <tr>
+          <td>{{form_permit.fields.has_archeology.label}}</td>
+          <td>{{permit.has_archeology|yesno:"Oui,Non"}}</td>
+          <td class="controlled-line-height">{{form_permit.fields.has_existing_archeology.label}}</td>
+          <td>{{permit.has_existing_archeology|yesno:"Oui,Non"}}</td>
+        </tr>
+        <tr>
+          <td>{{form_permit.fields.sitetype.label}}</td>
+          <td>{{permit.sitetype|default_if_none:"/"}}</td>
+        </tr>
+      </table>
+    </div>
+    <br>
+    <div id="validations">
+      <table>
+        <caption>Remarque(s)</caption>
+        <tr>
+          <th>Service</th>
+          <th>Commentaire</th>
+        </tr>
+          {% for validation in validations %}
+            <tr>
+              <td>
+                {{validation.department}}
+              </td>
+              <td class="controlled-line-height">
+                {{validation.comment|default_if_none:"/"}}
+              </td>
+            </tr>
+          {% endfor %}
+      </table>
+    </div>
+    <img id="banner_left" src="{{root_url}}{% static 'images/print/STE_Signature.png' %}" height=100>
+    <p style="page-break-before: always" ></p>
+    <div id="print-map-container">
+      <img src="{{print_image_path}}" alt="Loading map..." class="map-print-image">
+    </div>
+
+    <div id="print_date">pdf du {{print_date}}</div>
+  </body>
+</html>

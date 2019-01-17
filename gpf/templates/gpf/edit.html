@@ -1,0 +1,60 @@
+{% extends "base_generic.html" %}
+{% block navbartitle %}
+  <a class="navbar-brand" href="{% url 'gpf:list'%}?sort=id">Gestion des permis de fouille</a>
+{% endblock %}
+{% load bootstrap4 %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+
+{% load static %}
+{% block stylesheets%}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/gpf.css' %}">
+{% endblock %}
+{% block script %}
+
+{% endblock %}
+{% block content %}
+<br>
+<h3>Description de la demande</h3>
+<hr>
+<p>
+  <a class="btn btn-primary" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+    Voir les documents joints
+  </a>
+</p>
+<div class="collapse" id="collapseExample">
+  <div class="card card-body">
+    <ul>
+      {% if documents %}
+        {% for document in documents %}
+            <li> <a href="{% url 'gpf:file-download' document.pk %}">{{document.file_name}}</a></li>
+        {% endfor %}
+      {% else %}
+        <li>Pas de documents liés à cette demande.</li>
+      {% endif %}
+    </ul>
+  </div>
+</div>
+{{ form.media }}
+    <form method="post">
+        {% csrf_token %}
+        <br>
+        {{ validation_formset.management_form }}
+        <h3> Validations par les services </h3>
+        <table>
+            {% for subform in validation_formset %}
+            {% bootstrap_form subform layout='horizontal'%}
+            {% endfor %}
+        </table>
+        <hr>
+        <h3> Détails de la demande </h3>
+        {% bootstrap_form form layout='horizontal'%}
+        <div style="text-align:center">
+        {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary" value="Enregistrer" %}
+        <p></p>
+        <p><a class="btn btn-primary" href="{% url 'gpf:list' %}?sort=id">Annuler</a></p>
+        </div>
+        <hr>
+        <br>
+    </form>
+{% endblock %}
