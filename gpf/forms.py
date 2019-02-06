@@ -190,7 +190,6 @@ class CompanyForm(forms.ModelForm):
             'zipcode': forms.TextInput(attrs={'placeholder': 'ex: 1400'}),
             'city': forms.TextInput(attrs={'placeholder': 'ex: Yverdon'}),
             'company_name': forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}),
-            'phone_mobile': forms.TextInput(attrs={'placeholder': 'ex: 079 111 22 22'}),
             'email': forms.TextInput(attrs={'placeholder': 'ex: permis-de-fouille@mapnv.ch'}),
         }
 

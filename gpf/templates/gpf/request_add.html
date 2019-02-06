@@ -16,18 +16,23 @@
 
 {% endblock %}
 {% block content %}
-<br>
-<h3>Description de la demande</h3>
-<hr>
 {{ form.media }}
     <form method="post">
         {% csrf_token %}
+        {% if show_company_form == 0 %}
+          <br>
+          <h3>Coordonnées de l'entreprise</h3>
+          <hr>
+            {% bootstrap_form unlinked_company_form layout='horizontal'%}
+        {% endif %}
+        <br>
+        <h3>Description de la demande</h3>
+        <hr>
         {% bootstrap_form form layout='horizontal'%}
         <div style="text-align:center">
         {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary" value="Enregistrer" %}
         <p></p>
         {% if user.groups.all.0.name == "extern" %}
-
           <a class="btn btn-primary" href="{% url 'gpf:listexterns'%}?sort=id">Annuler</a>
         {% else %}
           <a class="btn btn-primary" href="{% url 'gpf:list' %}?sort=id">Annuler</a>
