@@ -33,21 +33,39 @@ import time
 def permitRequestAdd(request, project_owner_id):
     if request.method == 'POST':
 
-        form = AddPermitRequestForm(request.POST, request.FILES)
+        permit_form = AddPermitRequestForm(request.POST, request.FILES)
 
-        if form.is_valid():
+        # if the request is filled by intern employees, the user login is not
+        # linked to a company, thus, we add an "unlinked company form". here
+        # the form is saved if the case occures
+
+        show_company_form = len(Actor.objects.filter(user=request.user).all())
+        unlinked_company_form = None
+        if (show_company_form == 0):
+            unlinked_company_form = CompanyForm(request.POST or None)
+
+
+        # if unlinked_company_form.is_valid() and permit_form.is_valid():
+
+        if (unlinked_company_form is not None and unlinked_company_form.is_valid() and permit_form.is_valid()) \
+            or (unlinked_company_form is  None and permit_form.is_valid()):
 
             # Gets the data before pushing it to database
-            permitRequest = form.save(commit=False)
+            permitRequest = permit_form.save(commit=False)
             # Check for archeology
-            has_archeo = archeo_checker(form.cleaned_data['geom'])
-            form.instance.has_archeology = has_archeo
+            has_archeo = archeo_checker(permit_form.cleaned_data['geom'])
+            permit_form.instance.has_archeology = has_archeo
             if has_archeo:
                 permit_link = os.environ['PRODUCTION_ROOT_ADRESS'] + '/gpf/permitdetail/' + str(permitRequest.id)
                 gpf.sendmail.send(permit_link, [], '', 'archeo_detected', '')
 
-            # Add current user
-            permitRequest.company = Actor.objects.get(user=request.user)
+            # Add company
+            if show_company_form == 0:
+                new_company_actor = unlinked_company_form.save()
+                permitRequest.company = new_company_actor
+            else:
+                permitRequest.company = Actor.objects.get(user=request.user)
+
             permitRequest.project_owner = Actor.objects.get(pk=project_owner_id)
             permitRequest.date_request_created = datetime.now()
             # Save it in database
@@ -66,9 +84,21 @@ def permitRequestAdd(request, project_owner_id):
             return HttpResponseRedirect(
                 reverse('gpf:documentupload', args=(permitRequest.id,))
             )
+
     else:
-        form = AddPermitRequestForm()
-    return render(request, 'gpf/request_add.html', {'form': form})
+
+        permit_form = AddPermitRequestForm()
+
+        # if the request is filled by intern employees, the user ligin is not
+        # linked to a company, thus, we add an "unlinked company form"
+        show_company_form = len(Actor.objects.filter(user=request.user).all())
+        unlinked_company_form = CompanyForm(request.POST or None)
+
+
+    return render(request, 'gpf/request_add.html',
+        {'form': permit_form,
+        'unlinked_company_form': unlinked_company_form,
+        'show_company_form': show_company_form})
 
 
 @permission_required('gpf.view_permitrequest')
@@ -158,8 +188,6 @@ def permitdetail(request, pk):
 
 @login_required
 def documentUpload(request, permit_id):
-
-    test_user_rights = get_object_or_404(PermitRequest, pk=permit_id, company=Actor.objects.get(user__username=request.user))
 
     if request.method == 'POST':
 
@@ -266,6 +294,7 @@ class PermitRequestDelete(PermissionRequiredMixin, DeleteView):
 
 @login_required
 def actorAdd(request):
+
     form = ActorForm(request.POST or None)
 
     if form.is_valid():
