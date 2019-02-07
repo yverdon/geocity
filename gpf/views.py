@@ -288,7 +288,7 @@ def file_download (request, pk):
 
 class PermitRequestDelete(PermissionRequiredMixin, DeleteView):
     model = PermitRequest
-    success_url = reverse_lazy('gpf:list' + "?sort=id")
+    success_url = "/gpf/list?sort=id"
     permission_required = ('gpf.delete_permitrequest')
 
 
