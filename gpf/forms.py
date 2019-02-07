@@ -60,14 +60,17 @@ class AddPermitRequestForm(forms.ModelForm):
                     }
                 ).end_of('event days'),
             'description': forms.Textarea(attrs={'rows': '3'}),
+            'zipcode': forms.TextInput(attrs={'id': 'id_zipcode_permit'}),
+            'city': forms.TextInput(attrs={'id': 'id_city_permit'}),
             'address': RemoteAutocompleteWidget(
                 attrs={
+                    "id": "id_adress_permit",
                     "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
                     "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
                     "search_prefix": "1400 ",
                     "origins": "address",
-                    "zipcode_field": "zipcode",
-                    "city_field": "city",
+                    "zipcode_field": "zipcode_permit",
+                    "city_field": "city_permit",
                     "placeholder": "ex: Place Pestalozzi 2 Yverdon",
                 }),
         }
