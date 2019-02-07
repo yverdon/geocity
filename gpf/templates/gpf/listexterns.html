@@ -1,14 +1,17 @@
 {% extends "base_generic.html" %}
+{% load static %}
 {% block stylesheets%}
   {% load fontawesome %}
   {% fontawesome_stylesheet %}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/gpf.css' %}">
 {% endblock %}
-{% block navbartitle %}
-{% if user.groups.all.0.name == "extern" %}
 
-  <a class="navbar-brand" href="{% url 'gpf:listexterns'%}?sort=id">Gestion des permis de fouille</a>
+{% block navbartitle %}
+
+{% if user.groups.all.0.name == "extern" %}
+  <a class="navbar-brand" href="{% url 'gpf:listexterns'%}?sort=id">Permis de fouille</a>
 {% else %}
-  <a class="navbar-brand" href="{% url 'gpf:list' %}?sort=id">Gestion des permis de fouille</a>
+  <a class="navbar-brand" href="{% url 'gpf:list' %}?sort=id">Permis de fouille</a>
 {% endif %}
 {% endblock %}
 
@@ -37,11 +40,11 @@
 {% block content %}
 
 <hr>
-<a class="btn btn-primary" href="{% url 'gpf:actor_add'%}" role="button"><i class="fa fa-road"></i>&nbsp;Faire une nouvelle demande</a>
-<a class="btn btn-primary" data-toggle="collapse" href="#collapseFilter" role="button" aria-expanded="false" aria-controls="collapseFilter">
+<a class="btn btn-primary responsive-btn" href="{% url 'gpf:actor_add'%}" role="button"><i class="fa fa-road"></i>&nbsp;Faire une nouvelle demande</a>
+<a class="btn btn-primary responsive-btn" data-toggle="collapse" href="#collapseFilter" role="button" aria-expanded="false" aria-controls="collapseFilter">
   <i class="fa fa-filter"></i>&nbsp;Filtrer les demandes
 </a>
-<a class="btn btn-primary" href="{% url 'gpf:listexterns' %}?sort=id" role="button"><i class="fa fa-eraser"></i>&nbsp;Effacer le filtre</a><hr>
+<a class="btn btn-primary responsive-btn" href="{% url 'gpf:listexterns' %}?sort=id" role="button"><i class="fa fa-eraser"></i>&nbsp;Effacer le filtre</a><hr>
 <div class="modal" id="nonIEModal">
   <div class="modal-dialog">
     <div class="modal-content">
