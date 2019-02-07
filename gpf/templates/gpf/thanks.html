@@ -1,10 +1,9 @@
 {% extends "base_generic.html" %}
 {% block navbartitle %}
 {% if user.groups.all.0.name == "extern" %}
-
-  <a class="navbar-brand" href="{% url 'gpf:listexterns'%}?sort=id">Gestion des permis de fouille</a>
+  <a class="navbar-brand" href="{% url 'gpf:listexterns'%}?sort=id">Permis de fouille</a>
 {% else %}
-  <a class="navbar-brand" href="{% url 'gpf:list' %}?sort=id">Gestion des permis de fouille</a>
+  <a class="navbar-brand" href="{% url 'gpf:list' %}?sort=id">Permis de fouille</a>
 {% endif %}
 {% endblock %}
 {% load bootstrap4 %}
@@ -22,7 +21,11 @@
     <li><a href="{% static 'doc/Mode_refection_fouilles.pdf' %}">Mode de réfection</a></li>
   </ul>
   <p>
-      <a class="navbar-brand" href="{% url 'gpf:listexterns'%}?sort=id">Gestion des permis de fouille</a>
+      {% if user.groups.all.0.name == "extern" %}
+       <a class="navbar-brand" href="{% url 'gpf:listexterns'%}?sort=id">Permis de fouille</a>
+      {% else %}
+        <a class="navbar-brand" href="{% url 'gpf:list' %}?sort=id">Permis de fouille</a>
+      {% endif %}
   </p>
 
 </div>

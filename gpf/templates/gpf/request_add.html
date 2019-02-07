@@ -2,9 +2,9 @@
 {% block navbartitle %}
 {% if user.groups.all.0.name == "extern" %}
 
-  <a class="navbar-brand" href="{% url 'gpf:listexterns'%}?sort=id">Gestion des permis de fouille</a>
+  <a class="navbar-brand" href="{% url 'gpf:listexterns'%}?sort=id">Permis de fouille</a>
 {% else %}
-  <a class="navbar-brand" href="{% url 'gpf:list' %}?sort=id">Gestion des permis de fouille</a>
+  <a class="navbar-brand" href="{% url 'gpf:list' %}?sort=id">Permis de fouille</a>
 {% endif %}
 {% endblock %}
 {% load bootstrap4 %}
@@ -41,4 +41,5 @@
         <hr>
         <br>
     </form>
+    <br>
 {% endblock %}

@@ -51,7 +51,6 @@ class Actor(models.Model):
 
 class Department(models.Model):
     group = models.OneToOneField(Group, on_delete=models.CASCADE)
-    email_content = models.TextField(_("email_content"))
     is_validator = models.BooleanField(_("is_validator"))
     is_admin = models.BooleanField(_("is_admin"))
     is_archeologist = models.BooleanField(_("is_archeologist"))
