@@ -39,6 +39,9 @@
       <layer-tree-layer providerKey="postgres" source="service='geomapfish' sslmode=disable key='id' srid=2056 type=MultiLineString table=&quot;gn_gas&quot;.&quot;gas_leitung&quot; (geom) sql=" checked="Qt::Checked" id="gas_leitung_bc3a9a4e_2b44_4e0f_8d8e_3c017d5c0d35" name="gas_leitung" expanded="1">
         <customproperties/>
       </layer-tree-layer>
+      <layer-tree-layer providerKey="postgres" source="dbname='geomapshark' host=localhost port=5432 user='geomapshark' sslmode=disable key='id' srid=2056 type=MultiPolygon table=&quot;geomapshark&quot;.&quot;gpf_archelogy&quot; (geom) sql=" checked="Qt::Checked" id="gpf_archelogy_6b729a8d_bc4b_4e87_94f7_5e2f16fffa5e" name="gpf_archelogy" expanded="1">
+        <customproperties/>
+      </layer-tree-layer>
     </layer-tree-group>
     <layer-tree-group checked="Qt::Checked" name="basemaps" expanded="1">
       <customproperties/>
@@ -54,12 +57,14 @@
       <item>ele_rohr_9691c8e2_241b_48d0_ae86_95987557c3ad</item>
       <item>was_leitung_6e6648f2_7fc6_4088_aa3a_9cf90dfe2b7b</item>
       <item>cad_leitung_870dc936_5074_420e_b630_532281170414</item>
+      <item>gpf_archelogy_6b729a8d_bc4b_4e87_94f7_5e2f16fffa5e</item>
     </custom-order>
   </layer-tree-group>
   <snapping-settings mode="3" type="2" unit="1" enabled="1" intersection-snapping="1" tolerance="4">
     <individual-layer-settings>
       <layer-setting units="1" type="1" id="cad_leitung_870dc936_5074_420e_b630_532281170414" enabled="0" tolerance="12"/>
       <layer-setting units="1" type="1" id="ele_rohr_9691c8e2_241b_48d0_ae86_95987557c3ad" enabled="0" tolerance="12"/>
+      <layer-setting units="1" type="1" id="gpf_archelogy_6b729a8d_bc4b_4e87_94f7_5e2f16fffa5e" enabled="0" tolerance="12"/>
       <layer-setting units="1" type="1" id="gas_leitung_bc3a9a4e_2b44_4e0f_8d8e_3c017d5c0d35" enabled="0" tolerance="12"/>
       <layer-setting units="1" type="1" id="was_leitung_6e6648f2_7fc6_4088_aa3a_9cf90dfe2b7b" enabled="0" tolerance="12"/>
       <layer-setting units="1" type="2" id="_cadinput_techical_snap_layer_20140203092715598" enabled="0" tolerance="8"/>
@@ -71,10 +76,10 @@
   <mapcanvas name="theMapCanvas" annotationsVisible="1">
     <units>meters</units>
     <extent>
-      <xmin>2538809.72871116362512112</xmin>
-      <ymin>1181312.7072606876026839</ymin>
-      <xmax>2538906.10371115989983082</xmax>
-      <ymax>1181348.55896649952046573</ymax>
+      <xmin>2538967.00090344296768308</xmin>
+      <ymin>1181120.81771246786229312</ymin>
+      <xmax>2539352.50090342806652188</xmax>
+      <ymax>1181264.22453571553342044</ymax>
     </extent>
     <rotation>0</rotation>
     <destinationsrs>
@@ -124,6 +129,11 @@
           <legendlayerfile layerid="gas_leitung_bc3a9a4e_2b44_4e0f_8d8e_3c017d5c0d35" isInOverview="0" visible="1"/>
         </filegroup>
       </legendlayer>
+      <legendlayer open="true" checked="Qt::Checked" name="gpf_archelogy" drawingOrder="-1" showFeatureCount="0">
+        <filegroup hidden="false" open="true">
+          <legendlayerfile layerid="gpf_archelogy_6b729a8d_bc4b_4e87_94f7_5e2f16fffa5e" isInOverview="0" visible="1"/>
+        </filegroup>
+      </legendlayer>
     </legendgroup>
     <legendgroup open="true" checked="Qt::Checked" name="basemaps">
       <legendlayer open="true" checked="Qt::Checked" name="asitvd-couleur" drawingOrder="-1" showFeatureCount="0">
@@ -135,6 +145,75 @@
   </legend>
   <mapViewDocks/>
   <mapViewDocks3D/>
+  <mapcanvas name="mAreaCanvas" annotationsVisible="1">
+    <units>degrees</units>
+    <extent>
+      <xmin>0</xmin>
+      <ymin>0</ymin>
+      <xmax>0</xmax>
+      <ymax>0</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <destinationsrs>
+      <spatialrefsys>
+        <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+        <srsid>3452</srsid>
+        <srid>4326</srid>
+        <authid>EPSG:4326</authid>
+        <description>WGS 84</description>
+        <projectionacronym>longlat</projectionacronym>
+        <ellipsoidacronym>WGS84</ellipsoidacronym>
+        <geographicflag>true</geographicflag>
+      </spatialrefsys>
+    </destinationsrs>
+    <rendermaptile>0</rendermaptile>
+  </mapcanvas>
+  <mapcanvas name="mAreaCanvas" annotationsVisible="1">
+    <units>degrees</units>
+    <extent>
+      <xmin>0</xmin>
+      <ymin>0</ymin>
+      <xmax>0</xmax>
+      <ymax>0</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <destinationsrs>
+      <spatialrefsys>
+        <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+        <srsid>3452</srsid>
+        <srid>4326</srid>
+        <authid>EPSG:4326</authid>
+        <description>WGS 84</description>
+        <projectionacronym>longlat</projectionacronym>
+        <ellipsoidacronym>WGS84</ellipsoidacronym>
+        <geographicflag>true</geographicflag>
+      </spatialrefsys>
+    </destinationsrs>
+    <rendermaptile>0</rendermaptile>
+  </mapcanvas>
+  <mapcanvas name="mAreaCanvas" annotationsVisible="1">
+    <units>degrees</units>
+    <extent>
+      <xmin>0</xmin>
+      <ymin>0</ymin>
+      <xmax>0</xmax>
+      <ymax>0</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <destinationsrs>
+      <spatialrefsys>
+        <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+        <srsid>3452</srsid>
+        <srid>4326</srid>
+        <authid>EPSG:4326</authid>
+        <description>WGS 84</description>
+        <projectionacronym>longlat</projectionacronym>
+        <ellipsoidacronym>WGS84</ellipsoidacronym>
+        <geographicflag>true</geographicflag>
+      </spatialrefsys>
+    </destinationsrs>
+    <rendermaptile>0</rendermaptile>
+  </mapcanvas>
   <projectlayers>
     <maplayer autoRefreshTime="0" refreshOnNotifyEnabled="0" minScale="1e+08" autoRefreshEnabled="0" hasScaleBasedVisibilityFlag="0" type="raster" styleCategories="AllStyleCategories" maxScale="0" refreshOnNotifyMessage="">
       <extent>
@@ -6502,6 +6581,532 @@ def my_form_open(dialog, layer, feature):
       <previewExpression>objectid</previewExpression>
       <mapTip></mapTip>
     </maplayer>
+    <maplayer simplifyDrawingHints="1" simplifyDrawingTol="1" labelsEnabled="0" autoRefreshTime="0" refreshOnNotifyEnabled="0" minScale="1e+08" autoRefreshEnabled="0" geometry="Polygon" hasScaleBasedVisibilityFlag="0" simplifyAlgorithm="0" simplifyLocal="1" simplifyMaxScale="1" type="vector" styleCategories="AllStyleCategories" readOnly="0" maxScale="0" refreshOnNotifyMessage="">
+      <extent>
+        <xmin>2515037.75</xmin>
+        <ymin>1167880.25</ymin>
+        <xmax>2550340.25</xmax>
+        <ymax>1193563.5</ymax>
+      </extent>
+      <id>gpf_archelogy_6b729a8d_bc4b_4e87_94f7_5e2f16fffa5e</id>
+      <datasource>dbname='geomapshark' host=localhost port=5432 user='geomapshark' password='geomapshark' sslmode=disable key='id' srid=2056 type=MultiPolygon table="geomapshark"."gpf_archelogy" (geom) sql=</datasource>
+      <keywordList>
+        <value></value>
+      </keywordList>
+      <layername>gpf_archelogy</layername>
+      <srs>
+        <spatialrefsys>
+          <proj4>+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
+          <srsid>47</srsid>
+          <srid>2056</srid>
+          <authid>EPSG:2056</authid>
+          <description>CH1903+ / LV95</description>
+          <projectionacronym>somerc</projectionacronym>
+          <ellipsoidacronym>bessel</ellipsoidacronym>
+          <geographicflag>false</geographicflag>
+        </spatialrefsys>
+      </srs>
+      <resourceMetadata>
+        <identifier></identifier>
+        <parentidentifier></parentidentifier>
+        <language></language>
+        <type>dataset</type>
+        <title></title>
+        <abstract></abstract>
+        <contact>
+          <name></name>
+          <organization></organization>
+          <position></position>
+          <voice></voice>
+          <fax></fax>
+          <email></email>
+          <role></role>
+        </contact>
+        <links/>
+        <fees></fees>
+        <encoding></encoding>
+        <crs>
+          <spatialrefsys>
+            <proj4>+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
+            <srsid>47</srsid>
+            <srid>2056</srid>
+            <authid>EPSG:2056</authid>
+            <description>CH1903+ / LV95</description>
+            <projectionacronym>somerc</projectionacronym>
+            <ellipsoidacronym>bessel</ellipsoidacronym>
+            <geographicflag>false</geographicflag>
+          </spatialrefsys>
+        </crs>
+        <extent>
+          <spatial dimensions="2" minx="0" crs="EPSG:2056" maxx="0" minz="0" maxy="0" maxz="0" miny="0"/>
+          <temporal>
+            <period>
+              <start></start>
+              <end></end>
+            </period>
+          </temporal>
+        </extent>
+      </resourceMetadata>
+      <provider encoding="UTF-8">postgres</provider>
+      <vectorjoins/>
+      <layerDependencies/>
+      <dataDependencies/>
+      <legend type="default-vector"/>
+      <expressionfields/>
+      <map-layer-style-manager current="défaut">
+        <map-layer-style name="défaut"/>
+      </map-layer-style-manager>
+      <auxiliaryLayer/>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+      </flags>
+      <renderer-v2 enableorderby="0" type="singleSymbol" forceraster="0" symbollevels="0">
+        <symbols>
+          <symbol type="fill" clip_to_extent="1" name="0" alpha="1">
+            <layer pass="0" locked="0" enabled="1" class="SimpleFill">
+              <prop k="border_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
+              <prop k="color" v="229,182,61,42"/>
+              <prop k="joinstyle" v="bevel"/>
+              <prop k="offset" v="0,0"/>
+              <prop k="offset_map_unit_scale" v="3x:0,0,0,0,0,0"/>
+              <prop k="offset_unit" v="MM"/>
+              <prop k="outline_color" v="255,212,35,255"/>
+              <prop k="outline_style" v="dot"/>
+              <prop k="outline_width" v="1"/>
+              <prop k="outline_width_unit" v="MM"/>
+              <prop k="style" v="solid"/>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option type="QString" value="" name="name"/>
+                  <Option name="properties"/>
+                  <Option type="QString" value="collection" name="type"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+        </symbols>
+        <rotation/>
+        <sizescale/>
+      </renderer-v2>
+      <customproperties>
+        <property key="embeddedWidgets/count" value="0"/>
+        <property key="variableNames"/>
+        <property key="variableValues"/>
+      </customproperties>
+      <blendMode>0</blendMode>
+      <featureBlendMode>0</featureBlendMode>
+      <layerOpacity>1</layerOpacity>
+      <SingleCategoryDiagramRenderer attributeLegend="1" diagramType="Histogram">
+        <DiagramCategory scaleBasedVisibility="0" penWidth="0" lineSizeScale="3x:0,0,0,0,0,0" minScaleDenominator="0" penColor="#000000" sizeType="MM" labelPlacementMethod="XHeight" enabled="0" width="15" rotationOffset="270" minimumSize="0" sizeScale="3x:0,0,0,0,0,0" backgroundAlpha="255" scaleDependency="Area" backgroundColor="#ffffff" barWidth="5" height="15" penAlpha="255" diagramOrientation="Up" opacity="1" lineSizeType="MM" maxScaleDenominator="1e+08">
+          <fontProperties style="" description="MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0"/>
+        </DiagramCategory>
+      </SingleCategoryDiagramRenderer>
+      <DiagramLayerSettings showAll="1" dist="0" placement="1" zIndex="0" obstacle="0" priority="0" linePlacementFlags="18">
+        <properties>
+          <Option type="Map">
+            <Option type="QString" value="" name="name"/>
+            <Option name="properties"/>
+            <Option type="QString" value="collection" name="type"/>
+          </Option>
+        </properties>
+      </DiagramLayerSettings>
+      <geometryOptions geometryPrecision="0" removeDuplicateNodes="0">
+        <activeChecks/>
+        <checkConfiguration/>
+      </geometryOptions>
+      <fieldConfiguration>
+        <field name="id">
+          <editWidget type="Range">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="fiche">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="commune">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="descriptio">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="note_carto">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="annee_revi">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="id_per">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="lien_img">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="note_detai">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="shape_len">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="date_maj">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="guid">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="mention">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="fme_feat">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="autre_ment">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="multi_read">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="autre_mesu">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="shape_area">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="objectid">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="date_mesur">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="eca">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="url_recens">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="mesure">
+          <editWidget type="TextEdit">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="import_date">
+          <editWidget type="Range">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+      </fieldConfiguration>
+      <aliases>
+        <alias field="id" name="" index="0"/>
+        <alias field="fiche" name="" index="1"/>
+        <alias field="commune" name="" index="2"/>
+        <alias field="descriptio" name="" index="3"/>
+        <alias field="note_carto" name="" index="4"/>
+        <alias field="annee_revi" name="" index="5"/>
+        <alias field="id_per" name="" index="6"/>
+        <alias field="lien_img" name="" index="7"/>
+        <alias field="note_detai" name="" index="8"/>
+        <alias field="shape_len" name="" index="9"/>
+        <alias field="date_maj" name="" index="10"/>
+        <alias field="guid" name="" index="11"/>
+        <alias field="mention" name="" index="12"/>
+        <alias field="fme_feat" name="" index="13"/>
+        <alias field="autre_ment" name="" index="14"/>
+        <alias field="multi_read" name="" index="15"/>
+        <alias field="autre_mesu" name="" index="16"/>
+        <alias field="shape_area" name="" index="17"/>
+        <alias field="objectid" name="" index="18"/>
+        <alias field="date_mesur" name="" index="19"/>
+        <alias field="eca" name="" index="20"/>
+        <alias field="url_recens" name="" index="21"/>
+        <alias field="mesure" name="" index="22"/>
+        <alias field="import_date" name="" index="23"/>
+      </aliases>
+      <excludeAttributesWMS/>
+      <excludeAttributesWFS/>
+      <defaults>
+        <default expression="" field="id" applyOnUpdate="0"/>
+        <default expression="" field="fiche" applyOnUpdate="0"/>
+        <default expression="" field="commune" applyOnUpdate="0"/>
+        <default expression="" field="descriptio" applyOnUpdate="0"/>
+        <default expression="" field="note_carto" applyOnUpdate="0"/>
+        <default expression="" field="annee_revi" applyOnUpdate="0"/>
+        <default expression="" field="id_per" applyOnUpdate="0"/>
+        <default expression="" field="lien_img" applyOnUpdate="0"/>
+        <default expression="" field="note_detai" applyOnUpdate="0"/>
+        <default expression="" field="shape_len" applyOnUpdate="0"/>
+        <default expression="" field="date_maj" applyOnUpdate="0"/>
+        <default expression="" field="guid" applyOnUpdate="0"/>
+        <default expression="" field="mention" applyOnUpdate="0"/>
+        <default expression="" field="fme_feat" applyOnUpdate="0"/>
+        <default expression="" field="autre_ment" applyOnUpdate="0"/>
+        <default expression="" field="multi_read" applyOnUpdate="0"/>
+        <default expression="" field="autre_mesu" applyOnUpdate="0"/>
+        <default expression="" field="shape_area" applyOnUpdate="0"/>
+        <default expression="" field="objectid" applyOnUpdate="0"/>
+        <default expression="" field="date_mesur" applyOnUpdate="0"/>
+        <default expression="" field="eca" applyOnUpdate="0"/>
+        <default expression="" field="url_recens" applyOnUpdate="0"/>
+        <default expression="" field="mesure" applyOnUpdate="0"/>
+        <default expression="" field="import_date" applyOnUpdate="0"/>
+      </defaults>
+      <constraints>
+        <constraint unique_strength="1" notnull_strength="1" field="id" exp_strength="0" constraints="3"/>
+        <constraint unique_strength="0" notnull_strength="0" field="fiche" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="commune" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="descriptio" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="note_carto" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="annee_revi" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="id_per" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="lien_img" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="note_detai" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="shape_len" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="date_maj" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="guid" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="mention" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="fme_feat" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="autre_ment" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="multi_read" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="autre_mesu" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="shape_area" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="objectid" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="date_mesur" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="eca" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="url_recens" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="mesure" exp_strength="0" constraints="0"/>
+        <constraint unique_strength="0" notnull_strength="0" field="import_date" exp_strength="0" constraints="0"/>
+      </constraints>
+      <constraintExpressions>
+        <constraint field="id" desc="" exp=""/>
+        <constraint field="fiche" desc="" exp=""/>
+        <constraint field="commune" desc="" exp=""/>
+        <constraint field="descriptio" desc="" exp=""/>
+        <constraint field="note_carto" desc="" exp=""/>
+        <constraint field="annee_revi" desc="" exp=""/>
+        <constraint field="id_per" desc="" exp=""/>
+        <constraint field="lien_img" desc="" exp=""/>
+        <constraint field="note_detai" desc="" exp=""/>
+        <constraint field="shape_len" desc="" exp=""/>
+        <constraint field="date_maj" desc="" exp=""/>
+        <constraint field="guid" desc="" exp=""/>
+        <constraint field="mention" desc="" exp=""/>
+        <constraint field="fme_feat" desc="" exp=""/>
+        <constraint field="autre_ment" desc="" exp=""/>
+        <constraint field="multi_read" desc="" exp=""/>
+        <constraint field="autre_mesu" desc="" exp=""/>
+        <constraint field="shape_area" desc="" exp=""/>
+        <constraint field="objectid" desc="" exp=""/>
+        <constraint field="date_mesur" desc="" exp=""/>
+        <constraint field="eca" desc="" exp=""/>
+        <constraint field="url_recens" desc="" exp=""/>
+        <constraint field="mesure" desc="" exp=""/>
+        <constraint field="import_date" desc="" exp=""/>
+      </constraintExpressions>
+      <expressionfields/>
+      <attributeactions>
+        <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"/>
+      </attributeactions>
+      <attributetableconfig sortExpression="" sortOrder="0" actionWidgetStyle="dropDown">
+        <columns>
+          <column hidden="0" width="-1" type="field" name="id"/>
+          <column hidden="0" width="-1" type="field" name="fiche"/>
+          <column hidden="0" width="-1" type="field" name="commune"/>
+          <column hidden="0" width="-1" type="field" name="descriptio"/>
+          <column hidden="0" width="-1" type="field" name="note_carto"/>
+          <column hidden="0" width="-1" type="field" name="annee_revi"/>
+          <column hidden="0" width="-1" type="field" name="id_per"/>
+          <column hidden="0" width="-1" type="field" name="lien_img"/>
+          <column hidden="0" width="-1" type="field" name="note_detai"/>
+          <column hidden="0" width="-1" type="field" name="shape_len"/>
+          <column hidden="0" width="-1" type="field" name="date_maj"/>
+          <column hidden="0" width="-1" type="field" name="guid"/>
+          <column hidden="0" width="-1" type="field" name="mention"/>
+          <column hidden="0" width="-1" type="field" name="fme_feat"/>
+          <column hidden="0" width="-1" type="field" name="autre_ment"/>
+          <column hidden="0" width="-1" type="field" name="multi_read"/>
+          <column hidden="0" width="-1" type="field" name="autre_mesu"/>
+          <column hidden="0" width="-1" type="field" name="shape_area"/>
+          <column hidden="0" width="-1" type="field" name="objectid"/>
+          <column hidden="0" width="-1" type="field" name="date_mesur"/>
+          <column hidden="0" width="-1" type="field" name="eca"/>
+          <column hidden="0" width="-1" type="field" name="url_recens"/>
+          <column hidden="0" width="-1" type="field" name="mesure"/>
+          <column hidden="0" width="-1" type="field" name="import_date"/>
+          <column hidden="1" width="-1" type="actions"/>
+        </columns>
+      </attributetableconfig>
+      <conditionalstyles>
+        <rowstyles/>
+        <fieldstyles/>
+      </conditionalstyles>
+      <editform tolerant="1"></editform>
+      <editforminit/>
+      <editforminitcodesource>0</editforminitcodesource>
+      <editforminitfilepath></editforminitfilepath>
+      <editforminitcode><![CDATA[# -*- coding: utf-8 -*-
+"""
+Les formulaires QGIS peuvent avoir une fonction Python qui sera appelée à l'ouverture du formulaire.
+
+Utilisez cette fonction pour ajouter plus de fonctionnalités à vos formulaires.
+
+Entrez le nom de la fonction dans le champ "Fonction d'initialisation Python".
+Voici un exemple à suivre:
+"""
+from qgis.PyQt.QtWidgets import QWidget
+
+def my_form_open(dialog, layer, feature):
+    geom = feature.geometry()
+    control = dialog.findChild(QWidget, "MyLineEdit")
+
+]]></editforminitcode>
+      <featformsuppress>0</featformsuppress>
+      <editorlayout>generatedlayout</editorlayout>
+      <editable>
+        <field editable="1" name="annee_revi"/>
+        <field editable="1" name="autre_ment"/>
+        <field editable="1" name="autre_mesu"/>
+        <field editable="1" name="commune"/>
+        <field editable="1" name="date_maj"/>
+        <field editable="1" name="date_mesur"/>
+        <field editable="1" name="descriptio"/>
+        <field editable="1" name="eca"/>
+        <field editable="1" name="fiche"/>
+        <field editable="1" name="fme_feat"/>
+        <field editable="1" name="guid"/>
+        <field editable="1" name="id"/>
+        <field editable="1" name="id_per"/>
+        <field editable="1" name="import_date"/>
+        <field editable="1" name="lien_img"/>
+        <field editable="1" name="mention"/>
+        <field editable="1" name="mesure"/>
+        <field editable="1" name="multi_read"/>
+        <field editable="1" name="note_carto"/>
+        <field editable="1" name="note_detai"/>
+        <field editable="1" name="objectid"/>
+        <field editable="1" name="shape_area"/>
+        <field editable="1" name="shape_len"/>
+        <field editable="1" name="url_recens"/>
+      </editable>
+      <labelOnTop>
+        <field labelOnTop="0" name="annee_revi"/>
+        <field labelOnTop="0" name="autre_ment"/>
+        <field labelOnTop="0" name="autre_mesu"/>
+        <field labelOnTop="0" name="commune"/>
+        <field labelOnTop="0" name="date_maj"/>
+        <field labelOnTop="0" name="date_mesur"/>
+        <field labelOnTop="0" name="descriptio"/>
+        <field labelOnTop="0" name="eca"/>
+        <field labelOnTop="0" name="fiche"/>
+        <field labelOnTop="0" name="fme_feat"/>
+        <field labelOnTop="0" name="guid"/>
+        <field labelOnTop="0" name="id"/>
+        <field labelOnTop="0" name="id_per"/>
+        <field labelOnTop="0" name="import_date"/>
+        <field labelOnTop="0" name="lien_img"/>
+        <field labelOnTop="0" name="mention"/>
+        <field labelOnTop="0" name="mesure"/>
+        <field labelOnTop="0" name="multi_read"/>
+        <field labelOnTop="0" name="note_carto"/>
+        <field labelOnTop="0" name="note_detai"/>
+        <field labelOnTop="0" name="objectid"/>
+        <field labelOnTop="0" name="shape_area"/>
+        <field labelOnTop="0" name="shape_len"/>
+        <field labelOnTop="0" name="url_recens"/>
+      </labelOnTop>
+      <widgets/>
+      <previewExpression>id</previewExpression>
+      <mapTip></mapTip>
+    </maplayer>
     <maplayer simplifyDrawingHints="0" simplifyDrawingTol="1" labelsEnabled="0" autoRefreshTime="0" refreshOnNotifyEnabled="0" minScale="1e+08" autoRefreshEnabled="0" geometry="Point" hasScaleBasedVisibilityFlag="0" simplifyAlgorithm="0" simplifyLocal="1" simplifyMaxScale="1" type="vector" styleCategories="AllStyleCategories" readOnly="0" maxScale="0" refreshOnNotifyMessage="">
       <extent>
         <xmin>2538669.25</xmin>
@@ -9104,6 +9709,7 @@ def my_form_open(dialog, layer, feature):
     <layer id="ele_rohr_9691c8e2_241b_48d0_ae86_95987557c3ad"/>
     <layer id="was_leitung_6e6648f2_7fc6_4088_aa3a_9cf90dfe2b7b"/>
     <layer id="cad_leitung_870dc936_5074_420e_b630_532281170414"/>
+    <layer id="gpf_archelogy_6b729a8d_bc4b_4e87_94f7_5e2f16fffa5e"/>
   </layerorder>
   <properties>
     <Palette>
@@ -10522,7 +11128,7 @@ def my_form_open(dialog, layer, feature):
         </LayoutItem>
         <GuideCollection visible="1"/>
       </PageCollection>
-      <LayoutItem boxSpace="2" excludeFromExports="0" frame="false" splitLayer="0" rasterBorderWidth="0" columnSpace="2" outlineWidthM="0.3,mm" templateUuid="{d1fb19dd-04d8-4fc9-9f4f-093af6b6acca}" positionLock="false" lineSpacing="1" visibility="1" legendFilterByAtlas="0" rasterBorder="1" wmsLegendWidth="50" type="65642" blendMode="0" symbolHeight="4" background="true" equalColumnWidth="0" groupUuid="" map_uuid="{cc2dbdbb-a7d4-41c2-ac03-218301ff20c5}" referencePoint="0" wrapChar="" symbolWidth="7" uuid="{d1fb19dd-04d8-4fc9-9f4f-093af6b6acca}" zValue="8" rasterBorderColor="0,0,0,255" size="51.1702,86.4528,mm" wmsLegendHeight="25" positionOnPage="238.633,31.3664,mm" resizeToContents="0" columnCount="1" opacity="1" itemRotation="0" position="238.633,31.3664,mm" id="" fontColor="#000000" title="" frameJoinStyle="miter" titleAlignment="1">
+      <LayoutItem boxSpace="2" excludeFromExports="0" frame="false" splitLayer="0" rasterBorderWidth="0" columnSpace="2" outlineWidthM="0.3,mm" templateUuid="{d1fb19dd-04d8-4fc9-9f4f-093af6b6acca}" positionLock="false" lineSpacing="1" visibility="1" legendFilterByAtlas="0" rasterBorder="1" wmsLegendWidth="50" type="65642" blendMode="0" symbolHeight="4" background="true" equalColumnWidth="0" groupUuid="" map_uuid="{cc2dbdbb-a7d4-41c2-ac03-218301ff20c5}" referencePoint="0" wrapChar="" symbolWidth="7" uuid="{d1fb19dd-04d8-4fc9-9f4f-093af6b6acca}" zValue="8" rasterBorderColor="0,0,0,255" size="51.1702,99.9053,mm" wmsLegendHeight="25" positionOnPage="238.633,31.3664,mm" resizeToContents="0" columnCount="1" opacity="1" itemRotation="0" position="238.633,31.3664,mm" id="" fontColor="#000000" title="" frameJoinStyle="miter" titleAlignment="1">
         <FrameColor green="0" alpha="255" blue="0" red="0"/>
         <BackgroundColor green="255" alpha="255" blue="255" red="255"/>
         <LayoutObject>
@@ -10588,10 +11194,17 @@ def my_form_open(dialog, layer, feature):
               </customproperties>
             </layer-tree-layer>
           </layer-tree-group>
-          <custom-order enabled="0"/>
+          <layer-tree-layer providerKey="postgres" source="dbname='geomapshark' host=localhost port=5432 user='geomapshark' sslmode=disable key='id' srid=2056 type=MultiPolygon table=&quot;geomapshark&quot;.&quot;gpf_archelogy&quot; (geom) sql=" checked="Qt::Checked" id="gpf_archelogy_6b729a8d_bc4b_4e87_94f7_5e2f16fffa5e" name="gpf_archelogy" expanded="1">
+            <customproperties>
+              <property key="legend/title-label" value="Zone archéologique VD"/>
+            </customproperties>
+          </layer-tree-layer>
+          <custom-order enabled="0">
+            <item>gpf_archelogy_6b729a8d_bc4b_4e87_94f7_5e2f16fffa5e</item>
+          </custom-order>
         </layer-tree-group>
       </LayoutItem>
-      <LayoutItem marginY="0" blendMode="0" halign="8" templateUuid="{9913b110-9758-46a7-abf8-1f348089544c}" frameJoinStyle="miter" itemRotation="0" htmlState="0" uuid="{9913b110-9758-46a7-abf8-1f348089544c}" outlineWidthM="0.3,mm" positionLock="false" valign="32" referencePoint="0" frame="false" positionOnPage="240.764,141.048,mm" groupUuid="" type="65641" visibility="1" marginX="0" excludeFromExports="0" position="240.764,141.048,mm" labelText="Données cartographiques: mapnv, ASITVD, contributeurs OpenStreetMap et canton de Vaud.&#xa;Informations dépourvues de foi publique. La Ville ne répond en aucun cas de dommages résultant de l'utilisation de données erronées ou obsolètes" background="false" opacity="1" size="47.3385,29.4885,mm" id="" zValue="7">
+      <LayoutItem marginY="0" blendMode="0" halign="8" templateUuid="{9913b110-9758-46a7-abf8-1f348089544c}" frameJoinStyle="miter" itemRotation="0" htmlState="0" uuid="{9913b110-9758-46a7-abf8-1f348089544c}" outlineWidthM="0.3,mm" positionLock="false" valign="32" referencePoint="0" frame="false" positionOnPage="233.986,145.695,mm" groupUuid="" type="65641" visibility="1" marginX="0" excludeFromExports="0" position="233.986,145.695,mm" labelText="Données cartographiques: mapnv, ASITVD, contributeurs OpenStreetMap et canton de Vaud.&#xa;Informations dépourvues de foi publique. La Ville ne répond en aucun cas de dommages résultant de l'utilisation de données erronées ou obsolètes" background="false" opacity="1" size="49.4695,36.8263,mm" id="" zValue="7">
         <FrameColor green="0" alpha="255" blue="0" red="0"/>
         <BackgroundColor green="255" alpha="255" blue="255" red="255"/>
         <LayoutObject>
@@ -10607,7 +11220,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont style="Normal" description="Arial,8,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor green="75" blue="75" red="75"/>
       </LayoutItem>
-      <LayoutItem blendMode="0" templateUuid="{c62fe26a-ac6f-4195-8f70-c8b4e5b63fe4}" frameJoinStyle="miter" northMode="0" itemRotation="0" pictureRotation="0" svgBorderWidth="0.2" uuid="{c62fe26a-ac6f-4195-8f70-c8b4e5b63fe4}" svgFillColor="255,255,255,255" outlineWidthM="0.3,mm" positionLock="false" file="./images/north.svg" referencePoint="0" pictureHeight="15.622" frame="false" positionOnPage="271.016,122.466,mm" groupUuid="" mapUuid="" type="65640" visibility="1" anchorPoint="0" svgBorderColor="0,0,0,255" excludeFromExports="0" position="271.016,122.466,mm" background="false" opacity="1" northOffset="0" pictureWidth="15.622" size="17.0866,15.622,mm" resizeMode="0" id="" zValue="6">
+      <LayoutItem blendMode="0" templateUuid="{c62fe26a-ac6f-4195-8f70-c8b4e5b63fe4}" frameJoinStyle="miter" northMode="0" itemRotation="0" pictureRotation="0" svgBorderWidth="0.2" uuid="{c62fe26a-ac6f-4195-8f70-c8b4e5b63fe4}" svgFillColor="255,255,255,255" outlineWidthM="0.3,mm" positionLock="false" file="./images/north.svg" referencePoint="0" pictureHeight="15.622" frame="false" positionOnPage="262.709,172.119,mm" groupUuid="" mapUuid="" type="65640" visibility="1" anchorPoint="0" svgBorderColor="0,0,0,255" excludeFromExports="0" position="262.709,172.119,mm" background="false" opacity="1" northOffset="0" pictureWidth="15.622" size="17.0866,15.622,mm" resizeMode="0" id="" zValue="6">
         <FrameColor green="0" alpha="255" blue="0" red="0"/>
         <BackgroundColor green="255" alpha="255" blue="255" red="255"/>
         <LayoutObject>
@@ -10665,7 +11278,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont style="Bold" description="Arial,18,-1,5,75,0,0,0,0,0,Gras"/>
         <FontColor green="0" blue="0" red="0"/>
       </LayoutItem>
-      <LayoutItem blendMode="0" keepLayerSet="false" templateUuid="{cc2dbdbb-a7d4-41c2-ac03-218301ff20c5}" frameJoinStyle="miter" itemRotation="0" followPresetName="" uuid="{cc2dbdbb-a7d4-41c2-ac03-218301ff20c5}" outlineWidthM="0.3,mm" positionLock="false" drawCanvasItems="true" referencePoint="0" frame="false" mapRotation="0" followPreset="false" positionOnPage="198.006,370.469,px" groupUuid="" type="65639" visibility="1" excludeFromExports="0" position="198.006,370.469,px" background="true" opacity="1" size="2550.13,1634.18,px" id="map0" zValue="2">
+      <LayoutItem blendMode="0" keepLayerSet="false" templateUuid="{cc2dbdbb-a7d4-41c2-ac03-218301ff20c5}" frameJoinStyle="miter" itemRotation="0" followPresetName="" uuid="{cc2dbdbb-a7d4-41c2-ac03-218301ff20c5}" outlineWidthM="0.3,mm" positionLock="false" drawCanvasItems="true" referencePoint="0" frame="false" mapRotation="0" followPreset="false" positionOnPage="200,400,px" groupUuid="" type="65639" visibility="1" excludeFromExports="0" position="200,400,px" background="true" opacity="1" size="2500,1800,px" id="map0" zValue="2">
         <FrameColor green="0" alpha="255" blue="0" red="0"/>
         <BackgroundColor green="255" alpha="255" blue="255" red="255"/>
         <LayoutObject>
@@ -10678,7 +11291,7 @@ def my_form_open(dialog, layer, feature):
           </dataDefinedProperties>
           <customproperties/>
         </LayoutObject>
-        <Extent ymax="1185233.97014517011120915" xmin="2533583.38120744889602065" xmax="2545755.39230470499023795" ymin="1177433.8521934722084552"/>
+        <Extent ymax="1185715.83516433252952993" xmin="2533583.38120744889602065" xmax="2545755.39230470499023795" ymin="1176951.98717430816031992"/>
         <LayerSet/>
         <AtlasMap margin="0.10000000000000001" scalingMode="2" atlasDriven="0"/>
       </LayoutItem>
