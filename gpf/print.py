@@ -33,7 +33,7 @@ def printreport(request, pk, save_to_file):
           'DPI' : '150',
           'TEMPLATE' : 'permis-fouilles',
           'map0:extent' : ', '.join(map(str, extent)),
-          'LAYERS' : 'gpf_permitrequest,basemaps',
+          'LAYERS' : 'basemaps,ele_rohr,was_leitung,cad_leitung,awk_haltung,gas_leitung,gpf_permitrequest',
           'FILTER' : 'gpf_permitrequest:"id" >= ' +  str(permit.id) +' AND "id" < ' + str(permit.id + 1),
           }
 
