@@ -17,11 +17,16 @@ def printreport(request, pk, save_to_file):
     form_actor = ActorForm(request.POST or None, instance=permit.project_owner)
     print_date = datetime.datetime.now()
 
-    extent_raw = permit.geom.buffer(200).extent
-    extent = []
+    # TODO: configure this from env.yaml file
+    h_extent = extent_raw[2] - extent_raw[0]
+    h_extent_center = h_extent/2 + extent_raw[0]
+    h_extent_left =  round(extent_raw[0])
+    h_extent_right =  round(extent_raw[2])
+    v_extent_scaled = (extent_raw[3] - extent_raw[1]) * (1800/2500)
+    v_extent_bottom = round(v_extent_scaled/2 + extent_raw[1])
+    v_extent_top = round(v_extent_scaled + v_extent_bottom)
 
-    for coord in extent_raw:
-        extent.append(round(coord))
+    extent = [h_extent_left, v_extent_bottom, h_extent_right, v_extent_top]
 
     url = settings.QGISSERVER_URL
     values = {'SERVICE' : 'WMS',
@@ -33,7 +38,7 @@ def printreport(request, pk, save_to_file):
           'DPI' : '150',
           'TEMPLATE' : 'permis-fouilles',
           'map0:extent' : ', '.join(map(str, extent)),
-          'LAYERS' : 'gpf_permitrequest,basemaps',
+          'LAYERS' : 'basemaps,ele_rohr,was_leitung,cad_leitung,awk_haltung,gas_leitung,gpf_permitrequest',
           'FILTER' : 'gpf_permitrequest:"id" >= ' +  str(permit.id) +' AND "id" < ' + str(permit.id + 1),
           }
 
