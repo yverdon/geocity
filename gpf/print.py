@@ -18,6 +18,7 @@ def printreport(request, pk, save_to_file):
     print_date = datetime.datetime.now()
 
     # TODO: configure this from env.yaml file
+    extent_raw = permit.geom.buffer(100).extent
     h_extent = extent_raw[2] - extent_raw[0]
     h_extent_center = h_extent/2 + extent_raw[0]
     h_extent_left =  round(extent_raw[0])
