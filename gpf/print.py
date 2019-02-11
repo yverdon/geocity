@@ -36,7 +36,7 @@ def printreport(request, pk, save_to_file):
           'LAYERS' : 'gpf_permitrequest,basemaps',
           'FILTER' : 'gpf_permitrequest:"id" >= ' +  str(permit.id) +' AND "id" < ' + str(permit.id + 1),
           }
-    print(extent)
+
     data = urllib.parse.urlencode(values)
     printurl = settings.QGISSERVER_URL + '/?' + data
 
