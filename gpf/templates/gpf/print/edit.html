@@ -167,7 +167,7 @@
           {% for validation in validations %}
             <tr>
               <td>
-                {{validation.department}}
+                {{validation.service.description}}
               </td>
               <td class="controlled-line-height">
                 {{validation.comment|default_if_none:"/"}}
