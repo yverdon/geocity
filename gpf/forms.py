@@ -88,9 +88,9 @@ class ChangePermitRequestForm(forms.ModelForm):
         model = PermitRequest
         exclude = []
         fields = [
-            'ended', 'has_existing_archeology', 'has_archeology', 'amount', 'paid', 'validated', 'sent', 'date_start', 'date_end',
+            'company', 'project_owner', 'ended', 'has_existing_archeology', 'has_archeology', 'amount', 'paid', 'validated', 'sent', 'date_start', 'date_end',
             'date_end_work_announcement', 'date_end_work', 'road_marking_damaged', 'date_request_created',
-            'is_green_area', 'invoice_to', 'company', 'project_owner', 'sitetype',
+            'is_green_area', 'invoice_to', 'sitetype',
             'description', 'address',  'zipcode', 'city', 'length', 'width', 'geom'
         ]
         help_texts = {
