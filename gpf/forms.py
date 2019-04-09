@@ -88,7 +88,7 @@ class ChangePermitRequestForm(forms.ModelForm):
         model = PermitRequest
         exclude = []
         fields = [
-            'ended', 'date_effective_end', 'has_existing_archeology', 'has_archeology', 'amount', 'paid', 'validated', 'sent', 'date_start', 'date_end',
+            'ended', 'has_existing_archeology', 'has_archeology', 'amount', 'paid', 'validated', 'sent', 'date_start', 'date_end',
             'date_end_work_announcement', 'date_end_work', 'road_marking_damaged', 'date_request_created',
             'is_green_area', 'invoice_to', 'company', 'project_owner', 'sitetype',
             'description', 'address',  'zipcode', 'city', 'length', 'width', 'geom'
@@ -133,12 +133,6 @@ class ChangePermitRequestForm(forms.ModelForm):
                     "format": "DD/MM/YYYY",
                     "locale": "fr"
                     },
-                ),
-            'date_effective_end': DatePickerInput(
-                options={
-                    "format": "DD/MM/YYYY",
-                    "locale": "fr"
-                    }
                 ),
             'date_request_created': forms.TextInput(
                 attrs={'readonly':'readonly'}
