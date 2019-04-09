@@ -124,7 +124,7 @@ msgstr "Permis envoyé"
 
 #: .\gpf\models.py:66
 msgid "ended"
-msgstr "Fouille terminée"
+msgstr "Fouille contrôlée"
 
 #: .\gpf\models.py:67
 msgid "date_start"
