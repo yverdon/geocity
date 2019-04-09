@@ -8,6 +8,7 @@ from .models import PermitRequest, Actor, Validation, Document
 from .widgets import RemoteAutocompleteWidget
 from django.contrib.auth.forms import UserCreationForm
 from bootstrap_datepicker_plus import DatePickerInput
+import datetime
 
 class SitOpenLayersWidget(forms.OSMWidget):
 
@@ -50,13 +51,15 @@ class AddPermitRequestForm(forms.ModelForm):
             'date_start': DatePickerInput(
                 options={
                     "format": "DD/MM/YYYY",
-                    "locale": "fr"
+                    "locale": "fr",
+                    "minDate": (datetime.datetime.today() + datetime.timedelta(days=2)).strftime('%Y/%m/%d')
                     }
                 ).start_of('event days'),
             'date_end': DatePickerInput(
                 options={
                     "format": "DD/MM/YYYY",
-                    "locale": "fr"
+                    "locale": "fr",
+                    "minDate": (datetime.datetime.today() + datetime.timedelta(days=2)).strftime('%Y/%m/%d')
                     }
                 ).end_of('event days'),
             'description': forms.Textarea(attrs={'rows': '3'}),
