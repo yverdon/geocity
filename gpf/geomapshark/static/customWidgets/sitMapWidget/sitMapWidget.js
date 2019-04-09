@@ -117,7 +117,6 @@
 
     proj4.defs("EPSG:2056", "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs");
 
-
     var projection = ol.proj.get('EPSG:2056');
     sitMapWidget.prototype.createMap = function() {
         var map = new ol.Map({
@@ -134,7 +133,6 @@
             layers: [this.options.base_layer],
             view: new ol.View({
                 zoom: this.options.default_zoom,
-                minZoom: this.options.min_zoom,
                 projection: projection,
                 center: [2538812, 1181380]
             })
@@ -189,15 +187,8 @@
         this.enableDrawing();
     };
 
-    sitMapWidget.prototype.addPointFeature= function() {
+    sitMapWidget.prototype.addFeature = function(east, north) {
 
-      var east = $('#east_coord')[0].value;
-      var north = $('#north_coord')[0].value;
-        console.log(east, north)
-        var feature = new ol.Feature({
-          geometry: new ol.geom.Point([east, north]),
-        });
-        this.featureOverlay.getSource().addFeature(feature);
 
     };
 

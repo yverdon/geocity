@@ -1,4 +1,10 @@
 {% load i18n l10n %}
+{% block stylesheets%}
+  {% load fontawesome %}
+  {% fontawesome_stylesheet %}
+{% endblock %}
+
+
 <style type="text/css">{% block map_css %}{% get_current_language_bidi as LANGUAGE_BIDI %}
     #{{ id }}_map { width: {{ map_width }}; height: {{ map_height }}px; }
     #{{ id }}_map .aligned label { float: none; }
@@ -10,9 +16,21 @@
 <div id="{{ id }}_div_map">
     <a class="btn btn-primary" style="{{map_clear_style}}"
        href="javascript:gpfMap.clearFeatures();" role="button">
-       Effacer le(s) entité(s)
+       Effacer tous points
     </a>
-    <b style="{{map_clear_style}}">Saisissez un point sur la carte</b>
+    <div>
+    Ajouter un point manuel: 
+    <label for="east_coord">Est:</label>
+    <input id="east_coord" type="number" min=2535594 max=2542571 value=2539162 placeholder="ex: 2539142">
+    <label for="east_coord">Nord:</label>
+    <input id="north_coord" type="number" min=1178784 max=1183461 value=1181732  placeholder="ex: 1181572 ">
+    <a class="btn btn-primary" style="{{map_clear_style}}"
+       href="javascript:gpfMap.addPointFeature();" role="button">
+       <i class="fa fa-plus"></i>
+    </a>
+    </div>
+    <b style="{{map_clear_style}}">Ou cliquez dans la carte pour placer un point</b>
+    <hr>
     <div id="{{ id }}_map"></div>
     {% if display_raw %}<p>{% trans "Debugging window (serialized value)" %}</p>{% endif %}
     <textarea id="{{ id }}" class="vSerializedField required" cols="150" rows="10" name="{{ name }}">{{ serialized }}</textarea>
