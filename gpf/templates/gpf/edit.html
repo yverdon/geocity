@@ -21,6 +21,9 @@
   <a class="btn btn-primary" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
     Voir les documents joints
   </a>
+  <a class="btn btn-primary" href="#validations-anchor" role="button">
+    Voir les validations
+  </a>
 </p>
 <div class="collapse" id="collapseExample">
   <div class="card card-body">
@@ -38,15 +41,6 @@
 {{ form.media }}
     <form method="post">
         {% csrf_token %}
-        <br>
-        {{ validation_formset.management_form }}
-        <h3> Validations par les services </h3>
-        <table>
-            {% for subform in validation_formset %}
-            {% bootstrap_form subform layout='horizontal'%}
-            {% endfor %}
-        </table>
-        <hr>
         <h3> Détails de la demande </h3>
         {% bootstrap_form form layout='horizontal'%}
         <div style="text-align:center">
@@ -54,6 +48,15 @@
         <p></p>
         <p><a class="btn btn-primary" href="{% url 'gpf:list' %}?sort=id">Annuler</a></p>
         </div>
+        <hr>
+        <br>
+        {{ validation_formset.management_form }}
+        <h3 id="validations-anchor"> Validations par les services </h3>
+        <table>
+            {% for subform in validation_formset %}
+            {% bootstrap_form subform layout='horizontal'%}
+            {% endfor %}
+        </table>
         <hr>
         <br>
     </form>
