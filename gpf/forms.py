@@ -94,6 +94,7 @@ class ChangePermitRequestForm(forms.ModelForm):
             'validated': "Actif seulement lorsque tous les services ont validé la demande",
             'has_existing_archeology': "Zone archéologique observée au moment de la fouille",
             'has_archeology': "Zone archéologique détectée sur la base des géodonnées cantonales",
+            'ended': "La fouille a-t-elle été contrôlée par le bureau STE ?",
         }
         widgets = {
             'geom': SitOpenLayersWidget(attrs={
@@ -174,6 +175,9 @@ class CompanyForm(forms.ModelForm):
     class Meta:
         model = Actor
         exclude = ['user']
+        help_texts = {
+            'vat_number': 'Trouvez votre numéro <a href="https://www.bfs.admin.ch/bfs/fr/home/registres/registre-entreprises/numero-identification-entreprises.html" target="_blank">TVA</a>',
+        }
         widgets = {
             'address': RemoteAutocompleteWidget(
                 attrs={
