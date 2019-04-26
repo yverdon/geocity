@@ -107,10 +107,13 @@ class ChangePermitRequestForm(forms.ModelForm):
                 'map_height': 500,
                 'map_srid': 2056,
                 'default_center': [2539057, 1181111],
-                'default_zoom': 14,
-                'min_zoom': 14,
-                'map_clear_style': "visibility:hidden;",
-                'edit_geom': False,
+                'default_zoom': 10,
+                'display_raw': False, #show coordinate in debug
+                'map_clear_style': "visibility:visible;",
+                'edit_geom': True,
+                'min_zoom': 8,
+                'wmts_capabilities_url': 'https://ows.asitvd.ch/wmts?request=GetCapabilities',
+                'wmts_layer': 'asitvd.fond_cadastral',
             }),
             'date_start': DatePickerInput(
                 options={
