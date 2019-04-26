@@ -19,7 +19,7 @@ class SitOpenLayersWidget(forms.OSMWidget):
     def media(self):
         return forms.Media(
             css={'all': ('libs/js/openlayers/ol.css',)},
-            js=('libs/js/openlayers/ol-debug.js',
+            js=('libs/js/openlayers/ol.js',
                 'libs/js/proj4js/proj4-src.js',
                 'customWidgets/sitMapWidget/sitMapWidget.js'
                 ))
@@ -42,11 +42,13 @@ class AddPermitRequestForm(forms.ModelForm):
                 'map_height': 500,
                 'map_srid': 2056,
                 'default_center': [2539057, 1181111],
-                'default_zoom': 14,
+                'default_zoom': 10,
                 'display_raw': False, #show coordinate in debug
                 'map_clear_style': "visibility:visible;",
                 'edit_geom': True,
-                'min_zoom': 14,
+                'min_zoom': 8,
+                'wmts_capabilities_url': 'https://ows.asitvd.ch/wmts?request=GetCapabilities',
+                'wmts_layer': 'asitvd.fond_cadastral',
             }),
             'date_start': DatePickerInput(
                 options={
