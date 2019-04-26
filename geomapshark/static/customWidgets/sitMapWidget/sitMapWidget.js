@@ -41,9 +41,12 @@
         }
 
         this.map = this.createMap();
+        this.addBaseLayer();
+
         this.featureCollection = new ol.Collection();
 
         this.featureOverlay = new ol.layer.Vector({
+          name: 'featureOverlay',
           style: new ol.style.Style({
             image: new ol.style.Circle({
               fill: new ol.style.Fill({
@@ -115,9 +118,14 @@
         this.ready = true;
     }
 
-    proj4.defs("EPSG:2056", "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs");
+    var projection = new ol.proj.Projection({
+        code: 'EPSG:2056',
+        extent: [485869.5728, 76443.1884, 837076.5648, 299941.7864],
+        units: 'm'
+    });
 
-    var projection = ol.proj.get('EPSG:2056');
+    ol.proj.addProjection(projection);
+
     sitMapWidget.prototype.createMap = function() {
         var map = new ol.Map({
             controls: [
@@ -130,9 +138,10 @@
                 })
             ],
             target: this.options.map_id,
-            layers: [this.options.base_layer],
+            layers: [],
             view: new ol.View({
                 zoom: this.options.default_zoom,
+                minZoom: this.options.min_zoom,
                 projection: projection,
                 center: [2538812, 1181380]
             })
@@ -140,23 +149,84 @@
         return map;
     };
 
+    sitMapWidget.prototype.addBaseLayer = function() {
+
+      var wmtsLayer = new ol.layer.Tile({});
+      var wmtsLayerName = this.options.wmts_layer;
+      var matrixSet = this.options.map_srid;
+
+       $.ajax({
+           url: this.options.wmts_capabilities_url,
+           success: function(response) {
+             var parser = new ol.format.WMTSCapabilities();
+             var result = parser.read(response);
+             var options = ol.source.WMTS.optionsFromCapabilities(result, {
+               layer: wmtsLayerName,
+               matrixSet: matrixSet,
+               projection: 'EPSG:' + matrixSet
+             });
+             wmtsLayer.setSource(new ol.source.WMTS(/** @type {!olx.source.WMTSOptions} */ (options)));
+       }});
+
+       this.map.getLayers().insertAt(0, wmtsLayer);
+
+    }
+
     sitMapWidget.prototype.createInteractions = function() {
         // Initialize the modify interaction
         this.interactions.modify = new ol.interaction.Modify({
             features: this.featureCollection,
-            deleteCondition: function(event) {
-                return ol.events.condition.shiftKeyOnly(event) &&
-                    ol.events.condition.singleClick(event);
-            }
+            style: new ol.style.Style({})
         });
+        // Initialize the draw interaction
         this.interactions.draw = new ol.interaction.Draw({
             features: this.featureCollection,
             type: this.options.geom_name,
-            maxPoints: 5
+            condition: function(evt) {
+                if (evt.pointerEvent.type == 'pointerdown' && evt.pointerEvent.buttons == 1
+                      && !evt.originalEvent.altKey) {
+                    return true;
+                } else {
+                    return false
+                }
+            }
+        });
+
+        // Initialize the select interaction
+        this.interactions.select = new ol.interaction.Select({
+          layers: [this.featureOverlay],
+          style: new ol.style.Style({
+            image: new ol.style.Circle({
+              fill: new ol.style.Fill({
+                color: 'rgba(255, 238, 0, 1)'
+              }),
+              stroke: new ol.style.Stroke({
+                color: 'rgba(175, 164, 0, 1)',
+                width: 1
+              }),
+              radius: 9
+            })
+          })
         });
 
         this.map.addInteraction(this.interactions.draw);
         this.map.addInteraction(this.interactions.modify);
+        this.map.addInteraction(this.interactions.select);
+
+        this.map.on("pointermove", function (evt) {
+            var hit = evt.map.hasFeatureAtPixel(evt.pixel, {
+                layerFilter: function (layer) {
+                  if (layer.get('name') === 'featureOverlay') {
+                    return true;
+                  } else {
+                    return false;
+                  }
+              }
+            });
+
+            this.getTargetElement().style.cursor = hit ? 'pointer' : '';
+        });
+
     };
 
     sitMapWidget.prototype.enableDrawing = function() {
@@ -183,8 +253,49 @@
 
     sitMapWidget.prototype.clearFeatures = function() {
         this.featureCollection.clear();
+        this.interactions.select.getFeatures().clear();
         document.getElementById(this.options.id).value = '';
         this.enableDrawing();
+    };
+
+    sitMapWidget.prototype.removeLastPoint = function() {
+
+        if (this.featureCollection.getLength() > 0) {
+          this.featureCollection.pop();
+          this.interactions.select.getFeatures().clear();
+        }
+        if (this.featureCollection.getLength() > 0) {
+          this.serializeFeatures();
+        };
+    }
+
+    sitMapWidget.prototype.removeSelectedPoint = function() {
+
+        var selectedFeature = this.interactions.select.getFeatures().item(0);
+        var sourceF = this.featureCollection;
+        var featureToDeleteIndex = -1;
+        if (selectedFeature) {
+            for (var i=0; i < sourceF.getLength(); i++) {
+
+              if (sourceF.item(i).ol_uid === selectedFeature.ol_uid){
+                featureToDeleteIndex = i;
+              }
+            }
+            this.featureCollection.removeAt(featureToDeleteIndex);
+            this.interactions.select.getFeatures().clear();
+      }
+    }
+
+    sitMapWidget.prototype.addPointFeature= function() {
+
+      var east = $('#east_coord')[0].value;
+      var north = $('#north_coord')[0].value;
+        var feature = new ol.Feature({
+          geometry: new ol.geom.Point([east, north]),
+        });
+        this.featureOverlay.getSource().addFeature(feature);
+        this.interactions.select.getFeatures().clear();
+
     };
 
     sitMapWidget.prototype.serializeFeatures = function() {
