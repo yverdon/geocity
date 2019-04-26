@@ -274,16 +274,16 @@
         var selectedFeature = this.interactions.select.getFeatures().item(0);
         var sourceF = this.featureCollection;
         var featureToDeleteIndex = -1;
+        if (selectedFeature) {
+            for (var i=0; i < sourceF.getLength(); i++) {
 
-        for (var i=0; i < sourceF.getLength(); i++) {
-
-          if (sourceF.item(i).ol_uid === selectedFeature.ol_uid){
-            featureToDeleteIndex = i;
-          }
-        }
-        this.featureCollection.removeAt(featureToDeleteIndex);
-        this.interactions.select.getFeatures().clear();
-
+              if (sourceF.item(i).ol_uid === selectedFeature.ol_uid){
+                featureToDeleteIndex = i;
+              }
+            }
+            this.featureCollection.removeAt(featureToDeleteIndex);
+            this.interactions.select.getFeatures().clear();
+      }
     }
 
     sitMapWidget.prototype.addPointFeature= function() {

@@ -39,13 +39,12 @@
 {{ form.media }}
     <form method="post">
         {% csrf_token %}
+        <div style="text-align:center">
+        {% bootstrap_button "Enregister" button_type="submit" button_class="btn-primary" value="Enregistrer" %}
+        <a class="btn btn-primary" href="{% url 'gpf:list' %}?sort=id">Annuler</a>
+        </div>
         <h3> Détails de la demande </h3>
         {% bootstrap_form form layout='horizontal'%}
-        <div style="text-align:center">
-        {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary" value="Enregistrer" %}
-        <p></p>
-        <p><a class="btn btn-primary" href="{% url 'gpf:list' %}?sort=id">Annuler</a></p>
-        </div>
         <hr>
         <br>
         {{ validation_formset.management_form }}
