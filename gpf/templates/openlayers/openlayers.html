@@ -1,4 +1,10 @@
 {% load i18n l10n %}
+{% block stylesheets%}
+  {% load fontawesome %}
+  {% fontawesome_stylesheet %}
+{% endblock %}
+
+
 <style type="text/css">{% block map_css %}{% get_current_language_bidi as LANGUAGE_BIDI %}
     #{{ id }}_map { width: {{ map_width }}; height: {{ map_height }}px; }
     #{{ id }}_map .aligned label { float: none; }
@@ -10,49 +16,51 @@
 <div id="{{ id }}_div_map">
     <a class="btn btn-primary" style="{{map_clear_style}}"
        href="javascript:gpfMap.clearFeatures();" role="button">
-       Effacer le(s) entité(s)
+       Effacer tous les points
     </a>
-    <b style="{{map_clear_style}}">Saisissez un point sur la carte</b>
+    <a class="btn btn-primary" style="{{map_clear_style}}"
+       href="javascript:gpfMap.removeLastPoint();" role="button">
+       Effacer le dernier point
+    </a>
+    <a class="btn btn-primary" style="{{map_clear_style}}"
+       href="javascript:gpfMap.removeSelectedPoint();" role="button">
+       Effacer le point sélectionné
+    </a>
+    <div>
+    Ajouter un point manuel:
+    <label for="east_coord">Est:</label>
+    <input id="east_coord" type="number" min=2535594 max=2542571 value=2539162 placeholder="ex: 2539142">
+    <label for="east_coord">Nord:</label>
+    <input id="north_coord" type="number" min=1178784 max=1183461 value=1181732  placeholder="ex: 1181572 ">
+    <a class="btn btn-primary" style="{{map_clear_style}}"
+       href="javascript:gpfMap.addPointFeature();" role="button">
+       <i class="fa fa-plus"></i>
+    </a>
+    </div>
+    <b style="{{map_clear_style}}">Ou cliquez dans la carte pour placer un point</b>
+    <hr>
     <div id="{{ id }}_map"></div>
     {% if display_raw %}<p>{% trans "Debugging window (serialized value)" %}</p>{% endif %}
     <textarea id="{{ id }}" class="vSerializedField required" cols="150" rows="10" name="{{ name }}">{{ serialized }}</textarea>
     <script type="text/javascript">
         {% block base_layer %}
-        proj4.defs("EPSG:2056", "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs");
-        var layer = 'asitvd.fond_cadastral';
-        var projection = ol.proj.get('EPSG:2056');
-        var parser = new ol.format.WMTSCapabilities();
 
-        $.ajax({
-            url: 'https://ows.asitvd.ch/wmts?request=GetCapabilities',
-            success: function(response) {
-              var result = parser.read(response);
-              var options = ol.source.WMTS.optionsFromCapabilities(result, {
-              layer: layer,
-              matrixSet: '2056',
-              projection: projection,
-              });
+        var options = {
+            default_center:{{ default_center }},
+            default_zoom: {{ default_zoom }},
+            geom_name: '{{ geom_type }}',
+            id: '{{ id }}',
+            map_id: '{{ id }}_map',
+            map_srid: {{ map_srid }},
+            name: '{{ name }}',
+            edit_geom: '{{edit_geom}}',
+            min_zoom: {{min_zoom}},
+            wmts_capabilities_url: '{{wmts_capabilities_url}}',
+            wmts_layer: '{{wmts_layer}}',
+        };
 
-              base_layer = new ol.layer.Tile({
-                  source: new ol.source.WMTS(/** @type {!olx.source.WMTSOptions} */ (options)),
-              });
-
-              var options = {
-                  default_center:{{ default_center }},
-                  default_zoom: {{ default_zoom }},
-                  base_layer: base_layer,
-                  geom_name: '{{ geom_type }}',
-                  id: '{{ id }}',
-                  map_id: '{{ id }}_map',
-                  map_srid: {{ map_srid }},
-                  name: '{{ name }}',
-                  edit_geom: '{{edit_geom}}',
-                  min_zoom: {{min_zoom}}
-              };
-
-              var {{ module }} = new sitMapWidget(options);
-              gpfMap = {{ module }};
-          }});
+        var {{ module }} = new sitMapWidget(options);
+        gpfMap = {{ module }};
 
         {% endblock %}
     </script>

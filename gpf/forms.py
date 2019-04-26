@@ -8,6 +8,7 @@ from .models import PermitRequest, Actor, Validation, Document
 from .widgets import RemoteAutocompleteWidget
 from django.contrib.auth.forms import UserCreationForm
 from bootstrap_datepicker_plus import DatePickerInput
+import datetime
 
 class SitOpenLayersWidget(forms.OSMWidget):
 
@@ -18,7 +19,7 @@ class SitOpenLayersWidget(forms.OSMWidget):
     def media(self):
         return forms.Media(
             css={'all': ('libs/js/openlayers/ol.css',)},
-            js=('libs/js/openlayers/ol-debug.js',
+            js=('libs/js/openlayers/ol.js',
                 'libs/js/proj4js/proj4-src.js',
                 'customWidgets/sitMapWidget/sitMapWidget.js'
                 ))
@@ -41,22 +42,26 @@ class AddPermitRequestForm(forms.ModelForm):
                 'map_height': 500,
                 'map_srid': 2056,
                 'default_center': [2539057, 1181111],
-                'default_zoom': 14,
+                'default_zoom': 10,
                 'display_raw': False, #show coordinate in debug
                 'map_clear_style': "visibility:visible;",
                 'edit_geom': True,
-                'min_zoom': 14,
+                'min_zoom': 8,
+                'wmts_capabilities_url': 'https://ows.asitvd.ch/wmts?request=GetCapabilities',
+                'wmts_layer': 'asitvd.fond_cadastral',
             }),
             'date_start': DatePickerInput(
                 options={
                     "format": "DD/MM/YYYY",
-                    "locale": "fr"
+                    "locale": "fr",
+                    "minDate": (datetime.datetime.today() + datetime.timedelta(days=2)).strftime('%Y/%m/%d')
                     }
                 ).start_of('event days'),
             'date_end': DatePickerInput(
                 options={
                     "format": "DD/MM/YYYY",
-                    "locale": "fr"
+                    "locale": "fr",
+                    "minDate": (datetime.datetime.today() + datetime.timedelta(days=2)).strftime('%Y/%m/%d')
                     }
                 ).end_of('event days'),
             'description': forms.Textarea(attrs={'rows': '3'}),
@@ -85,15 +90,16 @@ class ChangePermitRequestForm(forms.ModelForm):
         model = PermitRequest
         exclude = []
         fields = [
-            'ended', 'date_effective_end', 'has_existing_archeology', 'has_archeology', 'amount', 'paid', 'validated', 'sent', 'date_start', 'date_end',
+            'company', 'project_owner', 'ended', 'has_existing_archeology', 'has_archeology', 'amount', 'paid', 'validated', 'sent', 'date_start', 'date_end',
             'date_end_work_announcement', 'date_end_work', 'road_marking_damaged', 'date_request_created',
-            'is_green_area', 'invoice_to', 'company', 'project_owner', 'sitetype',
+            'is_green_area', 'invoice_to', 'sitetype',
             'description', 'address',  'zipcode', 'city', 'length', 'width', 'geom'
         ]
         help_texts = {
             'validated': "Actif seulement lorsque tous les services ont validé la demande",
             'has_existing_archeology': "Zone archéologique observée au moment de la fouille",
             'has_archeology': "Zone archéologique détectée sur la base des géodonnées cantonales",
+            'ended': "La fouille a-t-elle été contrôlée par le bureau STE ?",
         }
         widgets = {
             'geom': SitOpenLayersWidget(attrs={
@@ -101,10 +107,13 @@ class ChangePermitRequestForm(forms.ModelForm):
                 'map_height': 500,
                 'map_srid': 2056,
                 'default_center': [2539057, 1181111],
-                'default_zoom': 14,
-                'min_zoom': 14,
-                'map_clear_style': "visibility:hidden;",
-                'edit_geom': False,
+                'default_zoom': 10,
+                'display_raw': False, #show coordinate in debug
+                'map_clear_style': "visibility:visible;",
+                'edit_geom': True,
+                'min_zoom': 8,
+                'wmts_capabilities_url': 'https://ows.asitvd.ch/wmts?request=GetCapabilities',
+                'wmts_layer': 'asitvd.fond_cadastral',
             }),
             'date_start': DatePickerInput(
                 options={
@@ -129,12 +138,6 @@ class ChangePermitRequestForm(forms.ModelForm):
                     "format": "DD/MM/YYYY",
                     "locale": "fr"
                     },
-                ),
-            'date_effective_end': DatePickerInput(
-                options={
-                    "format": "DD/MM/YYYY",
-                    "locale": "fr"
-                    }
                 ),
             'date_request_created': forms.TextInput(
                 attrs={'readonly':'readonly'}
@@ -174,6 +177,9 @@ class CompanyForm(forms.ModelForm):
     class Meta:
         model = Actor
         exclude = ['user']
+        help_texts = {
+            'vat_number': 'Trouvez votre numéro <a href="https://www.bfs.admin.ch/bfs/fr/home/registres/registre-entreprises/numero-identification-entreprises.html" target="_blank">TVA</a>',
+        }
         widgets = {
             'address': RemoteAutocompleteWidget(
                 attrs={

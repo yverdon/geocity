@@ -16,7 +16,7 @@ class PermitRequestFilter(django_filters.FilterSet):
 
     class Meta:
         model = PermitRequest
-        fields = ['address', 'project_owner', 'company', 'date_end', 'date_start', 'validated', 'paid','ended']
+        fields = ['id', 'address', 'project_owner', 'company', 'date_end', 'date_start', 'validated', 'paid','ended']
         filter_overrides = {
             models.CharField: {
                 'filter_class': django_filters.CharFilter,

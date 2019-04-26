@@ -1,0 +1,43 @@
+.ui-autocomplete-loading {
+  background: white url("images/ui-anim_basic_16x16.gif") right center no-repeat;
+}
+
+#gmf_search_input {
+    z-index: 10;
+    border: 2px solid;
+    border-radius: 5px;
+    border-color: lightgray;
+    opacity: 0.85;
+}
+
+#gmf_search_input input {
+    border: none;
+    outline:none;
+}
+
+.sit-autocomplete {
+    color: black;
+    width: 350px;
+    font-size: 12px;
+    opacity: 0.8;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+@media only screen and (max-width: 500px) {
+    #gmf_search_input {
+        width: 250px;
+        height:  25px;
+    }
+
+    #gmf_search_input input {
+        width: 210px;
+        height: 19px;
+    }
+
+    .sit-autocomplete {
+        font-size: 10px;
+        width: 250px;
+        opacity: 0.85;
+    }
+}
