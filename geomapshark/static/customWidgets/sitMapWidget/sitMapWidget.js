@@ -288,12 +288,15 @@
 
     sitMapWidget.prototype.addPointFeature= function() {
 
-      var east = $('#east_coord')[0].value;
-      var north = $('#north_coord')[0].value;
+      var east = parseFloat($('#east_coord')[0].value);
+      var north = parseFloat($('#north_coord')[0].value);
+      console.log(east)
+      console.log(north)
         var feature = new ol.Feature({
-          geometry: new ol.geom.Point([east, north]),
+          geometry: new ol.geom.MultiPoint([[east, north]]),
         });
-        this.featureOverlay.getSource().addFeature(feature);
+
+        this.featureCollection.push(feature);
         this.interactions.select.getFeatures().clear();
 
     };
@@ -306,6 +309,7 @@
         if (this.options.is_collection) {
 
                 geometry = features[0].getGeometry().clone();
+
                 for (var j = 1; j < features.length; j++) {
                     switch(geometry.getType()) {
                         case "MultiPoint":
