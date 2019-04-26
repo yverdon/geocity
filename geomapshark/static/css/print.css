@@ -8,13 +8,14 @@
    content: "page " counter(page) "/" counter(pages);
  }
  @bottom-left {
-   content: "Tél.: +41 24 423 63 64 Fax: +41 24 423 63 60";
+   content: "Tél.: +41 24 423 63 64";
  }
  @bottom-center {
    content: "www.yverdon-les-bains.ch";
  }
 
 }
+
 
 table {
     font-family: arial, sans-serif;
