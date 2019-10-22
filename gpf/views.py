@@ -245,7 +245,7 @@ def sendpermit_thread(request, pk):
 
     pdf_file, permit_path = gpf.print.printreport(request, pk, True)
     permit_link = ''
-    gpf.sendmail.send(permit_link, ['Directives_2017.pdf', 'Mode_refection_fouilles.pdf'], permit_path, 'permit_send', '')
+    gpf.sendmail.send(permit_link, ['Directives_2017.pdf', 'Mode_refection_fouilles.pdf', 'Fin_des_travaux_form.pdf'], permit_path, 'permit_send', '')
 
 
 @permission_required('gpf.view_permitrequest')

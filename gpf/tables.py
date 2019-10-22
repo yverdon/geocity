@@ -18,6 +18,10 @@ class PermitRequestTable(tables.Table):
         <i class="fa fa-bullhorn fa-lg" style="color:red"></i></a> | <a title="Voir les personnes n\'ayant pas validé la demande" href="{% url \'gpf:seewaitingvalidations\' record.id %}"> \
         <i class="fa fa-users fa-lg" style="color:blue"></i></a>', verbose_name='Secrétariat', orderable=False, attrs={"td": {"width": "150px"}})
 
+    company = tables.Column(accessor='company.name', verbose_name='Entreprise')
+    project_owner = tables.Column(accessor='project_owner.name', verbose_name='Maître d\'ouvrage')
+
+
     def before_render(self, request):
         if request.user.has_perm('gpf.change_sent'):
             self.columns.show('administrative')
@@ -26,7 +30,7 @@ class PermitRequestTable(tables.Table):
 
     class Meta:
         model = PermitRequest
-        fields = ('id', 'address', 'date_start', 'date_end', 'date_effective_end', 'paid', 'validated',
+        fields = ('id', 'address', 'company', 'project_owner', 'date_start', 'date_end', 'paid', 'validated',
         'has_archeology', 'has_existing_archeology', 'sent')
         template_name = 'django_tables2/bootstrap.html'
 
