@@ -1,0 +1,34 @@
+{% extends "base_generic.html" %}
+{% block navbartitle %}
+{% if user.groups.all.0.name == "extern" %}
+  <a class="navbar-brand" href="{% url 'gpf:listexterns'%}?sort=id">Permis de fouille</a>
+{% else %}
+  <a class="navbar-brand" href="{% url 'gpf:list' %}?sort=id">Permis de fouille</a>
+{% endif %}
+{% endblock %}
+{% load bootstrap4 %}
+{% load static %}
+{% block content %}
+<div class = "container">
+  <br>
+  <h2>Personnes n'ayant pas encore validé la demande numéro {{permit_id}}</h2>
+  <br>
+  <ul>
+    {% if users %}
+      {% for user in users %}
+          <li> {{user.first_name}} - {{user.last_name}} - {{user.email}}</li>
+      {% endfor %}
+    {% else %}
+      <li>Pas de validations en attente pour la demande numéro {{permit_id}}</li>
+    {% endif %}
+  </ul>
+  <p>
+      {% if user.groups.all.0.name == "extern" %}
+       <a class="navbar-brand" href="{% url 'gpf:listexterns'%}?sort=id">Retour à la liste des permis</a>
+      {% else %}
+        <a class="navbar-brand" href="{% url 'gpf:list' %}?sort=id">Retour à la liste des permis</a>
+      {% endif %}
+  </p>
+
+</div>
+{% endblock %}

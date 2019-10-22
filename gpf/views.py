@@ -52,7 +52,7 @@ def permitRequestAdd(request, project_owner_id):
 
             # Gets the data before pushing it to database
             permitRequest = permit_form.save(commit=False)
-            # Check for archeology
+            # Check for archeological zones
             has_archeo = archeo_checker(permit_form.cleaned_data['geom'])
             permit_form.instance.has_archeology = has_archeo
             if has_archeo:
@@ -268,6 +268,33 @@ def callforvalidations(request, pk):
     messagetxt +=  str(pk) + ' a été expédiée'
     messages.info(request, messagetxt)
     return HttpResponseRedirect(reverse('gpf:list') + "?sort=id")
+
+@permission_required('gpf.view_permitrequest')
+def seewaitingvalidations(request, pk):
+
+    groups = Group.objects.filter(department__validation__permitrequest__id=pk,
+        department__validation__accepted=False).all()
+
+    users = User.objects.filter(groups__in=groups).exclude(username='admin').all()
+
+    return render(request, 'gpf/waitingvalidations.html', {
+        'groups': groups,
+        'users': users,
+        'permit_id': pk
+    })
+
+@permission_required('gpf.change_sent')
+def serviceusers(request):
+
+    groups = Group.objects.filter(department__is_validator=True).all()
+
+
+    users = User.objects.filter(groups__in=groups).exclude(username='admin').all()
+
+
+    return render(request, 'gpf/servicesusers.html', {
+        'users': users
+    })
 
 
 @permission_required('gpf.change_sent')
