@@ -16,37 +16,30 @@ For windows using pip:
    pip install -r requirements.txt
 ```
 
-*Install on c2c server*
-```
-cd ~
-mkdir venv
-cd ~/venv
-python3 -m venv <projectname> --without-pip
-source <projectname>/bin/activate
-wget https://bootstrap.pypa.io/get-pip.py
-python3 get-pip.py
-deactivate
-source <projectname>/bin/activate
-pip --version
-pip install -r requirements.txt
-```
-
 ## Documentation
 
 Rename `sample.env.yaml` to `env.yaml` and modifiy it according to your specific configuration.
 
 ### Django Update
 
-Apply migration in venv "pip install -U <package-name>"
+A straightfoward way to update Django and all projects dependencies is to use pip-upgrader
+
+https://github.com/simion/pip-upgrader
+
+### Using non-docker version:  special notes on Weasyprint dependencies configuration
+
+You MUST install GTK-3 from here: https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer
+
+And you MUST add it on TOP of your path. If you don't, it will hurt.
+
+### Docker on windows hints
+
+In case you get and error similar to this: E: You don't have enough free space in /var/cache/...,
+run the following commands to clear them all:
 
 ```
-pip install -U django
-pip install -U django-filters==2.0.0
-pip install -U django-bootstrap4
-pip install -U django-bootstrap4-datepicker
-pip install -U django-tables2
-pip install -U django-fontawesome
-
+docker rmi $(docker images -q)
+docker rm -v $(docker ps -qa
 ```
 
 ### Setup database
