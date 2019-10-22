@@ -4,6 +4,7 @@ from django.contrib.auth.models import User, Group
 from django.utils.translation import ugettext_lazy as _
 from  django.core.validators import RegexValidator
 
+
 class Actor(models.Model):
 
     name = models.CharField(_("name"), max_length=100, null=True)
@@ -82,6 +83,18 @@ class CreditorType(models.Model):
     def __str__(self):
         return self.name
 
+
+class ArcheoType(models.Model):
+
+    description = models.CharField(_('description'), max_length=100)
+
+    class Meta:
+        verbose_name = _('archeotype')
+
+    def __str__(self):
+        return self.description
+
+
 class PermitRequest(models.Model):
     amount = models.PositiveIntegerField(_("amount"),null=True, blank=True)
     paid = models.BooleanField(_("payed"),default=False)
@@ -101,7 +114,7 @@ class PermitRequest(models.Model):
     sitetype = models.ForeignKey(SiteType, on_delete=models.SET_NULL, null=True, verbose_name=_("sitetype"))
     description = models.TextField(_("description"))
     has_archeology = models.BooleanField(_("has_archeology"), default=False)
-    has_existing_archeology = models.BooleanField(_("has_existing_archeology"), default=False)
+    archeotype = models.ForeignKey(ArcheoType, on_delete=models.SET_NULL, null=True, verbose_name=_("archeo_type"))
     address = models.CharField(_("address"), max_length=100, null=True)
     zipcode = models.PositiveIntegerField(_("zipcode"), null=True)
     city = models.CharField(_("city"), max_length=100, null=True)
@@ -122,7 +135,7 @@ class PermitRequest(models.Model):
             ("change_sent", "Can change sent"),
             ("change_ended", "Can change ended"),
             ("change_date_effective_end", "Can change date_effective_end"),
-            ("change_has_existing_archeology", "Can change has_existing_archeology")
+            ("change_archeotype", "Can change archeotype")
          )
 
     def __str__(self):

@@ -12,6 +12,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='permitrequest',
-            options={'permissions': (('change_amount', 'Can change amount'), ('change_paid', 'Can change paid'), ('change_geom', 'Can change geom'), ('change_validated', 'Can change validated'), ('change_sent', 'Can change sent'), ('change_ended', 'Can change ended'), ('change_date_effective_end', 'Can change date_effective_end'), ('change_has_existing_archeology', 'Can change has_existing_archeology')), 'verbose_name': 'permitrequest'},
+            options={'permissions': (('change_amount', 'Can change amount'), ('change_paid', 'Can change paid'), ('change_geom', 'Can change geom'), ('change_validated', 'Can change validated'), ('change_sent', 'Can change sent'), ('change_ended', 'Can change ended'), ('change_date_effective_end', 'Can change date_effective_end'), ('change_archeotype', 'Can change archeotype')), 'verbose_name': 'permitrequest'},
         ),
     ]

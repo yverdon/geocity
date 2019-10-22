@@ -31,7 +31,7 @@ class PermitRequestTable(tables.Table):
     class Meta:
         model = PermitRequest
         fields = ('id', 'address', 'company', 'project_owner', 'date_start', 'date_end', 'paid', 'validated',
-        'has_archeology', 'has_existing_archeology', 'sent')
+        'has_archeology', 'archeotype', 'sent')
         template_name = 'django_tables2/bootstrap.html'
 
 class PermitRequestTableExterns(tables.Table):
@@ -41,7 +41,7 @@ class PermitRequestTableExterns(tables.Table):
 
     class Meta:
         model = PermitRequest
-        fields = ('address', 'paid', 'validated', 'has_archeology', 'has_existing_archeology')
+        fields = ('address', 'paid', 'validated', 'has_archeology', 'archeotype')
         template_name = 'django_tables2/bootstrap.html'
 
 class PermitExportTable(tables.Table):

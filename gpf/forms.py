@@ -90,14 +90,14 @@ class ChangePermitRequestForm(forms.ModelForm):
         model = PermitRequest
         exclude = []
         fields = [
-            'company', 'project_owner', 'ended', 'has_existing_archeology', 'has_archeology', 'amount', 'paid', 'validated', 'sent', 'date_start', 'date_end',
+            'company', 'project_owner', 'ended', 'archeotype', 'has_archeology', 'amount', 'paid', 'validated', 'sent', 'date_start', 'date_end',
             'date_end_work_announcement', 'date_end_work', 'road_marking_damaged', 'date_request_created',
             'is_green_area', 'invoice_to', 'sitetype',
             'description', 'address',  'zipcode', 'city', 'length', 'width', 'geom'
         ]
         help_texts = {
             'validated': "Actif seulement lorsque tous les services ont validé la demande",
-            'has_existing_archeology': "Zone archéologique observée au moment de la fouille",
+            'archeotype': "Zone archéologique observée au moment de la fouille",
             'has_archeology': "Zone archéologique détectée sur la base des géodonnées cantonales",
             'ended': "La fouille a-t-elle été contrôlée par le bureau STE ?",
         }
