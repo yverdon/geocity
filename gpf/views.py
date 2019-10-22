@@ -251,13 +251,19 @@ def sendpermit_thread(request, pk):
 @permission_required('gpf.view_permitrequest')
 def printpermit(request, pk):
 
-    pdf_file, filepath = gpf.print.printreport(request, pk, True)
-    response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = 'filename="permis_fouille.pdf"'
-    messagetxt = 'Impression du permis n° '
-    messagetxt +=  str(pk) + ' terminée'
-    messages.info(request, messagetxt)
-    return response
+    try:
+        pdf_file, filepath = gpf.print.printreport(request, pk, True)
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = 'filename="permis_fouille.pdf"'
+        return response
+
+    except:
+
+        messagetxt = 'Échec de l\'impression du permis n° '
+        messagetxt +=  str(pk)
+        messages.add_message(request, messages.ERROR, messagetxt)
+        return HttpResponseRedirect(reverse('gpf:list') + "?sort=id")
+
 
 
 @permission_required('gpf.change_sent')
@@ -288,9 +294,7 @@ def serviceusers(request):
 
     groups = Group.objects.filter(department__is_validator=True).all()
 
-
     users = User.objects.filter(groups__in=groups).exclude(username='admin').all()
-
 
     return render(request, 'gpf/servicesusers.html', {
         'users': users
@@ -430,6 +434,7 @@ class PermitExportView(PermissionRequiredMixin, ExportMixin, SingleTableView):
     model = PermitRequest
     template_name = 'django_tables2/bootstrap.html'
     permission_required = ('gpf.view_permitrequest')
+    exclude_columns = ("edit_entries", "print", "administrative", )
 
 
 @method_decorator(login_required, name="dispatch")
@@ -437,6 +442,7 @@ class PermitExportViewExterns(ExportMixin, SingleTableView):
     table_class = PermitExportTable
     model = PermitRequest
     template_name = 'django_tables2/bootstrap.html'
+    exclude_columns = ("edit_entries", "print", "administrative", )
 
     def get_queryset(self):
         return PermitRequest.objects.filter(company=Actor.objects.get(user__username=self.request.user))

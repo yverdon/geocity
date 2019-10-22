@@ -78,13 +78,16 @@ if(navigator.userAgent.indexOf('MSIE')!==-1 || navigator.appVersion.indexOf('Tri
 <script>
     $(document).ready(function() {
         $('.print-info-messages').hide();
-        $('.info-messages').hide();
+        $('.info-messages').show();
         setTimeout(function() {
             $('.info-messages').fadeOut('slow');
-        }, 2500);
+        }, 5000);
 
         waitMessage = function () {
           $('.print-info-messages').show();
+          setTimeout(function() {
+              $('.print-info-messages').fadeOut('slow');
+          }, 5000);
         }
 
     });
