@@ -52,7 +52,7 @@ def permitRequestAdd(request, project_owner_id):
 
             # Gets the data before pushing it to database
             permitRequest = permit_form.save(commit=False)
-            # Check for archeological zones
+            # Check for archeological zones from cantonal geodata
             has_archeo = archeo_checker(permit_form.cleaned_data['geom'])
             permit_form.instance.has_archeology = has_archeo
             if has_archeo:
@@ -456,3 +456,9 @@ def thanks(request, permit_id):
     gpf.sendmail.send(permit_link, [], '', 'new_permit', '')
 
     return render(request, 'gpf/thanks.html')
+
+
+@login_required
+def prices(request):
+
+    return render(request, 'gpf/prices.html')

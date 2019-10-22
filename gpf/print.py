@@ -18,7 +18,8 @@ def printreport(request, pk, save_to_file):
     print_date = datetime.datetime.now()
 
     # TODO: configure this from env.yaml file
-    extent_raw = permit.geom.buffer(100).extent
+    buffer_extent = os.environ["PRINT_MAP_BUFFER_METERS"]
+    extent_raw = permit.geom.buffer(buffer_extent).extent
     h_extent = extent_raw[2] - extent_raw[0]
     h_extent_center = h_extent/2 + extent_raw[0]
     h_extent_left =  round(extent_raw[0])

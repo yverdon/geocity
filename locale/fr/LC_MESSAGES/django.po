@@ -168,11 +168,11 @@ msgstr "Maître d'ouvrage"
 
 #: .\gpf\models.py:79
 msgid "has_archeology"
-msgstr "Zone archéologique"
+msgstr "Zone archéologique selon données cantonales"
 
 #: .\gpf\models.py:80
 msgid "has_existing_archeology"
-msgstr "Zone archéologique existante"
+msgstr "Statut archéologique communal"
 
 #: .\gpf\models.py:84
 msgid "date_end_work"
