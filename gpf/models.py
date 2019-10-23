@@ -3,7 +3,7 @@ from django.contrib.gis.db import models
 from django.contrib.auth.models import User, Group
 from django.utils.translation import ugettext_lazy as _
 from  django.core.validators import RegexValidator
-
+from django.urls import reverse
 
 class Actor(models.Model):
 
@@ -46,8 +46,13 @@ class Actor(models.Model):
     class Meta:
         verbose_name = _('actor')
 
+    def get_absolute_url(self):
+
+        return reverse('gpf:genericactorview', args=[str(self.id)])
+
     def __str__(self):
         return self.name
+
 
 
 class Department(models.Model):
@@ -137,6 +142,10 @@ class PermitRequest(models.Model):
             ("change_date_effective_end", "Can change date_effective_end"),
             ("change_archeotype", "Can change archeotype")
          )
+
+    def get_absolute_url(self):
+
+        return reverse('gpf:permitdetail', args=[str(self.id)])
 
     def __str__(self):
         return 'Permit ' + str(self.id)

@@ -1,4 +1,5 @@
 import django_tables2 as tables
+from django.utils.html import format_html
 
 from .models import PermitRequest
 
@@ -18,8 +19,24 @@ class PermitRequestTable(tables.Table):
         <i class="fa fa-bullhorn fa-lg" style="color:red"></i></a> | <a title="Voir les personnes n\'ayant pas validé la demande" href="{% url \'gpf:seewaitingvalidations\' record.id %}"> \
         <i class="fa fa-users fa-lg" style="color:blue"></i></a>', verbose_name='Secrétariat', orderable=False, attrs={"td": {"width": "150px"}})
 
-    company = tables.Column(accessor='company.name', verbose_name='Entreprise')
-    project_owner = tables.Column(accessor='project_owner.name', verbose_name='Maître d\'ouvrage')
+    company_link = tables.Column(
+        accessor='company',
+        verbose_name='Raison sociale',
+        linkify=True
+    )
+
+    project_owner_link = tables.Column(
+        accessor='project_owner',
+        verbose_name='Maître d\'ouvrage',
+        linkify=True
+    )
+
+    id = tables.Column(
+        linkify=True
+    )
+
+    def render_company_link(self, value, record):
+        return format_html("{}", value.company_name, record.company)
 
 
     def before_render(self, request):
@@ -30,7 +47,7 @@ class PermitRequestTable(tables.Table):
 
     class Meta:
         model = PermitRequest
-        fields = ('id', 'address', 'company', 'project_owner', 'date_start', 'date_end', 'paid', 'validated',
+        fields = ('id', 'address', 'company_link', 'project_owner_link', 'date_start', 'date_end', 'paid', 'validated',
         'has_archeology', 'archeotype', 'sent')
         template_name = 'django_tables2/bootstrap.html'
 

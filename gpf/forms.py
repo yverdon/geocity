@@ -203,6 +203,39 @@ class CompanyForm(forms.ModelForm):
         }
 
 
+class GenericActorForm(forms.ModelForm):
+
+    required_css_class = 'required'
+
+    class Meta:
+        model = Actor
+        exclude = ['user']
+        help_texts = {
+            'vat_number': 'Trouvez votre numéro <a href="https://www.bfs.admin.ch/bfs/fr/home/registres/registre-entreprises/numero-identification-entreprises.html" target="_blank">TVA</a>',
+        }
+        widgets = {
+            'address': RemoteAutocompleteWidget(
+                attrs={
+                    "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
+                    "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
+                    "search_prefix": "",
+                    "origins": "address",
+                    "zipcode_field": "zipcode",
+                    "city_field": "city",
+                    "placeholder": "ex: Place Pestalozzi 2 Yverdon",
+                }),
+            'phone_fixed': forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}),
+            'phone_mobile': forms.TextInput(attrs={'placeholder': 'ex: 079 111 22 22'}),
+            'vat_number': forms.TextInput(attrs={'placeholder': 'ex: CHE-123.456.789'}),
+            'name': forms.TextInput(attrs={'placeholder': 'ex: Dupond'}),
+            'firstname': forms.TextInput(attrs={'placeholder': 'ex: Marcel'}),
+            'zipcode': forms.TextInput(attrs={'placeholder': 'ex: 1400'}),
+            'city': forms.TextInput(attrs={'placeholder': 'ex: Yverdon'}),
+            'company_name': forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}),
+            'email': forms.TextInput(attrs={'placeholder': 'ex: permis-de-fouille@mapnv.ch'}),
+        }
+
+
 class companyUserAddForm(UserCreationForm):
 
     required_css_class = 'required'

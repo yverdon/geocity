@@ -10,7 +10,7 @@ from django.urls import reverse_lazy
 from django.forms import formset_factory, inlineformset_factory
 from .filters import PermitRequestFilter, PermitRequestFilterExterns
 from .forms import AddPermitRequestForm, ChangePermitRequestForm
-from .forms import ActorForm, CompanyForm, ValidationForm, DocumentForm, EndWorkForm, companyUserAddForm
+from .forms import ActorForm, CompanyForm, ValidationForm, DocumentForm, EndWorkForm, companyUserAddForm, GenericActorForm
 from .models import Actor, Archelogy, PermitRequest, Validation, Department, Document
 from .tables import PermitRequestTable, PermitRequestTableExterns, PermitExportTable
 from django_filters.views import FilterView
@@ -350,6 +350,20 @@ def companyedit(request, pk):
         form = CompanyForm(request.POST or None, instance=instance)
 
     return render(request, "gpf/company_change.html", {'form': form})
+
+
+@login_required
+def genericactorview(request, pk):
+
+    instance = get_object_or_404(Actor, pk=pk)
+    form = GenericActorForm(request.POST or None, instance=instance)
+
+    for field in form.fields:
+
+        form.fields[field].disabled = True
+
+    return render(request, "gpf/genericactorview.html", {'form': form})
+
 
 
 def companyAdd(request):

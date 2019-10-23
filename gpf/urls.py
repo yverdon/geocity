@@ -8,6 +8,7 @@ urlpatterns = [
     path('add/', views.actorAdd, name='actor_add'),
     path('companyadd/', views.companyAdd, name='companyadd'),
     path('actor/<int:pk>/change', views.actorChange, name='ActorChange'),
+    path('actor/<int:pk>', views.genericactorview, name='genericactorview'),
     path('add/<int:project_owner_id>/', views.permitRequestAdd, name='permit-request-add'),
     path('change/', views.permitRequestChange, name='permit-request-change'),
     path('listexport/', views.PermitExportView.as_view(), name='listexport'),
