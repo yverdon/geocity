@@ -14,6 +14,7 @@ urlpatterns = [
     path('listexport/', views.PermitExportView.as_view(), name='listexport'),
     path('listexportexterns/', views.PermitExportViewExterns.as_view(), name='listexportexterns'),
     path('permitdetail/<int:pk>', views.permitdetail, name='permitdetail'),
+    path('mapnv/<int:pk>', views.mapnv, name='mapnv'),
     path('permitdelete/<int:pk>', views.PermitRequestDelete.as_view(), name='permitdelete'),
     path('companyedit/<int:pk>', views.companyedit, name='companyedit'),
     path('sendpermit/<int:pk>', views.sendpermit, name='sendpermit'),

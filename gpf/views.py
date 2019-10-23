@@ -2,7 +2,7 @@ import os, datetime
 from django.contrib.auth.decorators import login_required, permission_required
 from django.utils.decorators import method_decorator
 from django.http import HttpResponseRedirect,HttpResponse, FileResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.edit import DeleteView, FormView
@@ -476,3 +476,19 @@ def thanks(request, permit_id):
 def prices(request):
 
     return render(request, 'gpf/prices.html')
+
+
+@login_required
+def mapnv(request, pk):
+
+    permit = PermitRequest.objects.filter(pk=pk).first()
+    extent = permit.geom.extent
+    centerx = round((extent[0] + extent[2])/2)
+    centery = round((extent[1] + extent[3])/2)
+    gmf_base_url = os.environ['GMF_BASE_URL']
+    target_url = gmf_base_url + "/theme/permis_fouille?"
+    target_url += '&tree_groups=Permis%20de%20fouille&tree_group_layers_Permis%20de%20fouille=STE_gpf_demande'
+    target_url += '&map_x=' + str(centerx) + '&map_y=' + str(centery) + '&map_zoom=5'
+
+
+    return redirect(target_url)
