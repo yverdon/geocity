@@ -36,7 +36,7 @@ def permitRequestAdd(request, project_owner_id):
         permit_form = AddPermitRequestForm(request.POST, request.FILES)
 
         # if the request is filled by intern employees, the user login is not
-        # linked to a company, thus, we add an "unlinked company form". here
+        # linked to a company, thus, we add an "unlinked company form". Here
         # the form is saved if the case occures
 
         show_company_form = len(Actor.objects.filter(user=request.user).all())
