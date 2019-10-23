@@ -5,7 +5,6 @@ from .models import PermitRequest
 
 class PermitRequestTable(tables.Table):
 
-    id = tables.Column(order_by=('id'))
 
     edit_entries = tables.TemplateColumn('<a title="Modifier" href="{% url \'gpf:permitdetail\' record.id %}"> \
         <i class="fa fa-edit fa-lg"></i></a>', verbose_name='Modifier', orderable=False)
@@ -32,12 +31,13 @@ class PermitRequestTable(tables.Table):
     )
 
     id = tables.Column(
-        linkify=True
+        linkify=lambda record: record.get_absolute_url() + '#validations-anchor',
+        order_by=('id'),
+        verbose_name='Valider'
     )
 
     def render_company_link(self, value, record):
         return format_html("{}", value.company_name, record.company)
-
 
     def before_render(self, request):
         if request.user.has_perm('gpf.change_sent'):
@@ -47,8 +47,7 @@ class PermitRequestTable(tables.Table):
 
     class Meta:
         model = PermitRequest
-        fields = ('id', 'address', 'company_link', 'project_owner_link', 'date_start', 'date_end', 'paid', 'validated',
-        'has_archeology', 'archeotype', 'sent')
+        fields = ('id', 'address', 'company_link', 'project_owner_link', 'date_start', 'date_end', 'paid', 'validated', 'sent')
         template_name = 'django_tables2/bootstrap.html'
 
 class PermitRequestTableExterns(tables.Table):
