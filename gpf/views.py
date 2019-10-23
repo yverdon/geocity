@@ -405,6 +405,23 @@ def actorChange(request, pk=None):
 
 
 @login_required
+def actor_edit_account(request):
+
+    user = Actor.objects.filter(user=request.user.pk).first()
+    form = ActorForm(request.POST or None, instance=user)
+
+    if form.is_valid():
+        instance = form.save()
+
+        if request.user.groups.filter(name = "extern").exists():
+            return HttpResponseRedirect(reverse('gpf:listexterns') + "?sort=id")
+        else:
+            return HttpResponseRedirect(reverse('gpf:list') + "?sort=id")
+
+    return render(request, "gpf/actor_edit_account.html", {'form' : form})
+
+
+@login_required
 def endwork(request, pk):
 
     instance = get_object_or_404(PermitRequest, pk=pk, company=Actor.objects.get(user__username=request.user))
