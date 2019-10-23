@@ -7354,7 +7354,7 @@ def my_form_open(dialog, layer, feature):
             </config>
           </editWidget>
         </field>
-        <field name="has_existing_archeology">
+        <field name="archeotype">
           <editWidget type="CheckBox">
             <config>
               <Option/>
@@ -7462,7 +7462,7 @@ def my_form_open(dialog, layer, feature):
         <alias field="is_green_area" index="12" name=""/>
         <alias field="description" index="13" name=""/>
         <alias field="has_archeology" index="14" name=""/>
-        <alias field="has_existing_archeology" index="15" name=""/>
+        <alias field="archeotype" index="15" name=""/>
         <alias field="address" index="16" name=""/>
         <alias field="date_end_work" index="17" name=""/>
         <alias field="date_end_work_announcement" index="18" name=""/>
@@ -7494,7 +7494,7 @@ def my_form_open(dialog, layer, feature):
         <default applyOnUpdate="0" field="is_green_area" expression=""/>
         <default applyOnUpdate="0" field="description" expression=""/>
         <default applyOnUpdate="0" field="has_archeology" expression=""/>
-        <default applyOnUpdate="0" field="has_existing_archeology" expression=""/>
+        <default applyOnUpdate="0" field="archeotype" expression=""/>
         <default applyOnUpdate="0" field="address" expression=""/>
         <default applyOnUpdate="0" field="date_end_work" expression=""/>
         <default applyOnUpdate="0" field="date_end_work_announcement" expression=""/>
@@ -7524,7 +7524,7 @@ def my_form_open(dialog, layer, feature):
         <constraint constraints="1" field="is_green_area" unique_strength="0" notnull_strength="1" exp_strength="0"/>
         <constraint constraints="1" field="description" unique_strength="0" notnull_strength="1" exp_strength="0"/>
         <constraint constraints="1" field="has_archeology" unique_strength="0" notnull_strength="1" exp_strength="0"/>
-        <constraint constraints="1" field="has_existing_archeology" unique_strength="0" notnull_strength="1" exp_strength="0"/>
+        <constraint constraints="1" field="archeotype" unique_strength="0" notnull_strength="1" exp_strength="0"/>
         <constraint constraints="0" field="address" unique_strength="0" notnull_strength="0" exp_strength="0"/>
         <constraint constraints="0" field="date_end_work" unique_strength="0" notnull_strength="0" exp_strength="0"/>
         <constraint constraints="0" field="date_end_work_announcement" unique_strength="0" notnull_strength="0" exp_strength="0"/>
@@ -7554,7 +7554,7 @@ def my_form_open(dialog, layer, feature):
         <constraint field="is_green_area" desc="" exp=""/>
         <constraint field="description" desc="" exp=""/>
         <constraint field="has_archeology" desc="" exp=""/>
-        <constraint field="has_existing_archeology" desc="" exp=""/>
+        <constraint field="archeotype" desc="" exp=""/>
         <constraint field="address" desc="" exp=""/>
         <constraint field="date_end_work" desc="" exp=""/>
         <constraint field="date_end_work_announcement" desc="" exp=""/>
@@ -7586,7 +7586,7 @@ def my_form_open(dialog, layer, feature):
           <column hidden="0" type="field" name="is_green_area" width="-1"/>
           <column hidden="0" type="field" name="description" width="-1"/>
           <column hidden="0" type="field" name="has_archeology" width="-1"/>
-          <column hidden="0" type="field" name="has_existing_archeology" width="-1"/>
+          <column hidden="0" type="field" name="archeotype" width="-1"/>
           <column hidden="0" type="field" name="company_id" width="-1"/>
           <column hidden="0" type="field" name="project_owner_id" width="-1"/>
           <column hidden="0" type="field" name="sitetype_id" width="-1"/>
@@ -7646,7 +7646,7 @@ def my_form_open(dialog, layer, feature):
         <field editable="1" name="description"/>
         <field editable="1" name="ended"/>
         <field editable="1" name="has_archeology"/>
-        <field editable="1" name="has_existing_archeology"/>
+        <field editable="1" name="archeotype"/>
         <field editable="1" name="id"/>
         <field editable="1" name="invoice_to_id"/>
         <field editable="1" name="is_green_area"/>
@@ -7676,7 +7676,7 @@ def my_form_open(dialog, layer, feature):
         <field name="description" labelOnTop="0"/>
         <field name="ended" labelOnTop="0"/>
         <field name="has_archeology" labelOnTop="0"/>
-        <field name="has_existing_archeology" labelOnTop="0"/>
+        <field name="archeotype" labelOnTop="0"/>
         <field name="id" labelOnTop="0"/>
         <field name="invoice_to_id" labelOnTop="0"/>
         <field name="is_green_area" labelOnTop="0"/>

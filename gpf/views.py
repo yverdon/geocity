@@ -2,7 +2,7 @@ import os, datetime
 from django.contrib.auth.decorators import login_required, permission_required
 from django.utils.decorators import method_decorator
 from django.http import HttpResponseRedirect,HttpResponse, FileResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.edit import DeleteView, FormView
@@ -10,7 +10,7 @@ from django.urls import reverse_lazy
 from django.forms import formset_factory, inlineformset_factory
 from .filters import PermitRequestFilter, PermitRequestFilterExterns
 from .forms import AddPermitRequestForm, ChangePermitRequestForm
-from .forms import ActorForm, CompanyForm, ValidationForm, DocumentForm, EndWorkForm, companyUserAddForm
+from .forms import ActorForm, CompanyForm, ValidationForm, DocumentForm, EndWorkForm, companyUserAddForm, GenericActorForm
 from .models import Actor, Archelogy, PermitRequest, Validation, Department, Document
 from .tables import PermitRequestTable, PermitRequestTableExterns, PermitExportTable
 from django_filters.views import FilterView
@@ -36,7 +36,7 @@ def permitRequestAdd(request, project_owner_id):
         permit_form = AddPermitRequestForm(request.POST, request.FILES)
 
         # if the request is filled by intern employees, the user login is not
-        # linked to a company, thus, we add an "unlinked company form". here
+        # linked to a company, thus, we add an "unlinked company form". Here
         # the form is saved if the case occures
 
         show_company_form = len(Actor.objects.filter(user=request.user).all())
@@ -52,7 +52,7 @@ def permitRequestAdd(request, project_owner_id):
 
             # Gets the data before pushing it to database
             permitRequest = permit_form.save(commit=False)
-            # Check for archeology
+            # Check for archeological zones from cantonal geodata
             has_archeo = archeo_checker(permit_form.cleaned_data['geom'])
             permit_form.instance.has_archeology = has_archeo
             if has_archeo:
@@ -245,19 +245,25 @@ def sendpermit_thread(request, pk):
 
     pdf_file, permit_path = gpf.print.printreport(request, pk, True)
     permit_link = ''
-    gpf.sendmail.send(permit_link, ['Directives_2017.pdf', 'Mode_refection_fouilles.pdf'], permit_path, 'permit_send', '')
+    gpf.sendmail.send(permit_link, ['Directives_2017.pdf', 'Mode_refection_fouilles.pdf', 'Fin_des_travaux_form.pdf'], permit_path, 'permit_send', '')
 
 
 @permission_required('gpf.view_permitrequest')
 def printpermit(request, pk):
 
-    pdf_file, filepath = gpf.print.printreport(request, pk, True)
-    response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = 'filename="permis_fouille.pdf"'
-    messagetxt = 'Impression du permis n° '
-    messagetxt +=  str(pk) + ' terminée'
-    messages.info(request, messagetxt)
-    return response
+    try:
+        pdf_file, filepath = gpf.print.printreport(request, pk, True)
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = 'filename="permis_fouille.pdf"'
+        return response
+
+    except:
+
+        messagetxt = 'Échec de l\'impression du permis n° '
+        messagetxt +=  str(pk)
+        messages.add_message(request, messages.ERROR, messagetxt)
+        return HttpResponseRedirect(reverse('gpf:list') + "?sort=id")
+
 
 
 @permission_required('gpf.change_sent')
@@ -268,6 +274,31 @@ def callforvalidations(request, pk):
     messagetxt +=  str(pk) + ' a été expédiée'
     messages.info(request, messagetxt)
     return HttpResponseRedirect(reverse('gpf:list') + "?sort=id")
+
+@permission_required('gpf.view_permitrequest')
+def seewaitingvalidations(request, pk):
+
+    groups = Group.objects.filter(department__validation__permitrequest__id=pk,
+        department__validation__accepted=False).all()
+
+    users = User.objects.filter(groups__in=groups).exclude(username='admin').all()
+
+    return render(request, 'gpf/waitingvalidations.html', {
+        'groups': groups,
+        'users': users,
+        'permit_id': pk
+    })
+
+@permission_required('gpf.change_sent')
+def serviceusers(request):
+
+    groups = Group.objects.filter(department__is_validator=True).all()
+
+    users = User.objects.filter(groups__in=groups).exclude(username='admin').all()
+
+    return render(request, 'gpf/servicesusers.html', {
+        'users': users
+    })
 
 
 @permission_required('gpf.change_sent')
@@ -321,6 +352,20 @@ def companyedit(request, pk):
     return render(request, "gpf/company_change.html", {'form': form})
 
 
+@login_required
+def genericactorview(request, pk):
+
+    instance = get_object_or_404(Actor, pk=pk)
+    form = GenericActorForm(request.POST or None, instance=instance)
+
+    for field in form.fields:
+
+        form.fields[field].disabled = True
+
+    return render(request, "gpf/genericactorview.html", {'form': form})
+
+
+
 def companyAdd(request):
 
     signupform = companyUserAddForm(request.POST or None)
@@ -357,6 +402,23 @@ def actorChange(request, pk=None):
             '<script>opener.closePopup(window, "%s", "%s", "#id_actor");</script>' % \
             (instance.pk, instance))
     return render(request, "gpf/actor_form.html", {'form' : form})
+
+
+@login_required
+def actor_edit_account(request):
+
+    user = Actor.objects.filter(user=request.user.pk).first()
+    form = ActorForm(request.POST or None, instance=user)
+
+    if form.is_valid():
+        instance = form.save()
+
+        if request.user.groups.filter(name = "extern").exists():
+            return HttpResponseRedirect(reverse('gpf:listexterns') + "?sort=id")
+        else:
+            return HttpResponseRedirect(reverse('gpf:list') + "?sort=id")
+
+    return render(request, "gpf/actor_edit_account.html", {'form' : form})
 
 
 @login_required
@@ -403,6 +465,7 @@ class PermitExportView(PermissionRequiredMixin, ExportMixin, SingleTableView):
     model = PermitRequest
     template_name = 'django_tables2/bootstrap.html'
     permission_required = ('gpf.view_permitrequest')
+    exclude_columns = ("edit_entries", "print", "administrative", )
 
 
 @method_decorator(login_required, name="dispatch")
@@ -410,6 +473,7 @@ class PermitExportViewExterns(ExportMixin, SingleTableView):
     table_class = PermitExportTable
     model = PermitRequest
     template_name = 'django_tables2/bootstrap.html'
+    exclude_columns = ("edit_entries", "print", "administrative", )
 
     def get_queryset(self):
         return PermitRequest.objects.filter(company=Actor.objects.get(user__username=self.request.user))
@@ -423,3 +487,25 @@ def thanks(request, permit_id):
     gpf.sendmail.send(permit_link, [], '', 'new_permit', '')
 
     return render(request, 'gpf/thanks.html')
+
+
+@login_required
+def prices(request):
+
+    return render(request, 'gpf/prices.html')
+
+
+@login_required
+def mapnv(request, pk):
+
+    permit = PermitRequest.objects.filter(pk=pk).first()
+    extent = permit.geom.extent
+    centerx = round((extent[0] + extent[2])/2)
+    centery = round((extent[1] + extent[3])/2)
+    gmf_base_url = os.environ['GMF_BASE_URL']
+    target_url = gmf_base_url + "/theme/permis_fouille?"
+    target_url += '&tree_groups=Permis%20de%20fouille&tree_group_layers_Permis%20de%20fouille=STE_gpf_demande'
+    target_url += '&map_x=' + str(centerx) + '&map_y=' + str(centery) + '&map_zoom=5'
+
+
+    return redirect(target_url)

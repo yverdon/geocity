@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-12-06 16:14+0100\n"
+"POT-Creation-Date: 2019-10-22 16:42+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: .\geomapshark\settings.py:161
+#: .\geomapshark\settings.py:168 .\gpf\geomapshark\settings.py:168
 msgid "French"
 msgstr "Français"
 
-#: .\geomapshark\settings.py:163
+#: .\geomapshark\settings.py:170 .\gpf\geomapshark\settings.py:170
 msgid "English"
 msgstr "Anglais"
 
@@ -42,303 +42,318 @@ msgstr "Raison sociale"
 msgid "vat_number"
 msgstr "Numéro IDE d'entreprise"
 
-#: .\gpf\models.py:13 .\gpf\models.py:81
+#: .\gpf\models.py:22 .\gpf\models.py:117
 msgid "address"
 msgstr "Adresse"
 
-#: .\gpf\models.py:14 .\gpf\models.py:82
+#: .\gpf\models.py:23 .\gpf\models.py:118
 msgid "zipcode"
 msgstr "NPA"
 
-#: .\gpf\models.py:15 .\gpf\models.py:83
+#: .\gpf\models.py:24 .\gpf\models.py:119
 msgid "city"
 msgstr "Ville"
 
-#: .\gpf\models.py:16
+#: .\gpf\models.py:25
 msgid "phone_fixed"
 msgstr "Télephone fixe"
 
-#: .\gpf\models.py:17
+#: .\gpf\models.py:33
 msgid "phone_mobile"
 msgstr "Télephone mobile"
 
-#: .\gpf\models.py:18
+#: .\gpf\models.py:42
 msgid "email"
 msgstr "Email"
 
-#: .\gpf\models.py:22
+#: .\gpf\models.py:46
 msgid "actor"
 msgstr "Requérant"
 
-#: .\gpf\models.py:30
-msgid "email_content"
-msgstr "Contenu de l'email"
-
-#: .\gpf\models.py:31
-msgid "is_validator"
-msgstr "Validateur"
-
-#: .\gpf\models.py:32
-msgid "is_admin"
-msgstr "Administrateur"
-
-#: .\gpf\models.py:33
-msgid "is_archeologist"
-msgstr "Archéologue"
-
-#: .\gpf\models.py:36
-msgid "department"
-msgstr "Service"
-
-#: .\gpf\models.py:44 .\gpf\models.py:78
+#: .\gpf\models.py:54 .\gpf\models.py:68 .\gpf\models.py:88 .\gpf\models.py:114
 msgid "description"
 msgstr "Description"
 
-#: .\gpf\models.py:47 .\gpf\models.py:77
+#: .\gpf\models.py:55
+msgid "is_validator"
+msgstr "Validateur"
+
+#: .\gpf\models.py:56
+msgid "is_admin"
+msgstr "Administrateur"
+
+#: .\gpf\models.py:57
+msgid "is_archeologist"
+msgstr "Archéologue"
+
+#: .\gpf\models.py:60
+msgid "department"
+msgstr "Service"
+
+#: .\gpf\models.py:71 .\gpf\models.py:113
 msgid "sitetype"
 msgstr "Type de site"
 
-#: .\gpf\models.py:54
+#: .\gpf\models.py:78
 msgid "creditor_name"
 msgstr "Type de créditeur"
 
-#: .\gpf\models.py:56
+#: .\gpf\models.py:80
 msgid "creditortype"
 msgstr "Type de créditeur"
 
-#: .\gpf\models.py:62
+#: .\gpf\models.py:91
+msgid "archeotype"
+msgstr "Statut archéologique communal"
+
+#: .\gpf\models.py:98
 msgid "amount"
 msgstr "Montant facture"
 
-#: .\gpf\models.py:63
+#: .\gpf\models.py:99
 msgid "payed"
 msgstr "Payé"
 
-#: .\gpf\models.py:64
+#: .\gpf\models.py:100
 msgid "is_valid"
 msgstr "Validation définitive"
 
-#: .\gpf\models.py:65
+#: .\gpf\models.py:101
 msgid "sent"
 msgstr "Permis envoyé"
 
-#: .\gpf\models.py:66
+#: .\gpf\models.py:102
 msgid "ended"
 msgstr "Fouille contrôlée"
 
-#: .\gpf\models.py:67
+#: .\gpf\models.py:103
 msgid "date_start"
 msgstr "Date de début"
 
-#: .\gpf\models.py:68
+#: .\gpf\models.py:104
 msgid "date_end"
 msgstr "Date de fin"
 
-#: .\gpf\models.py:69
+#: .\gpf\models.py:105
 msgid "date_effective_end"
 msgstr "Date de fin effective"
 
-#: .\gpf\models.py:70
+#: .\gpf\models.py:106
 msgid "length"
 msgstr "Longueur"
 
-#: .\gpf\models.py:71
+#: .\gpf\models.py:107
 msgid "with"
 msgstr "Largeur"
 
-#: .\gpf\models.py:72
+#: .\gpf\models.py:108
 msgid "road_marking_damaged"
 msgstr "Endommagement de la chaussée"
 
-#: .\gpf\models.py:73
+#: .\gpf\models.py:109
 msgid "is_green_area"
 msgstr "Espace vert"
 
-#: .\gpf\models.py:74
+#: .\gpf\models.py:110
 msgid "invoice_to"
 msgstr "Facture"
 
-#: .\gpf\models.py:75
+#: .\gpf\models.py:111
 msgid "company"
 msgstr "Entreprise"
 
-#: .\gpf\models.py:76
+#: .\gpf\models.py:112
 msgid "project_owner"
 msgstr "Maître d'ouvrage"
 
-#: .\gpf\models.py:79
+#: .\gpf\models.py:115
 msgid "has_archeology"
-msgstr "Zone archéologique"
+msgstr "Zone archéologique selon données cantonales"
 
-#: .\gpf\models.py:80
-msgid "has_existing_archeology"
-msgstr "Zone archéologique existante"
+#: .\gpf\models.py:116
+msgid "archeo_type"
+msgstr "Statut archéologique communal"
 
-#: .\gpf\models.py:84
+#: .\gpf\models.py:120
 msgid "date_end_work"
 msgstr "Date de fin de travaux"
 
-#: .\gpf\models.py:85
+#: .\gpf\models.py:121
 msgid "date_end_work_announcement"
 msgstr "Date annonce fin de travaux par l'entreprise"
 
-#: .\gpf\models.py:86
+#: .\gpf\models.py:122
+#, fuzzy
+#| msgid "date_start"
+msgid "date_last_printed"
+msgstr "Date de début"
+
+#: .\gpf\models.py:123
+#, fuzzy
+#| msgid "firstname"
+msgid "report_filename"
+msgstr "Prénom"
+
+#: .\gpf\models.py:124
 msgid "date_request_created"
 msgstr "Date de la demande"
 
-#: .\gpf\models.py:87 .\gpf\models.py:167
+#: .\gpf\models.py:125 .\gpf\models.py:205
 msgid "geom"
 msgstr "Localisation"
 
-#: .\gpf\models.py:90
+#: .\gpf\models.py:128
 msgid "permitrequest"
 msgstr "Demandes de permis"
 
-#: .\gpf\models.py:109
+#: .\gpf\models.py:147
 msgid "accepted"
 msgstr "Accepté"
 
-#: .\gpf\models.py:110
+#: .\gpf\models.py:148
 msgid "comment"
 msgstr "Commentaire"
 
-#: .\gpf\models.py:113
+#: .\gpf\models.py:151
 msgid "validation"
 msgstr "Validations"
 
-#: .\gpf\models.py:121
+#: .\gpf\models.py:159
 msgid "file_path"
 msgstr "Chemin du fichier"
 
-#: .\gpf\models.py:122
+#: .\gpf\models.py:160
 #, fuzzy
 #| msgid "firstname"
 msgid "file_name"
 msgstr "Prénom"
 
-#: .\gpf\models.py:125
+#: .\gpf\models.py:163
 msgid "document"
 msgstr "Document"
 
-#: .\gpf\models.py:132
+#: .\gpf\models.py:170
 msgid "mail_type"
 msgstr "Contenu de l'email"
 
-#: .\gpf\models.py:133
+#: .\gpf\models.py:171
 msgid "recipients"
 msgstr "Destinataires"
 
-#: .\gpf\models.py:134
+#: .\gpf\models.py:172
 msgid "subject"
 msgstr "Sujet"
 
-#: .\gpf\models.py:135
+#: .\gpf\models.py:173
 msgid "body"
 msgstr "Message"
 
-#: .\gpf\models.py:138
+#: .\gpf\models.py:176
 msgid "mail"
 msgstr "Email"
 
-#: .\gpf\models.py:144
+#: .\gpf\models.py:182
 msgid "fiche"
 msgstr "Fiche"
 
-#: .\gpf\models.py:145
+#: .\gpf\models.py:183
 msgid "commune"
 msgstr "Commune"
 
-#: .\gpf\models.py:146
+#: .\gpf\models.py:184
 msgid "descriptio"
 msgstr "Description"
 
-#: .\gpf\models.py:147
+#: .\gpf\models.py:185
 msgid "note_carto"
 msgstr "Note cartographique"
 
-#: .\gpf\models.py:148
+#: .\gpf\models.py:186
 msgid "annee_revi"
 msgstr "Année de révision"
 
-#: .\gpf\models.py:149
+#: .\gpf\models.py:187
 msgid "id_per"
 msgstr "Idendifiant personnel"
 
-#: .\gpf\models.py:150
+#: .\gpf\models.py:188
 msgid "lien_img"
 msgstr "Lien image"
 
-#: .\gpf\models.py:151
+#: .\gpf\models.py:189
 msgid "note_detai"
 msgstr "Note détail"
 
-#: .\gpf\models.py:152
+#: .\gpf\models.py:190
 msgid "shape_len"
 msgstr "Longueur"
 
-#: .\gpf\models.py:153
+#: .\gpf\models.py:191
 msgid "date_maj"
 msgstr "Date de mise à jour"
 
-#: .\gpf\models.py:154
+#: .\gpf\models.py:192
 msgid "guid"
 msgstr "GUID"
 
-#: .\gpf\models.py:155
+#: .\gpf\models.py:193
 msgid "mention"
 msgstr "Mention"
 
-#: .\gpf\models.py:156
+#: .\gpf\models.py:194
 msgid "fme_feat"
 msgstr "FME"
 
-#: .\gpf\models.py:157
+#: .\gpf\models.py:195
 msgid "autre_ment"
 msgstr "Autre mention"
 
-#: .\gpf\models.py:158
+#: .\gpf\models.py:196
 msgid "multi_read"
 msgstr "Multi"
 
-#: .\gpf\models.py:159
+#: .\gpf\models.py:197
 msgid "autre_mesu"
 msgstr "Autre mesure"
 
-#: .\gpf\models.py:160
+#: .\gpf\models.py:198
 msgid "shape_area"
 msgstr "Surface"
 
-#: .\gpf\models.py:161
+#: .\gpf\models.py:199
 msgid "objectid"
 msgstr "OID"
 
-#: .\gpf\models.py:162
+#: .\gpf\models.py:200
 msgid "date_mesur"
 msgstr "Date de mesure"
 
-#: .\gpf\models.py:163
+#: .\gpf\models.py:201
 msgid "eca"
 msgstr "ECA"
 
-#: .\gpf\models.py:164
+#: .\gpf\models.py:202
 msgid "url_recens"
 msgstr "URL recensement"
 
-#: .\gpf\models.py:165
+#: .\gpf\models.py:203
 msgid "mesure"
 msgstr "Mesure"
 
-#: .\gpf\models.py:166
+#: .\gpf\models.py:204
 msgid "import_date"
 msgstr "Date d'import"
 
-#: .\gpf\models.py:170
+#: .\gpf\models.py:208
 msgid "archelogy"
 msgstr "Zone archéologique"
 
-#: .\gpf\templates\openlayers\openlayers.html:16
+#: .\gpf\templates\openlayers\openlayers.html:43
 msgid "Debugging window (serialized value)"
 msgstr ""
+
+#~ msgid "email_content"
+#~ msgstr "Contenu de l'email"
 
 #~ msgid "address_permit"
 #~ msgstr "Adresse de la fouille"

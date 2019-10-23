@@ -121,7 +121,7 @@ class Migration(migrations.Migration):
                 ('is_green_area', models.BooleanField(verbose_name='is_green_area')),
                 ('description', models.TextField(verbose_name='description')),
                 ('has_archeology', models.BooleanField(default=False, verbose_name='has_archeology')),
-                ('has_existing_archeology', models.BooleanField(default=False, verbose_name='has_existing_archeology')),
+                ('archeotype', models.BooleanField(default=False, verbose_name='archeotype')),
                 ('address', models.CharField(max_length=100, null=True, verbose_name='address_permit')),
                 ('date_end_work', models.DateField(null=True, verbose_name='date_end_work')),
                 ('date_end_work_announcement', models.DateField(null=True, verbose_name='date_end_work_announcement')),
@@ -132,7 +132,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'verbose_name': 'permitrequest',
-                'permissions': (('change_amount', 'Can change amount'), ('change_paid', 'Can change paid'), ('change_validated', 'Can change validated'), ('change_sent', 'Can change sent'), ('change_ended', 'Can change ended'), ('change_date_effective_end', 'Can change date_effective_end'), ('change_has_existing_archeology', 'Can change has_existing_archeology')),
+                'permissions': (('change_amount', 'Can change amount'), ('change_paid', 'Can change paid'), ('change_validated', 'Can change validated'), ('change_sent', 'Can change sent'), ('change_ended', 'Can change ended'), ('change_date_effective_end', 'Can change date_effective_end'), ('change_archeotype', 'Can change archeotype')),
             },
         ),
         migrations.CreateModel(

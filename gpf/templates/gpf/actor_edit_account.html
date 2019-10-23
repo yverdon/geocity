@@ -1,0 +1,32 @@
+{% extends "base_generic.html" %}
+{% load static %}
+{% block stylesheets%}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/gpf.css' %}">
+{% endblock %}
+{% block navbartitle %}
+{% if user.groups.all.0.name == "extern" %}
+
+  <a class="navbar-brand" href="{% url 'gpf:listexterns'%}?sort=id">Permis de fouille</a>
+{% else %}
+  <a class="navbar-brand" href="{% url 'gpf:list' %}?sort=id">Permis de fouille</a>
+{% endif %}
+{% endblock %}
+{% load bootstrap4 %}
+{% block content %}
+<div class = "container">
+
+  <br>
+  <h3>Modifier mes informations</h3>
+  <hr>
+	<form method='POST' action='' enctype="multipart/form-data" novalidate id="actor-form">
+		{% csrf_token %}
+		{% bootstrap_form form layout='horizontal'%}
+    {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary" value="Enregistrer" %}
+    {% if user.groups.all.0.name == "extern" %}
+      <a class="btn btn-primary" href="{% url 'gpf:listexterns'%}?sort=id">Annuler</a>
+    {% else %}
+      <a class="btn btn-primary" href="{% url 'gpf:list' %}?sort=id">Annuler</a>
+    {% endif %}	</form>
+    <br>
+</div>
+{% endblock %}

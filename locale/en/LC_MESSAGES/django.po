@@ -125,7 +125,7 @@ msgid "has_archeology"
 msgstr ""
 
 #: .\gpf\models.py:63
-msgid "has_existing_archeology"
+msgid "archeotype"
 msgstr ""
 
 #: .\gpf\models.py:64

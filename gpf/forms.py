@@ -90,14 +90,14 @@ class ChangePermitRequestForm(forms.ModelForm):
         model = PermitRequest
         exclude = []
         fields = [
-            'company', 'project_owner', 'ended', 'has_existing_archeology', 'has_archeology', 'amount', 'paid', 'validated', 'sent', 'date_start', 'date_end',
+            'company', 'project_owner', 'ended', 'archeotype', 'has_archeology', 'amount', 'paid', 'validated', 'sent', 'date_start', 'date_end',
             'date_end_work_announcement', 'date_end_work', 'road_marking_damaged', 'date_request_created',
             'is_green_area', 'invoice_to', 'sitetype',
             'description', 'address',  'zipcode', 'city', 'length', 'width', 'geom'
         ]
         help_texts = {
             'validated': "Actif seulement lorsque tous les services ont validé la demande",
-            'has_existing_archeology': "Zone archéologique observée au moment de la fouille",
+            'archeotype': "Zone archéologique observée au moment de la fouille",
             'has_archeology': "Zone archéologique détectée sur la base des géodonnées cantonales",
             'ended': "La fouille a-t-elle été contrôlée par le bureau STE ?",
         }
@@ -171,6 +171,39 @@ class EndWorkForm(forms.ModelForm):
 
 
 class CompanyForm(forms.ModelForm):
+
+    required_css_class = 'required'
+
+    class Meta:
+        model = Actor
+        exclude = ['user']
+        help_texts = {
+            'vat_number': 'Trouvez votre numéro <a href="https://www.bfs.admin.ch/bfs/fr/home/registres/registre-entreprises/numero-identification-entreprises.html" target="_blank">TVA</a>',
+        }
+        widgets = {
+            'address': RemoteAutocompleteWidget(
+                attrs={
+                    "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
+                    "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
+                    "search_prefix": "",
+                    "origins": "address",
+                    "zipcode_field": "zipcode",
+                    "city_field": "city",
+                    "placeholder": "ex: Place Pestalozzi 2 Yverdon",
+                }),
+            'phone_fixed': forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}),
+            'phone_mobile': forms.TextInput(attrs={'placeholder': 'ex: 079 111 22 22'}),
+            'vat_number': forms.TextInput(attrs={'placeholder': 'ex: CHE-123.456.789'}),
+            'name': forms.TextInput(attrs={'placeholder': 'ex: Dupond'}),
+            'firstname': forms.TextInput(attrs={'placeholder': 'ex: Marcel'}),
+            'zipcode': forms.TextInput(attrs={'placeholder': 'ex: 1400'}),
+            'city': forms.TextInput(attrs={'placeholder': 'ex: Yverdon'}),
+            'company_name': forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}),
+            'email': forms.TextInput(attrs={'placeholder': 'ex: permis-de-fouille@mapnv.ch'}),
+        }
+
+
+class GenericActorForm(forms.ModelForm):
 
     required_css_class = 'required'
 

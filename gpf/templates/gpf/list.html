@@ -14,11 +14,20 @@
   <ul class="navbar-nav">
     <li class="nav-item dropdown">
       <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        Documents
+        Informations utiles
       </a>
       <div class="dropdown-menu dropdown-menu-left" aria-labelledby="navbarDropdownMenuLink">
         <a class="dropdown-item" href="{% static 'doc/Directives_2017.pdf' %}">Directives</a>
         <a class="dropdown-item" href="{% static 'doc/Mode_refection_fouilles.pdf' %}">Mode de réfection</a>
+        <a class="dropdown-item" href="{% url 'gpf:prices'%}">Tarifs</a>
+      </div>
+    </li>
+    <li class="nav-item dropdown">
+      <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Divers
+      </a>
+      <div class="dropdown-menu dropdown-menu-left" aria-labelledby="navbarDropdownMenuLink">
+        <a class="dropdown-item" href="{% url 'gpf:serviceusers'%}">Lister les utilisateurs par service</a>
       </div>
     </li>
   </ul>
@@ -70,13 +79,16 @@ if(navigator.userAgent.indexOf('MSIE')!==-1 || navigator.appVersion.indexOf('Tri
 <script>
     $(document).ready(function() {
         $('.print-info-messages').hide();
-        $('.info-messages').hide();
+        $('.info-messages').show();
         setTimeout(function() {
             $('.info-messages').fadeOut('slow');
-        }, 2500);
+        }, 5000);
 
         waitMessage = function () {
           $('.print-info-messages').show();
+          setTimeout(function() {
+              $('.print-info-messages').fadeOut('slow');
+          }, 5000);
         }
 
     });

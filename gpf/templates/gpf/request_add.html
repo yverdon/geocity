@@ -46,6 +46,14 @@
         </div>
         <hr>
         <br>
+        <div style="text-align:center">
+        {% bootstrap_button "Enregister" button_type="submit" button_class="btn-primary" value="Enregistrer" %}
+        {% if user.groups.all.0.name == "extern" %}
+          <a class="btn btn-primary" href="{% url 'gpf:listexterns'%}?sort=id">Annuler</a>
+        {% else %}
+          <a class="btn btn-primary" href="{% url 'gpf:list' %}?sort=id">Annuler</a>
+        {% endif %}
+        </div>
     </form>
     <br>
 {% endblock %}
