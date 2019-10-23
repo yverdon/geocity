@@ -86,7 +86,7 @@ class PermitRequestFilter(django_filters.FilterSet):
     company_name = CharFilter (
         field_name = 'company__company_name',
         lookup_expr = 'icontains',
-        label = 'La raison sociale de contient le texte',
+        label = 'La raison sociale contient le texte',
         widget =  TextInput(
             attrs={
                 "placeholder": "ex: taupe"

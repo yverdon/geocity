@@ -16,9 +16,9 @@ class PermitRequestTable(tables.Table):
         <i class="fa fa-map fa-lg" style="color:#007bff"></i></a>', verbose_name='mapnv', orderable=False)
 
     administrative = tables.TemplateColumn('<a title="Supprimer" href="{% url \'gpf:permitdelete\' record.id %}"> \
-        <i class="fa fa-trash fa-lg" style="color:red"></i></a> | <a title="Envoyer la confirmation" href="{% url \'gpf:sendpermit\' record.id %}"> \
-        <i class="fa fa-envelope fa-lg" style="color:green"></i></a> | <a title="Re-demander aux services en attente de valider le permis" href="{% url \'gpf:callforvalidations\' record.id %}"> \
-        <i class="fa fa-bullhorn fa-lg" style="color:red"></i></a> | <a title="Voir les personnes n\'ayant pas validé la demande" href="{% url \'gpf:seewaitingvalidations\' record.id %}"> \
+        <i class="fa fa-trash fa-lg" style="color:#007bff"></i></a> | <a title="Envoyer la confirmation" href="{% url \'gpf:sendpermit\' record.id %}"> \
+        <i class="fa fa-envelope fa-lg" style="color:#007bff"></i></a> | <a title="Re-demander aux services en attente de valider le permis" href="{% url \'gpf:callforvalidations\' record.id %}"> \
+        <i class="fa fa-bullhorn fa-lg" style="color:#007bff"></i></a> | <a title="Voir les personnes n\'ayant pas validé la demande" href="{% url \'gpf:seewaitingvalidations\' record.id %}"> \
         <i class="fa fa-users fa-lg" style="color:#007bff"></i></a>', verbose_name='Secrétariat', orderable=False, attrs={"td": {"width": "150px"}})
 
     company_link = tables.Column(
