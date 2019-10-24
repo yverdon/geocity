@@ -5,7 +5,6 @@
 {% endblock %}
 {% block navbartitle %}
 {% if user.groups.all.0.name == "extern" %}
-
   <a class="navbar-brand" href="{% url 'gpf:listexterns'%}?sort=id">Permis de fouille</a>
 {% else %}
   <a class="navbar-brand" href="{% url 'gpf:list' %}?sort=id">Permis de fouille</a>
@@ -17,13 +16,17 @@
   <br>
   <h3>Création d'un compte entreprise</h3>
   <hr>
-	<form method='POST' action='' enctype="multipart/form-data" novalidate id="actor-form">
-		{% csrf_token %}
-		{% bootstrap_form form layout='horizontal'%}
-		{% bootstrap_form signupform layout='horizontal'%}
-    {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary" value="Enregistrer" %}
-    {% bootstrap_button "Annuler" button_type="submit" button_class="btn-primary" value="Annuler" href="/gpf/listexterns"%}
-	</form>
+  	<form method='POST' action='' enctype="multipart/form-data" novalidate id="actor-form">
+  		{% csrf_token %}
+  		{% bootstrap_form form layout='horizontal'%}
+  		{% bootstrap_form signupform layout='horizontal'%}
+      {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary" value="Enregistrer" %}
+      {% if user.groups.all.0.name == "extern" %}
+       <a class="btn btn-primary"  href="{% url 'gpf:listexterns'%}?sort=id">Annuler</a>
+      {% else %}
+        <a class="btn btn-primary"  href="{% url 'gpf:list' %}?sort=id">Annuler</a>
+      {% endif %}
+    </form>
   <br>
 </div>
 {% endblock %}
