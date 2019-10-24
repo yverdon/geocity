@@ -36,5 +36,43 @@
   background-color: #d4edda;
   border: 2px solid #c3e6cb;
   border-radius: 5px;
-  /* visibility: hidden; */
+}
+
+.responsive-btn {
+  width: 245px;
+}
+
+
+@media all and (max-width: 799px){
+
+  h3 {
+    font-size: 1em;
+  }
+
+  .responsive-btn {
+    margin-bottom: 10px;
+    width: 245px;
+
+  }
+
+  /* .responsive-banner {
+    font-size: 0.8em;
+  }
+
+  .navbar img {
+    height: 0px;
+  }
+
+  /* .navbar {
+    height: 50px;
+  }
+
+
+  .navbar-toggler {
+    height: 35px;
+  }
+  .navbar-toggler-icon {
+    height: 25px;
+  } */
+
 }
