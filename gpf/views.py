@@ -164,7 +164,7 @@ def permitdetail(request, pk):
             if not disable_validation:
                 sform.fields[field].widget.attrs['class'] = 'highlight-edit'
             if sform.fields[field].label:
-                sform.fields[field].label += ' ' + group_name.name
+                sform.fields[field].label += ' ' + group_name.department.description
 
 
     if form.is_valid():
