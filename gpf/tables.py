@@ -36,7 +36,7 @@ class PermitRequestTable(tables.Table):
     id = tables.Column(
         linkify=lambda record: record.get_absolute_url() + '#validations-anchor',
         order_by=('id'),
-        verbose_name='Valider'
+        verbose_name='Valider',
     )
 
     def render_company_link(self, value, record):
@@ -52,6 +52,7 @@ class PermitRequestTable(tables.Table):
         model = PermitRequest
         fields = ('id', 'address', 'company_link', 'project_owner_link', 'date_start', 'date_end', 'paid', 'validated', 'sent', 'mapnv')
         template_name = 'django_tables2/bootstrap.html'
+
 
 class PermitRequestTableExterns(tables.Table):
 

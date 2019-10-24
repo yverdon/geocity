@@ -1,9 +1,9 @@
 {% extends "base_generic.html" %}
 {% block navbartitle %}
 {% if user.groups.all.0.name == "extern" %}
-  <a class="navbar-brand" href="{% url 'gpf:listexterns'%}?sort=id">Permis de fouille</a>
+  <a class="navbar-brand" href="{% url 'gpf:listexterns'%}">Permis de fouille</a>
 {% else %}
-  <a class="navbar-brand" href="{% url 'gpf:list' %}?sort=id">Permis de fouille</a>
+  <a class="navbar-brand" href="{% url 'gpf:list' %}">Permis de fouille</a>
 {% endif %}
 {% endblock %}
 {% load bootstrap4 %}
@@ -21,9 +21,9 @@
   </p>
   <p>
       {% if user.groups.all.0.name == "extern" %}
-       <a class="navbar-brand" href="{% url 'gpf:listexterns'%}?sort=id">Retour aux permis de fouille</a>
+       <a class="navbar-brand" href="{% url 'gpf:listexterns'%}">Retour aux permis de fouille</a>
       {% else %}
-        <a class="navbar-brand" href="{% url 'gpf:list' %}?sort=id">Retour aux permis de fouille</a>
+        <a class="navbar-brand" href="{% url 'gpf:list' %}">Retour aux permis de fouille</a>
       {% endif %}
   </p>
 

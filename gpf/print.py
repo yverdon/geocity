@@ -19,7 +19,7 @@ def printreport(request, pk, save_to_file):
 
     # TODO: configure this from env.yaml file
     buffer_extent = os.environ["PRINT_MAP_BUFFER_METERS"]
-    extent_raw = permit.geom.buffer(buffer_extent).extent
+    extent_raw = permit.geom.buffer(int(buffer_extent)).extent
     h_extent = extent_raw[2] - extent_raw[0]
     h_extent_center = h_extent/2 + extent_raw[0]
     h_extent_left =  round(extent_raw[0])
@@ -52,7 +52,9 @@ def printreport(request, pk, save_to_file):
     image_uuid = str(uuid4())
     map_image_name = 'permis_fouille_numero_' + str(pk) + '-' + image_uuid + '.png'
     image_path = os.environ["TEMPFILES_FOLDER"] + '/' + map_image_name
+    print(printurl)
     map_request = urllib.request.urlretrieve(printurl, image_path)
+
     print_image_url = os.environ["PRODUCTION_ROOT_ADRESS"] + "static/tempfiles/" + map_image_name
 
     html = render(request, 'gpf/print/edit.html', {
@@ -73,7 +75,7 @@ def printreport(request, pk, save_to_file):
 
     if save_to_file:
             file_name = 'permis_fouille_numero_' + str(pk) + '.pdf'
-            file_path = os.environ["DOCUMENT_FOLDER"] + '/printed_reports/' + \
+            file_path = os.environ["PRINTED_REPORT_FOLDER"] + '/' + \
                 file_name
             with open(file_path, 'wb+') as destination:
                 destination.write(pdf_file)

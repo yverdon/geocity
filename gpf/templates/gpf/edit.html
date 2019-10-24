@@ -1,6 +1,6 @@
 {% extends "base_generic.html" %}
 {% block navbartitle %}
-  <a class="navbar-brand" href="{% url 'gpf:list'%}?sort=id">Permis de fouille</a>
+  <a class="navbar-brand" href="{% url 'gpf:list'%}">Permis de fouille</a>
 {% endblock %}
 {% load bootstrap4 %}
 {% bootstrap_css %}
@@ -53,7 +53,7 @@
         <hr id="validations-anchor">
         <div style="text-align:center">
           {% bootstrap_button "Enregister" button_type="submit" button_class="btn-primary" value="Enregistrer" %}
-          <a class="btn btn-primary" href="{% url 'gpf:list' %}?sort=id">Annuler</a>
+          <a class="btn btn-primary" href="{% url 'gpf:list' %}">Annuler</a>
         </div>
         <br>
     </form>

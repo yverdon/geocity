@@ -7,7 +7,7 @@ services:
         sh -c " python3 manage.py migrate &&
                 python3 manage.py compilemessages -l fr &&
                 echo yes | python3 manage.py collectstatic &&
-                python3 manage.py runserver --noreload 0.0.0.0:9000"
+                python3 manage.py runserver 0.0.0.0:9000"
     volumes:
       - .:/code
       - /var/sig/yverdon_geoportail/permis_fouille:/app_data
@@ -20,9 +20,9 @@ services:
       image: camptocamp/qgis-server:3.4
       container_name: qgis-server-geomapshark-print
       volumes:
-          - .:/data
+          - F:/Projets/geomapshark_private/print:/data
       ports:
           - "9096:80"
       environment:
-          - QGIS_PROJECT_FILE=/data/print/print.qgs
-          - PGSERVICEFILE=/data/print/pg_service.conf
+          - QGIS_PROJECT_FILE=/data/print.qgs
+          - PGSERVICEFILE=/data/pg_service.conf
