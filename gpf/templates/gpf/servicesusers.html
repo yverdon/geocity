@@ -17,7 +17,7 @@
     {% if users %}
       {% for user in users %}
           <li>
-              <b>{{user.groups.all.0}}</b>: {{user.first_name}} - {{user.last_name}} - {{user.email}}
+              <b>{{user.groups.all.0.department.description}}</b>: {{user.first_name}} - {{user.last_name}} - {{user.email}}
           </li>
       {% endfor %}
     {% else %}
