@@ -251,18 +251,18 @@ def sendpermit_thread(request, pk):
 @permission_required('gpf.view_permitrequest')
 def printpermit(request, pk):
 
-    try:
-        pdf_file, filepath = gpf.print.printreport(request, pk, True)
-        response = HttpResponse(pdf_file, content_type='application/pdf')
-        response['Content-Disposition'] = 'filename="permis_fouille.pdf"'
-        return response
+    # try:
+    pdf_file, filepath = gpf.print.printreport(request, pk, True)
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = 'filename="permis_fouille.pdf"'
+    return response
 
-    except:
-
-        messagetxt = 'Échec de l\'impression du permis n° '
-        messagetxt +=  str(pk)
-        messages.add_message(request, messages.ERROR, messagetxt)
-        return HttpResponseRedirect(reverse('gpf:list') + "?sort=id")
+    # except:
+    #
+    #     messagetxt = 'Échec de l\'impression du permis n° '
+    #     messagetxt +=  str(pk)
+    #     messages.add_message(request, messages.ERROR, messagetxt)
+    #     return HttpResponseRedirect(reverse('gpf:list') + "?sort=id")
 
 
 

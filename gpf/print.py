@@ -52,7 +52,7 @@ def printreport(request, pk, save_to_file):
     image_uuid = str(uuid4())
     map_image_name = 'permis_fouille_numero_' + str(pk) + '-' + image_uuid + '.png'
     image_path = os.environ["TEMPFILES_FOLDER"] + '/' + map_image_name
-
+    print(printurl)
     map_request = urllib.request.urlretrieve(printurl, image_path)
 
     print_image_url = os.environ["PRODUCTION_ROOT_ADRESS"] + "static/tempfiles/" + map_image_name
