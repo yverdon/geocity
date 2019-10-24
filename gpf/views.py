@@ -438,7 +438,7 @@ def endwork(request, pk):
 
 
 class PermitRequestListView(PermissionRequiredMixin, SingleTableMixin, FilterView):
-    paginate_by = 40
+    paginate_by = int(os.environ['PAGINATE_BY'])
     table_class = PermitRequestTable
     model = PermitRequest
     template_name = 'gpf/list.html'

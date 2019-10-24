@@ -104,6 +104,21 @@ if(navigator.userAgent.indexOf('MSIE')!==-1 || navigator.appVersion.indexOf('Tri
       float:right;
       margin-bottom: 10px;
     }
+
+    .pagination a {
+      margin-right: 2px;
+    }
+
+   .pagination .active a:link  {
+      color: green !important;
+      border:1px solid #007bff !important;
+    }
+
+  .pagination .active a:visited  {
+     color: green !important;
+     border:1px solid #007bff !important;
+   }
+
   </style>
 
   {{ filter.form.media }}
