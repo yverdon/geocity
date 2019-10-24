@@ -7,7 +7,7 @@ services:
         sh -c " python3 manage.py migrate &&
                 python3 manage.py compilemessages -l fr &&
                 echo yes | python3 manage.py collectstatic &&
-                python3 manage.py runserver 0.0.0.0:9000"
+                python3 manage.py runserver --noreload 0.0.0.0:9000"
     volumes:
       - .:/code
       - /var/sig/yverdon_geoportail/permis_fouille:/app_data

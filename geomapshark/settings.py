@@ -16,13 +16,6 @@ INSTANCE_ID = os.environ["INSTANCE_ID"]
 
 ROOT_URLCONF = 'geomapshark.urls'
 LOGIN_REDIRECT_URL ='/'
-#FORCE_SCRIPT_NAME = INSTANCE_ID
-# LOGIN_URL = '/' + INSTANCE_ID + '/accounts/login/'
-# LOGOUT_REDIRECT_URL = '/'+ INSTANCE_ID
-#LOGIN_REDIRECT_URL = INSTANCE_ID + '/accounts/profile/'
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ["SECRET_KEY"]
@@ -33,7 +26,7 @@ SIGNALEZ_URL = os.environ["SIGNALEZ_URL"]
 QGISSERVER_URL = os.environ["QGISSERVER_URL"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = eval(os.environ["DEBUG"])
 
 os.environ["GDAL_DATA"] = os.path.join(BASE_DIR, 'gdal_data')
 GDAL_DATA = os.environ["GDAL_DATA"]
