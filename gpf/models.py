@@ -131,6 +131,7 @@ class PermitRequest(models.Model):
     geom = models.MultiPointField(_("geom"), srid=2056)
 
     class Meta:
+        ordering = ["-id"]
         verbose_name = _('permitrequest')
         permissions = (
             ("change_amount", "Can change amount"),
