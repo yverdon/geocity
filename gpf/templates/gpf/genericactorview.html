@@ -5,9 +5,9 @@
 {% endblock %}
 {% block navbartitle %}
 {% if user.groups.all.0.name == "extern" %}
-  <a class="navbar-brand" href="{% url 'gpf:listexterns'%}?sort=id">Permis de fouille</a>
+  <a class="navbar-brand" href="{% url 'gpf:listexterns'%}">Permis de fouille</a>
 {% else %}
-  <a class="navbar-brand" href="{% url 'gpf:list' %}?sort=id">Permis de fouille</a>
+  <a class="navbar-brand" href="{% url 'gpf:list' %}">Permis de fouille</a>
 {% endif %}
 {% endblock %}
 {% load bootstrap4 %}
@@ -20,9 +20,9 @@
 		{% csrf_token %}
 		{% bootstrap_form form layout='horizontal'%}
     {% if user.groups.all.0.name == "extern" %}
-      <a class="btn btn-primary" href="{% url 'gpf:listexterns'%}?sort=id">Retour</a>
+      <a class="btn btn-primary" href="{% url 'gpf:listexterns'%}">Retour</a>
     {% else %}
-      <a class="btn btn-primary" href="{% url 'gpf:list' %}?sort=id">Retour</a>
+      <a class="btn btn-primary" href="{% url 'gpf:list' %}">Retour</a>
     {% endif %}
   	</form>
     <br>

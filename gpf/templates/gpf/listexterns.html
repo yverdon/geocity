@@ -9,9 +9,9 @@
 {% block navbartitle %}
 
 {% if user.groups.all.0.name == "extern" %}
-  <a class="navbar-brand" href="{% url 'gpf:listexterns'%}?sort=id">Permis de fouille</a>
+  <a class="navbar-brand" href="{% url 'gpf:listexterns'%}">Permis de fouille</a>
 {% else %}
-  <a class="navbar-brand" href="{% url 'gpf:list' %}?sort=id">Permis de fouille</a>
+  <a class="navbar-brand" href="{% url 'gpf:list' %}">Permis de fouille</a>
 {% endif %}
 {% endblock %}
 
@@ -44,7 +44,7 @@
 <a class="btn btn-primary responsive-btn" data-toggle="collapse" href="#collapseFilter" role="button" aria-expanded="false" aria-controls="collapseFilter">
   <i class="fa fa-filter"></i>&nbsp;Filtrer les demandes
 </a>
-<a class="btn btn-primary responsive-btn" href="{% url 'gpf:listexterns' %}?sort=id" role="button"><i class="fa fa-eraser"></i>&nbsp;Effacer le filtre</a><hr>
+<a class="btn btn-primary responsive-btn" href="{% url 'gpf:listexterns' %}" role="button"><i class="fa fa-eraser"></i>&nbsp;Effacer le filtre</a><hr>
 <div class="modal" id="nonIEModal">
   <div class="modal-dialog">
     <div class="modal-content">

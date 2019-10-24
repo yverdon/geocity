@@ -13,11 +13,11 @@
     <ul class="sidebar-nav app-list" style="margin-top: 50px; margin-left: 5%; width: 300px;">
         {% if user.groups.all.0.name == "extern" %}
 
-          <li><a class="btn btn-primary responsive-btn" href="{% url 'gpf:listexterns' %}?sort=id"><i class="fa fa-road"></i>&nbsp;Permis de fouille</a></li>
+          <li><a class="btn btn-primary responsive-btn" href="{% url 'gpf:listexterns' %}"><i class="fa fa-road"></i>&nbsp;Permis de fouille</a></li>
           <li><a class="btn btn-primary responsive-btn" href="{{apps.mapnv}}" target="_blank"><i class="fa fa-map"></i>&nbsp;mapnv: Géoportail</a></li>
           <li><a class="btn btn-primary responsive-btn" href="/lidar" target="_blank"><i class="fa fa-cube"></i>&nbsp;mapn: Géoportail 3D (LiDAR)</a></li>
         {% else %}
-          <li><a href="{% url 'gpf:list' %}?sort=id">Permis de fouille</a></li>
+          <li><a href="{% url 'gpf:list' %}">Permis de fouille</a></li>
           <li><a href="https://pro.mapnv.ch/admin" target="_blank">Interface d'administration des applications du territoire</a></li>
           <li><a href="{{apps.mapnv}}" target="_blank">MAPNV: Géoportail</a></li>
           <li><a href="/lidar" target="_blank">MAPNV: Géoportail 3D (LiDAR)</a></li>

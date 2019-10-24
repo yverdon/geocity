@@ -174,7 +174,7 @@ def permitdetail(request, pk):
                 sform.save()
 
         # Save ok, return to home for intern users
-        return HttpResponseRedirect(reverse('gpf:list') + "?sort=id")
+        return HttpResponseRedirect(reverse('gpf:list'))
 
     documents = Document.objects.filter(permitrequest=pk).all()
 
@@ -225,7 +225,7 @@ def permitRequestChange(request):
         if form.is_valid():
             form.instance.has_archeology = archeo_checker(form.cleaned_data['geom'])
             form.save()
-            return HttpResponseRedirect(reverse('gpf:list') + "?sort=id")
+            return HttpResponseRedirect(reverse('gpf:list'))
     else:
         form = ChangePermitRequestForm()
     return render(request, 'gpf/edit.html', {'form': form})
@@ -238,7 +238,7 @@ def sendpermit(request, pk):
     messagetxt = 'Le message de confirmation du permis n° ' + str(pk)
     messagetxt += ' vous parviendra d\'ici quelques minutes'
     messages.info(request, messagetxt)
-    return HttpResponseRedirect(reverse('gpf:list') + "?sort=id")
+    return HttpResponseRedirect(reverse('gpf:list'))
 
 
 def sendpermit_thread(request, pk):
@@ -262,7 +262,7 @@ def printpermit(request, pk):
     #     messagetxt = 'Échec de l\'impression du permis n° '
     #     messagetxt +=  str(pk)
     #     messages.add_message(request, messages.ERROR, messagetxt)
-    #     return HttpResponseRedirect(reverse('gpf:list') + "?sort=id")
+    #     return HttpResponseRedirect(reverse('gpf:list'))
 
 
 
@@ -273,7 +273,7 @@ def callforvalidations(request, pk):
     messagetxt = 'La demande de validation aux services retardataires pour le permis n° '
     messagetxt +=  str(pk) + ' a été expédiée'
     messages.info(request, messagetxt)
-    return HttpResponseRedirect(reverse('gpf:list') + "?sort=id")
+    return HttpResponseRedirect(reverse('gpf:list'))
 
 @permission_required('gpf.view_permitrequest')
 def seewaitingvalidations(request, pk):
@@ -306,7 +306,7 @@ def waitingvalidations(request, hours):
 
     waiting_validations(request, hours)
 
-    return HttpResponseRedirect(reverse('gpf:list') + "?sort=id")
+    return HttpResponseRedirect(reverse('gpf:list'))
 
 
 @permission_required('gpf.view_permitrequest')
@@ -319,7 +319,7 @@ def file_download (request, pk):
 
 class PermitRequestDelete(PermissionRequiredMixin, DeleteView):
     model = PermitRequest
-    success_url = "/gpf/list?sort=id"
+    success_url = "/gpf/list"
     permission_required = ('gpf.delete_permitrequest')
 
 
@@ -345,7 +345,7 @@ def companyedit(request, pk):
 
         if form.is_valid():
             form.save()
-            return HttpResponseRedirect(reverse('gpf:listexterns') + "?sort=id")
+            return HttpResponseRedirect(reverse('gpf:listexterns'))
     else:
         form = CompanyForm(request.POST or None, instance=instance)
 
@@ -386,7 +386,7 @@ def companyAdd(request):
         login(request, new_user)
 
         return HttpResponseRedirect(
-            reverse('gpf:listexterns') + "?sort=id")
+            reverse('gpf:listexterns'))
 
     return render(request, "gpf/company_form.html", {'form' : form, 'signupform': signupform})
 
@@ -414,9 +414,9 @@ def actor_edit_account(request):
         instance = form.save()
 
         if request.user.groups.filter(name = "extern").exists():
-            return HttpResponseRedirect(reverse('gpf:listexterns') + "?sort=id")
+            return HttpResponseRedirect(reverse('gpf:listexterns'))
         else:
-            return HttpResponseRedirect(reverse('gpf:list') + "?sort=id")
+            return HttpResponseRedirect(reverse('gpf:list'))
 
     return render(request, "gpf/actor_edit_account.html", {'form' : form})
 
@@ -432,7 +432,7 @@ def endwork(request, pk):
         instance = form.save()
         permit_link = os.environ['PRODUCTION_ROOT_ADRESS'] + '/gpf/permitdetail/' + str(pk)
         gpf.sendmail.send(permit_link, [], '',  'end_work_announcement', '')
-        return HttpResponseRedirect(reverse('gpf:listexterns') + "?sort=id")
+        return HttpResponseRedirect(reverse('gpf:listexterns'))
 
     return render(request, "gpf/end_work.html", {'form' : form})
 
