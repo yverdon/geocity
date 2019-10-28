@@ -4,6 +4,9 @@ __pycache__/
 /venv
 /print/*.conf
 /static/images/print/STE_Signature.png
+geomapshark/static/
+gunicorn_log.log
+static/tempfiles/
 geomapshark/static/images/print/STE_Signature.png
 print/images/STE_Signature.png
 env.yaml
