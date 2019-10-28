@@ -17,5 +17,6 @@ urlpatterns = [
     path('accounts/password_reset/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('accounts/password_change/', auth_views.PasswordChangeView.as_view(), name='password_change'),
     path('accounts/', include('django.contrib.auth.urls')),
+    path('protected-static/', views.protected-static, name='protected-static'),
 
 ]
