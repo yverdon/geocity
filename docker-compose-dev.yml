@@ -8,7 +8,7 @@ services:
     volumes:
       - .:/code
       - /var/sig/yverdon_geoportail/permis_fouille:/app_data
-      - /var/www/vhosts/pro.mapnv.ch/private/gms/static/tempfiles:/tempfiles
+      - /var/sig/yverdon_geoportail/permis_fouille/tempfiles:/tempfiles
       - /var/sig/yverdon_geoportail/geomapshark_dumps:/dumps_data
     ports:
       - "9095:9000"
@@ -17,9 +17,9 @@ services:
       image: camptocamp/qgis-server:3.4
       container_name: qgis-server-geomapshark-print
       volumes:
-          - F:/Projets/geomapshark_private/print:/data
+          - .:/data
       ports:
           - "9096:80"
       environment:
-          - QGIS_PROJECT_FILE=/data/print.qgs
-          - PGSERVICEFILE=/data/pg_service.conf
+          - QGIS_PROJECT_FILE=/data/print/print.qgs
+          - PGSERVICEFILE=/data/print/pg_service.conf
