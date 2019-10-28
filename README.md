@@ -107,6 +107,12 @@ https://docs.djangoproject.com/fr/2.0/howto/deployment/wsgi/modwsgi/
 python manage.py collectstatic
 ```
 
+*Setup protected files *
+```
+mkdir geomapshark/protected-static/
+```
+And copy required files here. For now: STE_Signature.png
+
 Same in docker:
 
 ```
