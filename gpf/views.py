@@ -495,6 +495,14 @@ def prices(request):
     return render(request, 'gpf/prices.html')
 
 
+@permission_required('gpf.change_sent')
+def signature(request):
+
+    path = settings.PROJECT_ROOT + "/protected-static/images/STE_Signature.png"
+    image_data = open(path, "rb").read()
+    return HttpResponse(image_data, content_type="image/png")
+
+
 @login_required
 def mapnv(request, pk):
 
@@ -506,6 +514,5 @@ def mapnv(request, pk):
     target_url = gmf_base_url + "/theme/permis_fouille?"
     target_url += '&tree_groups=Permis%20de%20fouille&tree_group_layers_Permis%20de%20fouille=STE_gpf_demande'
     target_url += '&map_x=' + str(centerx) + '&map_y=' + str(centery) + '&map_zoom=5'
-
 
     return redirect(target_url)

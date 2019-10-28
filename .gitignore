@@ -7,7 +7,5 @@ __pycache__/
 geomapshark/static/
 gunicorn_log.log
 static/tempfiles/
-protected-static/images/*.png
-geomapshark/static/images/print/STE_Signature.png
-print/images/STE_Signature.png
+geomapshark/protected-static/
 env.yaml

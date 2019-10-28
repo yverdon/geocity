@@ -28,5 +28,6 @@ urlpatterns = [
     path('documentupload/<int:permit_id>/', views.documentUpload, name='documentupload'),
     path('thanks/<int:permit_id>', views.thanks, name='thanks'),
     path('prices/', views.prices, name='prices'),
-    path('file-download/<int:pk>', views.file_download, name='file-download')
+    path('file-download/<int:pk>', views.file_download, name='file-download'),
+    path('signature', views.signature, name='signature'),
     ]

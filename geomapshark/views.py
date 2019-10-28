@@ -15,7 +15,3 @@ def index(request):
     context = { 'apps': apps }
 
     return render(request, 'geomapshark/index.html', context)
-
-@login_required
-def protected_serve(request, path, document_root=None):
-    return serve(request, path, document_root)
