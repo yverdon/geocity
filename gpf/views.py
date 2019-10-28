@@ -251,19 +251,10 @@ def sendpermit_thread(request, pk):
 @permission_required('gpf.view_permitrequest')
 def printpermit(request, pk):
 
-    # try:
     pdf_file, filepath = gpf.print.printreport(request, pk, True)
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = 'filename="permis_fouille.pdf"'
     return response
-
-    # except:
-    #
-    #     messagetxt = 'Échec de l\'impression du permis n° '
-    #     messagetxt +=  str(pk)
-    #     messages.add_message(request, messages.ERROR, messagetxt)
-    #     return HttpResponseRedirect(reverse('gpf:list'))
-
 
 
 @permission_required('gpf.change_sent')
@@ -495,7 +486,7 @@ def prices(request):
     return render(request, 'gpf/prices.html')
 
 
-@permission_required('gpf.change_sent')
+# @permission_required('gpf.change_sent')
 def signature(request):
 
     path = settings.PROJECT_ROOT + "/protected-static/images/STE_Signature.png"
