@@ -5,4 +5,5 @@ __pycache__/
 /print/*.conf
 /static/images/print/STE_Signature.png
 geomapshark/static/images/print/STE_Signature.png
+print/images/STE_Signature.png
 env.yaml
