@@ -2,6 +2,7 @@ from django.shortcuts import render
 from . import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Permission
+from django.views.static import serve
 
 @login_required
 def index(request):

@@ -183,14 +183,10 @@ msgid "date_end_work_announcement"
 msgstr "Date annonce fin de travaux par l'entreprise"
 
 #: .\gpf\models.py:122
-#, fuzzy
-#| msgid "date_start"
 msgid "date_last_printed"
 msgstr "Date de début"
 
 #: .\gpf\models.py:123
-#, fuzzy
-#| msgid "firstname"
 msgid "report_filename"
 msgstr "Prénom"
 
@@ -223,8 +219,6 @@ msgid "file_path"
 msgstr "Chemin du fichier"
 
 #: .\gpf\models.py:160
-#, fuzzy
-#| msgid "firstname"
 msgid "file_name"
 msgstr "Prénom"
 
