@@ -55,9 +55,6 @@ def permitRequestAdd(request, project_owner_id):
             # Check for archeological zones from cantonal geodata
             has_archeo = archeo_checker(permit_form.cleaned_data['geom'])
             permit_form.instance.has_archeology = has_archeo
-            if has_archeo:
-                permit_link = os.environ['PRODUCTION_ROOT_ADRESS'] + '/gpf/permitdetail/' + str(permitRequest.id)
-                gpf.sendmail.send(permit_link, [], '', 'archeo_detected', '')
 
             # Add company
             if show_company_form == 0:
@@ -70,6 +67,10 @@ def permitRequestAdd(request, project_owner_id):
             permitRequest.date_request_created = datetime.now()
             # Save it in database
             permitRequest.save()
+
+            if has_archeo:
+                permit_link = os.environ['PRODUCTION_ROOT_ADRESS'] + '/gpf/permitdetail/' + str(permitRequest.id)
+                gpf.sendmail.send(permit_link, [], '', 'archeo_detected', '')
 
             # Create empty validation objects related to this permit
             for dep in Department.objects.filter(is_validator=True).all():
@@ -122,6 +123,7 @@ def permitdetail(request, pk):
 
     form.fields['geom'].widget.attrs['edit_geom'] = field_permission_checker('geom', request.user, 'gpf.change')
     form.fields['validated'].disabled = validation_checker(instance)
+    form.fields['archeotype'].required = False
 
     ValidationFormSet = inlineformset_factory(
         PermitRequest,
