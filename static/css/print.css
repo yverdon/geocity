@@ -96,6 +96,7 @@ body {
   font-weight: bold;
   font-size: 12px;
 }
+
 #print_date {
   font-size: 6px;
   color: gray;
@@ -104,6 +105,11 @@ body {
   bottom: -20px;;
   width: 100%;
   text-align: right;
+}
+
+#signature {
+  width: 10px;
+  height: 10px;
 }
 
 .map-print-image {

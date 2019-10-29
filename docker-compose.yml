@@ -11,7 +11,7 @@ services:
     volumes:
       - .:/code
       - /var/sig/yverdon_geoportail/permis_fouille:/app_data
-      - /var/www/vhosts/pro.mapnv.ch/private/gms/static/tempfiles:/tempfiles
+      - /var/sig/yverdon_geoportail/permis_fouille/tempfiles:/tempfiles
       - /var/sig/yverdon_geoportail/geomapshark_dumps:/dumps_data
     ports:
       - "9095:9000"
