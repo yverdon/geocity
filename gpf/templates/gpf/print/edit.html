@@ -176,12 +176,11 @@
           {% endfor %}
       </table>
     </div>
-    <img id="banner_left" src="{{root_url}}{% static 'signature' %}" height=100>
     <p style="page-break-before: always" ></p>
     <div id="print-map-container">
-      <img src="{{print_image_path}}" alt="Loading map..." class="map-print-image">
+      <img src="data:image/png;base64,{{base64imagestr}}" alt="" class="map-print-image">
     </div>
-
-    <div id="print_date">pdf du {{print_date}}</div>
+    <div id="print_date">pdf du {{print_date}}
+    </div>
   </body>
 </html>

@@ -486,14 +486,6 @@ def prices(request):
     return render(request, 'gpf/prices.html')
 
 
-# @permission_required('gpf.change_sent')
-def signature(request):
-
-    path = settings.PROJECT_ROOT + "/protected-static/images/STE_Signature.png"
-    image_data = open(path, "rb").read()
-    return HttpResponse(image_data, content_type="image/png")
-
-
 @login_required
 def mapnv(request, pk):
 

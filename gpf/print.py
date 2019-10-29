@@ -7,6 +7,7 @@ from django.conf import settings
 import urllib.parse
 import urllib.request
 from uuid import uuid4
+import base64
 
 def printreport(request, pk, save_to_file):
 
@@ -47,14 +48,16 @@ def printreport(request, pk, save_to_file):
     data = urllib.parse.urlencode(values)
     printurl = settings.QGISSERVER_URL + '/?' + data
 
-    map_image_path = ''
-
     image_uuid = str(uuid4())
     map_image_name = 'permis_fouille_numero_' + str(pk) + '-' + image_uuid + '.png'
-    image_path = os.environ["TEMPFILES_FOLDER"] + '/' + map_image_name
+    image_path = settings.TEMPFILES_FOLDER + '/' + map_image_name
     map_request = urllib.request.urlretrieve(printurl, image_path)
 
-    print_image_url = os.environ["PRODUCTION_ROOT_ADRESS"] + "static/tempfiles/" + map_image_name
+    with open(image_path, "rb") as img_file:
+        base64image = base64.b64encode(img_file.read()).decode("utf-8")
+
+    with open(settings.YLB_PROTECTED_SIGNATURE, "rb") as signature_file:
+        base64imagesignature = base64.b64encode(signature_file.read()).decode("utf-8")
 
     html = render(request, 'gpf/print/edit.html', {
         'form_permit': form_permit,
@@ -63,7 +66,8 @@ def printreport(request, pk, save_to_file):
         'permit': permit,
         'validations': validations,
         'print_date': print_date,
-        'print_image_path': print_image_url,
+        'base64imagestr': base64image,
+        'base64imagesignaturestr': base64imagesignature,
         'root_url': os.environ['PRODUCTION_ROOT_ADRESS']
     })
 

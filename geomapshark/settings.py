@@ -179,4 +179,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 
+TEMPFILES_FOLDER = os.environ["TEMPFILES_FOLDER"]
+YLB_PROTECTED_SIGNATURE = os.environ["YLB_PROTECTED_SIGNATURE"]
+
 #STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
