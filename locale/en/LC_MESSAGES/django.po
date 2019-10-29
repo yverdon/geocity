@@ -136,6 +136,9 @@ msgstr ""
 msgid "road_number_ref"
 msgstr ""
 
+msgid "Password reset on %s"
+msgstr "Nouveau mot de passe pour pro.mapnv.ch"
+
 #: .\gpf\models.py:66 .\gpf\models.py:107
 msgid "geom"
 msgstr ""

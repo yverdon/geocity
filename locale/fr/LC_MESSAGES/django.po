@@ -342,6 +342,9 @@ msgstr "Date d'import"
 msgid "archelogy"
 msgstr "Zone archéologique"
 
+msgid "Password reset on %s"
+msgstr "Nouveau mot de passe pour pro.mapnv.ch"
+
 #: .\gpf\templates\openlayers\openlayers.html:43
 msgid "Debugging window (serialized value)"
 msgstr ""
