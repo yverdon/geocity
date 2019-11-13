@@ -54,14 +54,14 @@ class AddPermitRequestForm(forms.ModelForm):
                 options={
                     "format": "DD/MM/YYYY",
                     "locale": "fr",
-                    "minDate": (datetime.datetime.today() + datetime.timedelta(days=2)).strftime('%Y/%m/%d')
+                    "minDate": (datetime.datetime.today() + datetime.timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d')
                     }
                 ).start_of('event days'),
             'date_end': DatePickerInput(
                 options={
                     "format": "DD/MM/YYYY",
                     "locale": "fr",
-                    "minDate": (datetime.datetime.today() + datetime.timedelta(days=2)).strftime('%Y/%m/%d')
+                    "minDate": (datetime.datetime.today() + datetime.timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d')
                     }
                 ).end_of('event days'),
             'description': forms.Textarea(attrs={'rows': '3'}),
@@ -91,12 +91,12 @@ class ChangePermitRequestForm(forms.ModelForm):
         exclude = []
         fields = [
             'company', 'project_owner', 'ended', 'archeotype', 'has_archeology', 'amount', 'paid', 'validated', 'sent', 'date_start', 'date_end',
-            'date_end_work_announcement', 'date_end_work', 'road_marking_damaged', 'date_request_created',
+            'date_end_work_announcement', 'date_end_work', 'date_request_created', 'road_marking_damaged',
             'is_green_area', 'invoice_to', 'sitetype',
             'description', 'address',  'zipcode', 'city', 'length', 'width', 'geom'
         ]
         help_texts = {
-            'validated': "Actif seulement lorsque tous les services ont validé la demande",
+            'validated': "Par le secrétariat uniquement",
             'archeotype': "Zone archéologique observée au moment de la fouille",
             'has_archeology': "Zone archéologique détectée sur la base des géodonnées cantonales",
             'ended': "La fouille a-t-elle été contrôlée par le bureau STE ?",
