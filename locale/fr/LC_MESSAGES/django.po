@@ -140,19 +140,19 @@ msgstr "Date de fin effective"
 
 #: .\gpf\models.py:106
 msgid "length"
-msgstr "Longueur"
+msgstr "Longueur [m]"
 
 #: .\gpf\models.py:107
 msgid "with"
-msgstr "Largeur"
+msgstr "Largeur [m]"
 
 #: .\gpf\models.py:108
 msgid "road_marking_damaged"
-msgstr "Endommagement de la chaussée"
+msgstr "Marquage routier endommagé par les travaux"
 
 #: .\gpf\models.py:109
 msgid "is_green_area"
-msgstr "Espace vert"
+msgstr "Fouille à moins de 3m d'un tronc d'arbre ou haie"
 
 #: .\gpf\models.py:110
 msgid "invoice_to"
