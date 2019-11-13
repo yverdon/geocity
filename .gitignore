@@ -3,6 +3,7 @@ __pycache__/
 .vscode/
 /venv
 /print/*.conf
+/print/*.qgs~
 /static/images/print/STE_Signature.png
 geomapshark/static/
 gunicorn_log.log

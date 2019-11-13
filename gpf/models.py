@@ -141,7 +141,8 @@ class PermitRequest(models.Model):
             ("change_sent", "Can change sent"),
             ("change_ended", "Can change ended"),
             ("change_date_effective_end", "Can change date_effective_end"),
-            ("change_archeotype", "Can change archeotype")
+            ("change_archeotype", "Can change archeotype"),
+            ("date_start", "Can change date_start")
          )
 
     def get_absolute_url(self):

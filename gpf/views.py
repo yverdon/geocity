@@ -31,6 +31,7 @@ import time
 
 @login_required
 def permitRequestAdd(request, project_owner_id):
+
     if request.method == 'POST':
 
         permit_form = AddPermitRequestForm(request.POST, request.FILES)
@@ -43,9 +44,6 @@ def permitRequestAdd(request, project_owner_id):
         unlinked_company_form = None
         if (show_company_form == 0):
             unlinked_company_form = CompanyForm(request.POST or None)
-
-
-        # if unlinked_company_form.is_valid() and permit_form.is_valid():
 
         if (unlinked_company_form is not None and unlinked_company_form.is_valid() and permit_form.is_valid()) \
             or (unlinked_company_form is  None and permit_form.is_valid()):
@@ -89,7 +87,6 @@ def permitRequestAdd(request, project_owner_id):
     else:
 
         permit_form = AddPermitRequestForm()
-
         # if the request is filled by intern employees, the user ligin is not
         # linked to a company, thus, we add an "unlinked company form"
         show_company_form = len(Actor.objects.filter(user=request.user).all())
@@ -122,7 +119,8 @@ def permitdetail(request, pk):
             form.fields[field].disabled = False
 
     form.fields['geom'].widget.attrs['edit_geom'] = field_permission_checker('geom', request.user, 'gpf.change')
-    form.fields['validated'].disabled = validation_checker(instance)
+    # Allow final validation only if all validation are ok
+    # form.fields['validated'].disabled = validation_checker(instance)
     form.fields['archeotype'].required = False
 
     ValidationFormSet = inlineformset_factory(

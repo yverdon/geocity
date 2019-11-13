@@ -4,7 +4,10 @@ services:
   web:
     build: .
     command: >
-        sh -c " python3 manage.py runserver 0.0.0.0:9000 "
+        sh -c " python3 manage.py migrate &&
+            python3 manage.py compilemessages -l fr &&
+            echo yes | python3 manage.py collectstatic &&
+            python3 manage.py runserver 0.0.0.0:9000"
     volumes:
       - .:/code
       - C:/projets/geomapshark_files:/app_data

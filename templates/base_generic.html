@@ -29,7 +29,7 @@
             <i class="fa fa-user"></i> {% block connected_user %}<b>{{ user.get_username }}</b>{% endblock %}
           </a>
           <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
-            <a class="dropdown-item" href="{% url 'login' %}">Se connecter</a>
+            <!-- <a class="dropdown-item" href="{% url 'login' %}">Se connecter</a> -->
             <a class="dropdown-item" href="{% url 'logout' %}">Se déconnecter</a>
             <a class="dropdown-item" href="{% url 'password_change' %}">Changer son mot de passe</a>
             <a class="dropdown-item" href="{% url 'gpf:actor_edit_account' %}">Modifier son compte</a>
