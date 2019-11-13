@@ -100,9 +100,9 @@
                 this.featureOverlay.getSource().addFeature(feature);
                 ol.extent.extend(extent, feature.getGeometry().getExtent());
             }, this);
+
             this.map.getView().fit(extent,  {padding: [100, 100, 100, 100],  minResolution: 1 });
-            this.map.getView().setCenter(this.options.default_center);
-            this.map.getView().setZoom(this.options.default_zoom);
+
         } else {
 
             this.map.getView().setCenter(this.options.default_center);
