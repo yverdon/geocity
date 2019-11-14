@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 from  django.core.validators import RegexValidator
 from django.urls import reverse
 
+
 class Actor(models.Model):
 
     name = models.CharField(_("name"), max_length=100, null=True)
@@ -54,13 +55,28 @@ class Actor(models.Model):
         return self.name
 
 
+class AdministrativeEntity(models.Model):
+
+    name = models.CharField(_('name'), max_length=128)
+    ofs_id = models.PositiveIntegerField(_("ofs_id"))
+    geom = models.MultiPolygonField(_("geom"), null=True, srid=2056)
+
+
+    class Meta:
+        verbose_name = _('administrative_entity')
+
+    def __str__(self):
+        return self.name
+
 
 class Department(models.Model):
+
     group = models.OneToOneField(Group, on_delete=models.CASCADE)
     description = models.CharField(_('description'), max_length=100, default='Service')
     is_validator = models.BooleanField(_("is_validator"))
     is_admin = models.BooleanField(_("is_admin"))
     is_archeologist = models.BooleanField(_("is_archeologist"))
+    administrative_entity = models.ForeignKey(AdministrativeEntity, null=True, on_delete=models.SET_NULL, related_name='%(class)s_administrative_entity', verbose_name=_("administrative_entity"))
 
     class Meta:
         verbose_name = _('department')
@@ -81,6 +97,7 @@ class SiteType(models.Model):
 
 
 class CreditorType(models.Model):
+
     name = models.CharField(_("creditor_name"), max_length=100)
     class Meta:
         verbose_name = _('creditortype')
@@ -101,6 +118,7 @@ class ArcheoType(models.Model):
 
 
 class PermitRequest(models.Model):
+
     amount = models.PositiveIntegerField(_("amount"),null=True, blank=True)
     paid = models.BooleanField(_("payed"),default=False)
     validated = models.BooleanField(_("is_valid"), default=False)
@@ -116,6 +134,7 @@ class PermitRequest(models.Model):
     invoice_to = models.ForeignKey(CreditorType, on_delete=models.SET_NULL, null=True, verbose_name=_("invoice_to"))
     company = models.ForeignKey(Actor, on_delete=models.SET_NULL, null=True, related_name='%(class)s_company', verbose_name=_("company"))
     project_owner = models.ForeignKey(Actor, on_delete=models.SET_NULL, null=True, related_name='%(class)s_project_owner', verbose_name=_("project_owner"))
+    administrative_entity = models.ForeignKey(AdministrativeEntity, null=True, on_delete=models.SET_NULL, related_name='%(class)s_administrative_entity', verbose_name=_("administrative_entity"))
     sitetype = models.ForeignKey(SiteType, on_delete=models.SET_NULL, null=True, verbose_name=_("sitetype"))
     description = models.TextField(_("description"))
     has_archeology = models.BooleanField(_("has_archeology"), default=False)
@@ -154,16 +173,31 @@ class PermitRequest(models.Model):
 
 
 class Validation(models.Model):
+
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     permitrequest = models.ForeignKey(PermitRequest, on_delete=models.CASCADE)
     accepted = models.BooleanField(_("accepted"))
     comment = models.TextField(_("comment"), null=True, blank=True)
+
 
     class Meta:
         verbose_name = _('validation')
 
     def __str__(self):
         return str(self.department) + '-' + str(self.permitrequest)
+
+
+class ValidationCommentSample(models.Model):
+
+    comment_sample = models.TextField(_("comment_sample"), null=True, blank=True)
+    administrative_entity = models.ForeignKey(AdministrativeEntity, null=True, on_delete=models.SET_NULL, related_name='%(class)s_administrative_entity', verbose_name=_("administrative_entity"))
+
+    class Meta:
+        verbose_name = _('validation_comment_sample')
+
+    def __str__(self):
+        return str(self.comment_sample)
+
 
 class Document(models.Model):
 
@@ -177,12 +211,15 @@ class Document(models.Model):
     def __str__(self):
         return self.file_path
 
+
 class Mail(models.Model):
 
     type = models.CharField(_("mail_type"), max_length=128, unique=True)
     recipients = models.CharField(_("recipients"), max_length=1024)
     subject = models.CharField(_("subject"), max_length=128)
     body = models.TextField(_("body"))
+    administrative_entity = models.ForeignKey(AdministrativeEntity, null=True, on_delete=models.SET_NULL, related_name='%(class)s_administrative_entity', verbose_name=_("administrative_entity"))
+
 
     class Meta:
         verbose_name = _('mail')
@@ -190,7 +227,9 @@ class Mail(models.Model):
     def __str__(self):
         return 'Mail' + str(self.id)
 
+
 class Archelogy(models.Model):
+
     fiche = models.TextField(_("fiche"),null=True)
     commune = models.TextField(_("commune"),null=True)
     descriptio = models.TextField(_("descriptio"),null=True)
