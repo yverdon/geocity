@@ -9,7 +9,15 @@
 
     $( function() {
 
+      var selected_city = '';
+
+      if ("{{ widget.attrs.search_prefix}}" == 'true') {
+
+          selected_city = $('#id_administrative_entity').find("option:selected").text() + ' ';
+      };
+
       $( "#{{ widget.attrs.id }}").autocomplete({
+
           classes: {
               "ui-autocomplete": "sit-autocomplete"
           },
@@ -18,7 +26,7 @@
                   url: "{{ widget.attrs.apiurl}}",
                   dataType: "json",
                   data: {
-                      searchText: "{{ widget.attrs.search_prefix}}" + request.term,
+                      searchText: selected_city + request.term,
                       limit: 20,
                       partitionlimit: 24,
                       type: 'locations',
