@@ -24,7 +24,6 @@ def send(permit_link, attachments, permit_path, mail_type, recipients):
     if len(attachments) > 0:
         for file in attachments:
             attachment_path = settings.STATIC_ROOT + '/doc/' + file
-            print(attachment_path)
             msg.attach_file(attachment_path)
 
     if permit_path != '':

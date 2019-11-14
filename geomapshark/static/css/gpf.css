@@ -42,6 +42,14 @@
   width: 245px;
 }
 
+#switchbaselayers {
+  border-radius: 3px;
+  border: 2px solid #007bff;
+}
+#switchbaselayers:hover {
+  box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
+  cursor: pointer;
+}
 
 @media all and (max-width: 799px){
 
@@ -54,25 +62,5 @@
     width: 245px;
 
   }
-
-  /* .responsive-banner {
-    font-size: 0.8em;
-  }
-
-  .navbar img {
-    height: 0px;
-  }
-
-  /* .navbar {
-    height: 50px;
-  }
-
-
-  .navbar-toggler {
-    height: 35px;
-  }
-  .navbar-toggler-icon {
-    height: 25px;
-  } */
 
 }

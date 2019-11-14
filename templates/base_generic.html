@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     {% block title %}<title>Applications du territoire</title>{% endblock %}
-    {% load static %}
+    {% load staticfiles %}
     {% load bootstrap4 %}
     {% bootstrap_css %}
     {% bootstrap_javascript jquery='full' %}
@@ -40,7 +40,7 @@
       {% endblock %}
     </div>
     {% endif %}
-    <img src="/static/images/logo.svg" width="50" height="50" alt="" class="d-inline-block align-right" alt="">
+    <img src="{% static 'images/logo.svg'%}" width="50" height="50" alt="" class="d-inline-block align-right" alt="">
   </nav>
     <div class="container-fluid">
         <div class="row">

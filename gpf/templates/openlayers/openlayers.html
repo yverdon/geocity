@@ -1,4 +1,5 @@
 {% load i18n l10n %}
+{% load static %}
 {% block stylesheets%}
   {% load fontawesome %}
   {% fontawesome_stylesheet %}
@@ -14,32 +15,37 @@
 </style>
 
 <div id="{{ id }}_div_map">
-    <a class="btn btn-primary" style="{{map_clear_style}}"
-       href="javascript:gpfMap.clearFeatures();" role="button">
-       Effacer tous les points
-    </a>
-    <a class="btn btn-primary" style="{{map_clear_style}}"
-       href="javascript:gpfMap.removeLastPoint();" role="button">
-       Effacer le dernier point
-    </a>
-    <a class="btn btn-primary" style="{{map_clear_style}}"
-       href="javascript:gpfMap.removeSelectedPoint();" role="button">
-       Effacer le point sélectionné
-    </a>
-    <div>
-    Ajouter un point manuel:
-    <label for="east_coord">Est:</label>
-    <input id="east_coord" type="number" min=2535594 max=2542571 value=2539162 placeholder="ex: 2539142">
-    <label for="east_coord">Nord:</label>
-    <input id="north_coord" type="number" min=1178784 max=1183461 value=1181732  placeholder="ex: 1181572 ">
-    <a class="btn btn-primary" style="{{map_clear_style}}"
-       href="javascript:gpfMap.addPointFeature();" role="button">
-       <i class="fa fa-plus"></i>
-    </a>
+    <div id="mapButtons">
+      <a class="btn btn-primary" style="{{map_clear_style}}"
+         href="javascript:gpfMap.clearFeatures();" role="button">
+         Effacer tous les points
+      </a>
+      <a class="btn btn-primary" style="{{map_clear_style}}"
+         href="javascript:gpfMap.removeLastPoint();" role="button">
+         Effacer le dernier point
+      </a>
+      <a class="btn btn-primary" style="{{map_clear_style}}"
+         href="javascript:gpfMap.removeSelectedPoint();" role="button">
+         Effacer le point sélectionné
+      </a>
+      <hr>
+      <div>
+      Ajouter un point manuel:
+      <label for="east_coord">Est:</label>
+      <input id="east_coord" type="number" min=2535594 max=2542571 value=2539162 placeholder="ex: 2539142">
+      <label for="east_coord">Nord:</label>
+      <input id="north_coord" type="number" min=1178784 max=1183461 value=1181732  placeholder="ex: 1181572 ">
+      <a class="btn btn-primary" style="{{map_clear_style}}"
+         href="javascript:gpfMap.addPointFeature();" role="button">
+         <i class="fa fa-plus"></i>
+      </a>
+      </div>
+      <b style="{{map_clear_style}}">Ou cliquez dans la carte pour placer un point</b>
     </div>
-    <b style="{{map_clear_style}}">Ou cliquez dans la carte pour placer un point</b>
     <hr>
-    <div id="{{ id }}_map"></div>
+    <div id="{{ id }}_map">
+      <img id="switchbaselayers" src="{% static 'images/switchbaselayers.png'%}" width="100" height="40" alt="" onclick="javascript:gpfMap.switchBaseLayers()">
+    </div>
     {% if display_raw %}<p>{% trans "Debugging window (serialized value)" %}</p>{% endif %}
     <textarea id="{{ id }}" class="vSerializedField required" cols="150" rows="10" name="{{ name }}">{{ serialized }}</textarea>
     <script type="text/javascript">
@@ -57,8 +63,10 @@
             min_zoom: {{min_zoom}},
             wmts_capabilities_url: '{{wmts_capabilities_url}}',
             wmts_layer: '{{wmts_layer}}',
+            wmts_capabilities_url_alternative: '{{wmts_capabilities_url_alternative}}',
+            wmts_layer_alternative: '{{wmts_layer_alternative}}',
         };
-
+        console.log(options);
         var {{ module }} = new sitMapWidget(options);
         gpfMap = {{ module }};
 
