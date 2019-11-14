@@ -23,6 +23,8 @@
         }
 
         this.map = null;
+        this.wmtsLayer = new ol.layer.Tile({});
+        this.wmtsLayerAlternative = new ol.layer.Tile({});
         this.interactions = {draw: null, modify: null};
         this.ready = false;
 
@@ -42,6 +44,7 @@
 
         this.map = this.createMap();
         this.addBaseLayer();
+        this.setupAlternativeBaseLayer();
 
         this.featureCollection = new ol.Collection();
 
@@ -100,9 +103,9 @@
                 this.featureOverlay.getSource().addFeature(feature);
                 ol.extent.extend(extent, feature.getGeometry().getExtent());
             }, this);
+
             this.map.getView().fit(extent,  {padding: [100, 100, 100, 100],  minResolution: 1 });
-            this.map.getView().setCenter(this.options.default_center);
-            this.map.getView().setZoom(this.options.default_zoom);
+
         } else {
 
             this.map.getView().setCenter(this.options.default_center);
@@ -125,6 +128,7 @@
     });
 
     ol.proj.addProjection(projection);
+
 
     sitMapWidget.prototype.createMap = function() {
         var map = new ol.Map({
@@ -149,14 +153,42 @@
         return map;
     };
 
+
     sitMapWidget.prototype.addBaseLayer = function() {
 
-      var wmtsLayer = new ol.layer.Tile({});
       var wmtsLayerName = this.options.wmts_layer;
       var matrixSet = this.options.map_srid;
+      var _this = this;
 
        $.ajax({
            url: this.options.wmts_capabilities_url,
+           success: function(response) {
+                var parser = new ol.format.WMTSCapabilities();
+                 var result = parser.read(response);
+                 var options = ol.source.WMTS.optionsFromCapabilities(result, {
+                   layer: wmtsLayerName,
+                   matrixSet: matrixSet,
+                   projection: 'EPSG:' + matrixSet,
+                 });
+
+                 _this.wmtsLayer.setSource(new ol.source.WMTS(/** @type {!olx.source.WMTSOptions} */ (options)));
+
+              }
+            });
+
+       this.map.getLayers().insertAt(0, this.wmtsLayer);
+       this.wmtsLayer.setVisible(true);
+    }
+
+
+    sitMapWidget.prototype.setupAlternativeBaseLayer = function() {
+
+      var wmtsLayerName = this.options.wmts_layer_alternative;
+      var matrixSet = this.options.map_srid;
+      var _this = this;
+
+       $.ajax({
+           url: this.options.wmts_capabilities_url_alternative,
            success: function(response) {
              var parser = new ol.format.WMTSCapabilities();
              var result = parser.read(response);
@@ -165,12 +197,28 @@
                matrixSet: matrixSet,
                projection: 'EPSG:' + matrixSet
              });
-             wmtsLayer.setSource(new ol.source.WMTS(/** @type {!olx.source.WMTSOptions} */ (options)));
+
+             _this.wmtsLayerAlternative.setSource(new ol.source.WMTS(/** @type {!olx.source.WMTSOptions} */ (options)));
+
        }});
 
-       this.map.getLayers().insertAt(0, wmtsLayer);
+       this.map.getLayers().insertAt(0, this.wmtsLayerAlternative);
+       this.wmtsLayerAlternative.setVisible(false);
 
     }
+
+    sitMapWidget.prototype.switchBaseLayers = function() {
+
+        if (this.wmtsLayer.getVisible()) {
+            this.wmtsLayerAlternative.setVisible(true);
+            this.wmtsLayer.setVisible(false);
+        } else {
+            this.wmtsLayerAlternative.setVisible(false);
+            this.wmtsLayer.setVisible(true);
+        }
+
+    }
+
 
     sitMapWidget.prototype.createInteractions = function() {
         // Initialize the modify interaction
@@ -229,15 +277,18 @@
 
     };
 
+
     sitMapWidget.prototype.enableDrawing = function() {
         this.interactions.draw.setActive(true);
     };
+
 
     sitMapWidget.prototype.disableDrawing = function() {
         if (this.interactions.draw) {
             this.interactions.draw.setActive(false);
         }
     };
+
 
     sitMapWidget.prototype.disableModify = function() {
         if (this.interactions.modify) {
@@ -251,12 +302,14 @@
         }
     };
 
+
     sitMapWidget.prototype.clearFeatures = function() {
         this.featureCollection.clear();
         this.interactions.select.getFeatures().clear();
         document.getElementById(this.options.id).value = '';
         this.enableDrawing();
     };
+
 
     sitMapWidget.prototype.removeLastPoint = function() {
 
@@ -268,6 +321,7 @@
           this.serializeFeatures();
         };
     }
+
 
     sitMapWidget.prototype.removeSelectedPoint = function() {
 
@@ -286,12 +340,11 @@
       }
     }
 
+
     sitMapWidget.prototype.addPointFeature= function() {
 
       var east = parseFloat($('#east_coord')[0].value);
       var north = parseFloat($('#north_coord')[0].value);
-      console.log(east)
-      console.log(north)
         var feature = new ol.Feature({
           geometry: new ol.geom.MultiPoint([[east, north]]),
         });
@@ -300,6 +353,7 @@
         this.interactions.select.getFeatures().clear();
 
     };
+
 
     sitMapWidget.prototype.serializeFeatures = function() {
         // Two use cases: multigeometries, and single geometry

@@ -39,7 +39,7 @@ class AddPermitRequestForm(forms.ModelForm):
         widgets = {
             'geom': SitOpenLayersWidget(attrs={
                 'map_width': '100%',
-                'map_height': 500,
+                'map_height': settings.OL_MAP_HEIGHT,
                 'map_srid': 2056,
                 'default_center': [2539057, 1181111],
                 'default_zoom': 10,
@@ -47,8 +47,10 @@ class AddPermitRequestForm(forms.ModelForm):
                 'map_clear_style': "visibility:visible;",
                 'edit_geom': True,
                 'min_zoom': 8,
-                'wmts_capabilities_url': 'https://ows.asitvd.ch/wmts?request=GetCapabilities',
-                'wmts_layer': 'asitvd.fond_cadastral',
+                'wmts_capabilities_url': settings.WMTS_GETCAP,
+                'wmts_layer': settings.WMTS_LAYER,
+                'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
+                'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
             }),
             'date_start': DatePickerInput(
                 options={
@@ -104,16 +106,18 @@ class ChangePermitRequestForm(forms.ModelForm):
         widgets = {
             'geom': SitOpenLayersWidget(attrs={
                 'map_width': '100%',
-                'map_height': 500,
+                'map_height': settings.OL_MAP_HEIGHT,
                 'map_srid': 2056,
                 'default_center': [2539057, 1181111],
                 'default_zoom': 10,
                 'display_raw': False, #show coordinate in debug
                 'map_clear_style': "visibility:visible;",
-                'edit_geom': True,
+                'edit_geom': False,
                 'min_zoom': 8,
-                'wmts_capabilities_url': 'https://ows.asitvd.ch/wmts?request=GetCapabilities',
-                'wmts_layer': 'asitvd.fond_cadastral',
+                'wmts_capabilities_url': settings.WMTS_GETCAP,
+                'wmts_layer': settings.WMTS_LAYER,
+                'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
+                'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
             }),
             'date_start': DatePickerInput(
                 options={

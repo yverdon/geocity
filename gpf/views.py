@@ -40,7 +40,9 @@ def permitRequestAdd(request, project_owner_id):
         # linked to a company, thus, we add an "unlinked company form". Here
         # the form is saved if the case occures
 
-        show_company_form = len(Actor.objects.filter(user=request.user).all())
+        groups = Group.objects.filter(user=request.user, name__contains='extern').all()
+        show_company_form = len(groups)
+
         unlinked_company_form = None
         if (show_company_form == 0):
             unlinked_company_form = CompanyForm(request.POST or None)
@@ -89,7 +91,10 @@ def permitRequestAdd(request, project_owner_id):
         permit_form = AddPermitRequestForm()
         # if the request is filled by intern employees, the user ligin is not
         # linked to a company, thus, we add an "unlinked company form"
-        show_company_form = len(Actor.objects.filter(user=request.user).all())
+
+        groups = Group.objects.filter(user=request.user, name__contains='extern').all()
+        show_company_form = len(groups)
+
         unlinked_company_form = CompanyForm(request.POST or None)
 
 

@@ -9,7 +9,6 @@ from uuid import uuid4 as uuid
 def field_permission_checker(field, user, right_def):
 
     user_permissions = user.get_all_permissions()
-    print(user_permissions)
     field_permission = right_def + '_' + field
     if field_permission in user_permissions:
         return True
