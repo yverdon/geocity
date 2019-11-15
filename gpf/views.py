@@ -484,11 +484,23 @@ class PermitRequestListView(PermissionRequiredMixin, SingleTableMixin, FilterVie
     filterset_class = PermitRequestFilter
     permission_required = 'gpf.view_permitrequest'
 
+    def get_queryset(self):
+
+        groups = Group.objects.filter(user=self.request.user, department__is_validator=True).all()
+        administrative_entities = []
+
+        for group in groups:
+
+            if group.department.administrative_entity not in administrative_entities:
+                administrative_entities.append(group.department.administrative_entity)
+
+        return PermitRequest.objects.filter(administrative_entity__in=administrative_entities)
+
 
 @method_decorator(login_required, name="dispatch")
 class PermitRequestListExternsView(SingleTableMixin, FilterView):
 
-    paginate_by = 10
+    paginate_by = int(os.environ['PAGINATE_BY'])
     table_class = PermitRequestTableExterns
     model = PermitRequest
     template_name = 'gpf/listexterns.html'
