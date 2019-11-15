@@ -32,6 +32,7 @@ import time
 @login_required
 def permitRequestAdd(request, project_owner_id):
 
+
     if request.method == 'POST':
 
         permit_form = AddPermitRequestForm(request.POST, request.FILES)
@@ -73,13 +74,16 @@ def permitRequestAdd(request, project_owner_id):
                 gpf.sendmail.send(permit_link, [], '', 'archeo_detected', '')
 
             # Create empty validation objects related to this permit
-            for dep in Department.objects.filter(is_validator=True).all():
+            for dep in Department.objects.filter(is_validator=True, administrative_entity=permitRequest.administrative_entity).all():
+
+
                 new_validation = Validation (
                     department=dep,
                     permitrequest=permitRequest,
                     accepted=False,
                     comment=''
                 )
+
                 new_validation.save()
 
             return HttpResponseRedirect(
@@ -89,6 +93,7 @@ def permitRequestAdd(request, project_owner_id):
     else:
 
         permit_form = AddPermitRequestForm()
+
         # if the request is filled by intern employees, the user ligin is not
         # linked to a company, thus, we add an "unlinked company form"
 
@@ -148,7 +153,8 @@ def permitdetail(request, pk):
     #enable/disable validations depending on user validator group
     validations = []
     num_validation = 0
-    for dep in Department.objects.filter(is_validator=True).all():
+    for dep in Department.objects.filter(is_validator=True, administrative_entity=instance.administrative_entity).all():
+        print(num_validation)
         validations.append({
             'department': dep.id,
             'group_id': dep.group_id,
@@ -222,19 +228,6 @@ def documentUpload(request, permit_id):
     return render(request, 'gpf/upload.html', {'form': form, 'permit_id': permit_id})
 
 
-@permission_required('gpf.change_permitrequest')
-def permitRequestChange(request):
-    if request.method == 'POST':
-        form = ChangePermitRequestForm(request.POST, request.FILES)
-
-        if form.is_valid():
-            form.instance.has_archeology = archeo_checker(form.cleaned_data['geom'])
-            form.save()
-            return HttpResponseRedirect(reverse('gpf:list'))
-    else:
-        form = ChangePermitRequestForm()
-    return render(request, 'gpf/edit.html', {'form': form})
-
 
 @permission_required('gpf.change_sent')
 def sendpermit(request, pk):
@@ -271,29 +264,73 @@ def callforvalidations(request, pk):
     messages.info(request, messagetxt)
     return HttpResponseRedirect(reverse('gpf:list'))
 
+
 @permission_required('gpf.view_permitrequest')
 def seewaitingvalidations(request, pk):
 
     groups = Group.objects.filter(department__validation__permitrequest__id=pk,
         department__validation__accepted=False).all()
 
-    users = User.objects.filter(groups__in=groups).exclude(username='admin').all()
+    group_users = []
+
+    all_validated = False
+
+    if len(groups) == 0:
+
+        all_validated = True
+
+    else:
+
+        for group in groups:
+
+            users = User.objects.filter(groups__name=group.name)
+            user_list = []
+            for user in users:
+                userdict = {
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'email': user.email,
+                }
+                user_list.append(userdict)
+
+            group_users.append({
+                'group_name': group.department.description,
+                'user_details': user_list
+            })
 
     return render(request, 'gpf/waitingvalidations.html', {
-        'groups': groups,
-        'users': users,
-        'permit_id': pk
+        'group_users': group_users,
+        'permit_id': pk,
+        'all_validated': all_validated
     })
+
 
 @permission_required('gpf.change_sent')
 def serviceusers(request):
 
+    group_users = []
+    #TODO: fitler for administrative_entity
     groups = Group.objects.filter(department__is_validator=True).all()
 
-    users = User.objects.filter(groups__in=groups).exclude(username='admin').all()
+    for group in groups:
+
+        users = User.objects.filter(groups__name=group.name)
+        user_list = []
+        for user in users:
+            userdict = {
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+            }
+            user_list.append(userdict)
+
+        group_users.append({
+            'group_name': group.department.description,
+            'user_details': user_list
+        })
 
     return render(request, 'gpf/servicesusers.html', {
-        'users': users
+        'group_users': group_users,
     })
 
 
@@ -359,7 +396,6 @@ def genericactorview(request, pk):
         form.fields[field].disabled = True
 
     return render(request, "gpf/genericactorview.html", {'form': form})
-
 
 
 def companyAdd(request):

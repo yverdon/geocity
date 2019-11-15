@@ -190,7 +190,7 @@ class Validation(models.Model):
 class ValidationCommentSample(models.Model):
 
     comment_sample = models.TextField(_("comment_sample"), null=True, blank=True)
-    administrative_entity = models.ForeignKey(AdministrativeEntity, null=True, on_delete=models.SET_NULL, related_name='%(class)s_administrative_entity', verbose_name=_("administrative_entity"))
+    department = models.ForeignKey(Department, null=True, on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name = _('validation_comment_sample')
@@ -214,7 +214,7 @@ class Document(models.Model):
 
 class Mail(models.Model):
 
-    type = models.CharField(_("mail_type"), max_length=128, unique=True)
+    type = models.CharField(_("mail_type"), max_length=128)
     recipients = models.CharField(_("recipients"), max_length=1024)
     subject = models.CharField(_("subject"), max_length=128)
     body = models.TextField(_("body"))
@@ -225,7 +225,7 @@ class Mail(models.Model):
         verbose_name = _('mail')
 
     def __str__(self):
-        return 'Mail' + str(self.id)
+        return str(self.administrative_entity.name) +  ' ' + self.type
 
 
 class Archelogy(models.Model):

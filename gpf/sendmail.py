@@ -13,7 +13,7 @@ def send(permit_link, attachments, permit_path, mail_type, recipients):
         emailcontent += '<br>Cliquer ici pour consulter la demande<br><br>'
         emailcontent += '<a href="' + permit_link + '">' + permit_link + '</a>'
 
-    subject, from_email= mail.subject, setting.EMAIL_HOST_USER
+    subject, from_email= mail.subject, settings.EMAIL_HOST_USER
     html_content = emailcontent
     if recipients == '':
         recipients = mail.recipients.split(',')
