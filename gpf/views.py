@@ -71,7 +71,7 @@ def permitRequestAdd(request, project_owner_id):
 
             if has_archeo:
                 permit_link = os.environ['PRODUCTION_ROOT_ADRESS'] + '/gpf/permitdetail/' + str(permitRequest.id)
-                gpf.sendmail.send(permit_link, [], '', 'archeo_detected', '')
+                gpf.sendmail.send(permit_link, [], '', 'archeo_detected', '', permitRequest.administrative_entity)
 
             # Create empty validation objects related to this permit
             for dep in Department.objects.filter(is_validator=True, administrative_entity=permitRequest.administrative_entity).all():
@@ -241,9 +241,16 @@ def sendpermit(request, pk):
 
 def sendpermit_thread(request, pk):
 
+    permitrequest= PermitRequest.objects.get(pk=pk)
     pdf_file, permit_path = gpf.print.printreport(request, pk, True)
     permit_link = ''
-    gpf.sendmail.send(permit_link, ['Directives_2017.pdf', 'Mode_refection_fouilles.pdf', 'Fin_des_travaux_form.pdf'], permit_path, 'permit_send', '')
+
+    gpf.sendmail.send(
+        permit_link,
+        ['Directives_2017.pdf', 'Mode_refection_fouilles.pdf', 'Fin_des_travaux_form.pdf'],
+        permit_path, 'permit_send', '',
+        permitrequest.administrative_entity
+    )
 
 
 @permission_required('gpf.view_permitrequest')
@@ -463,7 +470,7 @@ def endwork(request, pk):
         form.instance.date_end_work_announcement = datetime.now()
         instance = form.save()
         permit_link = os.environ['PRODUCTION_ROOT_ADRESS'] + '/gpf/permitdetail/' + str(pk)
-        gpf.sendmail.send(permit_link, [], '',  'end_work_announcement', '')
+        gpf.sendmail.send(permit_link, [], '',  'end_work_announcement', '', instance.administrative_entity)
         return HttpResponseRedirect(reverse('gpf:listexterns'))
 
     return render(request, "gpf/end_work.html", {'form' : form})
@@ -514,9 +521,17 @@ class PermitExportViewExterns(ExportMixin, SingleTableView):
 @login_required
 def thanks(request, permit_id):
 
+    permitrequest= PermitRequest.objects.get(pk=permit_id)
     permit_link = os.environ['PRODUCTION_ROOT_ADRESS'] + '/gpf/permitdetail/' + str(permit_id)
-    gpf.sendmail.send(permit_link, ['Directives_2017.pdf', 'Mode_refection_fouilles.pdf'], '', 'permit_confirmation', [request.user.email])
-    gpf.sendmail.send(permit_link, [], '', 'new_permit', '')
+
+    gpf.sendmail.send(
+        permit_link, ['Directives_2017.pdf', 'Mode_refection_fouilles.pdf'],
+        '',
+        'permit_confirmation',
+        [request.user.email],
+        permitrequest.administrative_entity
+    )
+    gpf.sendmail.send(permit_link, [], '', 'new_permit', '', permitrequest.administrative_entity)
 
     return render(request, 'gpf/thanks.html')
 

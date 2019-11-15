@@ -5,9 +5,10 @@ from django.conf import settings
 from .models import Mail
 
 
-def send(permit_link, attachments, permit_path, mail_type, recipients):
+def send(permit_link, attachments, permit_path, mail_type, recipients, administrative_entity):
 
-    mail = Mail.objects.filter(type=mail_type).first()
+    mail = Mail.objects.filter(type=mail_type, administrative_entity=administrative_entity).first()
+
     emailcontent = mail.body
     if permit_link != '' and mail_type != 'permit_confirmation':
         emailcontent += '<br>Cliquer ici pour consulter la demande<br><br>'
