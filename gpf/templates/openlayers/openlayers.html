@@ -65,8 +65,8 @@
             wmts_layer: '{{wmts_layer}}',
             wmts_capabilities_url_alternative: '{{wmts_capabilities_url_alternative}}',
             wmts_layer_alternative: '{{wmts_layer_alternative}}',
+            administrative_entities_url:  "{% url administrative_entities_url %}",
         };
-        console.log(options);
         var {{ module }} = new sitMapWidget(options);
         gpfMap = {{ module }};
 

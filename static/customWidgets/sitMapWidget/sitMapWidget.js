@@ -42,9 +42,85 @@
             }
         }
 
-        this.map = this.createMap();
+        var createTextStyle = function(feature, resolution, dom) {
+          var align = dom.align.value;
+          var baseline = dom.baseline.value;
+          var size = dom.size.value;
+          var height = dom.height.value;
+          var offsetX = parseInt(dom.offsetX.value, 10);
+          var offsetY = parseInt(dom.offsetY.value, 10);
+          var weight = dom.weight.value;
+          var placement = dom.placement ? dom.placement.value : undefined;
+          var maxAngle = dom.maxangle ? parseFloat(dom.maxangle.value) : undefined;
+          var overflow = dom.overflow ? (dom.overflow.value == 'true') : undefined;
+          var rotation = parseFloat(dom.rotation.value);
+          if (dom.font.value == '\'Open Sans\'' && !openSansAdded) {
+            var openSans = document.createElement('link');
+            openSans.href = 'https://fonts.googleapis.com/css?family=Open+Sans';
+            openSans.rel = 'stylesheet';
+            document.getElementsByTagName('head')[0].appendChild(openSans);
+            openSansAdded = true;
+          }
+          var font = weight + ' ' + size + '/' + height + ' ' + dom.font.value;
+          var fillColor = dom.color.value;
+          var outlineColor = dom.outline.value;
+          var outlineWidth = parseInt(dom.outlineWidth.value, 10);
+
+          return new Text({
+            textAlign: align == '' ? undefined : align,
+            textBaseline: baseline,
+            font: font,
+            text: getText(feature, resolution, dom),
+            fill: new Fill({color: fillColor}),
+            stroke: new Stroke({color: outlineColor, width: outlineWidth}),
+            offsetX: offsetX,
+            offsetY: offsetY,
+            placement: placement,
+            maxAngle: maxAngle,
+            overflow: overflow,
+            rotation: rotation
+          });
+        };
+
+        var labelStyle = new ol.style.Style({
+          text: new ol.style.Text({
+            font: '18px Calibri,sans-serif',
+            overflow: true,
+            fill: new ol.style.Fill({
+              color: '#000'
+            }),
+            stroke: new ol.style.Stroke({
+              color: '#fff',
+              width: 3
+            })
+          })
+        });
+
+      var countryStyle = new  ol.style.Style({
+
+        stroke: new  ol.style.Stroke({
+          color: '#fcba03',
+          width: 2
+        })
+      });
+
+      var style = [countryStyle, labelStyle];
+
+       this.adminEntities = new ol.layer.Vector({
+           opacity: 100,
+           source: new ol.source.Vector({
+           }),
+           style: function(feature) {
+              labelStyle.getText().setText(feature.get('name'));
+              return style;
+            },
+            // declutter: true
+       });
+
+        this.map = this.createMap(this.adminEntities);
         this.addBaseLayer();
         this.setupAlternativeBaseLayer();
+        this.loadAdminEntities();
 
         this.featureCollection = new ol.Collection();
 
@@ -131,7 +207,8 @@
     ol.proj.addProjection(projection);
 
 
-    sitMapWidget.prototype.createMap = function() {
+    sitMapWidget.prototype.createMap = function(adminEntities) {
+
         var map = new ol.Map({
             controls: [
                 new ol.control.ScaleLine(),
@@ -143,7 +220,7 @@
                 })
             ],
             target: this.options.map_id,
-            layers: [],
+            layers: [adminEntities],
             view: new ol.View({
                 zoom: this.options.default_zoom,
                 minZoom: this.options.min_zoom,
@@ -153,6 +230,30 @@
         });
         return map;
     };
+
+
+    sitMapWidget.prototype.loadAdminEntities = function () {
+
+      var _this = this;
+
+      $.ajax({
+          url: this.options.administrative_entities_url,
+          success: function(response) {
+
+               var gJson = new ol.format.GeoJSON();
+                var feats = [];
+                for (var i=0; i < response.features.length; i++) {
+                  var f = gJson.readFeature(response.features[i]);
+                  f.setId(response.features[i].properties.pk)
+                  feats.push(f);
+                }
+                _this.adminEntities.getSource().addFeatures(feats)
+
+             }
+       });
+
+
+   };
 
 
     sitMapWidget.prototype.addBaseLayer = function() {
@@ -357,6 +458,17 @@
 
         this.featureCollection.push(feature);
         this.interactions.select.getFeatures().clear();
+
+    };
+
+
+    sitMapWidget.prototype.zoomToAdminEntity= function(admin_pk) {
+
+      var feature = this.adminEntities.getSource().getFeatureById(admin_pk);
+      if (feature) {
+        var bounds = feature.getGeometry().getExtent();
+        this.map.getView().fit(bounds, this.map.getSize());
+      }
 
     };
 

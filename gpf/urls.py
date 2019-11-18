@@ -11,7 +11,6 @@ urlpatterns = [
     path('actor/<int:pk>', views.genericactorview, name='genericactorview'),
     path('actor_edit_account/', views.actor_edit_account, name='actor_edit_account'),
     path('add/<int:project_owner_id>/', views.permitRequestAdd, name='permit-request-add'),
-    path('change/', views.permitRequestChange, name='permit-request-change'),
     path('listexport/', views.PermitExportView.as_view(), name='listexport'),
     path('listexportexterns/', views.PermitExportViewExterns.as_view(), name='listexportexterns'),
     path('permitdetail/<int:pk>', views.permitdetail, name='permitdetail'),
@@ -29,4 +28,5 @@ urlpatterns = [
     path('thanks/<int:permit_id>', views.thanks, name='thanks'),
     path('prices/', views.prices, name='prices'),
     path('file-download/<int:pk>', views.file_download, name='file-download'),
+    path('admentitygeojson/', views.adm_entity_geojson, name='adm-entity-geojson'),
     ]

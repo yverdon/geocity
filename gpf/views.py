@@ -1,7 +1,8 @@
-import os, datetime
+import os, datetime, json
+from django.core.serializers import serialize
 from django.contrib.auth.decorators import login_required, permission_required
 from django.utils.decorators import method_decorator
-from django.http import HttpResponseRedirect,HttpResponse, FileResponse
+from django.http import HttpResponseRedirect,HttpResponse, FileResponse,JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -11,7 +12,7 @@ from django.forms import formset_factory, inlineformset_factory
 from .filters import PermitRequestFilter, PermitRequestFilterExterns
 from .forms import AddPermitRequestForm, ChangePermitRequestForm
 from .forms import ActorForm, CompanyForm, ValidationForm, DocumentForm, EndWorkForm, companyUserAddForm, GenericActorForm
-from .models import Actor, Archelogy, PermitRequest, Validation, Department, Document
+from .models import Actor, Archelogy, PermitRequest, Validation, Department, Document, AdministrativeEntity
 from .tables import PermitRequestTable, PermitRequestTableExterns, PermitExportTable
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin, SingleTableView
@@ -31,6 +32,7 @@ import time
 
 @login_required
 def permitRequestAdd(request, project_owner_id):
+
 
     if request.method == 'POST':
 
@@ -70,16 +72,19 @@ def permitRequestAdd(request, project_owner_id):
 
             if has_archeo:
                 permit_link = os.environ['PRODUCTION_ROOT_ADRESS'] + '/gpf/permitdetail/' + str(permitRequest.id)
-                gpf.sendmail.send(permit_link, [], '', 'archeo_detected', '')
+                gpf.sendmail.send(permit_link, [], '', 'archeo_detected', '', permitRequest.administrative_entity)
 
             # Create empty validation objects related to this permit
-            for dep in Department.objects.filter(is_validator=True).all():
+            for dep in Department.objects.filter(is_validator=True, administrative_entity=permitRequest.administrative_entity).all():
+
+
                 new_validation = Validation (
                     department=dep,
                     permitrequest=permitRequest,
                     accepted=False,
                     comment=''
                 )
+
                 new_validation.save()
 
             return HttpResponseRedirect(
@@ -89,6 +94,7 @@ def permitRequestAdd(request, project_owner_id):
     else:
 
         permit_form = AddPermitRequestForm()
+
         # if the request is filled by intern employees, the user ligin is not
         # linked to a company, thus, we add an "unlinked company form"
 
@@ -148,7 +154,8 @@ def permitdetail(request, pk):
     #enable/disable validations depending on user validator group
     validations = []
     num_validation = 0
-    for dep in Department.objects.filter(is_validator=True).all():
+    for dep in Department.objects.filter(is_validator=True, administrative_entity=instance.administrative_entity).all():
+        print(num_validation)
         validations.append({
             'department': dep.id,
             'group_id': dep.group_id,
@@ -222,19 +229,6 @@ def documentUpload(request, permit_id):
     return render(request, 'gpf/upload.html', {'form': form, 'permit_id': permit_id})
 
 
-@permission_required('gpf.change_permitrequest')
-def permitRequestChange(request):
-    if request.method == 'POST':
-        form = ChangePermitRequestForm(request.POST, request.FILES)
-
-        if form.is_valid():
-            form.instance.has_archeology = archeo_checker(form.cleaned_data['geom'])
-            form.save()
-            return HttpResponseRedirect(reverse('gpf:list'))
-    else:
-        form = ChangePermitRequestForm()
-    return render(request, 'gpf/edit.html', {'form': form})
-
 
 @permission_required('gpf.change_sent')
 def sendpermit(request, pk):
@@ -248,9 +242,16 @@ def sendpermit(request, pk):
 
 def sendpermit_thread(request, pk):
 
+    permitrequest= PermitRequest.objects.get(pk=pk)
     pdf_file, permit_path = gpf.print.printreport(request, pk, True)
     permit_link = ''
-    gpf.sendmail.send(permit_link, ['Directives_2017.pdf', 'Mode_refection_fouilles.pdf', 'Fin_des_travaux_form.pdf'], permit_path, 'permit_send', '')
+
+    gpf.sendmail.send(
+        permit_link,
+        ['Directives_2017.pdf', 'Mode_refection_fouilles.pdf', 'Fin_des_travaux_form.pdf'],
+        permit_path, 'permit_send', '',
+        permitrequest.administrative_entity
+    )
 
 
 @permission_required('gpf.view_permitrequest')
@@ -271,29 +272,73 @@ def callforvalidations(request, pk):
     messages.info(request, messagetxt)
     return HttpResponseRedirect(reverse('gpf:list'))
 
+
 @permission_required('gpf.view_permitrequest')
 def seewaitingvalidations(request, pk):
 
     groups = Group.objects.filter(department__validation__permitrequest__id=pk,
         department__validation__accepted=False).all()
 
-    users = User.objects.filter(groups__in=groups).exclude(username='admin').all()
+    group_users = []
+
+    all_validated = False
+
+    if len(groups) == 0:
+
+        all_validated = True
+
+    else:
+
+        for group in groups:
+
+            users = User.objects.filter(groups__name=group.name)
+            user_list = []
+            for user in users:
+                userdict = {
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'email': user.email,
+                }
+                user_list.append(userdict)
+
+            group_users.append({
+                'group_name': group.department.description,
+                'user_details': user_list
+            })
 
     return render(request, 'gpf/waitingvalidations.html', {
-        'groups': groups,
-        'users': users,
-        'permit_id': pk
+        'group_users': group_users,
+        'permit_id': pk,
+        'all_validated': all_validated
     })
+
 
 @permission_required('gpf.change_sent')
 def serviceusers(request):
 
+    group_users = []
+    #TODO: fitler for administrative_entity
     groups = Group.objects.filter(department__is_validator=True).all()
 
-    users = User.objects.filter(groups__in=groups).exclude(username='admin').all()
+    for group in groups:
+
+        users = User.objects.filter(groups__name=group.name)
+        user_list = []
+        for user in users:
+            userdict = {
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+            }
+            user_list.append(userdict)
+
+        group_users.append({
+            'group_name': group.department.description,
+            'user_details': user_list
+        })
 
     return render(request, 'gpf/servicesusers.html', {
-        'users': users
+        'group_users': group_users,
     })
 
 
@@ -361,7 +406,6 @@ def genericactorview(request, pk):
     return render(request, "gpf/genericactorview.html", {'form': form})
 
 
-
 def companyAdd(request):
 
     signupform = companyUserAddForm(request.POST or None)
@@ -427,7 +471,7 @@ def endwork(request, pk):
         form.instance.date_end_work_announcement = datetime.now()
         instance = form.save()
         permit_link = os.environ['PRODUCTION_ROOT_ADRESS'] + '/gpf/permitdetail/' + str(pk)
-        gpf.sendmail.send(permit_link, [], '',  'end_work_announcement', '')
+        gpf.sendmail.send(permit_link, [], '',  'end_work_announcement', '', instance.administrative_entity)
         return HttpResponseRedirect(reverse('gpf:listexterns'))
 
     return render(request, "gpf/end_work.html", {'form' : form})
@@ -441,11 +485,23 @@ class PermitRequestListView(PermissionRequiredMixin, SingleTableMixin, FilterVie
     filterset_class = PermitRequestFilter
     permission_required = 'gpf.view_permitrequest'
 
+    def get_queryset(self):
+
+        groups = Group.objects.filter(user=self.request.user, department__is_validator=True).all()
+        administrative_entities = []
+
+        for group in groups:
+
+            if group.department.administrative_entity not in administrative_entities:
+                administrative_entities.append(group.department.administrative_entity)
+
+        return PermitRequest.objects.filter(administrative_entity__in=administrative_entities)
+
 
 @method_decorator(login_required, name="dispatch")
 class PermitRequestListExternsView(SingleTableMixin, FilterView):
 
-    paginate_by = 10
+    paginate_by = int(os.environ['PAGINATE_BY'])
     table_class = PermitRequestTableExterns
     model = PermitRequest
     template_name = 'gpf/listexterns.html'
@@ -478,9 +534,17 @@ class PermitExportViewExterns(ExportMixin, SingleTableView):
 @login_required
 def thanks(request, permit_id):
 
+    permitrequest= PermitRequest.objects.get(pk=permit_id)
     permit_link = os.environ['PRODUCTION_ROOT_ADRESS'] + '/gpf/permitdetail/' + str(permit_id)
-    gpf.sendmail.send(permit_link, ['Directives_2017.pdf', 'Mode_refection_fouilles.pdf'], '', 'permit_confirmation', [request.user.email])
-    gpf.sendmail.send(permit_link, [], '', 'new_permit', '')
+
+    gpf.sendmail.send(
+        permit_link, ['Directives_2017.pdf', 'Mode_refection_fouilles.pdf'],
+        '',
+        'permit_confirmation',
+        [request.user.email],
+        permitrequest.administrative_entity
+    )
+    gpf.sendmail.send(permit_link, [], '', 'new_permit', '', permitrequest.administrative_entity)
 
     return render(request, 'gpf/thanks.html')
 
@@ -504,3 +568,14 @@ def mapnv(request, pk):
     target_url += '&map_x=' + str(centerx) + '&map_y=' + str(centery) + '&map_zoom=5'
 
     return redirect(target_url)
+
+
+@login_required
+def adm_entity_geojson(request):
+
+    geojson_geom = json.loads(serialize('geojson', AdministrativeEntity.objects.all(),
+              geometry_field='geom',
+              srid=2056,
+              fields=('pk','name','ofs_id',)))
+
+    return JsonResponse(geojson_geom, safe=False)

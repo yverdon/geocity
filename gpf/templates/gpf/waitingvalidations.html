@@ -14,9 +14,14 @@
   <h2>Personnes n'ayant pas encore validé la demande numéro {{permit_id}}</h2>
   <br>
   <ul>
-    {% if users %}
-      {% for user in users %}
-          <li> {{user.first_name}} - {{user.last_name}} - {{user.email}}</li>
+    {% if not all_validated %}
+      {% for gu in group_users %}
+          <li>
+              <h4>{{gu.group_name}}</h4>
+              {% for user_detail in gu.user_details %}
+                <b><p>{{user_detail.first_name}} {{user_detail.last_name}}</b> <a href="mailto:{{user_detail.email}}">{{user_detail.email}}</a></p>
+              {% endfor %}
+          </li>
       {% endfor %}
     {% else %}
       <li>Pas de validations en attente pour la demande numéro {{permit_id}}</li>

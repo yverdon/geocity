@@ -32,7 +32,7 @@ class AddPermitRequestForm(forms.ModelForm):
     class Meta:
         model = PermitRequest
         fields = [
-            'geom', 'description', 'date_start', 'date_end', 'sitetype', 'address', 'zipcode', 'city',
+            'administrative_entity', 'address', 'geom', 'description', 'date_start', 'date_end', 'sitetype',
             'length', 'width', 'road_marking_damaged', 'is_green_area',
             'invoice_to'
         ]
@@ -51,6 +51,10 @@ class AddPermitRequestForm(forms.ModelForm):
                 'wmts_layer': settings.WMTS_LAYER,
                 'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
                 'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
+                'administrative_entities_url': 'admentitygeojson',
+            }),
+            'administrative_entity': forms.Select(
+                attrs = {'onchange' : "gpfMap.zoomToAdminEntity(this.options[this.selectedIndex].value);"
             }),
             'date_start': DatePickerInput(
                 options={
@@ -74,11 +78,11 @@ class AddPermitRequestForm(forms.ModelForm):
                     "id": "id_adress_permit",
                     "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
                     "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
-                    "search_prefix": "1400 ",
+                    "search_prefix": "true",
                     "origins": "address",
                     "zipcode_field": "zipcode_permit",
                     "city_field": "city_permit",
-                    "placeholder": "ex: Place Pestalozzi 2 Yverdon",
+                    "placeholder": "ex: Rue de la plaine",
                 }),
         }
 
@@ -95,7 +99,7 @@ class ChangePermitRequestForm(forms.ModelForm):
             'company', 'project_owner', 'ended', 'archeotype', 'has_archeology', 'amount', 'paid', 'validated', 'sent', 'date_start', 'date_end',
             'date_end_work_announcement', 'date_end_work', 'date_request_created', 'road_marking_damaged',
             'is_green_area', 'invoice_to', 'sitetype',
-            'description', 'address',  'zipcode', 'city', 'length', 'width', 'geom'
+            'description', 'administrative_entity', 'address', 'length', 'width', 'geom'
         ]
         help_texts = {
             'validated': "Par le secrétariat uniquement",
@@ -113,11 +117,15 @@ class ChangePermitRequestForm(forms.ModelForm):
                 'display_raw': False, #show coordinate in debug
                 'map_clear_style': "visibility:visible;",
                 'edit_geom': False,
-                'min_zoom': 8,
+                'min_zoom': 6,
                 'wmts_capabilities_url': settings.WMTS_GETCAP,
                 'wmts_layer': settings.WMTS_LAYER,
                 'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
                 'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
+                'administrative_entities_url': 'gpf:adm-entity-geojson',
+            }),
+            'administrative_entity': forms.Select(
+                attrs = {'onchange' : "gpfMap.zoomToAdminEntity(this.options[this.selectedIndex].value);"
             }),
             'date_start': DatePickerInput(
                 options={
@@ -151,7 +159,7 @@ class ChangePermitRequestForm(forms.ModelForm):
                 attrs={
                     "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
                     "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
-                    "search_prefix": "1400 ",
+                    "search_prefix": "true",
                     "origins": "address",
                     "zipcode_field": "zipcode",
                     "city_field": "city",
@@ -189,7 +197,7 @@ class CompanyForm(forms.ModelForm):
                 attrs={
                     "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
                     "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
-                    "search_prefix": "",
+                    "search_prefix": "false",
                     "origins": "address",
                     "zipcode_field": "zipcode",
                     "city_field": "city",
@@ -222,7 +230,7 @@ class GenericActorForm(forms.ModelForm):
                 attrs={
                     "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
                     "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
-                    "search_prefix": "",
+                    "search_prefix": "false",
                     "origins": "address",
                     "zipcode_field": "zipcode",
                     "city_field": "city",
@@ -258,7 +266,7 @@ class ActorForm(forms.ModelForm):
                 attrs={
                     "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
                     "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
-                    "search_prefix": "",
+                    "search_prefix": "false",
                     "origins": "address",
                     "zipcode_field": "zipcode",
                     "city_field": "city",

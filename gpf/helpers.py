@@ -42,7 +42,9 @@ def validation_remainder_mail(request, pk):
 
     permit_link = os.environ['PRODUCTION_ROOT_ADRESS'] + '/gpf/permitdetail/' + str(pk)
 
-    gpf.sendmail.send(permit_link, [], '',  'single_validation_remainder', recipients)
+    permitrequest= PermitRequest.objects.get(pk=pk)
+
+    gpf.sendmail.send(permit_link, [], '',  'single_validation_remainder', recipients, permitrequest.administrative_entity)
 
 
 #send mails to all services that are late on the validation process
@@ -61,9 +63,10 @@ def waiting_validations(request, hours):
         users = User.objects.filter(groups__in=groups).exclude(username='admin').all().values('email')
         permit_link = os.environ['PRODUCTION_ROOT_ADRESS'] + '/gpf/permitdetail/' + str(validation.permitrequest.id)
         recipients = list(users.values_list('email', flat=True))
+        permitrequest= PermitRequest.objects.get(pk=validation.permitrequest.id)
 
         if len(recipients) > 0:
-            gpf.sendmail.send(permit_link, [], '',  'daily_validation_remainder', recipients)
+            gpf.sendmail.send(permit_link, [], '',  'daily_validation_remainder', recipients, permitrequest.administrative_entity)
 
 
 # write uploaded file to disk

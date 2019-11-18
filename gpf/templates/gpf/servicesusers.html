@@ -14,15 +14,14 @@
   <h2>Utilisateurs par services</h2>
   <br>
   <ul>
-    {% if users %}
-      {% for user in users %}
+      {% for gu in group_users %}
           <li>
-              <b>{{user.groups.all.0.department.description}}</b>: {{user.first_name}} - {{user.last_name}} - {{user.email}}
+              <h4>{{gu.group_name}}</h4>
+              {% for user_detail in gu.user_details %}
+                <b><p>{{user_detail.first_name}} {{user_detail.last_name}}</b> <a href="mailto:{{user_detail.email}}">{{user_detail.email}}</a></p>
+              {% endfor %}
           </li>
       {% endfor %}
-    {% else %}
-      <li>Problème technique => contacter votre support</li>
-    {% endif %}
   </ul>
   <p>
       {% if user.groups.all.0.name == "extern" %}
