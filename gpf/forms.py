@@ -51,6 +51,10 @@ class AddPermitRequestForm(forms.ModelForm):
                 'wmts_layer': settings.WMTS_LAYER,
                 'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
                 'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
+                'administrative_entities_url': 'admentitygeojson',
+            }),
+            'administrative_entity': forms.Select(
+                attrs = {'onchange' : "gpfMap.zoomToAdminEntity(this.options[this.selectedIndex].value);"
             }),
             'date_start': DatePickerInput(
                 options={
@@ -113,11 +117,15 @@ class ChangePermitRequestForm(forms.ModelForm):
                 'display_raw': False, #show coordinate in debug
                 'map_clear_style': "visibility:visible;",
                 'edit_geom': False,
-                'min_zoom': 8,
+                'min_zoom': 6,
                 'wmts_capabilities_url': settings.WMTS_GETCAP,
                 'wmts_layer': settings.WMTS_LAYER,
                 'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
                 'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
+                'administrative_entities_url': 'gpf:adm-entity-geojson',
+            }),
+            'administrative_entity': forms.Select(
+                attrs = {'onchange' : "gpfMap.zoomToAdminEntity(this.options[this.selectedIndex].value);"
             }),
             'date_start': DatePickerInput(
                 options={

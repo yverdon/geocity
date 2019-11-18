@@ -28,4 +28,5 @@ urlpatterns = [
     path('thanks/<int:permit_id>', views.thanks, name='thanks'),
     path('prices/', views.prices, name='prices'),
     path('file-download/<int:pk>', views.file_download, name='file-download'),
+    path('admentitygeojson/', views.adm_entity_geojson, name='adm-entity-geojson'),
     ]

@@ -9,12 +9,18 @@
 
     $( function() {
 
-      var selected_city = '';
+      var getSelectedEntity = function () {
 
-      if ("{{ widget.attrs.search_prefix}}" == 'true') {
+        var selected_city = '';
 
-          selected_city = $('#id_administrative_entity').find("option:selected").text() + ' ';
-      };
+        if ("{{ widget.attrs.search_prefix}}" == 'true') {
+
+              selected_city = $('#id_administrative_entity').find("option:selected").text() + ' ';
+
+        }
+
+        return selected_city;
+      }
 
       $( "#{{ widget.attrs.id }}").autocomplete({
 
@@ -26,7 +32,7 @@
                   url: "{{ widget.attrs.apiurl}}",
                   dataType: "json",
                   data: {
-                      searchText: selected_city + request.term,
+                      searchText: getSelectedEntity() + request.term,
                       limit: 20,
                       partitionlimit: 24,
                       type: 'locations',

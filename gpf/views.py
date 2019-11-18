@@ -1,7 +1,8 @@
-import os, datetime
+import os, datetime, json
+from django.core.serializers import serialize
 from django.contrib.auth.decorators import login_required, permission_required
 from django.utils.decorators import method_decorator
-from django.http import HttpResponseRedirect,HttpResponse, FileResponse
+from django.http import HttpResponseRedirect,HttpResponse, FileResponse,JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -11,7 +12,7 @@ from django.forms import formset_factory, inlineformset_factory
 from .filters import PermitRequestFilter, PermitRequestFilterExterns
 from .forms import AddPermitRequestForm, ChangePermitRequestForm
 from .forms import ActorForm, CompanyForm, ValidationForm, DocumentForm, EndWorkForm, companyUserAddForm, GenericActorForm
-from .models import Actor, Archelogy, PermitRequest, Validation, Department, Document
+from .models import Actor, Archelogy, PermitRequest, Validation, Department, Document, AdministrativeEntity
 from .tables import PermitRequestTable, PermitRequestTableExterns, PermitExportTable
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin, SingleTableView
@@ -567,3 +568,14 @@ def mapnv(request, pk):
     target_url += '&map_x=' + str(centerx) + '&map_y=' + str(centery) + '&map_zoom=5'
 
     return redirect(target_url)
+
+
+@login_required
+def adm_entity_geojson(request):
+
+    geojson_geom = json.loads(serialize('geojson', AdministrativeEntity.objects.all(),
+              geometry_field='geom',
+              srid=2056,
+              fields=('pk','name','ofs_id',)))
+
+    return JsonResponse(geojson_geom, safe=False)
