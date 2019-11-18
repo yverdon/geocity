@@ -487,7 +487,7 @@ class PermitRequestListView(PermissionRequiredMixin, SingleTableMixin, FilterVie
 
     def get_queryset(self):
 
-        groups = Group.objects.filter(user=self.request.user, department__is_validator=True).all()
+        groups = Group.objects.filter(user=self.request.user).all()
         administrative_entities = []
 
         for group in groups:
