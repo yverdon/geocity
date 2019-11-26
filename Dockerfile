@@ -13,12 +13,12 @@ RUN echo deb http://ftp.uk.debian.org/debian unstable main contrib non-free >> /
     apt-get clean
 
 ENV PYTHONUNBUFFERED 1
-RUN mkdir /code && \
-    mkdir /code/app_data && \
-    mkdir /code/tempfiles
+RUN mkdir -p /code/app_data && \
+    mkdir -p /code/tempfiles
 
 VOLUME /code/app_data
 VOLUME /code/tempfiles
+VOLUME /postgresdata
 
 WORKDIR /code
 ADD requirements.txt /code/
@@ -30,3 +30,4 @@ ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
 ENV C_INCLUDE_PATH=/usr/include/gdal
 
 ADD . /code/
+ADD postgres/. /postgresdata/

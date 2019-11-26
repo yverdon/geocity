@@ -2,20 +2,24 @@ version: '2'
 
 volumes:
   gmsdata:
+  gmspostgresdata:
 
 services:
   web:
-    build: .
+    image: gms_web
+    depends_on:
+      - "postgres"
+    build: ./
     entrypoint: /code/entrypoint.sh
+    command: gunicorn geomapshark.wsgi -b :9000 --error-logfile gunicorn_log.log
     volumes:
-      - .:/code DEV ONLY!!!
+      - .:/code #DEV ONLY!!!
       - gmsdata:/code/app_data
     ports:
       - "9095:9000"
 
   qgisserver:
       image: camptocamp/qgis-server:3.4
-      container_name: qgis-server-geomapshark-print
       volumes:
           - .:/data
       ports:
@@ -23,3 +27,12 @@ services:
       environment:
           - QGIS_PROJECT_FILE=/data/print/print.qgs
           - PGSERVICEFILE=/data/print/pg_service.conf
+
+  postgres:
+      image: camptocamp/postgres:9.6
+      environment:
+        - POSTGRES_USER=geomapshark
+        - POSTGRES_PASSWORD=geomapshark
+      volumes:
+          - gmspostgresdata:/var/lib/postgresql/data
+          - ./postgres:/docker-entrypoint-initdb.d/
