@@ -1,20 +1,15 @@
 version: '2'
 
+volumes:
+  gmsdata:
+
 services:
   web:
     build: .
-    command: >
-        sh -c " python3 manage.py migrate &&
-            python3 manage.py compilemessages -l fr &&
-            echo yes | python3 manage.py collectstatic &&
-            python3 manage.py runserver 0.0.0.0:9000"
-    # command: >
-    #     sh -c "python3 manage.py runserver 0.0.0.0:9000"
+    entrypoint: /code/entrypoint.sh
     volumes:
-      - .:/code
-      - C:/projets/geomapshark_files:/app_data
-      - C:/projets/geomapshark_files/tempfiles:/tempfiles
-      - C:/projets/geomapshark_files:/dumps_data
+      - .:/code DEV ONLY!!!
+      - gmsdata:/code/app_data
     ports:
       - "9095:9000"
 
