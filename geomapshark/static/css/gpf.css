@@ -44,10 +44,15 @@
 
 #switchbaselayers {
   border-radius: 3px;
-  border: 2px solid #007bff;
+  border: 3px solid #ebe834;
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 1000;
 }
+
 #switchbaselayers:hover {
-  box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
+  box-shadow: 0 0 2px 2px yellow;
   cursor: pointer;
 }
 
