@@ -490,10 +490,16 @@ class PermitRequestListView(PermissionRequiredMixin, SingleTableMixin, FilterVie
         groups = Group.objects.filter(user=self.request.user).all()
         administrative_entities = []
 
-        for group in groups:
+        if str(self.request.user) == 'admin':
+            for adm in AdministrativeEntity.objects.all():
+                administrative_entities.append(adm)
 
-            if group.department.administrative_entity not in administrative_entities:
-                administrative_entities.append(group.department.administrative_entity)
+        else:
+
+            for group in groups:
+
+                if group.department.administrative_entity not in administrative_entities:
+                    administrative_entities.append(group.department.administrative_entity)
 
         return PermitRequest.objects.filter(administrative_entity__in=administrative_entities)
 

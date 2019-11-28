@@ -5,7 +5,6 @@ from . import settings
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-
     path('', views.index, name='index'),
     path('gpf/', include('gpf.urls')),
     path('admin/', admin.site.urls),
@@ -18,3 +17,6 @@ urlpatterns = [
     path('accounts/password_change/', auth_views.PasswordChangeView.as_view(), name='password_change'),
     path('accounts/', include('django.contrib.auth.urls')),
 ]
+
+if settings.PREFIX_URL:
+    urlpatterns = [path(f'{settings.PREFIX_URL}/', include(urlpatterns))]
