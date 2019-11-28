@@ -4,7 +4,6 @@ import os, yaml
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Load local environnement settings
-#stream = open('/var/www/vhosts/yverdon-geoportail/private/gms_preprod/env.yaml','r')
 stream = open(BASE_DIR + '/env.yaml','r')
 customConfig = yaml.load(stream, Loader=yaml.FullLoader)
 
@@ -12,7 +11,10 @@ customConfig = yaml.load(stream, Loader=yaml.FullLoader)
 for k, v in customConfig['ENV_VARS'].items():
     os.environ[str(k)] = str(v)
 
+
+PREFIX_URL = os.environ["PREFIX_URL"]
 INSTANCE_ID = os.environ["INSTANCE_ID"]
+
 
 ROOT_URLCONF = 'geomapshark.urls'
 LOGIN_REDIRECT_URL ='/'

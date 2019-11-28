@@ -9,7 +9,6 @@ services:
                 echo yes | python3 manage.py collectstatic &&
                 gunicorn geomapshark.wsgi -b :9000 --error-logfile gunicorn_log.log"
     volumes:
-      - .:/code
       - /var/sig/yverdon_geoportail/permis_fouille:/app_data
       - /var/sig/yverdon_geoportail/permis_fouille/tempfiles:/tempfiles
       - /var/sig/yverdon_geoportail/geomapshark_dumps:/dumps_data
