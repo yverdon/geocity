@@ -7,7 +7,7 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     path('', views.index, name='index'),
     path('gpf/', include('gpf.urls')),
-    path('admin/', admin.site.urls),
+    # path('admin/', admin.site.urls),
     path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
     path('accounts/logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('accounts/password_reset/', auth_views.PasswordResetView.as_view(template_name='registration/password_reset.html'), name='password_reset'),
@@ -19,4 +19,8 @@ urlpatterns = [
 ]
 
 if settings.PREFIX_URL:
-    urlpatterns = [path(f'{settings.PREFIX_URL}/', include(urlpatterns))]
+    urlpatterns = [
+        path(f'{settings.PREFIX_URL}/admin/', admin.site.urls),
+        path(f'{settings.PREFIX_URL}/accounts/', include('django.contrib.auth.urls')),
+        path(f'{settings.PREFIX_URL}/', include(urlpatterns)),
+        ]

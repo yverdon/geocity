@@ -1,20 +1,25 @@
 version: '2'
 
+volumes:
+  gmsdata:
+  gmspostgresdata:
+
 services:
   web:
-    build: .
-    command: >
-        sh -c " python3 manage.py runserver 0.0.0.0:9000 "
+    image: gms_web
+    depends_on:
+      - "postgres"
+    build: ./
+    entrypoint: /code/entrypoint.sh
+    command: python3 manage.py runserver 0.0.0.0:9000
     volumes:
-      - .:/code
-      - /var/sig/yverdon_geoportail/permis_fouille:/app_data
-      - /var/sig/yverdon_geoportail/permis_fouille/tempfiles:/tempfiles
+      - .:/code #DEV ONLY!!!
+      - gmsdata:/code/app_data
     ports:
       - "9095:9000"
 
   qgisserver:
       image: camptocamp/qgis-server:3.4
-      container_name: qgis-server-geomapshark-print
       volumes:
           - .:/data
       ports:
@@ -22,3 +27,14 @@ services:
       environment:
           - QGIS_PROJECT_FILE=/data/print/print.qgs
           - PGSERVICEFILE=/data/print/pg_service.conf
+
+  postgres:
+      image: camptocamp/postgres:9.6
+      environment:
+        - POSTGRES_USER=geomapshark
+        - POSTGRES_PASSWORD=geomapshark
+      ports:
+          - "9097:5432"
+      volumes:
+          - gmspostgresdata:/var/lib/postgresql/data
+          - ./postgres:/docker-entrypoint-initdb.d/
