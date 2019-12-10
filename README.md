@@ -2,27 +2,6 @@
 
 ## Work in progress...
 
-## Getting started without Docker (the hard, not recommended way)
-
-Clone the repository.
-
-For windows using pipenv:
-
-`python -m pipenv install`
-
-
-For windows using pip:
-
-```virtualenv venv
-   pip install -r requirements.txt
-```
-
-### Special notes on Weasyprint dependencies configuration
-
-You MUST install GTK-3 from here: https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer
-
-And you MUST add it on TOP of your path. If you don't, it will hurt.
-
 ## Environment variables
 
 Rename `sample.env.yaml` to `env.yaml` and modifiy it according to your specific configuration.
@@ -116,3 +95,24 @@ http://localhost:9050?&SERVICE=WMS&VERSION=1.3.0&REQUEST=GetPrint&FORMAT=pdf&TRA
 ```
 http://localhost:9050?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities
 ```
+
+## Getting started without Docker (the hard, not recommended way)
+
+Clone the repository.
+
+For windows using pipenv:
+
+`python -m pipenv install`
+
+
+For windows using pip:
+
+```virtualenv venv
+   pip install -r requirements.txt
+```
+
+### Special notes on Weasyprint dependencies configuration
+
+You MUST install GTK-3 from here: https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer
+
+And you MUST add it on TOP of your path. If you don't, it will hurt.
