@@ -50,7 +50,6 @@
   bottom: 10px;
   z-index: 1000;
 }
-
 #switchbaselayers:hover {
   box-shadow: 0 0 2px 2px yellow;
   cursor: pointer;

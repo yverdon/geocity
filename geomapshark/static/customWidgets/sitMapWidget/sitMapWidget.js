@@ -465,13 +465,12 @@
     sitMapWidget.prototype.zoomToAdminEntity= function(admin_pk) {
 
       var feature = this.adminEntities.getSource().getFeatureById(admin_pk);
-      var bounds = feature.getGeometry().getExtent();
-
-      this.map.getView().fit(bounds, this.map.getSize());
-
+      if (feature) {
+        var bounds = feature.getGeometry().getExtent();
+        this.map.getView().fit(bounds, this.map.getSize());
+      }
 
     };
-
 
 
     sitMapWidget.prototype.serializeFeatures = function() {
