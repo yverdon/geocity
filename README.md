@@ -34,7 +34,8 @@ Clone the repository
 Checkout on the docker-improve branch and then follow the usual docker procedure. This will start one additional service for Postgres/Postgis database and soon, insert Django fixtures with demo data (wip)
 
 
-```docker-compose -f docker-compose-dev.yml build
+```
+   docker-compose -f docker-compose-dev.yml build
    docker-compose down --remove-orphans && docker-compose -f docker-compose-dev.yml up
 ```
 
