@@ -12,10 +12,6 @@ for k, v in customConfig['ENV_VARS'].items():
     os.environ[str(k)] = str(v)
 
 
-PREFIX_URL = os.environ["PREFIX_URL"]
-INSTANCE_ID = os.environ["INSTANCE_ID"]
-
-
 ROOT_URLCONF = 'geomapshark.urls'
 LOGIN_REDIRECT_URL ='/'
 

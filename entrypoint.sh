@@ -22,5 +22,7 @@ python3 manage.py shell -c "from django.contrib.auth.models import User; \
                            User.objects.create_superuser('admin',
                            'admin@exampletoto.com', 'admin2020')"
 
+#python3 manage.py loaddata db.json
+
 
 exec $@
