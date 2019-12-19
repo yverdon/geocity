@@ -8,6 +8,12 @@ Rename `sample.env.yaml` to `env.yaml` and modifiy it according to your specific
 
 ## Getting started with the full Docker demo version (the less painfull way)
 
+### Step by step guide to the working full docker non persistent demo
+
+Clone repository
+
+
+
 Clone the repository
 
 Checkout on the docker-improve branch and then follow the usual docker procedure. This will start one additional service for Postgres/Postgis database and soon, insert Django fixtures with demo data (wip)
