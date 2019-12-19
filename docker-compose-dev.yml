@@ -2,7 +2,6 @@ version: '2'
 
 volumes:
   gmsdata:
-  gmspostgresdata:
 
 services:
   web:
@@ -35,6 +34,3 @@ services:
         - POSTGRES_PASSWORD=geocity
       ports:
           - "9097:5432"
-      volumes:
-          - gmspostgresdata:/var/lib/postgresql/data
-          - ./postgres:/docker-entrypoint-initdb.d/

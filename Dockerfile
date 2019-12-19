@@ -27,4 +27,3 @@ ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
 ENV C_INCLUDE_PATH=/usr/include/gdal
 
 ADD . /code/
-ADD postgres/. /postgresdata/
