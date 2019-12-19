@@ -17,12 +17,7 @@ python3 manage.py migrate
 echo yes | python3 manage.py compilemessages -l fr
 echo yes | python3 manage.py collectstatic
 
-python3 manage.py shell -c "from django.contrib.auth.models import User; \
-                           User.objects.filter(username='admin').exists() or \
-                           User.objects.create_superuser('admin',
-                           'admin@exampletoto.com', 'admin2020')"
-
-#python3 manage.py loaddata db.json
+python3 manage.py loaddata db.json
 
 
 exec $@

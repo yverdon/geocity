@@ -121,7 +121,7 @@ class Migration(migrations.Migration):
                 ('is_green_area', models.BooleanField(verbose_name='is_green_area')),
                 ('description', models.TextField(verbose_name='description')),
                 ('has_archeology', models.BooleanField(default=False, verbose_name='has_archeology')),
-                ('archeotype', models.BooleanField(default=False, verbose_name='archeotype')),
+                # ('archeotype', models.BooleanField(default=False, verbose_name='archeotype')),
                 ('address', models.CharField(max_length=100, null=True, verbose_name='address_permit')),
                 ('date_end_work', models.DateField(null=True, verbose_name='date_end_work')),
                 ('date_end_work_announcement', models.DateField(null=True, verbose_name='date_end_work_announcement')),
