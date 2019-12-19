@@ -31,8 +31,8 @@ services:
   postgres:
       image: camptocamp/postgres:9.6
       environment:
-        - POSTGRES_USER=geomapshark
-        - POSTGRES_PASSWORD=geomapshark
+        - POSTGRES_USER=geocity
+        - POSTGRES_PASSWORD=geocity
       ports:
           - "9097:5432"
       volumes:

@@ -6,25 +6,26 @@
 
 Rename `sample.env.yaml` to `env.yaml` and modifiy it according to your specific configuration.
 
+
 ## Getting started with the full Docker demo version (the less painfull way)
 
 ### Step by step guide to the working full docker non persistent demo
 
-Clone repository
-
-
-
-Clone the repository
-
-Checkout on the docker-improve branch and then follow the usual docker procedure. This will start one additional service for Postgres/Postgis database and soon, insert Django fixtures with demo data (wip)
-
+This will bring up a demo instance with preset fixtures served by the
+Django developpment server in reload mode.
 
 ```
-   docker-compose -f docker-compose-dev.yml build
-   docker-compose down --remove-orphans && docker-compose -f docker-compose-dev.yml up
+mkdir geocity
+git init
+git remote add upstream https://github.com/yverdon/geocity
+git fetch upstream
+git checkout upstream/demo-docker
+docker-compose -f docker-compose-dev.yaml build
+docker-compose down --remove-orphans && docker-compose -f docker-compose-dev.yml up
 ```
 
-Then the project will be available on localhost:9095/<PREFIX_URL>
+The demo application is now running on localhost:9095
+
 
 
 ### Generic Docker hints
