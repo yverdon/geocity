@@ -5,6 +5,15 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
+class WorksObjectTypeChoice(models.Model):
+    """
+    This intermediary model represents the selected objects for a permit
+    request. Property values will then point to this model.
+    """
+    permit_request = models.ForeignKey('PermitRequest', on_delete=models.CASCADE)
+    works_object_type = models.ForeignKey('WorksObjectType', on_delete=models.CASCADE)
+
+
 class PermitRequest(models.Model):
     STATUS_DRAFT = 0
     STATUS_SUBMITTED = 1
@@ -20,6 +29,7 @@ class PermitRequest(models.Model):
     )
     created_at = models.DateTimeField(_("date de création"), default=datetime.now)
     validated_at = models.DateTimeField(_("date de validation"), null=True)
+    works_objects_types = models.ManyToManyField('WorksObjectType', through=WorksObjectTypeChoice)
 
     class Meta:
         verbose_name = _("demande de permis")
@@ -37,9 +47,20 @@ class WorksType(models.Model):
         return self.name
 
 
+class WorksObjectType(models.Model):
+    """
+    Represents a works object for a specific works type.
+    """
+    works_type = models.ForeignKey(WorksType, on_delete=models.CASCADE)
+    works_object = models.ForeignKey('WorksObject', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "{} ({})".format(self.works_object.name, self.works_type.name)
+
+
 class WorksObject(models.Model):
     name = models.CharField(_("nom"), max_length=255)
-    works_types = models.ManyToManyField(WorksType, verbose_name=_("types de travaux"))
+    works_types = models.ManyToManyField(WorksType, through=WorksObjectType, verbose_name=_("types de travaux"))
 
     class Meta:
         verbose_name = _("objet des travaux")
@@ -66,7 +87,7 @@ class WorksObjectProperty(models.Model):
         _("type de caractéristique"), max_length=30, choices=INPUT_TYPE_CHOICES
     )
     is_mandatory = models.BooleanField(_("obligatoire"), default=False)
-    works_objects = models.ManyToManyField(WorksObject, verbose_name=_("objets des travaux"))
+    works_objects_types = models.ManyToManyField(WorksObjectType, verbose_name=_("objets des travaux"))
 
     class Meta:
         verbose_name = _("caractéristique")
@@ -76,28 +97,16 @@ class WorksObjectProperty(models.Model):
         return self.name
 
 
-class WorksObjectChoice(models.Model):
-    works_type = models.ForeignKey(
-        WorksType, verbose_name=_("type de travaux"), on_delete=models.PROTECT,
-        related_name='+'
-    )
-    works_object = models.ForeignKey(
-        WorksObject, verbose_name=_("objet des travaux"),
-        on_delete=models.PROTECT, related_name='+'
-    )
-    permit_request = models.ForeignKey(
-        PermitRequest, verbose_name=_("demande de permis"),
-        on_delete=models.CASCADE, related_name='works_objects'
-    )
-
-
 class WorksObjectPropertyValue(models.Model):
+    """
+    Value of a property for a selected object in a permit request.
+    """
     property = models.ForeignKey(
         WorksObjectProperty, verbose_name=_("caractéristique"),
         on_delete=models.PROTECT, related_name='+'
     )
-    works_object = models.ForeignKey(
-        WorksObjectChoice, verbose_name=_("objet des travaux"),
+    works_object_type_choice = models.ForeignKey(
+        WorksObjectTypeChoice, verbose_name=_("objet des travaux"),
         on_delete=models.CASCADE, related_name='properties'
     )
     value = JSONField()
