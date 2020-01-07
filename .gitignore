@@ -10,3 +10,4 @@ gunicorn_log.log
 static/tempfiles/
 geomapshark/protected-static/
 env.yaml
+/docker-compose.override.yml
