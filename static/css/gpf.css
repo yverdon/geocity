@@ -12,6 +12,16 @@
   border: 2px solid rgba(252, 200, 70, 1);
 }
 
+#homepage_main_apps {
+  margin-left: 100px;
+  margin-top: 50px;
+  width: 100%;
+}
+
+.main_app_icon {
+  width: 100px;
+}
+
 .info-messages {
   margin-top: 10px;
   padding-left: 20px;
@@ -50,6 +60,7 @@
   bottom: 10px;
   z-index: 1000;
 }
+
 #switchbaselayers:hover {
   box-shadow: 0 0 2px 2px yellow;
   cursor: pointer;
