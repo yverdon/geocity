@@ -1,0 +1,22 @@
+{% extends "base_generic.html" %}
+{% load bootstrap4 %}
+{% load i18n %}
+
+{% block content %}
+<div class="container mt-3">
+  <h3>{% trans "Sélectionnez les types de travaux" %}</h3>
+  <hr>
+  <form method="post">
+    {% bootstrap_form_errors works_types_form %}
+
+    {% csrf_token %}
+
+    {% bootstrap_field works_types_form.types show_label=False %}
+
+    {% buttons %}
+      <button class="btn btn-primary">{% trans "Continuer" %}</button>
+    {% endbuttons %}
+  </form>
+</div>
+{% endblock content %}
+

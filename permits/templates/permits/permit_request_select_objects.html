@@ -1,0 +1,24 @@
+{% extends "base_generic.html" %}
+{% load bootstrap4 %}
+{% load i18n %}
+
+{% block content %}
+<div class="container mt-3">
+  <h3>{% trans "Sélectionnez les objets de travaux" %}</h3>
+  <hr>
+  <form method="post">
+    {% csrf_token %}
+    {% bootstrap_form_errors works_objects_form %}
+
+    {% for field in works_objects_form %}
+      <h4>{{ field.label }}</h4>
+      {% bootstrap_field field show_label=False %}
+    {% endfor %}
+
+    {% buttons %}
+      <a href="{% url 'permits:permit_request_create' %}" class="mr-2">{% trans "Retour" %}</a>
+      <button class="btn btn-primary">{% trans "Continuer" %}</button>
+    {% endbuttons %}
+  </form>
+</div>
+{% endblock content %}

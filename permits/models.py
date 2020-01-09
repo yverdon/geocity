@@ -10,6 +10,7 @@ class WorksObjectTypeChoice(models.Model):
     This intermediary model represents the selected objects for a permit
     request. Property values will then point to this model.
     """
+    # TODO unicity constraints
     permit_request = models.ForeignKey('PermitRequest', on_delete=models.CASCADE)
     works_object_type = models.ForeignKey('WorksObjectType', on_delete=models.CASCADE)
 
@@ -60,7 +61,9 @@ class WorksObjectType(models.Model):
 
 class WorksObject(models.Model):
     name = models.CharField(_("nom"), max_length=255)
-    works_types = models.ManyToManyField(WorksType, through=WorksObjectType, verbose_name=_("types de travaux"))
+    works_types = models.ManyToManyField(
+        WorksType, through=WorksObjectType, related_name='works_objects', verbose_name=_("types de travaux")
+    )
 
     class Meta:
         verbose_name = _("objet des travaux")
