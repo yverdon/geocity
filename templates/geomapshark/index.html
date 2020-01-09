@@ -9,19 +9,42 @@
 {% endblock %}
 
 
-{% block sidebar %}
-    <ul class="sidebar-nav app-list" style="margin-top: 50px; margin-left: 5%; width: 300px;">
-        {% if user.groups.all.0.name == "extern" %}
 
-          <li><a class="btn btn-primary responsive-btn" href="{% url 'gpf:listexterns' %}"><i class="fa fa-road"></i>&nbsp;Permis de fouille</a></li>
-          <li><a class="btn btn-primary responsive-btn" href="{{apps.mapnv}}" target="_blank"><i class="fa fa-map"></i>&nbsp;mapnv: Géoportail</a></li>
-          <li><a class="btn btn-primary responsive-btn" href="/lidar" target="_blank"><i class="fa fa-cube"></i>&nbsp;mapn: Géoportail 3D (LiDAR)</a></li>
+{% block content %}
+
+
+
+        {% if user.groups.all.0.name == "extern" %}
+        <tr>
+            <td><a href="{% url 'permits:permit_request_create' %}"><img class="main_app_icon" src="{% static 'images/construction_permit.png'%}" alt=""></td>
+            <td><a href="{% url 'gpf:listexterns' %}"><img class="main_app_icon" src="{% static 'images/theme_permis_fouille.png'%}" alt=""></td>
+            <td><a href="{{apps.mapnv}}" target="_blank"><img class="main_app_icon" src="{% static 'images/theme_plan_de_ville.png'%}" alt=""></td>
+            <td><a href="{{apps.mapnv}}/lidar" target="_blank"><img class="main_app_icon" src="{% static 'images/theme_3d.png'%}" alt=""></td>
+        </tr>
+        <tr>
+          <td><a href="{% url 'permits:permit_request_create' %}">Permis de construire</td>
+          <td><a href="{% url 'gpf:list' %}">Permis de fouille</td>
+          <td><a href="{{apps.mapnv}}" target="_blank">Géoportail</td>
+          <td><a href="{{apps.mapnv}}/lidar" target="_blank">Géoportail 3D</td>
+        </tr>
         {% else %}
-          <li><a href="{% url 'gpf:list' %}">Permis de fouille</a></li>
+        <table id="homepage_main_apps">
+          <tr>
+              <td><a href="{% url 'permits:permit_request_create' %}"><img class="main_app_icon" src="{% static 'images/construction_permit.png'%}" alt=""></td>
+              <td><a href="{% url 'gpf:list' %}"><img class="main_app_icon" src="{% static 'images/theme_permis_fouille.png'%}" alt=""></td>
+              <td><a href="{{apps.mapnv}}" target="_blank"><img class="main_app_icon" src="{% static 'images/theme_plan_de_ville.png'%}" alt=""></td>
+              <td><a href="{{apps.mapnv}}/lidar" target="_blank"><img class="main_app_icon" src="{% static 'images/theme_3d.png'%}" alt=""></td>
+          </tr>
+          <tr>
+            <td><a href="{% url 'permits:permit_request_create' %}">Permis de construire</td>
+            <td><a href="{% url 'gpf:list' %}">Permis de fouille</td>
+            <td><a href="{{apps.mapnv}}" target="_blank">Géoportail</td>
+            <td><a href="{{apps.mapnv}}/lidar" target="_blank">Géoportail 3D</td>
+          </tr>
+        </table>
+        <ul class="sidebar-nav app-list" style="margin-top: 50px; margin-left: 5%; width: 300px;">
+          <li><a href="{{apps.yvent}}" target="_blank">Organisation d'événements</a></li>
           <li><a href="https://pro.mapnv.ch/admin" target="_blank">Interface d'administration des applications du territoire</a></li>
-          <li><a href="{{apps.mapnv}}" target="_blank">MAPNV: Géoportail</a></li>
-          <li><a href="/lidar" target="_blank">MAPNV: Géoportail 3D (LiDAR)</a></li>
-          <li><a href="{{apps.yvent}}" target="_blank">YVENT: gestion des événements</a></li>
           <li><a href="{{apps.signalez}}" target="_blank">SIGNALEZ: gestion participative</a></li>
           <li><a href="https://mapnv.ch/cs" target="_blank">PDF du cadastre souterrain</a></li>
           <li><a href="https://mapnv.ch/evenementiel/evenementiel.php" target="_blank">Liste de sites d'événements</a></li>
@@ -31,6 +54,7 @@
           <li><a href="https://mapnv.ch/batiments" target="_blank">Armoire à plans (BAT)</a></li>
           <li><a href="https://mapnv.ch/cityplan" target="_blank">QR Code vers les info touristiques</a></li>
           <li><a href="https://mapnv.ch/nona" target="_blank">Nonagénaires</a></li>
+        </ul>
         {% endif %}
-    </ul>
+
 {% endblock %}
