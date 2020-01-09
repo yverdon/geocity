@@ -4,23 +4,16 @@
 
 {% block content %}
 <div class="container mt-3">
-  <h3>{% trans "Sélectionnez les objets de travaux" %}</h3>
+  <h3>{% trans "Renseignez les caractéristiques des objets" %}</h3>
   <hr>
   <form method="post">
-    {% csrf_token %}
-    {% bootstrap_form_errors works_objects_form %}
-
-    {% for field in works_objects_form %}
-      <h4>{{ field.label }}</h4>
-      {% bootstrap_field field show_label=False %}
-    {% endfor %}
 
     {% buttons %}
       <a href="
         {% if permit_request %}
-          {% url 'permits:permit_request_select_types' permit_request_id=permit_request.pk %}
+          {% url 'permits:permit_request_select_objects' permit_request_id=permit_request.pk %}
         {% else %}
-          {% url 'permits:permit_request_select_types' %}
+          {% url 'permits:permit_request_select_objects' %}
         {% endif %}
         " class="mr-2">{% trans "Retour" %}</a>
       <button class="btn btn-primary">{% trans "Continuer" %}</button>

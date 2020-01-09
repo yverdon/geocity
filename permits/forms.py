@@ -10,6 +10,22 @@ class WorksTypesForm(forms.Form):
         queryset=models.WorksType.objects.all(), widget=forms.CheckboxSelectMultiple(), label=_("Types de travaux")
     )
 
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop('instance', None)
+
+        super().__init__(*args, **kwargs)
+
+    def save(self):
+        if not self.instance:
+            return
+
+        works_object_type_choices = models.WorksObjectTypeChoice.objects.filter(permit_request=self.instance)
+        works_type_ids = set(works_object_type_choices.values_list('works_object_type__works_type_id', flat=True))
+        selected_works_type_ids = set(obj.pk for obj in self.cleaned_data['types'])
+
+        deleted_works_type_ids = works_type_ids - selected_works_type_ids
+        works_object_type_choices.filter(works_object_type__works_type_id__in=deleted_works_type_ids).delete()
+
 
 class WorksObjectsTypeChoiceField(forms.ModelMultipleChoiceField):
     def label_from_instance(self, obj):
@@ -33,15 +49,25 @@ class WorksObjectsForm(forms.Form):
     @transaction.atomic
     def save(self):
         permit_request = self.instance or models.PermitRequest.objects.create()
+        works_object_types = [item for sublist in self.cleaned_data.values() for item in sublist]
 
         if not self.instance:
-            works_objects_types = [item for sublist in self.cleaned_data.values() for item in sublist]
-            for works_object_type in works_objects_types:
-                models.WorksObjectTypeChoice.objects.create(
-                    permit_request=permit_request, works_object_type=works_object_type
-                )
+            new_works_object_type_ids = [obj.pk for obj in works_object_types]
         else:
-            # TODO create inexistent WorksObjectTypeChoice
-            pass
+            # Check which object type are new or have been removed. We can't just remove them all and recreate them
+            # because there might be data related to these relations (eg. WorksObjectPropertyValue)
+            works_object_type_choices = models.WorksObjectTypeChoice.objects.filter(permit_request=permit_request)
+            works_object_type_ids = set(works_object_type_choices.values_list('works_object_type_id', flat=True))
+            selected_object_type_ids = set(obj.pk for obj in works_object_types)
+
+            deleted_works_object_type_ids = works_object_type_ids - selected_object_type_ids
+            works_object_type_choices.filter(works_object_type_id__in=deleted_works_object_type_ids).delete()
+
+            new_works_object_type_ids = selected_object_type_ids - works_object_type_ids
+
+        for works_object_type_id in new_works_object_type_ids:
+            models.WorksObjectTypeChoice.objects.create(
+                permit_request=permit_request, works_object_type_id=works_object_type_id
+            )
 
         return permit_request
