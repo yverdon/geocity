@@ -3,7 +3,7 @@ import urllib.parse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from . import forms, models
+from . import forms, models, templatetags
 
 
 def create_permit_request(request):

@@ -1,8 +1,12 @@
 {% extends "base_generic.html" %}
 {% load bootstrap4 %}
 {% load i18n %}
+{% block navbar %}
+{% load permit_progressbar %}
+{% endblock navbar %}
 
 {% block content %}
+{% permit_progressbar 1 %}
 <div class="container mt-3">
   <h3>{% trans "Sélectionnez les types de travaux" %}</h3>
   <hr>
@@ -19,4 +23,3 @@
   </form>
 </div>
 {% endblock content %}
-
