@@ -1,7 +1,6 @@
-from datetime import datetime
-
 from django.contrib.postgres.fields import JSONField
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
@@ -30,7 +29,7 @@ class PermitRequest(models.Model):
     status = models.PositiveSmallIntegerField(
         _("état"), choices=STATUS_CHOICES, default=STATUS_DRAFT
     )
-    created_at = models.DateTimeField(_("date de création"), default=datetime.now)
+    created_at = models.DateTimeField(_("date de création"), default=timezone.now)
     validated_at = models.DateTimeField(_("date de validation"), null=True)
     works_objects_types = models.ManyToManyField('WorksObjectType', through=WorksObjectTypeChoice)
 

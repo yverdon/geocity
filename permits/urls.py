@@ -11,6 +11,7 @@ permit_request_urlpatterns = [
 
 existing_permit_request_urlpatterns = [
     path('properties/', views.permit_request_properties, name='permit_request_properties'),
+    path('appendices/', views.permit_request_appendices, name='permit_request_appendices'),
 ]
 
 urlpatterns = [

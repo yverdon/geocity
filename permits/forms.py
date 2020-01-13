@@ -2,15 +2,7 @@ from django import forms
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 
-from . import models
-
-
-def get_works_object_type_choices(permit_request):
-    return models.WorksObjectTypeChoice.objects.filter(
-        permit_request=permit_request
-    ).select_related(
-        'permit_request', 'works_object_type'
-    ).prefetch_related('works_object_type__properties')
+from . import models, services
 
 
 def get_field_cls_for_property(prop):
@@ -24,61 +16,9 @@ def get_field_cls_for_property(prop):
     return input_type_mapping[prop.input_type]
 
 
-@transaction.atomic
-def set_object_property_value(permit_request, object_type, prop, value):
-    """
-    Create or update the `WorksObjectPropertyValue` object for the given property, object type and permit request. The
-    record will be deleted if value is an empty string or None.
-    """
-    existing_value_obj = models.WorksObjectPropertyValue.objects.filter(
-        works_object_type_choice__permit_request=permit_request,
-        works_object_type_choice__works_object_type=object_type,
-        property=prop
-    )
-
-    if value == "" or value is None:
-        existing_value_obj.delete()
-    else:
-        value_dict = {'val': value}
-
-        nb_objs = models.WorksObjectPropertyValue.objects.filter(
-            works_object_type_choice__permit_request=permit_request,
-            works_object_type_choice__works_object_type=object_type,
-            property=prop
-        ).update(value=value_dict)
-
-        if nb_objs == 0:
-            works_object_type_choice, created = models.WorksObjectTypeChoice.objects.get_or_create(
-                permit_request=permit_request, works_object_type=object_type
-            )
-            models.WorksObjectPropertyValue.objects.create(
-                works_object_type_choice=works_object_type_choice,
-                property=prop,
-                value=value_dict
-            )
-
-
-def get_properties_values(permit_request):
-    """
-    Return a queryset of `WorksObjectPropertyValue` objects for the given `permit_request`.
-    """
-    return models.WorksObjectPropertyValue.objects.filter(
-        works_object_type_choice__permit_request=permit_request
-    ).select_related('works_object_type_choice', 'works_object_type_choice__works_object_type', 'property')
-
-
-def properties_for_choices(works_object_type_choices):
-    """
-    Yield `(WorksObjectTypeChoice, WorksObjectProperty)` tuples for every `works_object_type_choices`.
-    """
-    for choice in works_object_type_choices:
-        for prop in choice.works_object_type.properties.exclude(input_type=models.WorksObjectProperty.INPUT_TYPE_FILE):
-            yield (choice, prop)
-
-
 class WorksTypesForm(forms.Form):
     types = forms.ModelMultipleChoiceField(
-        queryset=models.WorksType.objects.all(), widget=forms.CheckboxSelectMultiple(), label=_("Types de travaux")
+        queryset=services.get_works_types(), widget=forms.CheckboxSelectMultiple(), label=_("Types de travaux")
     )
 
     def __init__(self, *args, **kwargs):
@@ -102,7 +42,7 @@ class WorksTypesForm(forms.Form):
         selected_works_type_ids = set(obj.pk for obj in self.cleaned_data['types'])
 
         deleted_works_type_ids = works_type_ids - selected_works_type_ids
-        get_works_object_type_choices(self.instance).filter(
+        services.get_works_object_type_choices(self.instance).filter(
             works_object_type__works_type_id__in=deleted_works_type_ids
         ).delete()
 
@@ -146,7 +86,7 @@ class WorksObjectsForm(forms.Form):
             selected_object_type_ids = set(obj.pk for obj in works_object_types)
 
             deleted_works_object_type_ids = works_object_type_ids - selected_object_type_ids
-            get_works_object_type_choices(permit_request).filter(
+            services.get_works_object_type_choices(permit_request).filter(
                 works_object_type_id__in=deleted_works_object_type_ids
             ).delete()
 
@@ -170,7 +110,7 @@ class WorksObjectsPropertiesForm(forms.Form):
 
         # Compute initial values for fields
         initial = {}
-        prop_values = get_properties_values(instance)
+        prop_values = services.get_properties_values(instance)
         for prop_value in prop_values:
             initial[
                 self.get_field_name(prop_value.works_object_type_choice.works_object_type, prop_value.property)
@@ -181,7 +121,7 @@ class WorksObjectsPropertiesForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         # Create field for each property
-        for choice, prop in properties_for_choices(get_works_object_type_choices(self.instance)):
+        for choice, prop in services.properties_for_choices(services.get_works_object_type_choices(self.instance)):
             field_name = self.get_field_name(choice.works_object_type, prop)
             self.fields[field_name] = self.get_field_for_property(prop)
 
@@ -196,10 +136,10 @@ class WorksObjectsPropertiesForm(forms.Form):
         )
 
     def save(self):
-        works_object_type_choices = get_works_object_type_choices(self.instance)
+        works_object_type_choices = services.get_works_object_type_choices(self.instance)
 
-        for choice, prop in properties_for_choices(works_object_type_choices):
-            set_object_property_value(
+        for choice, prop in services.properties_for_choices(works_object_type_choices):
+            services.set_object_property_value(
                 permit_request=self.instance,
                 object_type=choice.works_object_type,
                 prop=prop,

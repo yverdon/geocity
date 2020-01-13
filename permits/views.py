@@ -47,7 +47,10 @@ def permit_request_select_objects(request, permit_request_id=None):
 
     if permit_request_id:
         permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
-        works_types += [works_object_type.works_type for works_object_type in permit_request.works_objects_types.all()]
+        works_types += [
+            works_object_type.works_type
+            for works_object_type in permit_request.works_objects_types.select_related('works_type')
+        ]
         works_types_form = None
     else:
         permit_request = None
@@ -78,7 +81,7 @@ def permit_request_properties(request, permit_request_id=None):
 
         if form.is_valid():
             form.save()
-            return redirect(reverse('permits:permit_request_appendices', permit_request_id=permit_request.pk))
+            return redirect('permits:permit_request_appendices', permit_request_id=permit_request.pk)
     else:
         form = forms.WorksObjectsPropertiesForm(instance=permit_request, enable_validation=False)
 
@@ -93,3 +96,8 @@ def permit_request_properties(request, permit_request_id=None):
         'form': form,
         'objects_types': fields_by_object_type,
     })
+
+
+def permit_request_appendices(request, permit_request_id=None):
+    from django.http import HttpResponse
+    return HttpResponse()
