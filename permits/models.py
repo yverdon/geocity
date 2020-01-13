@@ -90,7 +90,7 @@ class WorksObjectProperty(models.Model):
         _("type de caractéristique"), max_length=30, choices=INPUT_TYPE_CHOICES
     )
     is_mandatory = models.BooleanField(_("obligatoire"), default=False)
-    works_objects_types = models.ManyToManyField(WorksObjectType, verbose_name=_("objets des travaux"))
+    works_objects_types = models.ManyToManyField(WorksObjectType, verbose_name=_("objets des travaux"), related_name='properties')
 
     class Meta:
         verbose_name = _("caractéristique")

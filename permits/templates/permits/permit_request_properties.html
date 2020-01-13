@@ -7,6 +7,14 @@
   <h3>{% trans "Renseignez les caractéristiques des objets" %}</h3>
   <hr>
   <form method="post">
+    {% csrf_token %}
+
+    {% for object_type, fields in objects_types %}
+      <h4>{{ object_type }}</h4>
+      {% for field in fields %}
+        {% bootstrap_field field %}
+      {% endfor %}
+    {% endfor %}
 
     {% buttons %}
       <a href="

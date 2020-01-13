@@ -5,6 +5,77 @@ from django.utils.translation import gettext_lazy as _
 from . import models
 
 
+def get_works_object_type_choices(permit_request):
+    return models.WorksObjectTypeChoice.objects.filter(
+        permit_request=permit_request
+    ).select_related(
+        'permit_request', 'works_object_type'
+    ).prefetch_related('works_object_type__properties')
+
+
+def get_field_cls_for_property(prop):
+    input_type_mapping = {
+        models.WorksObjectProperty.INPUT_TYPE_TEXT: forms.CharField,
+        models.WorksObjectProperty.INPUT_TYPE_CHECKBOX: forms.BooleanField,
+        models.WorksObjectProperty.INPUT_TYPE_NUMBER: forms.IntegerField,
+        models.WorksObjectProperty.INPUT_TYPE_FILE: forms.FileField,
+    }
+
+    return input_type_mapping[prop.input_type]
+
+
+@transaction.atomic
+def set_object_property_value(permit_request, object_type, prop, value):
+    """
+    Create or update the `WorksObjectPropertyValue` object for the given property, object type and permit request. The
+    record will be deleted if value is an empty string or None.
+    """
+    existing_value_obj = models.WorksObjectPropertyValue.objects.filter(
+        works_object_type_choice__permit_request=permit_request,
+        works_object_type_choice__works_object_type=object_type,
+        property=prop
+    )
+
+    if value == "" or value is None:
+        existing_value_obj.delete()
+    else:
+        value_dict = {'val': value}
+
+        nb_objs = models.WorksObjectPropertyValue.objects.filter(
+            works_object_type_choice__permit_request=permit_request,
+            works_object_type_choice__works_object_type=object_type,
+            property=prop
+        ).update(value=value_dict)
+
+        if nb_objs == 0:
+            works_object_type_choice, created = models.WorksObjectTypeChoice.objects.get_or_create(
+                permit_request=permit_request, works_object_type=object_type
+            )
+            models.WorksObjectPropertyValue.objects.create(
+                works_object_type_choice=works_object_type_choice,
+                property=prop,
+                value=value_dict
+            )
+
+
+def get_properties_values(permit_request):
+    """
+    Return a queryset of `WorksObjectPropertyValue` objects for the given `permit_request`.
+    """
+    return models.WorksObjectPropertyValue.objects.filter(
+        works_object_type_choice__permit_request=permit_request
+    ).select_related('works_object_type_choice', 'works_object_type_choice__works_object_type', 'property')
+
+
+def properties_for_choices(works_object_type_choices):
+    """
+    Yield `(WorksObjectTypeChoice, WorksObjectProperty)` tuples for every `works_object_type_choices`.
+    """
+    for choice in works_object_type_choices:
+        for prop in choice.works_object_type.properties.exclude(input_type=models.WorksObjectProperty.INPUT_TYPE_FILE):
+            yield (choice, prop)
+
+
 class WorksTypesForm(forms.Form):
     types = forms.ModelMultipleChoiceField(
         queryset=models.WorksType.objects.all(), widget=forms.CheckboxSelectMultiple(), label=_("Types de travaux")
@@ -13,18 +84,27 @@ class WorksTypesForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop('instance', None)
 
+        kwargs['initial'] = {
+            'types': [
+                works_object_type.works_type
+                for works_object_type
+                in self.instance.works_objects_types.select_related('works_type')
+            ]
+        } if self.instance else {}
+
         super().__init__(*args, **kwargs)
 
     def save(self):
         if not self.instance:
             return
 
-        works_object_type_choices = models.WorksObjectTypeChoice.objects.filter(permit_request=self.instance)
-        works_type_ids = set(works_object_type_choices.values_list('works_object_type__works_type_id', flat=True))
+        works_type_ids = set(self.instance.works_objects_types.values_list('works_type_id', flat=True))
         selected_works_type_ids = set(obj.pk for obj in self.cleaned_data['types'])
 
         deleted_works_type_ids = works_type_ids - selected_works_type_ids
-        works_object_type_choices.filter(works_object_type__works_type_id__in=deleted_works_type_ids).delete()
+        get_works_object_type_choices(self.instance).filter(
+            works_object_type__works_type_id__in=deleted_works_type_ids
+        ).delete()
 
 
 class WorksObjectsTypeChoiceField(forms.ModelMultipleChoiceField):
@@ -38,7 +118,13 @@ class WorksObjectsForm(forms.Form):
     def __init__(self, works_types, *args, **kwargs):
         self.instance = kwargs.pop('instance', None)
 
-        super().__init__(*args, **kwargs)
+        initial = {}
+
+        if self.instance:
+            for type_id, object_id in self.instance.works_objects_types.values_list('works_type__id', 'id'):
+                initial.setdefault(str(type_id), []).append(object_id)
+
+        super().__init__(*args, **{**kwargs, 'initial': initial})
 
         for works_type in works_types:
             self.fields[str(works_type.pk)] = WorksObjectsTypeChoiceField(
@@ -56,12 +142,13 @@ class WorksObjectsForm(forms.Form):
         else:
             # Check which object type are new or have been removed. We can't just remove them all and recreate them
             # because there might be data related to these relations (eg. WorksObjectPropertyValue)
-            works_object_type_choices = models.WorksObjectTypeChoice.objects.filter(permit_request=permit_request)
-            works_object_type_ids = set(works_object_type_choices.values_list('works_object_type_id', flat=True))
+            works_object_type_ids = set(permit_request.works_objects_types.values_list('pk', flat=True))
             selected_object_type_ids = set(obj.pk for obj in works_object_types)
 
             deleted_works_object_type_ids = works_object_type_ids - selected_object_type_ids
-            works_object_type_choices.filter(works_object_type_id__in=deleted_works_object_type_ids).delete()
+            get_works_object_type_choices(permit_request).filter(
+                works_object_type_id__in=deleted_works_object_type_ids
+            ).delete()
 
             new_works_object_type_ids = selected_object_type_ids - works_object_type_ids
 
@@ -71,3 +158,50 @@ class WorksObjectsForm(forms.Form):
             )
 
         return permit_request
+
+
+class WorksObjectsPropertiesForm(forms.Form):
+    prefix = 'properties'
+
+    def __init__(self, instance, *args, **kwargs):
+        self.instance = instance
+        # Set to `False` to disable required fields validation (useful to allow saving incomplete forms)
+        self.enable_validation = kwargs.pop('enable_validation', True)
+
+        # Compute initial values for fields
+        initial = {}
+        prop_values = get_properties_values(instance)
+        for prop_value in prop_values:
+            initial[
+                self.get_field_name(prop_value.works_object_type_choice.works_object_type, prop_value.property)
+            ] = prop_value.value['val']
+
+        kwargs['initial'] = {**initial, **kwargs.get('initial', {})}
+
+        super().__init__(*args, **kwargs)
+
+        # Create field for each property
+        for choice, prop in properties_for_choices(get_works_object_type_choices(self.instance)):
+            field_name = self.get_field_name(choice.works_object_type, prop)
+            self.fields[field_name] = self.get_field_for_property(prop)
+
+    def get_field_name(self, works_object_type, prop):
+        return "{}_{}".format(works_object_type.pk, prop.pk)
+
+    def get_field_for_property(self, prop):
+        field_class = get_field_cls_for_property(prop)
+        return field_class(
+            required=self.enable_validation and prop.is_mandatory,
+            label=prop.name
+        )
+
+    def save(self):
+        works_object_type_choices = get_works_object_type_choices(self.instance)
+
+        for choice, prop in properties_for_choices(works_object_type_choices):
+            set_object_property_value(
+                permit_request=self.instance,
+                object_type=choice.works_object_type,
+                prop=prop,
+                value=self.cleaned_data[self.get_field_name(choice.works_object_type, prop)]
+            )
