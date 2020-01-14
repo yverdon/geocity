@@ -1,7 +1,6 @@
-from datetime import datetime
-
 from django.contrib.postgres.fields import JSONField
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
@@ -10,9 +9,11 @@ class WorksObjectTypeChoice(models.Model):
     This intermediary model represents the selected objects for a permit
     request. Property values will then point to this model.
     """
-    # TODO unicity constraints
     permit_request = models.ForeignKey('PermitRequest', on_delete=models.CASCADE)
     works_object_type = models.ForeignKey('WorksObjectType', on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = [('permit_request', 'works_object_type')]
 
 
 class PermitRequest(models.Model):
@@ -28,7 +29,7 @@ class PermitRequest(models.Model):
     status = models.PositiveSmallIntegerField(
         _("état"), choices=STATUS_CHOICES, default=STATUS_DRAFT
     )
-    created_at = models.DateTimeField(_("date de création"), default=datetime.now)
+    created_at = models.DateTimeField(_("date de création"), default=timezone.now)
     validated_at = models.DateTimeField(_("date de validation"), null=True)
     works_objects_types = models.ManyToManyField('WorksObjectType', through=WorksObjectTypeChoice)
 
@@ -52,8 +53,13 @@ class WorksObjectType(models.Model):
     """
     Represents a works object for a specific works type.
     """
-    works_type = models.ForeignKey(WorksType, on_delete=models.CASCADE)
-    works_object = models.ForeignKey('WorksObject', on_delete=models.CASCADE)
+    works_type = models.ForeignKey('WorksType', on_delete=models.CASCADE, verbose_name=_("type de travaux"))
+    works_object = models.ForeignKey('WorksObject', on_delete=models.CASCADE, verbose_name=_("objet des travaux"))
+
+    class Meta:
+        verbose_name = _("objet pour types de travaux")
+        verbose_name_plural = _("objets pour types de travaux")
+        unique_together = [('works_type', 'works_object')]
 
     def __str__(self):
         return "{} ({})".format(self.works_object.name, self.works_type.name)
@@ -90,7 +96,7 @@ class WorksObjectProperty(models.Model):
         _("type de caractéristique"), max_length=30, choices=INPUT_TYPE_CHOICES
     )
     is_mandatory = models.BooleanField(_("obligatoire"), default=False)
-    works_objects_types = models.ManyToManyField(WorksObjectType, verbose_name=_("objets des travaux"))
+    works_objects_types = models.ManyToManyField(WorksObjectType, verbose_name=_("objets des travaux"), related_name='properties')
 
     class Meta:
         verbose_name = _("caractéristique")
@@ -112,4 +118,9 @@ class WorksObjectPropertyValue(models.Model):
         WorksObjectTypeChoice, verbose_name=_("objet des travaux"),
         on_delete=models.CASCADE, related_name='properties'
     )
+    # Storing the value in a JSON field allows to keep the value type (eg. boolean, int) instead of transforming
+    # everything to str
     value = JSONField()
+
+    class Meta:
+        unique_together = [('property', 'works_object_type_choice')]
