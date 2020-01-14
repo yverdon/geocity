@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="container mt-3">
-  <h3>{% trans "Renseignez les caractéristiques des objets" %}</h3>
+  <h3>{% trans "Renseignez les annexes" %}</h3>
   <hr>
   <form method="post">
     {% csrf_token %}
@@ -17,8 +17,8 @@
     {% endfor %}
 
     {% buttons %}
-      <a href="{% url 'permits:permit_request_select_objects' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
-      <button class="btn btn-primary">{% trans "Continuer" %}</button>
+    <a href="{% url 'permits:permit_request_properties' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
+    <button class="btn btn-primary">{% trans "Continuer" %}</button>
     {% endbuttons %}
   </form>
 </div>
