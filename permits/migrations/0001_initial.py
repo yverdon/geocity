@@ -4,6 +4,7 @@ import datetime
 import django.contrib.postgres.fields.jsonb
 from django.db import migrations, models
 import django.db.models.deletion
+from django.utils import timezone
 
 
 class Migration(migrations.Migration):
@@ -19,7 +20,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('status', models.PositiveSmallIntegerField(choices=[(0, 'Brouillon'), (1, 'Envoyée'), (2, 'Validée')], default=0, verbose_name='état')),
-                ('created_at', models.DateTimeField(default=datetime.datetime.now, verbose_name='date de création')),
+                ('created_at', models.DateTimeField(default=timezone.now, verbose_name='date de création')),
                 ('validated_at', models.DateTimeField(null=True, verbose_name='date de validation')),
             ],
             options={
@@ -93,7 +94,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='worksobjectproperty',
-            name='works_objects_types',
+            name='works_object_types',
             field=models.ManyToManyField(to='permits.WorksObjectType', verbose_name='objets des travaux'),
         ),
         migrations.AddField(
@@ -103,7 +104,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='permitrequest',
-            name='works_objects_types',
+            name='works_object_types',
             field=models.ManyToManyField(through='permits.WorksObjectTypeChoice', to='permits.WorksObjectType'),
         ),
     ]

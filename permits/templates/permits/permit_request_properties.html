@@ -9,7 +9,7 @@
   <form method="post">
     {% csrf_token %}
 
-    {% for object_type, fields in objects_types %}
+    {% for object_type, fields in object_types %}
       <h4>{{ object_type }}</h4>
       {% for field in fields %}
         {% bootstrap_field field %}

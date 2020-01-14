@@ -1,12 +1,18 @@
+import mimetypes
 import urllib.parse
 
+from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from . import forms, models
+from . import forms, models, services
 
 
 def permit_request_select_types(request, permit_request_id=None):
+    """
+    Step to select works types (eg. demolition). No permit request is created at this step since we only store (works
+    object, works type) couples in the database.
+    """
     if permit_request_id:
         permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
     else:
@@ -28,30 +34,34 @@ def permit_request_select_types(request, permit_request_id=None):
     else:
         works_types_form = forms.WorksTypesForm(instance=permit_request)
 
-    return render(request, "permits/permit_request_types.html", {
+    return render(request, "permits/permit_request_select_types.html", {
         'works_types_form': works_types_form,
         'permit_request': permit_request
     })
 
 
 def permit_request_select_objects(request, permit_request_id=None):
+    """
+    Step to select works objects. This view supports either editing an existing permit request (if `permit_request_id`
+    is set) or creating a new permit request.
+    """
+    # Landing on this view without any selected works type and no existing permit request doesn't make sense: allow the
+    # user to select works types by redirecting them to the first step
     if not request.GET and not permit_request_id:
         return redirect('permits:permit_request_select_types')
+    # Works types in the querystring
     elif request.GET:
         works_types_form = forms.WorksTypesForm(request.GET)
         if not works_types_form.is_valid():
             return redirect('permits:permit_request_select_types')
-        works_types = list(works_types_form.cleaned_data['types'].prefetch_related('works_objects'))
+        works_types = works_types_form.cleaned_data['types']
     else:
-        works_types = []
+        works_types = models.WorksType.objects.none()
 
     if permit_request_id:
         permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
-        works_types += [
-            works_object_type.works_type
-            for works_object_type in permit_request.works_objects_types.select_related('works_type')
-        ]
-        works_types_form = None
+        # Add the permit request works types to the ones in the querystring
+        works_types = works_types.union(services.get_permit_request_works_types(permit_request)).distinct()
     else:
         permit_request = None
 
@@ -67,57 +77,70 @@ def permit_request_select_objects(request, permit_request_id=None):
         works_objects_form = forms.WorksObjectsForm(works_types, instance=permit_request)
 
     return render(request, "permits/permit_request_select_objects.html", {
-        'works_types_form': works_types_form,
         'works_objects_form': works_objects_form,
         'permit_request': permit_request
     })
 
 
 def permit_request_properties(request, permit_request_id):
+    """
+    Step to input properties values for the given permit request.
+    """
     permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
 
     if request.method == 'POST':
-        form = forms.WorksObjectsPropertiesForm(instance=permit_request, data=request.POST, enable_validation=False)
+        # Disable `required` fields validation to allow partial save
+        form = forms.WorksObjectsPropertiesForm(instance=permit_request, data=request.POST, enable_required=False)
 
         if form.is_valid():
             form.save()
             return redirect('permits:permit_request_appendices', permit_request_id=permit_request.pk)
     else:
-        form = forms.WorksObjectsPropertiesForm(instance=permit_request, enable_validation=False)
+        form = forms.WorksObjectsPropertiesForm(instance=permit_request, enable_required=False)
 
-    works_objects_types = permit_request.works_objects_types.all()
-    fields_by_object_type = [
-        # TODO exclude file properties
-        (object_type, [form[form.get_field_name(object_type, prop)] for prop in object_type.properties.exclude(input_type=models.WorksObjectProperty.INPUT_TYPE_FILE)])
-        for object_type in works_objects_types
-    ]
+    fields_by_object_type = form.get_fields_by_object_type()
 
     return render(request, "permits/permit_request_properties.html", {
         'permit_request': permit_request,
-        'objects_types': fields_by_object_type,
+        'object_types': fields_by_object_type,
     })
 
 
 def permit_request_appendices(request, permit_request_id):
+    """
+    Step to upload appendices for the given permit request.
+    """
     permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
 
     if request.method == 'POST':
-        form = forms.WorksObjectsAppendicesForm(instance=permit_request, data=request.POST, enable_validation=False)
+        form = forms.WorksObjectsAppendicesForm(
+            instance=permit_request, data=request.POST, files=request.FILES, enable_required=False
+        )
 
         if form.is_valid():
             form.save()
             return redirect('permits:permit_request_appendices', permit_request_id=permit_request.pk)
     else:
-        form = forms.WorksObjectsAppendicesForm(instance=permit_request, enable_validation=False)
+        form = forms.WorksObjectsAppendicesForm(instance=permit_request, enable_required=False)
 
-    works_objects_types = permit_request.works_objects_types.all()
-    fields_by_object_type = [
-        (object_type, [form[form.get_field_name(object_type, prop)] for prop in object_type.properties.filter(input_type=models.WorksObjectProperty.INPUT_TYPE_FILE)])
-        for object_type in works_objects_types
-    ]
+    fields_by_object_type = form.get_fields_by_object_type()
 
     return render(request, "permits/permit_request_appendices.html", {
         'permit_request': permit_request,
-        'form': form,
-        'objects_types': fields_by_object_type,
+        'object_types': fields_by_object_type,
     })
+
+
+def permit_request_media_download(request, property_value_id):
+    """
+    Send the file referenced by the given property value.
+    """
+    # TODO add access check
+    property_value = get_object_or_404(
+        models.WorksObjectPropertyValue.objects.filter(property__input_type=models.WorksObjectProperty.INPUT_TYPE_FILE),
+        pk=property_value_id
+    )
+    file = services.get_property_value(property_value)
+    mime_type, encoding = mimetypes.guess_type(file.name)
+
+    return StreamingHttpResponse(file, content_type=mime_type)

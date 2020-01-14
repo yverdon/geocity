@@ -17,4 +17,5 @@ existing_permit_request_urlpatterns = [
 urlpatterns = [
     path('<int:permit_request_id>/', include(permit_request_urlpatterns + existing_permit_request_urlpatterns)),
     path('', include(permit_request_urlpatterns)),
+    path('media/<int:property_value_id>/', views.permit_request_media_download, name='permit_request_media_download'),
 ]

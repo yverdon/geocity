@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterField(
             model_name='worksobjectproperty',
-            name='works_objects_types',
+            name='works_object_types',
             field=models.ManyToManyField(related_name='properties', to='permits.WorksObjectType', verbose_name='objets des travaux'),
         ),
         migrations.AlterUniqueTogether(
