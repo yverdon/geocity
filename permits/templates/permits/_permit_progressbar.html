@@ -1,1 +1,105 @@
-{{ WorksObjectsPropertiesForm }}
+<style>
+    *, *:after, *:before {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Open Sans";
+  }
+
+
+  /* Form Progress */
+  .progress {
+    /* width: 1000px; */
+    height: 80px;
+    margin: 10px 10px 10px 10px;
+    padding: 10px 10px 10px 10px;
+    text-align: center;
+  }
+  .progress .circle,
+  .progress .bar {
+    display: inline-block;
+    background: #fff;
+    width: 40px; height: 40px;
+    border-radius: 40px;
+    border: 1px solid #d5d5da;
+  }
+  .progress .bar {
+    position: relative;
+    width: 80px;
+    height: 6px;
+    top: -33px;
+    margin-left: -5px;
+    margin-right: -5px;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+  }
+  .progress .circle .label {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    border-radius: 32px;
+    margin-top: 3px;
+    color: #b5b5ba;
+    font-size: 17px;
+  }
+  .progress .circle .title {
+    color: #b5b5ba;
+    font-size: 13px;
+    line-height: 30px;
+    margin-left: -5px;
+  }
+
+  /* Done / Partial */
+  .progress .bar.done,
+  .progress .circle.done {
+    background: #eee;
+  }
+  /* .progress .bar.partial {
+    background: linear-gradient(to right, #EEE 40%, #FFF 60%);
+  } */
+  .progress .circle.done .label {
+    color: #FFF;
+    background: #8bc435;
+    box-shadow: inset 0 0 2px rgba(0,0,0,.2);
+  }
+  .progress .circle.done .title {
+    color: #444;
+  }
+  .progress .circle.partial .label {
+    color: #FFF;
+    background: #0c95be;
+    box-shadow: inset 0 0 2px rgba(0,0,0,.2);
+  }
+  .progress .circle.partial .title {
+    color: #0c95be;
+  }
+</style>
+
+<!-- from https://codepen.io/himanshu/pen/syLAh -->
+<div class="progress">
+{% for key, value in steps.items %}
+
+    {% if value.state == 'done' %}
+      <div class="circle done">
+      <span class="label">✓</span>
+    {% elif value.state == 'todo' %}
+      <div class="circle">
+      <span class="label">{{value.number}}</span>
+    {% elif value.state == 'partial' %}
+      <div class="circle partial">
+      <span class="label">{{value.number}}</span>
+    {% endif %}
+      <span class="title">{{value.name}}</span>
+    </div>
+    {% if value.state == 'done' %}
+      <span class="bar done"></span>
+    {% elif value.state == 'todo' %}
+      <span class="bar"></span>
+    {% elif value.state == 'partial' %}
+      <span class="bar half"></span>
+    {% endif %}
+
+{% endfor %}
+</div>
