@@ -6,7 +6,7 @@
 {% endblock navbar %}
 
 {% block content %}
-{% permit_progressbar 1 %}
+{% permit_progressbar permit_request 'WorksTypesForm' %}
 <div class="container mt-3">
   <h3>{% trans "Sélectionnez les types de travaux" %}</h3>
   <hr>

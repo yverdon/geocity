@@ -16,13 +16,13 @@
 
         {% if user.groups.all.0.name == "extern" %}
         <tr>
-            <td><a href="{% url 'permits:permit_request_create' %}"><img class="main_app_icon" src="{% static 'images/construction_permit.png'%}" alt=""></td>
+            <td><a href="{% url 'permits:permit_request_select_types' %}"><img class="main_app_icon" src="{% static 'images/construction_permit.png'%}" alt=""></td>
             <td><a href="{% url 'gpf:listexterns' %}"><img class="main_app_icon" src="{% static 'images/theme_permis_fouille.png'%}" alt=""></td>
             <td><a href="{{apps.mapnv}}" target="_blank"><img class="main_app_icon" src="{% static 'images/theme_plan_de_ville.png'%}" alt=""></td>
             <td><a href="{{apps.mapnv}}/lidar" target="_blank"><img class="main_app_icon" src="{% static 'images/theme_3d.png'%}" alt=""></td>
         </tr>
         <tr>
-          <td><a href="{% url 'permits:permit_request_create' %}">Permis de construire</td>
+          <td><a href="{% url 'permits:permit_request_select_types' %}">Permis de construire</td>
           <td><a href="{% url 'gpf:list' %}">Permis de fouille</td>
           <td><a href="{{apps.mapnv}}" target="_blank">Géoportail</td>
           <td><a href="{{apps.mapnv}}/lidar" target="_blank">Géoportail 3D</td>
@@ -30,13 +30,13 @@
         {% else %}
         <table id="homepage_main_apps">
           <tr>
-              <td><a href="{% url 'permits:permit_request_create' %}"><img class="main_app_icon" src="{% static 'images/construction_permit.png'%}" alt=""></td>
+              <td><a href="{% url 'permits:permit_request_select_types' %}"><img class="main_app_icon" src="{% static 'images/construction_permit.png'%}" alt=""></td>
               <td><a href="{% url 'gpf:list' %}"><img class="main_app_icon" src="{% static 'images/theme_permis_fouille.png'%}" alt=""></td>
               <td><a href="{{apps.mapnv}}" target="_blank"><img class="main_app_icon" src="{% static 'images/theme_plan_de_ville.png'%}" alt=""></td>
               <td><a href="{{apps.mapnv}}/lidar" target="_blank"><img class="main_app_icon" src="{% static 'images/theme_3d.png'%}" alt=""></td>
           </tr>
           <tr>
-            <td><a href="{% url 'permits:permit_request_create' %}">Permis de construire</td>
+            <td><a href="{% url 'permits:permit_request_select_types' %}">Permis de construire</td>
             <td><a href="{% url 'gpf:list' %}">Permis de fouille</td>
             <td><a href="{{apps.mapnv}}" target="_blank">Géoportail</td>
             <td><a href="{{apps.mapnv}}/lidar" target="_blank">Géoportail 3D</td>
