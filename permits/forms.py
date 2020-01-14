@@ -25,11 +25,7 @@ class WorksTypesForm(forms.Form):
         self.instance = kwargs.pop('instance', None)
 
         kwargs['initial'] = {
-            'types': [
-                works_object_type.works_type
-                for works_object_type
-                in self.instance.works_objects_types.select_related('works_type')
-            ]
+            'types': services.get_permit_request_works_types(self.instance)
         } if self.instance else {}
 
         super().__init__(*args, **kwargs)
@@ -38,13 +34,7 @@ class WorksTypesForm(forms.Form):
         if not self.instance:
             return
 
-        works_type_ids = set(self.instance.works_objects_types.values_list('works_type_id', flat=True))
-        selected_works_type_ids = set(obj.pk for obj in self.cleaned_data['types'])
-
-        deleted_works_type_ids = works_type_ids - selected_works_type_ids
-        services.get_works_object_type_choices(self.instance).filter(
-            works_object_type__works_type_id__in=deleted_works_type_ids
-        ).delete()
+        services.set_works_types(self.instance, self.cleaned_data['types'])
 
 
 class WorksObjectsTypeChoiceField(forms.ModelMultipleChoiceField):
@@ -77,40 +67,27 @@ class WorksObjectsForm(forms.Form):
         permit_request = self.instance or models.PermitRequest.objects.create()
         works_object_types = [item for sublist in self.cleaned_data.values() for item in sublist]
 
-        if not self.instance:
-            new_works_object_type_ids = [obj.pk for obj in works_object_types]
-        else:
-            # Check which object type are new or have been removed. We can't just remove them all and recreate them
-            # because there might be data related to these relations (eg. WorksObjectPropertyValue)
-            works_object_type_ids = set(permit_request.works_objects_types.values_list('pk', flat=True))
-            selected_object_type_ids = set(obj.pk for obj in works_object_types)
-
-            deleted_works_object_type_ids = works_object_type_ids - selected_object_type_ids
-            services.get_works_object_type_choices(permit_request).filter(
-                works_object_type_id__in=deleted_works_object_type_ids
-            ).delete()
-
-            new_works_object_type_ids = selected_object_type_ids - works_object_type_ids
-
-        for works_object_type_id in new_works_object_type_ids:
-            models.WorksObjectTypeChoice.objects.create(
-                permit_request=permit_request, works_object_type_id=works_object_type_id
-            )
+        services.set_works_object_types(permit_request, works_object_types)
 
         return permit_request
 
 
-class WorksObjectsPropertiesForm(forms.Form):
+class PartialValidationMixin:
+    def __init__(self, *args, **kwargs):
+        # Set to `False` to disable required fields validation (useful to allow saving incomplete forms)
+        self.enable_validation = kwargs.pop('enable_validation', True)
+        super().__init__(*args, **kwargs)
+
+
+class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
     prefix = 'properties'
 
     def __init__(self, instance, *args, **kwargs):
         self.instance = instance
-        # Set to `False` to disable required fields validation (useful to allow saving incomplete forms)
-        self.enable_validation = kwargs.pop('enable_validation', True)
 
         # Compute initial values for fields
         initial = {}
-        prop_values = services.get_properties_values(instance)
+        prop_values = self.get_values()
         for prop_value in prop_values:
             initial[
                 self.get_field_name(prop_value.works_object_type_choice.works_object_type, prop_value.property)
@@ -121,9 +98,15 @@ class WorksObjectsPropertiesForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         # Create field for each property
-        for choice, prop in services.properties_for_choices(services.get_works_object_type_choices(self.instance)):
-            field_name = self.get_field_name(choice.works_object_type, prop)
+        for works_object_type, prop in self.get_properties():
+            field_name = self.get_field_name(works_object_type, prop)
             self.fields[field_name] = self.get_field_for_property(prop)
+
+    def get_properties(self):
+        return services.get_permit_request_properties(self.instance)
+
+    def get_values(self):
+        return services.get_properties_values(self.instance)
 
     def get_field_name(self, works_object_type, prop):
         return "{}_{}".format(works_object_type.pk, prop.pk)
@@ -136,12 +119,20 @@ class WorksObjectsPropertiesForm(forms.Form):
         )
 
     def save(self):
-        works_object_type_choices = services.get_works_object_type_choices(self.instance)
-
-        for choice, prop in services.properties_for_choices(works_object_type_choices):
+        for works_object_type, prop in services.get_permit_request_properties(self.instance):
             services.set_object_property_value(
                 permit_request=self.instance,
-                object_type=choice.works_object_type,
+                object_type=works_object_type,
                 prop=prop,
-                value=self.cleaned_data[self.get_field_name(choice.works_object_type, prop)]
+                value=self.cleaned_data[self.get_field_name(works_object_type, prop)]
             )
+
+
+class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
+    prefix = 'appendices'
+
+    def get_properties(self):
+        return services.get_permit_request_appendices(self.instance)
+
+    def get_values(self):
+        return services.get_appendices_values(self.instance)

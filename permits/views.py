@@ -73,7 +73,7 @@ def permit_request_select_objects(request, permit_request_id=None):
     })
 
 
-def permit_request_properties(request, permit_request_id=None):
+def permit_request_properties(request, permit_request_id):
     permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
 
     if request.method == 'POST':
@@ -87,17 +87,37 @@ def permit_request_properties(request, permit_request_id=None):
 
     works_objects_types = permit_request.works_objects_types.all()
     fields_by_object_type = [
-        (object_type, [form[form.get_field_name(object_type, prop)] for prop in object_type.properties.all()])
+        # TODO exclude file properties
+        (object_type, [form[form.get_field_name(object_type, prop)] for prop in object_type.properties.exclude(input_type=models.WorksObjectProperty.INPUT_TYPE_FILE)])
         for object_type in works_objects_types
     ]
 
     return render(request, "permits/permit_request_properties.html", {
         'permit_request': permit_request,
-        'form': form,
         'objects_types': fields_by_object_type,
     })
 
 
-def permit_request_appendices(request, permit_request_id=None):
-    from django.http import HttpResponse
-    return HttpResponse()
+def permit_request_appendices(request, permit_request_id):
+    permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
+
+    if request.method == 'POST':
+        form = forms.WorksObjectsAppendicesForm(instance=permit_request, data=request.POST, enable_validation=False)
+
+        if form.is_valid():
+            form.save()
+            return redirect('permits:permit_request_appendices', permit_request_id=permit_request.pk)
+    else:
+        form = forms.WorksObjectsAppendicesForm(instance=permit_request, enable_validation=False)
+
+    works_objects_types = permit_request.works_objects_types.all()
+    fields_by_object_type = [
+        (object_type, [form[form.get_field_name(object_type, prop)] for prop in object_type.properties.filter(input_type=models.WorksObjectProperty.INPUT_TYPE_FILE)])
+        for object_type in works_objects_types
+    ]
+
+    return render(request, "permits/permit_request_appendices.html", {
+        'permit_request': permit_request,
+        'form': form,
+        'objects_types': fields_by_object_type,
+    })
