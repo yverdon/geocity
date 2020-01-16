@@ -3,7 +3,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from gpf.models import AdministrativeEntity
+from gpf.models import Actor, AdministrativeEntity
 
 
 class WorksObjectTypeChoice(models.Model):
@@ -33,9 +33,14 @@ class PermitRequest(models.Model):
     )
     created_at = models.DateTimeField(_("date de création"), default=timezone.now)
     validated_at = models.DateTimeField(_("date de validation"), null=True)
-    works_object_types = models.ManyToManyField('WorksObjectType', through=WorksObjectTypeChoice, related_name='permit_requests')
+    works_object_types = models.ManyToManyField(
+        'WorksObjectType', through=WorksObjectTypeChoice, related_name='permit_requests'
+    )
     administrative_entity = models.ForeignKey(
         AdministrativeEntity, on_delete=models.CASCADE, verbose_name=_("commune"), related_name='permit_requests'
+    )
+    author = models.ForeignKey(
+        Actor, null=True, on_delete=models.SET_NULL, verbose_name=_("auteur"), related_name='permit_requests'
     )
 
     class Meta:

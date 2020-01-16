@@ -2,6 +2,7 @@ import os
 
 from django.core.files.storage import default_storage
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 
 from gpf.models import AdministrativeEntity
@@ -215,3 +216,10 @@ def get_property_value(object_property_value):
         value = f
 
     return value
+
+
+def get_permit_request_for_user_or_404(user, permit_request_id):
+    """
+    Return the permit request with `permit_request_id` and associated to the `user` actor.
+    """
+    return get_object_or_404(models.PermitRequest, author=user.actor, pk=permit_request_id)

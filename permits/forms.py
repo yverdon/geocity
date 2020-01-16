@@ -21,11 +21,21 @@ class AdministrativeEntityForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop('instance', None)
+
+        if self.instance:
+            initial = {**kwargs.get('initial', {}), 'administrative_entity': self.instance.administrative_entity}
+        else:
+            initial = {}
+
+        kwargs['initial'] = initial
+
         super().__init__(*args, **kwargs)
 
-    def save(self):
+    def save(self, author):
         if not self.instance:
-            return models.PermitRequest.objects.create(administrative_entity=self.cleaned_data['administrative_entity'])
+            return models.PermitRequest.objects.create(
+                administrative_entity=self.cleaned_data['administrative_entity'], author=author
+            )
         else:
             services.set_administrative_entity(self.instance, self.cleaned_data['administrative_entity'])
             return self.instance
