@@ -11,11 +11,18 @@ def permit_progressbar(permit_request, step):
 
 
     steps = {
-        'WorksTypesForm': {'state': 'done', 'name': 'Types', 'number': 1, 'current': step}, # must have one item selected a least
-        'WorksObjectsForm': {'state':'partial', 'name': 'Objets', 'number': 2 ,'current': step}, # must have one object by worktype selected at least
-        'WorksObjectsPropertiesForm': {'state': 'partial', 'name': 'Détails', 'number': 3,'current': step}, # must be valid
-        'WorksObjectsAppendicesForm': {'state': 'todo', 'name': 'Documents', 'number': 4,'current': step}, # must be valid
+        'AdministrativeEntityForm': {'state': 'done', 'name': 'Commune', 'number': 1, 'active': False}, # must have one item selected a least
+        'WorksTypesForm': {'state': 'done', 'name': 'Travaux', 'number': 2, 'active': False}, # must have one item selected a least
+        'WorksObjectsForm': {'state':'partial', 'name': 'Objets', 'number': 3 ,'active': False}, # must have one object by worktype selected at least
+        'WorksObjectsPropertiesForm': {'state': 'partial', 'name': 'Détails', 'number': 4,'active': False}, # must be valid
+        'WorksObjectsAppendicesForm': {'state': 'todo', 'name': 'Documents', 'number': 5,'active': False}, # must be valid
+        'WorksContactForm': {'state': 'todo', 'name': 'Contacts', 'number': 6,'active': False}, # must be valid
+        'SubmitForm': {'state': 'todo', 'name': 'Envoi', 'number': 7,'active': False}, # must be valid
     }
+
+    if step in steps.keys():
+        steps[step]['active'] = True
+
 
     if permit_request:
 

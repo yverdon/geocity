@@ -9,7 +9,7 @@
 
   /* Form Progress */
   .progress {
-    /* width: 1000px; */
+    width: 1000px;
     height: 80px;
     margin: 10px 10px 10px 10px;
     padding: 10px 10px 10px 10px;
@@ -22,6 +22,7 @@
     width: 40px; height: 40px;
     border-radius: 40px;
     border: 1px solid #d5d5da;
+    margin-left: 100px;
   }
   .progress .bar {
     position: relative;
@@ -44,6 +45,7 @@
     color: #b5b5ba;
     font-size: 17px;
   }
+
   .progress .circle .title {
     color: #b5b5ba;
     font-size: 13px;
@@ -56,22 +58,23 @@
   .progress .circle.done {
     background: #eee;
   }
-  /* .progress .bar.partial {
-    background: linear-gradient(to right, #EEE 40%, #FFF 60%);
-  } */
+
   .progress .circle.done .label {
     color: #FFF;
     background: #8bc435;
     box-shadow: inset 0 0 2px rgba(0,0,0,.2);
   }
+
   .progress .circle.done .title {
     color: #444;
   }
+
   .progress .circle.partial .label {
     color: #FFF;
     background: #0c95be;
     box-shadow: inset 0 0 2px rgba(0,0,0,.2);
   }
+
   .progress .circle.partial .title {
     color: #0c95be;
   }
@@ -82,7 +85,7 @@
 {% for key, value in steps.items %}
 
     {% if value.state == 'done' %}
-      <div class="circle done">
+      <div class="circle done {{value.active}}">
       <span class="label">✓</span>
     {% elif value.state == 'todo' %}
       <div class="circle">
@@ -93,13 +96,7 @@
     {% endif %}
       <span class="title">{{value.name}}</span>
     </div>
-    {% if value.state == 'done' %}
-      <span class="bar done"></span>
-    {% elif value.state == 'todo' %}
-      <span class="bar"></span>
-    {% elif value.state == 'partial' %}
-      <span class="bar half"></span>
-    {% endif %}
+
 
 {% endfor %}
 </div>
