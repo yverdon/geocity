@@ -11,3 +11,4 @@ static/tempfiles/
 geomapshark/protected-static/
 env.yaml
 /docker-compose.override.yml
+/permit_requests_uploads

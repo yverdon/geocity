@@ -51,14 +51,14 @@ class WorksObjectsForm(forms.Form):
         initial = {}
 
         if self.instance:
-            for type_id, object_id in self.instance.works_objects_types.values_list('works_type__id', 'id'):
+            for type_id, object_id in self.instance.works_object_types.values_list('works_type__id', 'id'):
                 initial.setdefault(str(type_id), []).append(object_id)
 
         super().__init__(*args, **{**kwargs, 'initial': initial})
 
-        for works_type in works_types:
+        for works_type in works_types.prefetch_related('works_object_types'):
             self.fields[str(works_type.pk)] = WorksObjectsTypeChoiceField(
-                queryset=models.WorksObjectType.objects.filter(works_type=works_type),
+                queryset=works_type.works_object_types.all(),
                 widget=forms.CheckboxSelectMultiple(), label=works_type.name
             )
 
@@ -75,7 +75,7 @@ class WorksObjectsForm(forms.Form):
 class PartialValidationMixin:
     def __init__(self, *args, **kwargs):
         # Set to `False` to disable required fields validation (useful to allow saving incomplete forms)
-        self.enable_validation = kwargs.pop('enable_validation', True)
+        self.enable_required = kwargs.pop('enable_required', True)
         super().__init__(*args, **kwargs)
 
 
@@ -91,35 +91,69 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         for prop_value in prop_values:
             initial[
                 self.get_field_name(prop_value.works_object_type_choice.works_object_type, prop_value.property)
-            ] = prop_value.value['val']
+            ] = services.get_property_value(prop_value)
 
         kwargs['initial'] = {**initial, **kwargs.get('initial', {})}
 
         super().__init__(*args, **kwargs)
 
-        # Create field for each property
+        # Create a field for each property
         for works_object_type, prop in self.get_properties():
             field_name = self.get_field_name(works_object_type, prop)
-            self.fields[field_name] = self.get_field_for_property(prop)
+            self.fields[field_name] = self.field_for_property(prop)
+
+    def get_fields_by_object_type(self):
+        """
+        Return a list of tuples `(WorksObjectType, List[Field])` for each object type and their properties.
+        """
+        return [
+            (object_type, [self[self.get_field_name(object_type, prop)] for prop in props])
+            for object_type, props in self.get_properties_by_object_type()
+        ]
+
+    def get_properties_by_object_type(self):
+        """
+        Return a list of tuples `(WorksObjectType, List[WorksObjectTypeProperty])` for the object-types selected in the
+        current permit request.
+        """
+        return services.get_properties(self.instance)
 
     def get_properties(self):
+        """
+        Return a list of tuples `(WorksObjectType, WorksObjectTypeProperty)` for the current permit request. They're
+        used to create the form fields.
+        """
         return services.get_permit_request_properties(self.instance)
 
     def get_values(self):
+        """
+        Return a `WorksObjectPropertyValue` objects for the current permit request. They're used to set the initial
+        value of the form fields.
+        """
         return services.get_properties_values(self.instance)
 
     def get_field_name(self, works_object_type, prop):
         return "{}_{}".format(works_object_type.pk, prop.pk)
 
-    def get_field_for_property(self, prop):
+    def field_for_property(self, prop):
+        """
+        Return a Field instance for the given property. The specific class of the field is defined by
+        `get_field_cls_for_property`.
+        """
         field_class = get_field_cls_for_property(prop)
-        return field_class(
-            required=self.enable_validation and prop.is_mandatory,
-            label=prop.name
-        )
+        return field_class(**self.get_field_kwargs(prop))
+
+    def get_field_kwargs(self, prop):
+        """
+        Return the options used when instanciating the field for the given `prop`.
+        """
+        return {
+            'required': self.enable_required and prop.is_mandatory,
+            'label': prop.name
+        }
 
     def save(self):
-        for works_object_type, prop in services.get_permit_request_properties(self.instance):
+        for works_object_type, prop in self.get_properties():
             services.set_object_property_value(
                 permit_request=self.instance,
                 object_type=works_object_type,
@@ -131,8 +165,14 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
 class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
     prefix = 'appendices'
 
+    def get_properties_by_object_type(self):
+        return services.get_appendices(self.instance)
+
     def get_properties(self):
         return services.get_permit_request_appendices(self.instance)
 
     def get_values(self):
         return services.get_appendices_values(self.instance)
+
+    def get_field_kwargs(self, prop):
+        return {**super().get_field_kwargs(prop), **{'widget': forms.ClearableFileInput}}
