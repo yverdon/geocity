@@ -142,10 +142,12 @@ def _get_properties_filtered(permit_request, props_filter):
     `permit_request`. `props_filter` is passed the properties queryset and should return it (or a filtered version of
     it).
     """
-    return [
+    props_by_object_type = [
         (works_object_type, props_filter(works_object_type.properties.all()).order_by('name'))
         for works_object_type in permit_request.works_object_types.order_by('works_object__name', 'works_type__name')
     ]
+
+    return [(works_object_type, props) for works_object_type, props in props_by_object_type if props]
 
 
 def get_properties(permit_request):
