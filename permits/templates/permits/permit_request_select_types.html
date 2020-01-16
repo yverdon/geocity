@@ -19,6 +19,7 @@
     {% bootstrap_field works_types_form.types show_label=False %}
 
     {% buttons %}
+      <a href="{% url 'permits:permit_request_select_administrative_entity' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
       <button class="btn btn-primary">{% trans "Continuer" %}</button>
     {% endbuttons %}
   </form>

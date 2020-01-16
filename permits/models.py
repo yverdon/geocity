@@ -3,6 +3,8 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from gpf.models import AdministrativeEntity
+
 
 class WorksObjectTypeChoice(models.Model):
     """
@@ -31,7 +33,10 @@ class PermitRequest(models.Model):
     )
     created_at = models.DateTimeField(_("date de création"), default=timezone.now)
     validated_at = models.DateTimeField(_("date de validation"), null=True)
-    works_objects_types = models.ManyToManyField('WorksObjectType', through=WorksObjectTypeChoice)
+    works_object_types = models.ManyToManyField('WorksObjectType', through=WorksObjectTypeChoice, related_name='permit_requests')
+    administrative_entity = models.ForeignKey(
+        AdministrativeEntity, on_delete=models.CASCADE, verbose_name=_("commune"), related_name='permit_requests'
+    )
 
     class Meta:
         verbose_name = _("demande de permis")
@@ -53,8 +58,13 @@ class WorksObjectType(models.Model):
     """
     Represents a works object for a specific works type.
     """
-    works_type = models.ForeignKey('WorksType', on_delete=models.CASCADE, verbose_name=_("type de travaux"))
-    works_object = models.ForeignKey('WorksObject', on_delete=models.CASCADE, verbose_name=_("objet des travaux"))
+    works_type = models.ForeignKey(
+        'WorksType', on_delete=models.CASCADE, verbose_name=_("type de travaux"), related_name='works_object_types'
+    )
+    works_object = models.ForeignKey(
+        'WorksObject', on_delete=models.CASCADE, verbose_name=_("objet des travaux"), related_name='works_object_types'
+    )
+    administrative_entities = models.ManyToManyField(AdministrativeEntity, verbose_name=_("communes"), related_name='works_object_types')
 
     class Meta:
         verbose_name = _("objet pour types de travaux")
@@ -96,7 +106,7 @@ class WorksObjectProperty(models.Model):
         _("type de caractéristique"), max_length=30, choices=INPUT_TYPE_CHOICES
     )
     is_mandatory = models.BooleanField(_("obligatoire"), default=False)
-    works_objects_types = models.ManyToManyField(WorksObjectType, verbose_name=_("objets des travaux"), related_name='properties')
+    works_object_types = models.ManyToManyField(WorksObjectType, verbose_name=_("objets des travaux"), related_name='properties')
 
     class Meta:
         verbose_name = _("caractéristique")
