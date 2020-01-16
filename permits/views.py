@@ -1,34 +1,46 @@
 import mimetypes
 import urllib.parse
 
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
+from gpf.models import Actor
+
 from . import forms, models, services
 
 
+def user_has_actor(user):
+    try:
+        user.actor
+    except Actor.DoesNotExist:
+        return False
+
+    return True
+
+
+@login_required
+@user_passes_test(user_has_actor)
 def permit_request_select_administrative_entity(request, permit_request_id=None):
     if permit_request_id:
-        permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
-        initial = {'administrative_entity': permit_request.administrative_entity}
+        permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
     else:
         permit_request = None
-        initial = {}
 
     if request.method == 'POST':
         administrative_entity_form = forms.AdministrativeEntityForm(
-            instance=permit_request, data=request.POST, initial=initial
+            instance=permit_request, data=request.POST
         )
 
         if administrative_entity_form.is_valid():
-            permit_request = administrative_entity_form.save()
+            permit_request = administrative_entity_form.save(author=request.user.actor)
 
             return redirect(
                 reverse('permits:permit_request_select_types', kwargs={'permit_request_id': permit_request.pk})
             )
     else:
-        administrative_entity_form = forms.AdministrativeEntityForm(instance=permit_request, initial=initial)
+        administrative_entity_form = forms.AdministrativeEntityForm(instance=permit_request)
 
     return render(request, "permits/permit_request_select_administrative_entity.html", {
         'form': administrative_entity_form,
@@ -36,12 +48,13 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
     })
 
 
+@login_required
 def permit_request_select_types(request, permit_request_id):
     """
     Step to select works types (eg. demolition). No permit request is created at this step since we only store (works
     object, works type) couples in the database.
     """
-    permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
+    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
 
     if request.method == 'POST':
         works_types_form = forms.WorksTypesForm(data=request.POST, instance=permit_request)
@@ -65,12 +78,13 @@ def permit_request_select_types(request, permit_request_id):
     })
 
 
+@login_required
 def permit_request_select_objects(request, permit_request_id):
     """
     Step to select works objects. This view supports either editing an existing permit request (if `permit_request_id`
     is set) or creating a new permit request.
     """
-    permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
+    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
 
     if request.GET:
         works_types_form = forms.WorksTypesForm(data=request.GET, instance=permit_request)
@@ -103,11 +117,12 @@ def permit_request_select_objects(request, permit_request_id):
     })
 
 
+@login_required
 def permit_request_properties(request, permit_request_id):
     """
     Step to input properties values for the given permit request.
     """
-    permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
+    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
 
     if request.method == 'POST':
         # Disable `required` fields validation to allow partial save
@@ -127,11 +142,12 @@ def permit_request_properties(request, permit_request_id):
     })
 
 
+@login_required
 def permit_request_appendices(request, permit_request_id):
     """
     Step to upload appendices for the given permit request.
     """
-    permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
+    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
 
     if request.method == 'POST':
         form = forms.WorksObjectsAppendicesForm(
@@ -152,14 +168,16 @@ def permit_request_appendices(request, permit_request_id):
     })
 
 
+@login_required
 def permit_request_media_download(request, property_value_id):
     """
     Send the file referenced by the given property value.
     """
-    # TODO add access check
+    # TODO allow other users to access the uploaded media (eg. services that will validate the request)
     property_value = get_object_or_404(
         models.WorksObjectPropertyValue.objects.filter(property__input_type=models.WorksObjectProperty.INPUT_TYPE_FILE),
-        pk=property_value_id
+        pk=property_value_id,
+        works_object_type_choice__permit_request__author=request.user.actor
     )
     file = services.get_property_value(property_value)
     mime_type, encoding = mimetypes.guess_type(file.name)
