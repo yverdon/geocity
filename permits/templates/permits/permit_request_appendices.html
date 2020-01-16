@@ -14,11 +14,19 @@
       {% for field in fields %}
         {% bootstrap_field field %}
       {% endfor %}
+    {% empty %}
+      {% trans "Aucune annexe requise pour cette demande de permis." %}
     {% endfor %}
 
     {% buttons %}
     <a href="{% url 'permits:permit_request_properties' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
-    <button class="btn btn-primary">{% trans "Continuer" %}</button>
+    <button class="btn btn-primary">
+      {% if object_types %}
+        {% trans "Enregistrer et continuer" %}
+      {% else %}
+        {% trans "Continuer" %}
+      {% endif %}
+    </button>
     {% endbuttons %}
   </form>
 </div>
