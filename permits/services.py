@@ -4,6 +4,8 @@ from django.core.files.storage import default_storage
 from django.db import transaction
 from django.urls import reverse
 
+from gpf.models import AdministrativeEntity
+
 from . import models
 
 
@@ -118,8 +120,14 @@ def get_permit_request_appendices(permit_request):
             yield (works_object_type, prop)
 
 
-def get_works_types():
-    return models.WorksType.objects.order_by('name')
+def get_works_types(administrative_entity):
+    return models.WorksType.objects.filter(
+        pk__in=models.WorksObjectType.objects.values_list('works_type_id', flat=True)
+    ).order_by('name')
+
+
+def get_administrative_entities():
+    return AdministrativeEntity.objects.order_by('name')
 
 
 def get_permit_request_works_types(permit_request):
@@ -178,6 +186,20 @@ def set_works_object_types(permit_request, new_works_object_types):
         models.WorksObjectTypeChoice.objects.get_or_create(
             permit_request=permit_request, works_object_type=works_object_type
         )
+
+
+@transaction.atomic
+def set_administrative_entity(permit_request, administrative_entity):
+    """
+    Set the given `administrative_entity`, which should be an instance of `gpf.AdministrativeEntity`.
+    `WorksObjectTypeChoice` records that don't exist in the new `administrative_entity` will be deleted.
+    """
+    get_works_object_type_choices(permit_request).exclude(
+        works_object_type__in=administrative_entity.works_object_types.all()
+    ).delete()
+
+    permit_request.administrative_entity = administrative_entity
+    permit_request.save()
 
 
 def get_property_value(object_property_value):

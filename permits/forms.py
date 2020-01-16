@@ -16,13 +16,28 @@ def get_field_cls_for_property(prop):
     return input_type_mapping[prop.input_type]
 
 
-class WorksTypesForm(forms.Form):
-    types = forms.ModelMultipleChoiceField(
-        queryset=services.get_works_types(), widget=forms.CheckboxSelectMultiple(), label=_("Types de travaux")
-    )
+class AdministrativeEntityForm(forms.Form):
+    administrative_entity = forms.ModelChoiceField(queryset=services.get_administrative_entities(), label=_("Commune"))
 
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop('instance', None)
+        super().__init__(*args, **kwargs)
+
+    def save(self):
+        if not self.instance:
+            return models.PermitRequest.objects.create(administrative_entity=self.cleaned_data['administrative_entity'])
+        else:
+            services.set_administrative_entity(self.instance, self.cleaned_data['administrative_entity'])
+            return self.instance
+
+
+class WorksTypesForm(forms.Form):
+    types = forms.ModelMultipleChoiceField(
+        queryset=models.WorksType.objects.none(), widget=forms.CheckboxSelectMultiple(), label=_("Types de travaux")
+    )
+
+    def __init__(self, instance, *args, **kwargs):
+        self.instance = instance
 
         kwargs['initial'] = {
             'types': services.get_permit_request_works_types(self.instance)
@@ -30,10 +45,9 @@ class WorksTypesForm(forms.Form):
 
         super().__init__(*args, **kwargs)
 
-    def save(self):
-        if not self.instance:
-            return
+        self.fields['types'].queryset = services.get_works_types(self.instance.administrative_entity)
 
+    def save(self):
         services.set_works_types(self.instance, self.cleaned_data['types'])
 
 
@@ -45,31 +59,30 @@ class WorksObjectsTypeChoiceField(forms.ModelMultipleChoiceField):
 class WorksObjectsForm(forms.Form):
     prefix = 'works_objects'
 
-    def __init__(self, works_types, *args, **kwargs):
-        self.instance = kwargs.pop('instance', None)
+    def __init__(self, instance, works_types, *args, **kwargs):
+        self.instance = instance
 
         initial = {}
-
-        if self.instance:
-            for type_id, object_id in self.instance.works_object_types.values_list('works_type__id', 'id'):
-                initial.setdefault(str(type_id), []).append(object_id)
+        for type_id, object_id in self.instance.works_object_types.values_list('works_type__id', 'id'):
+            initial.setdefault(str(type_id), []).append(object_id)
 
         super().__init__(*args, **{**kwargs, 'initial': initial})
 
         for works_type in works_types.prefetch_related('works_object_types'):
             self.fields[str(works_type.pk)] = WorksObjectsTypeChoiceField(
-                queryset=works_type.works_object_types.all(),
+                queryset=works_type.works_object_types.filter(
+                    administrative_entities=self.instance.administrative_entity
+                ).distinct(),
                 widget=forms.CheckboxSelectMultiple(), label=works_type.name
             )
 
     @transaction.atomic
     def save(self):
-        permit_request = self.instance or models.PermitRequest.objects.create()
         works_object_types = [item for sublist in self.cleaned_data.values() for item in sublist]
 
-        services.set_works_object_types(permit_request, works_object_types)
+        services.set_works_object_types(self.instance, works_object_types)
 
-        return permit_request
+        return self.instance
 
 
 class PartialValidationMixin:

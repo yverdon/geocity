@@ -8,18 +8,43 @@ from django.urls import reverse
 from . import forms, models, services
 
 
-def permit_request_select_types(request, permit_request_id=None):
+def permit_request_select_administrative_entity(request, permit_request_id=None):
+    if permit_request_id:
+        permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
+        initial = {'administrative_entity': permit_request.administrative_entity}
+    else:
+        permit_request = None
+        initial = {}
+
+    if request.method == 'POST':
+        administrative_entity_form = forms.AdministrativeEntityForm(
+            instance=permit_request, data=request.POST, initial=initial
+        )
+
+        if administrative_entity_form.is_valid():
+            permit_request = administrative_entity_form.save()
+
+            return redirect(
+                reverse('permits:permit_request_select_types', kwargs={'permit_request_id': permit_request.pk})
+            )
+    else:
+        administrative_entity_form = forms.AdministrativeEntityForm(instance=permit_request, initial=initial)
+
+    return render(request, "permits/permit_request_select_administrative_entity.html", {
+        'form': administrative_entity_form,
+        'permit_request': permit_request,
+    })
+
+
+def permit_request_select_types(request, permit_request_id):
     """
     Step to select works types (eg. demolition). No permit request is created at this step since we only store (works
     object, works type) couples in the database.
     """
-    if permit_request_id:
-        permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
-    else:
-        permit_request = None
+    permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
 
     if request.method == 'POST':
-        works_types_form = forms.WorksTypesForm(request.POST, instance=permit_request)
+        works_types_form = forms.WorksTypesForm(data=request.POST, instance=permit_request)
 
         if works_types_form.is_valid():
             works_types_form.save()
@@ -40,41 +65,36 @@ def permit_request_select_types(request, permit_request_id=None):
     })
 
 
-def permit_request_select_objects(request, permit_request_id=None):
+def permit_request_select_objects(request, permit_request_id):
     """
     Step to select works objects. This view supports either editing an existing permit request (if `permit_request_id`
     is set) or creating a new permit request.
     """
+    permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
+
     # Landing on this view without any selected works type and no existing permit request doesn't make sense: allow the
     # user to select works types by redirecting them to the first step
-    if not request.GET and not permit_request_id:
-        return redirect('permits:permit_request_select_types')
-    # Works types in the querystring
-    elif request.GET:
-        works_types_form = forms.WorksTypesForm(request.GET)
+    if request.GET:
+        works_types_form = forms.WorksTypesForm(data=request.GET, instance=permit_request)
         if not works_types_form.is_valid():
             return redirect('permits:permit_request_select_types')
         works_types = works_types_form.cleaned_data['types']
     else:
         works_types = models.WorksType.objects.none()
 
-    if permit_request_id:
-        permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
-        # Add the permit request works types to the ones in the querystring
-        works_types = works_types.union(services.get_permit_request_works_types(permit_request)).distinct()
-    else:
-        permit_request = None
+    # Add the permit request works types to the ones in the querystring
+    works_types = works_types.union(services.get_permit_request_works_types(permit_request)).distinct()
 
     if request.method == 'POST':
         works_objects_form = forms.WorksObjectsForm(
-            works_types, data=request.POST, instance=permit_request
+            data=request.POST, instance=permit_request, works_types=works_types
         )
 
         if works_objects_form.is_valid():
             permit_request = works_objects_form.save()
             return redirect('permits:permit_request_properties', permit_request_id=permit_request.pk)
     else:
-        works_objects_form = forms.WorksObjectsForm(works_types, instance=permit_request)
+        works_objects_form = forms.WorksObjectsForm(instance=permit_request, works_types=works_types)
 
     return render(request, "permits/permit_request_select_objects.html", {
         'works_objects_form': works_objects_form,

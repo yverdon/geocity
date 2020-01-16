@@ -1,0 +1,21 @@
+{% extends "base_generic.html" %}
+{% load bootstrap4 %}
+{% load i18n %}
+
+{% block content %}
+<div class="container mt-3">
+  <h3>{% trans "Sélectionnez la commune" %}</h3>
+  <hr>
+  <form method="post">
+    {% bootstrap_form_errors form %}
+
+    {% csrf_token %}
+
+    {% bootstrap_field form.administrative_entity show_label=False %}
+
+    {% buttons %}
+      <button class="btn btn-primary">{% trans "Continuer" %}</button>
+    {% endbuttons %}
+  </form>
+</div>
+{% endblock content %}
