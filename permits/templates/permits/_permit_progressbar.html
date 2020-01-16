@@ -78,25 +78,23 @@
   .progress .circle.partial .title {
     color: #0c95be;
   }
+
+  .active-step .label {
+    background-color: white !important;
+    color: black !important;
+    font-weight: bold !important;
+  }
+
 </style>
 
 <!-- from https://codepen.io/himanshu/pen/syLAh -->
 <div class="progress">
 {% for key, value in steps.items %}
-
-    {% if value.state == 'done' %}
-      <div class="circle done {{value.active}}">
-      <span class="label">✓</span>
-    {% elif value.state == 'todo' %}
-      <div class="circle">
-      <span class="label">{{value.number}}</span>
-    {% elif value.state == 'partial' %}
-      <div class="circle partial">
-      <span class="label">{{value.number}}</span>
-    {% endif %}
-      <span class="title">{{value.name}}</span>
-    </div>
-
-
+      <div class="circle {{value.state}} {{value.current}}">
+        <a href="{{value.url}}"
+          <span class="label">{{value.number}}</span>
+          <span class="title">{{value.name}}</span>
+        </a>
+      </div>
 {% endfor %}
 </div>
