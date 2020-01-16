@@ -1,0 +1,25 @@
+{% extends "base_generic.html" %}
+{% load bootstrap4 %}
+{% load i18n %}
+
+{% block content %}
+<div class="container mt-3">
+  <h3>{% trans "Renseignez les acteurs" %}</h3>
+  <hr>
+  <form method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
+
+    <div id="forms-container">
+      {% for form in formset %}
+        {% bootstrap_form form %}
+      {% endfor %}
+    </div>
+
+    {% buttons %}
+      <a href="{% url 'permits:permit_request_appendices' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
+      <button class="btn btn-primary">{% trans "Enregistrer et continuer" %}</button>
+    {% endbuttons %}
+  </form>
+</div>
+{% endblock content %}
