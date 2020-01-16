@@ -1,7 +1,7 @@
 import urllib.parse
 
+from django.test import TestCase
 from django.urls import reverse
-from django.test import TestCase, tag
 
 from . import factories, models, services
 
@@ -31,38 +31,51 @@ class PermitRequestTestCase(TestCase):
         )
 
     def test_types_step_submit_redirects_to_objects_with_types_qs(self):
-        response = self.client.post(reverse('permits:permit_request_select_types'), data={
-            'types': self.works_types[0].pk
-        })
+        permit_request = factories.PermitRequestFactory()
+        permit_request.administrative_entity.works_object_types.set(models.WorksObjectType.objects.all())
+
+        response = self.client.post(
+            reverse('permits:permit_request_select_types', kwargs={'permit_request_id': permit_request.pk}), data={
+                'types': self.works_types[0].pk
+            }
+        )
 
         self.assertRedirects(
             response,
-            reverse('permits:permit_request_select_objects') + '?types={}'.format(self.works_types[0].pk)
+            reverse('permits:permit_request_select_objects', kwargs={'permit_request_id': permit_request.pk})
+            + '?types={}'.format(self.works_types[0].pk)
         )
 
     def test_objects_step_without_qs_redirects_to_types_step(self):
-        response = self.client.get(reverse('permits:permit_request_select_objects'))
-        self.assertRedirects(response, reverse('permits:permit_request_select_types'))
+        permit_request = factories.PermitRequestFactory()
+        permit_request.administrative_entity.works_object_types.set(models.WorksObjectType.objects.all())
 
-    def test_objects_step_submit_saves_permit_request(self):
+        response = self.client.get(
+            reverse('permits:permit_request_select_objects', kwargs={'permit_request_id': permit_request.pk})
+        )
+        self.assertRedirects(
+            response, reverse('permits:permit_request_select_types', kwargs={'permit_request_id': permit_request.pk})
+        )
+
+    def test_objects_step_submit_saves_selected_object_types(self):
+        permit_request = factories.PermitRequestFactory()
         works_object_type = models.WorksObjectType.objects.first()
+        permit_request.administrative_entity.works_object_types.set(models.WorksObjectType.objects.all())
         self.client.post(
-            reverse('permits:permit_request_select_objects') + '?types={}'.format(self.works_types[0].pk), data={
+            reverse('permits:permit_request_select_objects', kwargs={'permit_request_id': permit_request.pk})
+            + '?types={}'.format(self.works_types[0].pk), data={
                 'works_objects-{}'.format(self.works_types[0].pk): works_object_type.pk
             }
         )
 
         self.assertEqual(models.PermitRequest.objects.filter(works_object_types=works_object_type).count(), 1)
 
-    @tag('wip')
     def test_required_properties_can_be_left_blank(self):
         permit_request = factories.PermitRequestFactory()
         factories.WorksObjectTypeChoiceFactory.create_batch(3, permit_request=permit_request)
+        permit_request.administrative_entity.works_object_types.set(permit_request.works_object_types.all())
         prop = factories.WorksObjectPropertyFactory(is_mandatory=True)
-        prop.works_object_types.set([
-            works_object_type_choice.works_object_type
-            for works_object_type_choice in services.get_works_object_type_choices(permit_request)
-        ])
+        prop.works_object_types.set(permit_request.works_object_types.all())
 
         response = self.client.post(reverse('permits:permit_request_properties', kwargs={
             'permit_request_id': permit_request.pk
@@ -77,6 +90,7 @@ class PermitRequestUpdateTestCase(TestCase):
     def setUp(self):
         self.permit_request = factories.PermitRequestFactory()
         factories.WorksObjectTypeChoiceFactory.create_batch(3, permit_request=self.permit_request)
+        self.permit_request.administrative_entity.works_object_types.set(self.permit_request.works_object_types.all())
 
     def test_types_step_submit_shows_new_objects(self):
         new_works_object_type = factories.WorksObjectTypeFactory()
@@ -107,6 +121,7 @@ class PermitRequestUpdateTestCase(TestCase):
 
     def test_objects_step_submit_updates_permit_request(self):
         new_works_object_type = factories.WorksObjectTypeFactory()
+        self.permit_request.administrative_entity.works_object_types.add(new_works_object_type)
         current_works_object_types = list(self.permit_request.works_object_types.all())
         current_works_object_types_dict = to_works_objects_dict(current_works_object_types)
         new_works_object_types_dict = to_works_objects_dict([new_works_object_type])
@@ -154,6 +169,7 @@ class PermitRequestPrefillTestCase(TestCase):
     def setUp(self):
         self.permit_request = factories.PermitRequestFactory()
         factories.WorksObjectTypeChoiceFactory.create_batch(3, permit_request=self.permit_request)
+        self.permit_request.administrative_entity.works_object_types.set(self.permit_request.works_object_types.all())
 
     def test_types_step_preselects_types_for_existing_permit_request(self):
         response = self.client.get(

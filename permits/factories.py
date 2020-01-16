@@ -1,7 +1,15 @@
 import factory
 import faker
+from gpf.models import AdministrativeEntity
 
 from . import models
+
+
+class AdministrativeEntityFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = AdministrativeEntity
+
+    ofs_id = 0
 
 
 class WorksObjectFactory(factory.django.DjangoModelFactory):
@@ -21,6 +29,8 @@ class WorksTypeFactory(factory.django.DjangoModelFactory):
 class PermitRequestFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PermitRequest
+
+    administrative_entity = factory.SubFactory(AdministrativeEntityFactory)
 
 
 class WorksObjectPropertyFactory(factory.django.DjangoModelFactory):

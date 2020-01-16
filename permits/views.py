@@ -48,7 +48,7 @@ def permit_request_select_types(request, permit_request_id):
 
         if works_types_form.is_valid():
             works_types_form.save()
-            redirect_kwargs = {'permit_request_id': permit_request_id} if permit_request_id else {}
+            redirect_kwargs = {'permit_request_id': permit_request_id}
 
             return redirect(
                 reverse('permits:permit_request_select_objects', kwargs=redirect_kwargs)
@@ -72,14 +72,15 @@ def permit_request_select_objects(request, permit_request_id):
     """
     permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
 
-    # Landing on this view without any selected works type and no existing permit request doesn't make sense: allow the
-    # user to select works types by redirecting them to the first step
     if request.GET:
         works_types_form = forms.WorksTypesForm(data=request.GET, instance=permit_request)
         if not works_types_form.is_valid():
-            return redirect('permits:permit_request_select_types')
+            return redirect('permits:permit_request_select_types', permit_request_id=permit_request.pk)
         works_types = works_types_form.cleaned_data['types']
     else:
+        if not permit_request.works_object_types.exists():
+            return redirect('permits:permit_request_select_types', permit_request_id=permit_request.pk)
+
         works_types = models.WorksType.objects.none()
 
     # Add the permit request works types to the ones in the querystring
