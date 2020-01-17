@@ -9,10 +9,12 @@ permit_request_urlpatterns = [
 ]
 
 existing_permit_request_urlpatterns = [
+    path('', views.permit_request_redirect, name='permit_request_redirect'),
     path('types/', views.permit_request_select_types, name='permit_request_select_types'),
     path('objects/', views.permit_request_select_objects, name='permit_request_select_objects'),
     path('properties/', views.permit_request_properties, name='permit_request_properties'),
     path('appendices/', views.permit_request_appendices, name='permit_request_appendices'),
+    path('actors/', views.permit_request_actors, name='permit_request_actors'),
 ]
 
 urlpatterns = [

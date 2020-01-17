@@ -2,10 +2,13 @@ import mimetypes
 import urllib.parse
 
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db import transaction
+from django.forms import modelformset_factory
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
+from gpf.forms import ActorForm
 from gpf.models import Actor
 
 from . import forms, models, services
@@ -18,6 +21,11 @@ def user_has_actor(user):
         return False
 
     return True
+
+
+@login_required
+def permit_request_redirect(request, permit_request_id):
+    return redirect('permits:permit_request_select_administrative_entity', permit_request_id=permit_request_id)
 
 
 @login_required
@@ -156,7 +164,7 @@ def permit_request_appendices(request, permit_request_id):
 
         if form.is_valid():
             form.save()
-            return redirect('permits:permit_request_appendices', permit_request_id=permit_request.pk)
+            return redirect('permits:permit_request_actors', permit_request_id=permit_request.pk)
     else:
         form = forms.WorksObjectsAppendicesForm(instance=permit_request, enable_required=False)
 
@@ -165,6 +173,32 @@ def permit_request_appendices(request, permit_request_id):
     return render(request, "permits/permit_request_appendices.html", {
         'permit_request': permit_request,
         'object_types': fields_by_object_type,
+    })
+
+
+@login_required
+def permit_request_actors(request, permit_request_id):
+    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+    GenericActorFormSet = modelformset_factory(Actor, form=ActorForm, extra=0)
+    queryset = permit_request.actors.all()
+
+    if request.method == 'POST':
+        formset = GenericActorFormSet(request.POST, request.FILES, queryset=queryset)
+
+        if formset.is_valid():
+            actors = []
+            with transaction.atomic():
+                for form in formset:
+                    actors.append(form.save())
+                permit_request.actors.set(actors)
+
+            return redirect('permits:permit_request_summary', permit_request_id=permit_request.pk)
+    else:
+        formset = GenericActorFormSet(queryset=queryset)
+
+    return render(request, "permits/permit_request_actors.html", {
+        'formset': formset,
+        'permit_request': permit_request
     })
 
 
