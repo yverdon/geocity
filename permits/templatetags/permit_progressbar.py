@@ -12,19 +12,17 @@ def permit_progressbar(permit_request, step):
 
 
     steps = {
-        'AdministrativeEntityForm': {'state': 'todo', 'name': 'Commune', 'number': 1, 'current': 'inactive-step',
-            'url': reverse('permits:permit_request_select_administrative_entity', kwargs={'permit_request_id': permit_request.pk} if permit_request else {}),}, # must have one item selected a least
-        'WorksTypesForm': {'state': 'todo', 'name': 'Travaux', 'number': 2, 'current': 'inactive-step',
-            'url': reverse('permits:permit_request_select_administrative_entity', kwargs={'permit_request_id': permit_request.pk} if permit_request else {}),}, # must have one item selected a least
-        'WorksObjectsForm': {'state':'todo', 'name': 'Objets', 'number': 3 , 'current': 'inactive-step',
-            'url': reverse('permits:permit_request_select_administrative_entity', kwargs={'permit_request_id': permit_request.pk} if permit_request else {}),}, # must have one object by worktype selected at least
-        'WorksObjectsPropertiesForm': {'state': 'todo', 'name': 'Détails', 'number': 4, 'current': 'inactive-step',
+        'WorksTypesForm': {'state': 'todo', 'name': 'Travaux', 'number': 1, 'current': 'inactive-step',
+            'url': reverse('permits:permit_request_select_types', kwargs={'permit_request_id': permit_request.pk}),}, # must have one item selected a least
+        'WorksObjectsForm': {'state':'todo', 'name': 'Objets', 'number': 2 , 'current': 'inactive-step',
+            'url': reverse('permits:permit_request_select_objects', kwargs={'permit_request_id': permit_request.pk}),}, # must have one object by worktype selected at least
+        'WorksObjectsPropertiesForm': {'state': 'todo', 'name': 'Détails', 'number': 3, 'current': 'inactive-step',
+            'url': reverse('permits:permit_request_properties', kwargs={'permit_request_id': permit_request.pk}),}, # must be valid
+        'WorksObjectsAppendicesForm': {'state': 'todo', 'name': 'Documents', 'number': 4, 'current': 'inactive-step',
+            'url': reverse('permits:permit_request_appendices', kwargs={'permit_request_id': permit_request.pk}),}, # must be valid
+        'WorksContactForm': {'state': 'todo', 'name': 'Contacts', 'number': 5, 'current': 'inactive-step',
             'url': reverse('permits:permit_request_select_administrative_entity', kwargs={'permit_request_id': permit_request.pk} if permit_request else {}),}, # must be valid
-        'WorksObjectsAppendicesForm': {'state': 'todo', 'name': 'Documents', 'number': 5, 'current': 'inactive-step',
-            'url': reverse('permits:permit_request_select_administrative_entity', kwargs={'permit_request_id': permit_request.pk} if permit_request else {}),}, # must be valid
-        'WorksContactForm': {'state': 'todo', 'name': 'Contacts', 'number': 6, 'current': 'inactive-step',
-            'url': reverse('permits:permit_request_select_administrative_entity', kwargs={'permit_request_id': permit_request.pk} if permit_request else {}),}, # must be valid
-        'SubmitForm': {'state': 'todo', 'name': 'Envoi', 'number': 7, 'current': 'inactive-step',
+        'SubmitForm': {'state': 'todo', 'name': 'Envoi', 'number': 6, 'current': 'inactive-step',
             'url': reverse('permits:permit_request_select_administrative_entity', kwargs={'permit_request_id': permit_request.pk} if permit_request else {}),}, # must be valid
     }
 
@@ -47,6 +45,8 @@ def permit_progressbar(permit_request, step):
             steps['WorksObjectsAppendicesForm']['state'] = 'done'
         else:
             steps['WorksObjectsAppendicesForm']['partial'] = 'partial'
+
+
 
     steps_states = {
         'steps': steps
