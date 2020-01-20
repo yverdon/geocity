@@ -79,7 +79,11 @@
     color: #0c95be;
   }
 
-  .active-step .label {
+  .active-step {
+    color: black !important;
+  }
+
+  .enabled-step .label {
     background-color: white !important;
     color: black !important;
     font-weight: bold !important;
@@ -90,10 +94,10 @@
 <!-- from https://codepen.io/himanshu/pen/syLAh -->
 <div class="progress">
 {% for key, value in steps.items %}
-      <div class="circle {{value.state}} {{value.current}}">
+      <div class="circle {{value.state}} {{value.enabled}}">
         <a href="{{value.url}}"
           <span class="label">{{value.number}}</span>
-          <span class="title">{{value.name}}</span>
+          <span class="title {{value.current}}">{{value.name}}</span>
         </a>
       </div>
 {% endfor %}
