@@ -42,7 +42,7 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
         )
 
         if administrative_entity_form.is_valid():
-            print(request.user.actor)
+
             permit_request = administrative_entity_form.save(author=request.user.actor)
 
             return redirect(
