@@ -1,0 +1,71 @@
+{% extends "base_generic.html" %}
+{% load static %}
+{% block stylesheets%}
+  {% load fontawesome %}
+  {% fontawesome_stylesheet %}
+{% endblock %}
+
+{% block navbartitle %}
+  <a class="navbar-brand" href="{% url 'permits:listexterns'%}">Permis de fouille</a>
+{% endblock %}
+
+{% load bootstrap4 %}
+{% load static %}
+{% block navbar %}
+
+{% endblock %}
+{% block content %}
+
+<hr>
+<a class="btn btn-primary responsive-btn" href="{% url 'permits:permit_request_select_administrative_entity'%}" role="button"><i class="fa fa-road"></i>&nbsp;Faire une nouvelle demande</a>
+<a class="btn btn-primary responsive-btn" data-toggle="collapse" href="#collapseFilter" role="button" aria-expanded="false" aria-controls="collapseFilter">
+  <i class="fa fa-filter"></i>&nbsp;Filtrer les demandes
+</a>
+<a class="btn btn-primary responsive-btn" href="{% url 'permits:listexterns' %}" role="button"><i class="fa fa-eraser"></i>&nbsp;Effacer le filtre</a><hr>
+<div class="modal" id="nonIEModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Navigateur non supporté!</h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        Cette application ne supporte pas Microsoft Internet Explorer 11 et plus anciennes. Merci d'utiliser un navigateur récent comme Chrome, Firefox, Edge ou encore Safari
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script>
+if(navigator.userAgent.indexOf('MSIE')!==-1 || navigator.appVersion.indexOf('Trident/') > -1){
+   $('#nonIEModal').modal('show');
+}
+</script>
+
+{% load render_table from django_tables2 %}
+
+  <style>
+
+    #exports{
+      float:right;
+      margin-bottom: 10px;
+    }
+  </style>
+
+  {{ filter.form.media }}
+  <form method="get">
+    <div class="collapse" id="collapseFilter">
+      <hr>
+      {% bootstrap_form filter.form layout='horizontal' %}
+      {% bootstrap_button "Appliquer le filtre" button_type="submit" button_class="btn-primary"%}
+    </div>
+    <div id=exports>
+    </div>
+  </form>
+<br>
+{% render_table table %}
+
+{% endblock %}

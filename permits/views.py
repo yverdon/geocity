@@ -1,4 +1,4 @@
-import mimetypes
+import mimetypes, os
 import urllib.parse
 
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -7,6 +7,16 @@ from django.forms import modelformset_factory
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+
+# for filters & tables
+from django.utils.decorators import method_decorator
+from django_tables2.views import SingleTableMixin, SingleTableView
+from django_tables2.export.views import ExportMixin
+from django_filters.views import FilterView
+from .tables import PermitRequestTableExterns, PermitExportTable
+from .filters import PermitRequestFilterExterns
+
+
 
 from gpf.forms import ActorForm
 from gpf.models import Actor
@@ -218,3 +228,16 @@ def permit_request_media_download(request, property_value_id):
     mime_type, encoding = mimetypes.guess_type(file.name)
 
     return StreamingHttpResponse(file, content_type=mime_type)
+
+
+@method_decorator(login_required, name="dispatch")
+class PermitRequestListExternsView(SingleTableMixin, FilterView):
+
+    paginate_by = int(os.environ['PAGINATE_BY'])
+    table_class = PermitRequestTableExterns
+    model = models.PermitRequest
+    template_name = 'permits/listexterns.html'
+    filterset_class = PermitRequestFilterExterns
+
+    def get_queryset(self):
+        return models.PermitRequest.objects.filter(author=Actor.objects.get(user__username=self.request.user))
