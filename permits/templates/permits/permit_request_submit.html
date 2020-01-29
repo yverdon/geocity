@@ -1,0 +1,31 @@
+{% extends "base_generic.html" %}
+{% load bootstrap4 %}
+{% load i18n %}
+{% load static %}
+{% block stylesheets%}
+  {% load fontawesome %}
+  {% fontawesome_stylesheet %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/permits.css' %}">
+{% endblock %}
+{% load permit_progressbar %}
+{% block content %}
+{% permit_progressbar permit_request 'SubmitForm' %}
+<div class="container mt-3">
+  <h3>{% trans "Envoyer votre demande" %}</h3>
+  <hr>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {% buttons %}
+    <a href="{% url 'permits:permit_request_appendices' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
+    <button class="btn btn-primary">
+      {% if object_types %}
+        {% trans "Soumettre" %}
+      {% else %}
+        {% trans "Envoyer" %}
+      {% endif %}
+    </button>
+    {% endbuttons %}
+  </form>
+</div>
+{% endblock content %}

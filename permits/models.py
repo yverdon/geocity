@@ -11,17 +11,17 @@ class WorksObjectTypeChoice(models.Model):
     This intermediary model represents the selected objects for a permit
     request. Property values will then point to this model.
     """
-    permit_request = models.ForeignKey('PermitRequest', on_delete=models.CASCADE)
-    works_object_type = models.ForeignKey('WorksObjectType', on_delete=models.CASCADE)
+    permit_request = models.ForeignKey('PermitRequest', on_delete=models.CASCADE, null=True)
+    works_object_type = models.ForeignKey('WorksObjectType', on_delete=models.CASCADE, null=True)
 
     class Meta:
         unique_together = [('permit_request', 'works_object_type')]
 
 
-class PermitRequestActor(models.Model):
-    actor = models.ForeignKey(Actor, on_delete=models.CASCADE)
-    permit_request = models.ForeignKey('PermitRequest', on_delete=models.CASCADE)
-    description = models.CharField(max_length=255)
+# class PermitRequestActor(models.Model):
+#     actor = models.ForeignKey(Actor, on_delete=models.SET_NULL)
+#     permit_request = models.ForeignKey('PermitRequest', on_delete=models.SET_NULL)
+#     description = models.CharField(max_length=255)
 
 
 class PermitRequest(models.Model):
@@ -48,7 +48,7 @@ class PermitRequest(models.Model):
     author = models.ForeignKey(
         Actor, null=True, on_delete=models.SET_NULL, verbose_name=_("auteur"), related_name='permit_requests'
     )
-    actors = models.ManyToManyField(Actor, related_name='+', through=PermitRequestActor)
+    # actors = models.ManyToManyField(Actor, related_name='+', through=PermitRequestActor)
 
     class Meta:
         verbose_name = _("demande de permis")

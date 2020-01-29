@@ -1,0 +1,18 @@
+{% extends "base_permits.html" %}
+{% load bootstrap4 %}
+{% load i18n %}
+{% load static %}
+{% block stylesheets%}
+  {% load fontawesome %}
+  {% fontawesome_stylesheet %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/permits.css' %}">
+{% endblock %}
+{% load permit_progressbar %}
+{% block content %}
+{% permit_progressbar permit_request 'ConfirmationForm' %}
+<div class="container mt-3">
+  <h3>{% trans "Merci pour votre demande" %}</h3>
+  <hr>
+    <a href="{% url 'permits:permit_request_listexterns' %}" class="mr-2">{% trans "Voir mes demandes" %}</a>
+</div>
+{% endblock content %}

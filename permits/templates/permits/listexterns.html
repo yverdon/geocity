@@ -1,8 +1,10 @@
-{% extends "base_generic.html" %}
+{% extends "base_permits.html" %}
+{% load static %}
 {% load static %}
 {% block stylesheets%}
   {% load fontawesome %}
   {% fontawesome_stylesheet %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/permits.css' %}">
 {% endblock %}
 
 {% block navbartitle %}
