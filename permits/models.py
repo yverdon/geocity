@@ -18,6 +18,12 @@ class WorksObjectTypeChoice(models.Model):
         unique_together = [('permit_request', 'works_object_type')]
 
 
+class PermitRequestActor(models.Model):
+    actor = models.ForeignKey(Actor, on_delete=models.CASCADE)
+    permit_request = models.ForeignKey('PermitRequest', on_delete=models.CASCADE)
+    description = models.CharField(max_length=255)
+
+
 class PermitRequest(models.Model):
     STATUS_DRAFT = 0
     STATUS_SUBMITTED = 1
@@ -42,6 +48,7 @@ class PermitRequest(models.Model):
     author = models.ForeignKey(
         Actor, null=True, on_delete=models.SET_NULL, verbose_name=_("auteur"), related_name='permit_requests'
     )
+    actors = models.ManyToManyField(Actor, related_name='+', through=PermitRequestActor)
 
     class Meta:
         verbose_name = _("demande de permis")
