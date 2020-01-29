@@ -1,12 +1,6 @@
-{% extends "base_generic.html" %}
+{% extends "base_permits.html" %}
 {% load bootstrap4 %}
 {% load i18n %}
-{% load static %}
-{% block stylesheets%}
-  {% load fontawesome %}
-  {% fontawesome_stylesheet %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/permits.css' %}">
-{% endblock %}
 {% load permit_progressbar %}
 {% block content %}
 {% permit_progressbar permit_request 'SubmitForm' %}

@@ -259,3 +259,20 @@ class PermitRequestListExternsView(SingleTableMixin, FilterView):
 
     def get_queryset(self):
         return models.PermitRequest.objects.filter(author=Actor.objects.get(user__username=self.request.user))
+
+
+@login_required
+def permit_request_delete(request, permit_request_id):
+
+    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+
+    if request.method == 'POST':
+
+            permit_request.delete()
+
+            return redirect('permits:listexterns')
+
+
+    return render(request, "permits/permit_request_delete.html", {
+        'permit_request': permit_request
+    })

@@ -11,7 +11,7 @@ class PermitRequestTableExterns(tables.Table):
     submit = tables.TemplateColumn('<a title="Modifier" href="{% url \'permits:permit_request_submit\' record.id %}"> \
     <i class="fa fa-envelope fa-lg permit_status_{{record.status}}"></i></a>', verbose_name='Envoyer', orderable=False)
 
-    delete = tables.TemplateColumn('<a title="Supprimer la demande" href=""> \
+    delete = tables.TemplateColumn('<a title="Supprimer la demande" href="{% url \'permits:permit_request_delete\' record.id %}"> \
     <i class="fa fa-trash fa-lg"></i></a>', verbose_name='Supprimer', orderable=False)
 
 
