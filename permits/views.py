@@ -145,7 +145,7 @@ def permit_request_properties(request, permit_request_id):
 
     if request.method == 'POST':
         # Disable `required` fields validation to allow partial save
-        form = forms.WorksObjectsPropertiesForm(instance=permit_request, data=request.POST, enable_required=False)
+        form = forms.WorksObjectsPropertiesForm(instance=permit_request, data=request.POST, enable_required=True)
 
         if form.is_valid():
             form.save()
