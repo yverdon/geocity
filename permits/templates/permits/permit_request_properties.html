@@ -6,6 +6,7 @@
 {% permit_progressbar permit_request 'WorksObjectsPropertiesForm' %}
 <div class="container mt-3">
   <h3>{% trans "Renseignez les caractéristiques des objets" %}</h3>
+  <h6>La demande concerne la commune: {{administrative_entity}}</h6>
   <hr>
   <form method="post">
     {% csrf_token %}

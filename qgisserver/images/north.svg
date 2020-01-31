@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
+  <path d="M400 200a200 200 0 1 1-400 0 200 200 0 1 1 400 0z" fill="param(outline) #000" stroke="param(outline) #000" stroke-width="param(outline-width) 1"/>
+  <path d="M20 220L200 20l180 200z" fill="param(fill) #fff"/>
+  <path fill="param(fill) #fff" d="M120 120h160v240H120z"/>
+  <path d="M145.03 340V195h27.25l56.76 96.82V195h26v145h-28.1l-55.9-94.57V340z" fill="param(outline) #000" stroke="param(outline) #000" stroke-width="param(outline-width) 1"/>
+</svg>

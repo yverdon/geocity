@@ -6,6 +6,7 @@
 {% block content %}
 <div class="container mt-3">
   <h3>{% trans "Renseignez les acteurs" %}</h3>
+  <h6>La demande concerne la commune: {{administrative_entity}}</h6>
   <hr>
   <form method="post">
     {% csrf_token %}

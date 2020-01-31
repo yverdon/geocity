@@ -93,7 +93,8 @@ def permit_request_select_types(request, permit_request_id):
 
     return render(request, "permits/permit_request_select_types.html", {
         'works_types_form': works_types_form,
-        'permit_request': permit_request
+        'permit_request': permit_request,
+        'administrative_entity': permit_request.administrative_entity,
     })
 
 
@@ -132,7 +133,8 @@ def permit_request_select_objects(request, permit_request_id):
 
     return render(request, "permits/permit_request_select_objects.html", {
         'works_objects_form': works_objects_form,
-        'permit_request': permit_request
+        'permit_request': permit_request,
+        'administrative_entity': permit_request.administrative_entity,
     })
 
 
@@ -158,6 +160,7 @@ def permit_request_properties(request, permit_request_id):
     return render(request, "permits/permit_request_properties.html", {
         'permit_request': permit_request,
         'object_types': fields_by_object_type,
+        'administrative_entity': permit_request.administrative_entity,
     })
 
 
@@ -184,6 +187,7 @@ def permit_request_appendices(request, permit_request_id):
     return render(request, "permits/permit_request_appendices.html", {
         'permit_request': permit_request,
         'object_types': fields_by_object_type,
+        'administrative_entity': permit_request.administrative_entity,
     })
 
 
@@ -209,7 +213,8 @@ def permit_request_actors(request, permit_request_id):
 
     return render(request, "permits/permit_request_actors.html", {
         'formset': formset,
-        'permit_request': permit_request
+        'permit_request': permit_request,
+        'administrative_entity': permit_request.administrative_entity,
     })
 
 
@@ -227,7 +232,8 @@ def permit_request_submit(request, permit_request_id):
 
 
     return render(request, "permits/permit_request_submit.html", {
-        'permit_request': permit_request
+        'permit_request': permit_request,
+        'administrative_entity': permit_request.administrative_entity,
     })
 
 

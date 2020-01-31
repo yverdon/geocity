@@ -189,7 +189,7 @@
         }
 
         this.createInteractions();
-        if (initial_value && !this.options.is_collection || this.options.edit_geom == 'False') {
+        if (this.options.edit_geom == 'False') {
             this.disableDrawing();
             this.disableModify();
             this.hideMapButtons();

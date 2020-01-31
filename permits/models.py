@@ -1,5 +1,6 @@
 from django.contrib.postgres.fields import JSONField
 from django.db import models
+from django.contrib.gis.db import models as geomodels
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -49,6 +50,7 @@ class PermitRequest(models.Model):
         Actor, null=True, on_delete=models.SET_NULL, verbose_name=_("auteur"), related_name='permit_requests'
     )
     # actors = models.ManyToManyField(Actor, related_name='+', through=PermitRequestActor)
+    geom = geomodels.PointField(_("geom"), srid=2056)
 
     class Meta:
         verbose_name = _("demande de permis")

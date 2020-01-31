@@ -1,16 +1,20 @@
 {% extends "base_permits.html" %}
 {% load bootstrap4 %}
 {% load i18n %}
+{% load static %}
+{% block stylesheets%}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/permits.css' %}">
+{% endblock %}
 {% block content %}
 <div class="container mt-3">
-  <h3>{% trans "Sélectionnez la commune" %}</h3>
+  <h3>{% trans "Localisation de votre demande de permis" %}</h3>
   <hr>
+  {{ form.media }}
   <form method="post">
     {% bootstrap_form_errors form %}
 
     {% csrf_token %}
-
-    {% bootstrap_field form.administrative_entity show_label=False %}
+    {% bootstrap_form form layout='horizontal'%}
 
     {% buttons %}
       <button class="btn btn-primary">{% trans "Continuer" %}</button>
