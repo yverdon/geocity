@@ -20,6 +20,7 @@ VOLUME /postgresdata
 WORKDIR /code
 ADD requirements.txt /code/
 RUN pip install -r requirements.txt
+RUN pip install GDAL
 
 
 # Update C env vars so compiler can find gdal
