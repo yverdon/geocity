@@ -114,10 +114,27 @@
               labelStyle.getText().setText(feature.get('name'));
               return style;
             },
-            // declutter: true
        });
 
-        this.map = this.createMap(this.adminEntities);
+        this.administrativeEntityMask = new ol.layer.Tile({
+           extent: [420000, 30000, 900000, 350000],
+           projection: projection,
+           source: new ol.source.TileWMS(({
+             // TODO: don't hardcode this!!!
+             url: "http://localhost:9096/",
+             projection: projection,
+             params: {
+             "LAYERS": "gpf_administrativeentity",
+             "TILED": "true",
+             "VERSION": "1.3.0"},
+           })),
+           title: "gpf_administrativeentity",
+           opacity: 1.000000,
+
+         });
+
+        this.administrativeEntityMask .setVisible(true)
+        this.map = this.createMap(this.adminEntities, this.administrativeEntityMask);
         this.addBaseLayer();
         this.setupAlternativeBaseLayer();
         this.loadAdminEntities();
@@ -207,7 +224,8 @@
     ol.proj.addProjection(projection);
 
 
-    sitMapWidget.prototype.createMap = function(adminEntities) {
+    sitMapWidget.prototype.createMap = function(adminEntities, administrativeEntityMask) {
+
 
         var map = new ol.Map({
             controls: [
@@ -219,8 +237,8 @@
                   }
                 })
             ],
+            layers: [adminEntities, administrativeEntityMask],
             target: this.options.map_id,
-            layers: [adminEntities],
             view: new ol.View({
                 zoom: this.options.default_zoom,
                 minZoom: this.options.min_zoom,

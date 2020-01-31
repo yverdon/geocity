@@ -47,7 +47,7 @@ class AdministrativeEntityForm(forms.Form):
             'display_raw': False, #show coordinate in debug
             'map_clear_style': "visibility:visible;",
             'edit_geom': True,
-            'min_zoom': 8,
+            'min_zoom': 5,
             'wmts_capabilities_url': settings.WMTS_GETCAP,
             'wmts_layer': settings.WMTS_LAYER,
             'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
@@ -69,10 +69,11 @@ class AdministrativeEntityForm(forms.Form):
         super().__init__(*args, **kwargs)
 
     def save(self, author):
-        #TODO: get adminstrative entity from point location
+
         location = self.cleaned_data['geom']
         administrative_entity= AdministrativeEntity.objects.filter(geom__contains=location).get()
-        print(administrative_entity)
+        # TODO: intersect cadastre and generate crdppf link
+        # TODO: reverse geocoding to pre-fill project adress :-)
 
         if not self.instance:
             return models.PermitRequest.objects.create(
