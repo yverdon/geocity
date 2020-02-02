@@ -1,4 +1,4 @@
-{% extends "base_generic.html" %}
+{% extends "base_permits.html" %}
 {% load bootstrap4 %}
 {% load i18n %}
 {% load permit_progressbar %}
@@ -6,6 +6,7 @@
 {% permit_progressbar permit_request 'WorksObjectsForm' %}
 <div class="container mt-3">
   <h3>{% trans "Sélectionnez les objets de travaux" %}</h3>
+  <h6>La demande concerne la commune: {{administrative_entity}}</h6>
   <hr>
   <form method="post">
     {% csrf_token %}

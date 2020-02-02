@@ -98,7 +98,7 @@ sudo -u sigdev docker-compose run web  python manage.py compilemessages -l fr
 
 *Modify print template*
 
-Simply open the print/print.qgs project
+Simply open the qgisserver/print.qgs project
 
 *Test the print server*
 

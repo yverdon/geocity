@@ -1,0 +1,33 @@
+div {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.permit_status_0 {
+  visibility: visible;
+}
+
+.permit_status_1 {
+  visibility: hidden;
+}
+
+.permit_status_2 {
+  visibility: hidden;
+}
+
+.responsive-btn {
+  width: 245px;
+}
+
+#switchbaselayers {
+  border-radius: 3px;
+  border: 3px solid #ebe834;
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 1000;
+}
+
+#switchbaselayers:hover {
+  box-shadow: 0 0 2px 2px yellow;
+  cursor: pointer;
+}

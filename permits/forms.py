@@ -1,8 +1,27 @@
+from django.conf import settings
 from django import forms
+from django.contrib.gis import forms as geoforms
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 
 from . import models, services
+from gpf.models import AdministrativeEntity
+
+
+#Geo-forms
+class PermitOpenLayersWidget(geoforms.OSMWidget):
+
+    template_name = 'permits/permit_location_openlayers.html'
+    map_srid = 2056
+
+    @property
+    def media(self):
+        return geoforms.Media(
+            css={'all': ('libs/js/openlayers/ol.css',)},
+            js=('libs/js/openlayers/ol.js',
+                'libs/js/proj4js/proj4-src.js',
+                'customWidgets/sitMapWidget/sitMapWidget.js'
+                ))
 
 
 def get_field_cls_for_property(prop):
@@ -17,13 +36,31 @@ def get_field_cls_for_property(prop):
 
 
 class AdministrativeEntityForm(forms.Form):
-    administrative_entity = forms.ModelChoiceField(queryset=services.get_administrative_entities(), label=_("Commune"))
+
+    geom =  geoforms.PointField(
+        widget= PermitOpenLayersWidget(attrs={
+            'map_width': '100%',
+            'map_height': settings.OL_MAP_HEIGHT,
+            'map_srid': 2056,
+            'default_center': [2539057, 1181111],
+            'default_zoom': 10,
+            'display_raw': False, #show coordinate in debug
+            'map_clear_style': "visibility:visible;",
+            'edit_geom': True,
+            'min_zoom': 5,
+            'wmts_capabilities_url': settings.WMTS_GETCAP,
+            'wmts_layer': settings.WMTS_LAYER,
+            'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
+            'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
+            'administrative_entities_url': 'gpf:adm-entity-geojson',
+        })
+    )
 
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop('instance', None)
 
         if self.instance:
-            initial = {**kwargs.get('initial', {}), 'administrative_entity': self.instance.administrative_entity}
+            initial = {**kwargs.get('initial', {}), 'administrative_entity': self.instance.administrative_entity, 'geom': self.instance.geom}
         else:
             initial = {}
 
@@ -32,12 +69,18 @@ class AdministrativeEntityForm(forms.Form):
         super().__init__(*args, **kwargs)
 
     def save(self, author):
+
+        location = self.cleaned_data['geom']
+        administrative_entity= AdministrativeEntity.objects.filter(geom__contains=location).get()
+        # TODO: intersect cadastre and generate crdppf link
+        # TODO: reverse geocoding to pre-fill project adress :-)
+
         if not self.instance:
             return models.PermitRequest.objects.create(
-                administrative_entity=self.cleaned_data['administrative_entity'], author=author
+                administrative_entity=administrative_entity, author=author, geom=location
             )
         else:
-            services.set_administrative_entity(self.instance, self.cleaned_data['administrative_entity'])
+            services.set_administrative_entity(self.instance, administrative_entity)
             return self.instance
 
 

@@ -16,14 +16,14 @@ def permit_progressbar(permit_request, step):
             'url': reverse('permits:permit_request_select_types', kwargs={'permit_request_id': permit_request.pk}),}, # must have one item selected a least
         'WorksObjectsForm': {'state':'todo', 'name': 'Objets', 'number': 2 , 'current': 'inactive-step', 'enabled': 'disabled-step',
             'url': reverse('permits:permit_request_select_objects', kwargs={'permit_request_id': permit_request.pk}),}, # must have one object by worktype selected at least
-        'WorksObjectsPropertiesForm': {'state': 'todo', 'name': 'Détails', 'number': 3, 'current': 'inactive-step', 'disabled': 'enabled-step',
+        'WorksObjectsPropertiesForm': {'state': 'todo', 'name': 'Détails', 'number': 3, 'current': 'inactive-step', 'disabled': 'disabled-step',
             'url': reverse('permits:permit_request_properties', kwargs={'permit_request_id': permit_request.pk}),}, # must be valid
-        'WorksObjectsAppendicesForm': {'state': 'todo', 'name': 'Documents', 'number': 4, 'current': 'inactive-step', 'disabled': 'enabled-step',
+        'WorksObjectsAppendicesForm': {'state': 'todo', 'name': 'Documents', 'number': 4, 'current': 'inactive-step', 'disabled': 'disabled-step',
             'url': reverse('permits:permit_request_appendices', kwargs={'permit_request_id': permit_request.pk}),}, # must be valid
         'WorksContactForm': {'state': 'todo', 'name': 'Contacts', 'number': 5, 'current': 'inactive-step', 'enabled': 'disabled-step',
-            'url': reverse('permits:permit_request_select_administrative_entity', kwargs={'permit_request_id': permit_request.pk} if permit_request else {}),}, # must be valid
+            'url': reverse('permits:permit_request_actors', kwargs={'permit_request_id': permit_request.pk} if permit_request else {}),}, # must be valid
         'SubmitForm': {'state': 'todo', 'name': 'Envoi', 'number': 6, 'current': 'disabled-step', 'enabled': 'disabled-step',
-            'url': reverse('permits:permit_request_select_administrative_entity', kwargs={'permit_request_id': permit_request.pk} if permit_request else {}),}, # must be valid
+            'url': reverse('permits:permit_request_submit', kwargs={'permit_request_id': permit_request.pk} if permit_request else {}),}, # must be valid
     }
 
 
@@ -33,35 +33,47 @@ def permit_progressbar(permit_request, step):
 
     if permit_request:
 
-        # check validation state for properties
-        form = forms.WorksObjectsPropertiesForm(instance=permit_request, enable_required=True)
-
-        if form.is_valid():
-            steps['WorksObjectsPropertiesForm']['state'] = 'done'
-        else:
-            steps['WorksObjectsPropertiesForm']['state'] = 'partial'
-
-        # check validation state for appendices
-        form = forms.WorksObjectsAppendicesForm(instance=permit_request, enable_required=True)
-        if form.is_valid():
-            steps['WorksObjectsAppendicesForm']['state'] = 'done'
-        else:
-            steps['WorksObjectsAppendicesForm']['partial'] = 'partial'
+        form_properties = forms.WorksObjectsPropertiesForm(instance=permit_request, enable_required=True, data={})
+        form_appendices = forms.WorksObjectsAppendicesForm(instance=permit_request, enable_required=True, data={})
 
         if permit_request.works_object_types.exists():
 
-            steps['WorksTypesForm']['enabled'] = 'enabled-step'
-            steps['WorksObjectsForm']['enabled'] = 'enabled-step'
+            steps['WorksTypesForm']['state'] = 'done'
 
         if permit_request.worksobjecttypechoice_set.exists():
 
+            steps['WorksObjectsForm']['state'] = 'done'
+            steps['WorksTypesForm']['state'] = 'done'
+            steps['WorksObjectsForm']['enabled'] = 'enabled-step'
+            steps['WorksTypesForm']['enabled'] = 'enabled-step'
             steps['WorksObjectsPropertiesForm']['enabled'] = 'enabled-step'
             steps['WorksObjectsAppendicesForm']['enabled'] = 'enabled-step'
             steps['WorksContactForm']['enabled'] = 'enabled-step'
             steps['SubmitForm']['enabled'] = 'enabled-step'
 
+            if form_properties.is_valid():
+                steps['WorksObjectsPropertiesForm']['state'] = 'done'
+            else:
+                steps['WorksObjectsPropertiesForm']['state'] = 'partial'
+
+            if form_appendices.is_valid():
+                steps['WorksObjectsAppendicesForm']['state'] = 'done'
+            else:
+                steps['WorksObjectsAppendicesForm']['partial'] = 'partial'
+
+        else:
+            steps['WorksTypesForm']['enabled'] = 'enabled-step'
+            steps['WorksObjectsPropertiesForm']['enabled'] = 'disabled-step'
+            steps['WorksObjectsAppendicesForm']['enabled'] = 'disabled-step'
+            steps['WorksContactForm']['enabled'] = 'disabled-step'
+            steps['SubmitForm']['enabled'] = 'disabled-step'
+
+            steps['WorksObjectsPropertiesForm']['state'] = 'todo'
+            steps['WorksObjectsAppendicesForm']['partial'] = 'todo'
+
+
     steps_states = {
-        'steps': steps
+        'steps': steps,
     }
 
     return steps_states

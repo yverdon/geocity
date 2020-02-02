@@ -93,7 +93,8 @@ def permit_request_select_types(request, permit_request_id):
 
     return render(request, "permits/permit_request_select_types.html", {
         'works_types_form': works_types_form,
-        'permit_request': permit_request
+        'permit_request': permit_request,
+        'administrative_entity': permit_request.administrative_entity,
     })
 
 
@@ -132,7 +133,8 @@ def permit_request_select_objects(request, permit_request_id):
 
     return render(request, "permits/permit_request_select_objects.html", {
         'works_objects_form': works_objects_form,
-        'permit_request': permit_request
+        'permit_request': permit_request,
+        'administrative_entity': permit_request.administrative_entity,
     })
 
 
@@ -145,7 +147,7 @@ def permit_request_properties(request, permit_request_id):
 
     if request.method == 'POST':
         # Disable `required` fields validation to allow partial save
-        form = forms.WorksObjectsPropertiesForm(instance=permit_request, data=request.POST, enable_required=False)
+        form = forms.WorksObjectsPropertiesForm(instance=permit_request, data=request.POST, enable_required=True)
 
         if form.is_valid():
             form.save()
@@ -158,6 +160,7 @@ def permit_request_properties(request, permit_request_id):
     return render(request, "permits/permit_request_properties.html", {
         'permit_request': permit_request,
         'object_types': fields_by_object_type,
+        'administrative_entity': permit_request.administrative_entity,
     })
 
 
@@ -175,7 +178,7 @@ def permit_request_appendices(request, permit_request_id):
 
         if form.is_valid():
             form.save()
-            return redirect('permits:permit_request_actors', permit_request_id=permit_request.pk)
+            return redirect('permits:permit_request_submit', permit_request_id=permit_request.pk)
     else:
         form = forms.WorksObjectsAppendicesForm(instance=permit_request, enable_required=False)
 
@@ -184,6 +187,7 @@ def permit_request_appendices(request, permit_request_id):
     return render(request, "permits/permit_request_appendices.html", {
         'permit_request': permit_request,
         'object_types': fields_by_object_type,
+        'administrative_entity': permit_request.administrative_entity,
     })
 
 
@@ -209,7 +213,27 @@ def permit_request_actors(request, permit_request_id):
 
     return render(request, "permits/permit_request_actors.html", {
         'formset': formset,
-        'permit_request': permit_request
+        'permit_request': permit_request,
+        'administrative_entity': permit_request.administrative_entity,
+    })
+
+
+@login_required
+def permit_request_submit(request, permit_request_id):
+
+    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+
+    if request.method == 'POST':
+
+            permit_request.status = 1
+            permit_request.save()
+
+            return redirect('permits:listexterns')
+
+
+    return render(request, "permits/permit_request_submit.html", {
+        'permit_request': permit_request,
+        'administrative_entity': permit_request.administrative_entity,
     })
 
 
@@ -241,3 +265,20 @@ class PermitRequestListExternsView(SingleTableMixin, FilterView):
 
     def get_queryset(self):
         return models.PermitRequest.objects.filter(author=Actor.objects.get(user__username=self.request.user))
+
+
+@login_required
+def permit_request_delete(request, permit_request_id):
+
+    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+
+    if request.method == 'POST':
+
+            permit_request.delete()
+
+            return redirect('permits:listexterns')
+
+
+    return render(request, "permits/permit_request_delete.html", {
+        'permit_request': permit_request
+    })
