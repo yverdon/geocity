@@ -49,6 +49,12 @@ class PermitRequest(models.Model):
     author = models.ForeignKey(
         Actor, null=True, on_delete=models.SET_NULL, verbose_name=_("auteur"), related_name='permit_requests'
     )
+
+    street_name = models.CharField(_("Rue"), max_length=512, null=True)
+    street_number = models.CharField(_("Rue"), max_length=32, null=True)
+    npa = models.PositiveIntegerField(_("NPA"), null=True)
+    city_name = models.CharField(_("Ville"), max_length=255, null=True)
+
     # actors = models.ManyToManyField(Actor, related_name='+', through=PermitRequestActor)
     geom = geomodels.PointField(_("geom"), srid=2056)
 

@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from . import models, services
 from gpf.models import AdministrativeEntity
+from . import geointerfaces
 
 
 #Geo-forms
@@ -53,6 +54,7 @@ class AdministrativeEntityForm(forms.Form):
             'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
             'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
             'administrative_entities_url': 'gpf:adm-entity-geojson',
+            'reverse_geocoding_url': 'permits:reversegeocode',
         })
     )
 
@@ -71,13 +73,20 @@ class AdministrativeEntityForm(forms.Form):
     def save(self, author):
 
         location = self.cleaned_data['geom']
+        adress_infos = geointerfaces.reverse_geocode(location.x, location.y, '21781')
+        # TODO: handle synchronous request !!!
         administrative_entity= AdministrativeEntity.objects.filter(geom__contains=location).get()
         # TODO: intersect cadastre and generate crdppf link
-        # TODO: reverse geocoding to pre-fill project adress :-)
 
         if not self.instance:
             return models.PermitRequest.objects.create(
-                administrative_entity=administrative_entity, author=author, geom=location
+                administrative_entity=administrative_entity,
+                author=author,
+                street_name=adress_infos['street_name'],
+                street_number=adress_infos['street_number'],
+                npa=adress_infos['npa'],
+                city_name=adress_infos['administrative_entity_name'],
+                geom=location
             )
         else:
             services.set_administrative_entity(self.instance, administrative_entity)

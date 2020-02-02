@@ -10,7 +10,8 @@
 <hr>
 <div class="container mt-3">
   <h3>{% trans "Sélectionnez les types de travaux" %}</h3>
-  <h6>La demande concerne la commune: {{administrative_entity}}</h6>
+  <h6>La demande est sera traitée par: {{permit_request.administrative_entity}} </h6>
+  <h6>La demande est localisée ici : {{permit_request.city_name}} - {{permit_request.street_name}}, {{permit_request.street_number}}</h6>
   <hr>
   <form method="post">
     {% bootstrap_form_errors works_types_form %}

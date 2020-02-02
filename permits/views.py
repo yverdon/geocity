@@ -4,7 +4,7 @@ import urllib.parse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import transaction
 from django.forms import modelformset_factory
-from django.http import StreamingHttpResponse
+from django.http import StreamingHttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
@@ -15,7 +15,7 @@ from django_tables2.export.views import ExportMixin
 from django_filters.views import FilterView
 from .tables import PermitRequestTableExterns, PermitExportTable
 from .filters import PermitRequestFilterExterns
-
+from . import geointerfaces
 
 
 from gpf.forms import ActorForm
@@ -94,7 +94,6 @@ def permit_request_select_types(request, permit_request_id):
     return render(request, "permits/permit_request_select_types.html", {
         'works_types_form': works_types_form,
         'permit_request': permit_request,
-        'administrative_entity': permit_request.administrative_entity,
     })
 
 
@@ -134,7 +133,6 @@ def permit_request_select_objects(request, permit_request_id):
     return render(request, "permits/permit_request_select_objects.html", {
         'works_objects_form': works_objects_form,
         'permit_request': permit_request,
-        'administrative_entity': permit_request.administrative_entity,
     })
 
 
@@ -160,7 +158,6 @@ def permit_request_properties(request, permit_request_id):
     return render(request, "permits/permit_request_properties.html", {
         'permit_request': permit_request,
         'object_types': fields_by_object_type,
-        'administrative_entity': permit_request.administrative_entity,
     })
 
 
@@ -187,7 +184,6 @@ def permit_request_appendices(request, permit_request_id):
     return render(request, "permits/permit_request_appendices.html", {
         'permit_request': permit_request,
         'object_types': fields_by_object_type,
-        'administrative_entity': permit_request.administrative_entity,
     })
 
 
@@ -214,7 +210,6 @@ def permit_request_actors(request, permit_request_id):
     return render(request, "permits/permit_request_actors.html", {
         'formset': formset,
         'permit_request': permit_request,
-        'administrative_entity': permit_request.administrative_entity,
     })
 
 
@@ -233,7 +228,6 @@ def permit_request_submit(request, permit_request_id):
 
     return render(request, "permits/permit_request_submit.html", {
         'permit_request': permit_request,
-        'administrative_entity': permit_request.administrative_entity,
     })
 
 
@@ -282,3 +276,11 @@ def permit_request_delete(request, permit_request_id):
     return render(request, "permits/permit_request_delete.html", {
         'permit_request': permit_request
     })
+
+
+@login_required
+def reverse_geocode(east_coordinate, north_coordinate):
+
+    json = geointerfaces.reverse_geocode(east_coordinate, north_coordinate, api_epsg)
+
+    return JsonResponse(json, safe=False)

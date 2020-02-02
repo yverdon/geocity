@@ -47,9 +47,43 @@
             wmts_capabilities_url_alternative: '{{wmts_capabilities_url_alternative}}',
             wmts_layer_alternative: '{{wmts_layer_alternative}}',
             administrative_entities_url:  "{% url administrative_entities_url %}",
+            reverse_geocoding_url:  "{% url reverse_geocoding_url %}",
         };
         var {{ module }} = new sitMapWidget(options);
         gpfMap = {{ module }};
+
+        var reverse_geocode = function(east_coordinate, north_coordinate) {
+
+          coord = gpfMap.featureOverlay.getSource().getFeatures()[0].getGeometry().flatCoordinates;
+
+          $.ajax({
+              url: gpfMap.options.reverse_geocoding_url,
+              data: {
+                east: Math.round(coord[0]),
+                north: Math.round(coord[1]),
+              },
+              success: function(response) {
+
+                   var gJson = new ol.format.GeoJSON();
+                    var feats = [];
+                    for (var i=0; i < response.features.length; i++) {
+                      var f = gJson.readFeature(response.features[i]);
+                      f.setId(response.features[i].properties.pk)
+                      feats.push(f);
+                    }
+                    _this.adminEntities.getSource().addFeatures(feats)
+
+                 }
+           });
+        }
+
+        gpfMap.featureOverlay.getSource().on('addfeature', function(event){
+          reverse_geocode();
+        })
+
+        gpfMap.featureOverlay.getSource().on('changefeature', function(event){
+          reverse_geocode();
+        })
 
         {% endblock %}
     </script>
