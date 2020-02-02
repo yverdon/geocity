@@ -60,7 +60,7 @@ class AdministrativeEntityForm(forms.Form):
 
     street_name = forms.CharField()
     street_number = forms.CharField()
-    npa = forms.CharField()
+    npa = forms.IntegerField()
     city_name = forms.CharField()
 
     def __init__(self, *args, **kwargs):
