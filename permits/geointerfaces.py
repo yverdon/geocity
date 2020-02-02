@@ -5,11 +5,11 @@ import json
 
 def reverse_geocode(east_coordinate, north_coordinate, api_epsg):
 
-    print('reverse geocoding...')
     if api_epsg == '21781':
     	east_coordinate = east_coordinate - 2000000
     	north_coordinate = north_coordinate - 1000000
 
+    # TODO: move parameters to eny.yaml 
     base_url = 'https://api3.geo.admin.ch/rest/services/api/MapServer/identify'
 
     params = {

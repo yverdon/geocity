@@ -58,11 +58,23 @@ class AdministrativeEntityForm(forms.Form):
         })
     )
 
+    street_name = forms.CharField()
+    street_number = forms.CharField()
+    npa = forms.CharField()
+    city_name = forms.CharField()
+
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop('instance', None)
 
         if self.instance:
-            initial = {**kwargs.get('initial', {}), 'administrative_entity': self.instance.administrative_entity, 'geom': self.instance.geom}
+            initial = {**kwargs.get('initial', {}),
+                'administrative_entity': self.instance.administrative_entity,
+                'street_name': self.instance.street_name.geom,
+                'street_number': self.instance.street_number.geom,
+                'npa': self.instance.npa,
+                'city_name': self.instance.city_name,
+                'geom': self.instance.geom,
+                }
         else:
             initial = {}
 
@@ -73,8 +85,6 @@ class AdministrativeEntityForm(forms.Form):
     def save(self, author):
 
         location = self.cleaned_data['geom']
-        adress_infos = geointerfaces.reverse_geocode(location.x, location.y, '21781')
-        # TODO: handle synchronous request !!!
         administrative_entity= AdministrativeEntity.objects.filter(geom__contains=location).get()
         # TODO: intersect cadastre and generate crdppf link
 
@@ -82,10 +92,10 @@ class AdministrativeEntityForm(forms.Form):
             return models.PermitRequest.objects.create(
                 administrative_entity=administrative_entity,
                 author=author,
-                street_name=adress_infos['street_name'],
-                street_number=adress_infos['street_number'],
-                npa=adress_infos['npa'],
-                city_name=adress_infos['administrative_entity_name'],
+                street_name=self.cleaned_data['street_name'],
+                street_number=self.cleaned_data['street_number'],
+                npa=self.cleaned_data['npa'],
+                city_name=self.cleaned_data['city_name'],
                 geom=location
             )
         else:

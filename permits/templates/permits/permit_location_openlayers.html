@@ -22,6 +22,7 @@
       </a>
       <hr>
       <b style="{{map_clear_style}}">Ou cliquez dans la carte pour placer un point</b>
+      <div id="adress"></div>
     </div>
     <hr>
     <div id="{{ id }}_map">
@@ -54,7 +55,7 @@
 
         var reverse_geocode = function(east_coordinate, north_coordinate) {
 
-          coord = gpfMap.featureOverlay.getSource().getFeatures()[0].getGeometry().flatCoordinates;
+          var coord = gpfMap.featureOverlay.getSource().getFeatures()[0].getGeometry().flatCoordinates;
 
           $.ajax({
               url: gpfMap.options.reverse_geocoding_url,
@@ -64,14 +65,20 @@
               },
               success: function(response) {
 
-                   var gJson = new ol.format.GeoJSON();
-                    var feats = [];
-                    for (var i=0; i < response.features.length; i++) {
-                      var f = gJson.readFeature(response.features[i]);
-                      f.setId(response.features[i].properties.pk)
-                      feats.push(f);
-                    }
-                    _this.adminEntities.getSource().addFeatures(feats)
+                  if(response) {
+                    var html = "<b>Adresse sélectionnée:</b> "
+                    html += response.street_name + ' ';
+                    html += response.street_number + ' ' + response.npa;
+                    html += response.administrative_entity_name;
+                    $("#id_street_name").val(response.street_name);
+                    $("#id_street_number").val(response.street_number);
+                    $("#id_npa").val(response.npa);
+                    $("#id_city_name").val(response.administrative_entity_name);
+                } else {
+                  html = "Pas d'adresse trouvée pour ce point, placez votre point plus près d'un numéro de bâtiment ou saisisez ces informations manuellement ci-dessous"
+                }
+
+                 $("#adress").html(html)
 
                  }
            });

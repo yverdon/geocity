@@ -279,8 +279,11 @@ def permit_request_delete(request, permit_request_id):
 
 
 @login_required
-def reverse_geocode(east_coordinate, north_coordinate):
+def reverse_geocode(request):
 
-    json = geointerfaces.reverse_geocode(east_coordinate, north_coordinate, api_epsg)
+    east_coordinate = float(request.GET['east'])
+    north_coordinate = float(request.GET['north'])
+
+    json = geointerfaces.reverse_geocode(east_coordinate, north_coordinate, '21781')
 
     return JsonResponse(json, safe=False)

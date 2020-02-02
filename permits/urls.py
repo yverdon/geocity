@@ -24,6 +24,5 @@ urlpatterns = [
     path('', include(permit_request_urlpatterns)),
     path('media/<int:property_value_id>/', views.permit_request_media_download, name='permit_request_media_download'),
     path('listexterns/', views.PermitRequestListExternsView.as_view(), name='listexterns'),
-    # TODO: how to pass arguments correctly here ?
     path('reversegeocode/', views.reverse_geocode, name='reversegeocode'),
 ]
