@@ -76,6 +76,10 @@
                     $("#id_city_name").val(response.administrative_entity_name);
                 } else {
                   html = "Pas d'adresse trouvée pour ce point, placez votre point plus près d'un numéro de bâtiment ou saisisez ces informations manuellement ci-dessous"
+                  $("#id_street_name").val("");
+                  $("#id_street_number").val("");
+                  $("#id_npa").val("");
+                  $("#id_city_name").val("");
                 }
 
                  $("#adress").html(html)
