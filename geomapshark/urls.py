@@ -3,13 +3,14 @@ from django.urls import include, path
 from . import views
 from . import settings
 from django.contrib.auth import views as auth_views
+from .forms import PlaceholderAuthForm
 
 urlpatterns = [
     path('', views.index, name='index'),
     path('gpf/', include('gpf.urls')),
     path('permit-requests/', include('permits.urls')),
     path('admin/', admin.site.urls),
-    path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
+    path('accounts/login/', auth_views.LoginView.as_view(authentication_form=PlaceholderAuthForm,), name='login',),
     path('accounts/logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('accounts/password_reset/', auth_views.PasswordResetView.as_view(template_name='registration/password_reset.html'), name='password_reset'),
     path('accounts/password_reset_confirm/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
