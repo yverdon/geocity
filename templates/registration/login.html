@@ -1,12 +1,64 @@
 {% extends "base_generic.html" %}
 {% load bootstrap4 %}
+{% load staticfiles %}
 
-{% block content %}
-<br>
+{% block content-no-sidebar %}
+
+<style>
+  #login-container {
+    position: absolute;
+    width: 100%;
+    width: 500px;
+    margin-left: calc(50% - 250px);
+    margin-top: 25px;
+    border: solid 1px gray;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    padding: 5px 5px 5px 5px;
+  }
+
+  #login-container a {
+    left: 5px;
+    font-weight: bold;
+    font-size: 1.25em;
+  }
+  #login-container input {
+    width: 300px;
+    height: 40px;
+    border: solid 1px gray;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    padding: 5px 5px 5px 5px;
+  }
+
+  .center-element{
+    text-align: center;
+    font-weight: bold;
+  }
+
+  #logo-background {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50%;
+    margin-left: 25%;
+    max-height: 100px;
+  }
+
+  #submit-login {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1em;
+  }
+</style>
+
+<div id="login-container">
+  <br>
 {% if form.errors %}
 <p>Votre mot de passe et votre nom d'utilisateur ne correspondent pas.</p>
 {% endif %}
-
 {% if next %}
     {% if user.is_authenticated %}
     <p>Votre compte ne dispose pas des droits nécessaires pour accéder à cette page.</p>
@@ -15,25 +67,22 @@
     {% endif %}
 {% endif %}
 
-<form method="post" action="{% url 'login' %}">
-{% csrf_token %}
-<table>
-<tr>
-    <td>{{ form.username.label_tag }}</td>
-    <td>{{ form.username }}</td>
-</tr>
-<tr>
-    <td>{{ form.password.label_tag }}</td>
-    <td>{{ form.password }}</td>
-</tr>
-</table>
-
-<input class="btn btn-primary btn-sm" type="submit" value="login" />
-<input type="hidden" name="next" value="{{ next }}" />
-</form>
-<br>
-<p><a href="{% url 'gpf:companyadd' %}">Créer un compte</a></p>
-<p><a href="{% url 'password_reset' %}">Perdu votre mot de passe ?</a></p>
-
-
+  <form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+          <div class="center-element">
+              <h4>Connexion</h4>
+            <br>
+              <p>Accéder à la gestion des permis sur le domaine public</p>
+            <br>
+              <p>{{ form.username }}</p>
+              <p>{{ form.password }}</p>
+              <input id="submit-login" class="btn btn-primary btn-sm" type="submit" value="Suivant"/>
+          </div>
+              <input type="hidden" name="next" value="{{ next }}" />
+  </form>
+    <br>
+      <p><a href="{% url 'gpf:companyadd' %}">Créer un compte</a></p>
+      <p><a href="{% url 'password_reset' %}">Perdu votre mot de passe ?</a></p>
+</div>
+<!-- <img  id="logo-background" src="{% static 'images/Logo-MapNV_4.svg'%}" alt="logo_mapnv"> -->
 {% endblock %}
