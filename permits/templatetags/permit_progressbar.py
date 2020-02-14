@@ -2,6 +2,8 @@ from django import template
 from django.shortcuts import render
 from permits import forms, services
 from django.urls import reverse
+from django.forms import modelformset_factory
+from gpf.models import Actor
 
 
 register = template.Library()
@@ -12,17 +14,20 @@ def permit_progressbar(permit_request, step):
 
 
     steps = {
-        'WorksTypesForm': {'state': 'todo', 'name': 'Travaux', 'number': 1, 'current': 'inactive-step', 'enabled': 'disabled-step',
+        # TODO: handle the wrong edit in location
+        'AdministrativeEntityForm': {'state': 'done', 'name': 'Localisation', 'number': 1, 'current': 'inactive-step', 'enabled': 'enabled-step',
+            'url': reverse('permits:permit_request_select_administrative_entity', kwargs={'permit_request_id': permit_request.pk}),}, # must have one item selected a least
+        'WorksTypesForm': {'state': 'todo', 'name': 'Travaux', 'number': 2, 'current': 'inactive-step', 'enabled': 'disabled-step',
             'url': reverse('permits:permit_request_select_types', kwargs={'permit_request_id': permit_request.pk}),}, # must have one item selected a least
-        'WorksObjectsForm': {'state':'todo', 'name': 'Objets', 'number': 2 , 'current': 'inactive-step', 'enabled': 'disabled-step',
+        'WorksObjectsForm': {'state':'todo', 'name': 'Objets', 'number': 3 , 'current': 'inactive-step', 'enabled': 'disabled-step',
             'url': reverse('permits:permit_request_select_objects', kwargs={'permit_request_id': permit_request.pk}),}, # must have one object by worktype selected at least
-        'WorksObjectsPropertiesForm': {'state': 'todo', 'name': 'Détails', 'number': 3, 'current': 'inactive-step', 'disabled': 'disabled-step',
+        'WorksObjectsPropertiesForm': {'state': 'todo', 'name': 'Détails', 'number': 4, 'current': 'inactive-step', 'disabled': 'disabled-step',
             'url': reverse('permits:permit_request_properties', kwargs={'permit_request_id': permit_request.pk}),}, # must be valid
-        'WorksObjectsAppendicesForm': {'state': 'todo', 'name': 'Documents', 'number': 4, 'current': 'inactive-step', 'disabled': 'disabled-step',
+        'WorksObjectsAppendicesForm': {'state': 'todo', 'name': 'Documents', 'number': 5, 'current': 'inactive-step', 'disabled': 'disabled-step',
             'url': reverse('permits:permit_request_appendices', kwargs={'permit_request_id': permit_request.pk}),}, # must be valid
-        'WorksContactForm': {'state': 'todo', 'name': 'Contacts', 'number': 5, 'current': 'inactive-step', 'enabled': 'disabled-step',
+        'WorksContactForm': {'state': 'todo', 'name': 'Contacts', 'number': 6, 'current': 'inactive-step', 'enabled': 'disabled-step',
             'url': reverse('permits:permit_request_actors', kwargs={'permit_request_id': permit_request.pk} if permit_request else {}),}, # must be valid
-        'SubmitForm': {'state': 'todo', 'name': 'Envoi', 'number': 6, 'current': 'disabled-step', 'enabled': 'disabled-step',
+        'SubmitForm': {'state': 'todo', 'name': 'Envoi', 'number': 7, 'current': 'disabled-step', 'enabled': 'disabled-step',
             'url': reverse('permits:permit_request_submit', kwargs={'permit_request_id': permit_request.pk} if permit_request else {}),}, # must be valid
     }
 
@@ -35,6 +40,9 @@ def permit_progressbar(permit_request, step):
 
         form_properties = forms.WorksObjectsPropertiesForm(instance=permit_request, enable_required=True, data={})
         form_appendices = forms.WorksObjectsAppendicesForm(instance=permit_request, enable_required=True, data={})
+        GenericActorFormSet = modelformset_factory(Actor, form=forms.GenericActorForm)
+        queryset = permit_request.actors.all()
+        actors_formset_properties = GenericActorFormSet(queryset=queryset, data={})
 
         if permit_request.works_object_types.exists():
 
@@ -60,6 +68,12 @@ def permit_progressbar(permit_request, step):
                 steps['WorksObjectsAppendicesForm']['state'] = 'done'
             else:
                 steps['WorksObjectsAppendicesForm']['partial'] = 'partial'
+
+            # TODO: instantiate model formset correctly
+            # if actors_formset_properties.is_valid():
+            #     steps['WorksContactForm']['state'] = 'done'
+            # else:
+            #     steps['WorksContactForm']['partial'] = 'partial'
 
         else:
             steps['WorksTypesForm']['enabled'] = 'enabled-step'

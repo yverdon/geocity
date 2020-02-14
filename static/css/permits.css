@@ -2,18 +2,6 @@ div {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-.permit_status_0 {
-  visibility: visible;
-}
-
-.permit_status_1 {
-  visibility: hidden;
-}
-
-.permit_status_2 {
-  visibility: hidden;
-}
-
 .responsive-btn {
   width: 245px;
 }

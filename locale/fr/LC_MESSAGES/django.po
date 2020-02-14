@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-22 16:42+0200\n"
+"POT-Creation-Date: 2020-02-14 09:58+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,339 +18,597 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: .\geomapshark\settings.py:168 .\gpf\geomapshark\settings.py:168
+#: geomapshark/settings.py:161
 msgid "French"
 msgstr "Français"
 
-#: .\geomapshark\settings.py:170 .\gpf\geomapshark\settings.py:170
+#: geomapshark/settings.py:163
 msgid "English"
 msgstr "Anglais"
 
-#: .\gpf\models.py:9
+#: gpf/forms.py:286
+#, fuzzy
+#| msgid "address"
+msgid "Address"
+msgstr "Adresse"
+
+#: gpf/forms.py:287
+msgid "Phone"
+msgstr ""
+
+#: gpf/forms.py:288
+msgid "Mobile phone"
+msgstr ""
+
+#: gpf/forms.py:289
+#, fuzzy
+#| msgid "firstname"
+msgid "Last name"
+msgstr "Prénom"
+
+#: gpf/forms.py:290
+#, fuzzy
+#| msgid "firstname"
+msgid "First name"
+msgstr "Prénom"
+
+#: gpf/forms.py:291
+#, fuzzy
+#| msgid "zipcode"
+msgid "Zipcode"
+msgstr "NPA"
+
+#: gpf/forms.py:292
+msgid "City"
+msgstr ""
+
+#: gpf/forms.py:293
+#, fuzzy
+#| msgid "company_name"
+msgid "Company name"
+msgstr "Raison sociale"
+
+#: gpf/forms.py:294
+#, fuzzy
+#| msgid "address"
+msgid "Email address"
+msgstr "Adresse"
+
+#: gpf/models.py:11 gpf/models.py:60
 msgid "name"
 msgstr "Nom"
 
-#: .\gpf\models.py:10
+#: gpf/models.py:12
 msgid "firstname"
 msgstr "Prénom"
 
-#: .\gpf\models.py:11
+#: gpf/models.py:13
 msgid "company_name"
 msgstr "Raison sociale"
 
-#: .\gpf\models.py:12
+#: gpf/models.py:14
 msgid "vat_number"
 msgstr "Numéro IDE d'entreprise"
 
-#: .\gpf\models.py:22 .\gpf\models.py:117
+#: gpf/models.py:24 gpf/models.py:142
 msgid "address"
 msgstr "Adresse"
 
-#: .\gpf\models.py:23 .\gpf\models.py:118
+#: gpf/models.py:25 gpf/models.py:143
 msgid "zipcode"
 msgstr "NPA"
 
-#: .\gpf\models.py:24 .\gpf\models.py:119
+#: gpf/models.py:26 gpf/models.py:144
 msgid "city"
 msgstr "Ville"
 
-#: .\gpf\models.py:25
+#: gpf/models.py:27
 msgid "phone_fixed"
 msgstr "Télephone fixe"
 
-#: .\gpf\models.py:33
+#: gpf/models.py:35
 msgid "phone_mobile"
 msgstr "Télephone mobile"
 
-#: .\gpf\models.py:42
+#: gpf/models.py:44
 msgid "email"
 msgstr "Email"
 
-#: .\gpf\models.py:46
+#: gpf/models.py:48
 msgid "actor"
 msgstr "Requérant"
 
-#: .\gpf\models.py:54 .\gpf\models.py:68 .\gpf\models.py:88 .\gpf\models.py:114
-msgid "description"
-msgstr "Description"
+#: gpf/models.py:61
+msgid "ofs_id"
+msgstr ""
 
-#: .\gpf\models.py:55
-msgid "is_validator"
-msgstr "Validateur"
-
-#: .\gpf\models.py:56
-msgid "is_admin"
-msgstr "Administrateur"
-
-#: .\gpf\models.py:57
-msgid "is_archeologist"
-msgstr "Archéologue"
-
-#: .\gpf\models.py:60
-msgid "department"
-msgstr "Service"
-
-#: .\gpf\models.py:71 .\gpf\models.py:113
-msgid "sitetype"
-msgstr "Type de site"
-
-#: .\gpf\models.py:78
-msgid "creditor_name"
-msgstr "Type de créditeur"
-
-#: .\gpf\models.py:80
-msgid "creditortype"
-msgstr "Type de créditeur"
-
-#: .\gpf\models.py:91
-msgid "archeotype"
-msgstr "Statut archéologique communal"
-
-#: .\gpf\models.py:98
-msgid "amount"
-msgstr "Montant facture"
-
-#: .\gpf\models.py:99
-msgid "payed"
-msgstr "Payé"
-
-#: .\gpf\models.py:100
-msgid "is_valid"
-msgstr "Validation définitive"
-
-#: .\gpf\models.py:101
-msgid "sent"
-msgstr "Permis envoyé"
-
-#: .\gpf\models.py:102
-msgid "ended"
-msgstr "Fouille contrôlée"
-
-#: .\gpf\models.py:103
-msgid "date_start"
-msgstr "Date de début"
-
-#: .\gpf\models.py:104
-msgid "date_end"
-msgstr "Date de fin"
-
-#: .\gpf\models.py:105
-msgid "date_effective_end"
-msgstr "Date de fin effective"
-
-#: .\gpf\models.py:106
-msgid "length"
-msgstr "Longueur [m]"
-
-#: .\gpf\models.py:107
-msgid "with"
-msgstr "Largeur [m]"
-
-#: .\gpf\models.py:108
-msgid "road_marking_damaged"
-msgstr "Marquage routier endommagé par les travaux"
-
-#: .\gpf\models.py:109
-msgid "is_green_area"
-msgstr "Fouille à moins de 3m d'un tronc d'arbre ou haie"
-
-#: .\gpf\models.py:110
-msgid "invoice_to"
-msgstr "Facture"
-
-#: .\gpf\models.py:111
-msgid "company"
-msgstr "Entreprise"
-
-#: .\gpf\models.py:112
-msgid "project_owner"
-msgstr "Maître d'ouvrage"
-
-#: .\gpf\models.py:115
-msgid "has_archeology"
-msgstr "Zone archéologique selon données cantonales"
-
-#: .\gpf\models.py:116
-msgid "archeo_type"
-msgstr "Statut archéologique communal"
-
-#: .\gpf\models.py:120
-msgid "date_end_work"
-msgstr "Date de fin de travaux"
-
-#: .\gpf\models.py:121
-msgid "date_end_work_announcement"
-msgstr "Date annonce fin de travaux par l'entreprise"
-
-#: .\gpf\models.py:122
-msgid "date_last_printed"
-msgstr "Date de début"
-
-#: .\gpf\models.py:123
-msgid "report_filename"
-msgstr "Prénom"
-
-#: .\gpf\models.py:124
-msgid "date_request_created"
-msgstr "Date de la demande"
-
-#: .\gpf\models.py:125 .\gpf\models.py:205
+#: gpf/models.py:62 gpf/models.py:150 gpf/models.py:256 permits/models.py:59
 msgid "geom"
 msgstr "Localisation"
 
-#: .\gpf\models.py:128
-msgid "permitrequest"
-msgstr "Demandes de permis"
-
-#: .\gpf\models.py:147
-msgid "accepted"
-msgstr "Accepté"
-
-#: .\gpf\models.py:148
-msgid "comment"
-msgstr "Commentaire"
-
-#: .\gpf\models.py:151
-msgid "validation"
-msgstr "Validations"
-
-#: .\gpf\models.py:159
-msgid "file_path"
-msgstr "Chemin du fichier"
-
-#: .\gpf\models.py:160
-msgid "file_name"
-msgstr "Prénom"
-
-#: .\gpf\models.py:163
-msgid "document"
-msgstr "Document"
-
-#: .\gpf\models.py:170
-msgid "mail_type"
-msgstr "Contenu de l'email"
-
-#: .\gpf\models.py:171
-msgid "recipients"
-msgstr "Destinataires"
-
-#: .\gpf\models.py:172
-msgid "subject"
-msgstr "Sujet"
-
-#: .\gpf\models.py:173
-msgid "body"
-msgstr "Message"
-
-#: .\gpf\models.py:176
-msgid "mail"
-msgstr "Email"
-
-#: .\gpf\models.py:182
-msgid "fiche"
-msgstr "Fiche"
-
-#: .\gpf\models.py:183
-msgid "commune"
-msgstr "Commune"
-
-#: .\gpf\models.py:184
-msgid "descriptio"
-msgstr "Description"
-
-#: .\gpf\models.py:185
-msgid "note_carto"
-msgstr "Note cartographique"
-
-#: .\gpf\models.py:186
-msgid "annee_revi"
-msgstr "Année de révision"
-
-#: .\gpf\models.py:187
-msgid "id_per"
-msgstr "Idendifiant personnel"
-
-#: .\gpf\models.py:188
-msgid "lien_img"
-msgstr "Lien image"
-
-#: .\gpf\models.py:189
-msgid "note_detai"
-msgstr "Note détail"
-
-#: .\gpf\models.py:190
-msgid "shape_len"
-msgstr "Longueur"
-
-#: .\gpf\models.py:191
-msgid "date_maj"
-msgstr "Date de mise à jour"
-
-#: .\gpf\models.py:192
-msgid "guid"
-msgstr "GUID"
-
-#: .\gpf\models.py:193
-msgid "mention"
-msgstr "Mention"
-
-#: .\gpf\models.py:194
-msgid "fme_feat"
-msgstr "FME"
-
-#: .\gpf\models.py:195
-msgid "autre_ment"
-msgstr "Autre mention"
-
-#: .\gpf\models.py:196
-msgid "multi_read"
-msgstr "Multi"
-
-#: .\gpf\models.py:197
-msgid "autre_mesu"
-msgstr "Autre mesure"
-
-#: .\gpf\models.py:198
-msgid "shape_area"
-msgstr "Surface"
-
-#: .\gpf\models.py:199
-msgid "objectid"
-msgstr "OID"
-
-#: .\gpf\models.py:200
-msgid "date_mesur"
-msgstr "Date de mesure"
-
-#: .\gpf\models.py:201
-msgid "eca"
-msgstr "ECA"
-
-#: .\gpf\models.py:202
-msgid "url_recens"
-msgstr "URL recensement"
-
-#: .\gpf\models.py:203
-msgid "mesure"
-msgstr "Mesure"
-
-#: .\gpf\models.py:204
-msgid "import_date"
-msgstr "Date d'import"
-
-#: .\gpf\models.py:208
-msgid "archelogy"
-msgstr "Zone archéologique"
-
-msgid "Password reset on %s"
-msgstr "Nouveau mot de passe pour pro.mapnv.ch"
-
+#: gpf/models.py:66 gpf/models.py:79 gpf/models.py:137 gpf/models.py:221
 msgid "administrative_entity"
 msgstr "Commune"
 
-#: .\gpf\templates\openlayers\openlayers.html:43
+#: gpf/models.py:75 gpf/models.py:90 gpf/models.py:111 gpf/models.py:139
+msgid "description"
+msgstr "Description"
+
+#: gpf/models.py:76
+msgid "is_validator"
+msgstr "Validateur"
+
+#: gpf/models.py:77
+msgid "is_admin"
+msgstr "Administrateur"
+
+#: gpf/models.py:78
+msgid "is_archeologist"
+msgstr "Archéologue"
+
+#: gpf/models.py:82
+msgid "department"
+msgstr "Service"
+
+#: gpf/models.py:93 gpf/models.py:138
+msgid "sitetype"
+msgstr "Type de site"
+
+#: gpf/models.py:101
+msgid "creditor_name"
+msgstr "Type de créditeur"
+
+#: gpf/models.py:103
+msgid "creditortype"
+msgstr "Type de créditeur"
+
+#: gpf/models.py:114
+msgid "archeotype"
+msgstr "Statut archéologique communal"
+
+#: gpf/models.py:122
+msgid "amount"
+msgstr "Montant facture"
+
+#: gpf/models.py:123
+msgid "payed"
+msgstr "Payé"
+
+#: gpf/models.py:124
+msgid "is_valid"
+msgstr "Validation définitive"
+
+#: gpf/models.py:125
+msgid "sent"
+msgstr "Permis envoyé"
+
+#: gpf/models.py:126
+msgid "ended"
+msgstr "Fouille contrôlée"
+
+#: gpf/models.py:127
+msgid "date_start"
+msgstr "Date de début"
+
+#: gpf/models.py:128
+msgid "date_end"
+msgstr "Date de fin"
+
+#: gpf/models.py:129
+msgid "date_effective_end"
+msgstr "Date de fin effective"
+
+#: gpf/models.py:130
+msgid "length"
+msgstr "Longueur [m]"
+
+#: gpf/models.py:131
+msgid "with"
+msgstr "Largeur [m]"
+
+#: gpf/models.py:132
+msgid "road_marking_damaged"
+msgstr "Marquage routier endommagé par les travaux"
+
+#: gpf/models.py:133
+msgid "is_green_area"
+msgstr "Fouille à moins de 3m d'un tronc d'arbre ou haie"
+
+#: gpf/models.py:134
+msgid "invoice_to"
+msgstr "Facture"
+
+#: gpf/models.py:135
+msgid "company"
+msgstr "Entreprise"
+
+#: gpf/models.py:136
+msgid "project_owner"
+msgstr "Maître d'ouvrage"
+
+#: gpf/models.py:140
+msgid "has_archeology"
+msgstr "Zone archéologique selon données cantonales"
+
+#: gpf/models.py:141
+msgid "archeo_type"
+msgstr "Statut archéologique communal"
+
+#: gpf/models.py:145
+msgid "date_end_work"
+msgstr "Date de fin de travaux"
+
+#: gpf/models.py:146
+msgid "date_end_work_announcement"
+msgstr "Date annonce fin de travaux par l'entreprise"
+
+#: gpf/models.py:147
+msgid "date_last_printed"
+msgstr "Date de début"
+
+#: gpf/models.py:148
+msgid "report_filename"
+msgstr "Prénom"
+
+#: gpf/models.py:149
+msgid "date_request_created"
+msgstr "Date de la demande"
+
+#: gpf/models.py:154
+msgid "permitrequest"
+msgstr "Demandes de permis"
+
+#: gpf/models.py:179
+msgid "accepted"
+msgstr "Accepté"
+
+#: gpf/models.py:180
+msgid "comment"
+msgstr "Commentaire"
+
+#: gpf/models.py:184
+msgid "validation"
+msgstr "Validations"
+
+#: gpf/models.py:192
+#, fuzzy
+#| msgid "comment"
+msgid "comment_sample"
+msgstr "Commentaire"
+
+#: gpf/models.py:196
+msgid "validation_comment_sample"
+msgstr ""
+
+#: gpf/models.py:205
+msgid "file_path"
+msgstr "Chemin du fichier"
+
+#: gpf/models.py:206
+msgid "file_name"
+msgstr "Prénom"
+
+#: gpf/models.py:209
+msgid "document"
+msgstr "Document"
+
+#: gpf/models.py:217
+msgid "mail_type"
+msgstr "Contenu de l'email"
+
+#: gpf/models.py:218
+msgid "recipients"
+msgstr "Destinataires"
+
+#: gpf/models.py:219
+msgid "subject"
+msgstr "Sujet"
+
+#: gpf/models.py:220
+msgid "body"
+msgstr "Message"
+
+#: gpf/models.py:225
+msgid "mail"
+msgstr "Email"
+
+#: gpf/models.py:233
+msgid "fiche"
+msgstr "Fiche"
+
+#: gpf/models.py:234 permits/models.py:47
+msgid "commune"
+msgstr "Commune"
+
+#: gpf/models.py:235
+msgid "descriptio"
+msgstr "Description"
+
+#: gpf/models.py:236
+msgid "note_carto"
+msgstr "Note cartographique"
+
+#: gpf/models.py:237
+msgid "annee_revi"
+msgstr "Année de révision"
+
+#: gpf/models.py:238
+msgid "id_per"
+msgstr "Idendifiant personnel"
+
+#: gpf/models.py:239
+msgid "lien_img"
+msgstr "Lien image"
+
+#: gpf/models.py:240
+msgid "note_detai"
+msgstr "Note détail"
+
+#: gpf/models.py:241
+msgid "shape_len"
+msgstr "Longueur"
+
+#: gpf/models.py:242
+msgid "date_maj"
+msgstr "Date de mise à jour"
+
+#: gpf/models.py:243
+msgid "guid"
+msgstr "GUID"
+
+#: gpf/models.py:244
+msgid "mention"
+msgstr "Mention"
+
+#: gpf/models.py:245
+msgid "fme_feat"
+msgstr "FME"
+
+#: gpf/models.py:246
+msgid "autre_ment"
+msgstr "Autre mention"
+
+#: gpf/models.py:247
+msgid "multi_read"
+msgstr "Multi"
+
+#: gpf/models.py:248
+msgid "autre_mesu"
+msgstr "Autre mesure"
+
+#: gpf/models.py:249
+msgid "shape_area"
+msgstr "Surface"
+
+#: gpf/models.py:250
+msgid "objectid"
+msgstr "OID"
+
+#: gpf/models.py:251
+msgid "date_mesur"
+msgstr "Date de mesure"
+
+#: gpf/models.py:252
+msgid "eca"
+msgstr "ECA"
+
+#: gpf/models.py:253
+msgid "url_recens"
+msgstr "URL recensement"
+
+#: gpf/models.py:254
+msgid "mesure"
+msgstr "Mesure"
+
+#: gpf/models.py:255
+msgid "import_date"
+msgstr "Date d'import"
+
+#: gpf/models.py:259
+msgid "archelogy"
+msgstr "Zone archéologique"
+
+#: gpf/templates/openlayers/openlayers.html:49
+#: permits/templates/permits/permit_location_openlayers.html:31
 msgid "Debugging window (serialized value)"
 msgstr ""
+
+#: permits/forms.py:111
+msgid "Types de travaux"
+msgstr ""
+
+#: permits/models.py:33
+msgid "Brouillon"
+msgstr ""
+
+#: permits/models.py:34
+msgid "Envoyée"
+msgstr ""
+
+#: permits/models.py:35
+msgid "Validée"
+msgstr ""
+
+#: permits/models.py:39
+msgid "état"
+msgstr ""
+
+#: permits/models.py:41
+msgid "date de création"
+msgstr ""
+
+#: permits/models.py:42
+#, fuzzy
+#| msgid "validation"
+msgid "date de validation"
+msgstr "Validations"
+
+#: permits/models.py:50
+msgid "auteur"
+msgstr "Auteur"
+
+#: permits/models.py:53
+msgid "Rue"
+msgstr "Rue"
+
+#: permits/models.py:54
+msgid "Numero"
+msgstr ""
+
+#: permits/models.py:55
+msgid "NPA"
+msgstr "NPA"
+
+#: permits/models.py:56
+msgid "Ville"
+msgstr "Ville"
+
+#: permits/models.py:62
+msgid "demande de permis"
+msgstr "Demande de permis"
+
+#: permits/models.py:63
+msgid "demandes de permis"
+msgstr "Demande de permis"
+
+#: permits/models.py:67 permits/models.py:99 permits/models.py:124
+msgid "nom"
+msgstr ""
+
+#: permits/models.py:70 permits/models.py:82
+msgid "type de travaux"
+msgstr ""
+
+#: permits/models.py:71 permits/models.py:101
+msgid "types de travaux"
+msgstr "types de travaux"
+
+#: permits/models.py:85 permits/models.py:105 permits/models.py:148
+msgid "objet des travaux"
+msgstr ""
+
+#: permits/models.py:87
+#, fuzzy
+#| msgid "commune"
+msgid "communes"
+msgstr "Commune"
+
+#: permits/models.py:90
+msgid "objet pour types de travaux"
+msgstr ""
+
+#: permits/models.py:91
+msgid "objets pour types de travaux"
+msgstr ""
+
+#: permits/models.py:106 permits/models.py:129
+msgid "objets des travaux"
+msgstr ""
+
+#: permits/models.py:118
+msgid "Texte"
+msgstr ""
+
+#: permits/models.py:119
+msgid "Case à cocher"
+msgstr ""
+
+#: permits/models.py:120
+msgid "Nombre"
+msgstr ""
+
+#: permits/models.py:121
+msgid "Fichier"
+msgstr ""
+
+#: permits/models.py:126
+msgid "type de caractéristique"
+msgstr ""
+
+#: permits/models.py:128
+msgid "obligatoire"
+msgstr ""
+
+#: permits/models.py:132 permits/models.py:144
+msgid "caractéristique"
+msgstr ""
+
+#: permits/models.py:133
+msgid "caractéristiques"
+msgstr ""
+
+#: permits/templates/permits/permit_request_actors.html:8
+msgid "Renseignez les acteurs"
+msgstr ""
+
+#: permits/templates/permits/permit_request_actors.html:43
+#: permits/templates/permits/permit_request_appendices.html:25
+#: permits/templates/permits/permit_request_properties.html:23
+#: permits/templates/permits/permit_request_select_objects.html:22
+#: permits/templates/permits/permit_request_select_types.html:24
+#: permits/templates/permits/permit_request_submit.html:15
+msgid "Retour"
+msgstr ""
+
+#: permits/templates/permits/permit_request_actors.html:44
+#: permits/templates/permits/permit_request_appendices.html:28
+#: permits/templates/permits/permit_request_properties.html:24
+#: permits/templates/permits/permit_request_select_objects.html:23
+msgid "Enregistrer et continuer"
+msgstr ""
+
+#: permits/templates/permits/permit_request_appendices.html:8
+msgid "Renseignez les annexes"
+msgstr ""
+
+#: permits/templates/permits/permit_request_appendices.html:21
+msgid "Aucune annexe requise pour cette demande de permis."
+msgstr ""
+
+#: permits/templates/permits/permit_request_appendices.html:30
+#: permits/templates/permits/permit_request_select_administrative_entity.html:22
+#: permits/templates/permits/permit_request_select_types.html:25
+msgid "Continuer"
+msgstr ""
+
+#: permits/templates/permits/permit_request_confirmation.html:14
+msgid "Merci pour votre demande"
+msgstr ""
+
+#: permits/templates/permits/permit_request_confirmation.html:16
+msgid "Voir mes demandes"
+msgstr ""
+
+#: permits/templates/permits/permit_request_properties.html:8
+msgid "Renseignez les caractéristiques des objets"
+msgstr ""
+
+#: permits/templates/permits/permit_request_select_administrative_entity.html:12
+msgid "Localisation de votre demande de permis"
+msgstr ""
+
+#: permits/templates/permits/permit_request_select_objects.html:8
+msgid "Sélectionnez les objets de travaux"
+msgstr ""
+
+#: permits/templates/permits/permit_request_select_types.html:12
+msgid "Sélectionnez les types de travaux"
+msgstr ""
+
+#: permits/templates/permits/permit_request_submit.html:8
+msgid "Envoyer votre demande"
+msgstr ""
+
+#: permits/templates/permits/permit_request_submit.html:18
+msgid "Soumettre"
+msgstr ""
+
+#: permits/templates/permits/permit_request_submit.html:20
+msgid "Envoyer"
+msgstr ""
+
+#~ msgid "Password reset on %s"
+#~ msgstr "Nouveau mot de passe pour pro.mapnv.ch"
 
 #~ msgid "email_content"
 #~ msgstr "Contenu de l'email"

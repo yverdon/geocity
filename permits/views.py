@@ -18,8 +18,9 @@ from .filters import PermitRequestFilterExterns
 from . import geointerfaces
 
 
-from gpf.forms import ActorForm
+from .forms import GenericActorForm
 from gpf.models import Actor
+
 
 from . import forms, models, services
 
@@ -175,7 +176,7 @@ def permit_request_appendices(request, permit_request_id):
 
         if form.is_valid():
             form.save()
-            return redirect('permits:permit_request_submit', permit_request_id=permit_request.pk)
+            return redirect('permits:permit_request_actors', permit_request_id=permit_request.pk)
     else:
         form = forms.WorksObjectsAppendicesForm(instance=permit_request, enable_required=False)
 
@@ -190,7 +191,7 @@ def permit_request_appendices(request, permit_request_id):
 @login_required
 def permit_request_actors(request, permit_request_id):
     permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
-    GenericActorFormSet = modelformset_factory(Actor, form=ActorForm, extra=0)
+    GenericActorFormSet = modelformset_factory(Actor, form=GenericActorForm, extra=1, max_num=4)
     queryset = permit_request.actors.all()
 
     if request.method == 'POST':
@@ -203,7 +204,7 @@ def permit_request_actors(request, permit_request_id):
                     actors.append(form.save())
                 permit_request.actors.set(actors)
 
-            return redirect('permits:permit_request_summary', permit_request_id=permit_request.pk)
+            return redirect('permits:permit_request_submit', permit_request_id=permit_request.pk)
     else:
         formset = GenericActorFormSet(queryset=queryset)
 

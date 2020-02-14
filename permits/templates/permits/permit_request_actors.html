@@ -1,21 +1,41 @@
 {% extends "base_permits.html" %}
 {% load bootstrap4 %}
 {% load i18n %}
-
-
+{% load permit_progressbar %}
 {% block content %}
+{% permit_progressbar permit_request 'WorksContactForm' %}
 <div class="container mt-3">
-  <h3>{% trans "Renseignez les acteurs" %}</h3>
+  <h3>{% trans "Renseignez les contacts utiles au traitement de votre demande" %}</h3>
   <h6>La demande est sera traitée par: {{permit_request.administrative_entity}} </h6>
   <h6>La demande est localisée ici : {{permit_request.city_name}} - {{permit_request.street_name}}, {{permit_request.street_number}}</h6>
   <hr>
+
+
   <form method="post">
     {% csrf_token %}
     {{ formset.management_form }}
 
     <div id="forms-container">
       {% for form in formset %}
-        {% bootstrap_form form %}
+      <div>
+        <a data-toggle="collapse" href="#collapseActor-{{ forloop.counter0 }}" role="button" aria-expanded="false" aria-controls="collapseActor">
+          {% if form.initial.name %}
+            Ouvrir le détail du contact {{forloop.counter}} - {{form.initial.name}}
+          {% else %}
+            + Saisir un contact
+          {% endif %}
+        </a>
+        </div>
+        <hr>
+        {% if form.errors %}
+          <div class="collapse show" id="collapseActor-{{ forloop.counter0 }}">
+        {% else %}
+          <div class="collapse collapse" id="collapseActor-{{ forloop.counter0 }}">
+        {% endif %}
+          <div class="card card-body">
+            {% bootstrap_form form %}
+          </div>
+        </div>
       {% endfor %}
     </div>
 

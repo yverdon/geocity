@@ -6,6 +6,9 @@ from django.utils.translation import gettext_lazy as _
 
 from . import models, services
 from gpf.models import AdministrativeEntity
+from gpf.models import Actor
+from .widgets import RemoteAutocompleteWidget
+
 from . import geointerfaces
 
 
@@ -69,8 +72,8 @@ class AdministrativeEntityForm(forms.Form):
         if self.instance:
             initial = {**kwargs.get('initial', {}),
                 'administrative_entity': self.instance.administrative_entity,
-                'street_name': self.instance.street_name.geom,
-                'street_number': self.instance.street_number.geom,
+                'street_name': self.instance.street_name,
+                'street_number': self.instance.street_number,
                 'npa': self.instance.npa,
                 'city_name': self.instance.city_name,
                 'geom': self.instance.geom,
@@ -261,3 +264,36 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
 
     def get_field_kwargs(self, prop):
         return {**super().get_field_kwargs(prop), **{'widget': forms.ClearableFileInput}}
+
+
+class GenericActorForm(forms.ModelForm):
+
+    # required_css_class = 'required'
+
+    class Meta:
+        model = Actor
+        exclude = ['user']
+        help_texts = {
+            'vat_number': 'Trouvez votre numéro <a href="https://www.bfs.admin.ch/bfs/fr/home/registres/registre-entreprises/numero-identification-entreprises.html" target="_blank">TVA</a>',
+        }
+        widgets = {
+            'address': RemoteAutocompleteWidget(
+                attrs={
+                    "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
+                    "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
+                    "search_prefix": "false",
+                    "origins": "address",
+                    "zipcode_field": "zipcode",
+                    "city_field": "city",
+                    "placeholder": "ex: Place Pestalozzi 2 Yverdon",
+                }),
+            'phone_fixed': forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}),
+            'phone_mobile': forms.TextInput(attrs={'placeholder': 'ex: 079 111 22 22'}),
+            'vat_number': forms.TextInput(attrs={'placeholder': 'ex: CHE-123.456.789'}),
+            'name': forms.TextInput(attrs={'placeholder': 'ex: Dupond'}),
+            'firstname': forms.TextInput(attrs={'placeholder': 'ex: Marcel'}),
+            'zipcode': forms.TextInput(attrs={'placeholder': 'ex: 1400'}),
+            'city': forms.TextInput(attrs={'placeholder': 'ex: Yverdon'}),
+            'company_name': forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}),
+            'email': forms.TextInput(attrs={'placeholder': 'ex: monemail@monemail.com'}),
+        }
