@@ -2,7 +2,7 @@
 {% load bootstrap4 %}
 {% load i18n %}
 {% load permit_progressbar %}
-{% block content %}
+{% block content-no-sidebar %}
 {% permit_progressbar permit_request 'WorksContactForm' %}
 <div class="container mt-3">
   <h3>{% trans "Renseignez les contacts utiles au traitement de votre demande" %}</h3>
@@ -19,10 +19,10 @@
       {% for form in formset %}
       <div>
         <a data-toggle="collapse" href="#collapseActor-{{ forloop.counter0 }}" role="button" aria-expanded="false" aria-controls="collapseActor">
-          {% if form.initial.name %}
-            Ouvrir le détail du contact {{forloop.counter}} - {{form.initial.name}}
+          {% if form.initial.actor_type %}
+            Ouvrir le détail du contact {{forloop.counter}} {{form.initial.name}} - {{form.initial.actor_type}}
           {% else %}
-            + Saisir un contact
+            Ajouter un contact
           {% endif %}
         </a>
         </div>
@@ -33,7 +33,7 @@
           <div class="collapse collapse" id="collapseActor-{{ forloop.counter0 }}">
         {% endif %}
           <div class="card card-body">
-            {% bootstrap_form form %}
+            {% bootstrap_form form layout='horizontal'%}
           </div>
         </div>
       {% endfor %}
@@ -45,4 +45,4 @@
     {% endbuttons %}
   </form>
 </div>
-{% endblock content %}
+{% endblock content-no-sidebar %}

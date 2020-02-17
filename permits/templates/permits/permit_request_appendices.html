@@ -2,7 +2,7 @@
 {% load bootstrap4 %}
 {% load i18n %}
 {% load permit_progressbar %}
-{% block content %}
+{% block content-no-sidebar %}
 {% permit_progressbar permit_request 'WorksObjectsAppendicesForm' %}
 <div class="container mt-3">
   <h3>{% trans "Renseignez les annexes" %}</h3>
@@ -33,4 +33,4 @@
     {% endbuttons %}
   </form>
 </div>
-{% endblock content %}
+{% endblock content-no-sidebar %}

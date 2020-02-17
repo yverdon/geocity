@@ -22,7 +22,13 @@ class WorksObjectTypeChoice(models.Model):
 class PermitRequestActor(models.Model):
     actor = models.ForeignKey(Actor, on_delete=models.SET_NULL, null=True)
     permit_request = models.ForeignKey('PermitRequest', on_delete=models.SET_NULL, null=True)
-    description = models.CharField(max_length=255)
+    description = models.CharField(max_length=255, null=True)
+    actor_type = models.ForeignKey('PermitActorType', on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        verbose_name = _("permis-acteur")
+        verbose_name_plural = _("permis-acteurs")
+
 
 
 class PermitRequest(models.Model):
@@ -64,8 +70,20 @@ class PermitRequest(models.Model):
 
 
 class WorksType(models.Model):
-    name = models.CharField(_("nom"), max_length=255)
+    TYPE_BUILDING= 0
+    TYPE_PUBLICDOMAINUSAGE = 1
+    TYPE_EVENT = 2
+    TYPE_CHOICES = (
+        (TYPE_BUILDING, _("Permis de construire avec dispense")),
+        (TYPE_PUBLICDOMAINUSAGE, _("Utilisation du domaine public")),
+        (TYPE_EVENT, _("Événements")),
+    )
 
+    type = models.PositiveSmallIntegerField(
+        _("type"), choices=TYPE_CHOICES, default=TYPE_BUILDING
+    )
+
+    name = models.CharField(_("nom"), max_length=255)
     class Meta:
         verbose_name = _("type de travaux")
         verbose_name_plural = _("types de travaux")
@@ -154,3 +172,36 @@ class WorksObjectPropertyValue(models.Model):
 
     class Meta:
         unique_together = [('property', 'works_object_type_choice')]
+
+
+class PermitActorType(models.Model):
+    TYPE_OTHER= 0
+    TYPE_REQUESTOR = 1
+    TYPE_OWNER = 2
+    TYPE_COMPANY = 3
+    TYPE_CLIENT = 4
+    TYPE_SECURITY= 5
+    TYPE_ASSOCIATION= 6
+    TYPE_CHOICES = (
+        (TYPE_OTHER, _("Autres")),
+        (TYPE_OWNER, _("Popriétaire")),
+        (TYPE_COMPANY, _("Entreprise")),
+        (TYPE_CLIENT, _("Maître d\'ouvrage")),
+        (TYPE_REQUESTOR, _("Requérant si différent de l\'auteur de la demande")),
+        (TYPE_SECURITY, _("Sécurité")),
+        (TYPE_ASSOCIATION, _("Association")),
+    )
+    type = models.PositiveSmallIntegerField(
+        _("type de contact"), choices=TYPE_CHOICES, default=TYPE_OTHER
+    )
+    is_mandatory = models.BooleanField(_("obligatoire"), default=False)
+    works_type = models.ForeignKey(
+        'WorksType', on_delete=models.CASCADE, verbose_name=_("type de travaux"), related_name='works_contact_types'
+    )
+
+    class Meta:
+        verbose_name = _("contact à saisir")
+        verbose_name_plural = _("contacts à saisir")
+
+    def __str__(self):
+        return str(self.type) + '(' + str(self.works_type) + ')'

@@ -6,7 +6,7 @@
   <link rel="stylesheet" type="text/css" href="{% static 'css/permits.css' %}">
 {% endblock %}
 {% load permit_progressbar %}
-{% block content %}
+{% block content-no-sidebar %}
 
 <div class="container mt-3">
   <h3>{% trans "Localisation de votre demande de permis" %}</h3>
@@ -23,4 +23,4 @@
     {% endbuttons %}
   </form>
 </div>
-{% endblock content %}
+{% endblock content-no-sidebar %}

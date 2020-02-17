@@ -63,7 +63,7 @@ def permit_progressbar(permit_request, step):
                 steps['WorksObjectsPropertiesForm']['state'] = 'done'
             else:
                 steps['WorksObjectsPropertiesForm']['state'] = 'partial'
-
+    
             if form_appendices.is_valid():
                 steps['WorksObjectsAppendicesForm']['state'] = 'done'
             else:

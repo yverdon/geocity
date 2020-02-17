@@ -5,7 +5,7 @@
 {% load permit_progressbar %}
 {% endblock navbar %}
 
-{% block content %}
+{% block content-no-sidebar %}
 {% permit_progressbar permit_request 'WorksTypesForm' %}
 <hr>
 <div class="container mt-3">
@@ -26,4 +26,4 @@
     {% endbuttons %}
   </form>
 </div>
-{% endblock content %}
+{% endblock content-no-sidebar %}

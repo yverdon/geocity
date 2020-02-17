@@ -2,7 +2,7 @@
 {% load bootstrap4 %}
 {% load i18n %}
 {% load permit_progressbar %}
-{% block content %}
+{% block content-no-sidebar %}
 {% permit_progressbar permit_request 'WorksObjectsPropertiesForm' %}
 <div class="container mt-3">
   <h3>{% trans "Renseignez les caractéristiques des objets" %}</h3>
@@ -15,7 +15,7 @@
     {% for object_type, fields in object_types %}
       <h4>{{ object_type }}</h4>
       {% for field in fields %}
-        {% bootstrap_field field %}
+        {% bootstrap_field field layout='horizontal'%}
       {% endfor %}
     {% endfor %}
 
@@ -25,4 +25,4 @@
     {% endbuttons %}
   </form>
 </div>
-{% endblock content %}
+{% endblock content-no-sidebar %}

@@ -190,23 +190,52 @@ def permit_request_appendices(request, permit_request_id):
 
 @login_required
 def permit_request_actors(request, permit_request_id):
+
     permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
-    GenericActorFormSet = modelformset_factory(Actor, form=GenericActorForm, extra=1, max_num=4)
+
+    unique_initial_actors = models.PermitActorType.objects.filter(
+        works_type__in = services.get_permit_request_works_types(permit_request)
+    ).distinct('type')
+
+    actor_initial_forms = []
+    permit_actors = models.PermitRequestActor.objects.filter(permit_request=permit_request.pk).all()
+
+    if len(permit_actors) == 0:
+        for actor_type in unique_initial_actors:
+            actor_initial_forms.append({'actor_type': actor_type,})
+    else:
+        for actor in permit_actors:
+            actor_initial_forms.append(
+                {
+                    'actor_description': actor.description,
+                    'actor_type': actor.actor_type,
+                }
+            )
+
+    GenericActorFormSet = modelformset_factory(Actor, form=GenericActorForm, extra=0, min_num=len(actor_initial_forms), can_delete=False)
     queryset = permit_request.actors.all()
 
     if request.method == 'POST':
-        formset = GenericActorFormSet(request.POST, request.FILES, queryset=queryset)
+
+        formset = GenericActorFormSet(request.POST, request.FILES, queryset=queryset, initial=actor_initial_forms,)
 
         if formset.is_valid():
             actors = []
             with transaction.atomic():
                 for form in formset:
-                    actors.append(form.save())
+                    actor = form.save()
+                    actors.append(actor)
+
                 permit_request.actors.set(actors)
+                # TODO: save fields description & actor_type to db PermitRequestActor
+                for actor in actors:
+                    models.PermitRequestActor.objects.filter(actor=actor.pk).update(actor=actor,
+                        permit_request=permit_request, description='Coucou'
+                    )
 
             return redirect('permits:permit_request_submit', permit_request_id=permit_request.pk)
     else:
-        formset = GenericActorFormSet(queryset=queryset)
+        formset = GenericActorFormSet(queryset=queryset, initial=actor_initial_forms,)
 
     return render(request, "permits/permit_request_actors.html", {
         'formset': formset,

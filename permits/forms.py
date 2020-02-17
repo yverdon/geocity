@@ -268,7 +268,6 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
 
 class GenericActorForm(forms.ModelForm):
 
-    # required_css_class = 'required'
 
     class Meta:
         model = Actor
@@ -297,3 +296,13 @@ class GenericActorForm(forms.ModelForm):
             'company_name': forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}),
             'email': forms.TextInput(attrs={'placeholder': 'ex: monemail@monemail.com'}),
         }
+
+
+    def __init__(self, *args, **kwargs):
+        super(GenericActorForm, self).__init__(*args, **kwargs)
+
+        if 'instance' in kwargs  :
+            product = kwargs['instance']
+
+        self.fields['actor_description']  = forms.CharField(max_length=128)
+        self.fields['actor_type']  =  forms.CharField(max_length=128)

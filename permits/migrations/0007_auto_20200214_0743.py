@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             name='PermitRequestActor',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('description', models.CharField(max_length=255)),
+                ('description', models.CharField(max_length=255, null=True)),
                 ('actor', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='gpf.Actor')),
                 ('permit_request', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='permits.PermitRequest')),
             ],
