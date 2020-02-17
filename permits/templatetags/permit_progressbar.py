@@ -38,7 +38,7 @@ def permit_progressbar(permit_request, step):
 
     if permit_request:
 
-        form_properties = forms.WorksObjectsPropertiesForm(instance=permit_request, enable_required=True, data={})
+        form_properties = forms.WorksObjectsPropertiesForm(instance=permit_request, enable_required=True)
         form_appendices = forms.WorksObjectsAppendicesForm(instance=permit_request, enable_required=True, data={})
         GenericActorFormSet = modelformset_factory(Actor, form=forms.GenericActorForm)
         queryset = permit_request.actors.all()
@@ -59,15 +59,26 @@ def permit_progressbar(permit_request, step):
             steps['WorksContactForm']['enabled'] = 'enabled-step'
             steps['SubmitForm']['enabled'] = 'enabled-step'
 
-            if form_properties.is_valid():
-                steps['WorksObjectsPropertiesForm']['state'] = 'done'
-            else:
+            form_proprties_count = len(form_properties.fields)
+            correct_form_properties = len([array for key, array in form_properties.initial.items() if array])
+            form_properties_message = ''
+            if form_properties.initial == {}:
                 steps['WorksObjectsPropertiesForm']['state'] = 'partial'
-    
+                steps['WorksObjectsPropertiesForm']['name']  += '(0/' + str(form_proprties_count) + ')'
+
+            elif form_proprties_count - correct_form_properties > 0:
+                steps['WorksObjectsPropertiesForm']['state'] = 'partial'
+                steps['WorksObjectsPropertiesForm']['name']  += '(' + str(form_proprties_count -  correct_form_properties) + '/' + str(form_proprties_count) + ')'
+
+            else:
+                steps['WorksObjectsPropertiesForm']['state'] = 'done'
+
             if form_appendices.is_valid():
                 steps['WorksObjectsAppendicesForm']['state'] = 'done'
             else:
                 steps['WorksObjectsAppendicesForm']['partial'] = 'partial'
+
+
 
             # TODO: instantiate model formset correctly
             # if actors_formset_properties.is_valid():
