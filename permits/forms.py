@@ -268,6 +268,8 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
 
 class GenericActorForm(forms.ModelForm):
 
+    description = forms.CharField(max_length=128)
+    actor_type  =  forms.ChoiceField(choices=models.ACTOR_TYPE_CHOICES, disabled=True)
 
     class Meta:
         model = Actor
@@ -297,12 +299,19 @@ class GenericActorForm(forms.ModelForm):
             'email': forms.TextInput(attrs={'placeholder': 'ex: monemail@monemail.com'}),
         }
 
+    @transaction.atomic
+    def save(self, permit_request, commit=True):
 
-    def __init__(self, *args, **kwargs):
-        super(GenericActorForm, self).__init__(*args, **kwargs)
+        actor = super().save()
+        print(self.cleaned_data)
+        coucou = self.cleaned_data['description']
+        models.PermitRequestActor.objects.update_or_create(
+            description=coucou,
+            actor_type=self.cleaned_data['actor_type'],
+            defaults={
+                'actor': self.instance,
+                'permit_request': permit_request,
+            })
 
-        if 'instance' in kwargs  :
-            product = kwargs['instance']
 
-        self.fields['actor_description']  = forms.CharField(max_length=128)
-        self.fields['actor_type']  =  forms.CharField(max_length=128)
+        return actor

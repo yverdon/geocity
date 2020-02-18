@@ -7,6 +7,24 @@ from django.utils.translation import gettext_lazy as _
 from gpf.models import Actor, AdministrativeEntity
 
 
+ACTOR_TYPE_OTHER= 0
+ACTOR_TYPE_REQUESTOR = 1
+ACTOR_TYPE_OWNER = 2
+ACTOR_TYPE_COMPANY = 3
+ACTOR_TYPE_CLIENT = 4
+ACTOR_TYPE_SECURITY= 5
+ACTOR_TYPE_ASSOCIATION= 6
+ACTOR_TYPE_CHOICES = (
+    (ACTOR_TYPE_OTHER, _("Autres")),
+    (ACTOR_TYPE_OWNER, _("Popriétaire")),
+    (ACTOR_TYPE_COMPANY, _("Entreprise")),
+    (ACTOR_TYPE_CLIENT, _("Maître d\'ouvrage")),
+    (ACTOR_TYPE_REQUESTOR, _("Requérant si différent de l\'auteur de la demande")),
+    (ACTOR_TYPE_SECURITY, _("Sécurité")),
+    (ACTOR_TYPE_ASSOCIATION, _("Association")),
+)
+
+
 class WorksObjectTypeChoice(models.Model):
     """
     This intermediary model represents the selected objects for a permit
@@ -23,7 +41,10 @@ class PermitRequestActor(models.Model):
     actor = models.ForeignKey(Actor, on_delete=models.SET_NULL, null=True)
     permit_request = models.ForeignKey('PermitRequest', on_delete=models.SET_NULL, null=True)
     description = models.CharField(max_length=255, null=True)
-    actor_type = models.ForeignKey('PermitActorType', on_delete=models.SET_NULL, null=True)
+    actor_type = models.PositiveSmallIntegerField(
+        _("type de contact"), choices=ACTOR_TYPE_CHOICES, default=ACTOR_TYPE_OTHER
+    )
+
 
     class Meta:
         verbose_name = _("permis-acteur")
@@ -175,24 +196,9 @@ class WorksObjectPropertyValue(models.Model):
 
 
 class PermitActorType(models.Model):
-    TYPE_OTHER= 0
-    TYPE_REQUESTOR = 1
-    TYPE_OWNER = 2
-    TYPE_COMPANY = 3
-    TYPE_CLIENT = 4
-    TYPE_SECURITY= 5
-    TYPE_ASSOCIATION= 6
-    TYPE_CHOICES = (
-        (TYPE_OTHER, _("Autres")),
-        (TYPE_OWNER, _("Popriétaire")),
-        (TYPE_COMPANY, _("Entreprise")),
-        (TYPE_CLIENT, _("Maître d\'ouvrage")),
-        (TYPE_REQUESTOR, _("Requérant si différent de l\'auteur de la demande")),
-        (TYPE_SECURITY, _("Sécurité")),
-        (TYPE_ASSOCIATION, _("Association")),
-    )
+
     type = models.PositiveSmallIntegerField(
-        _("type de contact"), choices=TYPE_CHOICES, default=TYPE_OTHER
+        _("type de contact"), choices=ACTOR_TYPE_CHOICES, default=ACTOR_TYPE_OTHER
     )
     is_mandatory = models.BooleanField(_("obligatoire"), default=False)
     works_type = models.ForeignKey(

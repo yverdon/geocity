@@ -195,24 +195,13 @@ def permit_request_actors(request, permit_request_id):
 
     unique_initial_actors = models.PermitActorType.objects.filter(
         works_type__in = services.get_permit_request_works_types(permit_request)
-    ).distinct('type')
+    ).exclude(type__in=models.PermitRequestActor.objects.filter(permit_request=permit_request).values_list('actor_type',flat=True)).distinct('type')
 
     actor_initial_forms = []
-    permit_actors = models.PermitRequestActor.objects.filter(permit_request=permit_request.pk).all()
+    for actor_type in unique_initial_actors:
+        actor_initial_forms.append({'actor_type': actor_type.type,})
 
-    if len(permit_actors) == 0:
-        for actor_type in unique_initial_actors:
-            actor_initial_forms.append({'actor_type': actor_type,})
-    else:
-        for actor in permit_actors:
-            actor_initial_forms.append(
-                {
-                    'actor_description': actor.description,
-                    'actor_type': actor.actor_type,
-                }
-            )
-
-    GenericActorFormSet = modelformset_factory(Actor, form=GenericActorForm, extra=0, min_num=len(actor_initial_forms), can_delete=False)
+    GenericActorFormSet = modelformset_factory(Actor, form=GenericActorForm, min_num=len(unique_initial_actors),can_delete=False)
     queryset = permit_request.actors.all()
 
     if request.method == 'POST':
@@ -223,15 +212,7 @@ def permit_request_actors(request, permit_request_id):
             actors = []
             with transaction.atomic():
                 for form in formset:
-                    actor = form.save()
-                    actors.append(actor)
-
-                permit_request.actors.set(actors)
-                # TODO: save fields description & actor_type to db PermitRequestActor
-                for actor in actors:
-                    models.PermitRequestActor.objects.filter(actor=actor.pk).update(actor=actor,
-                        permit_request=permit_request, description='Coucou'
-                    )
+                    actors.append(form.save(permit_request))
 
             return redirect('permits:permit_request_submit', permit_request_id=permit_request.pk)
     else:
