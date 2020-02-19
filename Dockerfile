@@ -1,4 +1,4 @@
-FROM python:3.8-stretch
+FROM python:3.8-buster
 
 # Update base container install
 # Existing binutils causes a dependency conflict, correct version will be installed when GDAL gets intalled
