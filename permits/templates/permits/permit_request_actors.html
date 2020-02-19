@@ -19,10 +19,11 @@
       {% for form in formset %}
       <div>
         <a data-toggle="collapse" href="#collapseActor-{{ forloop.counter0 }}" role="button" aria-expanded="false" aria-controls="collapseActor">
+
           {% if form.instance.id %}
-            Ouvrir le détail du contact {{forloop.counter}} {{form.instance.name}}
+            Modifier le contact {{forloop.counter}} {{form.instance.name}}
           {% else %}
-            Ajouter un contact
+            Saisir le contact {{form.initial.actor_type}}
           {% endif %}
         </a>
         </div>

@@ -8,8 +8,8 @@ from . import models, services
 from gpf.models import AdministrativeEntity
 from gpf.models import Actor
 from .widgets import RemoteAutocompleteWidget
-
-from . import geointerfaces
+from django.core.exceptions import ValidationError
+from . import geointerfaces, validators
 
 
 #Geo-forms
@@ -44,7 +44,7 @@ class AdministrativeEntityForm(forms.Form):
     geom =  geoforms.PointField(
         widget= PermitOpenLayersWidget(attrs={
             'map_width': '100%',
-            'map_height': settings.OL_MAP_HEIGHT,
+            'map_height': 400,
             'map_srid': 2056,
             'default_center': [2539057, 1181111],
             'default_zoom': 10,
@@ -58,13 +58,15 @@ class AdministrativeEntityForm(forms.Form):
             'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
             'administrative_entities_url': 'gpf:adm-entity-geojson',
             'reverse_geocoding_url': 'permits:reversegeocode',
-        })
+        },),
+        validators=[validators.validate_administrative_entity],
+        label=_("Localisation")
     )
 
-    street_name = forms.CharField()
-    street_number = forms.CharField()
-    npa = forms.IntegerField()
-    city_name = forms.CharField()
+    street_name = forms.CharField(label=_("Rue"))
+    street_number = forms.CharField(label=_("Numero"))
+    npa = forms.IntegerField(label=_("NPA"))
+    city_name = forms.CharField(label=_("Ville"))
 
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop('instance', None)
@@ -89,7 +91,6 @@ class AdministrativeEntityForm(forms.Form):
 
         location = self.cleaned_data['geom']
         administrative_entity= AdministrativeEntity.objects.filter(geom__contains=location).get()
-        # TODO: intersect cadastre and generate crdppf link
 
         if not self.instance:
             return models.PermitRequest.objects.create(
@@ -274,6 +275,7 @@ class GenericActorForm(forms.ModelForm):
     class Meta:
         model = Actor
         exclude = ['user']
+        fields = ['actor_type', 'name', 'firstname', 'email', 'company_name', 'address', 'zipcode', 'city', 'phone_fixed', 'phone_mobile']
         help_texts = {
             'vat_number': 'Trouvez votre numéro <a href="https://www.bfs.admin.ch/bfs/fr/home/registres/registre-entreprises/numero-identification-entreprises.html" target="_blank">TVA</a>',
         }
@@ -303,11 +305,16 @@ class GenericActorForm(forms.ModelForm):
     def save(self, permit_request, commit=True):
 
         actor = super().save()
-        print(self.cleaned_data)
-        coucou = self.cleaned_data['description']
+        description = self.cleaned_data.get('description')
+        actor_type = self.cleaned_data.get('actor_type')
+        print("###")
+        print(description)
+        print(actor_type)
+        print("###")
+        patatra
         models.PermitRequestActor.objects.update_or_create(
-            description=coucou,
-            actor_type=self.cleaned_data['actor_type'],
+            description=description,
+            actor_type=actor_type,
             defaults={
                 'actor': self.instance,
                 'permit_request': permit_request,

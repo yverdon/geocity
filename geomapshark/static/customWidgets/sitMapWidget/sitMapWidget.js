@@ -6,6 +6,15 @@
 
     'use strict';
 
+    proj4.defs("EPSG:2056", "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs");
+    ol.proj.proj4.register(proj4);
+    var projection = new ol.proj.Projection({
+        code: 'EPSG:2056',
+        units: 'm'
+    });
+
+    ol.proj.addProjection(projection);
+
     var jsonFormat = new ol.format.GeoJSON();
 
     function sitMapWidget(options) {
@@ -117,7 +126,6 @@
        });
 
         this.administrativeEntityMask = new ol.layer.Tile({
-           extent: [420000, 30000, 900000, 350000],
            projection: projection,
            source: new ol.source.TileWMS(({
              // TODO: don't hardcode this!!!
@@ -212,17 +220,12 @@
             this.hideMapButtons();
         }
 
+        if (this.featureCollection.getLength() > 0 && !this.options.is_collection) {
+            this.disableDrawing(); // Only allow one feature at a time
+        }
+
         this.ready = true;
     }
-
-    var projection = new ol.proj.Projection({
-        code: 'EPSG:2056',
-        extent: [485869.5728, 76443.1884, 837076.5648, 299941.7864],
-        units: 'm'
-    });
-
-    ol.proj.addProjection(projection);
-
 
     sitMapWidget.prototype.createMap = function(adminEntities, administrativeEntityMask) {
 
@@ -344,7 +347,7 @@
         // Initialize the modify interaction
         this.interactions.modify = new ol.interaction.Modify({
             features: this.featureCollection,
-            style: new ol.style.Style({})
+            style: new ol.style.Style({}),
         });
         // Initialize the draw interaction
         this.interactions.draw = new ol.interaction.Draw({
@@ -470,12 +473,12 @@
 
       var east = parseFloat($('#east_coord')[0].value);
       var north = parseFloat($('#north_coord')[0].value);
-        var feature = new ol.Feature({
-          geometry: new ol.geom.MultiPoint([[east, north]]),
-        });
+      var feature = new ol.Feature({
+        geometry: new ol.geom.MultiPoint([[east, north]]),
+      });
 
-        this.featureCollection.push(feature);
-        this.interactions.select.getFeatures().clear();
+      this.featureCollection.push(feature);
+      this.interactions.select.getFeatures().clear();
 
     };
 

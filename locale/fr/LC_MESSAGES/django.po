@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-14 09:58+0000\n"
+"POT-Creation-Date: 2020-02-19 08:54+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -122,7 +122,7 @@ msgstr "Requérant"
 msgid "ofs_id"
 msgstr ""
 
-#: gpf/models.py:62 gpf/models.py:150 gpf/models.py:256 permits/models.py:59
+#: gpf/models.py:62 gpf/models.py:150 gpf/models.py:256 permits/models.py:86
 msgid "geom"
 msgstr "Localisation"
 
@@ -316,7 +316,7 @@ msgstr "Email"
 msgid "fiche"
 msgstr "Fiche"
 
-#: gpf/models.py:234 permits/models.py:47
+#: gpf/models.py:234 permits/models.py:74
 msgid "commune"
 msgstr "Commune"
 
@@ -413,132 +413,208 @@ msgstr "Zone archéologique"
 msgid "Debugging window (serialized value)"
 msgstr ""
 
-#: permits/forms.py:111
+#: permits/forms.py:110
 msgid "Types de travaux"
 msgstr ""
 
-#: permits/models.py:33
+#: permits/models.py:18
+#, fuzzy
+#| msgid "autre_mesu"
+msgid "Autres"
+msgstr "Autre mesure"
+
+#: permits/models.py:19
+msgid "Popriétaire"
+msgstr ""
+
+#: permits/models.py:20
+msgid "Entreprise"
+msgstr ""
+
+#: permits/models.py:21
+msgid "Maître d'ouvrage"
+msgstr ""
+
+#: permits/models.py:22
+msgid "Requérant si différent de l'auteur de la demande"
+msgstr ""
+
+#: permits/models.py:23
+msgid "Sécurité"
+msgstr ""
+
+#: permits/models.py:24
+#, fuzzy
+#| msgid "description"
+msgid "Association"
+msgstr "Description"
+
+#: permits/models.py:45 permits/models.py:201
+#, fuzzy
+#| msgid "types de travaux"
+msgid "type de contact"
+msgstr "types de travaux"
+
+#: permits/models.py:50
+#, fuzzy
+#| msgid "permitrequest"
+msgid "permis-acteur"
+msgstr "Demandes de permis"
+
+#: permits/models.py:51
+#, fuzzy
+#| msgid "permitrequest"
+msgid "permis-acteurs"
+msgstr "Demandes de permis"
+
+#: permits/models.py:60
 msgid "Brouillon"
 msgstr ""
 
-#: permits/models.py:34
+#: permits/models.py:61
 msgid "Envoyée"
 msgstr ""
 
-#: permits/models.py:35
+#: permits/models.py:62
 msgid "Validée"
 msgstr ""
 
-#: permits/models.py:39
+#: permits/models.py:66
 msgid "état"
 msgstr ""
 
-#: permits/models.py:41
+#: permits/models.py:68
 msgid "date de création"
 msgstr ""
 
-#: permits/models.py:42
+#: permits/models.py:69
 #, fuzzy
 #| msgid "validation"
 msgid "date de validation"
 msgstr "Validations"
 
-#: permits/models.py:50
+#: permits/models.py:77
 msgid "auteur"
 msgstr "Auteur"
 
-#: permits/models.py:53
+#: permits/models.py:80
 msgid "Rue"
 msgstr "Rue"
 
-#: permits/models.py:54
+#: permits/models.py:81
 msgid "Numero"
-msgstr ""
+msgstr "Numéro"
 
-#: permits/models.py:55
+#: permits/models.py:82
 msgid "NPA"
 msgstr "NPA"
 
-#: permits/models.py:56
+#: permits/models.py:83
 msgid "Ville"
 msgstr "Ville"
 
-#: permits/models.py:62
+#: permits/models.py:89
 msgid "demande de permis"
 msgstr "Demande de permis"
 
-#: permits/models.py:63
+#: permits/models.py:90
 msgid "demandes de permis"
 msgstr "Demande de permis"
 
-#: permits/models.py:67 permits/models.py:99 permits/models.py:124
+#: permits/models.py:98
+msgid "Permis de construire avec dispense"
+msgstr ""
+
+#: permits/models.py:99
+msgid "Utilisation du domaine public"
+msgstr ""
+
+#: permits/models.py:100
+msgid "Événements"
+msgstr ""
+
+#: permits/models.py:104
+#, fuzzy
+#| msgid "sitetype"
+msgid "type"
+msgstr "Type de site"
+
+#: permits/models.py:107 permits/models.py:138 permits/models.py:163
 msgid "nom"
 msgstr ""
 
-#: permits/models.py:70 permits/models.py:82
+#: permits/models.py:109 permits/models.py:121 permits/models.py:205
 msgid "type de travaux"
 msgstr ""
 
-#: permits/models.py:71 permits/models.py:101
+#: permits/models.py:110 permits/models.py:140
 msgid "types de travaux"
 msgstr "types de travaux"
 
-#: permits/models.py:85 permits/models.py:105 permits/models.py:148
+#: permits/models.py:124 permits/models.py:144 permits/models.py:187
 msgid "objet des travaux"
 msgstr ""
 
-#: permits/models.py:87
+#: permits/models.py:126
 #, fuzzy
 #| msgid "commune"
 msgid "communes"
 msgstr "Commune"
 
-#: permits/models.py:90
+#: permits/models.py:129
 msgid "objet pour types de travaux"
 msgstr ""
 
-#: permits/models.py:91
+#: permits/models.py:130
 msgid "objets pour types de travaux"
 msgstr ""
 
-#: permits/models.py:106 permits/models.py:129
+#: permits/models.py:145 permits/models.py:168
 msgid "objets des travaux"
 msgstr ""
 
-#: permits/models.py:118
+#: permits/models.py:157
 msgid "Texte"
 msgstr ""
 
-#: permits/models.py:119
+#: permits/models.py:158
 msgid "Case à cocher"
 msgstr ""
 
-#: permits/models.py:120
+#: permits/models.py:159
 msgid "Nombre"
 msgstr ""
 
-#: permits/models.py:121
+#: permits/models.py:160
 msgid "Fichier"
 msgstr ""
 
-#: permits/models.py:126
+#: permits/models.py:165
 msgid "type de caractéristique"
 msgstr ""
 
-#: permits/models.py:128
+#: permits/models.py:167 permits/models.py:203
 msgid "obligatoire"
 msgstr ""
 
-#: permits/models.py:132 permits/models.py:144
+#: permits/models.py:171 permits/models.py:183
 msgid "caractéristique"
 msgstr ""
 
-#: permits/models.py:133
+#: permits/models.py:172
 msgid "caractéristiques"
 msgstr ""
 
+#: permits/models.py:209
+msgid "contact à saisir"
+msgstr ""
+
+#: permits/models.py:210
+msgid "contacts à saisir"
+msgstr ""
+
 #: permits/templates/permits/permit_request_actors.html:8
-msgid "Renseignez les acteurs"
+msgid "Renseignez les contacts utiles au traitement de votre demande"
 msgstr ""
 
 #: permits/templates/permits/permit_request_actors.html:43
@@ -605,6 +681,12 @@ msgstr ""
 
 #: permits/templates/permits/permit_request_submit.html:20
 msgid "Envoyer"
+msgstr ""
+
+#: permits/validators.py:10
+msgid ""
+"La localisation n' est pas située à sur un territoire communal géré par "
+"cette application"
 msgstr ""
 
 #~ msgid "Password reset on %s"

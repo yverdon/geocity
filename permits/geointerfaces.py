@@ -1,6 +1,6 @@
 import urllib.request
 import urllib.parse
-import json
+import json, os
 
 
 def reverse_geocode(east_coordinate, north_coordinate, api_epsg):
@@ -9,18 +9,15 @@ def reverse_geocode(east_coordinate, north_coordinate, api_epsg):
     	east_coordinate = east_coordinate - 2000000
     	north_coordinate = north_coordinate - 1000000
 
-    # TODO: move parameters to eny.yaml
     base_url = 'https://api3.geo.admin.ch/rest/services/api/MapServer/identify'
-
     params = {
     	'mapExtent': '0,0,100,100',
     	'imageDisplay': '100,100,100',
-    	'tolerance': 10,
+    	'tolerance': os.environ["REVERSE_ADRESS_GEOCODING_TOLERANCE"],
     	'geometryType':'esriGeometryPoint',
     	'geometry': str(east_coordinate) + ',' + str(north_coordinate),
     	'layers': 'all:ch.bfs.gebaeude_wohnungs_register',
     	'returnGeometry': 'false',
-
     }
 
     data = urllib.parse.urlencode(params).encode("utf-8")
