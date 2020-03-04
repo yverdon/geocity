@@ -1,0 +1,37 @@
+{% extends "base_permits.html" %}
+{% load static %}
+{% load i18n %}
+{% load bootstrap4 %}
+{% block stylesheets%}
+  {% load fontawesome %}
+  {% fontawesome_stylesheet %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/permits.css' %}">
+{% endblock %}
+
+{% block navbartitle %}
+  <a class="navbar-brand" href="{% url 'permits:listexterns'%}">{% trans "Demandes de permis" %}</a>
+{% endblock %}
+
+{% block content %}
+
+<hr>
+<a class="btn btn-primary responsive-btn" href="{% url 'permits:permit_request_select_administrative_entity'%}" role="button"><i class="fa fa-road"></i>{% trans "Faire une nouvelle demande" %}</a>
+<a class="btn btn-primary responsive-btn" data-toggle="collapse" href="#collapseFilter" role="button" aria-expanded="false" aria-controls="collapseFilter">
+  <i class="fa fa-filter"></i>{% trans "Filtrer les demandes" %}
+</a>
+<a class="btn btn-primary responsive-btn" href="{% url 'permits:listexterns' %}" role="button"><i class="fa fa-eraser"></i>{% trans "Effacer le filtre" %}</a><hr>
+
+{% load render_table from django_tables2 %}
+
+  {{ filter.form.media }}
+  <form method="get">
+    <div class="collapse" id="collapseFilter">
+      <hr>
+      {% bootstrap_form filter.form layout='horizontal' %}
+      {% bootstrap_button "Appliquer le filtre" button_type="submit" button_class="btn-primary"%}
+    </div>
+  </form>
+<br>
+{% render_table table %}
+
+{% endblock %}

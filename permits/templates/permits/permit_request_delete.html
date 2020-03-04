@@ -1,0 +1,26 @@
+{% extends "base_permits.html" %}
+{% load i18n %}
+{% block navbartitle %}
+{% if user.groups.all.0.name == "extern" %}
+  <a class="navbar-brand" href="{% url 'permits:listexterns'%}">Permis de fouille</a>
+{% else %}
+  <a class="navbar-brand" href="{% url 'gpf:list' %}">Permis de fouille</a>
+{% endif %}
+{% endblock %}
+{% load bootstrap4 %}
+{% block content %}
+<h3 style="margin-top: 20px">Effacer la demande ?</h3>
+<form method="post">{% csrf_token %}
+    <p>{% trans "Êtes vous sûr de vouloir supprimer la demande de permis n°" %}{{ permit_request.id }} ?</p>
+    <h4>{% trans "Détails de la demande:" %} </h4>
+    <ul>
+        <li>{% trans "Requérant:"%} {{ permit_request.author }}</li>
+        <li>{% trans "Demande du:"%} {{ permit_request.created_at }}</li>
+    </ul>
+    {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary" value="Confirmer" %}
+    <a class="btn btn-primary" href="{% url 'permits:listexterns' %}">{% trans "Annuler" %}</a>
+
+
+
+</form>
+{% endblock content %}
