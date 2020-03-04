@@ -3,6 +3,8 @@ from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 
 from . import models, services
+from gpf.models import Actor
+from .widgets import RemoteAutocompleteWidget
 
 
 def get_field_cls_for_property(prop):
@@ -107,6 +109,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
 
     def __init__(self, instance, *args, **kwargs):
         self.instance = instance
+        disable_fields = kwargs.pop('disable_fields', False)
 
         # Compute initial values for fields
         initial = {}
@@ -124,6 +127,11 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         for works_object_type, prop in self.get_properties():
             field_name = self.get_field_name(works_object_type, prop)
             self.fields[field_name] = self.field_for_property(prop)
+
+        if disable_fields:
+            for field in self.fields.values():
+                field.disabled = True
+
 
     def get_fields_by_object_type(self):
         """
@@ -199,3 +207,38 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
 
     def get_field_kwargs(self, prop):
         return {**super().get_field_kwargs(prop), **{'widget': forms.ClearableFileInput}}
+
+
+class GenericActorForm(forms.ModelForm):
+
+    description = forms.CharField(max_length=128)
+    actor_type  =  forms.ChoiceField(choices=models.ACTOR_TYPE_CHOICES, disabled=True)
+
+    class Meta:
+        model = Actor
+        exclude = ['user']
+        fields = ['actor_type', 'name', 'firstname', 'email', 'company_name', 'address', 'zipcode', 'city', 'phone_fixed', 'phone_mobile']
+        help_texts = {
+            'vat_number': 'Trouvez votre numéro <a href="https://www.bfs.admin.ch/bfs/fr/home/registres/registre-entreprises/numero-identification-entreprises.html" target="_blank">TVA</a>',
+        }
+        widgets = {
+            'address': RemoteAutocompleteWidget(
+                attrs={
+                    "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
+                    "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
+                    "search_prefix": "false",
+                    "origins": "address",
+                    "zipcode_field": "zipcode",
+                    "city_field": "city",
+                    "placeholder": "ex: Place Pestalozzi 2 Yverdon",
+                }),
+            'phone_fixed': forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}),
+            'phone_mobile': forms.TextInput(attrs={'placeholder': 'ex: 079 111 22 22'}),
+            'vat_number': forms.TextInput(attrs={'placeholder': 'ex: CHE-123.456.789'}),
+            'name': forms.TextInput(attrs={'placeholder': 'ex: Dupond'}),
+            'firstname': forms.TextInput(attrs={'placeholder': 'ex: Marcel'}),
+            'zipcode': forms.TextInput(attrs={'placeholder': 'ex: 1400'}),
+            'city': forms.TextInput(attrs={'placeholder': 'ex: Yverdon'}),
+            'company_name': forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}),
+            'email': forms.TextInput(attrs={'placeholder': 'ex: monemail@monemail.com'}),
+        }

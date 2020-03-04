@@ -1,8 +1,11 @@
 {% extends "base_generic.html" %}
 {% load bootstrap4 %}
 {% load i18n %}
-
+{% load permit_progressbar %}
 {% block content %}
+{% if permit_request %}
+{% permit_progressbar permit_request 'location' %}
+{% endif %}
 <div class="container mt-3">
   <h3>{% trans "Sélectionnez la commune" %}</h3>
   <hr>
