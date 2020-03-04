@@ -1,9 +1,11 @@
 {% extends "base_permits.html" %}
 {% load bootstrap4 %}
 {% load i18n %}
+{% load permit_progressbar %}
 
 {% block content-no-sidebar %}
 <div class="container">
+  {% permit_progressbar permit_request 'properties' %}
   <h3>{% trans "Renseignez les caractéristiques des objets" %}</h3>
   <hr>
   <form method="post">

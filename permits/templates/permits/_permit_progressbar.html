@@ -1,0 +1,24 @@
+{% load static %}
+{% block stylesheets%}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/permitprogressbar.css' %}">
+{% endblock %}
+
+<div class="progress">
+{% for step_key, step in steps.items %}
+  <div class="circle{% if step_key == active_step %} active {% endif %}
+            {% if step.enabled %} enabled {% endif %}
+            {% if step.completed %} done {% endif %}
+            {% if step.errors %} partial {% endif %}">
+    {% if step.url %}
+      <a href="{{ step.url }}">
+    {% endif %}
+
+    <span class="label">{{ forloop.counter }}</span>
+    <span class="title">{{ step.name }}{% if step.errors %}({{ step.errors|length }}){% endif %}</span>
+
+    {% if step.url %}
+      </a>
+    {% endif %}
+  </div>
+{% endfor %}
+</div>
