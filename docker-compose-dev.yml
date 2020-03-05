@@ -18,14 +18,14 @@ services:
       - "9095:9000"
 
   qgisserver:
-      image: camptocamp/qgis-server:3.4
+      image: camptocamp/qgis-server:3.10
       volumes:
           - .:/data
       ports:
           - "9096:80"
       environment:
-          - QGIS_PROJECT_FILE=/data/print/print.qgs
-          - PGSERVICEFILE=/data/print/pg_service.conf
+          - QGIS_PROJECT_FILE=/data/qgisserver/geocity_demo.qgs
+          - PGSERVICEFILE=/data/qgisserver/pg_service_demo.conf
 
   postgres:
       image: camptocamp/postgres:9.6
