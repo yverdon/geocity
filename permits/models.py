@@ -23,6 +23,24 @@ ACTOR_TYPE_CHOICES = (
 )
 
 
+ACTOR_TYPE_OTHER= 0
+ACTOR_TYPE_REQUESTOR = 1
+ACTOR_TYPE_OWNER = 2
+ACTOR_TYPE_COMPANY = 3
+ACTOR_TYPE_CLIENT = 4
+ACTOR_TYPE_SECURITY= 5
+ACTOR_TYPE_ASSOCIATION= 6
+ACTOR_TYPE_CHOICES = (
+    (ACTOR_TYPE_OTHER, _("Autres")),
+    (ACTOR_TYPE_OWNER, _("Popriétaire")),
+    (ACTOR_TYPE_COMPANY, _("Entreprise")),
+    (ACTOR_TYPE_CLIENT, _("Maître d'ouvrage")),
+    (ACTOR_TYPE_REQUESTOR, _("Requérant si différent de l'auteur de la demande")),
+    (ACTOR_TYPE_SECURITY, _("Sécurité")),
+    (ACTOR_TYPE_ASSOCIATION, _("Association")),
+)
+
+
 class WorksObjectTypeChoice(models.Model):
     """
     This intermediary model represents the selected objects for a permit
@@ -35,10 +53,30 @@ class WorksObjectTypeChoice(models.Model):
         unique_together = [('permit_request', 'works_object_type')]
 
 
+class PermitActorType(models.Model):
+
+    type = models.PositiveSmallIntegerField(
+        _("type de contact"), choices=ACTOR_TYPE_CHOICES, default=ACTOR_TYPE_OTHER
+    )
+    works_type = models.ForeignKey(
+        'WorksType', on_delete=models.CASCADE, verbose_name=_("type de travaux"), related_name='works_contact_types'
+    )
+
+    class Meta:
+        verbose_name = _("contact à saisir")
+        verbose_name_plural = _("contacts à saisir")
+
+    def __str__(self):
+        return str(self.type) + '(' + str(self.works_type) + ')'
+
+
 class PermitRequestActor(models.Model):
     actor = models.ForeignKey(Actor, on_delete=models.CASCADE)
     permit_request = models.ForeignKey('PermitRequest', on_delete=models.CASCADE)
     description = models.CharField(max_length=255)
+    actor_type = models.PositiveSmallIntegerField(
+        _("type de contact"), choices=ACTOR_TYPE_CHOICES, default=ACTOR_TYPE_OTHER
+    )
 
 
 class PermitRequest(models.Model):

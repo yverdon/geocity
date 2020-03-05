@@ -2,9 +2,8 @@ from django import forms
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 
-from . import models, services
 from gpf.models import Actor
-from .widgets import RemoteAutocompleteWidget
+from . import models, services, widgets
 
 
 def get_field_cls_for_property(prop):
@@ -222,7 +221,7 @@ class GenericActorForm(forms.ModelForm):
             'vat_number': 'Trouvez votre numéro <a href="https://www.bfs.admin.ch/bfs/fr/home/registres/registre-entreprises/numero-identification-entreprises.html" target="_blank">TVA</a>',
         }
         widgets = {
-            'address': RemoteAutocompleteWidget(
+            'address': widgets.RemoteAutocompleteWidget(
                 attrs={
                     "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
                     "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
@@ -242,3 +241,19 @@ class GenericActorForm(forms.ModelForm):
             'company_name': forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}),
             'email': forms.TextInput(attrs={'placeholder': 'ex: monemail@monemail.com'}),
         }
+
+    @transaction.atomic
+    def save(self, permit_request, commit=True):
+
+        actor = super().save()
+        description = self.cleaned_data.get('description')
+        actor_type = self.cleaned_data.get('actor_type')
+        models.PermitRequestActor.objects.update_or_create(
+            description=description,
+            actor_type=actor_type,
+            defaults={
+                'actor': self.instance,
+                'permit_request': permit_request,
+            })
+
+        return actor
