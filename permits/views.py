@@ -190,13 +190,31 @@ def permit_request_actors(request, permit_request_id):
             for form in formset:
                 form.save(permit_request=permit_request)
 
-            return redirect('permits:permit_request_appendices', permit_request_id=permit_request.pk)
+            return redirect('permits:permit_request_submit', permit_request_id=permit_request.pk)
     else:
 
         formset = services.get_permitactorformset_initiated(permit_request)
 
     return render(request, "permits/permit_request_actors.html", {
         'formset': formset,
+        'permit_request': permit_request,
+    })
+
+
+@login_required
+def permit_request_submit(request, permit_request_id):
+
+    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+
+    if request.method == 'POST':
+
+            permit_request.status = 1
+            permit_request.save()
+
+            return redirect('permits:listexterns')
+
+
+    return render(request, "permits/permit_request_submit.html", {
         'permit_request': permit_request,
     })
 
