@@ -1,17 +1,35 @@
 {% extends "base_generic.html" %}
 {% load bootstrap4 %}
 {% load i18n %}
-
+{% load static %}
+{% block stylesheets%}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/permits.css' %}">
+{% endblock %}
 {% block content %}
+
 <div class="container mt-3">
-  <h3>{% trans "Sélectionnez la commune" %}</h3>
+  <h3>{% trans "Localisation de votre demande de permis" %}</h3>
   <hr>
+  <div id="mapButtons">
+    Cliquez ou déplacez le point existant
+    <span id="adress"></span>
+    <hr>
+ </div>
+  {{ form.media }}
+
   <form method="post">
     {% bootstrap_form_errors form %}
 
     {% csrf_token %}
-
-    {% bootstrap_field form.administrative_entity show_label=False %}
+    {% bootstrap_field form.geom show_label=False  %}
+    <table>
+      <tr>
+        <td width=500>{% bootstrap_field form.street_name show_label=False %}</td>
+        <td width=100>{% bootstrap_field form.street_number show_label=False %}</td>
+        <td width=100>{% bootstrap_field form.npa show_label=False %}</td>
+        <td width=300>{% bootstrap_field form.city_name show_label=False %}</td>
+      </tr>
+    </table>
 
     {% buttons %}
       <button class="btn btn-primary">{% trans "Continuer" %}</button>

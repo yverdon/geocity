@@ -4,14 +4,14 @@ import urllib.parse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import transaction
 from django.forms import modelformset_factory
-from django.http import StreamingHttpResponse
+from django.http import StreamingHttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from gpf.forms import ActorForm
 from gpf.models import Actor
 
-from . import forms, models, services
+from . import forms, models, services, geointerfaces
 
 
 def user_has_actor(user):
@@ -217,3 +217,14 @@ def permit_request_media_download(request, property_value_id):
     mime_type, encoding = mimetypes.guess_type(file.name)
 
     return StreamingHttpResponse(file, content_type=mime_type)
+
+
+@login_required
+def reverse_geocode(request):
+
+    east_coordinate = float(request.GET['east'])
+    north_coordinate = float(request.GET['north'])
+
+    json = geointerfaces.reverse_geocode(east_coordinate, north_coordinate, '21781')
+
+    return JsonResponse(json, safe=False)

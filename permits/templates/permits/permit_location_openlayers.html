@@ -1,0 +1,96 @@
+{% load i18n l10n %}
+{% load static %}
+{% block stylesheets%}
+  {% load fontawesome %}
+  {% fontawesome_stylesheet %}
+  <link rel="stylesheet" type="text/css" href="{% static 'customWidgets/sitMapWidget/sitMapWidget.css' %}">
+{% endblock %}
+
+
+<style type="text/css">{% block map_css %}{% get_current_language_bidi as LANGUAGE_BIDI %}
+    #{{ id }}_map { width: {{ map_width }}; height: {{ map_height }}px; }
+    #{{ id }}_map .aligned label { float: none; }
+    #{{ id }}_div_map { position: relative; vertical-align: top; }
+    {% if not display_raw %}#{{ id }} { display: none; }{% endif %}
+    {% endblock %}
+</style>
+
+<div id="{{ id }}_div_map">
+    <div id="{{ id }}_map">
+      <a class="btn btn-primary" id="clear_feature_button"
+         href="javascript:gpfMap.clearFeatures();" role="button">
+         Effacer le point
+      </a>
+      <img id="switchbaselayers" src="{% static 'images/switchbaselayers.png'%}" width="100" height="40" alt="" onclick="javascript:gpfMap.switchBaseLayers()">
+    </div>
+    {% if display_raw %}<p>{% trans "Debugging window (serialized value)" %}</p>{% endif %}
+    <textarea id="{{ id }}" class="vSerializedField required" cols="150" rows="10" name="{{ name }}">{{ serialized }}</textarea>
+    <script type="text/javascript">
+        {% block base_layer %}
+
+        var options = {
+            default_center:{{ default_center }},
+            default_zoom: {{ default_zoom }},
+            geom_name: '{{ geom_type }}',
+            id: '{{ id }}',
+            map_id: '{{ id }}_map',
+            map_srid: {{ map_srid }},
+            name: '{{ name }}',
+            edit_geom: '{{edit_geom}}',
+            min_zoom: {{min_zoom}},
+            wmts_capabilities_url: '{{wmts_capabilities_url}}',
+            wmts_layer: '{{wmts_layer}}',
+            wmts_capabilities_url_alternative: '{{wmts_capabilities_url_alternative}}',
+            wmts_layer_alternative: '{{wmts_layer_alternative}}',
+            administrative_entities_url:  "{% url administrative_entities_url %}",
+            reverse_geocoding_url:  "{% url reverse_geocoding_url %}",
+        };
+        var {{ module }} = new sitMapWidget(options);
+        gpfMap = {{ module }};
+
+        var reverse_geocode = function(east_coordinate, north_coordinate) {
+
+          var coord = gpfMap.featureOverlay.getSource().getFeatures()[0].getGeometry().flatCoordinates;
+
+          $.ajax({
+              url: gpfMap.options.reverse_geocoding_url,
+              data: {
+                east: Math.round(coord[0]),
+                north: Math.round(coord[1]),
+              },
+              success: function(response) {
+
+                  if(response) {
+                    var html = "<b>Adresse sélectionnée:</b> "
+                    html += response.street_name + ' ';
+                    html += response.street_number + ' ' + response.npa;
+                    html += response.administrative_entity_name;
+                    $("#id_street_name").val(response.street_name);
+                    $("#id_street_number").val(response.street_number);
+                    $("#id_npa").val(response.npa);
+                    $("#id_city_name").val(response.administrative_entity_name);
+                } else {
+                  html = "Pas d'adresse trouvée pour ce point, placez votre point plus près d'un numéro de bâtiment ou saisisez ces informations manuellement ci-dessous"
+                  $("#id_street_name").val("");
+                  $("#id_street_number").val("");
+                  $("#id_npa").val("");
+                  $("#id_city_name").val("");
+                }
+
+                 $("#adress").html(html)
+
+               }
+           });
+        }
+
+        gpfMap.featureOverlay.getSource().on('addfeature', function(event){
+          reverse_geocode();
+        })
+
+        gpfMap.interactions.modify.on('modifyend',function(e){
+            reverse_geocode();
+        });
+
+        {% endblock %}
+    </script>
+</div>
