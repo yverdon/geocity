@@ -1,9 +1,9 @@
-{% extends "base_generic.html" %}
+{% extends "base_permits.html" %}
 {% load bootstrap4 %}
 {% load i18n %}
 
-{% block content %}
-<div class="container mt-3">
+{% block content-no-sidebar %}
+<div class="container">
   <h3>{% trans "Sélectionnez les objets de travaux" %}</h3>
   <hr>
   <form method="post">
@@ -21,4 +21,4 @@
     {% endbuttons %}
   </form>
 </div>
-{% endblock content %}
+{% endblock %}

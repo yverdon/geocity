@@ -228,25 +228,22 @@ class PermitRequestListExternsView(SingleTableMixin, FilterView):
     paginate_by = int(os.environ['PAGINATE_BY'])
     table_class = tables.PermitRequestTableExterns
     model = models.PermitRequest
-    template_name = 'permits/listexterns.html'
+    template_name = 'permits/permit_requests_list.html'
     filterset_class = filters.PermitRequestFilterExterns
 
     def get_queryset(self):
-        return models.PermitRequest.objects.filter(author=Actor.objects.get(user__username=self.request.user))
+        return models.PermitRequest.objects.filter(author=Actor.objects.get(user=self.request.user))
 
 
 @login_required
 def permit_request_submit(request, permit_request_id):
-
     permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
 
     if request.method == 'POST':
-
-            permit_request.status = 1
+            permit_request.status = models.PermitRequest.STATUS_SUBMITTED
             permit_request.save()
 
-            return redirect('permits:listexterns')
-
+            return redirect('permits:permit_requests_list')
 
     return render(request, "permits/permit_request_submit.html", {
         'permit_request': permit_request,
@@ -262,7 +259,7 @@ def permit_request_delete(request, permit_request_id):
 
             permit_request.delete()
 
-            return redirect('permits:listexterns')
+            return redirect('permits:permit_requests_list')
 
 
     return render(request, "permits/permit_request_delete.html", {

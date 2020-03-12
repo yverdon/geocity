@@ -1,8 +1,8 @@
 {% extends "base_generic.html" %}
+
 {% load static %}
-{% block stylesheets%}
-  {% load fontawesome %}
-  {% fontawesome_stylesheet %}
-  <link rel="stylesheet" type="text/css" href="{% static 'css/permits.css' %}">
+{% load i18n %}
+
+{% block navbartitle %}
+  <a class="navbar-brand" href="{% url 'permits:permit_requests_list'%}">{% trans "Demandes de permis" %}</a>
 {% endblock %}
-{% block permitlist %}<a href="{% url 'permits:listexterns' %}"">Mes demandes</a>{% endblock %}
