@@ -1,42 +1,39 @@
 {% extends "base_generic.html" %}
+
 {% load i18n %}
 {% load bootstrap4 %}
-{% load staticfiles %}
 {% load static %}
+
 {% block stylesheets%}
+  {{ block.super }}
   <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}">
 {% endblock %}
-{% block content-no-sidebar %}
 
-  <h2 class="main-title-centered">{% trans "Gestion des demandes de permis d'utilisation du domaine public" %}</h2>
+{% block content-no-sidebar %}
+  <h2 class="mt-4 text-center">{% trans "Gestion des demandes de permis d'utilisation du domaine public" %}</h2>
 
   <div id="login-container">
     <br>
     {% if form.errors %}
-    <p class="login-issue">{% trans "Votre mot de passe et votre nom d'utilisateur ne correspondent pas" %}</p>
+      <p class="text-danger font-weight-bold">{% trans "Votre mot de passe et votre nom d'utilisateur ne correspondent pas" %}</p>
     {% endif %}
-    {% if next %}
-        {% if user.is_authenticated %}
-        <p id="login-issue">{% trans "Votre compte ne dispose pas des droits nécessaires pour accéder à cette page" %}</p>
-        {% else %}
-        <p>{% trans "Merci de vous authentifier" %}</p>
-        {% endif %}
+    {% if next and user.is_authenticated %}
+      <p id="login-issue">{% trans "Votre compte ne dispose pas des droits nécessaires pour accéder à cette page" %}</p>
     {% endif %}
     <form method="post" action="{% url 'login' %}">
       {% csrf_token %}
-            <div class="center-element">
-                <h4>{% trans "Connexion" %}</h4>
-              <br>
-                <p>{% trans "Connectez vous à l'aide de vos identifiants" %}</p>
-              <br>
-                <p>{{ form.username }}</p>
-                <p>{{ form.password }}</p>
-                <input id="submit-login" class="btn btn-primary btn-sm" type="submit" value="Suivant"/>
-            </div>
-                <input type="hidden" name="next" value="{{ next }}" />
+      <div class="text-center px-md-5">
+        <h4>{% trans "Connexion" %}</h4>
+        <br>
+        <p>{% trans "Connectez-vous à l'aide de vos identifiants" %}</p>
+        <p>{% bootstrap_field form.username show_label=False %}</p>
+        <p>{% bootstrap_field form.password show_label=False %}</p>
+        <button class="btn btn-primary font-weight-bold" type="submit">{% trans "Suivant" %}</button>
+      </div>
+      <input type="hidden" name="next" value="{{ next }}" />
     </form>
     <br>
-    <p><a href="{% url 'gpf:companyadd' %}">{% trans "Créer un compte" %}</a></p>
-    <p><a href="{% url 'password_reset' %}">{% trans "Perdu votre mot de passe ?" %}</a></p>
+    <p><a class="font-weight-bold" href="{% url 'gpf:companyadd' %}">{% trans "Créer un compte" %}</a></p>
+    <p><a class="font-weight-bold" href="{% url 'password_reset' %}">{% trans "Perdu votre mot de passe ?" %}</a></p>
   </div>
-  {% endblock %}
+{% endblock %}

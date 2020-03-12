@@ -1,79 +1,21 @@
+h2 {
+    font-size: 1.5em;
+}
 
 #login-container {
-  position: absolute;
-  width: 500px;
-  margin-left: calc(50% - 250px);
+  max-width: 500px;
   margin-top: 25px;
-  border: solid 1px gray;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
-  padding: 5px 5px 5px 5px;
+  margin-left: auto;
+  margin-right: auto;
+  border: 0;
+  padding: 5px;
 }
 
-#login-container a {
-  left: 5px;
-  font-weight: bold;
-  font-size: 1.25em;
-}
-
-#login-container input {
-  width: 300px;
-  height: 40px;
-  border: solid 1px gray;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
-  padding: 5px 5px 5px 5px;
-}
-
-.center-element{
-  text-align: center;
-  font-weight: bold;
-}
-
-#logo-background {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 50%;
-  margin-left: 25%;
-  max-height: 100px;
-}
-
-#submit-login {
-  text-align: center;
-  font-weight: bold;
-  font-size: 1.1em;
-}
-
-.login-issue{
-  color: red;
-  font-weight: bold;
-}
-
-.main-title-centered {
-  text-align: center;
-  margin-top: 25px;
-}
-
-@media all and (max-width: 799px){
-
-  h2 {
-    font-size: 1.5em;;
-  }
-
-  p {
-    text-align: center;
-  }
-
+@media (min-width: 768px) {
   #login-container {
-    border: 0;
-  }
-
-  .login-issue {
-    width: 80%;
-    margin-left: 10%;
-    margin-right: 10%;
+    border: solid 1px gray;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
   }
 }
