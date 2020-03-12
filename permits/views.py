@@ -1,7 +1,8 @@
 import mimetypes
 import urllib.parse
-
+import os
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.utils.decorators import method_decorator
 from django.db import transaction
 from django.forms import modelformset_factory
 from django.http import StreamingHttpResponse
@@ -11,7 +12,9 @@ from django.urls import reverse
 from gpf.forms import ActorForm
 from gpf.models import Actor
 
-from . import forms, models, services
+from . import forms, models, services, tables, filters
+from django_tables2.views import SingleTableMixin
+from django_filters.views import FilterView
 
 
 def user_has_actor(user):
@@ -217,3 +220,48 @@ def permit_request_media_download(request, property_value_id):
     mime_type, encoding = mimetypes.guess_type(file.name)
 
     return StreamingHttpResponse(file, content_type=mime_type)
+
+
+@method_decorator(login_required, name="dispatch")
+class PermitRequestListExternsView(SingleTableMixin, FilterView):
+
+    paginate_by = int(os.environ['PAGINATE_BY'])
+    table_class = tables.PermitRequestTableExterns
+    model = models.PermitRequest
+    template_name = 'permits/permit_requests_list.html'
+    filterset_class = filters.PermitRequestFilterExterns
+
+    def get_queryset(self):
+        return models.PermitRequest.objects.filter(author=Actor.objects.get(user=self.request.user))
+
+
+@login_required
+def permit_request_submit(request, permit_request_id):
+    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+
+    if request.method == 'POST':
+            permit_request.status = models.PermitRequest.STATUS_SUBMITTED
+            permit_request.save()
+
+            return redirect('permits:permit_requests_list')
+
+    return render(request, "permits/permit_request_submit.html", {
+        'permit_request': permit_request,
+    })
+
+
+@login_required
+def permit_request_delete(request, permit_request_id):
+
+    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+
+    if request.method == 'POST':
+
+            permit_request.delete()
+
+            return redirect('permits:permit_requests_list')
+
+
+    return render(request, "permits/permit_request_delete.html", {
+        'permit_request': permit_request
+    })
