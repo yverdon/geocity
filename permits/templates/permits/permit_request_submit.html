@@ -7,17 +7,13 @@
   <h3>{% trans "Envoyer votre demande" %}</h3>
   <h6>{% trans "La demande concerne la commune:" %} {{administrative_entity}}</h6>
   <hr>
-  <form method="post" enctype="multipart/form-data">
+  <form method="post">
     {% csrf_token %}
 
     {% buttons %}
     <a href="{% url 'permits:permit_request_appendices' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
     <button class="btn btn-primary">
-      {% if object_types %}
-        {% trans "Soumettre" %}
-      {% else %}
-        {% trans "Envoyer" %}
-      {% endif %}
+      {% trans "Envoyer" %}
     </button>
     <a class="btn btn-primary" href="{% url 'permits:listexterns'%}">{% trans "Envoyer ultérieurement" %}</a>
     {% endbuttons %}
