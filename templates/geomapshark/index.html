@@ -1,27 +1,32 @@
 {% extends "base_generic.html" %}
+
 {% load static %}
 {% load i18n %}
+
 {% block stylesheets%}
-  {% load fontawesome %}
-  {% fontawesome_stylesheet %}
+  {{ block.super }}
   <link rel="stylesheet" type="text/css" href="{% static 'css/homepage.css' %}">
 {% endblock %}
-{% block navbartitle %}<a class="navbar-brand responsive-banner" href="#">Applications du territoire</a>
-{% endblock %}
 
-
+{% block navbartitle %}<a class="navbar-brand responsive-banner" href="#">{% trans "Applications du territoire" %}</a>{% endblock %}
 
 {% block content-no-sidebar %}
-    <h1>{% trans "Demandes de permis" %}</h1>
-    <div id="permit_choices">
-      <span class="item">
-        <a href="{% url 'permits:permit_request_select_administrative_entity' %}"><img class="main_app_icon" src="{% static 'images/construction_permit.svg'%}" alt=""></a>
-        <span class="caption"><a href="{% url 'permits:permit_request_select_administrative_entity' %}">{% trans "Permis de construire" %}</a><span>
-      </span>
-      <span class="item">
-        <a href="{% url 'gpf:list' %}"><img class="main_app_icon" src="{% static 'images/theme_permis_fouille.svg'%}" alt=""></a>
-        <span class="caption"><a href="{% url 'gpf:list' %}">{% trans "Permis de fouille" %}</a><span>
-      </span>
+  <h1 class="text-center mt-4">{% trans "Demandes de permis" %}</h1>
+  <div class="text-center mt-4">
+    <div class="main-app-item mr-4">
+      <a href="{% url 'permits:permit_request_select_administrative_entity' %}">
+        <img class="main-app-icon" src="{% static 'images/construction_permit.svg' %}" alt="{% trans "Permis de construire" %}">
+        <br>
+        {% trans "Permis de construire" %}
+      </a>
     </div>
 
+    <div class="main-app-item">
+      <a href="{% url 'gpf:list' %}">
+        <img class="main-app-icon" src="{% static 'images/theme_permis_fouille.svg' %}" alt="{% trans "Permis de fouille" %}">
+        <br>
+        {% trans "Permis de fouille" %}
+      </a>
+    </div>
+  </div>
 {% endblock content-no-sidebar %}

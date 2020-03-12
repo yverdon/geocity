@@ -11,8 +11,9 @@
     {% bootstrap_javascript jquery='full' %}
     {% block script%}{% endblock %}
     {% block stylesheets%}
-    {% load fontawesome %}
-    {% fontawesome_stylesheet %}
+      {% load fontawesome %}
+      {% fontawesome_stylesheet %}
+      <link rel="stylesheet" type="text/css" href="{% static 'css/gpf.css' %}">
     {% endblock %}
     <link rel="icon" href="{% static 'images/logo.svg'%}" type="image/svg" sizes="16x16">
 </head>

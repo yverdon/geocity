@@ -1,31 +1,8 @@
-#permit_choices {
-  text-align:center;
-  margin-top: 50px;
+.main-app-icon {
+  width: 100%;
 }
 
-.main_app_icon {
-  width: 150px;
-}
-
-h1 {
-  text-align:center;
-  margin-top:25px;
-}
-
-.caption {
-    display: block;
-}
-
-.item {
-    vertical-align: top;
+.main-app-item {
     display: inline-block;
     width: 150px;
-    margin-top: 10px;
-}
-
-@media all and (max-width: 799px){
-
-  h1 {
-    font-size: 1.5em;
-  }
 }
