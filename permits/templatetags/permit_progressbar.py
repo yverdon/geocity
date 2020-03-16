@@ -2,13 +2,10 @@ import dataclasses
 from typing import Dict, List
 
 from django import template
-from django.forms import modelformset_factory
-from django.shortcuts import render
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
 
-from gpf.models import Actor
-from permits import forms, services
+from permits import forms
 
 register = template.Library()
 
@@ -22,16 +19,15 @@ class Step:
     errors: List[Dict[str, str]] = dataclasses.field(default_factory=list)
 
 
-@register.inclusion_tag('permits/_permit_progressbar.html')
-def permit_progressbar(permit_request, active_step):
-
-    print(active_step)
+@register.inclusion_tag('permits/_permit_progressbar.html', takes_context=True)
+def permit_progressbar(context, permit_request, active_step):
     def reverse_permit_request_url(name):
         if permit_request:
             return reverse(name, kwargs={'permit_request_id': permit_request.pk})
         else:
             return None
 
+    request = context['request']
     has_objects_types = permit_request.works_object_types.exists()
 
     localisation_url = (
@@ -67,7 +63,7 @@ def permit_progressbar(permit_request, active_step):
         "works_types": Step(
             name=_("Type"),
             url=works_types_url,
-            completed=has_objects_types,
+            completed=has_objects_types or request.GET.getlist('types'),
             enabled=has_objects_types,
         ),
         "objects_types": Step(
