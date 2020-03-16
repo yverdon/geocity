@@ -1,7 +1,10 @@
 import urllib.parse
 
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+
+from gpf.models import Actor
 
 from . import factories, models, services
 
@@ -21,8 +24,22 @@ def get_permit_request_works_types_ids(permit_request):
     )
 
 
-class PermitRequestTestCase(TestCase):
+def create_user():
+    user = get_user_model().objects.create_user(username='admin', password='admin')
+    Actor.objects.create(user=user, firstname='Admin', name='admin')
+
+    return user
+
+
+class LoggedInUserMixin:
     def setUp(self):
+        self.user = create_user()
+        self.client.login(username=self.user.username, password='admin')
+
+
+class PermitRequestTestCase(LoggedInUserMixin, TestCase):
+    def setUp(self):
+        super().setUp()
         self.works_types = factories.WorksTypeFactory.create_batch(2)
         self.works_objects = factories.WorksObjectFactory.create_batch(2)
 
@@ -31,7 +48,7 @@ class PermitRequestTestCase(TestCase):
         )
 
     def test_types_step_submit_redirects_to_objects_with_types_qs(self):
-        permit_request = factories.PermitRequestFactory()
+        permit_request = factories.PermitRequestFactory(author=self.user.actor)
         permit_request.administrative_entity.works_object_types.set(models.WorksObjectType.objects.all())
 
         response = self.client.post(
@@ -47,7 +64,7 @@ class PermitRequestTestCase(TestCase):
         )
 
     def test_objects_step_without_qs_redirects_to_types_step(self):
-        permit_request = factories.PermitRequestFactory()
+        permit_request = factories.PermitRequestFactory(author=self.user.actor)
         permit_request.administrative_entity.works_object_types.set(models.WorksObjectType.objects.all())
 
         response = self.client.get(
@@ -58,7 +75,7 @@ class PermitRequestTestCase(TestCase):
         )
 
     def test_objects_step_submit_saves_selected_object_types(self):
-        permit_request = factories.PermitRequestFactory()
+        permit_request = factories.PermitRequestFactory(author=self.user.actor)
         works_object_type = models.WorksObjectType.objects.first()
         permit_request.administrative_entity.works_object_types.set(models.WorksObjectType.objects.all())
         self.client.post(
@@ -71,7 +88,7 @@ class PermitRequestTestCase(TestCase):
         self.assertEqual(models.PermitRequest.objects.filter(works_object_types=works_object_type).count(), 1)
 
     def test_required_properties_can_be_left_blank(self):
-        permit_request = factories.PermitRequestFactory()
+        permit_request = factories.PermitRequestFactory(author=self.user.actor)
         factories.WorksObjectTypeChoiceFactory.create_batch(3, permit_request=permit_request)
         permit_request.administrative_entity.works_object_types.set(permit_request.works_object_types.all())
         prop = factories.WorksObjectPropertyFactory(is_mandatory=True)
@@ -86,9 +103,10 @@ class PermitRequestTestCase(TestCase):
         )
 
 
-class PermitRequestUpdateTestCase(TestCase):
+class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
-        self.permit_request = factories.PermitRequestFactory()
+        super().setUp()
+        self.permit_request = factories.PermitRequestFactory(author=self.user.actor)
         factories.WorksObjectTypeChoiceFactory.create_batch(3, permit_request=self.permit_request)
         self.permit_request.administrative_entity.works_object_types.set(self.permit_request.works_object_types.all())
 
@@ -165,9 +183,10 @@ class PermitRequestUpdateTestCase(TestCase):
         )
 
 
-class PermitRequestPrefillTestCase(TestCase):
+class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
-        self.permit_request = factories.PermitRequestFactory()
+        super().setUp()
+        self.permit_request = factories.PermitRequestFactory(author=self.user.actor)
         factories.WorksObjectTypeChoiceFactory.create_batch(3, permit_request=self.permit_request)
         self.permit_request.administrative_entity.works_object_types.set(self.permit_request.works_object_types.all())
 
@@ -176,6 +195,7 @@ class PermitRequestPrefillTestCase(TestCase):
             reverse('permits:permit_request_select_types', kwargs={'permit_request_id': self.permit_request.pk})
         )
         content = response.content.decode()
+
 
         for i, works_type_id in enumerate(get_permit_request_works_types_ids(self.permit_request)):
             expected = ('<input checked="" class="form-check-input" id="id_types_{i}" name="types" title=""'

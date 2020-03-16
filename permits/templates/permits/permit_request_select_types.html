@@ -1,10 +1,12 @@
 {% extends "base_permits.html" %}
 {% load bootstrap4 %}
 {% load i18n %}
+{% load permit_progressbar %}
 
 {% block content-no-sidebar %}
 <div class="container">
-  <h3>{% trans "Sélectionnez les types de travaux" %}</h3>
+  {% permit_progressbar permit_request 'works_types' %}
+  <h3>{% trans "Sélectionnez les types" %}</h3>
   <hr>
   <form method="post">
     {% bootstrap_form_errors works_types_form %}
