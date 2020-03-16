@@ -63,6 +63,10 @@ h2 {
     font-size: 1.5em;
 }
 
+h3 {
+    font-size: 1.3em;
+}
+
 @media (min-width: 768px) {
   h1 {
     font-size: 2.5rem;
@@ -71,13 +75,13 @@ h2 {
   h2 {
       font-size: 2rem;
   }
+
+  h2 {
+      font-size: 1.75rem;
+  }
 }
 
-@media all and (max-width: 799px){
-
-  h3 {
-    font-size: 1em;
-  }
+@media (max-width: 799px){
 
   .responsive-btn {
     margin-bottom: 10px;
@@ -85,4 +89,76 @@ h2 {
 
   }
 
+}
+
+.progress-nav {
+  display: flex;
+  justify-content: center;
+  list-style-type: none;
+  flex-wrap: wrap;
+  text-align: center;
+  font-size: 0.9rem;
+  margin: 0;
+  padding: 0;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.progress-nav-item {
+  flex: 1 1 auto;
+  width: 120px;
+}
+
+.progress-nav-item, .progress-nav-item a {
+  color: black;
+}
+
+.progress-nav-item-active {
+  font-weight: bold;
+}
+
+.progress-nav-item-active .circle {
+  background-color: #d5f763;
+}
+
+.progress-nav-item-done .circle-inner {
+  background-color: #8bc435;
+}
+
+.progress-nav-item-partial .circle-inner {
+  background-color: #ffbf00;
+}
+
+.circle {
+  display: inline-block;
+  width: 42px;
+  height: 42px;
+  border-radius: 100%;
+  border: 1px solid #d5d5da;
+  position: relative;
+}
+
+.circle-inner {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 34px;
+  height: 34px;
+  line-height: 32px;
+  border-radius: 100%;
+  border: 1px solid transparent;
+}
+
+.pill {
+  position: absolute;
+  right: -5px;
+  top: -5px;
+  z-index: 1;
+  border-radius: 100%;
+  background-color: var(--danger);
+  color: white;
+  font-size: 0.7rem;
+  width: 15px;
+  height: 15px;
+  line-height: 15px;
 }

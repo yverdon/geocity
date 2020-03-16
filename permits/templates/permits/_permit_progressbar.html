@@ -1,24 +1,30 @@
 {% load static %}
-{% block stylesheets%}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/permitprogressbar.css' %}">
-{% endblock %}
 
-<div class="progress">
-{% for step_key, step in steps.items %}
-  <div class="circle{% if step_key == active_step %} active {% endif %}
-            {% if step.enabled %} enabled {% endif %}
-            {% if step.completed %} done {% endif %}
-            {% if step.errors %} partial {% endif %}">
-    {% if step.url %}
-      <a href="{{ step.url }}">
-    {% endif %}
+<ul class="progress-nav mb-4">
+  {% for step_key, step in steps.items %}
+    <li class="progress-nav-item
+      {% if step_key == active_step %} progress-nav-item-active{% endif %}
+      {% if step.enabled %}progress-nav-item-enabled{% endif %}
+      {% if step.completed %}progress-nav-item-done{% endif %}
+      {% if step.errors %}progress-nav-item-partial{% endif %}
+      ">
+      {% if step.url %}
+        <a class="progress-nav-link" href="{{ step.url }}">
+      {% endif %}
 
-    <span class="label">{{ forloop.counter }}</span>
-    <span class="title">{{ step.name }}{% if step.errors %}({{ step.errors|length }}){% endif %}</span>
+      <div class="circle">
+        {% if step.errors %}<div class="pill">{{ step.errors|length }}</div>{% endif %}
+        <div class="circle-inner">
+          {{ forloop.counter }}
+        </div>
+      </div>
+      <br>
+      {{ step.name }}
 
-    {% if step.url %}
+      {% if step.url %}
+        </a>
+      {% endif %}
       </a>
-    {% endif %}
-  </div>
-{% endfor %}
-</div>
+    </li>
+  {% endfor %}
+</ul>
