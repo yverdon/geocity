@@ -240,10 +240,10 @@ def permit_request_submit(request, permit_request_id):
     permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
 
     if request.method == 'POST':
-            permit_request.status = models.PermitRequest.STATUS_SUBMITTED
-            permit_request.save()
+        permit_request.status = models.PermitRequest.STATUS_SUBMITTED
+        permit_request.save()
 
-            return redirect('permits:permit_requests_list')
+        return redirect('permits:permit_requests_list')
 
     return render(request, "permits/permit_request_submit.html", {
         'permit_request': permit_request,
@@ -256,10 +256,9 @@ def permit_request_delete(request, permit_request_id):
     permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
 
     if request.method == 'POST':
+        permit_request.delete()
 
-            permit_request.delete()
-
-            return redirect('permits:permit_requests_list')
+        return redirect('permits:permit_requests_list')
 
 
     return render(request, "permits/permit_request_delete.html", {
