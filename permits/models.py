@@ -1,9 +1,29 @@
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils import timezone
+from  django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
 
-from gpf.models import Actor, AdministrativeEntity
+from gpf import models as gpfmodels
+
+
+ACTOR_TYPE_OTHER= 0
+ACTOR_TYPE_REQUESTOR = 1
+ACTOR_TYPE_OWNER = 2
+ACTOR_TYPE_COMPANY = 3
+ACTOR_TYPE_CLIENT = 4
+ACTOR_TYPE_SECURITY= 5
+ACTOR_TYPE_ASSOCIATION= 6
+ACTOR_TYPE_CHOICES = (
+    (ACTOR_TYPE_OTHER, _("Autres")),
+    (ACTOR_TYPE_OWNER, _("Popriétaire")),
+    (ACTOR_TYPE_COMPANY, _("Entreprise")),
+    (ACTOR_TYPE_CLIENT, _("Maître d'ouvrage")),
+    (ACTOR_TYPE_REQUESTOR, _("Requérant si différent de l'auteur de la demande")),
+    (ACTOR_TYPE_SECURITY, _("Sécurité")),
+    (ACTOR_TYPE_ASSOCIATION, _("Association")),
+)
+
 
 ACTOR_TYPE_OTHER= 0
 ACTOR_TYPE_REQUESTOR = 1
@@ -23,22 +43,48 @@ ACTOR_TYPE_CHOICES = (
 )
 
 
-ACTOR_TYPE_OTHER= 0
-ACTOR_TYPE_REQUESTOR = 1
-ACTOR_TYPE_OWNER = 2
-ACTOR_TYPE_COMPANY = 3
-ACTOR_TYPE_CLIENT = 4
-ACTOR_TYPE_SECURITY= 5
-ACTOR_TYPE_ASSOCIATION= 6
-ACTOR_TYPE_CHOICES = (
-    (ACTOR_TYPE_OTHER, _("Autres")),
-    (ACTOR_TYPE_OWNER, _("Popriétaire")),
-    (ACTOR_TYPE_COMPANY, _("Entreprise")),
-    (ACTOR_TYPE_CLIENT, _("Maître d'ouvrage")),
-    (ACTOR_TYPE_REQUESTOR, _("Requérant si différent de l'auteur de la demande")),
-    (ACTOR_TYPE_SECURITY, _("Sécurité")),
-    (ACTOR_TYPE_ASSOCIATION, _("Association")),
-)
+class PermitActor(models.Model):
+
+    name = models.CharField(_("name"), max_length=100, blank=True)
+    firstname = models.CharField(_("firstname"), max_length=100, blank=True)
+    company_name = models.CharField(_("company_name"), max_length=100, blank=True)
+    vat_number = models.CharField(_("vat_number"),
+        max_length=100,
+        blank=True,
+        validators=[
+            RegexValidator(
+                regex='([CHE-])+\d{3}[.]+\d{3}[.]+\d{3}',
+                message='Le code d\'entreprise doit être de type CHE-123.456.789 et vous pouvez le trouver sur \
+                le registe fédéral des entreprises \
+                https://www.uid.admin.ch/search.aspx'
+        )])
+    address = models.CharField(_("address"), max_length=100, blank=True)
+    zipcode = models.PositiveIntegerField(_("zipcode"), null=True)
+    city = models.CharField(_("city"), max_length=100, blank=True)
+    phone_fixed = models.CharField(_("phone_fixed"),
+        null=True,
+        max_length=20,
+        validators=[
+            RegexValidator(
+                regex='^(\s*[0-9]+\s*)+$',
+                message='Seuls les chiffres et les espaces sont autorisés'
+        )])
+    phone_mobile = models.CharField(_("phone_mobile"),
+        blank=True,
+        max_length=20,
+        validators=[
+            RegexValidator(
+                regex='^(\s*[0-9]+\s*)+$',
+                message='Seuls les chiffres et les espaces sont autorisés'
+        )])
+    email = models.EmailField(_("email"), blank=True)
+
+    class Meta:
+        verbose_name = _('permitactor')
+
+
+    def __str__(self):
+        return self.name
 
 
 class WorksObjectTypeChoice(models.Model):
@@ -67,11 +113,11 @@ class PermitActorType(models.Model):
         verbose_name_plural = _("contacts à saisir")
 
     def __str__(self):
-        return str(self.type) + '(' + str(self.works_type) + ')'
+         return self.get_type_display() + ' (' + str(self.works_type) + ')'
 
 
 class PermitRequestActor(models.Model):
-    actor = models.ForeignKey(Actor, on_delete=models.CASCADE)
+    actor = models.ForeignKey(PermitActor, on_delete=models.CASCADE)
     permit_request = models.ForeignKey('PermitRequest', on_delete=models.CASCADE)
     description = models.CharField(max_length=255)
     actor_type = models.PositiveSmallIntegerField(
@@ -98,12 +144,12 @@ class PermitRequest(models.Model):
         'WorksObjectType', through=WorksObjectTypeChoice, related_name='permit_requests'
     )
     administrative_entity = models.ForeignKey(
-        AdministrativeEntity, on_delete=models.CASCADE, verbose_name=_("commune"), related_name='permit_requests'
+        gpfmodels.AdministrativeEntity, on_delete=models.CASCADE, verbose_name=_("commune"), related_name='permit_requests'
     )
     author = models.ForeignKey(
-        Actor, null=True, on_delete=models.SET_NULL, verbose_name=_("auteur"), related_name='permit_requests'
+        gpfmodels.Actor, null=True, on_delete=models.SET_NULL, verbose_name=_("auteur"), related_name='permit_requests'
     )
-    actors = models.ManyToManyField(Actor, related_name='+', through=PermitRequestActor)
+    actors = models.ManyToManyField(PermitActor, related_name='+', through=PermitRequestActor)
 
     class Meta:
         verbose_name = _("demande de permis")
@@ -131,7 +177,7 @@ class WorksObjectType(models.Model):
     works_object = models.ForeignKey(
         'WorksObject', on_delete=models.CASCADE, verbose_name=_("objet des travaux"), related_name='works_object_types'
     )
-    administrative_entities = models.ManyToManyField(AdministrativeEntity, verbose_name=_("communes"), related_name='works_object_types')
+    administrative_entities = models.ManyToManyField(gpfmodels.AdministrativeEntity, verbose_name=_("communes"), related_name='works_object_types')
 
     class Meta:
         verbose_name = _("objet pour types de travaux")

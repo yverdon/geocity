@@ -7,18 +7,16 @@
 {% block content-no-sidebar %}
 <div class="container">
   {% permit_progressbar permit_request 'actors' %}
-  <h3>{% trans "Renseignez les acteurs" %}</h3>
+  <h3>{% trans "Renseignez les contacts" %}</h3>
   <hr>
   <form method="post">
     {% csrf_token %}
     {{ formset.management_form }}
-
     <div id="forms-container">
-      {% for form in formset %}
-        {% bootstrap_form form %}
-      {% endfor %}
-    </div>
-
+       {% for form in formset %}
+         {% bootstrap_form form layout='horizontal' %}
+       {% endfor %}
+     </div>
     {% buttons %}
       <a href="{% url 'permits:permit_request_appendices' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
       <button class="btn btn-primary">{% trans "Enregistrer et continuer" %}</button>

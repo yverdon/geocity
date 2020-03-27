@@ -257,3 +257,101 @@ class GenericActorForm(forms.ModelForm):
             })
 
         return actor
+
+
+class PermitRequestActorForm(forms.ModelForm):
+
+
+    def __init__(self, *args, **kwargs):
+
+        request = kwargs.pop('request', None)
+        initial_values = kwargs.pop('initial', None)
+        print("**********************")
+        print(self)
+        permitrequestactor = models.PermitRequestActor.objects.filter(permit_request=initial_values['permit_request']).first()
+
+        if permitrequestactor:
+            initial = {**kwargs.get('initial', {}),
+            'actor_type': permitrequestactor.actor_type,
+            'description': permitrequestactor.description,
+            'name': permitrequestactor.actor.name,
+            'firstname': permitrequestactor.actor.firstname,
+            'company_name': permitrequestactor.actor.company_name,
+            'vat_number': permitrequestactor.actor.vat_number,
+            'address': permitrequestactor.actor.address,
+            'name': permitrequestactor.actor.name,
+            'city': permitrequestactor.actor.city,
+            'name': permitrequestactor.actor.name,
+            'phone_fixed': permitrequestactor.actor.phone_fixed,
+            'phone_mobile': permitrequestactor.actor.phone_mobile,
+            'name': permitrequestactor.actor.name,
+            }
+        else:
+
+            if initial_values:
+                initial = {'actor_type': initial_values['actor_type']}
+            else:
+                initial = {}
+
+        kwargs['initial'] = initial
+
+        super().__init__(*args, **kwargs)
+
+
+    name = forms.CharField(max_length=100)
+    firstname = forms.CharField( max_length=100)
+    company_name = forms.CharField(max_length=100)
+    vat_number = forms.CharField(max_length=100)
+    address = forms.CharField(max_length=100)
+    # zipcode = forms.PositiveIntegerField()
+    city = forms.CharField( max_length=100)
+    phone_fixed = forms.CharField(max_length=20)
+    phone_mobile = forms.CharField(max_length=20)
+    # email = forms.EmailField(_("email"), blank=True)
+
+
+    class Meta:
+        model = models.PermitRequestActor
+        exclude = ['actor', 'permit_request']
+        fields = ['actor_type','description', 'actor', ]
+
+    @transaction.atomic
+    def save(self, permit_request, commit=True):
+        print('***SAVING***')
+        name = self.cleaned_data.get('name')
+        firstname = self.cleaned_data.get('firstname')
+        company_name = self.cleaned_data.get('company_name')
+        vat_number = self.cleaned_data.get('vat_number')
+        address = self.cleaned_data.get('address')
+        # name = self.cleaned_data.get('name')
+        city = self.cleaned_data.get('city')
+        phone_fixed = self.cleaned_data.get('phone_fixed')
+        phone_mobile = self.cleaned_data.get('phone_mobile')
+        # name = self.cleaned_data.get('name')
+
+        actor, created = models.PermitActor.objects.update_or_create(
+            name=name,
+            firstname=firstname,
+            company_name=company_name,
+            vat_number=vat_number,
+            address=address,
+            # name=name,
+            city=city,
+            phone_fixed=phone_fixed,
+            phone_mobile=phone_mobile,
+            # name=name,
+        )
+
+        # Create or update based on actor and permit_request
+        permitrequestactor, created = models.PermitRequestActor.objects.update_or_create(
+            actor=actor,
+            permit_request=permit_request,
+        )
+
+        # Set fields that could be modified without creating a new object
+        models.PermitRequestActor.objects.filter(pk=permitrequestactor.pk).update(
+            description=self.cleaned_data.get('description'),
+            actor_type = self.cleaned_data.get('actor_type'),
+        )
+
+        return permitrequestactor
