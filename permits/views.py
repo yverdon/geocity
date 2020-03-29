@@ -198,7 +198,7 @@ def permit_request_actors(request, permit_request_id):
             'empty_form': True,}
         for actor_type in initial_actors]
 
-        PermitActorFormSet = formset_factory(forms.PermitRequestActorForm, extra=0)
+        PermitActorFormSet = formset_factory(forms.PermitRequestActorForm, extra=1)
 
     else:
         actor_initial_forms = []
@@ -213,7 +213,7 @@ def permit_request_actors(request, permit_request_id):
                 'empty_form': False,
             })
 
-        PermitActorFormSet = formset_factory(forms.PermitRequestActorForm, extra=0)
+        PermitActorFormSet = formset_factory(forms.PermitRequestActorForm, extra=1)
 
     if request.method == 'POST':
         formset = PermitActorFormSet(request.POST)
