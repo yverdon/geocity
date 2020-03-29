@@ -208,106 +208,64 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
         return {**super().get_field_kwargs(prop), **{'widget': forms.ClearableFileInput}}
 
 
-class GenericActorForm(forms.ModelForm):
-
-    description = forms.CharField(max_length=128)
-    actor_type  =  forms.ChoiceField(choices=models.ACTOR_TYPE_CHOICES, disabled=True)
-
-    class Meta:
-        model = Actor
-        exclude = ['user']
-        fields = ['actor_type', 'name', 'firstname', 'email', 'company_name', 'address', 'zipcode', 'city', 'phone_fixed', 'phone_mobile']
-        help_texts = {
-            'vat_number': 'Trouvez votre numéro <a href="https://www.bfs.admin.ch/bfs/fr/home/registres/registre-entreprises/numero-identification-entreprises.html" target="_blank">TVA</a>',
-        }
-        widgets = {
-            'address': widgets.RemoteAutocompleteWidget(
-                attrs={
-                    "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
-                    "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
-                    "search_prefix": "false",
-                    "origins": "address",
-                    "zipcode_field": "zipcode",
-                    "city_field": "city",
-                    "placeholder": "ex: Place Pestalozzi 2 Yverdon",
-                }),
-            'phone_fixed': forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}),
-            'phone_mobile': forms.TextInput(attrs={'placeholder': 'ex: 079 111 22 22'}),
-            'vat_number': forms.TextInput(attrs={'placeholder': 'ex: CHE-123.456.789'}),
-            'name': forms.TextInput(attrs={'placeholder': 'ex: Dupond'}),
-            'firstname': forms.TextInput(attrs={'placeholder': 'ex: Marcel'}),
-            'zipcode': forms.TextInput(attrs={'placeholder': 'ex: 1400'}),
-            'city': forms.TextInput(attrs={'placeholder': 'ex: Yverdon'}),
-            'company_name': forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}),
-            'email': forms.TextInput(attrs={'placeholder': 'ex: monemail@monemail.com'}),
-        }
-
-    @transaction.atomic
-    def save(self, permit_request, commit=True):
-
-        actor = super().save()
-        description = self.cleaned_data.get('description')
-        actor_type = self.cleaned_data.get('actor_type')
-        models.PermitRequestActor.objects.update_or_create(
-            description=description,
-            actor_type=actor_type,
-            defaults={
-                'actor': self.instance,
-                'permit_request': permit_request,
-            })
-
-        return actor
-
-
 class PermitRequestActorForm(forms.ModelForm):
 
 
     def __init__(self, *args, **kwargs):
 
-        request = kwargs.pop('request', None)
         initial_values = kwargs.pop('initial', None)
-        print("**********************")
-        print(self)
-        permitrequestactor = models.PermitRequestActor.objects.filter(permit_request=initial_values['permit_request']).first()
 
-        if permitrequestactor:
-            initial = {**kwargs.get('initial', {}),
-            'actor_type': permitrequestactor.actor_type,
-            'description': permitrequestactor.description,
-            'name': permitrequestactor.actor.name,
-            'firstname': permitrequestactor.actor.firstname,
-            'company_name': permitrequestactor.actor.company_name,
-            'vat_number': permitrequestactor.actor.vat_number,
-            'address': permitrequestactor.actor.address,
-            'name': permitrequestactor.actor.name,
-            'city': permitrequestactor.actor.city,
-            'name': permitrequestactor.actor.name,
-            'phone_fixed': permitrequestactor.actor.phone_fixed,
-            'phone_mobile': permitrequestactor.actor.phone_mobile,
-            'name': permitrequestactor.actor.name,
-            }
-        else:
+        if initial_values:
 
-            if initial_values:
+            if initial_values['empty_form']:
                 initial = {'actor_type': initial_values['actor_type']}
+                kwargs['initial'] = initial
             else:
-                initial = {}
 
-        kwargs['initial'] = initial
+                permitrequestactor = models.PermitRequestActor.objects.get(pk=initial_values['permit_request_actor'].pk)
+
+                initial = {**kwargs.get('initial', {}),
+                'actor_type': permitrequestactor.actor_type,
+                'description': permitrequestactor.description,
+                'name': permitrequestactor.actor.name,
+                'firstname': permitrequestactor.actor.firstname,
+                'company_name': permitrequestactor.actor.company_name,
+                'vat_number': permitrequestactor.actor.vat_number,
+                'address': permitrequestactor.actor.address,
+                'name': permitrequestactor.actor.name,
+                'city': permitrequestactor.actor.city,
+                'name': permitrequestactor.actor.name,
+                'phone_fixed': permitrequestactor.actor.phone_fixed,
+                'phone_mobile': permitrequestactor.actor.phone_mobile,
+                'name': permitrequestactor.actor.name,
+                'zipcode': permitrequestactor.actor.zipcode,
+                'email': permitrequestactor.actor.email,
+                }
+
+                kwargs['initial'] = initial
 
         super().__init__(*args, **kwargs)
 
-
-    name = forms.CharField(max_length=100)
-    firstname = forms.CharField( max_length=100)
-    company_name = forms.CharField(max_length=100)
-    vat_number = forms.CharField(max_length=100)
-    address = forms.CharField(max_length=100)
-    # zipcode = forms.PositiveIntegerField()
-    city = forms.CharField( max_length=100)
-    phone_fixed = forms.CharField(max_length=20)
-    phone_mobile = forms.CharField(max_length=20)
-    # email = forms.EmailField(_("email"), blank=True)
+    name = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'placeholder': 'ex: Marcel'}))
+    firstname = forms.CharField( max_length=100, widget=forms.TextInput(attrs={'placeholder': 'ex: Dupond'}))
+    company_name = forms.CharField(required=False, max_length=100, widget=forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}))
+    vat_number = forms.CharField(required=False, max_length=100,widget=forms.TextInput(attrs={'placeholder': 'ex: CHE-123.456.789'}))
+    address = forms.CharField(max_length=100, widget= widgets.RemoteAutocompleteWidget(
+            attrs={
+                "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
+                "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
+                "search_prefix": "false",
+                "origins": "address",
+                "zipcode_field": "zipcode",
+                "city_field": "city",
+                "placeholder": "ex: Place Pestalozzi 2 Yverdon",
+            }),
+    )
+    zipcode = forms.IntegerField()
+    city = forms.CharField( max_length=100, widget=forms.TextInput(attrs={'placeholder': 'ex: Yverdon'}))
+    phone_fixed = forms.CharField( max_length=100, widget=forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}))
+    phone_mobile = forms.CharField(max_length=20, widget=forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}))
+    email = forms.EmailField()
 
 
     class Meta:
@@ -317,41 +275,57 @@ class PermitRequestActorForm(forms.ModelForm):
 
     @transaction.atomic
     def save(self, permit_request, commit=True):
-        print('***SAVING***')
-        name = self.cleaned_data.get('name')
-        firstname = self.cleaned_data.get('firstname')
-        company_name = self.cleaned_data.get('company_name')
-        vat_number = self.cleaned_data.get('vat_number')
-        address = self.cleaned_data.get('address')
-        # name = self.cleaned_data.get('name')
-        city = self.cleaned_data.get('city')
-        phone_fixed = self.cleaned_data.get('phone_fixed')
-        phone_mobile = self.cleaned_data.get('phone_mobile')
-        # name = self.cleaned_data.get('name')
 
-        actor, created = models.PermitActor.objects.update_or_create(
-            name=name,
-            firstname=firstname,
-            company_name=company_name,
-            vat_number=vat_number,
-            address=address,
-            # name=name,
-            city=city,
-            phone_fixed=phone_fixed,
-            phone_mobile=phone_mobile,
-            # name=name,
-        )
+        actor_type = self.cleaned_data.get('actor_type')
 
-        # Create or update based on actor and permit_request
-        permitrequestactor, created = models.PermitRequestActor.objects.update_or_create(
-            actor=actor,
-            permit_request=permit_request,
-        )
+        #Only one actor type by permit request to prevent creating loads of permitrestuqest actors
+        permitrequestactor = models.PermitRequestActor.objects.filter(actor_type=actor_type, permit_request=permit_request).first()
 
-        # Set fields that could be modified without creating a new object
-        models.PermitRequestActor.objects.filter(pk=permitrequestactor.pk).update(
-            description=self.cleaned_data.get('description'),
-            actor_type = self.cleaned_data.get('actor_type'),
-        )
+        if permitrequestactor:
+
+            # Update PermitActor
+            actor = models.PermitRequestActor.objects.get(pk=permitrequestactor.pk).actor
+            models.PermitActor.objects.filter(pk=actor.pk).update(
+                name = self.cleaned_data.get('name'),
+                firstname = self.cleaned_data.get('firstname'),
+                company_name = self.cleaned_data.get('company_name'),
+                vat_number = self.cleaned_data.get('vat_number'),
+                address = self.cleaned_data.get('address'),
+                zipcode = self.cleaned_data.get('zipcode'),
+                city = self.cleaned_data.get('city'),
+                phone_fixed = self.cleaned_data.get('phone_fixed'),
+                phone_mobile = self.cleaned_data.get('phone_mobile'),
+                email = self.cleaned_data.get('email'),
+
+            )
+            #Update PermitRequestActor
+            models.PermitRequestActor.objects.filter(pk=permitrequestactor.pk).update(
+                description=self.cleaned_data.get('description'),
+                actor_type = self.cleaned_data.get('actor_type'),
+                actor=actor,
+                permit_request=permit_request,
+            )
+
+        else:
+            # Create PermitActor
+            actor = models.PermitActor.objects.create(
+                name = self.cleaned_data.get('name'),
+                firstname = self.cleaned_data.get('firstname'),
+                company_name = self.cleaned_data.get('company_name'),
+                vat_number = self.cleaned_data.get('vat_number'),
+                address = self.cleaned_data.get('address'),
+                zipcode = self.cleaned_data.get('zipcode'),
+                city = self.cleaned_data.get('city'),
+                phone_fixed = self.cleaned_data.get('phone_fixed'),
+                phone_mobile = self.cleaned_data.get('phone_mobile'),
+                email = self.cleaned_data.get('email'),
+            )
+            # Create PermitResquestActor
+            permitrequestactor = models.PermitRequestActor.objects.create(
+                actor=actor,
+                permit_request=permit_request,
+                description=self.cleaned_data.get('description'),
+                actor_type = self.cleaned_data.get('actor_type'),
+            )
 
         return permitrequestactor

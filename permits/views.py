@@ -192,15 +192,11 @@ def permit_request_actors(request, permit_request_id):
             permit_request=permit_request).values_list('actor_type',flat=True)
         ).distinct('type')
 
-        actor_initial_forms = [{'actor_type': actor_type.type, 'permit_request': permit_request} for actor_type in initial_actors]
-
-        ValidationFormSet = inlineformset_factory(
-            PermitRequest,
-            Validation,
-            form=forms.PermitRequestActorForm,
-            extra=0,
-            can_delete=False
-        )
+        actor_initial_forms = [{
+            'actor_type': actor_type.type,
+            'permit_request': permit_request,
+            'empty_form': True,}
+        for actor_type in initial_actors]
 
         PermitActorFormSet = formset_factory(forms.PermitRequestActorForm, extra=0)
 
@@ -209,9 +205,13 @@ def permit_request_actors(request, permit_request_id):
         for permit_request_actor in models.PermitRequestActor.objects.filter(permit_request=permit_request):
 
             actor_initial_forms.append({
+                'permit_request_actor': permit_request_actor,
                 'actor_type': permit_request_actor.actor_type,
+                'actor': permit_request_actor.actor,
                 'permit_request': permit_request,
-                })
+                'description': permit_request_actor.description,
+                'empty_form': False,
+            })
 
         PermitActorFormSet = formset_factory(forms.PermitRequestActorForm, extra=0)
 
