@@ -80,7 +80,7 @@ class PermitActor(models.Model):
     email = models.EmailField(_("email"), blank=True)
 
     class Meta:
-        verbose_name = _('permitactor')
+        verbose_name = _('Demandeur')
 
 
     def __str__(self):
@@ -113,7 +113,7 @@ class PermitActorType(models.Model):
         verbose_name_plural = _("contacts à saisir")
 
     def __str__(self):
-         return self.get_type_display() + ' (' + str(self.works_type) + ')'
+        return self.get_type_display() + ' (' + str(self.works_type) + ')'
 
 
 class PermitRequestActor(models.Model):

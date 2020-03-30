@@ -198,7 +198,7 @@ def permit_request_actors(request, permit_request_id):
             'empty_form': True,}
         for actor_type in initial_actors]
 
-        PermitActorFormSet = formset_factory(forms.PermitRequestActorForm, extra=1)
+        PermitActorFormSet = formset_factory(forms.PermitRequestActorForm, extra=0)
 
     else:
         actor_initial_forms = []
@@ -213,13 +213,12 @@ def permit_request_actors(request, permit_request_id):
                 'empty_form': False,
             })
 
-        PermitActorFormSet = formset_factory(forms.PermitRequestActorForm, extra=1)
+        PermitActorFormSet = formset_factory(forms.PermitRequestActorForm, extra=0)
 
     if request.method == 'POST':
         formset = PermitActorFormSet(request.POST)
         if formset.is_valid():
             for form in formset:
-
                 form.save(permit_request=permit_request)
 
             return redirect('permits:permit_request_appendices', permit_request_id=permit_request.pk)

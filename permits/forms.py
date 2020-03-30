@@ -1,9 +1,9 @@
 from django import forms
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
-
+import json
 from gpf.models import Actor
-from . import models, services, widgets
+from . import models, services
 
 
 def get_field_cls_for_property(prop):
@@ -225,47 +225,42 @@ class PermitRequestActorForm(forms.ModelForm):
                 permitrequestactor = models.PermitRequestActor.objects.get(pk=initial_values['permit_request_actor'].pk)
 
                 initial = {**kwargs.get('initial', {}),
+                    **{key: getattr(permitrequestactor.actor, key) for key in
+                    ['name', 'firstname', 'company_name',
+                    'vat_number', 'address', 'address', 'city', 'phone_fixed',
+                    'phone_mobile', 'zipcode', 'email',]},
                 'actor_type': permitrequestactor.actor_type,
                 'description': permitrequestactor.description,
-                'name': permitrequestactor.actor.name,
-                'firstname': permitrequestactor.actor.firstname,
-                'company_name': permitrequestactor.actor.company_name,
-                'vat_number': permitrequestactor.actor.vat_number,
-                'address': permitrequestactor.actor.address,
-                'name': permitrequestactor.actor.name,
-                'city': permitrequestactor.actor.city,
-                'name': permitrequestactor.actor.name,
-                'phone_fixed': permitrequestactor.actor.phone_fixed,
-                'phone_mobile': permitrequestactor.actor.phone_mobile,
-                'name': permitrequestactor.actor.name,
-                'zipcode': permitrequestactor.actor.zipcode,
-                'email': permitrequestactor.actor.email,
                 }
 
                 kwargs['initial'] = initial
 
         super().__init__(*args, **kwargs)
 
-    name = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'placeholder': 'ex: Marcel'}))
-    firstname = forms.CharField( max_length=100, widget=forms.TextInput(attrs={'placeholder': 'ex: Dupond'}))
-    company_name = forms.CharField(required=False, max_length=100, widget=forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}))
-    vat_number = forms.CharField(required=False, max_length=100,widget=forms.TextInput(attrs={'placeholder': 'ex: CHE-123.456.789'}))
-    address = forms.CharField(max_length=100, widget= widgets.RemoteAutocompleteWidget(
+    required_css_class = 'required'
+
+    name = forms.CharField(max_length=100, label=_('Prénom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Marcel'}))
+    firstname = forms.CharField( max_length=100, label=_('Nom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Dupond'}))
+    phone_fixed = forms.CharField( max_length=100, label=_('Téléphone fixe'), widget=forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}))
+    phone_mobile = forms.CharField(max_length=20, label=_('Téléphone mobile'), widget=forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}))
+    email = forms.EmailField()
+    address = forms.CharField(max_length=100, label=_('Adresse'), widget= forms.TextInput(
             attrs={
+                "data_remote_autocomplete": json.dumps({
                 "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
                 "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
                 "search_prefix": "false",
                 "origins": "address",
                 "zipcode_field": "zipcode",
                 "city_field": "city",
-                "placeholder": "ex: Place Pestalozzi 2 Yverdon",
+                "placeholder": "ex: Place Pestalozzi 2 Yverdon",})
             }),
     )
-    zipcode = forms.IntegerField()
-    city = forms.CharField( max_length=100, widget=forms.TextInput(attrs={'placeholder': 'ex: Yverdon'}))
-    phone_fixed = forms.CharField( max_length=100, widget=forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}))
-    phone_mobile = forms.CharField(max_length=20, widget=forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}))
-    email = forms.EmailField()
+
+    zipcode = forms.IntegerField(label=_('NPA'))
+    city = forms.CharField( max_length=100, label=_('Ville'), widget=forms.TextInput(attrs={'placeholder': 'ex: Yverdon'}))
+    company_name = forms.CharField(required=False, label=_('Raison sociale'), max_length=100, widget=forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}))
+    vat_number = forms.CharField(required=False, label=_('Numéro TVA'), max_length=100,widget=forms.TextInput(attrs={'placeholder': 'ex: CHE-123.456.789'}))
 
 
     class Meta:
