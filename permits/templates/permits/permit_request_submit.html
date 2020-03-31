@@ -11,12 +11,49 @@
     {% csrf_token %}
 
     {% buttons %}
-    <a href="{% url 'permits:permit_request_appendices' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
+    <a href="{% url 'permits:permit_request_actors' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
     <button class="btn btn-primary">
       {% trans "Envoyer" %}
     </button>
-    <a class="btn btn-primary" href="{% url 'permits:listexterns'%}">{% trans "Envoyer ultérieurement" %}</a>
+    <a class="btn btn-primary" href="{% url 'permits:permit_requests_list' %}">Envoyer ultérieurement</a>
     {% endbuttons %}
   </form>
+  <hr>
+  <h2>Résumé de la demande</h2>
+    <h4>Détails saisis</h4>
+    {% for object_type, fields in properties_object_types %}
+      <h5>{{ object_type }}</h5>
+      <table>
+      {% for field in fields %}
+        <tr>
+          <td>{{ field.label }}</td>
+          <td>{{ field|default_if_none:"/"}}</td>
+        </tr>
+      {% endfor %}
+      </table>
+    {% endfor %}
+    <h4>Documents joints</h4>
+    {% for object_type, fields in appendices_object_types %}
+      <h5>{{ object_type }}</h5>
+      <table>
+      {% for field in fields %}
+        <tr>
+          <td>{{ field.label }}:</td>
+          <td>{{ field.value|default_if_none:"Pas de document joint"}}</td>
+        </tr>
+      {% endfor %}
+      </table>
+    {% endfor %}
+    <table>
+     {% for form in actor_formset %}
+      <tr>
+      {% for field in form.fields %}
+        {{ field }}
+
+      {% endfor %}
+    {% endfor %}
+    </table>
+
+    <br>
 </div>
 {% endblock content-no-sidebar %}

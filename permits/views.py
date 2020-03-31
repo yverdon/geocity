@@ -202,24 +202,6 @@ def permit_request_actors(request, permit_request_id):
 
 
 @login_required
-def permit_request_submit(request, permit_request_id):
-
-    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
-
-    if request.method == 'POST':
-
-            permit_request.status = 1
-            permit_request.save()
-
-            return redirect('permits:listexterns')
-
-
-    return render(request, "permits/permit_request_submit.html", {
-        'permit_request': permit_request,
-    })
-
-
-@login_required
 def permit_request_media_download(request, property_value_id):
     """
     Send the file referenced by the given property value.
@@ -256,11 +238,37 @@ def permit_request_submit(request, permit_request_id):
     if request.method == 'POST':
         permit_request.status = models.PermitRequest.STATUS_SUBMITTED
         permit_request.save()
-
         return redirect('permits:permit_requests_list')
+
+    #properties
+    properties_form = forms.WorksObjectsPropertiesForm(instance=permit_request, enable_required=False)
+    fields_by_object_type = properties_form.get_fields_by_object_type()
+
+    #appendices
+    appendices_form = forms.WorksObjectsAppendicesForm(instance=permit_request, enable_required=False)
+    appendices_object_types = appendices_form.get_fields_by_object_type()
+
+    #actors
+    actor_initial_forms = []
+    for permit_request_actor in models.PermitRequestActor.objects.filter(permit_request=permit_request):
+
+        actor_initial_forms.append({
+            'permit_request_actor': permit_request_actor,
+            'actor_type': permit_request_actor.actor_type,
+            'actor': permit_request_actor.actor,
+            'permit_request': permit_request,
+            'description': permit_request_actor.description,
+            'empty_form': False,
+        })
+
+    PermitActorFormSet = formset_factory(forms.PermitRequestActorForm, extra=0)
+    actor_formset = PermitActorFormSet(initial=actor_initial_forms,)
 
     return render(request, "permits/permit_request_submit.html", {
         'permit_request': permit_request,
+        'properties_object_types': fields_by_object_type,
+        'appendices_object_types':appendices_object_types,
+        'actor_formset': actor_formset,
     })
 
 
