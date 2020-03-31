@@ -4,7 +4,7 @@ import os
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
 from django.db import transaction
-from django.forms import formset_factory
+from django.forms import modelformset_factory
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -194,11 +194,10 @@ def permit_request_actors(request, permit_request_id):
 
         actor_initial_forms = [{
             'actor_type': actor_type.type,
-            'permit_request': permit_request,
-            'empty_form': True,}
+            'permit_request': permit_request,}
         for actor_type in initial_actors]
 
-        PermitActorFormSet = formset_factory(forms.PermitRequestActorForm, extra=0)
+        PermitActorFormSet = modelformset_factory(models.PermitRequestActor, form=forms.PermitRequestActorForm, extra=0)
 
     else:
         actor_initial_forms = []
@@ -209,11 +208,9 @@ def permit_request_actors(request, permit_request_id):
                 'actor_type': permit_request_actor.actor_type,
                 'actor': permit_request_actor.actor,
                 'permit_request': permit_request,
-                'description': permit_request_actor.description,
-                'empty_form': False,
             })
 
-        PermitActorFormSet = formset_factory(forms.PermitRequestActorForm, extra=0)
+        PermitActorFormSet = modelformset_factory(models.PermitRequestActor, form=forms.PermitRequestActorForm, extra=0)
 
     if request.method == 'POST':
         formset = PermitActorFormSet(request.POST)

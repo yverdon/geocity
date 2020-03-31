@@ -77,7 +77,6 @@ def permit_progressbar(context, permit_request, active_step):
                 'actor_type': permit_request_actor.actor_type,
                 'actor': permit_request_actor.actor,
                 'permit_request': permit_request,
-                'description': permit_request_actor.description,
                 'empty_form': False,
             })
 

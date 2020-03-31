@@ -214,25 +214,23 @@ class PermitRequestActorForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
 
         initial_values = kwargs.pop('initial', None)
+        instance = kwargs.pop('instance', None)
 
-        if initial_values:
+        if instance:
 
-            if initial_values['empty_form']:
+            actor = instance.actor
+
+            initial_fields = ['name', 'firstname', 'company_name',
+            'vat_number', 'address', 'address', 'city',
+            'phone', 'zipcode', 'email']
+            kwargs['initial'] = {
+                **kwargs.get('initial', {}), **{field: getattr(actor, field) for field in initial_fields},
+                **{'actor_type': instance.actor_type}
+            }
+
+        elif initial_values:
+
                 initial = {'actor_type': initial_values['actor_type']}
-                kwargs['initial'] = initial
-            else:
-
-                permitrequestactor = models.PermitRequestActor.objects.get(pk=initial_values['permit_request_actor'].pk)
-
-                initial = {**kwargs.get('initial', {}),
-                    **{key: getattr(permitrequestactor.actor, key) for key in
-                    ['name', 'firstname', 'company_name',
-                    'vat_number', 'address', 'address', 'city', 'phone_fixed',
-                    'phone_mobile', 'zipcode', 'email',]},
-                'actor_type': permitrequestactor.actor_type,
-                'description': permitrequestactor.description,
-                }
-
                 kwargs['initial'] = initial
 
         super().__init__(*args, **kwargs)
@@ -241,8 +239,7 @@ class PermitRequestActorForm(forms.ModelForm):
 
     name = forms.CharField(max_length=100, label=_('Prénom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Marcel'}))
     firstname = forms.CharField( max_length=100, label=_('Nom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Dupond'}))
-    phone_fixed = forms.CharField( max_length=100, label=_('Téléphone fixe'), widget=forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}))
-    phone_mobile = forms.CharField(max_length=20, label=_('Téléphone mobile'), widget=forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}))
+    phone = forms.CharField(max_length=20, label=_('Téléphone'), widget=forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}))
     email = forms.EmailField()
     address = forms.CharField(max_length=100, label=_('Adresse'), widget= forms.TextInput(
             attrs={
@@ -266,15 +263,12 @@ class PermitRequestActorForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequestActor
         exclude = ['actor', 'permit_request']
-        fields = ['actor_type','description', 'actor', ]
+        fields = ['actor_type', 'actor', ]
 
     @transaction.atomic
     def save(self, permit_request, commit=True):
 
-        actor_type = self.cleaned_data.get('actor_type')
-
-        #Only one actor type by permit request to prevent creating loads of permitrestuqest actors
-        permitrequestactor = models.PermitRequestActor.objects.filter(actor_type=actor_type, permit_request=permit_request).first()
+        permitrequestactor = self.cleaned_data.get('id')
 
         if permitrequestactor:
 
@@ -288,14 +282,12 @@ class PermitRequestActorForm(forms.ModelForm):
                 address = self.cleaned_data.get('address'),
                 zipcode = self.cleaned_data.get('zipcode'),
                 city = self.cleaned_data.get('city'),
-                phone_fixed = self.cleaned_data.get('phone_fixed'),
-                phone_mobile = self.cleaned_data.get('phone_mobile'),
+                phone = self.cleaned_data.get('phone'),
                 email = self.cleaned_data.get('email'),
 
             )
             #Update PermitRequestActor
             models.PermitRequestActor.objects.filter(pk=permitrequestactor.pk).update(
-                description=self.cleaned_data.get('description'),
                 actor_type = self.cleaned_data.get('actor_type'),
                 actor=actor,
                 permit_request=permit_request,
@@ -311,15 +303,13 @@ class PermitRequestActorForm(forms.ModelForm):
                 address = self.cleaned_data.get('address'),
                 zipcode = self.cleaned_data.get('zipcode'),
                 city = self.cleaned_data.get('city'),
-                phone_fixed = self.cleaned_data.get('phone_fixed'),
-                phone_mobile = self.cleaned_data.get('phone_mobile'),
+                phone = self.cleaned_data.get('phone'),
                 email = self.cleaned_data.get('email'),
             )
             # Create PermitResquestActor
             permitrequestactor = models.PermitRequestActor.objects.create(
                 actor=actor,
                 permit_request=permit_request,
-                description=self.cleaned_data.get('description'),
                 actor_type = self.cleaned_data.get('actor_type'),
             )
 

@@ -61,15 +61,7 @@ class PermitActor(models.Model):
     address = models.CharField(_("address"), max_length=100, blank=True)
     zipcode = models.PositiveIntegerField(_("zipcode"), null=True)
     city = models.CharField(_("city"), max_length=100, blank=True)
-    phone_fixed = models.CharField(_("phone_fixed"),
-        null=True,
-        max_length=20,
-        validators=[
-            RegexValidator(
-                regex='^(\s*[0-9]+\s*)+$',
-                message='Seuls les chiffres et les espaces sont autorisés'
-        )])
-    phone_mobile = models.CharField(_("phone_mobile"),
+    phone = models.CharField(_("Téléphone"),
         blank=True,
         max_length=20,
         validators=[
@@ -119,7 +111,6 @@ class PermitActorType(models.Model):
 class PermitRequestActor(models.Model):
     actor = models.ForeignKey(PermitActor, on_delete=models.CASCADE)
     permit_request = models.ForeignKey('PermitRequest', on_delete=models.CASCADE)
-    description = models.CharField(max_length=255)
     actor_type = models.PositiveSmallIntegerField(
         _("type de contact"), choices=ACTOR_TYPE_CHOICES, default=ACTOR_TYPE_OTHER
     )
