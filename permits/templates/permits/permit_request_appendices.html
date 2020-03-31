@@ -1,9 +1,11 @@
-{% extends "base_generic.html" %}
+{% extends "base_permits.html" %}
 {% load bootstrap4 %}
 {% load i18n %}
+{% load permit_progressbar %}
 
-{% block content %}
-<div class="container mt-3">
+{% block content-no-sidebar %}
+<div class="container">
+  {% permit_progressbar permit_request 'appendices' %}
   <h3>{% trans "Renseignez les annexes" %}</h3>
   <hr>
   <form method="post" enctype="multipart/form-data">
@@ -30,4 +32,4 @@
     {% endbuttons %}
   </form>
 </div>
-{% endblock content %}
+{% endblock %}

@@ -1,0 +1,17 @@
+#login-container {
+  max-width: 500px;
+  margin-top: 25px;
+  margin-left: auto;
+  margin-right: auto;
+  border: 0;
+  padding: 5px;
+}
+
+@media (min-width: 768px) {
+  #login-container {
+    border: solid 1px gray;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+  }
+}

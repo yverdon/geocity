@@ -18,7 +18,7 @@ django-fontawesome==1.0
 django-tables2==2.1.1
 docopt==0.6.2
 et-xmlfile==1.0.1
-gdal==2.3.3
+gdal==3.0.4
 gunicorn==19.9.0
 html5lib==1.0.1
 idna==2.8

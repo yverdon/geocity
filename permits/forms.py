@@ -1,7 +1,8 @@
 from django import forms
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
-
+import json
+from gpf.models import Actor
 from . import models, services
 
 
@@ -107,6 +108,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
 
     def __init__(self, instance, *args, **kwargs):
         self.instance = instance
+        disable_fields = kwargs.pop('disable_fields', False)
 
         # Compute initial values for fields
         initial = {}
@@ -124,6 +126,11 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         for works_object_type, prop in self.get_properties():
             field_name = self.get_field_name(works_object_type, prop)
             self.fields[field_name] = self.field_for_property(prop)
+
+        if disable_fields:
+            for field in self.fields.values():
+                field.disabled = True
+
 
     def get_fields_by_object_type(self):
         """
@@ -199,3 +206,121 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
 
     def get_field_kwargs(self, prop):
         return {**super().get_field_kwargs(prop), **{'widget': forms.ClearableFileInput}}
+
+
+class PermitRequestActorForm(forms.ModelForm):
+
+
+    def __init__(self, *args, **kwargs):
+
+        initial_values = kwargs.pop('initial', None)
+
+        if initial_values:
+
+            if initial_values['empty_form']:
+                initial = {'actor_type': initial_values['actor_type']}
+                kwargs['initial'] = initial
+            else:
+
+                permitrequestactor = models.PermitRequestActor.objects.get(pk=initial_values['permit_request_actor'].pk)
+
+                initial = {**kwargs.get('initial', {}),
+                    **{key: getattr(permitrequestactor.actor, key) for key in
+                    ['name', 'firstname', 'company_name',
+                    'vat_number', 'address', 'address', 'city', 'phone_fixed',
+                    'phone_mobile', 'zipcode', 'email',]},
+                'actor_type': permitrequestactor.actor_type,
+                'description': permitrequestactor.description,
+                }
+
+                kwargs['initial'] = initial
+
+        super().__init__(*args, **kwargs)
+
+    required_css_class = 'required'
+
+    name = forms.CharField(max_length=100, label=_('Prénom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Marcel'}))
+    firstname = forms.CharField( max_length=100, label=_('Nom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Dupond'}))
+    phone_fixed = forms.CharField( max_length=100, label=_('Téléphone fixe'), widget=forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}))
+    phone_mobile = forms.CharField(max_length=20, label=_('Téléphone mobile'), widget=forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}))
+    email = forms.EmailField()
+    address = forms.CharField(max_length=100, label=_('Adresse'), widget= forms.TextInput(
+            attrs={
+                "data_remote_autocomplete": json.dumps({
+                "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
+                "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
+                "search_prefix": "false",
+                "origins": "address",
+                "zipcode_field": "zipcode",
+                "city_field": "city",
+                "placeholder": "ex: Place Pestalozzi 2 Yverdon",})
+            }),
+    )
+
+    zipcode = forms.IntegerField(label=_('NPA'))
+    city = forms.CharField( max_length=100, label=_('Ville'), widget=forms.TextInput(attrs={'placeholder': 'ex: Yverdon'}))
+    company_name = forms.CharField(required=False, label=_('Raison sociale'), max_length=100, widget=forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}))
+    vat_number = forms.CharField(required=False, label=_('Numéro TVA'), max_length=100,widget=forms.TextInput(attrs={'placeholder': 'ex: CHE-123.456.789'}))
+
+
+    class Meta:
+        model = models.PermitRequestActor
+        exclude = ['actor', 'permit_request']
+        fields = ['actor_type','description', 'actor', ]
+
+    @transaction.atomic
+    def save(self, permit_request, commit=True):
+
+        actor_type = self.cleaned_data.get('actor_type')
+
+        #Only one actor type by permit request to prevent creating loads of permitrestuqest actors
+        permitrequestactor = models.PermitRequestActor.objects.filter(actor_type=actor_type, permit_request=permit_request).first()
+
+        if permitrequestactor:
+
+            # Update PermitActor
+            actor = models.PermitRequestActor.objects.get(pk=permitrequestactor.pk).actor
+            models.PermitActor.objects.filter(pk=actor.pk).update(
+                name = self.cleaned_data.get('name'),
+                firstname = self.cleaned_data.get('firstname'),
+                company_name = self.cleaned_data.get('company_name'),
+                vat_number = self.cleaned_data.get('vat_number'),
+                address = self.cleaned_data.get('address'),
+                zipcode = self.cleaned_data.get('zipcode'),
+                city = self.cleaned_data.get('city'),
+                phone_fixed = self.cleaned_data.get('phone_fixed'),
+                phone_mobile = self.cleaned_data.get('phone_mobile'),
+                email = self.cleaned_data.get('email'),
+
+            )
+            #Update PermitRequestActor
+            models.PermitRequestActor.objects.filter(pk=permitrequestactor.pk).update(
+                description=self.cleaned_data.get('description'),
+                actor_type = self.cleaned_data.get('actor_type'),
+                actor=actor,
+                permit_request=permit_request,
+            )
+
+        else:
+            # Create PermitActor
+            actor = models.PermitActor.objects.create(
+                name = self.cleaned_data.get('name'),
+                firstname = self.cleaned_data.get('firstname'),
+                company_name = self.cleaned_data.get('company_name'),
+                vat_number = self.cleaned_data.get('vat_number'),
+                address = self.cleaned_data.get('address'),
+                zipcode = self.cleaned_data.get('zipcode'),
+                city = self.cleaned_data.get('city'),
+                phone_fixed = self.cleaned_data.get('phone_fixed'),
+                phone_mobile = self.cleaned_data.get('phone_mobile'),
+                email = self.cleaned_data.get('email'),
+            )
+            # Create PermitResquestActor
+            permitrequestactor = models.PermitRequestActor.objects.create(
+                actor=actor,
+                permit_request=permit_request,
+                description=self.cleaned_data.get('description'),
+                actor_type = self.cleaned_data.get('actor_type'),
+            )
+
+        return permitrequestactor

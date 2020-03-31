@@ -1,9 +1,13 @@
-{% extends "base_generic.html" %}
+{% extends "base_permits.html" %}
 {% load bootstrap4 %}
 {% load i18n %}
+{% load permit_progressbar %}
 
-{% block content %}
-<div class="container mt-3">
+{% block content-no-sidebar %}
+<div class="container">
+  {% if permit_request %}
+    {% permit_progressbar permit_request 'location' %}
+  {% endif %}
   <h3>{% trans "Sélectionnez la commune" %}</h3>
   <hr>
   <form method="post">
@@ -18,4 +22,4 @@
     {% endbuttons %}
   </form>
 </div>
-{% endblock content %}
+{% endblock %}

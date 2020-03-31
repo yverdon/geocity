@@ -1,10 +1,12 @@
-{% extends "base_generic.html" %}
+{% extends "base_permits.html" %}
 {% load bootstrap4 %}
 {% load i18n %}
+{% load permit_progressbar %}
 
-{% block content %}
-<div class="container mt-3">
-  <h3>{% trans "Sélectionnez les types de travaux" %}</h3>
+{% block content-no-sidebar %}
+<div class="container">
+  {% permit_progressbar permit_request 'works_types' %}
+  <h3>{% trans "Sélectionnez les types" %}</h3>
   <hr>
   <form method="post">
     {% bootstrap_form_errors works_types_form %}
@@ -19,4 +21,4 @@
     {% endbuttons %}
   </form>
 </div>
-{% endblock content %}
+{% endblock %}
