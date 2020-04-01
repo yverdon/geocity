@@ -236,8 +236,8 @@ class PermitRequestActorForm(forms.ModelForm):
 
     required_css_class = 'required'
 
-    name = forms.CharField(max_length=100, label=_('Prénom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Marcel'}))
-    firstname = forms.CharField( max_length=100, label=_('Nom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Dupond'}))
+    name = forms.CharField( max_length=100, label=_('Nom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Marcel',}))
+    firstname = forms.CharField( max_length=100, label=_('Prénom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Dupond'}))
     phone = forms.CharField(max_length=20, label=_('Téléphone'), widget=forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}))
     email = forms.EmailField()
     address = forms.CharField(max_length=100, label=_('Adresse'), widget= forms.TextInput(
@@ -263,6 +263,9 @@ class PermitRequestActorForm(forms.ModelForm):
         model = models.PermitRequestActor
         exclude = ['actor', 'permit_request']
         fields = ['actor_type', 'actor', ]
+        required = (
+            'email',
+        )
 
     @transaction.atomic
     def save(self, permit_request, commit=True):

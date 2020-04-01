@@ -255,9 +255,23 @@ def get_permitactorformset_initiated(permit_request):
             })
 
     PermitActorFormSet = modelformset_factory(models.PermitRequestActor,
-        form=forms.PermitRequestActorForm, extra=extra)
+        form=forms.PermitRequestActorForm, extra=extra,)
 
     formset = PermitActorFormSet(initial=actor_initial_forms, queryset=models.PermitRequestActor.objects.filter(permit_request=permit_request),)
 
 
     return formset
+
+def check_permitrequestactor_state(permit_request):
+    """
+    Return PermitRequestActor yet to be filled
+    """
+
+    initial_actors_count = len(models.PermitActorType.objects.filter(
+        works_type__in = get_permit_request_works_types(permit_request)
+    ).exclude(type__in=models.PermitRequestActor.objects.filter(
+        permit_request=permit_request).values_list('actor_type',flat=True)
+    ).distinct('type'))
+
+    filled_actors_count =  models.PermitRequestActor.objects.filter(permit_request=permit_request).count()
+    return initial_actors_count - filled_actors_count

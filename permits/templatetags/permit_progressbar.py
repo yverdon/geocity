@@ -54,10 +54,16 @@ def permit_progressbar(context, permit_request, active_step):
         instance=permit_request, enable_required=True, disable_fields=True, data={}
     ) if permit_request else None
 
-    # actor_formset = services.get_permitactorformset_initiated(permit_request)
-    # actor_errors = actor_formset.errors
-    # actor_completed = has_objects_types and actor_formset and not actor_formset.errors
+    remaining_actors = services.check_permitrequestactor_state(permit_request)
+    actor_errors = []
+    i = 0
+    while i < remaining_actors:
+        actor_errors.append(1)
+        i+=1
 
+    actor_completed = False
+    if remaining_actors <= 0:
+        actor_completed = True
 
     steps = {
         "location": Step(
@@ -96,8 +102,8 @@ def permit_progressbar(context, permit_request, active_step):
             name=_("Contacts"),
             url=actors_url,
             enabled=has_objects_types,
-            # errors=actor_errors,
-            # completed=actor_completed,
+            errors=actor_errors,
+            completed=actor_completed,
         ),
     }
     steps_states = {
