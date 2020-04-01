@@ -4,7 +4,7 @@ import os
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
 from django.db import transaction
-from django.forms import formset_factory
+from django.forms import modelformset_factory
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -184,38 +184,8 @@ def permit_request_actors(request, permit_request_id):
 
     permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
 
-    # No actors saved so far for this permit request
-    if models.PermitRequestActor.objects.filter(permit_request=permit_request).count() == 0:
-        initial_actors = models.PermitActorType.objects.filter(
-            works_type__in = services.get_permit_request_works_types(permit_request)
-        ).exclude(type__in=models.PermitRequestActor.objects.filter(
-            permit_request=permit_request).values_list('actor_type',flat=True)
-        ).distinct('type')
-
-        actor_initial_forms = [{
-            'actor_type': actor_type.type,
-            'permit_request': permit_request,
-            'empty_form': True,}
-        for actor_type in initial_actors]
-
-        PermitActorFormSet = formset_factory(forms.PermitRequestActorForm, extra=0)
-
-    else:
-        actor_initial_forms = []
-        for permit_request_actor in models.PermitRequestActor.objects.filter(permit_request=permit_request):
-
-            actor_initial_forms.append({
-                'permit_request_actor': permit_request_actor,
-                'actor_type': permit_request_actor.actor_type,
-                'actor': permit_request_actor.actor,
-                'permit_request': permit_request,
-                'description': permit_request_actor.description,
-                'empty_form': False,
-            })
-
-        PermitActorFormSet = formset_factory(forms.PermitRequestActorForm, extra=0)
-
     if request.method == 'POST':
+        PermitActorFormSet = modelformset_factory(models.PermitRequestActor, form=forms.PermitRequestActorForm)
         formset = PermitActorFormSet(request.POST)
         if formset.is_valid():
             for form in formset:
@@ -224,7 +194,7 @@ def permit_request_actors(request, permit_request_id):
             return redirect('permits:permit_request_submit', permit_request_id=permit_request.pk)
     else:
 
-        formset = PermitActorFormSet(initial=actor_initial_forms,)
+        formset = services.get_permitactorformset_initiated(permit_request)
 
     return render(request, "permits/permit_request_actors.html", {
         'formset': formset,
