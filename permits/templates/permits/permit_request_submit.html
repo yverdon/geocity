@@ -29,11 +29,12 @@
       {% for field in fields %}
         <tr>
           <td>{{ field.label }}</td>
-          <td>{{ field|default_if_none:"/"}}</td>
+          <td>{{ field.value|default_if_none:"/"}}</td>
         </tr>
       {% endfor %}
       </table>
     {% endfor %}
+    <hr>
     <h4>Documents joints</h4>
     {% for object_type, fields in appendices_object_types %}
       <h5>{{ object_type }}</h5>
@@ -46,15 +47,13 @@
       {% endfor %}
       </table>
     {% endfor %}
-    <table>
-     {% for form in actor_formset %}
-      <tr>
-      {% for field in form.fields %}
-        {{ field }}
+    <hr>
+    <h4>Contacts</h4>
 
-      {% endfor %}
+    {% for form in actor_formset %}
+      {% bootstrap_form form layout='horizontal' %}
+      <hr>
     {% endfor %}
-    </table>
 
     <br>
 </div>
