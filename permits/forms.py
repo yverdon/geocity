@@ -215,7 +215,6 @@ class PermitRequestActorForm(forms.ModelForm):
 
         initial_values = kwargs.pop('initial', None)
         instance = kwargs.pop('instance', None)
-
         if instance:
 
             actor = instance.actor
@@ -223,13 +222,13 @@ class PermitRequestActorForm(forms.ModelForm):
             initial_fields = ['name', 'firstname', 'company_name',
             'vat_number', 'address', 'address', 'city',
             'phone', 'zipcode', 'email']
+
             kwargs['initial'] = {
                 **kwargs.get('initial', {}), **{field: getattr(actor, field) for field in initial_fields},
                 **{'actor_type': instance.actor_type}
             }
 
         elif initial_values:
-
                 initial = {'actor_type': initial_values['actor_type']}
                 kwargs['initial'] = initial
 

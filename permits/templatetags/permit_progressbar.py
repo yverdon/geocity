@@ -2,7 +2,7 @@ import dataclasses
 from typing import Dict, List
 
 from django import template
-from django.forms import formset_factory
+from django.forms import modelformset_factory
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
 
@@ -54,36 +54,9 @@ def permit_progressbar(context, permit_request, active_step):
         instance=permit_request, enable_required=True, disable_fields=True, data={}
     ) if permit_request else None
 
-    # No actors saved so far for this permit request
-
-    if models.PermitRequestActor.objects.filter(permit_request=permit_request).count() == 0:
-
-        initial_actors = models.PermitActorType.objects.filter(
-            works_type__in = services.get_permit_request_works_types(permit_request)
-        ).exclude(type__in=models.PermitRequestActor.objects.filter(
-            permit_request=permit_request).values_list('actor_type',flat=True)
-        ).distinct('type')
-        actor_completed = False
-        actor_errors = []
-        for initial_actor in initial_actors:
-            actor_errors.append(initial_actor)
-    else:
-
-        actor_initial_forms = []
-        for permit_request_actor in models.PermitRequestActor.objects.filter(permit_request=permit_request):
-
-            actor_initial_forms.append({
-                'permit_request_actor': permit_request_actor,
-                'actor_type': permit_request_actor.actor_type,
-                'actor': permit_request_actor.actor,
-                'permit_request': permit_request,
-                'empty_form': False,
-            })
-
-        PermitActorFormSet = formset_factory(forms.PermitRequestActorForm, extra=0)
-        actor_formset = PermitActorFormSet(initial=actor_initial_forms,)
-        actor_errors = actor_formset.errors
-        actor_completed = has_objects_types and actor_formset and not actor_formset.errors
+    # actor_formset = services.get_permitactorformset_initiated(permit_request)
+    # actor_errors = actor_formset.errors
+    # actor_completed = has_objects_types and actor_formset and not actor_formset.errors
 
 
     steps = {
@@ -123,8 +96,8 @@ def permit_progressbar(context, permit_request, active_step):
             name=_("Contacts"),
             url=actors_url,
             enabled=has_objects_types,
-            errors=actor_errors,
-            completed=actor_completed,
+            # errors=actor_errors,
+            # completed=actor_completed,
         ),
     }
     steps_states = {
