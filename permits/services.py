@@ -263,3 +263,30 @@ def get_missing_actors_types(permit_request):
     ).values_list('type', flat=True))
 
     return required_actor_types - existing_actor_types
+
+
+def get_total_error_count(permit_request):
+    """
+    Return the total count of errors in forms for a given permit request
+    """
+    properties_form = forms.WorksObjectsPropertiesForm(
+        instance=permit_request, enable_required=True, disable_fields=True, data={}
+    ) if permit_request else None
+    appendices_form = forms.WorksObjectsAppendicesForm(
+        instance=permit_request, enable_required=True, disable_fields=True, data={}
+    ) if permit_request else None
+
+    remaining_actors = len(get_missing_actors_types(permit_request))
+    actor_errors = []
+    i = 0
+    while i < remaining_actors:
+        actor_errors.append(1)
+        i+=1
+
+    actor_completed = False
+    if remaining_actors <= 0:
+        actor_completed = True
+
+    errors = {**appendices_form.errors, **properties_form.errors, **dict.fromkeys(actor_errors, 1)}
+
+    return len(errors)

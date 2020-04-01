@@ -250,11 +250,14 @@ def permit_request_submit(request, permit_request_id):
     # actors
     actor_formset = services.get_permitactorformset_initiated(permit_request)
 
+    total_error_count = services.get_total_error_count(permit_request)
+
     return render(request, "permits/permit_request_submit.html", {
         'permit_request': permit_request,
         'properties_object_types': fields_by_object_type,
         'appendices_object_types':appendices_object_types,
         'actor_formset': actor_formset,
+        'total_error_count': total_error_count,
     })
 
 

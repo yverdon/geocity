@@ -44,8 +44,10 @@ def permit_progressbar(context, permit_request, active_step):
         properties_url = reverse_permit_request_url('permits:permit_request_properties')
         appendices_url = reverse_permit_request_url('permits:permit_request_appendices')
         actors_url = reverse_permit_request_url('permits:permit_request_actors')
+        submit_url = reverse_permit_request_url('permits:permit_request_submit')
+        print(submit_url)
     else:
-        objects_types_url = properties_url = appendices_url = actors_url = ''
+        objects_types_url = properties_url = appendices_url = actors_url = submit_url = ''
 
     properties_form = forms.WorksObjectsPropertiesForm(
         instance=permit_request, enable_required=True, disable_fields=True, data={}
@@ -95,6 +97,13 @@ def permit_progressbar(context, permit_request, active_step):
             enabled=has_objects_types,
             errors=actor_errors,
             completed=not actor_errors,
+        ),
+        "submit": Step(
+            name=_("Résumé et envoi"),
+            url=submit_url,
+            enabled=has_objects_types,
+            errors={**appendices_form.errors, **properties_form.errors, **dict.fromkeys(actor_errors, 1)},
+            completed=len({**appendices_form.errors, **properties_form.errors, **dict.fromkeys(actor_errors, 1)})==0,
         ),
     }
     steps_states = {
