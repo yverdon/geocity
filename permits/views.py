@@ -247,22 +247,8 @@ def permit_request_submit(request, permit_request_id):
     #appendices
     appendices_form = forms.WorksObjectsAppendicesForm(instance=permit_request, enable_required=False)
     appendices_object_types = appendices_form.get_fields_by_object_type()
-
-    #actors
-    actor_initial_forms = []
-    for permit_request_actor in models.PermitRequestActor.objects.filter(permit_request=permit_request):
-
-        actor_initial_forms.append({
-            'permit_request_actor': permit_request_actor,
-            'actor_type': permit_request_actor.actor_type,
-            'actor': permit_request_actor.actor,
-            'permit_request': permit_request,
-            'description': permit_request_actor.description,
-            'empty_form': False,
-        })
-
-    PermitActorFormSet = formset_factory(forms.PermitRequestActorForm, extra=0)
-    actor_formset = PermitActorFormSet(initial=actor_initial_forms,)
+    # actors
+    actor_formset = services.get_permitactorformset_initiated(permit_request)
 
     return render(request, "permits/permit_request_submit.html", {
         'permit_request': permit_request,
