@@ -1,10 +1,13 @@
 from django import forms
+from django.conf import settings
+from django.contrib.gis import forms as geoforms
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
-
 from . import models, services
 from gpf.models import Actor
 from .widgets import RemoteAutocompleteWidget
+from bootstrap_datepicker_plus import DatePickerInput
+import datetime
 
 
 def get_field_cls_for_property(prop):
@@ -241,4 +244,59 @@ class GenericActorForm(forms.ModelForm):
             'city': forms.TextInput(attrs={'placeholder': 'ex: Yverdon'}),
             'company_name': forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}),
             'email': forms.TextInput(attrs={'placeholder': 'ex: monemail@monemail.com'}),
+        }
+
+
+class SitOpenLayersWidget(geoforms.OSMWidget):
+
+    template_name = 'permits/openlayers/openlayers_multigeom.html'
+    map_srid = 2056
+
+    @property
+    def media(self):
+        return forms.Media(
+            css={'all': ('libs/js/openlayers6/ol.css',)},
+            js=('libs/js/openlayers6/ol.js',
+                'libs/js/proj4js/proj4-src.js',
+                'customWidgets/sitMapWidget/sitMapWidgetGeometryCollection.js'
+                ))
+
+
+class PermitRequestGeoTimeForm(forms.ModelForm):
+
+    class Meta:
+        model = models.PermitRequestGeoTime
+        fields = ['datetime_start', 'datetime_end', 'description','external_link', 'geom']
+        widgets = {
+            'geom': SitOpenLayersWidget(attrs={
+                'map_width': '100%',
+                'map_height': 400,
+                'map_srid': 2056,
+                'default_center': [2539057, 1181111],
+                'default_zoom': 10,
+                'display_raw': False, #show coordinate in debug
+                'map_clear_style': "visibility:visible;",
+                'edit_geom': True,
+                'min_zoom': 8,
+                'wmts_capabilities_url': settings.WMTS_GETCAP,
+                'wmts_layer': settings.WMTS_LAYER,
+                'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
+                'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
+                'administrative_entities_url': 'gpf:adm-entity-geojson',
+            }),
+            'datetime_start': DatePickerInput(
+                options={
+                    "format": "DD/MM/YYYY HH:MM",
+                    "locale": "fr",
+                    "minDate": (datetime.datetime.today() + datetime.timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d')
+                    }
+                ).start_of('event days'),
+            'datetime_end': DatePickerInput(
+                options={
+                    "format": "DD/MM/YYYY  HH:MM",
+                    "locale": "fr",
+                    "minDate": (datetime.datetime.today() + datetime.timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d')
+                    }
+                ).end_of('event days'),
+
         }

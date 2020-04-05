@@ -1,0 +1,30 @@
+{% extends "base_permits.html" %}
+{% load bootstrap4 %}
+{% load i18n %}
+{% load static %}
+{% load permit_progressbar %}
+{% block content-no-sidebar %}
+
+
+<div class="container">
+  {% permit_progressbar permit_request 'objects_types' %}
+  <h3>{% trans "Renseignez le planning et la localisation" %}</h3>
+  <hr>
+  <form method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    <div id="forms-container">
+       {% for form in formset %}
+         {{ form.media }}
+         {% bootstrap_form form layout='horizontal' %}
+      <hr>
+       {% endfor %}
+     </div>
+    {% buttons %}
+      <a href="{% url 'permits:permit_request_geo_time' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
+      <button class="btn btn-primary">{% trans "Enregistrer et ajouter un nouveau" %}</button>
+      <button class="btn btn-primary">{% trans "Enregistrer et poursuivre" %}</button>
+    {% endbuttons %}
+  </form>
+</div>
+{% endblock %}
