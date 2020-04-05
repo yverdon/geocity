@@ -12,14 +12,8 @@
 
         var is_collection = false;
 
-        if (options.geom_name.toLowerCase().indexOf('multi') >= 0) {
+        if (options.geom_name.toLowerCase().indexOf('multi') >= 0 || options.geom_name.toLowerCase().indexOf('geometrycollection') >= 0) {
           var is_collection = true;
-        }
-
-        if (!options.geom_name.includes('MULTI')) {
-           options.geom_name = options.geom_name.charAt(0).toUpperCase() + options.geom_name.slice(1).toLowerCase();
-         } else {
-           options.geom_name = "Multi" + options.geom_name.charAt(5).toUpperCase() + options.geom_name.slice(6).toLowerCase();
         }
 
         this.map = null;
@@ -30,8 +24,6 @@
 
         // Default options
         this.options = {
-            default_center: [2538812, 1181380],
-            default_zoom: 5,
             is_collection: is_collection
         };
 
@@ -96,31 +88,12 @@
           })
         });
 
-      var countryStyle = new  ol.style.Style({
+      var style = [labelStyle];
 
-        stroke: new  ol.style.Stroke({
-          color: '#fcba03',
-          width: 2
-        })
-      });
 
-      var style = [countryStyle, labelStyle];
-
-       this.adminEntities = new ol.layer.Vector({
-           opacity: 100,
-           source: new ol.source.Vector({
-           }),
-           style: function(feature) {
-              labelStyle.getText().setText(feature.get('name'));
-              return style;
-            },
-            // declutter: true
-       });
-
-        this.map = this.createMap(this.adminEntities);
+        this.map = this.createMap();
         this.addBaseLayer();
         this.setupAlternativeBaseLayer();
-        this.loadAdminEntities();
 
         this.featureCollection = new ol.Collection();
 
@@ -157,7 +130,6 @@
         // Populate and set handlers for the feature container
         var self = this;
         this.featureCollection.on('add', function(event) {
-
             var feature = event.element;
             feature.on('change', function() {
                 self.serializeFeatures();
@@ -207,7 +179,7 @@
     ol.proj.addProjection(projection);
 
 
-    sitMapWidget.prototype.createMap = function(adminEntities) {
+    sitMapWidget.prototype.createMap = function() {
 
         var map = new ol.Map({
             controls: [
@@ -220,7 +192,7 @@
                 })
             ],
             target: this.options.map_id,
-            layers: [adminEntities],
+            layers: [],
             view: new ol.View({
                 zoom: this.options.default_zoom,
                 minZoom: this.options.min_zoom,
@@ -230,30 +202,6 @@
         });
         return map;
     };
-
-
-    sitMapWidget.prototype.loadAdminEntities = function () {
-
-      var _this = this;
-
-      $.ajax({
-          url: this.options.administrative_entities_url,
-          success: function(response) {
-
-               var gJson = new ol.format.GeoJSON();
-                var feats = [];
-                for (var i=0; i < response.features.length; i++) {
-                  var f = gJson.readFeature(response.features[i]);
-                  f.setId(response.features[i].properties.pk)
-                  feats.push(f);
-                }
-                _this.adminEntities.getSource().addFeatures(feats)
-
-             }
-       });
-
-
-   };
 
 
     sitMapWidget.prototype.addBaseLayer = function() {
@@ -328,20 +276,6 @@
             features: this.featureCollection,
             style: new ol.style.Style({})
         });
-        // Initialize the draw interaction
-        this.interactions.draw = new ol.interaction.Draw({
-            features: this.featureCollection,
-            type: this.options.geom_name,
-            condition: function(evt) {
-                if (evt.pointerEvent.type == 'pointerdown' && evt.pointerEvent.buttons == 1
-                      && !evt.originalEvent.altKey) {
-                    return true;
-                } else {
-                    return false
-                }
-            }
-        });
-
         // Initialize the select interaction
         this.interactions.select = new ol.interaction.Select({
           layers: [this.featureOverlay],
@@ -359,10 +293,9 @@
           })
         });
 
-        this.map.addInteraction(this.interactions.draw);
         this.map.addInteraction(this.interactions.modify);
         this.map.addInteraction(this.interactions.select);
-
+        this.setDrawInteraction();
         this.map.on("pointermove", function (evt) {
             var hit = evt.map.hasFeatureAtPixel(evt.pixel, {
                 layerFilter: function (layer) {
@@ -377,6 +310,27 @@
             this.getTargetElement().style.cursor = hit ? 'pointer' : '';
         });
 
+    };
+
+
+    sitMapWidget.prototype.setDrawInteraction = function() {
+
+        if (this.interactions.draw) {
+          this.map.removeInteraction(this.interactions.draw);
+        }
+        this.interactions.draw = new ol.interaction.Draw({
+            features: this.featureCollection,
+            type: 'Point', //$('#geom_type')[0].value,
+            condition: function(evt) {
+                if (evt.pointerEvent.type == 'pointerdown' && evt.pointerEvent.buttons == 1
+                      && !evt.originalEvent.altKey) {
+                    return true;
+                } else {
+                    return false
+                }
+            }
+        });
+        this.map.addInteraction(this.interactions.draw);
     };
 
 
@@ -462,44 +416,16 @@
     };
 
 
-    sitMapWidget.prototype.zoomToAdminEntity= function(admin_pk) {
-
-      var feature = this.adminEntities.getSource().getFeatureById(admin_pk);
-      if (feature) {
-        var bounds = feature.getGeometry().getExtent();
-        this.map.getView().fit(bounds, this.map.getSize());
-      }
-
-    };
-
-
     sitMapWidget.prototype.serializeFeatures = function() {
-        // Two use cases: multigeometries, and single geometry
-        var geometry = null;
+
+        var gJson = new ol.format.GeoJSON()
+        var collection = []
         var features = this.featureOverlay.getSource().getFeatures();
-
-        if (this.options.is_collection) {
-
-                geometry = features[0].getGeometry().clone();
-
-                for (var j = 1; j < features.length; j++) {
-                    switch(geometry.getType()) {
-                        case "MultiPoint":
-                            geometry.appendPoint(features[j].getGeometry().getPoint(0));
-                            break;
-                        case "MultiLineString":
-                            geometry.appendLineString(features[j].getGeometry().getLineString(0));
-                            break;
-                        case "MultiPolygon":
-                            geometry.appendPolygon(features[j].getGeometry().getPolygon(0));
-                    }
-                }
-        } else {
-            if (features[0]) {
-                geometry = features[0].getGeometry();
-            }
+        for (var i=0; i < features.length; i++) {
+          collection.push(gJson.writeFeatureObject(features[i]));
         }
-        document.getElementById(this.options.id).value = jsonFormat.writeGeometry(geometry);
+        // var geojson = gJson.writeFeaturesObject(this.featureOverlay.getSource().getFeatures());
+        document.getElementById(this.options.id).value = collection;
     };
 
     window.sitMapWidget = sitMapWidget;

@@ -282,7 +282,6 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 'wmts_layer': settings.WMTS_LAYER,
                 'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
                 'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
-                'administrative_entities_url': 'gpf:adm-entity-geojson',
             }),
             'datetime_start': DatePickerInput(
                 options={

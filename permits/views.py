@@ -215,8 +215,13 @@ def permit_request_geo_time(request, permit_request_id):
 
     if request.method == 'POST':
         formset = PermitRequestGeoTimeFormSet(request.POST)
+    
         if formset.is_valid():
-            formset.save()
+            for form in formset:
+                form.permit_request = permit_request
+                time_geo_form = form.save(commit=False)
+                time_geo_form.permit_request = permit_request
+                time_geo_form.save()
 
             return redirect('permits:permit_request_appendices', permit_request_id=permit_request.pk)
     else:

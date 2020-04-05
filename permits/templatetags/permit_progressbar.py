@@ -42,9 +42,10 @@ def permit_progressbar(context, permit_request, active_step):
         objects_types_url = reverse_permit_request_url('permits:permit_request_select_objects')
         properties_url = reverse_permit_request_url('permits:permit_request_properties')
         appendices_url = reverse_permit_request_url('permits:permit_request_appendices')
+        geo_time_url = reverse_permit_request_url('permits:permit_request_geo_time')
         actors_url = reverse_permit_request_url('permits:permit_request_actors')
     else:
-        objects_types_url = properties_url = appendices_url = actors_url = ''
+        objects_types_url = properties_url = appendices_url = actors_url = geo_time_url = ''
 
     properties_form = forms.WorksObjectsPropertiesForm(
         instance=permit_request, enable_required=True, disable_fields=True, data={}
@@ -77,6 +78,13 @@ def permit_progressbar(context, permit_request, active_step):
             url=properties_url,
             completed=has_objects_types and properties_form and not properties_form.errors,
             errors=properties_form.errors if properties_form else [],
+            enabled=has_objects_types,
+        ),
+        "geo_time": Step(
+            name=_("Agenda et plan"),
+            url=geo_time_url,
+            completed=has_objects_types,
+            errors= [],
             enabled=has_objects_types,
         ),
         "appendices": Step(

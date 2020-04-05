@@ -18,15 +18,15 @@
     <div id="mapButtons">
       <a class="btn btn-primary" style="{{map_clear_style}}"
          href="javascript:gpfMap.clearFeatures();" role="button">
-         Effacer tous les points
+         Effacer toutes les entités
       </a>
       <a class="btn btn-primary" style="{{map_clear_style}}"
          href="javascript:gpfMap.removeLastPoint();" role="button">
-         Effacer le dernier point
+         Effacer la dernière entité
       </a>
       <a class="btn btn-primary" style="{{map_clear_style}}"
          href="javascript:gpfMap.removeSelectedPoint();" role="button">
-         Effacer le point sélectionné
+         Effacer l'entité sélectionnée
       </a>
       <hr>
       <div>
@@ -41,6 +41,12 @@
       </a>
       </div>
       <b style="{{map_clear_style}}">Ou cliquez dans la carte pour placer un point</b>
+        <label>Type de dessin</label>
+        <select id="geom_type" onchange="gpfMap.setDrawInteraction()">
+          <option value="MultiPoint" selected>Points</option>
+          <option value="MultiLineString">Lignes</option>
+          <option value="MultiPolygon">Surfaces</option>
+        </select>
     </div>
     <hr>
     <div id="{{ id }}_map">
@@ -64,8 +70,7 @@
             wmts_capabilities_url: '{{wmts_capabilities_url}}',
             wmts_layer: '{{wmts_layer}}',
             wmts_capabilities_url_alternative: '{{wmts_capabilities_url_alternative}}',
-            wmts_layer_alternative: '{{wmts_layer_alternative}}',
-            administrative_entities_url:  "{% url administrative_entities_url %}",
+            wmts_layer_alternative: '{{wmts_layer_alternative}}'
         };
         var {{ module }} = new sitMapWidget(options);
         gpfMap = {{ module }};
