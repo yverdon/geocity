@@ -318,9 +318,10 @@
         if (this.interactions.draw) {
           this.map.removeInteraction(this.interactions.draw);
         }
+
         this.interactions.draw = new ol.interaction.Draw({
             features: this.featureCollection,
-            type: 'Point', //$('#geom_type')[0].value,
+            type: $('#geom_type')[0].value,
             condition: function(evt) {
                 if (evt.pointerEvent.type == 'pointerdown' && evt.pointerEvent.buttons == 1
                       && !evt.originalEvent.altKey) {
@@ -417,15 +418,37 @@
 
 
     sitMapWidget.prototype.serializeFeatures = function() {
-
-        var gJson = new ol.format.GeoJSON()
-        var collection = []
+        // Three use cases: GeometryCollection, multigeometries, and single geometry
+        var geometry = null;
         var features = this.featureOverlay.getSource().getFeatures();
-        for (var i=0; i < features.length; i++) {
-          collection.push(gJson.writeFeatureObject(features[i]));
+        if (this.options.is_collection) {
+            if (this.options.geom_name.toLowerCase() === "geometrycollection") {
+                var geometries = [];
+                for (var i = 0; i < features.length; i++) {
+                    geometries.push(features[i].getGeometry());
+                }
+                geometry = new ol.geom.GeometryCollection(geometries);
+            } else {
+                geometry = features[0].getGeometry().clone();
+                for (var j = 1; j < features.length; j++) {
+                    switch (geometry.getType()) {
+                    case "MultiPoint":
+                        geometry.appendPoint(features[j].getGeometry().getPoint(0));
+                        break;
+                    case "MultiLineString":
+                        geometry.appendLineString(features[j].getGeometry().getLineString(0));
+                        break;
+                    case "MultiPolygon":
+                        geometry.appendPolygon(features[j].getGeometry().getPolygon(0));
+                    }
+                }
+            }
+        } else {
+            if (features[0]) {
+                geometry = features[0].getGeometry();
+            }
         }
-        // var geojson = gJson.writeFeaturesObject(this.featureOverlay.getSource().getFeatures());
-        document.getElementById(this.options.id).value = collection;
+        document.getElementById(this.options.id).value = jsonFormat.writeGeometry(geometry);
     };
 
     window.sitMapWidget = sitMapWidget;

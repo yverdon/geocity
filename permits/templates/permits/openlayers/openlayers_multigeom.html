@@ -42,7 +42,7 @@
       </div>
       <b style="{{map_clear_style}}">Ou cliquez dans la carte pour placer un point</b>
         <label>Type de dessin</label>
-        <select id="geom_type" onchange="gpfMap.setDrawInteraction()">
+        <select id="{{ id }}_geom_type" onchange="gpfMap.setDrawInteraction()">
           <option value="MultiPoint" selected>Points</option>
           <option value="MultiLineString">Lignes</option>
           <option value="MultiPolygon">Surfaces</option>
