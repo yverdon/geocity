@@ -1,0 +1,26 @@
+{% extends "base_permits.html" %}
+{% load bootstrap4 %}
+{% load i18n %}
+{% load permit_progressbar %}
+
+{% block content-no-sidebar %}
+<div class="container">
+  {% permit_progressbar permit_request 'objects_types' %}
+  <h3>{% trans "Sélectionnez les objets" %}</h3>
+  <hr>
+  <form method="post">
+    {% csrf_token %}
+    {% bootstrap_form_errors works_objects_form %}
+
+    {% for field in works_objects_form %}
+      <h4>{{ field.label }}</h4>
+      {% bootstrap_field field show_label=False %}
+    {% endfor %}
+
+    {% buttons %}
+      <a href="{% url 'permits:permit_request_select_types' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
+      <button class="btn btn-primary">{% trans "Enregistrer et continuer" %}</button>
+    {% endbuttons %}
+  </form>
+</div>
+{% endblock %}

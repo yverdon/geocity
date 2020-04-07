@@ -3,6 +3,7 @@ from django.contrib.gis import forms
 from django.forms import widgets
 from django.urls import reverse
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext_lazy as _
 from django.core.validators import FileExtensionValidator
 from .models import PermitRequest, Actor, Validation, Document
 from .widgets import RemoteAutocompleteWidget
@@ -279,8 +280,18 @@ class ActorForm(forms.ModelForm):
             'zipcode': forms.TextInput(attrs={'placeholder': 'ex: 1400'}),
             'city': forms.TextInput(attrs={'placeholder': 'ex: Yverdon'}),
             'company_name': forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}),
-            'phone_mobile': forms.TextInput(attrs={'placeholder': 'ex: 079 111 22 22'}),
             'email': forms.TextInput(attrs={'placeholder': 'ex: permis-de-fouille@mapnv.ch'}),
+        }
+        labels = {
+            'address': _("Address"),
+            'phone_fixed': _("Phone"),
+            'phone_mobile': _("Mobile phone"),
+            'name': _("Last name"),
+            'firstname': _("First name"),
+            'zipcode': _("Zipcode"),
+            'city': _("City"),
+            'company_name': _("Company name"),
+            'email': _("Email address"),
         }
 
 

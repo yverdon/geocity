@@ -13,12 +13,13 @@
     {% block stylesheets%}
       {% load fontawesome %}
       {% fontawesome_stylesheet %}
+      <link rel="stylesheet" type="text/css" href="{% static 'css/gpf.css' %}">
     {% endblock %}
     <link rel="icon" href="{% static 'images/logo.svg'%}" type="image/svg" sizes="16x16">
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    {% block navbartitle %}<a class="navbar-brand" href="#">Applications du territoire</a>{% endblock %}
+  <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+    {% block navbartitle %}<a class="navbar-brand" href="/">Applications du territoire</a>{% endblock %}
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -30,7 +31,6 @@
             <i class="fa fa-user"></i> {% block connected_user %}<b>{{ user.get_username }}</b>{% endblock %}
           </a>
           <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
-            <!-- <a class="dropdown-item" href="{% url 'login' %}">Se connecter</a> -->
             <a class="dropdown-item" href="{% url 'logout' %}">Se déconnecter</a>
             <a class="dropdown-item" href="{% url 'password_change' %}">Changer son mot de passe</a>
             <a class="dropdown-item" href="{% url 'gpf:actor_edit_account' %}">Modifier son compte</a>
@@ -41,7 +41,7 @@
       {% endblock %}
     </div>
     {% endif %}
-    <img src="{% static 'images/logo.svg'%}" width="50" height="50" alt="" class="d-inline-block align-right" alt="">
+    <a href="https://mapnv.ch" target="_blank">mapnv.ch</a>
   </nav>
     <div class="container-fluid">
         <div class="row">
@@ -49,9 +49,10 @@
                 {% block sidebar %}{% endblock %}
             </div>
         </div>
-    <div class="col-sm-10">
-        {% block content %}{% endblock %}
+      <div class="col-sm-10">
+          {% block content %}{% endblock %}
+      </div>
     </div>
-    </div>
+    {% block content-no-sidebar %}{% endblock %}
 </body>
 </html>
