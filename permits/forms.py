@@ -209,32 +209,8 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
 
 
 class PermitRequestActorForm(forms.ModelForm):
-
-
-    def __init__(self, *args, **kwargs):
-
-        initial_values = kwargs.pop('initial', None)
-        instance = kwargs.pop('instance', None)
-        if instance:
-
-            actor = instance.actor
-
-            initial_fields = ['name', 'firstname', 'company_name',
-            'vat_number', 'address', 'address', 'city',
-            'phone', 'zipcode', 'email']
-
-            kwargs['initial'] = {
-                **kwargs.get('initial', {}), **{field: getattr(actor, field) for field in initial_fields},
-                **{'actor_type': instance.actor_type}
-            }
-
-        elif initial_values:
-                initial = {'actor_type': initial_values['actor_type']}
-                kwargs['initial'] = initial
-
-        super().__init__(*args, **kwargs)
-
-    required_css_class = 'required'
+    actor_fields = ['name', 'firstname', 'company_name', 'vat_number', 'address', 'address', 'city', 'phone',
+                    'zipcode', 'email']
 
     name = forms.CharField( max_length=100, label=_('Nom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Marcel',}))
     firstname = forms.CharField( max_length=100, label=_('Prénom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Dupond'}))
@@ -258,61 +234,37 @@ class PermitRequestActorForm(forms.ModelForm):
     company_name = forms.CharField(required=False, label=_('Raison sociale'), max_length=100, widget=forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}))
     vat_number = forms.CharField(required=False, label=_('Numéro TVA'), max_length=100,widget=forms.TextInput(attrs={'placeholder': 'ex: CHE-123.456.789'}))
 
-
     class Meta:
         model = models.PermitRequestActor
-        exclude = ['actor', 'permit_request']
-        fields = ['actor_type', 'actor', ]
-        required = (
-            'email',
-        )
+        fields = ['actor_type']
+
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.get('instance')
+
+        if instance and instance.pk:
+            kwargs['initial'] = {**kwargs.get('initial', {}), **{
+                **kwargs.get('initial', {}), **{field: getattr(instance.actor, field) for field in self.actor_fields},
+                **{'actor_type': instance.actor_type}
+            }}
+
+        super().__init__(*args, **kwargs)
 
     @transaction.atomic
     def save(self, permit_request, commit=True):
+        actor = self.instance.actor if self.instance.pk else None
 
-        permitrequestactor = self.cleaned_data.get('id')
-
-        if permitrequestactor:
-
-            # Update PermitActor
-            actor = models.PermitRequestActor.objects.get(pk=permitrequestactor.pk).actor
-            models.PermitActor.objects.filter(pk=actor.pk).update(
-                name = self.cleaned_data.get('name'),
-                firstname = self.cleaned_data.get('firstname'),
-                company_name = self.cleaned_data.get('company_name'),
-                vat_number = self.cleaned_data.get('vat_number'),
-                address = self.cleaned_data.get('address'),
-                zipcode = self.cleaned_data.get('zipcode'),
-                city = self.cleaned_data.get('city'),
-                phone = self.cleaned_data.get('phone'),
-                email = self.cleaned_data.get('email'),
-
-            )
-            #Update PermitRequestActor
-            models.PermitRequestActor.objects.filter(pk=permitrequestactor.pk).update(
-                actor_type = self.cleaned_data.get('actor_type'),
-                actor=actor,
-                permit_request=permit_request,
-            )
-
-        else:
-            # Create PermitActor
+        if not actor:
             actor = models.PermitActor.objects.create(
-                name = self.cleaned_data.get('name'),
-                firstname = self.cleaned_data.get('firstname'),
-                company_name = self.cleaned_data.get('company_name'),
-                vat_number = self.cleaned_data.get('vat_number'),
-                address = self.cleaned_data.get('address'),
-                zipcode = self.cleaned_data.get('zipcode'),
-                city = self.cleaned_data.get('city'),
-                phone = self.cleaned_data.get('phone'),
-                email = self.cleaned_data.get('email'),
+                **{field: self.cleaned_data.get(field) for field in self.actor_fields}
             )
-            # Create PermitResquestActor
-            permitrequestactor = models.PermitRequestActor.objects.create(
-                actor=actor,
-                permit_request=permit_request,
-                actor_type = self.cleaned_data.get('actor_type'),
-            )
+        else:
+            for field in self.actor_fields:
+                setattr(actor, field, self.cleaned_data.get(field))
+            actor.save()
 
-        return permitrequestactor
+        instance = super().save(commit=False)
+        instance.actor = actor
+        instance.permit_request = permit_request
+        instance.save()
+
+        return instance

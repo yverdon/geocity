@@ -227,51 +227,39 @@ def get_permit_request_for_user_or_404(user, permit_request_id):
     return get_object_or_404(models.PermitRequest, author=user.actor, pk=permit_request_id)
 
 
-def get_permitactorformset_initiated(permit_request):
+def get_permitactorformset_initiated(permit_request, data=None):
     """
     Return PermitActorFormSet with initial values set
     """
-    if models.PermitRequestActor.objects.filter(permit_request=permit_request).count() == 0:
-        initial_actors = models.PermitActorType.objects.filter(
-            works_type__in = get_permit_request_works_types(permit_request)
-        ).exclude(type__in=models.PermitRequestActor.objects.filter(
-            permit_request=permit_request).values_list('actor_type',flat=True)
-        ).distinct('type')
-        actor_initial_forms = [{
-            'actor_type': actor_type.type,
-            'permit_request': permit_request,}
-        for actor_type in initial_actors]
-        extra = len(actor_initial_forms)
+    missing_actor_types = get_missing_actors_types(permit_request)
 
-    else:
-        extra = 0
-        actor_initial_forms = []
-        for permit_request_actor in models.PermitRequestActor.objects.filter(permit_request=permit_request):
-            actor_initial_forms.append({
-                'permit_request_actor': permit_request_actor,
-                'actor_type': permit_request_actor.actor_type,
-                'actor': permit_request_actor.actor,
-                'permit_request': permit_request,
-            })
+    actor_initial_forms = [
+        {'actor_type': actor_type}
+        for actor_type in missing_actor_types
+    ]
 
-    PermitActorFormSet = modelformset_factory(models.PermitRequestActor,
-        form=forms.PermitRequestActorForm, extra=extra,)
+    PermitActorFormSet = modelformset_factory(
+        models.PermitRequestActor,
+        form=forms.PermitRequestActorForm,
+        extra=len(actor_initial_forms)
+    )
 
-    formset = PermitActorFormSet(initial=actor_initial_forms, queryset=models.PermitRequestActor.objects.filter(permit_request=permit_request),)
-
+    formset = PermitActorFormSet(
+        initial=actor_initial_forms,
+        queryset=models.PermitRequestActor.objects.filter(permit_request=permit_request),
+        data=data
+    )
 
     return formset
 
-def check_permitrequestactor_state(permit_request):
+
+def get_missing_actors_types(permit_request):
     """
     Return PermitRequestActor yet to be filled
     """
+    existing_actor_types = set(permit_request.permit_request_actors.values_list('actor_type', flat=True))
+    required_actor_types = set(models.PermitActorType.objects.filter(
+        works_type__in=get_permit_request_works_types(permit_request)
+    ).values_list('type', flat=True))
 
-    initial_actors_count = len(models.PermitActorType.objects.filter(
-        works_type__in = get_permit_request_works_types(permit_request)
-    ).exclude(type__in=models.PermitRequestActor.objects.filter(
-        permit_request=permit_request).values_list('actor_type',flat=True)
-    ).distinct('type'))
-
-    filled_actors_count =  models.PermitRequestActor.objects.filter(permit_request=permit_request).count()
-    return initial_actors_count - filled_actors_count
+    return required_actor_types - existing_actor_types

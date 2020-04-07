@@ -32,6 +32,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='permitrequestactor',
             name='permit_request',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='permits.PermitRequest'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='permits.PermitRequest', related_name='permit_request_actors'),
         ),
     ]

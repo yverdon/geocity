@@ -110,10 +110,13 @@ class PermitActorType(models.Model):
 
 class PermitRequestActor(models.Model):
     actor = models.ForeignKey(PermitActor, on_delete=models.CASCADE)
-    permit_request = models.ForeignKey('PermitRequest', on_delete=models.CASCADE)
+    permit_request = models.ForeignKey('PermitRequest', on_delete=models.CASCADE, related_name='permit_request_actors')
     actor_type = models.PositiveSmallIntegerField(
         _("type de contact"), choices=ACTOR_TYPE_CHOICES, default=ACTOR_TYPE_OTHER
     )
+
+    def __str__(self):
+        return "{} - {}".format(str(self.actor), str(self.get_actor_type_display()))
 
 
 class PermitRequest(models.Model):

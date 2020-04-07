@@ -185,8 +185,7 @@ def permit_request_actors(request, permit_request_id):
     permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
 
     if request.method == 'POST':
-        PermitActorFormSet = modelformset_factory(models.PermitRequestActor, form=forms.PermitRequestActorForm)
-        formset = PermitActorFormSet(request.POST)
+        formset = services.get_permitactorformset_initiated(permit_request, data=request.POST)
         if formset.is_valid():
             for form in formset:
                 form.save(permit_request=permit_request)
