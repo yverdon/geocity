@@ -5,7 +5,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.forms import modelformset_factory
-
+from django.utils.translation import gettext_lazy as _
 
 from gpf.models import AdministrativeEntity
 
@@ -271,22 +271,19 @@ def get_total_error_count(permit_request):
     """
     properties_form = forms.WorksObjectsPropertiesForm(
         instance=permit_request, enable_required=True, disable_fields=True, data={}
-    ) if permit_request else None
+    )
     appendices_form = forms.WorksObjectsAppendicesForm(
         instance=permit_request, enable_required=True, disable_fields=True, data={}
-    ) if permit_request else None
+    )
 
-    remaining_actors = len(get_missing_actors_types(permit_request))
-    actor_errors = []
-    i = 0
-    while i < remaining_actors:
-        actor_errors.append(1)
-        i+=1
+    missing_actor_types = get_missing_actors_types(permit_request)
 
-    actor_completed = False
-    if remaining_actors <= 0:
-        actor_completed = True
+    actor_errors = [
+        _('Contact de type "%s" manquant.') % models.ACTOR_TYPE_CHOICES[actor_type][1]
+        for actor_type in missing_actor_types
+    ]
 
-    errors = {**appendices_form.errors, **properties_form.errors, **dict.fromkeys(actor_errors, 1)}
-
-    return len(errors)
+    return sum(
+        len(errors)
+        for errors in [appendices_form.errors, properties_form.errors, actor_errors]
+    )
