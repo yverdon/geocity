@@ -43,7 +43,6 @@ def permit_progressbar(context, permit_request, active_step):
         appendices_url = reverse_permit_request_url('permits:permit_request_appendices')
         actors_url = reverse_permit_request_url('permits:permit_request_actors')
         submit_url = reverse_permit_request_url('permits:permit_request_submit')
-        print(submit_url)
     else:
         objects_types_url = properties_url = appendices_url = actors_url = submit_url = ''
 
