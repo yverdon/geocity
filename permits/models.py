@@ -131,6 +131,18 @@ class PermitRequest(models.Model):
         verbose_name = _("demande de permis")
         verbose_name_plural = _("demandes de permis")
 
+    def is_draft(self):
+        return self.status == self.STATUS_DRAFT
+
+    def can_be_submitted_by_author(self):
+        return self.is_draft()
+
+    def can_be_edited_by_author(self):
+        return self.is_draft()
+
+    def can_be_deleted_by_author(self):
+        return self.is_draft()
+
 
 class WorksType(models.Model):
     name = models.CharField(_("nom"), max_length=255)

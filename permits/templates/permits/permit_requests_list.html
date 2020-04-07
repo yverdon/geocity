@@ -3,10 +3,8 @@
 {% load static %}
 {% load i18n %}
 {% load bootstrap4 %}
-{% block stylesheets%}
-  {{ block.super }}
-  <link rel="stylesheet" type="text/css" href="{% static 'css/permitlist.css' %}">
-{% endblock %}
+{% load render_table from django_tables2 %}
+
 {% block navbartitle %}
   <a class="navbar-brand" href="{% url 'permits:permit_requests_list'%}">{% trans "Demandes de permis" %}</a>
 {% endblock %}
@@ -20,7 +18,6 @@
     <a class="btn btn-primary" href="{% url 'permits:permit_requests_list' %}" role="button"><i class="fa fa-eraser"></i> {% trans "Effacer le filtre" %}</a>
     <hr>
     <p><b>Les demandes envoyées de peuvent plus être modifiées</b></p>
-    {% load render_table from django_tables2 %}
 
     {{ filter.form.media }}
     <form method="get">
