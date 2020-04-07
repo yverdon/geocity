@@ -1,0 +1,6 @@
+{% load i18n %}
+{% if record.can_be_submitted_by_author %}
+  <a title="{% trans "Envoyer" %}" href="{% url 'permits:permit_request_submit' record.id %}">
+    <i class="fa fa-envelope fa-lg"></i>
+  </a>
+{% endif %}

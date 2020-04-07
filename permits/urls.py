@@ -17,7 +17,6 @@ existing_permit_request_urlpatterns = [
     path('actors/', views.permit_request_actors, name='permit_request_actors'),
     path('submit/', views.permit_request_submit, name='permit_request_submit'),
     path('delete/', views.permit_request_delete, name='permit_request_delete'),
-
 ]
 
 urlpatterns = [

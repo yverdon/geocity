@@ -3,13 +3,10 @@ import urllib.parse
 import os
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
-from django.db import transaction
-from django.forms import modelformset_factory
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from gpf.forms import ActorForm
 from gpf.models import Actor
 
 from . import forms, models, services, tables, filters
@@ -190,7 +187,7 @@ def permit_request_actors(request, permit_request_id):
             for form in formset:
                 form.save(permit_request=permit_request)
 
-            return redirect('permits:permit_request_appendices', permit_request_id=permit_request.pk)
+            return redirect('permits:permit_request_submit', permit_request_id=permit_request.pk)
     else:
 
         formset = services.get_permitactorformset_initiated(permit_request)
@@ -238,11 +235,26 @@ def permit_request_submit(request, permit_request_id):
     if request.method == 'POST':
         permit_request.status = models.PermitRequest.STATUS_SUBMITTED
         permit_request.save()
-
         return redirect('permits:permit_requests_list')
+
+    #properties
+    properties_form = forms.WorksObjectsPropertiesForm(instance=permit_request, enable_required=False)
+    fields_by_object_type = properties_form.get_fields_by_object_type()
+
+    #appendices
+    appendices_form = forms.WorksObjectsAppendicesForm(instance=permit_request, enable_required=False)
+    appendices_object_types = appendices_form.get_fields_by_object_type()
+    # actors
+    actor_formset = services.get_permitactorformset_initiated(permit_request)
+
+    total_error_count = services.get_total_error_count(permit_request)
 
     return render(request, "permits/permit_request_submit.html", {
         'permit_request': permit_request,
+        'properties_object_types': fields_by_object_type,
+        'appendices_object_types': appendices_object_types,
+        'actor_formset': actor_formset,
+        'total_error_count': total_error_count,
     })
 
 

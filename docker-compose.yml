@@ -6,7 +6,6 @@ services:
     command: >
         sh -c " python3 manage.py migrate &&
                 python3 manage.py compilemessages -l fr &&
-                echo yes | python3 manage.py collectstatic &&
                 gunicorn geomapshark.wsgi -b :9000 --error-logfile gunicorn_log.log"
     volumes:
       - /var/sig/yverdon_geoportail/permis_fouille:/app_data

@@ -5,7 +5,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.forms import modelformset_factory
-
+from django.utils.translation import gettext_lazy as _
 
 from gpf.models import AdministrativeEntity
 
@@ -263,3 +263,27 @@ def get_missing_actors_types(permit_request):
     ).values_list('type', flat=True))
 
     return required_actor_types - existing_actor_types
+
+
+def get_total_error_count(permit_request):
+    """
+    Return the total count of errors in forms for a given permit request
+    """
+    properties_form = forms.WorksObjectsPropertiesForm(
+        instance=permit_request, enable_required=True, disable_fields=True, data={}
+    )
+    appendices_form = forms.WorksObjectsAppendicesForm(
+        instance=permit_request, enable_required=True, disable_fields=True, data={}
+    )
+
+    missing_actor_types = get_missing_actors_types(permit_request)
+
+    actor_errors = [
+        _('Contact de type "%s" manquant.') % models.ACTOR_TYPE_CHOICES[actor_type][1]
+        for actor_type in missing_actor_types
+    ]
+
+    return sum(
+        len(errors)
+        for errors in [appendices_form.errors, properties_form.errors, actor_errors]
+    )

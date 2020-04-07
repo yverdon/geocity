@@ -1,0 +1,6 @@
+{% load i18n %}
+{% if record.can_be_deleted_by_author %}
+  <a title="{% trans "Supprimer la demande" %}" href="{% url 'permits:permit_request_delete' record.id %}">
+    <i class="fa fa-trash fa-lg"></i>
+  </a>
+{% endif %}
