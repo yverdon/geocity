@@ -3,13 +3,10 @@ import urllib.parse
 import os
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.decorators import method_decorator
-from django.db import transaction
-from django.forms import modelformset_factory
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from gpf.forms import ActorForm
 from gpf.models import Actor
 
 from . import forms, models, services, tables, filters
@@ -255,7 +252,7 @@ def permit_request_submit(request, permit_request_id):
     return render(request, "permits/permit_request_submit.html", {
         'permit_request': permit_request,
         'properties_object_types': fields_by_object_type,
-        'appendices_object_types':appendices_object_types,
+        'appendices_object_types': appendices_object_types,
         'actor_formset': actor_formset,
         'total_error_count': total_error_count,
     })
