@@ -4,10 +4,12 @@ from django.core.files.storage import default_storage
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django.forms import modelformset_factory
+
 
 from gpf.models import AdministrativeEntity
 
-from . import models
+from . import models, forms
 
 
 def get_works_object_type_choices(permit_request):
@@ -223,3 +225,41 @@ def get_permit_request_for_user_or_404(user, permit_request_id):
     Return the permit request with `permit_request_id` and associated to the `user` actor.
     """
     return get_object_or_404(models.PermitRequest, author=user.actor, pk=permit_request_id)
+
+
+def get_permitactorformset_initiated(permit_request, data=None):
+    """
+    Return PermitActorFormSet with initial values set
+    """
+    missing_actor_types = get_missing_actors_types(permit_request)
+
+    actor_initial_forms = [
+        {'actor_type': actor_type}
+        for actor_type in missing_actor_types
+    ]
+
+    PermitActorFormSet = modelformset_factory(
+        models.PermitRequestActor,
+        form=forms.PermitRequestActorForm,
+        extra=len(actor_initial_forms)
+    )
+
+    formset = PermitActorFormSet(
+        initial=actor_initial_forms,
+        queryset=models.PermitRequestActor.objects.filter(permit_request=permit_request),
+        data=data
+    )
+
+    return formset
+
+
+def get_missing_actors_types(permit_request):
+    """
+    Return PermitRequestActor yet to be filled
+    """
+    existing_actor_types = set(permit_request.permit_request_actors.values_list('actor_type', flat=True))
+    required_actor_types = set(models.PermitActorType.objects.filter(
+        works_type__in=get_permit_request_works_types(permit_request)
+    ).values_list('type', flat=True))
+
+    return required_actor_types - existing_actor_types

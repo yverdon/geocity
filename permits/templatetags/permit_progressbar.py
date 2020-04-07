@@ -2,10 +2,11 @@ import dataclasses
 from typing import Dict, List
 
 from django import template
+from django.forms import modelformset_factory
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
 
-from permits import forms
+from permits import forms, models, services
 
 register = template.Library()
 
@@ -53,6 +54,8 @@ def permit_progressbar(context, permit_request, active_step):
         instance=permit_request, enable_required=True, disable_fields=True, data={}
     ) if permit_request else None
 
+    actor_errors = services.get_missing_actors_types(permit_request)
+
     steps = {
         "location": Step(
             name=_("Localisation"),
@@ -90,6 +93,8 @@ def permit_progressbar(context, permit_request, active_step):
             name=_("Contacts"),
             url=actors_url,
             enabled=has_objects_types,
+            errors=actor_errors,
+            completed=not actor_errors,
         ),
     }
     steps_states = {

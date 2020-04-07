@@ -1,10 +1,9 @@
 from django import forms
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
-
-from . import models, services
+import json
 from gpf.models import Actor
-from .widgets import RemoteAutocompleteWidget
+from . import models, services
 
 
 def get_field_cls_for_property(prop):
@@ -209,36 +208,63 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
         return {**super().get_field_kwargs(prop), **{'widget': forms.ClearableFileInput}}
 
 
-class GenericActorForm(forms.ModelForm):
+class PermitRequestActorForm(forms.ModelForm):
+    actor_fields = ['name', 'firstname', 'company_name', 'vat_number', 'address', 'address', 'city', 'phone',
+                    'zipcode', 'email']
 
-    description = forms.CharField(max_length=128)
-    actor_type  =  forms.ChoiceField(choices=models.ACTOR_TYPE_CHOICES, disabled=True)
+    name = forms.CharField( max_length=100, label=_('Nom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Marcel',}))
+    firstname = forms.CharField( max_length=100, label=_('Prénom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Dupond'}))
+    phone = forms.CharField(max_length=20, label=_('Téléphone'), widget=forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}))
+    email = forms.EmailField()
+    address = forms.CharField(max_length=100, label=_('Adresse'), widget= forms.TextInput(
+            attrs={
+                "data_remote_autocomplete": json.dumps({
+                "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
+                "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
+                "search_prefix": "false",
+                "origins": "address",
+                "zipcode_field": "zipcode",
+                "city_field": "city",
+                "placeholder": "ex: Place Pestalozzi 2 Yverdon",})
+            }),
+    )
+
+    zipcode = forms.IntegerField(label=_('NPA'))
+    city = forms.CharField( max_length=100, label=_('Ville'), widget=forms.TextInput(attrs={'placeholder': 'ex: Yverdon'}))
+    company_name = forms.CharField(required=False, label=_('Raison sociale'), max_length=100, widget=forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}))
+    vat_number = forms.CharField(required=False, label=_('Numéro TVA'), max_length=100,widget=forms.TextInput(attrs={'placeholder': 'ex: CHE-123.456.789'}))
 
     class Meta:
-        model = Actor
-        exclude = ['user']
-        fields = ['actor_type', 'name', 'firstname', 'email', 'company_name', 'address', 'zipcode', 'city', 'phone_fixed', 'phone_mobile']
-        help_texts = {
-            'vat_number': 'Trouvez votre numéro <a href="https://www.bfs.admin.ch/bfs/fr/home/registres/registre-entreprises/numero-identification-entreprises.html" target="_blank">TVA</a>',
-        }
-        widgets = {
-            'address': RemoteAutocompleteWidget(
-                attrs={
-                    "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
-                    "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
-                    "search_prefix": "false",
-                    "origins": "address",
-                    "zipcode_field": "zipcode",
-                    "city_field": "city",
-                    "placeholder": "ex: Place Pestalozzi 2 Yverdon",
-                }),
-            'phone_fixed': forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}),
-            'phone_mobile': forms.TextInput(attrs={'placeholder': 'ex: 079 111 22 22'}),
-            'vat_number': forms.TextInput(attrs={'placeholder': 'ex: CHE-123.456.789'}),
-            'name': forms.TextInput(attrs={'placeholder': 'ex: Dupond'}),
-            'firstname': forms.TextInput(attrs={'placeholder': 'ex: Marcel'}),
-            'zipcode': forms.TextInput(attrs={'placeholder': 'ex: 1400'}),
-            'city': forms.TextInput(attrs={'placeholder': 'ex: Yverdon'}),
-            'company_name': forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}),
-            'email': forms.TextInput(attrs={'placeholder': 'ex: monemail@monemail.com'}),
-        }
+        model = models.PermitRequestActor
+        fields = ['actor_type']
+
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.get('instance')
+
+        if instance and instance.pk:
+            kwargs['initial'] = {**kwargs.get('initial', {}), **{
+                **kwargs.get('initial', {}), **{field: getattr(instance.actor, field) for field in self.actor_fields},
+                **{'actor_type': instance.actor_type}
+            }}
+
+        super().__init__(*args, **kwargs)
+
+    @transaction.atomic
+    def save(self, permit_request, commit=True):
+        actor = self.instance.actor if self.instance.pk else None
+
+        if not actor:
+            actor = models.PermitActor.objects.create(
+                **{field: self.cleaned_data.get(field) for field in self.actor_fields}
+            )
+        else:
+            for field in self.actor_fields:
+                setattr(actor, field, self.cleaned_data.get(field))
+            actor.save()
+
+        instance = super().save(commit=False)
+        instance.actor = actor
+        instance.permit_request = permit_request
+        instance.save()
+
+        return instance

@@ -181,27 +181,23 @@ def permit_request_appendices(request, permit_request_id):
 
 @login_required
 def permit_request_actors(request, permit_request_id):
+
     permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
-    GenericActorFormSet = modelformset_factory(Actor, form=ActorForm, extra=0)
-    queryset = permit_request.actors.all()
 
     if request.method == 'POST':
-        formset = GenericActorFormSet(request.POST, request.FILES, queryset=queryset)
-
+        formset = services.get_permitactorformset_initiated(permit_request, data=request.POST)
         if formset.is_valid():
-            actors = []
-            with transaction.atomic():
-                for form in formset:
-                    actors.append(form.save())
-                permit_request.actors.set(actors)
+            for form in formset:
+                form.save(permit_request=permit_request)
 
-            return redirect('permits:permit_request_summary', permit_request_id=permit_request.pk)
+            return redirect('permits:permit_request_appendices', permit_request_id=permit_request.pk)
     else:
-        formset = GenericActorFormSet(queryset=queryset)
+
+        formset = services.get_permitactorformset_initiated(permit_request)
 
     return render(request, "permits/permit_request_actors.html", {
         'formset': formset,
-        'permit_request': permit_request
+        'permit_request': permit_request,
     })
 
 
