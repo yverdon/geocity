@@ -1,3 +1,5 @@
+import dataclasses
+
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils import timezone
@@ -235,3 +237,12 @@ class WorksObjectPropertyValue(models.Model):
 
     class Meta:
         unique_together = [('property', 'works_object_type_choice')]
+
+
+@dataclasses.dataclass
+class Step:
+    name: str
+    url: str
+    completed: bool = False
+    enabled: bool = False
+    errors_count: int = 0

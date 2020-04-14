@@ -24,9 +24,9 @@ def get_permit_request_works_types_ids(permit_request):
     )
 
 
-def create_user():
-    user = get_user_model().objects.create_user(username='admin', password='admin')
-    Actor.objects.create(user=user, firstname='Admin', name='admin')
+def create_user(username='admin'):
+    user = get_user_model().objects.create_user(username=username, password=username)
+    Actor.objects.create(user=user, firstname=username, name=username)
 
     return user
 
@@ -100,6 +100,28 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         self.assertRedirects(
             response, reverse('permits:permit_request_appendices', kwargs={'permit_request_id': permit_request.pk})
+        )
+
+    def test_user_can_only_see_own_requests(self):
+        permit_request = factories.PermitRequestFactory(author=create_user(username='sarah').actor)
+
+        response = self.client.get(
+            reverse('permits:permit_request_select_types', kwargs={'permit_request_id': permit_request.pk})
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_user_cannot_edit_non_draft_request(self):
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.actor, status=models.PermitRequest.STATUS_SUBMITTED
+        )
+
+        response = self.client.get(
+            reverse('permits:permit_request_select_types', kwargs={'permit_request_id': permit_request.pk})
+        )
+
+        self.assertRedirects(
+            response, reverse('permits:permit_request_detail', kwargs={'permit_request_id': permit_request.pk})
         )
 
 
