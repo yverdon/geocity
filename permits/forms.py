@@ -2,7 +2,7 @@ from django import forms
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 import json
-from gpf.models import Actor
+from gpf.models import AdministrativeEntity
 from . import models, services
 
 
@@ -18,7 +18,7 @@ def get_field_cls_for_property(prop):
 
 
 class AdministrativeEntityForm(forms.Form):
-    administrative_entity = forms.ModelChoiceField(queryset=services.get_administrative_entities(), label=_("Commune"))
+    administrative_entity = forms.ModelChoiceField(queryset=AdministrativeEntity.objects.none(), label=_("Commune"))
 
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop('instance', None)
@@ -31,6 +31,8 @@ class AdministrativeEntityForm(forms.Form):
         kwargs['initial'] = initial
 
         super().__init__(*args, **kwargs)
+
+        self.fields['administrative_entity'].queryset = services.get_administrative_entities()
 
     def save(self, author):
         if not self.instance:
