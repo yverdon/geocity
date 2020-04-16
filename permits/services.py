@@ -1,8 +1,13 @@
 import os
 
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.files.storage import default_storage
+from django.core.mail import send_mass_mail
 from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.forms import modelformset_factory
 from django.utils.translation import gettext_lazy as _
@@ -216,23 +221,43 @@ def get_property_value(object_property_value):
         # The `url` attribute of the file is used to detect if there was already a file set (it is used by
         # `ClearableFileInput` and by the `set_object_property_value` function)
         f.url = reverse('permits:permit_request_media_download', kwargs={'property_value_id': object_property_value.pk})
-        value = f
+
+        return f
 
     return value
 
 
+def get_user_administrative_entities(user):
+    return AdministrativeEntity.objects.filter(departments__group__in=user.groups.all())
+
+
 def get_permit_request_for_user_or_404(user, permit_request_id, status=None):
     """
-    Return the permit request with `permit_request_id` and associated to the `user` actor or raise an Http404 if there
-    is no such permit request. If `status` is set and a permit request is found but its status doesn't match the given
-    `status` value, `BadPermitRequestStatus` will be raised.
+    Return the permit request with `permit_request_id` or raise an Http404 if there is no such permit request. The
+    permit request must either belong to the given user, or the given user should be in the same administrative entity.
+    If `status` is set and a permit request is found but its status doesn't match the given `status` value,
+    `BadPermitRequestStatus` will be raised.
     """
-    permit_request = get_object_or_404(models.PermitRequest, author=user.actor, pk=permit_request_id)
+    permit_request = get_object_or_404(get_permit_requests_list_for_user(user), pk=permit_request_id)
 
     if status is not None and permit_request.status != status:
         raise BadPermitRequestStatus(permit_request, status)
 
     return permit_request
+
+
+def get_permit_requests_list_for_user(user):
+    """
+    Return the list of permit requests this user has access to.
+    """
+    if user.is_superuser:
+        return models.PermitRequest.objects.all()
+    else:
+        return models.PermitRequest.objects.filter(
+            Q(author=user.actor)
+            | (Q(administrative_entity__in=get_user_administrative_entities(user))
+               & Q(status=models.PermitRequest.STATUS_SUBMITTED))
+        )
 
 
 def get_permitactorformset_initiated(permit_request, data=None):
@@ -388,3 +413,30 @@ def get_progressbar_steps(request, permit_request):
     }
 
     return steps
+
+
+def submit_permit_request(permit_request, absolute_uri_func):
+    """
+    Change the permit request status to submitted and send notification e-mails. `absolute_uri_func` should be a
+    callable that takes a path and returns an absolute URI, usually `request.build_absolute_uri`.
+    """
+    permit_request.status = models.PermitRequest.STATUS_SUBMITTED
+    permit_request.save()
+
+    users_to_notify = set(get_user_model().objects.filter(
+        groups__department__administrative_entity=permit_request.administrative_entity,
+        actor__email__isnull=False,
+    ).values_list("actor__email", flat=True))
+
+    email_contents = render_to_string("permits/emails/permit_request_submitted.txt", {
+        "permit_request_url": absolute_uri_func(
+            reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk})
+        )
+    })
+    emails = [
+        ("Nouvelle demande de permis", email_contents, settings.DEFAULT_FROM_EMAIL, [email_address])
+        for email_address in users_to_notify
+    ]
+
+    if emails:
+        send_mass_mail(emails)
