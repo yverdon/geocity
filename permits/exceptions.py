@@ -1,6 +1,9 @@
 class BadPermitRequestStatus(Exception):
-    def __init__(self, permit_request):
+    def __init__(self, permit_request, expected_status):
         self.permit_request = permit_request
+        self.expected_status = expected_status
 
     def __str__(self):
-        return f"<BadPermitRequestStatus: {self.permit_request}>"
+        return "Bad permit request status {}, expected {}".format(
+            self.permit_request.status, self.expected_status
+        )

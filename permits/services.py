@@ -230,7 +230,7 @@ def get_permit_request_for_user_or_404(user, permit_request_id, status=None):
     permit_request = get_object_or_404(models.PermitRequest, author=user.actor, pk=permit_request_id)
 
     if status is not None and permit_request.status != status:
-        raise BadPermitRequestStatus(permit_request)
+        raise BadPermitRequestStatus(permit_request, status)
 
     return permit_request
 
