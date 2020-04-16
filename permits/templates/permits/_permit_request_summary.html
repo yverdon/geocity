@@ -1,0 +1,49 @@
+{% load i18n %}
+{% load permits_extras %}
+
+{% for object, properties, appendices in objects_infos %}
+  <h4>{{ object }}</h4>
+  <dl>
+    {% for field in properties %}
+      <dt>{{ field.label }}</dt>
+      <dd>
+        {% if not field.value %}
+          <em>{% trans "Information non fournie" %}</em>
+        {% else %}
+          {{ field.value }}
+        {% endif %}
+      </dd>
+    {% endfor %}
+
+    {% for field in appendices %}
+      <dt>{{ field.label }}</dt>
+      <dd>
+        {% if not field.value %}
+          <em>{% trans "Information non fournie" %}</em>
+        {% else %}
+          <a href="{{ field.value.url }}" target="_blank">{{ field.value.name|basename }}</a>
+        {% endif %}
+      </dd>
+    {% endfor %}
+  </dl>
+{% endfor %}
+
+{% if contacts %}
+  <h4>{% trans "Contacts" %}</h4>
+  {% for contact_type, contact_infos in contacts %}
+    <h5>{{ contact_type }}</h5>
+
+    <dl>
+      {% for field_label, field_value in contact_infos %}
+        {% if field_value %}
+          <dt>
+            {{ field_label }}
+          </dt>
+          <dd>
+            {{ field_value }}
+          </dd>
+        {% endif %}
+      {% endfor %}
+    </dl>
+  {% endfor %}
+{% endif %}
