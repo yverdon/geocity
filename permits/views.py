@@ -273,9 +273,9 @@ class PermitRequestListExternsView(SingleTableMixin, FilterView):
 
     def get_filterset_class(self):
         return (
-            filters.SecretariatPermitRequestFilter
+            filters.SecretariatPermitRequestFilterSet
             if self.is_secretariat()
-            else filters.OwnPermitRequestFilter
+            else filters.OwnPermitRequestFilterSet
         )
 
 

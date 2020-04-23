@@ -6,10 +6,16 @@ from gpf.models import Actor
 from . import models, services
 
 
-class OwnPermitRequestFilter(django_filters.FilterSet):
+class BasePermitRequestFilterSet(django_filters.FilterSet):
+    created_at = django_filters.DateFilter(field_name='created_at', lookup_expr='date', label=_("Date de création"))
+
     class Meta:
         model = models.PermitRequest
-        fields = ['status', 'created_at', 'administrative_entity']
+        fields = ['status', 'administrative_entity']
+
+
+class OwnPermitRequestFilterSet(BasePermitRequestFilterSet):
+    pass
 
 
 def permit_request_authors(request):
@@ -18,7 +24,7 @@ def permit_request_authors(request):
     ).order_by('firstname', 'name')
 
 
-class SecretariatPermitRequestFilter(django_filters.FilterSet):
+class SecretariatPermitRequestFilterSet(BasePermitRequestFilterSet):
     author = django_filters.filters.ModelChoiceFilter(
         queryset=permit_request_authors
     )
@@ -33,4 +39,4 @@ class SecretariatPermitRequestFilter(django_filters.FilterSet):
 
     class Meta:
         model = models.PermitRequest
-        fields = ['created_at', 'status']
+        fields = ['status']
