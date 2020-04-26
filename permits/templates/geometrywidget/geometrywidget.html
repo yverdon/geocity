@@ -1,0 +1,89 @@
+<!-- Adapted from django gis contrib -->
+
+{% load i18n l10n %}
+{% load static %}
+{% block stylesheets%}
+  {% load fontawesome %}
+  {% fontawesome_stylesheet %}
+{% endblock %}
+
+
+<style type="text/css">{% block map_css %}{% get_current_language_bidi as LANGUAGE_BIDI %}
+    #{{ id }}_map { width: {{ map_width }}; height: {{ map_height }}px; }
+    #{{ id }}_map .aligned label { float: none; }
+    #{{ id }}_div_map { position: relative; vertical-align: top; }
+    {% if not display_raw %}#{{ id }} { display: none; }{% endif %}
+    {% endblock %}
+
+
+    .invalid-feedback {
+      display: inline !important;
+      font-weight: bold;
+    }
+
+    select {
+      font-family: 'FontAwesome', 'Second Font name'
+    }
+
+</style>
+
+<div id="{{ id }}_div_map">
+    <div id="mapButtons">
+      <a class="btn btn-light btn-sm"
+         href="javascript:geometryWidget.clearFeatures();" role="button">
+         <i class="fa fa-trash"></i>  Effacer toutes les entités
+      </a>
+      <a class="btn btn-light btn-sm"
+         href="javascript:geometryWidget.removeSelectedEntity();" role="button">
+         <i class="fa fa-trash"></i> Cliquer sur une entité pour la supprimer
+      </a>
+      <hr>
+      <div>
+      Ajouter un point manuel:
+      <label for="east_coord">Est:</label>
+      <input id="east_coord" type="number" min=2535594 max=2542571 value=2539162 placeholder="ex: 2539142">
+      <label for="east_coord">Nord:</label>
+      <input id="north_coord" type="number" min=1178784 max=1183461 value=1181732  placeholder="ex: 1181572 ">
+      <a class="btn btn-light btn-sm"
+         href="javascript:geometryWidget.addPointFeature();" role="button">
+         <i class="fa fa-plus"></i>
+      </a>
+      </div>
+      <b>Cliquez dans la carte pour dessiner un point ou choisissez un autre type de dessin </b>
+        <label>Type de dessin</label>
+        <select id="geom_type" onchange="geometryWidget.setDrawInteraction()">
+          <option value="MultiPoint" selected>&#xf041 Points</option>
+          <option value="MultiLineString">&#xf041Lignes</option>
+          <option value="MultiPolygon">&#xf041 Surfaces</option>
+        </select>
+    </div>
+    <hr>
+    <div id="{{ id }}_map">
+      <img id="switchbaselayers" src="{% static 'images/switchbaselayers.png'%}" width="100" height="40" alt="" onclick="javascript:geometryWidget.switchBaseLayers()">
+    </div>
+    {% if display_raw %}<p>{% trans "Debugging window (serialized value)" %}</p>{% endif %}
+    <textarea id="{{ id }}" class="vSerializedField required" cols="150" rows="10" name="{{ name }}">{{ serialized }}</textarea>
+    <script type="text/javascript">
+        {% block base_layer %}
+
+        var options = {
+            default_center:{{ default_center }},
+            default_zoom: {{ default_zoom }},
+            geom_name: '{{ geom_type }}',
+            id: '{{ id }}',
+            map_id: '{{ id }}_map',
+            map_srid: {{ map_srid }},
+            name: '{{ name }}',
+            edit_geom: '{{edit_geom}}',
+            min_zoom: {{min_zoom}},
+            wmts_capabilities_url: '{{wmts_capabilities_url}}',
+            wmts_layer: '{{wmts_layer}}',
+            wmts_capabilities_url_alternative: '{{wmts_capabilities_url_alternative}}',
+            wmts_layer_alternative: '{{wmts_layer_alternative}}'
+        };
+        var {{ module }} = new geometryWidget(options);
+        geometryWidget = {{ module }};
+
+        {% endblock %}
+    </script>
+</div>

@@ -1,5 +1,6 @@
 from django.contrib.postgres.fields import JSONField
 from django.db import models
+from django.contrib.gis.db import models as geomodels
 from django.utils import timezone
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
@@ -235,3 +236,15 @@ class WorksObjectPropertyValue(models.Model):
 
     class Meta:
         unique_together = [('property', 'works_object_type_choice')]
+
+
+class PermitRequestGeoTime(models.Model):
+    """
+    Permit location in space and time
+    """
+    permit_request = models.ForeignKey('PermitRequest', on_delete=models.CASCADE)
+    datetime_start = models.DateTimeField(_("Date de début"))
+    datetime_end =models.DateTimeField(_("Date de fin"))
+    commentaire = models.CharField(_("Commentaire"), max_length=1024, blank=True)
+    external_link = models.URLField(_("Lien externe"), blank=True)
+    geom = geomodels.GeometryCollectionField(_("geom"), null=True, srid=2056)
