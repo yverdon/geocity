@@ -99,7 +99,7 @@
 
         this.featureOverlay = new ol.layer.Vector({
           name: 'featureOverlay',
-          style: this.setStyle(),
+          style: this.setDrawingStyle(),
           map: this.map,
           source: new ol.source.Vector({
               features: this.featureCollection,
@@ -251,23 +251,35 @@
 
     }
 
-    geometryWidget.prototype.setStyle = function() {
-      var image = new ol.style.Circle({
+    geometryWidget.prototype.setDrawingStyle = function() {
+      var imagePoint = new ol.style.Circle({
         radius: 5,
-        fill: null,
         stroke: new ol.style.Stroke({
-          color: 'rgba(255, 0, 0, 0.9)',
+          color: 'rgba(0, 24, 110, 0.9)',
           width: 2
+        }),
+        fill: new ol.style.Fill({
+          color: 'rgba(0, 48, 220, 0.6)',
+        })
+      });
+      var imageVertex = new ol.style.Circle({
+        radius: 3,
+        stroke: new ol.style.Stroke({
+          color: 'rgba(255, 24, 0, 0.8)',
+          width: 2
+        }),
+        fill: new ol.style.Fill({
+          color: 'rgba(255, 24, 0, 0.2)',
         })
       });
       return [
         new ol.style.Style({
-            image: image,
+            image: imageVertex,
             geometry: function(feature) {
               var geomType = feature.getGeometry().getType();
               var geomCoords = feature.getGeometry().getCoordinates();
               if (geomType == "MultiPoint") {
-                var coordinates = geomCoords;
+                return
               } else if (geomType == "MultiLineString") {
                 var coordinates = geomCoords[0];
               } else if (geomType == "MultiPolygon") {
@@ -277,12 +289,63 @@
             }
         }),
         new ol.style.Style({
+          image: imagePoint,
           stroke: new ol.style.Stroke({
-            color: 'blue',
+            color: 'rgba(0, 64, 255, 0.9)',
             width: 3
           }),
           fill: new ol.style.Fill({
-            color: 'rgba(0, 0, 255, 0.1)'
+            color: 'rgba(0, 64, 255, 0.2)'
+          })
+        })
+      ];
+    }
+
+    geometryWidget.prototype.setSelectionStyle = function() {
+      var imagePoint = new ol.style.Circle({
+        radius: 5,
+        stroke: new ol.style.Stroke({
+          color: 'rgba(255, 244, 0, 0.8)',
+          width: 2
+        }),
+        fill: new ol.style.Fill({
+          color: 'rgba(255, 244, 0, 0.2)',
+        })
+      });
+      var imageVertex = new ol.style.Circle({
+        radius: 3,
+        stroke: new ol.style.Stroke({
+          color: 'rgba(255, 128, 0, 0.8)',
+          width: 2
+        }),
+        fill: new ol.style.Fill({
+          color: 'rgba(255, 128, 0, 0.2)',
+        })
+      });
+      return [
+        new ol.style.Style({
+            image: imageVertex,
+            geometry: function(feature) {
+              var geomType = feature.getGeometry().getType();
+              var geomCoords = feature.getGeometry().getCoordinates();
+              if (geomType == "MultiPoint") {
+                return;
+              } else if (geomType == "MultiLineString") {
+                var coordinates = geomCoords[0];
+              } else if (geomType == "MultiPolygon") {
+                var coordinates = geomCoords[0][0];
+              }
+              return new ol.geom.MultiPoint(coordinates);
+            }
+        }),
+        new ol.style.Style({
+          image: imagePoint,
+          stroke: new ol.style.Stroke({
+            color: 'rgba(255, 244, 0, 0.8)',
+            width: 3
+          }),
+          fill: new ol.style.Fill({
+            color: 'rgba(255, 244, 0, 0.2)'
           })
         })
       ];
@@ -297,7 +360,7 @@
         // Initialize the select interaction
         this.interactions.select = new ol.interaction.Select({
           layers: [this.featureOverlay],
-          style: this.setStyle()
+          style: this.setSelectionStyle()
         });
 
         this.map.addInteraction(this.interactions.modify);
@@ -385,13 +448,15 @@
 
     geometryWidget.prototype.selectFeatures = function() {
       this.disableDrawing();
+      this.disableModify();
+
       var selectedFeature = this.interactions.select.getFeatures().item(0);
       var sourceF = this.featureCollection;
       var featureToDeleteIndex = -1;
 
       console.log("selectedFeature: ", selectedFeature);
       console.log("sourceF: ", sourceF);
-      console.log("featureToDeleteIndex: ", featureToDeleteIndex);
+      //console.log("featureToDeleteIndex: ", featureToDeleteIndex);
 
     };
 
