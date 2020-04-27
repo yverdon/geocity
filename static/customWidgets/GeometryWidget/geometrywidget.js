@@ -373,21 +373,43 @@
     };
 
 
+
+
+
+    geometryWidget.prototype.selectFeatures = function() {
+      this.disableDrawing();
+      var selected_feature_style = {
+          strokeWidth: 5,
+          strokeColor: 'rgba(255, 238, 0, 0.5)'
+      };
+      var selectedFeature = this.interactions.select.getFeatures().item(0);
+      var sourceF = this.featureCollection;
+      var featureToDeleteIndex = -1;
+
+      console.log("selectedFeature: ",selectedFeature);
+      console.log("sourceF: ",sourceF);
+      console.log("featureToDeleteIndex: ",featureToDeleteIndex);
+
+      selectedFeature.style = selected_feature_style;
+      layer.addFeatures([selectedFeature]);
+
+    };
+
     geometryWidget.prototype.removeSelectedEntity = function() {
 
 
-        var selectedFeature = this.interactions.select.getFeatures().item(0);
-        var sourceF = this.featureCollection;
-        var featureToDeleteIndex = -1;
-        if (selectedFeature) {
-            for (var i=0; i < sourceF.getLength(); i++) {
+      var selectedFeature = this.interactions.select.getFeatures().item(0);
+      var sourceF = this.featureCollection;
+      var featureToDeleteIndex = -1;
+      if (selectedFeature) {
+          for (var i=0; i < sourceF.getLength(); i++) {
 
-              if (sourceF.item(i).ol_uid === selectedFeature.ol_uid){
-                featureToDeleteIndex = i;
-              }
+            if (sourceF.item(i).ol_uid === selectedFeature.ol_uid){
+              featureToDeleteIndex = i;
             }
-            this.featureCollection.removeAt(featureToDeleteIndex);
-            this.interactions.select.getFeatures().clear();
+          }
+          this.featureCollection.removeAt(featureToDeleteIndex);
+          this.interactions.select.getFeatures().clear();
       }
     }
 
