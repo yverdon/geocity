@@ -255,16 +255,23 @@
       var image = new ol.style.Circle({
         radius: 5,
         fill: null,
-        stroke: new ol.style.Stroke({color: 'orange', width: 2})
+        stroke: new ol.style.Stroke({
+          color: 'rgba(255, 0, 0, 0.9)',
+          width: 2
+        })
       });
       return [
         new ol.style.Style({
             image: image,
             geometry: function(feature) {
-              if (feature.getGeometry().getType() == "MultiLineString") {
-                var coordinates = feature.getGeometry().getCoordinates()[0];
-              } else if (feature.getGeometry().getType() == "MultiPolygon") {
-                var coordinates = feature.getGeometry().getCoordinates()[0][0];
+              var geomType = feature.getGeometry().getType();
+              var geomCoords = feature.getGeometry().getCoordinates();
+              if (geomType == "MultiPoint") {
+                var coordinates = geomCoords;
+              } else if (geomType == "MultiLineString") {
+                var coordinates = geomCoords[0];
+              } else if (geomType == "MultiPolygon") {
+                var coordinates = geomCoords[0][0];
               }
               return new ol.geom.MultiPoint(coordinates);
             }
