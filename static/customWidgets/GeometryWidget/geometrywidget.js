@@ -99,32 +99,14 @@
 
         this.featureOverlay = new ol.layer.Vector({
           name: 'featureOverlay',
-          style: new ol.style.Style({
-            image: new ol.style.Circle({
-              fill: new ol.style.Fill({
-                color: 'rgba(252, 50, 0, 0.8)'
-              }),
-              stroke: new ol.style.Stroke({
-                color: 'rgba(230, 30, 0, 0.8)',
-                width: 2
-              }),
-              radius: 8
-            }),
-            fill: new ol.style.Fill({
-              color: 'rgba(252, 50, 0, 0.8)'
-            }),
-            stroke: new ol.style.Stroke({
-              color: 'rgba(230, 30, 0, 0.8)',
-              width: 2
-            })
+          style: this.setStyle(),
+          map: this.map,
+          source: new ol.source.Vector({
+              features: this.featureCollection,
+              useSpatialIndex: false // improve performance
           }),
-            map: this.map,
-            source: new ol.source.Vector({
-                features: this.featureCollection,
-                useSpatialIndex: false // improve performance
-            }),
-            updateWhileAnimating: true, // optional, for instant visual feedback
-            updateWhileInteracting: true // optional, for instant visual feedback
+          updateWhileAnimating: true, // optional, for instant visual feedback
+          updateWhileInteracting: true // optional, for instant visual feedback
         });
 
         // Populate and set handlers for the feature container
@@ -269,6 +251,35 @@
 
     }
 
+    geometryWidget.prototype.setStyle = function() {
+      var image = new ol.style.Circle({
+        radius: 5,
+        fill: null,
+        stroke: new ol.style.Stroke({color: 'orange', width: 2})
+      });
+      return [
+        new ol.style.Style({
+            image: image,
+            geometry: function(feature) {
+              if (feature.getGeometry().getType() == "MultiLineString") {
+                var coordinates = feature.getGeometry().getCoordinates()[0];
+              } else if (feature.getGeometry().getType() == "MultiPolygon") {
+                var coordinates = feature.getGeometry().getCoordinates()[0][0];
+              }
+              return new ol.geom.MultiPoint(coordinates);
+            }
+        }),
+        new ol.style.Style({
+          stroke: new ol.style.Stroke({
+            color: 'blue',
+            width: 3
+          }),
+          fill: new ol.style.Fill({
+            color: 'rgba(0, 0, 255, 0.1)'
+          })
+        })
+      ];
+    }
 
     geometryWidget.prototype.createInteractions = function() {
         // Initialize the modify interaction
@@ -279,18 +290,7 @@
         // Initialize the select interaction
         this.interactions.select = new ol.interaction.Select({
           layers: [this.featureOverlay],
-          style: new ol.style.Style({
-            image: new ol.style.Circle({
-              fill: new ol.style.Fill({
-                color: 'rgba(255, 238, 0, 1)'
-              }),
-              stroke: new ol.style.Stroke({
-                color: 'rgba(175, 164, 0, 1)',
-                width: 1
-              }),
-              radius: 9
-            })
-          })
+          style: this.setStyle()
         });
 
         this.map.addInteraction(this.interactions.modify);
@@ -378,20 +378,13 @@
 
     geometryWidget.prototype.selectFeatures = function() {
       this.disableDrawing();
-      var selected_feature_style = {
-          strokeWidth: 5,
-          strokeColor: 'rgba(255, 238, 0, 0.5)'
-      };
       var selectedFeature = this.interactions.select.getFeatures().item(0);
       var sourceF = this.featureCollection;
       var featureToDeleteIndex = -1;
 
-      console.log("selectedFeature: ",selectedFeature);
-      console.log("sourceF: ",sourceF);
-      console.log("featureToDeleteIndex: ",featureToDeleteIndex);
-
-      selectedFeature.style = selected_feature_style;
-      layer.addFeatures([selectedFeature]);
+      console.log("selectedFeature: ", selectedFeature);
+      console.log("sourceF: ", sourceF);
+      console.log("featureToDeleteIndex: ", featureToDeleteIndex);
 
     };
 
