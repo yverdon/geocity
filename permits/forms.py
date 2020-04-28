@@ -7,7 +7,7 @@ import json
 from gpf.models import Actor
 from . import models, services
 from bootstrap_datepicker_plus import DatePickerInput
-import datetime
+from datetime import datetime, timedelta
 
 
 def get_field_cls_for_property(prop):
@@ -311,17 +311,17 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
             }),
             'datetime_start': DatePickerInput(
+                format="DD/MM/YYYY HH:MM",
                 options={
-                    "format": "DD/MM/YYYY HH:MM",
                     "locale": "fr",
-                    "minDate": (datetime.datetime.today() + datetime.timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d')
+                    #"minDate": (datetime.now() + timedelta(minutes=60)).strftime('%Y/%m/%d %H:%M')
                     }
                 ).start_of('event days'),
             'datetime_end': DatePickerInput(
+                format="DD/MM/YYYY HH:MM",
                 options={
-                    "format": "DD/MM/YYYY  HH:MM",
                     "locale": "fr",
-                    "minDate": (datetime.datetime.today() + datetime.timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d')
+                    #"minDate": (datetime.now() + timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d %H:%M')
                     }
                 ).end_of('event days'),
 

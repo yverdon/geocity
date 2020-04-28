@@ -276,6 +276,7 @@
         new ol.style.Style({
             image: imageVertex,
             geometry: function(feature) {
+              console.log("feature.getGeometry().getType():", feature.getGeometry().getType())
               var geomType = feature.getGeometry().getType();
               var geomCoords = feature.getGeometry().getCoordinates();
               if (geomType == "MultiPoint") {
