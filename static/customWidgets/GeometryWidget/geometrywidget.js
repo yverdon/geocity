@@ -449,25 +449,13 @@
     geometryWidget.prototype.selectFeatures = function() {
       this.disableDrawing();
       this.disableModify();
-
-      var selectedFeatures = this.interactions.select.getFeatures();
       var sourceF = this.featureCollection;
-
-      console.log("selectedFeature: ", Object.keys(selectedFeatures));
-      console.log("sourceF: ", Object.keys(sourceF));
-      console.log("selectedFeature Array: ", selectedFeatures.getArray());
-      console.log("sourceF Array: ", sourceF.getArray());
-
-      selectedFeatures.getArray().forEach((element, i) => {
-        console.log("element.ol_uid selectedFeatures: ", i, element.ol_uid);
-      });
-      selectedFeatures.forEach((feature, i)  => {
-        console.log("feature.ol_uid selectedFeatures: ", i, feature.ol_uid);
-      });
-      console.log("########################################")
+      var selectedFeatures = this.interactions.select.getFeatures();
     };
 
     geometryWidget.prototype.removeSelectedFeatures = function() {
+      this.disableDrawing();
+      this.disableModify();
       var sourceF = this.featureCollection.getArray();
       var selectedFeatures = this.interactions.select.getFeatures()
       if ( true ) {
@@ -479,9 +467,6 @@
           })
         });
         this.interactions.select.getFeatures().clear();
-        sourceF.forEach((element, i) => {
-          console.log("remaining element.ol_uid selectedFeatures: ", i, element.ol_uid);
-        });
       }
     }
 
