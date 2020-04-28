@@ -458,25 +458,30 @@
       console.log("selectedFeature Array: ", selectedFeatures.getArray());
       console.log("sourceF Array: ", sourceF.getArray());
 
-      selectedFeatures.getArray().forEach(element => {
-        console.log("element.id selectedFeatures: ", element.getElementById);
-        console.log("element.ol_uid selectedFeatures: ", element.ol_uid);
+      selectedFeatures.getArray().forEach((element, i) => {
+        console.log("element.ol_uid selectedFeatures: ", i, element.ol_uid);
       });
-      selectedFeatures.forEach(feature => {
-        console.log("feature.id selectedFeatures: ", feature.getElementById);
-        console.log("feature.ol_uid selectedFeatures: ", feature.ol_uid);
+      selectedFeatures.forEach((feature, i)  => {
+        console.log("feature.ol_uid selectedFeatures: ", i, feature.ol_uid);
       });
+      console.log("########################################")
     };
 
     geometryWidget.prototype.removeSelectedFeatures = function() {
+      var sourceF = this.featureCollection.getArray();
       var selectedFeatures = this.interactions.select.getFeatures()
-      console.log("selectedFeatures: ", selectedFeatures);
       if ( true ) {
         selectedFeatures.forEach(feature => {
-          console.log("feature.ol_uid", feature.ol_uid);
-          this.featureCollection.removeAt(feature.ol_uid);
+          sourceF.forEach((sourceFeature, i) => {
+            if (sourceFeature.ol_uid === feature.ol_uid) {
+              this.featureCollection.removeAt(i);
+            }
+          })
         });
         this.interactions.select.getFeatures().clear();
+        sourceF.forEach((element, i) => {
+          console.log("remaining element.ol_uid selectedFeatures: ", i, element.ol_uid);
+        });
       }
     }
 
