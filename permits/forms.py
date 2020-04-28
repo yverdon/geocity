@@ -313,14 +313,14 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             'datetime_start': DatePickerInput(
                 format="DD/MM/YYYY HH:MM",
                 options={
-                    "locale": "fr",
+                    "locale": "fr-ch",
                     #"minDate": (datetime.now() + timedelta(minutes=60)).strftime('%Y/%m/%d %H:%M')
                     }
                 ).start_of('event days'),
             'datetime_end': DatePickerInput(
                 format="DD/MM/YYYY HH:MM",
                 options={
-                    "locale": "fr",
+                    "locale": "fr-ch",
                     #"minDate": (datetime.now() + timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d %H:%M')
                     }
                 ).end_of('event days'),
