@@ -276,15 +276,23 @@
         new ol.style.Style({
             image: imageVertex,
             geometry: function(feature) {
-              console.log("feature.getGeometry().getType():", feature.getGeometry().getType())
+              const allowedGeometriesTypes = [
+                "LineString",
+                "MultiLineString",
+                "Polygon",
+                "MultiPolygon"
+              ];
+              // TODO split geometryCollection into lower level oL geometries
               var geomType = feature.getGeometry().getType();
-              var geomCoords = feature.getGeometry().getCoordinates();
-              if (geomType == "MultiPoint") {
+              if (allowedGeometriesTypes.includes(geomType)) {
+                var geomCoords = feature.getGeometry().getCoordinates();
+                if (geomType == "MultiLineString") {
+                  var coordinates = geomCoords[0];
+                } else if (geomType == "MultiPolygon") {
+                  var coordinates = geomCoords[0][0];
+                }
+              } else {
                 return
-              } else if (geomType == "MultiLineString") {
-                var coordinates = geomCoords[0];
-              } else if (geomType == "MultiPolygon") {
-                var coordinates = geomCoords[0][0];
               }
               return new ol.geom.MultiPoint(coordinates);
             }
@@ -327,14 +335,23 @@
         new ol.style.Style({
             image: imageVertex,
             geometry: function(feature) {
+              const allowedGeometriesTypes = [
+                "LineString",
+                "MultiLineString",
+                "Polygon",
+                "MultiPolygon"
+              ];
+              // TODO split geometryCollection into lower level oL geometries
               var geomType = feature.getGeometry().getType();
-              var geomCoords = feature.getGeometry().getCoordinates();
-              if (geomType == "MultiPoint") {
-                return;
-              } else if (geomType == "MultiLineString") {
-                var coordinates = geomCoords[0];
-              } else if (geomType == "MultiPolygon") {
-                var coordinates = geomCoords[0][0];
+              if (allowedGeometriesTypes.includes(geomType)) {
+                var geomCoords = feature.getGeometry().getCoordinates();
+                if (geomType == "MultiLineString") {
+                  var coordinates = geomCoords[0];
+                } else if (geomType == "MultiPolygon") {
+                  var coordinates = geomCoords[0][0];
+                }
+              } else {
+                return
               }
               return new ol.geom.MultiPoint(coordinates);
             }
