@@ -450,31 +450,33 @@
       this.disableDrawing();
       this.disableModify();
 
-      var selectedFeature = this.interactions.select.getFeatures().item(0);
+      var selectedFeatures = this.interactions.select.getFeatures();
       var sourceF = this.featureCollection;
-      var featureToDeleteIndex = -1;
 
-      console.log("selectedFeature: ", selectedFeature);
-      console.log("sourceF: ", sourceF);
-      //console.log("featureToDeleteIndex: ", featureToDeleteIndex);
+      console.log("selectedFeature: ", Object.keys(selectedFeatures));
+      console.log("sourceF: ", Object.keys(sourceF));
+      console.log("selectedFeature Array: ", selectedFeatures.getArray());
+      console.log("sourceF Array: ", sourceF.getArray());
 
+      selectedFeatures.getArray().forEach(element => {
+        console.log("element.id selectedFeatures: ", element.getElementById);
+        console.log("element.ol_uid selectedFeatures: ", element.ol_uid);
+      });
+      selectedFeatures.forEach(feature => {
+        console.log("feature.id selectedFeatures: ", feature.getElementById);
+        console.log("feature.ol_uid selectedFeatures: ", feature.ol_uid);
+      });
     };
 
-    geometryWidget.prototype.removeSelectedEntity = function() {
-
-
-      var selectedFeature = this.interactions.select.getFeatures().item(0);
-      var sourceF = this.featureCollection;
-      var featureToDeleteIndex = -1;
-      if (selectedFeature) {
-          for (var i=0; i < sourceF.getLength(); i++) {
-
-            if (sourceF.item(i).ol_uid === selectedFeature.ol_uid){
-              featureToDeleteIndex = i;
-            }
-          }
-          this.featureCollection.removeAt(featureToDeleteIndex);
-          this.interactions.select.getFeatures().clear();
+    geometryWidget.prototype.removeSelectedFeatures = function() {
+      var selectedFeatures = this.interactions.select.getFeatures()
+      console.log("selectedFeatures: ", selectedFeatures);
+      if ( true ) {
+        selectedFeatures.forEach(feature => {
+          console.log("feature.ol_uid", feature.ol_uid);
+          this.featureCollection.removeAt(feature.ol_uid);
+        });
+        this.interactions.select.getFeatures().clear();
       }
     }
 
