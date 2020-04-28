@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 import json
 from gpf.models import Actor
 from . import models, services
-from bootstrap_datepicker_plus import DatePickerInput
+from bootstrap_datepicker_plus import DatePickerInput, DateTimePickerInput
 from datetime import datetime, timedelta
 
 
@@ -310,19 +310,11 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
                 'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
             }),
-            'datetime_start': DatePickerInput(
-                format="DD/MM/YYYY HH:MM",
-                options={
-                    "locale": "fr-ch",
-                    #"minDate": (datetime.now() + timedelta(minutes=60)).strftime('%Y/%m/%d %H:%M')
-                    }
-                ).start_of('event days'),
-            'datetime_end': DatePickerInput(
-                format="DD/MM/YYYY HH:MM",
-                options={
-                    "locale": "fr-ch",
-                    #"minDate": (datetime.now() + timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d %H:%M')
-                    }
-                ).end_of('event days'),
+            'datetime_start': DateTimePickerInput(
+                format="%m/%d/%Y %H:%M",
+                ),
+            'datetime_end': DateTimePickerInput(
+                format="%m/%d/%Y %H:%M",
+                ),
 
         }
