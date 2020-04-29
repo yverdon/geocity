@@ -311,10 +311,18 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
             }),
             'datetime_start': DateTimePickerInput(
-                format="%m/%d/%Y %H:%M",
-                ),
+              options={
+                    "format": "DD/MM/YYYY HH:mm",
+                    "locale": "fr",
+                    "minDate": (datetime.today() + timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d')
+                    }
+                ).start_of('event days'),
             'datetime_end': DateTimePickerInput(
-                format="%m/%d/%Y %H:%M",
-                ),
+              options={
+                    "format": "DD/MM/YYYY  HH:mm",
+                    "locale": "fr",
+                    "minDate": (datetime.today() + timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d')
+                    }
+                ).start_of('event days'),
 
         }
