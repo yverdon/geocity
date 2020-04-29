@@ -210,6 +210,7 @@ def permit_request_geo_time(request, permit_request_id):
     if request.method == 'POST':
 
         if form.is_valid():
+            print(form.instance.geom)
             form.instance.permit_request = permit_request
             form.save();
 

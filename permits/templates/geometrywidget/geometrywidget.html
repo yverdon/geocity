@@ -28,39 +28,37 @@
 </style>
 
 <div id="{{ id }}_div_map">
+    Ajouter un point manuellement :
+    <label for="east_coord">Est:</label>
+    <input id="east_coord" type="number" min=2535594 max=2542571 value=2539162 placeholder="ex: 2539142">
+    <label for="east_coord">Nord:</label>
+    <input id="north_coord" type="number" min=1178784 max=1183461 value=1181732  placeholder="ex: 1181572 ">
+    <a class="btn btn-outline-success"
+       href="javascript:geometryWidget.addPointFeature();" role="button">
+       <i class="fa fa-plus"></i>
+    </a>
+    <hr>
     <div id="mapButtons">
-      <a class="btn btn-light btn-sm"
-         href="javascript:geometryWidget.clearFeatures();" role="button">
-         <i class="fa fa-trash"></i>  Effacer toutes les entités
+      <a class="btn btn-outline-warning" title="Cliquer dans la carte pour ajouter des dessins"
+         href="javascript:geometryWidget.enableDrawing();" role="button">
+         <i class="fa fa-pencil"></i> Dessiner/Modifier
       </a>
-      <a class="btn btn-light btn-sm"
-         href="javascript:geometryWidget.removeSelectedFeatures();" role="button">
-         <i class="fa fa-trash"></i> Supprimer les entités sélectionnées
-      </a>
-      <a class="btn btn-light btn-sm"
+      <a class="btn btn-outline-secondary" title="Maintenir la touche Maj (Shift) enfoncée pour en sélectionner plusieurs"
          href="javascript:geometryWidget.selectFeatures();" role="button">
-         <i class="fa fa-mouse-pointer"></i> Cliquer sur une entité pour la sélectionner.<br>Maintenir la touche Maj (Shift) enfoncée pour en sélectionner plusieurs
+         <i class="fa fa-mouse-pointer"></i> Sélectionner
       </a>
-      <hr>
-      <div>
-      Ajouter un point manuellement :
-      <label for="east_coord">Est:</label>
-      <input id="east_coord" type="number" min=2535594 max=2542571 value=2539162 placeholder="ex: 2539142">
-      <label for="east_coord">Nord:</label>
-      <input id="north_coord" type="number" min=1178784 max=1183461 value=1181732  placeholder="ex: 1181572 ">
-      <a class="btn btn-light btn-sm"
-         href="javascript:geometryWidget.addPointFeature();" role="button">
-         <i class="fa fa-plus"></i>
+      <a id="delete-selected" class="btn btn-outline-danger""
+         href="javascript:geometryWidget.removeSelectedFeatures();" role="button">
+         <i class="fa fa-trash"></i>  Effacer les entités sélectionnées
       </a>
-      </div>
-      <b>Cliquez dans la carte pour dessiner un point ou choisissez un autre type de dessin </b>
-        <label>Type de dessin</label>
-        <select id="geom_type" onchange="geometryWidget.setDrawInteraction()">
-          <option value="MultiPoint" selected>&#xf041 Points</option>
-          <option value="MultiLineString">&#xf041Lignes</option>
-          <option value="MultiPolygon">&#xf041 Surfaces</option>
-        </select>
     </div>
+    <hr>
+    <label>Type de dessin</label>
+     <select id="geom_type" onchange="geometryWidget.setDrawInteraction()">
+       <option value="MultiPoint" selected>Points</option>
+       <option value="MultiLineString">Lignes</option>
+       <option value="MultiPolygon">Surfaces</option>
+     </select>
     <hr>
     <div id="{{ id }}_map">
       <img id="switchbaselayers" src="{% static 'images/switchbaselayers.png'%}" width="100" height="40" alt="" onclick="javascript:geometryWidget.switchBaseLayers()">

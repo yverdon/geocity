@@ -10,22 +10,12 @@
 
     function geometryWidget(options) {
 
-        var is_collection = false;
-
-        if (options.geom_name.toLowerCase().indexOf('multi') >= 0 || options.geom_name.toLowerCase().indexOf('geometrycollection') >= 0) {
-          var is_collection = true;
-        }
-
         this.map = null;
         this.wmtsLayer = new ol.layer.Tile({});
         this.wmtsLayerAlternative = new ol.layer.Tile({});
         this.interactions = {draw: null, modify: null};
         this.ready = false;
-
-        // Default options
-        this.options = {
-            is_collection: is_collection
-        };
+        this.options = {};
 
         // Altering using user-provided options
         for (var property in options) {
@@ -34,106 +24,51 @@
             }
         }
 
-        var createTextStyle = function(feature, resolution, dom) {
-          var align = dom.align.value;
-          var baseline = dom.baseline.value;
-          var size = dom.size.value;
-          var height = dom.height.value;
-          var offsetX = parseInt(dom.offsetX.value, 10);
-          var offsetY = parseInt(dom.offsetY.value, 10);
-          var weight = dom.weight.value;
-          var placement = dom.placement ? dom.placement.value : undefined;
-          var maxAngle = dom.maxangle ? parseFloat(dom.maxangle.value) : undefined;
-          var overflow = dom.overflow ? (dom.overflow.value == 'true') : undefined;
-          var rotation = parseFloat(dom.rotation.value);
-          if (dom.font.value == '\'Open Sans\'' && !openSansAdded) {
-            var openSans = document.createElement('link');
-            openSans.href = 'https://fonts.googleapis.com/css?family=Open+Sans';
-            openSans.rel = 'stylesheet';
-            document.getElementsByTagName('head')[0].appendChild(openSans);
-            openSansAdded = true;
-          }
-          var font = weight + ' ' + size + '/' + height + ' ' + dom.font.value;
-          var fillColor = dom.color.value;
-          var outlineColor = dom.outline.value;
-          var outlineWidth = parseInt(dom.outlineWidth.value, 10);
-
-          return new Text({
-            textAlign: align == '' ? undefined : align,
-            textBaseline: baseline,
-            font: font,
-            text: getText(feature, resolution, dom),
-            fill: new Fill({color: fillColor}),
-            stroke: new Stroke({color: outlineColor, width: outlineWidth}),
-            offsetX: offsetX,
-            offsetY: offsetY,
-            placement: placement,
-            maxAngle: maxAngle,
-            overflow: overflow,
-            rotation: rotation
-          });
-        };
-
-        var labelStyle = new ol.style.Style({
-          text: new ol.style.Text({
-            font: '18px Calibri,sans-serif',
-            overflow: true,
-            fill: new ol.style.Fill({
-              color: '#000'
-            }),
-            stroke: new ol.style.Stroke({
-              color: '#fff',
-              width: 3
-            })
-          })
-        });
-
-      var style = [labelStyle];
-
-
         this.map = this.createMap();
         this.addBaseLayer();
         this.setupAlternativeBaseLayer();
-
-        this.featureCollection = new ol.Collection();
-
+        this.vectorSource = new ol.source.Vector();
         this.featureOverlay = new ol.layer.Vector({
           name: 'featureOverlay',
           style: this.setDrawingStyle(),
           map: this.map,
-          source: new ol.source.Vector({
-              features: this.featureCollection,
-              useSpatialIndex: false // improve performance
-          }),
+          source: this.vectorSource,
           updateWhileAnimating: true, // optional, for instant visual feedback
           updateWhileInteracting: true // optional, for instant visual feedback
         });
 
-        // Populate and set handlers for the feature container
-        var self = this;
-        this.featureCollection.on('add', function(event) {
-            var feature = event.element;
-            feature.on('change', function() {
-                self.serializeFeatures();
-            });
-            if (self.ready) {
-                self.serializeFeatures();
-                if (!self.options.is_collection) {
-                    self.disableDrawing(); // Only allow one feature at a time
-                }
-            }
-        });
-
         var initial_value = document.getElementById(this.options.id).value;
+        var extent = ol.extent.createEmpty();
+
         if (initial_value) {
+            var collection = JSON.parse(initial_value);
+            var features = collection.geometries;
+            for (var i=0; i<features.length;i++){
 
-            var features = jsonFormat.readFeatures('{"type": "Feature", "geometry": ' + initial_value + '}');
-            var extent = ol.extent.createEmpty();
-            features.forEach(function(feature) {
-                this.featureOverlay.getSource().addFeature(feature);
-                ol.extent.extend(extent, feature.getGeometry().getExtent());
-            }, this);
+              var f = features[i];
 
+              if (f.type == 'MultiPoint') {
+                var olFeature =  new ol.Feature({
+                    geometry: new ol.geom.MultiPoint(f.coordinates)
+                });
+
+              } else if (f.type == 'MultiLineString') {
+                var olFeature =  new ol.Feature({
+                    geometry: new ol.geom.MultiLineString(f.coordinates)
+                });
+
+              } else if (f.type == 'MultiPolygon') {
+                var olFeature =  new ol.Feature({
+                    geometry: new ol.geom.MultiPolygon(f.coordinates)
+                });
+              }
+
+              this.featureOverlay.getSource().addFeature(olFeature);
+              //update extent
+              ol.extent.extend(extent, olFeature.getGeometry().getExtent());
+
+            }
+            // zoom to extent of initial geometry that we got fomr db
             this.map.getView().fit(extent,  {padding: [100, 100, 100, 100],  minResolution: 1 });
 
         } else {
@@ -143,24 +78,33 @@
         }
 
         this.createInteractions();
-        if (initial_value && !this.options.is_collection || this.options.edit_geom == 'False') {
+
+        // disable edit (for use in read-only views)
+        if (this.options.edit_geom == 'False') {
             this.disableDrawing();
-            this.disableModify();
+            this.interactions.modify.setActive(false);
             this.hideMapButtons();
         }
 
         this.ready = true;
     }
 
+    // Add new swiss CRS to proj4js
+    proj4.defs("EPSG:2056","+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs");
+    ol.proj.proj4.register(proj4);
+
     var projection = new ol.proj.Projection({
         code: 'EPSG:2056',
-        extent: [485869.5728, 76443.1884, 837076.5648, 299941.7864],
+        extent: [2485071.58, 1075346.31, 2828515.82, 1299941.79],
         units: 'm'
     });
 
     ol.proj.addProjection(projection);
 
 
+    /*
+    Create ol.Map instance
+    */
     geometryWidget.prototype.createMap = function() {
 
         var map = new ol.Map({
@@ -179,13 +123,16 @@
                 zoom: this.options.default_zoom,
                 minZoom: this.options.min_zoom,
                 projection: projection,
-                center: [2538812, 1181380]
+                center: this.options.default_center
             })
         });
         return map;
     };
 
 
+    /*
+    Add default WMTS base layer
+    */
     geometryWidget.prototype.addBaseLayer = function() {
 
       var wmtsLayerName = this.options.wmts_layer;
@@ -213,6 +160,9 @@
     }
 
 
+    /*
+    Add alternative WMTS base layer
+    */
     geometryWidget.prototype.setupAlternativeBaseLayer = function() {
 
       var wmtsLayerName = this.options.wmts_layer_alternative;
@@ -239,6 +189,10 @@
 
     }
 
+
+    /*
+    Base layer switcher
+    */
     geometryWidget.prototype.switchBaseLayers = function() {
 
         if (this.wmtsLayer.getVisible()) {
@@ -251,6 +205,10 @@
 
     }
 
+
+    /*
+    Dynamic OL style for drawing
+    */
     geometryWidget.prototype.setDrawingStyle = function() {
       var imagePoint = new ol.style.Circle({
         radius: 5,
@@ -282,7 +240,6 @@
                 "Polygon",
                 "MultiPolygon"
               ];
-              // TODO split geometryCollection into lower level oL geometries
               var geomType = feature.getGeometry().getType();
               if (allowedGeometriesTypes.includes(geomType)) {
                 var geomCoords = feature.getGeometry().getCoordinates();
@@ -310,6 +267,10 @@
       ];
     }
 
+
+    /*
+    Dynamic OL style for selected features
+    */
     geometryWidget.prototype.setSelectionStyle = function() {
       var imagePoint = new ol.style.Circle({
         radius: 5,
@@ -341,7 +302,6 @@
                 "Polygon",
                 "MultiPolygon"
               ];
-              // TODO split geometryCollection into lower level oL geometries
               var geomType = feature.getGeometry().getType();
               if (allowedGeometriesTypes.includes(geomType)) {
                 var geomCoords = feature.getGeometry().getCoordinates();
@@ -369,17 +329,38 @@
       ];
     }
 
+
+    /*
+    Create OL interactions
+    */
     geometryWidget.prototype.createInteractions = function() {
+
+        $('#delete-selected').hide();
         // Initialize the modify interaction
         this.interactions.modify = new ol.interaction.Modify({
-            features: this.featureCollection,
+            source: this.vectorSource,
             style: new ol.style.Style({})
         });
+
+        var _this = this;
+        this.interactions.modify.on('modifyend', function(event) {
+             _this.serializeFeatures();
+        });
+
         // Initialize the select interaction
         this.interactions.select = new ol.interaction.Select({
           layers: [this.featureOverlay],
           style: this.setSelectionStyle()
         });
+
+        this.interactions.select.on('select', function(e) {
+            if (e.selected.length > 0) {
+              $('#delete-selected').show();
+            } else {
+              $('#delete-selected').hide();
+            }
+        })
+
 
         this.map.addInteraction(this.interactions.modify);
         this.map.addInteraction(this.interactions.select);
@@ -400,7 +381,9 @@
 
     };
 
-
+    /*
+    Draw interactions setting for Points, Lines & Polygons
+    */
     geometryWidget.prototype.setDrawInteraction = function() {
 
         if (this.interactions.draw) {
@@ -408,7 +391,7 @@
         }
 
         this.interactions.draw = new ol.interaction.Draw({
-            features: this.featureCollection,
+            source: this.vectorSource,
             type: $('#geom_type')[0].value,
             condition: function(evt) {
                 if (evt.pointerEvent.type == 'pointerdown' && evt.pointerEvent.buttons == 1
@@ -419,20 +402,30 @@
                 }
             }
         });
+
+        var _this = this;
+
+        this.interactions.draw.on('drawend', function(event) {
+
+             _this.serializeFeatures();
+        });
         this.map.addInteraction(this.interactions.draw);
     };
 
 
+    /*
+    Enable drawing & modify interactions
+    */
     geometryWidget.prototype.enableDrawing = function() {
         this.interactions.draw.setActive(true);
+        this.interactions.modify.setActive(true);
+        this.interactions.select.setActive(false);
     };
 
 
-    geometryWidget.prototype.hideMapButtons = function() {
-        $('#mapButtons').hide();
-    };
-
-
+    /*
+    Disable drawing & modify interactions
+    */
     geometryWidget.prototype.disableDrawing = function() {
         if (this.interactions.draw) {
             this.interactions.draw.setActive(false);
@@ -440,55 +433,43 @@
     };
 
 
-    geometryWidget.prototype.disableModify = function() {
-        if (this.interactions.modify) {
-            this.interactions.modify.setActive(false);
-        }
-    };
-
-    geometryWidget.prototype.enableModify = function() {
-        if (this.interactions.modify) {
-            this.interactions.modify.setActive(true);
-        }
+    /*
+    hide map buttons for readonly views
+    */
+    geometryWidget.prototype.hideMapButtons = function() {
+        $('#mapButtons').hide();
     };
 
 
-    geometryWidget.prototype.clearFeatures = function() {
-        this.featureCollection.clear();
-        this.interactions.select.getFeatures().clear();
-        document.getElementById(this.options.id).value = '';
-        this.enableDrawing();
-    };
-
-
-
-
-
+    /*
+    Enable feature selection and disable other interactions
+    */
     geometryWidget.prototype.selectFeatures = function() {
       this.disableDrawing();
-      this.disableModify();
-      var sourceF = this.featureCollection;
-      var selectedFeatures = this.interactions.select.getFeatures();
+      this.interactions.modify.setActive(false);
+      this.interactions.select.setActive(true);
     };
 
+
+    /*
+    Remove features selected on the map
+    */
     geometryWidget.prototype.removeSelectedFeatures = function() {
-      this.disableDrawing();
-      this.disableModify();
-      var sourceF = this.featureCollection.getArray();
-      var selectedFeatures = this.interactions.select.getFeatures()
-      if ( true ) {
-        selectedFeatures.forEach(feature => {
-          sourceF.forEach((sourceFeature, i) => {
-            if (sourceFeature.ol_uid === feature.ol_uid) {
-              this.featureCollection.removeAt(i);
-            }
-          })
-        });
-        this.interactions.select.getFeatures().clear();
+
+      var selectedFeatures = this.interactions.select.getFeatures().getArray();
+
+      for (var i=0; i<selectedFeatures.length; i++) {
+        this.vectorSource.removeFeature(selectedFeatures[i])
       }
+      this.interactions.select.getFeatures().clear();
+      $('#delete-selected').hide();
+
     }
 
 
+    /*
+    Add point from manuelly edited coordinates (ch1903+)
+    */
     geometryWidget.prototype.addPointFeature= function() {
 
       var east = parseFloat($('#east_coord')[0].value);
@@ -497,44 +478,26 @@
           geometry: new ol.geom.MultiPoint([[east, north]]),
         });
 
-        this.featureCollection.push(feature);
+        this.vectorSource.addFeature(feature);
         this.interactions.select.getFeatures().clear();
 
     };
 
 
+    /*
+    Serialize geometries into django-gis collections
+    */
     geometryWidget.prototype.serializeFeatures = function() {
-        // Three use cases: GeometryCollection, multigeometries, and single geometry
-        var geometry = null;
-        var features = this.featureOverlay.getSource().getFeatures();
-        if (this.options.is_collection) {
-            if (this.options.geom_name.toLowerCase() === "geometrycollection") {
-                var geometries = [];
-                for (var i = 0; i < features.length; i++) {
-                    geometries.push(features[i].getGeometry());
-                }
-                geometry = new ol.geom.GeometryCollection(geometries);
-            } else {
-                geometry = features[0].getGeometry().clone();
-                for (var j = 1; j < features.length; j++) {
-                    switch (geometry.getType()) {
-                    case "MultiPoint":
-                        geometry.appendPoint(features[j].getGeometry().getPoint(0));
-                        break;
-                    case "MultiLineString":
-                        geometry.appendLineString(features[j].getGeometry().getLineString(0));
-                        break;
-                    case "MultiPolygon":
-                        geometry.appendPolygon(features[j].getGeometry().getPolygon(0));
-                    }
-                }
-            }
-        } else {
-            if (features[0]) {
-                geometry = features[0].getGeometry();
-            }
-        }
-        document.getElementById(this.options.id).value = jsonFormat.writeGeometry(geometry);
+
+      var features = this.vectorSource.getFeatures();
+      var geometries = [];
+
+      for (var i = 0; i < features.length; i++) {
+        geometries.push(features[i].getGeometry());
+      }
+      var geometry = new ol.geom.GeometryCollection(geometries);
+
+      document.getElementById(this.options.id).value = jsonFormat.writeGeometry(geometry);
     };
 
     window.geometryWidget = geometryWidget;
