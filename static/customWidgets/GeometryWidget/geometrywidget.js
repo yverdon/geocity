@@ -28,6 +28,20 @@
         this.addBaseLayer();
         this.setupAlternativeBaseLayer();
         this.vectorSource = new ol.source.Vector();
+
+        var _this = this;
+        this.vectorSource.on('addfeature', function(e){
+           _this.serializeFeatures();
+        })
+
+        this.vectorSource.on('removefeature', function(e){
+          _this.serializeFeatures();
+        })
+
+        this.vectorSource.on('changefeature', function(e){
+          _this.serializeFeatures();
+        })
+
         this.featureOverlay = new ol.layer.Vector({
           name: 'featureOverlay',
           style: this.setDrawingStyle(),
@@ -39,14 +53,12 @@
 
         var initial_value = document.getElementById(this.options.id).value;
         var extent = ol.extent.createEmpty();
-
         if (initial_value) {
             var collection = JSON.parse(initial_value);
             var features = collection.geometries;
             for (var i=0; i<features.length;i++){
 
               var f = features[i];
-
               if (f.type == 'MultiPoint') {
                 var olFeature =  new ol.Feature({
                     geometry: new ol.geom.MultiPoint(f.coordinates)
@@ -335,17 +347,14 @@
     */
     geometryWidget.prototype.createInteractions = function() {
 
-        $('#delete-selected').hide();
+        $('#delete-selected').addClass('disabled');
+
         // Initialize the modify interaction
         this.interactions.modify = new ol.interaction.Modify({
             source: this.vectorSource,
             style: new ol.style.Style({})
         });
 
-        var _this = this;
-        this.interactions.modify.on('modifyend', function(event) {
-             _this.serializeFeatures();
-        });
 
         // Initialize the select interaction
         this.interactions.select = new ol.interaction.Select({
@@ -355,9 +364,9 @@
 
         this.interactions.select.on('select', function(e) {
             if (e.selected.length > 0) {
-              $('#delete-selected').show();
+              $('#delete-selected').removeClass('disabled');
             } else {
-              $('#delete-selected').hide();
+              $('#delete-selected').addClass('disabled');
             }
         })
 
@@ -392,23 +401,11 @@
 
         this.interactions.draw = new ol.interaction.Draw({
             source: this.vectorSource,
-            type: $('#geom_type')[0].value,
-            condition: function(evt) {
-                if (evt.pointerEvent.type == 'pointerdown' && evt.pointerEvent.buttons == 1
-                      && !evt.originalEvent.altKey) {
-                    return true;
-                } else {
-                    return false
-                }
-            }
+            type: $('#geom_type')[0].value
         });
 
         var _this = this;
 
-        this.interactions.draw.on('drawend', function(event) {
-
-             _this.serializeFeatures();
-        });
         this.map.addInteraction(this.interactions.draw);
     };
 
@@ -437,7 +434,7 @@
     hide map buttons for readonly views
     */
     geometryWidget.prototype.hideMapButtons = function() {
-        $('#mapButtons').hide();
+        $('#delete-selected').addClass('disabled');
     };
 
 
@@ -462,8 +459,7 @@
         this.vectorSource.removeFeature(selectedFeatures[i])
       }
       this.interactions.select.getFeatures().clear();
-      $('#delete-selected').hide();
-
+        $('#delete-selected').addClass('disabled');
     }
 
 
@@ -492,9 +488,15 @@
       var features = this.vectorSource.getFeatures();
       var geometries = [];
 
+      if (features.length == 0) {
+        document.getElementById(this.options.id).value = '';
+        return;
+      }
+
       for (var i = 0; i < features.length; i++) {
         geometries.push(features[i].getGeometry());
       }
+  
       var geometry = new ol.geom.GeometryCollection(geometries);
 
       document.getElementById(this.options.id).value = jsonFormat.writeGeometry(geometry);

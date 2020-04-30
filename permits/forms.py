@@ -302,8 +302,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 'default_center': [2539057, 1181111],
                 'default_zoom': 10,
                 'display_raw': False, #show coordinate in debug
-                'map_clear_style': "visibility:visible;",
-                'edit_geom': True,
+                'edit_geom': True, #For readonly set to False
                 'min_zoom': 8,
                 'wmts_capabilities_url': settings.WMTS_GETCAP,
                 'wmts_layer': settings.WMTS_LAYER,
