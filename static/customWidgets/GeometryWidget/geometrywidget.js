@@ -80,7 +80,7 @@
               ol.extent.extend(extent, olFeature.getGeometry().getExtent());
 
             }
-            // zoom to extent of initial geometry that we got fomr db
+            // zoom to extent of initial geometry that we got from db
             this.map.getView().fit(extent,  {padding: [100, 100, 100, 100],  minResolution: 1 });
 
         } else {
@@ -373,7 +373,7 @@
 
         this.map.addInteraction(this.interactions.modify);
         this.map.addInteraction(this.interactions.select);
-        this.setDrawInteraction();
+        this.setDrawInteraction('MultiPoint');
         this.map.on("pointermove", function (evt) {
             var hit = evt.map.hasFeatureAtPixel(evt.pixel, {
                 layerFilter: function (layer) {
@@ -390,10 +390,11 @@
 
     };
 
+
     /*
     Draw interactions setting for Points, Lines & Polygons
     */
-    geometryWidget.prototype.setDrawInteraction = function() {
+    geometryWidget.prototype.setDrawInteraction = function(geotype) {
 
         if (this.interactions.draw) {
           this.map.removeInteraction(this.interactions.draw);
@@ -401,10 +402,8 @@
 
         this.interactions.draw = new ol.interaction.Draw({
             source: this.vectorSource,
-            type: $('#geom_type')[0].value
+            type: geotype,
         });
-
-        var _this = this;
 
         this.map.addInteraction(this.interactions.draw);
     };
@@ -415,7 +414,7 @@
     */
     geometryWidget.prototype.enableDrawing = function() {
         this.interactions.draw.setActive(true);
-        this.interactions.modify.setActive(true);
+        this.interactions.modify.setActive(false);
         this.interactions.select.setActive(false);
     };
 
@@ -443,7 +442,7 @@
     */
     geometryWidget.prototype.selectFeatures = function() {
       this.disableDrawing();
-      this.interactions.modify.setActive(false);
+      this.interactions.modify.setActive(true);
       this.interactions.select.setActive(true);
     };
 
@@ -477,6 +476,9 @@
         this.vectorSource.addFeature(feature);
         this.interactions.select.getFeatures().clear();
 
+        this.map.getView().fit(this.vectorSource.getExtent(),  
+          {padding: [100, 100, 100, 100],  minResolution: 1 });
+
     };
 
 
@@ -496,7 +498,7 @@
       for (var i = 0; i < features.length; i++) {
         geometries.push(features[i].getGeometry());
       }
-  
+
       var geometry = new ol.geom.GeometryCollection(geometries);
 
       document.getElementById(this.options.id).value = jsonFormat.writeGeometry(geometry);

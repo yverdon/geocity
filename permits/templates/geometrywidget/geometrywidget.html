@@ -28,24 +28,14 @@
 </style>
 
 <div id="{{ id }}_div_map">
-    Ajouter un point manuellement :
-    <label for="east_coord">Est:</label>
-    <input id="east_coord" type="number" min=2535594 max=2542571 value=2539162 placeholder="ex: 2539142">
-    <label for="east_coord">Nord:</label>
-    <input id="north_coord" type="number" min=1178784 max=1183461 value=1181732  placeholder="ex: 1181572 ">
-    <a class="btn btn-outline-success"
-       href="javascript:geometryWidget.addPointFeature();" role="button">
-       <i class="fa fa-plus"></i>
-    </a>
-    <hr>
     <div id="mapButtons">
       <a class="btn btn-outline-warning" title="Cliquer dans la carte pour ajouter des dessins"
          href="javascript:geometryWidget.enableDrawing();" role="button">
-         <i class="fa fa-pencil"></i> Dessiner/Modifier
+         <i class="fa fa-pencil"></i> Dessiner
       </a>
-      <a class="btn btn-outline-secondary" title="Maintenir la touche Maj (Shift) enfoncée pour en sélectionner plusieurs"
+      <a class="btn btn-outline-warning" title="Maintenir la touche Maj (Shift) enfoncée pour en sélectionner plusieurs"
          href="javascript:geometryWidget.selectFeatures();" role="button">
-         <i class="fa fa-mouse-pointer"></i> Sélectionner
+         <i class="fa fa-mouse-pointer"></i> Sélectionner et Modifier
       </a>
       <a id="delete-selected" class="btn btn-outline-danger""
          href="javascript:geometryWidget.removeSelectedFeatures();" role="button">
@@ -53,13 +43,42 @@
       </a>
     </div>
     <hr>
-    <label>Type de dessin</label>
-     <select id="geom_type" onchange="geometryWidget.setDrawInteraction()">
-       <option value="MultiPoint" selected>Points</option>
-       <option value="MultiLineString">Lignes</option>
-       <option value="MultiPolygon">Surfaces</option>
-     </select>
-    <hr>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" title="Cliquer pour ajouter un point" type="radio" name="inlineRadioOptions" id="inlineRadio1" checked onclick="javascript:geometryWidget.setDrawInteraction('MultiPoint');">
+      <label class="form-check-label" title="Cliquer pour ajouter un point" for="inlineRadio1">Points<img src="{% static 'images/geometrywidget/points.svg'%}" height=30></label>
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions" id="inlineRadio2" onclick="javascript:geometryWidget.setDrawInteraction('MultiLineString');">
+      <label class="form-check-label" title="Double clique pour terminer la construction" for="inlineRadio2">Lignes<img src="{% static 'images/geometrywidget/polyline.svg'%}" height=30></label>
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions" id="inlineRadio3" onclick="javascript:geometryWidget.setDrawInteraction('MultiPolygon');">
+      <label class="form-check-label" title="Double clique pour terminer la construction" for="inlineRadio3">Surfaces<img src="{% static 'images/geometrywidget/polygon.svg'%}" height=30></label>
+    </div>
+    <a class="btn btn-outline-primary" data-toggle="collapse" href="#manual-coordinates" role="button" aria-expanded="false" aria-controls="manual-coordinates">
+      Saisir des coordonnées manuellement
+    </a>
+    <br><br>
+    <div class="collapse" id="manual-coordinates">
+      <div class="card card-body">
+        <div class="row">
+          <div class="col">
+            <label for="east_coord">Est:</label>
+            <input id="east_coord" type="number" min=2535594 max=2542571 value=2539162 placeholder="ex: 2539142">
+          </div>
+          <div class="col">
+            <label for="east_coord">Nord:</label>
+            <input id="north_coord" type="number" min=1178784 max=1183461 value=1181732 width=1000 placeholder="ex: 1181572 ">
+          </div>
+          <div class="col">
+            <a class="btn btn-outline-success" title="Ajouter ce point à la carte"
+               href="javascript:geometryWidget.addPointFeature();" role="button">
+               <i class="fa fa-plus"></i> Ajouter à la carte
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
     <div id="{{ id }}_map">
       <img id="switchbaselayers" src="{% static 'images/switchbaselayers.png'%}" width="100" height="40" alt="" onclick="javascript:geometryWidget.switchBaseLayers()">
     </div>
@@ -83,6 +102,7 @@
             wmts_capabilities_url_alternative: '{{wmts_capabilities_url_alternative}}',
             wmts_layer_alternative: '{{wmts_layer_alternative}}'
         };
+
         var {{ module }} = new geometryWidget(options);
         geometryWidget = {{ module }};
 
