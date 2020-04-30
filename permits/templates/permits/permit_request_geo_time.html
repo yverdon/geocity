@@ -17,7 +17,7 @@
          {% bootstrap_form form layout='horizontal' %}
      </div>
     {% buttons %}
-      <a href="{% url 'permits:permit_request_geo_time' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
+      <a href="{% url 'permits:permit_request_properties' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
       <button class="btn btn-primary">{% trans "Enregistrer et poursuivre" %}</button>
     {% endbuttons %}
   </form>
