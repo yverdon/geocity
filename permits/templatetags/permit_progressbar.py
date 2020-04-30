@@ -4,7 +4,7 @@ from django import template
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
 
-from permits import forms, services
+from permits import forms, services, models
 
 register = template.Library()
 
@@ -56,12 +56,13 @@ def permit_progressbar(context, permit_request, active_step):
 
     properties_errors = len(properties_form.errors) if properties_form else 0
     appendices_errors = len(appendices_form.errors) if appendices_form else 0
+    geo_time_errors = 0 if models.PermitRequestGeoTime.objects.filter(permit_request=permit_request) else 1
     actor_errors = len(services.get_missing_actors_types(permit_request)) if permit_request else 0
     total_errors = sum([properties_errors, appendices_errors, actor_errors])
 
     steps = {
         "location": Step(
-            name=_("Localisation"),
+            name=_("Commune"),
             url=localisation_url,
             completed=bool(permit_request),
             enabled=True,
@@ -88,7 +89,8 @@ def permit_progressbar(context, permit_request, active_step):
         "geo_time": Step(
             name=_("Agenda et plan"),
             url=geo_time_url,
-            completed=has_objects_types,
+            completed=geo_time_errors==0,
+            errors_count=geo_time_errors,
             enabled=has_objects_types,
         ),
         "appendices": Step(
