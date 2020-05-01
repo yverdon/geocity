@@ -162,3 +162,9 @@ h3 {
   height: 15px;
   line-height: 15px;
 }
+
+.navbar {
+  background-image: url('../images/blanc_light_compact.jpg');
+  height: 100px;
+  font-weight: bold;
+}

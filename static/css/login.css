@@ -5,6 +5,8 @@
   margin-right: auto;
   border: 0;
   padding: 5px;
+  background-color: white;
+  opacity: 0.85;
 }
 
 @media (min-width: 768px) {

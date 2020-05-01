@@ -7,11 +7,11 @@
 {% block stylesheets%}
   {{ block.super }}
   <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'css/homepage.css' %}">
 {% endblock %}
 
 {% block content-no-sidebar %}
   <h2 class="text-center">{% trans "Gestion des demandes de permis d'utilisation du domaine public" %}</h2>
-
   <div id="login-container">
     <br>
     {% if form.errors %}
