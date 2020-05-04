@@ -5,12 +5,22 @@ from django.utils.translation import gettext_lazy as _
 from . import models
 
 
-class PermitRequestTableExterns(tables.Table):
+class OwnPermitRequestsTable(tables.Table):
     actions = tables.TemplateColumn(template_name="tables/_permit_request_actions.html", verbose_name=_('Actions'), orderable=False)
 
     class Meta:
         model = models.PermitRequest
-        fields = ('id', 'status', 'created_at', 'administrative_entity')
+        fields = ('id', 'created_at', 'status', 'administrative_entity')
+        template_name = 'django_tables2/bootstrap.html'
+
+
+class SecretariatPermitRequestsTable(tables.Table):
+    actions = tables.TemplateColumn(template_name="tables/_permit_request_actions.html", verbose_name=_('Actions'), orderable=False)
+    works_objects_html = tables.Column(verbose_name=_("Objets et types de travaux"), orderable=False)
+
+    class Meta:
+        model = models.PermitRequest
+        fields = ('id', 'created_at', 'status', 'author', 'works_objects_html')
         template_name = 'django_tables2/bootstrap.html'
 
 

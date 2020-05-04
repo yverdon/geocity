@@ -2,6 +2,7 @@ import mimetypes
 import urllib.parse
 import os
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db.models import Prefetch
 from django.utils.decorators import method_decorator
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -248,15 +249,34 @@ def permit_request_media_download(request, property_value_id):
 
 @method_decorator(login_required, name="dispatch")
 class PermitRequestListExternsView(SingleTableMixin, FilterView):
-
     paginate_by = int(os.environ['PAGINATE_BY'])
-    table_class = tables.PermitRequestTableExterns
     model = models.PermitRequest
     template_name = 'permits/permit_requests_list.html'
-    filterset_class = filters.PermitRequestFilterExterns
+
+    def is_secretariat(self):
+        return services.get_user_administrative_entities(self.request.user).exists()
 
     def get_queryset(self):
-        return services.get_permit_requests_list_for_user(self.request.user).order_by('-created_at')
+        return services.get_permit_requests_list_for_user(self.request.user).prefetch_related(
+            Prefetch(
+                'works_object_types',
+                queryset=models.WorksObjectType.objects.select_related('works_type', 'works_object')
+            )
+        ).order_by('-created_at')
+
+    def get_table_class(self):
+        return (
+            tables.SecretariatPermitRequestsTable
+            if self.is_secretariat()
+            else tables.OwnPermitRequestsTable
+        )
+
+    def get_filterset_class(self):
+        return (
+            filters.SecretariatPermitRequestFilterSet
+            if self.is_secretariat()
+            else filters.OwnPermitRequestFilterSet
+        )
 
 
 @redirect_bad_status_to_readonly

@@ -4,6 +4,7 @@ from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils import timezone
 from django.core.validators import RegexValidator
+from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
 
 from gpf import models as gpfmodels
@@ -144,6 +145,17 @@ class PermitRequest(models.Model):
 
     def can_be_deleted_by_author(self):
         return self.is_draft()
+
+    def works_objects_html(self):
+        """
+        Return the works objects as a string, separated by <br> characters.
+        """
+        return format_html(
+            "<br>".join(
+                escape(f"{item.works_object.name} ({item.works_type.name})")
+                for item in self.works_object_types.all()
+            )
+        )
 
 
 class WorksType(models.Model):
