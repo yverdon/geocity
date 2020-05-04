@@ -1,10 +1,12 @@
 import urllib.parse
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
 
-from gpf.models import Actor
+from gpf.models import Actor, AdministrativeEntity, Department
 
 from . import factories, models, services
 
@@ -123,6 +125,42 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.assertRedirects(
             response, reverse('permits:permit_request_detail', kwargs={'permit_request_id': permit_request.pk})
         )
+
+    def test_submit_permit_request_sends_email_to_secretariat(self):
+        # Create a secretariat user Yverdon (the one that will get the notification)
+        secretariat_user = create_user(username="secretariat-yverdon")
+        secretariat_user.actor.email = "secretariat@yverdon.ch"
+        secretariat_user.actor.save()
+
+        yverdon = AdministrativeEntity.objects.create(name="Yverdon", ofs_id=0)
+        group = Group.objects.create(name="Secrétariat Yverdon")
+        secretariat_user.groups.set([group])
+        Department.objects.create(
+            group=group, is_validator=False, is_admin=False, is_archeologist=False,
+            administrative_entity=yverdon
+        )
+
+        # Create a secretariat user Lausanne (this one shouldn't get the notification)
+        secretariat_user = create_user(username="secretariat-lausanne")
+        secretariat_user.actor.email = "secretariat@lausanne.ch"
+        secretariat_user.actor.save()
+
+        administrative_entity = AdministrativeEntity.objects.create(name="Lausanne", ofs_id=0)
+        group = Group.objects.create(name="Secrétariat Lausanne")
+        secretariat_user.groups.set([group])
+        Department.objects.create(
+            group=group, is_validator=False, is_admin=False, is_archeologist=False,
+            administrative_entity=administrative_entity
+        )
+
+        permit_request = factories.PermitRequestFactory(
+            administrative_entity=yverdon,
+            author=self.user.actor, status=models.PermitRequest.STATUS_DRAFT
+        )
+        self.client.post(reverse('permits:permit_request_submit', kwargs={'permit_request_id': permit_request.pk}))
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["secretariat@yverdon.ch"])
 
 
 class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):

@@ -256,7 +256,7 @@ class PermitRequestListExternsView(SingleTableMixin, FilterView):
     filterset_class = filters.PermitRequestFilterExterns
 
     def get_queryset(self):
-        return models.PermitRequest.objects.filter(author=Actor.objects.get(user=self.request.user))
+        return services.get_permit_requests_list_for_user(self.request.user).order_by('-created_at')
 
 
 @redirect_bad_status_to_readonly
@@ -265,8 +265,7 @@ def permit_request_submit(request, permit_request_id):
     permit_request = get_draft_permit_request(request.user, permit_request_id)
 
     if request.method == 'POST':
-        permit_request.status = models.PermitRequest.STATUS_SUBMITTED
-        permit_request.save()
+        services.submit_permit_request(permit_request, request.build_absolute_uri)
         return redirect('permits:permit_requests_list')
 
     incomplete_steps = [
