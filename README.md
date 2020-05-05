@@ -132,3 +132,37 @@ For windows using pip:
 You MUST install GTK-3 from here: https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer
 
 And you MUST add it on TOP of your path. If you don't, it will hurt.
+
+## Dependency management
+
+Dependencies are managed with [`pip-tools`](https://github.com/jazzband/pip-tools).
+
+### Installing packages
+
+To install a new package, add it to `requirements.in`, without pinning it to a
+specific version unless needed. Then run:
+
+```
+docker-compose exec web pip-tools compile requirements.in
+docker-compose exec web pip install -r requirements.txt
+```
+
+Make sure you commit both the `requirements.in` and the `requirements.txt` files.
+
+### Upgrading packages
+
+To upgrade all the packages to their latest available version, run:
+
+```
+docker-compose exec web pip-tools compile -U requirements.in
+docker-compose exec web pip install -r requirements.txt
+```
+
+To upgrade only a specific package, use `pip-tools compile -P <packagename>`.
+The following commands will upgrade Django to its latest version, making sure
+it's compatible with other packages listed in the `requirements.in` file:
+
+```
+docker-compose exec web pip-tools compile -P django requirements.in
+docker-compose exec web pip install -r requirements.txt
+```
