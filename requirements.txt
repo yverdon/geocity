@@ -10,7 +10,7 @@ chardet==3.0.4
 colorclass==2.2.0
 cssselect2==0.2.2
 defusedxml==0.6.0
-Django==2.2.6
+Django==2.2.10
 django-bootstrap-datepicker-plus==3.0.5
 django-bootstrap4==1.0.1
 django-filter==2.2.0
