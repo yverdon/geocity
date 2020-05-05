@@ -270,3 +270,24 @@ class PermitRequestActorForm(forms.ModelForm):
         instance.save()
 
         return instance
+
+
+class PermitRequestAdditionalInformationForm(forms.ModelForm):
+    class Meta:
+        model = models.PermitRequest
+        fields = ['status', 'price', 'exemption', 'opposition', 'comment']
+        widgets = {
+            'exemption': forms.Textarea(attrs={'rows': 3}),
+            'opposition': forms.Textarea(attrs={'rows': 3}),
+            'comment': forms.Textarea(attrs={'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Prevent secretariat from putting back a request in draft status
+        self.fields['status'].choices = [
+            (status, label)
+            for status, label in self.fields['status'].choices
+            if status != models.PermitRequest.STATUS_DRAFT
+        ]

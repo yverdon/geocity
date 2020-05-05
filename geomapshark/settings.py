@@ -106,6 +106,8 @@ TEMPLATES = [
 
 BOOTSTRAP4 = {
     'include_jquery': True,
+    # Avoid repeating the label in the placeholder
+    'set_placeholder': False,
 }
 
 WSGI_APPLICATION = 'geomapshark.wsgi.application'

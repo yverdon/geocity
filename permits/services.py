@@ -2,6 +2,7 @@ import os
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.exceptions import SuspiciousOperation
 from django.core.files.storage import default_storage
 from django.core.mail import send_mass_mail
 from django.db import transaction
@@ -231,17 +232,17 @@ def get_user_administrative_entities(user):
     return AdministrativeEntity.objects.filter(departments__group__in=user.groups.all())
 
 
-def get_permit_request_for_user_or_404(user, permit_request_id, status=None):
+def get_permit_request_for_user_or_404(user, permit_request_id, statuses=None):
     """
     Return the permit request with `permit_request_id` or raise an Http404 if there is no such permit request. The
     permit request must either belong to the given user, or the given user should be in the same administrative entity.
-    If `status` is set and a permit request is found but its status doesn't match the given `status` value,
+    If `statuses` is set and a permit request is found but its status doesn't match any value in `statuses`,
     `BadPermitRequestStatus` will be raised.
     """
     permit_request = get_object_or_404(get_permit_requests_list_for_user(user), pk=permit_request_id)
 
-    if status is not None and permit_request.status != status:
-        raise BadPermitRequestStatus(permit_request, status)
+    if statuses is not None and permit_request.status not in statuses:
+        raise BadPermitRequestStatus(permit_request, statuses)
 
     return permit_request
 
@@ -256,7 +257,12 @@ def get_permit_requests_list_for_user(user):
         return models.PermitRequest.objects.filter(
             Q(author=user.actor)
             | (Q(administrative_entity__in=get_user_administrative_entities(user))
-               & Q(status=models.PermitRequest.STATUS_SUBMITTED))
+               & Q(status__in=[
+                   models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+                   models.PermitRequest.STATUS_PROCESSING,
+                   models.PermitRequest.STATUS_VALIDATED,
+                   models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+               ]))
         )
 
 
@@ -420,7 +426,10 @@ def submit_permit_request(permit_request, absolute_uri_func):
     Change the permit request status to submitted and send notification e-mails. `absolute_uri_func` should be a
     callable that takes a path and returns an absolute URI, usually `request.build_absolute_uri`.
     """
-    permit_request.status = models.PermitRequest.STATUS_SUBMITTED
+    if not permit_request.can_be_submitted_by_author():
+        raise SuspiciousOperation
+
+    permit_request.status = models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
     permit_request.save()
 
     users_to_notify = set(get_user_model().objects.filter(
@@ -440,3 +449,7 @@ def submit_permit_request(permit_request, absolute_uri_func):
 
     if emails:
         send_mass_mail(emails)
+
+
+def is_secretariat(user):
+    return get_user_administrative_entities(user).exists()

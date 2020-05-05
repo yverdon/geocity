@@ -115,7 +115,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
     def test_user_cannot_edit_non_draft_request(self):
         permit_request = factories.PermitRequestFactory(
-            author=self.user.actor, status=models.PermitRequest.STATUS_SUBMITTED
+            author=self.user.actor, status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
         )
 
         response = self.client.get(
@@ -291,7 +291,7 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
         content = response.content.decode()
         expected = (
             '<input type="text" name="properties-{obj_type_id}_{prop_id}" value="{value}" class="form-control"'
-            ' placeholder="{prop_name}" title="" id="id_properties-{obj_type_id}_{prop_id}">'.format(
+            ' title="" id="id_properties-{obj_type_id}_{prop_id}">'.format(
                 obj_type_id=works_object_type_choice.works_object_type.pk,
                 prop_id=prop.pk,
                 prop_name=prop.name,

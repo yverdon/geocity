@@ -43,6 +43,19 @@
     {% endif %}
     <a href="https://mapnv.ch" target="_blank">mapnv.ch</a>
   </nav>
+  {% if messages %}
+    <div class="container-fluid">
+      {% for message in messages %}
+        <div class="alert
+          {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+          alert-danger
+          {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+          alert-success
+          {% endif %}
+          ">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-2">

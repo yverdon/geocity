@@ -1,7 +1,7 @@
 {% load i18n %}
 
 <ul class="list-inline">
-  {% if not record.is_draft %}
+  {% if record.author == request.user.actor and not record.can_be_edited_by_author or is_secretariat %}
   <li>
     <a title="{% trans "Voir" %}" href="{% url 'permits:permit_request_detail' record.id %}">
       <i class="fa fa-eye fa-lg"></i>
