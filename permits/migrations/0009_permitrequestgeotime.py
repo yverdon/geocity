@@ -16,9 +16,9 @@ class Migration(migrations.Migration):
             name='PermitRequestGeoTime',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('datetime_start', models.DateTimeField(verbose_name='Date de début')),
-                ('datetime_end', models.DateTimeField(verbose_name='Date de fin')),
-                ('commentaire', models.CharField(blank=True, max_length=1024, verbose_name='Commentaire')),
+                ('starts_at', models.DateTimeField(verbose_name='Date de début')),
+                ('ends_at', models.DateTimeField(verbose_name='Date de fin')),
+                ('comment', models.CharField(blank=True, max_length=1024, verbose_name='Commentaire')),
                 ('external_link', models.URLField(blank=True, verbose_name='Lien externe')),
                 ('geom', django.contrib.gis.db.models.fields.GeometryCollectionField(null=True, srid=2056, verbose_name='geom')),
                 ('permit_request', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='permits.PermitRequest')),

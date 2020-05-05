@@ -277,7 +277,6 @@ class PermitRequestActorForm(forms.ModelForm):
 class GeometryWidget(geoforms.OSMWidget):
 
     template_name = 'geometrywidget/geometrywidget.html'
-    map_srid = 2056
 
     @property
     def media(self):
@@ -293,12 +292,11 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
 
     class Meta:
         model = models.PermitRequestGeoTime
-        fields = ['datetime_start', 'datetime_end', 'commentaire', 'external_link', 'geom']
+        fields = ['starts_at', 'ends_at', 'comment', 'external_link', 'geom']
         widgets = {
             'geom': GeometryWidget(attrs={
                 'map_width': '100%',
                 'map_height': 400,
-                'map_srid': 2056, #swiss MN95 CRS
                 'default_center': [2539057, 1181111],
                 'default_zoom': 10,
                 'display_raw': False, #show coordinate in debug
@@ -309,14 +307,14 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
                 'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
             }),
-            'datetime_start': DateTimePickerInput(
+            'starts_at': DateTimePickerInput(
               options={
                     "format": "DD/MM/YYYY HH:mm",
                     "locale": "fr",
                     "minDate": (datetime.today() + timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d')
                     }
                 ).start_of('event days'),
-            'datetime_end': DateTimePickerInput(
+            'ends_at': DateTimePickerInput(
               options={
                     "format": "DD/MM/YYYY  HH:mm",
                     "locale": "fr",

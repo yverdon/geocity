@@ -210,13 +210,10 @@ def permit_request_geo_time(request, permit_request_id):
     if request.method == 'POST':
 
         if form.is_valid():
-            print(form.instance.geom)
             form.instance.permit_request = permit_request
-            form.save();
+            form.save()
 
             return redirect('permits:permit_request_appendices', permit_request_id=permit_request_id)
-        else:
-            print(form.errors)
 
     return render(request, "permits/permit_request_geo_time.html", {
         'form': form,

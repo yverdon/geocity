@@ -5,6 +5,7 @@
 {% block stylesheets%}
   {% load fontawesome %}
   {% fontawesome_stylesheet %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/geotime.css' %}">
 {% endblock %}
 
 
@@ -14,17 +15,6 @@
     #{{ id }}_div_map { position: relative; vertical-align: top; }
     {% if not display_raw %}#{{ id }} { display: none; }{% endif %}
     {% endblock %}
-
-
-    .invalid-feedback {
-      display: inline !important;
-      font-weight: bold;
-    }
-
-    select {
-      font-family: 'FontAwesome', 'Second Font name'
-    }
-
 </style>
 
 <div id="{{ id }}_div_map">
@@ -93,7 +83,6 @@
             geom_name: '{{ geom_type }}',
             id: '{{ id }}',
             map_id: '{{ id }}_map',
-            map_srid: {{ map_srid }},
             name: '{{ name }}',
             edit_geom: '{{edit_geom}}',
             min_zoom: {{min_zoom}},

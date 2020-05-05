@@ -148,7 +148,6 @@
     geometryWidget.prototype.addBaseLayer = function() {
 
       var wmtsLayerName = this.options.wmts_layer;
-      var matrixSet = this.options.map_srid;
       var _this = this;
 
        $.ajax({
@@ -158,8 +157,8 @@
                  var result = parser.read(response);
                  var options = ol.source.WMTS.optionsFromCapabilities(result, {
                    layer: wmtsLayerName,
-                   matrixSet: matrixSet,
-                   projection: 'EPSG:' + matrixSet,
+                   matrixSet: 'EPSG:2056',
+                   projection: 'EPSG:2056',
                  });
 
                  _this.wmtsLayer.setSource(new ol.source.WMTS(/** @type {!olx.source.WMTSOptions} */ (options)));
@@ -178,7 +177,6 @@
     geometryWidget.prototype.setupAlternativeBaseLayer = function() {
 
       var wmtsLayerName = this.options.wmts_layer_alternative;
-      var matrixSet = this.options.map_srid;
       var _this = this;
 
        $.ajax({
@@ -188,8 +186,8 @@
              var result = parser.read(response);
              var options = ol.source.WMTS.optionsFromCapabilities(result, {
                layer: wmtsLayerName,
-               matrixSet: matrixSet,
-               projection: 'EPSG:' + matrixSet
+               matrixSet: 'EPSG:2056',
+               projection: 'EPSG:2056'
              });
 
              _this.wmtsLayerAlternative.setSource(new ol.source.WMTS(/** @type {!olx.source.WMTSOptions} */ (options)));
@@ -476,7 +474,7 @@
         this.vectorSource.addFeature(feature);
         this.interactions.select.getFeatures().clear();
 
-        this.map.getView().fit(this.vectorSource.getExtent(),  
+        this.map.getView().fit(this.vectorSource.getExtent(),
           {padding: [100, 100, 100, 100],  minResolution: 1 });
 
     };

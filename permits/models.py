@@ -243,8 +243,8 @@ class PermitRequestGeoTime(models.Model):
     Permit location in space and time
     """
     permit_request = models.ForeignKey('PermitRequest', on_delete=models.CASCADE)
-    datetime_start = models.DateTimeField(_("Date de début"))
-    datetime_end =models.DateTimeField(_("Date de fin"))
-    commentaire = models.CharField(_("Commentaire"), max_length=1024, blank=True)
+    starts_at = models.DateTimeField(_("Date de début"))
+    ends_at =models.DateTimeField(_("Date de fin"))
+    comment = models.CharField(_("Commentaire"), max_length=1024, blank=True)
     external_link = models.URLField(_("Lien externe"), blank=True)
-    geom = geomodels.GeometryCollectionField(_("geom"), null=True, srid=2056)
+    geom = geomodels.GeometryCollectionField(_("Localisation"), null=True, srid=2056)
