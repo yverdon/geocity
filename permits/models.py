@@ -242,7 +242,7 @@ class PermitRequestGeoTime(models.Model):
     """
     Permit location in space and time
     """
-    permit_request = models.ForeignKey('PermitRequest', on_delete=models.CASCADE)
+    permit_request = models.ForeignKey('PermitRequest', on_delete=models.CASCADE, related_name='geo_time')
     starts_at = models.DateTimeField(_("Date de début"))
     ends_at =models.DateTimeField(_("Date de fin"))
     comment = models.CharField(_("Commentaire"), max_length=1024, blank=True)

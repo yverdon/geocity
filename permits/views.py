@@ -203,7 +203,7 @@ def permit_request_geo_time(request, permit_request_id):
 
     permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
 
-    instance = models.PermitRequestGeoTime.objects.filter(permit_request=permit_request_id).first()
+    instance = permit_request.geo_time.first()
 
     form = forms.PermitRequestGeoTimeForm(request.POST or None, instance=instance)
 
