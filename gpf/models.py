@@ -54,6 +54,11 @@ class Actor(models.Model):
     def __str__(self):
         return self.name if self.name else ''
 
+    def get_full_name(self):
+        name_parts = [self.firstname, self.name]
+        return " ".join(name_part for name_part in name_parts if name_part)
+
+
 
 class AdministrativeEntity(models.Model):
 
