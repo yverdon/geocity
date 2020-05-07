@@ -1,0 +1,8 @@
+{% load i18n %}{% autoescape off %}{% blocktrans %}Bonjour {{ name }}{% endblocktrans %},
+
+{% trans "Nous vous confirmons bonne réception de votre demande et vous en remercions." %}
+
+{% trans "Vous pouvez la consulter sur le lien suivant" %}: {{ permit_request_url }}
+
+{% trans "Avec nos meilleures salutations," %}
+{{ administrative_entity_name }}{% endautoescape %}

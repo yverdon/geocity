@@ -28,6 +28,7 @@ class AdministrativeEntityFactory(factory.django.DjangoModelFactory):
         model = AdministrativeEntity
 
     ofs_id = 0
+    name = factory.Faker('company')
 
 
 class WorksObjectFactory(factory.django.DjangoModelFactory):

@@ -33,6 +33,10 @@ def create_user(username='admin'):
     return user
 
 
+def get_mails(subject):
+    return [email for email in mail.outbox if email.subject == subject]
+
+
 class LoggedInUserMixin:
     def setUp(self):
         self.user = create_user()
@@ -159,8 +163,22 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
         self.client.post(reverse('permits:permit_request_submit', kwargs={'permit_request_id': permit_request.pk}))
 
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, ["secretariat@yverdon.ch"])
+        notification_emails = get_mails("Nouvelle demande de permis")
+
+        self.assertEqual(len(notification_emails), 1)
+        self.assertEqual(notification_emails[0].to, ["secretariat@yverdon.ch"])
+
+    def test_submit_permit_request_sends_email_to_author(self):
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.actor, status=models.PermitRequest.STATUS_DRAFT
+        )
+        self.client.post(reverse('permits:permit_request_submit', kwargs={'permit_request_id': permit_request.pk}))
+
+        notification_emails = get_mails("Votre demande de permis")
+
+        self.assertEqual(len(notification_emails), 1)
+        self.assertEqual(notification_emails[0].to, [self.user.actor.email])
+        self.assertIn(permit_request.administrative_entity.name, notification_emails[0].body)
 
 
 class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
