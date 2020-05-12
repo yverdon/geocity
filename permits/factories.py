@@ -46,20 +46,18 @@ class DepartmentFactory(factory.django.DjangoModelFactory):
     is_admin = False
     is_archeologist = False
     administrative_entity = factory.SubFactory(AdministrativeEntityFactory)
+    group = factory.SubFactory("permits.factories.GroupFactory")
 
     class Meta:
         model = gpf_models.Department
 
 
 class GroupFactory(factory.django.DjangoModelFactory):
-    department = factory.RelatedFactory(DepartmentFactory, "group")
     name = factory.Faker("company")
 
     class Meta:
         model = Group
 
-
-class SecretariatGroupFactory(GroupFactory):
     @factory.post_generation
     def permissions(self, create, extracted, **kwargs):
         if not create:
@@ -69,6 +67,40 @@ class SecretariatGroupFactory(GroupFactory):
             permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
             amend_permission = Permission.objects.get(codename="amend_permit_request", content_type=permit_request_ct)
             extracted = [amend_permission]
+
+        for permission in extracted:
+            self.permissions.add(permission)
+
+
+class SecretariatGroupFactory(GroupFactory):
+    department = factory.RelatedFactory(DepartmentFactory, "group")
+
+    @factory.post_generation
+    def permissions(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if not extracted:
+            permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
+            amend_permission = Permission.objects.get(codename="amend_permit_request", content_type=permit_request_ct)
+            extracted = [amend_permission]
+
+        for permission in extracted:
+            self.permissions.add(permission)
+
+
+class ValidatorGroupFactory(GroupFactory):
+    department = factory.RelatedFactory(DepartmentFactory, "group")
+
+    @factory.post_generation
+    def permissions(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if not extracted:
+            permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
+            validate_permission = Permission.objects.get(codename="validate_permit_request", content_type=permit_request_ct)
+            extracted = [validate_permission]
 
         for permission in extracted:
             self.permissions.add(permission)

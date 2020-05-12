@@ -7,6 +7,8 @@ from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
 
+from bs4 import BeautifulSoup
+
 from gpf.models import Actor, AdministrativeEntity, Department
 
 from . import factories, models, services, views
@@ -30,6 +32,14 @@ def get_permit_request_works_types_ids(permit_request):
 class LoggedInUserMixin:
     def setUp(self):
         self.user = factories.UserFactory()
+        self.client.login(username=self.user.username, password="password")
+
+
+class LoggedInSecretariatMixin:
+    def setUp(self):
+        self.group = factories.SecretariatGroupFactory()
+        self.administrative_entity = self.group.department.administrative_entity
+        self.user = factories.SecretariatUserFactory(groups=[self.group])
         self.client.login(username=self.user.username, password="password")
 
 
@@ -276,15 +286,7 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
         self.assertInHTML(expected, content)
 
 
-class PermitRequestAmendmentTestCase(TestCase):
-    def setUp(self):
-        super().setUp()
-
-        group = factories.SecretariatGroupFactory()
-        self.administrative_entity = group.department.administrative_entity
-        secretariat_user = factories.SecretariatUserFactory(groups=[group])
-        self.client.login(username=secretariat_user.username, password="password")
-
+class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
     def test_non_secretariat_user_cannot_amend_request(self):
         user = factories.UserFactory()
         self.client.login(username=user.username, password="password")
@@ -346,3 +348,90 @@ class PermitRequestAmendmentTestCase(TestCase):
         )
 
         self.assertContains(response, "Vous devez maintenant contacter le requérant par email")
+
+    def test_secretariat_cannot_amend_permit_request_with_validation_requested(self):
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            administrative_entity=self.administrative_entity,
+        )
+        response = self.client.post(
+            reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk}),
+            data={
+                "price": 200,
+                "action": views.PermitRequestDetailView.ACTION_AMEND
+            },
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+
+class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase):
+    def test_secretariat_can_request_validation(self):
+        validator_groups = factories.ValidatorGroupFactory.create_batch(
+            2, department__administrative_entity=self.administrative_entity
+        )
+        validator_departments = [group.department.pk for group in validator_groups]
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+            administrative_entity=self.administrative_entity,
+        )
+        response = self.client.post(
+            reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk}),
+            data={
+                "departments": validator_departments,
+                "action": views.PermitRequestDetailView.ACTION_REQUEST_VALIDATION
+            },
+        )
+
+        permit_request.refresh_from_db()
+
+        self.assertEqual(permit_request.status, models.PermitRequest.STATUS_AWAITING_VALIDATION)
+        self.assertEqual(list(permit_request.validations.values_list('department', flat=True)), validator_departments)
+
+    def test_secretariat_cannot_request_validation_for_already_validated_permit_request(self):
+        validator_group = factories.ValidatorGroupFactory(department__administrative_entity=self.administrative_entity)
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            administrative_entity=self.administrative_entity,
+        )
+        response = self.client.post(
+            reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk}),
+            data={
+                "departments": [validator_group.department.pk],
+                "action": views.PermitRequestDetailView.ACTION_REQUEST_VALIDATION
+            },
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_default_departments_are_checked(self):
+        default_validator_groups = factories.ValidatorGroupFactory.create_batch(
+            2, department__administrative_entity=self.administrative_entity, department__is_default_validator=True
+        )
+        non_default_validator_group = factories.ValidatorGroupFactory(
+            department__administrative_entity=self.administrative_entity
+        )
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+            administrative_entity=self.administrative_entity,
+        )
+        response = self.client.get(
+            reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk}),
+        )
+
+        parser = BeautifulSoup(response.content, features="html5lib")
+        inputs = {
+            int(input_["value"]): input_.get("checked") is not None
+            for input_ in parser.select('input[name="departments"]')
+        }
+
+        self.assertDictEqual(
+            inputs,
+            {
+                **{group.pk: True for group in default_validator_groups},
+                **{non_default_validator_group.pk: False}
+            }
+        )
