@@ -15,5 +15,7 @@ psycopg2-binary
 pytz
 PyYAML
 requests
+# Required by django-tables2, which doesn't list it in their requirements
+tablib
 WeasyPrint
 whitenoise

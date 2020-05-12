@@ -35,6 +35,7 @@ requests==2.22.0          # via -r requirements.in
 six==1.12.0               # via html5lib, pip-tools
 soupsieve==1.9.4          # via beautifulsoup4
 sqlparse==0.3.0           # via django
+tablib==1.1.0             # via -r requirements.in
 tinycss2==1.0.2           # via cairosvg, cssselect2, weasyprint
 urllib3==1.25.6           # via requests
 weasyprint==50            # via -r requirements.in
