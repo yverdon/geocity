@@ -1,11 +1,6 @@
-FROM python:3.8-buster
+FROM osgeo/gdal:ubuntu-small-latest
 
-RUN echo deb http://ftp.uk.debian.org/debian unstable main contrib non-free >> /etc/apt/sources.list && \
-    apt-get update && apt-get upgrade -y && \
-    apt-get remove -y binutils && \
-    apt-get -t unstable install -y libgdal-dev g++ && \
-    apt-get install -y gettext && \
-    apt-get clean
+RUN apt-get install python3-pip -y
 
 # Update C env vars so compiler can find gdal
 ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
@@ -17,12 +12,10 @@ RUN mkdir -p /code/app_data && \
 
 VOLUME /code/app_data
 VOLUME /code/tempfiles
-VOLUME /postgresdata
 
 WORKDIR /code
-ADD requirements.txt /code/
-RUN pip install -r requirements.txt
+
+COPY . /code/
+RUN pip3 install -r requirements.txt
 
 
-
-ADD . /code/
