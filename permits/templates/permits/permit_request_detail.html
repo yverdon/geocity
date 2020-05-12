@@ -26,22 +26,55 @@
 
     {% permit_request_summary permit_request %}
 
-    {% if additional_information_form %}
-      <div class="box box--default">
-        <h3>{% trans "Amender la demande" %}</h3>
-        <form method="post">
-          {% csrf_token %}
+    {% if forms.amend or forms.request_validation %}
+      <h2>{% trans "Actions" %}</h2>
+      <ul class="nav nav-tabs" id="actions-tabs" role="tablist">
+        {% if forms.amend %}
+          <li class="nav-item">
+            <a class="nav-link active" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="true">{% trans "Amender" %}</a>
+          </li>
+        {% endif %}
 
-          {% bootstrap_form additional_information_form layout='horizontal' %}
+        {% if forms.request_validation %}
+          <li class="nav-item">
+            <a class="nav-link" id="validate-tab" data-toggle="tab" href="#validate" role="tab" aria-controls="validate" aria-selected="false">{% trans "Envoyer pour validation" %}</a>
+          </li>
+        {% endif %}
+      </ul>
+      <div class="pt-3 tab-content box box--default">
+        {% if forms.amend %}
+          <div class="tab-pane show active" id="amend" role="tabpanel" aria-labelledby="amend-tab">
+            <form method="post">
+              {% csrf_token %}
 
-          <div class="text-right">
-            <button class="btn btn-primary">{% trans "Enregistrer" %}</button>
+              {% bootstrap_form forms.amend layout='horizontal' %}
+
+              <div class="text-right">
+                <input name="action" type="hidden" value="amend">
+                <button class="btn btn-primary">{% trans "Amender" %}</button>
+              </div>
+            </form>
           </div>
-        </form>
+        {% endif %}
+
+        {% if forms.request_validation %}
+        <div class="tab-pane" id="validate" role="tabpanel" aria-labelledby="validate-tab">
+          <form method="post">
+            {% csrf_token %}
+
+            {% bootstrap_form forms.request_validation layout='horizontal' %}
+
+            <div class="text-right">
+              <input name="action" type="hidden" value="request_validation">
+              <button class="btn btn-primary">{% trans "Envoyer pour validation" %}</button>
+            </div>
+          </form>
+        </div>
+        {% endif %}
       </div>
     {% endif %}
 
-    <p>
+    <p class="mt-4">
       <a href="{% url 'permits:permit_requests_list' %}">{% trans "Retour à la liste des demandes" %}</a>
     </p>
   </div>

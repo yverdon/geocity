@@ -78,6 +78,7 @@ class Department(models.Model):
     is_admin = models.BooleanField(_("is_admin"))
     is_archeologist = models.BooleanField(_("is_archeologist"))
     administrative_entity = models.ForeignKey(AdministrativeEntity, null=True, on_delete=models.SET_NULL, related_name='departments', verbose_name=_("administrative_entity"))
+    is_default_validator = models.BooleanField(_("sélectionné par défaut pour les validations"), default=False)
 
     class Meta:
         verbose_name = _('department')

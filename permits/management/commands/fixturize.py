@@ -1,12 +1,14 @@
 from io import StringIO
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
 from django.core import management
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 
 from gpf import models as gpf_models
+from permits import models
 
 User = get_user_model()
 
@@ -47,16 +49,21 @@ class Command(BaseCommand):
         gpf_models.Actor.objects.create(user=user, email="user@localhost")
         self.stdout.write("user / admin")
 
-        self.create_user('secretariat-yverdon', 'Secrétariat Yverdon', 'Démo Yverdon')
+        permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
+        amend_permission = Permission.objects.get(codename='amend_permit_request', content_type=permit_request_ct)
+        user = self.create_user('secretariat-yverdon', 'Secrétariat Yverdon', 'Démo Yverdon')
+        user.user_permissions.add(amend_permission)
         self.stdout.write("secretariat-yverdon / admin")
 
-        self.create_user('secretariat-lausanne', 'Secrétariat Lausanne', 'Démo Lausanne')
+        user = self.create_user('secretariat-lausanne', 'Secrétariat Lausanne', 'Démo Lausanne')
+        user.user_permissions.add(amend_permission)
         self.stdout.write("secretariat-lausanne / admin")
 
-        admin = User.objects.get(username='admin')
-        admin.set_password('admin')
-        admin.save()
-        self.stdout.write("admin / admin")
+        user = self.create_user('validator-yverdon', 'Validateur Yverdon', 'Démo Yverdon')
+        user.user_permissions.add(
+            Permission.objects.get(codename='validate_permit_request', content_type=permit_request_ct)
+        )
+        self.stdout.write("validator-yverdon / admin")
 
     def create_user(self, username, group_name, administrative_entity_name):
         administrative_entity, created = gpf_models.AdministrativeEntity.objects.get_or_create(
@@ -72,3 +79,8 @@ class Command(BaseCommand):
         )
 
         return user
+
+    def create_works_types(self):
+        works_types = [
+            ("Démolition", ["Bûcher", ""])
+        ]

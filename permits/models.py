@@ -111,6 +111,7 @@ class PermitRequest(models.Model):
     STATUS_VALIDATED = 2
     STATUS_PROCESSING = 3
     STATUS_AWAITING_SUPPLEMENT = 4
+    STATUS_AWAITING_VALIDATION = 5
 
     STATUS_CHOICES = (
         (STATUS_DRAFT, _("Brouillon")),
@@ -118,7 +119,13 @@ class PermitRequest(models.Model):
         (STATUS_PROCESSING, _("En traitement")),
         (STATUS_VALIDATED, _("Validée")),
         (STATUS_AWAITING_SUPPLEMENT, _("Demande de compléments")),
+        (STATUS_AWAITING_VALIDATION, _("En validation")),
     )
+    AMENDABLE_STATUSES = {
+        STATUS_SUBMITTED_FOR_VALIDATION,
+        STATUS_PROCESSING,
+        STATUS_AWAITING_SUPPLEMENT
+    }
 
     status = models.PositiveSmallIntegerField(
         _("état"), choices=STATUS_CHOICES, default=STATUS_DRAFT
@@ -144,6 +151,10 @@ class PermitRequest(models.Model):
     class Meta:
         verbose_name = _("demande de permis")
         verbose_name_plural = _("demandes de permis")
+        permissions = [
+            ('amend_permit_request', _("Amender les demandes de permis")),
+            ('validate_permit_request', _("Valider les demandes de permis")),
+        ]
 
     def is_draft(self):
         return self.status == self.STATUS_DRAFT
@@ -157,12 +168,8 @@ class PermitRequest(models.Model):
     def can_be_deleted_by_author(self):
         return self.is_draft()
 
-    def can_be_amended_by_secretariat(self):
-        return self.status in {
-            self.STATUS_SUBMITTED_FOR_VALIDATION,
-            self.STATUS_PROCESSING,
-            self.STATUS_AWAITING_SUPPLEMENT
-        }
+    def can_be_amended(self):
+        return self.status in self.AMENDABLE_STATUSES
 
     def works_objects_html(self):
         """
@@ -267,6 +274,26 @@ class WorksObjectPropertyValue(models.Model):
 
     class Meta:
         unique_together = [('property', 'works_object_type_choice')]
+
+
+class PermitRequestValidation(models.Model):
+    STATUS_REQUESTED = 0
+    STATUS_APPROVED = 1
+    STATUS_REJECTED = 2
+    STATUS_CHOICES = (
+        (STATUS_REQUESTED, _("En attente")),
+        (STATUS_APPROVED, _("Approuvé")),
+        (STATUS_REJECTED, _("Refusé")),
+    )
+
+    permit_request = models.ForeignKey(PermitRequest, on_delete=models.CASCADE, related_name="validations")
+    department = models.ForeignKey(
+        "gpf.Department", on_delete=models.CASCADE, related_name="permit_request_validations"
+    )
+    validation_status = models.IntegerField(choices=STATUS_CHOICES, default=STATUS_REQUESTED)
+
+    class Meta:
+        unique_together = ("permit_request", "department")
 
 
 @dataclasses.dataclass

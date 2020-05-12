@@ -254,16 +254,16 @@ def get_permit_requests_list_for_user(user):
     if user.is_superuser:
         return models.PermitRequest.objects.all()
     else:
-        return models.PermitRequest.objects.filter(
-            Q(author=user.actor)
-            | (Q(administrative_entity__in=get_user_administrative_entities(user))
-               & Q(status__in=[
-                   models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-                   models.PermitRequest.STATUS_PROCESSING,
-                   models.PermitRequest.STATUS_VALIDATED,
-                   models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
-               ]))
-        )
+        qs = Q(author=user.actor)
+
+        if user.has_perm('permits.amend_permit_request'):
+            qs |= Q(
+                administrative_entity__in=get_user_administrative_entities(user),
+            ) & ~Q(
+                status=models.PermitRequest.STATUS_DRAFT
+            )
+
+        return models.PermitRequest.objects.filter(qs)
 
 
 def get_permitactorformset_initiated(permit_request, data=None):
@@ -460,5 +460,13 @@ def submit_permit_request(permit_request, absolute_uri_func):
         send_mass_mail(emails)
 
 
-def is_secretariat(user):
-    return get_user_administrative_entities(user).exists()
+def can_amend_permit_request(user, permit_request):
+    return (
+        user.has_perm('permits.amend_permit_request')
+        and permit_request.can_be_amended()
+        and permit_request.administrative_entity in get_user_administrative_entities(user)
+    )
+
+
+def can_validate_permit_request(user, permit_request):
+    pass
