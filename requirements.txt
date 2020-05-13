@@ -27,6 +27,7 @@ jdcal==1.4.1              # via -r requirements.in
 pillow==6.2.1             # via -r requirements.in, cairosvg
 pip-tools==5.1.1          # via -r requirements.in
 psycopg2-binary==2.8.5    # via -r requirements.in
+pycairo==1.19.1           # via -r requirements.in
 pycparser==2.19           # via cffi
 pyphen==0.9.5             # via weasyprint
 pytz==2019.3              # via -r requirements.in, django
@@ -35,6 +36,7 @@ requests==2.22.0          # via -r requirements.in
 six==1.12.0               # via html5lib, pip-tools
 soupsieve==1.9.4          # via beautifulsoup4
 sqlparse==0.3.0           # via django
+tablib==1.1.0             # via -r requirements.in
 tinycss2==1.0.2           # via cairosvg, cssselect2, weasyprint
 urllib3==1.25.6           # via requests
 weasyprint==50            # via -r requirements.in

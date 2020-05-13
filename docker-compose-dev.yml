@@ -9,7 +9,7 @@ services:
     depends_on:
       - "postgres"
     build: ./
-    entrypoint: entrypoint.sh
+    entrypoint: /build-files/entrypoint.sh
     command: python3 manage.py runserver 0.0.0.0:9000
     volumes:
       - .:/code #DEV ONLY!!!

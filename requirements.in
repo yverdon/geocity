@@ -17,3 +17,5 @@ PyYAML
 requests
 WeasyPrint
 whitenoise
+tablib
+pycairo
