@@ -11,23 +11,22 @@ ENV C_INCLUDE_PATH=/usr/include/gdal
 
 ENV PYTHONUNBUFFERED 1
 RUN mkdir -p /code/app_data && \
-    mkdir -p /code/tempfiles && \
-    mkdir -p /build-files
+    mkdir -p /code/tempfiles
 
 VOLUME /code/app_data
 VOLUME /code/tempfiles
 
+# Copy files in another location to solved windows rights issues
+# These files are only used during build process and by entrypoint.sh for dev
+
 #For production
 COPY . /code/
 
-# Copy files in another location to solved windows rights issues
-# These files are only used during build process and by entrypoint.sh for dev
-COPY . /build-files/
-WORKDIR /build-files/
+WORKDIR /code
 
 # Required to fix rights when used on windows
-RUN chmod 777 /build-files/entrypoint.sh \
-    && ln -s /build-files/entrypoint.sh /
+RUN chmod 777 entrypoint.sh \
+    && ln -s entrypoint.sh /
 
 RUN pip3 install -r requirements.txt
 

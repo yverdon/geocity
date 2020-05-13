@@ -12,7 +12,7 @@ do
     sleep 1
 done
 
-cd /build-files
+cd /code
 # rename demo env file
 cp -n env.yaml_demo env.yaml
 # setup app using the django tools
