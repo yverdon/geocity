@@ -27,6 +27,7 @@ jdcal==1.4.1              # via -r requirements.in
 pillow==6.2.1             # via -r requirements.in, cairosvg
 pip-tools==5.1.1          # via -r requirements.in
 psycopg2-binary==2.8.5    # via -r requirements.in
+pycairo==1.19.1           # via -r requirements.in
 pycparser==2.19           # via cffi
 pyphen==0.9.5             # via weasyprint
 pytz==2019.3              # via -r requirements.in, django

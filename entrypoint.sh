@@ -12,13 +12,12 @@ do
     sleep 1
 done
 
-cd /code
+cd /build-files
 # rename demo env file
 cp -n env.yaml_demo env.yaml
 # setup app using the django tools
 python3 manage.py migrate
 echo yes | python3 manage.py compilemessages -l fr
-echo yes | python3 manage.py collectstatic
 
 python3 manage.py loaddata db.json
 

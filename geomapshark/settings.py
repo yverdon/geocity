@@ -34,7 +34,9 @@ ALLOWED_HOSTS = ['gmf23-mapnv.preprod.sig.cloud.camptocamp.com',
                 'pro.mapnv.ch',
                 'mapnv.ch',
                  'localhost',
-                 '127.0.0.1']
+                 '127.0.0.1',
+                 'geocity-dev.mapnv.ch',
+                 'construire.mapnv.ch',]
 
 DATE_INPUT_FORMAT = [
     '%Y-%m-%d', '%m/%d/%Y', '%m/%d/%y', # '2006-10-25', '10/25/2006', '10/25/06'
