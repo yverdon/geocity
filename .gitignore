@@ -6,6 +6,7 @@ __pycache__/
 /print/*.qgs~
 /static/images/print/STE_Signature.png
 geomapshark/static/
+/geomapshark/static/
 gunicorn_log.log
 static/tempfiles/
 geomapshark/protected-static/

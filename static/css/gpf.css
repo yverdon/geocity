@@ -176,3 +176,15 @@ h3 {
 .list-inline > li:not(:first-child) {
   margin-left: 7px;
 }
+
+.text-right {
+  text-align: right;
+}
+
+.box {
+  padding: 1rem;
+}
+
+.box--default {
+  background-color: var(--light);
+}

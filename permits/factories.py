@@ -1,8 +1,26 @@
 import factory
 import faker
-from gpf.models import AdministrativeEntity
+from gpf.models import Actor, AdministrativeEntity
 
 from . import models
+
+
+class GpfActorFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Actor
+
+    firstname = factory.Faker('first_name')
+    name = factory.Faker('last_name')
+    email = factory.Faker('email')
+
+
+class PermitRequestActorFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitActor
+
+    firstname = factory.Faker('first_name')
+    name = factory.Faker('last_name')
+    email = factory.Faker('email')
 
 
 class AdministrativeEntityFactory(factory.django.DjangoModelFactory):
@@ -31,6 +49,7 @@ class PermitRequestFactory(factory.django.DjangoModelFactory):
         model = models.PermitRequest
 
     administrative_entity = factory.SubFactory(AdministrativeEntityFactory)
+    author = factory.SubFactory(GpfActorFactory)
 
 
 class WorksObjectPropertyFactory(factory.django.DjangoModelFactory):
