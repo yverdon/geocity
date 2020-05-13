@@ -13,9 +13,16 @@ RUN mkdir -p /code/app_data && \
 VOLUME /code/app_data
 VOLUME /code/tempfiles
 
+COPY . /code/
+
 WORKDIR /code
 
-COPY . /code/
+
+RUN chmod 777 /code/entrypoint.sh \
+    && ln -s /code/entrypoint.sh /
+
+
 RUN pip3 install -r requirements.txt
+RUN pip3 install tablib
 
 
