@@ -1,6 +1,0 @@
-{% load i18n %}
-{% if record.can_be_edited_by_author %}
-  <a title="{% trans "Modifier" %}" href="{% url 'permits:permit_request_properties' record.id %}">
-    <i class="fa fa-edit fa-lg"></i>
-  </a>
-{% endif %}

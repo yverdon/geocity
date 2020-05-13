@@ -1,15 +1,19 @@
 import mimetypes
 import urllib.parse
 import os
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db.models import Prefetch
 from django.utils.decorators import method_decorator
 from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.translation import gettext as _
 
 from gpf.models import Actor
 
 from . import forms, models, services, tables, filters
+from .exceptions import BadPermitRequestStatus
 from django_tables2.views import SingleTableMixin
 from django_filters.views import FilterView
 
@@ -23,16 +27,78 @@ def user_has_actor(user):
     return True
 
 
+def get_permit_request_for_edition(user, permit_request_id):
+    return services.get_permit_request_for_user_or_404(
+        user,
+        permit_request_id,
+        statuses=[
+            models.PermitRequest.STATUS_DRAFT,
+            models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
+        ]
+    )
+
+
+def redirect_bad_status_to_detail(func):
+    def inner(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except BadPermitRequestStatus as e:
+            return redirect('permits:permit_request_detail', permit_request_id=e.permit_request.pk)
+
+    return inner
+
+
 @login_required
-def permit_request_redirect(request, permit_request_id):
-    return redirect('permits:permit_request_select_administrative_entity', permit_request_id=permit_request_id)
+def permit_request_detail(request, permit_request_id):
+    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+
+    if permit_request.is_draft() and permit_request.author.user == request.user:
+        return redirect('permits:permit_request_select_administrative_entity', permit_request_id=permit_request_id)
+
+    if services.is_secretariat(request.user) and permit_request.can_be_amended_by_secretariat():
+        if request.method == "POST":
+            additional_information_form = forms.PermitRequestAdditionalInformationForm(
+                request.POST, instance=permit_request
+            )
+
+            if additional_information_form.is_valid():
+                success_message = _("La demande de permis #%s a bien été amendée.") % permit_request.pk
+
+                if permit_request.status == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT:
+                    success_message += " " + _(
+                        "Le statut de la demande a été passé à en attente de compléments. Vous devez maintenant"
+                        " contacter le requérant par email (%s) afin de lui demander de fournir les informations manquantes."
+                    ) % permit_request.author.email
+
+                additional_information_form.save()
+                messages.success(request, success_message)
+
+                return redirect("permits:permit_requests_list")
+        else:
+            # Only set the `status` default value if it's submitted for validation, to prevent accidentally resetting
+            # the status
+            initial = {
+                "status": models.PermitRequest.STATUS_PROCESSING
+            } if permit_request.status == models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION else {}
+
+            additional_information_form = forms.PermitRequestAdditionalInformationForm(
+                instance=permit_request, initial=initial
+            )
+    else:
+        additional_information_form = None
+
+    return render(request, "permits/permit_request_detail.html", {
+        "permit_request": permit_request,
+        "additional_information_form": additional_information_form,
+    })
 
 
+@redirect_bad_status_to_detail
 @login_required
 @user_passes_test(user_has_actor)
 def permit_request_select_administrative_entity(request, permit_request_id=None):
     if permit_request_id:
-        permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+        permit_request = get_permit_request_for_edition(request.user, permit_request_id)
     else:
         permit_request = None
 
@@ -56,13 +122,14 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
     })
 
 
+@redirect_bad_status_to_detail
 @login_required
 def permit_request_select_types(request, permit_request_id):
     """
     Step to select works types (eg. demolition). No permit request is created at this step since we only store (works
     object, works type) couples in the database.
     """
-    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+    permit_request = get_permit_request_for_edition(request.user, permit_request_id)
 
     if request.method == 'POST':
         works_types_form = forms.WorksTypesForm(data=request.POST, instance=permit_request)
@@ -86,13 +153,14 @@ def permit_request_select_types(request, permit_request_id):
     })
 
 
+@redirect_bad_status_to_detail
 @login_required
 def permit_request_select_objects(request, permit_request_id):
     """
     Step to select works objects. This view supports either editing an existing permit request (if `permit_request_id`
     is set) or creating a new permit request.
     """
-    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+    permit_request = get_permit_request_for_edition(request.user, permit_request_id)
 
     if request.GET:
         works_types_form = forms.WorksTypesForm(data=request.GET, instance=permit_request)
@@ -125,12 +193,13 @@ def permit_request_select_objects(request, permit_request_id):
     })
 
 
+@redirect_bad_status_to_detail
 @login_required
 def permit_request_properties(request, permit_request_id):
     """
     Step to input properties values for the given permit request.
     """
-    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+    permit_request = get_permit_request_for_edition(request.user, permit_request_id)
 
     if request.method == 'POST':
         # Disable `required` fields validation to allow partial save
@@ -150,12 +219,13 @@ def permit_request_properties(request, permit_request_id):
     })
 
 
+@redirect_bad_status_to_detail
 @login_required
 def permit_request_appendices(request, permit_request_id):
     """
     Step to upload appendices for the given permit request.
     """
-    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+    permit_request = get_permit_request_for_edition(request.user, permit_request_id)
 
     if request.method == 'POST':
         form = forms.WorksObjectsAppendicesForm(
@@ -176,10 +246,10 @@ def permit_request_appendices(request, permit_request_id):
     })
 
 
+@redirect_bad_status_to_detail
 @login_required
 def permit_request_actors(request, permit_request_id):
-
-    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+    permit_request = get_permit_request_for_edition(request.user, permit_request_id)
 
     if request.method == 'POST':
         formset = services.get_permitactorformset_initiated(permit_request, data=request.POST)
@@ -226,11 +296,10 @@ def permit_request_media_download(request, property_value_id):
     """
     Send the file referenced by the given property value.
     """
-    # TODO allow other users to access the uploaded media (eg. services that will validate the request)
     property_value = get_object_or_404(
         models.WorksObjectPropertyValue.objects.filter(property__input_type=models.WorksObjectProperty.INPUT_TYPE_FILE),
         pk=property_value_id,
-        works_object_type_choice__permit_request__author=request.user.actor
+        works_object_type_choice__permit_request__in=services.get_permit_requests_list_for_user(request.user)
     )
     file = services.get_property_value(property_value)
     mime_type, encoding = mimetypes.guess_type(file.name)
@@ -240,51 +309,58 @@ def permit_request_media_download(request, property_value_id):
 
 @method_decorator(login_required, name="dispatch")
 class PermitRequestListExternsView(SingleTableMixin, FilterView):
-
     paginate_by = int(os.environ['PAGINATE_BY'])
-    table_class = tables.PermitRequestTableExterns
     model = models.PermitRequest
     template_name = 'permits/permit_requests_list.html'
-    filterset_class = filters.PermitRequestFilterExterns
 
     def get_queryset(self):
-        return models.PermitRequest.objects.filter(author=Actor.objects.get(user=self.request.user))
+        return services.get_permit_requests_list_for_user(self.request.user).prefetch_related(
+            Prefetch(
+                'works_object_types',
+                queryset=models.WorksObjectType.objects.select_related('works_type', 'works_object')
+            )
+        ).order_by('-created_at')
+
+    def get_table_class(self):
+        return (
+            tables.SecretariatPermitRequestsTable
+            if services.is_secretariat(self.request.user)
+            else tables.OwnPermitRequestsTable
+        )
+
+    def get_filterset_class(self):
+        return (
+            filters.SecretariatPermitRequestFilterSet
+            if services.is_secretariat(self.request.user)
+            else filters.OwnPermitRequestFilterSet
+        )
 
 
+@redirect_bad_status_to_detail
 @login_required
 def permit_request_submit(request, permit_request_id):
-    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+    permit_request = get_permit_request_for_edition(request.user, permit_request_id)
 
     if request.method == 'POST':
-        permit_request.status = models.PermitRequest.STATUS_SUBMITTED
-        permit_request.save()
+        services.submit_permit_request(permit_request, request.build_absolute_uri)
         return redirect('permits:permit_requests_list')
 
-    #properties
-    properties_form = forms.WorksObjectsPropertiesForm(instance=permit_request, enable_required=False)
-    fields_by_object_type = properties_form.get_fields_by_object_type()
-
-    #appendices
-    appendices_form = forms.WorksObjectsAppendicesForm(instance=permit_request, enable_required=False)
-    appendices_object_types = appendices_form.get_fields_by_object_type()
-    # actors
-    actor_formset = services.get_permitactorformset_initiated(permit_request)
-
-    total_error_count = services.get_total_error_count(permit_request)
+    incomplete_steps = [
+        step.url
+        for step in services.get_progressbar_steps(request, permit_request).values()
+        if step.errors_count and step.url
+    ]
 
     return render(request, "permits/permit_request_submit.html", {
         'permit_request': permit_request,
-        'properties_object_types': fields_by_object_type,
-        'appendices_object_types': appendices_object_types,
-        'actor_formset': actor_formset,
-        'total_error_count': total_error_count,
+        'incomplete_steps': incomplete_steps,
     })
 
 
+@redirect_bad_status_to_detail
 @login_required
 def permit_request_delete(request, permit_request_id):
-
-    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+    permit_request = get_permit_request_for_edition(request.user, permit_request_id)
 
     if request.method == 'POST':
         permit_request.delete()

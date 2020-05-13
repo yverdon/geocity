@@ -34,7 +34,9 @@ ALLOWED_HOSTS = ['gmf23-mapnv.preprod.sig.cloud.camptocamp.com',
                 'pro.mapnv.ch',
                 'mapnv.ch',
                  'localhost',
-                 '127.0.0.1']
+                 '127.0.0.1',
+                 'geocity-dev.mapnv.ch',
+                 'construire.mapnv.ch',]
 
 DATE_INPUT_FORMAT = [
     '%Y-%m-%d', '%m/%d/%Y', '%m/%d/%y', # '2006-10-25', '10/25/2006', '10/25/06'
@@ -50,6 +52,11 @@ EMAIL_PORT = os.environ["EMAIL_PORT"]
 EMAIL_HOST_USER = os.environ["EMAIL_HOST_USER"]
 EMAIL_HOST_PASSWORD = os.environ["EMAIL_HOST_PASSWORD"]
 EMAIL_USE_TLS = os.environ["EMAIL_USE_TLS"]
+
+EMAIL_BACKEND = (
+    'django.core.mail.backends.console.EmailBackend'
+    if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'
+)
 
 DEFAULT_CHARSET = "utf-8"
 
@@ -101,6 +108,8 @@ TEMPLATES = [
 
 BOOTSTRAP4 = {
     'include_jquery': True,
+    # Avoid repeating the label in the placeholder
+    'set_placeholder': False,
 }
 
 WSGI_APPLICATION = 'geomapshark.wsgi.application'

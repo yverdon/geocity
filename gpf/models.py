@@ -52,7 +52,8 @@ class Actor(models.Model):
         return reverse('gpf:genericactorview', args=[str(self.id)])
 
     def __str__(self):
-        return self.name
+
+        return self.name if self.name else ''
 
 
 class AdministrativeEntity(models.Model):
@@ -76,7 +77,7 @@ class Department(models.Model):
     is_validator = models.BooleanField(_("is_validator"))
     is_admin = models.BooleanField(_("is_admin"))
     is_archeologist = models.BooleanField(_("is_archeologist"))
-    administrative_entity = models.ForeignKey(AdministrativeEntity, null=True, on_delete=models.SET_NULL, related_name='%(class)s_administrative_entity', verbose_name=_("administrative_entity"))
+    administrative_entity = models.ForeignKey(AdministrativeEntity, null=True, on_delete=models.SET_NULL, related_name='departments', verbose_name=_("administrative_entity"))
 
     class Meta:
         verbose_name = _('department')

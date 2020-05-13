@@ -1,80 +1,43 @@
 {% extends "base_permits.html" %}
 {% load bootstrap4 %}
 {% load i18n %}
-{% load permit_progressbar %}
+{% load permits_extras %}
 
 {% block content-no-sidebar %}
-<div class="container mt-3">
+<div class="container">
   {% permit_progressbar permit_request 'submit' %}
-  {% if total_error_count != 0  %}
-    <h3>{% trans "Votre demande n'est pas complète mais elle est sauvegardée" %}</h3>
-    {% trans "Vous pouvez revenir dans l'application ultérieurement afin de la compléter. Une fois toutes les informations saisies, vous pourrez l'envoyer" %}
-  {% else %}
-    <h3>{% trans "Envoyer votre demande" %}</h3>
-  {% endif %}
+
+  <h3>{% trans "Envoi de la demande" %}</h3>
   <hr>
+
+  {% if incomplete_steps  %}
+  <p>
+    {% blocktrans trimmed %}
+      Votre demande n'est pas complète mais elle est sauvegardée. Vous pouvez
+      revenir dans l'application ultérieurement afin de la compléter. Une fois
+      toutes les informations saisies, vous pourrez l'envoyer.
+    {% endblocktrans %}
+  </p>
+  {% endif %}
+  <p>
+    {% trans "Vous trouverez ci-dessous un récapitulatif de votre demande." %}
+  </p>
+
+  {% permit_request_summary permit_request %}
+
   <form method="post">
     {% csrf_token %}
     {% buttons %}
     <a href="{% url 'permits:permit_request_actors' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
 
-      {% if total_error_count == 0  %}
-        <button class="btn btn-primary">
+    {% if incomplete_steps %}
+      <a class="btn btn-primary" href="{{ incomplete_steps|first }}">{% trans "Renseigner les informations manquantes" %}</a>
+    {% else %}
+      <button class="btn btn-primary">
         {% trans "Envoyer" %}
-        </button>
-      {% endif %}
-
-    <a class="btn btn-primary" href="{% url 'permits:permit_requests_list' %}">{% trans "Envoyer ultérieurement" %}</a>
+      </button>
+    {% endif %}
     {% endbuttons %}
   </form>
-
-  {# FIXME: make this nicer: use trans tags, do not use tables, show placeholder text when no values, etc. #}
-
-  <hr>
-  <h2>Résumé de la demande</h2>
-    <hr>
-    <h4>Types, objets et caractéristiques de la demande</h4>
-    {% for object_type, fields in properties_object_types %}
-      <h5>{{ object_type }}</h5>
-      <table>
-      {% for field in fields %}
-        <tr>
-          <td>{{ field.label }}</td>
-          <td>{{ field.value|default_if_none:"/"}}</td>
-        </tr>
-      {% endfor %}
-      </table>
-    {% endfor %}
-    <hr>
-    <h4>Documents joints</h4>
-    {% for object_type, fields in appendices_object_types %}
-      <h5>{{ object_type }}</h5>
-      <table>
-      {% for field in fields %}
-        <tr>
-          <td>{{ field.label }}:</td>
-          <td>{{ field.value|default_if_none:"Pas de document joint"}}</td>
-        </tr>
-      {% endfor %}
-      </table>
-    {% endfor %}
-    <hr>
-    <h4>Contacts</h4>
-
-    {% for form in actor_formset %}
-    <table>
-      {% for field in form %}
-      <tr>
-        {% if field.name != 'id' %}
-        <td>{{ field.label }}:</td>
-        <td>{{ field.value|default_if_none:"/"}}</td>
-        {% endif %}
-      </tr>
-      {% endfor %}
-    </table>
-      <hr>
-    {% endfor %}
-
-    <br>
 </div>
 {% endblock content-no-sidebar %}

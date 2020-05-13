@@ -1,16 +1,17 @@
 {% extends "base_permits.html" %}
-{% load static %}
 
+{% load static %}
 {% load bootstrap4 %}
 {% load i18n %}
-{% load permit_progressbar %}
+{% load permits_extras %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static 'libs/js/jquery-ui-custom/jquery-ui.min.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'customWidgets/RemoteAutocomplete/remoteautocomplete.css' %}">
+{% endblock %}
 
 {% block content-no-sidebar %}
-<link rel="stylesheet" type="text/css" href="{% static 'libs/js/jquery-ui-custom/jquery-ui.min.css' %}">
-<link rel="stylesheet" type="text/css" href="{% static 'customWidgets/RemoteAutocomplete/remoteautocomplete.css' %}">
-<script src="{% static 'libs/js/jquery-ui-custom/jquery-ui.js' %}"></script>
-<script src="{% static 'customWidgets/RemoteAutocomplete/remoteautocomplete.js' %}"></script>
-
 <div class="container">
   {% permit_progressbar permit_request 'actors' %}
   <h3>{% trans "Renseignez les contacts" %}</h3>
@@ -30,4 +31,9 @@
     {% endbuttons %}
   </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'libs/js/jquery-ui-custom/jquery-ui.js' %}"></script>
+  <script src="{% static 'customWidgets/RemoteAutocomplete/remoteautocomplete.js' %}"></script>
 {% endblock %}

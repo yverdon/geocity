@@ -1,8 +1,11 @@
+import dataclasses
+
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.contrib.gis.db import models as geomodels
 from django.utils import timezone
 from django.core.validators import RegexValidator
+from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
 
 from gpf import models as gpfmodels
@@ -104,12 +107,17 @@ class PermitRequestActor(models.Model):
 
 class PermitRequest(models.Model):
     STATUS_DRAFT = 0
-    STATUS_SUBMITTED = 1
+    STATUS_SUBMITTED_FOR_VALIDATION = 1
     STATUS_VALIDATED = 2
+    STATUS_PROCESSING = 3
+    STATUS_AWAITING_SUPPLEMENT = 4
+
     STATUS_CHOICES = (
         (STATUS_DRAFT, _("Brouillon")),
-        (STATUS_SUBMITTED, _("Envoyée")),
+        (STATUS_SUBMITTED_FOR_VALIDATION, _("Envoyée, en attente de traitement")),
+        (STATUS_PROCESSING, _("En traitement")),
         (STATUS_VALIDATED, _("Validée")),
+        (STATUS_AWAITING_SUPPLEMENT, _("Demande de compléments")),
     )
 
     status = models.PositiveSmallIntegerField(
@@ -128,6 +136,11 @@ class PermitRequest(models.Model):
     )
     actors = models.ManyToManyField(PermitActor, related_name='+', through=PermitRequestActor)
 
+    price = models.DecimalField(_("Prix"), decimal_places=2, max_digits=7, null=True, blank=True)
+    exemption = models.TextField(_("Dérogation"), blank=True)
+    opposition = models.TextField(_("Opposition"), blank=True)
+    comment = models.TextField(_("Commentaire"), blank=True)
+
     class Meta:
         verbose_name = _("demande de permis")
         verbose_name_plural = _("demandes de permis")
@@ -136,13 +149,31 @@ class PermitRequest(models.Model):
         return self.status == self.STATUS_DRAFT
 
     def can_be_submitted_by_author(self):
-        return self.is_draft()
+        return self.can_be_edited_by_author()
 
     def can_be_edited_by_author(self):
-        return self.is_draft()
+        return self.status in {self.STATUS_AWAITING_SUPPLEMENT, self.STATUS_DRAFT}
 
     def can_be_deleted_by_author(self):
         return self.is_draft()
+
+    def can_be_amended_by_secretariat(self):
+        return self.status in {
+            self.STATUS_SUBMITTED_FOR_VALIDATION,
+            self.STATUS_PROCESSING,
+            self.STATUS_AWAITING_SUPPLEMENT
+        }
+
+    def works_objects_html(self):
+        """
+        Return the works objects as a string, separated by <br> characters.
+        """
+        return format_html(
+            "<br>".join(
+                escape(f"{item.works_object.name} ({item.works_type.name})")
+                for item in self.works_object_types.all()
+            )
+        )
 
 
 class WorksType(models.Model):
@@ -236,6 +267,15 @@ class WorksObjectPropertyValue(models.Model):
 
     class Meta:
         unique_together = [('property', 'works_object_type_choice')]
+
+
+@dataclasses.dataclass
+class Step:
+    name: str
+    url: str
+    completed: bool = False
+    enabled: bool = False
+    errors_count: int = 0
 
 
 class PermitRequestGeoTime(models.Model):

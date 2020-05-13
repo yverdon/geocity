@@ -4,7 +4,7 @@ from django.contrib.gis import forms as geoforms
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 import json
-from gpf.models import Actor
+from gpf.models import AdministrativeEntity
 from . import models, services
 from bootstrap_datepicker_plus import DatePickerInput, DateTimePickerInput
 from datetime import datetime, timedelta
@@ -22,7 +22,7 @@ def get_field_cls_for_property(prop):
 
 
 class AdministrativeEntityForm(forms.Form):
-    administrative_entity = forms.ModelChoiceField(queryset=services.get_administrative_entities(), label=_("Commune"))
+    administrative_entity = forms.ModelChoiceField(queryset=AdministrativeEntity.objects.none(), label=_("Commune"))
 
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop('instance', None)
@@ -35,6 +35,8 @@ class AdministrativeEntityForm(forms.Form):
         kwargs['initial'] = initial
 
         super().__init__(*args, **kwargs)
+
+        self.fields['administrative_entity'].queryset = services.get_administrative_entities()
 
     def save(self, author):
         if not self.instance:
@@ -272,6 +274,28 @@ class PermitRequestActorForm(forms.ModelForm):
         instance.save()
 
         return instance
+
+
+class PermitRequestAdditionalInformationForm(forms.ModelForm):
+    class Meta:
+        model = models.PermitRequest
+        fields = ['status', 'price', 'exemption', 'opposition', 'comment']
+        widgets = {
+            'exemption': forms.Textarea(attrs={'rows': 3}),
+            'opposition': forms.Textarea(attrs={'rows': 3}),
+            'comment': forms.Textarea(attrs={'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Prevent secretariat from putting back a request in draft status
+        self.fields['status'].choices = [
+            (status, label)
+            for status, label in self.fields['status'].choices
+            if status != models.PermitRequest.STATUS_DRAFT
+        ]
+
 
 #extend django gis osm openlayers widget
 class GeometryWidget(geoforms.OSMWidget):

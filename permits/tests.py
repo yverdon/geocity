@@ -1,10 +1,12 @@
 import urllib.parse
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
 
-from gpf.models import Actor
+from gpf.models import Actor, AdministrativeEntity, Department
 
 from . import factories, models, services
 
@@ -24,9 +26,9 @@ def get_permit_request_works_types_ids(permit_request):
     )
 
 
-def create_user():
-    user = get_user_model().objects.create_user(username='admin', password='admin')
-    Actor.objects.create(user=user, firstname='Admin', name='admin')
+def create_user(username='admin'):
+    user = get_user_model().objects.create_user(username=username, password=username)
+    Actor.objects.create(user=user, firstname=username, name=username)
 
     return user
 
@@ -34,7 +36,7 @@ def create_user():
 class LoggedInUserMixin:
     def setUp(self):
         self.user = create_user()
-        self.client.login(username=self.user.username, password='admin')
+        self.client.login(username=self.user.username, password=self.user.username)
 
 
 class PermitRequestTestCase(LoggedInUserMixin, TestCase):
@@ -101,6 +103,64 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.assertRedirects(
             response, reverse('permits:permit_request_appendices', kwargs={'permit_request_id': permit_request.pk})
         )
+
+    def test_user_can_only_see_own_requests(self):
+        permit_request = factories.PermitRequestFactory(author=create_user(username='sarah').actor)
+
+        response = self.client.get(
+            reverse('permits:permit_request_select_types', kwargs={'permit_request_id': permit_request.pk})
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_user_cannot_edit_non_draft_request(self):
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.actor, status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
+        )
+
+        response = self.client.get(
+            reverse('permits:permit_request_select_types', kwargs={'permit_request_id': permit_request.pk})
+        )
+
+        self.assertRedirects(
+            response, reverse('permits:permit_request_detail', kwargs={'permit_request_id': permit_request.pk})
+        )
+
+    def test_submit_permit_request_sends_email_to_secretariat(self):
+        # Create a secretariat user Yverdon (the one that will get the notification)
+        secretariat_user = create_user(username="secretariat-yverdon")
+        secretariat_user.actor.email = "secretariat@yverdon.ch"
+        secretariat_user.actor.save()
+
+        yverdon = AdministrativeEntity.objects.create(name="Yverdon", ofs_id=0)
+        group = Group.objects.create(name="Secrétariat Yverdon")
+        secretariat_user.groups.set([group])
+        Department.objects.create(
+            group=group, is_validator=False, is_admin=False, is_archeologist=False,
+            administrative_entity=yverdon
+        )
+
+        # Create a secretariat user Lausanne (this one shouldn't get the notification)
+        secretariat_user = create_user(username="secretariat-lausanne")
+        secretariat_user.actor.email = "secretariat@lausanne.ch"
+        secretariat_user.actor.save()
+
+        administrative_entity = AdministrativeEntity.objects.create(name="Lausanne", ofs_id=0)
+        group = Group.objects.create(name="Secrétariat Lausanne")
+        secretariat_user.groups.set([group])
+        Department.objects.create(
+            group=group, is_validator=False, is_admin=False, is_archeologist=False,
+            administrative_entity=administrative_entity
+        )
+
+        permit_request = factories.PermitRequestFactory(
+            administrative_entity=yverdon,
+            author=self.user.actor, status=models.PermitRequest.STATUS_DRAFT
+        )
+        self.client.post(reverse('permits:permit_request_submit', kwargs={'permit_request_id': permit_request.pk}))
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["secretariat@yverdon.ch"])
 
 
 class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
@@ -231,7 +291,7 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
         content = response.content.decode()
         expected = (
             '<input type="text" name="properties-{obj_type_id}_{prop_id}" value="{value}" class="form-control"'
-            ' placeholder="{prop_name}" title="" id="id_properties-{obj_type_id}_{prop_id}">'.format(
+            ' title="" id="id_properties-{obj_type_id}_{prop_id}">'.format(
                 obj_type_id=works_object_type_choice.works_object_type.pk,
                 prop_id=prop.pk,
                 prop_name=prop.name,
@@ -240,3 +300,83 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
         )
 
         self.assertInHTML(expected, content)
+
+
+class PermitRequestAmendmentTestCase(TestCase):
+    def setUp(self):
+        super().setUp()
+        secretariat_user = create_user(username="secretariat-yverdon")
+        secretariat_user.actor.email = "secretariat@yverdon.ch"
+        secretariat_user.actor.save()
+
+        self.administrative_entity = AdministrativeEntity.objects.create(name="Yverdon", ofs_id=0)
+        group = Group.objects.create(name="Secrétariat Yverdon")
+        secretariat_user.groups.set([group])
+        Department.objects.create(
+            group=group, is_validator=False, is_admin=False, is_archeologist=False,
+            administrative_entity=self.administrative_entity
+        )
+
+        self.client.login(username=secretariat_user.username, password=secretariat_user.username)
+
+    def test_non_secretariat_user_cannot_amend_request(self):
+        user = create_user(username="user")
+        user.actor.email = "user@yverdon.ch"
+        user.actor.save()
+        self.client.login(username=user.username, password=user.username)
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+            administrative_entity=self.administrative_entity,
+            author=user.actor
+        )
+        self.client.post(
+            reverse('permits:permit_request_detail', kwargs={'permit_request_id': permit_request.pk}),
+            data={
+                'price': 300,
+                'status': models.PermitRequest.STATUS_PROCESSING
+            }
+        )
+
+        permit_request.refresh_from_db()
+
+        self.assertIsNone(permit_request.price)
+
+    def test_secretariat_can_amend_request(self):
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+            administrative_entity=self.administrative_entity,
+        )
+        self.client.post(
+            reverse('permits:permit_request_detail', kwargs={'permit_request_id': permit_request.pk}),
+            data={
+                'price': 300,
+                'status': models.PermitRequest.STATUS_PROCESSING
+            }
+        )
+
+        permit_request.refresh_from_db()
+
+        self.assertEqual(permit_request.price, 300)
+
+    def test_secretariat_can_see_submitted_requests(self):
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+            administrative_entity=self.administrative_entity,
+        )
+        response = self.client.get(reverse('permits:permit_requests_list'))
+
+        self.assertEqual(list(response.context['permitrequest_list']), [permit_request])
+
+    def test_ask_for_supplements_shows_specific_message(self):
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+            administrative_entity=self.administrative_entity,
+        )
+        response = self.client.post(
+            reverse('permits:permit_request_detail', kwargs={'permit_request_id': permit_request.pk}),
+            data={'status': models.PermitRequest.STATUS_AWAITING_SUPPLEMENT},
+            follow=True
+        )
+
+        self.assertContains(response, "Vous devez maintenant contacter le requérant par email")

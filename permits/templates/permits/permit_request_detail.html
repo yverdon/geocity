@@ -1,0 +1,48 @@
+{% extends "base_permits.html" %}
+
+{% load i18n %}
+{% load bootstrap4 %}
+{% load permits_extras %}
+
+{% block content-no-sidebar %}
+  <div class="container">
+    <h1>{% blocktrans with request_id=permit_request.pk %}Demande #{{ request_id }}{% endblocktrans %}</h1>
+    <p title="">
+    </p>
+    <dl>
+      <dt>{% trans "Date de création" %}</dt>
+      <dd title="{{ permit_request.created_at }}">
+        {% blocktrans with request_date=permit_request.created_at|timesince %}Il y a {{ request_date }}{% endblocktrans %}
+      </dd>
+      <dt>{% trans "Statut" %}</dt>
+      <dd>{{ permit_request.get_status_display }}</dd>
+      <dt>{% trans "Auteur-e" %}</dt>
+      <dd>
+        <a href="mailto:{{ permit_request.author }} <{{ permit_request.author.email }}>" target="_blank">
+          {{ permit_request.author }} &lt;{{ permit_request.author.email }}&gt;
+        </a>
+      </dd>
+    </dl>
+
+    {% permit_request_summary permit_request %}
+
+    {% if additional_information_form %}
+      <div class="box box--default">
+        <h3>{% trans "Amender la demande" %}</h3>
+        <form method="post">
+          {% csrf_token %}
+
+          {% bootstrap_form additional_information_form layout='horizontal' %}
+
+          <div class="text-right">
+            <button class="btn btn-primary">{% trans "Enregistrer" %}</button>
+          </div>
+        </form>
+      </div>
+    {% endif %}
+
+    <p>
+      <a href="{% url 'permits:permit_requests_list' %}">{% trans "Retour à la liste des demandes" %}</a>
+    </p>
+  </div>
+{% endblock %}

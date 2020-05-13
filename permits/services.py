@@ -1,8 +1,14 @@
 import os
 
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.core.exceptions import SuspiciousOperation
 from django.core.files.storage import default_storage
+from django.core.mail import send_mass_mail
 from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
 from django.urls import reverse
 from django.forms import modelformset_factory
 from django.utils.translation import gettext_lazy as _
@@ -10,6 +16,7 @@ from django.utils.translation import gettext_lazy as _
 from gpf.models import AdministrativeEntity
 
 from . import models, forms
+from .exceptions import BadPermitRequestStatus
 
 
 def get_works_object_type_choices(permit_request):
@@ -215,16 +222,48 @@ def get_property_value(object_property_value):
         # The `url` attribute of the file is used to detect if there was already a file set (it is used by
         # `ClearableFileInput` and by the `set_object_property_value` function)
         f.url = reverse('permits:permit_request_media_download', kwargs={'property_value_id': object_property_value.pk})
-        value = f
+
+        return f
 
     return value
 
 
-def get_permit_request_for_user_or_404(user, permit_request_id):
+def get_user_administrative_entities(user):
+    return AdministrativeEntity.objects.filter(departments__group__in=user.groups.all())
+
+
+def get_permit_request_for_user_or_404(user, permit_request_id, statuses=None):
     """
-    Return the permit request with `permit_request_id` and associated to the `user` actor.
+    Return the permit request with `permit_request_id` or raise an Http404 if there is no such permit request. The
+    permit request must either belong to the given user, or the given user should be in the same administrative entity.
+    If `statuses` is set and a permit request is found but its status doesn't match any value in `statuses`,
+    `BadPermitRequestStatus` will be raised.
     """
-    return get_object_or_404(models.PermitRequest, author=user.actor, pk=permit_request_id)
+    permit_request = get_object_or_404(get_permit_requests_list_for_user(user), pk=permit_request_id)
+
+    if statuses is not None and permit_request.status not in statuses:
+        raise BadPermitRequestStatus(permit_request, statuses)
+
+    return permit_request
+
+
+def get_permit_requests_list_for_user(user):
+    """
+    Return the list of permit requests this user has access to.
+    """
+    if user.is_superuser:
+        return models.PermitRequest.objects.all()
+    else:
+        return models.PermitRequest.objects.filter(
+            Q(author=user.actor)
+            | (Q(administrative_entity__in=get_user_administrative_entities(user))
+               & Q(status__in=[
+                   models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+                   models.PermitRequest.STATUS_PROCESSING,
+                   models.PermitRequest.STATUS_VALIDATED,
+                   models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+               ]))
+        )
 
 
 def get_permitactorformset_initiated(permit_request, data=None):
@@ -287,3 +326,130 @@ def get_total_error_count(permit_request):
         len(errors)
         for errors in [appendices_form.errors, properties_form.errors, actor_errors]
     )
+
+
+def get_progressbar_steps(request, permit_request):
+    """
+    Return a dict of `Step` items that can be used to track the user progress through the permit request wizard.
+    """
+    def reverse_permit_request_url(name):
+        if permit_request:
+            return reverse(name, kwargs={'permit_request_id': permit_request.pk})
+        else:
+            return None
+
+    has_objects_types = permit_request.works_object_types.exists()
+
+    localisation_url = (
+        reverse_permit_request_url('permits:permit_request_select_administrative_entity')
+        if permit_request
+        else reverse('permits:permit_request_select_administrative_entity')
+    )
+
+    works_types_url = reverse_permit_request_url('permits:permit_request_select_types')
+
+    if permit_request and has_objects_types:
+        objects_types_url = reverse_permit_request_url('permits:permit_request_select_objects')
+        properties_url = reverse_permit_request_url('permits:permit_request_properties')
+        appendices_url = reverse_permit_request_url('permits:permit_request_appendices')
+        actors_url = reverse_permit_request_url('permits:permit_request_actors')
+        submit_url = reverse_permit_request_url('permits:permit_request_submit')
+    else:
+        objects_types_url = properties_url = appendices_url = actors_url = submit_url = ''
+
+    properties_form = forms.WorksObjectsPropertiesForm(
+        instance=permit_request, enable_required=True, disable_fields=True, data={}
+    ) if permit_request else None
+    appendices_form = forms.WorksObjectsAppendicesForm(
+        instance=permit_request, enable_required=True, disable_fields=True, data={}
+    ) if permit_request else None
+
+    properties_errors = len(properties_form.errors) if properties_form else 0
+    appendices_errors = len(appendices_form.errors) if appendices_form else 0
+    actor_errors = len(get_missing_actors_types(permit_request)) if permit_request else 0
+    total_errors = sum([properties_errors, appendices_errors, actor_errors])
+
+    steps = {
+        "location": models.Step(
+            name=_("Localisation"),
+            url=localisation_url,
+            completed=bool(permit_request),
+            enabled=True,
+        ),
+        "works_types": models.Step(
+            name=_("Type"),
+            url=works_types_url,
+            completed=has_objects_types or request.GET.getlist('types'),
+            enabled=has_objects_types,
+        ),
+        "objects_types": models.Step(
+            name=_("Objets"),
+            url=objects_types_url,
+            completed=has_objects_types,
+            enabled=has_objects_types,
+        ),
+        "properties": models.Step(
+            name=_("Détails"),
+            url=properties_url,
+            completed=has_objects_types and properties_form and not properties_form.errors,
+            errors_count=properties_errors,
+            enabled=has_objects_types,
+        ),
+        "appendices": models.Step(
+            name=_("Documents"),
+            url=appendices_url,
+            completed=has_objects_types and appendices_form and not appendices_form.errors,
+            errors_count=appendices_errors,
+            enabled=has_objects_types,
+        ),
+        "actors": models.Step(
+            name=_("Contacts"),
+            url=actors_url,
+            enabled=has_objects_types,
+            errors_count=actor_errors,
+            completed=not actor_errors,
+        ),
+        "submit": models.Step(
+            name=_("Résumé et envoi"),
+            url=submit_url,
+            enabled=has_objects_types,
+            errors_count=total_errors,
+            completed=total_errors == 0,
+        ),
+    }
+
+    return steps
+
+
+def submit_permit_request(permit_request, absolute_uri_func):
+    """
+    Change the permit request status to submitted and send notification e-mails. `absolute_uri_func` should be a
+    callable that takes a path and returns an absolute URI, usually `request.build_absolute_uri`.
+    """
+    if not permit_request.can_be_submitted_by_author():
+        raise SuspiciousOperation
+
+    permit_request.status = models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
+    permit_request.save()
+
+    users_to_notify = set(get_user_model().objects.filter(
+        groups__department__administrative_entity=permit_request.administrative_entity,
+        actor__email__isnull=False,
+    ).values_list("actor__email", flat=True))
+
+    email_contents = render_to_string("permits/emails/permit_request_submitted.txt", {
+        "permit_request_url": absolute_uri_func(
+            reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk})
+        )
+    })
+    emails = [
+        ("Nouvelle demande de permis", email_contents, settings.DEFAULT_FROM_EMAIL, [email_address])
+        for email_address in users_to_notify
+    ]
+
+    if emails:
+        send_mass_mail(emails)
+
+
+def is_secretariat(user):
+    return get_user_administrative_entities(user).exists()

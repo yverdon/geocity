@@ -2,18 +2,29 @@ import django_tables2 as tables
 
 from django.utils.translation import gettext_lazy as _
 
-from . import models
+from . import models, services
 
 
-class PermitRequestTableExterns(tables.Table):
-    edit_properties = tables.TemplateColumn(template_name="tables/_edit_permit_request.html", verbose_name=_('Modifier'), orderable=False)
-    submit = tables.TemplateColumn(template_name="tables/_submit_permit_request.html", verbose_name=_('Envoyer'), orderable=False)
-    delete = tables.TemplateColumn(template_name="tables/_delete_permit_request.html", verbose_name=_('Supprimer'), orderable=False)
+class OwnPermitRequestsTable(tables.Table):
+    actions = tables.TemplateColumn(template_name="tables/_permit_request_actions.html", verbose_name=_('Actions'), orderable=False)
 
     class Meta:
         model = models.PermitRequest
-        fields = ('id', 'status', 'created_at', 'administrative_entity')
+        fields = ('id', 'created_at', 'status', 'administrative_entity')
         template_name = 'django_tables2/bootstrap.html'
+
+
+class SecretariatPermitRequestsTable(tables.Table):
+    actions = tables.TemplateColumn(template_name="tables/_permit_request_actions.html", verbose_name=_('Actions'), orderable=False)
+    works_objects_html = tables.Column(verbose_name=_("Objets et types de travaux"), orderable=False)
+
+    class Meta:
+        model = models.PermitRequest
+        fields = ('id', 'created_at', 'status', 'author', 'works_objects_html')
+        template_name = 'django_tables2/bootstrap.html'
+
+    def before_render(self, request):
+        self.columns['actions'].column.extra_context = {'is_secretariat': services.is_secretariat(request.user)}
 
 
 class PermitExportTable(tables.Table):
