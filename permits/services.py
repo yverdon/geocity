@@ -352,10 +352,11 @@ def get_progressbar_steps(request, permit_request):
         objects_types_url = reverse_permit_request_url('permits:permit_request_select_objects')
         properties_url = reverse_permit_request_url('permits:permit_request_properties')
         appendices_url = reverse_permit_request_url('permits:permit_request_appendices')
+        geo_time_url = reverse_permit_request_url('permits:permit_request_geo_time')
         actors_url = reverse_permit_request_url('permits:permit_request_actors')
         submit_url = reverse_permit_request_url('permits:permit_request_submit')
     else:
-        objects_types_url = properties_url = appendices_url = actors_url = submit_url = ''
+        objects_types_url = properties_url = appendices_url = actors_url = submit_url = geo_time_url = ''
 
     properties_form = forms.WorksObjectsPropertiesForm(
         instance=permit_request, enable_required=True, disable_fields=True, data={}
@@ -366,6 +367,7 @@ def get_progressbar_steps(request, permit_request):
 
     properties_errors = len(properties_form.errors) if properties_form else 0
     appendices_errors = len(appendices_form.errors) if appendices_form else 0
+    geo_time_errors = 0 if models.PermitRequestGeoTime.objects.filter(permit_request=permit_request) else 1
     actor_errors = len(get_missing_actors_types(permit_request)) if permit_request else 0
     total_errors = sum([properties_errors, appendices_errors, actor_errors])
 
@@ -393,6 +395,13 @@ def get_progressbar_steps(request, permit_request):
             url=properties_url,
             completed=has_objects_types and properties_form and not properties_form.errors,
             errors_count=properties_errors,
+            enabled=has_objects_types,
+        ),
+        "geo_time": models.Step(
+            name=_("Agenda et plan"),
+            url=geo_time_url,
+            completed=geo_time_errors==0,
+            errors_count=geo_time_errors,
             enabled=has_objects_types,
         ),
         "appendices": models.Step(
