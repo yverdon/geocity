@@ -11,6 +11,7 @@
 {% block navbartitle %}<a class="navbar-brand responsive-banner" href="#">{% trans "Applications du territoire" %}</a>{% endblock %}
 
 {% block content-no-sidebar %}
+<div class="semi-transparent-container">
   <h1 class="text-center">{% trans "Demandes de permis" %}</h1>
   <div class="text-center mt-4">
     <div class="main-app-item mr-4">
@@ -22,11 +23,12 @@
     </div>
 
     <div class="main-app-item">
-      <a href="{% url 'gpf:list' %}">
-        <img class="main-app-icon" src="{% static 'images/theme_permis_fouille.svg' %}" alt="{% trans "Permis de fouille" %}">
-        <br>
-        {% trans "Permis de fouille" %}
-      </a>
-    </div>
+     <a href="{% url 'gpf:list' %}">
+       <img class="main-app-icon" src="{% static 'images/theme_permis_fouille.svg' %}" alt="{% trans "Permis de fouille" %}">
+       <br>
+       {% trans "Permis de fouille" %}
+     </a>
+   </div>
   </div>
+</div>
 {% endblock content-no-sidebar %}

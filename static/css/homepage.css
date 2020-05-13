@@ -6,3 +6,15 @@
     display: inline-block;
     width: 150px;
 }
+
+body {
+  background-image: url('../images/blanc_light_compact.jpg');
+}
+
+
+.semi-transparent-container{
+  background-color: white;
+  opacity: 0.85;
+  padding-top: 50px;
+  padding-bottom: 50px;
+}

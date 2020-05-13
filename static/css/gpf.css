@@ -188,3 +188,9 @@ h3 {
 .box--default {
   background-color: var(--light);
 }
+
+.navbar {
+  background-image: url('../images/blanc_light_compact.jpg');
+  height: 100px;
+  font-weight: bold;
+}
