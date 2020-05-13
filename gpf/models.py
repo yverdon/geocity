@@ -52,6 +52,7 @@ class Actor(models.Model):
         return reverse('gpf:genericactorview', args=[str(self.id)])
 
     def __str__(self):
+
         return self.name if self.name else ''
 
 

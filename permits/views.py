@@ -207,7 +207,7 @@ def permit_request_properties(request, permit_request_id):
 
         if form.is_valid():
             form.save()
-            return redirect('permits:permit_request_appendices', permit_request_id=permit_request.pk)
+            return redirect('permits:permit_request_geo_time', permit_request_id=permit_request.pk)
     else:
         form = forms.WorksObjectsPropertiesForm(instance=permit_request, enable_required=False)
 
@@ -264,6 +264,29 @@ def permit_request_actors(request, permit_request_id):
 
     return render(request, "permits/permit_request_actors.html", {
         'formset': formset,
+        'permit_request': permit_request,
+    })
+
+
+@login_required
+def permit_request_geo_time(request, permit_request_id):
+
+    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+
+    instance = permit_request.geo_time.first()
+
+    form = forms.PermitRequestGeoTimeForm(request.POST or None, instance=instance)
+
+    if request.method == 'POST':
+
+        if form.is_valid():
+            form.instance.permit_request = permit_request
+            form.save()
+
+            return redirect('permits:permit_request_appendices', permit_request_id=permit_request_id)
+
+    return render(request, "permits/permit_request_geo_time.html", {
+        'form': form,
         'permit_request': permit_request,
     })
 

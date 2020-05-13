@@ -2,6 +2,7 @@ import dataclasses
 
 from django.contrib.postgres.fields import JSONField
 from django.db import models
+from django.contrib.gis.db import models as geomodels
 from django.utils import timezone
 from django.core.validators import RegexValidator
 from django.utils.html import escape, format_html
@@ -275,3 +276,15 @@ class Step:
     completed: bool = False
     enabled: bool = False
     errors_count: int = 0
+
+
+class PermitRequestGeoTime(models.Model):
+    """
+    Permit location in space and time
+    """
+    permit_request = models.ForeignKey('PermitRequest', on_delete=models.CASCADE, related_name='geo_time')
+    starts_at = models.DateTimeField(_("Date de début"))
+    ends_at =models.DateTimeField(_("Date de fin"))
+    comment = models.CharField(_("Commentaire"), max_length=1024, blank=True)
+    external_link = models.URLField(_("Lien externe"), blank=True)
+    geom = geomodels.GeometryCollectionField(_("Localisation"), null=True, srid=2056)

@@ -1,9 +1,13 @@
+from django.conf import settings
 from django import forms
+from django.contrib.gis import forms as geoforms
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 import json
 from gpf.models import AdministrativeEntity
 from . import models, services
+from bootstrap_datepicker_plus import DatePickerInput, DateTimePickerInput
+from datetime import datetime, timedelta
 
 
 def get_field_cls_for_property(prop):
@@ -291,3 +295,55 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
             for status, label in self.fields['status'].choices
             if status != models.PermitRequest.STATUS_DRAFT
         ]
+
+
+#extend django gis osm openlayers widget
+class GeometryWidget(geoforms.OSMWidget):
+
+    template_name = 'geometrywidget/geometrywidget.html'
+
+    @property
+    def media(self):
+        return forms.Media(
+            css={'all': ('libs/js/openlayers6/ol.css',)},
+            js=('libs/js/openlayers6/ol.js',
+                'libs/js/proj4js/proj4-src.js',
+                'customWidgets/GeometryWidget/geometrywidget.js'
+                ))
+
+
+class PermitRequestGeoTimeForm(forms.ModelForm):
+
+    class Meta:
+        model = models.PermitRequestGeoTime
+        fields = ['starts_at', 'ends_at', 'comment', 'external_link', 'geom']
+        widgets = {
+            'geom': GeometryWidget(attrs={
+                'map_width': '100%',
+                'map_height': 400,
+                'default_center': [2539057, 1181111],
+                'default_zoom': 10,
+                'display_raw': False, #show coordinate in debug
+                'edit_geom': True, #For readonly set to False
+                'min_zoom': 8,
+                'wmts_capabilities_url': settings.WMTS_GETCAP,
+                'wmts_layer': settings.WMTS_LAYER,
+                'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
+                'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
+            }),
+            'starts_at': DateTimePickerInput(
+              options={
+                    "format": "DD/MM/YYYY HH:mm",
+                    "locale": "fr",
+                    "minDate": (datetime.today() + timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d')
+                    }
+                ).start_of('event days'),
+            'ends_at': DateTimePickerInput(
+              options={
+                    "format": "DD/MM/YYYY  HH:mm",
+                    "locale": "fr",
+                    "minDate": (datetime.today() + timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d')
+                    }
+                ).start_of('event days'),
+
+        }
