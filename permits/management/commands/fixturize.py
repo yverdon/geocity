@@ -43,11 +43,11 @@ class Command(BaseCommand):
 
     def create_users(self):
         user = User.objects.create_user(username='admin', password='admin', is_staff=True, is_superuser=True)
-        gpf_models.Actor.objects.create(user=user, email="admin@localhost")
+        gpf_models.Actor.objects.create(user=user, email="yverdon-squad+admin@liip.ch")
         self.stdout.write("admin / admin")
 
         user = User.objects.create_user(username='user', password='admin')
-        gpf_models.Actor.objects.create(user=user, email="user@localhost")
+        gpf_models.Actor.objects.create(user=user, email="yverdon-squad+user@liip.ch")
         self.stdout.write("user / admin")
 
         permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
@@ -79,7 +79,7 @@ class Command(BaseCommand):
         group, created = Group.objects.get_or_create(name=group_name)
         user = User.objects.create_user(username=username, password='admin')
         user.groups.set([group])
-        gpf_models.Actor.objects.create(user=user, email=f"{username}@localhost")
+        gpf_models.Actor.objects.create(user=user, email=f"yverdon-squad+{username}@liip.ch")
         gpf_models.Department.objects.create(
             group=group, is_validator=False, is_admin=False, is_archeologist=False,
             administrative_entity=administrative_entity, is_default_validator=is_default_validator
