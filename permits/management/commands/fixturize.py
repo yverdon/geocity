@@ -27,7 +27,7 @@ def reset_db():
     # Call migrate so that post-migrate hooks such as generating a default Site object
     # are run
     management.call_command("migrate", "--noinput", stdout=StringIO())
-    management.call_command("loaddata", "db.json", stdout=StringIO())
+    #management.call_command("loaddata", "db.json", stdout=StringIO())
 
 
 class Command(BaseCommand):
@@ -39,6 +39,14 @@ class Command(BaseCommand):
         self.create_users()
 
     def create_users(self):
+        user = User.objects.create_user(username='admin', password='admin', is_staff=True, is_superuser=True)
+        gpf_models.Actor.objects.create(user=user, email="admin@localhost")
+        self.stdout.write("admin / admin")
+
+        user = User.objects.create_user(username='user', password='admin')
+        gpf_models.Actor.objects.create(user=user, email="user@localhost")
+        self.stdout.write("user / admin")
+
         self.create_user('secretariat-yverdon', 'Secrétariat Yverdon', 'Démo Yverdon')
         self.stdout.write("secretariat-yverdon / admin")
 
