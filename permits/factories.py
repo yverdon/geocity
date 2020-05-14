@@ -201,3 +201,11 @@ class WorksObjectPropertyValueFactory(factory.django.DjangoModelFactory):
     value = factory.LazyFunction(lambda: {'val': faker.Faker().word()})
     property = factory.SubFactory(WorksObjectPropertyFactory)
     works_object_type_choice = factory.SubFactory(WorksObjectTypeChoiceFactory)
+
+
+class PermitRequestValidationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitRequestValidation
+
+    department = factory.SubFactory(DepartmentFactory)
+    permit_request = factory.SubFactory(PermitRequestFactory, status=models.PermitRequest.STATUS_AWAITING_VALIDATION)

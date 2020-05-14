@@ -14,7 +14,7 @@ from django.urls import reverse
 from django.forms import modelformset_factory
 from django.utils.translation import gettext_lazy as _
 
-from gpf.models import AdministrativeEntity
+from gpf import models as gpf_models
 
 from . import models, forms
 from .exceptions import BadPermitRequestStatus
@@ -138,7 +138,7 @@ def get_works_types(administrative_entity):
 
 
 def get_administrative_entities():
-    return AdministrativeEntity.objects.order_by('name')
+    return gpf_models.AdministrativeEntity.objects.order_by('name')
 
 
 def get_permit_request_works_types(permit_request):
@@ -230,7 +230,7 @@ def get_property_value(object_property_value):
 
 
 def get_user_administrative_entities(user):
-    return AdministrativeEntity.objects.filter(departments__group__in=user.groups.all())
+    return gpf_models.AdministrativeEntity.objects.filter(departments__group__in=user.groups.all())
 
 
 def get_permit_request_for_user_or_404(user, permit_request_id, statuses=None):
@@ -257,11 +257,16 @@ def get_permit_requests_list_for_user(user):
     else:
         qs = Q(author=user.actor)
 
-        if user.has_perm('permits.amend_permit_request'):
+        if user.has_perm("permits.amend_permit_request"):
             qs |= Q(
                 administrative_entity__in=get_user_administrative_entities(user),
             ) & ~Q(
                 status=models.PermitRequest.STATUS_DRAFT
+            )
+
+        if user.has_perm("permits.validate_permit_request"):
+            qs |= Q(
+                validations__department__in=gpf_models.Department.objects.filter(group__in=user.groups.all())
             )
 
         return models.PermitRequest.objects.filter(qs)

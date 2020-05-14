@@ -389,17 +389,20 @@ class PermitRequestListExternsView(SingleTableMixin, FilterView):
             )
         ).order_by('-created_at')
 
+    def is_department_user(self):
+        return self.request.user.groups.filter(department__isnull=False).exists()
+
     def get_table_class(self):
         return (
-            tables.SecretariatPermitRequestsTable
-            if self.request.user.has_perm('permits.amend_permit_request')
+            tables.DepartmentPermitRequestsTable
+            if self.is_department_user()
             else tables.OwnPermitRequestsTable
         )
 
     def get_filterset_class(self):
         return (
-            filters.SecretariatPermitRequestFilterSet
-            if self.request.user.has_perm('permits.amend_permit_request')
+            filters.DepartmentPermitRequestFilterSet
+            if self.is_department_user()
             else filters.OwnPermitRequestFilterSet
         )
 

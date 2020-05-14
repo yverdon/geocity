@@ -1,14 +1,10 @@
 import urllib.parse
 
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth import get_user_model
 from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
 
 from bs4 import BeautifulSoup
-
-from gpf.models import Actor, AdministrativeEntity, Department
 
 from . import factories, models, services, views
 
@@ -239,7 +235,6 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
         )
         content = response.content.decode()
 
-
         for i, works_type_id in enumerate(get_permit_request_works_types_ids(self.permit_request)):
             expected = ('<input checked="" class="form-check-input" id="id_types_{i}" name="types" title=""'
                         '  type="checkbox" value="{value}"/>').format(
@@ -295,7 +290,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             administrative_entity=self.administrative_entity,
             author=user.actor
         )
-        response = self.client.post(
+        self.client.post(
             reverse('permits:permit_request_detail', kwargs={'permit_request_id': permit_request.pk}),
             data={
                 'price': 300,
@@ -375,7 +370,7 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
             status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
             administrative_entity=self.administrative_entity,
         )
-        response = self.client.post(
+        self.client.post(
             reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk}),
             data={
                 "departments": validator_departments,
@@ -456,3 +451,17 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, [validator_user.actor.email])
+
+
+class PermitRequestValidationTestcase(TestCase):
+    def test_validator_can_see_assigned_permit_requests(self):
+        validation = factories.PermitRequestValidationFactory()
+        validator = factories.ValidatorUserFactory(
+            groups=[validation.department.group, factories.ValidatorGroupFactory()]
+        )
+
+        self.client.login(username=validator.username, password="password")
+
+        response = self.client.get(reverse("permits:permit_requests_list"))
+
+        assert list(response.context["permitrequest_list"]) == [validation.permit_request]

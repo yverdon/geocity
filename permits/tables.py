@@ -14,7 +14,7 @@ class OwnPermitRequestsTable(tables.Table):
         template_name = 'django_tables2/bootstrap.html'
 
 
-class SecretariatPermitRequestsTable(tables.Table):
+class DepartmentPermitRequestsTable(tables.Table):
     actions = tables.TemplateColumn(template_name="tables/_permit_request_actions.html", verbose_name=_('Actions'), orderable=False)
     works_objects_html = tables.Column(verbose_name=_("Objets et types de travaux"), orderable=False)
 
@@ -24,8 +24,11 @@ class SecretariatPermitRequestsTable(tables.Table):
         template_name = 'django_tables2/bootstrap.html'
 
     def before_render(self, request):
-        self.columns['actions'].column.extra_context = {
-            'can_amend': request.user.has_perm('permits.amend_permit_request')
+        self.columns["actions"].column.extra_context = {
+            "can_view": (
+                request.user.has_perm("permits.amend_permit_request")
+                or request.user.has_perm("permits.validate_permit_request")
+            )
         }
 
 
