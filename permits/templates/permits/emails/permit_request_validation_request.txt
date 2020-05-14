@@ -1,0 +1,9 @@
+{% load i18n %}{% autoescape off %}{% trans "Bonjour," %}
+
+{% trans "Une nouvelle demande de permis a été déposée. Vous pouvez la consulter sur le lien suivant:" %}
+
+{{ permit_request_url }}
+
+{% trans "Avec nos meilleures salutations," %}
+{{ administrative_entity.name }}
+{% endautoescape %}

@@ -95,8 +95,6 @@ class PermitRequestDetailView(View):
             raise PermissionDenied
 
         if form.is_valid():
-            form.save()
-
             return self.handle_form_submission(form, action)
 
         # Replace unbound form by bound form in the context
@@ -140,6 +138,7 @@ class PermitRequestDetailView(View):
             return self.handle_request_validation_form_submission(form)
 
     def handle_amend_form_submission(self, form):
+        form.save()
         success_message = _("La demande de permis #%s a bien été amendée.") % self.permit_request.pk
 
         if form.instance.status == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT:
@@ -153,6 +152,9 @@ class PermitRequestDetailView(View):
         return redirect("permits:permit_requests_list")
 
     def handle_request_validation_form_submission(self, form):
+        services.request_permit_request_validation(
+            self.permit_request, form.cleaned_data["departments"], self.request.build_absolute_uri
+        )
         messages.success(
             self.request, _("La demande de permis #%s a bien été transmise pour validation.") % self.permit_request.pk
         )

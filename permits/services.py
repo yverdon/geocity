@@ -1,3 +1,4 @@
+import itertools
 import os
 
 from django.conf import settings
@@ -450,6 +451,37 @@ def submit_permit_request(permit_request, absolute_uri_func):
         "permit_request_url": absolute_uri_func(
             reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk})
         )
+    })
+    emails = [
+        ("Nouvelle demande de permis", email_contents, settings.DEFAULT_FROM_EMAIL, [email_address])
+        for email_address in users_to_notify
+    ]
+
+    if emails:
+        send_mass_mail(emails)
+
+
+@transaction.atomic
+def request_permit_request_validation(permit_request, departments, absolute_uri_func):
+    permit_request.status = models.PermitRequest.STATUS_AWAITING_VALIDATION
+    permit_request.save()
+
+    for department in departments:
+        models.PermitRequestValidation.objects.get_or_create(
+            permit_request=permit_request, department=department
+        )
+
+    users_to_notify = {
+        email
+        for department in departments
+        for email in department.group.user_set.values_list("actor__email", flat=True)
+    }
+
+    email_contents = render_to_string("permits/emails/permit_request_validation_request.txt", {
+        "permit_request_url": absolute_uri_func(
+            reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk})
+        ),
+        "administrative_entity": permit_request.administrative_entity,
     })
     emails = [
         ("Nouvelle demande de permis", email_contents, settings.DEFAULT_FROM_EMAIL, [email_address])

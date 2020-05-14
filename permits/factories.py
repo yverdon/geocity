@@ -119,6 +119,19 @@ class SecretariatUserFactory(UserFactory):
             self.groups.add(group)
 
 
+class ValidatorUserFactory(UserFactory):
+    @factory.post_generation
+    def groups(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if not extracted:
+            extracted = [ValidatorGroupFactory()]
+
+        for group in extracted:
+            self.groups.add(group)
+
+
 class PermitRequestActorFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PermitActor
