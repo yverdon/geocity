@@ -101,7 +101,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         }))
 
         self.assertRedirects(
-            response, reverse('permits:permit_request_appendices', kwargs={'permit_request_id': permit_request.pk})
+            response, reverse('permits:permit_request_geo_time', kwargs={'permit_request_id': permit_request.pk})
         )
 
     def test_user_can_only_see_own_requests(self):
