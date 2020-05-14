@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('gpf', '0031_default_validator'),
-        ('permits', '0010_permits_permissions'),
+        ('permits', '0011_permits_permissions'),
     ]
 
     operations = [
