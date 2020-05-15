@@ -440,6 +440,9 @@ def submit_permit_request(permit_request, absolute_uri_func):
 
     permit_request.status = models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
     permit_request.save()
+    permit_request_url = absolute_uri_func(
+        reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk})
+    )
 
     users_to_notify = set(get_user_model().objects.filter(
         groups__department__administrative_entity=permit_request.administrative_entity,
@@ -447,14 +450,24 @@ def submit_permit_request(permit_request, absolute_uri_func):
     ).values_list("actor__email", flat=True))
 
     email_contents = render_to_string("permits/emails/permit_request_submitted.txt", {
-        "permit_request_url": absolute_uri_func(
-            reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk})
-        )
+        "permit_request_url": permit_request_url
     })
     emails = [
         ("Nouvelle demande de permis", email_contents, settings.DEFAULT_FROM_EMAIL, [email_address])
         for email_address in users_to_notify
     ]
+
+    acknowledgment_email_contents = render_to_string("permits/emails/permit_request_acknowledgment.txt", {
+        "permit_request_url": permit_request_url,
+        "name": permit_request.author.get_full_name(),
+        "administrative_entity_name": permit_request.administrative_entity.name,
+    })
+    emails.append(
+        (
+            "Votre demande de permis", acknowledgment_email_contents, settings.DEFAULT_FROM_EMAIL,
+            [permit_request.author.email]
+        )
+    )
 
     if emails:
         send_mass_mail(emails)
