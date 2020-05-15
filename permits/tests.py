@@ -2,7 +2,6 @@ import urllib.parse
 
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group, Permission
 from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
@@ -435,3 +434,25 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
                 **{non_default_validator_group.pk: False}
             }
         )
+
+    def test_validation_request_sends_mail_to_selected_validators(self):
+        validator_groups = factories.ValidatorGroupFactory.create_batch(
+            2, department__administrative_entity=self.administrative_entity
+        )
+        validator_user = factories.ValidatorUserFactory(groups=[validator_groups[0]])
+        factories.ValidatorUserFactory(groups=[validator_groups[1]])
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+            administrative_entity=self.administrative_entity,
+        )
+        self.client.post(
+            reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk}),
+            data={
+                "departments": [validator_groups[0].department.pk],
+                "action": views.PermitRequestDetailView.ACTION_REQUEST_VALIDATION
+            },
+        )
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [validator_user.actor.email])

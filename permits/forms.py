@@ -349,6 +349,8 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 ).start_of('event days'),
 
         }
+
+
 class PermitRequestValidationDepartmentSelectionForm(forms.Form):
     departments = forms.ModelMultipleChoiceField(
         queryset=Department.objects.none(),
@@ -370,15 +372,3 @@ class PermitRequestValidationDepartmentSelectionForm(forms.Form):
 
         super().__init__(*args, **kwargs)
         self.fields["departments"].queryset = permit_request_departments
-
-    @transaction.atomic
-    def save(self):
-        self.permit_request.status = models.PermitRequest.STATUS_AWAITING_VALIDATION
-        self.permit_request.save()
-
-        for department in self.cleaned_data["departments"]:
-            models.PermitRequestValidation.objects.get_or_create(
-                permit_request=self.permit_request, department=department
-            )
-
-        return self.permit_request
