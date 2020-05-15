@@ -2,7 +2,7 @@ import django_tables2 as tables
 
 from django.utils.translation import gettext_lazy as _
 
-from . import models, services
+from . import models
 
 
 class OwnPermitRequestsTable(tables.Table):
@@ -24,7 +24,9 @@ class SecretariatPermitRequestsTable(tables.Table):
         template_name = 'django_tables2/bootstrap.html'
 
     def before_render(self, request):
-        self.columns['actions'].column.extra_context = {'is_secretariat': services.is_secretariat(request.user)}
+        self.columns['actions'].column.extra_context = {
+            'can_amend': request.user.has_perm('permits.amend_permit_request')
+        }
 
 
 class PermitExportTable(tables.Table):

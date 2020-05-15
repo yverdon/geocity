@@ -3,13 +3,15 @@ import urllib.parse
 import os
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.exceptions import PermissionDenied
 from django.core.exceptions import SuspiciousOperation
 from django.db.models import Prefetch
 from django.utils.decorators import method_decorator
-from django.http import StreamingHttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext as _
+from django.views import View
 
 from gpf.models import Actor
 
@@ -49,49 +51,113 @@ def redirect_bad_status_to_detail(func):
     return inner
 
 
-@login_required
-def permit_request_detail(request, permit_request_id):
-    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+@method_decorator(login_required, name='dispatch')
+class PermitRequestDetailView(View):
+    ACTION_AMEND = "amend"
+    ACTION_REQUEST_VALIDATION = "request_validation"
+    # If you add an action here, make sure you also handle it in `get_form_for_action` and in `handle_form_submission`
+    actions = [ACTION_AMEND, ACTION_REQUEST_VALIDATION]
 
-    if permit_request.is_draft() and permit_request.author.user == request.user:
-        return redirect('permits:permit_request_select_administrative_entity', permit_request_id=permit_request_id)
+    def dispatch(self, request, *args, **kwargs):
+        self.permit_request = services.get_permit_request_for_user_or_404(request.user, kwargs["permit_request_id"])
 
-    if services.is_secretariat(request.user) and permit_request.can_be_amended_by_secretariat():
-        if request.method == "POST":
-            additional_information_form = forms.PermitRequestAdditionalInformationForm(
-                request.POST, instance=permit_request
+        if self.permit_request.is_draft() and self.permit_request.author.user == request.user:
+            return redirect(
+                'permits:permit_request_select_administrative_entity', permit_request_id=self.permit_request.pk
             )
 
-            if additional_information_form.is_valid():
-                success_message = _("La demande de permis #%s a bien été amendée.") % permit_request.pk
+        return super().dispatch(request, *args, **kwargs)
 
-                if permit_request.status == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT:
-                    success_message += " " + _(
-                        "Le statut de la demande a été passé à en attente de compléments. Vous devez maintenant"
-                        " contacter le requérant par email (%s) afin de lui demander de fournir les informations manquantes."
-                    ) % permit_request.author.email
+    def render_to_response(self, context):
+        return render(self.request, "permits/permit_request_detail.html", context)
 
-                additional_information_form.save()
-                messages.success(request, success_message)
+    def get_context_data(self, **kwargs):
+        return {**kwargs, **{
+            "permit_request": self.permit_request,
+            "forms": {action: self.get_form_for_action(action) for action in self.actions}
+        }}
 
-                return redirect("permits:permit_requests_list")
-        else:
+    def get(self, request, *args, **kwargs):
+        return self.render_to_response(self.get_context_data())
+
+    def post(self, request, *args, **kwargs):
+        """
+        Instanciate the form matching the submitted POST `action`, checking if the user has the permissions to use it,
+        save it, and call the related submission function.
+        """
+        action = request.POST.get("action")
+
+        if action not in self.actions:
+            return HttpResponse(status=400)
+
+        form = self.get_form_for_action(action, data=request.POST)
+
+        if not form:
+            raise PermissionDenied
+
+        if form.is_valid():
+            form.save()
+
+            return self.handle_form_submission(form, action)
+
+        # Replace unbound form by bound form in the context
+        context = self.get_context_data()
+        context["forms"][action] = form
+
+        return self.render_to_response(context)
+
+    def get_form_for_action(self, action, data=None):
+        actions_forms = {
+            self.ACTION_AMEND: self.get_amend_form,
+            self.ACTION_REQUEST_VALIDATION: self.get_request_validation_form,
+        }
+
+        return actions_forms[action](data=data)
+
+    def get_amend_form(self, data=None):
+        if services.can_amend_permit_request(self.request.user, self.permit_request):
             # Only set the `status` default value if it's submitted for validation, to prevent accidentally resetting
             # the status
             initial = {
                 "status": models.PermitRequest.STATUS_PROCESSING
-            } if permit_request.status == models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION else {}
+            } if self.permit_request.status == models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION else {}
 
-            additional_information_form = forms.PermitRequestAdditionalInformationForm(
-                instance=permit_request, initial=initial
+            return forms.PermitRequestAdditionalInformationForm(
+                instance=self.permit_request, initial=initial, data=data
             )
-    else:
-        additional_information_form = None
 
-    return render(request, "permits/permit_request_detail.html", {
-        "permit_request": permit_request,
-        "additional_information_form": additional_information_form,
-    })
+        return None
+
+    def get_request_validation_form(self, data=None):
+        if services.can_amend_permit_request(self.request.user, self.permit_request):
+            return forms.PermitRequestValidationDepartmentSelectionForm(instance=self.permit_request, data=data)
+
+        return None
+
+    def handle_form_submission(self, form, action):
+        if action == self.ACTION_AMEND:
+            return self.handle_amend_form_submission(form)
+        elif action == self.ACTION_REQUEST_VALIDATION:
+            return self.handle_request_validation_form_submission(form)
+
+    def handle_amend_form_submission(self, form):
+        success_message = _("La demande de permis #%s a bien été amendée.") % self.permit_request.pk
+
+        if form.instance.status == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT:
+            success_message += " " + _(
+                "Le statut de la demande a été passé à en attente de compléments. Vous devez maintenant"
+                " contacter le requérant par email (%s) afin de lui demander de fournir les informations manquantes."
+            ) % self.permit_request.author.email
+
+        messages.success(self.request, success_message)
+
+        return redirect("permits:permit_requests_list")
+
+    def handle_request_validation_form_submission(self, form):
+        messages.success(
+            self.request, _("La demande de permis #%s a bien été transmise pour validation.") % self.permit_request.pk
+        )
+        return redirect("permits:permit_requests_list")
 
 
 @redirect_bad_status_to_detail
@@ -325,14 +391,14 @@ class PermitRequestListExternsView(SingleTableMixin, FilterView):
     def get_table_class(self):
         return (
             tables.SecretariatPermitRequestsTable
-            if services.is_secretariat(self.request.user)
+            if self.request.user.has_perm('permits.amend_permit_request')
             else tables.OwnPermitRequestsTable
         )
 
     def get_filterset_class(self):
         return (
             filters.SecretariatPermitRequestFilterSet
-            if services.is_secretariat(self.request.user)
+            if self.request.user.has_perm('permits.amend_permit_request')
             else filters.OwnPermitRequestFilterSet
         )
 
