@@ -1,6 +1,6 @@
 {% load i18n %}{% autoescape off %}{% trans "Bonjour," %}
 
-{% trans "Une nouvelle demande de permis a été déposée. Vous pouvez la consulter sur le lien suivant:" %}
+{% trans "Une nouvelle demande attend votre validation. Vous pouvez la consulter et la valider sur le lien suivant:" %}
 
 {{ permit_request_url }}
 
