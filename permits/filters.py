@@ -24,7 +24,7 @@ def permit_request_authors(request):
     ).order_by('firstname', 'name')
 
 
-class SecretariatPermitRequestFilterSet(BasePermitRequestFilterSet):
+class DepartmentPermitRequestFilterSet(BasePermitRequestFilterSet):
     author = django_filters.filters.ModelChoiceFilter(
         queryset=permit_request_authors
     )
