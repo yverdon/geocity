@@ -15,7 +15,7 @@ from django.views import View
 
 from gpf.models import Actor
 
-from . import forms, models, services, tables, filters
+from . import forms, models, services, tables, filters, print
 from .exceptions import BadPermitRequestStatus
 from django_tables2.views import SingleTableMixin
 from django_filters.views import FilterView
@@ -446,3 +446,11 @@ def permit_request_delete(request, permit_request_id):
     return render(request, "permits/permit_request_delete.html", {
         'permit_request': permit_request
     })
+
+
+# @method_decorator(login_required, name='dispatch')
+def printpermit(request, permit_request_id):
+    pdf_file, filepath = print.printreport(request, permit_request_id)
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = 'filename="permis.pdf"'
+    return response
