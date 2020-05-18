@@ -19,7 +19,7 @@ cp -n env.yaml_demo env.yaml
 python3 manage.py migrate
 echo yes | python3 manage.py compilemessages -l fr
 
-python3 manage.py loaddata db.json
+python3 manage.py fixturize
 
 
 exec $@
