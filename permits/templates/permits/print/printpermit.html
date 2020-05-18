@@ -1,0 +1,12 @@
+{% extends "base_permits.html" %}
+{% load bootstrap4 %}
+{% load i18n %}
+{% load permits_extras %}
+
+{% block content-no-sidebar %}
+<div class="container">
+
+  {% permit_request_summary permit_request %}
+
+</div>
+{% endblock content-no-sidebar %}
