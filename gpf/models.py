@@ -55,6 +55,11 @@ class Actor(models.Model):
 
         return self.name if self.name else ''
 
+    def get_full_name(self):
+        name_parts = [self.firstname, self.name]
+        return " ".join(name_part for name_part in name_parts if name_part)
+
+
 
 class AdministrativeEntity(models.Model):
 
@@ -78,6 +83,7 @@ class Department(models.Model):
     is_admin = models.BooleanField(_("is_admin"))
     is_archeologist = models.BooleanField(_("is_archeologist"))
     administrative_entity = models.ForeignKey(AdministrativeEntity, null=True, on_delete=models.SET_NULL, related_name='departments', verbose_name=_("administrative_entity"))
+    is_default_validator = models.BooleanField(_("sélectionné par défaut pour les validations"), default=False)
 
     class Meta:
         verbose_name = _('department')

@@ -1,10 +1,12 @@
 from django.conf import settings
 from django import forms
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis import forms as geoforms
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 import json
-from gpf.models import AdministrativeEntity
+from gpf.models import AdministrativeEntity, Department
 from . import models, services
 from bootstrap_datepicker_plus import DatePickerInput, DateTimePickerInput
 from datetime import datetime, timedelta
@@ -347,3 +349,26 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 ).start_of('event days'),
 
         }
+
+
+class PermitRequestValidationDepartmentSelectionForm(forms.Form):
+    departments = forms.ModelMultipleChoiceField(
+        queryset=Department.objects.none(),
+        widget=forms.CheckboxSelectMultiple(),
+        label=_("Services chargés de la validation")
+    )
+
+    def __init__(self, instance, *args, **kwargs):
+        self.permit_request = instance
+        permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
+        validate_permission = Permission.objects.get(codename='validate_permit_request', content_type=permit_request_ct)
+        permit_request_departments = Department.objects.filter(
+            administrative_entity=self.permit_request.administrative_entity,
+            group__permissions=validate_permission
+        ).distinct()
+        kwargs["initial"] = dict(
+            kwargs.get("initial", {}), departments=permit_request_departments.filter(is_default_validator=True)
+        )
+
+        super().__init__(*args, **kwargs)
+        self.fields["departments"].queryset = permit_request_departments

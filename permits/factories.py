@@ -1,17 +1,135 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
+
 import factory
 import faker
-from gpf.models import Actor, AdministrativeEntity
 
+from gpf import models as gpf_models
 from . import models
 
 
 class GpfActorFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Actor
+        model = gpf_models.Actor
 
     firstname = factory.Faker('first_name')
     name = factory.Faker('last_name')
     email = factory.Faker('email')
+
+
+class UserFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = get_user_model()
+
+    username = factory.Faker("user_name")
+    actor = factory.RelatedFactory(GpfActorFactory, "user")
+    password = "password"
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        manager = cls._get_manager(model_class)
+        return manager.create_user(*args, **kwargs)
+
+
+class AdministrativeEntityFactory(factory.django.DjangoModelFactory):
+    ofs_id = 0
+    name = factory.Faker("company")
+
+    class Meta:
+        model = gpf_models.AdministrativeEntity
+
+
+class DepartmentFactory(factory.django.DjangoModelFactory):
+    is_default_validator = False
+    is_validator = False
+    is_admin = False
+    is_archeologist = False
+    administrative_entity = factory.SubFactory(AdministrativeEntityFactory)
+    group = factory.SubFactory("permits.factories.GroupFactory")
+
+    class Meta:
+        model = gpf_models.Department
+
+
+class GroupFactory(factory.django.DjangoModelFactory):
+    name = factory.Faker("company")
+
+    class Meta:
+        model = Group
+
+    @factory.post_generation
+    def permissions(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if not extracted:
+            permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
+            amend_permission = Permission.objects.get(codename="amend_permit_request", content_type=permit_request_ct)
+            extracted = [amend_permission]
+
+        for permission in extracted:
+            self.permissions.add(permission)
+
+
+class SecretariatGroupFactory(GroupFactory):
+    department = factory.RelatedFactory(DepartmentFactory, "group")
+
+    @factory.post_generation
+    def permissions(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if not extracted:
+            permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
+            amend_permission = Permission.objects.get(codename="amend_permit_request", content_type=permit_request_ct)
+            extracted = [amend_permission]
+
+        for permission in extracted:
+            self.permissions.add(permission)
+
+
+class ValidatorGroupFactory(GroupFactory):
+    department = factory.RelatedFactory(DepartmentFactory, "group")
+
+    @factory.post_generation
+    def permissions(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if not extracted:
+            permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
+            validate_permission = Permission.objects.get(codename="validate_permit_request", content_type=permit_request_ct)
+            extracted = [validate_permission]
+
+        for permission in extracted:
+            self.permissions.add(permission)
+
+
+class SecretariatUserFactory(UserFactory):
+    @factory.post_generation
+    def groups(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if not extracted:
+            extracted = [SecretariatGroupFactory()]
+
+        for group in extracted:
+            self.groups.add(group)
+
+
+class ValidatorUserFactory(UserFactory):
+    @factory.post_generation
+    def groups(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if not extracted:
+            extracted = [ValidatorGroupFactory()]
+
+        for group in extracted:
+            self.groups.add(group)
 
 
 class PermitRequestActorFactory(factory.django.DjangoModelFactory):
@@ -25,9 +143,10 @@ class PermitRequestActorFactory(factory.django.DjangoModelFactory):
 
 class AdministrativeEntityFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = AdministrativeEntity
+        model = gpf_models.AdministrativeEntity
 
     ofs_id = 0
+    name = factory.Faker('company')
 
 
 class WorksObjectFactory(factory.django.DjangoModelFactory):
@@ -83,3 +202,11 @@ class WorksObjectPropertyValueFactory(factory.django.DjangoModelFactory):
     value = factory.LazyFunction(lambda: {'val': faker.Faker().word()})
     property = factory.SubFactory(WorksObjectPropertyFactory)
     works_object_type_choice = factory.SubFactory(WorksObjectTypeChoiceFactory)
+
+
+class PermitRequestValidationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitRequestValidation
+
+    department = factory.SubFactory(DepartmentFactory)
+    permit_request = factory.SubFactory(PermitRequestFactory, status=models.PermitRequest.STATUS_AWAITING_VALIDATION)

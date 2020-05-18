@@ -1,3 +1,4 @@
+import itertools
 import os
 
 from django.conf import settings
@@ -13,7 +14,7 @@ from django.urls import reverse
 from django.forms import modelformset_factory
 from django.utils.translation import gettext_lazy as _
 
-from gpf.models import AdministrativeEntity
+from gpf import models as gpf_models
 
 from . import models, forms
 from .exceptions import BadPermitRequestStatus
@@ -137,7 +138,7 @@ def get_works_types(administrative_entity):
 
 
 def get_administrative_entities():
-    return AdministrativeEntity.objects.order_by('name')
+    return gpf_models.AdministrativeEntity.objects.order_by('name')
 
 
 def get_permit_request_works_types(permit_request):
@@ -229,7 +230,7 @@ def get_property_value(object_property_value):
 
 
 def get_user_administrative_entities(user):
-    return AdministrativeEntity.objects.filter(departments__group__in=user.groups.all())
+    return gpf_models.AdministrativeEntity.objects.filter(departments__group__in=user.groups.all())
 
 
 def get_permit_request_for_user_or_404(user, permit_request_id, statuses=None):
@@ -254,16 +255,21 @@ def get_permit_requests_list_for_user(user):
     if user.is_superuser:
         return models.PermitRequest.objects.all()
     else:
-        return models.PermitRequest.objects.filter(
-            Q(author=user.actor)
-            | (Q(administrative_entity__in=get_user_administrative_entities(user))
-               & Q(status__in=[
-                   models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-                   models.PermitRequest.STATUS_PROCESSING,
-                   models.PermitRequest.STATUS_VALIDATED,
-                   models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
-               ]))
-        )
+        qs = Q(author=user.actor)
+
+        if user.has_perm("permits.amend_permit_request"):
+            qs |= Q(
+                administrative_entity__in=get_user_administrative_entities(user),
+            ) & ~Q(
+                status=models.PermitRequest.STATUS_DRAFT
+            )
+
+        if user.has_perm("permits.validate_permit_request"):
+            qs |= Q(
+                validations__department__in=gpf_models.Department.objects.filter(group__in=user.groups.all())
+            )
+
+        return models.PermitRequest.objects.filter(qs)
 
 
 def get_permitactorformset_initiated(permit_request, data=None):
@@ -440,6 +446,9 @@ def submit_permit_request(permit_request, absolute_uri_func):
 
     permit_request.status = models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
     permit_request.save()
+    permit_request_url = absolute_uri_func(
+        reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk})
+    )
 
     users_to_notify = set(get_user_model().objects.filter(
         groups__department__administrative_entity=permit_request.administrative_entity,
@@ -447,9 +456,50 @@ def submit_permit_request(permit_request, absolute_uri_func):
     ).values_list("actor__email", flat=True))
 
     email_contents = render_to_string("permits/emails/permit_request_submitted.txt", {
+        "permit_request_url": permit_request_url
+    })
+    emails = [
+        ("Nouvelle demande de permis", email_contents, settings.DEFAULT_FROM_EMAIL, [email_address])
+        for email_address in users_to_notify
+    ]
+
+    acknowledgment_email_contents = render_to_string("permits/emails/permit_request_acknowledgment.txt", {
+        "permit_request_url": permit_request_url,
+        "name": permit_request.author.get_full_name(),
+        "administrative_entity_name": permit_request.administrative_entity.name,
+    })
+    emails.append(
+        (
+            "Votre demande de permis", acknowledgment_email_contents, settings.DEFAULT_FROM_EMAIL,
+            [permit_request.author.email]
+        )
+    )
+
+    if emails:
+        send_mass_mail(emails)
+
+
+@transaction.atomic
+def request_permit_request_validation(permit_request, departments, absolute_uri_func):
+    permit_request.status = models.PermitRequest.STATUS_AWAITING_VALIDATION
+    permit_request.save()
+
+    for department in departments:
+        models.PermitRequestValidation.objects.get_or_create(
+            permit_request=permit_request, department=department
+        )
+
+    users_to_notify = {
+        email
+        for department in departments
+        for email in department.group.user_set.values_list("actor__email", flat=True)
+    }
+
+    email_contents = render_to_string("permits/emails/permit_request_validation_request.txt", {
         "permit_request_url": absolute_uri_func(
             reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk})
-        )
+        ),
+        "administrative_entity": permit_request.administrative_entity,
     })
     emails = [
         ("Nouvelle demande de permis", email_contents, settings.DEFAULT_FROM_EMAIL, [email_address])
@@ -460,5 +510,13 @@ def submit_permit_request(permit_request, absolute_uri_func):
         send_mass_mail(emails)
 
 
-def is_secretariat(user):
-    return get_user_administrative_entities(user).exists()
+def can_amend_permit_request(user, permit_request):
+    return (
+        user.has_perm('permits.amend_permit_request')
+        and permit_request.can_be_amended()
+        and permit_request.administrative_entity in get_user_administrative_entities(user)
+    )
+
+
+def can_validate_permit_request(user, permit_request):
+    pass
