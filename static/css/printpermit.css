@@ -16,47 +16,12 @@
 
 }
 
-
-table {
-    font-family: arial, sans-serif;
-    border-collapse: collapse;
-    width: 100%;
-    font-size: 10px;
-}
-
-td, th {
-    border: 0.5px solid #dddddd;
-    text-align: left;
-    padding: 8px;
-}
-
-th {
-  background-color: #dddddd;
-}
-
-.controlled-line-height {
-  line-height: 10px;
-}
-
-.first-column-dual td:nth-child(odd) {
-    font-weight: bold;
-    width: 35%;
-}
-
-.first-column-single td:nth-child(odd) {
-    font-weight: bold;
-    width: 20%;
-}
-
-caption {
-  font-weight: bold;
-  font-size: 14px;
-  height: 15px;
-}
-
-
 body {
   font-family: arial;
+}
+
+p {
+  margin: 0.5em;
 }
 
 #header{

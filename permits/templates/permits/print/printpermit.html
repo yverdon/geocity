@@ -1,12 +1,62 @@
-{% extends "base_permits.html" %}
-{% load bootstrap4 %}
 {% load i18n %}
-{% load permits_extras %}
+{% load static %}
 
-{% block content-no-sidebar %}
-<div class="container">
-
-  {% permit_request_summary permit_request %}
-
+<div id=header>
+    <img id="banner_left" src="{{root_url}}{% static 'images/print/STE.png' %}" height=100>
+    <img id="banner_right" src="{{root_url}}{% static 'images/print/ylb_etroit_noir.png' %}">
+    <div class="banner_center">Permis</div>
 </div>
-{% endblock content-no-sidebar %}
+<div id="permit_number">
+  Demande N°{{ permit_request.id }}
+</div>
+<hr>
+<h3>{% trans "Objet(s)" %}</h3>
+{% for object, properties, appendices in objects_infos %}
+  <h4>{{ object }}</h4>
+  <dl>
+    {% for field in properties %}
+      <p>
+        {{ field.label }}:
+        {% if not field.value %}
+          <em>{% trans "Information non fournie" %}</em>
+        {% else %}
+          {{ field.value }}
+        {% endif %}
+      </p>
+    {% endfor %}
+    <h4>{% trans "Document(s)" %}</h4>
+    {% for field in appendices %}
+      <p>
+      {{ field.label }}:
+        {% if not field.value %}
+          <em>{% trans "Information non fournie" %}</em>
+        {% else %}
+          <a href="{{ field.value.url }}" target="_blank">{{ field.value.name }}</a>
+        {% endif %}
+      </p>
+    {% endfor %}
+{% endfor %}
+<p style="page-break-before: always" ></p>
+{% if contacts %}
+  <h3>{% trans "Contacts" %}</h3>
+  <hr>
+  {% for contact_type, contact_infos in contacts %}
+    <h5>{{ contact_type }}</h5>
+      {% for field_label, field_value in contact_infos %}
+      <p>
+        {% if field_value %}
+            {{ field_label }}:
+            {{ field_value }}
+        {% endif %}
+      </p>
+      {% endfor %}
+  {% endfor %}
+<p style="page-break-before: always" ></p>
+<h3> Plan de situation </h3>
+<div id="print-map-container">
+  <img src="data:image/png;base64,{{base64imagestr}}" alt="" class="map-print-image">
+</div>
+<p style="page-break-before: always" ></p>
+<h3> Signatures </h3>
+ici
+{% endif %}
