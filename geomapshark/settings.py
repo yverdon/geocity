@@ -22,6 +22,7 @@ YVENT_URL = os.environ["YVENT_URL"]
 MAPNV_URL = os.environ["MAPNV_URL"]
 SIGNALEZ_URL = os.environ["SIGNALEZ_URL"]
 QGISSERVER_URL = os.environ["QGISSERVER_URL"]
+PRINTED_PERMIT_FOLDER = os.environ["PRINTED_PERMIT_FOLDER"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = eval(os.environ["DEBUG"])

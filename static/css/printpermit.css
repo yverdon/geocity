@@ -1,21 +1,3 @@
-
-@page {
- size: A4;
- font-family: arial, sans-serif;
- font-size: 10px;
- margin-top: 25px;
- @bottom-right {
-   content: "page " counter(page) "/" counter(pages);
- }
- @bottom-left {
-   content: "Tél.: +41 24 423 63 64";
- }
- @bottom-center {
-   content: "www.yverdon-les-bains.ch";
- }
-
-}
-
 body {
   font-family: arial;
 }
@@ -32,16 +14,6 @@ p {
   border-bottom: 1px solid black;
   margin-bottom: 5px;
   position: relative;
-}
-
-#banner_right {
-  float:right;
-  height: 95%;
-}
-
-#banner_left {
-  float:left;
-  height: 95%;
 }
 
 #header .banner_center {
@@ -72,11 +44,6 @@ p {
   text-align: right;
 }
 
-#signature {
-  width: 10px;
-  height: 10px;
-}
-
 .map-print-image {
   width: 100%;
   height: auto;
@@ -90,4 +57,36 @@ p {
   height: 600px;
   background-color: gray;
   transform:rotate(-90deg);
+}
+
+.column {
+  float: left;
+  width: 50%;
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+#logo_main {
+  float:left;
+  height: 95%;
+  max-height: 100px;
+}
+
+#logo_secondary {
+  float:right;
+  height: 95%;
+  max-height: 100px;
+}
+
+#image_signature_1 {
+  max-height: 100px;
+}
+
+#image_signature_2 {
+  max-height: 100px;
 }

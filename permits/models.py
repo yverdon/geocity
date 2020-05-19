@@ -4,10 +4,9 @@ from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.contrib.gis.db import models as geomodels
 from django.utils import timezone
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, FileExtensionValidator
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
-
 from gpf import models as gpfmodels
 
 
@@ -132,6 +131,13 @@ class PermitRequest(models.Model):
     )
     created_at = models.DateTimeField(_("date de création"), default=timezone.now)
     validated_at = models.DateTimeField(_("date de validation"), null=True)
+    printed_at = models.DateTimeField(_("date d'impression"), null=True)
+    printed_by = models.CharField(_("imprimé par"), max_length=255, blank=True)
+    printed_file = models.FileField(
+            _('permis imprimé'),
+            upload_to='printed_permits/',
+            blank=True,
+            validators=[FileExtensionValidator(allowed_extensions=['pdf'])])
     works_object_types = models.ManyToManyField(
         'WorksObjectType', through=WorksObjectTypeChoice, related_name='permit_requests'
     )

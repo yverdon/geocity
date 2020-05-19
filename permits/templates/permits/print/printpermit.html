@@ -1,16 +1,41 @@
 {% load i18n %}
 {% load static %}
 
+<style>
+  @page {
+   size: A4;
+   font-family: arial, sans-serif;
+   font-size: 10px;
+   margin-top: 25px;
+   @bottom-right {
+     content: "page " counter(page) "/" counter(pages);
+   }
+   @bottom-left {
+     content: "Tél.: {{ administrative_entity.phone }}";
+   }
+   @bottom-center {
+     content: "{{ administrative_entity.link }}";
+   }
+  }
+</style>
+
 <div id=header>
-    <img id="banner_left" src="{{root_url}}{% static 'images/print/STE.png' %}" height=100>
-    <img id="banner_right" src="{{root_url}}{% static 'images/print/ylb_etroit_noir.png' %}">
-    <div class="banner_center">Permis</div>
+  <img id="logo_main" src="data:image/png;base64,{{logo_main}}" alt="">
+  <img id="logo_secondary" src="data:image/png;base64,{{logo_secondary}}" alt="">
 </div>
-<div id="permit_number">
-  Demande N°{{ permit_request.id }}
-</div>
+  <div class="banner_center">Permis N°{{ permit_request.id }}</div>
 <hr>
-<h3>{% trans "Objet(s)" %}</h3>
+<h3>Agenda</h3>
+{% for geo_time in geo_times %}
+  <p>Date de début: {{ geo_time.starts_at }} - Date de fin: {{ geo_time.ends_at }}</p>
+  {% if geo_time.comment %}
+    <p>Commentaire: {{ geo_time.comment }}</p>
+  {% endif %}
+  {% if geo_time.comment %}
+    <p>Lien externe: {{ geo_time.external_link }}</p>
+  {% endif %}
+{% endfor %}
+<h3>{% trans "Objet(s) du permis" %}</h3>
 {% for object, properties, appendices in objects_infos %}
   <h4>{{ object }}</h4>
   <dl>
@@ -40,6 +65,15 @@
 {% if contacts %}
   <h3>{% trans "Contacts" %}</h3>
   <hr>
+  <h5>{% trans "Auteur de la demande" %}</h5>
+  {% for field in author %}
+    <p>
+      {% if field.value %}
+          {{ field.label }}:
+          {{ field.value }}
+      {% endif %}
+    </p>
+  {% endfor %}
   {% for contact_type, contact_infos in contacts %}
     <h5>{{ contact_type }}</h5>
       {% for field_label, field_value in contact_infos %}
@@ -51,12 +85,25 @@
       </p>
       {% endfor %}
   {% endfor %}
+{% endif %}
 <p style="page-break-before: always" ></p>
 <h3> Plan de situation </h3>
 <div id="print-map-container">
-  <img src="data:image/png;base64,{{base64imagestr}}" alt="" class="map-print-image">
+  <img src="{{map_image}}" alt="" class="map-print-image">
 </div>
 <p style="page-break-before: always" ></p>
 <h3> Signatures </h3>
-ici
-{% endif %}
+<br><br><br>
+<hr>
+<div class="row">
+  <div class="column">
+
+    <b>{{ administrative_entity.title_signature_1 }}</b>
+      <p>  <img id="image_signature_1" src="data:image/png;base64,{{image_signature_1}}" alt=""></p>
+  </div>
+  <div class="column">
+    <b>{{ administrative_entity.title_signature_2 }}</b>
+      <p>  <img id="image_signature_2" src="data:image/png;base64,{{image_signature_2}}" alt=""></p>
+  </div>
+</div>
+<div id="print_date">pdf du {{print_date}}</div>

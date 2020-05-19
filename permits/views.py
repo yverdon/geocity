@@ -442,15 +442,14 @@ def permit_request_delete(request, permit_request_id):
 
         return redirect('permits:permit_requests_list')
 
-
     return render(request, "permits/permit_request_delete.html", {
         'permit_request': permit_request
     })
 
 
-# @method_decorator(login_required, name='dispatch')
+@login_required
 def printpermit(request, permit_request_id):
-    pdf_file, filepath = print.printreport(request, permit_request_id)
+    pdf_file = print.printreport(request, permit_request_id)
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = 'filename="permis.pdf"'
     return response
