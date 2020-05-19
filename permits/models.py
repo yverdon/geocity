@@ -185,6 +185,11 @@ class PermitRequest(models.Model):
             )
         )
 
+    def get_pending_validations(self):
+        return self.validations.filter(
+            validation_status=PermitRequestValidation.STATUS_REQUESTED
+        )
+
 
 class WorksType(models.Model):
     name = models.CharField(_("nom"), max_length=255)
@@ -300,6 +305,9 @@ class PermitRequestValidation(models.Model):
 
     class Meta:
         unique_together = ("permit_request", "department")
+
+    def is_pending(self):
+        return self.validation_status == self.STATUS_REQUESTED
 
 
 @dataclasses.dataclass

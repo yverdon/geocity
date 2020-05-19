@@ -1,5 +1,6 @@
 from django.conf import settings
 from django import forms
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis import forms as geoforms
@@ -8,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 import json
 from gpf.models import AdministrativeEntity, Department
 from . import models, services
-from bootstrap_datepicker_plus import DatePickerInput, DateTimePickerInput
+from bootstrap_datepicker_plus import DateTimePickerInput
 from datetime import datetime, timedelta
 
 
@@ -392,3 +393,16 @@ class PermitRequestValidationForm(forms.ModelForm):
             (value, label if value != models.PermitRequestValidation.STATUS_REQUESTED else "-" * 9)
             for value, label in self.fields["validation_status"].choices
         ]
+
+
+class PermitRequestValidationPokeForm(forms.Form):
+    def __init__(self, instance, request, *args, **kwargs):
+        self.permit_request = instance
+        self.request = request
+
+        super().__init__(*args, **kwargs)
+
+    def save(self):
+        return services.send_validation_reminder(
+            self.permit_request, absolute_uri_func=self.request.build_absolute_uri
+        )

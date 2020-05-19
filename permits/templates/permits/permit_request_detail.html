@@ -26,7 +26,7 @@
 
     {% permit_request_summary permit_request %}
 
-    {% if forms.amend or forms.request_validation or forms.validate %}
+    {% if forms.amend or forms.request_validation or forms.validate or forms.poke %}
       <h2>{% trans "Actions" %}</h2>
       <ul class="nav nav-tabs" id="actions-tabs" role="tablist">
         {% if forms.amend %}
@@ -48,8 +48,16 @@
             </a>
           </li>
         {% endif %}
+
+        {% if forms.poke %}
+          <li class="nav-item">
+            <a class="nav-link{% if active_form == "poke" %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#classify" role="tab" aria-controls="classify" aria-selected="{% if active_form == "poke" %}true{% else %}false{% endif %}">
+              {% trans "Classer" %}
+            </a>
+          </li>
+        {% endif %}
       </ul>
-      <div class="pt-3 tab-content box box--default">
+      <div class="pt-3 tab-content box box--default box--tabbed">
         {% if forms.amend %}
           <div class="tab-pane{% if active_form == "amend" %} show active{% endif %}" id="amend" role="tabpanel" aria-labelledby="amend-tab">
             <form method="post">
@@ -66,33 +74,60 @@
         {% endif %}
 
         {% if forms.request_validation %}
-        <div class="tab-pane{% if active_form == "request_validation" %} show active{% endif %}" id="request-validation" role="tabpanel" aria-labelledby="request-validation-tab">
-          <form method="post">
-            {% csrf_token %}
+          <div class="tab-pane{% if active_form == "request_validation" %} show active{% endif %}" id="request-validation" role="tabpanel" aria-labelledby="request-validation-tab">
+            <form method="post">
+              {% csrf_token %}
 
-            {% bootstrap_form forms.request_validation layout='horizontal' %}
+              {% bootstrap_form forms.request_validation layout='horizontal' %}
 
-            <div class="text-right">
-              <input name="action" type="hidden" value="request_validation">
-              <button class="btn btn-primary">{% trans "Envoyer pour validation" %}</button>
-            </div>
-          </form>
-        </div>
+              <div class="text-right">
+                <input name="action" type="hidden" value="request_validation">
+                <button class="btn btn-primary">{% trans "Envoyer pour validation" %}</button>
+              </div>
+            </form>
+          </div>
         {% endif %}
 
         {% if forms.validate %}
-        <div class="tab-pane{% if active_form == "validate" %} show active{% endif  %}" id="validate" role="tabpanel" aria-labelledby="validate-tab">
-          <form method="post">
-            {% csrf_token %}
+          <div class="tab-pane{% if active_form == "validate" %} show active{% endif  %}" id="validate" role="tabpanel" aria-labelledby="validate-tab">
+            <form method="post">
+              {% csrf_token %}
 
-            {% bootstrap_form forms.validate layout='horizontal' %}
+              {% bootstrap_form forms.validate layout='horizontal' %}
 
-            <div class="text-right">
-              <input name="action" type="hidden" value="validate">
-              <button class="btn btn-primary">{% trans "Valider" %}</button>
-            </div>
-          </form>
-        </div>
+              <div class="text-right">
+                <input name="action" type="hidden" value="validate">
+                <button class="btn btn-primary">{% trans "Valider" %}</button>
+              </div>
+            </form>
+          </div>
+        {% endif %}
+
+        {% if forms.poke %}
+          <div class="tab-pane{% if active_form == "poke" %} show active{% endif  %}" id="classify" role="tabpanel" aria-labelledby="classify-tab">
+            <form method="post">
+              {% csrf_token %}
+
+              <dl>
+              {% for validation in validations %}
+                <dt>{{ validation.department.group.name }}</dt>
+                <dd{% if validation.is_pending %} class="text-muted"{% endif %}>{{ validation.get_validation_status_display }}</dd>
+              {% endfor %}
+              </dl>
+              {% if nb_pending_validations %}
+                <div class="text-right">
+                  <input name="action" type="hidden" value="poke">
+                  <button class="btn btn-primary">
+                    {% blocktrans trimmed count counter=nb_pending_validations %}
+                      Envoyer un rappel au service
+                    {% plural %}
+                      Envoyer des rappels à {{ counter }} services
+                    {% endblocktrans %}
+                  </button>
+                </div>
+              {% endif %}
+            </form>
+          </div>
         {% endif %}
       </div>
     {% endif %}
