@@ -9,7 +9,7 @@
 
   <h3>{% trans "Envoi de la demande" %}</h3>
   <hr>
-
+  <a class="btn btn-outline-primary" href="{% url 'permits:printpermit' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Imprimer" %}</a>
   {% if incomplete_steps  %}
   <p>
     {% blocktrans trimmed %}
