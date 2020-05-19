@@ -303,6 +303,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
 class GeometryWidget(geoforms.OSMWidget):
 
     template_name = 'geometrywidget/geometrywidget.html'
+    map_srid = 2056
 
     @property
     def media(self):
