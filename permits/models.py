@@ -177,6 +177,9 @@ class PermitRequest(models.Model):
     def can_be_amended(self):
         return self.status in self.AMENDABLE_STATUSES
 
+    def can_be_validated(self):
+        return self.status == self.STATUS_AWAITING_VALIDATION
+
     def works_objects_html(self):
         """
         Return the works objects as a string, separated by <br> characters.
@@ -296,7 +299,10 @@ class PermitRequestValidation(models.Model):
     department = models.ForeignKey(
         "gpf.Department", on_delete=models.CASCADE, related_name="permit_request_validations"
     )
-    validation_status = models.IntegerField(choices=STATUS_CHOICES, default=STATUS_REQUESTED)
+    validation_status = models.IntegerField(_("Statut de validation"), choices=STATUS_CHOICES, default=STATUS_REQUESTED)
+    comment_before = models.TextField(_("Commentaires (avant)"), blank=True)
+    comment_during = models.TextField(_("Commentaires (pendant)"), blank=True)
+    comment_after = models.TextField(_("Commentaires (après)"), blank=True)
 
     class Meta:
         unique_together = ("permit_request", "department")

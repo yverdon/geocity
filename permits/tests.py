@@ -24,6 +24,10 @@ def get_permit_request_works_types_ids(permit_request):
     )
 
 
+def get_emails(subject):
+    return [email for email in mail.outbox if email.subject == subject]
+
+
 class LoggedInUserMixin:
     def setUp(self):
         self.user = factories.UserFactory()
@@ -137,9 +141,10 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             author=self.user.actor, status=models.PermitRequest.STATUS_DRAFT
         )
         self.client.post(reverse('permits:permit_request_submit', kwargs={'permit_request_id': permit_request.pk}))
+        emails = get_emails("Nouvelle demande de permis")
 
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, ["secretariat@yverdon.ch"])
+        self.assertEqual(len(emails), 1)
+        self.assertEqual(emails[0].to, ["secretariat@yverdon.ch"])
 
 
 class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
@@ -464,4 +469,45 @@ class PermitRequestValidationTestcase(TestCase):
 
         response = self.client.get(reverse("permits:permit_requests_list"))
 
-        assert list(response.context["permitrequest_list"]) == [validation.permit_request]
+        self.assertEqual(list(response.context["permitrequest_list"]), [validation.permit_request])
+
+    def test_validator_can_validate_assigned_permit_requests(self):
+        validation = factories.PermitRequestValidationFactory()
+        validator = factories.ValidatorUserFactory(
+            groups=[validation.department.group, factories.ValidatorGroupFactory()]
+        )
+
+        self.client.login(username=validator.username, password="password")
+
+        self.client.post(
+            reverse("permits:permit_request_detail", kwargs={
+                "permit_request_id": validation.permit_request.pk
+            }), data={
+                "action": views.PermitRequestDetailView.ACTION_VALIDATE,
+                "validation_status": models.PermitRequestValidation.STATUS_APPROVED,
+            }
+        )
+
+        validation.refresh_from_db()
+
+        self.assertEqual(validation.validation_status, models.PermitRequestValidation.STATUS_APPROVED)
+
+    def test_validator_cannot_validate_non_assigned_permit_requests(self):
+        validation = factories.PermitRequestValidationFactory()
+        factories.ValidatorUserFactory(
+            groups=[validation.department.group, factories.ValidatorGroupFactory()]
+        )
+        validator = factories.ValidatorUserFactory()
+
+        self.client.login(username=validator.username, password="password")
+
+        response = self.client.post(
+            reverse("permits:permit_request_detail", kwargs={
+                "permit_request_id": validation.permit_request.pk
+            }), data={
+                "action": views.PermitRequestDetailView.ACTION_VALIDATE,
+                "validation_status": models.PermitRequestValidation.STATUS_APPROVED,
+            }
+        )
+
+        self.assertEqual(response.status_code, 404)
