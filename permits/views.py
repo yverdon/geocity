@@ -13,6 +13,7 @@ from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from django.views import View
 
 from gpf.models import Actor
@@ -60,8 +61,10 @@ class PermitRequestDetailView(View):
     ACTION_AMEND = "amend"
     ACTION_REQUEST_VALIDATION = "request_validation"
     ACTION_VALIDATE = "validate"
+    ACTION_POKE = "poke"
+
     # If you add an action here, make sure you also handle it in `get_form_for_action` and in `handle_form_submission`
-    actions = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE]
+    actions = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE, ACTION_POKE]
 
     def dispatch(self, request, *args, **kwargs):
         self.permit_request = services.get_permit_request_for_user_or_404(request.user, kwargs["permit_request_id"])
@@ -82,6 +85,13 @@ class PermitRequestDetailView(View):
             active_form = [action for action in self.actions if forms[action]][0]
         except IndexError:
             active_form = None
+
+        if forms.get(self.ACTION_POKE):
+            kwargs["nb_pending_validations"] = self.permit_request.get_pending_validations().count()
+            kwargs["validations"] = self.permit_request.validations.select_related("department", "department__group")
+        else:
+            kwargs["nb_pending_validations"] = 0
+            kwargs["validations"] = []
 
         return {**kwargs, **{
             "permit_request": self.permit_request,
@@ -121,6 +131,7 @@ class PermitRequestDetailView(View):
             self.ACTION_AMEND: self.get_amend_form,
             self.ACTION_REQUEST_VALIDATION: self.get_request_validation_form,
             self.ACTION_VALIDATE: self.get_validation_form,
+            self.ACTION_POKE: self.get_poke_form,
         }
 
         return actions_forms[action](data=data)
@@ -166,6 +177,12 @@ class PermitRequestDetailView(View):
 
         return forms.PermitRequestValidationForm(instance=validation, data=data)
 
+    def get_poke_form(self, data=None):
+        if services.can_poke_permit_request(self.request.user, self.permit_request):
+            return forms.PermitRequestValidationPokeForm(instance=self.permit_request, request=self.request, data=data)
+
+        return None
+
     def handle_form_submission(self, form, action):
         if action == self.ACTION_AMEND:
             return self.handle_amend_form_submission(form)
@@ -173,6 +190,8 @@ class PermitRequestDetailView(View):
             return self.handle_request_validation_form_submission(form)
         elif action == self.ACTION_VALIDATE:
             return self.handle_validation_form_submission(form)
+        elif action == self.ACTION_POKE:
+            return self.handle_poke(form)
 
     def handle_amend_form_submission(self, form):
         form.save()
@@ -208,6 +227,16 @@ class PermitRequestDetailView(View):
             validation_message = _("Les commentaires ont été enregistrés.")
 
         messages.success(self.request, validation_message)
+
+        return redirect("permits:permit_requests_list")
+
+    def handle_poke(self, form):
+        validations = form.save()
+
+        message = ngettext(
+            "%s rappel a bien été envoyé.", "%s rappels ont bien été envoyés", len(validations)
+        ) % (len(validations))
+        messages.success(self.request, message)
 
         return redirect("permits:permit_requests_list")
 

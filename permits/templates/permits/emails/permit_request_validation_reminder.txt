@@ -1,0 +1,8 @@
+{% load i18n %}{% autoescape off %}{% trans "Bonjour," %}
+
+{% trans "La demande suivante est en attente de validation de votre part:" %}
+
+{{ permit_request_url }}
+
+{% trans "Avec nos meilleures salutations," %}
+{{ administrative_entity.name }}{% endautoescape %}
