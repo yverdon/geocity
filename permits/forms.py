@@ -372,3 +372,23 @@ class PermitRequestValidationDepartmentSelectionForm(forms.Form):
 
         super().__init__(*args, **kwargs)
         self.fields["departments"].queryset = permit_request_departments
+
+
+class PermitRequestValidationForm(forms.ModelForm):
+    class Meta:
+        model = models.PermitRequestValidation
+        fields = ("validation_status", "comment_before", "comment_during", "comment_after")
+        widgets = {
+            'comment_before': forms.Textarea(attrs={'rows': 3}),
+            'comment_during': forms.Textarea(attrs={'rows': 3}),
+            'comment_after': forms.Textarea(attrs={'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Show "----" instead of "en attente" for the default status
+        self.fields["validation_status"].choices = [
+            (value, label if value != models.PermitRequestValidation.STATUS_REQUESTED else "-" * 9)
+            for value, label in self.fields["validation_status"].choices
+        ]

@@ -1,6 +1,8 @@
+import logging
 import mimetypes
 import urllib.parse
 import os
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import PermissionDenied
@@ -19,6 +21,8 @@ from . import forms, models, services, tables, filters
 from .exceptions import BadPermitRequestStatus
 from django_tables2.views import SingleTableMixin
 from django_filters.views import FilterView
+
+logger = logging.getLogger(__name__)
 
 
 def user_has_actor(user):
@@ -55,8 +59,9 @@ def redirect_bad_status_to_detail(func):
 class PermitRequestDetailView(View):
     ACTION_AMEND = "amend"
     ACTION_REQUEST_VALIDATION = "request_validation"
+    ACTION_VALIDATE = "validate"
     # If you add an action here, make sure you also handle it in `get_form_for_action` and in `handle_form_submission`
-    actions = [ACTION_AMEND, ACTION_REQUEST_VALIDATION]
+    actions = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE]
 
     def dispatch(self, request, *args, **kwargs):
         self.permit_request = services.get_permit_request_for_user_or_404(request.user, kwargs["permit_request_id"])
@@ -72,9 +77,16 @@ class PermitRequestDetailView(View):
         return render(self.request, "permits/permit_request_detail.html", context)
 
     def get_context_data(self, **kwargs):
+        forms = {action: self.get_form_for_action(action) for action in self.actions}
+        try:
+            active_form = [action for action in self.actions if forms[action]][0]
+        except IndexError:
+            active_form = None
+
         return {**kwargs, **{
             "permit_request": self.permit_request,
-            "forms": {action: self.get_form_for_action(action) for action in self.actions}
+            "forms": forms,
+            "active_form": active_form,
         }}
 
     def get(self, request, *args, **kwargs):
@@ -108,6 +120,7 @@ class PermitRequestDetailView(View):
         actions_forms = {
             self.ACTION_AMEND: self.get_amend_form,
             self.ACTION_REQUEST_VALIDATION: self.get_request_validation_form,
+            self.ACTION_VALIDATE: self.get_validation_form,
         }
 
         return actions_forms[action](data=data)
@@ -132,11 +145,34 @@ class PermitRequestDetailView(View):
 
         return None
 
+    def get_validation_form(self, data=None):
+        if not services.can_validate_permit_request(self.request.user, self.permit_request):
+            return None
+
+        departments = services.get_user_departments(self.request.user)
+
+        try:
+            validation, *rest = list(self.permit_request.validations.filter(department__in=departments))
+        # User is not part of the requested departments
+        except ValueError:
+            return None
+
+        if rest:
+            logger.error(
+                "User %s is a member of more than 1 validation group for permit request %s. This is not"
+                " implemented yet.", self.request.user, self.permit_request
+            )
+            return None
+
+        return forms.PermitRequestValidationForm(instance=validation, data=data)
+
     def handle_form_submission(self, form, action):
         if action == self.ACTION_AMEND:
             return self.handle_amend_form_submission(form)
         elif action == self.ACTION_REQUEST_VALIDATION:
             return self.handle_request_validation_form_submission(form)
+        elif action == self.ACTION_VALIDATE:
+            return self.handle_validation_form_submission(form)
 
     def handle_amend_form_submission(self, form):
         form.save()
@@ -159,6 +195,20 @@ class PermitRequestDetailView(View):
         messages.success(
             self.request, _("La demande de permis #%s a bien été transmise pour validation.") % self.permit_request.pk
         )
+        return redirect("permits:permit_requests_list")
+
+    def handle_validation_form_submission(self, form):
+        validation = form.save()
+
+        if validation.validation_status == models.PermitRequestValidation.STATUS_APPROVED:
+            validation_message = _("La demande a bien été validée.")
+        elif validation.validation_status == models.PermitRequestValidation.STATUS_REJECTED:
+            validation_message = _("La demande a bien été refusée.")
+        else:
+            validation_message = _("Les commentaires ont été enregistrés.")
+
+        messages.success(self.request, validation_message)
+
         return redirect("permits:permit_requests_list")
 
 

@@ -1,4 +1,3 @@
-import itertools
 import os
 
 from django.conf import settings
@@ -231,6 +230,10 @@ def get_property_value(object_property_value):
 
 def get_user_administrative_entities(user):
     return gpf_models.AdministrativeEntity.objects.filter(departments__group__in=user.groups.all())
+
+
+def get_user_departments(user):
+    return gpf_models.Department.objects.filter(group__in=user.groups.all())
 
 
 def get_permit_request_for_user_or_404(user, permit_request_id, statuses=None):
@@ -512,11 +515,15 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
 
 def can_amend_permit_request(user, permit_request):
     return (
-        user.has_perm('permits.amend_permit_request')
-        and permit_request.can_be_amended()
+        permit_request.can_be_amended()
+        and user.has_perm('permits.amend_permit_request')
         and permit_request.administrative_entity in get_user_administrative_entities(user)
     )
 
 
 def can_validate_permit_request(user, permit_request):
-    pass
+    return (
+        permit_request.can_be_validated()
+        and user.has_perm('permits.validate_permit_request')
+        and get_permit_requests_list_for_user(user).filter(pk=permit_request.pk).exists()
+    )

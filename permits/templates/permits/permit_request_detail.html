@@ -26,24 +26,32 @@
 
     {% permit_request_summary permit_request %}
 
-    {% if forms.amend or forms.request_validation %}
+    {% if forms.amend or forms.request_validation or forms.validate %}
       <h2>{% trans "Actions" %}</h2>
       <ul class="nav nav-tabs" id="actions-tabs" role="tablist">
         {% if forms.amend %}
           <li class="nav-item">
-            <a class="nav-link active" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="true">{% trans "Amender" %}</a>
+            <a class="nav-link{% if active_form == "amend" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">{% trans "Amender" %}</a>
           </li>
         {% endif %}
 
         {% if forms.request_validation %}
           <li class="nav-item">
-            <a class="nav-link" id="validate-tab" data-toggle="tab" href="#validate" role="tab" aria-controls="validate" aria-selected="false">{% trans "Envoyer pour validation" %}</a>
+            <a class="nav-link{% if active_form == "request_validation" %} active{% endif %}" id="request-validation-tab" data-toggle="tab" href="#request-validation" role="tab" aria-controls="request-validation" aria-selected="{% if active_form == "request_validation" %}true{% else %}false{% endif %}">{% trans "Envoyer pour validation" %}</a>
+          </li>
+        {% endif %}
+
+        {% if forms.validate %}
+          <li class="nav-item">
+            <a class="nav-link{% if active_form == "validate" %} active{% endif %}" id="validate-tab" data-toggle="tab" href="#validate" role="tab" aria-controls="validate" aria-selected="{% if active_form == "validate" %}true{% else %}false{% endif %}">
+              {% trans "Valider" %}
+            </a>
           </li>
         {% endif %}
       </ul>
       <div class="pt-3 tab-content box box--default">
         {% if forms.amend %}
-          <div class="tab-pane show active" id="amend" role="tabpanel" aria-labelledby="amend-tab">
+          <div class="tab-pane{% if active_form == "amend" %} show active{% endif %}" id="amend" role="tabpanel" aria-labelledby="amend-tab">
             <form method="post">
               {% csrf_token %}
 
@@ -58,7 +66,7 @@
         {% endif %}
 
         {% if forms.request_validation %}
-        <div class="tab-pane" id="validate" role="tabpanel" aria-labelledby="validate-tab">
+        <div class="tab-pane{% if active_form == "request_validation" %} show active{% endif %}" id="request-validation" role="tabpanel" aria-labelledby="request-validation-tab">
           <form method="post">
             {% csrf_token %}
 
@@ -67,6 +75,21 @@
             <div class="text-right">
               <input name="action" type="hidden" value="request_validation">
               <button class="btn btn-primary">{% trans "Envoyer pour validation" %}</button>
+            </div>
+          </form>
+        </div>
+        {% endif %}
+
+        {% if forms.validate %}
+        <div class="tab-pane{% if active_form == "validate" %} show active{% endif  %}" id="validate" role="tabpanel" aria-labelledby="validate-tab">
+          <form method="post">
+            {% csrf_token %}
+
+            {% bootstrap_form forms.validate layout='horizontal' %}
+
+            <div class="text-right">
+              <input name="action" type="hidden" value="validate">
+              <button class="btn btn-primary">{% trans "Valider" %}</button>
             </div>
           </form>
         </div>
