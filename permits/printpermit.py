@@ -4,7 +4,7 @@ from weasyprint import HTML, CSS
 import urllib.parse
 from django.shortcuts import render
 from django.conf import settings
-from . import services, models, forms, views
+from . import services, models, forms
 from gpf import models as gpf_models
 from gpf import forms as gpf_forms
 import base64
@@ -66,6 +66,8 @@ def printreport(request, permit_request_id):
     appendices_form = forms.WorksObjectsAppendicesForm(instance=permit_request)
     appendices_by_object_type = dict(appendices_form.get_fields_by_object_type())
 
+    validations = permit_request.validations.all()
+
     objects_infos = [
         (
             obj,
@@ -99,6 +101,7 @@ def printreport(request, permit_request_id):
         'administrative_entity': administrative_entity,
         'geo_times': geo_times,
         'map_image': map_image,
+        'validations': validations,
         'logo_main': base64.b64encode(administrative_entity.logo_main.open().read()).decode("utf-8") if administrative_entity.logo_main else '',
         'logo_secondary': base64.b64encode(administrative_entity.logo_secondary.open().read()).decode("utf-8") if administrative_entity.logo_secondary else '',
         'image_signature_1': base64.b64encode(administrative_entity.image_signature_1.open().read()).decode("utf-8") if administrative_entity.image_signature_1 else '',

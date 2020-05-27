@@ -530,7 +530,16 @@ def permit_request_delete(request, permit_request_id):
 
 @login_required
 def printpdf(request, permit_request_id):
-    pdf_file = printpermit.printreport(request, permit_request_id)
-    response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = 'filename="permis.pdf"'
-    return response
+
+    permit_request = models.PermitRequest.objects.get(pk=permit_request_id)
+    if request.user.has_perm('permits.amend_permit_request') and \
+        (permit_request.has_validations() and
+            permit_request.get_pending_validations().count() == 0) \
+            or permit_request.status == 2:
+
+        pdf_file = printpermit.printreport(request, permit_request_id)
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = 'filename="permis.pdf"'
+        return response
+    else:
+        raise PermissionDenied

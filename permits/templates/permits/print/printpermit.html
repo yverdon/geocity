@@ -62,6 +62,30 @@
     {% endfor %}
 {% endfor %}
 <p style="page-break-before: always" ></p>
+<table>
+  <caption>Remarque(s)</caption>
+  <tr>
+    <th>Service</th>
+    <th>Commentaire</th>
+  </tr>
+    {% for validation in validations %}
+      <tr>
+        <td>
+          {{validation.department}}
+        </td>
+        <td class="controlled-line-height">
+            <p><h5>{% trans "Avant" %}</h5></p>
+            <p>{{validation.comment_before|default_if_none:"/"}}</p>
+            <p><h5>{% trans "Pendant" %}</h5></p>
+            <p>{{validation.comment_during|default_if_none:"/"}}</p>
+            <p><h5>{% trans "Après" %}</h5></p>
+            <p>{{validation.comment_after|default_if_none:"/"}}</p>
+        </td>
+      </tr>
+    {% endfor %}
+</table>
+
+<p style="page-break-before: always" ></p>
 {% if contacts %}
   <h3>{% trans "Contacts" %}</h3>
   <hr>
