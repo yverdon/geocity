@@ -511,3 +511,28 @@ class PermitRequestValidationTestcase(TestCase):
         )
 
         self.assertEqual(response.status_code, 404)
+
+    def test_secretariat_can_send_validation_reminders(self):
+        group = factories.SecretariatGroupFactory()
+        administrative_entity = group.department.administrative_entity
+        secretariat = factories.SecretariatUserFactory(groups=[group])
+
+        validation = factories.PermitRequestValidationFactory(
+            permit_request__administrative_entity=administrative_entity
+        )
+        validator = factories.ValidatorUserFactory(
+            groups=[validation.department.group, factories.ValidatorGroupFactory()]
+        )
+
+        self.client.login(username=secretariat.username, password="password")
+
+        self.client.post(
+            reverse("permits:permit_request_detail", kwargs={
+                "permit_request_id": validation.permit_request.pk
+            }), data={
+                "action": views.PermitRequestDetailView.ACTION_POKE,
+            }
+        )
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [validator.actor.email])

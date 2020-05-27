@@ -513,6 +513,33 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
         send_mass_mail(emails)
 
 
+def send_validation_reminder(permit_request, absolute_uri_func):
+    """
+    Send a reminder to departments that have not yet processed the given `permit_request` and return the list of pending
+    validations.
+    """
+    pending_validations = permit_request.get_pending_validations()
+    users_to_notify = set(get_user_model().objects.filter(
+        groups__department__in=pending_validations.values_list("department", flat=True)
+    ).values_list("actor__email", flat=True).distinct())
+
+    email_contents = render_to_string("permits/emails/permit_request_validation_reminder.txt", {
+        "permit_request_url": absolute_uri_func(
+            reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk})
+        ),
+        "administrative_entity": permit_request.administrative_entity,
+    })
+    emails = [
+        ("Rappel: une demande est en attente de validation", email_contents, settings.DEFAULT_FROM_EMAIL, [email_address])
+        for email_address in users_to_notify
+    ]
+
+    if emails:
+        send_mass_mail(emails)
+
+    return pending_validations
+
+
 def can_amend_permit_request(user, permit_request):
     return (
         permit_request.can_be_amended()
@@ -526,4 +553,12 @@ def can_validate_permit_request(user, permit_request):
         permit_request.can_be_validated()
         and user.has_perm('permits.validate_permit_request')
         and get_permit_requests_list_for_user(user).filter(pk=permit_request.pk).exists()
+    )
+
+
+def can_poke_permit_request(user, permit_request):
+    return (
+        permit_request.status == models.PermitRequest.STATUS_AWAITING_VALIDATION
+        and user.has_perm('permits.amend_permit_request')
+        and permit_request.administrative_entity in get_user_administrative_entities(user)
     )
