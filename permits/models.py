@@ -196,6 +196,9 @@ class PermitRequest(models.Model):
             validation_status=PermitRequestValidation.STATUS_REQUESTED
         )
 
+    def has_validations(self):
+        return True if self.validations.all().count() > 0 else False
+
 
 class WorksType(models.Model):
     name = models.CharField(_("nom"), max_length=255)

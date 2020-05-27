@@ -18,7 +18,7 @@ existing_permit_request_urlpatterns = [
     path('submit/', views.permit_request_submit, name='permit_request_submit'),
     path('geotime/', views.permit_request_geo_time, name='permit_request_geo_time'),
     path('delete/', views.permit_request_delete, name='permit_request_delete'),
-    path('printpermit/', views.printpermit, name='printpermit'),
+    path('printpdf/', views.printpdf, name='printpdf'),
 ]
 
 urlpatterns = [

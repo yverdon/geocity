@@ -52,7 +52,7 @@ def get_map_base64(geo_times, permit_id):
 
 def printreport(request, permit_request_id):
 
-    permit_request = views.get_permit_request_for_edition(request.user, permit_request_id)
+    permit_request = models.PermitRequest.objects.get(pk=permit_request_id)
 
     geo_times = models.PermitRequestGeoTime.objects.filter(permit_request=permit_request).all()
     map_image = get_map_base64(geo_times, permit_request.pk)

@@ -18,7 +18,7 @@ from django.views import View
 
 from gpf.models import Actor
 
-from . import forms, models, services, tables, filters, print
+from . import forms, models, services, tables, filters, printpermit
 from .exceptions import BadPermitRequestStatus
 from django_tables2.views import SingleTableMixin
 from django_filters.views import FilterView
@@ -86,6 +86,8 @@ class PermitRequestDetailView(View):
         except IndexError:
             active_form = None
 
+        kwargs["has_validations"] = self.permit_request.has_validations()
+        print(self.permit_request.has_validations())
         if forms.get(self.ACTION_POKE):
             kwargs["nb_pending_validations"] = self.permit_request.get_pending_validations().count()
             kwargs["validations"] = self.permit_request.validations.select_related("department", "department__group")
@@ -527,8 +529,8 @@ def permit_request_delete(request, permit_request_id):
 
 
 @login_required
-def printpermit(request, permit_request_id):
-    pdf_file = print.printreport(request, permit_request_id)
+def printpdf(request, permit_request_id):
+    pdf_file = printpermit.printreport(request, permit_request_id)
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = 'filename="permis.pdf"'
     return response
