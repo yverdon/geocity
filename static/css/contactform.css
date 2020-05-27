@@ -1,0 +1,4 @@
+
+select[readonly] option, select[readonly] optgroup {
+  display: none;
+}

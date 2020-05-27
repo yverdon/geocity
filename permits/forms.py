@@ -218,13 +218,14 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
 
 
 class PermitRequestActorForm(forms.ModelForm):
+
     actor_fields = ['name', 'firstname', 'company_name', 'vat_number', 'address', 'address', 'city', 'phone',
                     'zipcode', 'email']
 
-    name = forms.CharField( max_length=100, label=_('Nom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Marcel',}))
-    firstname = forms.CharField( max_length=100, label=_('Prénom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Dupond'}))
-    phone = forms.CharField(max_length=20, label=_('Téléphone'), widget=forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}))
-    email = forms.EmailField()
+    name = forms.CharField( max_length=100, label=_('Nom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Marcel', 'required': 'required'}))
+    firstname = forms.CharField(max_length=100, label=_('Prénom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Dupond', 'required': 'required'}))
+    phone = forms.CharField(max_length=20, label=_('Téléphone'), widget=forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22', 'required': 'required'}))
+    email = forms.EmailField(max_length=100, label=_('Email'), widget=forms.TextInput(attrs={'placeholder': 'ex: example@example.com', 'required': 'required'}))
     address = forms.CharField(max_length=100, label=_('Adresse'), widget= forms.TextInput(
             attrs={
                 "data_remote_autocomplete": json.dumps({
@@ -234,18 +235,23 @@ class PermitRequestActorForm(forms.ModelForm):
                 "origins": "address",
                 "zipcode_field": "zipcode",
                 "city_field": "city",
-                "placeholder": "ex: Place Pestalozzi 2 Yverdon",})
+                "placeholder": "ex: Place Pestalozzi 2 Yverdon",}),
+                'required': 'required',
             }),
     )
 
-    zipcode = forms.IntegerField(label=_('NPA'))
-    city = forms.CharField( max_length=100, label=_('Ville'), widget=forms.TextInput(attrs={'placeholder': 'ex: Yverdon'}))
+    zipcode = forms.IntegerField(label=_('NPA'), widget=forms.NumberInput(attrs={'required': 'required'}))
+    city = forms.CharField(max_length=100, label=_('Ville'), widget=forms.TextInput(attrs={'placeholder': 'ex: Yverdon', 'required': 'required'}))
     company_name = forms.CharField(required=False, label=_('Raison sociale'), max_length=100, widget=forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}))
     vat_number = forms.CharField(required=False, label=_('Numéro TVA'), max_length=100,widget=forms.TextInput(attrs={'placeholder': 'ex: CHE-123.456.789'}))
 
     class Meta:
         model = models.PermitRequestActor
         fields = ['actor_type']
+        widgets = {'actor_type': forms.Select(
+                attrs={'readonly': 'readonly',}
+            ),
+        }
 
     def __init__(self, *args, **kwargs):
         instance = kwargs.get('instance')
