@@ -562,3 +562,12 @@ def can_poke_permit_request(user, permit_request):
         and user.has_perm('permits.amend_permit_request')
         and permit_request.administrative_entity in get_user_administrative_entities(user)
     )
+
+
+def can_classify_permit_request(user, permit_request):
+    return (
+        permit_request.status == models.PermitRequest.STATUS_AWAITING_VALIDATION
+        and user.has_perm('permits.amend_permit_request')
+        and permit_request.administrative_entity in get_user_administrative_entities(user)
+        and permit_request.get_pending_validations().count() == 0
+    )
