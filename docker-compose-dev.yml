@@ -16,6 +16,8 @@ services:
       - gmsdata:/code/app_data
     ports:
       - "9095:9000"
+    environment:
+        - DJANGO_SETTINGS_MODULE=geomapshark.settings_dev
 
   qgisserver:
       image: camptocamp/qgis-server:3.10

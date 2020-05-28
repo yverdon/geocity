@@ -29,4 +29,5 @@ WORKDIR /code
 RUN chmod 777 entrypoint.sh \
     && ln -s entrypoint.sh /
 
-RUN pip3 install -r requirements.txt
+# TODO don't do this here since this Dockerfile is also used for prod
+RUN pip3 install -r requirements_dev.txt
