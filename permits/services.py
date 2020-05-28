@@ -255,6 +255,9 @@ def get_permit_requests_list_for_user(user):
     """
     Return the list of permit requests this user has access to.
     """
+    if not user.is_authenticated:
+        return models.PermitRequest.objects.none()
+
     if user.is_superuser:
         return models.PermitRequest.objects.all()
     else:
