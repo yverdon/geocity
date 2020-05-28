@@ -4,6 +4,8 @@
 {% load bootstrap4 %}
 {% load permits_extras %}
 
+{% block title %}{% blocktrans with request_id=permit_request.pk %}Demande #{{ request_id }}{% endblocktrans %}{% endblock %}
+
 {% block content-no-sidebar %}
   <div class="container">
     <h1>{% blocktrans with request_id=permit_request.pk %}Demande #{{ request_id }}{% endblocktrans %}</h1>
