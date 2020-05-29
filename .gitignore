@@ -13,3 +13,5 @@ geomapshark/protected-static/
 env.yaml
 /docker-compose.override.yml
 /permit_requests_uploads
+geomapshark/permit_requests_uploads/
+printed_permits/
