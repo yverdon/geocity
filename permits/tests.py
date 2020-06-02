@@ -368,7 +368,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             },
         )
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 400)
 
 
 class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase):
@@ -410,7 +410,7 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
             },
         )
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 400)
 
     def test_default_departments_are_checked(self):
         default_validator_groups = factories.ValidatorGroupFactory.create_batch(

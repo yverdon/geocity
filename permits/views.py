@@ -56,6 +56,15 @@ def redirect_bad_status_to_detail(func):
     return inner
 
 
+def disable_form(form):
+    for field in form.fields.values():
+        field.disabled = True
+
+    form.disabled = True
+
+    return form
+
+
 @method_decorator(login_required, name='dispatch')
 class PermitRequestDetailView(View):
     ACTION_AMEND = "amend"
@@ -81,10 +90,14 @@ class PermitRequestDetailView(View):
 
     def get_context_data(self, **kwargs):
         forms = {action: self.get_form_for_action(action) for action in self.actions}
+        available_actions = [action for action in self.actions if forms[action]]
+
         try:
-            active_form = [action for action in self.actions if forms[action]][0]
+            active_form = [
+                action for action in available_actions if not getattr(forms[action], "disabled", False)
+            ][0]
         except IndexError:
-            active_form = None
+            active_form = available_actions[-1] if len(available_actions) > 0 else None
 
         if forms.get(self.ACTION_POKE):
             kwargs["nb_pending_validations"] = self.permit_request.get_pending_validations().count()
@@ -97,6 +110,9 @@ class PermitRequestDetailView(View):
             "permit_request": self.permit_request,
             "forms": forms,
             "active_form": active_form,
+            "has_permission_to_classify": services.has_permission_to_classify_permit_request(
+                self.request.user, self.permit_request
+            ),
             "can_classify": services.can_classify_permit_request(self.request.user, self.permit_request),
         }}
 
@@ -117,6 +133,8 @@ class PermitRequestDetailView(View):
 
         if not form:
             raise PermissionDenied
+        elif getattr(form, "disabled", False):
+            raise SuspiciousOperation
 
         if form.is_valid():
             return self.handle_form_submission(form, action)
@@ -138,27 +156,37 @@ class PermitRequestDetailView(View):
         return actions_forms[action](data=data)
 
     def get_amend_form(self, data=None):
-        if services.can_amend_permit_request(self.request.user, self.permit_request):
+        if services.has_permission_to_amend_permit_request(self.request.user, self.permit_request):
             # Only set the `status` default value if it's submitted for validation, to prevent accidentally resetting
             # the status
             initial = {
                 "status": models.PermitRequest.STATUS_PROCESSING
             } if self.permit_request.status == models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION else {}
 
-            return forms.PermitRequestAdditionalInformationForm(
+            form = forms.PermitRequestAdditionalInformationForm(
                 instance=self.permit_request, initial=initial, data=data
             )
+
+            if not services.can_amend_permit_request(self.request.user, self.permit_request):
+                disable_form(form)
+
+            return form
 
         return None
 
     def get_request_validation_form(self, data=None):
-        if services.can_amend_permit_request(self.request.user, self.permit_request):
-            return forms.PermitRequestValidationDepartmentSelectionForm(instance=self.permit_request, data=data)
+        if services.has_permission_to_amend_permit_request(self.request.user, self.permit_request):
+            form = forms.PermitRequestValidationDepartmentSelectionForm(instance=self.permit_request, data=data)
+
+            if not services.can_amend_permit_request(self.request.user, self.permit_request):
+                disable_form(form)
+
+            return form
 
         return None
 
     def get_validation_form(self, data=None):
-        if not services.can_validate_permit_request(self.request.user, self.permit_request):
+        if not services.has_permission_to_validate_permit_request(self.request.user, self.permit_request):
             return None
 
         departments = services.get_user_departments(self.request.user)
@@ -176,11 +204,21 @@ class PermitRequestDetailView(View):
             )
             return None
 
-        return forms.PermitRequestValidationForm(instance=validation, data=data)
+        form = forms.PermitRequestValidationForm(instance=validation, data=data)
+
+        if not services.can_validate_permit_request(self.request.user, self.permit_request):
+            disable_form(form)
+
+        return form
 
     def get_poke_form(self, data=None):
-        if services.can_poke_permit_request(self.request.user, self.permit_request):
-            return forms.PermitRequestValidationPokeForm(instance=self.permit_request, request=self.request, data=data)
+        if services.has_permission_to_poke_permit_request(self.request.user, self.permit_request):
+            form = forms.PermitRequestValidationPokeForm(instance=self.permit_request, request=self.request, data=data)
+
+            if not services.can_poke_permit_request(self.request.user, self.permit_request):
+                disable_form(form)
+
+            return form
 
         return None
 

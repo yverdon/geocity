@@ -71,7 +71,7 @@
 
               <div class="text-right">
                 <input name="action" type="hidden" value="amend">
-                <button class="btn btn-primary">{% trans "Amender" %}</button>
+                <button class="btn btn-primary" {% if forms.amend.disabled %}disabled{% endif %}>{% trans "Amender" %}</button>
               </div>
             </form>
           </div>
@@ -86,7 +86,7 @@
 
               <div class="text-right">
                 <input name="action" type="hidden" value="request_validation">
-                <button class="btn btn-primary">{% trans "Envoyer pour validation" %}</button>
+                <button class="btn btn-primary" {% if forms.request_validation.disabled %}disabled{% endif %}>{% trans "Envoyer pour validation" %}</button>
               </div>
             </form>
           </div>
@@ -101,7 +101,7 @@
 
               <div class="text-right">
                 <input name="action" type="hidden" value="validate">
-                <button class="btn btn-primary">{% trans "Valider" %}</button>
+                <button class="btn btn-primary" {% if forms.validate.disabled %}disabled{% endif %}>{% trans "Valider" %}</button>
               </div>
             </form>
           </div>
@@ -134,7 +134,7 @@
               {% endfor %}
               </dl>
 
-              {% if nb_pending_validations %}
+              {% if nb_pending_validations and not forms.poke.disabled %}
                 <div class="text-right">
                   <button name="action" value="poke" class="btn btn-primary">
                     {% blocktrans trimmed count counter=nb_pending_validations %}
@@ -144,12 +144,12 @@
                     {% endblocktrans %}
                   </button>
                 </div>
-              {% elif can_classify %}
+              {% elif has_permission_to_classify %}
                 <div class="text-right">
-                  <a href="{% url 'permits:permit_request_reject' permit_request_id=permit_request.pk %}" class="btn btn-primary">
+                  <a href="{% if not can_classify %}#{% else %}{% url 'permits:permit_request_reject' permit_request_id=permit_request.pk %}{% endif %}" class="btn btn-primary {% if not can_classify %} disabled{% endif %}"{% if not can_classify %} aria-disabled="true"{% endif %}>
                     {% trans "Refuser" %}
                   </a>
-                  <a href="{% url 'permits:permit_request_approve' permit_request_id=permit_request.pk %}" class="btn btn-primary">
+                  <a href="{% if not can_classify %}#{% else %}{% url 'permits:permit_request_approve' permit_request_id=permit_request.pk %}{% endif %}" class="btn btn-primary{% if not can_classify %} disabled{% endif %}"{% if not can_classify %} aria-disabled="true"{% endif %}>
                     {% trans "Approuver" %}
                   </a>
                 </div>

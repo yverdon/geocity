@@ -543,26 +543,51 @@ def send_validation_reminder(permit_request, absolute_uri_func):
     return pending_validations
 
 
+def has_permission_to_amend_permit_request(user, permit_request):
+    return (
+        user.has_perm('permits.amend_permit_request')
+        and permit_request.administrative_entity in get_user_administrative_entities(user)
+    )
+
+
 def can_amend_permit_request(user, permit_request):
     return (
         permit_request.can_be_amended()
-        and user.has_perm('permits.amend_permit_request')
-        and permit_request.administrative_entity in get_user_administrative_entities(user)
+        and has_permission_to_amend_permit_request(user, permit_request)
+    )
+
+
+def has_permission_to_validate_permit_request(user, permit_request):
+    return (
+        user.has_perm('permits.validate_permit_request')
+        and get_permit_requests_list_for_user(user).filter(pk=permit_request.pk).exists()
     )
 
 
 def can_validate_permit_request(user, permit_request):
     return (
         permit_request.can_be_validated()
-        and user.has_perm('permits.validate_permit_request')
-        and get_permit_requests_list_for_user(user).filter(pk=permit_request.pk).exists()
+        and has_permission_to_validate_permit_request(user, permit_request)
+    )
+
+
+def has_permission_to_poke_permit_request(user, permit_request):
+    return (
+        user.has_perm('permits.amend_permit_request')
+        and permit_request.administrative_entity in get_user_administrative_entities(user)
     )
 
 
 def can_poke_permit_request(user, permit_request):
     return (
         permit_request.status == models.PermitRequest.STATUS_AWAITING_VALIDATION
-        and user.has_perm('permits.amend_permit_request')
+        and has_permission_to_poke_permit_request(user, permit_request)
+    )
+
+
+def has_permission_to_classify_permit_request(user, permit_request):
+    return (
+        user.has_perm('permits.amend_permit_request')
         and permit_request.administrative_entity in get_user_administrative_entities(user)
     )
 
@@ -570,7 +595,6 @@ def can_poke_permit_request(user, permit_request):
 def can_classify_permit_request(user, permit_request):
     return (
         permit_request.status == models.PermitRequest.STATUS_AWAITING_VALIDATION
-        and user.has_perm('permits.amend_permit_request')
-        and permit_request.administrative_entity in get_user_administrative_entities(user)
         and permit_request.get_pending_validations().count() == 0
+        and has_permission_to_classify_permit_request(user, permit_request)
     )
