@@ -1,6 +1,7 @@
 import dataclasses
 
 from django.contrib.postgres.fields import JSONField
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.contrib.gis.db import models as geomodels
 from django.utils import timezone
@@ -9,6 +10,8 @@ from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
 
 from gpf import models as gpfmodels
+
+from . import fields
 
 
 ACTOR_TYPE_OTHER = 0
@@ -108,18 +111,20 @@ class PermitRequestActor(models.Model):
 class PermitRequest(models.Model):
     STATUS_DRAFT = 0
     STATUS_SUBMITTED_FOR_VALIDATION = 1
-    STATUS_VALIDATED = 2
+    STATUS_APPROVED = 2
     STATUS_PROCESSING = 3
     STATUS_AWAITING_SUPPLEMENT = 4
     STATUS_AWAITING_VALIDATION = 5
+    STATUS_REJECTED = 6
 
     STATUS_CHOICES = (
         (STATUS_DRAFT, _("Brouillon")),
         (STATUS_SUBMITTED_FOR_VALIDATION, _("Envoyée, en attente de traitement")),
-        (STATUS_PROCESSING, _("En traitement")),
-        (STATUS_VALIDATED, _("Validée")),
         (STATUS_AWAITING_SUPPLEMENT, _("Demande de compléments")),
+        (STATUS_PROCESSING, _("En traitement")),
         (STATUS_AWAITING_VALIDATION, _("En validation")),
+        (STATUS_APPROVED, _("Approuvée")),
+        (STATUS_REJECTED, _("Refusée")),
     )
     AMENDABLE_STATUSES = {
         STATUS_SUBMITTED_FOR_VALIDATION,
@@ -148,12 +153,18 @@ class PermitRequest(models.Model):
     opposition = models.TextField(_("Opposition"), blank=True)
     comment = models.TextField(_("Commentaire"), blank=True)
 
+    validation_pdf = fields.PermitRequestFileField(
+        _("pdf de validation"), blank=True, validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
+        upload_to="validations"
+    )
+
     class Meta:
         verbose_name = _("demande de permis")
         verbose_name_plural = _("demandes de permis")
         permissions = [
             ('amend_permit_request', _("Amender les demandes de permis")),
             ('validate_permit_request', _("Valider les demandes de permis")),
+            ('classify_permit_request', _("Classer les demandes de permis")),
         ]
 
     def is_draft(self):

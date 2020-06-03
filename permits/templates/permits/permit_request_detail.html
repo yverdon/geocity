@@ -4,18 +4,22 @@
 {% load bootstrap4 %}
 {% load permits_extras %}
 
+{% block title %}{% blocktrans with request_id=permit_request.pk %}Demande #{{ request_id }}{% endblocktrans %}{% endblock %}
+
 {% block content-no-sidebar %}
   <div class="container">
     <h1>{% blocktrans with request_id=permit_request.pk %}Demande #{{ request_id }}{% endblocktrans %}</h1>
-    <p title="">
-    </p>
     <dl>
       <dt>{% trans "Date de création" %}</dt>
       <dd title="{{ permit_request.created_at }}">
         {% blocktrans with request_date=permit_request.created_at|timesince %}Il y a {{ request_date }}{% endblocktrans %}
       </dd>
       <dt>{% trans "Statut" %}</dt>
-      <dd>{{ permit_request.get_status_display }}</dd>
+      <dd>
+        {% if permit_request.validation_pdf %}<a href="{{ permit_request.validation_pdf.url }}">{% endif %}
+        {{ permit_request.get_status_display }}{% if permit_request.validated_at %} {% blocktrans with validated_at=permit_request.validated_at %}le {{ validated_at }}{% endblocktrans %}{% endif %}
+        {% if permit_request.validation_pdf %}</a>{% endif %}
+      </dd>
       <dt>{% trans "Auteur-e" %}</dt>
       <dd>
         <a href="mailto:{{ permit_request.author }} <{{ permit_request.author.email }}>" target="_blank">
@@ -49,7 +53,7 @@
           </li>
         {% endif %}
 
-        {% if forms.poke %}
+        {% if forms.poke or can_classify %}
           <li class="nav-item">
             <a class="nav-link{% if active_form == "poke" %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#classify" role="tab" aria-controls="classify" aria-selected="{% if active_form == "poke" %}true{% else %}false{% endif %}">
               {% trans "Classer" %}
@@ -67,7 +71,7 @@
 
               <div class="text-right">
                 <input name="action" type="hidden" value="amend">
-                <button class="btn btn-primary">{% trans "Amender" %}</button>
+                <button class="btn btn-primary" {% if forms.amend.disabled %}disabled{% endif %}>{% trans "Amender" %}</button>
               </div>
             </form>
           </div>
@@ -82,7 +86,7 @@
 
               <div class="text-right">
                 <input name="action" type="hidden" value="request_validation">
-                <button class="btn btn-primary">{% trans "Envoyer pour validation" %}</button>
+                <button class="btn btn-primary" {% if forms.request_validation.disabled %}disabled{% endif %}>{% trans "Envoyer pour validation" %}</button>
               </div>
             </form>
           </div>
@@ -97,33 +101,57 @@
 
               <div class="text-right">
                 <input name="action" type="hidden" value="validate">
-                <button class="btn btn-primary">{% trans "Valider" %}</button>
+                <button class="btn btn-primary" {% if forms.validate.disabled %}disabled{% endif %}>{% trans "Valider" %}</button>
               </div>
             </form>
           </div>
         {% endif %}
 
-        {% if forms.poke %}
-          <div class="tab-pane{% if active_form == "poke" %} show active{% endif  %}" id="classify" role="tabpanel" aria-labelledby="classify-tab">
+        {% if forms.poke or can_classify %}
+          <div class="tab-pane{% if active_form == "poke" or not active_form and can_classify %} show active{% endif  %}" id="classify" role="tabpanel" aria-labelledby="classify-tab">
             <form method="post">
               {% csrf_token %}
 
               <dl>
               {% for validation in validations %}
                 <dt>{{ validation.department.group.name }}</dt>
-                <dd{% if validation.is_pending %} class="text-muted"{% endif %}>{{ validation.get_validation_status_display }}</dd>
+                <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
+                  {{ validation.get_validation_status_display }}
+
+                  {% if validation.comment_before %}
+                    <br>
+                    {% trans "Commentaire (avant)" %}: {{ validation.comment_before }}
+                  {% endif %}
+                  {% if validation.comment_during %}
+                    <br>
+                    {% trans "Commentaire (pendant)" %}: {{ validation.comment_during }}
+                  {% endif %}
+                  {% if validation.comment_after %}
+                    <br>
+                    {% trans "Commentaire (après)" %}: {{ validation.comment_after }}
+                  {% endif %}
+                </dd>
               {% endfor %}
               </dl>
-              {% if nb_pending_validations %}
+
+              {% if nb_pending_validations and not forms.poke.disabled %}
                 <div class="text-right">
-                  <input name="action" type="hidden" value="poke">
-                  <button class="btn btn-primary">
+                  <button name="action" value="poke" class="btn btn-primary">
                     {% blocktrans trimmed count counter=nb_pending_validations %}
                       Envoyer un rappel au service
                     {% plural %}
                       Envoyer des rappels à {{ counter }} services
                     {% endblocktrans %}
                   </button>
+                </div>
+              {% elif has_permission_to_classify %}
+                <div class="text-right">
+                  <a href="{% if not can_classify %}#{% else %}{% url 'permits:permit_request_reject' permit_request_id=permit_request.pk %}{% endif %}" class="btn btn-primary {% if not can_classify %} disabled{% endif %}"{% if not can_classify %} aria-disabled="true"{% endif %}>
+                    {% trans "Refuser" %}
+                  </a>
+                  <a href="{% if not can_classify %}#{% else %}{% url 'permits:permit_request_approve' permit_request_id=permit_request.pk %}{% endif %}" class="btn btn-primary{% if not can_classify %} disabled{% endif %}"{% if not can_classify %} aria-disabled="true"{% endif %}>
+                    {% trans "Approuver" %}
+                  </a>
                 </div>
               {% endif %}
             </form>

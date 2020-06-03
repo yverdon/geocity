@@ -1,5 +1,7 @@
 FROM osgeo/gdal:ubuntu-small-3.1.0
 
+ARG dev_dependencies
+
 RUN apt-get update
 RUN apt-get install gettext python3-pip -y && \
     apt-get install libcairo2-dev -y && \
@@ -29,4 +31,5 @@ WORKDIR /code
 RUN chmod 777 entrypoint.sh \
     && ln -s entrypoint.sh /
 
-RUN pip3 install -r requirements.txt
+RUN if [ "$dev_dependencies" = "true" ] ; then pip3 install -r requirements_dev.txt && echo "Installed development depencies"; \
+    else pip3 install -r requirements.txt && echo "Installed production depencies"; fi

@@ -3,6 +3,8 @@
 {% load i18n %}
 {% load permits_extras %}
 
+{% block title %}{% trans "Saisie des caractéristiques" %}{% endblock %}
+
 {% block content-no-sidebar %}
 <div class="container">
   {% permit_progressbar permit_request 'properties' %}
