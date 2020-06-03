@@ -17,7 +17,7 @@ def get_field_cls_for_property(prop):
     input_type_mapping = {
         models.WorksObjectProperty.INPUT_TYPE_TEXT: forms.CharField,
         models.WorksObjectProperty.INPUT_TYPE_CHECKBOX: forms.BooleanField,
-        models.WorksObjectProperty.INPUT_TYPE_NUMBER: forms.IntegerField,
+        models.WorksObjectProperty.INPUT_TYPE_NUMBER: forms.FloatField,
         models.WorksObjectProperty.INPUT_TYPE_FILE: forms.FileField,
     }
 
@@ -139,7 +139,6 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         if disable_fields:
             for field in self.fields.values():
                 field.disabled = True
-
 
     def get_fields_by_object_type(self):
         """
