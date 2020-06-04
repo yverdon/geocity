@@ -50,16 +50,18 @@
       </p>
     {% endfor %}
     <h4>{% trans "Document(s)" %}</h4>
-    {% for field in appendices %}
-      <p>
-      {{ field.label }}:
-        {% if not field.value %}
-          <em>{% trans "Information non fournie" %}</em>
-        {% else %}
-          <a href="{{ field.value.url }}" target="_blank">{{ field.value.name }}</a>
-        {% endif %}
-      </p>
-    {% endfor %}
+    {%if appendices %}
+      {% for field in appendices %}
+        <p>
+        {{ field.label }}:
+          {% if not field.value %}
+            <em>{% trans "Information non fournie" %}</em>
+          {% else %}
+            <a href="{{ field.value.url }}" target="_blank">{{ field.value.name }}</a>
+          {% endif %}
+        </p>
+      {% endfor %}
+    {% endif %}
 {% endfor %}
 <p style="page-break-before: always" ></p>
 <table>
@@ -121,7 +123,6 @@
 <hr>
 <div class="row">
   <div class="column">
-
     <b>{{ administrative_entity.title_signature_1 }}</b>
       <p>  <img id="image_signature_1" src="data:image/png;base64,{{image_signature_1}}" alt=""></p>
   </div>

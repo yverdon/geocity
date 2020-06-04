@@ -34,7 +34,11 @@ def get_map_base64(geo_times, permit_id):
               'TEMPLATE': 'permits',
               'map0:extent': ', '.join(map(str, extent)),
               'LAYERS': settings.PRINTED_REPORT_LAYERS + layers,
-              'FILTER': 'gpf_permitrequest:"id" >= ' + str(permit_id)
+              'FILTER': 'permit_permitrequestgeotime_polygons:"id" >= ' + str(permit_id)
+              + ' AND "id" < ' + str(permit_id + 1) +
+              ';permit_permitrequestgeotime_lines:"id" >= ' + str(permit_id)
+              + ' AND "id" < ' + str(permit_id + 1) +
+              ';permit_permitrequestgeotime_points:"id" >= ' + str(permit_id)
               + ' AND "id" < ' + str(permit_id + 1),
               }
 
