@@ -51,13 +51,15 @@ class Command(BaseCommand):
         self.stdout.write("user / admin")
 
         permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
-        amend_permission = Permission.objects.get(codename='amend_permit_request', content_type=permit_request_ct)
+        secretariat_permissions = Permission.objects.filter(
+            codename__in=['amend_permit_request', 'classify_permit_request'], content_type=permit_request_ct
+        )
         user = self.create_user('secretariat-yverdon', 'Secrétariat Yverdon', 'Démo Yverdon')
-        user.user_permissions.add(amend_permission)
+        user.user_permissions.set(secretariat_permissions)
         self.stdout.write("secretariat-yverdon / admin")
 
         user = self.create_user('secretariat-lausanne', 'Secrétariat Lausanne', 'Démo Lausanne')
-        user.user_permissions.add(amend_permission)
+        user.user_permissions.set(secretariat_permissions)
         self.stdout.write("secretariat-lausanne / admin")
 
         user = self.create_user('validator-yverdon', 'Validateur Yverdon', 'Démo Yverdon', is_default_validator=True)

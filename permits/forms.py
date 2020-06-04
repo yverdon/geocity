@@ -1,10 +1,10 @@
 from django.conf import settings
 from django import forms
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis import forms as geoforms
 from django.db import transaction
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 import json
 from gpf.models import AdministrativeEntity, Department
@@ -17,7 +17,7 @@ def get_field_cls_for_property(prop):
     input_type_mapping = {
         models.WorksObjectProperty.INPUT_TYPE_TEXT: forms.CharField,
         models.WorksObjectProperty.INPUT_TYPE_CHECKBOX: forms.BooleanField,
-        models.WorksObjectProperty.INPUT_TYPE_NUMBER: forms.IntegerField,
+        models.WorksObjectProperty.INPUT_TYPE_NUMBER: forms.FloatField,
         models.WorksObjectProperty.INPUT_TYPE_FILE: forms.FileField,
     }
 
@@ -139,7 +139,6 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         if disable_fields:
             for field in self.fields.values():
                 field.disabled = True
-
 
     def get_fields_by_object_type(self):
         """
@@ -413,3 +412,30 @@ class PermitRequestValidationPokeForm(forms.Form):
         return services.send_validation_reminder(
             self.permit_request, absolute_uri_func=self.request.build_absolute_uri
         )
+
+
+class PermitRequestClassifyForm(forms.ModelForm):
+    # Status field is set as initial value when instanciating the form in the view
+    status = forms.ChoiceField(choices=(
+        (status, label)
+        for status, label in models.PermitRequest.STATUS_CHOICES
+        if status in [models.PermitRequest.STATUS_APPROVED, models.PermitRequest.STATUS_REJECTED]
+    ), widget=forms.HiddenInput, disabled=True)
+
+    class Meta:
+        model = models.PermitRequest
+        fields = ["status", "validation_pdf"]
+
+    def save(self, commit=True):
+        permit_request = super().save(commit=False)
+
+        # ModelForm doesn't set the status because the field is disabled, so let's do it manually
+        if self.cleaned_data["status"]:
+            permit_request.status = self.cleaned_data["status"]
+
+        permit_request.validated_at = timezone.now()
+
+        if commit:
+            permit_request.save()
+
+        return permit_request

@@ -1,8 +1,11 @@
 import urllib.parse
 
+from django.conf import settings
 from django.core import mail
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from bs4 import BeautifulSoup
 
@@ -22,6 +25,10 @@ def get_permit_request_works_types_ids(permit_request):
             'works_type__pk', flat=True
         ).distinct()
     )
+
+
+def get_parser(content):
+    return BeautifulSoup(content, features="html5lib")
 
 
 def get_emails(subject):
@@ -361,7 +368,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             },
         )
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 400)
 
 
 class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase):
@@ -403,7 +410,7 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
             },
         )
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 400)
 
     def test_default_departments_are_checked(self):
         default_validator_groups = factories.ValidatorGroupFactory.create_batch(
@@ -421,7 +428,7 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
             reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk}),
         )
 
-        parser = BeautifulSoup(response.content, features="html5lib")
+        parser = get_parser(response.content)
         inputs = {
             int(input_["value"]): input_.get("checked") is not None
             for input_ in parser.select('input[name="departments"]')
@@ -536,3 +543,124 @@ class PermitRequestValidationTestcase(TestCase):
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, [validator.actor.email])
+
+
+class PermitRequestClassifyTestCase(TestCase):
+    def setUp(self):
+        self.secretariat_group = factories.SecretariatGroupFactory()
+        self.administrative_entity = self.secretariat_group.department.administrative_entity
+        self.secretariat_user = factories.SecretariatUserFactory(groups=[self.secretariat_group])
+
+        validation = factories.PermitRequestValidationFactory(
+            permit_request__administrative_entity=self.administrative_entity
+        )
+        self.validator_user = factories.ValidatorUserFactory(
+            groups=[validation.department.group, factories.ValidatorGroupFactory()]
+        )
+
+    def test_secretariat_can_classify_permit_request(self):
+        validation = factories.PermitRequestValidationFactory(
+            permit_request__administrative_entity=self.administrative_entity,
+            validation_status=models.PermitRequestValidation.STATUS_APPROVED
+        )
+
+        self.client.login(username=self.secretariat_user.username, password="password")
+        response = self.client.post(
+            reverse("permits:permit_request_approve", kwargs={
+                "permit_request_id": validation.permit_request.pk
+            }), data={"validation_pdf": SimpleUploadedFile("file.pdf", "contents".encode())}
+        )
+
+        self.assertRedirects(response, reverse("permits:permit_requests_list"))
+        validation.permit_request.refresh_from_db()
+        self.assertEqual(validation.permit_request.status, models.PermitRequest.STATUS_APPROVED)
+
+    def test_secretariat_cannot_classify_permit_request_with_pending_validations(self):
+        validation = factories.PermitRequestValidationFactory(
+            permit_request__administrative_entity=self.administrative_entity
+        )
+
+        self.client.login(username=self.secretariat_user.username, password="password")
+        response = self.client.post(
+            reverse("permits:permit_request_approve", kwargs={
+                "permit_request_id": validation.permit_request.pk
+            }), data={"validation_pdf": SimpleUploadedFile("file.pdf", "")}
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_secretariat_does_not_see_classify_form_when_pending_validations(self):
+        validation = factories.PermitRequestValidationFactory(
+            permit_request__administrative_entity=self.administrative_entity
+        )
+
+        self.client.login(username=self.secretariat_user.username, password="password")
+        response = self.client.get(
+            reverse("permits:permit_request_detail", kwargs={
+                "permit_request_id": validation.permit_request.pk
+            })
+        )
+
+        self.assertNotContains(
+            response,
+            reverse("permits:permit_request_approve", kwargs={"permit_request_id": validation.permit_request.pk})
+        )
+
+    def test_user_without_permission_cannot_classify_permit_request(self):
+        validation = factories.PermitRequestValidationFactory(
+            permit_request__administrative_entity=self.administrative_entity,
+            validation_status=models.PermitRequestValidation.STATUS_APPROVED
+        )
+        user = factories.UserFactory(actor=validation.permit_request.author)
+        self.client.login(username=user.username, password="password")
+
+        approve_url = reverse("permits:permit_request_approve", kwargs={
+            "permit_request_id": validation.permit_request.pk
+        })
+
+        response = self.client.post(approve_url, data={"validation_pdf": SimpleUploadedFile("file.pdf", "")})
+
+        self.assertRedirects(response, settings.LOGIN_URL + "?next=" + approve_url)
+
+    def test_permit_request_validation_file_accessible_to_permit_request_author(self):
+        author_user = factories.UserFactory()
+        permit_request = factories.PermitRequestFactory(
+            validated_at=timezone.now(), status=models.PermitRequest.STATUS_APPROVED, author=author_user.actor
+        )
+        # This cannot be performed in the factory because we need the permit request to have an id to upload a file
+        permit_request.validation_pdf = SimpleUploadedFile("file.pdf", b"contents")
+        permit_request.save()
+
+        self.client.login(username=author_user, password="password")
+        response = self.client.get(permit_request.validation_pdf.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(b"".join(response.streaming_content), b"contents")
+
+    def test_permit_request_validation_file_not_accessible_to_other_users(self):
+        non_author_user = factories.UserFactory()
+        permit_request = factories.PermitRequestFactory(
+            validated_at=timezone.now(), status=models.PermitRequest.STATUS_APPROVED
+        )
+        # This cannot be performed in the factory because we need the permit request to have an id to upload a file
+        permit_request.validation_pdf = SimpleUploadedFile("file.pdf", b"contents")
+        permit_request.save()
+
+        self.client.login(username=non_author_user, password="password")
+        response = self.client.get(permit_request.validation_pdf.url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_classify_sets_validation_date(self):
+        validation = factories.PermitRequestValidationFactory(
+            permit_request__administrative_entity=self.administrative_entity,
+            validation_status=models.PermitRequestValidation.STATUS_APPROVED
+        )
+
+        self.client.login(username=self.secretariat_user.username, password="password")
+        self.client.post(
+            reverse("permits:permit_request_approve", kwargs={
+                "permit_request_id": validation.permit_request.pk
+            }), data={"validation_pdf": SimpleUploadedFile("file.pdf", b"contents")}
+        )
+
+        validation.permit_request.refresh_from_db()
+        self.assertIsNotNone(validation.permit_request.validated_at)

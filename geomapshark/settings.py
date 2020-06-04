@@ -187,6 +187,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 
+PRIVATE_MEDIA_ROOT = os.environ.get("PRIVATE_MEDIA_ROOT", os.path.join(PROJECT_ROOT, "permit_requests_uploads"))
+
 TEMPFILES_FOLDER = os.environ["TEMPFILES_FOLDER"]
 YLB_PROTECTED_SIGNATURE = os.environ["YLB_PROTECTED_SIGNATURE"]
 PRINTED_REPORT_LAYERS = os.environ["PRINTED_REPORT_LAYERS"]

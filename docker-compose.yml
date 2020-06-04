@@ -2,7 +2,10 @@ version: '2'
 
 services:
   web:
-    build: .
+    build:
+      context: ./
+      args:
+        dev_dependencies: "false"
     command: >
         sh -c " python3 manage.py migrate &&
                 python3 manage.py compilemessages -l fr &&

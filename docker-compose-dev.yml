@@ -9,7 +9,10 @@ services:
     depends_on:
       - "qgisserver"
       - "postgres"
-    build: ./
+    build:
+      context: ./
+      args:
+        dev_dependencies: "true"
     entrypoint: /code/entrypoint.sh
     command: python3 manage.py runserver 0.0.0.0:9000
     volumes:
@@ -17,6 +20,8 @@ services:
       - gmsdata:/code/app_data
     ports:
       - "9095:9000"
+    environment:
+        - DJANGO_SETTINGS_MODULE=geomapshark.settings_dev
 
   qgisserver:
       image: camptocamp/qgis-server:3.10
