@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0013_validation_comments'),
+        ('permits', '0015_permit_request_status_order'),
     ]
 
     operations = [

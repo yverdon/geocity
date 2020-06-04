@@ -75,11 +75,11 @@
         </td>
         <td class="controlled-line-height">
             <p><h5>{% trans "Avant" %}</h5></p>
-            <p>{{validation.comment_before|default_if_none:"/"}}</p>
+            <p>{{validation.comment_before}}</p>
             <p><h5>{% trans "Pendant" %}</h5></p>
-            <p>{{validation.comment_during|default_if_none:"/"}}</p>
+            <p>{{validation.comment_during}}</p>
             <p><h5>{% trans "Après" %}</h5></p>
-            <p>{{validation.comment_after|default_if_none:"/"}}</p>
+            <p>{{validation.comment_after}}</p>
         </td>
       </tr>
     {% endfor %}
@@ -90,13 +90,13 @@
   <h3>{% trans "Contacts" %}</h3>
   <hr>
   <h5>{% trans "Auteur de la demande" %}</h5>
-  {% for field in author %}
-    <p>
-      {% if field.value %}
-          {{ field.label }}:
-          {{ field.value }}
-      {% endif %}
-    </p>
+  {% for field_label, field_value in author.fields %}
+  <p>
+    {% if field_value %}
+        {{ field_label }}:
+        {{ field_value }}
+    {% endif %}
+  </p>
   {% endfor %}
   {% for contact_type, contact_infos in contacts %}
     <h5>{{ contact_type }}</h5>

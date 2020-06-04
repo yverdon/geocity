@@ -17,12 +17,8 @@ from django.utils.translation import ngettext
 from django.views import View
 
 from gpf.models import Actor
+from . import fields, forms, models, services, tables, filters, printpermit
 
-<<<<<<< HEAD
-from . import forms, models, services, tables, filters, printpermit
-=======
-from . import fields, forms, models, services, tables, filters
->>>>>>> upstream/sprint-4/master
 from .exceptions import BadPermitRequestStatus
 from django_tables2.views import SingleTableMixin
 from django_filters.views import FilterView
@@ -649,7 +645,7 @@ def printpdf(request, permit_request_id):
             permit_request.get_pending_validations().count() == 0) \
             or permit_request.status == 2:
 
-        pdf_file = printpermit.printreport(request, permit_request_id)
+        pdf_file = printpermit.printreport(request, permit_request)
         response = HttpResponse(pdf_file, content_type='application/pdf')
         response['Content-Disposition'] = 'filename="permis.pdf"'
         return response

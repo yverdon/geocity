@@ -598,3 +598,39 @@ def can_classify_permit_request(user, permit_request):
         and permit_request.get_pending_validations().count() == 0
         and has_permission_to_classify_permit_request(user, permit_request)
     )
+
+
+def get_contacts_summary(permit_request):
+
+    actor_types = dict(models.ACTOR_TYPE_CHOICES)
+
+    contacts = [
+        (actor_types.get(contact['actor_type'].value(), ''), [
+            (field.label, field.value())
+            for field in contact
+            if field.name not in {'id', 'actor_type'}
+        ])
+        for contact in get_permitactorformset_initiated(permit_request)
+        if contact['id'].value()
+    ]
+
+    return contacts
+
+
+def get_permit_objects(permit_request):
+
+    properties_form = forms.WorksObjectsPropertiesForm(instance=permit_request)
+    appendices_form = forms.WorksObjectsAppendicesForm(instance=permit_request)
+    properties_by_object_type = dict(properties_form.get_fields_by_object_type())
+    appendices_by_object_type = dict(appendices_form.get_fields_by_object_type())
+
+    objects_infos = [
+        (
+            obj,
+            properties_by_object_type.get(obj, []),
+            appendices_by_object_type.get(obj, [])
+        )
+        for obj in permit_request.works_object_types.all()
+    ]
+
+    return objects_infos

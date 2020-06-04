@@ -4,9 +4,7 @@ from weasyprint import HTML, CSS
 import urllib.parse
 from django.shortcuts import render
 from django.conf import settings
-from . import services, models, forms
-from gpf import models as gpf_models
-from gpf import forms as gpf_forms
+from . import services, models
 import base64
 import requests
 from django.contrib.gis.db.models import Extent
@@ -50,33 +48,13 @@ def get_map_base64(geo_times, permit_id):
     return map_base64
 
 
-def printreport(request, permit_request_id):
+def printreport(request, permit_request):
 
-    permit_request = models.PermitRequest.objects.get(pk=permit_request_id)
-
-    geo_times = models.PermitRequestGeoTime.objects.filter(permit_request=permit_request).all()
+    geo_times = permit_request.geo_time.all()
     map_image = get_map_base64(geo_times, permit_request.pk)
-
     print_date = datetime.datetime.now()
-    administrative_entity = gpf_models.AdministrativeEntity.objects.get(
-        pk=permit_request.administrative_entity.pk)
-
-    properties_form = forms.WorksObjectsPropertiesForm(instance=permit_request)
-    properties_by_object_type = dict(properties_form.get_fields_by_object_type())
-    appendices_form = forms.WorksObjectsAppendicesForm(instance=permit_request)
-    appendices_by_object_type = dict(appendices_form.get_fields_by_object_type())
-
     validations = permit_request.validations.all()
-
-    objects_infos = [
-        (
-            obj,
-            properties_by_object_type.get(obj, []),
-            appendices_by_object_type.get(obj, [])
-        )
-        for obj in permit_request.works_object_types.all()
-    ]
-
+    objects_infos = services.get_permit_objects(permit_request)
     actor_types = dict(models.ACTOR_TYPE_CHOICES)
 
     contacts = [
@@ -89,13 +67,13 @@ def printreport(request, permit_request_id):
         if contact['id'].value()
     ]
 
-    author = gpf_models.Actor.objects.get(pk=permit_request.author.pk)
-    author_form = gpf_forms.GenericActorForm(instance=author)
+    author = permit_request.author
+    administrative_entity = permit_request.administrative_entity
 
     html = render(request, "permits/print/printpermit.html", {
         'permit_request': permit_request,
         'contacts': contacts,
-        'author': author_form,
+        'author': author,
         'objects_infos': objects_infos,
         'print_date': print_date,
         'administrative_entity': administrative_entity,
@@ -109,13 +87,12 @@ def printreport(request, permit_request_id):
     })
 
     pdf_permit = HTML(string=html.content,  base_url=request.build_absolute_uri()).write_pdf(
-        stylesheets=[CSS('/code/static/css/printpermit.css')])  # FIX THAT
+        stylesheets=[CSS('/code/static/css/printpermit.css')])
 
     file_name = 'permis_' + str(permit_request.pk) + '.pdf'
-    permit = models.PermitRequest.objects.get(pk=permit_request.pk)
-    permit.printed_file.save(file_name, ContentFile(pdf_permit), True)
-    permit.printed_at = datetime.datetime.now()
-    permit.printed_by = request.user.first_name + ' ' + request.user.last_name
-    permit.save()
+    permit_request.printed_file.save(file_name, ContentFile(pdf_permit), True)
+    permit_request.printed_at = datetime.datetime.now()
+    permit_request.printed_by = request.user.get_full_name()
+    permit_request.save()
 
     return pdf_permit
