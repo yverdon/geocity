@@ -418,17 +418,15 @@ def companyAdd(request):
         signupform.instance.last_name = form.instance.name
         signupform.instance.email = form.instance.email
         new_user = signupform.save()
-        group = Group.objects.filter(name='extern').first()
-        new_user.groups.add(group)
         form.instance.user = new_user
-        new_company= form.save()
+        form.save()
 
         login(request, new_user)
 
         return HttpResponseRedirect(
-            reverse('gpf:listexterns'))
+            reverse('permits:permit_requests_list'))
 
-    return render(request, "gpf/company_form.html", {'form' : form, 'signupform': signupform})
+    return render(request, "gpf/company_form.html", {'form': form, 'signupform': signupform})
 
 
 @permission_required('gpf.can_change', raise_exception=True)

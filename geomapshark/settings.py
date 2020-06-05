@@ -13,7 +13,7 @@ for k, v in customConfig['ENV_VARS'].items():
 
 
 ROOT_URLCONF = 'geomapshark.urls'
-LOGIN_REDIRECT_URL ='/'
+LOGIN_REDIRECT_URL ='/permit-requests'
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ["SECRET_KEY"]
