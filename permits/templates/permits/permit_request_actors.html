@@ -5,10 +5,13 @@
 {% load i18n %}
 {% load permits_extras %}
 
+{% block title %}{% trans "Saisie des contacts" %}{% endblock %}
+
 {% block stylesheets %}
   {{ block.super }}
   <link rel="stylesheet" type="text/css" href="{% static 'libs/js/jquery-ui-custom/jquery-ui.min.css' %}">
   <link rel="stylesheet" type="text/css" href="{% static 'customWidgets/RemoteAutocomplete/remoteautocomplete.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'css/contactform.css' %}">
 {% endblock %}
 
 {% block content-no-sidebar %}

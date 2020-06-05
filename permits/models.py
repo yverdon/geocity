@@ -1,14 +1,16 @@
 import dataclasses
 
 from django.contrib.postgres.fields import JSONField
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.contrib.gis.db import models as geomodels
 from django.utils import timezone
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, FileExtensionValidator
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
-
 from gpf import models as gpfmodels
+
+from . import fields
 
 
 ACTOR_TYPE_OTHER = 0
@@ -108,18 +110,20 @@ class PermitRequestActor(models.Model):
 class PermitRequest(models.Model):
     STATUS_DRAFT = 0
     STATUS_SUBMITTED_FOR_VALIDATION = 1
-    STATUS_VALIDATED = 2
+    STATUS_APPROVED = 2
     STATUS_PROCESSING = 3
     STATUS_AWAITING_SUPPLEMENT = 4
     STATUS_AWAITING_VALIDATION = 5
+    STATUS_REJECTED = 6
 
     STATUS_CHOICES = (
         (STATUS_DRAFT, _("Brouillon")),
         (STATUS_SUBMITTED_FOR_VALIDATION, _("Envoyée, en attente de traitement")),
-        (STATUS_PROCESSING, _("En traitement")),
-        (STATUS_VALIDATED, _("Validée")),
         (STATUS_AWAITING_SUPPLEMENT, _("Demande de compléments")),
+        (STATUS_PROCESSING, _("En traitement")),
         (STATUS_AWAITING_VALIDATION, _("En validation")),
+        (STATUS_APPROVED, _("Approuvée")),
+        (STATUS_REJECTED, _("Refusée")),
     )
     AMENDABLE_STATUSES = {
         STATUS_SUBMITTED_FOR_VALIDATION,
@@ -132,6 +136,13 @@ class PermitRequest(models.Model):
     )
     created_at = models.DateTimeField(_("date de création"), default=timezone.now)
     validated_at = models.DateTimeField(_("date de validation"), null=True)
+    printed_at = models.DateTimeField(_("date d'impression"), null=True)
+    printed_by = models.CharField(_("imprimé par"), max_length=255, blank=True)
+    printed_file = models.FileField(
+            _('permis imprimé'),
+            upload_to='printed_permits/',
+            blank=True,
+            validators=[FileExtensionValidator(allowed_extensions=['pdf'])])
     works_object_types = models.ManyToManyField(
         'WorksObjectType', through=WorksObjectTypeChoice, related_name='permit_requests'
     )
@@ -148,12 +159,18 @@ class PermitRequest(models.Model):
     opposition = models.TextField(_("Opposition"), blank=True)
     comment = models.TextField(_("Commentaire"), blank=True)
 
+    validation_pdf = fields.PermitRequestFileField(
+        _("pdf de validation"), blank=True, validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
+        upload_to="validations"
+    )
+
     class Meta:
         verbose_name = _("demande de permis")
         verbose_name_plural = _("demandes de permis")
         permissions = [
             ('amend_permit_request', _("Amender les demandes de permis")),
             ('validate_permit_request', _("Valider les demandes de permis")),
+            ('classify_permit_request', _("Classer les demandes de permis")),
         ]
 
     def is_draft(self):
@@ -171,6 +188,9 @@ class PermitRequest(models.Model):
     def can_be_amended(self):
         return self.status in self.AMENDABLE_STATUSES
 
+    def can_be_validated(self):
+        return self.status == self.STATUS_AWAITING_VALIDATION
+
     def works_objects_html(self):
         """
         Return the works objects as a string, separated by <br> characters.
@@ -181,6 +201,14 @@ class PermitRequest(models.Model):
                 for item in self.works_object_types.all()
             )
         )
+
+    def get_pending_validations(self):
+        return self.validations.filter(
+            validation_status=PermitRequestValidation.STATUS_REQUESTED
+        )
+
+    def has_validations(self):
+        return True if self.validations.all().count() > 0 else False
 
 
 class WorksType(models.Model):
@@ -290,10 +318,16 @@ class PermitRequestValidation(models.Model):
     department = models.ForeignKey(
         "gpf.Department", on_delete=models.CASCADE, related_name="permit_request_validations"
     )
-    validation_status = models.IntegerField(choices=STATUS_CHOICES, default=STATUS_REQUESTED)
+    validation_status = models.IntegerField(_("Statut de validation"), choices=STATUS_CHOICES, default=STATUS_REQUESTED)
+    comment_before = models.TextField(_("Commentaires (avant)"), blank=True)
+    comment_during = models.TextField(_("Commentaires (pendant)"), blank=True)
+    comment_after = models.TextField(_("Commentaires (après)"), blank=True)
 
     class Meta:
         unique_together = ("permit_request", "department")
+
+    def is_pending(self):
+        return self.validation_status == self.STATUS_REQUESTED
 
 
 @dataclasses.dataclass

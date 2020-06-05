@@ -4,11 +4,12 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis import forms as geoforms
 from django.db import transaction
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 import json
 from gpf.models import AdministrativeEntity, Department
 from . import models, services
-from bootstrap_datepicker_plus import DatePickerInput, DateTimePickerInput
+from bootstrap_datepicker_plus import DateTimePickerInput
 from datetime import datetime, timedelta
 
 
@@ -16,7 +17,7 @@ def get_field_cls_for_property(prop):
     input_type_mapping = {
         models.WorksObjectProperty.INPUT_TYPE_TEXT: forms.CharField,
         models.WorksObjectProperty.INPUT_TYPE_CHECKBOX: forms.BooleanField,
-        models.WorksObjectProperty.INPUT_TYPE_NUMBER: forms.IntegerField,
+        models.WorksObjectProperty.INPUT_TYPE_NUMBER: forms.FloatField,
         models.WorksObjectProperty.INPUT_TYPE_FILE: forms.FileField,
     }
 
@@ -139,7 +140,6 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
             for field in self.fields.values():
                 field.disabled = True
 
-
     def get_fields_by_object_type(self):
         """
         Return a list of tuples `(WorksObjectType, List[Field])` for each object type and their properties.
@@ -217,13 +217,14 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
 
 
 class PermitRequestActorForm(forms.ModelForm):
+
     actor_fields = ['name', 'firstname', 'company_name', 'vat_number', 'address', 'address', 'city', 'phone',
                     'zipcode', 'email']
 
-    name = forms.CharField( max_length=100, label=_('Nom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Marcel',}))
-    firstname = forms.CharField( max_length=100, label=_('Prénom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Dupond'}))
-    phone = forms.CharField(max_length=20, label=_('Téléphone'), widget=forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}))
-    email = forms.EmailField()
+    name = forms.CharField( max_length=100, label=_('Nom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Marcel', 'required': 'required'}))
+    firstname = forms.CharField(max_length=100, label=_('Prénom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Dupond', 'required': 'required'}))
+    phone = forms.CharField(max_length=20, label=_('Téléphone'), widget=forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22', 'required': 'required'}))
+    email = forms.EmailField(max_length=100, label=_('Email'), widget=forms.TextInput(attrs={'placeholder': 'ex: example@example.com', 'required': 'required'}))
     address = forms.CharField(max_length=100, label=_('Adresse'), widget= forms.TextInput(
             attrs={
                 "data_remote_autocomplete": json.dumps({
@@ -233,18 +234,23 @@ class PermitRequestActorForm(forms.ModelForm):
                 "origins": "address",
                 "zipcode_field": "zipcode",
                 "city_field": "city",
-                "placeholder": "ex: Place Pestalozzi 2 Yverdon",})
+                "placeholder": "ex: Place Pestalozzi 2 Yverdon",}),
+                'required': 'required',
             }),
     )
 
-    zipcode = forms.IntegerField(label=_('NPA'))
-    city = forms.CharField( max_length=100, label=_('Ville'), widget=forms.TextInput(attrs={'placeholder': 'ex: Yverdon'}))
+    zipcode = forms.IntegerField(label=_('NPA'), widget=forms.NumberInput(attrs={'required': 'required'}))
+    city = forms.CharField(max_length=100, label=_('Ville'), widget=forms.TextInput(attrs={'placeholder': 'ex: Yverdon', 'required': 'required'}))
     company_name = forms.CharField(required=False, label=_('Raison sociale'), max_length=100, widget=forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}))
     vat_number = forms.CharField(required=False, label=_('Numéro TVA'), max_length=100,widget=forms.TextInput(attrs={'placeholder': 'ex: CHE-123.456.789'}))
 
     class Meta:
         model = models.PermitRequestActor
         fields = ['actor_type']
+        widgets = {'actor_type': forms.Select(
+                attrs={'readonly': 'readonly',}
+            ),
+        }
 
     def __init__(self, *args, **kwargs):
         instance = kwargs.get('instance')
@@ -303,6 +309,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
 class GeometryWidget(geoforms.OSMWidget):
 
     template_name = 'geometrywidget/geometrywidget.html'
+    map_srid = 2056
 
     @property
     def media(self):
@@ -372,3 +379,63 @@ class PermitRequestValidationDepartmentSelectionForm(forms.Form):
 
         super().__init__(*args, **kwargs)
         self.fields["departments"].queryset = permit_request_departments
+
+
+class PermitRequestValidationForm(forms.ModelForm):
+    class Meta:
+        model = models.PermitRequestValidation
+        fields = ("validation_status", "comment_before", "comment_during", "comment_after")
+        widgets = {
+            'comment_before': forms.Textarea(attrs={'rows': 3}),
+            'comment_during': forms.Textarea(attrs={'rows': 3}),
+            'comment_after': forms.Textarea(attrs={'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Show "----" instead of "en attente" for the default status
+        self.fields["validation_status"].choices = [
+            (value, label if value != models.PermitRequestValidation.STATUS_REQUESTED else "-" * 9)
+            for value, label in self.fields["validation_status"].choices
+        ]
+
+
+class PermitRequestValidationPokeForm(forms.Form):
+    def __init__(self, instance, request, *args, **kwargs):
+        self.permit_request = instance
+        self.request = request
+
+        super().__init__(*args, **kwargs)
+
+    def save(self):
+        return services.send_validation_reminder(
+            self.permit_request, absolute_uri_func=self.request.build_absolute_uri
+        )
+
+
+class PermitRequestClassifyForm(forms.ModelForm):
+    # Status field is set as initial value when instanciating the form in the view
+    status = forms.ChoiceField(choices=(
+        (status, label)
+        for status, label in models.PermitRequest.STATUS_CHOICES
+        if status in [models.PermitRequest.STATUS_APPROVED, models.PermitRequest.STATUS_REJECTED]
+    ), widget=forms.HiddenInput, disabled=True)
+
+    class Meta:
+        model = models.PermitRequest
+        fields = ["status", "validation_pdf"]
+
+    def save(self, commit=True):
+        permit_request = super().save(commit=False)
+
+        # ModelForm doesn't set the status because the field is disabled, so let's do it manually
+        if self.cleaned_data["status"]:
+            permit_request.status = self.cleaned_data["status"]
+
+        permit_request.validated_at = timezone.now()
+
+        if commit:
+            permit_request.save()
+
+        return permit_request

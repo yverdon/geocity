@@ -1,4 +1,3 @@
-import itertools
 import os
 
 from django.conf import settings
@@ -233,6 +232,10 @@ def get_user_administrative_entities(user):
     return gpf_models.AdministrativeEntity.objects.filter(departments__group__in=user.groups.all())
 
 
+def get_user_departments(user):
+    return gpf_models.Department.objects.filter(group__in=user.groups.all())
+
+
 def get_permit_request_for_user_or_404(user, permit_request_id, statuses=None):
     """
     Return the permit request with `permit_request_id` or raise an Http404 if there is no such permit request. The
@@ -252,6 +255,9 @@ def get_permit_requests_list_for_user(user):
     """
     Return the list of permit requests this user has access to.
     """
+    if not user.is_authenticated:
+        return models.PermitRequest.objects.none()
+
     if user.is_superuser:
         return models.PermitRequest.objects.all()
     else:
@@ -510,13 +516,121 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
         send_mass_mail(emails)
 
 
-def can_amend_permit_request(user, permit_request):
+def send_validation_reminder(permit_request, absolute_uri_func):
+    """
+    Send a reminder to departments that have not yet processed the given `permit_request` and return the list of pending
+    validations.
+    """
+    pending_validations = permit_request.get_pending_validations()
+    users_to_notify = set(get_user_model().objects.filter(
+        groups__department__in=pending_validations.values_list("department", flat=True)
+    ).values_list("actor__email", flat=True).distinct())
+
+    email_contents = render_to_string("permits/emails/permit_request_validation_reminder.txt", {
+        "permit_request_url": absolute_uri_func(
+            reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk})
+        ),
+        "administrative_entity": permit_request.administrative_entity,
+    })
+    emails = [
+        ("Rappel: une demande est en attente de validation", email_contents, settings.DEFAULT_FROM_EMAIL, [email_address])
+        for email_address in users_to_notify
+    ]
+
+    if emails:
+        send_mass_mail(emails)
+
+    return pending_validations
+
+
+def has_permission_to_amend_permit_request(user, permit_request):
     return (
         user.has_perm('permits.amend_permit_request')
-        and permit_request.can_be_amended()
         and permit_request.administrative_entity in get_user_administrative_entities(user)
     )
 
 
+def can_amend_permit_request(user, permit_request):
+    return (
+        permit_request.can_be_amended()
+        and has_permission_to_amend_permit_request(user, permit_request)
+    )
+
+
+def has_permission_to_validate_permit_request(user, permit_request):
+    return (
+        user.has_perm('permits.validate_permit_request')
+        and get_permit_requests_list_for_user(user).filter(pk=permit_request.pk).exists()
+    )
+
+
 def can_validate_permit_request(user, permit_request):
-    pass
+    return (
+        permit_request.can_be_validated()
+        and has_permission_to_validate_permit_request(user, permit_request)
+    )
+
+
+def has_permission_to_poke_permit_request(user, permit_request):
+    return (
+        user.has_perm('permits.amend_permit_request')
+        and permit_request.administrative_entity in get_user_administrative_entities(user)
+    )
+
+
+def can_poke_permit_request(user, permit_request):
+    return (
+        permit_request.status == models.PermitRequest.STATUS_AWAITING_VALIDATION
+        and has_permission_to_poke_permit_request(user, permit_request)
+    )
+
+
+def has_permission_to_classify_permit_request(user, permit_request):
+    return (
+        user.has_perm('permits.amend_permit_request')
+        and permit_request.administrative_entity in get_user_administrative_entities(user)
+    )
+
+
+def can_classify_permit_request(user, permit_request):
+    return (
+        permit_request.status == models.PermitRequest.STATUS_AWAITING_VALIDATION
+        and permit_request.get_pending_validations().count() == 0
+        and has_permission_to_classify_permit_request(user, permit_request)
+    )
+
+
+def get_contacts_summary(permit_request):
+
+    actor_types = dict(models.ACTOR_TYPE_CHOICES)
+
+    contacts = [
+        (actor_types.get(contact['actor_type'].value(), ''), [
+            (field.label, field.value())
+            for field in contact
+            if field.name not in {'id', 'actor_type'}
+        ])
+        for contact in get_permitactorformset_initiated(permit_request)
+        if contact['id'].value()
+    ]
+
+    return contacts
+
+
+def get_permit_objects(permit_request):
+
+    properties_form = forms.WorksObjectsPropertiesForm(instance=permit_request)
+    appendices_form = forms.WorksObjectsAppendicesForm(instance=permit_request)
+    properties_by_object_type = dict(properties_form.get_fields_by_object_type())
+    appendices_by_object_type = dict(appendices_form.get_fields_by_object_type())
+
+    objects_infos = [
+        (
+            obj,
+            properties_by_object_type.get(obj, []),
+            appendices_by_object_type.get(obj, [])
+        )
+        for obj in permit_request.works_object_types.all()
+    ]
+
+    return objects_infos

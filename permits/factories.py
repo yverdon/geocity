@@ -82,8 +82,11 @@ class SecretariatGroupFactory(GroupFactory):
 
         if not extracted:
             permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
-            amend_permission = Permission.objects.get(codename="amend_permit_request", content_type=permit_request_ct)
-            extracted = [amend_permission]
+            extracted = list(
+                Permission.objects.filter(
+                    codename__in=["amend_permit_request", "classify_permit_request"], content_type=permit_request_ct
+                )
+            )
 
         for permission in extracted:
             self.permissions.add(permission)

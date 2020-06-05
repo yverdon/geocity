@@ -2,7 +2,7 @@
 from django.contrib.gis.db import models
 from django.contrib.auth.models import User, Group
 from django.utils.translation import ugettext_lazy as _
-from  django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, FileExtensionValidator
 from django.urls import reverse
 
 
@@ -60,11 +60,45 @@ class Actor(models.Model):
         return " ".join(name_part for name_part in name_parts if name_part)
 
 
-
 class AdministrativeEntity(models.Model):
-
     name = models.CharField(_('name'), max_length=128)
     ofs_id = models.PositiveIntegerField(_("ofs_id"))
+    link = models.URLField(_("Lien"), max_length=200, blank=True)
+    legal_document = models.FileField(
+        _('Directive'),
+        upload_to='administrative_entity_customization/',
+        blank=True,
+        validators=[FileExtensionValidator(allowed_extensions=['pdf'])])
+    link = models.URLField(_("Lien"), max_length=200, blank=True)
+    logo_main = models.FileField(
+        _('Logo principal'),
+        upload_to='administrative_entity_customization/',
+        blank=True,
+        validators=[FileExtensionValidator(allowed_extensions=['png', 'jpg'])])
+    logo_secondary = models.FileField(
+        _('Logo secondaire'),
+        upload_to='administrative_entity_customization/',
+        blank=True,
+        validators=[FileExtensionValidator(allowed_extensions=['png', 'jpg'])])
+    title_signature_1 = models.CharField(_('Signature Gauche'), max_length=128, blank=True)
+    image_signature_1 = models.FileField(
+        _('Scan signature gauche'),
+        upload_to='administrative_entity_customization/',
+        blank=True,
+        validators=[FileExtensionValidator(allowed_extensions=['png', 'jpg'])])
+    title_signature_2 = models.CharField(_('Signature Droite'), max_length=128, blank=True)
+    image_signature_2 = models.FileField(
+        _('Scan signature droite'),        upload_to='administrative_entity_customization/',
+        blank=True,
+        validators=[FileExtensionValidator(allowed_extensions=['png', 'jpg'])])
+    phone = models.CharField(_("Téléphone"),
+        blank=True,
+        max_length=20,
+        validators=[
+            RegexValidator(
+                regex='^(\s*[0-9]+\s*)+$',
+                message='Seuls les chiffres et les espaces sont autorisés'
+        )])
     geom = models.MultiPolygonField(_("geom"), null=True, srid=2056)
 
 

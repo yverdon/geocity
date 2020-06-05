@@ -51,13 +51,15 @@ class Command(BaseCommand):
         self.stdout.write("user / admin")
 
         permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
-        amend_permission = Permission.objects.get(codename='amend_permit_request', content_type=permit_request_ct)
+        secretariat_permissions = Permission.objects.filter(
+            codename__in=['amend_permit_request', 'classify_permit_request'], content_type=permit_request_ct
+        )
         user = self.create_user('secretariat-yverdon', 'Secrétariat Yverdon', 'Démo Yverdon')
-        user.user_permissions.add(amend_permission)
+        user.user_permissions.set(secretariat_permissions)
         self.stdout.write("secretariat-yverdon / admin")
 
         user = self.create_user('secretariat-lausanne', 'Secrétariat Lausanne', 'Démo Lausanne')
-        user.user_permissions.add(amend_permission)
+        user.user_permissions.set(secretariat_permissions)
         self.stdout.write("secretariat-lausanne / admin")
 
         user = self.create_user('validator-yverdon', 'Validateur Yverdon', 'Démo Yverdon', is_default_validator=True)
@@ -74,8 +76,14 @@ class Command(BaseCommand):
 
     def create_user(self, username, group_name, administrative_entity_name, is_default_validator=False):
         administrative_entity, created = gpf_models.AdministrativeEntity.objects.get_or_create(
-            name=administrative_entity_name, defaults={'ofs_id': 0}
+            name=administrative_entity_name, defaults={
+                'ofs_id': 0,
+                'link': 'https://mapnv.ch',
+                'title_signature_1': 'Marcel Dupond',
+                'title_signature_2': 'Gérard Personne',
+                }
         )
+
         group, created = Group.objects.get_or_create(name=group_name)
         user = User.objects.create_user(username=username, password='admin')
         user.groups.set([group])
@@ -110,6 +118,11 @@ class Command(BaseCommand):
 
         for works_type, objs in works_types:
             works_type_obj = models.WorksType.objects.create(name=works_type)
+            models.PermitActorType.objects.create(
+                type=models.ACTOR_TYPE_OTHER,
+                works_type=works_type_obj,
+            )
+
             for works_obj, *props in objs:
                 works_obj_obj = models.WorksObject.objects.create(name=works_obj)
                 works_object_type = models.WorksObjectType.objects.create(works_type=works_type_obj, works_object=works_obj_obj)
