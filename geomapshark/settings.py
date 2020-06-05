@@ -22,6 +22,7 @@ YVENT_URL = os.environ["YVENT_URL"]
 MAPNV_URL = os.environ["MAPNV_URL"]
 SIGNALEZ_URL = os.environ["SIGNALEZ_URL"]
 QGISSERVER_URL = os.environ["QGISSERVER_URL"]
+PRINTED_PERMIT_FOLDER = os.environ["PRINTED_PERMIT_FOLDER"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = eval(os.environ["DEBUG"])
@@ -52,10 +53,9 @@ EMAIL_PORT = os.environ["EMAIL_PORT"]
 EMAIL_HOST_USER = os.environ["EMAIL_HOST_USER"]
 EMAIL_HOST_PASSWORD = os.environ["EMAIL_HOST_PASSWORD"]
 EMAIL_USE_TLS = os.environ["EMAIL_USE_TLS"]
-
 EMAIL_BACKEND = (
-    'django.core.mail.backends.console.EmailBackend'
-    if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'
+    'django.core.mail.backends.smtp.EmailBackend'
+    if os.environ["EMAIL_TO_CONSOLE"] == 'False' else 'django.core.mail.backends.console.EmailBackend'
 )
 
 DEFAULT_CHARSET = "utf-8"

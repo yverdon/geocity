@@ -17,8 +17,8 @@ from django.utils.translation import ngettext
 from django.views import View
 
 from gpf.models import Actor
+from . import fields, forms, models, services, tables, filters, printpermit
 
-from . import fields, forms, models, services, tables, filters
 from .exceptions import BadPermitRequestStatus
 from django_tables2.views import SingleTableMixin
 from django_filters.views import FilterView
@@ -99,6 +99,8 @@ class PermitRequestDetailView(View):
         except IndexError:
             active_form = available_actions[-1] if len(available_actions) > 0 else None
 
+        kwargs["has_validations"] = self.permit_request.has_validations()
+        print(self.permit_request.has_validations())
         if forms.get(self.ACTION_POKE):
             kwargs["nb_pending_validations"] = self.permit_request.get_pending_validations().count()
             kwargs["validations"] = self.permit_request.validations.select_related("department", "department__group")
@@ -632,3 +634,20 @@ def permit_request_file_download(request, path):
     storage = fields.PrivateFileSystemStorage()
 
     return StreamingHttpResponse(storage.open(path), content_type=mime_type)
+
+
+@login_required
+def printpdf(request, permit_request_id):
+
+    permit_request = models.PermitRequest.objects.get(pk=permit_request_id)
+    if request.user.has_perm('permits.amend_permit_request') and \
+        (permit_request.has_validations() and
+            permit_request.get_pending_validations().count() == 0) \
+            or permit_request.status == 2:
+
+        pdf_file = printpermit.printreport(request, permit_request)
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = 'filename="permis.pdf"'
+        return response
+    else:
+        raise PermissionDenied

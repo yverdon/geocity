@@ -76,8 +76,14 @@ class Command(BaseCommand):
 
     def create_user(self, username, group_name, administrative_entity_name, is_default_validator=False):
         administrative_entity, created = gpf_models.AdministrativeEntity.objects.get_or_create(
-            name=administrative_entity_name, defaults={'ofs_id': 0}
+            name=administrative_entity_name, defaults={
+                'ofs_id': 0,
+                'link': 'https://mapnv.ch',
+                'title_signature_1': 'Marcel Dupond',
+                'title_signature_2': 'Gérard Personne',
+                }
         )
+
         group, created = Group.objects.get_or_create(name=group_name)
         user = User.objects.create_user(username=username, password='admin')
         user.groups.set([group])
@@ -112,6 +118,11 @@ class Command(BaseCommand):
 
         for works_type, objs in works_types:
             works_type_obj = models.WorksType.objects.create(name=works_type)
+            models.PermitActorType.objects.create(
+                type=models.ACTOR_TYPE_OTHER,
+                works_type=works_type_obj,
+            )
+
             for works_obj, *props in objs:
                 works_obj_obj = models.WorksObject.objects.create(name=works_obj)
                 works_object_type = models.WorksObjectType.objects.create(works_type=works_type_obj, works_object=works_obj_obj)

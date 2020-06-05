@@ -12,5 +12,7 @@ geomapshark/protected-static/
 env.yaml
 /docker-compose.override.yml
 /permit_requests_uploads
+/administrative_entity_customization
 geomapshark/permit_requests_uploads/
-printed_permits/
+/printed_permits
+/qgisserver/*.qgs~
