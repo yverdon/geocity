@@ -1,5 +1,4 @@
 import os
-import datetime
 from weasyprint import HTML, CSS
 import urllib.parse
 from django.shortcuts import render
@@ -9,6 +8,7 @@ import base64
 import requests
 from django.contrib.gis.db.models import Extent
 from django.core.files.base import ContentFile
+from django.utils import timezone
 
 
 def get_map_base64(geo_times, permit_id):
@@ -17,9 +17,14 @@ def get_map_base64(geo_times, permit_id):
     buffer_extent = int(os.environ["PRINT_MAP_BUFFER_METERS"])
     h_extent_left = round(extent[0] - buffer_extent)
     h_extent_right = round(extent[2] + buffer_extent)
-    v_extent_scaled = round((extent[2] - extent[0]) * (1800/2500))
     v_extent_bottom = round(extent[1] - buffer_extent)
-    v_extent_top = round(v_extent_bottom + v_extent_scaled + buffer_extent)
+
+    if extent[2] - extent[0] == 0:
+        v_extent_scaled = round(2 * buffer_extent * (1800/2500))
+    else:
+        v_extent_scaled = round((extent[2] - extent[0]) * (1800/2500))
+
+    v_extent_top = round(v_extent_bottom + v_extent_scaled)
     extent = [h_extent_left, v_extent_bottom, h_extent_right, v_extent_top]
 
     layers = 'permit_permitrequestgeotime_polygons,permit_permitrequestgeotime_lines,permit_permitrequestgeotime_points'
@@ -56,7 +61,7 @@ def printreport(request, permit_request):
 
     geo_times = permit_request.geo_time.all()
     map_image = get_map_base64(geo_times, permit_request.pk)
-    print_date = datetime.datetime.now()
+    print_date = timezone.now()
     validations = permit_request.validations.all()
     objects_infos = services.get_permit_objects(permit_request)
     actor_types = dict(models.ACTOR_TYPE_CHOICES)
@@ -95,7 +100,7 @@ def printreport(request, permit_request):
 
     file_name = 'permis_' + str(permit_request.pk) + '.pdf'
     permit_request.printed_file.save(file_name, ContentFile(pdf_permit), True)
-    permit_request.printed_at = datetime.datetime.now()
+    permit_request.printed_at = timezone.now()
     permit_request.printed_by = request.user.get_full_name()
     permit_request.save()
 

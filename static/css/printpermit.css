@@ -90,3 +90,29 @@ p {
 #image_signature_2 {
   max-height: 100px;
 }
+
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 10px;
+}
+
+td, th {
+    border: 0.5px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+th {
+  background-color: #dddddd;
+}
+
+.validation-table-left {
+    font-weight: bold;
+    width: 35%;
+}
+
+.validation-table-right{
+    width: 65%;
+}

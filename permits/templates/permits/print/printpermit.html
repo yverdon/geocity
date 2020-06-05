@@ -49,8 +49,8 @@
         {% endif %}
       </p>
     {% endfor %}
-    <h4>{% trans "Document(s)" %}</h4>
     {%if appendices %}
+    <h4>{% trans "Document(s)" %}</h4>
       {% for field in appendices %}
         <p>
         {{ field.label }}:
@@ -64,23 +64,23 @@
     {% endif %}
 {% endfor %}
 <p style="page-break-before: always" ></p>
+<h3> Remarques des services consultés </h3>
 <table>
-  <caption>Remarque(s)</caption>
   <tr>
     <th>Service</th>
     <th>Commentaire</th>
   </tr>
     {% for validation in validations %}
       <tr>
-        <td>
+        <td class="validation-table-left">
           {{validation.department}}
         </td>
-        <td class="controlled-line-height">
-            <p><h5>{% trans "Avant" %}</h5></p>
+        <td class="validation-table-right">
+            <h5>{% trans "Avant" %}</h5>
             <p>{{validation.comment_before}}</p>
-            <p><h5>{% trans "Pendant" %}</h5></p>
+            <h5>{% trans "Pendant" %}</h5>
             <p>{{validation.comment_during}}</p>
-            <p><h5>{% trans "Après" %}</h5></p>
+            <h5>{% trans "Après" %}</h5>
             <p>{{validation.comment_after}}</p>
         </td>
       </tr>

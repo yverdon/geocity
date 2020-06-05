@@ -8,14 +8,14 @@
 
 {% block content-no-sidebar %}
   <div class="container">
-    <h1>{% blocktrans with request_id=permit_request.pk %}Demande #{{ request_id }}{% endblocktrans %}</h1>
+    <h1>{% blocktrans with request_id=permit_request.pk %}Demande #{{ request_id }}{% endblocktrans %}
+      {% if has_validations and nb_pending_validations == 0 or permit_request.status == 2 %}
+          {% if perms.permits.amend_permit_request %}
+            <a class="btn btn-outline-primary" href="{% url 'permits:printpdf' permit_request_id=permit_request.pk %}" class="mr-2"><i class="fa fa-print"></i> {% trans "Imprimer" %}</a>
+          {% endif %}
+        {% endif %}</h1>
     <p title="">
     </p>
-    {% if has_validations and nb_pending_validations == 0 or permit_request.status == 2 %}
-      {% if perms.permits.amend_permit_request %}
-        <a class="btn btn-outline-primary" href="{% url 'permits:printpdf' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Imprimer" %}</a>
-      {% endif %}
-    {% endif %}
     <dl>
       <dt>{% trans "Date de création" %}</dt>
       <dd title="{{ permit_request.created_at }}">
