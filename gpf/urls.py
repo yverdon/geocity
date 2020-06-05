@@ -4,7 +4,6 @@ from . import views
 app_name = 'gpf'
 urlpatterns = [
     path('list', views.PermitRequestListView.as_view(), name='list'),
-    path('listexterns/', views.PermitRequestListExternsView.as_view(), name='listexterns'),
     path('add/', views.actorAdd, name='actor_add'),
     path('companyadd/', views.companyAdd, name='companyadd'),
     path('actor/<int:pk>/change', views.actorChange, name='ActorChange'),

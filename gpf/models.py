@@ -8,12 +8,12 @@ from django.urls import reverse
 
 class Actor(models.Model):
 
-    name = models.CharField(_("name"), max_length=100, null=True)
-    firstname = models.CharField(_("firstname"), max_length=100, null=True)
-    company_name = models.CharField(_("company_name"), max_length=100, null=True)
+    name = models.CharField(_("name"), max_length=100,)
+    firstname = models.CharField(_("firstname"), max_length=100,)
+    company_name = models.CharField(_("company_name"), max_length=100, blank=True)
     vat_number = models.CharField(_("vat_number"),
         max_length=100,
-        null=True,
+        blank=True,
         validators=[
             RegexValidator(
                 regex='([CHE-])+\d{3}[.]+\d{3}[.]+\d{3}',
@@ -21,10 +21,10 @@ class Actor(models.Model):
                 le registe fédéral des entreprises \
                 https://www.uid.admin.ch/search.aspx'
         )])
-    address = models.CharField(_("address"), max_length=100, null=True)
-    zipcode = models.PositiveIntegerField(_("zipcode"), null=True)
-    city = models.CharField(_("city"), max_length=100, null=True)
-    phone_fixed = models.CharField(_("phone_fixed"),
+    address = models.CharField(_("address"), max_length=100,)
+    zipcode = models.PositiveIntegerField(_("zipcode"),)
+    city = models.CharField(_("city"), max_length=100,)
+    phone_fixed = models.CharField(_("Téléphone principal"),
         null=True,
         max_length=20,
         validators=[
@@ -32,7 +32,7 @@ class Actor(models.Model):
                 regex='^(\s*[0-9]+\s*)+$',
                 message='Seuls les chiffres et les espaces sont autorisés'
         )])
-    phone_mobile = models.CharField(_("phone_mobile"),
+    phone_mobile = models.CharField(_("Téléphone secondaire"),
         null=True,
         blank=True,
         max_length=20,
@@ -41,7 +41,7 @@ class Actor(models.Model):
                 regex='^(\s*[0-9]+\s*)+$',
                 message='Seuls les chiffres et les espaces sont autorisés'
         )])
-    email = models.EmailField(_("email"), null=True)
+    email = models.EmailField(_("email"),)
     user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
 
     class Meta:
