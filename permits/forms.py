@@ -332,8 +332,8 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 'map_height': 400,
                 'default_center': [2539057, 1181111],
                 'default_zoom': 10,
-                'display_raw': False, #show coordinate in debug
-                'edit_geom': True, #For readonly set to False
+                'display_raw': False,
+                'edit_geom': True,
                 'min_zoom': 8,
                 'wmts_capabilities_url': settings.WMTS_GETCAP,
                 'wmts_layer': settings.WMTS_LAYER,
@@ -341,19 +341,22 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
             }),
             'starts_at': DateTimePickerInput(
-              options={
-                    "format": "DD/MM/YYYY HH:mm",
-                    "locale": "fr",
-                    "minDate": (datetime.today() + timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d')
-                    }
-                ).start_of('event days'),
+                  options={
+                        "format": "DD/MM/YYYY HH:mm",
+                        "locale": "fr",
+                        "useCurrent": False,
+                        "minDate": (datetime.today() +
+                                    timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d')
+                        }
+                     ).start_of('event days'),
             'ends_at': DateTimePickerInput(
-              options={
-                    "format": "DD/MM/YYYY  HH:mm",
-                    "locale": "fr",
-                    "minDate": (datetime.today() + timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d')
-                    }
-                ).start_of('event days'),
+                  options={
+                        "format": "DD/MM/YYYY  HH:mm",
+                        "locale": "fr",
+                        "useCurrent": False,
+                        }
+                    ).end_of('event days'),
+
 
         }
 
