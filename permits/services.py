@@ -6,7 +6,7 @@ from django.core.exceptions import SuspiciousOperation
 from django.core.files.storage import default_storage
 from django.core.mail import send_mass_mail
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Max, Min
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -256,10 +256,10 @@ def get_permit_requests_list_for_user(user):
     Return the list of permit requests this user has access to.
     """
     if not user.is_authenticated:
-        return models.PermitRequest.objects.none()
+        return models.PermitRequest.objects.none().annotate(starts_at_min=Min('geo_time__starts_at'), ends_at_max=Max('geo_time__ends_at'))
 
     if user.is_superuser:
-        return models.PermitRequest.objects.all()
+        return models.PermitRequest.objects.all().annotate(starts_at_min=Min('geo_time__starts_at'), ends_at_max=Max('geo_time__ends_at'))
     else:
         qs = Q(author=user.actor)
 
@@ -275,7 +275,7 @@ def get_permit_requests_list_for_user(user):
                 validations__department__in=gpf_models.Department.objects.filter(group__in=user.groups.all())
             )
 
-        return models.PermitRequest.objects.filter(qs)
+        return models.PermitRequest.objects.filter(qs).annotate(starts_at_min=Min('geo_time__starts_at'), ends_at_max=Max('geo_time__ends_at'))
 
 
 def get_permitactorformset_initiated(permit_request, data=None):

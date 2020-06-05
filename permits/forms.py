@@ -357,7 +357,6 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                         }
                     ).end_of('event days'),
 
-
         }
 
 
