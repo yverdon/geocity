@@ -13,13 +13,14 @@
 
 {% block content-no-sidebar %}
   <div class="container-fluid">
-    <a class="btn btn-primary" href="{% url 'permits:permit_request_select_administrative_entity'%}" role="button"><i class="fa fa-road"></i> {% trans "Faire une nouvelle demande" %}</a>
-    <a class="btn btn-primary" data-toggle="collapse" href="#collapseFilter" role="button" aria-expanded="false" aria-controls="collapseFilter">
+    <a class="btn btn-outline-primary" href="{% url 'permits:permit_request_select_administrative_entity'%}" role="button"><i class="fa fa-road"></i> {% trans "Faire une nouvelle demande" %}</a>
+    <a class="btn btn-outline-primary" data-toggle="collapse" href="#collapseFilter" role="button" aria-expanded="false" aria-controls="collapseFilter">
       <i class="fa fa-filter"></i> {% trans "Filtrer les demandes" %}
     </a>
-    <a class="btn btn-primary" href="{% url 'permits:permit_requests_list' %}" role="button"><i class="fa fa-eraser"></i> {% trans "Effacer le filtre" %}</a>
+    <a class="btn btn-outline-primary" href="{% url 'permits:permit_requests_list' %}" role="button"><i class="fa fa-eraser"></i> {% trans "Effacer le filtre" %}</a>
     <hr>
-    <p><b>Les demandes envoyées de peuvent plus être modifiées</b></p>
+    <p><b>Les demandes envoyées ne peuvent plus être modifiées</b></p>
+    <p><a class="btn btn-outline-success btn-sm" href="{% url 'permits:listexport'%}?_export=csv" role="button">Exporter en CSV</a></p>
 
     {{ filter.form.media }}
     <form method="get">

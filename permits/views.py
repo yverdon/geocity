@@ -15,13 +15,14 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views import View
-
+from django_tables2.views import SingleTableMixin, SingleTableView
+from django_tables2.export.views import ExportMixin
+from django_filters.views import FilterView
 from gpf.models import Actor
 from . import fields, forms, models, services, tables, filters, printpermit
 
 from .exceptions import BadPermitRequestStatus
-from django_tables2.views import SingleTableMixin
-from django_filters.views import FilterView
+
 
 logger = logging.getLogger(__name__)
 
@@ -497,9 +498,8 @@ def permit_request_media_download(request, property_value_id):
 
 
 @method_decorator(login_required, name="dispatch")
-class PermitRequestListExternsView(SingleTableMixin, FilterView):
+class PermitRequestList(SingleTableMixin, FilterView):
     paginate_by = int(os.environ['PAGINATE_BY'])
-    model = models.PermitRequest
     template_name = 'permits/permit_requests_list.html'
 
     def get_queryset(self):
@@ -526,6 +526,21 @@ class PermitRequestListExternsView(SingleTableMixin, FilterView):
             if self.is_department_user()
             else filters.OwnPermitRequestFilterSet
         )
+
+
+@method_decorator(login_required, name="dispatch")
+class PermitExportView(ExportMixin, SingleTableView):
+    table_class = tables.OwnPermitRequestsTable
+    template_name = 'django_tables2/bootstrap.html'
+
+    def get_queryset(self):
+        return services.get_permit_requests_list_for_user(self.request.user).prefetch_related(
+            Prefetch(
+                'works_object_types',
+                queryset=models.WorksObjectType.objects.select_related('works_type', 'works_object')
+            )
+        ).order_by('-created_at')
+    exclude_columns = ("actions", )
 
 
 @redirect_bad_status_to_detail

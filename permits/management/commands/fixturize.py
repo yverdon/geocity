@@ -43,11 +43,29 @@ class Command(BaseCommand):
 
     def create_users(self):
         user = User.objects.create_user(username='admin', password='admin', is_staff=True, is_superuser=True)
-        gpf_models.Actor.objects.create(user=user, email="yverdon-squad+admin@liip.ch")
+        gpf_models.Actor.objects.create(
+            user=user,
+            email="yverdon-squad+admin@liip.ch",
+            name="Marcel",
+            firstname="Dupond",
+            address="Rue du Pont",
+            zipcode=1234,
+            city="Métropole",
+            phone_fixed="000 00 00 00",
+        )
         self.stdout.write("admin / admin")
 
         user = User.objects.create_user(username='user', password='admin')
-        gpf_models.Actor.objects.create(user=user, email="yverdon-squad+user@liip.ch")
+        gpf_models.Actor.objects.create(
+            user=user,
+            email="yverdon-squad+admin@liip.ch",
+            name="Gérard",
+            firstname="Ducommun",
+            address="Rue du Port",
+            zipcode=1234,
+            city="Mégalopole",
+            phone_fixed="000 00 00 00",
+        )
         self.stdout.write("user / admin")
 
         permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
@@ -87,7 +105,14 @@ class Command(BaseCommand):
         group, created = Group.objects.get_or_create(name=group_name)
         user = User.objects.create_user(username=username, password='admin')
         user.groups.set([group])
-        gpf_models.Actor.objects.create(user=user, email=f"yverdon-squad+{username}@liip.ch")
+        gpf_models.Actor.objects.create(
+            user=user,
+            email=f"yverdon-squad+{username}@liip.ch",
+            name="André",
+            firstname="Matthey",
+            address="Rue du Lac",
+            zipcode=1234,
+            city="Ville",)
         gpf_models.Department.objects.create(
             group=group, is_validator=False, is_admin=False, is_archeologist=False,
             administrative_entity=administrative_entity, is_default_validator=is_default_validator
