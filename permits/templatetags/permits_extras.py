@@ -31,6 +31,7 @@ def permit_request_summary(context, permit_request):
     geo_time_instance = permit_request.geo_time.first()
     geo_time_form = forms.PermitRequestGeoTimeForm(instance=geo_time_instance)
     geo_time_form.fields['geom'].widget.attrs['edit_geom'] = False
+
     for elem in ['starts_at', 'ends_at', 'external_link', 'comment']:
         geo_time_form.fields[elem].widget.attrs['readonly'] = True
 
