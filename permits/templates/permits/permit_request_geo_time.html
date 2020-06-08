@@ -15,7 +15,7 @@
     <div id="forms-container">
          {{ form.media }}
          {% bootstrap_form form layout='horizontal' %}
-     </div>
+    </div>
     {% buttons %}
       <a href="{% url 'permits:permit_request_properties' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
       <button class="btn btn-primary">{% trans "Enregistrer et poursuivre" %}</button>

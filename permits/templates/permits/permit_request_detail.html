@@ -13,7 +13,8 @@
           {% if perms.permits.amend_permit_request %}
             <a class="btn btn-outline-primary" href="{% url 'permits:printpdf' permit_request_id=permit_request.pk %}" class="mr-2"><i class="fa fa-print"></i> {% trans "Imprimer" %}</a>
           {% endif %}
-        {% endif %}</h1>
+        {% endif %}
+    </h1>
     <p title="">
     </p>
     <dl>
@@ -34,6 +35,7 @@
         </a>
       </dd>
     </dl>
+
     {% permit_request_summary permit_request %}
 
     {% if forms.amend or forms.request_validation or forms.validate or forms.poke %}
