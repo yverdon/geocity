@@ -175,18 +175,18 @@
         {% for validation in validations %}
           <dt>{{ validation.department.group.name }}</dt>
           <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
-            {{ validation.get_validation_status_display }}
+            {{ validation.get_validation_status_display }} par {{ validation.validated_by.permitauthor.firstname }} {{ validation.validated_by.permitauthor.name }} le {{ validation.validated_at}}
             {% if validation.comment_before %}
               <br>
-              <h5>{% trans "Commentaire (avant)" %}</h5>: {{ validation.comment_before }}
+              <h5>{% trans "Commentaire (avant)" %}:</h5> {{ validation.comment_before }}
             {% endif %}
             {% if validation.comment_during %}
               <br>
-              <h5>{% trans "Commentaire (pendant)" %}</h5>: {{ validation.comment_during }}
+              <h5>{% trans "Commentaire (pendant)" %}:</h5> {{ validation.comment_during }}
             {% endif %}
             {% if validation.comment_after %}
               <br>
-              <h5>{% trans "Commentaire (après)" %}</h5>: {{ validation.comment_after }}
+              <h5>{% trans "Commentaire (après)" %}:</h5> {{ validation.comment_after }}
             {% endif %}
           </dd>
         {% endfor %}

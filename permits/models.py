@@ -595,6 +595,8 @@ class PermitRequestValidation(models.Model):
         _("Commentaires (après)"),
         blank=True
     )
+    validated_by = models.OneToOneField(User, null=True, on_delete=models.SET_NULL)
+    validated_at = models.DateTimeField(_("Validé le"), null=True)
 
     class Meta:
         unique_together = ("permit_request", "department")
