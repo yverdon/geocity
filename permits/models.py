@@ -55,6 +55,7 @@ class PermitAdministrativeEntity(models.Model):
     name = models.CharField(_('name'), max_length=128)
     ofs_id = models.PositiveIntegerField(_("ofs_id"))
     link = models.URLField(_("Lien"), max_length=200, blank=True)
+    archive_link = models.URLField(_("Archives externes"), max_length=1024, blank=True)
     legal_document = models.FileField(
         _('Directive'),
         upload_to='administrative_entity_customization/',
@@ -359,7 +360,7 @@ class WorksObjectType(models.Model):
         'WorksObject', on_delete=models.CASCADE, verbose_name=_("objet des travaux"), related_name='works_object_types'
     )
     administrative_entities = models.ManyToManyField(PermitAdministrativeEntity,
-                                                     verbose_name=_("communes"), related_name='works_object_types')
+                                                     verbose_name=_("Entités administratives"), related_name='works_object_types')
 
     class Meta:
         verbose_name = _("Configuration type-objet-entité administrative")
