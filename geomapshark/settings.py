@@ -36,6 +36,7 @@ ALLOWED_HOSTS = ['gmf23-mapnv.preprod.sig.cloud.camptocamp.com',
                 'mapnv.ch',
                  'localhost',
                  '127.0.0.1',
+                 'srvdev',
                  'geocity-dev.mapnv.ch',
                  'construire.mapnv.ch',]
 
