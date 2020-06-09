@@ -5,13 +5,12 @@ from django.contrib.contenttypes.models import ContentType
 import factory
 import faker
 
-from gpf import models as gpf_models
 from . import models
 
 
-class GpfActorFactory(factory.django.DjangoModelFactory):
+class PermitActorFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = gpf_models.Actor
+        model = models.PermitAuthor
 
     firstname = factory.Faker('first_name')
     name = factory.Faker('last_name')
@@ -23,7 +22,7 @@ class UserFactory(factory.django.DjangoModelFactory):
         model = get_user_model()
 
     username = factory.Faker("user_name")
-    actor = factory.RelatedFactory(GpfActorFactory, "user")
+    actor = factory.RelatedFactory(PermitActorFactory, "user")
     password = "password"
 
     @classmethod
@@ -32,24 +31,24 @@ class UserFactory(factory.django.DjangoModelFactory):
         return manager.create_user(*args, **kwargs)
 
 
-class AdministrativeEntityFactory(factory.django.DjangoModelFactory):
+class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
     ofs_id = 0
     name = factory.Faker("company")
 
     class Meta:
-        model = gpf_models.AdministrativeEntity
+        model = models.PermitAdministrativeEntity
 
 
-class DepartmentFactory(factory.django.DjangoModelFactory):
+class PermitDepartmentFactory(factory.django.DjangoModelFactory):
     is_default_validator = False
     is_validator = False
     is_admin = False
     is_archeologist = False
-    administrative_entity = factory.SubFactory(AdministrativeEntityFactory)
+    administrative_entity = factory.SubFactory(PermitAdministrativeEntityFactory)
     group = factory.SubFactory("permits.factories.GroupFactory")
 
     class Meta:
-        model = gpf_models.Department
+        model = models.PermitDepartment
 
 
 class GroupFactory(factory.django.DjangoModelFactory):
@@ -73,7 +72,7 @@ class GroupFactory(factory.django.DjangoModelFactory):
 
 
 class SecretariatGroupFactory(GroupFactory):
-    department = factory.RelatedFactory(DepartmentFactory, "group")
+    department = factory.RelatedFactory(PermitDepartmentFactory, "group")
 
     @factory.post_generation
     def permissions(self, create, extracted, **kwargs):
@@ -93,7 +92,7 @@ class SecretariatGroupFactory(GroupFactory):
 
 
 class ValidatorGroupFactory(GroupFactory):
-    department = factory.RelatedFactory(DepartmentFactory, "group")
+    department = factory.RelatedFactory(PermitDepartmentFactory, "group")
 
     @factory.post_generation
     def permissions(self, create, extracted, **kwargs):
@@ -144,9 +143,9 @@ class PermitRequestActorFactory(factory.django.DjangoModelFactory):
     email = factory.Faker('email')
 
 
-class AdministrativeEntityFactory(factory.django.DjangoModelFactory):
+class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = gpf_models.AdministrativeEntity
+        model = models.PermitAdministrativeEntity
 
     ofs_id = 0
     name = factory.Faker('company')
@@ -170,8 +169,8 @@ class PermitRequestFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PermitRequest
 
-    administrative_entity = factory.SubFactory(AdministrativeEntityFactory)
-    author = factory.SubFactory(GpfActorFactory)
+    administrative_entity = factory.SubFactory(PermitAdministrativeEntityFactory)
+    author = factory.SubFactory(PermitActorFactory)
 
 
 class WorksObjectPropertyFactory(factory.django.DjangoModelFactory):
@@ -211,5 +210,5 @@ class PermitRequestValidationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PermitRequestValidation
 
-    department = factory.SubFactory(DepartmentFactory)
+    department = factory.SubFactory(PermitDepartmentFactory)
     permit_request = factory.SubFactory(PermitRequestFactory, status=models.PermitRequest.STATUS_AWAITING_VALIDATION)

@@ -1,12 +1,11 @@
 from django.contrib import admin
 from django.urls import include, path
-from . import views
 from . import settings
+from permits import views
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('gpf/', include('gpf.urls')),
+    path('', views.permit_request_select_administrative_entity),
     path('permit-requests/', include('permits.urls')),
     path('admin/', admin.site.urls),
     path('accounts/login/', auth_views.LoginView.as_view(), name='login'),

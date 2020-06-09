@@ -1,7 +1,7 @@
 {% load i18n %}
 
 <ul class="list-inline">
-  {% if record.author == request.user.actor and not record.can_be_edited_by_author or can_view %}
+  {% if record.author == request.user.permitauthor and not record.can_be_edited_by_author or can_view %}
   <li>
     <a title="{% trans "Voir" %}" href="{% url 'permits:permit_request_detail' record.id %}">
       <i class="fa fa-eye fa-lg"></i>
@@ -9,7 +9,7 @@
   </li>
   {% endif %}
 
-  {% if record.author == request.user.actor or request.user.is_superuser %}
+  {% if record.author == request.user.permitauthor or request.user.is_superuser %}
     {% if record.can_be_edited_by_author %}
       <li>
         <a title="{% trans "Modifier" %}" href="{% url 'permits:permit_request_properties' record.id %}">
@@ -19,7 +19,7 @@
     {% endif %}
   {% endif %}
 
-  {% if record.author == request.user.actor or request.user.is_superuser %}
+  {% if record.author == request.user.permitauthor or request.user.is_superuser %}
     {% if record.can_be_deleted_by_author %}
       <li>
         <a title="{% trans "Supprimer la demande" %}" href="{% url 'permits:permit_request_delete' record.id %}">
@@ -29,7 +29,7 @@
     {% endif %}
   {% endif %}
 
-  {% if record.author == request.user.actor or request.user.is_superuser %}
+  {% if record.author == request.user.permitauthor or request.user.is_superuser %}
     {% if record.can_be_submitted_by_author %}
       <li>
         <a title="{% trans "Envoyer" %}" href="{% url 'permits:permit_request_submit' record.id %}">

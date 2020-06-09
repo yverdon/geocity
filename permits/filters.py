@@ -2,7 +2,6 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models import Max, Min
 import django_filters
 from bootstrap_datepicker_plus import DatePickerInput
-from gpf.models import Actor
 from . import models, services
 
 
@@ -67,7 +66,7 @@ class OwnPermitRequestFilterSet(BasePermitRequestFilterSet):
 
 
 def permit_request_authors(request):
-    return Actor.objects.filter(
+    return models.PermitAuthor.objects.filter(
         pk__in=services.get_permit_requests_list_for_user(request.user).values_list('author')
     ).order_by('firstname', 'name')
 

@@ -17,10 +17,6 @@ LOGIN_REDIRECT_URL ='/permit-requests'
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ["SECRET_KEY"]
-
-YVENT_URL = os.environ["YVENT_URL"]
-MAPNV_URL = os.environ["MAPNV_URL"]
-SIGNALEZ_URL = os.environ["SIGNALEZ_URL"]
 QGISSERVER_URL = os.environ["QGISSERVER_URL"]
 PRINTED_PERMIT_FOLDER = os.environ["PRINTED_PERMIT_FOLDER"]
 
@@ -74,7 +70,6 @@ INSTALLED_APPS = [
     'bootstrap_datepicker_plus',
     'django_tables2',
     'fontawesome',
-    'gpf',
     'permits',
 ]
 
@@ -151,7 +146,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Internationalization
-# https://docs.djangoproject.com/en/2.0/topics/i18n/
 
 LANGUAGE_CODE = 'fr-CH'
 
@@ -198,6 +192,3 @@ WMTS_LAYER = os.environ["WMTS_LAYER"]
 WMTS_GETCAP_ALTERNATIVE = os.environ["WMTS_GETCAP_ALTERNATIVE"]
 WMTS_LAYER_ALTERNATIVE = os.environ["WMTS_LAYER_ALTERNATIVE"]
 OL_MAP_HEIGHT = os.environ["OL_MAP_HEIGHT"]
-
-
-#STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
