@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load bootstrap4 %}
 {% load permits_extras %}
 
 {% for object, properties, appendices in objects_infos %}
@@ -27,6 +28,11 @@
     {% endfor %}
   </dl>
 {% endfor %}
+
+{% if geo_time_form %}
+    {{ geo_time_form.media }}
+    {% bootstrap_form geo_time_form layout='horizontal' %}
+{% endif %}
 
 {% if contacts %}
   <h4>{% trans "Contacts" %}</h4>
