@@ -381,21 +381,23 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
             }),
             'starts_at': DateTimePickerInput(
-                  options={
-                        "format": "DD/MM/YYYY HH:mm",
-                        "locale": "fr",
-                        "useCurrent": False,
-                        "minDate": (datetime.today() +
-                                    timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d')
-                        }
-                     ).start_of('event days'),
+                options={
+                "format": "DD/MM/YYYY HH:mm",
+                "locale": "fr",
+                "useCurrent": False,
+                "minDate": (
+                        datetime.today() +
+                        timedelta(days=int(settings.MIN_START_DELAY))
+                    ).strftime('%Y/%m/%d')
+                }
+            ).start_of('event days'),
             'ends_at': DateTimePickerInput(
-                  options={
-                        "format": "DD/MM/YYYY  HH:mm",
-                        "locale": "fr",
-                        "useCurrent": False,
-                        }
-                    ).end_of('event days'),
+                options={
+                    "format": "DD/MM/YYYY  HH:mm",
+                    "locale": "fr",
+                    "useCurrent": False,
+                }
+            ).end_of('event days'),
 
         }
 
@@ -410,13 +412,17 @@ class PermitRequestValidationDepartmentSelectionForm(forms.Form):
     def __init__(self, instance, *args, **kwargs):
         self.permit_request = instance
         permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
-        validate_permission = Permission.objects.get(codename='validate_permit_request', content_type=permit_request_ct)
+        validate_permission = Permission.objects.get(
+            codename='validate_permit_request',
+            content_type=permit_request_ct
+        )
         permit_request_departments = models.PermitDepartment.objects.filter(
             administrative_entity=self.permit_request.administrative_entity,
             group__permissions=validate_permission
         ).distinct()
         kwargs["initial"] = dict(
-            kwargs.get("initial", {}), departments=permit_request_departments.filter(is_default_validator=True)
+            kwargs.get("initial", {}),
+            departments=permit_request_departments.filter(is_default_validator=True)
         )
 
         super().__init__(*args, **kwargs)

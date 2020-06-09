@@ -521,7 +521,7 @@ def send_validation_reminder(permit_request, absolute_uri_func):
     """
     pending_validations = permit_request.get_pending_validations()
     users_to_notify = set(get_user_model().objects.filter(
-        groups__department__in=pending_validations.values_list("department", flat=True)
+        groups__permitdepartment__in=pending_validations.values_list("department", flat=True)
     ).values_list("permitauthor__email", flat=True).distinct())
 
     email_contents = render_to_string("permits/emails/permit_request_validation_reminder.txt", {
