@@ -13,8 +13,6 @@ from django.urls import reverse
 from django.forms import modelformset_factory
 from django.utils.translation import gettext_lazy as _
 
-from gpf import models as gpf_models
-
 from . import models, forms
 from .exceptions import BadPermitRequestStatus
 
@@ -137,7 +135,7 @@ def get_works_types(administrative_entity):
 
 
 def get_administrative_entities():
-    return gpf_models.AdministrativeEntity.objects.order_by('name')
+    return models.PermitAdministrativeEntity.objects.order_by('name')
 
 
 def get_permit_request_works_types(permit_request):
@@ -203,7 +201,7 @@ def set_works_object_types(permit_request, new_works_object_types):
 @transaction.atomic
 def set_administrative_entity(permit_request, administrative_entity):
     """
-    Set the given `administrative_entity`, which should be an instance of `gpf.AdministrativeEntity`.
+    Set the given `administrative_entity`, which should be an instance of `models.PermitAdministrativeEntity`.
     `WorksObjectTypeChoice` records that don't exist in the new `administrative_entity` will be deleted.
     """
     get_works_object_type_choices(permit_request).exclude(
@@ -229,11 +227,11 @@ def get_property_value(object_property_value):
 
 
 def get_user_administrative_entities(user):
-    return gpf_models.AdministrativeEntity.objects.filter(departments__group__in=user.groups.all())
+    return models.PermitAdministrativeEntity.objects.filter(departments__group__in=user.groups.all())
 
 
 def get_user_departments(user):
-    return gpf_models.Department.objects.filter(group__in=user.groups.all())
+    return models.PermitDepartment.objects.filter(group__in=user.groups.all())
 
 
 def get_permit_request_for_user_or_404(user, permit_request_id, statuses=None):
@@ -261,7 +259,7 @@ def get_permit_requests_list_for_user(user):
     if user.is_superuser:
         return models.PermitRequest.objects.all().annotate(starts_at_min=Min('geo_time__starts_at'), ends_at_max=Max('geo_time__ends_at'))
     else:
-        qs = Q(author=user.actor)
+        qs = Q(author=user.permitauthor)
 
         if user.has_perm("permits.amend_permit_request"):
             qs |= Q(
@@ -272,7 +270,7 @@ def get_permit_requests_list_for_user(user):
 
         if user.has_perm("permits.validate_permit_request"):
             qs |= Q(
-                validations__department__in=gpf_models.Department.objects.filter(group__in=user.groups.all())
+                validations__department__in=models.PermitDepartment.objects.filter(group__in=user.groups.all())
             )
 
         return models.PermitRequest.objects.filter(qs).annotate(starts_at_min=Min('geo_time__starts_at'), ends_at_max=Max('geo_time__ends_at'))
@@ -457,9 +455,9 @@ def submit_permit_request(permit_request, absolute_uri_func):
     )
 
     users_to_notify = set(get_user_model().objects.filter(
-        groups__department__administrative_entity=permit_request.administrative_entity,
-        actor__email__isnull=False,
-    ).values_list("actor__email", flat=True))
+        groups__permitdepartment__administrative_entity=permit_request.administrative_entity,
+        permitauthor__email__isnull=False,
+    ).values_list("permitauthor__email", flat=True))
 
     email_contents = render_to_string("permits/emails/permit_request_submitted.txt", {
         "permit_request_url": permit_request_url
@@ -498,7 +496,7 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
     users_to_notify = {
         email
         for department in departments
-        for email in department.group.user_set.values_list("actor__email", flat=True)
+        for email in department.group.user_set.values_list("permitauthor__email", flat=True)
     }
 
     email_contents = render_to_string("permits/emails/permit_request_validation_request.txt", {
@@ -523,8 +521,8 @@ def send_validation_reminder(permit_request, absolute_uri_func):
     """
     pending_validations = permit_request.get_pending_validations()
     users_to_notify = set(get_user_model().objects.filter(
-        groups__department__in=pending_validations.values_list("department", flat=True)
-    ).values_list("actor__email", flat=True).distinct())
+        groups__permitdepartment__in=pending_validations.values_list("department", flat=True)
+    ).values_list("permitauthor__email", flat=True).distinct())
 
     email_contents = render_to_string("permits/emails/permit_request_validation_reminder.txt", {
         "permit_request_url": absolute_uri_func(

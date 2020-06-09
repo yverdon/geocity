@@ -1,17 +1,6 @@
-from django.shortcuts import render
-from . import settings
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import Permission
-from django.views.static import serve
+from django.shortcuts import redirect
 
-@login_required
-def index(request):
 
-    apps = {
-        'yvent': settings.YVENT_URL,
-        'mapnv': settings.MAPNV_URL,
-        'signalez': settings.SIGNALEZ_URL,
-    }
-    context = { 'apps': apps }
-
-    return render(request, 'geomapshark/index.html', context)
+def redirect_permit(request):
+    response = redirect('/permit-request')
+    return response

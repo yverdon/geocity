@@ -169,24 +169,29 @@
         </a>
       </dd>
     </dl>
-
-    {% if validations %}    
+    {% if validations %}
       <h2>{% trans "Statut des validations" %}</h2>
-        <div class="container-fluid">
-          {{ filter.form.media }}
-          <form method="get">
-            <div class="collapse" id="collapseFilter">
-              <hr>
-              {% for field in form %}
-                  {% bootstrap_field field %}
-              {% endfor %}
-              {% bootstrap_button "Appliquer le filtre" button_type="submit" button_class="btn-primary"%}
-            </div>
-          </form>
-          <br>
-          {% render_table validations %}
-        </div>
-        <br>
+      <dl>
+        {% for validation in validations %}
+          <dt>{{ validation.department.group.name }}</dt>
+          <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
+            {{ validation.get_validation_status_display }}
+            {% if validation.comment_before %}
+              <br>
+              <h5>{% trans "Commentaire (avant)" %}</h5>: {{ validation.comment_before }}
+            {% endif %}
+            {% if validation.comment_during %}
+              <br>
+              <h5>{% trans "Commentaire (pendant)" %}</h5>: {{ validation.comment_during }}
+            {% endif %}
+            {% if validation.comment_after %}
+              <br>
+              <h5>{% trans "Commentaire (après)" %}</h5>: {{ validation.comment_after }}
+            {% endif %}
+          </dd>
+        {% endfor %}
+      </dl>
+      <br>
     {% endif %}
 
     <h2>{% trans "Résumé" %}</h2>

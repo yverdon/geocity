@@ -60,7 +60,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
 
     def test_types_step_submit_redirects_to_objects_with_types_qs(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.actor)
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         permit_request.administrative_entity.works_object_types.set(models.WorksObjectType.objects.all())
 
         response = self.client.post(
@@ -76,7 +76,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
 
     def test_objects_step_without_qs_redirects_to_types_step(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.actor)
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         permit_request.administrative_entity.works_object_types.set(models.WorksObjectType.objects.all())
 
         response = self.client.get(
@@ -87,7 +87,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
 
     def test_objects_step_submit_saves_selected_object_types(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.actor)
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         works_object_type = models.WorksObjectType.objects.first()
         permit_request.administrative_entity.works_object_types.set(models.WorksObjectType.objects.all())
         self.client.post(
@@ -100,7 +100,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(models.PermitRequest.objects.filter(works_object_types=works_object_type).count(), 1)
 
     def test_required_properties_can_be_left_blank(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.actor)
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         factories.WorksObjectTypeChoiceFactory.create_batch(3, permit_request=permit_request)
         permit_request.administrative_entity.works_object_types.set(permit_request.works_object_types.all())
         prop = factories.WorksObjectPropertyFactory(is_mandatory=True)
@@ -125,7 +125,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
     def test_user_cannot_edit_non_draft_request(self):
         permit_request = factories.PermitRequestFactory(
-            author=self.user.actor, status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
+            author=self.user.permitauthor, status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
         )
 
         response = self.client.get(
@@ -145,7 +145,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         permit_request = factories.PermitRequestFactory(
             administrative_entity=group.department.administrative_entity,
-            author=self.user.actor, status=models.PermitRequest.STATUS_DRAFT
+            author=self.user.permitauthor, status=models.PermitRequest.STATUS_DRAFT
         )
         self.client.post(reverse('permits:permit_request_submit', kwargs={'permit_request_id': permit_request.pk}))
         emails = get_emails("Nouvelle demande de permis")
@@ -157,7 +157,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
         super().setUp()
-        self.permit_request = factories.PermitRequestFactory(author=self.user.actor)
+        self.permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         factories.WorksObjectTypeChoiceFactory.create_batch(3, permit_request=self.permit_request)
         self.permit_request.administrative_entity.works_object_types.set(self.permit_request.works_object_types.all())
 
@@ -237,7 +237,7 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
 class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
         super().setUp()
-        self.permit_request = factories.PermitRequestFactory(author=self.user.actor)
+        self.permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         factories.WorksObjectTypeChoiceFactory.create_batch(3, permit_request=self.permit_request)
         self.permit_request.administrative_entity.works_object_types.set(self.permit_request.works_object_types.all())
 
@@ -300,7 +300,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         permit_request = factories.PermitRequestFactory(
             status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
             administrative_entity=self.administrative_entity,
-            author=user.actor
+            author=user.permitauthor
         )
         self.client.post(
             reverse('permits:permit_request_detail', kwargs={'permit_request_id': permit_request.pk}),
@@ -462,7 +462,7 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
         )
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, [validator_user.actor.email])
+        self.assertEqual(mail.outbox[0].to, [validator_user.permitauthor.email])
 
 
 class PermitRequestValidationTestcase(TestCase):
@@ -625,7 +625,7 @@ class PermitRequestClassifyTestCase(TestCase):
     def test_permit_request_validation_file_accessible_to_permit_request_author(self):
         author_user = factories.UserFactory()
         permit_request = factories.PermitRequestFactory(
-            validated_at=timezone.now(), status=models.PermitRequest.STATUS_APPROVED, author=author_user.actor
+            validated_at=timezone.now(), status=models.PermitRequest.STATUS_APPROVED, author=author_user.permitauthor
         )
         # This cannot be performed in the factory because we need the permit request to have an id to upload a file
         permit_request.validation_pdf = SimpleUploadedFile("file.pdf", b"contents")
