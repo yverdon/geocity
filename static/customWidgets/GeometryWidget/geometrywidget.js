@@ -6,7 +6,7 @@
 
     'use strict';
 
-    var jsonFormat = new ol.format.GeoJSON();
+    var geojsonFormat = new ol.format.GeoJSON();
 
     function geometryWidget(options) {
 
@@ -24,7 +24,52 @@
             }
         }
 
-        this.map = this.createMap();
+        /*
+        Drawing restriction area definition
+        */
+        let restrictionStyle = new ol.style.Style({
+          fill: new ol.style.Fill({
+            color: "#ffffff00",
+          }),
+          stroke: new ol.style.Stroke({
+            color: "#fc4c9e88",
+            width: 1,
+          })
+        });
+
+        this.rasterMaskLayer = new ol.layer.Image({
+          source: new ol.source.ImageWMS({
+              url: 'https://srvdev/qgis',
+              params: {
+                  'LAYERS': 'permits_permitadministrativeentity',
+              },
+              projection: 'EPSG:2056'
+          }),
+          style: restrictionStyle,
+          opacity: 0.9
+        });
+
+        this.vectorMaskLayer = new ol.layer.Vector({
+          source: new ol.source.Vector({
+              url: (e) => {
+                return 'https://srvdev/qgis/wfs?service=WFS&' +
+                'version=1.1.0&' +
+                'request=GetFeature&' +
+                'typename=permits_permitadministrativeentity&' +
+                'outputFormat=application/json&' +
+                'srsname=EPSG:2056';
+              },
+              zIndex: 9999,
+              // 'permits_permitadministrativeentity',
+              format: new ol.format.GeoJSON()
+          }),
+          zIndex: 9999,
+          style: restrictionStyle,
+          opacity: 0.9
+        });
+
+
+        this.map = this.createMap(this.rasterMaskLayer, this.vectorMaskLayer);
         this.addBaseLayer();
         this.setupAlternativeBaseLayer();
         this.vectorSource = new ol.source.Vector();
@@ -117,7 +162,7 @@
     /*
     Create ol.Map instance
     */
-    geometryWidget.prototype.createMap = function() {
+    geometryWidget.prototype.createMap = function(rasterMaskLayer, vectorMaskLayer) {
 
         var map = new ol.Map({
             controls: [
@@ -130,7 +175,7 @@
                 })
             ],
             target: this.options.map_id,
-            layers: [],
+            layers: [rasterMaskLayer, vectorMaskLayer],
             view: new ol.View({
                 zoom: this.options.default_zoom,
                 minZoom: this.options.min_zoom,
@@ -388,7 +433,6 @@
 
     };
 
-
     /*
     Draw interactions setting for Points, Lines & Polygons
     */
@@ -401,6 +445,24 @@
         this.interactions.draw = new ol.interaction.Draw({
             source: this.vectorSource,
             type: geotype,
+            condition: (e) => {
+              $('#out-of-administrative-limits').hide();
+              let coords = e.coordinate;
+              let features = this.map.getFeaturesAtPixel(e.pixel, {
+                layerFilter: (layer) => {
+                  return layer === this.vectorMaskLayer;
+                }
+              });
+              if (features && features.length > 0) {
+                return true;
+              } else {
+                  $('#out-of-administrative-limits').show();
+                  $('#out-of-administrative-limits').html(
+                    "Votre saisie sort du territoire de l'entité administrative concernée !"
+                    )
+                return false;
+              }
+            }
         });
 
         this.map.addInteraction(this.interactions.draw);
@@ -499,7 +561,7 @@
 
       var geometry = new ol.geom.GeometryCollection(geometries);
 
-      document.getElementById(this.options.id).value = jsonFormat.writeGeometry(geometry);
+      document.getElementById(this.options.id).value = geojsonFormat.writeGeometry(geometry);
     };
 
     window.geometryWidget = geometryWidget;

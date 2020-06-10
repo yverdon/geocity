@@ -3,3 +3,15 @@
   display: inline !important;
   font-weight: bold;
 }
+
+#out-of-administrative-limits {
+  border-radius: 3px;
+  border: 3px solid #fc4c58;
+  position: absolute;
+  left: 160px;
+  bottom: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-family: bold;
+  z-index: 1000;
+}
