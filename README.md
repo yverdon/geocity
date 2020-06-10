@@ -96,6 +96,10 @@ sudo -u sigdev docker-compose run web  python manage.py compilemessages -l fr
 
 ## QGIS-server for map generation
 
+*Prerequisite*
+
+A dummy feature must drawn otherwise qgis will raise an error.
+
 *Modify print template*
 
 Simply open the print/print.qgs project
