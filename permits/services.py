@@ -13,7 +13,7 @@ from django.urls import reverse
 from django.forms import modelformset_factory
 from django.utils.translation import gettext_lazy as _
 
-from . import models, forms
+from . import models, forms, geoservices
 from .exceptions import BadPermitRequestStatus
 
 
@@ -449,6 +449,7 @@ def submit_permit_request(permit_request, absolute_uri_func):
         raise SuspiciousOperation
 
     permit_request.status = models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
+    permit_request.intersected_geometries = geoservices.get_intersected_geometries(permit_request)
     permit_request.save()
     permit_request_url = absolute_uri_func(
         reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk})

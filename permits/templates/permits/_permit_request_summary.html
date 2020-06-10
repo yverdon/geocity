@@ -53,3 +53,8 @@
     </dl>
   {% endfor %}
 {% endif %}
+
+{% if intersected_geometries %}
+  <h4>{% trans "Éléments géographiques touchés par le demande (automatique)" %}</h4>
+  {{ intersected_geometries|safe }}
+{% endif %}
