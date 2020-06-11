@@ -15,11 +15,12 @@ admin.site.register(models.PermitAuthor)
 admin.site.register(models.PermitAdministrativeEntity)
 admin.site.register(models.PermitDepartment)
 admin.site.register(models.PermitRequestValidation)
+admin.site.register(models.GeomLayer)
 admin.site.register(models.WorksObjectPropertyValue)
 
 
 class WorksObjectTypeAdmin(admin.ModelAdmin):
-    list_fields =  ['administrative_entities']
+    list_fields = ['administrative_entities']
 
 
 admin.site.register(models.WorksObjectType, WorksObjectTypeAdmin)

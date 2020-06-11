@@ -2,6 +2,7 @@ import logging
 import mimetypes
 import urllib.parse
 import os
+import requests
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
@@ -132,6 +133,7 @@ class PermitRequestDetailView(View):
         Instanciate the form matching the submitted POST `action`, checking if the user has the permissions to use it,
         save it, and call the related submission function.
         """
+
         action = request.POST.get("action")
 
         if action not in self.actions:
@@ -241,6 +243,7 @@ class PermitRequestDetailView(View):
             return self.handle_poke(form)
 
     def handle_amend_form_submission(self, form):
+
         form.save()
         success_message = _("La demande de permis #%s a bien été amendée.") % self.permit_request.pk
 

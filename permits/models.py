@@ -119,7 +119,6 @@ class PermitAuthor(models.Model):
     zipcode = models.PositiveIntegerField(_("NPA"),)
     city = models.CharField(_("Ville"), max_length=100,)
     phone_first = models.CharField(_("Téléphone principal"),
-        null=True,
         max_length=20,
         validators=[
             RegexValidator(
@@ -127,7 +126,6 @@ class PermitAuthor(models.Model):
                 message='Seuls les chiffres et les espaces sont autorisés'
         )])
     phone_second = models.CharField(_("Téléphone secondaire"),
-        null=True,
         blank=True,
         max_length=20,
         validators=[
@@ -309,6 +307,19 @@ class PermitRequest(models.Model):
         STATUS_AWAITING_SUPPLEMENT
     }
 
+    ARCHEOLOGY_STATUS_IRRELEVANT = 0
+    ARCHEOLOGY_STATUS_UNKNOWN = 1
+    ARCHEOLOGY_STATUS_NEVER = 2
+    ARCHEOLOGY_STATUS_PARTIAL = 3
+    ARCHEOLOGY_STATUS_DONE = 4
+    ARCHEOLOGY_STATUS_CHOICES = (
+        (ARCHEOLOGY_STATUS_IRRELEVANT, _("Non pertinent")),
+        (ARCHEOLOGY_STATUS_UNKNOWN, _("Inconnu")),
+        (ARCHEOLOGY_STATUS_NEVER, _("Pas fouillé")),
+        (ARCHEOLOGY_STATUS_PARTIAL, _("Partiellement fouillé")),
+        (ARCHEOLOGY_STATUS_DONE, _("Déjà fouillé")),
+    )
+
     status = models.PositiveSmallIntegerField(
         _("état"),
         choices=STATUS_CHOICES,
@@ -359,6 +370,16 @@ class PermitRequest(models.Model):
         'PermitActor',
         related_name='+',
         through=PermitRequestActor
+    )
+    archeology_status = models.PositiveSmallIntegerField(
+        _("Status archéologique"),
+        choices=ARCHEOLOGY_STATUS_CHOICES,
+        default=ARCHEOLOGY_STATUS_IRRELEVANT
+    )
+    intersected_geometries = models.CharField(
+        _("Entités géométriques concernées"),
+        max_length=1024,
+        null=True
     )
     price = models.DecimalField(
         _("Prix"),
@@ -645,3 +666,46 @@ class PermitRequestGeoTime(models.Model):
         null=True,
         srid=2056
     )
+
+    class Meta:
+        verbose_name = _("Agenda et géométrie")
+        verbose_name_plural = _("Agenda et géométries")
+
+
+class GeomLayer(models.Model):
+    """
+    Geometric entities that might be touched by the PermitRequest
+    """
+    layer_name = models.CharField(
+        _("Nom de la couche source"),
+        max_length=128,
+        blank=True
+    )
+    description = models.CharField(
+        _("Commentaire"),
+        max_length=1024,
+        blank=True
+    )
+    source_id = models.CharField(
+        _("Id entité"),
+        max_length=128,
+        blank=True
+    )
+    source_subid = models.CharField(
+        _("Id entité secondaire"),
+        max_length=128,
+        blank=True
+    )
+    external_link = models.URLField(
+        _("Lien externe"),
+        blank=True
+    )
+    geom = geomodels.MultiPolygonField(
+        _("Géométrie"),
+        null=True,
+        srid=2056
+    )
+
+    class Meta:
+        verbose_name = _("Entité géographique à intersecter")
+        verbose_name_plural = _("Entités géographiques à intersecter")
