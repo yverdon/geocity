@@ -145,7 +145,7 @@ class PermitRequestDetailView(View):
             raise PermissionDenied
         elif getattr(form, "disabled", False):
             raise SuspiciousOperation
-        form.is_valid()
+
         if form.is_valid():
             return self.handle_form_submission(form, action)
 
