@@ -17,7 +17,9 @@ cd /code
 cp -n env.yaml_demo env.yaml
 # setup app using the django tools
 python3 manage.py migrate
+mkdir /code/geomapshark/static/
 echo yes | python3 manage.py compilemessages -l fr
+
 
 python3 manage.py fixturize
 

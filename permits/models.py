@@ -119,7 +119,6 @@ class PermitAuthor(models.Model):
     zipcode = models.PositiveIntegerField(_("NPA"),)
     city = models.CharField(_("Ville"), max_length=100,)
     phone_first = models.CharField(_("Téléphone principal"),
-        null=True,
         max_length=20,
         validators=[
             RegexValidator(
@@ -127,7 +126,6 @@ class PermitAuthor(models.Model):
                 message='Seuls les chiffres et les espaces sont autorisés'
         )])
     phone_second = models.CharField(_("Téléphone secondaire"),
-        null=True,
         blank=True,
         max_length=20,
         validators=[
@@ -389,10 +387,6 @@ class PermitRequest(models.Model):
         max_digits=7,
         null=True,
         blank=True
-    )
-    is_paid = models.BooleanField(
-        _("Payé"),
-        default=False
     )
     exemption = models.TextField(
         _("Dérogation"),

@@ -133,6 +133,7 @@ class PermitRequestDetailView(View):
         Instanciate the form matching the submitted POST `action`, checking if the user has the permissions to use it,
         save it, and call the related submission function.
         """
+
         action = request.POST.get("action")
 
         if action not in self.actions:
@@ -144,7 +145,7 @@ class PermitRequestDetailView(View):
             raise PermissionDenied
         elif getattr(form, "disabled", False):
             raise SuspiciousOperation
-
+        form.is_valid()
         if form.is_valid():
             return self.handle_form_submission(form, action)
 
@@ -242,6 +243,7 @@ class PermitRequestDetailView(View):
             return self.handle_poke(form)
 
     def handle_amend_form_submission(self, form):
+
         form.save()
         success_message = _("La demande de permis #%s a bien été amendée.") % self.permit_request.pk
 

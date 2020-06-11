@@ -317,7 +317,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
 
     def test_secretariat_can_amend_request(self):
         permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+            status=models.PermitRequest.STATUS_PROCESSING,
             administrative_entity=self.administrative_entity,
         )
         self.client.post(
@@ -325,12 +325,12 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             data={
                 'price': 300,
                 'status': models.PermitRequest.STATUS_PROCESSING,
-                'action': views.PermitRequestDetailView.ACTION_AMEND
+                'action': views.PermitRequestDetailView.ACTION_AMEND,
+                'archeology_status': models.PermitRequest.ARCHEOLOGY_STATUS_IRRELEVANT,
             }
         )
 
         permit_request.refresh_from_db()
-
         self.assertEqual(permit_request.price, 300)
 
     def test_secretariat_can_see_submitted_requests(self):
@@ -353,7 +353,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             follow=True
         )
 
-        self.assertContains(response, "Vous devez maintenant contacter le requérant par email")
+        self.assertContains(response, "compléments")
 
     def test_secretariat_cannot_amend_permit_request_with_validation_requested(self):
         permit_request = factories.PermitRequestFactory(
