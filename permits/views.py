@@ -2,6 +2,7 @@ import logging
 import mimetypes
 import urllib.parse
 import os
+import requests
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
@@ -20,6 +21,7 @@ from django_tables2.export.views import ExportMixin
 from django_filters.views import FilterView
 from . import fields, forms, models, services, tables, filters, printpermit
 from django.contrib.auth import login
+from django.utils import timezone
 
 from .exceptions import BadPermitRequestStatus
 
@@ -101,13 +103,17 @@ class PermitRequestDetailView(View):
             active_form = available_actions[-1] if len(available_actions) > 0 else None
 
         kwargs["has_validations"] = self.permit_request.has_validations()
-        print(self.permit_request.has_validations())
+
         if forms.get(self.ACTION_POKE):
             kwargs["nb_pending_validations"] = self.permit_request.get_pending_validations().count()
             kwargs["validations"] = self.permit_request.validations.select_related("department", "department__group")
         else:
             kwargs["nb_pending_validations"] = 0
-            kwargs["validations"] = []
+
+            if services.can_validate_permit_request(self.request.user, self.permit_request):
+                kwargs["validations"] = self.permit_request.validations.select_related("department", "department__group")
+            else:
+                kwargs["validations"] = []
 
         return {**kwargs, **{
             "permit_request": self.permit_request,
@@ -127,6 +133,7 @@ class PermitRequestDetailView(View):
         Instanciate the form matching the submitted POST `action`, checking if the user has the permissions to use it,
         save it, and call the related submission function.
         """
+
         action = request.POST.get("action")
 
         if action not in self.actions:
@@ -236,6 +243,7 @@ class PermitRequestDetailView(View):
             return self.handle_poke(form)
 
     def handle_amend_form_submission(self, form):
+
         form.save()
         success_message = _("La demande de permis #%s a bien été amendée.") % self.permit_request.pk
 
@@ -259,6 +267,9 @@ class PermitRequestDetailView(View):
         return redirect("permits:permit_requests_list")
 
     def handle_validation_form_submission(self, form):
+
+        form.instance.validated_at = timezone.now()
+        form.instance.validated_by = self.request.user
         validation = form.save()
 
         if validation.validation_status == models.PermitRequestValidation.STATUS_APPROVED:

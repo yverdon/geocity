@@ -327,7 +327,7 @@ class PermitRequestActorForm(forms.ModelForm):
 class PermitRequestAdditionalInformationForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequest
-        fields = ['status', 'price', 'exemption', 'opposition', 'comment']
+        fields = ['status', 'price', 'exemption', 'opposition', 'comment', 'archeology_status']
         widgets = {
             'exemption': forms.Textarea(attrs={'rows': 3}),
             'opposition': forms.Textarea(attrs={'rows': 3}),

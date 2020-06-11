@@ -39,4 +39,6 @@ def permit_request_summary(context, permit_request):
         'contacts': contacts,
         'objects_infos': objects_infos,
         'geo_time_form': geo_time_form if geo_time_instance else None,
+        'intersected_geometries': permit_request.intersected_geometries
+        if permit_request.intersected_geometries != '' else None,
     }

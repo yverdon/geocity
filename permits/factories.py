@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
+from django.utils.text import Truncator
 
 import factory
 import faker
@@ -8,12 +9,17 @@ import faker
 from . import models
 
 
-class PermitActorFactory(factory.django.DjangoModelFactory):
+class PermitAuthorFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PermitAuthor
 
     firstname = factory.Faker('first_name')
     name = factory.Faker('last_name')
+    address = factory.Faker('word')
+    zipcode = factory.Faker('zipcode')
+    city = factory.Faker('city')
+    phone_first = Truncator(factory.Faker('phone_number')).chars(19)
+    phone_second = Truncator(factory.Faker('phone_number')).chars(19)
     email = factory.Faker('email')
 
 
@@ -22,7 +28,7 @@ class UserFactory(factory.django.DjangoModelFactory):
         model = get_user_model()
 
     username = factory.Faker("user_name")
-    actor = factory.RelatedFactory(PermitActorFactory, "user")
+    actor = factory.RelatedFactory(PermitAuthorFactory, "user")
     password = "password"
 
     @classmethod
@@ -170,7 +176,7 @@ class PermitRequestFactory(factory.django.DjangoModelFactory):
         model = models.PermitRequest
 
     administrative_entity = factory.SubFactory(PermitAdministrativeEntityFactory)
-    author = factory.SubFactory(PermitActorFactory)
+    author = factory.SubFactory(PermitAuthorFactory)
 
 
 class WorksObjectPropertyFactory(factory.django.DjangoModelFactory):
