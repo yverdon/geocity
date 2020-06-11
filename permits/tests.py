@@ -44,7 +44,7 @@ class LoggedInUserMixin:
 class LoggedInSecretariatMixin:
     def setUp(self):
         self.group = factories.SecretariatGroupFactory()
-        self.administrative_entity = self.group.department.administrative_entity
+        self.administrative_entity = self.group.permitdepartment.administrative_entity
         self.user = factories.SecretariatUserFactory(groups=[self.group])
         self.client.login(username=self.user.username, password="password")
 
@@ -115,7 +115,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
 
     def test_user_can_only_see_own_requests(self):
-        permit_request = factories.PermitRequestFactory(author=factories.UserFactory().actor)
+        permit_request = factories.PermitRequestFactory(author=factories.UserFactory().permitauthor)
 
         response = self.client.get(
             reverse('permits:permit_request_select_types', kwargs={'permit_request_id': permit_request.pk})
@@ -144,7 +144,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         factories.SecretariatUserFactory(actor__email="secretariat@lausanne.ch")
 
         permit_request = factories.PermitRequestFactory(
-            administrative_entity=group.department.administrative_entity,
+            administrative_entity=group.permitdepartment.administrative_entity,
             author=self.user.permitauthor, status=models.PermitRequest.STATUS_DRAFT
         )
         self.client.post(reverse('permits:permit_request_submit', kwargs={'permit_request_id': permit_request.pk}))
@@ -376,7 +376,7 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
         validator_groups = factories.ValidatorGroupFactory.create_batch(
             2, department__administrative_entity=self.administrative_entity
         )
-        validator_departments = [group.department.pk for group in validator_groups]
+        validator_departments = [group.permitdepartment.pk for group in validator_groups]
 
         permit_request = factories.PermitRequestFactory(
             status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
@@ -405,7 +405,7 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
         response = self.client.post(
             reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk}),
             data={
-                "departments": [validator_group.department.pk],
+                "departments": [validator_group.permitdepartment.pk],
                 "action": views.PermitRequestDetailView.ACTION_REQUEST_VALIDATION
             },
         )
@@ -456,7 +456,7 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
         self.client.post(
             reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk}),
             data={
-                "departments": [validator_groups[0].department.pk],
+                "departments": [validator_groups[0].permitdepartment.pk],
                 "action": views.PermitRequestDetailView.ACTION_REQUEST_VALIDATION
             },
         )
@@ -521,7 +521,7 @@ class PermitRequestValidationTestcase(TestCase):
 
     def test_secretariat_can_send_validation_reminders(self):
         group = factories.SecretariatGroupFactory()
-        administrative_entity = group.department.administrative_entity
+        administrative_entity = group.permitdepartment.administrative_entity
         secretariat = factories.SecretariatUserFactory(groups=[group])
 
         validation = factories.PermitRequestValidationFactory(
@@ -542,13 +542,13 @@ class PermitRequestValidationTestcase(TestCase):
         )
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, [validator.actor.email])
+        self.assertEqual(mail.outbox[0].to, [validator.permitauthor.email])
 
 
 class PermitRequestClassifyTestCase(TestCase):
     def setUp(self):
         self.secretariat_group = factories.SecretariatGroupFactory()
-        self.administrative_entity = self.secretariat_group.department.administrative_entity
+        self.administrative_entity = self.secretariat_group.permitdepartment.administrative_entity
         self.secretariat_user = factories.SecretariatUserFactory(groups=[self.secretariat_group])
 
         validation = factories.PermitRequestValidationFactory(
