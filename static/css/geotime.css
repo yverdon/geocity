@@ -5,13 +5,15 @@
 }
 
 #out-of-administrative-limits {
+  background-color: #f5d142;
   border-radius: 3px;
-  border: 3px solid #fc4c58;
+  border: 3px solid #f5bf42;
   position: absolute;
   left: 160px;
   bottom: 10px;
   padding-left: 10px;
   padding-right: 10px;
-  font-family: bold;
+  font-family: arial;
   z-index: 1000;
+  opacity: 80%;
 }

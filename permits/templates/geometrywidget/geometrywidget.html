@@ -92,7 +92,9 @@
             wmts_capabilities_url: '{{wmts_capabilities_url}}',
             wmts_layer: '{{wmts_layer}}',
             wmts_capabilities_url_alternative: '{{wmts_capabilities_url_alternative}}',
-            wmts_layer_alternative: '{{wmts_layer_alternative}}'
+            wmts_layer_alternative: '{{wmts_layer_alternative}}',
+            administrative_entities_geojson: "{% url 'permits:administrative_entities_geojson' %}",
+            qgisserver_proxy: "{% url 'permits:qgisserver_proxy' %}",
         };
 
         var {{ module }} = new geometryWidget(options);

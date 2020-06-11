@@ -1,11 +1,12 @@
 from django.urls import include, path
 
-from . import views
+from . import views, geoviews
 
 app_name = 'permits'
 
 permit_request_urlpatterns = [
-    path('administrative-entity/', views.permit_request_select_administrative_entity, name='permit_request_select_administrative_entity'),
+    path('administrative-entity/',
+         views.permit_request_select_administrative_entity, name='permit_request_select_administrative_entity'),
 ]
 
 existing_permit_request_urlpatterns = [
@@ -32,4 +33,6 @@ urlpatterns = [
     path('listexport/', views.PermitExportView.as_view(), name='listexport'),
     path('permitauthoradd/', views.permit_author_add, name='permit_author_add'),
     path('permitauthorchange/', views.permit_author_change, name='permit_author_change'),
+    path('adminentitiesgeojson/', geoviews.administrative_entities_geojson, name='administrative_entities_geojson'),
+    path('qgisserverproxy/', geoviews.qgisserver_proxy, name='qgisserver_proxy'),
 ]

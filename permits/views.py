@@ -2,7 +2,6 @@ import logging
 import mimetypes
 import urllib.parse
 import os
-import requests
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required, user_passes_test

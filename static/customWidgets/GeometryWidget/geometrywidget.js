@@ -39,7 +39,7 @@
 
         this.rasterMaskLayer = new ol.layer.Image({
           source: new ol.source.ImageWMS({
-              url: 'https://srvdev/qgis',
+              url: this.options.qgisserver_proxy,
               params: {
                   'LAYERS': 'permits_permitadministrativeentity',
               },
@@ -52,15 +52,9 @@
         this.vectorMaskLayer = new ol.layer.Vector({
           source: new ol.source.Vector({
               url: (e) => {
-                return 'https://srvdev/qgis/wfs?service=WFS&' +
-                'version=1.1.0&' +
-                'request=GetFeature&' +
-                'typename=permits_permitadministrativeentity&' +
-                'outputFormat=application/json&' +
-                'srsname=EPSG:2056';
+                return this.options.administrative_entities_geojson;
               },
               zIndex: 9999,
-              // 'permits_permitadministrativeentity',
               format: new ol.format.GeoJSON()
           }),
           zIndex: 9999,
@@ -458,7 +452,7 @@
               } else {
                   $('#out-of-administrative-limits').show();
                   $('#out-of-administrative-limits').html(
-                    "Votre saisie sort du territoire de l'entité administrative concernée !"
+                    "Votre saisie sort du territoire du territoire concerné"
                     )
                 return false;
               }
