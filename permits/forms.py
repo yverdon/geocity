@@ -117,6 +117,7 @@ class PartialValidationMixin:
 
 class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
     prefix = 'properties'
+    required_css_class = 'required'
 
     def __init__(self, instance, *args, **kwargs):
         self.instance = instance
@@ -138,6 +139,8 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         for works_object_type, prop in self.get_properties():
             field_name = self.get_field_name(works_object_type, prop)
             self.fields[field_name] = self.field_for_property(prop)
+            if prop.is_mandatory:
+                self.fields[field_name].required = True
 
         if disable_fields:
             for field in self.fields.values():
@@ -182,7 +185,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         `get_field_cls_for_property`.
         """
         field_class = get_field_cls_for_property(prop)
-        return field_class(**self.get_field_kwargs(prop))
+        return field_class(**self.get_field_kwargs(prop),)
 
     def get_field_kwargs(self, prop):
         """
