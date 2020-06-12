@@ -395,7 +395,10 @@ class GeometryWidget(geoforms.OSMWidget):
 
 class PermitRequestGeoTimeForm(forms.ModelForm):
 
+    required_css_class = 'required'
+
     class Meta:
+        required_css_class = 'required'
         model = models.PermitRequestGeoTime
         fields = ['starts_at', 'ends_at', 'comment', 'external_link', 'geom']
         widgets = {
