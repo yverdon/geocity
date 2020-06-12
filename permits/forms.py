@@ -373,7 +373,9 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
         self.fields['status'].choices = [
             (status, label)
             for status, label in self.fields['status'].choices
-            if status != models.PermitRequest.STATUS_DRAFT
+            if status == models.PermitRequest.STATUS_PROCESSING or
+                status == models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION or
+                status == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
         ]
 
 
