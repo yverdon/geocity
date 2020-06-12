@@ -33,6 +33,5 @@ def administrative_entities_geojson(request):
                   geometry_field='geom',
                   srid=2056,
                   fields=('id', 'name', 'ofs_id', 'link',)))
-    print(geojson)
 
     return JsonResponse(geojson)

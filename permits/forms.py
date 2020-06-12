@@ -443,9 +443,13 @@ class PermitRequestValidationDepartmentSelectionForm(forms.Form):
             administrative_entity=self.permit_request.administrative_entity,
             group__permissions=validate_permission
         ).distinct()
+
+        departments = []
+        for validation in self.permit_request.validations.all():
+            departements = departments.append(validation.department)
         kwargs["initial"] = dict(
             kwargs.get("initial", {}),
-            departments=permit_request_departments.filter(is_default_validator=True)
+            departments=departments if departments else permit_request_departments.filter(is_default_validator=True)
         )
 
         super().__init__(*args, **kwargs)
