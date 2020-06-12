@@ -3,13 +3,13 @@
 {% load i18n %}
 {% load permits_extras %}
 
-{% block title %}{% trans "Envoi de la demande" %}{% endblock %}
+{% block title %}{% trans "Résumé et envoi" %}{% endblock %}
 
 {% block content-no-sidebar %}
 <div class="container">
   {% permit_progressbar permit_request 'submit' %}
 
-  <h3>{% trans "Envoi de la demande" %}</h3>
+  <h3>{% trans "Résumé et envoi" %}</h3>
   <hr>
   {% if incomplete_steps  %}
   <p>

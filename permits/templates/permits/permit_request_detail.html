@@ -3,6 +3,7 @@
 {% load i18n %}
 {% load bootstrap4 %}
 {% load permits_extras %}
+{% load render_table from django_tables2 %}
 
 {% block title %}{% blocktrans with request_id=permit_request.pk %}Demande #{{ request_id }}{% endblocktrans %}{% endblock %}
 
@@ -10,31 +11,14 @@
   <div class="container">
     <h1>{% blocktrans with request_id=permit_request.pk %}Demande #{{ request_id }}{% endblocktrans %}
       {% if has_validations and nb_pending_validations == 0 or permit_request.status == 2 %}
-          {% if perms.permits.amend_permit_request %}
-            <a class="btn btn-outline-primary" href="{% url 'permits:printpdf' permit_request_id=permit_request.pk %}" class="mr-2"><i class="fa fa-print"></i> {% trans "Imprimer" %}</a>
-          {% endif %}
-        {% endif %}</h1>
+        {% if perms.permits.amend_permit_request %}
+          <a class="btn btn-outline-primary" href="{% url 'permits:printpdf' permit_request_id=permit_request.pk %}" class="mr-2"><i class="fa fa-print"></i> {% trans "Imprimer" %}</a>
+        {% endif %}
+      {% endif %}
+    </h1>
+
     <p title="">
     </p>
-    <dl>
-      <dt>{% trans "Date de création" %}</dt>
-      <dd title="{{ permit_request.created_at }}">
-        {% blocktrans with request_date=permit_request.created_at|timesince %}Il y a {{ request_date }}{% endblocktrans %}
-      </dd>
-      <dt>{% trans "Statut" %}</dt>
-      <dd>
-        {% if permit_request.validation_pdf %}<a href="{{ permit_request.validation_pdf.url }}">{% endif %}
-        {{ permit_request.get_status_display }}{% if permit_request.validated_at %} {% blocktrans with validated_at=permit_request.validated_at %}le {{ validated_at }}{% endblocktrans %}{% endif %}
-        {% if permit_request.validation_pdf %}</a>{% endif %}
-      </dd>
-      <dt>{% trans "Auteur-e" %}</dt>
-      <dd>
-        <a href="mailto:{{ permit_request.author }} <{{ permit_request.author.email }}>" target="_blank">
-          {{ permit_request.author }} &lt;{{ permit_request.author.email }}&gt;
-        </a>
-      </dd>
-    </dl>
-    {% permit_request_summary permit_request %}
 
     {% if forms.amend or forms.request_validation or forms.validate or forms.poke %}
       <h2>{% trans "Actions" %}</h2>
@@ -165,6 +149,53 @@
         {% endif %}
       </div>
     {% endif %}
+
+    <h2>{% trans "Données de base" %}</h2>
+    <dl>
+      <dt>{% trans "Date de création" %}</dt>
+      <dd title="{{ permit_request.created_at }}">
+        {% blocktrans with request_date=permit_request.created_at|timesince %}Il y a {{ request_date }}{% endblocktrans %}
+      </dd>
+      <dt>{% trans "Statut" %}</dt>
+      <dd>
+        {% if permit_request.validation_pdf %}<a href="{{ permit_request.validation_pdf.url }}">{% endif %}
+        {{ permit_request.get_status_display }}{% if permit_request.validated_at %} {% blocktrans with validated_at=permit_request.validated_at %}le {{ validated_at }}{% endblocktrans %}{% endif %}
+        {% if permit_request.validation_pdf %}</a>{% endif %}
+      </dd>
+      <dt>{% trans "Auteur-e" %}</dt>
+      <dd>
+        <a href="mailto:{{ permit_request.author }} <{{ permit_request.author.email }}>" target="_blank">
+          {{ permit_request.author }} &lt;{{ permit_request.author.email }}&gt;
+        </a>
+      </dd>
+    </dl>
+    {% if validations %}
+      <h2>{% trans "Statut des validations" %}</h2>
+      <dl>
+        {% for validation in validations %}
+          <dt>{{ validation.department.group.name }}</dt>
+          <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
+            {{ validation.get_validation_status_display }} par {{ validation.validated_by.permitauthor.firstname }} {{ validation.validated_by.permitauthor.name }} le {{ validation.validated_at}}
+            {% if validation.comment_before %}
+              <br>
+              <h5>{% trans "Commentaire (avant)" %}:</h5> {{ validation.comment_before }}
+            {% endif %}
+            {% if validation.comment_during %}
+              <br>
+              <h5>{% trans "Commentaire (pendant)" %}:</h5> {{ validation.comment_during }}
+            {% endif %}
+            {% if validation.comment_after %}
+              <br>
+              <h5>{% trans "Commentaire (après)" %}:</h5> {{ validation.comment_after }}
+            {% endif %}
+          </dd>
+        {% endfor %}
+      </dl>
+      <br>
+    {% endif %}
+
+    <h2>{% trans "Résumé" %}</h2>
+      {% permit_request_summary permit_request %}
 
     <p class="mt-4">
       <a href="{% url 'permits:permit_requests_list' %}">{% trans "Retour à la liste des demandes" %}</a>

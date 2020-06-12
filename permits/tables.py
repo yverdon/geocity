@@ -6,21 +6,28 @@ from . import models
 
 
 class OwnPermitRequestsTable(tables.Table):
-    actions = tables.TemplateColumn(template_name="tables/_permit_request_actions.html", verbose_name=_('Actions'), orderable=False)
-
-    class Meta:
-        model = models.PermitRequest
-        fields = ('id', 'created_at', 'status', 'administrative_entity')
-        template_name = 'django_tables2/bootstrap.html'
-
-
-class DepartmentPermitRequestsTable(tables.Table):
-    actions = tables.TemplateColumn(template_name="tables/_permit_request_actions.html", verbose_name=_('Actions'), orderable=False)
+    actions = tables.TemplateColumn(template_name="tables/_permit_request_actions.html",
+                                    verbose_name=_('Actions'), orderable=False)
+    starts_at_min = tables.Column(verbose_name=_("Début"))
+    ends_at_max = tables.Column(verbose_name=_("Fin"))
     works_objects_html = tables.Column(verbose_name=_("Objets et types de travaux"), orderable=False)
 
     class Meta:
         model = models.PermitRequest
-        fields = ('id', 'created_at', 'status', 'author', 'works_objects_html')
+        fields = ('id', 'created_at', 'status', 'starts_at_min', 'ends_at_max',
+                        'administrative_entity', 'works_objects_html')
+        template_name = 'django_tables2/bootstrap.html'
+
+
+class DepartmentPermitRequestsTable(tables.Table):
+    actions = tables.TemplateColumn(template_name="tables/_permit_request_actions.html",
+                                    verbose_name=_('Actions'), orderable=False)
+    starts_at_min = tables.Column(verbose_name=_("Début"))
+    ends_at_max = tables.Column(verbose_name=_("Fin"))
+
+    class Meta:
+        model = models.PermitRequest
+        fields = ('id', 'created_at', 'status', 'starts_at_min', 'ends_at_max', 'author', 'works_objects_html')
         template_name = 'django_tables2/bootstrap.html'
 
     def before_render(self, request):
@@ -30,9 +37,3 @@ class DepartmentPermitRequestsTable(tables.Table):
                 or request.user.has_perm("permits.validate_permit_request")
             )
         }
-
-
-class PermitExportTable(tables.Table):
-    class Meta:
-        model = models.PermitRequest
-        template_name = 'django_tables2/bootstrap.html'

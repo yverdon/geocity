@@ -9,27 +9,29 @@ from django.core.exceptions import PermissionDenied
 from django.core.exceptions import SuspiciousOperation
 from django.db.models import Prefetch
 from django.utils.decorators import method_decorator
-from django.http import Http404, HttpResponse, StreamingHttpResponse
+from django.http import Http404, HttpResponse, StreamingHttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views import View
-
-from gpf.models import Actor
+from django_tables2.views import SingleTableMixin, SingleTableView
+from django_tables2.export.views import ExportMixin
+from django_filters.views import FilterView
 from . import fields, forms, models, services, tables, filters, printpermit
+from django.contrib.auth import login
+from django.utils import timezone
 
 from .exceptions import BadPermitRequestStatus
-from django_tables2.views import SingleTableMixin
-from django_filters.views import FilterView
+
 
 logger = logging.getLogger(__name__)
 
 
-def user_has_actor(user):
+def user_has_permitauthor(user):
     try:
-        user.actor
-    except Actor.DoesNotExist:
+        user.permitauthor
+    except models.PermitAuthor.DoesNotExist:
         return False
 
     return True
@@ -100,13 +102,17 @@ class PermitRequestDetailView(View):
             active_form = available_actions[-1] if len(available_actions) > 0 else None
 
         kwargs["has_validations"] = self.permit_request.has_validations()
-        print(self.permit_request.has_validations())
+
         if forms.get(self.ACTION_POKE):
             kwargs["nb_pending_validations"] = self.permit_request.get_pending_validations().count()
             kwargs["validations"] = self.permit_request.validations.select_related("department", "department__group")
         else:
             kwargs["nb_pending_validations"] = 0
-            kwargs["validations"] = []
+
+            if services.can_validate_permit_request(self.request.user, self.permit_request):
+                kwargs["validations"] = self.permit_request.validations.select_related("department", "department__group")
+            else:
+                kwargs["validations"] = []
 
         return {**kwargs, **{
             "permit_request": self.permit_request,
@@ -126,6 +132,7 @@ class PermitRequestDetailView(View):
         Instanciate the form matching the submitted POST `action`, checking if the user has the permissions to use it,
         save it, and call the related submission function.
         """
+
         action = request.POST.get("action")
 
         if action not in self.actions:
@@ -235,6 +242,7 @@ class PermitRequestDetailView(View):
             return self.handle_poke(form)
 
     def handle_amend_form_submission(self, form):
+
         form.save()
         success_message = _("La demande de permis #%s a bien été amendée.") % self.permit_request.pk
 
@@ -258,6 +266,9 @@ class PermitRequestDetailView(View):
         return redirect("permits:permit_requests_list")
 
     def handle_validation_form_submission(self, form):
+
+        form.instance.validated_at = timezone.now()
+        form.instance.validated_by = self.request.user
         validation = form.save()
 
         if validation.validation_status == models.PermitRequestValidation.STATUS_APPROVED:
@@ -284,7 +295,7 @@ class PermitRequestDetailView(View):
 
 @redirect_bad_status_to_detail
 @login_required
-@user_passes_test(user_has_actor)
+@user_passes_test(user_has_permitauthor)
 def permit_request_select_administrative_entity(request, permit_request_id=None):
     if permit_request_id:
         permit_request = get_permit_request_for_edition(request.user, permit_request_id)
@@ -297,7 +308,7 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
         )
 
         if administrative_entity_form.is_valid():
-            permit_request = administrative_entity_form.save(author=request.user.actor)
+            permit_request = administrative_entity_form.save(author=request.user.permitauthor)
 
             return redirect(
                 reverse('permits:permit_request_select_types', kwargs={'permit_request_id': permit_request.pk})
@@ -497,9 +508,8 @@ def permit_request_media_download(request, property_value_id):
 
 
 @method_decorator(login_required, name="dispatch")
-class PermitRequestListExternsView(SingleTableMixin, FilterView):
+class PermitRequestList(SingleTableMixin, FilterView):
     paginate_by = int(os.environ['PAGINATE_BY'])
-    model = models.PermitRequest
     template_name = 'permits/permit_requests_list.html'
 
     def get_queryset(self):
@@ -511,7 +521,7 @@ class PermitRequestListExternsView(SingleTableMixin, FilterView):
         ).order_by('-created_at')
 
     def is_department_user(self):
-        return self.request.user.groups.filter(department__isnull=False).exists()
+        return self.request.user.groups.filter(permitdepartment__isnull=False).exists()
 
     def get_table_class(self):
         return (
@@ -526,6 +536,21 @@ class PermitRequestListExternsView(SingleTableMixin, FilterView):
             if self.is_department_user()
             else filters.OwnPermitRequestFilterSet
         )
+
+
+@method_decorator(login_required, name="dispatch")
+class PermitExportView(ExportMixin, SingleTableView):
+    table_class = tables.OwnPermitRequestsTable
+    template_name = 'django_tables2/bootstrap.html'
+
+    def get_queryset(self):
+        return services.get_permit_requests_list_for_user(self.request.user).prefetch_related(
+            Prefetch(
+                'works_object_types',
+                queryset=models.WorksObjectType.objects.select_related('works_type', 'works_object')
+            )
+        ).order_by('-created_at')
+    exclude_columns = ("actions", )
 
 
 @redirect_bad_status_to_detail
@@ -651,3 +676,55 @@ def printpdf(request, permit_request_id):
         return response
     else:
         raise PermissionDenied
+
+
+@login_required
+def genericauthorview(request, pk):
+
+    instance = get_object_or_404(models.permitAuthor, pk=pk)
+    form = forms.GenericAuthorForm(request.POST or None, instance=instance)
+
+    for field in form.fields:
+
+        form.fields[field].disabled = True
+
+    return render(request, "permits/permit_request_author.html", {'form': form})
+
+
+def permit_author_add(request):
+
+    signupform = forms.PermitAuthorUserForm(request.POST or None)
+
+    form = forms.GenericAuthorForm(request.POST or None)
+
+    if signupform.is_valid() and form.is_valid():
+
+        signupform.instance.first_name = form.instance.firstname
+        signupform.instance.last_name = form.instance.name
+        signupform.instance.email = form.instance.email
+        new_user = signupform.save()
+        form.instance.user = new_user
+        form.save()
+
+        login(request, new_user)
+
+        return HttpResponseRedirect(
+            reverse('permits:permit_requests_list'))
+
+    return render(request, "permits/permit_request_author.html", {'form': form, 'signupform': signupform})
+
+
+@login_required
+def permit_author_change(request):
+
+    user = models.PermitAuthor.objects.filter(user=request.user.pk).first()
+    form = forms.GenericAuthorForm(request.POST or None, instance=user)
+
+    if form.is_valid():
+
+        form.save()
+
+        return HttpResponseRedirect(
+            reverse('permits:permit_requests_list'))
+
+    return render(request, "permits/permit_request_author.html", {'form': form})

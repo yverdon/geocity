@@ -1,11 +1,12 @@
 from django.urls import include, path
 
-from . import views
+from . import views, geoviews
 
 app_name = 'permits'
 
 permit_request_urlpatterns = [
-    path('administrative-entity/', views.permit_request_select_administrative_entity, name='permit_request_select_administrative_entity'),
+    path('administrative-entity/',
+         views.permit_request_select_administrative_entity, name='permit_request_select_administrative_entity'),
 ]
 
 existing_permit_request_urlpatterns = [
@@ -26,7 +27,12 @@ existing_permit_request_urlpatterns = [
 urlpatterns = [
     path('<int:permit_request_id>/', include(permit_request_urlpatterns + existing_permit_request_urlpatterns)),
     path('permits-files/<path:path>', views.permit_request_file_download, name='permit_request_file_download'),
-    path('', views.PermitRequestListExternsView.as_view(), name='permit_requests_list'),
+    path('', views.PermitRequestList.as_view(), name='permit_requests_list'),
     path('', include(permit_request_urlpatterns)),
     path('media/<int:property_value_id>/', views.permit_request_media_download, name='permit_request_media_download'),
+    path('listexport/', views.PermitExportView.as_view(), name='listexport'),
+    path('permitauthoradd/', views.permit_author_add, name='permit_author_add'),
+    path('permitauthorchange/', views.permit_author_change, name='permit_author_change'),
+    path('adminentitiesgeojson/', geoviews.administrative_entities_geojson, name='administrative_entities_geojson'),
+    path('qgisserverproxy/', geoviews.qgisserver_proxy, name='qgisserver_proxy'),
 ]

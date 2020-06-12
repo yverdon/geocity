@@ -7,7 +7,6 @@ from django.core import management
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 
-from gpf import models as gpf_models
 from permits import models
 
 User = get_user_model()
@@ -43,11 +42,31 @@ class Command(BaseCommand):
 
     def create_users(self):
         user = User.objects.create_user(username='admin', password='admin', is_staff=True, is_superuser=True)
-        gpf_models.Actor.objects.create(user=user, email="yverdon-squad+admin@liip.ch")
+        models.PermitAuthor.objects.create(
+            user=user,
+            email="yverdon-squad+admin@liip.ch",
+            name="Marcel",
+            firstname="Dupond",
+            address="Rue du Pont",
+            zipcode=1234,
+            city="Métropole",
+            phone_first="000 00 00 00",
+            phone_second="000 00 00 00",
+        )
         self.stdout.write("admin / admin")
 
         user = User.objects.create_user(username='user', password='admin')
-        gpf_models.Actor.objects.create(user=user, email="yverdon-squad+user@liip.ch")
+        models.PermitAuthor.objects.create(
+            user=user,
+            email="yverdon-squad+admin@liip.ch",
+            name="Gérard",
+            firstname="Ducommun",
+            address="Rue du Port",
+            zipcode=1234,
+            city="Mégalopole",
+            phone_first="000 00 00 00",
+            phone_second="000 00 00 00",
+        )
         self.stdout.write("user / admin")
 
         permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
@@ -75,7 +94,7 @@ class Command(BaseCommand):
         self.stdout.write("eaux-yverdon / admin")
 
     def create_user(self, username, group_name, administrative_entity_name, is_default_validator=False):
-        administrative_entity, created = gpf_models.AdministrativeEntity.objects.get_or_create(
+        administrative_entity, created = models.PermitAdministrativeEntity.objects.get_or_create(
             name=administrative_entity_name, defaults={
                 'ofs_id': 0,
                 'link': 'https://mapnv.ch',
@@ -87,8 +106,15 @@ class Command(BaseCommand):
         group, created = Group.objects.get_or_create(name=group_name)
         user = User.objects.create_user(username=username, password='admin')
         user.groups.set([group])
-        gpf_models.Actor.objects.create(user=user, email=f"yverdon-squad+{username}@liip.ch")
-        gpf_models.Department.objects.create(
+        models.PermitAuthor.objects.create(
+            user=user,
+            email=f"yverdon-squad+{username}@liip.ch",
+            name="André",
+            firstname="Matthey",
+            address="Rue du Lac",
+            zipcode=1234,
+            city="Ville",)
+        models.PermitDepartment.objects.create(
             group=group, is_validator=False, is_admin=False, is_archeologist=False,
             administrative_entity=administrative_entity, is_default_validator=is_default_validator
         )
@@ -114,7 +140,7 @@ class Command(BaseCommand):
             ("Démolition", objects),
             ("Construction", objects),
         ]
-        administrative_entity = gpf_models.AdministrativeEntity.objects.get(name="Démo Yverdon")
+        administrative_entity = models.PermitAdministrativeEntity.objects.get(name="Démo Yverdon")
 
         for works_type, objs in works_types:
             works_type_obj = models.WorksType.objects.create(name=works_type)

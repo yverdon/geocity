@@ -1,14 +1,14 @@
 from django.conf import settings
 from django import forms
 from django.contrib.auth.models import Permission
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis import forms as geoforms
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 import json
-from gpf.models import AdministrativeEntity, Department
-from . import models, services
+from . import models, services, widgets
 from bootstrap_datepicker_plus import DateTimePickerInput
 from datetime import datetime, timedelta
 
@@ -25,7 +25,9 @@ def get_field_cls_for_property(prop):
 
 
 class AdministrativeEntityForm(forms.Form):
-    administrative_entity = forms.ModelChoiceField(queryset=AdministrativeEntity.objects.none(), label=_("Commune"))
+
+    administrative_entity = forms.ModelChoiceField(queryset=models.PermitAdministrativeEntity.objects.none(),
+                                                   label=_("Entité administrative"))
 
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop('instance', None)
@@ -216,9 +218,47 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
         return {**super().get_field_kwargs(prop), **{'widget': forms.ClearableFileInput}}
 
 
+class PermitAuthorUserForm(UserCreationForm):
+
+    required_css_class = 'required'
+
+
+class GenericAuthorForm(forms.ModelForm):
+
+    required_css_class = 'required'
+
+    class Meta:
+        model = models.PermitAuthor
+        exclude = ['user']
+        help_texts = {
+            'vat_number': 'Trouvez votre numéro <a href="https://www.bfs.admin.ch/bfs/fr/home/registres/registre-entreprises/numero-identification-entreprises.html" target="_blank">TVA</a>',
+        }
+        widgets = {
+            'address': widgets.RemoteAutocompleteWidget(
+                attrs={
+                    "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
+                    "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
+                    "search_prefix": "false",
+                    "origins": "address",
+                    "zipcode_field": "zipcode",
+                    "city_field": "city",
+                    "placeholder": "ex: Place Pestalozzi 2 Yverdon",
+                }),
+            'phone_fixed': forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}),
+            'phone_mobile': forms.TextInput(attrs={'placeholder': 'ex: 079 111 22 22'}),
+            'vat_number': forms.TextInput(attrs={'placeholder': 'ex: CHE-123.456.789'}),
+            'name': forms.TextInput(attrs={'placeholder': 'ex: Dupond'}),
+            'firstname': forms.TextInput(attrs={'placeholder': 'ex: Marcel'}),
+            'zipcode': forms.TextInput(attrs={'placeholder': 'ex: 1400'}),
+            'city': forms.TextInput(attrs={'placeholder': 'ex: Yverdon'}),
+            'company_name': forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}),
+            'email': forms.TextInput(attrs={'placeholder': 'ex: permis-de-fouille@mapnv.ch'}),
+        }
+
+
 class PermitRequestActorForm(forms.ModelForm):
 
-    actor_fields = ['name', 'firstname', 'company_name', 'vat_number', 'address', 'address', 'city', 'phone',
+    actor_fields = ['firstname', 'name', 'company_name', 'vat_number', 'address', 'address', 'city', 'phone',
                     'zipcode', 'email']
 
     name = forms.CharField( max_length=100, label=_('Nom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Marcel', 'required': 'required'}))
@@ -287,7 +327,7 @@ class PermitRequestActorForm(forms.ModelForm):
 class PermitRequestAdditionalInformationForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequest
-        fields = ['status', 'price', 'exemption', 'opposition', 'comment']
+        fields = ['status', 'price', 'exemption', 'opposition', 'comment', 'archeology_status']
         widgets = {
             'exemption': forms.Textarea(attrs={'rows': 3}),
             'opposition': forms.Textarea(attrs={'rows': 3}),
@@ -305,7 +345,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
         ]
 
 
-#extend django gis osm openlayers widget
+# extend django gis osm openlayers widget
 class GeometryWidget(geoforms.OSMWidget):
 
     template_name = 'geometrywidget/geometrywidget.html'
@@ -332,8 +372,8 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 'map_height': 400,
                 'default_center': [2539057, 1181111],
                 'default_zoom': 10,
-                'display_raw': False, #show coordinate in debug
-                'edit_geom': True, #For readonly set to False
+                'display_raw': False,
+                'edit_geom': True,
                 'min_zoom': 8,
                 'wmts_capabilities_url': settings.WMTS_GETCAP,
                 'wmts_layer': settings.WMTS_LAYER,
@@ -341,26 +381,30 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
             }),
             'starts_at': DateTimePickerInput(
-              options={
-                    "format": "DD/MM/YYYY HH:mm",
-                    "locale": "fr",
-                    "minDate": (datetime.today() + timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d')
-                    }
-                ).start_of('event days'),
+                options={
+                "format": "DD/MM/YYYY HH:mm",
+                "locale": "fr",
+                "useCurrent": False,
+                "minDate": (
+                        datetime.today() +
+                        timedelta(days=int(settings.MIN_START_DELAY))
+                    ).strftime('%Y/%m/%d')
+                }
+            ).start_of('event days'),
             'ends_at': DateTimePickerInput(
-              options={
+                options={
                     "format": "DD/MM/YYYY  HH:mm",
                     "locale": "fr",
-                    "minDate": (datetime.today() + timedelta(days=int(settings.MIN_START_DELAY))).strftime('%Y/%m/%d')
-                    }
-                ).start_of('event days'),
+                    "useCurrent": False,
+                }
+            ).end_of('event days'),
 
         }
 
 
 class PermitRequestValidationDepartmentSelectionForm(forms.Form):
     departments = forms.ModelMultipleChoiceField(
-        queryset=Department.objects.none(),
+        queryset=models.PermitDepartment.objects.none(),
         widget=forms.CheckboxSelectMultiple(),
         label=_("Services chargés de la validation")
     )
@@ -368,13 +412,17 @@ class PermitRequestValidationDepartmentSelectionForm(forms.Form):
     def __init__(self, instance, *args, **kwargs):
         self.permit_request = instance
         permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
-        validate_permission = Permission.objects.get(codename='validate_permit_request', content_type=permit_request_ct)
-        permit_request_departments = Department.objects.filter(
+        validate_permission = Permission.objects.get(
+            codename='validate_permit_request',
+            content_type=permit_request_ct
+        )
+        permit_request_departments = models.PermitDepartment.objects.filter(
             administrative_entity=self.permit_request.administrative_entity,
             group__permissions=validate_permission
         ).distinct()
         kwargs["initial"] = dict(
-            kwargs.get("initial", {}), departments=permit_request_departments.filter(is_default_validator=True)
+            kwargs.get("initial", {}),
+            departments=permit_request_departments.filter(is_default_validator=True)
         )
 
         super().__init__(*args, **kwargs)
