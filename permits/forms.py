@@ -185,7 +185,13 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         `get_field_cls_for_property`.
         """
         field_class = get_field_cls_for_property(prop)
-        return field_class(**self.get_field_kwargs(prop),)
+        if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_TEXT:
+            field_instance = field_class(**self.get_field_kwargs(prop),
+                widget=forms.Textarea(attrs={'rows':1,}),
+                )
+        else:
+            field_instance = field_class(**self.get_field_kwargs(prop),)
+        return field_instance
 
     def get_field_kwargs(self, prop):
         """
