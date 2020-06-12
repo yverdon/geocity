@@ -12,7 +12,7 @@
       <p>{% trans "Êtes vous sûr de vouloir supprimer la demande de permis n°" %}{{ permit_request.id }} ?</p>
       <h4>{% trans "Détails de la demande:" %} </h4>
       <ul>
-        <li>{% trans "Requérant:"%} {{ permit_request.author.firstname }}, {{ permit_request.author.name}}</li>
+        <li>{% trans "Requérant:"%} {{ permit_request.author.user.first_name }}, {{ permit_request.author.user.last_name}}</li>
         <li>{% trans "Demande du:"%} {{ permit_request.created_at }}</li>
       </ul>
       {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary" value="Confirmer" %}

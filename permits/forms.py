@@ -11,6 +11,7 @@ import json
 from . import models, services, widgets
 from bootstrap_datepicker_plus import DateTimePickerInput
 from datetime import datetime, timedelta
+from django.contrib.auth.models import User
 
 
 def get_field_cls_for_property(prop):
@@ -116,6 +117,7 @@ class PartialValidationMixin:
 
 class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
     prefix = 'properties'
+    required_css_class = 'required'
 
     def __init__(self, instance, *args, **kwargs):
         self.instance = instance
@@ -137,6 +139,8 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         for works_object_type, prop in self.get_properties():
             field_name = self.get_field_name(works_object_type, prop)
             self.fields[field_name] = self.field_for_property(prop)
+            if prop.is_mandatory:
+                self.fields[field_name].required = True
 
         if disable_fields:
             for field in self.fields.values():
@@ -181,7 +185,13 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         `get_field_cls_for_property`.
         """
         field_class = get_field_cls_for_property(prop)
-        return field_class(**self.get_field_kwargs(prop))
+        if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_TEXT:
+            field_instance = field_class(**self.get_field_kwargs(prop),
+                widget=forms.Textarea(attrs={'rows':1,}),
+                )
+        else:
+            field_instance = field_class(**self.get_field_kwargs(prop),)
+        return field_instance
 
     def get_field_kwargs(self, prop):
         """
@@ -218,10 +228,35 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
         return {**super().get_field_kwargs(prop), **{'widget': forms.ClearableFileInput}}
 
 
-class PermitAuthorUserForm(UserCreationForm):
+class NewDjangoAuthUserForm(UserCreationForm):
 
+    first_name = forms.CharField(label=_('Prénom'), max_length=30,)
+    last_name = forms.CharField(label=_('Nom'), max_length=30,)
+    email = forms.EmailField(label=_('Email'))
     required_css_class = 'required'
 
+    def save(self, commit=True):
+        user = super(NewDjangoAuthUserForm, self).save(commit=False)
+        user.email = self.cleaned_data['email']
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
+
+        if commit:
+            user.save()
+
+        return user
+
+
+class DjangoAuthUserForm(forms.ModelForm):
+
+    first_name = forms.CharField( max_length=100, label=_('Nom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Marcel', 'required': 'required'}))
+    last_name = forms.CharField(max_length=100, label=_('Prénom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Dupond', 'required': 'required'}))
+    email = forms.EmailField(max_length=100, label=_('Email'), widget=forms.TextInput(attrs={'placeholder': 'ex: example@example.com', 'required': 'required'}))
+    required_css_class = 'required'
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
 
 class GenericAuthorForm(forms.ModelForm):
 
@@ -229,7 +264,7 @@ class GenericAuthorForm(forms.ModelForm):
 
     class Meta:
         model = models.PermitAuthor
-        exclude = ['user']
+        fields = ['address', 'zipcode', 'city', 'phone_first', 'phone_second','company_name','vat_number', ]
         help_texts = {
             'vat_number': 'Trouvez votre numéro <a href="https://www.bfs.admin.ch/bfs/fr/home/registres/registre-entreprises/numero-identification-entreprises.html" target="_blank">TVA</a>',
         }
@@ -244,15 +279,12 @@ class GenericAuthorForm(forms.ModelForm):
                     "city_field": "city",
                     "placeholder": "ex: Place Pestalozzi 2 Yverdon",
                 }),
-            'phone_fixed': forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}),
-            'phone_mobile': forms.TextInput(attrs={'placeholder': 'ex: 079 111 22 22'}),
+            'phone_first': forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}),
+            'phone_second': forms.TextInput(attrs={'placeholder': 'ex: 079 111 22 22'}),
             'vat_number': forms.TextInput(attrs={'placeholder': 'ex: CHE-123.456.789'}),
-            'name': forms.TextInput(attrs={'placeholder': 'ex: Dupond'}),
-            'firstname': forms.TextInput(attrs={'placeholder': 'ex: Marcel'}),
             'zipcode': forms.TextInput(attrs={'placeholder': 'ex: 1400'}),
             'city': forms.TextInput(attrs={'placeholder': 'ex: Yverdon'}),
             'company_name': forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}),
-            'email': forms.TextInput(attrs={'placeholder': 'ex: permis-de-fouille@mapnv.ch'}),
         }
 
 
@@ -363,7 +395,10 @@ class GeometryWidget(geoforms.OSMWidget):
 
 class PermitRequestGeoTimeForm(forms.ModelForm):
 
+    required_css_class = 'required'
+
     class Meta:
+        required_css_class = 'required'
         model = models.PermitRequestGeoTime
         fields = ['starts_at', 'ends_at', 'comment', 'external_link', 'geom']
         widgets = {
@@ -420,9 +455,13 @@ class PermitRequestValidationDepartmentSelectionForm(forms.Form):
             administrative_entity=self.permit_request.administrative_entity,
             group__permissions=validate_permission
         ).distinct()
+
+        departments = []
+        for validation in self.permit_request.validations.all():
+            departements = departments.append(validation.department)
         kwargs["initial"] = dict(
             kwargs.get("initial", {}),
-            departments=permit_request_departments.filter(is_default_validator=True)
+            departments=departments if departments else permit_request_departments.filter(is_default_validator=True)
         )
 
         super().__init__(*args, **kwargs)

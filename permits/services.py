@@ -459,8 +459,8 @@ def submit_permit_request(permit_request, absolute_uri_func):
 
     users_to_notify = set(get_user_model().objects.filter(
         groups__permitdepartment__administrative_entity=permit_request.administrative_entity,
-        permitauthor__email__isnull=False,
-    ).values_list("permitauthor__email", flat=True))
+        permitauthor__user__email__isnull=False,
+    ).values_list("permitauthor__user__email", flat=True))
 
     email_contents = render_to_string("permits/emails/permit_request_submitted.txt", {
         "permit_request_url": permit_request_url
@@ -472,13 +472,13 @@ def submit_permit_request(permit_request, absolute_uri_func):
 
     acknowledgment_email_contents = render_to_string("permits/emails/permit_request_acknowledgment.txt", {
         "permit_request_url": permit_request_url,
-        "name": permit_request.author.get_full_name(),
+        "name": permit_request.author.user.get_full_name(),
         "administrative_entity_name": permit_request.administrative_entity.name,
     })
     emails.append(
         (
             "Votre demande de permis", acknowledgment_email_contents, settings.DEFAULT_FROM_EMAIL,
-            [permit_request.author.email]
+            [permit_request.author.user.email]
         )
     )
 
@@ -499,7 +499,7 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
     users_to_notify = {
         email
         for department in departments
-        for email in department.group.user_set.values_list("permitauthor__email", flat=True)
+        for email in department.group.user_set.values_list("permitauthor__user__email", flat=True)
     }
 
     email_contents = render_to_string("permits/emails/permit_request_validation_request.txt", {
@@ -525,7 +525,7 @@ def send_validation_reminder(permit_request, absolute_uri_func):
     pending_validations = permit_request.get_pending_validations()
     users_to_notify = set(get_user_model().objects.filter(
         groups__permitdepartment__in=pending_validations.values_list("department", flat=True)
-    ).values_list("permitauthor__email", flat=True).distinct())
+    ).values_list("permitauthor__user__email", flat=True).distinct())
 
     email_contents = render_to_string("permits/emails/permit_request_validation_reminder.txt", {
         "permit_request_url": absolute_uri_func(
