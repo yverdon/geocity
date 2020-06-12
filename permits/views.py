@@ -452,11 +452,17 @@ def permit_request_appendices(request, permit_request_id):
 def permit_request_actors(request, permit_request_id):
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
 
+    creditorform = forms.PermitRequestCreditorForm(request.POST or None, instance=permit_request)
+
     if request.method == 'POST':
         formset = services.get_permitactorformset_initiated(permit_request, data=request.POST)
-        if formset.is_valid():
+        if formset.is_valid() and creditorform.is_valid():
             for form in formset:
                 form.save(permit_request=permit_request)
+
+            models.PermitRequest.objects.filter(
+                pk=permit_request_id
+                ).update(creditor_type=creditorform.instance.creditor_type)
 
             return redirect('permits:permit_request_submit', permit_request_id=permit_request.pk)
     else:
@@ -465,6 +471,7 @@ def permit_request_actors(request, permit_request_id):
 
     return render(request, "permits/permit_request_actors.html", {
         'formset': formset,
+        'creditorform': creditorform,
         'permit_request': permit_request,
     })
 

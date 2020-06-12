@@ -288,6 +288,26 @@ class GenericAuthorForm(forms.ModelForm):
         }
 
 
+class PermitRequestCreditorForm(forms.ModelForm):
+
+    class Meta:
+        model = models.PermitRequest
+        fields = ['creditor_type']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        required_actor_types = set(models.PermitActorType.objects.filter(
+            works_type__in=services.get_permit_request_works_types(self.instance)
+        ).values_list('type', flat=True))
+
+        self.fields['creditor_type'].choices = [
+            (creditor_type, label)
+            for creditor_type, label in self.fields['creditor_type'].choices
+                if creditor_type in required_actor_types
+        ]
+
+
 class PermitRequestActorForm(forms.ModelForm):
 
     actor_fields = ['firstname', 'name', 'company_name', 'vat_number', 'address', 'address', 'city', 'phone',

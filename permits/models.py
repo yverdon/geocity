@@ -399,6 +399,11 @@ class PermitRequest(models.Model):
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
         upload_to="validations"
     )
+    creditor_type = models.PositiveSmallIntegerField(
+        _("Destinaire de la facture"),
+        choices=ACTOR_TYPE_CHOICES,
+        default=ACTOR_TYPE_OTHER
+    )
 
     class Meta:
         verbose_name = _("demande de permis")
