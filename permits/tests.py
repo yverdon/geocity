@@ -280,8 +280,8 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
         )
         content = response.content.decode()
         expected = (
-            '<input type="text" name="properties-{obj_type_id}_{prop_id}" value="{value}" class="form-control"'
-            ' title="" id="id_properties-{obj_type_id}_{prop_id}">'.format(
+            '<textarea name="properties-{obj_type_id}_{prop_id}" cols="40" rows="1" class="form-control" title="" class="form-control"'
+            ' id="id_properties-{obj_type_id}_{prop_id}"></textarea>'.format(
                 obj_type_id=works_object_type_choice.works_object_type.pk,
                 prop_id=prop.pk,
                 prop_name=prop.name,
