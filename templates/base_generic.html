@@ -24,9 +24,6 @@
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    {% block list_permit %}
-      <a href="{% url 'permits:permit_requests_list'%}">{% trans "Voir mes demandes" %}  </a>
-    {% endblock %}
     {% if user.is_authenticated %}
     <div class="collapse navbar-collapse" id="navbarNavDropdown">
       <ul class="navbar-nav">
