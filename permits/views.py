@@ -21,6 +21,7 @@ from django_filters.views import FilterView
 from . import fields, forms, models, services, tables, filters, printpermit
 from django.contrib.auth import login
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 from .exceptions import BadPermitRequestStatus
 
@@ -250,7 +251,7 @@ class PermitRequestDetailView(View):
             success_message += " " + _(
                 "Le statut de la demande a été passé à en attente de compléments. Vous devez maintenant"
                 " contacter le requérant par email (%s) afin de lui demander de fournir les informations manquantes."
-            ) % self.permit_request.author.email
+            ) % self.permit_request.author.user.email
 
         messages.success(self.request, success_message)
 
@@ -681,7 +682,7 @@ def printpdf(request, permit_request_id):
 @login_required
 def genericauthorview(request, pk):
 
-    instance = get_object_or_404(models.permitAuthor, pk=pk)
+    instance = get_object_or_404(models.PermitAuthor, pk=pk)
     form = forms.GenericAuthorForm(request.POST or None, instance=instance)
 
     for field in form.fields:
@@ -691,40 +692,38 @@ def genericauthorview(request, pk):
     return render(request, "permits/permit_request_author.html", {'form': form})
 
 
-def permit_author_add(request):
+def permit_author_create(request):
 
-    signupform = forms.PermitAuthorUserForm(request.POST or None)
+    djangouserform = forms.NewDjangoAuthUserForm(request.POST or None)
+    permitauthorform = forms.GenericAuthorForm(request.POST or None)
 
-    form = forms.GenericAuthorForm(request.POST or None)
+    if djangouserform.is_valid() and permitauthorform.is_valid():
 
-    if signupform.is_valid() and form.is_valid():
-
-        signupform.instance.first_name = form.instance.firstname
-        signupform.instance.last_name = form.instance.name
-        signupform.instance.email = form.instance.email
-        new_user = signupform.save()
-        form.instance.user = new_user
-        form.save()
+        new_user = djangouserform.save()
+        permitauthorform.instance.user = new_user
+        permitauthorform.save()
 
         login(request, new_user)
 
         return HttpResponseRedirect(
             reverse('permits:permit_requests_list'))
 
-    return render(request, "permits/permit_request_author.html", {'form': form, 'signupform': signupform})
-
+    return render(request, "permits/permit_request_author.html", {'permitauthorform': permitauthorform, 'djangouserform': djangouserform})
 
 @login_required
-def permit_author_change(request):
+def permit_author_edit(request):
 
-    user = models.PermitAuthor.objects.filter(user=request.user.pk).first()
-    form = forms.GenericAuthorForm(request.POST or None, instance=user)
+    djangouserform = forms.DjangoAuthUserForm(request.POST or None, instance=request.user)
+    permit_author_instance = get_object_or_404(models.PermitAuthor, pk=request.user.permitauthor.pk)
+    permitauthorform = forms.GenericAuthorForm(request.POST or None, instance=permit_author_instance)
 
-    if form.is_valid():
+    if djangouserform.is_valid() and permitauthorform.is_valid():
 
-        form.save()
+        user = djangouserform.save()
+        permitauthorform.instance.user = user
+        permitauthorform.save()
 
         return HttpResponseRedirect(
             reverse('permits:permit_requests_list'))
 
-    return render(request, "permits/permit_request_author.html", {'form': form})
+    return render(request, "permits/permit_request_author.html", {'permitauthorform': permitauthorform, 'djangouserform': djangouserform})

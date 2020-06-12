@@ -68,7 +68,7 @@ class OwnPermitRequestFilterSet(BasePermitRequestFilterSet):
 def permit_request_authors(request):
     return models.PermitAuthor.objects.filter(
         pk__in=services.get_permit_requests_list_for_user(request.user).values_list('author')
-    ).order_by('firstname', 'name')
+    ).order_by('user__first_name', 'user__last_name')
 
 
 class DepartmentPermitRequestFilterSet(BasePermitRequestFilterSet):

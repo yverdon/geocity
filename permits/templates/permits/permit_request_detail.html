@@ -164,8 +164,8 @@
       </dd>
       <dt>{% trans "Auteur-e" %}</dt>
       <dd>
-        <a href="mailto:{{ permit_request.author }} <{{ permit_request.author.email }}>" target="_blank">
-          {{ permit_request.author }} &lt;{{ permit_request.author.email }}&gt;
+        <a href="mailto:{{ permit_request.author }} <{{ permit_request.author.user.email }}>" target="_blank">
+          {{ permit_request.author }} &lt;{{ permit_request.author.user.email }}&gt;
         </a>
       </dd>
     </dl>
@@ -175,7 +175,7 @@
         {% for validation in validations %}
           <dt>{{ validation.department.group.name }}</dt>
           <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
-            {{ validation.get_validation_status_display }} par {{ validation.validated_by.permitauthor.firstname }} {{ validation.validated_by.permitauthor.name }} le {{ validation.validated_at}}
+            {{ validation.get_validation_status_display }} par {{ validation.validated_by.permitauthor.user.first_name }} {{ validation.validated_by.permitauthor.user.last_name }} le {{ validation.validated_at}}
             {% if validation.comment_before %}
               <br>
               <h5>{% trans "Commentaire (avant)" %}:</h5> {{ validation.comment_before }}

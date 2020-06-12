@@ -139,9 +139,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
     def test_submit_permit_request_sends_email_to_secretariat(self):
         # Create a secretariat user Yverdon (the one that will get the notification)
         group = factories.SecretariatGroupFactory()
-        factories.SecretariatUserFactory(actor__email="secretariat@yverdon.ch", groups=[group])
+        factories.SecretariatUserFactory(email="secretariat@yverdon.ch", groups=[group])
         # This one should not receive the notification
-        factories.SecretariatUserFactory(actor__email="secretariat@lausanne.ch")
+        factories.SecretariatUserFactory(email="secretariat@lausanne.ch")
 
         permit_request = factories.PermitRequestFactory(
             administrative_entity=group.permitdepartment.administrative_entity,
@@ -462,7 +462,7 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
         )
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, [validator_user.permitauthor.email])
+        self.assertEqual(mail.outbox[0].to, [validator_user.permitauthor.user.email])
 
 
 class PermitRequestValidationTestcase(TestCase):
@@ -542,7 +542,7 @@ class PermitRequestValidationTestcase(TestCase):
         )
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, [validator.permitauthor.email])
+        self.assertEqual(mail.outbox[0].to, [validator.permitauthor.user.email])
 
 
 class PermitRequestClassifyTestCase(TestCase):

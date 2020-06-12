@@ -41,12 +41,16 @@ class Command(BaseCommand):
         self.create_works_types()
 
     def create_users(self):
-        user = User.objects.create_user(username='admin', password='admin', is_staff=True, is_superuser=True)
+        user = User.objects.create_user(
+            email=f"yverdon-squad+admin@liip.ch",
+            first_name="Super",
+            last_name="Admin",
+            username='admin',
+            password='admin',
+            is_staff=True,
+            is_superuser=True)
         models.PermitAuthor.objects.create(
             user=user,
-            email="yverdon-squad+admin@liip.ch",
-            name="Marcel",
-            firstname="Dupond",
             address="Rue du Pont",
             zipcode=1234,
             city="Métropole",
@@ -55,12 +59,14 @@ class Command(BaseCommand):
         )
         self.stdout.write("admin / admin")
 
-        user = User.objects.create_user(username='user', password='admin')
+        user = User.objects.create_user(
+            username='user',
+            password='admin',
+            email=f"yverdon-squad+user@liip.ch",
+            first_name="Utilisateur",
+            last_name="Externe",)
         models.PermitAuthor.objects.create(
             user=user,
-            email="yverdon-squad+admin@liip.ch",
-            name="Gérard",
-            firstname="Ducommun",
             address="Rue du Port",
             zipcode=1234,
             city="Mégalopole",
@@ -104,13 +110,15 @@ class Command(BaseCommand):
         )
 
         group, created = Group.objects.get_or_create(name=group_name)
-        user = User.objects.create_user(username=username, password='admin')
+        user = User.objects.create_user(
+            email=f"yverdon-squad+user@liip.ch",
+            first_name="Mon Prénom",
+            last_name="Mon Nom",
+            username=username,
+            password='admin')
         user.groups.set([group])
         models.PermitAuthor.objects.create(
             user=user,
-            email=f"yverdon-squad+{username}@liip.ch",
-            name="André",
-            firstname="Matthey",
             address="Rue du Lac",
             zipcode=1234,
             city="Ville",)

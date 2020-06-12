@@ -13,14 +13,11 @@ class PermitAuthorFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PermitAuthor
 
-    firstname = factory.Faker('first_name')
-    name = factory.Faker('last_name')
     address = factory.Faker('word')
     zipcode = factory.Faker('zipcode')
     city = factory.Faker('city')
     phone_first = Truncator(factory.Faker('phone_number')).chars(19)
     phone_second = Truncator(factory.Faker('phone_number')).chars(19)
-    email = factory.Faker('email')
 
 
 class UserFactory(factory.django.DjangoModelFactory):

@@ -102,8 +102,6 @@ class PermitAdministrativeEntity(models.Model):
 
 
 class PermitAuthor(models.Model):
-    firstname = models.CharField(_("Prénom"), max_length=100,)
-    name = models.CharField(_("Nom"), max_length=100,)
     company_name = models.CharField(_("Raison Sociale"), max_length=100, blank=True)
     vat_number = models.CharField(_("Numéro TVA"),
         max_length=100,
@@ -133,8 +131,7 @@ class PermitAuthor(models.Model):
                 regex='^(\s*[0-9]+\s*)+$',
                 message='Seuls les chiffres et les espaces sont autorisés'
         )])
-    email = models.EmailField(_("email"),)
-    user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = _('Auteur')
@@ -145,11 +142,7 @@ class PermitAuthor(models.Model):
 
     def __str__(self):
 
-        return self.name if self.name else ''
-
-    def get_full_name(self):
-        name_parts = [self.firstname, self.name]
-        return " ".join(name_part for name_part in name_parts if name_part)
+        return str(self.pk)
 
 
 class PermitActor(models.Model):
