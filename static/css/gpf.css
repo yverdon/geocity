@@ -42,6 +42,14 @@
   width: 245px;
 }
 
+.ol-mouse-position {
+  position: absolute !important;
+  top: 92% !important;
+  right: 116px !important;
+  background-color: #fffff4aa !important;
+  font-size: 0.8em;
+}
+
 #switchbaselayers {
   border-radius: 3px;
   border: 3px solid #ebe834;
