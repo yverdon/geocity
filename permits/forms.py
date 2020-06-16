@@ -9,6 +9,10 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 import json
 from . import models, services, widgets
+from django.core.validators import FileExtensionValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import RegexValidator
+from django.utils.safestring import mark_safe
 from bootstrap_datepicker_plus import DateTimePickerInput
 from datetime import datetime, timedelta
 from django.contrib.auth.models import User
@@ -27,8 +31,10 @@ def get_field_cls_for_property(prop):
 
 class AdministrativeEntityForm(forms.Form):
 
-    administrative_entity = forms.ModelChoiceField(queryset=models.PermitAdministrativeEntity.objects.none(),
-                                                   label=_("Entité administrative"))
+    administrative_entity = forms.ModelChoiceField(
+        queryset=models.PermitAdministrativeEntity.objects.none(),
+        label=_("Entité administrative")
+    )
 
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop('instance', None)
@@ -229,10 +235,19 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
 
 
 class NewDjangoAuthUserForm(UserCreationForm):
-
-    first_name = forms.CharField(label=_('Prénom'), max_length=30,)
-    last_name = forms.CharField(label=_('Nom'), max_length=30,)
-    email = forms.EmailField(label=_('Email'))
+    
+    first_name = forms.CharField(
+        label=_('Prénom'),
+        max_length=30,
+    )
+    last_name = forms.CharField(
+        label=_('Nom'),
+        max_length=150,
+    )
+    email = forms.EmailField(
+        label=_('Email'),
+        max_length=254,
+    )
     required_css_class = 'required'
 
     def save(self, commit=True):
@@ -248,10 +263,11 @@ class NewDjangoAuthUserForm(UserCreationForm):
 
 
 class DjangoAuthUserForm(forms.ModelForm):
-
+    """ User
+    """
     first_name = forms.CharField(
-        max_length=100,
-        label=_('Nom'),
+        max_length=30,
+        label=_('Prénom'),
         widget=forms.TextInput(
             attrs={
                 'placeholder': 'ex: Marcel',
@@ -260,8 +276,8 @@ class DjangoAuthUserForm(forms.ModelForm):
         )
     )
     last_name = forms.CharField(
-        max_length=100,
-        label=_('Prénom'),
+        max_length=150,
+        label=_('Nom'),
         widget=forms.TextInput(
             attrs={
                 'placeholder': 'ex: Dupond',
@@ -270,7 +286,7 @@ class DjangoAuthUserForm(forms.ModelForm):
         )
     )
     email = forms.EmailField(
-        max_length=100,
+        max_length=254,
         label=_('Email'),
         widget=forms.TextInput(
             attrs={
@@ -283,7 +299,11 @@ class DjangoAuthUserForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email']
+        fields = [
+            'first_name',
+            'last_name',
+            'email'
+        ]
 
 class GenericAuthorForm(forms.ModelForm):
 
@@ -369,7 +389,8 @@ class PermitRequestCreditorForm(forms.ModelForm):
 
 
 class PermitRequestActorForm(forms.ModelForm):
-
+    """ Contacts
+    """
     actor_fields = [
         'firstname',
         'name',
@@ -384,8 +405,8 @@ class PermitRequestActorForm(forms.ModelForm):
     ]
 
     name = forms.CharField(
-        max_length=100,
-        label=_('Nom'),
+        max_length=150,
+        label=_('Prénom'),
         widget=forms.TextInput(
             attrs={
                 'placeholder': 'ex: Marcel',
@@ -395,7 +416,7 @@ class PermitRequestActorForm(forms.ModelForm):
     )
     firstname = forms.CharField(
         max_length=100,
-        label=_('Prénom'),
+        label=_('Nom'),
         widget=forms.TextInput(
             attrs={
                 'placeholder': 'ex: Dupond',
@@ -404,14 +425,23 @@ class PermitRequestActorForm(forms.ModelForm):
         )
     )
     phone = forms.CharField(
-        max_length=20,
+        min_length=10,
+        max_length=16,
         label=_('Téléphone'),
         widget=forms.TextInput(
             attrs={
-                'placeholder': 'ex: 024 111 22 22',
+                'placeholder': 'ex: +41 (0)24 111 22 22',
                 'required': 'required'
             }
-        )
+        ),
+        validators=[
+            RegexValidator(
+                regex=r'^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$',
+                message=mark_safe(
+                    'Veuillez saisir un <a href="https://www.bakom.admin.ch/bakom/fr/page-daccueil/telecommunication/numerotation-et-telephonie.html">numéro de téléphone suisse valide</a>.'
+                )
+            )
+        ]
     )
     email = forms.EmailField(
         max_length=100,
@@ -443,6 +473,10 @@ class PermitRequestActorForm(forms.ModelForm):
 
     zipcode = forms.IntegerField(
         label=_('NPA'),
+        validators=[
+            MinValueValidator(1000),
+            MaxValueValidator(9999)
+        ],
         widget=forms.NumberInput(
             attrs={
                 'required': 'required'
@@ -472,12 +506,22 @@ class PermitRequestActorForm(forms.ModelForm):
     vat_number = forms.CharField(
         required=False,
         label=_('Numéro TVA'),
-        max_length=100,
+        max_length=19,
+        validators=[
+            RegexValidator(
+                regex=r'^(CHE-)+\d{3}[.]+\d{3}[.]+\d{3}++(\sTVA)?$',
+                message='Le code d\'entreprise doit être de type \
+                         CHE-123.456.789 (TVA) \
+                         et vous pouvez le trouver sur \
+                         le registe fédéral des entreprises \
+                         https://www.uid.admin.ch/search.aspx'
+            )
+        ],
         widget=forms.TextInput(
             attrs={
-                'placeholder': 'ex: CHE-123.456.789'
+                'placeholder': 'ex: CHE-123.456.789 (TVA)'
             }
-        )
+        ),
     )
 
     class Meta:
