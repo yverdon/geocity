@@ -349,7 +349,8 @@ class PermitRequestActorForm(forms.ModelForm):
 
         if instance and instance.pk:
             kwargs['initial'] = {**kwargs.get('initial', {}), **{
-                **kwargs.get('initial', {}), **{field: getattr(instance.actor, field) for field in self.actor_fields},
+                **kwargs.get('initial', {}),
+                **{field: getattr(instance.actor, field) for field in self.actor_fields},
                 **{'actor_type': instance.actor_type}
             }}
 
@@ -423,6 +424,10 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         required_css_class = 'required'
         model = models.PermitRequestGeoTime
         fields = ['starts_at', 'ends_at', 'comment', 'external_link', 'geom']
+        help_texts = {
+            'starts_at': "Date de début du chantier ou d'occupation du territoire. Si l'heure n'est pas pertinente, insérer 00:00.",
+            'ends_at': "Date de fin du chantier ou d'occupation du territoire. Si l'heure n'est pas pertinente, insérer 23:59.",
+        }
         widgets = {
             'geom': GeometryWidget(attrs={
                 'map_width': '100%',
