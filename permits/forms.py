@@ -450,7 +450,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             ).start_of('event days'),
             'ends_at': DateTimePickerInput(
                 options={
-                    "format": "DD/MM/YYYY  HH:mm",
+                    "format": "DD/MM/YYYY HH:mm",
                     "locale": "fr",
                     "useCurrent": False,
                 }
