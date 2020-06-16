@@ -509,7 +509,7 @@ class PermitRequestActorForm(forms.ModelForm):
         max_length=19,
         validators=[
             RegexValidator(
-                regex=r'^(CHE-)+\d{3}[.]+\d{3}[.]+\d{3}++(\sTVA)?$',
+                regex='^(CHE-)+\d{3}[.]+\d{3}[.]+\d{3}+(\sTVA)?$',
                 message='Le code d\'entreprise doit être de type \
                          CHE-123.456.789 (TVA) \
                          et vous pouvez le trouver sur \
