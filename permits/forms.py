@@ -391,6 +391,7 @@ class PermitRequestCreditorForm(forms.ModelForm):
 class PermitRequestActorForm(forms.ModelForm):
     """ Contacts
     """
+    required_css_class = 'required'
     actor_fields = [
         'firstname',
         'name',
