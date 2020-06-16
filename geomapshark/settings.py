@@ -1,27 +1,20 @@
-import os, yaml
+import os
+from dotenv import load_dotenv
 
+
+load_dotenv()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# Load local environnement settings
-stream = open(BASE_DIR + '/env.yaml','r')
-customConfig = yaml.load(stream, Loader=yaml.FullLoader)
-
-
-for k, v in customConfig['ENV_VARS'].items():
-    os.environ[str(k)] = str(v)
-
 
 ROOT_URLCONF = 'geomapshark.urls'
 LOGIN_REDIRECT_URL ='/permit-requests'
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ["SECRET_KEY"]
-QGISSERVER_URL = os.environ["QGISSERVER_URL"]
-PRINTED_PERMIT_FOLDER = os.environ["PRINTED_PERMIT_FOLDER"]
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = eval(os.environ["DEBUG"])
+DEBUG = eval(os.getenv("DEBUG"))
 
 os.environ["GDAL_DATA"] = os.path.join(BASE_DIR, 'gdal_data')
 GDAL_DATA = os.environ["GDAL_DATA"]
@@ -45,14 +38,14 @@ DATE_INPUT_FORMAT = [
 ]
 
 DEFAULT_FROM_EMAIL = "noreply@mapnv.ch"
-EMAIL_HOST = os.environ["EMAIL_HOST"]
-EMAIL_PORT = os.environ["EMAIL_PORT"]
-EMAIL_HOST_USER = os.environ["EMAIL_HOST_USER"]
-EMAIL_HOST_PASSWORD = os.environ["EMAIL_HOST_PASSWORD"]
-EMAIL_USE_TLS = os.environ["EMAIL_USE_TLS"]
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = os.getenv("EMAIL_PORT")
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")
 EMAIL_BACKEND = (
     'django.core.mail.backends.smtp.EmailBackend'
-    if os.environ["EMAIL_TO_CONSOLE"] == 'False' else 'django.core.mail.backends.console.EmailBackend'
+    if os.getenv("EMAIL_TO_CONSOLE") == 'False' else 'django.core.mail.backends.console.EmailBackend'
 )
 
 DEFAULT_CHARSET = "utf-8"
@@ -117,11 +110,11 @@ WSGI_APPLICATION = 'geomapshark.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': os.environ["PGDATABASE"],
-        'USER': os.environ["PGUSER"],
-        'HOST': os.environ["PGHOST"],
-        'PORT': os.environ["PGPORT"],
-        'PASSWORD': os.environ["PGPASSWORD"],
+        'NAME': os.getenv("PGDATABASE"),
+        'USER': os.getenv("PGUSER"),
+        'HOST': os.getenv("PGHOST"),
+        'PORT': os.getenv("PGPORT"),
+        'PASSWORD': os.getenv("PGPASSWORD"),
     }
 }
 
@@ -172,8 +165,6 @@ LOCALE_PATHS = (
     os.path.join(BASE_DIR, 'locale'),
 )
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 STATIC_URL = '/static/'
@@ -182,14 +173,12 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 
-PRIVATE_MEDIA_ROOT = os.environ.get("PRIVATE_MEDIA_ROOT", os.path.join(PROJECT_ROOT, "private_documents"))
+PRIVATE_MEDIA_ROOT = '/private_documents'
 
-TEMPFILES_FOLDER = os.environ["TEMPFILES_FOLDER"]
-YLB_PROTECTED_SIGNATURE = os.environ["YLB_PROTECTED_SIGNATURE"]
-PRINTED_REPORT_LAYERS = os.environ["PRINTED_REPORT_LAYERS"]
-MIN_START_DELAY = os.environ["MIN_START_DELAY"]
-WMTS_GETCAP = os.environ["WMTS_GETCAP"]
-WMTS_LAYER = os.environ["WMTS_LAYER"]
-WMTS_GETCAP_ALTERNATIVE = os.environ["WMTS_GETCAP_ALTERNATIVE"]
-WMTS_LAYER_ALTERNATIVE = os.environ["WMTS_LAYER_ALTERNATIVE"]
-OL_MAP_HEIGHT = os.environ["OL_MAP_HEIGHT"]
+PRINTED_REPORT_LAYERS = os.getenv("PRINTED_REPORT_LAYERS")
+MIN_START_DELAY = os.getenv("MIN_START_DELAY")
+WMTS_GETCAP = os.getenv("WMTS_GETCAP")
+WMTS_LAYER = os.getenv("WMTS_LAYER")
+WMTS_GETCAP_ALTERNATIVE = os.getenv("WMTS_GETCAP_ALTERNATIVE")
+WMTS_LAYER_ALTERNATIVE = os.getenv("WMTS_LAYER_ALTERNATIVE")
+OL_MAP_HEIGHT = os.getenv("OL_MAP_HEIGHT")

@@ -11,25 +11,13 @@ RUN apt-get install gettext python3-pip -y && \
 # Update C env vars so compiler can find gdal
 ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
 ENV C_INCLUDE_PATH=/usr/include/gdal
-
 ENV PYTHONUNBUFFERED 1
-RUN mkdir -p /code/app_data && \
-    mkdir -p /code/tempfiles
-
-VOLUME /code/app_data
-VOLUME /code/tempfiles
 
 # Copy files in another location to solved windows rights issues
 # These files are only used during build process and by entrypoint.sh for dev
 
-#For production
 COPY . /code/
-
 WORKDIR /code
-
-# Required to fix rights when used on windows
-RUN chmod 777 entrypoint.sh \
-    && ln -s entrypoint.sh /
 
 RUN if [ "$dev_dependencies" = "true" ] ; then pip3 install -r requirements_dev.txt && echo "Installed development depencies"; \
     else pip3 install -r requirements.txt && echo "Installed production depencies"; fi
