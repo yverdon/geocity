@@ -249,9 +249,36 @@ class NewDjangoAuthUserForm(UserCreationForm):
 
 class DjangoAuthUserForm(forms.ModelForm):
 
-    first_name = forms.CharField( max_length=100, label=_('Nom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Marcel', 'required': 'required'}))
-    last_name = forms.CharField(max_length=100, label=_('Prénom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Dupond', 'required': 'required'}))
-    email = forms.EmailField(max_length=100, label=_('Email'), widget=forms.TextInput(attrs={'placeholder': 'ex: example@example.com', 'required': 'required'}))
+    first_name = forms.CharField(
+        max_length=100,
+        label=_('Nom'),
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'ex: Marcel',
+                'required': 'required'
+            }
+        )
+    )
+    last_name = forms.CharField(
+        max_length=100,
+        label=_('Prénom'),
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'ex: Dupond',
+                'required': 'required'
+            }
+        )
+    )
+    email = forms.EmailField(
+        max_length=100,
+        label=_('Email'),
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'ex: example@example.com',
+                'required': 'required'
+            }
+        )
+    )
     required_css_class = 'required'
 
     class Meta:
@@ -264,7 +291,15 @@ class GenericAuthorForm(forms.ModelForm):
 
     class Meta:
         model = models.PermitAuthor
-        fields = ['address', 'zipcode', 'city', 'phone_first', 'phone_second','company_name','vat_number', ]
+        fields = [
+            'address',
+            'zipcode',
+            'city',
+            'phone_first',
+            'phone_second',
+            'company_name',
+            'vat_number',
+        ]
         help_texts = {
             'vat_number': 'Trouvez votre numéro <a href="https://www.bfs.admin.ch/bfs/fr/home/registres/registre-entreprises/numero-identification-entreprises.html" target="_blank">TVA</a>',
         }
@@ -278,13 +313,38 @@ class GenericAuthorForm(forms.ModelForm):
                     "zipcode_field": "zipcode",
                     "city_field": "city",
                     "placeholder": "ex: Place Pestalozzi 2 Yverdon",
-                }),
-            'phone_first': forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22'}),
-            'phone_second': forms.TextInput(attrs={'placeholder': 'ex: 079 111 22 22'}),
-            'vat_number': forms.TextInput(attrs={'placeholder': 'ex: CHE-123.456.789'}),
-            'zipcode': forms.TextInput(attrs={'placeholder': 'ex: 1400'}),
-            'city': forms.TextInput(attrs={'placeholder': 'ex: Yverdon'}),
-            'company_name': forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}),
+                }
+            ),
+            'phone_first': forms.TextInput(
+                attrs={
+                    'placeholder': 'ex: 024 111 22 22'
+                }
+            ),
+            'phone_second': forms.TextInput(
+                attrs={
+                    'placeholder': 'ex: 079 111 22 22'
+                }
+            ),
+            'vat_number': forms.TextInput(
+                attrs={
+                    'placeholder': 'ex: CHE-123.456.789'
+                }
+            ),
+            'zipcode': forms.TextInput(
+                attrs={
+                    'placeholder': 'ex: 1400'
+                }
+            ),
+            'city': forms.TextInput(
+                attrs={
+                    'placeholder': 'ex: Yverdon'
+                }
+            ),
+            'company_name': forms.TextInput(
+                attrs={
+                    'placeholder': 'ex: Construction SA'
+                }
+            ),
         }
 
 
@@ -310,14 +370,63 @@ class PermitRequestCreditorForm(forms.ModelForm):
 
 class PermitRequestActorForm(forms.ModelForm):
 
-    actor_fields = ['firstname', 'name', 'company_name', 'vat_number', 'address', 'address', 'city', 'phone',
-                    'zipcode', 'email']
+    actor_fields = [
+        'firstname',
+        'name',
+        'company_name',
+        'vat_number',
+        'address',
+        'address',
+        'city',
+        'phone',
+        'zipcode',
+        'email'
+    ]
 
-    name = forms.CharField( max_length=100, label=_('Nom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Marcel', 'required': 'required'}))
-    firstname = forms.CharField(max_length=100, label=_('Prénom'), widget=forms.TextInput(attrs={'placeholder': 'ex: Dupond', 'required': 'required'}))
-    phone = forms.CharField(max_length=20, label=_('Téléphone'), widget=forms.TextInput(attrs={'placeholder': 'ex: 024 111 22 22', 'required': 'required'}))
-    email = forms.EmailField(max_length=100, label=_('Email'), widget=forms.TextInput(attrs={'placeholder': 'ex: example@example.com', 'required': 'required'}))
-    address = forms.CharField(max_length=100, label=_('Adresse'), widget= forms.TextInput(
+    name = forms.CharField(
+        max_length=100,
+        label=_('Nom'),
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'ex: Marcel',
+                'required': 'required'
+            }
+        )
+    )
+    firstname = forms.CharField(
+        max_length=100,
+        label=_('Prénom'),
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'ex: Dupond',
+                'required': 'required'
+            }
+        )
+    )
+    phone = forms.CharField(
+        max_length=20,
+        label=_('Téléphone'),
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'ex: 024 111 22 22',
+                'required': 'required'
+            }
+        )
+    )
+    email = forms.EmailField(
+        max_length=100,
+        label=_('Email'),
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'ex: example@example.com',
+                'required': 'required'
+            }
+        )
+    )
+    address = forms.CharField(
+        max_length=100,
+        label=_('Adresse'),
+        widget= forms.TextInput(
             attrs={
                 "data_remote_autocomplete": json.dumps({
                 "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
@@ -328,13 +437,48 @@ class PermitRequestActorForm(forms.ModelForm):
                 "city_field": "city",
                 "placeholder": "ex: Place Pestalozzi 2 Yverdon",}),
                 'required': 'required',
-            }),
+            }
+        ),
     )
 
-    zipcode = forms.IntegerField(label=_('NPA'), widget=forms.NumberInput(attrs={'required': 'required'}))
-    city = forms.CharField(max_length=100, label=_('Ville'), widget=forms.TextInput(attrs={'placeholder': 'ex: Yverdon', 'required': 'required'}))
-    company_name = forms.CharField(required=False, label=_('Raison sociale'), max_length=100, widget=forms.TextInput(attrs={'placeholder': 'ex: Construction SA'}))
-    vat_number = forms.CharField(required=False, label=_('Numéro TVA'), max_length=100,widget=forms.TextInput(attrs={'placeholder': 'ex: CHE-123.456.789'}))
+    zipcode = forms.IntegerField(
+        label=_('NPA'),
+        widget=forms.NumberInput(
+            attrs={
+                'required': 'required'
+            }
+        )
+    )
+    city = forms.CharField(
+        max_length=100,
+        label=_('Ville'),
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'ex: Yverdon',
+                'required': 'required'
+            }
+        )
+    )
+    company_name = forms.CharField(
+        required=False,
+        label=_('Raison sociale'),
+        max_length=100,
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'ex: Construction SA'
+            }
+        )
+    )
+    vat_number = forms.CharField(
+        required=False,
+        label=_('Numéro TVA'),
+        max_length=100,
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'ex: CHE-123.456.789'
+            }
+        )
+    )
 
     class Meta:
         model = models.PermitRequestActor
@@ -380,7 +524,14 @@ class PermitRequestActorForm(forms.ModelForm):
 class PermitRequestAdditionalInformationForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequest
-        fields = ['status', 'price', 'exemption', 'opposition', 'comment', 'archeology_status']
+        fields = [
+            'status',
+            'price',
+            'exemption',
+            'opposition',
+            'comment',
+            'archeology_status'
+        ]
         widgets = {
             'exemption': forms.Textarea(attrs={'rows': 3}),
             'opposition': forms.Textarea(attrs={'rows': 3}),
@@ -423,7 +574,13 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
     class Meta:
         required_css_class = 'required'
         model = models.PermitRequestGeoTime
-        fields = ['starts_at', 'ends_at', 'comment', 'external_link', 'geom']
+        fields = [
+            'starts_at',
+            'ends_at',
+            'comment',
+            'external_link',
+            'geom'
+        ]
         help_texts = {
             'starts_at': "Date de début du chantier ou d'occupation du territoire. Si l'heure n'est pas pertinente, insérer 00:00.",
             'ends_at': "Date de fin du chantier ou d'occupation du territoire. Si l'heure n'est pas pertinente, insérer 23:59.",
@@ -460,7 +617,6 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                     "useCurrent": False,
                 }
             ).end_of('event days'),
-
         }
 
 
@@ -498,7 +654,12 @@ class PermitRequestValidationDepartmentSelectionForm(forms.Form):
 class PermitRequestValidationForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequestValidation
-        fields = ("validation_status", "comment_before", "comment_during", "comment_after")
+        fields = [
+            "validation_status",
+            "comment_before",
+            "comment_during",
+            "comment_after"
+        ]
         widgets = {
             'comment_before': forms.Textarea(attrs={'rows': 3}),
             'comment_during': forms.Textarea(attrs={'rows': 3}),
@@ -538,7 +699,10 @@ class PermitRequestClassifyForm(forms.ModelForm):
 
     class Meta:
         model = models.PermitRequest
-        fields = ["status", "validation_pdf"]
+        fields = [
+            "status",
+            "validation_pdf"
+        ]
 
     def save(self, commit=True):
         permit_request = super().save(commit=False)
