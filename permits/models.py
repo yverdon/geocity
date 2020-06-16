@@ -1,7 +1,7 @@
 import dataclasses
 from django.contrib.auth.models import User, Group
 from django.contrib.postgres.fields import JSONField
-from django.core.validators import FileExtensionValidator
+from django.core.validators import FileExtensionValidator, MaxValueValidator, MinValueValidator
 from django.db import models
 from django.contrib.gis.db import models as geomodels
 from django.utils import timezone
@@ -33,15 +33,35 @@ ACTOR_TYPE_CHOICES = (
 
 class PermitDepartment(models.Model):
 
-    group = models.OneToOneField(Group, on_delete=models.CASCADE)
-    description = models.CharField(_('description'), max_length=100, default='Service')
-    is_validator = models.BooleanField(_("is_validator"))
-    is_admin = models.BooleanField(_("is_admin"))
-    is_archeologist = models.BooleanField(_("is_archeologist"))
-    administrative_entity = models.ForeignKey('PermitAdministrativeEntity', null=True, on_delete=models.SET_NULL,
-                                              related_name='departments',
-                                              verbose_name=_("permit_administrative_entity"))
-    is_default_validator = models.BooleanField(_("sélectionné par défaut pour les validations"), default=False)
+    group = models.OneToOneField(
+        Group,
+        on_delete=models.CASCADE
+    )
+    description = models.CharField(
+        _('description'),
+        max_length=100,
+        default='Service'
+    )
+    is_validator = models.BooleanField(
+        _("is_validator")
+    )
+    is_admin = models.BooleanField(
+        _("is_admin")
+    )
+    is_archeologist = models.BooleanField(
+        _("is_archeologist")
+    )
+    administrative_entity = models.ForeignKey(
+        'PermitAdministrativeEntity',
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='departments',
+        verbose_name=_("permit_administrative_entity")
+    )
+    is_default_validator = models.BooleanField(
+        _("sélectionné par défaut pour les validations"),
+        default=False
+    )
 
     class Meta:
         verbose_name = _("Configuration du service")
@@ -102,28 +122,47 @@ class PermitAdministrativeEntity(models.Model):
 
 
 class PermitAuthor(models.Model):
-    company_name = models.CharField(_("Raison Sociale"), max_length=100, blank=True)
-    vat_number = models.CharField(_("Numéro TVA"),
+    company_name = models.CharField(
+        _("Raison Sociale"),
+        max_length=100, blank=True
+    )
+    vat_number = models.CharField(
+        _("Numéro TVA"),
         max_length=100,
         blank=True,
         validators=[
             RegexValidator(
                 regex='([CHE-])+\d{3}[.]+\d{3}[.]+\d{3}',
-                message='Le code d\'entreprise doit être de type CHE-123.456.789 et vous pouvez le trouver sur \
-                le registe fédéral des entreprises \
-                https://www.uid.admin.ch/search.aspx'
+                message='Le code d\'entreprise doit être de type CHE-123.456.789 \
+                         et vous pouvez le trouver sur \
+                         le registe fédéral des entreprises \
+                         https://www.uid.admin.ch/search.aspx'
         )])
-    address = models.CharField(_("Rue"), max_length=100,)
-    zipcode = models.PositiveIntegerField(_("NPA"),)
-    city = models.CharField(_("Ville"), max_length=100,)
-    phone_first = models.CharField(_("Téléphone principal"),
+    address = models.CharField(
+        _("Rue"),
+        max_length=100,
+    )
+    zipcode = models.PositiveIntegerField(
+        _("NPA"),
+        validators=[
+            MinValueValidator(1000),
+            MaxValueValidator(9999)
+        ],
+    )
+    city = models.CharField(
+        _("Ville"),
+        max_length=100,
+    )
+    phone_first = models.CharField(
+        _("Téléphone principal"),
         max_length=20,
         validators=[
             RegexValidator(
                 regex='^(\s*[0-9]+\s*)+$',
                 message='Seuls les chiffres et les espaces sont autorisés'
         )])
-    phone_second = models.CharField(_("Téléphone secondaire"),
+    phone_second = models.CharField(
+        _("Téléphone secondaire"),
         blank=True,
         max_length=20,
         validators=[
@@ -182,6 +221,10 @@ class PermitActor(models.Model):
     )
     zipcode = models.PositiveIntegerField(
         _("zipcode"),
+        validators=[
+            MinValueValidator(1000),
+            MaxValueValidator(9999)
+        ],
         null=True
     )
     city = models.CharField(
@@ -494,7 +537,10 @@ class WorksObjectType(models.Model):
         unique_together = [('works_type', 'works_object')]
 
     def __str__(self):
-        return "{} ({})".format(self.works_object.name, self.works_type.name, self.administrative_entities.name)
+        return "{} ({})".format(
+            self.works_object.name,
+            self.works_type.name,self.administrative_entities.name
+        )
 
 
 class WorksObject(models.Model):
@@ -614,8 +660,15 @@ class PermitRequestValidation(models.Model):
         _("Commentaires (après)"),
         blank=True
     )
-    validated_by = models.OneToOneField(User, null=True, on_delete=models.SET_NULL)
-    validated_at = models.DateTimeField(_("Validé le"), null=True)
+    validated_by = models.OneToOneField(
+        User,
+        null=True,
+        on_delete=models.SET_NULL
+    )
+    validated_at = models.DateTimeField(
+        _("Validé le"),
+        null=True
+    )
 
     class Meta:
         unique_together = ("permit_request", "department")
