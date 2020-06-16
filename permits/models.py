@@ -365,7 +365,7 @@ class PermitRequest(models.Model):
         through=PermitRequestActor
     )
     archeology_status = models.PositiveSmallIntegerField(
-        _("Status archéologique"),
+        _("Statut archéologique"),
         choices=ARCHEOLOGY_STATUS_CHOICES,
         default=ARCHEOLOGY_STATUS_IRRELEVANT
     )
