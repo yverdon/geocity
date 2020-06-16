@@ -1,4 +1,26 @@
 
+
+.ol-mouse-position {
+  position: absolute !important;
+  top: 92% !important;
+  right: 116px !important;
+  background-color: #fffff4aa !important;
+  font-size: 0.8em;
+}
+
+#switchbaselayers {
+  border-radius: 3px;
+  border: 3px solid #ebe834;
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 1000;
+}
+#switchbaselayers:hover {
+  box-shadow: 0 0 2px 2px yellow;
+  cursor: pointer;
+}
+
 .invalid-feedback {
   display: inline !important;
   font-weight: bold;
