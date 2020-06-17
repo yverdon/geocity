@@ -9,7 +9,6 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 import json
 from . import models, services, widgets
-from django.core.validators import FileExtensionValidator
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.validators import RegexValidator
 from django.utils.safestring import mark_safe
@@ -235,7 +234,7 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
 
 
 class NewDjangoAuthUserForm(UserCreationForm):
-    
+
     first_name = forms.CharField(
         label=_('Prénom'),
         max_length=30,
@@ -431,7 +430,7 @@ class PermitRequestActorForm(forms.ModelForm):
         label=_('Téléphone'),
         widget=forms.TextInput(
             attrs={
-                'placeholder': 'ex: +41 (0)24 111 22 22',
+                'placeholder': 'ex: 024 111 22 22',
                 'required': 'required'
             }
         ),
@@ -439,7 +438,7 @@ class PermitRequestActorForm(forms.ModelForm):
             RegexValidator(
                 regex=r'^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$',
                 message=mark_safe(
-                    'Veuillez saisir un <a href="https://www.bakom.admin.ch/bakom/fr/page-daccueil/telecommunication/numerotation-et-telephonie.html">numéro de téléphone suisse valide</a>.'
+                    'Veuillez saisir un <a target="_blank" href="https://www.bakom.admin.ch/bakom/fr/page-daccueil/telecommunication/numerotation-et-telephonie.html">numéro de téléphone suisse valide</a>.'
                 )
             )
         ]
@@ -529,7 +528,7 @@ class PermitRequestActorForm(forms.ModelForm):
         model = models.PermitRequestActor
         fields = ['actor_type']
         widgets = {'actor_type': forms.Select(
-                attrs={'readonly': 'readonly',}
+                attrs={'readonly': 'readonly', 'class': "hide-arrow"}
             ),
         }
 
@@ -617,7 +616,6 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
     required_css_class = 'required'
 
     class Meta:
-        required_css_class = 'required'
         model = models.PermitRequestGeoTime
         fields = [
             'starts_at',

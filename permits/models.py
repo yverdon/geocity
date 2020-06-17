@@ -248,17 +248,14 @@ class PermitActor(models.Model):
     name = models.CharField(
         _("name"),
         max_length=150,
-        blank=True
     )
     firstname = models.CharField(
         _("firstname"),
         max_length=100,
-        blank=True
     )
     company_name = models.CharField(
         _("company_name"),
         max_length=100,
-        blank=True
     )
     vat_number = models.CharField(
         _("vat_number"),
@@ -268,25 +265,20 @@ class PermitActor(models.Model):
     address = models.CharField(
         _("address"),
         max_length=100,
-        blank=True
     )
     zipcode = models.PositiveIntegerField(
         _("zipcode"),
-        null=True
     )
     city = models.CharField(
         _("city"),
         max_length=100,
-        blank=True
     )
     phone = models.CharField(
         _("Téléphone"),
-        blank=True,
         max_length=16,
     )
     email = models.EmailField(
         _("email"),
-        blank=True
     )
 
     class Meta:
