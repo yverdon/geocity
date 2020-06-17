@@ -47,6 +47,7 @@ urllib3==1.25.6           # via -r requirements.txt, requests
 weasyprint==50            # via -r requirements.txt
 webencodings==0.5.1       # via -r requirements.txt, html5lib, tinycss2
 whitenoise==4.1.4         # via -r requirements.txt
+python-dotenv==0.13.0     # via -r requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip

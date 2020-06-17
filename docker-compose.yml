@@ -11,7 +11,7 @@ services:
     build:
       context: ./
       args:
-        dev_dependencies: ${DEV_DEPENDENCIES}
+        dev_dependencies: "false"
     entrypoint: /code/entrypoint_prod.sh
     command: "gunicorn geomapshark.wsgi -b :9000 --error-logfile gunicorn_log.log"
     volumes:
