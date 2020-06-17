@@ -32,7 +32,9 @@ class AdministrativeEntityForm(forms.Form):
 
     administrative_entity = forms.ModelChoiceField(
         queryset=models.PermitAdministrativeEntity.objects.none(),
-        label=_("Entité administrative")
+        label=_("Entité administrative"),
+        empty_label=None,
+        widget=forms.RadioSelect()
     )
 
     def __init__(self, *args, **kwargs):
