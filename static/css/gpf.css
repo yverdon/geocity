@@ -7,25 +7,7 @@
   list-style-type: none;
 }
 
-.highlight-edit{
-  box-shadow: 0 0 5px rgba(252, 200, 70, 1);
-  border: 2px solid rgba(252, 200, 70, 1);
-}
-
 .info-messages {
-  margin-top: 10px;
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-top: 5px;
-  min-height: 15px;
-  color: #155760;
-  display: inline-block;
-  background-color: #d4edda;
-  border: 2px solid #c3e6cb;
-  border-radius: 5px;
-}
-
-.print-info-messages {
   margin-top: 10px;
   padding-left: 20px;
   padding-right: 20px;
@@ -40,19 +22,6 @@
 
 .responsive-btn {
   width: 245px;
-}
-
-#switchbaselayers {
-  border-radius: 3px;
-  border: 3px solid #ebe834;
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
-  z-index: 1000;
-}
-#switchbaselayers:hover {
-  box-shadow: 0 0 2px 2px yellow;
-  cursor: pointer;
 }
 
 h1 {
@@ -199,4 +168,8 @@ h3 {
   background-image: url('../images/blanc_light_compact.jpg');
   height: 100px;
   font-weight: bold;
+}
+
+#manual-coordinates input{
+ width: 120px; 
 }

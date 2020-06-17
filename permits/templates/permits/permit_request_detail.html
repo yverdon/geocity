@@ -169,13 +169,40 @@
         </a>
       </dd>
     </dl>
+
+
     {% if validations %}
+      <h2>{% trans "Données du service pilote" %}</h2>
+      <dl>
+        <dt><dt>{{ validation.department.group.name }}</dt>
+        {% if permit_request.status %}
+          <h5>{% trans "État" %}:</h5> {{ permit_request.get_status_display }}
+        {% endif %}
+        {% if permit_request.price %}
+          <h5>{% trans "Prix" %}:</h5> {{ permit_request.price }}
+        {% endif %}
+        {% if permit_request.exemption %}
+          <h5>{% trans "Dérogation" %}:</h5> {{ permit_request.exemption }}
+        {% endif %}
+        {% if permit_request.opposition %}
+          <h5>{% trans "Opposition" %}:</h5> {{ permit_request.opposition }}
+        {% endif %}
+        {% if permit_request.comment %}
+          <h5>{% trans "Commentaire" %}:</h5> {{ permit_request.comment }}
+        {% endif %}
+        {% if permit_request.exemption %}
+          <h5>{% trans "Statut archéologique" %}:</h5> {{ permit_request.get_archeology_status_display }}
+        {% endif %}
+      </dl>
+      </dl>
+
+
       <h2>{% trans "Statut des validations" %}</h2>
       <dl>
         {% for validation in validations %}
           <dt>{{ validation.department.group.name }}</dt>
           <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
-            {{ validation.get_validation_status_display }} par {{ validation.validated_by.permitauthor.user.first_name }} {{ validation.validated_by.permitauthor.user.last_name }} le {{ validation.validated_at}}
+            {{ validation.get_validation_status_display }} par {{ validation.validated_by.permitauthor.user.first_name }} {{ validation.validated_by.permitauthor.user.last_name }} le {{ validation.validated_at }}
             {% if validation.comment_before %}
               <br>
               <h5>{% trans "Commentaire (avant)" %}:</h5> {{ validation.comment_before }}

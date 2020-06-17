@@ -142,23 +142,16 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 
 LANGUAGE_CODE = 'fr-CH'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
 gettext = lambda x: x
 
 LANGUAGES = (
-
    ('fr', gettext('French')),
-
    ('en', gettext('English')),
-
 )
 
 LOCALE_PATHS = (
