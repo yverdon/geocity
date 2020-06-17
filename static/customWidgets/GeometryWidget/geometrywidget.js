@@ -42,6 +42,7 @@
               url: this.options.qgisserver_proxy,
               params: {
                   'LAYERS': 'permits_permitadministrativeentity',
+                  'FILTER': 'permits_permitadministrativeentity:"id" = ' + this.options.administrative_entity_id
               },
               projection: 'EPSG:2056'
           }),
@@ -52,7 +53,7 @@
         this.vectorMaskLayer = new ol.layer.Vector({
           source: new ol.source.Vector({
               url: (e) => {
-                return this.options.administrative_entities_geojson;
+                return this.options.administrative_entity_json_url;
               },
               zIndex: 9999,
               format: new ol.format.GeoJSON()
@@ -61,7 +62,6 @@
           style: restrictionStyle,
           opacity: 0.9
         });
-
 
         this.map = this.createMap(this.rasterMaskLayer, this.vectorMaskLayer);
         this.addBaseLayer();
@@ -126,6 +126,11 @@
 
             this.map.getView().setCenter(this.options.default_center);
             this.map.getView().setZoom(this.options.default_zoom);
+            _this = this;
+            this.vectorMaskLayer.on("change", function(e){
+              extent = _this.vectorMaskLayer.getSource().getExtent();
+              _this.map.getView().fit(extent,  {padding: [100, 100, 100, 100],  minResolution: 1 })
+            })
         }
 
         this.createInteractions();

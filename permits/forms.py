@@ -638,7 +638,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 'default_zoom': 10,
                 'display_raw': False,
                 'edit_geom': True,
-                'min_zoom': 8,
+                'min_zoom': 5,
                 'wmts_capabilities_url': settings.WMTS_GETCAP,
                 'wmts_layer': settings.WMTS_LAYER,
                 'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
@@ -663,6 +663,13 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 }
             ).end_of('event days'),
         }
+
+    def __init__(self, *args, **kwargs):
+        permit_request = kwargs.pop('permit_request', None)
+        super().__init__(*args, **kwargs)
+        self.fields['geom'].widget.attrs['administrative_entity_json_url'] = '/permit-requests/adminentitiesgeojson/' + \
+                str(permit_request.administrative_entity.id)
+        self.fields['geom'].widget.attrs['administrative_entity_id'] = str(permit_request.administrative_entity.id)
 
 
 class PermitRequestValidationDepartmentSelectionForm(forms.Form):

@@ -25,13 +25,13 @@
       <ul class="nav nav-tabs" id="actions-tabs" role="tablist">
         {% if forms.amend %}
           <li class="nav-item">
-            <a class="nav-link{% if active_form == "amend" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">{% trans "Amender" %}</a>
+            <a class="nav-link{% if active_form == "amend" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">1. {% trans "Amender" %}</a>
           </li>
         {% endif %}
 
         {% if forms.request_validation %}
           <li class="nav-item">
-            <a class="nav-link{% if active_form == "request_validation" %} active{% endif %}" id="request-validation-tab" data-toggle="tab" href="#request-validation" role="tab" aria-controls="request-validation" aria-selected="{% if active_form == "request_validation" %}true{% else %}false{% endif %}">{% trans "Envoyer pour validation" %}</a>
+            <a class="nav-link{% if active_form == "request_validation" %} active{% endif %}" id="request-validation-tab" data-toggle="tab" href="#request-validation" role="tab" aria-controls="request-validation" aria-selected="{% if active_form == "request_validation" %}true{% else %}false{% endif %}">2. {% trans "Envoyer pour validation" %}</a>
           </li>
         {% endif %}
 
@@ -46,7 +46,7 @@
         {% if forms.poke or can_classify %}
           <li class="nav-item">
             <a class="nav-link{% if active_form == "poke" %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#classify" role="tab" aria-controls="classify" aria-selected="{% if active_form == "poke" %}true{% else %}false{% endif %}">
-              {% trans "Classer" %}
+              3. {% trans "Classer" %}
             </a>
           </li>
         {% endif %}
@@ -165,7 +165,7 @@
       <dt>{% trans "Auteur-e" %}</dt>
       <dd>
         <a href="mailto:{{ permit_request.author }} <{{ permit_request.author.user.email }}>" target="_blank">
-          {{ permit_request.author }} &lt;{{ permit_request.author.user.email }}&gt;
+          {{ permit_request.author.user.first_name }} {{ permit_request.author.user.last_name }} &lt;{{ permit_request.author.user.email }}&gt;
         </a>
       </dd>
     </dl>
@@ -202,7 +202,10 @@
         {% for validation in validations %}
           <dt>{{ validation.department.group.name }}</dt>
           <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
-            {{ validation.get_validation_status_display }} par {{ validation.validated_by.permitauthor.user.first_name }} {{ validation.validated_by.permitauthor.user.last_name }} le {{ validation.validated_at }}
+            {{ validation.get_validation_status_display }} par
+              {% if validation.validated_by %}
+                {{ validation.validated_by.permitauthor.user.first_name }} {{ validation.validated_by.permitauthor.user.last_name }} le {{ validation.validated_at }}
+              {% endif %}
             {% if validation.comment_before %}
               <br>
               <h5>{% trans "Commentaire (avant)" %}:</h5> {{ validation.comment_before }}

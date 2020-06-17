@@ -4,12 +4,14 @@ from django.core.serializers import serialize
 from django.http import JsonResponse, HttpResponseNotFound, FileResponse
 from django.contrib.auth.decorators import login_required
 import json
+from django.forms.models import model_to_dict
 import urllib
 from django.utils.translation import gettext_lazy as _
 
 
 @login_required
 def qgisserver_proxy(request):
+
 
     # Secure QGISSERVER as it potentially has access to whole DB
     # Event getcapabilities requests are disabled
@@ -26,12 +28,13 @@ def qgisserver_proxy(request):
 
 
 @login_required
-def administrative_entities_geojson(request):
+def administrative_entities_geojson(request, administrative_entity_id):
 
-    geojson = json.loads(
-        serialize('geojson', models.PermitAdministrativeEntity.objects.all(),
-                  geometry_field='geom',
-                  srid=2056,
-                  fields=('id', 'name', 'ofs_id', 'link',)))
+    administrative_entity = models.PermitAdministrativeEntity.objects.filter(id=administrative_entity_id)
 
-    return JsonResponse(geojson)
+    geojson = json.loads(serialize('geojson', administrative_entity,
+                                   geometry_field='geom',
+                                   srid=2056,
+                                   fields=('id', 'name', 'ofs_id', 'link',)))
+
+    return JsonResponse(geojson, safe=False)

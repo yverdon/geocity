@@ -47,7 +47,7 @@ class Command(BaseCommand):
     def create_users(self):
 
         administrative_entity_yverdon = models.PermitAdministrativeEntity.objects.create(
-            name='Démo Grandson',
+            name='Démo Yverdon',
             ofs_id=0,
             link='https://mapnv.ch',
             title_signature_1='Responsable Grandson 1',
@@ -56,7 +56,7 @@ class Command(BaseCommand):
         )
 
         administrative_entity_grandson = models.PermitAdministrativeEntity.objects.create(
-            name='Démo Yverdon',
+            name='Démo Grandson',
             ofs_id=0,
             link='https://mapnv.ch',
             title_signature_1='Responsable Yverdon 1',

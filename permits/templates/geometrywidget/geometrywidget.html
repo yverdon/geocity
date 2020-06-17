@@ -78,10 +78,11 @@
   {% if display_raw %}<p>{% trans "Debugging window (serialized value)" %}</p>{% endif %}
   <textarea id="{{ id }}" class="vSerializedField required" cols="150" rows="10" name="{{ name }}">{{ serialized }}</textarea>
   <script type="text/javascript">
-      
-      {% block base_layer %}
 
+      {% block base_layer %}
       var options = {
+          administrative_entity_json_url:'{{ administrative_entity_json_url }}',
+          administrative_entity_id:'{{ administrative_entity_id }}',
           default_center:{{ default_center }},
           default_zoom: {{ default_zoom }},
           geom_name: '{{ geom_type }}',
@@ -94,7 +95,6 @@
           wmts_layer: '{{wmts_layer}}',
           wmts_capabilities_url_alternative: '{{wmts_capabilities_url_alternative}}',
           wmts_layer_alternative: '{{wmts_layer_alternative}}',
-          administrative_entities_geojson: "{% url 'permits:administrative_entities_geojson' %}",
           qgisserver_proxy: "{% url 'permits:qgisserver_proxy' %}",
       };
 

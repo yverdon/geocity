@@ -21,7 +21,6 @@ from django_filters.views import FilterView
 from . import fields, forms, models, services, tables, filters, printpermit
 from django.contrib.auth import login
 from django.utils import timezone
-from django.contrib.auth.models import User
 
 from .exceptions import BadPermitRequestStatus
 
@@ -483,7 +482,7 @@ def permit_request_geo_time(request, permit_request_id):
 
     instance = permit_request.geo_time.first()
 
-    form = forms.PermitRequestGeoTimeForm(request.POST or None, instance=instance)
+    form = forms.PermitRequestGeoTimeForm(request.POST or None, instance=instance, permit_request=permit_request)
 
     if request.method == 'POST':
 

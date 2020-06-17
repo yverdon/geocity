@@ -148,7 +148,7 @@ class PermitAdministrativeEntity(models.Model):
     phone = models.CharField(
         _("Téléphone"),
         blank=True,
-        max_length=16,
+        max_length=20,
         validators=[
             RegexValidator(
                 regex=r'^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$',
@@ -209,7 +209,7 @@ class PermitAuthor(models.Model):
     )
     phone_first = models.CharField(
         _("Téléphone principal"),
-        max_length=16,
+        max_length=20,
         validators=[
             RegexValidator(
                 regex=r'^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$',
@@ -220,7 +220,7 @@ class PermitAuthor(models.Model):
     phone_second = models.CharField(
         _("Téléphone secondaire"),
         blank=True,
-        max_length=16,
+        max_length=20,
         validators=[
             RegexValidator(
                 regex=r'^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$',
@@ -275,7 +275,7 @@ class PermitActor(models.Model):
     )
     phone = models.CharField(
         _("Téléphone"),
-        max_length=16,
+        max_length=20,
     )
     email = models.EmailField(
         _("email"),
@@ -696,7 +696,7 @@ class PermitRequestValidation(models.Model):
         _("Commentaires (après)"),
         blank=True
     )
-    validated_by = models.OneToOneField(
+    validated_by = models.ForeignKey(
         User,
         null=True,
         on_delete=models.SET_NULL
