@@ -17,7 +17,6 @@ services:
     command: python3 manage.py runserver 0.0.0.0:9000
     volumes:
       - .:/code #DEV ONLY!!!
-      - gmsdata:/code/app_data
     ports:
       - "9095:9000"
     environment:

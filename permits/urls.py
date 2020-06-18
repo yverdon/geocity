@@ -27,6 +27,7 @@ existing_permit_request_urlpatterns = [
 urlpatterns = [
     path('<int:permit_request_id>/', include(permit_request_urlpatterns + existing_permit_request_urlpatterns)),
     path('permits-files/<path:path>', views.permit_request_file_download, name='permit_request_file_download'),
+    path('aministrative-entity-files/<path:path>', views.administrative_entity_file_download, name='administrative_entity_file_download'),
     path('', views.PermitRequestList.as_view(), name='permit_requests_list'),
     path('', include(permit_request_urlpatterns)),
     path('media/<int:property_value_id>/', views.permit_request_media_download, name='permit_request_media_download'),

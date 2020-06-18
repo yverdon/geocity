@@ -669,6 +669,18 @@ def permit_request_file_download(request, path):
 
 
 @login_required
+def administrative_entity_file_download(request, path):
+    """
+    Securely download the administrative entity customization files`.
+    """
+
+    mime_type, encoding = mimetypes.guess_type(path)
+    storage = fields.PrivateFileSystemStorage()
+
+    return StreamingHttpResponse(storage.open(path), content_type=mime_type)
+
+
+@login_required
 def printpdf(request, permit_request_id):
 
     permit_request = models.PermitRequest.objects.get(pk=permit_request_id)

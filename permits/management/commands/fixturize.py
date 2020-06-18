@@ -50,8 +50,11 @@ class Command(BaseCommand):
             name='Démo Yverdon',
             ofs_id=0,
             link='https://mapnv.ch',
-            title_signature_1='Responsable Grandson 1',
-            title_signature_2='Responsable Grandson 2',
+            legal_document="administrative_entity_customization/demo-directive.pdf",
+            general_informations="Prix par jour: 40CHF",
+            archive_link='https://mapnv.ch',
+            title_signature_1='Responsable Yverdon 1',
+            title_signature_2='Responsable Yverdon 2',
             geom="SRID=2056;MultiPolygon (((2538391 1176432, 2538027 1178201, 2538485 1178804, 2537777 1179199, 2536748 1178450, 2536123 1179647, 2537382 1180593, 2537143 1181623, 2538651 1183257, 2540368 1183236, 2541252 1181093, 2541460 1180458, 2540160 1179543, 2540097 1178877, 2538391 1176432)))"
         )
 
@@ -59,8 +62,11 @@ class Command(BaseCommand):
             name='Démo Grandson',
             ofs_id=0,
             link='https://mapnv.ch',
-            title_signature_1='Responsable Yverdon 1',
-            title_signature_2='Responsable Yverdon 2',
+            legal_document="administrative_entity_customization/demo-directive.pdf",
+            general_informations="Prix par jour: 45CHF",
+            archive_link='https://mapnv.ch',
+            title_signature_1='Responsable Grandson 1',
+            title_signature_2='Responsable Grandson 2',
             geom="SRID=2056;MultiPolygon (((2543281 1184952, 2542053 1186731, 2541148 1186887, 2538214 1186367, 2537195 1184609, 2537153 1183330, 2537757 1182653, 2539317 1182404, 2543281 1184952)))"
         )
 

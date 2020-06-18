@@ -90,14 +90,8 @@ class PermitAdministrativeEntity(models.Model):
         max_length=1024,
         blank=True
     )
-    legal_document = models.FileField(
-        _('Directive(s)'),
-        upload_to='administrative_entity_customization/',
-        blank=True,
-        validators=[
-            FileExtensionValidator(allowed_extensions=['pdf'])
-        ]
-    )
+    legal_document = fields.AministrativeEntityFileField(
+        _('Directive'), blank=True, upload_to='administrative_entity_files/')
     general_informations = models.CharField(
         _("Informations"),
         blank=True,
@@ -108,48 +102,24 @@ class PermitAdministrativeEntity(models.Model):
         max_length=200,
         blank=True
     )
-    logo_main = models.FileField(
-        _('Logo principal'),
-        upload_to='administrative_entity_customization/',
-        blank=True,
-        validators=[
-            FileExtensionValidator(allowed_extensions=['png', 'jpg'])
-        ]
-    )
-    logo_secondary = models.FileField(
-        _('Logo secondaire'),
-        upload_to='administrative_entity_customization/',
-        blank=True,
-        validators=[
-            FileExtensionValidator(allowed_extensions=['png', 'jpg'])
-        ]
-    )
+    logo_main = fields.AministrativeEntityFileField(
+        _('Logo principal'), blank=True, upload_to='administrative_entity_files/')
+    logo_secondary = fields.AministrativeEntityFileField(
+        _('Logo secondaire'), blank=True, upload_to='administrative_entity_files/')
     title_signature_1 = models.CharField(
         _('Signature Gauche'),
         max_length=128,
         blank=True
     )
-    image_signature_1 = models.FileField(
-        _('Scan signature gauche'),
-        upload_to='administrative_entity_customization/',
-        blank=True,
-        validators=[
-            FileExtensionValidator(allowed_extensions=['png', 'jpg'])
-        ]
-    )
+    image_signature_1 = fields.AministrativeEntityFileField(
+        _('Signature gauche'), blank=True, upload_to='administrative_entity_files/')
     title_signature_2 = models.CharField(
         _('Signature Droite'),
         max_length=128,
         blank=True
     )
-    image_signature_2 = models.FileField(
-        _('Scan signature droite'),
-        upload_to='administrative_entity_customization/',
-        blank=True,
-        validators=[
-            FileExtensionValidator(allowed_extensions=['png', 'jpg'])
-        ]
-    )
+    image_signature_2 = fields.AministrativeEntityFileField(
+        _('Signature droite'), blank=True, upload_to='administrative_entity_files/')
     phone = models.CharField(
         _("Téléphone"),
         blank=True,
@@ -417,14 +387,8 @@ class PermitRequest(models.Model):
         max_length=255,
         blank=True
     )
-    printed_file = models.FileField(
-        _('permis imprimé'),
-        upload_to='printed_permits/',
-        blank=True,
-        validators=[
-            FileExtensionValidator(allowed_extensions=['pdf'])
-        ]
-    )
+    printed_file = fields.AministrativeEntityFileField(
+            _('Permis imprimé'), null=True, blank=True, upload_to='printed_permits/')
     works_object_types = models.ManyToManyField(
         'WorksObjectType',
         through=WorksObjectTypeChoice,
