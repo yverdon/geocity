@@ -40,6 +40,10 @@ class DepartmentPermitRequestsTable(tables.Table):
     )
     starts_at_min = tables.Column(verbose_name=_("Début"))
     ends_at_max = tables.Column(verbose_name=_("Fin"))
+    works_objects_html = tables.Column(
+        verbose_name=_("Objets et types de travaux"),
+        orderable=False
+    )
 
     class Meta:
         model = models.PermitRequest
@@ -50,7 +54,6 @@ class DepartmentPermitRequestsTable(tables.Table):
             'status',
             'starts_at_min',
             'ends_at_max',
-            'author',
             'works_objects_html'
         )
         template_name = 'django_tables2/bootstrap.html'

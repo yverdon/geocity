@@ -168,6 +168,14 @@
           {{ permit_request.author.user.first_name }} {{ permit_request.author.user.last_name }} &lt;{{ permit_request.author.user.email }}&gt;
         </a>
       </dd>
+      {% if permit_request.validation_pdf %}
+        <dt>{% trans "Permis délivré" %}</dt>
+        <dd>
+          <a href="{{permit_request.validation_pdf.url}}>" target="_blank">
+            Télécharger le document PDF
+          </a>
+        </dd>
+      {% endif %}
     </dl>
 
 
