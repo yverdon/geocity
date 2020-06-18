@@ -91,12 +91,17 @@ class PermitAdministrativeEntity(models.Model):
         blank=True
     )
     legal_document = models.FileField(
-        _('Directive'),
+        _('Directive(s)'),
         upload_to='administrative_entity_customization/',
         blank=True,
         validators=[
             FileExtensionValidator(allowed_extensions=['pdf'])
         ]
+    )
+    general_informations = models.CharField(
+        _("Informations"),
+        blank=True,
+        max_length=1024,
     )
     link = models.URLField(
         _("Lien"),
@@ -245,32 +250,32 @@ class PermitAuthor(models.Model):
 class PermitActor(models.Model):
     """ Contacts
     """
-    name = models.CharField(
-        _("name"),
+    first_name = models.CharField(
+        _("Prénom"),
         max_length=150,
     )
-    firstname = models.CharField(
-        _("firstname"),
+    last_name = models.CharField(
+        _("Nom"),
         max_length=100,
     )
     company_name = models.CharField(
-        _("company_name"),
+        _("Entreprise"),
         max_length=100,
     )
     vat_number = models.CharField(
-        _("vat_number"),
+        _("Numéro TVA"),
         max_length=19,
         blank=True
     )
     address = models.CharField(
-        _("address"),
+        _("Adresse"),
         max_length=100,
     )
     zipcode = models.PositiveIntegerField(
-        _("zipcode"),
+        _("NPA"),
     )
     city = models.CharField(
-        _("city"),
+        _("Ville"),
         max_length=100,
     )
     phone = models.CharField(
@@ -278,11 +283,11 @@ class PermitActor(models.Model):
         max_length=20,
     )
     email = models.EmailField(
-        _("email"),
+        _("Email"),
     )
 
     class Meta:
-        verbose_name = _('Demandeur')
+        verbose_name = _('Contact')
 
 
     def __str__(self):

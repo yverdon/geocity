@@ -394,8 +394,8 @@ class PermitRequestActorForm(forms.ModelForm):
     """
     required_css_class = 'required'
     actor_fields = [
-        'firstname',
-        'name',
+        'first_name',
+        'last_name',
         'company_name',
         'vat_number',
         'address',
@@ -406,7 +406,7 @@ class PermitRequestActorForm(forms.ModelForm):
         'email'
     ]
 
-    name = forms.CharField(
+    first_name = forms.CharField(
         max_length=150,
         label=_('Prénom'),
         widget=forms.TextInput(
@@ -416,7 +416,7 @@ class PermitRequestActorForm(forms.ModelForm):
             }
         )
     )
-    firstname = forms.CharField(
+    last_name = forms.CharField(
         max_length=100,
         label=_('Nom'),
         widget=forms.TextInput(
