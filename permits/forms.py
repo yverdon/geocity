@@ -194,8 +194,8 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         field_class = get_field_cls_for_property(prop)
         if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_TEXT:
             field_instance = field_class(**self.get_field_kwargs(prop),
-                widget=forms.Textarea(attrs={'rows':1,}),
-                )
+                                         widget=forms.Textarea(attrs={'rows': 1, }),
+                                         )
         else:
             field_instance = field_class(**self.get_field_kwargs(prop),)
         return field_instance
@@ -667,9 +667,10 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         permit_request = kwargs.pop('permit_request', None)
         super().__init__(*args, **kwargs)
-        self.fields['geom'].widget.attrs['administrative_entity_json_url'] = '/permit-requests/adminentitiesgeojson/' + \
-                str(permit_request.administrative_entity.id)
-        self.fields['geom'].widget.attrs['administrative_entity_id'] = str(permit_request.administrative_entity.id)
+        if permit_request:
+            self.fields['geom'].widget.attrs['administrative_entity_json_url'] = \
+                    '/permit-requests/adminentitiesgeojson/' + str(permit_request.administrative_entity.id)
+            self.fields['geom'].widget.attrs['administrative_entity_id'] = str(permit_request.administrative_entity.id)
 
 
 class PermitRequestValidationDepartmentSelectionForm(forms.Form):
