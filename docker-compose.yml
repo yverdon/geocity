@@ -27,6 +27,8 @@ services:
       environment:
           - QGIS_PROJECT_FILE=/qgisserver_data/geocity.qgs
           - PGSERVICEFILE=/qgisserver_data/pg_service.conf
+          - QGIS_SERVER_PARALLEL_RENDERING=true
+          - QGIS_SERVER_IGNORE_BAD_LAYERS=true
 
 volumes:
   qgisserver_data:

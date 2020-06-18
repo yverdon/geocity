@@ -31,6 +31,8 @@ services:
       environment:
           - QGIS_PROJECT_FILE=/data/qgisserver/geocity.qgs
           - PGSERVICEFILE=/data/qgisserver/pg_service.conf
+          - QGIS_SERVER_PARALLEL_RENDERING=true
+          - QGIS_SERVER_IGNORE_BAD_LAYERS=true
 
   postgres:
       image: camptocamp/postgres:9.6
