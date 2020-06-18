@@ -39,3 +39,7 @@
   z-index: 1000;
   opacity: 80%;
 }
+
+#manual-coordinates input{
+ width: 120px;
+}
