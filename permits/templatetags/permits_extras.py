@@ -31,6 +31,9 @@ def permit_request_summary(context, permit_request):
     geo_time_instance = permit_request.geo_time.first()
     geo_time_form = forms.PermitRequestGeoTimeForm(instance=geo_time_instance)
     geo_time_form.fields['geom'].widget.attrs['edit_geom'] = False
+    geo_time_form.fields['geom'].widget.attrs['administrative_entity_json_url'] = \
+        '/permit-requests/adminentitiesgeojson/' + str(permit_request.administrative_entity.id)
+    geo_time_form.fields['geom'].widget.attrs['administrative_entity_id'] = str(permit_request.administrative_entity.id)
     creditor = models.ACTOR_TYPE_CHOICES[permit_request.creditor_type][1]
 
     for elem in ['starts_at', 'ends_at', 'external_link', 'comment']:

@@ -21,7 +21,6 @@ from django_filters.views import FilterView
 from . import fields, forms, models, services, tables, filters, printpermit
 from django.contrib.auth import login
 from django.utils import timezone
-from django.contrib.auth.models import User
 
 from .exceptions import BadPermitRequestStatus
 
@@ -483,7 +482,7 @@ def permit_request_geo_time(request, permit_request_id):
 
     instance = permit_request.geo_time.first()
 
-    form = forms.PermitRequestGeoTimeForm(request.POST or None, instance=instance)
+    form = forms.PermitRequestGeoTimeForm(request.POST or None, instance=instance, permit_request=permit_request)
 
     if request.method == 'POST':
 
@@ -662,6 +661,18 @@ def permit_request_file_download(request, path):
         raise Http404
 
     services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+
+    mime_type, encoding = mimetypes.guess_type(path)
+    storage = fields.PrivateFileSystemStorage()
+
+    return StreamingHttpResponse(storage.open(path), content_type=mime_type)
+
+
+@login_required
+def administrative_entity_file_download(request, path):
+    """
+    Securely download the administrative entity customization files`.
+    """
 
     mime_type, encoding = mimetypes.guess_type(path)
     storage = fields.PrivateFileSystemStorage()

@@ -42,4 +42,10 @@
 {% block scripts %}
   <script src="{% static 'libs/js/jquery-ui-custom/jquery-ui.js' %}"></script>
   <script src="{% static 'customWidgets/RemoteAutocomplete/remoteautocomplete.js' %}"></script>
+  <script>
+      $("input[required]").each(function(){
+        var label = $("label[for='" + $(this).attr('id') + "']");
+        label.css("font-weight","bold");
+      });
+  </script>
 {% endblock %}

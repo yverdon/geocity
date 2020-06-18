@@ -22,10 +22,16 @@ This process will create the env.yaml file only if no env.yaml file is present
 
 The demo application is now running on localhost:9095
 
+###Docker and UFW on Ubuntu
+Don't forget to allow docker0 trough UFW:
+
+```sudo ufw allow 5432/tcp
+```
+
 #### demo accounts
 
 Administrator role (django superuser):
-    *admin:demo2020*
+    *admin:admin*
 
 Backoffice role:
     *demo-backoffice:demo2020*
@@ -43,13 +49,12 @@ In case you get and error similar to this: E: You don't have enough free space i
 run the following commands to clear them all:
 
 ```
-docker rmi $(docker images -q)
-docker rm -v $(docker ps -qa
+docker system prune -a
 ```
 
 ### Generic Django hints
 
-*install requirements*
+*install python requirements*
 ```
 pip install -r requirements.txt
 ```

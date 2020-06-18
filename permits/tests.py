@@ -99,11 +99,11 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         self.assertEqual(models.PermitRequest.objects.filter(works_object_types=works_object_type).count(), 1)
 
-    def test_required_properties_can_be_left_blank(self):
+    def test_non_required_properties_can_be_left_blank(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         factories.WorksObjectTypeChoiceFactory.create_batch(3, permit_request=permit_request)
         permit_request.administrative_entity.works_object_types.set(permit_request.works_object_types.all())
-        prop = factories.WorksObjectPropertyFactory(is_mandatory=True)
+        prop = factories.WorksObjectPropertyFactory()
         prop.works_object_types.set(permit_request.works_object_types.all())
 
         response = self.client.post(reverse('permits:permit_request_properties', kwargs={
@@ -280,8 +280,7 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
         )
         content = response.content.decode()
         expected = (
-            '<textarea name="properties-{obj_type_id}_{prop_id}" cols="40" rows="1" class="form-control" title="" class="form-control"'
-            ' id="id_properties-{obj_type_id}_{prop_id}"></textarea>'.format(
+            '<textarea name="properties-{obj_type_id}_{prop_id}" cols="40" rows="1" class="form-control" title="" id="id_properties-{obj_type_id}_{prop_id}">{value}</textarea>'.format(
                 obj_type_id=works_object_type_choice.works_object_type.pk,
                 prop_id=prop.pk,
                 prop_name=prop.name,

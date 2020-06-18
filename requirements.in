@@ -21,3 +21,4 @@ WeasyPrint
 whitenoise
 tablib
 pycairo
+python-dotenv

@@ -385,7 +385,7 @@ def get_progressbar_steps(request, permit_request):
 
     steps = {
         "location": models.Step(
-            name=_("Localisation"),
+            name=_("Entité"),
             url=localisation_url,
             completed=bool(permit_request),
             enabled=True,
