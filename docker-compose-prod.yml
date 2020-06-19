@@ -1,0 +1,34 @@
+version: '3'
+
+volumes:
+  gmsdata:
+
+services:
+  web:
+    image: gms_web
+    depends_on:
+      - "qgisserver"
+    build:
+      context: ./
+      args:
+        dev_dependencies: "false"
+    entrypoint: /code/entrypoint_prod.sh
+    command: "gunicorn geomapshark.wsgi -b :9000 --error-logfile gunicorn_log.log"
+    volumes:
+      - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
+    ports:
+      - "9395:9000"
+  qgisserver:
+      image: camptocamp/qgis-server:3.10
+      volumes:
+        - ./qgisserver:/qgisserver_data
+      ports:
+          - "9396:80"
+      environment:
+          - QGIS_PROJECT_FILE=/qgisserver_data/geocity.qgs
+          - PGSERVICEFILE=/qgisserver_data/pg_service.conf
+          - QGIS_SERVER_PARALLEL_RENDERING=true
+          - QGIS_SERVER_IGNORE_BAD_LAYERS=true
+
+volumes:
+  qgisserver_data:

@@ -18,16 +18,7 @@ DEBUG = eval(os.getenv("DEBUG"))
 
 os.environ["GDAL_DATA"] = os.path.join(BASE_DIR, 'gdal_data')
 GDAL_DATA = os.environ["GDAL_DATA"]
-
-ALLOWED_HOSTS = ['gmf23-mapnv.preprod.sig.cloud.camptocamp.com',
-                'dev.mapnv.ch',
-                'pro.mapnv.ch',
-                'mapnv.ch',
-                 'localhost',
-                 '127.0.0.1',
-                 'srvdev',
-                 'geocity-dev.mapnv.ch',
-                 'construire.mapnv.ch',]
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(',')
 
 DATE_INPUT_FORMAT = [
     '%Y-%m-%d', '%m/%d/%Y', '%m/%d/%y', # '2006-10-25', '10/25/2006', '10/25/06'
@@ -37,7 +28,7 @@ DATE_INPUT_FORMAT = [
     '%d %B %Y', '%d %B, %Y',            # '25 October 2006', '25 October, 2006'
 ]
 
-DEFAULT_FROM_EMAIL = "noreply@mapnv.ch"
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
