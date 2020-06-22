@@ -28,6 +28,9 @@ Don't forget to allow docker0 trough UFW:
 ```sudo ufw allow 5432/tcp
 ```
 
+### SSL Let'e encrypt certificate
+https://www.digitalocean.com/community/tutorials/how-to-secure-apache-with-let-s-encrypt-on-ubuntu-18-04
+
 #### demo accounts
 
 Administrator role (django superuser):

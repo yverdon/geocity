@@ -4,14 +4,12 @@ from django.core.serializers import serialize
 from django.http import JsonResponse, HttpResponseNotFound, FileResponse
 from django.contrib.auth.decorators import login_required
 import json
-from django.forms.models import model_to_dict
 import urllib
 from django.utils.translation import gettext_lazy as _
 
 
 @login_required
 def qgisserver_proxy(request):
-
 
     # Secure QGISSERVER as it potentially has access to whole DB
     # Event getcapabilities requests are disabled

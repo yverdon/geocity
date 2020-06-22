@@ -15,6 +15,7 @@ from django.utils.safestring import mark_safe
 from bootstrap_datepicker_plus import DateTimePickerInput
 from datetime import datetime, timedelta
 from django.contrib.auth.models import User
+from django.urls import reverse
 
 
 def get_field_cls_for_property(prop):
@@ -669,7 +670,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if permit_request:
             self.fields['geom'].widget.attrs['administrative_entity_json_url'] = \
-                    '/permit-requests/adminentitiesgeojson/' + str(permit_request.administrative_entity.id)
+                reverse("permits:administrative_entities_geojson", args=[permit_request.administrative_entity_id])
             self.fields['geom'].widget.attrs['administrative_entity_id'] = str(permit_request.administrative_entity.id)
 
 
