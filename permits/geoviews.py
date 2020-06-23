@@ -13,7 +13,7 @@ def qgisserver_proxy(request):
 
     # Secure QGISSERVER as it potentially has access to whole DB
     # Event getcapabilities requests are disabled
-    if request.GET['REQUEST'] == 'GetMap' and request.GET['LAYERS'] == 'permits_permitadministrativeentity':
+    if request.GET['REQUEST'] == 'GetMap':
         data = urllib.parse.urlencode(request.GET)
         format = request.GET['FORMAT']
         url = "http://qgisserver" + '/?' + data
