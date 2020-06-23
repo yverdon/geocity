@@ -9,7 +9,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.exceptions import SuspiciousOperation
 from django.db.models import Prefetch
 from django.utils.decorators import method_decorator
-from django.http import Http404, HttpResponse, StreamingHttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, StreamingHttpResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext as _
@@ -671,8 +671,11 @@ def permit_request_file_download(request, path):
 @login_required
 def administrative_entity_file_download(request, path):
     """
-    Securely download the administrative entity customization files`.
+    Securely download the administrative entity customization files for member of the administrative_entity concerned
     """
+
+    if services.get_user_administrative_entities(request.user).count() == 0 and not request.user.is_superuser:
+        raise Http404
 
     mime_type, encoding = mimetypes.guess_type(path)
     storage = fields.PrivateFileSystemStorage()

@@ -176,3 +176,9 @@ h3 {
   margin-bottom: 10px;
   border-radius: 5px;
 }
+
+.error-page {
+  margin-left: 25%;
+  width: 50%;
+
+}

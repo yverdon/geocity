@@ -450,7 +450,8 @@ class PermitRequest(models.Model):
     creditor_type = models.PositiveSmallIntegerField(
         _("Destinaire de la facture"),
         choices=ACTOR_TYPE_CHOICES,
-        default=ACTOR_TYPE_OTHER
+        null=True,
+        blank=True,
     )
 
     class Meta:

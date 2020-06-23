@@ -3,6 +3,7 @@ import os.path
 from django import template
 
 from permits import services, forms, models
+from django.utils.translation import gettext as _
 
 register = template.Library()
 
@@ -34,7 +35,12 @@ def permit_request_summary(context, permit_request):
     geo_time_form.fields['geom'].widget.attrs['administrative_entity_json_url'] = \
         '/permit-requests/adminentitiesgeojson/' + str(permit_request.administrative_entity.id)
     geo_time_form.fields['geom'].widget.attrs['administrative_entity_id'] = str(permit_request.administrative_entity.id)
-    creditor = models.ACTOR_TYPE_CHOICES[permit_request.creditor_type][1]
+
+    if permit_request.creditor_type:
+        creditor = models.ACTOR_TYPE_CHOICES[permit_request.creditor_type][1]
+    else:
+        creditor = _('Auteur de la demande, ') + \
+            permit_request.author.user.first_name + ' ' + permit_request.author.user.last_name
 
     for elem in ['starts_at', 'ends_at', 'external_link', 'comment']:
         geo_time_form.fields[elem].widget.attrs['readonly'] = True

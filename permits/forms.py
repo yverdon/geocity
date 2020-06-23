@@ -383,11 +383,13 @@ class PermitRequestCreditorForm(forms.ModelForm):
             works_type__in=services.get_permit_request_works_types(self.instance)
         ).values_list('type', flat=True))
 
-        self.fields['creditor_type'].choices = [
+        choices = [
             (creditor_type, label)
             for creditor_type, label in self.fields['creditor_type'].choices
                 if creditor_type in required_actor_types
         ]
+        choices.insert(0, ('', '----'))
+        self.fields['creditor_type'].choices = choices
 
 
 class PermitRequestActorForm(forms.ModelForm):

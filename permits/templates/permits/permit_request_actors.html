@@ -21,7 +21,7 @@
     {% csrf_token %}
     {{ formset.management_form }}
     <br>
-    <h4>Choisissez le destinataire de la facture parmi les contacts ci-dessous</h4>
+    <h4>Choisissez le destinataire de la facture si différent de l'auteur</h4>
     {% bootstrap_form creditorform layout='horizontal' %}
     <hr>
     <h3>{% trans "Renseignez les contacts" %}</h3>
