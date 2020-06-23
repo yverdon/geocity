@@ -748,3 +748,12 @@ def permit_author_edit(request):
             reverse('permits:permit_requests_list'))
 
     return render(request, "permits/permit_request_author.html", {'permitauthorform': permitauthorform, 'djangouserform': djangouserform})
+
+
+@login_required
+def administrative_infos(request):
+
+    administrative_entities = models.PermitAdministrativeEntity.objects.all()
+
+    return render(request, "permits/administrative_infos.html",
+                           {'administrative_entities': administrative_entities})
