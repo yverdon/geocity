@@ -165,9 +165,10 @@ h3 {
 }
 
 .navbar {
-  background-image: url('../images/blanc_light_compact.jpg');
   height: 100px;
   font-weight: bold;
+  background-image: url('../images/blanc_light_navbar.jpg');
+  background-size: cover;
 }
 
 #legal-infos {
