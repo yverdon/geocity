@@ -22,7 +22,7 @@ This process will create the .env file only if it does not already exist
 
 The demo application is now running on *localhost:9095*
 
-### Step by step guide to the working full docker persistent demo served by gunicorn webserver
+### Setup for full docker persistent instance served by gunicorn webserver
 
 #### Create new postgis DB
 
