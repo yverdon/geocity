@@ -38,9 +38,11 @@ def permit_request_summary(context, permit_request):
 
     if permit_request.creditor_type:
         creditor = models.ACTOR_TYPE_CHOICES[permit_request.creditor_type][1]
-    else:
+    elif permit_request.author.user:
         creditor = _('Auteur de la demande, ') + \
             permit_request.author.user.first_name + ' ' + permit_request.author.user.last_name
+    else:
+        creditor = ''
 
     for elem in ['starts_at', 'ends_at', 'external_link', 'comment']:
         geo_time_form.fields[elem].widget.attrs['readonly'] = True

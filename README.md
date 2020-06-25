@@ -22,10 +22,24 @@ This process will create the env.yaml file only if no env.yaml file is present
 
 The demo application is now running on localhost:9095
 
-###Docker and UFW on Ubuntu
-Don't forget to allow docker0 trough UFW:
+### Upgrade python dependencies using pip-tools
 
-```sudo ufw allow 5432/tcp
+```
+pip-compile --upgrade requirements.in
+pip-compile --upgrade requirements_dev.in
+pip-compile --upgrade requirements_test.in
+```
+
+Regenerate requirements
+```
+pip-compile requirements.in
+pip-compile requirements_dev.in
+pip-compile requirements_test.in
+```
+
+Run the tests after upgrade!
+```
+python manage.py test
 ```
 
 ### SSL Let'e encrypt certificate
