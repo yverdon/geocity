@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.translation import gettext_lazy as _
 
 from . import models
 
@@ -19,8 +20,19 @@ admin.site.register(models.GeomLayer)
 admin.site.register(models.WorksObjectPropertyValue)
 
 
+def works_object_type_administrative_entities(obj):
+    return ", ".join(administrative_entity.name for administrative_entity in obj.administrative_entities.all())
+
+
+works_object_type_administrative_entities.short_description = _("Communes")
+
+
 class WorksObjectTypeAdmin(admin.ModelAdmin):
-    list_fields = ['administrative_entities']
+    list_display = ['__str__', works_object_type_administrative_entities]
+    list_filter = ['administrative_entities']
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('works_object', 'works_type').prefetch_related('administrative_entities')
 
 
 admin.site.register(models.WorksObjectType, WorksObjectTypeAdmin)
