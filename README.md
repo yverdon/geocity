@@ -29,6 +29,7 @@ The demo application is now running on *localhost:9095*
 1. Create a geocity user
 2. Create a geocity schema owned by geocity user
 3. Edit DB connexion in .env file
+3. Create and edit pg_service.conf file in qgisserver directory
 
 
 #### Build and start the composition
