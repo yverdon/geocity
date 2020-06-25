@@ -5,16 +5,14 @@
 {% load static %}
 
 {% block stylesheets%}
-  {{ block.super }}
   <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}">
-  <link rel="stylesheet" type="text/css" href="{% static 'css/homepage.css' %}">
 {% endblock %}
-
-{% block title %}{% trans "Connexion" %}{% endblock %}
-
 {% block content-no-sidebar %}
-  <h2 class="text-center">{% trans "Gestion des demandes de permis d'utilisation du domaine public" %}</h2>
-
+<div id="login-welcome-text">
+  <h3 class="text-center">{% trans "Demandes de permis touchant le territoire communal" %}</h3>
+  <br>
+  <h5 class="text-center">{% trans "Travaux de minime importance, abattages, fouilles, dépôts,..." %}</h5>
+</div>
   <div id="login-container">
     <br>
     {% if form.errors %}
@@ -36,7 +34,10 @@
       <input type="hidden" name="next" value="{{ next }}" />
     </form>
     <br>
-    <p><a class="font-weight-bold" href="{% url 'permits:permit_author_add' %}">{% trans "Créer un compte" %}</a></p>
+    <p><a class="font-weight-bold" href="{% url 'permits:permit_author_create' %}">{% trans "Créer un compte" %}</a></p>
     <p><a class="font-weight-bold" href="{% url 'password_reset' %}">{% trans "Perdu votre mot de passe ?" %}</a></p>
+  </div>
+  <div id="bottom-login-text">
+    <h5 class="text-center">{% trans "Une application du Système d'Information du Territoire de la Ville d'Yverdon-les-bains" %} - <a href="https://mapnv.ch" target="_blank">mapnv.ch</a></h5>
   </div>
 {% endblock %}

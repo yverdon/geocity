@@ -17,13 +17,13 @@ services:
     volumes:
       - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
     ports:
-      - "9095:9000"
+      - "9295:9000"
   qgisserver:
       image: camptocamp/qgis-server:3.10
       volumes:
         - ./qgisserver:/qgisserver_data
       ports:
-          - "9096:80"
+          - "9296:80"
       environment:
           - QGIS_PROJECT_FILE=/qgisserver_data/geocity.qgs
           - PGSERVICEFILE=/qgisserver_data/pg_service.conf

@@ -13,7 +13,7 @@ def qgisserver_proxy(request):
 
     # Secure QGISSERVER as it potentially has access to whole DB
     # Event getcapabilities requests are disabled
-    if request.GET['REQUEST'] == 'GetMap' and request.GET['LAYERS'] == 'permits_permitadministrativeentity':
+    if request.GET['REQUEST'] == 'GetMap':
         data = urllib.parse.urlencode(request.GET)
         format = request.GET['FORMAT']
         url = "http://qgisserver" + '/?' + data
@@ -26,13 +26,13 @@ def qgisserver_proxy(request):
 
 
 @login_required
-def administrative_entities_geojson(request):
+def administrative_entities_geojson(request, administrative_entity_id):
 
-    geojson = json.loads(
-        serialize('geojson', models.PermitAdministrativeEntity.objects.all(),
-                  geometry_field='geom',
-                  srid=2056,
-                  fields=('id', 'name', 'ofs_id', 'link',)))
-    print(geojson)
+    administrative_entity = models.PermitAdministrativeEntity.objects.filter(id=administrative_entity_id)
 
-    return JsonResponse(geojson)
+    geojson = json.loads(serialize('geojson', administrative_entity,
+                                   geometry_field='geom',
+                                   srid=2056,
+                                   fields=('id', 'name', 'ofs_id', 'link',)))
+
+    return JsonResponse(geojson, safe=False)

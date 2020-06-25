@@ -1,4 +1,3 @@
-#For demo only => host is the postgres service!
 [pg_geocity]
 host=postgres
 dbname=geocity

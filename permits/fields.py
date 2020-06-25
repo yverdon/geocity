@@ -54,3 +54,23 @@ class PermitRequestFileField(models.FileField):
         filename = posixpath.join(str(instance.pk), filename)
 
         return self.storage.generate_filename(filename)
+
+
+class AministrativeEntityFieldFile(FieldFile):
+    @property
+    def url(self):
+        return reverse(
+            "permits:administrative_entity_file_download", kwargs={"path": self.name},
+        )
+
+
+class AministrativeEntityFileField(models.FileField):
+    """
+    FileField storing information in a private media root.
+    """
+
+    attr_class = AministrativeEntityFieldFile
+
+    def __init__(self, verbose_name=None, name=None, **kwargs):
+        kwargs["storage"] = PrivateFileSystemStorage()
+        super().__init__(verbose_name, name, **kwargs)

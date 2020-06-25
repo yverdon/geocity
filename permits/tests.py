@@ -99,11 +99,11 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         self.assertEqual(models.PermitRequest.objects.filter(works_object_types=works_object_type).count(), 1)
 
-    def test_required_properties_can_be_left_blank(self):
+    def test_non_required_properties_can_be_left_blank(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         factories.WorksObjectTypeChoiceFactory.create_batch(3, permit_request=permit_request)
         permit_request.administrative_entity.works_object_types.set(permit_request.works_object_types.all())
-        prop = factories.WorksObjectPropertyFactory(is_mandatory=True)
+        prop = factories.WorksObjectPropertyFactory()
         prop.works_object_types.set(permit_request.works_object_types.all())
 
         response = self.client.post(reverse('permits:permit_request_properties', kwargs={
@@ -139,9 +139,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
     def test_submit_permit_request_sends_email_to_secretariat(self):
         # Create a secretariat user Yverdon (the one that will get the notification)
         group = factories.SecretariatGroupFactory()
-        factories.SecretariatUserFactory(actor__email="secretariat@yverdon.ch", groups=[group])
+        factories.SecretariatUserFactory(email="secretariat@yverdon.ch", groups=[group])
         # This one should not receive the notification
-        factories.SecretariatUserFactory(actor__email="secretariat@lausanne.ch")
+        factories.SecretariatUserFactory(email="secretariat@lausanne.ch")
 
         permit_request = factories.PermitRequestFactory(
             administrative_entity=group.permitdepartment.administrative_entity,
@@ -280,8 +280,7 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
         )
         content = response.content.decode()
         expected = (
-            '<input type="text" name="properties-{obj_type_id}_{prop_id}" value="{value}" class="form-control"'
-            ' title="" id="id_properties-{obj_type_id}_{prop_id}">'.format(
+            '<textarea name="properties-{obj_type_id}_{prop_id}" cols="40" rows="1" class="form-control" title="" id="id_properties-{obj_type_id}_{prop_id}">{value}</textarea>'.format(
                 obj_type_id=works_object_type_choice.works_object_type.pk,
                 prop_id=prop.pk,
                 prop_name=prop.name,
@@ -462,7 +461,7 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
         )
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, [validator_user.permitauthor.email])
+        self.assertEqual(mail.outbox[0].to, [validator_user.permitauthor.user.email])
 
 
 class PermitRequestValidationTestcase(TestCase):
@@ -542,7 +541,7 @@ class PermitRequestValidationTestcase(TestCase):
         )
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, [validator.permitauthor.email])
+        self.assertEqual(mail.outbox[0].to, [validator.permitauthor.user.email])
 
 
 class PermitRequestClassifyTestCase(TestCase):

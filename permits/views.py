@@ -9,7 +9,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.exceptions import SuspiciousOperation
 from django.db.models import Prefetch
 from django.utils.decorators import method_decorator
-from django.http import Http404, HttpResponse, StreamingHttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, StreamingHttpResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext as _
@@ -250,7 +250,7 @@ class PermitRequestDetailView(View):
             success_message += " " + _(
                 "Le statut de la demande a été passé à en attente de compléments. Vous devez maintenant"
                 " contacter le requérant par email (%s) afin de lui demander de fournir les informations manquantes."
-            ) % self.permit_request.author.email
+            ) % self.permit_request.author.user.email
 
         messages.success(self.request, success_message)
 
@@ -451,11 +451,17 @@ def permit_request_appendices(request, permit_request_id):
 def permit_request_actors(request, permit_request_id):
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
 
+    creditorform = forms.PermitRequestCreditorForm(request.POST or None, instance=permit_request)
+
     if request.method == 'POST':
         formset = services.get_permitactorformset_initiated(permit_request, data=request.POST)
-        if formset.is_valid():
+        if formset.is_valid() and creditorform.is_valid():
             for form in formset:
                 form.save(permit_request=permit_request)
+
+            models.PermitRequest.objects.filter(
+                pk=permit_request_id
+                ).update(creditor_type=creditorform.instance.creditor_type)
 
             return redirect('permits:permit_request_submit', permit_request_id=permit_request.pk)
     else:
@@ -464,6 +470,7 @@ def permit_request_actors(request, permit_request_id):
 
     return render(request, "permits/permit_request_actors.html", {
         'formset': formset,
+        'creditorform': creditorform,
         'permit_request': permit_request,
     })
 
@@ -475,7 +482,7 @@ def permit_request_geo_time(request, permit_request_id):
 
     instance = permit_request.geo_time.first()
 
-    form = forms.PermitRequestGeoTimeForm(request.POST or None, instance=instance)
+    form = forms.PermitRequestGeoTimeForm(request.POST or None, instance=instance, permit_request=permit_request)
 
     if request.method == 'POST':
 
@@ -662,6 +669,21 @@ def permit_request_file_download(request, path):
 
 
 @login_required
+def administrative_entity_file_download(request, path):
+    """
+    Securely download the administrative entity customization files for member of the administrative_entity concerned
+    """
+
+    if services.get_user_administrative_entities(request.user).count() == 0 and not request.user.is_superuser:
+        raise Http404
+
+    mime_type, encoding = mimetypes.guess_type(path)
+    storage = fields.PrivateFileSystemStorage()
+
+    return StreamingHttpResponse(storage.open(path), content_type=mime_type)
+
+
+@login_required
 def printpdf(request, permit_request_id):
 
     permit_request = models.PermitRequest.objects.get(pk=permit_request_id)
@@ -681,7 +703,7 @@ def printpdf(request, permit_request_id):
 @login_required
 def genericauthorview(request, pk):
 
-    instance = get_object_or_404(models.permitAuthor, pk=pk)
+    instance = get_object_or_404(models.PermitAuthor, pk=pk)
     form = forms.GenericAuthorForm(request.POST or None, instance=instance)
 
     for field in form.fields:
@@ -691,40 +713,47 @@ def genericauthorview(request, pk):
     return render(request, "permits/permit_request_author.html", {'form': form})
 
 
-def permit_author_add(request):
+def permit_author_create(request):
 
-    signupform = forms.PermitAuthorUserForm(request.POST or None)
+    djangouserform = forms.NewDjangoAuthUserForm(request.POST or None)
+    permitauthorform = forms.GenericAuthorForm(request.POST or None)
 
-    form = forms.GenericAuthorForm(request.POST or None)
+    if djangouserform.is_valid() and permitauthorform.is_valid():
 
-    if signupform.is_valid() and form.is_valid():
-
-        signupform.instance.first_name = form.instance.firstname
-        signupform.instance.last_name = form.instance.name
-        signupform.instance.email = form.instance.email
-        new_user = signupform.save()
-        form.instance.user = new_user
-        form.save()
+        new_user = djangouserform.save()
+        permitauthorform.instance.user = new_user
+        permitauthorform.save()
 
         login(request, new_user)
 
         return HttpResponseRedirect(
             reverse('permits:permit_requests_list'))
 
-    return render(request, "permits/permit_request_author.html", {'form': form, 'signupform': signupform})
-
+    return render(request, "permits/permit_request_author.html", {'permitauthorform': permitauthorform, 'djangouserform': djangouserform})
 
 @login_required
-def permit_author_change(request):
+def permit_author_edit(request):
 
-    user = models.PermitAuthor.objects.filter(user=request.user.pk).first()
-    form = forms.GenericAuthorForm(request.POST or None, instance=user)
+    djangouserform = forms.DjangoAuthUserForm(request.POST or None, instance=request.user)
+    permit_author_instance = get_object_or_404(models.PermitAuthor, pk=request.user.permitauthor.pk)
+    permitauthorform = forms.GenericAuthorForm(request.POST or None, instance=permit_author_instance)
 
-    if form.is_valid():
+    if djangouserform.is_valid() and permitauthorform.is_valid():
 
-        form.save()
+        user = djangouserform.save()
+        permitauthorform.instance.user = user
+        permitauthorform.save()
 
         return HttpResponseRedirect(
             reverse('permits:permit_requests_list'))
 
-    return render(request, "permits/permit_request_author.html", {'form': form})
+    return render(request, "permits/permit_request_author.html", {'permitauthorform': permitauthorform, 'djangouserform': djangouserform})
+
+
+@login_required
+def administrative_infos(request):
+
+    administrative_entities = models.PermitAdministrativeEntity.objects.all()
+
+    return render(request, "permits/administrative_infos.html",
+                           {'administrative_entities': administrative_entities})

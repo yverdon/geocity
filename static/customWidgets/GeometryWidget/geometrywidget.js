@@ -42,6 +42,7 @@
               url: this.options.qgisserver_proxy,
               params: {
                   'LAYERS': 'permits_permitadministrativeentity',
+                  'FILTER': 'permits_permitadministrativeentity:"id" = ' + this.options.administrative_entity_id
               },
               projection: 'EPSG:2056'
           }),
@@ -52,7 +53,7 @@
         this.vectorMaskLayer = new ol.layer.Vector({
           source: new ol.source.Vector({
               url: (e) => {
-                return this.options.administrative_entities_geojson;
+                return this.options.administrative_entity_json_url;
               },
               zIndex: 9999,
               format: new ol.format.GeoJSON()
@@ -61,7 +62,6 @@
           style: restrictionStyle,
           opacity: 0.9
         });
-
 
         this.map = this.createMap(this.rasterMaskLayer, this.vectorMaskLayer);
         this.addBaseLayer();
@@ -126,6 +126,11 @@
 
             this.map.getView().setCenter(this.options.default_center);
             this.map.getView().setZoom(this.options.default_zoom);
+            _this = this;
+            this.vectorMaskLayer.on("change", function(e){
+              extent = _this.vectorMaskLayer.getSource().getExtent();
+              _this.map.getView().fit(extent,  {padding: [100, 100, 100, 100],  minResolution: 1 })
+            })
         }
 
         this.createInteractions();
@@ -152,19 +157,22 @@
 
     ol.proj.addProjection(projection);
 
-
     /*
     Create ol.Map instance
     */
     geometryWidget.prototype.createMap = function(rasterMaskLayer, vectorMaskLayer) {
-
         var map = new ol.Map({
             controls: [
                 new ol.control.ScaleLine(),
                 new ol.control.Zoom(),
+                new ol.control.Rotate({
+                  autoHide: false
+                }),
                 new ol.control.MousePosition({
                   coordinateFormat: function(coordinate) {
-                    return ol.coordinate.format(coordinate, 'Est: {x}, Nord: {y}', 0);
+                    return ol.coordinate.format(
+                      coordinate, 'Est: {x}, Nord: {y}', 0
+                    );
                   }
                 })
             ],
@@ -185,28 +193,27 @@
     Add default WMTS base layer
     */
     geometryWidget.prototype.addBaseLayer = function() {
-
       var wmtsLayerName = this.options.wmts_layer;
       var _this = this;
 
-       $.ajax({
-           url: this.options.wmts_capabilities_url,
-           success: function(response) {
-                var parser = new ol.format.WMTSCapabilities();
-                 var result = parser.read(response);
-                 var options = ol.source.WMTS.optionsFromCapabilities(result, {
-                   layer: wmtsLayerName,
-                   matrixSet: 'EPSG:2056',
-                   projection: 'EPSG:2056',
-                 });
+      $.ajax({
+        url: this.options.wmts_capabilities_url,
+        success: function(response) {
+          var parser = new ol.format.WMTSCapabilities();
+          var result = parser.read(response);
+          var options = ol.source.WMTS.optionsFromCapabilities(result, {
+              layer: wmtsLayerName,
+              matrixSet: 'EPSG:2056',
+              projection: 'EPSG:2056',
+          });
+          _this.wmtsLayer.setSource(
+            new ol.source.WMTS(/** @type {!olx.source.WMTSOptions} */ (options))
+          );
+        }
+      });
 
-                 _this.wmtsLayer.setSource(new ol.source.WMTS(/** @type {!olx.source.WMTSOptions} */ (options)));
-
-              }
-            });
-
-       this.map.getLayers().insertAt(0, this.wmtsLayer);
-       this.wmtsLayer.setVisible(true);
+      this.map.getLayers().insertAt(0, this.wmtsLayer);
+      this.wmtsLayer.setVisible(true);
     }
 
 
@@ -214,28 +221,29 @@
     Add alternative WMTS base layer
     */
     geometryWidget.prototype.setupAlternativeBaseLayer = function() {
-
       var wmtsLayerName = this.options.wmts_layer_alternative;
       var _this = this;
 
-       $.ajax({
-           url: this.options.wmts_capabilities_url_alternative,
-           success: function(response) {
-             var parser = new ol.format.WMTSCapabilities();
-             var result = parser.read(response);
-             var options = ol.source.WMTS.optionsFromCapabilities(result, {
-               layer: wmtsLayerName,
-               matrixSet: 'EPSG:2056',
-               projection: 'EPSG:2056'
-             });
+      $.ajax({
+        url: this.options.wmts_capabilities_url_alternative,
+        success: function(response) {
+          var parser = new ol.format.WMTSCapabilities();
+          var result = parser.read(response);
+          var options = ol.source.WMTS.optionsFromCapabilities(
+            result, {
+              layer: wmtsLayerName,
+              matrixSet: 'EPSG:2056',
+              projection: 'EPSG:2056'
+            }
+          );
+          _this.wmtsLayerAlternative.setSource(
+            new ol.source.WMTS(/** @type {!olx.source.WMTSOptions} */ (options))
+          );
+        }
+      });
 
-             _this.wmtsLayerAlternative.setSource(new ol.source.WMTS(/** @type {!olx.source.WMTSOptions} */ (options)));
-
-       }});
-
-       this.map.getLayers().insertAt(0, this.wmtsLayerAlternative);
-       this.wmtsLayerAlternative.setVisible(false);
-
+      this.map.getLayers().insertAt(0, this.wmtsLayerAlternative);
+      this.wmtsLayerAlternative.setVisible(false);
     }
 
 
@@ -243,15 +251,13 @@
     Base layer switcher
     */
     geometryWidget.prototype.switchBaseLayers = function() {
-
-        if (this.wmtsLayer.getVisible()) {
-            this.wmtsLayerAlternative.setVisible(true);
-            this.wmtsLayer.setVisible(false);
-        } else {
-            this.wmtsLayerAlternative.setVisible(false);
-            this.wmtsLayer.setVisible(true);
-        }
-
+      if (this.wmtsLayer.getVisible()) {
+          this.wmtsLayerAlternative.setVisible(true);
+          this.wmtsLayer.setVisible(false);
+      } else {
+          this.wmtsLayerAlternative.setVisible(false);
+          this.wmtsLayer.setVisible(true);
+      }
     }
 
 

@@ -9,6 +9,7 @@
 
 {% block navbartitle %}
   <a class="navbar-brand" href="{% url 'permits:permit_requests_list'%}">{% trans "Demandes de permis" %}</a>
+  <a href="{% url 'permits:administrative_infos' %}"><i class="fa fa-file"></i> Infos</a>
 {% endblock %}
 
 {% block content-no-sidebar %}

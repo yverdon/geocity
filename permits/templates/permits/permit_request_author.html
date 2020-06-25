@@ -9,10 +9,10 @@
   <hr>
 	<form method='POST' action='' enctype="multipart/form-data" novalidate id="actor-form">
 		{% csrf_token %}
-		{% bootstrap_form form layout='horizontal'%}
-    {% if signupform %}
-		  {% bootstrap_form signupform layout='horizontal'%}
-      {% endif %} 
+    {% if djangouserform %}
+      {% bootstrap_form djangouserform layout='horizontal'%}
+    {% endif %}
+		{% bootstrap_form permitauthorform layout='horizontal'%}
     {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary" value="Enregistrer" %}
     <a href="{% url 'permits:permit_requests_list' %}" class="mr-2">{% trans "Annuler" %}</a>
     <br>

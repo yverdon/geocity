@@ -17,11 +17,14 @@
 {% block content-no-sidebar %}
 <div class="container">
   {% permit_progressbar permit_request 'actors' %}
-  <h3>{% trans "Renseignez les contacts" %}</h3>
-  <hr>
   <form method="post">
     {% csrf_token %}
     {{ formset.management_form }}
+    <br>
+    <h4>Choisissez le destinataire de la facture si différent de l'auteur</h4>
+    {% bootstrap_form creditorform layout='horizontal' %}
+    <hr>
+    <h3>{% trans "Renseignez les contacts" %}</h3>
     <div id="forms-container">
        {% for form in formset %}
          {% bootstrap_form form layout='horizontal' %}
@@ -39,4 +42,10 @@
 {% block scripts %}
   <script src="{% static 'libs/js/jquery-ui-custom/jquery-ui.js' %}"></script>
   <script src="{% static 'customWidgets/RemoteAutocomplete/remoteautocomplete.js' %}"></script>
+  <script>
+      $("input[required]").each(function(){
+        var label = $("label[for='" + $(this).attr('id') + "']");
+        label.css("font-weight","bold");
+      });
+  </script>
 {% endblock %}

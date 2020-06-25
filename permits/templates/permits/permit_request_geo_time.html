@@ -4,7 +4,8 @@
 {% load permits_extras %}
 
 {% block title %}{% trans "Saisie de la localisation" %}{% endblock %}
-
+{% block scripts %}
+{% endblock %}
 {% block content-no-sidebar %}
 <div class="container">
   {% permit_progressbar permit_request 'geo_time' %}

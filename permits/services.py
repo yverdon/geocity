@@ -3,7 +3,6 @@ import os
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import SuspiciousOperation
-from django.core.files.storage import default_storage
 from django.core.mail import send_mass_mail
 from django.db import transaction
 from django.db.models import Q, Max, Min
@@ -13,7 +12,7 @@ from django.urls import reverse
 from django.forms import modelformset_factory
 from django.utils.translation import gettext_lazy as _
 
-from . import models, forms, geoservices
+from . import models, forms, geoservices, fields
 from .exceptions import BadPermitRequestStatus
 
 
@@ -44,6 +43,9 @@ def set_object_property_value(permit_request, object_type, prop, value):
         existing_value_obj.delete()
     else:
         if is_file:
+
+            # Use private storage to prevent uploaded files exposition to the outside world
+            private_storage = fields.PrivateFileSystemStorage()
             # If the given File has a `url` attribute, it means the value comes from the `initial` form data, so the
             # value hasn't changed
             if getattr(value, 'url', None):
@@ -55,8 +57,7 @@ def set_object_property_value(permit_request, object_type, prop, value):
             except models.WorksObjectPropertyValue.DoesNotExist:
                 pass
             else:
-                default_storage.delete(current_value.value['val'])
-
+                private_storage.delete(current_value.value['val'])
             # User has asked to remove the file. The file has already been removed from the storage, remove the property
             # value record and we're done
             if value is False:
@@ -67,7 +68,7 @@ def set_object_property_value(permit_request, object_type, prop, value):
             directory = 'permit_requests_uploads/{}'.format(permit_request.pk)
             ext = os.path.splitext(value.name)[1]
             path = os.path.join(directory, '{}_{}{}'.format(object_type.pk, prop.pk, ext))
-            default_storage.save(path, value)
+            private_storage.save(path, value)
             value = path
 
         value_dict = {'val': value}
@@ -216,7 +217,8 @@ def get_property_value(object_property_value):
     value = object_property_value.value['val']
 
     if object_property_value.property.input_type == models.WorksObjectProperty.INPUT_TYPE_FILE:
-        f = default_storage.open(value)
+        private_storage = fields.PrivateFileSystemStorage()
+        f = private_storage.open(value)
         # The `url` attribute of the file is used to detect if there was already a file set (it is used by
         # `ClearableFileInput` and by the `set_object_property_value` function)
         f.url = reverse('permits:permit_request_media_download', kwargs={'property_value_id': object_property_value.pk})
@@ -383,7 +385,7 @@ def get_progressbar_steps(request, permit_request):
 
     steps = {
         "location": models.Step(
-            name=_("Localisation"),
+            name=_("Entité"),
             url=localisation_url,
             completed=bool(permit_request),
             enabled=True,
@@ -457,8 +459,8 @@ def submit_permit_request(permit_request, absolute_uri_func):
 
     users_to_notify = set(get_user_model().objects.filter(
         groups__permitdepartment__administrative_entity=permit_request.administrative_entity,
-        permitauthor__email__isnull=False,
-    ).values_list("permitauthor__email", flat=True))
+        permitauthor__user__email__isnull=False,
+    ).values_list("permitauthor__user__email", flat=True))
 
     email_contents = render_to_string("permits/emails/permit_request_submitted.txt", {
         "permit_request_url": permit_request_url
@@ -470,13 +472,13 @@ def submit_permit_request(permit_request, absolute_uri_func):
 
     acknowledgment_email_contents = render_to_string("permits/emails/permit_request_acknowledgment.txt", {
         "permit_request_url": permit_request_url,
-        "name": permit_request.author.get_full_name(),
+        "name": permit_request.author.user.get_full_name(),
         "administrative_entity_name": permit_request.administrative_entity.name,
     })
     emails.append(
         (
             "Votre demande de permis", acknowledgment_email_contents, settings.DEFAULT_FROM_EMAIL,
-            [permit_request.author.email]
+            [permit_request.author.user.email]
         )
     )
 
@@ -497,7 +499,7 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
     users_to_notify = {
         email
         for department in departments
-        for email in department.group.user_set.values_list("permitauthor__email", flat=True)
+        for email in department.group.user_set.values_list("permitauthor__user__email", flat=True)
     }
 
     email_contents = render_to_string("permits/emails/permit_request_validation_request.txt", {
@@ -523,7 +525,7 @@ def send_validation_reminder(permit_request, absolute_uri_func):
     pending_validations = permit_request.get_pending_validations()
     users_to_notify = set(get_user_model().objects.filter(
         groups__permitdepartment__in=pending_validations.values_list("department", flat=True)
-    ).values_list("permitauthor__email", flat=True).distinct())
+    ).values_list("permitauthor__user__email", flat=True).distinct())
 
     email_contents = render_to_string("permits/emails/permit_request_validation_reminder.txt", {
         "permit_request_url": absolute_uri_func(

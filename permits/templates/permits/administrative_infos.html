@@ -1,0 +1,31 @@
+{% extends "base_permits.html" %}
+
+{% load static %}
+{% load i18n %}
+{% load bootstrap4 %}
+{% load render_table from django_tables2 %}
+
+{% block title %}{% trans "Liste des demandes" %}{% endblock %}
+
+{% block navbartitle %}
+  <a class="navbar-brand" href="{% url 'permits:permit_requests_list'%}">{% trans "Demandes de permis" %}</a>
+  {% block list_permit %}
+    <a href="{% url 'permits:permit_requests_list'%}">{% trans "Voir mes demandes" %} - </a>
+  {% endblock %}
+{% endblock %}
+
+{% block content %}
+  <div>
+    <h3>Informations des communes / entités</h3>
+    {% for item in administrative_entities %}
+      <h4>{{ item.name }}</h4>
+      <h5>Informations</h5>
+      <p>{{ item.general_informations }}</p>
+      <h5>Documents</h5>
+      <p>
+      <a href="{{item.legal_document.url}}" target="_blank">{% trans 'Télécharger les directives PDF' %}</a>
+      </p>
+      <hr>
+    {% endfor %}
+  </div>
+{% endblock %}
