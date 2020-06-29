@@ -183,3 +183,13 @@ h3 {
   width: 50%;
 
 }
+
+#list-info-title {
+  font-size: 20px;
+  margin-left: 20px;
+  font-weight: bold;
+}
+
+.new-request-btn {
+  margin-left: 30px;
+}
