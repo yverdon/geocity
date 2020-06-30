@@ -131,7 +131,9 @@ def get_permit_request_appendices(permit_request):
 
 def get_works_types(administrative_entity):
     return models.WorksType.objects.filter(
-        pk__in=models.WorksObjectType.objects.values_list('works_type_id', flat=True)
+        pk__in=models.WorksObjectType.objects.filter(
+            administrative_entities=administrative_entity
+        ).values_list('works_type_id', flat=True)
     ).order_by('name')
 
 
