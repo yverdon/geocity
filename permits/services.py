@@ -131,7 +131,9 @@ def get_permit_request_appendices(permit_request):
 
 def get_works_types(administrative_entity):
     return models.WorksType.objects.filter(
-        pk__in=models.WorksObjectType.objects.values_list('works_type_id', flat=True)
+        pk__in=models.WorksObjectType.objects.filter(
+            administrative_entities=administrative_entity
+        ).values_list('works_type_id', flat=True)
     ).order_by('name')
 
 
@@ -379,7 +381,7 @@ def get_progressbar_steps(request, permit_request):
 
     properties_errors = len(properties_form.errors) if properties_form else 0
     appendices_errors = len(appendices_form.errors) if appendices_form else 0
-    geo_time_errors = 0 if models.PermitRequestGeoTime.objects.filter(permit_request=permit_request) else 1
+    geo_time_errors = 0 if models.PermitRequestGeoTime.objects.filter(permit_request=permit_request).count() == 1 else 1
     actor_errors = len(get_missing_actors_types(permit_request)) if permit_request else 0
     total_errors = sum([properties_errors, appendices_errors, actor_errors])
 
@@ -394,7 +396,7 @@ def get_progressbar_steps(request, permit_request):
             name=_("Type"),
             url=works_types_url,
             completed=has_objects_types or request.GET.getlist('types'),
-            enabled=has_objects_types,
+            enabled=True,
         ),
         "objects_types": models.Step(
             name=_("Objets"),

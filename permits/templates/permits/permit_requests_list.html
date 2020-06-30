@@ -8,13 +8,15 @@
 {% block title %}{% trans "Liste des demandes" %}{% endblock %}
 
 {% block navbartitle %}
-  <a class="navbar-brand" href="{% url 'permits:permit_requests_list'%}">{% trans "Demandes de permis" %}</a>
+  <a class="navbar-brand" href="{% url 'permits:permit_requests_list'%}">{% trans "Demandes d'autorisations" %}</a>
   <a href="{% url 'permits:administrative_infos' %}"><i class="fa fa-file"></i> Infos</a>
 {% endblock %}
 
 {% block content-no-sidebar %}
   <div class="container-fluid">
-    <a class="btn btn-outline-primary" href="{% url 'permits:permit_request_select_administrative_entity'%}" role="button"><i class="fa fa-plus"></i> {% trans "Nouvelle demande" %}</a>
+    <span id="list-info-title">{% trans "Vue d'ensemble de vos demandes" %}</span><a class="btn btn-primary new-request-btn" href="{% url 'permits:permit_request_select_administrative_entity'%}" role="button"><i class="fa fa-plus"></i> {% trans "Créer une nouvelle demande" %}</a>
+
+    <hr>
     <a class="btn btn-outline-primary" data-toggle="collapse" href="#collapseFilter" role="button" aria-expanded="false" aria-controls="collapseFilter">
       <i class="fa fa-filter"></i> {% trans "Filtrer" %}
     </a>
@@ -26,10 +28,9 @@
         {% endif %}
       {% endif %}
     {% endwith %}
-    <hr>
-    <p><b>Les demandes envoyées ne peuvent plus être modifiées</b></p>
-    <p><a class="btn btn-outline-success btn-sm" href="{% url 'permits:listexport'%}?_export=csv" role="button">Exporter en CSV</a></p>
-
+    <a class="btn btn-outline-success" href="{% url 'permits:listexport'%}?_export=csv" role="button">Exporter en CSV</a>
+    <br><br>
+    {% trans "Les demandes envoyées ne peuvent plus être modifiées" %}
     {{ filter.form.media }}
     <form method="get">
       <div class="collapse" id="collapseFilter">

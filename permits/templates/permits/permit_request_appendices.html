@@ -19,7 +19,8 @@
         {% bootstrap_field field %}
       {% endfor %}
     {% empty %}
-      {% trans "Aucune annexe requise pour cette demande de permis." %}
+      <h5>{% trans "Aucune annexe requise pour cette demande de permis." %}</h5>
+      <br>
     {% endfor %}
 
     {% buttons %}

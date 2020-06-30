@@ -64,7 +64,10 @@ class AdministrativeEntityForm(forms.Form):
 
 class WorksTypesForm(forms.Form):
     types = forms.ModelMultipleChoiceField(
-        queryset=models.WorksType.objects.none(), widget=forms.CheckboxSelectMultiple(), label=_("Types de travaux")
+        queryset=models.WorksType.objects.none(),
+        widget=forms.CheckboxSelectMultiple(),
+        label=_("Types de travaux"),
+        error_messages={'required': _('Sélectionnez au moins un type de demande')},
     )
 
     def __init__(self, instance, *args, **kwargs):
@@ -104,7 +107,8 @@ class WorksObjectsForm(forms.Form):
                 queryset=works_type.works_object_types.filter(
                     administrative_entities=self.instance.administrative_entity
                 ).distinct(),
-                widget=forms.CheckboxSelectMultiple(), label=works_type.name
+                widget=forms.CheckboxSelectMultiple(), label=works_type.name,
+                error_messages={'required': _('Sélectionnez au moins un objet par type de demande')},
             )
 
     @transaction.atomic

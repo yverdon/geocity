@@ -25,7 +25,7 @@
       <ul class="nav nav-tabs" id="actions-tabs" role="tablist">
         {% if forms.amend %}
           <li class="nav-item">
-            <a class="nav-link{% if active_form == "amend" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">1. {% trans "Amender" %}</a>
+            <a class="nav-link{% if active_form == "amend" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">1. {% trans "Traiter" %}</a>
           </li>
         {% endif %}
 
@@ -61,7 +61,7 @@
 
               <div class="text-right">
                 <input name="action" type="hidden" value="amend">
-                <button class="btn btn-primary" {% if forms.amend.disabled %}disabled{% endif %}>{% trans "Amender" %}</button>
+                <button class="btn btn-primary" {% if forms.amend.disabled %}disabled{% endif %}>{% trans "Traiter" %}</button>
               </div>
             </form>
           </div>

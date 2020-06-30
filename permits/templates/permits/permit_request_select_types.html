@@ -3,12 +3,12 @@
 {% load i18n %}
 {% load permits_extras %}
 
-{% block title %}{% trans "Sélection des types de travaux" %}{% endblock %}
+{% block title %}{% trans "Sélection des types " %}{% endblock %}
 
 {% block content-no-sidebar %}
 <div class="container">
   {% permit_progressbar permit_request 'works_types' %}
-  <h3>{% trans "Sélectionnez les types" %}</h3>
+  <h3>{% trans "Sélectionnez le ou les type(s) de travaux / événement(s) prévu(s)" %}</h3>
   <hr>
   <form method="post">
     {% bootstrap_form_errors works_types_form %}

@@ -6,7 +6,6 @@ from . import models
 
 admin.site.register(models.WorksType)
 admin.site.register(models.WorksObject)
-admin.site.register(models.WorksObjectProperty)
 admin.site.register(models.PermitRequest)
 admin.site.register(models.PermitActorType)
 admin.site.register(models.PermitRequestActor)
@@ -36,3 +35,10 @@ class WorksObjectTypeAdmin(admin.ModelAdmin):
 
 
 admin.site.register(models.WorksObjectType, WorksObjectTypeAdmin)
+
+
+class WorksObjectPropertyAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'is_mandatory']
+
+
+admin.site.register(models.WorksObjectProperty, WorksObjectPropertyAdmin)

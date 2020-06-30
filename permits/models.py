@@ -23,7 +23,7 @@ ACTOR_TYPE_SECURITY = 5
 ACTOR_TYPE_ASSOCIATION = 6
 ACTOR_TYPE_CHOICES = (
     (ACTOR_TYPE_OTHER, _("Autres")),
-    (ACTOR_TYPE_OWNER, _("Popriétaire")),
+    (ACTOR_TYPE_OWNER, _("Propriétaire")),
     (ACTOR_TYPE_COMPANY, _("Entreprise")),
     (ACTOR_TYPE_CLIENT, _("Maître d'ouvrage")),
     (ACTOR_TYPE_REQUESTOR, _("Requérant si différent de l'auteur de la demande")),
@@ -423,7 +423,7 @@ class PermitRequest(models.Model):
         null=True
     )
     price = models.DecimalField(
-        _("Prix"),
+        _("Émolument"),
         decimal_places=2,
         max_digits=7,
         null=True,
@@ -438,12 +438,11 @@ class PermitRequest(models.Model):
         blank=True
     )
     comment = models.TextField(
-        _("Commentaire"),
+        _("Analyse du service pilote"),
         blank=True
     )
     validation_pdf = fields.PermitRequestFileField(
         _("pdf de validation"),
-        blank=True,
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
         upload_to="validations"
     )
@@ -458,7 +457,7 @@ class PermitRequest(models.Model):
         verbose_name = _("demande de permis")
         verbose_name_plural = _("demandes de permis")
         permissions = [
-            ('amend_permit_request', _("Amender les demandes de permis")),
+            ('amend_permit_request', _("Traiter les demandes de permis")),
             ('validate_permit_request', _("Valider les demandes de permis")),
             ('classify_permit_request', _("Classer les demandes de permis")),
         ]
@@ -704,10 +703,10 @@ class PermitRequestGeoTime(models.Model):
         related_name='geo_time'
     )
     starts_at = models.DateTimeField(
-        _("Date de début")
+        _("Date planifiée de début")
     )
     ends_at = models.DateTimeField(
-        _("Date de fin")
+        _("Date planifiée de fin")
     )
     comment = models.CharField(
         _("Commentaire"),

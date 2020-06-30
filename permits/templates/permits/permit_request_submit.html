@@ -31,21 +31,13 @@
     {% if incomplete_steps %}
       <a class="btn btn-primary" href="{{ incomplete_steps|first }}">{% trans "Renseigner les informations manquantes" %}</a>
     {% else %}
-      <div id="legal-infos">
-          <h5>Merci de prendre connaissance des directives et tarifs appliqués par la commune / l'entité {{ permit_request.administrative_entity.name }}</h5>
-          <p>
-            <b>Directives</b>
-              <a href="{{permit_request.administrative_entity.legal_document.url}}" target="_blank">{% trans 'Télécharger le PDF' %}</a>
-          </p>
-            <b>Autres informations</b><br>
-            {{ permit_request.administrative_entity.general_informations }}
-      </div>
-      <button class="btn btn-primary">
-        {% trans "Envoyer" %}
-      </button>
+      <hr>
+      <a class="btn btn-primary" href="{% url 'permits:permit_request_submit_confirmation' permit_request_id=permit_request.pk %}" class="mr-2">
+      {% trans "Envoyer" %}</a>
       <a href="{% url 'permits:permit_request_actors' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
     {% endif %}
     {% endbuttons %}
   </form>
 </div>
+<br><br>
 {% endblock content-no-sidebar %}
