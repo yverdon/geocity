@@ -7,4 +7,7 @@ select[readonly] {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
+    background-color: white !important;
+    border: 0;
+    font-weight: bold;
 }

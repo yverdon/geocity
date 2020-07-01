@@ -244,7 +244,7 @@ class PermitRequestDetailView(View):
     def handle_amend_form_submission(self, form):
 
         form.save()
-        success_message = _("La demande de permis #%s a bien été amendée.") % self.permit_request.pk
+        success_message = _("La demande de permis #%s a bien été complétée par le service pilote.") % self.permit_request.pk
 
         if form.instance.status == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT:
             success_message += " " + _(

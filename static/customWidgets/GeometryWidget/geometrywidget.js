@@ -395,7 +395,25 @@
         // Initialize the modify interaction
         this.interactions.modify = new ol.interaction.Modify({
             source: this.vectorSource,
-            style: new ol.style.Style({})
+            style: new ol.style.Style({}),
+            condition: (e) => {
+              $('#out-of-administrative-limits').hide();
+              let coords = e.coordinate;
+              let features = this.map.getFeaturesAtPixel(e.pixel, {
+                layerFilter: (layer) => {
+                  return layer === this.vectorMaskLayer;
+                }
+              });
+              if (features && features.length > 0) {
+                return true;
+              } else {
+                  $('#out-of-administrative-limits').show();
+                  $('#out-of-administrative-limits').html(
+                    "Votre saisie sort du territoire du territoire concerné"
+                    )
+                return false;
+              }
+            }
         });
 
 
