@@ -126,3 +126,12 @@ body {
   background-color: gray;
   transform:rotate(-90deg);
 }
+
+textarea {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: white !important;
+    border: 0;
+    font-weight: bold;
+}

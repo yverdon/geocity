@@ -3,12 +3,14 @@
 {% load i18n %}
 {% load bootstrap4 %}
 
-{% block title %}{% trans "Envoi de la demande" %}{% endblock %}
-
 {% block content %}
   <div class="container-fluid">
     <h3 class="mt-2">{% trans "Envoyer votre demande ?" %}</h3>
     <form method="post">{% csrf_token %}
+      <hr>
+      <a class="btn btn-primary" href="{% url 'permits:permit_request_submit_confirmed' permit_request_id=permit_request.pk %}">{% trans "Confirmer l'envoi" %}</a>
+      <a class="ml-2" href="{% url 'permits:permit_request_submit' permit_request_id=permit_request.pk %}">{% trans "Annuler" %}</a>
+      <hr>
       <div id="legal-infos">
          <h5>Merci de prendre connaissance des directives et tarifs appliqués par la commune / l'entité {{ permit_request.administrative_entity.name }}</h5>
          <p>
@@ -23,8 +25,6 @@
         <li>{% trans "Requérant:"%} {{ permit_request.author.user.first_name }}, {{ permit_request.author.user.last_name}}</li>
         <li>{% trans "Demande du:"%} {{ permit_request.created_at }}</li>
       </ul>
-      <a class="btn btn-primary" href="{% url 'permits:permit_request_submit_confirmed' permit_request_id=permit_request.pk %}">{% trans "Confirmer l'envoi" %}</a>
-      <a class="ml-2" href="{% url 'permits:permit_requests_list' %}">{% trans "Annuler" %}</a>
     </form>
   </div>
 {% endblock %}

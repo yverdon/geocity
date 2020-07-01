@@ -627,11 +627,11 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequestGeoTime
         fields = [
+            'geom',
             'starts_at',
             'ends_at',
             'comment',
             'external_link',
-            'geom'
         ]
         help_texts = {
             'starts_at': "Date de début du chantier ou d'occupation du territoire. Si l'heure n'est pas pertinente, insérer 00:00.",
@@ -669,6 +669,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                     "useCurrent": False,
                 }
             ).end_of('event days'),
+            'comment':  forms.Textarea(attrs={'rows': 2}),
         }
 
     def __init__(self, *args, **kwargs):
