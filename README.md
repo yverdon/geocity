@@ -127,12 +127,12 @@ docker-compose exec web pip install -r requirements.txt
 
 1. Copy tables into schema with same name on target db, for instance:
 ```
-select * into public.auth_user from geomapshark.auth_user
+select * into my_target.auth_user from my_schema.auth_user
 ```
 
 2. Backup only data as plain sql
 3. Empty test users on new instance
 4. Restore on db
 ```
-sudo -u postgres psql -d geocity_preprod -a -f /var/sig/dumps/auth_user_data.sql
+sudo -u postgres psql -d my_db -a -f my_dump.sql
 ```
