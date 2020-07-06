@@ -214,7 +214,7 @@ class PermitAuthor(models.Model):
 
     def __str__(self):
 
-        return str(self.pk)
+        return str(self.user.first_name) + ' ' + str(self.user.last_name) if self.user else str(self.pk)
 
 
 class PermitActor(models.Model):
