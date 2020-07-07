@@ -36,15 +36,15 @@
     <hr>
     <div class="form-check form-check-inline">
       <input class="form-check-input" title="Cliquer pour ajouter un point" type="radio" name="inlineRadioOptions" id="inlineRadio1" checked onclick="javascript:geometryWidget.setDrawInteraction('MultiPoint');">
-      <label class="form-check-label" title="Cliquer pour ajouter un point" for="inlineRadio1">Points<img src="{% static 'images/geometrywidget/points.svg'%}" height=30></label>
+      <label class="form-check-label no-wildcard" title="Cliquer pour ajouter un point" for="inlineRadio1">Points<img src="{% static 'images/geometrywidget/points.svg'%}" height=30></label>
     </div>
     <div class="form-check form-check-inline">
       <input class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions" id="inlineRadio2" onclick="javascript:geometryWidget.setDrawInteraction('MultiLineString');">
-      <label class="form-check-label" title="Double clique pour terminer la construction" for="inlineRadio2">Lignes<img src="{% static 'images/geometrywidget/polyline.svg'%}" height=30></label>
+      <label class="form-check-label no-wildcard" title="Double clique pour terminer la construction" for="inlineRadio2">Lignes<img src="{% static 'images/geometrywidget/polyline.svg'%}" height=30></label>
     </div>
     <div class="form-check form-check-inline">
       <input class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions" id="inlineRadio3" onclick="javascript:geometryWidget.setDrawInteraction('MultiPolygon');">
-      <label class="form-check-label" title="Double clique pour terminer la construction" for="inlineRadio3">Surfaces<img src="{% static 'images/geometrywidget/polygon.svg'%}" height=30></label>
+      <label class="form-check-label no-wildcard" title="Double clique pour terminer la construction" for="inlineRadio3">Surfaces<img src="{% static 'images/geometrywidget/polygon.svg'%}" height=30></label>
     </div>
     <a class="btn btn-outline-primary" data-toggle="collapse" href="#manual-coordinates" role="button" aria-expanded="false" aria-controls="manual-coordinates">
       Saisir des coordonnées manuellement

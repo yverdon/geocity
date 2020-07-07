@@ -44,6 +44,8 @@
       $("input[required]").each(function(){
         var label = $("label[for='" + $(this).attr('id') + "']");
         label.css("font-weight","bold");
+        label.append(" *");
+
       });
   </script>
 {% endblock %}
