@@ -15,6 +15,8 @@ urlpatterns = [
     path('accounts/password_reset/done', auth_views.PasswordResetDoneView.as_view(template_name='registration/password_reset_done.html'), name='password_reset_done'),
     path('accounts/password_reset/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('accounts/password_change/', auth_views.PasswordChangeView.as_view(), name='password_change'),
+    path('permitauthorcreate/', views.permit_author_create, name='permit_author_create'),
+    path('permitauthoredit/', views.permit_author_edit, name='permit_author_edit'),
     path('accounts/', include('django.contrib.auth.urls')),
 ]
 
