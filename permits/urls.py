@@ -34,8 +34,6 @@ urlpatterns = [
     path('', include(permit_request_urlpatterns)),
     path('media/<int:property_value_id>/', views.permit_request_media_download, name='permit_request_media_download'),
     path('listexport/', views.PermitExportView.as_view(), name='listexport'),
-    path('permitauthorcreate/', views.permit_author_create, name='permit_author_create'),
-    path('permitauthoredit/', views.permit_author_edit, name='permit_author_edit'),
     path('administrativeinfos/', views.administrative_infos, name='administrative_infos'),
     path('adminentitiesgeojson/<int:administrative_entity_id>/', geoviews.administrative_entities_geojson, name='administrative_entities_geojson'),
     path('qgisserverproxy/', geoviews.qgisserver_proxy, name='qgisserver_proxy'),

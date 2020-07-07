@@ -9,7 +9,6 @@ from django.core.exceptions import PermissionDenied
 from django.core.exceptions import SuspiciousOperation
 from django.db.models import Prefetch
 from django.utils.decorators import method_decorator
-from django.http import Http404, HttpResponse, StreamingHttpResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext as _
@@ -19,8 +18,10 @@ from django_tables2.views import SingleTableMixin, SingleTableView
 from django_tables2.export.views import ExportMixin
 from django_filters.views import FilterView
 from . import fields, forms, models, services, tables, filters, printpermit
-from django.contrib.auth import login
 from django.utils import timezone
+from django.http import Http404, HttpResponse, StreamingHttpResponse
+from django.contrib.auth.decorators import login_required
+
 
 from .exceptions import BadPermitRequestStatus
 
@@ -755,43 +756,6 @@ def genericauthorview(request, pk):
         form.fields[field].disabled = True
 
     return render(request, "permits/permit_request_author.html", {'form': form})
-
-
-def permit_author_create(request):
-
-    djangouserform = forms.NewDjangoAuthUserForm(request.POST or None)
-    permitauthorform = forms.GenericAuthorForm(request.POST or None)
-
-    if djangouserform.is_valid() and permitauthorform.is_valid():
-
-        new_user = djangouserform.save()
-        permitauthorform.instance.user = new_user
-        permitauthorform.save()
-
-        login(request, new_user)
-
-        return HttpResponseRedirect(
-            reverse('permits:permit_requests_list'))
-
-    return render(request, "permits/permit_request_author.html", {'permitauthorform': permitauthorform, 'djangouserform': djangouserform})
-
-@login_required
-def permit_author_edit(request):
-
-    djangouserform = forms.DjangoAuthUserForm(request.POST or None, instance=request.user)
-    permit_author_instance = get_object_or_404(models.PermitAuthor, pk=request.user.permitauthor.pk)
-    permitauthorform = forms.GenericAuthorForm(request.POST or None, instance=permit_author_instance)
-
-    if djangouserform.is_valid() and permitauthorform.is_valid():
-
-        user = djangouserform.save()
-        permitauthorform.instance.user = user
-        permitauthorform.save()
-
-        return HttpResponseRedirect(
-            reverse('permits:permit_requests_list'))
-
-    return render(request, "permits/permit_request_author.html", {'permitauthorform': permitauthorform, 'djangouserform': djangouserform})
 
 
 @login_required
