@@ -311,6 +311,7 @@ class DjangoAuthUserForm(forms.ModelForm):
             'email'
         ]
 
+
 class GenericAuthorForm(forms.ModelForm):
 
     required_css_class = 'required'

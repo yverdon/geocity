@@ -25,44 +25,50 @@
 </div>
   <div class="banner_center">Permis N°{{ permit_request.id }}</div>
 <hr>
+{% if geo_times %}
 <h3>Agenda</h3>
-{% for geo_time in geo_times %}
-  <p>Date de début: {{ geo_time.starts_at }} - Date de fin: {{ geo_time.ends_at }}</p>
-  {% if geo_time.comment %}
-    <p>Commentaire: {{ geo_time.comment }}</p>
-  {% endif %}
-  {% if geo_time.comment %}
-    <p>Lien externe: {{ geo_time.external_link }}</p>
-  {% endif %}
-{% endfor %}
+
+  {% for geo_time in geo_times %}
+    <p>Date de début: {{ geo_time.starts_at }} - Date de fin: {{ geo_time.ends_at }}</p>
+    {% if geo_time.comment %}
+      <p>Commentaire: {{ geo_time.comment }}</p>
+    {% endif %}
+    {% if geo_time.comment %}
+      <p>Lien externe: {{ geo_time.external_link }}</p>
+    {% endif %}
+  {% endfor %}
+{% endif %}
+{% if objects_infos %}
 <h3>{% trans "Objet(s) du permis" %}</h3>
-{% for object, properties, appendices in objects_infos %}
-  <h4>{{ object }}</h4>
-  <dl>
-    {% for field in properties %}
-      <p>
-        {{ field.label }}:
-        {% if not field.value %}
-          <em>{% trans "Information non fournie" %}</em>
-        {% else %}
-          {{ field.value }}
-        {% endif %}
-      </p>
-    {% endfor %}
-    {%if appendices %}
-    <h4>{% trans "Document(s)" %}</h4>
-      {% for field in appendices %}
+  {% for object, properties, appendices in objects_infos %}
+    <h4>{{ object }}</h4>
+    <dl>
+      {% for field in properties %}
         <p>
-        {{ field.label }}:
+          {{ field.label }}:
           {% if not field.value %}
             <em>{% trans "Information non fournie" %}</em>
           {% else %}
-            <a href="{{ field.value.url }}" target="_blank">{{ field.value.name }}</a>
+            {{ field.value }}
           {% endif %}
         </p>
       {% endfor %}
-    {% endif %}
-{% endfor %}
+      {%if appendices %}
+      <h4>{% trans "Document(s)" %}</h4>
+        {% for field in appendices %}
+          <p>
+          {{ field.label }}:
+            {% if not field.value %}
+              <em>{% trans "Information non fournie" %}</em>
+            {% else %}
+              <a href="{{ field.value.url }}" target="_blank">{{ field.value.name }}</a>
+            {% endif %}
+          </p>
+        {% endfor %}
+      {% endif %}
+  {% endfor %}
+{% endif %}
+{% if validations %}
 <p style="page-break-before: always" ></p>
 <h3> Remarques des services consultés </h3>
 <table>
@@ -70,25 +76,26 @@
     <th>Service</th>
     <th>Commentaire</th>
   </tr>
-    {% for validation in validations %}
-      <tr>
-        <td class="validation-table-left">
-          {{validation.department}}
-        </td>
-        <td class="validation-table-right">
-            <h5>{% trans "Avant" %}</h5>
-            <p>{{validation.comment_before}}</p>
-            <h5>{% trans "Pendant" %}</h5>
-            <p>{{validation.comment_during}}</p>
-            <h5>{% trans "Après" %}</h5>
-            <p>{{validation.comment_after}}</p>
-        </td>
-      </tr>
-    {% endfor %}
-</table>
 
-<p style="page-break-before: always" ></p>
+      {% for validation in validations %}
+        <tr>
+          <td class="validation-table-left">
+            {{validation.department}}
+          </td>
+          <td class="validation-table-right">
+              <h5>{% trans "Avant" %}</h5>
+              <p>{{validation.comment_before}}</p>
+              <h5>{% trans "Pendant" %}</h5>
+              <p>{{validation.comment_during}}</p>
+              <h5>{% trans "Après" %}</h5>
+              <p>{{validation.comment_after}}</p>
+          </td>
+        </tr>
+      {% endfor %}
+</table>
+{% endif %}
 {% if contacts %}
+<p style="page-break-before: always" ></p>
   <h3>{% trans "Contacts" %}</h3>
   <hr>
   <h5>{% trans "Auteur de la demande" %}</h5>
@@ -112,11 +119,13 @@
       {% endfor %}
   {% endfor %}
 {% endif %}
-<p style="page-break-before: always" ></p>
-<h3> Plan de situation </h3>
-<div id="print-map-container">
-  <img src="{{map_image}}" alt="" class="map-print-image">
-</div>
+{% if map_image %}
+  <p style="page-break-before: always" ></p>
+  <h3> Plan de situation </h3>
+  <div id="print-map-container">
+    <img src="{{map_image}}" alt="" class="map-print-image">
+  </div>
+{% endif %}
 <p style="page-break-before: always" ></p>
 <h3> Signatures </h3>
 <br><br><br>
