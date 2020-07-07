@@ -8,10 +8,10 @@
    content: "page " counter(page) "/" counter(pages);
  }
  @bottom-left {
-   content: "Tél.: +41 24 423 63 64";
+   content: "Tél.: ";
  }
  @bottom-center {
-   content: "www.yverdon-les-bains.ch";
+   content: "";
  }
 
 }

@@ -327,7 +327,8 @@ class GenericAuthorForm(forms.ModelForm):
             'vat_number',
         ]
         help_texts = {
-            'vat_number': 'Trouvez votre numéro <a href="https://www.bfs.admin.ch/bfs/fr/home/registres/registre-entreprises/numero-identification-entreprises.html" target="_blank">TVA</a>',
+            'vat_number':
+                'Trouvez votre numéro <a href="https://www.uid.admin.ch/Search.aspx?lang=fr" target="_blank">TVA</a>',
         }
         widgets = {
             'address': widgets.RemoteAutocompleteWidget(
