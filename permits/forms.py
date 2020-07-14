@@ -625,8 +625,32 @@ class GeometryWidget(geoforms.OSMWidget):
 class PermitRequestGeoTimeForm(forms.ModelForm):
 
     required_css_class = 'required'
-
+    starts_at = forms.DateTimeField(
+        input_formats = ["%d/%m/%Y %H:%M"],
+        widget = DateTimePickerInput(
+            options = {
+                "format": "DD/MM/YYYY HH:MM",
+                "locale": "fr-CH",
+                "useCurrent": False,
+                "minDate": (
+                        datetime.today() +
+                        timedelta(days=int(settings.MIN_START_DELAY))
+                    ).strftime('%Y/%m/%d')
+            }
+        ).start_of('event days'),
+    )
+    ends_at = forms.DateTimeField(
+        input_formats = ["%d/%m/%Y %H:%M"],
+        widget = DateTimePickerInput(
+            options={
+                "format": "DD/MM/YYYY HH:MM",
+                "locale": "fr-CH",
+                "useCurrent": False,
+            }
+        ).end_of('event days'),
+    )
     class Meta:
+
         model = models.PermitRequestGeoTime
         fields = [
             'geom',
@@ -653,24 +677,6 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
                 'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
             }),
-            'starts_at': DateTimePickerInput(
-                options={
-                "format": "DD/MM/YYYY HH:mm",
-                "locale": "fr",
-                "useCurrent": False,
-                "minDate": (
-                        datetime.today() +
-                        timedelta(days=int(settings.MIN_START_DELAY))
-                    ).strftime('%Y/%m/%d')
-                }
-            ).start_of('event days'),
-            'ends_at': DateTimePickerInput(
-                options={
-                    "format": "DD/MM/YYYY HH:mm",
-                    "locale": "fr",
-                    "useCurrent": False,
-                }
-            ).end_of('event days'),
             'comment':  forms.Textarea(attrs={'rows': 2}),
         }
 
