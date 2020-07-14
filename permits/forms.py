@@ -626,6 +626,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
 
     required_css_class = 'required'
     starts_at = forms.DateTimeField(
+        label=_("Date planifiée de début"),
         input_formats = ["%d/%m/%Y %H:%M"],
         widget = DateTimePickerInput(
             options = {
@@ -640,6 +641,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         ).start_of('event days'),
     )
     ends_at = forms.DateTimeField(
+        label=_("Date planifiée de fin"),
         input_formats = ["%d/%m/%Y %H:%M"],
         widget = DateTimePickerInput(
             options={
