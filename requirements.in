@@ -22,3 +22,4 @@ whitenoise
 tablib
 pycairo
 python-dotenv
+django-grappelli

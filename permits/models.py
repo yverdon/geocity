@@ -544,7 +544,7 @@ class WorksObjectType(models.Model):
     def __str__(self):
         return "{} ({})".format(
             self.works_object.name,
-            self.works_type.name,self.administrative_entities.name
+            self.works_type.name
         )
 
 

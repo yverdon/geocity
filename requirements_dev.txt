@@ -18,6 +18,7 @@ django-bootstrap4==2.1.1  # via -r requirements.txt
 django-debug-toolbar==2.2  # via -r requirements_dev.in
 django-filter==2.3.0      # via -r requirements.txt
 django-fontawesome==1.0   # via -r requirements.txt
+django-grappelli==2.14.2  # via -r requirements.txt
 django-tables2==2.3.1     # via -r requirements.txt
 django==2.2.13            # via -r requirements.txt, django-bootstrap-datepicker-plus, django-bootstrap4, django-debug-toolbar, django-filter, django-tables2
 factory-boy==2.12.0       # via -r requirements_dev.in
@@ -26,7 +27,6 @@ gdal==3.1.0               # via -r requirements.txt
 gunicorn==20.0.4          # via -r requirements.txt
 html5lib==1.1             # via -r requirements.txt, weasyprint
 idna==2.9                 # via -r requirements.txt, requests
-importlib-metadata==1.6.1  # via -r requirements.txt, django-bootstrap4
 jdcal==1.4.1              # via -r requirements.txt
 pillow==7.1.2             # via -r requirements.txt, cairosvg
 pip-tools==5.2.1          # via -r requirements.txt
@@ -49,7 +49,6 @@ urllib3==1.25.9           # via -r requirements.txt, requests
 weasyprint==51            # via -r requirements.txt
 webencodings==0.5.1       # via -r requirements.txt, cssselect2, html5lib, tinycss2
 whitenoise==5.1.0         # via -r requirements.txt
-zipp==3.1.0               # via -r requirements.txt, importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip

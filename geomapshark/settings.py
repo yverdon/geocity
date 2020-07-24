@@ -43,6 +43,7 @@ DEFAULT_CHARSET = "utf-8"
 
 # Application definition
 INSTALLED_APPS = [
+    'grappelli',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -166,3 +167,5 @@ WMTS_LAYER = os.getenv("WMTS_LAYER")
 WMTS_GETCAP_ALTERNATIVE = os.getenv("WMTS_GETCAP_ALTERNATIVE")
 WMTS_LAYER_ALTERNATIVE = os.getenv("WMTS_LAYER_ALTERNATIVE")
 OL_MAP_HEIGHT = os.getenv("OL_MAP_HEIGHT")
+
+GRAPPELLI_ADMIN_TITLE= 'Interface d\'administration Geocity'
