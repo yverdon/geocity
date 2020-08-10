@@ -1,8 +1,9 @@
 from django.contrib import admin
+from django.db.models import Prefetch
 from django.utils.translation import gettext_lazy as _
 
 from . import models
-from django import forms as djforms
+from django import forms
 
 
 admin.site.register(models.WorksType)
@@ -34,17 +35,47 @@ class WorksObjectTypeAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related('works_object', 'works_type').prefetch_related('administrative_entities')
 
 
+class WorksObjectTypeWithAdministrativeEntities(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+        entities = ", ".join(entity.name for entity in obj.administrative_entities.all())
+        return f"{obj.works_object} ({obj.works_type}) - {entities}"
+
+
+class WorksObjectPropertyForm(forms.ModelForm):
+    works_object_types = WorksObjectTypeWithAdministrativeEntities(
+        queryset=(
+            models.WorksObjectType
+                  .objects
+                  .select_related('works_object', 'works_type')
+                  .order_by('works_object__name', 'works_type__name')
+                  .prefetch_related('administrative_entities')
+        ),
+        widget=forms.CheckboxSelectMultiple,
+        label=_('objets des travaux').capitalize(),
+    )
+
+    class Meta:
+        model = models.WorksObjectProperty
+        fields = ['name', 'input_type', 'is_mandatory', 'works_object_types']
+
+
 class WorksObjectPropertyAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'is_mandatory']
+    form = WorksObjectPropertyForm
+
+    # def get_queryset(self, request):
+    #     prefetch = Prefetch('works_object_types', queryset=models.WorksObjectType.objects.select_related('works_object', 'works_type'))
+    #     return super().get_queryset(request).prefetch_related(prefetch)
+    #     #return super().get_queryset(request).select_related('works_object_types__works_object', 'works_object_types__works_type')
 
 
-class PermitAdministrativeEntityAdminForm(djforms.ModelForm):
+class PermitAdministrativeEntityAdminForm(forms.ModelForm):
 
     class Meta:
         model = models.PermitAdministrativeEntity
         fields = '__all__'
         widgets = {
-            'general_informations': djforms.Textarea(attrs={'rows': 5, }),
+            'general_informations': forms.Textarea(attrs={'rows': 5, }),
         }
 
 
