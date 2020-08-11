@@ -71,8 +71,7 @@ def printreport(request, permit_request):
     pdf_permit : <class 'bytes'>
         The PDF of the permit request.
     """
-    print("Type request: {}".format(type(request)))
-    print("Type permit_request: {}".format(type(permit_request)))
+
     geo_times = permit_request.geo_time.all()
     map_image = get_map_base64(geo_times, permit_request.pk)
     print_date = timezone.now()
@@ -117,5 +116,5 @@ def printreport(request, permit_request):
     permit_request.printed_at = timezone.now()
     permit_request.printed_by = request.user.get_full_name()
     permit_request.save()
-    print("Type pdf_permit: {}".format(type(pdf_permit)))
+
     return pdf_permit
