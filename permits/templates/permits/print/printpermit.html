@@ -24,22 +24,22 @@
   <img id="logo_secondary" src="data:image/png;base64,{{logo_secondary}}" alt="">
 </div>
 <div class="banner_center">
-  Permis N°{{ permit_request.id }}
+  {% trans "Permis N°" %}{{ permit_request.id }}
 </div>
 
 <hr>
 
 {% if objects_infos %}
-  <h3>Objet(s) du permis</h3>
+  <h3>{% trans "Objet(s) du permis" %}</h3>
     <table>
       <tr>
-        <th>Champ</th>
-        <th>Valeur</th>
+        <th>{% trans "Champ" %}</th>
+        <th>{% trans "Valeur" %}</th>
       </tr>
       {% for object, properties, appendices in objects_infos %}
         <tr>
           <td class="validation-table-left">
-            <p>Objet N°{{ object.id }}</p>
+            <p>{% trans "Objet N°" %}{{ object.id }}</p>
           </td>
           <td class="validation-table-right">
             {% if not object %}
@@ -57,13 +57,13 @@
   <h3>Agenda</h3>
     <table>
       <tr>
-        <th>Champ</th>
-        <th>Valeur</th>
+        <th>{% trans "Champ" %}</th>
+        <th>{% trans "Valeur" %}</th>
       </tr>
       {% for geo_time in geo_times %}
         <tr>
           <td class="validation-table-left">
-            <p>Date de début :</p>
+            <p>{% trans "Date de début :" %}</p>
           </td>
           <td class="validation-table-right">
               <p> {{ geo_time.starts_at }}</p>
@@ -71,7 +71,7 @@
         </tr>
         <tr>
           <td class="validation-table-left">
-            <p>Date de fin :</p>
+            <p>{% trans "Date de fin :" %}</p>
           </td>
           <td class="validation-table-right">
               <p>{{ geo_time.ends_at }}</p>
@@ -80,7 +80,7 @@
         {% if geo_time.comment %}
           <tr>
             <td class="validation-table-left">
-              <p>Commentaire :</pr>
+              <p>{% trans "Commentaire :" %}</pr>
             </td>
             <td class="validation-table-right">
               {% if not geo_time.comment %}
@@ -94,7 +94,7 @@
         {% if geo_time.external_link %}
           <tr>
             <td class="validation-table-left">
-              <p>Lien externe :</p>
+              <p>{% trans "Lien externe :" %}</p>
             </td>
             <td class="validation-table-right">
               {% if not geo_time.external_link %}
@@ -113,11 +113,11 @@
   {% for object, properties, appendices in objects_infos %}
 
     {% if properties %}
-      <h3>Détails</h3>
+      <h3>{% trans "Détails" %}</h3>
         <table>
           <tr>
-            <th>Champ</th>
-            <th>Valeur</th>
+            <th>{% trans "Champ" %}</th>
+            <th>{% trans "Valeur" %}</th>
           </tr>
           {% for property in properties %}
             <tr>
@@ -137,16 +137,16 @@
     {% endif %}
     
     {% if appendices %}
-      <h3>Documents</h3>
+      <h3>{% trans "Documents" %}</h3>
         <table>
           <tr>
-            <th>Champ</th>
-            <th>Valeur</th>
+            <th>{% trans "Champ" %}</th>
+            <th>{% trans "Valeur" %}</th>
           </tr>
           {% for appendice in appendices %}
             <tr>
               <td class="validation-table-left">
-                <p>Annexe :</p>
+                <p>{% trans "Annexe :" %}</p>
               </td>
               <td class="validation-table-right">
                 <p>
@@ -167,11 +167,11 @@
 
 {% if validations %}
   <p style="page-break-before: always" ></p>
-  <h3>Remarques des services consultés</h3>
+  <h3>{% trans "Remarques des services consultés" %}</h3>
   <table>
     <tr>
-      <th>Service</th>
-      <th>Commentaire</th>
+      <th>{% trans "Service" %}</th>
+      <th>{% trans "Commentaire" %}</th>
     </tr>
     {% for validation in validations %}
       <tr>
@@ -193,12 +193,12 @@
 
 {% if contacts %}
   <p style="page-break-before: always"></p>
-  <h3>Contact(s)</h3>
+  <h3>{% trans "Contact(s)" %}</h3>
     <h4>{% trans "Auteur de la demande" %}</h4>
       <table>
         <tr>
-          <th>Champ</th>
-          <th>Valeur</th>
+          <th>{% trans "Champ" %}</th>
+          <th>{% trans "Valeur" %}</th>
         </tr>
         {% for author_label, author_value in author.fields %}
           {% if author_label %}
@@ -222,8 +222,8 @@
         <h4>{{ contact_type }}</h4>
           <table>
             <tr>
-              <th>Champ</th>
-              <th>Valeur</th>
+              <th>{% trans "Champ" %}</th>
+              <th>{% trans "Valeur" %}</th>
             </tr>
             {% for contact_label, contact_value in contact_infos %}
               {% if contact_label %}
@@ -248,14 +248,14 @@
 
 {% if map_image %}
   <p style="page-break-before: always" ></p>
-  <h3> Plan de situation </h3>
+  <h3>{% trans "Plan de situation" %}</h3>
   <div id="print-map-container">
     <img src="{{map_image}}" alt="" class="map-print-image">
   </div>
 {% endif %}
 
 <p style="page-break-before: always" ></p>
-<h3> Signatures </h3>
+<h3>{% trans "Signatures" %}</h3>
 <br><br><br>
 <hr>
 <div class="row">
@@ -268,4 +268,4 @@
       <p>  <img id="image_signature_2" src="data:image/png;base64,{{image_signature_2}}" alt=""></p>
   </div>
 </div>
-<div id="print_date">pdf du {{print_date}}</div>
+<div id="print_date">{% trans "pdf du " %}{{print_date}}</div>
