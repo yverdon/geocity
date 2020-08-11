@@ -12,7 +12,8 @@ from django.utils import timezone
 
 
 def get_map_base64(geo_times, permit_id):
-
+    """Docstring:
+    """
     extent = list(geo_times.aggregate(Extent('geom'))['geom__extent'])
     buffer_extent = int(os.environ["PRINT_MAP_BUFFER_METERS"])
     h_extent_left = round(extent[0] - buffer_extent)
@@ -56,7 +57,22 @@ def get_map_base64(geo_times, permit_id):
 
 
 def printreport(request, permit_request):
+    """Return a PDF of the permit request generated using weasyprint.
+    
+    Parameters
+    ----------
+    request : <class 'django.core.handlers.wsgi.WSGIRequest'>
+        The user request.
+    permit_request : <class 'permits.models.PermitRequest'>
+        The permit request.
 
+    Returns
+    -------
+    pdf_permit : <class 'bytes'>
+        The PDF of the permit request.
+    """
+    print("Type request: {}".format(type(request)))
+    print("Type permit_request: {}".format(type(permit_request)))
     geo_times = permit_request.geo_time.all()
     map_image = get_map_base64(geo_times, permit_request.pk)
     print_date = timezone.now()
@@ -101,5 +117,5 @@ def printreport(request, permit_request):
     permit_request.printed_at = timezone.now()
     permit_request.printed_by = request.user.get_full_name()
     permit_request.save()
-
+    print("Type pdf_permit: {}".format(type(pdf_permit)))
     return pdf_permit
