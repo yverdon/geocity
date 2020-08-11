@@ -23,102 +23,171 @@
   <img id="logo_main" src="data:image/png;base64,{{logo_main}}" alt="">
   <img id="logo_secondary" src="data:image/png;base64,{{logo_secondary}}" alt="">
 </div>
-  <div class="banner_center">Permis N°{{ permit_request.id }}</div>
+<div class="banner_center">
+  Permis N°{{ permit_request.id }}
+</div>
+
 <hr>
-{% if geo_times %}
-<h3>Agenda</h3>
 
-  {% for geo_time in geo_times %}
-    <p>Date de début: {{ geo_time.starts_at }} - Date de fin: {{ geo_time.ends_at }}</p>
-    {% if geo_time.comment %}
-      <p>Commentaire: {{ geo_time.comment }}</p>
-    {% endif %}
-    {% if geo_time.comment %}
-      <p>Lien externe: {{ geo_time.external_link }}</p>
-    {% endif %}
-  {% endfor %}
-{% endif %}
 {% if objects_infos %}
-<h3>{% trans "Objet(s) du permis" %}</h3>
-  {% for object, properties, appendices in objects_infos %}
-    <h4>{{ object }}</h4>
-    <dl>
-      {% for field in properties %}
-        <p>
-          {{ field.label }}:
-          {% if not field.value %}
-            <em>{% trans "Information non fournie" %}</em>
-          {% else %}
-            {{ field.value }}
-          {% endif %}
-        </p>
-      {% endfor %}
-      {%if appendices %}
-      <h4>{% trans "Document(s)" %}</h4>
-        {% for field in appendices %}
-          <p>
-          {{ field.label }}:
-            {% if not field.value %}
-              <em>{% trans "Information non fournie" %}</em>
-            {% else %}
-              <a href="{{ field.value.url }}" target="_blank">{{ field.value.name }}</a>
-            {% endif %}
-          </p>
-        {% endfor %}
-      {% endif %}
-  {% endfor %}
-{% endif %}
-{% if validations %}
-<p style="page-break-before: always" ></p>
-<h3> Remarques des services consultés </h3>
-<table>
-  <tr>
-    <th>Service</th>
-    <th>Commentaire</th>
-  </tr>
-
-      {% for validation in validations %}
+  <h3>Objet(s) du permis</h3>
+    <table>
+      {% for object, properties, appendices in objects_infos %}
         <tr>
-          <td class="validation-table-left">
-            {{validation.department}}
-          </td>
           <td class="validation-table-right">
-              <h5>{% trans "Avant" %}</h5>
-              <p>{{validation.comment_before}}</p>
-              <h5>{% trans "Pendant" %}</h5>
-              <p>{{validation.comment_during}}</p>
-              <h5>{% trans "Après" %}</h5>
-              <p>{{validation.comment_after}}</p>
+            <h4>{{ object }}</h4>
           </td>
         </tr>
       {% endfor %}
-</table>
+    </table>
 {% endif %}
-{% if contacts %}
-<p style="page-break-before: always" ></p>
-  <h3>{% trans "Contacts" %}</h3>
-  <hr>
-  <h5>{% trans "Auteur de la demande" %}</h5>
-  {% for field_label, field_value in author.fields %}
-  <p>
-    {% if field_value %}
-        {{ field_label }}:
-        {{ field_value }}
-    {% endif %}
-  </p>
-  {% endfor %}
-  {% for contact_type, contact_infos in contacts %}
-    <h5>{{ contact_type }}</h5>
-      {% for field_label, field_value in contact_infos %}
-      <p>
-        {% if field_value %}
-            {{ field_label }}:
-            {{ field_value }}
+
+{% if geo_times %}
+  <h3>Agenda</h3>
+    <table>
+      {% for geo_time in geo_times %}
+        <tr>
+          <td class="validation-table-left">
+            <p>Date de début :</p>
+          </td>
+          <td class="validation-table-right">
+              <p> {{ geo_time.starts_at }}</p>
+          </td>
+        </tr>
+        <tr>
+          <td class="validation-table-left">
+            <p>Date de fin :</p>
+          </td>
+          <td class="validation-table-right">
+              <p>{{ geo_time.ends_at }}</p>
+          </td>
+        </tr>
+        {% if geo_time.comment %}
+          <tr>
+            <td class="validation-table-left">
+              <p>Commentaire :</pr>
+            </td>
+            <td class="validation-table-right">
+              <p>{{ geo_time.comment }}</p>
+            </td>
+          </tr>
         {% endif %}
-      </p>
+        {% if geo_time.comment %}
+          <tr>
+            <td class="validation-table-left">
+              <p>Lien externe :</p>
+            </td>
+            <td class="validation-table-right">
+              <p>{{ geo_time.external_link }}</p>
+            </td>
+          </tr>
+        {% endif %}
       {% endfor %}
+    </table>
+{% endif %}
+
+{% if objects_infos %}
+  {% for object, properties, appendices in objects_infos %}
+
+    {% if properties %}
+      <h3>Détails</h3>
+        <table>
+          {% for property in properties %}
+            <tr>
+              <td class="validation-table-left">
+                {{ property.label }} :
+              </td>
+              <td class="validation-table-right">
+                <p>
+                {% if not property.value %}
+                  <em>{% trans "Information non fournie" %}</em>
+                {% else %}
+                  {{ property.value }}
+                {% endif %}
+                </p>
+              </td>
+            </tr>
+          {% endfor %}  
+        </table>
+    {% endif %}
+    
+    {% if appendices %}
+      <h3>Documents</h3>
+        <table>
+          {% for appendice in appendices %}
+            <tr>
+              <td class="validation-table-left">
+                <p>Annexe :</p>
+              </td>
+              <td class="validation-table-right">
+                <p>
+                {% if not appendice.value %}
+                  <em>{% trans "Information non fournie" %}</em>
+                {% else %}
+                  <a href="{{ appendice.value.url }}" target="_blank">{{ appendice.value.name }}</a>
+                {% endif %}
+                </p>
+              </td>
+            </tr>
+          {% endfor %}
+        </table>
+    {% endif %}
+
   {% endfor %}
 {% endif %}
+
+{% if validations %}
+  <p style="page-break-before: always" ></p>
+  <h3>Remarques des services consultés</h3>
+  <table>
+    <tr>
+      <th>Service</th>
+      <th>Commentaire</th>
+    </tr>
+    {% for validation in validations %}
+      <tr>
+        <td class="validation-table-left">
+          {{validation.department}}
+        </td>
+        <td class="validation-table-right">
+            <h5>{% trans "Avant" %}</h5>
+            <p>{{validation.comment_before}}</p>
+            <h5>{% trans "Pendant" %}</h5>
+            <p>{{validation.comment_during}}</p>
+            <h5>{% trans "Après" %}</h5>
+            <p>{{validation.comment_after}}</p>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endif %}
+
+{% if contacts %}
+  <p style="page-break-before: always" ></p>
+    <h3>{% trans "Contacts" %}</h3>
+    <hr>
+    <h5>{% trans "Auteur de la demande" %}</h5>
+    {% for field_label, field_value in author.fields %}
+    <p>
+      {% if field_value %}
+          {{ field_label }}:
+          {{ field_value }}
+      {% endif %}
+    </p>
+    {% endfor %}
+    {% for contact_type, contact_infos in contacts %}
+      <h5>{{ contact_type }}</h5>
+        {% for field_label, field_value in contact_infos %}
+        <p>
+          {% if field_value %}
+              {{ field_label }}:
+              {{ field_value }}
+          {% endif %}
+        </p>
+        {% endfor %}
+    {% endfor %}
+{% endif %}
+
 {% if map_image %}
   <p style="page-break-before: always" ></p>
   <h3> Plan de situation </h3>
@@ -126,6 +195,7 @@
     <img src="{{map_image}}" alt="" class="map-print-image">
   </div>
 {% endif %}
+
 <p style="page-break-before: always" ></p>
 <h3> Signatures </h3>
 <br><br><br>
