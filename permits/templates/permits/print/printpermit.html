@@ -32,7 +32,6 @@
 {% if objects_infos %}
   <h3>Objet(s) du permis</h3>
     <table>
-<<<<<<< HEAD
       <tr>
         <th>Champ</th>
         <th>Valeur</th>
@@ -48,12 +47,6 @@
             {% else %}
               <h4>{{ object }}</h4>
             {% endif %}
-=======
-      {% for object, properties, appendices in objects_infos %}
-        <tr>
-          <td class="validation-table-right">
-            <h4>{{ object }}</h4>
->>>>>>> 96d1ff1f67ab0cd0660a948d426642d5aab5e9bf
           </td>
         </tr>
       {% endfor %}
@@ -63,7 +56,6 @@
 {% if geo_times %}
   <h3>Agenda</h3>
     <table>
-<<<<<<< HEAD
       <tr>
         <th>Champ</th>
         <th>Valeur</th>
@@ -85,32 +77,12 @@
               <p>{{ geo_time.ends_at }}</p>
           </td>
         </tr>
-=======
-      {% for geo_time in geo_times %}
-        <tr>
-          <td class="validation-table-left">
-            <p>Date de début :</p>
-          </td>
-          <td class="validation-table-right">
-              <p> {{ geo_time.starts_at }}</p>
-          </td>
-        </tr>
-        <tr>
-          <td class="validation-table-left">
-            <p>Date de fin :</p>
-          </td>
-          <td class="validation-table-right">
-              <p>{{ geo_time.ends_at }}</p>
-          </td>
-        </tr>
->>>>>>> 96d1ff1f67ab0cd0660a948d426642d5aab5e9bf
         {% if geo_time.comment %}
           <tr>
             <td class="validation-table-left">
               <p>Commentaire :</pr>
             </td>
             <td class="validation-table-right">
-<<<<<<< HEAD
               {% if not geo_time.comment %}
                 <em>{% trans "Information non fournie" %}</em>
               {% else %}
@@ -120,27 +92,16 @@
           </tr>
         {% endif %}
         {% if geo_time.external_link %}
-=======
-              <p>{{ geo_time.comment }}</p>
-            </td>
-          </tr>
-        {% endif %}
-        {% if geo_time.comment %}
->>>>>>> 96d1ff1f67ab0cd0660a948d426642d5aab5e9bf
           <tr>
             <td class="validation-table-left">
               <p>Lien externe :</p>
             </td>
             <td class="validation-table-right">
-<<<<<<< HEAD
               {% if not geo_time.external_link %}
                 <em>{% trans "Information non fournie" %}</em>
               {% else %}
                 <p>{{ geo_time.external_link }}</p>
               {% endif %}
-=======
-              <p>{{ geo_time.external_link }}</p>
->>>>>>> 96d1ff1f67ab0cd0660a948d426642d5aab5e9bf
             </td>
           </tr>
         {% endif %}
@@ -154,7 +115,6 @@
     {% if properties %}
       <h3>Détails</h3>
         <table>
-<<<<<<< HEAD
           <tr>
             <th>Champ</th>
             <th>Valeur</th>
@@ -170,21 +130,6 @@
                 {% else %}
                   <p>{{ property.value }}</p>
                 {% endif %}
-=======
-          {% for property in properties %}
-            <tr>
-              <td class="validation-table-left">
-                {{ property.label }} :
-              </td>
-              <td class="validation-table-right">
-                <p>
-                {% if not property.value %}
-                  <em>{% trans "Information non fournie" %}</em>
-                {% else %}
-                  {{ property.value }}
-                {% endif %}
-                </p>
->>>>>>> 96d1ff1f67ab0cd0660a948d426642d5aab5e9bf
               </td>
             </tr>
           {% endfor %}  
@@ -194,13 +139,10 @@
     {% if appendices %}
       <h3>Documents</h3>
         <table>
-<<<<<<< HEAD
           <tr>
             <th>Champ</th>
             <th>Valeur</th>
           </tr>
-=======
->>>>>>> 96d1ff1f67ab0cd0660a948d426642d5aab5e9bf
           {% for appendice in appendices %}
             <tr>
               <td class="validation-table-left">
@@ -221,7 +163,6 @@
     {% endif %}
 
   {% endfor %}
-<<<<<<< HEAD
 {% endif %}
 
 {% if validations %}
@@ -304,61 +245,6 @@
       {% endfor %}
 {% endif %}
 
-=======
-{% endif %}
-
-{% if validations %}
-  <p style="page-break-before: always" ></p>
-  <h3>Remarques des services consultés</h3>
-  <table>
-    <tr>
-      <th>Service</th>
-      <th>Commentaire</th>
-    </tr>
-    {% for validation in validations %}
-      <tr>
-        <td class="validation-table-left">
-          {{validation.department}}
-        </td>
-        <td class="validation-table-right">
-            <h5>{% trans "Avant" %}</h5>
-            <p>{{validation.comment_before}}</p>
-            <h5>{% trans "Pendant" %}</h5>
-            <p>{{validation.comment_during}}</p>
-            <h5>{% trans "Après" %}</h5>
-            <p>{{validation.comment_after}}</p>
-        </td>
-      </tr>
-    {% endfor %}
-  </table>
-{% endif %}
-
-{% if contacts %}
-  <p style="page-break-before: always" ></p>
-    <h3>{% trans "Contacts" %}</h3>
-    <hr>
-    <h5>{% trans "Auteur de la demande" %}</h5>
-    {% for field_label, field_value in author.fields %}
-    <p>
-      {% if field_value %}
-          {{ field_label }}:
-          {{ field_value }}
-      {% endif %}
-    </p>
-    {% endfor %}
-    {% for contact_type, contact_infos in contacts %}
-      <h5>{{ contact_type }}</h5>
-        {% for field_label, field_value in contact_infos %}
-        <p>
-          {% if field_value %}
-              {{ field_label }}:
-              {{ field_value }}
-          {% endif %}
-        </p>
-        {% endfor %}
-    {% endfor %}
-{% endif %}
->>>>>>> 96d1ff1f67ab0cd0660a948d426642d5aab5e9bf
 
 {% if map_image %}
   <p style="page-break-before: always" ></p>
