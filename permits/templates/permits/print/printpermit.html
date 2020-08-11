@@ -122,16 +122,14 @@
           {% for property in properties %}
             <tr>
               <td class="validation-table-left">
-                {{ property.label }} :
+                <p>{{ property.label }} :</p>
               </td>
               <td class="validation-table-right">
-                <p>
                 {% if not property.value %}
                   <em>{% trans "Information non fournie" %}</em>
                 {% else %}
                   <p>{{ property.value }}</p>
                 {% endif %}
-                </p>
               </td>
             </tr>
           {% endfor %}  
