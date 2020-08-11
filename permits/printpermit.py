@@ -4,7 +4,7 @@ import urllib.parse
 from django.shortcuts import render
 from django.conf import settings
 from . import services, models
-import base64
+from base64 import b64encode
 import requests
 from django.contrib.gis.db.models import Extent
 from django.core.files.base import ContentFile
@@ -50,7 +50,7 @@ def get_map_base64(geo_times, permit_id):
     response = requests.get(printurl)
     map_base64 = ("data:" +
                   response.headers['Content-Type'] + ";" +
-                  "base64," + base64.b64encode(response.content).decode("utf-8"))
+                  "base64," + b64encode(response.content).decode("utf-8"))
 
     return map_base64
 
@@ -87,10 +87,10 @@ def printreport(request, permit_request):
         'geo_times': geo_times,
         'map_image': map_image,
         'validations': validations,
-        'logo_main': base64.b64encode(administrative_entity.logo_main.open().read()).decode("utf-8") if administrative_entity.logo_main else '',
-        'logo_secondary': base64.b64encode(administrative_entity.logo_secondary.open().read()).decode("utf-8") if administrative_entity.logo_secondary else '',
-        'image_signature_1': base64.b64encode(administrative_entity.image_signature_1.open().read()).decode("utf-8") if administrative_entity.image_signature_1 else '',
-        'image_signature_2': base64.b64encode(administrative_entity.image_signature_2.open().read()).decode("utf-8") if administrative_entity.image_signature_2 else '',
+        'logo_main': b64encode(administrative_entity.logo_main.open().read()).decode("utf-8") if administrative_entity.logo_main else '',
+        'logo_secondary': b64encode(administrative_entity.logo_secondary.open().read()).decode("utf-8") if administrative_entity.logo_secondary else '',
+        'image_signature_1': b64encode(administrative_entity.image_signature_1.open().read()).decode("utf-8") if administrative_entity.image_signature_1 else '',
+        'image_signature_2': b64encode(administrative_entity.image_signature_2.open().read()).decode("utf-8") if administrative_entity.image_signature_2 else '',
     })
 
     pdf_permit = HTML(string=html.content,  base_url=request.build_absolute_uri()).write_pdf(
