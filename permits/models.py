@@ -65,8 +65,8 @@ class PermitDepartment(models.Model):
     )
 
     class Meta:
-        verbose_name = _("Configuration du service")
-        verbose_name_plural = _("Configuration des services")
+        verbose_name = _("2.1 Configuration du service (pilote, validateur...)")
+        verbose_name_plural = _("2.1 Configuration des services (pilote, validateur...)")
 
     def __str__(self):
         return str(self.group)
@@ -138,8 +138,8 @@ class PermitAdministrativeEntity(models.Model):
     )
 
     class Meta:
-        verbose_name = _('Configuration de l\'entité administrative (commune, organisation)')
-        verbose_name_plural = _('Configuration de l\'entité administrative (commune, organisation)')
+        verbose_name = _('1.1 Configuration de l\'entité administrative (commune, organisation)')
+        verbose_name_plural = _('1.1 Configuration de l\'entité administrative (commune, organisation)')
 
     def __str__(self):
         return self.name
@@ -206,7 +206,8 @@ class PermitAuthor(models.Model):
     user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
 
     class Meta:
-        verbose_name = _('Auteur')
+        verbose_name = _('3.2 Consultation de l\'auteur')
+        verbose_name_plural = _('3.2 Consultation des auteurs')
 
     def get_absolute_url(self):
 
@@ -297,8 +298,8 @@ class PermitActorType(models.Model):
     )
 
     class Meta:
-        verbose_name = _("Configuration du contact à saisir")
-        verbose_name_plural = _("Configuration des contacts à saisir")
+        verbose_name = _("1.6 Configuration du contact")
+        verbose_name_plural = _("1.6 Configuration des contacts")
 
     def __str__(self):
         return self.get_type_display() + ' (' + str(self.works_type) + ')'
@@ -454,8 +455,8 @@ class PermitRequest(models.Model):
     )
 
     class Meta:
-        verbose_name = _("demande de permis")
-        verbose_name_plural = _("demandes de permis")
+        verbose_name = _("3.1 Consultation de la demande")
+        verbose_name_plural = _("3.1 Consultation des demandes")
         permissions = [
             ('amend_permit_request', _("Traiter les demandes de permis")),
             ('validate_permit_request', _("Valider les demandes de permis")),
@@ -507,8 +508,8 @@ class WorksType(models.Model):
     )
 
     class Meta:
-        verbose_name = _("Configuration du type de travaux")
-        verbose_name_plural = _("Configuration types de travaux")
+        verbose_name = _("1.2 Configuration du type")
+        verbose_name_plural = _("1.2 Configuration des types")
 
     def __str__(self):
         return self.name
@@ -537,8 +538,8 @@ class WorksObjectType(models.Model):
     )
 
     class Meta:
-        verbose_name = _("Configuration type-objet-entité administrative")
-        verbose_name_plural = _("Configurations type-objet-entité administrative")
+        verbose_name = _("1.4 Configuration type-objet-entité administrative")
+        verbose_name_plural = _("1.4 Configurations type-objet-entité administrative")
         unique_together = [('works_type', 'works_object')]
 
     def __str__(self):
@@ -554,12 +555,12 @@ class WorksObject(models.Model):
         WorksType,
         through=WorksObjectType,
         related_name='works_objects',
-        verbose_name=_("types de travaux")
+        verbose_name=_("types")
     )
 
     class Meta:
-        verbose_name = _("Configuration de l\'objet des travaux")
-        verbose_name_plural = _("Configuration des objets des travaux")
+        verbose_name = _("1.3 Configuration de l\'objet")
+        verbose_name_plural = _("1.3 Configuration des objets")
 
     def __str__(self):
         return self.name
@@ -597,8 +598,8 @@ class WorksObjectProperty(models.Model):
     )
 
     class Meta:
-        verbose_name = _("Configuration de la caractéristique")
-        verbose_name_plural = _("Configuration des caractéristiques")
+        verbose_name = _("1.5 Configuration du champ")
+        verbose_name_plural = _("1.5 Configuration des champs")
 
     def __str__(self):
         return self.name
@@ -677,8 +678,8 @@ class PermitRequestValidation(models.Model):
 
     class Meta:
         unique_together = ("permit_request", "department")
-        verbose_name = _("Validation par le service")
-        verbose_name_plural = _("Validations par les services")
+        verbose_name = _("3.5 Consultation de la validation par le service")
+        verbose_name_plural = _("3.5 Consultation des validations par les services")
 
     def is_pending(self):
         return self.validation_status == self.STATUS_REQUESTED
@@ -724,8 +725,8 @@ class PermitRequestGeoTime(models.Model):
     )
 
     class Meta:
-        verbose_name = _("Agenda et géométrie")
-        verbose_name_plural = _("Agenda et géométries")
+        verbose_name = _("3.3 Consultation de l'agenda et de la géométrie")
+        verbose_name_plural = _("3.3 Consultation des agenda et géométries")
 
 
 class GeomLayer(models.Model):
@@ -763,5 +764,5 @@ class GeomLayer(models.Model):
     )
 
     class Meta:
-        verbose_name = _("Entité géographique à intersecter")
-        verbose_name_plural = _("Entités géographiques à intersecter")
+        verbose_name = _("3.4 Consultation de l'entité géographique à intersecter")
+        verbose_name_plural = _("3.4 Consultation des entités géographiques à intersecter")
