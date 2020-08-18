@@ -28,6 +28,11 @@ def get_map_base64(geo_times, permit_id):
     v_extent_top = round(v_extent_bottom + v_extent_scaled)
     extent = [h_extent_left, v_extent_bottom, h_extent_right, v_extent_top]
 
+    if settings.PRINTED_REPORT_LAYERS == "":
+        layers = 'permit_permitrequestgeotime_polygons,permit_permitrequestgeotimes_lines,permit_permitrequestgeotime_points'
+    else:
+        layers = settings.PRINTED_REPORT_LAYERS
+
     values = {'SERVICE': 'WMS',
               'VERSION': '1.3.0',
               'REQUEST': 'GetPrint',
@@ -37,17 +42,14 @@ def get_map_base64(geo_times, permit_id):
               'DPI': '150',
               'TEMPLATE': 'permits',
               'map0:extent': ', '.join(map(str, extent)),
-              'LAYERS': settings.PRINTED_REPORT_LAYERS,
-              'FILTER': 'permit_permitrequestgeotime_polygons:"id" >= ' + str(permit_id)
-              + ' AND "id" < ' + str(permit_id + 1) +
-              ';permit_permitrequestgeotime_lines:"id" >= ' + str(permit_id)
-              + ' AND "id" < ' + str(permit_id + 1) +
-              ';permit_permitrequestgeotime_points:"id" >= ' + str(permit_id)
-              + ' AND "id" < ' + str(permit_id + 1),
+              'LAYERS': layers,
+              'FILTER': 'permits_permitrequestgeotime_polygons,permits_permitrequestgeotimes_lines,permits_permitrequestgeotime_points:"permit_request_id" > ' + str(permit_id - 1)
+              + ' AND "permit_request_id" < ' + str(permit_id + 1)
               }
 
     data = urllib.parse.urlencode(values)
     printurl = "http://qgisserver" + '/?' + data
+    print(printurl)
     response = requests.get(printurl)
     map_base64 = ("data:" +
                   response.headers['Content-Type'] + ";" +
@@ -58,7 +60,7 @@ def get_map_base64(geo_times, permit_id):
 
 def printreport(request, permit_request):
     """Return a PDF of the permit request generated using weasyprint.
-    
+
     Parameters
     ----------
     request : <class 'django.core.handlers.wsgi.WSGIRequest'>
