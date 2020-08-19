@@ -34,23 +34,14 @@ body {
 }
 
 #login-welcome-text {
-  margin-top: 25px;
   padding: 25px 25px 25px 25px;
   background-color: white;
   opacity: 0.85;
-  width: 100%;
-}
-
-#bottom-login-text {
-  padding: 25px 25px 25px 25px;
-  background-color: white;
-  opacity: 0.85;
-  position: absolute;
-  bottom: 0;
   width: 100%;
 }
 
 @media (max-width: 768px) {
+
   #login-container {
     border: 0;
     -webkit-border-radius: 5px;
@@ -63,12 +54,8 @@ body {
     font-size: 20px !important;
   }
 
-  #bottom-login-text {
-    visibility: hidden;
-  }
-
   #login-welcome-text .text-center {
-    font-size: 25px;
+    font-size: 15px;
   }
 
   #login-welcome-text {
@@ -81,6 +68,10 @@ body {
   }
 
   #login-welcome-text h5 {
+    visibility: hidden;
+  }
+
+  #login-welcome-text div {
     visibility: hidden;
   }
 
