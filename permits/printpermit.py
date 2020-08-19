@@ -19,13 +19,7 @@ def get_map_base64(geo_times, permit_id):
     h_extent_left = round(extent[0] - buffer_extent)
     h_extent_right = round(extent[2] + buffer_extent)
     v_extent_bottom = round(extent[1] - buffer_extent)
-
-    if extent[2] - extent[0] == 0:
-        v_extent_scaled = round(2 * buffer_extent * (1800/2500))
-    else:
-        v_extent_scaled = round((extent[2] - extent[0]) * (1800/2500))
-
-    v_extent_top = round(v_extent_bottom + v_extent_scaled)
+    v_extent_top = round(extent[3] + buffer_extent)
     extent = [h_extent_left, v_extent_bottom, h_extent_right, v_extent_top]
 
     if settings.PRINTED_REPORT_LAYERS == "":
@@ -49,7 +43,6 @@ def get_map_base64(geo_times, permit_id):
 
     data = urllib.parse.urlencode(values)
     printurl = "http://qgisserver" + '/?' + data
-    print(printurl)
     response = requests.get(printurl)
     map_base64 = ("data:" +
                   response.headers['Content-Type'] + ";" +

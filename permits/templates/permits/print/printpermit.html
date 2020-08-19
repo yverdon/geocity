@@ -18,21 +18,52 @@
    }
   }
 </style>
-
 <div id=header>
   <img id="logo_main" src="data:image/png;base64,{{logo_main}}" alt="">
   <img id="logo_secondary" src="data:image/png;base64,{{logo_secondary}}" alt="">
 </div>
 <div class="banner_center">
-  {% trans "Permis N°" %}{{ permit_request.id }}
+  <h2>{% trans "Permis N°" %}{{ permit_request.id }}</h2>
 </div>
 <hr>
+<br><br>
+<h3>{% trans "Informations" %}</h3>
+<table>
+    <tr>
+      <td>
+        {% trans "Date de création" %}
+      </td>
+      <td>
+        {{ permit_request.created_at }}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {% trans "Statut" %}
+      </td>
+      <td>
+        {{ permit_request.get_status_display }}{% if permit_request.validated_at %} {% blocktrans with validated_at=permit_request.validated_at %}le {{ validated_at }}{% endblocktrans %}{% endif %}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {% trans "Auteur-e" %}
+      </td>
+      <td>
+          {{ permit_request.author.user.first_name }} {{ permit_request.author.user.last_name }} {{ permit_request.author.user.email }};
+      </td>
+    </tr>
+</table>
+
 
 {% if objects_infos %}
   <h3>{% trans "Objet(s) du permis" %}</h3>
     <table>
       {% for object, properties, appendices in objects_infos %}
         <tr>
+          <td>
+              <h4>{{ forloop.counter }}</h4>
+          </td>
           <td>
               <h4>{{ object }}</h4>
           </td>
@@ -105,16 +136,16 @@
     {% endif %}
 
     {% if appendices %}
-      <h3>{% trans "Documents" %}</h3>
+      <h4>{% trans "Documents" %}</h4>
         <table>
           {% for appendice in appendices %}
             <tr>
               <td class="validation-table-left">
-                <p>{% trans "Annexe :" %}</p>
+                <p>{% trans "Document :" %}</p>
               </td>
               <td class="validation-table-right">
                 <p>
-                  <a href="{{ appendice.value.url }}" target="_blank">{{ appendice.value.name|default:"Information non fournie" }}</a>
+                  <a href="{{ appendice.value.url }}" target="_blank">Annexe</a>
                 </p>
               </td>
             </tr>
@@ -125,8 +156,17 @@
   {% endfor %}
 {% endif %}
 
-<p style="page-break-before: always"></p>
+{% if permit_request.intersected_geometries %}
+  <h4>{% trans "Éléments géographiques touchés par la demande" %}</h4>
+  <table>
+    <tr>
+      <td>{{ permit_request.intersected_geometries|safe }}</td>
+    </tr>
+  </table>
+{% endif %}
+
 {% if author %}
+  <p style="page-break-before: always"></p>
   <h3>{% trans "Auteur de la demande" %}</h3>
   <table>
         <tr>
@@ -251,6 +291,32 @@
     {% endfor %}
   </table>
 {% endif %}
+
+
+<p style="page-break-before: always" ></p>
+<h3>{% trans "Commentaires du service pilote" %}</h3>
+<table>
+  <tr>
+    <td>{% trans "Dérogation" %}</td>
+    <td>{{ permit_request.exemption|default:"Information non fournie" }}</td>
+  </tr>
+  <tr>
+    <td>{% trans "Opposition" %}</td>
+    <td>{{ permit_request.exemption|default:"Information non fournie" }}</td>
+  </tr>
+  <tr>
+    <td>{% trans "Commentaire" %}</td>
+    <td>{{ permit_request.comment|default:"Information non fournie" }}</td>
+  </tr>
+  <tr>
+    <td>{% trans "Statut archéologique" %}</td>
+    <td>{{ permit_request.get_archeology_status_display|default:"Information non fournie" }}</td>
+  </tr>
+  <tr>
+    <td>{% trans "Émolument" %}</td>
+    <td>{{ permit_request.price }}</td>
+  </tr>
+</table>
 
 <p style="page-break-before: always" ></p>
 <br><br><br>
