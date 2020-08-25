@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'django_tables2',
     'fontawesome',
     'permits',
+    'reversion',
 ]
 
 MIDDLEWARE = [

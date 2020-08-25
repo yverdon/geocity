@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
+import reversion
 
 from . import fields
 
@@ -329,6 +330,7 @@ class PermitRequestActor(models.Model):
         return "{} - {}".format(str(self.actor), str(self.get_actor_type_display()))
 
 
+@reversion.register()
 class PermitRequest(models.Model):
     STATUS_DRAFT = 0
     STATUS_SUBMITTED_FOR_VALIDATION = 1

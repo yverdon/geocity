@@ -3,17 +3,24 @@ from django.utils.translation import gettext_lazy as _
 
 from . import models
 from django import forms
+from reversion.admin import VersionAdmin
 
 
 admin.site.register(models.WorksType)
 admin.site.register(models.WorksObject)
-admin.site.register(models.PermitRequest)
+
 admin.site.register(models.PermitActorType)
 admin.site.register(models.PermitRequestGeoTime)
 admin.site.register(models.PermitAuthor)
 admin.site.register(models.PermitDepartment)
 admin.site.register(models.PermitRequestValidation)
 admin.site.register(models.GeomLayer)
+
+
+@admin.register(models.PermitRequest)
+class PermitRequestAdmin(VersionAdmin):
+
+    pass
 
 
 def works_object_type_administrative_entities(obj):
