@@ -771,6 +771,7 @@ class PermitRequestClassifyForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequest
         fields = [
+            "is_public",
             "status",
             "validation_pdf"
         ]

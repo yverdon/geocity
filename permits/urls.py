@@ -37,4 +37,8 @@ urlpatterns = [
     path('administrativeinfos/', views.administrative_infos, name='administrative_infos'),
     path('adminentitiesgeojson/<int:administrative_entity_id>/', geoviews.administrative_entities_geojson, name='administrative_entities_geojson'),
     path('qgisserverproxy/', geoviews.qgisserver_proxy, name='qgisserver_proxy'),
+    path('geocity-front-config/<int:administrative_entity_id>/', geoviews.geocity_front_config, name='geocity_front_config'),
+    path('public-geocity-front-events/<int:administrative_entity_id>/<int:event_type>/<str:starts_at>/<str:ends_at>/', geoviews.public_geocity_front_events, name='public_geocity_front_events'),
+    path('private-geocity-front-events/<int:administrative_entity_id>/<int:event_type>/<str:starts_at>/<str:ends_at>/', geoviews.private_geocity_front_events, name='private_geocity_front_events'),
+
 ]
