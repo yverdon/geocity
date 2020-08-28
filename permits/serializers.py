@@ -21,7 +21,6 @@ class PermitRequestSerializer(serializers.ModelSerializer):
 class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
 
     permit_request = PermitRequestSerializer(many=False, read_only=True)
-    geom = gis_serializers.GeometryField(precision=2, remove_duplicates=True)
 
     class Meta:
         model = models.PermitRequestGeoTime
