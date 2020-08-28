@@ -23,3 +23,5 @@ tablib
 pycairo
 python-dotenv
 django-grappelli
+djangorestframework
+djangorestframework-gis

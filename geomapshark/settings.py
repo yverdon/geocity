@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'django_filters',
+    'rest_framework',
+    'rest_framework_gis',
     'bootstrap4',
     'bootstrap_datepicker_plus',
     'django_tables2',
