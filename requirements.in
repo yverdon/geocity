@@ -25,3 +25,4 @@ python-dotenv
 django-grappelli
 djangorestframework
 djangorestframework-gis
+django-cors-headers
