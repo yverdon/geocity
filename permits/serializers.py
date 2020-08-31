@@ -9,13 +9,20 @@ class PermitAdministrativeEntitySerializer(serializers.ModelSerializer):
         fields = ('name', )
 
 
+class MetaTypesField(serializers.RelatedField):
+    def to_representation(self, value):
+        meta_types = {wot.works_type.meta_type for wot in value.all()}
+        return list(meta_types)
+
+
 class PermitRequestSerializer(serializers.ModelSerializer):
 
     administrative_entity = PermitAdministrativeEntitySerializer(many=False, read_only=True)
+    meta_types = MetaTypesField(source='works_object_types', read_only=True)
 
     class Meta:
         model = models.PermitRequest
-        fields = ('status', 'administrative_entity', 'works_object_types')
+        fields = ('status', 'administrative_entity', 'works_object_types', 'meta_types')
 
 
 class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):

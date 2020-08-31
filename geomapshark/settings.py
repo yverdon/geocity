@@ -134,15 +134,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 CORS_ALLOWED_ORIGINS = [
-    "https://liip.ch",
     "https://mapnv.ch",
-    "https://form-demo.mapnv.ch",
-    "https://form-preprod.mapnv.ch",
     "https://form.mapnv.ch",
-    "http://localhost:3000",
-]
+] + os.getenv("ALLOWED_CORS").split(",")
 
 
 if DEBUG:

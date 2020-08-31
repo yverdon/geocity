@@ -1,6 +1,7 @@
 from . import models, services, serializers
 import requests
 from django.core.serializers import serialize
+from django.db.models import Prefetch, Q
 from django.http import JsonResponse, HttpResponseNotFound, FileResponse
 from django.contrib.auth.decorators import login_required
 import json
@@ -52,8 +53,6 @@ def geocity_front_config(request, administrative_entity_id):
 # DJANGO REST API
 # ///////////////////////////////////
 
-# example query: http://localhost:9095/rest/events/?format=api&starts_at=2020-01-01&ends_at=2020-12-30&adminentity=1
-
 
 class PermitRequestGeoTimeViewSet(viewsets.ModelViewSet):
     queryset = models.PermitRequestGeoTime.objects.all().order_by('starts_at')
@@ -64,20 +63,29 @@ class PermitRequestGeoTimeViewSet(viewsets.ModelViewSet):
         This view should return a list of events for which the loggued user has
         view permissions
         """
-        start = datetime.datetime.strptime(self.request.query_params.get('starts_at', None), '%Y-%m-%d')
-        end = datetime.datetime.strptime(self.request.query_params.get('ends_at', None), '%Y-%m-%d')
+
+        starts_at = self.request.query_params.get('starts_at', None)
+        ends_at = self.request.query_params.get('ends_at', None)
+
         administrative_entity = self.request.query_params.get('adminentity', None),
+
+        if starts_at:
+            start = datetime.datetime.strptime(starts_at, '%Y-%m-%d')
+        if ends_at:
+            end = datetime.datetime.strptime(ends_at, '%Y-%m-%d')
         user = self.request.user
 
-        private_qs = models.PermitRequestGeoTime.objects.filter(
-                permit_request__administrative_entity=administrative_entity,
-                permit_request__in=services.get_permit_requests_list_for_user(user),
-                starts_at__gte=start,
-                ends_at__lte=end
-        )
+        works_object_types_prefetch = Prefetch("permit_request__works_object_types",
+                                               queryset=models.WorksObjectType.objects.select_related("works_type"))
+        qs = models.PermitRequestGeoTime.objects.filter(
+                 Q(permit_request__administrative_entity=administrative_entity,
+                   permit_request__in=services.get_permit_requests_list_for_user(user),
+                   starts_at__gte=start,
+                   ends_at__lte=end) |
+                 Q(permit_request__administrative_entity=administrative_entity,
+                   permit_request__is_public=True,
+                   starts_at__gte=start,
+                   ends_at__lte=end)).prefetch_related(
+                    works_object_types_prefetch).select_related("permit_request__administrative_entity")
 
-        public_qs = models.PermitRequestGeoTime.objects.filter(
-                permit_request__is_public=True
-        )
-
-        return public_qs.union(private_qs).order_by('starts_at')
+        return qs.order_by('starts_at')
