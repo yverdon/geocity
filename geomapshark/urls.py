@@ -9,7 +9,7 @@ from permits import geoviews
 # Django-rest Configuration
 
 router = routers.DefaultRouter()
-router.register(r'events', geoviews.PermitRequestGeoTimeViewSet)
+router.register(r'events', geoviews.PermitRequestGeoTimeViewSet, 'events')
 
 # Django-configuration
 
