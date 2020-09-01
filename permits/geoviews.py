@@ -1,4 +1,5 @@
 from . import models, services, serializers
+from geomapshark import settings
 import requests
 from django.core.serializers import serialize
 from django.db.models import Prefetch, Q
@@ -9,7 +10,6 @@ import urllib
 from django.utils.translation import gettext_lazy as _
 import datetime
 from rest_framework import viewsets
-from django.http import HttpResponseNotFound
 
 
 @login_required
@@ -42,17 +42,32 @@ def administrative_entities_geojson(request, administrative_entity_id):
     return JsonResponse(geojson, safe=False)
 
 
-@login_required
-def geocity_front_config(request, administrative_entity_id):
-
-    json_config = {'meta_types': dict((str(x), y) for x, y in models.WorksType.META_TYPE_CHOICES)}
-
-    return JsonResponse(json_config, safe=False)
-
-
 # ///////////////////////////////////
 # DJANGO REST API
 # ///////////////////////////////////
+
+
+class GeocityViewConfigViewSet(viewsets.ViewSet):
+
+    def list(self, request):
+
+        config = {'meta_types': dict((str(x), y) for x, y in models.WorksType.META_TYPE_CHOICES)}
+
+        config['map_config'] = {
+            'wmts_capabilities': settings.WMTS_GETCAP,
+            'wmts_layer': settings.WMTS_LAYER,
+            'wmts_capabilities_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
+            'wmts_layer_aternative': settings.WMTS_LAYER_ALTERNATIVE,
+        }
+
+        geojson = json.loads(serialize('geojson', models.PermitAdministrativeEntity.objects.all(),
+                                       geometry_field='geom',
+                                       srid=2056,
+                                       fields=('id', 'name', 'ofs_id', 'link',)))
+
+        config['administrative_entities'] = geojson
+
+        return JsonResponse(config, safe=False)
 
 
 class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
@@ -79,16 +94,12 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
         if administrative_entity:
             base_filter &= Q(permit_request__administrative_entity=administrative_entity)
 
-        private_filter = base_filter
-        public_filter = base_filter
-        private_filter &= Q(permit_request__in=services.get_permit_requests_list_for_user(user))
-        public_filter &= Q(permit_request__is_public=True)
-
         works_object_types_prefetch = Prefetch("permit_request__works_object_types",
                                                queryset=models.WorksObjectType.objects.select_related("works_type"))
 
-        qs = models.PermitRequestGeoTime.objects.filter(
-                 private_filter | public_filter).prefetch_related(
+        qs = models.PermitRequestGeoTime.objects.filter(base_filter).filter(
+                 Q(permit_request__in=services.get_permit_requests_list_for_user(user)) |
+                 Q(permit_request__is_public=True)).prefetch_related(
                     works_object_types_prefetch).select_related("permit_request__administrative_entity")
 
         return qs.order_by('starts_at')

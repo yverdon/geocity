@@ -10,6 +10,7 @@ from permits import geoviews
 
 router = routers.DefaultRouter()
 router.register(r'events', geoviews.PermitRequestGeoTimeViewSet, 'events')
+router.register(r'front-config', geoviews.GeocityViewConfigViewSet, 'front-config')
 
 # Django-configuration
 
