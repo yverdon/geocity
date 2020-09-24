@@ -85,6 +85,11 @@ class PermitAdministrativeEntity(models.Model):
         max_length=200,
         blank=True
     )
+    enabled_status = models.ManyToManyField(
+        'PermitWorkFlowStatus',
+        related_name='permit_workflow_status',
+        verbose_name=_("Statuts actifs"),
+    )
     archive_link = models.URLField(
         _("Archives externes"),
         max_length=1024,
@@ -337,6 +342,7 @@ class PermitRequest(models.Model):
     STATUS_AWAITING_SUPPLEMENT = 4
     STATUS_AWAITING_VALIDATION = 5
     STATUS_REJECTED = 6
+    STATUS_RECEIVED = 7
 
     STATUS_CHOICES = (
         (STATUS_DRAFT, _("Brouillon")),
@@ -346,6 +352,7 @@ class PermitRequest(models.Model):
         (STATUS_AWAITING_VALIDATION, _("En validation")),
         (STATUS_APPROVED, _("Approuvée")),
         (STATUS_REJECTED, _("Refusée")),
+        (STATUS_RECEIVED, _("Annonce réceptionnée")),
     )
     AMENDABLE_STATUSES = {
         STATUS_SUBMITTED_FOR_VALIDATION,
@@ -766,3 +773,34 @@ class GeomLayer(models.Model):
     class Meta:
         verbose_name = _("3.4 Consultation de l'entité géographique à intersecter")
         verbose_name_plural = _("3.4 Consultation des entités géographiques à intersecter")
+
+
+class PermitWorkFlowStatusChoices(models.Model):
+    """
+    Represents a works object for a specific works type.
+    """
+    status = models.PositiveSmallIntegerField(
+        _("statut"),
+        choices=PermitRequest.STATUS_CHOICES
+    )
+
+    def __str__(self):
+        return str(PermitRequest.STATUS_CHOICES[self.status][1])
+
+
+class PermitWorkFlowStatus(models.Model):
+    """
+    Represents a works object for a specific works type.
+    """
+    administrative_entity = models.ForeignKey(
+        PermitAdministrativeEntity,
+        on_delete=models.CASCADE
+    )
+    status_choices = models.ForeignKey(
+        PermitWorkFlowStatusChoices,
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        verbose_name = _("Relation Statut - Entité administrative")
+        verbose_name_plural = _("Relations Statuts - Entités administratives")

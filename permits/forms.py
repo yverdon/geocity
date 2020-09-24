@@ -596,14 +596,14 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Prevent secretariat from putting back a request in draft status
-        self.fields['status'].choices = [
-            (status, label)
-            for status, label in self.fields['status'].choices
-            if status == models.PermitRequest.STATUS_PROCESSING or
-                status == models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION or
-                status == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
-        ]
+        instance = kwargs.pop('instance', None)
+
+        choices = []
+        for choice in instance.administrative_entity.enabled_status.all():
+            # Prevent secretariat from putting back a request in draft status
+            if choice.status_choices.status not in [models.PermitRequest.STATUS_PROCESSING, models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION, models.PermitRequest.STATUS_AWAITING_SUPPLEMENT]:
+                choices.append((choice.status_choices.status, models.PermitRequest.STATUS_CHOICES[choice.status_choices.status][1]))
+        self.fields['status'].choices = choices
 
 
 # extend django gis osm openlayers widget
