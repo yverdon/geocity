@@ -1,8 +1,8 @@
 from django.urls import include, path
-
 from . import views, geoviews
 
 app_name = 'permits'
+
 
 permit_request_urlpatterns = [
     path('administrative-entity/',

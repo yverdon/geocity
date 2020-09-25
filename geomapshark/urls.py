@@ -3,6 +3,16 @@ from django.urls import include, path
 from . import settings, views
 from permits import views as permits_views
 from django.contrib.auth import views as auth_views
+from rest_framework import routers
+from permits import geoviews
+
+# Django-rest Configuration
+
+router = routers.DefaultRouter()
+router.register(r'events', geoviews.PermitRequestGeoTimeViewSet, 'events')
+router.register(r'front-config', geoviews.GeocityViewConfigViewSet, 'front-config')
+
+# Django-configuration
 
 urlpatterns = [
     path('', permits_views.permit_request_select_administrative_entity),
@@ -19,6 +29,7 @@ urlpatterns = [
     path('permitauthorcreate/', views.permit_author_create, name='permit_author_create'),
     path('permitauthoredit/', views.permit_author_edit, name='permit_author_edit'),
     path('accounts/', include('django.contrib.auth.urls')),
+    path('rest/', include(router.urls)), # Django-rest urls
 ]
 
 if settings.DEBUG:

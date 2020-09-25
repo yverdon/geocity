@@ -169,11 +169,15 @@
       {% if permit_request.validation_pdf %}
         <dt>{% trans "Permis délivré" %}</dt>
         <dd>
-          <a href="{{permit_request.validation_pdf.url}}>" target="_blank">
+          <a href="{{permit_request.validation_pdf.url}}" target="_blank">
             Télécharger le document PDF
           </a>
         </dd>
       {% endif %}
+      <dt>{% trans "Publié" %}</dt>
+      <dd>
+        {{permit_request.is_public|yesno:"Oui,Non" }}
+      </dd>
     </dl>
 
 

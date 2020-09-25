@@ -23,4 +23,7 @@ tablib
 pycairo
 python-dotenv
 django-grappelli
+djangorestframework
+djangorestframework-gis
+django-cors-headers
 django-reversion
