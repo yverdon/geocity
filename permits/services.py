@@ -605,9 +605,11 @@ def has_permission_to_classify_permit_request(user, permit_request):
 
 def can_classify_permit_request(user, permit_request):
     return (
-        permit_request.status == models.PermitRequest.STATUS_AWAITING_VALIDATION
-        and permit_request.get_pending_validations().count() == 0
-        and has_permission_to_classify_permit_request(user, permit_request)
+        (permit_request.status == models.PermitRequest.STATUS_AWAITING_VALIDATION
+         and permit_request.get_pending_validations().count() == 0
+         and has_permission_to_classify_permit_request(user, permit_request))
+        or not administrative_entity_has_status(permit_request.administrative_entity,
+                                                models.PermitRequest.STATUS_AWAITING_VALIDATION)
     )
 
 
@@ -654,12 +656,11 @@ def get_status_choices_for_administrative_entity(administrative_entity):
 
     availables_choices = []
     for value in status:
-
         # Prevent turning back to draft mode
         if value.status_choices.status in [models.PermitRequest.STATUS_PROCESSING,
-                                               models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-                                               models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
-                                               models.PermitRequest.STATUS_RECEIVED]:
+                                           models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+                                           models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+                                           models.PermitRequest.STATUS_RECEIVED]:
             availables_choices.append(
                 (value.status_choices.status,
                  value.status_choices.get_status_display()
@@ -667,3 +668,10 @@ def get_status_choices_for_administrative_entity(administrative_entity):
             )
 
     return availables_choices
+
+
+def administrative_entity_has_status(administrative_entity, status):
+    is_status_enabled = models.PermitWorkFlowStatus.objects.filter(
+        administrative_entity=administrative_entity,
+        status_choices__status=status).first()
+    return is_status_enabled

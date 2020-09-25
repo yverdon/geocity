@@ -785,7 +785,7 @@ class PermitWorkFlowStatusChoices(models.Model):
     )
 
     def __str__(self):
-        return str(PermitRequest.STATUS_CHOICES[self.status][1])
+        return str(self.get_status_display())
 
 
 class PermitWorkFlowStatus(models.Model):
