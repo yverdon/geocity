@@ -43,8 +43,6 @@ class Command(BaseCommand):
         self.create_permit()
         self.stdout.write("Creating dummy geometric entities...")
         self.create_geom_layer_entity()
-        self.stdout.write("Inserting status...")
-        self.insert_workflow_status_choices()
 
     def create_users(self):
 
@@ -129,6 +127,19 @@ class Command(BaseCommand):
             Permission.objects.get(codename='validate_permit_request', content_type=permit_request_ct)
         )
         self.stdout.write("eaux-yverdon / admin")
+
+        # Insert status choices from PermitRequest and insert status for adminsitrative_entity
+        for status_value in models.PermitRequest.STATUS_CHOICES:
+            choice, created = models.PermitWorkFlowStatusChoices.objects.get_or_create(status=status_value[0])
+            models.PermitWorkFlowStatus.objects.get_or_create(status_choices=choice,
+                                                              administrative_entity=administrative_entity_yverdon)
+            # Example without validation
+            if status_value[0] != 5:
+                models.PermitWorkFlowStatus.objects.get_or_create(status_choices=choice,
+                                                                  administrative_entity=administrative_entity_grandson)
+
+
+
 
     def create_user(self, username, group_name, administrative_entity, is_default_validator=False):
 
@@ -234,8 +245,3 @@ class Command(BaseCommand):
             external_link="https://www.osm.org",
             geom="SRID=2056;MultiPolygon(((2526831.16912443 1159820.00193672, 2516148.68477727 1198947.70623155, 2551053.08130695 1201183.5750484, 2560741.84617995 1166651.82332153, 2526831.16912443 1159820.00193672)))",
         )
-
-    def insert_workflow_status_choices(self):
-
-        for status_value in models.PermitRequest.STATUS_CHOICES:
-            models.PermitWorkFlowStatusChoices.objects.get_or_create(status=status_value[0])
