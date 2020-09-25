@@ -51,7 +51,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
+    'corsheaders',
     'django_filters',
+    'rest_framework',
+    'rest_framework_gis',
     'bootstrap4',
     'bootstrap_datepicker_plus',
     'django_tables2',
@@ -63,6 +66,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -130,6 +134,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+CORS_ALLOWED_ORIGINS = [
+    "https://mapnv.ch",
+    "https://form.mapnv.ch",
+] + os.getenv("ALLOWED_CORS").split(",")
+
+
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
 
 # Internationalization
 
