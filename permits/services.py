@@ -223,7 +223,8 @@ def get_property_value(object_property_value):
         f = private_storage.open(value)
         # The `url` attribute of the file is used to detect if there was already a file set (it is used by
         # `ClearableFileInput` and by the `set_object_property_value` function)
-        f.url = reverse('permits:permit_request_media_download', kwargs={'property_value_id': object_property_value.pk})
+        f.url = reverse('permits:permit_request_media_download', kwargs={
+                        'property_value_id': object_property_value.pk})
 
         return f
 
@@ -245,7 +246,8 @@ def get_permit_request_for_user_or_404(user, permit_request_id, statuses=None):
     If `statuses` is set and a permit request is found but its status doesn't match any value in `statuses`,
     `BadPermitRequestStatus` will be raised.
     """
-    permit_request = get_object_or_404(get_permit_requests_list_for_user(user), pk=permit_request_id)
+    permit_request = get_object_or_404(
+        get_permit_requests_list_for_user(user), pk=permit_request_id)
 
     if statuses is not None and permit_request.status not in statuses:
         raise BadPermitRequestStatus(permit_request, statuses)
@@ -274,7 +276,8 @@ def get_permit_requests_list_for_user(user):
 
         if user.has_perm("permits.validate_permit_request"):
             qs |= Q(
-                validations__department__in=models.PermitDepartment.objects.filter(group__in=user.groups.all())
+                validations__department__in=models.PermitDepartment.objects.filter(
+                    group__in=user.groups.all())
             )
 
         return models.PermitRequest.objects.filter(qs).annotate(starts_at_min=Min('geo_time__starts_at'), ends_at_max=Max('geo_time__ends_at'))
@@ -310,7 +313,8 @@ def get_missing_actors_types(permit_request):
     """
     Return PermitRequestActor yet to be filled
     """
-    existing_actor_types = set(permit_request.permit_request_actors.values_list('actor_type', flat=True))
+    existing_actor_types = set(
+        permit_request.permit_request_actors.values_list('actor_type', flat=True))
     required_actor_types = set(models.PermitActorType.objects.filter(
         works_type__in=get_permit_request_works_types(permit_request)
     ).values_list('type', flat=True))
@@ -381,7 +385,8 @@ def get_progressbar_steps(request, permit_request):
 
     properties_errors = len(properties_form.errors) if properties_form else 0
     appendices_errors = len(appendices_form.errors) if appendices_form else 0
-    geo_time_errors = 0 if models.PermitRequestGeoTime.objects.filter(permit_request=permit_request).count() == 1 else 1
+    geo_time_errors = 0 if models.PermitRequestGeoTime.objects.filter(
+        permit_request=permit_request).count() == 1 else 1
     actor_errors = len(get_missing_actors_types(permit_request)) if permit_request else 0
     total_errors = sum([properties_errors, appendices_errors, actor_errors])
 
@@ -414,7 +419,7 @@ def get_progressbar_steps(request, permit_request):
         "geo_time": models.Step(
             name=_("Agenda et plan"),
             url=geo_time_url,
-            completed=geo_time_errors==0,
+            completed=geo_time_errors == 0,
             errors_count=geo_time_errors,
             enabled=has_objects_types,
         ),
@@ -506,7 +511,8 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
 
     email_contents = render_to_string("permits/emails/permit_request_validation_request.txt", {
         "permit_request_url": absolute_uri_func(
-            reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk})
+            reverse("permits:permit_request_detail", kwargs={
+                    "permit_request_id": permit_request.pk})
         ),
         "administrative_entity": permit_request.administrative_entity,
     })
@@ -531,12 +537,14 @@ def send_validation_reminder(permit_request, absolute_uri_func):
 
     email_contents = render_to_string("permits/emails/permit_request_validation_reminder.txt", {
         "permit_request_url": absolute_uri_func(
-            reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk})
+            reverse("permits:permit_request_detail", kwargs={
+                    "permit_request_id": permit_request.pk})
         ),
         "administrative_entity": permit_request.administrative_entity,
     })
     emails = [
-        ("Rappel: une demande est en attente de validation", email_contents, settings.DEFAULT_FROM_EMAIL, [email_address])
+        ("Rappel: une demande est en attente de validation",
+         email_contents, settings.DEFAULT_FROM_EMAIL, [email_address])
         for email_address in users_to_notify
     ]
 
@@ -637,3 +645,25 @@ def get_permit_objects(permit_request):
     ]
 
     return objects_infos
+
+
+def get_status_choices_for_administrative_entity(administrative_entity):
+
+    status = models.PermitWorkFlowStatus.objects.filter(
+        administrative_entity=administrative_entity).all()
+
+    availables_choices = []
+    for value in status:
+
+        # Prevent turning back to draft mode
+        if value.status_choices.status in [models.PermitRequest.STATUS_PROCESSING,
+                                               models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+                                               models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+                                               models.PermitRequest.STATUS_RECEIVED]:
+            availables_choices.append(
+                (value.status_choices.status,
+                 value.status_choices.get_status_display()
+                 )
+            )
+
+    return availables_choices

@@ -8,7 +8,7 @@ from permits import models as permitsModels
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0002_auto_20200924_1457'),
+        ('permits', '0002_auto_20200925_0652'),
     ]
 
     def insertData(apps, schema_editor):

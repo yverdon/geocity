@@ -801,6 +801,10 @@ class PermitWorkFlowStatus(models.Model):
         on_delete=models.CASCADE
     )
 
+    def __str__(self):
+        return str(self.status_choices) + ' (' + str(self.administrative_entity) + ')'
+
+
     class Meta:
-        verbose_name = _("Relation Statut - Entité administrative")
-        verbose_name_plural = _("Relations Statuts - Entités administratives")
+        verbose_name = _("1.7 Configuration du statut")
+        verbose_name_plural = _("1.7 Configuration des statuts")

@@ -15,7 +15,6 @@ admin.site.register(models.PermitDepartment)
 admin.site.register(models.PermitRequestValidation)
 admin.site.register(models.GeomLayer)
 admin.site.register(models.PermitWorkFlowStatus)
-admin.site.register(models.PermitWorkFlowStatusChoices)
 
 
 def works_object_type_administrative_entities(obj):
