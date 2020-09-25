@@ -20,7 +20,7 @@ docker-compose down --remove-orphans && docker-compose -f docker-compose-dev.yml
 
 This process will create the .env file only if it does not already exist
 
-The demo application is now running on *localhost:9095*
+The demo application is now running on _localhost:9095_
 
 ### Setup for full docker persistent instance served by gunicorn webserver
 
@@ -29,8 +29,7 @@ The demo application is now running on *localhost:9095*
 1. Create a geocity user
 2. Create a geocity schema owned by geocity user
 3. Edit DB connexion in .env file
-3. Create and edit pg_service.conf file in qgisserver directory
-
+4. Create and edit pg_service.conf file in qgisserver directory
 
 #### Build and start the composition
 
@@ -43,21 +42,19 @@ docker-compose down --remove-orphans && docker-compose -f docker-compose-prod.ym
 
 Use your favorite webserver to proxypass localhost:9095 to the outside world
 
-
-
 #### demo accounts
 
 Administrator role (django superuser):
-    *admin:admin*
+_admin:admin_
 
 Backoffice role:
-    *secretariat-yverdon:admin*
+_secretariat-yverdon:admin_
 
 Validatation role A:
-    *validator-yverdon:admin*
+_validator-yverdon:admin_
 
 Validatation role B:
-    *eaux-yverdon:admin*
+_eaux-yverdon:admin_
 
 ### Configuration: Environment variables
 
@@ -72,18 +69,17 @@ run the following commands to clear them all:
 docker system prune -a
 ```
 
-
 ## QGIS-server for map generation
 
-*Prerequisite*
+_Prerequisite_
 
 A dummy feature must drawn otherwise qgis will raise an error.
 
-*Modify print template*
+_Modify print template_
 
 Simply open the print/print.qgs project
 
-*Capabilities of the print server*
+_Capabilities of the print server_
 
 ```
 http://localhost:9096?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities
