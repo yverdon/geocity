@@ -133,10 +133,9 @@ class Command(BaseCommand):
             choice, created = models.PermitWorkFlowStatusChoices.objects.get_or_create(status=status_value[0])
             models.PermitWorkFlowStatus.objects.get_or_create(status_choices=choice,
                                                               administrative_entity=administrative_entity_yverdon)
-            # Example without validation
-            if status_value[0] != 5:
-                models.PermitWorkFlowStatus.objects.get_or_create(status_choices=choice,
-                                                                  administrative_entity=administrative_entity_grandson)
+
+            models.PermitWorkFlowStatus.objects.get_or_create(status_choices=choice,
+                                                              administrative_entity=administrative_entity_grandson)
 
 
 
