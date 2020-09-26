@@ -10,6 +10,8 @@ from django.utils import timezone
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
+from simple_history.models import HistoricalRecords
+
 
 from . import fields
 
@@ -457,7 +459,7 @@ class PermitRequest(models.Model):
         _("Publier"),
         default=False
     )
-
+    history = HistoricalRecords()
     class Meta:
         verbose_name = _("3.1 Consultation de la demande")
         verbose_name_plural = _("3.1 Consultation des demandes")
@@ -745,6 +747,7 @@ class PermitRequestGeoTime(models.Model):
         _("Lien externe"),
         blank=True
     )
+    history = HistoricalRecords()
     geom = geomodels.GeometryCollectionField(
         _("Localisation"),
         null=True,

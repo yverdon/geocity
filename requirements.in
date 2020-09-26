@@ -26,3 +26,4 @@ django-grappelli
 djangorestframework
 djangorestframework-gis
 django-cors-headers
+django-simple-history

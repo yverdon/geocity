@@ -3,13 +3,14 @@ from django.utils.translation import gettext_lazy as _
 
 from . import models
 from django import forms
+from simple_history.admin import SimpleHistoryAdmin
 
 
 admin.site.register(models.WorksType)
 admin.site.register(models.WorksObject)
-admin.site.register(models.PermitRequest)
+admin.site.register(models.PermitRequest, SimpleHistoryAdmin)
 admin.site.register(models.PermitActorType)
-admin.site.register(models.PermitRequestGeoTime)
+admin.site.register(models.PermitRequestGeoTime, SimpleHistoryAdmin)
 admin.site.register(models.PermitAuthor)
 admin.site.register(models.PermitDepartment)
 admin.site.register(models.PermitRequestValidation)
