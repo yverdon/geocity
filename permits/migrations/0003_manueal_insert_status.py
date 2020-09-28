@@ -12,8 +12,11 @@ class Migration(migrations.Migration):
     def insertData(apps, schema_editor):
 
         for status_value in permitsModels.PermitRequest.STATUS_CHOICES:
-            statusChoice = permitsModels.PermitWorkFlowStatus(status=status_value[0])
-            statusChoice.save()
+            for entity in permitsModels.PermitAdministrativeEntity.objects.all():
+                statusChoice = permitsModels.PermitWorkFlowStatus(
+                    status=status_value[0],
+                    administrative_entity=entity)
+                statusChoice.save()
 
     operations = [
         migrations.RunPython(insertData),
