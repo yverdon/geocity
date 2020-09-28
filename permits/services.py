@@ -608,8 +608,6 @@ def can_classify_permit_request(user, permit_request):
         (permit_request.status == models.PermitRequest.STATUS_AWAITING_VALIDATION
          and permit_request.get_pending_validations().count() == 0
          and has_permission_to_classify_permit_request(user, permit_request))
-        or not administrative_entity_has_status(permit_request.administrative_entity,
-                                                models.PermitRequest.STATUS_AWAITING_VALIDATION)
     )
 
 

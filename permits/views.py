@@ -189,9 +189,7 @@ class PermitRequestDetailView(View):
         return None
 
     def get_request_validation_form(self, data=None):
-        if services.has_permission_to_amend_permit_request(self.request.user, self.permit_request) and \
-           services.administrative_entity_has_status(self.permit_request.administrative_entity,
-                                                     models.PermitRequest.STATUS_AWAITING_VALIDATION):
+        if services.has_permission_to_amend_permit_request(self.request.user, self.permit_request):
             form = forms.PermitRequestValidationDepartmentSelectionForm(
                 instance=self.permit_request, data=data)
 
@@ -203,9 +201,7 @@ class PermitRequestDetailView(View):
         return None
 
     def get_validation_form(self, data=None):
-        if not services.has_permission_to_validate_permit_request(self.request.user, self.permit_request) and \
-                not services.administrative_entity_has_status(self.permit_request.administrative_entity,
-                                                              models.PermitRequest.STATUS_AWAITING_VALIDATION):
+        if not services.has_permission_to_validate_permit_request(self.request.user, self.permit_request):
             return None
 
         departments = services.get_user_departments(self.request.user)
@@ -232,12 +228,9 @@ class PermitRequestDetailView(View):
         return form
 
     def get_poke_form(self, data=None):
-        if services.has_permission_to_poke_permit_request(self.request.user, self.permit_request) and \
-                services.administrative_entity_has_status(self.permit_request.administrative_entity,
-                                                          models.PermitRequest.STATUS_APPROVED):
+        if services.has_permission_to_poke_permit_request(self.request.user, self.permit_request):
             form = forms.PermitRequestValidationPokeForm(
                 instance=self.permit_request, request=self.request, data=data)
-
             if not services.can_poke_permit_request(self.request.user, self.permit_request):
                 disable_form(form)
 
