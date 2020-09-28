@@ -10,6 +10,15 @@ class Migration(migrations.Migration):
         ('permits', '0001_initial'),
     ]
 
+    def insertData(apps, schema_editor):
+
+        for status_value in permitsModels.PermitRequest.STATUS_CHOICES:
+            for entity in permitsModels.PermitAdministrativeEntity.objects.all():
+                statusChoice = permitsModels.PermitWorkFlowStatus(
+                    status=status_value[0],
+                    administrative_entity=entity)
+                statusChoice.save()
+
     operations = [
         migrations.AlterField(
             model_name='permitrequest',
@@ -28,4 +37,5 @@ class Migration(migrations.Migration):
                 'verbose_name_plural': 'Status (contrôle les étapes du processus administratif)',
             },
         ),
+        migrations.RunPython(insertData),
     ]
