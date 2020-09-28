@@ -93,6 +93,18 @@ class PermitRequestDetailView(View):
         return render(self.request, "permits/permit_request_detail.html", context)
 
     def get_context_data(self, **kwargs):
+
+        for action in self.actions:
+            if action == 'request_validation' and \
+             not services.administrative_entity_has_status(self.permit_request.administrative_entity,
+                                                           models.PermitRequest.STATUS_AWAITING_VALIDATION):
+                self.actions.remove('request_validation')
+
+            if action == 'poke' and not services.administrative_entity_has_status(self.permit_request.administrative_entity,
+                                                                                  models.PermitRequest.STATUS_APPROVED):
+                self.actions.remove('poke')
+
+
         forms = {action: self.get_form_for_action(action) for action in self.actions}
         available_actions = [action for action in self.actions if forms[action]]
 
@@ -343,7 +355,6 @@ def permit_request_select_types(request, permit_request_id):
 
     if request.method == 'POST':
         works_types_form = forms.WorksTypesForm(data=request.POST, instance=permit_request)
-
         if works_types_form.is_valid():
             works_types_form.save()
             redirect_kwargs = {'permit_request_id': permit_request_id}

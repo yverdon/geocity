@@ -14,7 +14,6 @@ admin.site.register(models.PermitAuthor)
 admin.site.register(models.PermitDepartment)
 admin.site.register(models.PermitRequestValidation)
 admin.site.register(models.GeomLayer)
-admin.site.register(models.PermitWorkFlowStatus)
 
 
 def works_object_type_administrative_entities(obj):
@@ -66,13 +65,22 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
     class Meta:
         model = models.PermitAdministrativeEntity
         fields = '__all__'
+        exclude = ['enabled_status']
         widgets = {
             'general_informations': forms.Textarea(attrs={'rows': 5, }),
         }
 
 
+class PermitWorkFlowStatusInline(admin.StackedInline):
+    model = models.PermitWorkFlowStatus
+    extra = 0
+
+
 class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
     form = PermitAdministrativeEntityAdminForm
+    inlines = [
+        PermitWorkFlowStatusInline,
+    ]
 
 
 admin.site.register(models.WorksObjectType, WorksObjectTypeAdmin)

@@ -85,11 +85,6 @@ class PermitAdministrativeEntity(models.Model):
         max_length=200,
         blank=True
     )
-    enabled_status = models.ManyToManyField(
-        'PermitWorkFlowStatus',
-        related_name='permit_workflow_status',
-        verbose_name=_("Statuts actifs"),
-    )
     archive_link = models.URLField(
         _("Archives externes"),
         max_length=1024,
@@ -802,36 +797,25 @@ class GeomLayer(models.Model):
         verbose_name_plural = _("3.4 Consultation des entités géographiques à intersecter")
 
 
-class PermitWorkFlowStatusChoices(models.Model):
+class PermitWorkFlowStatus(models.Model):
     """
     Represents a works object for a specific works type.
     """
     status = models.PositiveSmallIntegerField(
         _("statut"),
-        choices=PermitRequest.STATUS_CHOICES
+        choices=PermitRequest.STATUS_CHOICES,
+    )
+    administrative_entity = models.ForeignKey(
+        'PermitAdministrativeEntity',
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='enabled_status'
     )
 
     def __str__(self):
         return str(self.get_status_display())
 
-
-class PermitWorkFlowStatus(models.Model):
-    """
-    Represents a works object for a specific works type.
-    """
-    administrative_entity = models.ForeignKey(
-        PermitAdministrativeEntity,
-        on_delete=models.CASCADE
-    )
-    status_choices = models.ForeignKey(
-        PermitWorkFlowStatusChoices,
-        on_delete=models.CASCADE
-    )
-
-    def __str__(self):
-        return str(self.status_choices) + ' (' + str(self.administrative_entity) + ')'
-
-
     class Meta:
-        verbose_name = _("1.7 Configuration du statut")
-        verbose_name_plural = _("1.7 Configuration des statuts")
+        verbose_name = _("Status (contrôle l'étape du processus administratif)")
+        verbose_name_plural = _("Status (contrôle les étapes du processus administratif)")
+        unique_together = ('status', 'administrative_entity')

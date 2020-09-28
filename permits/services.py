@@ -655,13 +655,13 @@ def get_status_choices_for_administrative_entity(administrative_entity):
     availables_choices = []
     for value in status:
         # Prevent turning back to draft mode
-        if value.status_choices.status in [models.PermitRequest.STATUS_PROCESSING,
+        if value.status in [models.PermitRequest.STATUS_PROCESSING,
                                            models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
                                            models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
                                            models.PermitRequest.STATUS_RECEIVED]:
             availables_choices.append(
-                (value.status_choices.status,
-                 value.status_choices.get_status_display()
+                (value.status,
+                 value.get_status_display()
                  )
             )
 
@@ -671,5 +671,5 @@ def get_status_choices_for_administrative_entity(administrative_entity):
 def administrative_entity_has_status(administrative_entity, status):
     is_status_enabled = models.PermitWorkFlowStatus.objects.filter(
         administrative_entity=administrative_entity,
-        status_choices__status=status).first()
+        status=status).first()
     return is_status_enabled

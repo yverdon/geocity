@@ -6,13 +6,13 @@ from permits import models as permitsModels
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0002_auto_20200925_0925'),
+        ('permits', '0002_auto_20200928_1114'),
     ]
 
     def insertData(apps, schema_editor):
 
         for status_value in permitsModels.PermitRequest.STATUS_CHOICES:
-            statusChoice = permitsModels.PermitWorkFlowStatusChoices(status=status_value[0])
+            statusChoice = permitsModels.PermitWorkFlowStatus(status=status_value[0])
             statusChoice.save()
 
     operations = [

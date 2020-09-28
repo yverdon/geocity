@@ -130,12 +130,8 @@ class Command(BaseCommand):
 
         # Insert status choices from PermitRequest and insert status for adminsitrative_entity
         for status_value in models.PermitRequest.STATUS_CHOICES:
-            choice, created = models.PermitWorkFlowStatusChoices.objects.get_or_create(status=status_value[0])
-            models.PermitWorkFlowStatus.objects.get_or_create(status_choices=choice,
-                                                              administrative_entity=administrative_entity_yverdon)
-
-            models.PermitWorkFlowStatus.objects.get_or_create(status_choices=choice,
-                                                              administrative_entity=administrative_entity_grandson)
+            choice, created = models.PermitWorkFlowStatus.objects.get_or_create(status=status_value[0], administrative_entity=administrative_entity_yverdon)
+            choice, created = models.PermitWorkFlowStatus.objects.get_or_create(status=status_value[0], administrative_entity=administrative_entity_grandson)
 
 
 
