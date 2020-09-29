@@ -70,13 +70,23 @@ def disable_form(form):
 
 @method_decorator(login_required, name='dispatch')
 class PermitRequestDetailView(View):
+    """
+    Docstring
+    """
     ACTION_AMEND = "amend"
     ACTION_REQUEST_VALIDATION = "request_validation"
     ACTION_VALIDATE = "validate"
+    ACTION_MODIFY = "modify"
     ACTION_POKE = "poke"
 
     # If you add an action here, make sure you also handle it in `get_form_for_action` and in `handle_form_submission`
-    actions = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE, ACTION_POKE]
+    actions = [
+        ACTION_AMEND,
+        ACTION_REQUEST_VALIDATION,
+        ACTION_VALIDATE,
+        ACTION_MODIFY,
+        ACTION_POKE
+    ]
 
     def dispatch(self, request, *args, **kwargs):
         self.permit_request = services.get_permit_request_for_user_or_404(
@@ -167,6 +177,7 @@ class PermitRequestDetailView(View):
             self.ACTION_AMEND: self.get_amend_form,
             self.ACTION_REQUEST_VALIDATION: self.get_request_validation_form,
             self.ACTION_VALIDATE: self.get_validation_form,
+            self.ACTION_MODIFY: self.get_modify_form,
             self.ACTION_POKE: self.get_poke_form,
         }
 
@@ -230,6 +241,11 @@ class PermitRequestDetailView(View):
             disable_form(form)
 
         return form
+    
+    def get_modification_form(self, data=None):
+    #TODO SET THIS FOR MODIFICATION DEMANDS
+
+        return form
 
     def get_poke_form(self, data=None):
         if services.has_permission_to_poke_permit_request(self.request.user, self.permit_request):
@@ -249,6 +265,8 @@ class PermitRequestDetailView(View):
             return self.handle_request_validation_form_submission(form)
         elif action == self.ACTION_VALIDATE:
             return self.handle_validation_form_submission(form)
+        elif action == self.ACTION_MODIFY:
+            return self.handle_request_modification_form_submission(form)
         elif action == self.ACTION_POKE:
             return self.handle_poke(form)
 
@@ -293,6 +311,11 @@ class PermitRequestDetailView(View):
 
         messages.success(self.request, validation_message)
 
+        return redirect("permits:permit_requests_list")
+
+    def handle_request_modification_form_submission(self, form):
+    #TODO: SET THIS HANDLE FOR MODIFICATION DEMANDS
+        
         return redirect("permits:permit_requests_list")
 
     def handle_poke(self, form):
