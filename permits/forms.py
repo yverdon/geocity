@@ -42,7 +42,8 @@ class AdministrativeEntityForm(forms.Form):
         self.instance = kwargs.pop('instance', None)
 
         if self.instance:
-            initial = {**kwargs.get('initial', {}), 'administrative_entity': self.instance.administrative_entity}
+            initial = {**kwargs.get('initial', {}),
+                       'administrative_entity': self.instance.administrative_entity}
         else:
             initial = {}
 
@@ -58,7 +59,8 @@ class AdministrativeEntityForm(forms.Form):
                 administrative_entity=self.cleaned_data['administrative_entity'], author=author
             )
         else:
-            services.set_administrative_entity(self.instance, self.cleaned_data['administrative_entity'])
+            services.set_administrative_entity(
+                self.instance, self.cleaned_data['administrative_entity'])
             return self.instance
 
 
@@ -79,7 +81,8 @@ class WorksTypesForm(forms.Form):
 
         super().__init__(*args, **kwargs)
 
-        self.fields['types'].queryset = services.get_works_types(self.instance.administrative_entity)
+        self.fields['types'].queryset = services.get_works_types(
+            self.instance.administrative_entity)
 
     def save(self):
         services.set_works_types(self.instance, self.cleaned_data['types'])
@@ -108,7 +111,8 @@ class WorksObjectsForm(forms.Form):
                     administrative_entities=self.instance.administrative_entity
                 ).distinct(),
                 widget=forms.CheckboxSelectMultiple(), label=works_type.name,
-                error_messages={'required': _('Sélectionnez au moins un objet par type de demande')},
+                error_messages={'required': _(
+                    'Sélectionnez au moins un objet par type de demande')},
             )
 
     @transaction.atomic
@@ -140,7 +144,8 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         prop_values = self.get_values()
         for prop_value in prop_values:
             initial[
-                self.get_field_name(prop_value.works_object_type_choice.works_object_type, prop_value.property)
+                self.get_field_name(
+                    prop_value.works_object_type_choice.works_object_type, prop_value.property)
             ] = services.get_property_value(prop_value)
 
         kwargs['initial'] = {**initial, **kwargs.get('initial', {})}
@@ -392,7 +397,7 @@ class PermitRequestCreditorForm(forms.ModelForm):
         choices = [
             (creditor_type, label)
             for creditor_type, label in self.fields['creditor_type'].choices
-                if creditor_type in required_actor_types
+            if creditor_type in required_actor_types
         ]
         choices.insert(0, ('', '----'))
         self.fields['creditor_type'].choices = choices
@@ -467,16 +472,16 @@ class PermitRequestActorForm(forms.ModelForm):
     address = forms.CharField(
         max_length=100,
         label=_('Adresse'),
-        widget= forms.TextInput(
+        widget=forms.TextInput(
             attrs={
                 "data_remote_autocomplete": json.dumps({
-                "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
-                "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
-                "search_prefix": "false",
-                "origins": "address",
-                "zipcode_field": "zipcode",
-                "city_field": "city",
-                "placeholder": "ex: Place Pestalozzi 2 Yverdon",}),
+                    "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
+                    "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
+                    "search_prefix": "false",
+                    "origins": "address",
+                    "zipcode_field": "zipcode",
+                    "city_field": "city",
+                    "placeholder": "ex: Place Pestalozzi 2 Yverdon", }),
                 'required': 'required',
             }
         ),
@@ -539,8 +544,8 @@ class PermitRequestActorForm(forms.ModelForm):
         model = models.PermitRequestActor
         fields = ['actor_type']
         widgets = {'actor_type': forms.Select(
-                attrs={'readonly': 'readonly', 'class': "hide-arrow"}
-            ),
+            attrs={'readonly': 'readonly', 'class': "hide-arrow"}
+        ),
         }
 
     def __init__(self, *args, **kwargs):
@@ -596,14 +601,10 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Prevent secretariat from putting back a request in draft status
-        self.fields['status'].choices = [
-            (status, label)
-            for status, label in self.fields['status'].choices
-            if status == models.PermitRequest.STATUS_PROCESSING or
-                status == models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION or
-                status == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
-        ]
+        instance = kwargs.pop('instance', None)
+        availables_choices = services.get_status_choices_for_administrative_entity(
+            instance.administrative_entity)
+        self.fields['status'].choices = availables_choices
 
 
 # extend django gis osm openlayers widget
@@ -625,8 +626,35 @@ class GeometryWidget(geoforms.OSMWidget):
 class PermitRequestGeoTimeForm(forms.ModelForm):
 
     required_css_class = 'required'
+    starts_at = forms.DateTimeField(
+        label=_("Date planifiée de début"),
+        input_formats=["%d/%m/%Y %H:%M"],
+        widget=DateTimePickerInput(
+            options={
+                "format": "DD/MM/YYYY HH:MM",
+                "locale": "fr-CH",
+                "useCurrent": False,
+                "minDate": (
+                    datetime.today() +
+                    timedelta(days=int(settings.MIN_START_DELAY))
+                ).strftime('%Y/%m/%d')
+            }
+        ).start_of('event days'),
+    )
+    ends_at = forms.DateTimeField(
+        label=_("Date planifiée de fin"),
+        input_formats=["%d/%m/%Y %H:%M"],
+        widget=DateTimePickerInput(
+            options={
+                "format": "DD/MM/YYYY HH:MM",
+                "locale": "fr-CH",
+                "useCurrent": False,
+            }
+        ).end_of('event days'),
+    )
 
     class Meta:
+
         model = models.PermitRequestGeoTime
         fields = [
             'geom',
@@ -653,24 +681,6 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
                 'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
             }),
-            'starts_at': DateTimePickerInput(
-                options={
-                "format": "DD/MM/YYYY HH:mm",
-                "locale": "fr",
-                "useCurrent": False,
-                "minDate": (
-                        datetime.today() +
-                        timedelta(days=int(settings.MIN_START_DELAY))
-                    ).strftime('%Y/%m/%d')
-                }
-            ).start_of('event days'),
-            'ends_at': DateTimePickerInput(
-                options={
-                    "format": "DD/MM/YYYY HH:mm",
-                    "locale": "fr",
-                    "useCurrent": False,
-                }
-            ).end_of('event days'),
             'comment':  forms.Textarea(attrs={'rows': 2}),
         }
 
@@ -679,8 +689,10 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if permit_request:
             self.fields['geom'].widget.attrs['administrative_entity_json_url'] = \
-                reverse("permits:administrative_entities_geojson", args=[permit_request.administrative_entity_id])
-            self.fields['geom'].widget.attrs['administrative_entity_id'] = str(permit_request.administrative_entity.id)
+                reverse("permits:administrative_entities_geojson",
+                        args=[permit_request.administrative_entity_id])
+            self.fields['geom'].widget.attrs['administrative_entity_id'] = str(
+                permit_request.administrative_entity.id)
 
 
 class PermitRequestValidationDepartmentSelectionForm(forms.Form):
@@ -707,7 +719,8 @@ class PermitRequestValidationDepartmentSelectionForm(forms.Form):
             departements = departments.append(validation.department)
         kwargs["initial"] = dict(
             kwargs.get("initial", {}),
-            departments=departments if departments else permit_request_departments.filter(is_default_validator=True)
+            departments=departments if departments else permit_request_departments.filter(
+                is_default_validator=True)
         )
 
         super().__init__(*args, **kwargs)
@@ -763,6 +776,7 @@ class PermitRequestClassifyForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequest
         fields = [
+            "is_public",
             "status",
             "validation_pdf"
         ]

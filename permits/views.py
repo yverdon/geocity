@@ -79,7 +79,8 @@ class PermitRequestDetailView(View):
     actions = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE, ACTION_POKE]
 
     def dispatch(self, request, *args, **kwargs):
-        self.permit_request = services.get_permit_request_for_user_or_404(request.user, kwargs["permit_request_id"])
+        self.permit_request = services.get_permit_request_for_user_or_404(
+            request.user, kwargs["permit_request_id"])
 
         if self.permit_request.is_draft() and self.permit_request.author.user == request.user:
             return redirect(
@@ -92,8 +93,12 @@ class PermitRequestDetailView(View):
         return render(self.request, "permits/permit_request_detail.html", context)
 
     def get_context_data(self, **kwargs):
-        forms = {action: self.get_form_for_action(action) for action in self.actions}
-        available_actions = [action for action in self.actions if forms[action]]
+
+        current_actions = services.get_actions_for_adminentity(self.actions.copy(),
+                                                               self.permit_request.administrative_entity)
+
+        forms = {action: self.get_form_for_action(action) for action in current_actions}
+        available_actions = [action for action in current_actions if forms[action]]
 
         try:
             active_form = [
@@ -106,12 +111,14 @@ class PermitRequestDetailView(View):
 
         if forms.get(self.ACTION_POKE):
             kwargs["nb_pending_validations"] = self.permit_request.get_pending_validations().count()
-            kwargs["validations"] = self.permit_request.validations.select_related("department", "department__group")
+            kwargs["validations"] = self.permit_request.validations.select_related(
+                "department", "department__group")
         else:
             kwargs["nb_pending_validations"] = 0
 
             if services.can_validate_permit_request(self.request.user, self.permit_request):
-                kwargs["validations"] = self.permit_request.validations.select_related("department", "department__group")
+                kwargs["validations"] = self.permit_request.validations.select_related(
+                    "department", "department__group")
             else:
                 kwargs["validations"] = []
 
@@ -166,6 +173,7 @@ class PermitRequestDetailView(View):
         return actions_forms[action](data=data)
 
     def get_amend_form(self, data=None):
+
         if services.has_permission_to_amend_permit_request(self.request.user, self.permit_request):
             # Only set the `status` default value if it's submitted for validation, to prevent accidentally resetting
             # the status
@@ -186,7 +194,8 @@ class PermitRequestDetailView(View):
 
     def get_request_validation_form(self, data=None):
         if services.has_permission_to_amend_permit_request(self.request.user, self.permit_request):
-            form = forms.PermitRequestValidationDepartmentSelectionForm(instance=self.permit_request, data=data)
+            form = forms.PermitRequestValidationDepartmentSelectionForm(
+                instance=self.permit_request, data=data)
 
             if not services.can_amend_permit_request(self.request.user, self.permit_request):
                 disable_form(form)
@@ -202,7 +211,8 @@ class PermitRequestDetailView(View):
         departments = services.get_user_departments(self.request.user)
 
         try:
-            validation, *rest = list(self.permit_request.validations.filter(department__in=departments))
+            validation, * \
+                rest = list(self.permit_request.validations.filter(department__in=departments))
         # User is not part of the requested departments
         except ValueError:
             return None
@@ -223,8 +233,8 @@ class PermitRequestDetailView(View):
 
     def get_poke_form(self, data=None):
         if services.has_permission_to_poke_permit_request(self.request.user, self.permit_request):
-            form = forms.PermitRequestValidationPokeForm(instance=self.permit_request, request=self.request, data=data)
-
+            form = forms.PermitRequestValidationPokeForm(
+                instance=self.permit_request, request=self.request, data=data)
             if not services.can_poke_permit_request(self.request.user, self.permit_request):
                 disable_form(form)
 
@@ -245,7 +255,8 @@ class PermitRequestDetailView(View):
     def handle_amend_form_submission(self, form):
 
         form.save()
-        success_message = _("La demande de permis #%s a bien été complétée par le service pilote.") % self.permit_request.pk
+        success_message = _(
+            "La demande de permis #%s a bien été complétée par le service pilote.") % self.permit_request.pk
 
         if form.instance.status == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT:
             success_message += " " + _(
@@ -262,7 +273,8 @@ class PermitRequestDetailView(View):
             self.permit_request, form.cleaned_data["departments"], self.request.build_absolute_uri
         )
         messages.success(
-            self.request, _("La demande de permis #%s a bien été transmise pour validation.") % self.permit_request.pk
+            self.request, _(
+                "La demande de permis #%s a bien été transmise pour validation.") % self.permit_request.pk
         )
         return redirect("permits:permit_requests_list")
 
@@ -312,7 +324,8 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
             permit_request = administrative_entity_form.save(author=request.user.permitauthor)
 
             return redirect(
-                reverse('permits:permit_request_select_types', kwargs={'permit_request_id': permit_request.pk})
+                reverse('permits:permit_request_select_types', kwargs={
+                        'permit_request_id': permit_request.pk})
             )
     else:
         administrative_entity_form = forms.AdministrativeEntityForm(instance=permit_request)
@@ -334,7 +347,6 @@ def permit_request_select_types(request, permit_request_id):
 
     if request.method == 'POST':
         works_types_form = forms.WorksTypesForm(data=request.POST, instance=permit_request)
-
         if works_types_form.is_valid():
             works_types_form.save()
             redirect_kwargs = {'permit_request_id': permit_request_id}
@@ -375,7 +387,8 @@ def permit_request_select_objects(request, permit_request_id):
         works_types = models.WorksType.objects.none()
 
     # Add the permit request works types to the ones in the querystring
-    works_types = works_types.union(services.get_permit_request_works_types(permit_request)).distinct()
+    works_types = works_types.union(
+        services.get_permit_request_works_types(permit_request)).distinct()
 
     if request.method == 'POST':
         works_objects_form = forms.WorksObjectsForm(
@@ -386,7 +399,8 @@ def permit_request_select_objects(request, permit_request_id):
             permit_request = works_objects_form.save()
             return redirect('permits:permit_request_properties', permit_request_id=permit_request.pk)
     else:
-        works_objects_form = forms.WorksObjectsForm(instance=permit_request, works_types=works_types)
+        works_objects_form = forms.WorksObjectsForm(
+            instance=permit_request, works_types=works_types)
 
     return render(request, "permits/permit_request_select_objects.html", {
         'works_objects_form': works_objects_form,
@@ -404,7 +418,8 @@ def permit_request_properties(request, permit_request_id):
 
     if request.method == 'POST':
         # Disable `required` fields validation to allow partial save
-        form = forms.WorksObjectsPropertiesForm(instance=permit_request, data=request.POST, enable_required=False)
+        form = forms.WorksObjectsPropertiesForm(
+            instance=permit_request, data=request.POST, enable_required=False)
 
         if form.is_valid():
             form.save()
@@ -462,7 +477,7 @@ def permit_request_actors(request, permit_request_id):
 
             models.PermitRequest.objects.filter(
                 pk=permit_request_id
-                ).update(creditor_type=creditorform.instance.creditor_type)
+            ).update(creditor_type=creditorform.instance.creditor_type)
 
             return redirect('permits:permit_request_submit', permit_request_id=permit_request.pk)
     else:
@@ -483,7 +498,8 @@ def permit_request_geo_time(request, permit_request_id):
 
     instance = permit_request.geo_time.first()
 
-    form = forms.PermitRequestGeoTimeForm(request.POST or None, instance=instance, permit_request=permit_request)
+    form = forms.PermitRequestGeoTimeForm(
+        request.POST or None, instance=instance, permit_request=permit_request)
 
     if request.method == 'POST':
 
@@ -505,9 +521,11 @@ def permit_request_media_download(request, property_value_id):
     Send the file referenced by the given property value.
     """
     property_value = get_object_or_404(
-        models.WorksObjectPropertyValue.objects.filter(property__input_type=models.WorksObjectProperty.INPUT_TYPE_FILE),
+        models.WorksObjectPropertyValue.objects.filter(
+            property__input_type=models.WorksObjectProperty.INPUT_TYPE_FILE),
         pk=property_value_id,
-        works_object_type_choice__permit_request__in=services.get_permit_requests_list_for_user(request.user)
+        works_object_type_choice__permit_request__in=services.get_permit_requests_list_for_user(
+            request.user)
     )
     file = services.get_property_value(property_value)
     mime_type, encoding = mimetypes.guess_type(file.name)
@@ -660,6 +678,7 @@ def permit_request_classify(request, permit_request_id, approve):
         permit_request_id,
         statuses=[
             models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            models.PermitRequest.STATUS_PROCESSING,
         ]
     )
     if not services.can_classify_permit_request(request.user, permit_request):
@@ -672,7 +691,8 @@ def permit_request_classify(request, permit_request_id, approve):
             else models.PermitRequest.STATUS_REJECTED
         )
     }
-    title = (_("Approbation de la demande #%s") if approve else _("Refus de la demande #%s")) % permit_request.pk
+    title = (_("Approbation de la demande #%s") if approve else _(
+        "Refus de la demande #%s")) % permit_request.pk
 
     if request.method == "POST":
         classify_form = forms.PermitRequestClassifyForm(

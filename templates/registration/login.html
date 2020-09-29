@@ -10,8 +10,9 @@
 {% block content-no-sidebar %}
 <div id="login-welcome-text">
   <h3 class="text-center">{% trans "Demandes d'autorisations touchant le territoire communal" %}</h3>
-  <br>
   <h5 class="text-center">{% trans "Petits travaux, abattages, fouilles, dépôts,..." %}</h5>
+  <br>
+  <div class="text-center">{% trans "Une application du Système d'Information du Territoire de la Ville d'Yverdon-les-Bains" %} - <a href="https://mapnv.ch" target="_blank">mapnv.ch</a></div>
 </div>
   <div id="login-container">
     <br>
@@ -36,8 +37,5 @@
     <br>
     <p><a class="font-weight-bold" href="{% url 'permit_author_create' %}">{% trans "Créer un compte" %}</a></p>
     <p><a class="font-weight-bold" href="{% url 'password_reset' %}">{% trans "Perdu votre mot de passe ?" %}</a></p>
-  </div>
-  <div id="bottom-login-text">
-    <h5 class="text-center">{% trans "Une application du Système d'Information du Territoire de la Ville d'Yverdon-les-Bains" %} - <a href="https://mapnv.ch" target="_blank">mapnv.ch</a></h5>
   </div>
 {% endblock %}

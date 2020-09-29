@@ -4,7 +4,7 @@ import urllib.parse
 from django.shortcuts import render
 from django.conf import settings
 from . import services, models
-import base64
+from base64 import b64encode
 import requests
 from django.contrib.gis.db.models import Extent
 from django.core.files.base import ContentFile
@@ -12,20 +12,20 @@ from django.utils import timezone
 
 
 def get_map_base64(geo_times, permit_id):
-
+    """Docstring:
+    """
     extent = list(geo_times.aggregate(Extent('geom'))['geom__extent'])
     buffer_extent = int(os.environ["PRINT_MAP_BUFFER_METERS"])
     h_extent_left = round(extent[0] - buffer_extent)
     h_extent_right = round(extent[2] + buffer_extent)
     v_extent_bottom = round(extent[1] - buffer_extent)
-
-    if extent[2] - extent[0] == 0:
-        v_extent_scaled = round(2 * buffer_extent * (1800/2500))
-    else:
-        v_extent_scaled = round((extent[2] - extent[0]) * (1800/2500))
-
-    v_extent_top = round(v_extent_bottom + v_extent_scaled)
+    v_extent_top = round(extent[3] + buffer_extent)
     extent = [h_extent_left, v_extent_bottom, h_extent_right, v_extent_top]
+
+    if settings.PRINTED_REPORT_LAYERS == "":
+        layers = 'permit_permitrequestgeotime_polygons,permit_permitrequestgeotimes_lines,permit_permitrequestgeotime_points'
+    else:
+        layers = settings.PRINTED_REPORT_LAYERS
 
     values = {'SERVICE': 'WMS',
               'VERSION': '1.3.0',
@@ -36,13 +36,9 @@ def get_map_base64(geo_times, permit_id):
               'DPI': '150',
               'TEMPLATE': 'permits',
               'map0:extent': ', '.join(map(str, extent)),
-              'LAYERS': settings.PRINTED_REPORT_LAYERS,
-              'FILTER': 'permit_permitrequestgeotime_polygons:"id" >= ' + str(permit_id)
-              + ' AND "id" < ' + str(permit_id + 1) +
-              ';permit_permitrequestgeotime_lines:"id" >= ' + str(permit_id)
-              + ' AND "id" < ' + str(permit_id + 1) +
-              ';permit_permitrequestgeotime_points:"id" >= ' + str(permit_id)
-              + ' AND "id" < ' + str(permit_id + 1),
+              'LAYERS': layers,
+              'FILTER': 'permits_permitrequestgeotime_polygons,permits_permitrequestgeotimes_lines,permits_permitrequestgeotime_points:"permit_request_id" > ' + str(permit_id - 1)
+              + ' AND "permit_request_id" < ' + str(permit_id + 1)
               }
 
     data = urllib.parse.urlencode(values)
@@ -50,12 +46,26 @@ def get_map_base64(geo_times, permit_id):
     response = requests.get(printurl)
     map_base64 = ("data:" +
                   response.headers['Content-Type'] + ";" +
-                  "base64," + base64.b64encode(response.content).decode("utf-8"))
+                  "base64," + b64encode(response.content).decode("utf-8"))
 
     return map_base64
 
 
 def printreport(request, permit_request):
+    """Return a PDF of the permit request generated using weasyprint.
+
+    Parameters
+    ----------
+    request : <class 'django.core.handlers.wsgi.WSGIRequest'>
+        The user request.
+    permit_request : <class 'permits.models.PermitRequest'>
+        The permit request.
+
+    Returns
+    -------
+    pdf_permit : <class 'bytes'>
+        The PDF of the permit request.
+    """
 
     geo_times = permit_request.geo_time.all()
     map_image = get_map_base64(geo_times, permit_request.pk)
@@ -87,10 +97,10 @@ def printreport(request, permit_request):
         'geo_times': geo_times,
         'map_image': map_image,
         'validations': validations,
-        'logo_main': base64.b64encode(administrative_entity.logo_main.open().read()).decode("utf-8") if administrative_entity.logo_main else '',
-        'logo_secondary': base64.b64encode(administrative_entity.logo_secondary.open().read()).decode("utf-8") if administrative_entity.logo_secondary else '',
-        'image_signature_1': base64.b64encode(administrative_entity.image_signature_1.open().read()).decode("utf-8") if administrative_entity.image_signature_1 else '',
-        'image_signature_2': base64.b64encode(administrative_entity.image_signature_2.open().read()).decode("utf-8") if administrative_entity.image_signature_2 else '',
+        'logo_main': b64encode(administrative_entity.logo_main.open().read()).decode("utf-8") if administrative_entity.logo_main else '',
+        'logo_secondary': b64encode(administrative_entity.logo_secondary.open().read()).decode("utf-8") if administrative_entity.logo_secondary else '',
+        'image_signature_1': b64encode(administrative_entity.image_signature_1.open().read()).decode("utf-8") if administrative_entity.image_signature_1 else '',
+        'image_signature_2': b64encode(administrative_entity.image_signature_2.open().read()).decode("utf-8") if administrative_entity.image_signature_2 else '',
     })
 
     pdf_permit = HTML(string=html.content,  base_url=request.build_absolute_uri()).write_pdf(
