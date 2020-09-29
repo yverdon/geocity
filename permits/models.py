@@ -33,7 +33,9 @@ ACTOR_TYPE_CHOICES = (
 
 
 class PermitDepartment(models.Model):
-
+    """
+    Docstring
+    """
     group = models.OneToOneField(
         Group,
         on_delete=models.CASCADE
@@ -73,6 +75,9 @@ class PermitDepartment(models.Model):
 
 
 class PermitAdministrativeEntity(models.Model):
+    """
+    Docstring
+    """
     name = models.CharField(
         _('name'),
         max_length=128
@@ -284,7 +289,9 @@ class WorksObjectTypeChoice(models.Model):
 
 
 class PermitActorType(models.Model):
-
+    """
+    Docstring
+    """
     type = models.PositiveSmallIntegerField(
         _("type de contact"),
         choices=ACTOR_TYPE_CHOICES,
@@ -306,6 +313,9 @@ class PermitActorType(models.Model):
 
 
 class PermitRequestActor(models.Model):
+    """
+    Docstring
+    """
     actor = models.ForeignKey(
         PermitActor,
         on_delete=models.CASCADE
@@ -330,6 +340,9 @@ class PermitRequestActor(models.Model):
 
 
 class PermitRequest(models.Model):
+    """
+    Docstring
+    """
     STATUS_DRAFT = 0
     STATUS_SUBMITTED_FOR_VALIDATION = 1
     STATUS_APPROVED = 2
@@ -338,6 +351,7 @@ class PermitRequest(models.Model):
     STATUS_AWAITING_VALIDATION = 5
     STATUS_REJECTED = 6
     STATUS_RECEIVED = 7
+    STATUS_MODIFIED = 8
 
     STATUS_CHOICES = (
         (STATUS_DRAFT, _("Brouillon")),
@@ -348,6 +362,7 @@ class PermitRequest(models.Model):
         (STATUS_APPROVED, _("Approuvée")),
         (STATUS_REJECTED, _("Refusée")),
         (STATUS_RECEIVED, _("Annonce réceptionnée")),
+        (STATUS_MODIFIED, _("Annonce modifiée")),
     )
     AMENDABLE_STATUSES = {
         STATUS_SUBMITTED_FOR_VALIDATION,
@@ -467,6 +482,7 @@ class PermitRequest(models.Model):
             ('amend_permit_request', _("Traiter les demandes de permis")),
             ('validate_permit_request', _("Valider les demandes de permis")),
             ('classify_permit_request', _("Classer les demandes de permis")),
+            ('modify_permit_request', _("Modifier les demandes de permis")),
         ]
 
     def is_draft(self):
@@ -476,7 +492,13 @@ class PermitRequest(models.Model):
         return self.can_be_edited_by_author()
 
     def can_be_edited_by_author(self):
-        return self.status in {self.STATUS_AWAITING_SUPPLEMENT, self.STATUS_DRAFT}
+        print("self.status: ", self.status)
+        return self.status in {
+            self.STATUS_AWAITING_SUPPLEMENT,
+            self.STATUS_DRAFT,
+            self.STATUS_PROCESSING,
+            self.STATUS_SUBMITTED_FOR_VALIDATION,
+        }
 
     def can_be_deleted_by_author(self):
         return self.is_draft()
@@ -508,6 +530,9 @@ class PermitRequest(models.Model):
 
 
 class WorksType(models.Model):
+    """
+    Docstring
+    """
     name = models.CharField(
         _("nom"),
         max_length=255
@@ -579,6 +604,9 @@ class WorksObjectType(models.Model):
 
 
 class WorksObject(models.Model):
+    """
+    Docstring
+    """
     name = models.CharField(_("nom"), max_length=255)
     works_types = models.ManyToManyField(
         WorksType,
@@ -596,6 +624,9 @@ class WorksObject(models.Model):
 
 
 class WorksObjectProperty(models.Model):
+    """
+    Docstring
+    """
     INPUT_TYPE_TEXT = 'text'
     INPUT_TYPE_CHECKBOX = 'checkbox'
     INPUT_TYPE_NUMBER = 'number'
@@ -659,6 +690,9 @@ class WorksObjectPropertyValue(models.Model):
 
 
 class PermitRequestValidation(models.Model):
+    """
+    Docstring
+    """
     STATUS_REQUESTED = 0
     STATUS_APPROVED = 1
     STATUS_REJECTED = 2
