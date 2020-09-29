@@ -131,6 +131,7 @@ class Migration(migrations.Migration):
                 ('comment', models.TextField(blank=True, verbose_name='Analyse du service pilote')),
                 ('validation_pdf', permits.fields.PermitRequestFileField(storage=permits.fields.PrivateFileSystemStorage(), upload_to='validations', validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['pdf'])], verbose_name='pdf de validation')),
                 ('creditor_type', models.PositiveSmallIntegerField(blank=True, choices=[(0, 'Autres'), (2, 'Propriétaire'), (3, 'Entreprise'), (4, "Maître d'ouvrage"), (1, "Requérant si différent de l'auteur de la demande"), (5, 'Sécurité'), (6, 'Association')], null=True, verbose_name='Destinaire de la facture')),
+                ('is_public', models.BooleanField(default=False, verbose_name='Publier')),
             ],
             options={
                 'verbose_name': '3.1 Consultation de la demande',
@@ -166,6 +167,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=255, verbose_name='nom')),
+                ('meta_type', models.IntegerField(choices=[(0, 'Autres'), (1, 'Chantier'), (2, 'Construction'), (3, 'Événement sportif'), (4, 'Événement culturel'), (5, 'Événement commercial'), (6, 'Dispositif de police')], default=0, verbose_name='Type générique')),
             ],
             options={
                 'verbose_name': '1.2 Configuration du type',

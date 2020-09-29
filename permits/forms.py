@@ -628,23 +628,23 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
     required_css_class = 'required'
     starts_at = forms.DateTimeField(
         label=_("Date planifiée de début"),
-        input_formats=["%d/%m/%Y %H:%M"],
-        widget=DateTimePickerInput(
-            options={
+        input_formats = ["%d/%m/%Y %H:%M"],
+        widget = DateTimePickerInput(
+            options = {
                 "format": "DD/MM/YYYY HH:MM",
                 "locale": "fr-CH",
                 "useCurrent": False,
                 "minDate": (
-                    datetime.today() +
-                    timedelta(days=int(settings.MIN_START_DELAY))
-                ).strftime('%Y/%m/%d')
+                        datetime.today() +
+                        timedelta(days=int(settings.MIN_START_DELAY))
+                    ).strftime('%Y/%m/%d')
             }
         ).start_of('event days'),
     )
     ends_at = forms.DateTimeField(
         label=_("Date planifiée de fin"),
-        input_formats=["%d/%m/%Y %H:%M"],
-        widget=DateTimePickerInput(
+        input_formats = ["%d/%m/%Y %H:%M"],
+        widget = DateTimePickerInput(
             options={
                 "format": "DD/MM/YYYY HH:MM",
                 "locale": "fr-CH",
@@ -652,7 +652,6 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             }
         ).end_of('event days'),
     )
-
     class Meta:
 
         model = models.PermitRequestGeoTime
