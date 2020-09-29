@@ -94,19 +94,11 @@ class PermitRequestDetailView(View):
 
     def get_context_data(self, **kwargs):
 
-        for action in self.actions:
-            if action == 'request_validation' and \
-             not services.administrative_entity_has_status(self.permit_request.administrative_entity,
-                                                           models.PermitRequest.STATUS_AWAITING_VALIDATION):
-                self.actions.remove('request_validation')
+        current_actions = services.get_actions_for_adminentity(self.actions.copy(),
+                                                               self.permit_request.administrative_entity)
 
-            if action == 'poke' and not services.administrative_entity_has_status(self.permit_request.administrative_entity,
-                                                                                  models.PermitRequest.STATUS_APPROVED):
-                self.actions.remove('poke')
-
-
-        forms = {action: self.get_form_for_action(action) for action in self.actions}
-        available_actions = [action for action in self.actions if forms[action]]
+        forms = {action: self.get_form_for_action(action) for action in current_actions}
+        available_actions = [action for action in current_actions if forms[action]]
 
         try:
             active_form = [

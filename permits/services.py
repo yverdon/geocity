@@ -668,8 +668,20 @@ def get_status_choices_for_administrative_entity(administrative_entity):
     return availables_choices
 
 
-def administrative_entity_has_status(administrative_entity, status):
-    is_status_enabled = models.PermitWorkFlowStatus.objects.filter(
-        administrative_entity=administrative_entity,
-        status=status).first()
-    return is_status_enabled
+def get_actions_for_adminentity(actions, administrative_entity):
+
+    for action in actions:
+        if action == 'request_validation' and \
+         not models.PermitWorkFlowStatus.objects.filter(
+             administrative_entity=administrative_entity,
+             status=models.PermitRequest.STATUS_AWAITING_VALIDATION).first():
+
+            actions.remove('request_validation')
+
+        if action == 'poke' and \
+            not models.PermitWorkFlowStatus.objects.filter(
+                administrative_entity=administrative_entity,
+                status=models.PermitRequest.STATUS_APPROVED).first():
+
+            actions.remove('poke')
+    return actions
