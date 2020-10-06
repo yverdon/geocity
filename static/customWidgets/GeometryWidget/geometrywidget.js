@@ -264,7 +264,13 @@
         } else {
           for (var i = 0; i < features.length; i++) {
             var feature = features[i];
-
+            feature
+              .getGeometry()
+              .getCoordinates()
+              .forEach(function (coord) {
+                console.log(coord);
+                feature.getGeometry().setCoordinates(coord[0:1]);
+              });
             if (feature.getGeometry().getType() == "Polygon") {
               $("#out-of-administrative-limits").show();
               $("#out-of-administrative-limits").html(
