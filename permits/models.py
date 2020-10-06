@@ -351,8 +351,6 @@ class PermitRequest(models.Model):
     STATUS_AWAITING_VALIDATION = 5
     STATUS_REJECTED = 6
     STATUS_RECEIVED = 7
-    STATUS_MODIFIED = 8
-    STATUS_AWAITING_MODIFICATION = 9
 
     STATUS_CHOICES = (
         (STATUS_DRAFT, _("Brouillon")),
@@ -363,8 +361,6 @@ class PermitRequest(models.Model):
         (STATUS_APPROVED, _("Approuvée")),
         (STATUS_REJECTED, _("Refusée")),
         (STATUS_RECEIVED, _("Annonce réceptionnée")),
-        (STATUS_MODIFIED, _("Annonce modifiée")),
-        (STATUS_AWAITING_MODIFICATION, _("Annonce en attente de modification")),
     )
     AMENDABLE_STATUSES = {
         STATUS_SUBMITTED_FOR_VALIDATION,
@@ -372,8 +368,11 @@ class PermitRequest(models.Model):
         STATUS_AWAITING_SUPPLEMENT
     }
     MODIFIABLE_STATUSES = {
-        STATUS_AWAITING_MODIFICATION,
-        STATUS_MODIFIED
+        STATUS_DRAFT,
+        STATUS_AWAITING_SUPPLEMENT,
+        STATUS_SUBMITTED_FOR_VALIDATION,
+        STATUS_PROCESSING,
+        STATUS_RECEIVED,
     }
 
     ARCHEOLOGY_STATUS_IRRELEVANT = 0
@@ -477,7 +476,7 @@ class PermitRequest(models.Model):
         blank=True,
     )
     is_public = models.BooleanField(
-        _("Publier"),
+        _("Rendre la demande publique"),
         default=False
     )
 
@@ -498,12 +497,10 @@ class PermitRequest(models.Model):
         return self.can_be_edited_by_author()
 
     def can_be_edited_by_author(self):
-        print("self.status: ", self.status)
         return self.status in {
             self.STATUS_AWAITING_SUPPLEMENT,
             self.STATUS_DRAFT,
             self.STATUS_PROCESSING,
-            self.STATUS_SUBMITTED_FOR_VALIDATION,
         }
 
     def can_be_deleted_by_author(self):
@@ -513,9 +510,8 @@ class PermitRequest(models.Model):
         return self.status in self.AMENDABLE_STATUSES
 
     def can_be_modified(self):
-        """ Defines if permit request can be modified by the pilot service. 
+        """ Defines if permit request can be modified by the pilot service.
         """
-        print("self.status: ", self.status)
         return self.status in self.MODIFIABLE_STATUSES
 
     def can_be_validated(self):

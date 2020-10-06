@@ -44,7 +44,8 @@ def get_permit_request_for_edition(user, permit_request_id):
         permit_request_id,
         statuses=[
             models.PermitRequest.STATUS_DRAFT,
-            models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
+            models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+            models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
         ]
     )
 
@@ -241,7 +242,7 @@ class PermitRequestDetailView(View):
             disable_form(form)
 
         return form
-    
+
     def get_modify_form(self, data=None):
     #TODO SET THIS FOR MODIFICATION DEMANDS
         if not services.has_permission_to_modify_permit_request(self.request.user, self.permit_request):
@@ -458,7 +459,6 @@ def permit_request_properties(request, permit_request_id):
     Step to input properties values for the given permit request.
     """
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
-
     if request.method == 'POST':
         # Disable `required` fields validation to allow partial save
         form = forms.WorksObjectsPropertiesForm(
