@@ -254,8 +254,28 @@
       var reader = new FileReader();
       reader.onloadend = function () {
         var kml = new ol.format.KML();
-        var feat = kml.readFeature(reader.result);
-        parent.geometryWidget.vectorSource.addFeature(feat);
+        var features = kml.readFeatures(reader.result);
+
+        if (features.length > 50) {
+          $("#out-of-administrative-limits").show();
+          $("#out-of-administrative-limits").html(
+            "Votre fichier dépasse la limite de 50 entités, il n'a pas été importé!"
+          );
+        } else {
+          for (var i = 0; i < features.length; i++) {
+            var feature = features[i];
+
+            if (feature.getGeometry().getType() == "Polygon") {
+              $("#out-of-administrative-limits").show();
+              $("#out-of-administrative-limits").html(
+                "L'import des polygones n'est pas supporté pour le moment!"
+              );
+            } else {
+              feature.getGeometry().transform("EPSG:4326", "EPSG:2056");
+              parent.geometryWidget.vectorSource.addFeature(feature);
+            }
+          }
+        }
       };
       reader.readAsText(file);
     }
