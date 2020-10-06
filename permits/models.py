@@ -206,7 +206,7 @@ class PermitAuthor(models.Model):
         ]
     )
     user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
-
+    history = HistoricalRecords()
     class Meta:
         verbose_name = _('3.2 Consultation de l\'auteur')
         verbose_name_plural = _('3.2 Consultation des auteurs')
@@ -258,7 +258,7 @@ class PermitActor(models.Model):
     email = models.EmailField(
         _("Email"),
     )
-
+    history = HistoricalRecords()
     class Meta:
         verbose_name = _('Contact')
 
@@ -322,7 +322,7 @@ class PermitRequestActor(models.Model):
         choices=ACTOR_TYPE_CHOICES,
         default=ACTOR_TYPE_OTHER
     )
-
+    history = HistoricalRecords()
     class Meta:
         verbose_name = _("Relation permis-contact")
         verbose_name_plural = _("Relations permis-contact")
@@ -653,7 +653,7 @@ class WorksObjectPropertyValue(models.Model):
     # Storing the value in a JSON field allows to keep the value type
     # (eg. boolean, int) instead of transforming everything to str
     value = JSONField()
-
+    history = HistoricalRecords()
     class Meta:
         unique_together = [('property', 'works_object_type_choice')]
 
@@ -704,7 +704,7 @@ class PermitRequestValidation(models.Model):
         _("Validé le"),
         null=True
     )
-
+    history = HistoricalRecords()
     class Meta:
         unique_together = ("permit_request", "department")
         verbose_name = _("3.5 Consultation de la validation par le service")
