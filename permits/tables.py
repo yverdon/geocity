@@ -33,6 +33,9 @@ class OwnPermitRequestsTable(tables.Table):
 
 
 class DepartmentPermitRequestsTable(tables.Table):
+    """
+    Docstring
+    """
     actions = tables.TemplateColumn(
         template_name="tables/_permit_request_actions.html",
         verbose_name=_('Actions'),
@@ -63,5 +66,6 @@ class DepartmentPermitRequestsTable(tables.Table):
             "can_view": (
                 request.user.has_perm("permits.amend_permit_request")
                 or request.user.has_perm("permits.validate_permit_request")
+                or request.user.has_perm("permits.modify_permit_request")
             )
         }

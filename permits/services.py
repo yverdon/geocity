@@ -580,6 +580,11 @@ def has_permission_to_modify_permit_request(user, permit_request):
         and get_permit_requests_list_for_user(user).filter(pk=permit_request.pk).exists()
     )
 
+def can_modify_permit_request(user, permit_request):
+    return (
+        permit_request.can_be_modified()
+        and has_permission_to_modify_permit_request(user, permit_request)
+    )
 
 def can_validate_permit_request(user, permit_request):
     return (

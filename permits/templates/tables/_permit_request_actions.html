@@ -1,6 +1,10 @@
 {% load i18n %}
 
 <ul class="list-inline">
+  {{ record.author }}
+  {{ request.user.is_superuser }}
+  {{ record.can_be_edited_by_author }}
+  {{ record.can_be_modified }}
   {% if record.author == request.user.permitauthor and not record.can_be_edited_by_author or can_view %}
   <li>
     <a title="{% trans "Voir" %}" href="{% url 'permits:permit_request_detail' record.id %}">
@@ -10,13 +14,7 @@
   {% endif %}
 
   {% if record.author == request.user.permitauthor or request.user.is_superuser or perms.permits.modify_permit_request %}
-    {% if record.can_be_edited_by_author %}
-      <li>
-        <a title="{% trans "Modifier" %}" href="{% url 'permits:permit_request_properties' record.id %}">
-          <i class="fa fa-edit fa-lg"></i>
-        </a>
-      </li>
-    {% elif record.can_be_modified %}
+    {% if record.can_be_edited_by_author or record.can_be_modified %}
       <li>
         <a title="{% trans "Modifier" %}" href="{% url 'permits:permit_request_properties' record.id %}">
           <i class="fa fa-edit fa-lg"></i>
