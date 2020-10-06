@@ -242,10 +242,18 @@ class PermitRequestDetailView(View):
 
         return form
     
-    def get_modification_form(self, data=None):
+    def get_modify_form(self, data=None):
     #TODO SET THIS FOR MODIFICATION DEMANDS
+        if not services.has_permission_to_modify_permit_request(self.request.user, self.permit_request):
+            return None
 
-        return form
+        initial = {
+                "status": models.PermitRequest.STATUS_PROCESSING
+            } if self.permit_request.status == models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION else {}
+
+        form = self.permit_request
+
+        return services.get_permit_request_properties(form)
 
     def get_poke_form(self, data=None):
         if services.has_permission_to_poke_permit_request(self.request.user, self.permit_request):
@@ -315,7 +323,19 @@ class PermitRequestDetailView(View):
 
     def handle_request_modification_form_submission(self, form):
     #TODO: SET THIS HANDLE FOR MODIFICATION DEMANDS
-        
+        form.instance.modified_at = timezone.now()
+        form.instance.modifed_by = self.request.user
+        modification = form.save()
+
+        if modification.modification_status == models.PermitRequestModification.STATUS_APPROVED:
+            modification_message = _("La demande a bien été modifiée.")
+        elif modification.modification_status == models.PermitRequestModification.STATUS_REJECTED:
+            modification_message = _("La demande n'a pas été modifiée.")
+        else:
+            modification_message = _("Les modifications ont été enregistrées.")
+
+        messages.success(self.request, modification_message)
+
         return redirect("permits:permit_requests_list")
 
     def handle_poke(self, form):

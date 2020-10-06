@@ -12,7 +12,7 @@
   {% if record.author == request.user.permitauthor or request.user.is_superuser or perms.permits.modify_permit_request %}
     {% if record.can_be_edited_by_author %}
       <li>
-        <a title="{% trans "Modifier" %}" href="{% url 'permits:permit_request_select_administrative_entity' record.id %}">
+        <a title="{% trans "Modifier" %}" href="{% url 'permits:permit_request_properties' record.id %}">
           <i class="fa fa-edit fa-lg"></i>
         </a>
       </li>
