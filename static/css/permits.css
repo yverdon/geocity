@@ -202,3 +202,7 @@ h3 {
 .no-wildcard:after {
   content: "" !important;
 }
+
+.fa-trash {
+  color: crimson;
+}

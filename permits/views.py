@@ -253,7 +253,7 @@ class PermitRequestDetailView(View):
 
         form = self.permit_request
 
-        return services.get_permit_request_properties(form)
+        return form
 
     def get_poke_form(self, data=None):
         if services.has_permission_to_poke_permit_request(self.request.user, self.permit_request):

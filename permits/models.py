@@ -352,6 +352,7 @@ class PermitRequest(models.Model):
     STATUS_REJECTED = 6
     STATUS_RECEIVED = 7
     STATUS_MODIFIED = 8
+    STATUS_AWAITING_MODIFICATION = 9
 
     STATUS_CHOICES = (
         (STATUS_DRAFT, _("Brouillon")),
@@ -363,11 +364,16 @@ class PermitRequest(models.Model):
         (STATUS_REJECTED, _("Refusée")),
         (STATUS_RECEIVED, _("Annonce réceptionnée")),
         (STATUS_MODIFIED, _("Annonce modifiée")),
+        (STATUS_AWAITING_MODIFICATION, _("Annonce en attente de modification")),
     )
     AMENDABLE_STATUSES = {
         STATUS_SUBMITTED_FOR_VALIDATION,
         STATUS_PROCESSING,
         STATUS_AWAITING_SUPPLEMENT
+    }
+    MODIFIABLE_STATUSES = {
+        STATUS_AWAITING_MODIFICATION,
+        STATUS_MODIFIED
     }
 
     ARCHEOLOGY_STATUS_IRRELEVANT = 0
@@ -505,6 +511,12 @@ class PermitRequest(models.Model):
 
     def can_be_amended(self):
         return self.status in self.AMENDABLE_STATUSES
+
+    def can_be_modified(self):
+        """ Defines if permit request can be modified by the pilot service. 
+        """
+        print("self.status: ", self.status)
+        return self.status in self.MODIFIABLE_STATUSES
 
     def can_be_validated(self):
         return self.status == self.STATUS_AWAITING_VALIDATION
