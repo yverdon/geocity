@@ -263,23 +263,14 @@
           );
         } else {
           for (var i = 0; i < features.length; i++) {
-            var feature = features[i];
-            feature
+            features[i]
               .getGeometry()
-              .getCoordinates()
-              .forEach(function (coord) {
-                console.log(coord);
-                feature.getGeometry().setCoordinates(coord[0:1]);
+              .setCoordinates(features[i].getGeometry().getCoordinates(), {
+                layout: "XY",
               });
-            if (feature.getGeometry().getType() == "Polygon") {
-              $("#out-of-administrative-limits").show();
-              $("#out-of-administrative-limits").html(
-                "L'import des polygones n'est pas supporté pour le moment!"
-              );
-            } else {
-              feature.getGeometry().transform("EPSG:4326", "EPSG:2056");
-              parent.geometryWidget.vectorSource.addFeature(feature);
-            }
+            console.log(features[i].getGeometry().getCoordinates());
+            features[i].getGeometry().transform("EPSG:4326", "EPSG:2056");
+            parent.geometryWidget.vectorSource.addFeature(features[i]);
           }
         }
       };
@@ -583,10 +574,9 @@
     }
 
     var geometry = new ol.geom.GeometryCollection(geometries);
+    var geojsongeom = geojsonFormat.writeGeometry(geometry);
 
-    document.getElementById(
-      this.options.id
-    ).value = geojsonFormat.writeGeometry(geometry);
+    document.getElementById(this.options.id).value = geojsongeom;
   };
 
   window.geometryWidget = geometryWidget;
