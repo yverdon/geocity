@@ -263,13 +263,12 @@
           );
         } else {
           for (var i = 0; i < features.length; i++) {
+            var coord = features[i].getGeometry().getCoordinates();
             features[i]
               .getGeometry()
-              .setCoordinates(features[i].getGeometry().getCoordinates(), {
-                layout: "XY",
-              });
-            console.log(features[i].getGeometry().getCoordinates());
+              .setCoordinates(coord, "XY");
             features[i].getGeometry().transform("EPSG:4326", "EPSG:2056");
+
             parent.geometryWidget.vectorSource.addFeature(features[i]);
           }
         }
