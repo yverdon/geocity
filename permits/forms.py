@@ -671,7 +671,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 'map_height': 400,
                 'default_center': [2539057, 1181111],
                 'default_zoom': 10,
-                'display_raw': True,
+                'display_raw': False,
                 'edit_geom': True,
                 'min_zoom': 5,
                 'wmts_capabilities_url': settings.WMTS_GETCAP,

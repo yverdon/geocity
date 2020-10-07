@@ -269,6 +269,17 @@
               .setCoordinates(coord, "XY");
             features[i].getGeometry().transform("EPSG:4326", "EPSG:2056");
 
+            var geomType = features[i].getGeometry().getType();
+            if (geomType == 'Polygon') {
+              var multiPolygon = new ol.geom.MultiPolygon([features[i].getGeometry().getCoordinates()]);
+              features[i].setGeometry(multiPolygon);
+            } else if (geomType == 'LineString') {
+              var MultiLineString = new ol.geom.MultiLineString([features[i].getGeometry().getCoordinates()]);
+              features[i].setGeometry(MultiLineString);
+            } else if (geomType == 'Point'){
+              var multiPoint = new ol.geom.MultiPoint([features[i].getGeometry().getCoordinates()]);
+              features[i].setGeometry(multiPoint);
+            }
             parent.geometryWidget.vectorSource.addFeature(features[i]);
           }
         }
