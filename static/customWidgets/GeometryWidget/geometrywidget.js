@@ -63,7 +63,12 @@
       opacity: 0.9,
     });
 
-    this.map = this.createMap(this.rasterMaskLayer, this.vectorMaskLayer);
+    this.map = this.createMap(
+      this.rasterMaskLayer,
+      this.vectorMaskLayer,
+      this.options.restriction_area_enabled
+    );
+
     this.addBaseLayer();
     this.setupAlternativeBaseLayer();
     this.vectorSource = new ol.source.Vector();
@@ -88,31 +93,72 @@
       updateWhileAnimating: true, // optional, for instant visual feedback
       updateWhileInteracting: true, // optional, for instant visual feedback
     });
-
     var initial_value = document.getElementById(this.options.id).value;
     var extent = ol.extent.createEmpty();
+    if (this.options.geometry_db_type != "GeometryCollection") {
+      if (this.options.geometry_db_type == "MultiPolygon") {
+        $("#edit-points").hide();
+        $("#edit-lines").hide();
+        $("#edit-polygon").prop("checked", true);
+        $("#set-point-manual").hide();
+        $("#manual-coordinates").hide();
+      } else if (this.options.geometry_db_type == "MultiLineString") {
+        $("#edit-points").hide();
+        $("#edit-polygon").hide();
+        $("#edit-lines").prop("checked", true);
+        $("#set-point-manual").hide();
+        $("#manual-coordinates").hide();
+      } else if (this.options.geometry_db_type == "MultiPoint") {
+        $("#edit-polygon").hide();
+        $("#edit-lines").hide();
+        $("#edit-points").prop("checked", true);
+      }
+    }
     if (initial_value) {
-      var collection = JSON.parse(initial_value);
-      var features = collection.geometries;
-      for (var i = 0; i < features.length; i++) {
-        var f = features[i];
-        if (f.type == "MultiPoint") {
+      var data = JSON.parse(initial_value);
+      // If not collection, hide buttons for unsupported geometry types
+      if (this.options.geometry_db_type != "GeometryCollection") {
+        if (this.options.geometry_db_type == "MultiPoint") {
           var olFeature = new ol.Feature({
-            geometry: new ol.geom.MultiPoint(f.coordinates),
+            geometry: new ol.geom.MultiPoint(data.coordinates),
           });
-        } else if (f.type == "MultiLineString") {
+        } else if (this.options.geometry_db_type == "MultiLineString") {
           var olFeature = new ol.Feature({
-            geometry: new ol.geom.MultiLineString(f.coordinates),
+            geometry: new ol.geom.MultiLineString(data.coordinates),
           });
-        } else if (f.type == "MultiPolygon") {
+        } else if (this.options.geometry_db_type == "MultiPolygon") {
           var olFeature = new ol.Feature({
-            geometry: new ol.geom.MultiPolygon(f.coordinates),
+            geometry: new ol.geom.MultiPolygon(data.coordinates),
           });
         }
 
+        extent = olFeature.getGeometry().getExtent();
+
         this.featureOverlay.getSource().addFeature(olFeature);
-        //update extent
-        ol.extent.extend(extent, olFeature.getGeometry().getExtent());
+      } else {
+        // GeometryCollection
+        var features = data.geometries;
+
+        for (var i = 0; i < features.length; i++) {
+          var f = features[i];
+          if (f.type == "MultiPoint") {
+            var olFeature = new ol.Feature({
+              geometry: new ol.geom.MultiPoint(f.coordinates),
+            });
+          } else if (f.type == "MultiLineString") {
+            var olFeature = new ol.Feature({
+              geometry: new ol.geom.MultiLineString(f.coordinates),
+            });
+          } else if (f.type == "MultiPolygon") {
+            var olFeature = new ol.Feature({
+              geometry: new ol.geom.MultiPolygon(f.coordinates),
+            });
+          }
+
+          this.featureOverlay.getSource().addFeature(olFeature);
+          //update extent
+          ol.extent.extend(extent, olFeature.getGeometry().getExtent());
+        }
       }
       // zoom to extent of initial geometry that we got from db
       this.map
@@ -161,7 +207,8 @@
     */
   geometryWidget.prototype.createMap = function (
     rasterMaskLayer,
-    vectorMaskLayer
+    vectorMaskLayer,
+    restriction_area_enabled
   ) {
     var map = new ol.Map({
       controls: [
@@ -177,7 +224,6 @@
         }),
       ],
       target: this.options.map_id,
-      layers: [rasterMaskLayer, vectorMaskLayer],
       view: new ol.View({
         zoom: this.options.default_zoom,
         minZoom: this.options.min_zoom,
@@ -185,6 +231,10 @@
         center: this.options.default_center,
       }),
     });
+    if (restriction_area_enabled == "True") {
+      map.addLayer(vectorMaskLayer);
+      map.addLayer(rasterMaskLayer);
+    }
     return map;
   };
 
@@ -479,21 +529,25 @@
       source: this.vectorSource,
       type: geotype,
       condition: (e) => {
-        $("#out-of-administrative-limits").hide();
-        let coords = e.coordinate;
-        let features = this.map.getFeaturesAtPixel(e.pixel, {
-          layerFilter: (layer) => {
-            return layer === this.vectorMaskLayer;
-          },
-        });
-        if (features && features.length > 0) {
-          return true;
+        if (this.options.restriction_area_enabled == "True") {
+          $("#out-of-administrative-limits").hide();
+          let coords = e.coordinate;
+          let features = this.map.getFeaturesAtPixel(e.pixel, {
+            layerFilter: (layer) => {
+              return layer === this.vectorMaskLayer;
+            },
+          });
+          if (features && features.length > 0) {
+            return true;
+          } else {
+            $("#out-of-administrative-limits").show();
+            $("#out-of-administrative-limits").html(
+              "Votre saisie sort du territoire du territoire concerné"
+            );
+            return false;
+          }
         } else {
-          $("#out-of-administrative-limits").show();
-          $("#out-of-administrative-limits").html(
-            "Votre saisie sort du territoire du territoire concerné"
-          );
-          return false;
+          return true;
         }
       },
     });
@@ -572,18 +626,31 @@
     */
   geometryWidget.prototype.serializeFeatures = function () {
     var features = this.vectorSource.getFeatures();
-    var geometries = [];
-
     if (features.length == 0) {
       document.getElementById(this.options.id).value = "";
       return;
     }
 
-    for (var i = 0; i < features.length; i++) {
-      geometries.push(features[i].getGeometry());
+    if (this.options.geometry_db_type == "GeometryCollection") {
+      var geometries = [];
+      for (var i = 0; i < features.length; i++) {
+        geometries.push(features[i].getGeometry());
+      }
+      var geometry = new ol.geom.GeometryCollection(geometries);
+    } else if (this.options.geometry_db_type == "MultiPolygon") {
+      var geometry = new ol.geom.MultiPolygon([
+        features[0].getGeometry().getCoordinates(),
+      ]);
+    } else if (this.options.geometry_db_type == "MultiLineString") {
+      var geometry = new ol.geom.MultiLineString([
+        features[0].getGeometry().getCoordinates(),
+      ]);
+    } else if (this.options.geometry_db_type == "MultiPoint") {
+      var geometry = new ol.geom.MultiPoint([
+        features[0].getGeometry().getCoordinates(),
+      ]);
     }
 
-    var geometry = new ol.geom.GeometryCollection(geometries);
     var geojsongeom = geojsonFormat.writeGeometry(geometry);
 
     document.getElementById(this.options.id).value = geojsongeom;

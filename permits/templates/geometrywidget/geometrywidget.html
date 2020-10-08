@@ -31,25 +31,26 @@
       <a id="delete-selected" class="btn btn-outline-danger""
          href="javascript:geometryWidget.removeSelectedFeatures();" role="button">
          <i class="fa fa-trash"></i>  Effacer la ou les entité(s) sélectionnée(s)
-      </a>
-      <br><br>
-      Charger une géométrie depuis un fichier .kml
-      <input id="selectfile" type="file" accept=".kml" onchange="javascript:geometryWidget.addKML()">
+      </a><br><br>
+      <div class="custom-file">
+        <input type="file" class="custom-file-input" id="selectfile" accept=".kml" onchange="javascript:geometryWidget.addKML()">
+        <label class="custom-file-label" for="selectfile">Charger des géométries (Point, Ligne, Polygone) depuis un fichier .kml</label>
+      </div>
     </div>
     <hr>
-    <div class="form-check form-check-inline">
+    <div id="edit-points" class="form-check form-check-inline">
       <input class="form-check-input" title="Cliquer pour ajouter un point" type="radio" name="inlineRadioOptions" id="inlineRadio1" checked onclick="javascript:geometryWidget.setDrawInteraction('MultiPoint');">
       <label class="form-check-label no-wildcard" title="Cliquer pour ajouter un point" for="inlineRadio1">Points<img src="{% static 'images/geometrywidget/points.svg'%}" height=30></label>
     </div>
-    <div class="form-check form-check-inline">
+    <div id="edit-lines" class="form-check form-check-inline">
       <input class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions" id="inlineRadio2" onclick="javascript:geometryWidget.setDrawInteraction('MultiLineString');">
       <label class="form-check-label no-wildcard" title="Double clique pour terminer la construction" for="inlineRadio2">Lignes<img src="{% static 'images/geometrywidget/polyline.svg'%}" height=30></label>
     </div>
-    <div class="form-check form-check-inline">
+    <div id="edit-polygones" class="form-check form-check-inline">
       <input class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions" id="inlineRadio3" onclick="javascript:geometryWidget.setDrawInteraction('MultiPolygon');">
       <label class="form-check-label no-wildcard" title="Double clique pour terminer la construction" for="inlineRadio3">Surfaces<img src="{% static 'images/geometrywidget/polygon.svg'%}" height=30></label>
     </div>
-    <a class="btn btn-outline-primary" data-toggle="collapse" href="#manual-coordinates" role="button" aria-expanded="false" aria-controls="manual-coordinates">
+    <a id="set-point-manual" class="btn btn-outline-primary" data-toggle="collapse" href="#manual-coordinates" role="button" aria-expanded="false" aria-controls="manual-coordinates">
       Saisir des coordonnées manuellement
     </a>
     <br><br>
@@ -82,6 +83,10 @@
   <textarea id="{{ id }}" class="vSerializedField required" cols="150" rows="10" name="{{ name }}">{{ serialized }}</textarea>
   <script type="text/javascript">
 
+    if (!$) {
+        $ = django.jQuery;
+    }
+
       {% block base_layer %}
       var options = {
           administrative_entity_json_url:'{{ administrative_entity_json_url }}',
@@ -99,11 +104,18 @@
           wmts_capabilities_url_alternative: '{{wmts_capabilities_url_alternative}}',
           wmts_layer_alternative: '{{wmts_layer_alternative}}',
           qgisserver_proxy: "{% url 'permits:qgisserver_proxy' %}",
+          restriction_area_enabled: '{{restriction_area_enabled}}',
+          geometry_db_type: '{{geometry_db_type}}',
       };
 
       var {{ module }} = new geometryWidget(options);
       geometryWidget = {{ module }};
 
       {% endblock %}
+
+      $(".custom-file-input").on("change", function() {
+        var fileName = $(this).val().split("\\").pop();
+        $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+      });
   </script>
 </div>
