@@ -620,8 +620,8 @@
   };
 
   /*
-    Serialize geometries into django-gis collections
-    */
+    Serialize geometries into geojson collections
+  */
   geometryWidget.prototype.serializeFeatures = function () {
     var features = this.vectorSource.getFeatures();
     if (features.length == 0) {
@@ -632,30 +632,23 @@
     for (var i = 0; i < features.length; i++) {
       if (this.options.geometry_db_type == "GeometryCollection") {
         geometries.push(features[i].getGeometry());
-      } else if (this.options.geometry_db_type == "MultiPolygon") {
-        console.log(features.length);
-        var geometry = new ol.geom.MultiPolygon(
-          features[0].getGeometry().getCoordinates()
-        );
-        console.log("lalaal");
-      } else if (this.options.geometry_db_type == "MultiLineString") {
-        var geometry = new ol.geom.MultiLineString(
-          features[0].getGeometry().getCoordinates()
-        );
-      } else if (this.options.geometry_db_type == "MultiPoint") {
-        var geometry = new ol.geom.MultiPoint(
-          features[0].getGeometry().getCoordinates()
-        );
+      } else {
+        geometries.push(features[i].getGeometry().getCoordinates()[0]);
       }
     }
     if (this.options.geometry_db_type == "GeometryCollection") {
       var geometry = new ol.geom.GeometryCollection(geometries);
+    } else if (this.options.geometry_db_type == "MultiPolygon") {
+      var geometry = new ol.geom.MultiPolygon(geometries);
+    } else if (this.options.geometry_db_type == "MultiLineString") {
+      var geometry = new ol.geom.MultiLineString(geometries);
+    } else if (this.options.geometry_db_type == "MultiPoint") {
+      var geometry = new ol.geom.MultiPoint(geometries);
     }
 
     var geojsongeom = geojsonFormat.writeGeometry(geometry, {
       decimals: 2,
     });
-    console.log(geojsongeom);
     document.getElementById(this.options.id).value = geojsongeom;
   };
 
