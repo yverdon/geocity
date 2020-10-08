@@ -96,22 +96,16 @@
     var initial_value = document.getElementById(this.options.id).value;
     var extent = ol.extent.createEmpty();
     if (this.options.geometry_db_type != "GeometryCollection") {
+      $("#edit-points").hide();
+      $("#edit-lines").hide();
+      $("#edit-polygons").hide();
+
       if (this.options.geometry_db_type == "MultiPolygon") {
-        $("#edit-points").hide();
-        $("#edit-lines").hide();
-        $("#edit-polygon").prop("checked", true);
         $("#set-point-manual").hide();
         $("#manual-coordinates").hide();
       } else if (this.options.geometry_db_type == "MultiLineString") {
-        $("#edit-points").hide();
-        $("#edit-polygon").hide();
-        $("#edit-lines").prop("checked", true);
         $("#set-point-manual").hide();
         $("#manual-coordinates").hide();
-      } else if (this.options.geometry_db_type == "MultiPoint") {
-        $("#edit-polygon").hide();
-        $("#edit-lines").hide();
-        $("#edit-points").prop("checked", true);
       }
     }
     if (initial_value) {
@@ -298,7 +292,7 @@
 
     if (file) {
       var reader = new FileReader();
-      reader.onloadend = function () {
+      reader.onloadend = () => {
         var kml = new ol.format.KML();
         var features = kml.readFeatures(reader.result);
 
@@ -330,7 +324,7 @@
               ]);
               features[i].setGeometry(multiPoint);
             }
-            parent.geometryWidget.vectorSource.addFeature(features[i]);
+            this.vectorSource.addFeature(features[i]);
           }
         }
       };
@@ -501,7 +495,11 @@
 
     this.map.addInteraction(this.interactions.modify);
     this.map.addInteraction(this.interactions.select);
-    this.setDrawInteraction("MultiPoint");
+    if (this.options.geometry_db_type == "GeometryCollection") {
+      this.setDrawInteraction("MultiPoint");
+    } else {
+      this.setDrawInteraction(this.options.geometry_db_type);
+    }
     this.map.on("pointermove", function (evt) {
       var hit = evt.map.hasFeatureAtPixel(evt.pixel, {
         layerFilter: function (layer) {
@@ -630,29 +628,34 @@
       document.getElementById(this.options.id).value = "";
       return;
     }
-
-    if (this.options.geometry_db_type == "GeometryCollection") {
-      var geometries = [];
-      for (var i = 0; i < features.length; i++) {
+    var geometries = [];
+    for (var i = 0; i < features.length; i++) {
+      if (this.options.geometry_db_type == "GeometryCollection") {
         geometries.push(features[i].getGeometry());
+      } else if (this.options.geometry_db_type == "MultiPolygon") {
+        console.log(features.length);
+        var geometry = new ol.geom.MultiPolygon(
+          features[0].getGeometry().getCoordinates()
+        );
+        console.log("lalaal");
+      } else if (this.options.geometry_db_type == "MultiLineString") {
+        var geometry = new ol.geom.MultiLineString(
+          features[0].getGeometry().getCoordinates()
+        );
+      } else if (this.options.geometry_db_type == "MultiPoint") {
+        var geometry = new ol.geom.MultiPoint(
+          features[0].getGeometry().getCoordinates()
+        );
       }
+    }
+    if (this.options.geometry_db_type == "GeometryCollection") {
       var geometry = new ol.geom.GeometryCollection(geometries);
-    } else if (this.options.geometry_db_type == "MultiPolygon") {
-      var geometry = new ol.geom.MultiPolygon([
-        features[0].getGeometry().getCoordinates(),
-      ]);
-    } else if (this.options.geometry_db_type == "MultiLineString") {
-      var geometry = new ol.geom.MultiLineString([
-        features[0].getGeometry().getCoordinates(),
-      ]);
-    } else if (this.options.geometry_db_type == "MultiPoint") {
-      var geometry = new ol.geom.MultiPoint([
-        features[0].getGeometry().getCoordinates(),
-      ]);
     }
 
-    var geojsongeom = geojsonFormat.writeGeometry(geometry);
-
+    var geojsongeom = geojsonFormat.writeGeometry(geometry, {
+      decimals: 2,
+    });
+    console.log(geojsongeom);
     document.getElementById(this.options.id).value = geojsongeom;
   };
 
