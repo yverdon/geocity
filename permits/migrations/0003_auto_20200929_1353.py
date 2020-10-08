@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0002_auto_20200928_1828'),
+        ('permits', '0002_historicalpermitrequest_historicalpermitrequestgeotime'),
     ]
 
     operations = [

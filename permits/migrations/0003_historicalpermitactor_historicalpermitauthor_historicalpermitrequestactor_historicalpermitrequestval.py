@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('permits', '0002_historicalpermitrequest_historicalpermitrequestgeotime'),
+        ('permits', '0003_auto_20200929_1353'),
     ]
 
     operations = [
