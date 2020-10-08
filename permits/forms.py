@@ -678,6 +678,8 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 'wmts_layer': settings.WMTS_LAYER,
                 'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
                 'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
+                'restriction_area_enabled': True,
+                'geometry_db_type': 'GeometryCollection',
             }),
             'comment':  forms.Textarea(attrs={'rows': 2}),
         }

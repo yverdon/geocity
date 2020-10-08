@@ -15,7 +15,7 @@ git fetch upstream
 git checkout upstream/master
 chmod a+rwx entrypoint.sh
 docker-compose -f docker-compose-dev.yml build
-docker-compose down --remove-orphans && docker-compose -f docker-compose-dev.yml up
+docker-compose -f docker-compose-dev.yml down --remove-orphans && docker-compose -f docker-compose-dev.yml up
 ```
 
 This process will create the .env file only if it does not already exist
