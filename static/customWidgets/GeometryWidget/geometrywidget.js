@@ -68,17 +68,16 @@
     this.setupAlternativeBaseLayer();
     this.vectorSource = new ol.source.Vector();
 
-    var _this = this;
-    this.vectorSource.on("addfeature", function (e) {
-      _this.serializeFeatures();
+    this.vectorSource.on("addfeature", (e) => {
+      this.serializeFeatures();
     });
 
-    this.vectorSource.on("removefeature", function (e) {
-      _this.serializeFeatures();
+    this.vectorSource.on("removefeature", (e) => {
+      this.serializeFeatures();
     });
 
-    this.vectorSource.on("changefeature", function (e) {
-      _this.serializeFeatures();
+    this.vectorSource.on("changefeature", (e) => {
+      this.serializeFeatures();
     });
 
     this.featureOverlay = new ol.layer.Vector({
@@ -122,10 +121,9 @@
     } else {
       this.map.getView().setCenter(this.options.default_center);
       this.map.getView().setZoom(this.options.default_zoom);
-      _this = this;
-      this.vectorMaskLayer.on("change", function (e) {
-        extent = _this.vectorMaskLayer.getSource().getExtent();
-        _this.map
+      this.vectorMaskLayer.on("change", (e) => {
+        var extent = this.vectorMaskLayer.getSource().getExtent();
+        this.map
           .getView()
           .fit(extent, { padding: [100, 100, 100, 100], minResolution: 1 });
       });
@@ -195,11 +193,10 @@
     */
   geometryWidget.prototype.addBaseLayer = function () {
     var wmtsLayerName = this.options.wmts_layer;
-    var _this = this;
 
     $.ajax({
       url: this.options.wmts_capabilities_url,
-      success: function (response) {
+      success: (response) => {
         var parser = new ol.format.WMTSCapabilities();
         var result = parser.read(response);
         var options = ol.source.WMTS.optionsFromCapabilities(result, {
@@ -207,7 +204,7 @@
           matrixSet: "EPSG:2056",
           projection: "EPSG:2056",
         });
-        _this.wmtsLayer.setSource(
+        this.wmtsLayer.setSource(
           new ol.source.WMTS(/** @type {!olx.source.WMTSOptions} */ (options))
         );
       },
@@ -222,11 +219,10 @@
     */
   geometryWidget.prototype.setupAlternativeBaseLayer = function () {
     var wmtsLayerName = this.options.wmts_layer_alternative;
-    var _this = this;
 
     $.ajax({
       url: this.options.wmts_capabilities_url_alternative,
-      success: function (response) {
+      success: (response) => {
         var parser = new ol.format.WMTSCapabilities();
         var result = parser.read(response);
         var options = ol.source.WMTS.optionsFromCapabilities(result, {
@@ -234,7 +230,7 @@
           matrixSet: "EPSG:2056",
           projection: "EPSG:2056",
         });
-        _this.wmtsLayerAlternative.setSource(
+        this.wmtsLayerAlternative.setSource(
           new ol.source.WMTS(/** @type {!olx.source.WMTSOptions} */ (options))
         );
       },
@@ -264,20 +260,24 @@
         } else {
           for (var i = 0; i < features.length; i++) {
             var coord = features[i].getGeometry().getCoordinates();
-            features[i]
-              .getGeometry()
-              .setCoordinates(coord, "XY");
+            features[i].getGeometry().setCoordinates(coord, "XY");
             features[i].getGeometry().transform("EPSG:4326", "EPSG:2056");
 
             var geomType = features[i].getGeometry().getType();
-            if (geomType == 'Polygon') {
-              var multiPolygon = new ol.geom.MultiPolygon([features[i].getGeometry().getCoordinates()]);
+            if (geomType == "Polygon") {
+              var multiPolygon = new ol.geom.MultiPolygon([
+                features[i].getGeometry().getCoordinates(),
+              ]);
               features[i].setGeometry(multiPolygon);
-            } else if (geomType == 'LineString') {
-              var MultiLineString = new ol.geom.MultiLineString([features[i].getGeometry().getCoordinates()]);
+            } else if (geomType == "LineString") {
+              var MultiLineString = new ol.geom.MultiLineString([
+                features[i].getGeometry().getCoordinates(),
+              ]);
               features[i].setGeometry(MultiLineString);
-            } else if (geomType == 'Point'){
-              var multiPoint = new ol.geom.MultiPoint([features[i].getGeometry().getCoordinates()]);
+            } else if (geomType == "Point") {
+              var multiPoint = new ol.geom.MultiPoint([
+                features[i].getGeometry().getCoordinates(),
+              ]);
               features[i].setGeometry(multiPoint);
             }
             parent.geometryWidget.vectorSource.addFeature(features[i]);
