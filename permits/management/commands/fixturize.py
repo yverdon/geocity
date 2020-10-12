@@ -106,23 +106,44 @@ class Command(BaseCommand):
 
         permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
         secretariat_permissions = Permission.objects.filter(
-            codename__in=['amend_permit_request', 'classify_permit_request'], content_type=permit_request_ct
+            codename__in=[
+                'amend_permit_request',
+                'classify_permit_request'
+            ],
+            content_type=permit_request_ct
         )
-        user = self.create_user('secretariat-yverdon', 'Secrétariat Yverdon', administrative_entity_yverdon)
+        user = self.create_user(
+            'secretariat-yverdon',
+            'Secrétariat Yverdon',
+            administrative_entity_yverdon
+        )
         user.user_permissions.set(secretariat_permissions)
         self.stdout.write("secretariat-yverdon / admin")
 
-        user = self.create_user('secretariat-grandson', 'Secrétariat Grandson', administrative_entity_grandson)
+        user = self.create_user(
+            'secretariat-grandson',
+            'Secrétariat Grandson',
+            administrative_entity_grandson
+        )
         user.user_permissions.set(secretariat_permissions)
         self.stdout.write("secretariat-grandson / admin")
 
-        user = self.create_user('validator-yverdon', 'Validateur Yverdon', administrative_entity_yverdon, is_default_validator=True)
+        user = self.create_user(
+            'validator-yverdon',
+            'Validateur Yverdon',
+            administrative_entity_yverdon,
+            is_default_validator=True
+        )
         Group.objects.get(name="Validateur Yverdon").permissions.add(
             Permission.objects.get(codename='validate_permit_request', content_type=permit_request_ct)
         )
         self.stdout.write("validator-yverdon / admin")
 
-        user = self.create_user('eaux-yverdon', 'Service des eaux Yverdon', administrative_entity_yverdon)
+        user = self.create_user(
+            'eaux-yverdon',
+            'Service des eaux Yverdon',
+            administrative_entity_yverdon
+        )
         Group.objects.get(name="Service des eaux Yverdon").permissions.add(
             Permission.objects.get(codename='validate_permit_request', content_type=permit_request_ct)
         )
