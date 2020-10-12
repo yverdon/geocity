@@ -93,7 +93,8 @@ class Command(BaseCommand):
             password='admin',
             email=f"yverdon-squad+user@liip.ch",
             first_name="Antoine",
-            last_name="Ducommun",)
+            last_name="Ducommun",
+        )
         models.PermitAuthor.objects.create(
             user=user,
             address="Rue du Port",
@@ -108,7 +109,8 @@ class Command(BaseCommand):
         secretariat_permissions = Permission.objects.filter(
             codename__in=[
                 'amend_permit_request',
-                'classify_permit_request'
+                'classify_permit_request',
+                'modify_permit_request'
             ],
             content_type=permit_request_ct
         )

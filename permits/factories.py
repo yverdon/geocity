@@ -88,7 +88,12 @@ class SecretariatGroupFactory(GroupFactory):
             permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
             extracted = list(
                 Permission.objects.filter(
-                    codename__in=["amend_permit_request", "classify_permit_request"], content_type=permit_request_ct
+                    codename__in=[
+                        "amend_permit_request",
+                        "classify_permit_request",
+                        "modify_permit_request",
+                    ],
+                    content_type=permit_request_ct
                 )
             )
 
@@ -106,7 +111,10 @@ class ValidatorGroupFactory(GroupFactory):
 
         if not extracted:
             permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
-            validate_permission = Permission.objects.get(codename="validate_permit_request", content_type=permit_request_ct)
+            validate_permission = Permission.objects.get(
+                codename="validate_permit_request",
+                content_type=permit_request_ct
+            )
             extracted = [validate_permission]
 
         for permission in extracted:
