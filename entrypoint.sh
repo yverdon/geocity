@@ -7,6 +7,4 @@ mkdir /code/geomapshark/static/
 echo yes | python3 manage.py compilemessages -l fr
 echo yes | python3 manage.py collectstatic
 
-
-
 exec $@
