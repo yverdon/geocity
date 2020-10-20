@@ -56,7 +56,6 @@ git init
 git remote add upstream https://github.com/yverdon/geocity
 git fetch upstream
 git checkout upstream/master
-chmod a+rwx entrypoint.sh
 docker-compose build
 docker-compose down --remove-orphans && docker-compose  up
 ```
