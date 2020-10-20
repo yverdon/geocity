@@ -2,7 +2,7 @@
 
 ## Getting started with the full Docker demo version
 
-### Step by step guide to the working full docker non persistent demo
+### Step by step guide to the working full docker non persistent DEMO
 
 This will bring up a demo instance with preset fixtures served by the
 Django developpment server in reload mode.
@@ -20,48 +20,63 @@ docker-compose -f docker-compose-dev.yml down --remove-orphans && docker-compose
 
 This process will create the .env file only if it does not already exist
 
-The demo application is now running on *localhost:9095*
+The demo application is now running on _localhost:9095_
 
-### Setup for full docker persistent instance served by gunicorn webserver
+## Setup for full docker persistent instance served by gunicorn webserver
 
 #### Create new postgis DB
 
 1. Create a geocity user
 2. Create a geocity schema owned by geocity user
 3. Edit DB connexion in .env file
-3. Create and edit pg_service.conf file in qgisserver directory
+4. Create and edit pg_service.conf file in qgisserver directory
 
-
-#### Build and start the composition
+### Setup your Environment file
 
 ```
-docker-compose -f docker-compose-prod.yml build
-docker-compose down --remove-orphans && docker-compose -f docker-compose-prod.yml up -d
+cp env.demo .env
+```
+
+Edit the variables in .env accordingly with your environment
+
+Keep in mind that you are in a docker environment. Thus you might need to set, on linux environment something like
+
+```
+PGHOST=172.17.0.1
+```
+
+So that the django container can reach you postgres on the host machine
+
+## Production containers administrations
+
+```
+mkdir geocity
+git init
+git remote add upstream https://github.com/yverdon/geocity
+git fetch upstream
+git checkout upstream/master
+chmod a+rwx entrypoint.sh
+docker-compose build
+docker-compose down --remove-orphans && docker-compose  up
 ```
 
 #### Open the application to the world
 
 Use your favorite webserver to proxypass localhost:9095 to the outside world
 
-
-
 #### demo accounts
 
 Administrator role (django superuser):
-    *admin:admin*
+_admin:admin_
 
 Backoffice role:
-    *secretariat-yverdon:admin*
+_secretariat-yverdon:admin_
 
 Validatation role A:
-    *validator-yverdon:admin*
+_validator-yverdon:admin_
 
 Validatation role B:
-    *eaux-yverdon:admin*
-
-### Configuration: Environment variables
-
-Rename `env.demo` to `.env` and modifiy it according to your specific configuration.
+_eaux-yverdon:admin_
 
 ### Generic Docker hints
 
@@ -72,18 +87,17 @@ run the following commands to clear them all:
 docker system prune -a
 ```
 
-
 ## QGIS-server for map generation
 
-*Prerequisite*
+_Prerequisite_
 
 A dummy feature must drawn otherwise qgis will raise an error.
 
-*Modify print template*
+_Modify print template_
 
 Simply open the print/print.qgs project
 
-*Capabilities of the print server*
+_Capabilities of the print server_
 
 ```
 http://localhost:9096?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities
