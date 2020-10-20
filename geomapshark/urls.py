@@ -17,7 +17,7 @@ router.register(r'front-config', geoviews.GeocityViewConfigViewSet, 'front-confi
 urlpatterns = [
     path('', permits_views.permit_request_select_administrative_entity),
     path('permit-requests/', include('permits.urls')),
-    path('grappelli/', include('grappelli.urls')), # grappelli URLS
+    path('grappelli/', include('grappelli.urls')),  # grappelli URLS
     path('admin/', admin.site.urls),
     path('accounts/login/', auth_views.LoginView.as_view(), name='login'),
     path('accounts/logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
@@ -31,6 +31,8 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('rest/', include(router.urls)), # Django-rest urls
 ]
+
+urlpatterns = [path('tititoto/', include(urlpatterns))]
 
 if settings.DEBUG:
     import debug_toolbar

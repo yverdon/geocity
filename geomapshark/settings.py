@@ -1,14 +1,13 @@
 import os
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ROOT_URLCONF = 'geomapshark.urls'
-LOGIN_REDIRECT_URL ='/permit-requests'
+LOGIN_REDIRECT_URL = os.environ["LOGIN_REDIRECT_URL"]
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -134,10 +133,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "https://mapnv.ch",
-    "https://form.mapnv.ch",
-] + os.getenv("ALLOWED_CORS").split(",")
+CORS_ALLOWED_ORIGINS = [] + os.getenv("ALLOWED_CORS").split(",")
 
 
 if DEBUG:
@@ -164,13 +160,13 @@ LOCALE_PATHS = (
 
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-STATIC_URL = '/static/'
+STATIC_URL = os.environ["STATIC_URL"]
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 
-PRIVATE_MEDIA_ROOT = '/private_documents'
+PRIVATE_MEDIA_ROOT = os.environ["PRIVATE_MEDIA_ROOT"]
 
 PRINTED_REPORT_LAYERS = os.getenv("PRINTED_REPORT_LAYERS")
 MIN_START_DELAY = os.getenv("MIN_START_DELAY")
