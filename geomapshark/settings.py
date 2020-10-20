@@ -8,7 +8,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ROOT_URLCONF = 'geomapshark.urls'
 PREFIX_URL = os.getenv("PREFIX_URL")
-LOGIN_URL = os.getenv("PREFIX_URL") + '/accounts/login'
+LOGIN_URL = '/' + os.getenv("PREFIX_URL") + 'accounts/login'
 LOGIN_REDIRECT_URL = os.environ["LOGIN_REDIRECT_URL"]
 
 # SECURITY WARNING: keep the secret key used in production secret!
