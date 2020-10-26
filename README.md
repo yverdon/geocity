@@ -53,7 +53,7 @@ git fetch upstream
 git checkout upstream/master
 cp -n env.demo .env
 docker-compose build
-docker-compose down --remove-orphans && docker-compose  up
+docker-compose down --remove-orphans && docker-compose up
 ```
 
 #### Open the application to the world
