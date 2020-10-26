@@ -17,13 +17,13 @@ services:
         volumes:
             - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
         ports:
-            - ${DJANGO_DOCKER_PORT}:9000
+            - "${DJANGO_DOCKER_PORT}:9000"
     qgisserver:
         image: camptocamp/qgis-server:3.10
         volumes:
             - ./qgisserver:/qgisserver_data
         ports:
-            - ${QGISSERVER_DOCKER_PORT}:80
+            - "${QGISSERVER_DOCKER_PORT}:80"
         environment:
             - QGIS_PROJECT_FILE=/qgisserver_data/geocity.qgs
             - PGSERVICEFILE=/qgisserver_data/pg_service.conf
