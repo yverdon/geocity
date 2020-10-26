@@ -123,7 +123,7 @@ docker-compose exec web pip-tools compile -P django requirements.in
 docker-compose exec web pip install -r requirements.txt
 ```
 
-### Migrations
+## Migrations
 
 To run a migration, for example when the model has changed, execute
 `manage.py makemigrations` from inside the docker service of the web app.
