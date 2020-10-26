@@ -13,8 +13,7 @@ git init
 git remote add upstream https://github.com/yverdon/geocity
 git fetch upstream
 git checkout upstream/master
-chmod a+rwx entrypoint.sh
-cp env.demo .env
+cp -n env.demo .env
 docker-compose -f docker-compose-dev.yml build
 docker-compose -f docker-compose-dev.yml down --remove-orphans && docker-compose -f docker-compose-dev.yml up
 ```
@@ -23,9 +22,9 @@ This process will create the .env file only if it does not already exist
 
 The demo application is now running on _localhost:9095_
 
-## Setup for full docker persistent instance served by gunicorn webserver
+## Setup for full Docker persistent instance served by gunicorn webserver
 
-#### Create new postgis DB
+#### Create new Postgis DB
 
 1. Create a geocity user
 2. Create a geocity schema owned by geocity user
@@ -34,19 +33,15 @@ The demo application is now running on _localhost:9095_
 
 ### Setup your Environment file
 
-```
-cp env.demo .env
-```
+Edit the variables in `.env` accordingly with your environment
 
-Edit the variables in .env accordingly with your environment
-
-Keep in mind that you are in a docker environment. Thus you might need to set, on linux environment something like
+Keep in mind that you are in a Docker environment. Thus you might need to set, on Linux environment something like
 
 ```
-PGHOST=172.17.0.1
+PGHOST="172.17.0.1"
 ```
 
-So that the django container can reach you postgres on the host machine
+So that the Django container can reach you Postgres on the host machine
 
 ## Production containers administrations
 
@@ -56,7 +51,7 @@ git init
 git remote add upstream https://github.com/yverdon/geocity
 git fetch upstream
 git checkout upstream/master
-chmod a+rwx entrypoint.sh
+cp -n env.demo .env
 docker-compose build
 docker-compose down --remove-orphans && docker-compose  up
 ```
@@ -65,9 +60,9 @@ docker-compose down --remove-orphans && docker-compose  up
 
 Use your favorite webserver to proxypass localhost:9095 to the outside world
 
-#### demo accounts
+#### Demo accounts
 
-Administrator role (django superuser):
+Administrator role (Django superuser):
 _admin:admin_
 
 Backoffice role:
@@ -81,7 +76,7 @@ _eaux-yverdon:admin_
 
 ### Generic Docker hints
 
-In case you get and error similar to this: E: You don't have enough free space in /var/cache/...,
+In case you get and error similar to this: `E: You don't have enough free space in /var/cache/...`,
 run the following commands to clear them all:
 
 ```
@@ -137,3 +132,4 @@ it's compatible with other packages listed in the `requirements.in` file:
 docker-compose exec web pip-tools compile -P django requirements.in
 docker-compose exec web pip install -r requirements.txt
 ```
+
