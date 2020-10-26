@@ -33,15 +33,15 @@ The demo application is now running on _localhost:9095_
 
 ### Setup your Environment file
 
-Edit the variables in `.env` accordingly with your environment
+Edit the variables in `.env` according to your environment.
 
-Keep in mind that you are in a Docker environment. Thus you might need to set, on Linux environment something like
+Keep in mind that you are in a Docker environment. Thus you might need to set, on Linux environment something like:
 
 ```
 PGHOST="172.17.0.1"
 ```
 
-So that the Django container can reach you Postgres on the host machine
+So that the Django container can reach your `postgres` user on the host machine.
 
 ## Production containers administrations
 
