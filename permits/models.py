@@ -615,12 +615,12 @@ class WorksObjectType(models.Model):
 
 class WorksObject(models.Model):
     """
-    Docstring
+    Configuration of the object types in the admin interface.
     """
     name = models.CharField(_("nom"), max_length=255)
     works_types = models.ManyToManyField(
         WorksType,
-        through=WorksObjectType,
+        through=WorksObjectType, # TODO: fix this?
         related_name='works_objects',
         verbose_name=_("types")
     )
@@ -635,7 +635,7 @@ class WorksObject(models.Model):
 
 class WorksObjectProperty(models.Model):
     """
-    Docstring
+    Configuration of the object fields in the admin interface.
     """
     INPUT_TYPE_TEXT = 'text'
     INPUT_TYPE_CHECKBOX = 'checkbox'
