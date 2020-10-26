@@ -24,7 +24,7 @@ The demo application is now running on _localhost:9095_
 
 ## Setup for full Docker persistent instance served by gunicorn webserver
 
-#### Create new Postgis DB
+#### Create new PostGIS DB
 
 1. Create a geocity user
 2. Create a geocity schema owned by geocity user
