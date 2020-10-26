@@ -19,3 +19,4 @@ private_documents/
 /qgisserver/*.qgs~
 /qgisserver/*.conf
 *.env
+*.bak
