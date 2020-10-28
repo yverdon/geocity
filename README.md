@@ -122,3 +122,20 @@ it's compatible with other packages listed in the `requirements.in` file:
 docker-compose exec web pip-tools compile -P django requirements.in
 docker-compose exec web pip install -r requirements.txt
 ```
+
+## Migrations
+
+To run a migration, for example when the model has changed, execute
+`manage.py makemigrations` from inside the docker service of the web app.
+Then execute `manage.py migrate`.
+
+```
+docker-compose exec web python3 manage.py makemigrations <app_label>
+docker-compose exec web python3 manage.py migrate <app_label> <migration_name>
+```
+
+For more information about django's migrations, help is available at:
+```
+docker-compose exec web python3 manage.py makemigrations --help
+docker-compose exec web python3 manage.py migrate --help
+```
