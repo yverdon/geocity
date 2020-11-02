@@ -1,8 +1,9 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-
-from . import models
 from django import forms
+from . import models
+from geomapshark import settings
+from. import forms as permit_forms
 
 
 admin.site.register(models.WorksType)
@@ -68,6 +69,21 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
         exclude = ['enabled_status']
         widgets = {
             'general_informations': forms.Textarea(attrs={'rows': 5, }),
+            'geom': permit_forms.GeometryWidget(attrs={
+                'map_width': '100%',
+                'map_height': 400,
+                'default_center': [2539057, 1181111],
+                'default_zoom': 10,
+                'display_raw': False,
+                'edit_geom': True,
+                'min_zoom': 5,
+                'wmts_capabilities_url': settings.WMTS_GETCAP,
+                'wmts_layer': settings.WMTS_LAYER,
+                'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
+                'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
+                'restriction_area_enabled': False,
+                'geometry_db_type': 'MultiPolygon',
+            }),
         }
 
 
