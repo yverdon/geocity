@@ -87,15 +87,15 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
         }
 
 
-class PermitWorkFlowStatusInline(admin.StackedInline):
-    model = models.PermitWorkFlowStatus
+class PermitWorkflowStatusInline(admin.StackedInline):
+    model = models.PermitWorkflowStatus
     extra = 0
 
 
 class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
     form = PermitAdministrativeEntityAdminForm
     inlines = [
-        PermitWorkFlowStatusInline,
+        PermitWorkflowStatusInline,
     ]
 
 

@@ -797,9 +797,9 @@ class GeomLayer(models.Model):
         verbose_name_plural = _("3.4 Consultation des entités géographiques à intersecter")
 
 
-class PermitWorkFlowStatus(models.Model):
+class PermitWorkflowStatus(models.Model):
     """
-    Represents a works object for a specific works type.
+    Represents a status in the administrative workflow
     """
     status = models.PositiveSmallIntegerField(
         _("statut"),
@@ -807,15 +807,14 @@ class PermitWorkFlowStatus(models.Model):
     )
     administrative_entity = models.ForeignKey(
         'PermitAdministrativeEntity',
-        null=True,
-        on_delete=models.SET_NULL,
-        related_name='enabled_status'
+        on_delete=models.CASCADE,
+        related_name='enabled_statuses'
     )
 
     def __str__(self):
         return str(self.get_status_display())
 
     class Meta:
-        verbose_name = _("Status (contrôle l'étape du processus administratif)")
-        verbose_name_plural = _("Status (contrôle les étapes du processus administratif)")
+        verbose_name = _("Status disponible pour l'entité administrative")
+        verbose_name_plural = _("Status disponibles pour l'entité administratives")
         unique_together = ('status', 'administrative_entity')

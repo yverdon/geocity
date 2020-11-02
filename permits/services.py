@@ -648,40 +648,35 @@ def get_permit_objects(permit_request):
 
 
 def get_status_choices_for_administrative_entity(administrative_entity):
+    """
+    Returns the status availables for an administrative entity
+    """
+    available_statuses = models.PermitWorkflowStatus.objects.filter(
+        administrative_entity=administrative_entity,
+        status__in=[models.PermitRequest.STATUS_PROCESSING,
+                    models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+                    models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+                    models.PermitRequest.STATUS_RECEIVED]).values_list("status", flat=True)
+    statuses_dict = dict(models.PermitRequest.STATUS_CHOICES)
 
-    status = models.PermitWorkFlowStatus.objects.filter(
-        administrative_entity=administrative_entity).all()
-
-    availables_choices = []
-    for value in status:
-        # Prevent turning back to draft mode
-        if value.status in [models.PermitRequest.STATUS_PROCESSING,
-                                           models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-                                           models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
-                                           models.PermitRequest.STATUS_RECEIVED]:
-            availables_choices.append(
-                (value.status,
-                 value.get_status_display()
-                 )
-            )
-
-    return availables_choices
+    return [(status, statuses_dict[status]) for status in available_statuses]
 
 
-def get_actions_for_adminentity(actions, administrative_entity):
+def get_actions_for_administrative_entity(actions, administrative_entity):
+    """
+    Filter out administrative workflow step that are not coherent
+    with current permit_request status
+    """
+    available_statuses = get_status_choices_for_administrative_entity(administrative_entity)
+    required_statuses_for_actions = {
+        "request_validation": models.PermitRequest.STATUS_AWAITING_VALIDATION,
+        "poke": models.PermitRequest.STATUS_APPROVED,
+    }
 
-    for action in actions:
-        if action == 'request_validation' and \
-         not models.PermitWorkFlowStatus.objects.filter(
-             administrative_entity=administrative_entity,
-             status=models.PermitRequest.STATUS_AWAITING_VALIDATION).first():
+    available_actions = [
+        action
+        for action in actions
+        if action not in required_statuses_for_actions or required_statuses_for_actions[action] in available_statuses
+    ]
 
-            actions.remove('request_validation')
-
-        if action == 'poke' and \
-            not models.PermitWorkFlowStatus.objects.filter(
-                administrative_entity=administrative_entity,
-                status=models.PermitRequest.STATUS_APPROVED).first():
-
-            actions.remove('poke')
-    return actions
+    return available_actions

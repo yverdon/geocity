@@ -94,8 +94,8 @@ class PermitRequestDetailView(View):
 
     def get_context_data(self, **kwargs):
 
-        current_actions = services.get_actions_for_adminentity(self.actions.copy(),
-                                                               self.permit_request.administrative_entity)
+        current_actions = services.get_actions_for_administrative_entity(self.actions,
+                                                                         self.permit_request.administrative_entity)
 
         forms = {action: self.get_form_for_action(action) for action in current_actions}
         available_actions = [action for action in current_actions if forms[action]]
@@ -211,8 +211,9 @@ class PermitRequestDetailView(View):
         departments = services.get_user_departments(self.request.user)
 
         try:
-            validation, * \
-                rest = list(self.permit_request.validations.filter(department__in=departments))
+            validation, *rest = list(
+                self.permit_request.validations.filter(department__in=departments)
+            )
         # User is not part of the requested departments
         except ValueError:
             return None

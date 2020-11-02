@@ -602,8 +602,10 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         instance = kwargs.pop('instance', None)
-        availables_choices = services.get_status_choices_for_administrative_entity(
-            instance.administrative_entity)
+        availables_choices = []
+        if instance:
+            availables_choices = services.get_status_choices_for_administrative_entity(
+                instance.administrative_entity)
         self.fields['status'].choices = availables_choices
 
 
