@@ -667,7 +667,7 @@ def get_actions_for_administrative_entity(actions, administrative_entity):
     Filter out administrative workflow step that are not coherent
     with current permit_request status
     """
-    available_statuses = get_status_choices_for_administrative_entity(administrative_entity)
+    available_statuses = set(dict(get_status_choices_for_administrative_entity(administrative_entity)).keys())
     required_statuses_for_actions = {
         "request_validation": models.PermitRequest.STATUS_AWAITING_VALIDATION,
         "poke": models.PermitRequest.STATUS_APPROVED,
