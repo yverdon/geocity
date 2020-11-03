@@ -38,10 +38,20 @@ class UserFactory(factory.django.DjangoModelFactory):
 
 class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
     ofs_id = 0
-    name = factory.Faker("company")
+    name = factory.Faker('company')
 
     class Meta:
         model = models.PermitAdministrativeEntity
+
+    @factory.post_generation
+    def workflow_statuses(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        extracted = extracted or [v[0] for v in models.PermitRequest.STATUS_CHOICES]
+
+        for status in extracted:
+            models.PermitWorkflowStatus.objects.create(status=status, administrative_entity=self)
 
 
 class PermitDepartmentFactory(factory.django.DjangoModelFactory):
@@ -146,26 +156,6 @@ class PermitRequestActorFactory(factory.django.DjangoModelFactory):
     first_name = factory.Faker('first_name')
     last_name = factory.Faker('last_name')
     email = factory.Faker('email')
-
-
-class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.PermitAdministrativeEntity
-
-    ofs_id = 0
-    name = factory.Faker('company')
-
-    @factory.post_generation
-    def workflow_statuses(self, create, extracted, **kwargs):
-
-        """
-        Insert values in PermitWorkflowStatus model from models.PermitRequest.STATUS_CHOICES values
-        """
-        for status_value in models.PermitRequest.STATUS_CHOICES:
-            for entity in models.PermitAdministrativeEntity.objects.all():
-                models.PermitWorkflowStatus.objects.get_or_create(
-                        status=status_value[0],
-                        administrative_entity=entity)
 
 
 class WorksObjectFactory(factory.django.DjangoModelFactory):
