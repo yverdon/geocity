@@ -74,7 +74,6 @@ class WorksTypesForm(forms.Form):
 
     def __init__(self, instance, *args, **kwargs):
         self.instance = instance
-
         kwargs['initial'] = {
             'types': services.get_permit_request_works_types(self.instance)
         } if self.instance else {}

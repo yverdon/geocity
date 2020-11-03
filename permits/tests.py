@@ -423,6 +423,7 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
             status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
             administrative_entity=self.administrative_entity,
         )
+
         response = self.client.get(
             reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk}),
         )

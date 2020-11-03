@@ -226,7 +226,6 @@ class PermitRequestDetailView(View):
             return None
 
         form = forms.PermitRequestValidationForm(instance=validation, data=data)
-
         if not services.can_validate_permit_request(self.request.user, self.permit_request):
             disable_form(form)
 

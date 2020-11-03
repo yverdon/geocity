@@ -7,9 +7,9 @@ load_dotenv()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ROOT_URLCONF = 'geomapshark.urls'
-PREFIX_URL = os.getenv("PREFIX_URL")
-LOGIN_URL = '/' + os.getenv("PREFIX_URL") + 'accounts/login'
-LOGIN_REDIRECT_URL = os.environ["LOGIN_REDIRECT_URL"]
+PREFIX_URL = os.environ.get("URL_PREFIX", "")
+LOGIN_URL = PREFIX_URL + '/accounts/login/'
+LOGIN_REDIRECT_URL = PREFIX_URL + '/accounts/profile/'
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
