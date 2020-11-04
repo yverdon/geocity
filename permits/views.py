@@ -20,7 +20,6 @@ from django_filters.views import FilterView
 from . import fields, forms, models, services, tables, filters, printpermit
 from django.utils import timezone
 from django.http import Http404, HttpResponse, StreamingHttpResponse
-from django.contrib.auth.decorators import login_required
 
 
 from .exceptions import BadPermitRequestStatus

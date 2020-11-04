@@ -651,15 +651,18 @@ def get_status_choices_for_administrative_entity(administrative_entity):
     """
     Returns the status availables for an administrative entity
     """
-    available_statuses = models.PermitWorkflowStatus.objects.filter(
-        administrative_entity=administrative_entity,
-        status__in=[models.PermitRequest.STATUS_PROCESSING,
-                    models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-                    models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
-                    models.PermitRequest.STATUS_RECEIVED]).values_list("status", flat=True)
-    statuses_dict = dict(models.PermitRequest.STATUS_CHOICES)
+    return models.PermitWorkflowStatus.objects.filter(
+        administrative_entity=administrative_entity).values_list("status", flat=True)
 
-    return [(status, statuses_dict[status]) for status in available_statuses]
+
+def get_available_actions(available_statuses, required_statuses_for_actions):
+
+    for action in required_statuses_for_actions.keys():
+        print(1 in available_statuses)
+        print(required_statuses_for_actions[action])
+
+
+    return []
 
 
 def get_actions_for_administrative_entity(actions, administrative_entity):
@@ -667,16 +670,21 @@ def get_actions_for_administrative_entity(actions, administrative_entity):
     Filter out administrative workflow step that are not coherent
     with current permit_request status
     """
-    available_statuses = set(dict(get_status_choices_for_administrative_entity(administrative_entity)).keys())
+
+    # Statuses that are available for a given administrative entity, configured in admin
+    available_statuses = get_status_choices_for_administrative_entity(administrative_entity)
+
+    # Statuses for which a given action should be availble
     required_statuses_for_actions = {
-        "request_validation": models.PermitRequest.STATUS_AWAITING_VALIDATION,
-        "poke": models.PermitRequest.STATUS_APPROVED,
+        "amend": [models.PermitRequest.STATUS_AWAITING_VALIDATION,
+                  models.PermitRequest.STATUS_PROCESSING,
+                  models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+                  ],
+        "request_validation": [models.PermitRequest.STATUS_AWAITING_VALIDATION],
+        "validate": [models.PermitRequest.STATUS_AWAITING_VALIDATION],
+        "poke": [models.PermitRequest.STATUS_APPROVED],
     }
 
-    available_actions = [
-        action
-        for action in actions
-        if action not in required_statuses_for_actions or required_statuses_for_actions[action] in available_statuses
-    ]
+    available_actions = get_available_actions(available_statuses, required_statuses_for_actions)
 
     return available_actions
