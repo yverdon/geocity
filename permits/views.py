@@ -94,7 +94,7 @@ class PermitRequestDetailView(View):
     def get_context_data(self, **kwargs):
 
         current_actions = services.get_actions_for_administrative_entity(self.actions,
-                                                                         self.permit_request.administrative_entity)
+                                                                         self.permit_request)
 
         forms = {action: self.get_form_for_action(action) for action in current_actions}
         available_actions = [action for action in current_actions if forms[action]]

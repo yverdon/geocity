@@ -655,28 +655,32 @@ def get_status_choices_for_administrative_entity(administrative_entity):
         administrative_entity=administrative_entity).values_list("status", flat=True)
 
 
-def get_available_actions(available_statuses, required_statuses_for_actions):
+def get_available_actions(required_statuses_for_actions, permit_request):
+    """
+    Returns the status availables for an administrative entity
+    """
 
+    # Statuses that are available for a given administrative entity, configured in admin
+    available_statuses = get_status_choices_for_administrative_entity(permit_request.administrative_entity)
+    available_actions = []
     for action in required_statuses_for_actions.keys():
-        print(1 in available_statuses)
-        print(required_statuses_for_actions[action])
+        action_as_set = set(required_statuses_for_actions[action])
+        enabled_actions = list(action_as_set.intersection(available_statuses))
+        if permit_request.status in enabled_actions:
+            available_actions.extend(enabled_actions)
+    distinct_available_actions = list(dict.fromkeys(available_actions))
+    return distinct_available_actions
 
 
-    return []
-
-
-def get_actions_for_administrative_entity(actions, administrative_entity):
+def get_actions_for_administrative_entity(actions, permit_request):
     """
     Filter out administrative workflow step that are not coherent
     with current permit_request status
     """
 
-    # Statuses that are available for a given administrative entity, configured in admin
-    available_statuses = get_status_choices_for_administrative_entity(administrative_entity)
-
     # Statuses for which a given action should be availble
     required_statuses_for_actions = {
-        "amend": [models.PermitRequest.STATUS_AWAITING_VALIDATION,
+        "amend": [models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
                   models.PermitRequest.STATUS_PROCESSING,
                   models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
                   ],
@@ -685,6 +689,6 @@ def get_actions_for_administrative_entity(actions, administrative_entity):
         "poke": [models.PermitRequest.STATUS_APPROVED],
     }
 
-    available_actions = get_available_actions(available_statuses, required_statuses_for_actions)
+    available_actions = get_available_actions(required_statuses_for_actions, permit_request)
 
     return available_actions
