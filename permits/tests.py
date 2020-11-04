@@ -164,6 +164,8 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
     def test_types_step_submit_shows_new_objects(self):
         new_works_object_type = factories.WorksObjectTypeFactory()
 
+        new_works_object_type.administrative_entities.set([self.permit_request.administrative_entity])
+
         response = self.client.post(
             reverse('permits:permit_request_select_types', kwargs={'permit_request_id': self.permit_request.pk}),
             follow=True,
