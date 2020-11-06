@@ -5,3 +5,7 @@ from .settings import *
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.MD5PasswordHasher',
 ]
+
+PREFIX_URL = os.getenv("PREFIX_URL", "")
+LOGIN_URL = '/' + PREFIX_URL + 'accounts/login'
+LOGIN_REDIRECT_URL = '/' + PREFIX_URL + 'permit-requests'

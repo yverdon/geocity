@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
+from simple_history.models import HistoricalRecords
 
 from . import fields
 
@@ -204,7 +205,7 @@ class PermitAuthor(models.Model):
         ]
     )
     user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
-
+    history = HistoricalRecords()
     class Meta:
         verbose_name = _('3.2 Consultation de l\'auteur')
         verbose_name_plural = _('3.2 Consultation des auteurs')
@@ -256,6 +257,7 @@ class PermitActor(models.Model):
     email = models.EmailField(
         _("Email"),
     )
+    history = HistoricalRecords()
 
     class Meta:
         verbose_name = _('Contact')
@@ -320,6 +322,7 @@ class PermitRequestActor(models.Model):
         choices=ACTOR_TYPE_CHOICES,
         default=ACTOR_TYPE_OTHER
     )
+    history = HistoricalRecords()
 
     class Meta:
         verbose_name = _("Relation permis-contact")
@@ -457,6 +460,7 @@ class PermitRequest(models.Model):
         _("Publier"),
         default=False
     )
+    history = HistoricalRecords()
 
     class Meta:
         verbose_name = _("3.1 Consultation de la demande")
@@ -651,7 +655,7 @@ class WorksObjectPropertyValue(models.Model):
     # Storing the value in a JSON field allows to keep the value type
     # (eg. boolean, int) instead of transforming everything to str
     value = JSONField()
-
+    history = HistoricalRecords()
     class Meta:
         unique_together = [('property', 'works_object_type_choice')]
 
@@ -702,6 +706,7 @@ class PermitRequestValidation(models.Model):
         _("Validé le"),
         null=True
     )
+    history = HistoricalRecords()
 
     class Meta:
         unique_together = ("permit_request", "department")
@@ -750,7 +755,7 @@ class PermitRequestGeoTime(models.Model):
         null=True,
         srid=2056
     )
-
+    history = HistoricalRecords()
     class Meta:
         verbose_name = _("3.3 Consultation de l'agenda et de la géométrie")
         verbose_name_plural = _("3.3 Consultation des agenda et géométries")
