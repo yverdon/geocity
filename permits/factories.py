@@ -49,7 +49,6 @@ class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
             return
 
         extracted = extracted or [v[0] for v in models.PermitRequest.STATUS_CHOICES]
-
         for status in extracted:
             models.PermitWorkflowStatus.objects.create(status=status, administrative_entity=self)
 

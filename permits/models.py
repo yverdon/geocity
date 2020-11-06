@@ -14,6 +14,7 @@ from django.urls import reverse
 from . import fields
 
 
+# Contact types
 ACTOR_TYPE_OTHER = 0
 ACTOR_TYPE_REQUESTOR = 1
 ACTOR_TYPE_OWNER = 2
@@ -31,6 +32,14 @@ ACTOR_TYPE_CHOICES = (
     (ACTOR_TYPE_ASSOCIATION, _("Association")),
 )
 
+# Actions
+ACTION_AMEND = "amend"
+ACTION_REQUEST_VALIDATION = "request_validation"
+ACTION_VALIDATE = "validate"
+ACTION_POKE = "poke"
+# If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
+# and services.get_actions_and_status_for_administrative_entity
+ACTIONS = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE, ACTION_POKE]
 
 class PermitDepartment(models.Model):
 
@@ -352,7 +361,8 @@ class PermitRequest(models.Model):
     AMENDABLE_STATUSES = {
         STATUS_SUBMITTED_FOR_VALIDATION,
         STATUS_PROCESSING,
-        STATUS_AWAITING_SUPPLEMENT
+        STATUS_AWAITING_SUPPLEMENT,
+        STATUS_RECEIVED,
     }
 
     ARCHEOLOGY_STATUS_IRRELEVANT = 0

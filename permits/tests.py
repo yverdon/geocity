@@ -308,7 +308,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             data={
                 'price': 300,
                 'status': models.PermitRequest.STATUS_PROCESSING,
-                'action': views.PermitRequestDetailView.ACTION_AMEND
+                'action': models.ACTION_AMEND
             }
         )
 
@@ -326,7 +326,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             data={
                 'price': 300,
                 'status': models.PermitRequest.STATUS_PROCESSING,
-                'action': views.PermitRequestDetailView.ACTION_AMEND,
+                'action': models.ACTION_AMEND,
                 'archeology_status': models.PermitRequest.ARCHEOLOGY_STATUS_IRRELEVANT,
             }
         )
@@ -350,7 +350,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         )
         response = self.client.post(
             reverse('permits:permit_request_detail', kwargs={'permit_request_id': permit_request.pk}),
-            data={'status': models.PermitRequest.STATUS_AWAITING_SUPPLEMENT, 'action': views.PermitRequestDetailView.ACTION_AMEND},
+            data={'status': models.PermitRequest.STATUS_AWAITING_SUPPLEMENT, 'action': models.ACTION_AMEND},
             follow=True
         )
 
@@ -365,7 +365,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk}),
             data={
                 "price": 200,
-                "action": views.PermitRequestDetailView.ACTION_AMEND
+                "action": models.ACTION_AMEND
             },
         )
 
@@ -387,7 +387,7 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
             reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk}),
             data={
                 "departments": validator_departments,
-                "action": views.PermitRequestDetailView.ACTION_REQUEST_VALIDATION
+                "action": models.ACTION_REQUEST_VALIDATION
             },
         )
 
@@ -407,7 +407,7 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
             reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk}),
             data={
                 "departments": [validator_group.permitdepartment.pk],
-                "action": views.PermitRequestDetailView.ACTION_REQUEST_VALIDATION
+                "action": models.ACTION_REQUEST_VALIDATION
             },
         )
 
@@ -459,7 +459,7 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
             reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk}),
             data={
                 "departments": [validator_groups[0].permitdepartment.pk],
-                "action": views.PermitRequestDetailView.ACTION_REQUEST_VALIDATION
+                "action": models.ACTION_REQUEST_VALIDATION
             },
         )
 
@@ -492,7 +492,7 @@ class PermitRequestValidationTestcase(TestCase):
             reverse("permits:permit_request_detail", kwargs={
                 "permit_request_id": validation.permit_request.pk
             }), data={
-                "action": views.PermitRequestDetailView.ACTION_VALIDATE,
+                "action": models.ACTION_VALIDATE,
                 "validation_status": models.PermitRequestValidation.STATUS_APPROVED,
             }
         )
@@ -514,7 +514,7 @@ class PermitRequestValidationTestcase(TestCase):
             reverse("permits:permit_request_detail", kwargs={
                 "permit_request_id": validation.permit_request.pk
             }), data={
-                "action": views.PermitRequestDetailView.ACTION_VALIDATE,
+                "action": models.ACTION_VALIDATE,
                 "validation_status": models.PermitRequestValidation.STATUS_APPROVED,
             }
         )
@@ -539,7 +539,7 @@ class PermitRequestValidationTestcase(TestCase):
             reverse("permits:permit_request_detail", kwargs={
                 "permit_request_id": validation.permit_request.pk
             }), data={
-                "action": views.PermitRequestDetailView.ACTION_POKE,
+                "action": models.ACTION_POKE,
             }
         )
 
