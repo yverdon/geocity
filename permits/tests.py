@@ -164,6 +164,8 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
     def test_types_step_submit_shows_new_objects(self):
         new_works_object_type = factories.WorksObjectTypeFactory()
 
+        new_works_object_type.administrative_entities.set([self.permit_request.administrative_entity])
+
         response = self.client.post(
             reverse('permits:permit_request_select_types', kwargs={'permit_request_id': self.permit_request.pk}),
             follow=True,
@@ -306,7 +308,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             data={
                 'price': 300,
                 'status': models.PermitRequest.STATUS_PROCESSING,
-                'action': views.PermitRequestDetailView.ACTION_AMEND
+                'action': models.ACTION_AMEND
             }
         )
 
@@ -324,7 +326,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             data={
                 'price': 300,
                 'status': models.PermitRequest.STATUS_PROCESSING,
-                'action': views.PermitRequestDetailView.ACTION_AMEND,
+                'action': models.ACTION_AMEND,
                 'archeology_status': models.PermitRequest.ARCHEOLOGY_STATUS_IRRELEVANT,
             }
         )
@@ -348,7 +350,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         )
         response = self.client.post(
             reverse('permits:permit_request_detail', kwargs={'permit_request_id': permit_request.pk}),
-            data={'status': models.PermitRequest.STATUS_AWAITING_SUPPLEMENT, 'action': views.PermitRequestDetailView.ACTION_AMEND},
+            data={'status': models.PermitRequest.STATUS_AWAITING_SUPPLEMENT, 'action': models.ACTION_AMEND},
             follow=True
         )
 
@@ -363,7 +365,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk}),
             data={
                 "price": 200,
-                "action": views.PermitRequestDetailView.ACTION_AMEND
+                "action": models.ACTION_AMEND
             },
         )
 
@@ -385,7 +387,7 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
             reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk}),
             data={
                 "departments": validator_departments,
-                "action": views.PermitRequestDetailView.ACTION_REQUEST_VALIDATION
+                "action": models.ACTION_REQUEST_VALIDATION
             },
         )
 
@@ -405,7 +407,7 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
             reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk}),
             data={
                 "departments": [validator_group.permitdepartment.pk],
-                "action": views.PermitRequestDetailView.ACTION_REQUEST_VALIDATION
+                "action": models.ACTION_REQUEST_VALIDATION
             },
         )
 
@@ -420,9 +422,10 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
         )
 
         permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+            status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
             administrative_entity=self.administrative_entity,
         )
+
         response = self.client.get(
             reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk}),
         )
@@ -456,7 +459,7 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
             reverse("permits:permit_request_detail", kwargs={"permit_request_id": permit_request.pk}),
             data={
                 "departments": [validator_groups[0].permitdepartment.pk],
-                "action": views.PermitRequestDetailView.ACTION_REQUEST_VALIDATION
+                "action": models.ACTION_REQUEST_VALIDATION
             },
         )
 
@@ -489,7 +492,7 @@ class PermitRequestValidationTestcase(TestCase):
             reverse("permits:permit_request_detail", kwargs={
                 "permit_request_id": validation.permit_request.pk
             }), data={
-                "action": views.PermitRequestDetailView.ACTION_VALIDATE,
+                "action": models.ACTION_VALIDATE,
                 "validation_status": models.PermitRequestValidation.STATUS_APPROVED,
             }
         )
@@ -511,7 +514,7 @@ class PermitRequestValidationTestcase(TestCase):
             reverse("permits:permit_request_detail", kwargs={
                 "permit_request_id": validation.permit_request.pk
             }), data={
-                "action": views.PermitRequestDetailView.ACTION_VALIDATE,
+                "action": models.ACTION_VALIDATE,
                 "validation_status": models.PermitRequestValidation.STATUS_APPROVED,
             }
         )
@@ -536,7 +539,7 @@ class PermitRequestValidationTestcase(TestCase):
             reverse("permits:permit_request_detail", kwargs={
                 "permit_request_id": validation.permit_request.pk
             }), data={
-                "action": views.PermitRequestDetailView.ACTION_POKE,
+                "action": models.ACTION_POKE,
             }
         )
 

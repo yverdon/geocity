@@ -23,13 +23,13 @@
       <ul class="nav nav-tabs" id="actions-tabs" role="tablist">
         {% if forms.amend %}
           <li class="nav-item">
-            <a class="nav-link{% if active_form == "amend" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">1. {% trans "Traiter" %}</a>
+            <a class="nav-link{% if active_form == "amend" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">{% trans "Traiter" %}</a>
           </li>
         {% endif %}
 
         {% if forms.request_validation %}
           <li class="nav-item">
-            <a class="nav-link{% if active_form == "request_validation" %} active{% endif %}" id="request-validation-tab" data-toggle="tab" href="#request-validation" role="tab" aria-controls="request-validation" aria-selected="{% if active_form == "request_validation" %}true{% else %}false{% endif %}">2. {% trans "Envoyer pour validation" %}</a>
+            <a class="nav-link{% if active_form == "request_validation" %} active{% endif %}" id="request-validation-tab" data-toggle="tab" href="#request-validation" role="tab" aria-controls="request-validation" aria-selected="{% if active_form == "request_validation" %}true{% else %}false{% endif %}">{% trans "Envoyer pour validation" %}</a>
           </li>
         {% endif %}
 
@@ -44,7 +44,7 @@
         {% if forms.poke or can_classify %}
           <li class="nav-item">
             <a class="nav-link{% if active_form == "poke" %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#classify" role="tab" aria-controls="classify" aria-selected="{% if active_form == "poke" %}true{% else %}false{% endif %}">
-              3. {% trans "Classer" %}
+              {% trans "Classer" %}
             </a>
           </li>
         {% endif %}

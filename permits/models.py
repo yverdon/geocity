@@ -14,6 +14,7 @@ from django.urls import reverse
 from . import fields
 
 
+# Contact types
 ACTOR_TYPE_OTHER = 0
 ACTOR_TYPE_REQUESTOR = 1
 ACTOR_TYPE_OWNER = 2
@@ -31,6 +32,14 @@ ACTOR_TYPE_CHOICES = (
     (ACTOR_TYPE_ASSOCIATION, _("Association")),
 )
 
+# Actions
+ACTION_AMEND = "amend"
+ACTION_REQUEST_VALIDATION = "request_validation"
+ACTION_VALIDATE = "validate"
+ACTION_POKE = "poke"
+# If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
+# and services.get_actions_and_status_for_administrative_entity
+ACTIONS = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE, ACTION_POKE]
 
 class PermitDepartment(models.Model):
 
@@ -337,6 +346,7 @@ class PermitRequest(models.Model):
     STATUS_AWAITING_SUPPLEMENT = 4
     STATUS_AWAITING_VALIDATION = 5
     STATUS_REJECTED = 6
+    STATUS_RECEIVED = 7
 
     STATUS_CHOICES = (
         (STATUS_DRAFT, _("Brouillon")),
@@ -346,11 +356,13 @@ class PermitRequest(models.Model):
         (STATUS_AWAITING_VALIDATION, _("En validation")),
         (STATUS_APPROVED, _("Approuvée")),
         (STATUS_REJECTED, _("Refusée")),
+        (STATUS_RECEIVED, _("Annonce réceptionnée")),
     )
     AMENDABLE_STATUSES = {
         STATUS_SUBMITTED_FOR_VALIDATION,
         STATUS_PROCESSING,
-        STATUS_AWAITING_SUPPLEMENT
+        STATUS_AWAITING_SUPPLEMENT,
+        STATUS_RECEIVED,
     }
 
     ARCHEOLOGY_STATUS_IRRELEVANT = 0
@@ -793,3 +805,26 @@ class GeomLayer(models.Model):
     class Meta:
         verbose_name = _("3.4 Consultation de l'entité géographique à intersecter")
         verbose_name_plural = _("3.4 Consultation des entités géographiques à intersecter")
+
+
+class PermitWorkflowStatus(models.Model):
+    """
+    Represents a status in the administrative workflow
+    """
+    status = models.PositiveSmallIntegerField(
+        _("statut"),
+        choices=PermitRequest.STATUS_CHOICES,
+    )
+    administrative_entity = models.ForeignKey(
+        'PermitAdministrativeEntity',
+        on_delete=models.CASCADE,
+        related_name='enabled_statuses'
+    )
+
+    def __str__(self):
+        return str(self.get_status_display())
+
+    class Meta:
+        verbose_name = _("Status disponible pour l'entité administrative")
+        verbose_name_plural = _("Status disponibles pour l'entité administratives")
+        unique_together = ('status', 'administrative_entity')

@@ -66,6 +66,7 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
     class Meta:
         model = models.PermitAdministrativeEntity
         fields = '__all__'
+        exclude = ['enabled_status']
         widgets = {
             'general_informations': forms.Textarea(attrs={'rows': 5, }),
             'geom': permit_forms.GeometryWidget(attrs={
@@ -86,9 +87,16 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
         }
 
 
+class PermitWorkflowStatusInline(admin.StackedInline):
+    model = models.PermitWorkflowStatus
+    extra = 0
+
 
 class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
     form = PermitAdministrativeEntityAdminForm
+    inlines = [
+        PermitWorkflowStatusInline,
+    ]
 
 
 admin.site.register(models.WorksObjectType, WorksObjectTypeAdmin)

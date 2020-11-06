@@ -145,8 +145,8 @@ docker-compose exec web python3 manage.py migrate <app_label> <migration_name>
 ```
 
 For more information about django's migrations, help is available at:
+
 ```
 docker-compose exec web python3 manage.py makemigrations --help
 docker-compose exec web python3 manage.py migrate --help
 ```
-
