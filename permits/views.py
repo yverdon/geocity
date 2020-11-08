@@ -20,7 +20,6 @@ from django_filters.views import FilterView
 from . import fields, forms, models, services, tables, filters, printpermit
 from django.utils import timezone
 from django.http import Http404, HttpResponse, StreamingHttpResponse
-from django.contrib.auth.decorators import login_required
 
 
 from .exceptions import BadPermitRequestStatus
@@ -71,23 +70,8 @@ def disable_form(form):
 
 @method_decorator(login_required, name='dispatch')
 class PermitRequestDetailView(View):
-    """
-    Docstring
-    """
-    ACTION_AMEND = "amend"
-    ACTION_REQUEST_VALIDATION = "request_validation"
-    ACTION_VALIDATE = "validate"
-    ACTION_MODIFY = "modify"
-    ACTION_POKE = "poke"
 
-    # If you add an action here, make sure you also handle it in `get_form_for_action` and in `handle_form_submission`
-    actions = [
-        ACTION_AMEND,
-        ACTION_REQUEST_VALIDATION,
-        ACTION_VALIDATE,
-        ACTION_MODIFY,
-        ACTION_POKE
-    ]
+    actions = models.ACTIONS
 
     def dispatch(self, request, *args, **kwargs):
         self.permit_request = services.get_permit_request_for_user_or_404(
@@ -101,12 +85,12 @@ class PermitRequestDetailView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def render_to_response(self, context):
+
         return render(self.request, "permits/permit_request_detail.html", context)
 
     def get_context_data(self, **kwargs):
 
-        current_actions = services.get_actions_for_adminentity(self.actions.copy(),
-                                                               self.permit_request.administrative_entity)
+        current_actions = services.get_actions_for_administrative_entity(self.permit_request)
 
         forms = {action: self.get_form_for_action(action) for action in current_actions}
         available_actions = [action for action in current_actions if forms[action]]
@@ -120,7 +104,7 @@ class PermitRequestDetailView(View):
 
         kwargs["has_validations"] = self.permit_request.has_validations()
 
-        if forms.get(self.ACTION_POKE):
+        if forms.get(models.ACTION_POKE):
             kwargs["nb_pending_validations"] = self.permit_request.get_pending_validations().count()
             kwargs["validations"] = self.permit_request.validations.select_related(
                 "department", "department__group")
@@ -153,12 +137,10 @@ class PermitRequestDetailView(View):
         """
 
         action = request.POST.get("action")
-
-        if action not in self.actions:
+        if action not in models.ACTIONS:
             return HttpResponse(status=400)
 
         form = self.get_form_for_action(action, data=request.POST)
-
         if not form:
             raise PermissionDenied
         elif getattr(form, "disabled", False):
@@ -175,11 +157,10 @@ class PermitRequestDetailView(View):
 
     def get_form_for_action(self, action, data=None):
         actions_forms = {
-            self.ACTION_AMEND: self.get_amend_form,
-            self.ACTION_REQUEST_VALIDATION: self.get_request_validation_form,
-            self.ACTION_VALIDATE: self.get_validation_form,
-            self.ACTION_MODIFY: self.get_modify_form,
-            self.ACTION_POKE: self.get_poke_form,
+            models.ACTION_AMEND: self.get_amend_form,
+            models.ACTION_REQUEST_VALIDATION: self.get_request_validation_form,
+            models.ACTION_VALIDATE: self.get_validation_form,
+            models.ACTION_POKE: self.get_poke_form,
         }
 
         return actions_forms[action](data=data)
@@ -223,8 +204,9 @@ class PermitRequestDetailView(View):
         departments = services.get_user_departments(self.request.user)
 
         try:
-            validation, * \
-                rest = list(self.permit_request.validations.filter(department__in=departments))
+            validation, *rest = list(
+                self.permit_request.validations.filter(department__in=departments)
+            )
         # User is not part of the requested departments
         except ValueError:
             return None
@@ -237,7 +219,6 @@ class PermitRequestDetailView(View):
             return None
 
         form = forms.PermitRequestValidationForm(instance=validation, data=data)
-
         if not services.can_validate_permit_request(self.request.user, self.permit_request):
             disable_form(form)
 
@@ -268,15 +249,13 @@ class PermitRequestDetailView(View):
         return None
 
     def handle_form_submission(self, form, action):
-        if action == self.ACTION_AMEND:
+        if action == models.ACTION_AMEND:
             return self.handle_amend_form_submission(form)
-        elif action == self.ACTION_REQUEST_VALIDATION:
+        elif action == models.ACTION_REQUEST_VALIDATION:
             return self.handle_request_validation_form_submission(form)
-        elif action == self.ACTION_VALIDATE:
+        elif action == models.ACTION_VALIDATE:
             return self.handle_validation_form_submission(form)
-        elif action == self.ACTION_MODIFY:
-            return self.handle_request_modification_form_submission(form)
-        elif action == self.ACTION_POKE:
+        elif action == models.ACTION_POKE:
             return self.handle_poke(form)
 
     def handle_amend_form_submission(self, form):

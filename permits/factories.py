@@ -38,10 +38,19 @@ class UserFactory(factory.django.DjangoModelFactory):
 
 class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
     ofs_id = 0
-    name = factory.Faker("company")
+    name = factory.Faker('company')
 
     class Meta:
         model = models.PermitAdministrativeEntity
+
+    @factory.post_generation
+    def workflow_statuses(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        extracted = extracted or [v[0] for v in models.PermitRequest.STATUS_CHOICES]
+        for status in extracted:
+            models.PermitWorkflowStatus.objects.create(status=status, administrative_entity=self)
 
 
 class PermitDepartmentFactory(factory.django.DjangoModelFactory):
@@ -154,14 +163,6 @@ class PermitRequestActorFactory(factory.django.DjangoModelFactory):
     first_name = factory.Faker('first_name')
     last_name = factory.Faker('last_name')
     email = factory.Faker('email')
-
-
-class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.PermitAdministrativeEntity
-
-    ofs_id = 0
-    name = factory.Faker('company')
 
 
 class WorksObjectFactory(factory.django.DjangoModelFactory):

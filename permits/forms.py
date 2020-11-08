@@ -74,7 +74,6 @@ class WorksTypesForm(forms.Form):
 
     def __init__(self, instance, *args, **kwargs):
         self.instance = instance
-
         kwargs['initial'] = {
             'types': services.get_permit_request_works_types(self.instance)
         } if self.instance else {}
@@ -602,9 +601,14 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         instance = kwargs.pop('instance', None)
-        availables_choices = services.get_status_choices_for_administrative_entity(
-            instance.administrative_entity)
-        self.fields['status'].choices = availables_choices
+        availables_choices = []
+        if instance:
+            available_statuses_for_administrative_entity = list(
+                services.get_status_choices_for_administrative_entity(instance.administrative_entity)
+            )
+            filter1 = [tup for tup in models.PermitRequest.STATUS_CHOICES if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)]
+            filter2 = [el for el in filter1 if any(i in el for i in available_statuses_for_administrative_entity)]
+            self.fields['status'].choices = tuple(filter2)
 
 
 # extend django gis osm openlayers widget

@@ -23,6 +23,7 @@ tablib
 pycairo
 python-dotenv
 django-grappelli
+django-simple-history
 djangorestframework
 djangorestframework-gis
 django-cors-headers

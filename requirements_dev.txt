@@ -20,7 +20,7 @@ django-debug-toolbar==2.2  # via -r requirements_dev.in
 django-filter==2.3.0      # via -r requirements.txt
 django-fontawesome==1.0   # via -r requirements.txt
 django-grappelli==2.14.2  # via -r requirements.txt
-django-simple-history==2.11.0  # via -r requirements.txt
+django-simple-history==2.11.0  # via -r requirements.in
 django-tables2==2.3.1     # via -r requirements.txt
 django==2.2.13            # via -r requirements.txt, django-bootstrap-datepicker-plus, django-bootstrap4, django-cors-headers, django-debug-toolbar, django-filter, django-tables2, djangorestframework
 djangorestframework-gis==0.15  # via -r requirements.txt

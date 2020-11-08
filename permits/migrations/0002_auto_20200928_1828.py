@@ -26,17 +26,4 @@ class Migration(migrations.Migration):
             name='status',
             field=models.PositiveSmallIntegerField(choices=[(0, 'Brouillon'), (1, 'Envoyée, en attente de traitement'), (4, 'Demande de compléments'), (3, 'En traitement'), (5, 'En validation'), (2, 'Approuvée'), (6, 'Refusée'), (7, 'Annonce réceptionnée')], default=0, verbose_name='état'),
         ),
-        migrations.CreateModel(
-            name='PermitWorkFlowStatus',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('status', models.PositiveSmallIntegerField(choices=[(0, 'Brouillon'), (1, 'Envoyée, en attente de traitement'), (4, 'Demande de compléments'), (3, 'En traitement'), (5, 'En validation'), (2, 'Approuvée'), (6, 'Refusée'), (7, 'Annonce réceptionnée')], verbose_name='statut')),
-                ('administrative_entity', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='enabled_status', to='permits.PermitAdministrativeEntity')),
-            ],
-            options={
-                'verbose_name': "Status (contrôle l'étape du processus administratif)",
-                'verbose_name_plural': 'Status (contrôle les étapes du processus administratif)',
-                'unique_together': {('status', 'administrative_entity')},
-            },
-        ),
     ]
