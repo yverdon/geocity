@@ -58,14 +58,14 @@ $( function() {
                     nmr = '';
                   }
                   var formPrefix = event.target.attributes.id.value.substring(0,9);
-                  $("#" + item.id ).val(data.feature.attributes.strname1 + ' ' + nmr);
+                  $("#" + item.id ).val(data.feature.attributes.strname + ' ' + nmr);
                   if (dataRemoteAutocomplete.zipcode_field != "") {
                       var field = '#' + formPrefix + '-' + dataRemoteAutocomplete.zipcode_field;
-                      $(field).val(data.feature.attributes.plz4);
+                      $(field).val(data.feature.attributes.dplz4);
                   }
                   if (dataRemoteAutocomplete.city_field != "") {
                       var field = '#' + formPrefix + '-' + dataRemoteAutocomplete.city_field;
-                      $(field).val(data.feature.attributes.plzname);
+                      $(field).val(data.feature.attributes.dplzname);
                   }
                 }
             });

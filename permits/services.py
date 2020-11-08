@@ -604,10 +604,16 @@ def has_permission_to_classify_permit_request(user, permit_request):
 
 
 def can_classify_permit_request(user, permit_request):
+    no_validation_process = (
+        models.PermitRequest.STATUS_AWAITING_VALIDATION not in get_status_choices_for_administrative_entity(permit_request.administrative_entity)
+        and models.PermitRequest.STATUS_APPROVED in get_status_choices_for_administrative_entity(permit_request.administrative_entity)
+        and models.PermitRequest.STATUS_REJECTED in get_status_choices_for_administrative_entity(permit_request.administrative_entity)
+    )
     return (
         (permit_request.status == models.PermitRequest.STATUS_AWAITING_VALIDATION
          and permit_request.get_pending_validations().count() == 0
-         and has_permission_to_classify_permit_request(user, permit_request))
+         and has_permission_to_classify_permit_request(user, permit_request)) or
+         no_validation_process
     )
 
 
@@ -655,7 +661,7 @@ def get_status_choices_for_administrative_entity(administrative_entity):
         administrative_entity=administrative_entity).values_list("status", flat=True)
 
 
-def get_actions_and_status_for_administrative_entity(permit_request):
+def get_actions_for_administrative_entity(permit_request):
     """
     Filter out administrative workflow step that are not coherent
     with current permit_request status
@@ -668,7 +674,10 @@ def get_actions_and_status_for_administrative_entity(permit_request):
         "amend": list(models.PermitRequest.AMENDABLE_STATUSES),
         "request_validation": [models.PermitRequest.STATUS_PROCESSING],
         "poke": [models.PermitRequest.STATUS_AWAITING_VALIDATION],
-        "validate": [models.PermitRequest.STATUS_AWAITING_VALIDATION],
+        "validate": [models.PermitRequest.STATUS_APPROVED,
+                    models.PermitRequest.STATUS_REJECTED,
+                    models.PermitRequest.STATUS_AWAITING_VALIDATION,
+                    models.PermitRequest.STATUS_PROCESSING,],
     }
 
     available_statuses_for_administrative_entity = get_status_choices_for_administrative_entity(permit_request.administrative_entity)
@@ -677,8 +686,12 @@ def get_actions_and_status_for_administrative_entity(permit_request):
         action_as_set = set(required_statuses_for_actions[action])
         enabled_actions = list(action_as_set.intersection(available_statuses_for_administrative_entity))
         if permit_request.status in enabled_actions:
-            available_actions.append(action)
+            if action != "request_validation":
+                available_actions.append(action)
+            elif action == "request_validation":
+                if models.PermitRequest.STATUS_AWAITING_VALIDATION in available_statuses_for_administrative_entity:
+                    available_actions.append(action)
+
     distinct_available_actions = list(dict.fromkeys(available_actions))
 
-
-    return available_actions
+    return distinct_available_actions
