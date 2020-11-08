@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from django import forms
+from simple_history.admin import SimpleHistoryAdmin
 from . import models
 from geomapshark import settings
 from. import forms as permit_forms
@@ -8,13 +9,18 @@ from. import forms as permit_forms
 
 admin.site.register(models.WorksType)
 admin.site.register(models.WorksObject)
-admin.site.register(models.PermitRequest)
 admin.site.register(models.PermitActorType)
-admin.site.register(models.PermitRequestGeoTime)
-admin.site.register(models.PermitAuthor)
 admin.site.register(models.PermitDepartment)
 admin.site.register(models.PermitRequestValidation)
 admin.site.register(models.GeomLayer)
+admin.site.register(models.PermitRequestGeoTime, SimpleHistoryAdmin)
+admin.site.register(models.PermitAuthor, SimpleHistoryAdmin)
+
+
+class PermitRequestHistoryAdmin(SimpleHistoryAdmin):
+    list_display = ["id", "administrative_entity", "status"]
+    history_list_display = ["status"]
+    search_fields = ['administrative_entity', 'user__username']
 
 
 def works_object_type_administrative_entities(obj):
@@ -98,7 +104,7 @@ class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
         PermitWorkflowStatusInline,
     ]
 
-
+admin.site.register(models.PermitRequest, PermitRequestHistoryAdmin)
 admin.site.register(models.WorksObjectType, WorksObjectTypeAdmin)
 admin.site.register(models.WorksObjectProperty, WorksObjectPropertyAdmin)
 admin.site.register(models.PermitAdministrativeEntity, PermitAdministrativeEntityAdmin)
