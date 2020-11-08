@@ -38,7 +38,7 @@ ACTION_REQUEST_VALIDATION = "request_validation"
 ACTION_VALIDATE = "validate"
 ACTION_POKE = "poke"
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
-# and services.get_actions_and_status_for_administrative_entity
+# and services.get_actions_for_administrative_entity
 ACTIONS = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE, ACTION_POKE]
 
 class PermitDepartment(models.Model):

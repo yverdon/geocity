@@ -422,7 +422,7 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
         )
 
         permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            status=models.PermitRequest.STATUS_PROCESSING,
             administrative_entity=self.administrative_entity,
         )
 
