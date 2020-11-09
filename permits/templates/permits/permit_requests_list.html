@@ -26,7 +26,7 @@
         {% endif %}
       {% endif %}
     {% endwith %}
-    <a class="btn btn-outline-success" href="{% url 'permits:listexport'%}?_export=csv" role="button">Exporter en CSV</a>
+    <a class="btn btn-outline-primary" href="{% url 'permits:listexport'%}?_export=csv" role="button">Exporter en CSV</a>
     <br><br>
     {% trans "Les demandes envoyées ne peuvent plus être modifiées" %}
     {{ filter.form.media }}
