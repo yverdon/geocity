@@ -610,6 +610,7 @@ def can_classify_permit_request(user, permit_request):
         models.PermitRequest.STATUS_AWAITING_VALIDATION not in status_choices_for_administrative_entity
         and models.PermitRequest.STATUS_APPROVED in status_choices_for_administrative_entity
         and models.PermitRequest.STATUS_REJECTED in status_choices_for_administrative_entity
+        and permit_request.status == models.PermitRequest.STATUS_PROCESSING
     )
     return (
         (permit_request.status == models.PermitRequest.STATUS_AWAITING_VALIDATION
@@ -688,7 +689,7 @@ def get_actions_for_administrative_entity(permit_request):
     # Statuses for which a given action should be availble
     required_statuses_for_actions = {
         "amend": list(models.PermitRequest.AMENDABLE_STATUSES),
-        "request_validation": [models.PermitRequest.STATUS_PROCESSING],
+        "request_validation": [models.PermitRequest.STATUS_AWAITING_VALIDATION],
         "poke": [models.PermitRequest.STATUS_AWAITING_VALIDATION],
         "validate": [models.PermitRequest.STATUS_APPROVED,
                     models.PermitRequest.STATUS_REJECTED,
@@ -701,12 +702,8 @@ def get_actions_for_administrative_entity(permit_request):
     for action in required_statuses_for_actions.keys():
         action_as_set = set(required_statuses_for_actions[action])
         enabled_actions = list(action_as_set.intersection(available_statuses_for_administrative_entity))
-        if permit_request.status in enabled_actions:
-            if action != "request_validation":
-                available_actions.append(action)
-            elif action == "request_validation":
-                if models.PermitRequest.STATUS_AWAITING_VALIDATION in available_statuses_for_administrative_entity:
-                    available_actions.append(action)
+        if enabled_actions:
+            available_actions.append(action)
 
     distinct_available_actions = list(dict.fromkeys(available_actions))
 

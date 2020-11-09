@@ -677,6 +677,7 @@ def permit_request_reject(request, permit_request_id):
 @login_required
 @permission_required("permits.classify_permit_request")
 def permit_request_classify(request, permit_request_id, approve):
+
     permit_request = services.get_permit_request_for_user_or_404(
         request.user,
         permit_request_id,
