@@ -604,16 +604,32 @@ def has_permission_to_classify_permit_request(user, permit_request):
 
 
 def can_classify_permit_request(user, permit_request):
+
+    status_choices_for_administrative_entity = get_status_choices_for_administrative_entity(permit_request.administrative_entity)
     no_validation_process = (
-        models.PermitRequest.STATUS_AWAITING_VALIDATION not in get_status_choices_for_administrative_entity(permit_request.administrative_entity)
-        and models.PermitRequest.STATUS_APPROVED in get_status_choices_for_administrative_entity(permit_request.administrative_entity)
-        and models.PermitRequest.STATUS_REJECTED in get_status_choices_for_administrative_entity(permit_request.administrative_entity)
+        models.PermitRequest.STATUS_AWAITING_VALIDATION not in status_choices_for_administrative_entity
+        and models.PermitRequest.STATUS_APPROVED in status_choices_for_administrative_entity
+        and models.PermitRequest.STATUS_REJECTED in status_choices_for_administrative_entity
     )
     return (
         (permit_request.status == models.PermitRequest.STATUS_AWAITING_VALIDATION
          and permit_request.get_pending_validations().count() == 0
          and has_permission_to_classify_permit_request(user, permit_request)) or
          no_validation_process
+    )
+
+
+def has_permission_to_edit_permit_request(user, permit_request):
+    return (
+        user.has_perm('permits.edit_permit_request')
+        and get_permit_requests_list_for_user(user).filter(pk=permit_request.pk).exists()
+    )
+
+
+def can_edit_permit_request(user, permit_request):
+    return (
+        permit_request.can_be_edited_by_pilot()
+        and has_permission_to_edit_permit_request(user, permit_request)
     )
 
 

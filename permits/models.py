@@ -366,6 +366,15 @@ class PermitRequest(models.Model):
         STATUS_RECEIVED,
     }
 
+    # Statuses that can be edited by pilot service if granted permission "edit_permit_request"
+    EDITABLE_STATUSES = {
+        STATUS_DRAFT,
+        STATUS_AWAITING_SUPPLEMENT,
+        STATUS_SUBMITTED_FOR_VALIDATION,
+        STATUS_PROCESSING,
+        STATUS_RECEIVED,
+    }
+
     ARCHEOLOGY_STATUS_IRRELEVANT = 0
     ARCHEOLOGY_STATUS_UNKNOWN = 1
     ARCHEOLOGY_STATUS_NEVER = 2
@@ -478,6 +487,7 @@ class PermitRequest(models.Model):
             ('amend_permit_request', _("Traiter les demandes de permis")),
             ('validate_permit_request', _("Valider les demandes de permis")),
             ('classify_permit_request', _("Classer les demandes de permis")),
+            ('edit_permit_request', _("Éditer les demandes de permis")),
         ]
 
     def is_draft(self):
@@ -494,6 +504,9 @@ class PermitRequest(models.Model):
 
     def can_be_amended(self):
         return self.status in self.AMENDABLE_STATUSES
+
+    def can_be_edited_by_pilot(self):
+        return self.status in self.EDITABLE_STATUSES
 
     def can_be_validated(self):
         return self.status == self.STATUS_AWAITING_VALIDATION

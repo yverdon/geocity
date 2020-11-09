@@ -38,14 +38,26 @@ def user_has_permitauthor(user):
 
 
 def get_permit_request_for_edition(user, permit_request_id):
-    return services.get_permit_request_for_user_or_404(
+
+    allowed_statuses = {
+            models.PermitRequest.STATUS_DRAFT,
+            models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+            models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+    }
+
+    permit_request = services.get_permit_request_for_user_or_404(
         user,
         permit_request_id,
-        statuses=[
-            models.PermitRequest.STATUS_DRAFT,
-            models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
-        ]
+        statuses=allowed_statuses,
     )
+
+    can_pilot_edit_permit_request = services.can_edit_permit_request(user, permit_request)
+
+    if permit_request.status == models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION and not can_pilot_edit_permit_request:
+        raise BadPermitRequestStatus(permit_request, [models.PermitRequest.STATUS_DRAFT,
+                                     models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,])
+
+    return permit_request
 
 
 def redirect_bad_status_to_detail(func):
