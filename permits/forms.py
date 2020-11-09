@@ -693,11 +693,16 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         permit_request = kwargs.pop('permit_request', None)
         super().__init__(*args, **kwargs)
         if permit_request:
+            # Pass administrative entity id to the widget
             self.fields['geom'].widget.attrs['administrative_entity_json_url'] = \
                 reverse("permits:administrative_entities_geojson",
                         args=[permit_request.administrative_entity_id])
             self.fields['geom'].widget.attrs['administrative_entity_id'] = str(
                 permit_request.administrative_entity.id)
+            # Pass WMS layers to the widgets
+            wms_layers = [item.works_object_type.works_object.wms_layers.strip()
+                            for item in services.get_works_object_type_choices(permit_request) if item.works_object_type.works_object.wms_layers != '']
+            self.fields['geom'].widget.attrs['wms_layers'] = ','.join(wms_layers)
 
 
 class PermitRequestValidationDepartmentSelectionForm(forms.Form):

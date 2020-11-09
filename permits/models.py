@@ -610,6 +610,12 @@ class WorksObject(models.Model):
         related_name='works_objects',
         verbose_name=_("types")
     )
+    wms_layers = models.URLField(
+        _("Couche(s) WMS"),
+        blank=True,
+        max_length=1024
+    )
+
 
     class Meta:
         verbose_name = _("1.3 Configuration de l\'objet")
