@@ -2,7 +2,7 @@
 
 ## Getting started with the full Docker demo version
 
-### Step by step guide to the working full docker non persistent demo
+### Step by step guide to the working full docker non persistent DEMO
 
 This will bring up a demo instance with preset fixtures served by the
 Django developpment server in reload mode.
@@ -13,77 +13,87 @@ git init
 git remote add upstream https://github.com/yverdon/geocity
 git fetch upstream
 git checkout upstream/master
-chmod a+rwx entrypoint.sh
+cp -n env.demo .env
 docker-compose -f docker-compose-dev.yml build
 docker-compose -f docker-compose-dev.yml down --remove-orphans && docker-compose -f docker-compose-dev.yml up
 ```
 
 This process will create the .env file only if it does not already exist
 
-The demo application is now running on *localhost:9095*
+The demo application is now running on _localhost:9095_
 
-### Setup for full docker persistent instance served by gunicorn webserver
+## Setup for full Docker persistent instance served by gunicorn webserver
 
-#### Create new postgis DB
+#### Create new PostGIS DB
 
 1. Create a geocity user
 2. Create a geocity schema owned by geocity user
 3. Edit DB connexion in .env file
-3. Create and edit pg_service.conf file in qgisserver directory
+4. Create and edit pg_service.conf file in qgisserver directory
 
+### Setup your Environment file
 
-#### Build and start the composition
+Edit the variables in `.env` according to your environment.
+
+Keep in mind that you are in a Docker environment. Thus you might need to set, on Linux environment something like:
 
 ```
-docker-compose -f docker-compose-prod.yml build
-docker-compose down --remove-orphans && docker-compose -f docker-compose-prod.yml up -d
+PGHOST="172.17.0.1"
+```
+
+So that the Django container can reach your `postgres` user on the host machine.
+
+## Production containers administrations
+
+```
+mkdir geocity
+git init
+git remote add upstream https://github.com/yverdon/geocity
+git fetch upstream
+git checkout upstream/master
+cp -n env.demo .env
+docker-compose build
+docker-compose down --remove-orphans && docker-compose up
 ```
 
 #### Open the application to the world
 
 Use your favorite webserver to proxypass localhost:9095 to the outside world
 
+#### Demo accounts
 
-
-#### demo accounts
-
-Administrator role (django superuser):
-    *admin:admin*
+Administrator role (Django superuser):
+_admin:admin_
 
 Backoffice role:
-    *secretariat-yverdon:admin*
+_secretariat-yverdon:admin_
 
 Validatation role A:
-    *validator-yverdon:admin*
+_validator-yverdon:admin_
 
 Validatation role B:
-    *eaux-yverdon:admin*
-
-### Configuration: Environment variables
-
-Rename `env.demo` to `.env` and modifiy it according to your specific configuration.
+_eaux-yverdon:admin_
 
 ### Generic Docker hints
 
-In case you get and error similar to this: E: You don't have enough free space in /var/cache/...,
+In case you get and error similar to this: `E: You don't have enough free space in /var/cache/...`,
 run the following commands to clear them all:
 
 ```
 docker system prune -a
 ```
 
-
 ## QGIS-server for map generation
 
-*Prerequisite*
+_Prerequisite_
 
 A dummy feature must drawn otherwise qgis will raise an error.
 
-*Modify print template*
+_Modify print template_
 
 Simply open the print/print.qgs project
 
-*Capabilities of the print server*
+_Capabilities of the print server_
 
 ```
 http://localhost:9096?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities
@@ -121,4 +131,22 @@ it's compatible with other packages listed in the `requirements.in` file:
 ```
 docker-compose exec web pip-tools compile -P django requirements.in
 docker-compose exec web pip install -r requirements.txt
+```
+
+## Migrations
+
+To run a migration, for example when the model has changed, execute
+`manage.py makemigrations` from inside the docker service of the web app.
+Then execute `manage.py migrate`.
+
+```
+docker-compose exec web python3 manage.py makemigrations <app_label>
+docker-compose exec web python3 manage.py migrate <app_label> <migration_name>
+```
+
+For more information about django's migrations, help is available at:
+
+```
+docker-compose exec web python3 manage.py makemigrations --help
+docker-compose exec web python3 manage.py migrate --help
 ```

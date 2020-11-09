@@ -128,6 +128,13 @@ class Command(BaseCommand):
         )
         self.stdout.write("eaux-yverdon / admin")
 
+        # Insert status choices from PermitRequest and insert status for adminsitrative_entity
+        for status_value in models.PermitRequest.STATUS_CHOICES:
+            for entity in [administrative_entity_yverdon, administrative_entity_grandson]:
+                models.PermitWorkflowStatus.objects.get_or_create(status=status_value[0], administrative_entity=entity)
+
+
+
     def create_user(self, username, group_name, administrative_entity, is_default_validator=False):
 
         group, created = Group.objects.get_or_create(name=group_name)
