@@ -1,3 +1,63 @@
+/* Global boostrap4 styling  */
+.btn {
+    border-radius: 0 !important;
+}
+
+.btn-primary {
+    background-color: #008C6F;
+    border-color: #008C6F;
+}
+
+.btn-primary:not(:disabled):not(.disabled):active {
+    color: #fff;
+    background-color: #008C6F;
+    border-color: #008C6F;
+    box-shadow: 0 0 0 0.2rem #008C6F !important
+}
+
+.btn-outline-primary:not(:disabled):not(.disabled):active {
+    color: #fff;
+    background-color: #008C6F;
+    border-color: #008C6F;
+    box-shadow: 0 0 0 0.2rem #008C6F !important
+}
+
+.btn-primary:hover {
+    background-color: #01755d;
+}
+
+.btn-outline-primary {
+    border-color: #008C6F;
+    color: #008C6F;
+}
+
+.btn-outline-primary:hover {
+    background-color: #01755d;
+}
+
+a {
+  color: #008C6F;
+}
+
+a:hover {
+  color: #01755d;
+}
+
+.btn-primary:not(:disabled):not(.disabled):active:focus,
+.btn-primary:focus, .btn-primary.focus {
+    box-shadow:none !important;
+}
+
+input:focus {
+    box-shadow:none !important;
+}
+
+.form-control:focus {
+  border-color: #008C6F !important;
+  box-shadow: 0 0 5px rgba(0, 140, 111, 1) !important;
+}
+
+/* App specific */
 .required label {
   font-weight: bold;
 }
@@ -91,16 +151,16 @@ h3 {
 }
 
 .progress-nav-item-active .circle {
-  background-color: #428573;
-  border: 1px solid transparent;
+  background-color: #008C6F;
 }
 
 .progress-nav-item-done .circle-inner {
-  background-color: #62c4aa;
+  background-color: #008C6F;
+  color: white
 }
 
 .progress-nav-item-partial .circle-inner {
-  background-color: #ffffff;
+  background-color: #F1F4F8;
 }
 
 .circle {
@@ -129,8 +189,8 @@ h3 {
   top: -5px;
   z-index: 1;
   border-radius: 100%;
-  background-color: #ffbaba;
-  color: black;
+  background-color: #1865B5;
+  color: white;
   font-size: 0.7rem;
   width: 15px;
   height: 15px;
