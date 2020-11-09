@@ -38,12 +38,17 @@ def user_has_permitauthor(user):
 
 
 def get_permit_request_for_edition(user, permit_request_id):
+
+    can_pilot_edit_permit_request = services.can_edit_permit_request(user,
+        models.PermitRequest.objects.get(pk=permit_request_id))
+
     return services.get_permit_request_for_user_or_404(
         user,
         permit_request_id,
         statuses=[
             models.PermitRequest.STATUS_DRAFT,
-            models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
+            models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+            models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION if can_pilot_edit_permit_request else None,
         ]
     )
 

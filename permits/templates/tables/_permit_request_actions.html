@@ -9,14 +9,12 @@
   </li>
   {% endif %}
 
-  {% if record.author == request.user.permitauthor or request.user.is_superuser %}
-    {% if record.can_be_edited_by_author %}
+  {% if record.author == request.user.permitauthor and record.can_be_edited_by_author or request.user.is_superuser or perms.permits.edit_permit_request and record.can_be_edited_by_pilot %}
       <li>
         <a title="{% trans "Modifier" %}" href="{% url 'permits:permit_request_properties' record.id %}">
           <i class="fa fa-edit fa-lg"></i>
         </a>
       </li>
-    {% endif %}
   {% endif %}
 
   {% if record.author == request.user.permitauthor or request.user.is_superuser %}
