@@ -701,7 +701,9 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 permit_request.administrative_entity.id)
             # Pass WMS layers to the widgets
             wms_layers = [item.works_object_type.works_object.wms_layers.strip()
-                            for item in services.get_works_object_type_choices(permit_request) if item.works_object_type.works_object.wms_layers != '']
+                          for item in services.get_works_object_type_choices(
+                            permit_request).order_by('-works_object_type__works_object__wms_layers_order')
+                          if item.works_object_type.works_object.wms_layers != '']
             self.fields['geom'].widget.attrs['wms_layers'] = ','.join(wms_layers)
 
 

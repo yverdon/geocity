@@ -34,33 +34,22 @@
       }),
     });
 
-    ;
+    var layer_list = [];
 
-    var layers =  this.options.wms_layers.split(',');
-    var ol_layers = [];
-    for (var i=0; i < layers.length; i++) {
-        ol_layers.push(
-            new ol.layer.Image({
-            source: new ol.source.ImageWMS({
-              url: layers[i],
-              projection: "EPSG:2056",
-            }),
-            opacity: 1,
-          })
+    this.options.wms_layers.split(",").forEach(function (item, index) {
+      layer_list.push(
+        new ol.layer.Image({
+          source: new ol.source.ImageWMS({
+            url: item,
+            projection: "EPSG:2056",
+          }),
+          opacity: 1,
+        })
       );
-    }
+    });
 
-    this.wmsLayerGroup =  new ol.layer.Group({
-      layers: ol_layers
-    })
-
-)
-    this.wmsObjectTypeLayers = new ol.layer.Image({
-      source: new ol.source.ImageWMS({
-        url: this.options.wms_layers,
-        projection: "EPSG:2056",
-      }),
-      opacity: 1,
+    this.wmsLayerGroup = new ol.layer.Group({
+      layers: layer_list,
     });
 
     this.rasterMaskLayer = new ol.layer.Image({
@@ -257,9 +246,9 @@
       map.addLayer(vectorMaskLayer);
       map.addLayer(rasterMaskLayer);
     }
-    if (this.options.wms_layers != "") {
-      map.addLayer(this.wmsLayerGroup);
-    }
+
+    map.addLayer(this.wmsLayerGroup);
+
     return map;
   };
 

@@ -42,6 +42,7 @@ ACTION_POKE = "poke"
 # and services.get_actions_for_administrative_entity
 ACTIONS = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE, ACTION_POKE]
 
+
 class PermitDepartment(models.Model):
 
     group = models.OneToOneField(
@@ -615,7 +616,10 @@ class WorksObject(models.Model):
         blank=True,
         max_length=1024
     )
-
+    wms_layers_order = models.PositiveIntegerField(
+        _("Ordre de(s) couche(s)"),
+        default=1
+    )
 
     class Meta:
         verbose_name = _("1.3 Configuration de l\'objet")

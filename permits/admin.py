@@ -8,7 +8,6 @@ from. import forms as permit_forms
 
 
 admin.site.register(models.WorksType)
-admin.site.register(models.WorksObject)
 admin.site.register(models.PermitActorType)
 admin.site.register(models.PermitDepartment)
 admin.site.register(models.PermitRequestValidation)
@@ -98,13 +97,40 @@ class PermitWorkflowStatusInline(admin.StackedInline):
     extra = 0
 
 
+class WorksObjectAdminForm(forms.ModelForm):
+
+    class Meta:
+        model = models.WorksObject
+        fields = '__all__'
+        widgets = {
+            'wms_layers': forms.Textarea(attrs={
+                'rows': 5,
+                'placeholder': 'ex: https://mywmserver.ch?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&' +
+                               'FORMAT=image%2Fpng&TRANSPARENT=true&LAYERS=my_layer_name&SERVERTYPE=' +
+                               'mapserver&CRS=EPSG%3A2056',
+            }),
+        }
+        help_texts = {
+            'wms_layers':
+                "URL pour la ou les couches WMS utiles à la saisie de la demande pour ce type d'objet",
+            'wms_layers_order':
+                "Ordre de(s) la(les) couche(s) dans la carte. 1: au-dessus",
+        }
+
+
+class WorksObjectAdmin(admin.ModelAdmin):
+    form = WorksObjectAdminForm
+
+
 class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
     form = PermitAdministrativeEntityAdminForm
     inlines = [
         PermitWorkflowStatusInline,
     ]
 
+
 admin.site.register(models.PermitRequest, PermitRequestHistoryAdmin)
 admin.site.register(models.WorksObjectType, WorksObjectTypeAdmin)
 admin.site.register(models.WorksObjectProperty, WorksObjectPropertyAdmin)
 admin.site.register(models.PermitAdministrativeEntity, PermitAdministrativeEntityAdmin)
+admin.site.register(models.WorksObject, WorksObjectAdmin)
