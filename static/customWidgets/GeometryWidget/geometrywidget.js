@@ -21,7 +21,6 @@
         this.options[property] = options[property];
       }
     }
-
     /*
         Drawing restriction area definition
         */
@@ -33,6 +32,24 @@
         color: "#fc4c9e88",
         width: 1,
       }),
+    });
+
+    var layer_list = [];
+
+    this.options.wms_layers.split(",").forEach(function (item, index) {
+      layer_list.push(
+        new ol.layer.Image({
+          source: new ol.source.ImageWMS({
+            url: item,
+            projection: "EPSG:2056",
+          }),
+          opacity: 1,
+        })
+      );
+    });
+
+    this.wmsLayerGroup = new ol.layer.Group({
+      layers: layer_list,
     });
 
     this.rasterMaskLayer = new ol.layer.Image({
@@ -229,6 +246,9 @@
       map.addLayer(vectorMaskLayer);
       map.addLayer(rasterMaskLayer);
     }
+
+    map.addLayer(this.wmsLayerGroup);
+
     return map;
   };
 

@@ -106,6 +106,7 @@
           qgisserver_proxy: "{% url 'permits:qgisserver_proxy' %}",
           restriction_area_enabled: '{{restriction_area_enabled}}',
           geometry_db_type: '{{geometry_db_type}}',
+          wms_layers: '{{ wms_layers }}',
       };
 
       var {{ module }} = new geometryWidget(options);
