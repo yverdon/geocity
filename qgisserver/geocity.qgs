@@ -21,16 +21,16 @@
     <customproperties/>
     <layer-tree-group name="geocity" expanded="1" checked="Qt::Checked">
       <customproperties/>
-      <layer-tree-layer name="permits_permitrequestgeotime_points" source="service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table=&quot;(select id, permit_request_id,starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 1) as geom from public.permits_permitrequestgeotime&#xa;)&quot; (geom) sql=" id="permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376" providerKey="postgres" expanded="1" checked="Qt::Checked">
+      <layer-tree-layer name="permits_permitrequestgeotime_points" source="service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table=&quot;(select id, permit_request_id,starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 1) as geom from geocity.permits_permitrequestgeotime&#xa;)&quot; (geom) sql=" id="permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376" providerKey="postgres" expanded="1" checked="Qt::Checked">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer name="permits_permitrequestgeotimes_lines" source="service='pg_geocity' key='_uid_' checkPrimaryKeyUnicity='1' table=&quot;(SELECT row_number() over () AS _uid_,* FROM (select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 2) as geom from public.permits_permitrequestgeotime&#xa;) AS _subq_1_&#xa;)&quot; (geom) sql=" id="permits_permitrequestgeotimes_lines_7b7c51f4_711d_40db_8a9d_31840309d56f" providerKey="postgres" expanded="1" checked="Qt::Checked">
+      <layer-tree-layer name="permits_permitrequestgeotimes_lines" source="service='pg_geocity' key='_uid_' checkPrimaryKeyUnicity='1' table=&quot;(SELECT row_number() over () AS _uid_,* FROM (select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 2) as geom from geocity.permits_permitrequestgeotime&#xa;) AS _subq_1_&#xa;)&quot; (geom) sql=" id="permits_permitrequestgeotimes_lines_7b7c51f4_711d_40db_8a9d_31840309d56f" providerKey="postgres" expanded="1" checked="Qt::Checked">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer name="permits_permitrequestgeotime_polygons" source="service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table=&quot;(select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 3) as geom from public.permits_permitrequestgeotime&#xa;)&quot; (geom) sql=" id="permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e" providerKey="postgres" expanded="1" checked="Qt::Checked">
+      <layer-tree-layer name="permits_permitrequestgeotime_polygons" source="service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table=&quot;(select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 3) as geom from geocity.permits_permitrequestgeotime&#xa;)&quot; (geom) sql=" id="permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e" providerKey="postgres" expanded="1" checked="Qt::Checked">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer name="permits_permitadministrativeentity" source="service='pg_geocity' sslmode=disable key='id' srid=2056 type=MultiPolygon checkPrimaryKeyUnicity='0' table=&quot;public&quot;.&quot;permits_permitadministrativeentity&quot; (geom) sql=" id="gpf_administrativeentity_1f9b32c8_25d9_4418_9b3f_565e0f6df0b1" providerKey="postgres" expanded="1" checked="Qt::Checked">
+      <layer-tree-layer name="permits_permitadministrativeentity" source="service='pg_geocity' sslmode=disable key='id' srid=2056 type=MultiPolygon checkPrimaryKeyUnicity='0' table=&quot;geocity.;.&quot;permits_permitadministrativeentity&quot; (geom) sql=" id="gpf_administrativeentity_1f9b32c8_25d9_4418_9b3f_565e0f6df0b1" providerKey="postgres" expanded="1" checked="Qt::Checked">
         <customproperties/>
       </layer-tree-layer>
     </layer-tree-group>
@@ -293,7 +293,7 @@
         <ymax>1186887</ymax>
       </extent>
       <id>gpf_administrativeentity_1f9b32c8_25d9_4418_9b3f_565e0f6df0b1</id>
-      <datasource>service='pg_geocity' sslmode=disable key='id' srid=2056 type=MultiPolygon checkPrimaryKeyUnicity='0' table="public"."permits_permitadministrativeentity" (geom) sql=</datasource>
+      <datasource>service='pg_geocity' sslmode=disable key='id' srid=2056 type=MultiPolygon checkPrimaryKeyUnicity='0' table="geocity"."permits_permitadministrativeentity" (geom) sql=</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -661,7 +661,7 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
     <maplayer refreshOnNotifyEnabled="0" geometry="Unknown geometry" maxScale="0" readOnly="0" autoRefreshTime="0" minScale="1e+08" autoRefreshEnabled="0" styleCategories="AllStyleCategories" type="vector" refreshOnNotifyMessage="" wkbType="GeometryCollection" hasScaleBasedVisibilityFlag="0">
       <id>permits_permitrequestgeotime_e236401a_57e3_466c_8439_f9c14b5900b0</id>
-      <datasource>service='pg_geocity' key='id' type=GeometryCollection checkPrimaryKeyUnicity='1' table="public"."permits_permitrequestgeotime" (geom) sql=</datasource>
+      <datasource>service='pg_geocity' key='id' type=GeometryCollection checkPrimaryKeyUnicity='1' table="geocity"."permits_permitrequestgeotime" (geom) sql=</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -833,7 +833,7 @@ def my_form_open(dialog, layer, feature):
         <ymax>1181128.47008801996707916</ymax>
       </extent>
       <id>permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376</id>
-      <datasource>service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table="(select id, permit_request_id,starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 1) as geom from public.permits_permitrequestgeotime
+      <datasource>service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table="(select id, permit_request_id,starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 1) as geom from geocity.permits_permitrequestgeotime
 )" (geom) sql=</datasource>
       <keywordList>
         <value></value>
@@ -1046,7 +1046,7 @@ def my_form_open(dialog, layer, feature):
         <ymax>1181140.1152381100691855</ymax>
       </extent>
       <id>permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e</id>
-      <datasource>service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table="(select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 3) as geom from public.permits_permitrequestgeotime
+      <datasource>service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table="(select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 3) as geom from geocity.permits_permitrequestgeotime
 )" (geom) sql=</datasource>
       <keywordList>
         <value></value>
@@ -1262,7 +1262,7 @@ def my_form_open(dialog, layer, feature):
         <ymax>1181134.07701214007101953</ymax>
       </extent>
       <id>permits_permitrequestgeotimes_lines_7b7c51f4_711d_40db_8a9d_31840309d56f</id>
-      <datasource>service='pg_geocity' key='_uid_' checkPrimaryKeyUnicity='1' table="(SELECT row_number() over () AS _uid_,* FROM (select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 2) as geom from public.permits_permitrequestgeotime
+      <datasource>service='pg_geocity' key='_uid_' checkPrimaryKeyUnicity='1' table="(SELECT row_number() over () AS _uid_,* FROM (select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 2) as geom from geocity.permits_permitrequestgeotime
 ) AS _subq_1_
 )" (geom) sql=</datasource>
       <keywordList>
@@ -1850,9 +1850,9 @@ def my_form_open(dialog, layer, feature):
         </LayoutObject>
         <Extent xmin="2533583.38120744889602065" ymax="1185715.83516433252952993" ymin="1176951.98717430816031992" xmax="2545755.39230470499023795"/>
         <LayerSet>
-          <Layer name="permits_permitrequestgeotime_points" source="service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table=&quot;(select id, permit_request_id,starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 1) as geom from public.permits_permitrequestgeotime&#xa;)&quot; (geom) sql=" provider="postgres">permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376</Layer>
-          <Layer name="permits_permitrequestgeotimes_lines" source="service='pg_geocity' key='_uid_' checkPrimaryKeyUnicity='1' table=&quot;(SELECT row_number() over () AS _uid_,* FROM (select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 2) as geom from public.permits_permitrequestgeotime&#xa;) AS _subq_1_&#xa;)&quot; (geom) sql=" provider="postgres">permits_permitrequestgeotimes_lines_7b7c51f4_711d_40db_8a9d_31840309d56f</Layer>
-          <Layer name="permits_permitrequestgeotime_polygons" source="service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table=&quot;(select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 3) as geom from public.permits_permitrequestgeotime&#xa;)&quot; (geom) sql=" provider="postgres">permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e</Layer>
+          <Layer name="permits_permitrequestgeotime_points" source="service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table=&quot;(select id, permit_request_id,starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 1) as geom from geocity.permits_permitrequestgeotime&#xa;)&quot; (geom) sql=" provider="postgres">permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376</Layer>
+          <Layer name="permits_permitrequestgeotimes_lines" source="service='pg_geocity' key='_uid_' checkPrimaryKeyUnicity='1' table=&quot;(SELECT row_number() over () AS _uid_,* FROM (select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 2) as geom from geocity.permits_permitrequestgeotime&#xa;) AS _subq_1_&#xa;)&quot; (geom) sql=" provider="postgres">permits_permitrequestgeotimes_lines_7b7c51f4_711d_40db_8a9d_31840309d56f</Layer>
+          <Layer name="permits_permitrequestgeotime_polygons" source="service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table=&quot;(select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 3) as geom from geocity.permits_permitrequestgeotime&#xa;)&quot; (geom) sql=" provider="postgres">permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e</Layer>
           <Layer name="Fond ASIT VD - cadastral" source="crs=EPSG:2056&amp;dpiMode=7&amp;format=image/png&amp;layers=asitvd.fond_cadastral&amp;styles=default&amp;tileMatrixSet=2056&amp;url=https://ows.asitvd.ch/wmts/?service%3DWMTS%26version%3D1.0.0%26request%3DGetCapabilities" provider="wms">Fond_ASIT_VD___cadastral_ec976cae_fb72_40c4_97b6_7c5dd60081ab</Layer>
         </LayerSet>
         <AtlasMap atlasDriven="0" scalingMode="2" margin="0.10000000000000001"/>
