@@ -8,7 +8,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 import json
-from . import models, services, widgets
+from . import models, services
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.validators import RegexValidator
 from django.utils.safestring import mark_safe
@@ -319,6 +319,47 @@ class DjangoAuthUserForm(forms.ModelForm):
 class GenericAuthorForm(forms.ModelForm):
 
     required_css_class = 'required'
+    address = forms.CharField(
+        max_length=100,
+        label=_('Adresse'),
+        widget=forms.TextInput(
+            attrs={
+                "data_remote_autocomplete": json.dumps({
+                    "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
+                    "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
+                    "search_prefix": "false",
+                    "origins": "address",
+                    "zipcode_field": "zipcode",
+                    "city_field": "city",
+                    "placeholder": "ex: Place Pestalozzi 2 Yverdon",
+                    "single_contact": "true"}),
+                'required': 'required',
+            }
+        ),
+    )
+
+    zipcode = forms.IntegerField(
+        label=_('NPA'),
+        validators=[
+            MinValueValidator(1000),
+            MaxValueValidator(9999)
+        ],
+        widget=forms.NumberInput(
+            attrs={
+                'required': 'required'
+            }
+        )
+    )
+    city = forms.CharField(
+        max_length=100,
+        label=_('Ville'),
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'ex: Yverdon',
+                'required': 'required'
+            }
+        )
+    )
 
     class Meta:
         model = models.PermitAuthor
@@ -336,17 +377,6 @@ class GenericAuthorForm(forms.ModelForm):
                 'Trouvez votre numéro <a href="https://www.uid.admin.ch/Search.aspx?lang=fr" target="_blank">TVA</a>',
         }
         widgets = {
-            'address': widgets.RemoteAutocompleteWidget(
-                attrs={
-                    "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
-                    "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
-                    "search_prefix": "false",
-                    "origins": "address",
-                    "zipcode_field": "zipcode",
-                    "city_field": "city",
-                    "placeholder": "ex: Place Pestalozzi 2 Yverdon",
-                }
-            ),
             'phone_first': forms.TextInput(
                 attrs={
                     'placeholder': 'ex: 024 111 22 22'
@@ -360,16 +390,6 @@ class GenericAuthorForm(forms.ModelForm):
             'vat_number': forms.TextInput(
                 attrs={
                     'placeholder': 'ex: CHE-123.456.789'
-                }
-            ),
-            'zipcode': forms.TextInput(
-                attrs={
-                    'placeholder': 'ex: 1400'
-                }
-            ),
-            'city': forms.TextInput(
-                attrs={
-                    'placeholder': 'ex: Yverdon'
                 }
             ),
             'company_name': forms.TextInput(
