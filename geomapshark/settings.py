@@ -115,7 +115,7 @@ DATABASES = {
         'PORT': os.getenv("PGPORT"),
         'PASSWORD': os.getenv("PGPASSWORD"),
         'OPTIONS': {
-            'options': '-c search_path=geocity'
+            'options': '-c search_path=geocity,public'
         },
     }
 }
