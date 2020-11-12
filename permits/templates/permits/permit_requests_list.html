@@ -22,7 +22,7 @@
     {% with request.user.groups.all|first as group %}
       {% if group.permitdepartment.administrative_entity.archive_link != '' %}
         {% if request.user.groups.all.count > 0 %}
-          <a class="btn btn-outline-primary" href="{{group.permitdepartment.administrative_entity.archive_link}}" role="button"><i class="fa fa-archive"></i> {% trans "Archives" %}</a>
+          <a class="btn btn-outline-primary" href="{{group.permitdepartment.administrative_entity.archive_link}}" role="button" target="_blank" rel="noopener"><i class="fa fa-archive"></i> {% trans "Archives" %}</a>
         {% endif %}
       {% endif %}
     {% endwith %}
