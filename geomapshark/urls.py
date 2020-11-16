@@ -32,7 +32,6 @@ urlpatterns = [
     path('rest/', include(router.urls)), # Django-rest urls
 ]
 
-
 urlpatterns = [path(settings.PREFIX_URL, include(urlpatterns))]
 
 if settings.DEBUG:
