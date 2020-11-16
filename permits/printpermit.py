@@ -11,7 +11,7 @@ from django.core.files.base import ContentFile
 from django.utils import timezone
 
 
-def get_map_base64(geo_times, permit_id):
+def get_map_url(geo_times, permit_id):
     """Docstring:
     """
     extent = list(geo_times.aggregate(Extent('geom'))['geom__extent'])
@@ -43,12 +43,7 @@ def get_map_base64(geo_times, permit_id):
 
     data = urllib.parse.urlencode(values)
     printurl = "http://qgisserver" + '/?' + data
-    response = requests.get(printurl)
-    map_base64 = ("data:" +
-                  response.headers['Content-Type'] + ";" +
-                  "base64," + b64encode(response.content).decode("utf-8"))
-
-    return map_base64
+    return printurl
 
 
 def printreport(request, permit_request):
@@ -68,7 +63,7 @@ def printreport(request, permit_request):
     """
 
     geo_times = permit_request.geo_time.all()
-    map_image = get_map_base64(geo_times, permit_request.pk)
+    printurl = get_map_url(geo_times, permit_request.pk)
     print_date = timezone.now()
     validations = permit_request.validations.all()
     objects_infos = services.get_permit_objects(permit_request)
@@ -95,7 +90,7 @@ def printreport(request, permit_request):
         'print_date': print_date,
         'administrative_entity': administrative_entity,
         'geo_times': geo_times,
-        'map_image': map_image,
+        'map_image': printurl,
         'validations': validations,
         'logo_main': b64encode(administrative_entity.logo_main.open().read()).decode("utf-8") if administrative_entity.logo_main else '',
         'logo_secondary': b64encode(administrative_entity.logo_secondary.open().read()).decode("utf-8") if administrative_entity.logo_secondary else '',
