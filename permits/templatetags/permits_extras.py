@@ -35,10 +35,9 @@ def permit_request_summary(context, permit_request):
     geo_time_form.fields['geom'].widget.attrs['administrative_entity_json_url'] = \
         '/permit-requests/adminentitiesgeojson/' + str(permit_request.administrative_entity.id)
     geo_time_form.fields['geom'].widget.attrs['administrative_entity_id'] = str(permit_request.administrative_entity.id)
-
-    if permit_request.creditor_type:
+    if permit_request.creditor_type is not None:
         creditor = models.ACTOR_TYPE_CHOICES[permit_request.creditor_type][1]
-    elif permit_request.author.user:
+    elif permit_request.author.user and permit_request.creditor_type is None:
         creditor = _('Auteur de la demande, ') + \
             permit_request.author.user.first_name + ' ' + permit_request.author.user.last_name
     else:
