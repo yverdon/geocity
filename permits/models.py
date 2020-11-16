@@ -441,7 +441,7 @@ class PermitRequest(models.Model):
         choices=ARCHEOLOGY_STATUS_CHOICES,
         default=ARCHEOLOGY_STATUS_IRRELEVANT
     )
-    intersected_geometries = models.CharField(
+    intersected_geometries = models.TextField(
         _("Entités géométriques concernées"),
         max_length=1024,
         null=True
