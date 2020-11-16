@@ -7,9 +7,11 @@ load_dotenv()
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ROOT_URLCONF = 'geomapshark.urls'
-PREFIX_URL = os.environ.get("URL_PREFIX", "")
-LOGIN_URL = PREFIX_URL + '/accounts/login/'
-LOGIN_REDIRECT_URL = PREFIX_URL + '/permit-requests/'
+PREFIX_URL = os.environ.get("PREFIX_URL", "")
+LOGIN_URL = '/' + PREFIX_URL + 'accounts/login/'
+LOGIN_REDIRECT_URL = '/' + PREFIX_URL + 'permit-requests/'
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -149,7 +151,7 @@ if DEBUG:
 # Internationalization
 
 LANGUAGE_CODE = 'fr-CH'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'CET'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True

@@ -72,8 +72,9 @@ def permit_request_authors(request):
 
 
 class DepartmentPermitRequestFilterSet(BasePermitRequestFilterSet):
-    author = django_filters.filters.ModelChoiceFilter(
-        queryset=permit_request_authors
+    author = django_filters.filters.ModelMultipleChoiceFilter(
+        queryset=permit_request_authors,
+        label=_("Auteur de la demande")
     )
     works_object_types__works_object = django_filters.filters.ModelChoiceFilter(
         queryset=models.WorksObject.objects.order_by('name'),
