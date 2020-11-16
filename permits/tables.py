@@ -44,6 +44,7 @@ class DepartmentPermitRequestsTable(tables.Table):
         verbose_name=_("Objets et types de travaux"),
         orderable=False
     )
+    author__user__last_name = tables.Column(verbose_name=_("Auteur de la demande"))
 
     class Meta:
         model = models.PermitRequest
