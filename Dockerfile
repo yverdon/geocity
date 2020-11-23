@@ -5,7 +5,9 @@ ARG dev_dependencies
 RUN apt-get update
 RUN apt-get install gettext python3-pip -y && \
     apt-get install libcairo2-dev -y && \
-    apt-get install build-essential python3-dev python3-setuptools python3-wheel python3-cffi libcairo2 libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 libffi-dev shared-mime-info -y
+    apt-get install build-essential python3-dev python3-setuptools \
+    python3-wheel python3-cffi libcairo2 libpango-1.0-0 libpangocairo-1.0-0 \
+    libgdk-pixbuf2.0-0 libffi-dev shared-mime-info -y
 
 
 # Update C env vars so compiler can find gdal
@@ -19,5 +21,16 @@ ENV PYTHONUNBUFFERED 1
 COPY . /code/
 WORKDIR /code
 
-RUN if [ "$dev_dependencies" = "true" ] ; then pip3 install -r requirements_dev.txt && echo "Installed development depencies"; \
-    else pip3 install -r requirements.txt && echo "Installed production depencies"; fi
+RUN if [ "$dev_dependencies" = "true" ] ; \
+    then \
+    echo "Installing development dependencies..." \
+    && pip3 install -r requirements_dev.txt \
+    && echo "########################################" \
+    && echo "# Installed development dependencies   #" \
+    && echo "########################################"; \
+    else \
+    pip3 install -r requirements.txt \
+    && echo "########################################" \
+    && echo "# Installed production dependencies    #" \
+    && echo "########################################"; \
+    fi
