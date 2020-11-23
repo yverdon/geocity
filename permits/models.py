@@ -23,6 +23,7 @@ ACTOR_TYPE_COMPANY = 3
 ACTOR_TYPE_CLIENT = 4
 ACTOR_TYPE_SECURITY = 5
 ACTOR_TYPE_ASSOCIATION = 6
+ACTOR_TYPE_ASSOCIATION = 7
 ACTOR_TYPE_CHOICES = (
     (ACTOR_TYPE_OTHER, _("Autres")),
     (ACTOR_TYPE_OWNER, _("Propriétaire")),
@@ -31,6 +32,7 @@ ACTOR_TYPE_CHOICES = (
     (ACTOR_TYPE_REQUESTOR, _("Requérant si différent de l'auteur de la demande")),
     (ACTOR_TYPE_SECURITY, _("Sécurité")),
     (ACTOR_TYPE_ASSOCIATION, _("Association")),
+    (ACTOR_TYPE_ASSOCIATION, _("Architect/Ingénieur")),
 )
 
 # Actions
