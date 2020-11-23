@@ -8,7 +8,7 @@ This will bring up a demo instance with preset fixtures served by the
 Django developpment server in reload mode.
 
 ```
-git clone git@github.com:yverdon/geocity.git
+git clone git@github.com:yverdon/geocity.git && cd geocity
 cp -n env.demo .env
 docker-compose -f docker-compose-dev.yml build
 docker-compose -f docker-compose-dev.yml down --remove-orphans && docker-compose -f docker-compose-dev.yml up
