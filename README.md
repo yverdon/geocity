@@ -42,11 +42,7 @@ So that the Django container can reach your `postgres` user on the host machine.
 ## Production containers administrations
 
 ```
-mkdir geocity
-git init
-git remote add upstream https://github.com/yverdon/geocity
-git fetch upstream
-git checkout upstream/master
+git clone git@github.com:yverdon/geocity.git && cd geocity
 cp -n env.demo .env
 docker-compose build
 docker-compose down --remove-orphans && docker-compose up
