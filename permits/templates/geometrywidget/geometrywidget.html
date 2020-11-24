@@ -1,122 +1,93 @@
-<!-- Adapted from django gis contrib -->
+{# Adapted from django gis contrib #}
 
 {% load i18n l10n %}
 {% load static %}
-{% block stylesheets%}
-  {% load fontawesome %}
-  {% fontawesome_stylesheet %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/geotime.css' %}">
-{% endblock %}
-
+{% load permits_extras %}
 
 <style type="text/css">{% block map_css %}{% get_current_language_bidi as LANGUAGE_BIDI %}
+  {# TODO cleanup #}
     #{{ id }}_map { width: {{ map_width }}; height: {{ map_height }}px; }
     #{{ id }}_map .aligned label { float: none; }
     #{{ id }}_div_map { position: relative; vertical-align: top; }
     {% if not display_raw %}#{{ id }} { display: none; }{% endif %}
+  .map { height: {{ map_height  }}px; }
     {% endblock %}
 </style>
 
-<div id="{{ id }}_div_map">
-  {% if edit_geom %}
-    <div id="mapButtons">
-      <a class="btn btn-outline-warning" title="Cliquer dans la carte pour ajouter des dessins"
-         href="javascript:geometryWidget.enableDrawing();" role="button">
+<div id="geometry-widget-{{ id }}" data-initialize="{% if "__prefix__" in id %}0{% else %}1{% endif %}" data-map-target="{{ id }}_map" data-options="{{ options|json }}" data-geometry-widget>
+  {% if options.edit_geom %}
+    <div>
+      <button type="button" class="btn btn-outline-warning" title="Cliquer dans la carte pour ajouter des dessins"
+         role="button" data-action="enableDrawing">
          <i class="fa fa-pencil"></i> Dessiner
-      </a>
-      <a class="btn btn-outline-warning" title="Maintenir la touche Maj (Shift) enfoncée pour en sélectionner plusieurs"
-         href="javascript:geometryWidget.selectFeatures();" role="button">
+      </button>
+      <button type="button" class="btn btn-outline-warning" title="Maintenir la touche Maj (Shift) enfoncée pour en sélectionner plusieurs"
+         role="button" data-action="selectFeatures">
          <i class="fa fa-mouse-pointer"></i> Sélectionner et Modifier
-      </a>
-      <a id="delete-selected" class="btn btn-outline-danger""
-         href="javascript:geometryWidget.removeSelectedFeatures();" role="button">
+      </button>
+      <button type="button" class="btn btn-outline-danger"
+         role="button" data-action="removeSelectedFeatures">
          <i class="fa fa-trash"></i>  Effacer la ou les entité(s) sélectionnée(s)
-      </a><br><br>
+      </button><br><br>
       <div class="custom-file">
-        <input type="file" class="custom-file-input" id="selectfile" accept=".kml" onchange="javascript:geometryWidget.addKML()">
+        <input type="file" class="custom-file-input" id="selectfile" accept=".kml" data-action="addKML">
         <label class="custom-file-label" for="selectfile">Charger des géométries (Point, Ligne, Polygone) depuis un fichier .kml</label>
       </div>
     </div>
     <hr>
-    <div id="edit-points" class="form-check form-check-inline">
-      <input class="form-check-input" title="Cliquer pour ajouter un point" type="radio" name="inlineRadioOptions" id="inlineRadio1" checked onclick="javascript:geometryWidget.setDrawInteraction('MultiPoint');">
-      <label class="form-check-label no-wildcard" title="Cliquer pour ajouter un point" for="inlineRadio1">Points<img src="{% static 'images/geometrywidget/points.svg'%}" height=30></label>
+    <div data-action="editPoints" class="form-check form-check-inline">
+      <label class="form-check-label no-wildcard" title="Cliquer pour ajouter un point">
+        <input class="form-check-input" title="Cliquer pour ajouter un point" type="radio" name="inlineRadioOptions" checked data-action="setDrawInteraction" data-interaction-type="MultiPoint">
+        Points<img src="{% static 'images/geometrywidget/points.svg'%}" height=30>
+      </label>
     </div>
-    <div id="edit-lines" class="form-check form-check-inline">
-      <input class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions" id="inlineRadio2" onclick="javascript:geometryWidget.setDrawInteraction('MultiLineString');">
-      <label class="form-check-label no-wildcard" title="Double clique pour terminer la construction" for="inlineRadio2">Lignes<img src="{% static 'images/geometrywidget/polyline.svg'%}" height=30></label>
+    <div data-action="editLines" class="form-check form-check-inline">
+      <label class="form-check-label no-wildcard" title="Double clique pour terminer la construction">
+        <input class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions" data-action="setDrawInteraction" data-interaction-type="MultiLineString">
+        Lignes<img src="{% static 'images/geometrywidget/polyline.svg'%}" height=30>
+      </label>
     </div>
-    <div id="edit-polygons" class="form-check form-check-inline">
-      <input class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions" id="inlineRadio3" onclick="javascript:geometryWidget.setDrawInteraction('MultiPolygon');">
-      <label class="form-check-label no-wildcard" title="Double clique pour terminer la construction" for="inlineRadio3">Surfaces<img src="{% static 'images/geometrywidget/polygon.svg'%}" height=30></label>
+    <div data-action="editPolygons" class="form-check form-check-inline">
+      <label class="form-check-label no-wildcard" title="Double clique pour terminer la construction">
+        <input class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions" data-action="setDrawInteraction" data-interaction-type="MultiPolygon">
+        Surfaces<img src="{% static 'images/geometrywidget/polygon.svg'%}" height=30>
+      </label>
     </div>
-    <a id="set-point-manual" class="btn btn-outline-primary" data-toggle="collapse" href="#manual-coordinates" role="button" aria-expanded="false" aria-controls="manual-coordinates">
+    <a data-action="setPointManual" class="btn btn-outline-primary" data-toggle="collapse" href="#manual-coordinates-{{ id }}" role="button" aria-expanded="false" aria-controls="manual-coordinates">
       Saisir des coordonnées manuellement
     </a>
     <br><br>
-    <div class="collapse" id="manual-coordinates">
+    <div class="collapse" id="manual-coordinates-{{ id }}">
       <div class="card card-body">
         <div class="row">
           <div class="col">
-            <label for="east_coord">Est:</label>
-            <input id="east_coord" type="float" min=2535594.00 max=2542571.00 value=2539162.00 placeholder="ex: 2539142.00">
+            <label for="east_coord-{{ id }}">Est:</label>
+            <input name="east_coord" id="east_coord-{{ id }}" type="float" min=2535594.00 max=2542571.00 value=2539162.00 placeholder="ex: 2539142.00">
           </div>
           <div class="col">
-            <label for="east_coord">Nord:</label>
-            <input id="north_coord" type="float" min=1178784.00 max=1183461.00 value=1181732.00 placeholder="ex: 1181572.00 ">
+            <label for="east_coord-{{ id }}">Nord:</label>
+            <input name="north_coord" id="north_coord-{{ id }}" type="float" min=1178784.00 max=1183461.00 value=1181732.00 placeholder="ex: 1181572.00 ">
           </div>
           <div class="col">
-            <a class="btn btn-outline-success" title="Ajouter ce point à la carte"
-               href="javascript:geometryWidget.addPointFeature();" role="button">
+            <button type="button" class="btn btn-outline-success" title="Ajouter ce point à la carte"
+               role="button" data-action="addPointFeature">
                <i class="fa fa-plus"></i> Ajouter à la carte
-            </a>
+            </button>
           </div>
         </div>
       </div>
     </div>
   {% endif %}
-  <div id="out-of-administrative-limits"></div>
-  <div id="{{ id }}_map">
-    <img id="switchbaselayers" src="{% static 'images/switchbaselayers.png'%}" width="100" height="40" alt="" onclick="javascript:geometryWidget.switchBaseLayers()">
+  <div data-role="outOfAdministrativeLimits"></div>
+  <div class="map" data-role="map">
+    <img class="switchbaselayers" src="{% static 'images/switchbaselayers.png'%}" width="100" height="40" alt="" data-action="switchBaseLayers">
   </div>
   {% if display_raw %}<p>{% trans "Debugging window (serialized value)" %}</p>{% endif %}
-  <textarea id="{{ id }}" class="vSerializedField required" cols="150" rows="10" name="{{ name }}">{{ serialized }}</textarea>
-  <script type="text/javascript">
-
-    if (!$) {
-        $ = django.jQuery;
-    }
-
-      {% block base_layer %}
-      var options = {
-          administrative_entity_json_url:'{{ administrative_entity_json_url }}',
-          administrative_entity_id:'{{ administrative_entity_id }}',
-          default_center:{{ default_center }},
-          default_zoom: {{ default_zoom }},
-          geom_name: '{{ geom_type }}',
-          id: '{{ id }}',
-          map_id: '{{ id }}_map',
-          name: '{{ name }}',
-          edit_geom: '{{edit_geom}}',
-          min_zoom: {{min_zoom}},
-          wmts_capabilities_url: '{{wmts_capabilities_url}}',
-          wmts_layer: '{{wmts_layer}}',
-          wmts_capabilities_url_alternative: '{{wmts_capabilities_url_alternative}}',
-          wmts_layer_alternative: '{{wmts_layer_alternative}}',
-          qgisserver_proxy: "{% url 'permits:qgisserver_proxy' %}",
-          restriction_area_enabled: '{{restriction_area_enabled}}',
-          geometry_db_type: '{{geometry_db_type}}',
-          wms_layers: '{{ wms_layers }}',
-      };
-
-      var {{ module }} = new geometryWidget(options);
-      geometryWidget = {{ module }};
-
-      {% endblock %}
-
-      $(".custom-file-input").on("change", function() {
-        var fileName = $(this).val().split("\\").pop();
-        $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
-      });
-  </script>
+  <textarea id="{{ id }}" class="vSerializedField required" cols="150" rows="10" name="{{ name }}" data-role="serialized">{{ serialized }}</textarea>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    geometryWidgetManager.rebind();
+  });
+</script>

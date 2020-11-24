@@ -7,7 +7,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 from django.core.exceptions import PermissionDenied
 from django.core.exceptions import SuspiciousOperation
+from django.db import transaction
 from django.db.models import Prefetch
+from django.forms import modelformset_factory
 from django.utils.decorators import method_decorator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -496,24 +498,34 @@ def permit_request_actors(request, permit_request_id):
 
 @login_required
 def permit_request_geo_time(request, permit_request_id):
-
     permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+    PermitRequestGeoTimeFormSet = modelformset_factory(
+        models.PermitRequestGeoTime,
+        form=forms.PermitRequestGeoTimeForm,
+        extra=0,
+        min_num=1,
+        can_delete=True
+    )
 
-    instance = permit_request.geo_time.first()
-
-    form = forms.PermitRequestGeoTimeForm(
-        request.POST or None, instance=instance, permit_request=permit_request)
+    formset = PermitRequestGeoTimeFormSet(
+        request.POST if request.method == "POST" else None,
+        form_kwargs={"permit_request": permit_request},
+        queryset=permit_request.geo_time.all()
+    )
 
     if request.method == 'POST':
+        if formset.is_valid():
+            with transaction.atomic():
+                formset.save()
 
-        if form.is_valid():
-            form.instance.permit_request = permit_request
-            form.save()
+                for obj in formset.deleted_objects:
+                    if obj.pk:
+                        obj.delete()
 
             return redirect('permits:permit_request_appendices', permit_request_id=permit_request_id)
 
     return render(request, "permits/permit_request_geo_time.html", {
-        'form': form,
+        'formset': formset,
         'permit_request': permit_request,
     })
 

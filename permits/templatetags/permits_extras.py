@@ -1,3 +1,4 @@
+import json
 import os.path
 
 from django import template
@@ -31,10 +32,8 @@ def permit_request_summary(context, permit_request):
     contacts = services.get_contacts_summary(permit_request)
     geo_time_instance = permit_request.geo_time.first()
     geo_time_form = forms.PermitRequestGeoTimeForm(instance=geo_time_instance)
-    geo_time_form.fields['geom'].widget.attrs['edit_geom'] = False
-    geo_time_form.fields['geom'].widget.attrs['administrative_entity_json_url'] = \
-        '/permit-requests/adminentitiesgeojson/' + str(permit_request.administrative_entity.id)
-    geo_time_form.fields['geom'].widget.attrs['administrative_entity_id'] = str(permit_request.administrative_entity.id)
+    # TODO test
+    geo_time_form.fields['geom'].widget.attrs['options']['edit_geom'] = False
     if permit_request.creditor_type is not None:
         creditor = models.ACTOR_TYPE_CHOICES[permit_request.creditor_type][1]
     elif permit_request.author.user and permit_request.creditor_type is None:
@@ -54,3 +53,8 @@ def permit_request_summary(context, permit_request):
         'intersected_geometries': permit_request.intersected_geometries
         if permit_request.intersected_geometries != '' else None,
     }
+
+
+@register.filter(name="json")
+def json_(value):
+    return json.dumps(value)

@@ -6,7 +6,7 @@
   font-size: 0.8em;
 }
 
-#switchbaselayers {
+.switchbaselayers {
   border-radius: 3px;
   border: 3px solid #ebe834;
   position: absolute;
@@ -14,7 +14,7 @@
   bottom: 10px;
   z-index: 1000;
 }
-#switchbaselayers:hover {
+.switchbaselayers:hover {
   box-shadow: 0 0 2px 2px yellow;
   cursor: pointer;
 }

@@ -7,7 +7,10 @@
 
   var geojsonFormat = new ol.format.GeoJSON();
 
-  function geometryWidget(options) {
+  function geometryWidget(el) {
+    let options = JSON.parse(el.dataset.options);
+    this.el = el;
+    this.serializedEl = el.querySelector("[data-role='serialized']");
     this.map = null;
     this.wmtsLayer = new ol.layer.Tile({});
     this.wmtsLayerAlternative = new ol.layer.Tile({});
@@ -36,7 +39,7 @@
 
     var layer_list = [];
 
-    this.options.wms_layers.split(",").forEach(function (item, index) {
+    this.options.wms_layers.forEach(function (item, index) {
       layer_list.push(
         new ol.layer.Image({
           source: new ol.source.ImageWMS({
@@ -70,7 +73,7 @@
     this.vectorMaskLayer = new ol.layer.Vector({
       source: new ol.source.Vector({
         url: (e) => {
-          return this.options.administrative_entity_json_url;
+          return this.options.administrative_entity_url;
         },
         zIndex: 9999,
         format: new ol.format.GeoJSON(),
@@ -110,19 +113,19 @@
       updateWhileAnimating: true, // optional, for instant visual feedback
       updateWhileInteracting: true, // optional, for instant visual feedback
     });
-    var initial_value = document.getElementById(this.options.id).value;
+    var initial_value = this.serializedEl.value;
     var extent = ol.extent.createEmpty();
     if (this.options.geometry_db_type != "GeometryCollection") {
-      $("#edit-points").hide();
-      $("#edit-lines").hide();
-      $("#edit-polygons").hide();
+      $("[data-action='editPoints']", this.el).hide();
+      $("[data-action='editLines']", this.el).hide();
+      $("[data-action='editPolygons']", this.el).hide();
 
       if (this.options.geometry_db_type == "MultiPolygon") {
-        $("#set-point-manual").hide();
-        $("#manual-coordinates").hide();
+        $("[data-action='setPointManual']", this.el).hide();
+        $("[data-action='manualCoordinates']", this.el).hide();
       } else if (this.options.geometry_db_type == "MultiLineString") {
-        $("#set-point-manual").hide();
-        $("#manual-coordinates").hide();
+        $("[data-action='setPointManual']", this.el).hide();
+        $("[dataction='manualCoordinates']", this.el).hide();
       }
     }
     if (initial_value) {
@@ -189,12 +192,13 @@
     this.createInteractions();
 
     // disable edit (for use in read-only views)
-    if (this.options.edit_geom == "False") {
+    if (!this.options.edit_geom) {
       this.disableDrawing();
       this.interactions.modify.setActive(false);
       this.hideMapButtons();
     }
 
+    this._addEventListeners();
     this.ready = true;
   }
 
@@ -234,7 +238,7 @@
           },
         }),
       ],
-      target: this.options.map_id,
+      target: this.el.querySelector("[data-role=map]"),
       view: new ol.View({
         zoom: this.options.default_zoom,
         minZoom: this.options.min_zoom,
@@ -242,7 +246,7 @@
         center: this.options.default_center,
       }),
     });
-    if (restriction_area_enabled == "True") {
+    if (restriction_area_enabled) {
       map.addLayer(vectorMaskLayer);
       map.addLayer(rasterMaskLayer);
     }
@@ -308,7 +312,7 @@
     Function to load KML data
   */
   geometryWidget.prototype.addKML = function () {
-    var file = document.getElementById("selectfile").files[0];
+    var file = this.el.querySelector("selectfile").files[0];
 
     if (file) {
       var reader = new FileReader();
@@ -317,8 +321,8 @@
         var features = kml.readFeatures(reader.result);
 
         if (features.length > 50) {
-          $("#out-of-administrative-limits").show();
-          $("#out-of-administrative-limits").html(
+          $("[data-role='outOfAdministrativeLimits']", this.el).show();
+          $("[data-role='outOfAdministrativeLimits']", this.el).html(
             "Votre fichier dépasse la limite de 50 entités, il n'a pas été importé!"
           );
         } else {
@@ -547,7 +551,7 @@
       source: this.vectorSource,
       type: geotype,
       condition: (e) => {
-        if (this.options.restriction_area_enabled == "True") {
+        if (this.options.restriction_area_enabled) {
           $("#out-of-administrative-limits").hide();
           let coords = e.coordinate;
           let features = this.map.getFeaturesAtPixel(e.pixel, {
@@ -624,8 +628,8 @@
     Add point from manuelly edited coordinates (ch1903+)
     */
   geometryWidget.prototype.addPointFeature = function () {
-    var east = parseFloat($("#east_coord")[0].value);
-    var north = parseFloat($("#north_coord")[0].value);
+    var east = parseFloat(this.el.querySelector("[name='east_coord']").value);
+    var north = parseFloat(this.el.querySelector("[name='north_coord']")[0].value);
     var feature = new ol.Feature({
       geometry: new ol.geom.MultiPoint([[east, north]]),
     });
@@ -645,7 +649,7 @@
   geometryWidget.prototype.serializeFeatures = function () {
     var features = this.vectorSource.getFeatures();
     if (features.length == 0) {
-      document.getElementById(this.options.id).value = "";
+      this.serializedEl.value = "";
       return;
     }
     var geometries = [];
@@ -669,8 +673,65 @@
     var geojsongeom = geojsonFormat.writeGeometry(geometry, {
       decimals: 2,
     });
-    document.getElementById(this.options.id).value = geojsongeom;
+    this.serializedEl.value = geojsongeom;
   };
 
+  geometryWidget.prototype._addEventListeners = function () {
+    let widget = this;
+
+    this.el.querySelectorAll("[data-action='enableDrawing']").forEach(function(node) {
+      node.addEventListener("click", function(e) {
+        widget.enableDrawing();
+      });
+    });
+
+    this.el.querySelectorAll("[data-action='selectFeatures']").forEach(function(node) {
+      node.addEventListener("click", function(e) {
+        widget.selectFeatures();
+      });
+    });
+
+    this.el.querySelectorAll("[data-action='removeSelectedFeatures']").forEach(function(node) {
+      node.addEventListener("click", function(e) {
+        widget.removeSelectedFeatures();
+      });
+    });
+
+    this.el.querySelectorAll("[data-action='addKML']").forEach(function(node) {
+      node.addEventListener("change", function(e) {
+        widget.addKML();
+      });
+    });
+
+    this.el.querySelectorAll("[data-action='setDrawInteraction']").forEach(function(node) {
+      node.addEventListener("click", function(e) {
+        let interactionType = e.originalTarget.dataset.interactionType;
+        widget.setDrawInteraction(interactionType);
+      });
+    });
+
+    this.el.querySelectorAll("[data-action='switchBaseLayers']").forEach(function(node) {
+      node.addEventListener("click", function(e) {
+        widget.switchBaseLayers();
+      });
+    });
+  };
+
+  function geometryWidgetManager() {
+    this.boundNodes = {};
+  }
+
+  geometryWidgetManager.prototype.rebind = function() {
+    [...document.querySelectorAll("[data-geometry-widget]:not([data-initialize='0'])")].forEach(node => {
+      if (node.attributes.id.value in this.boundNodes) {
+        return;
+      }
+
+      let widget = new geometryWidget(node);
+      this.boundNodes[node.attributes.id.value] = widget;
+    });
+  }
+
   window.geometryWidget = geometryWidget;
+  window.geometryWidgetManager = new geometryWidgetManager();
 })();
