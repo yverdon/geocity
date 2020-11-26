@@ -681,43 +681,24 @@
   };
 
   geometryWidget.prototype._addEventListeners = function () {
-    let widget = this;
+    const widget = this;
+    const clickActions = {
+      enableDrawing: e => this.enableDrawing(),
+      selectFeatures: e => this.selectFeatures(),
+      removeSelectedFeatures: e => this.removeSelectedFeatures(),
+      setDrawInteraction: e => this.setDrawInteraction(e.originalTarget.dataset.interactionType),
+      switchBaseLayers: e => this.switchBaseLayers(),
+    };
 
-    this.el.querySelectorAll("[data-action='enableDrawing']").forEach(function(node) {
-      node.addEventListener("click", function(e) {
-        widget.enableDrawing();
+    for (let clickAction in clickActions) {
+      [...this.el.querySelectorAll(`[data-action='${clickAction}']`)].forEach(node => {
+        node.addEventListener("click", clickActions[clickAction]);
       });
-    });
+    }
 
-    this.el.querySelectorAll("[data-action='selectFeatures']").forEach(function(node) {
-      node.addEventListener("click", function(e) {
-        widget.selectFeatures();
-      });
-    });
 
-    this.el.querySelectorAll("[data-action='removeSelectedFeatures']").forEach(function(node) {
-      node.addEventListener("click", function(e) {
-        widget.removeSelectedFeatures();
-      });
-    });
-
-    this.el.querySelectorAll("[data-action='addKML']").forEach(function(node) {
-      node.addEventListener("change", function(e) {
-        widget.addKML();
-      });
-    });
-
-    this.el.querySelectorAll("[data-action='setDrawInteraction']").forEach(function(node) {
-      node.addEventListener("click", function(e) {
-        let interactionType = e.originalTarget.dataset.interactionType;
-        widget.setDrawInteraction(interactionType);
-      });
-    });
-
-    this.el.querySelectorAll("[data-action='switchBaseLayers']").forEach(function(node) {
-      node.addEventListener("click", function(e) {
-        widget.switchBaseLayers();
-      });
+    [...this.el.querySelectorAll("[data-action='addKML']")].forEach(node => {
+      node.addEventListener("change", () => widget.addKML());
     });
   };
 
@@ -734,6 +715,12 @@
       let widget = new geometryWidget(node);
       this.boundNodes[node.attributes.id.value] = widget;
     });
+  }
+
+  geometryWidgetManager.prototype.updateSize = function() {
+    for (let elem in this.boundNodes) {
+      this.boundNodes[elem].map.updateSize();
+    }
   }
 
   window.geometryWidget = geometryWidget;
