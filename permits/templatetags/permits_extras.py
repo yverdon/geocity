@@ -2,6 +2,7 @@ import json
 import os.path
 
 from django import template
+from django.forms import modelformset_factory
 
 from permits import services, forms, models
 from django.utils.translation import gettext as _
@@ -30,10 +31,19 @@ def permit_request_summary(context, permit_request):
 
     objects_infos = services.get_permit_objects(permit_request)
     contacts = services.get_contacts_summary(permit_request)
-    geo_time_instance = permit_request.geo_time.first()
-    geo_time_form = forms.PermitRequestGeoTimeForm(instance=geo_time_instance)
-    # TODO test
-    geo_time_form.fields['geom'].widget.attrs['options']['edit_geom'] = False
+
+    PermitRequestGeoTimeFormSet = modelformset_factory(
+        models.PermitRequestGeoTime,
+        form=forms.PermitRequestGeoTimeForm,
+        extra=0,
+    )
+
+    geo_time_formset = PermitRequestGeoTimeFormSet(
+        None,
+        form_kwargs={"permit_request": permit_request, "disable_fields": True},
+        queryset=permit_request.geo_time.all()
+    )
+
     if permit_request.creditor_type is not None:
         creditor = models.ACTOR_TYPE_CHOICES[permit_request.creditor_type][1]
     elif permit_request.author.user and permit_request.creditor_type is None:
@@ -42,14 +52,11 @@ def permit_request_summary(context, permit_request):
     else:
         creditor = ''
 
-    for elem in ['starts_at', 'ends_at', 'external_link', 'comment']:
-        geo_time_form.fields[elem].widget.attrs['readonly'] = True
-
     return {
         'creditor': creditor,
         'contacts': contacts,
         'objects_infos': objects_infos,
-        'geo_time_form': geo_time_form if geo_time_instance else None,
+        'geo_time_formset': geo_time_formset,
         'intersected_geometries': permit_request.intersected_geometries
         if permit_request.intersected_geometries != '' else None,
     }

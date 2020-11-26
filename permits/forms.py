@@ -697,8 +697,15 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.permit_request = kwargs.pop('permit_request', None)
+        disable_fields = kwargs.pop('disable_fields', False)
+
         super().__init__(*args, **kwargs)
+
         self.fields["geom"].widget.attrs["options"] = self.get_widget_options(self.permit_request)
+        if disable_fields:
+            self.fields["geom"].widget.attrs["options"]["edit_geom"] = False
+            for field in self.fields.values():
+                field.disabled = True
 
     def get_widget_options(self, permit_request):
         works_object_type_choices = services.get_works_object_type_choices(permit_request).select_related(

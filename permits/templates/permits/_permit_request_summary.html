@@ -29,10 +29,10 @@
   </dl>
 {% endfor %}
 
-{% if geo_time_form %}
-    {{ geo_time_form.media }}
-    {% bootstrap_form geo_time_form layout='horizontal' %}
-{% endif %}
+{% for geo_time_form in geo_time_formset %}
+  {{ geo_time_form.media }}
+  {% include "permits/_geo_time_form.html" with form=geo_time_form form_id=forloop.counter0 form_number=forloop.counter open=True %}
+{% endfor %}
 
 {% if contacts %}
   <br>
