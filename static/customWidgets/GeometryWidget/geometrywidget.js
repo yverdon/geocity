@@ -312,7 +312,11 @@
     Function to load KML data
   */
   geometryWidget.prototype.addKML = function () {
-    var file = this.el.querySelector("selectfile").files[0];
+    const filePicker = this.el.querySelector("[data-action='addKML']");
+    if (!filePicker) {
+      return;
+    }
+    const file = filePicker.files[0];
 
     if (file) {
       var reader = new FileReader();
