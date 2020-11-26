@@ -556,7 +556,7 @@
       type: geotype,
       condition: (e) => {
         if (this.options.restriction_area_enabled) {
-          $("#out-of-administrative-limits").hide();
+          $("[data-role='outOfAdministrativeLimits']", this.el).hide();
           let coords = e.coordinate;
           let features = this.map.getFeaturesAtPixel(e.pixel, {
             layerFilter: (layer) => {
@@ -566,8 +566,7 @@
           if (features && features.length > 0) {
             return true;
           } else {
-            $("#out-of-administrative-limits").show();
-            $("#out-of-administrative-limits").html(
+            $("[data-role='outOfAdministrativeLimits']", this.el).show().html(
               "Votre saisie sort du territoire du territoire concerné"
             );
             return false;
