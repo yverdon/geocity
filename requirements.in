@@ -27,3 +27,4 @@ django-simple-history
 djangorestframework
 djangorestframework-gis
 django-cors-headers
+django-constance[database]
