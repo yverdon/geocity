@@ -41,7 +41,7 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS").lower() == "true"
 EMAIL_BACKEND = (
     'django.core.mail.backends.smtp.EmailBackend'
-    if os.getenv("EMAIL_TO_CONSOLE") == 'False' else 'django.core.mail.backends.console.EmailBackend'
+    if os.getenv("EMAIL_TO_CONSOLE").lower() == 'false' else 'django.core.mail.backends.console.EmailBackend'
 )
 
 DEFAULT_CHARSET = "utf-8"
