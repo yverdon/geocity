@@ -18,8 +18,8 @@ def reset_db():
     """
     with connection.cursor() as cursor:
 
-        cursor.execute("select tablename from pg_tables where schemaname = 'geocity' or schemaname = 'public'")
-        tables = [row[0] for row in cursor.fetchall() if row[0] not in {'spatial_ref_sys'}]
+        cursor.execute("select tablename from pg_tables where schemaname = 'geocity'")
+        tables = [row[0] for row in cursor.fetchall()]
         # Can't use query parameters here as they'll add single quotes which are not
         # supported by postgres
         for table in tables:
