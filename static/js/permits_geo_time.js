@@ -57,7 +57,10 @@
       [...this.formsContainerNode.querySelectorAll(".collapse")].forEach(node => {
         jQuery(node).collapse("hide");
       });
-      jQuery(newNode.querySelector(".collapse")).collapse("show");
+
+      let collapseNode = newNode.querySelector(".collapse");
+      this._fixMapSizeOnCollapseOpen(collapseNode);
+      jQuery(collapseNode).collapse("show");
 
       // Initialize `geometryWidget` on the newly created element
       window.geometryWidgetManager.rebind();
@@ -67,6 +70,27 @@
 
     _addEventListeners() {
       this.addButtonNode.addEventListener("click", this.addForm.bind(this));
+
+      [...this.formsContainerNode.querySelectorAll(".collapse")].forEach(
+        this._fixMapSizeOnCollapseOpen
+      );
+    }
+
+    _fixMapSizeOnCollapseOpen(collapseNode) {
+      jQuery(collapseNode).on("shown.bs.collapse", (e) => {
+        let geometryWidgetNode = collapseNode.querySelector("[data-geometry-widget]");
+        let elementId;
+
+        if (geometryWidgetNode === undefined) {
+          return;
+        }
+
+        elementId = geometryWidgetNode.attributes.id.value;
+
+        if (elementId && elementId in window.geometryWidgetManager.boundNodes) {
+          window.geometryWidgetManager.boundNodes[elementId].map.updateSize();
+        }
+      });
     }
 
     _fixTotalForms() {
