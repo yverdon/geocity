@@ -23,13 +23,15 @@ WORKDIR /code
 
 RUN if [ "$dev_dependencies" = "true" ] ; \
     then \
-    echo "Installing development dependencies..." \
+    DEBUG=True \
+    && echo "Installing development dependencies..." \
     && pip3 install -r requirements_dev.txt \
     && echo "########################################" \
     && echo "# Installed development dependencies   #" \
     && echo "########################################"; \
     else \
-    pip3 install -r requirements.txt \
+    DEBUG=False \
+    && pip3 install -r requirements.txt \
     && echo "########################################" \
     && echo "# Installed production dependencies    #" \
     && echo "########################################"; \
