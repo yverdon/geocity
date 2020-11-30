@@ -11,7 +11,7 @@ PREFIX_URL = os.environ.get("PREFIX_URL", "")
 LOGIN_URL = '/' + PREFIX_URL + 'accounts/login/'
 LOGIN_REDIRECT_URL = '/' + PREFIX_URL + 'permit-requests/'
 
-CLEAR_PUBLIC_SHEMA_ON_FIXTURIZE = os.getenv("CLEAR_PUBLIC_SHEMA_ON_FIXTURIZE").lower() == "true"
+CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE = os.getenv("CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE")
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
@@ -23,7 +23,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-if (ENV.lower()=='dev'):
+if (ENV.lower() == 'dev'):
     DEBUG = True
 
 os.environ["GDAL_DATA"] = os.path.join(BASE_DIR, 'gdal_data')
