@@ -19,7 +19,7 @@ def reset_db():
     """
     with connection.cursor() as cursor:
 
-        if settings.CLEAR_PUBLIC_SHEMA_ON_FIXTURIZE:
+        if (settings.CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE.lower() == "true"):
             cursor.execute("select tablename from pg_tables where schemaname = 'geocity' or schemaname = 'public'")
             tables = [row[0] for row in cursor.fetchall() if row[0] not in {'spatial_ref_sys'}]
         else: # some user might don't want to clear public schema

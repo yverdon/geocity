@@ -30,6 +30,7 @@ The demo application is now running on _localhost:9095_
 ### Setup your Environment file
 
 Edit the variables in `.env` according to your environment.
+Set the global environment switcher to `ENV=DEV` in the `.env` file.
 
 Keep in mind that you are in a Docker environment. Thus you might need to set, on Linux environment something like:
 
