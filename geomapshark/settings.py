@@ -11,6 +11,8 @@ PREFIX_URL = os.environ.get("PREFIX_URL", "")
 LOGIN_URL = '/' + PREFIX_URL + 'accounts/login/'
 LOGIN_REDIRECT_URL = '/' + PREFIX_URL + 'permit-requests/'
 
+CLEAR_PUBLIC_SHEMA_ON_FIXTURIZE = os.getenv("CLEAR_PUBLIC_SHEMA_ON_FIXTURIZE").lower() == "true"
+
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Set environment mode
@@ -41,10 +43,10 @@ EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS").lower() == "true"
 EMAIL_BACKEND = (
     'django.core.mail.backends.smtp.EmailBackend'
-    if os.getenv("EMAIL_TO_CONSOLE") == 'False' else 'django.core.mail.backends.console.EmailBackend'
+    if os.getenv("EMAIL_TO_CONSOLE").lower() == 'false' else 'django.core.mail.backends.console.EmailBackend'
 )
 
 DEFAULT_CHARSET = "utf-8"
@@ -59,6 +61,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
+    'constance',
+    'constance.backends.database',
     'simple_history',
     'corsheaders',
     'django_filters',
@@ -85,6 +89,17 @@ MIDDLEWARE = [
     'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
+CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
+
+CONSTANCE_CONFIG = {
+    'APPLICATION_TITLE': ("Demandes d'autorisations touchant le territoire communal",
+                            "Titre de la page de login", str),
+    'APPLICATION_SUBTITLE': ("Petits travaux, abattages, fouilles, dépôts,...",
+                            "Sous-titre de la page de login", str),
+    'APPLICATION_DESCRIPTION': ("Une application du Système d'Information du Territoire de la Ville d'Yverdon-les-Bains - mapnv.ch",
+                            "Description de la page de login", str),
+}
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -92,6 +107,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'constance.context_processors.config',
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',

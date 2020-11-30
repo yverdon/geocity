@@ -6,6 +6,7 @@ from django.core import management
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from django.utils import timezone
+from geomapshark import settings
 
 from permits import models
 
@@ -18,8 +19,12 @@ def reset_db():
     """
     with connection.cursor() as cursor:
 
-        cursor.execute("select tablename from pg_tables where schemaname = 'geocity' or schemaname = 'public'")
-        tables = [row[0] for row in cursor.fetchall() if row[0] not in {'spatial_ref_sys'}]
+        if settings.CLEAR_PUBLIC_SHEMA_ON_FIXTURIZE:
+            cursor.execute("select tablename from pg_tables where schemaname = 'geocity' or schemaname = 'public'")
+            tables = [row[0] for row in cursor.fetchall() if row[0] not in {'spatial_ref_sys'}]
+        else: # some user might don't want to clear public schema
+            cursor.execute("select tablename from pg_tables where schemaname = 'geocity'")
+            tables = [row[0] for row in cursor.fetchall()]
         # Can't use query parameters here as they'll add single quotes which are not
         # supported by postgres
         for table in tables:

@@ -15,14 +15,16 @@ cssselect2==0.3.0         # via -r requirements.txt, cairosvg, weasyprint
 defusedxml==0.6.0         # via -r requirements.txt, cairosvg
 django-bootstrap-datepicker-plus==3.0.5  # via -r requirements.txt
 django-bootstrap4==2.1.1  # via -r requirements.txt
+django-constance[database]==2.8.0  # via -r requirements.txt
 django-cors-headers==3.5.0  # via -r requirements.txt
 django-debug-toolbar==2.2  # via -r requirements_dev.in
 django-filter==2.3.0      # via -r requirements.txt
 django-fontawesome==1.0   # via -r requirements.txt
 django-grappelli==2.14.2  # via -r requirements.txt
-django-simple-history==2.11.0  # via -r requirements.in
+django-picklefield==3.0.1  # via -r requirements.txt, django-constance
+django-simple-history==2.11.0  # via -r requirements.txt
 django-tables2==2.3.1     # via -r requirements.txt
-django==2.2.13            # via -r requirements.txt, django-bootstrap-datepicker-plus, django-bootstrap4, django-cors-headers, django-debug-toolbar, django-filter, django-tables2, djangorestframework
+django==2.2.13            # via -r requirements.txt, django-bootstrap-datepicker-plus, django-bootstrap4, django-cors-headers, django-debug-toolbar, django-filter, django-picklefield, django-tables2, djangorestframework
 djangorestframework-gis==0.15  # via -r requirements.txt
 djangorestframework==3.11.1  # via -r requirements.txt, djangorestframework-gis
 factory-boy==2.12.0       # via -r requirements_dev.in
@@ -43,7 +45,7 @@ python-dotenv==0.13.0     # via -r requirements.txt
 pytz==2020.1              # via -r requirements.txt, django
 pyyaml==5.3.1             # via -r requirements.txt, django-fontawesome
 requests==2.24.0          # via -r requirements.txt
-six==1.15.0               # via -r requirements.txt, html5lib, pip-tools, python-dateutil
+six==1.15.0               # via -r requirements.txt, django-simple-history, html5lib, pip-tools, python-dateutil
 soupsieve==2.0.1          # via -r requirements.txt, beautifulsoup4
 sqlparse==0.3.1           # via -r requirements.txt, django, django-debug-toolbar
 tablib==2.0.0             # via -r requirements.txt
