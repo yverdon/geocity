@@ -12,7 +12,7 @@
       <a class="ml-2" href="{% url 'permits:permit_request_submit' permit_request_id=permit_request.pk %}">{% trans "Annuler" %}</a>
       <hr>
       <div id="legal-infos">
-         <h5>Merci de prendre connaissance des directives ci-dessous </h5>
+         <h5>Merci de prendre connaissance des directives ci-dessous</h5>
          <p>
            <b>Directives</b>
              <a href="{{permit_request.administrative_entity.legal_document.url}}" target="_blank">{% trans 'Télécharger le PDF' %}</a>

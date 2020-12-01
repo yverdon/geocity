@@ -98,15 +98,14 @@ CONSTANCE_CONFIG = {
                             "Sous-titre de la page de login", str),
     'APPLICATION_DESCRIPTION': ("Une application du Système d'Information du Territoire de la Ville d'Yverdon-les-Bains - mapnv.ch",
                             "Description de la page de login", str),
-    'LOCATION_STEP': ("Sélectionnez la commune / l'entité", str),
-    'WORKS_TYPES_STEP': ("Sélectionnez le ou les type(s) de travaux / événement(s) prévu(s)", str),
-    'OBJECTS_TYPES_STEP': ("Sélectionnez les objets", str),
-    'PROPERTIES_STEP': ("Renseignez les caractéristiques des objets", str),
-    'GEO_TIME_STEP': ("Renseignez le planning et la localisation", str),
-    'APPENDICES_STEP': ("Ajouter des documents", str),
-    'ACTORS_STEP': ("Renseignez les contacts", str),
-    'SUBMIT_STEP': ("Résumé et envoi", str),
-    'CONFIRM_STEP': ("Confirmation de l'envoi", str),
+    'LOCATION_STEP': ("Sélectionnez la commune / l'entité",  "", str),
+    'WORKS_TYPES_STEP': ("Sélectionnez le ou les type(s) de travaux / événement(s) prévu(s)", "", str),
+    'OBJECTS_TYPES_STEP': ("Sélectionnez les objets", "", str),
+    'PROPERTIES_STEP': ("Renseignez les caractéristiques des objets", "", str),
+    'GEO_TIME_STEP': ("Renseignez le planning et la localisation", "", str),
+    'APPENDICES_STEP': ("Ajouter des documents", "", str),
+    'ACTORS_STEP': ("Renseignez les contacts", "", str),
+    'SUBMIT_STEP': ("Résumé et envoi", "", str),
 }
 
 TEMPLATES = [
