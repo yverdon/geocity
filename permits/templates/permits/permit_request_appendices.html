@@ -6,7 +6,7 @@
 {% block content-no-sidebar %}
 <div class="container">
   {% permit_progressbar permit_request 'appendices' %}
-  <h3>{% trans "Ajouter des documents" %}</h3>
+  <h3>{{ config.APPENDICES_STEP }}</h3>
   <hr>
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
