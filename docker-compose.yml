@@ -2,6 +2,7 @@ version: "3"
 
 volumes:
     gmsdata:
+    qgisserver_data:
 
 services:
     web:
@@ -31,7 +32,3 @@ services:
             - PGSERVICEFILE=/qgisserver_data/pg_service.conf
             - QGIS_SERVER_PARALLEL_RENDERING=true
             - QGIS_SERVER_IGNORE_BAD_LAYERS=true
-
-volumes:
-    qgisserver_data:
-

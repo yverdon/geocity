@@ -9,7 +9,7 @@ Discover geocity features and usage [here](https://project.mapnv.ch/projects/geo
 This will bring up a demo instance with preset fixtures served by the
 Django developpment server in reload mode.
 
-```
+```bash
 git clone git@github.com:yverdon/geocity.git && cd geocity
 cp -n env.demo .env
 docker-compose -f docker-compose-dev.yml build
@@ -19,6 +19,12 @@ docker-compose -f docker-compose-dev.yml down --remove-orphans && docker-compose
 This process will create the .env file only if it does not already exist
 
 The demo application is now running on _localhost:9095_
+
+To debug and view the resulting `docker-compose-dev.yml` file use (uses the `.env` file for variables substitution):
+
+```bash
+docker-compose -f docker-compose-dev.yml config
+```
 
 ## Setup for full Docker persistent instance served by gunicorn webserver
 
