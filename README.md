@@ -1,5 +1,7 @@
 # geomapshark - a geocyberadministration tool for cities
 
+Discover geocity features and usage [here](https://project.mapnv.ch/projects/geocity-wiki/wiki/geocity)
+
 ## Getting started with the full Docker demo version
 
 ### Step by step guide to the working full docker non persistent DEMO
