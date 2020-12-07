@@ -40,7 +40,7 @@ def permit_author_create(request):
         login(request, new_user)
 
         return HttpResponseRedirect(
-            reverse('permits:permit_requests_list'))
+            reverse('two_factor:profile'))
 
     return render(request, "permits/permit_request_author.html", {'permitauthorform': permitauthorform, 'djangouserform': djangouserform})
 
