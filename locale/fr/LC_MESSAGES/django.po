@@ -18,9 +18,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-
-msgid "Password reset on %s"
-msgstr "Nouveau mot de passe pour pro.mapnv.ch"
-
 msgid "administrative_entity"
 msgstr "Commune"
+
+msgid "Plus tard"
+msgstr "Plus tard"

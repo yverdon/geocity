@@ -27,7 +27,7 @@
     {% endif %}
 		{% bootstrap_form permitauthorform layout='horizontal'%}
     {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary" value="Enregistrer" %}
-    <a href="{% url 'permits:permit_requests_list' %}" class="mr-2">{% trans "Annuler" %}</a>
+    <a href="{% url 'permits:permit_requests_list' %}" class="ml-3">{% trans "Annuler" %}</a>
     <br>
 </div>
 {% endblock %}

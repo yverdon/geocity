@@ -1,42 +1,42 @@
 /* Global boostrap4 styling  */
 .btn {
-    border-radius: 0 !important;
+  border-radius: 0 !important;
 }
 
 .btn-primary {
-    background-color: #008C6F;
-    border-color: #008C6F;
+  background-color: #008c6f;
+  border-color: #008c6f;
 }
 
 .btn-primary:not(:disabled):not(.disabled):active {
-    color: #fff;
-    background-color: #008C6F;
-    border-color: #008C6F;
-    box-shadow: 0 0 0 0.2rem #008C6F !important
+  color: #fff;
+  background-color: #008c6f;
+  border-color: #008c6f;
+  box-shadow: 0 0 0 0.2rem #008c6f !important;
 }
 
 .btn-outline-primary:not(:disabled):not(.disabled):active {
-    color: #fff;
-    background-color: #008C6F;
-    border-color: #008C6F;
-    box-shadow: 0 0 0 0.2rem #008C6F !important
+  color: #fff;
+  background-color: #008c6f;
+  border-color: #008c6f;
+  box-shadow: 0 0 0 0.2rem #008c6f !important;
 }
 
 .btn-primary:hover {
-    background-color: #01755d;
+  background-color: #01755d;
 }
 
 .btn-outline-primary {
-    border-color: #008C6F;
-    color: #008C6F;
+  border-color: #008c6f;
+  color: #008c6f;
 }
 
 .btn-outline-primary:hover {
-    background-color: #01755d;
+  background-color: #01755d;
 }
 
 a {
-  color: #008C6F;
+  color: #008c6f;
 }
 
 a:hover {
@@ -44,16 +44,17 @@ a:hover {
 }
 
 .btn-primary:not(:disabled):not(.disabled):active:focus,
-.btn-primary:focus, .btn-primary.focus {
-    box-shadow:none !important;
+.btn-primary:focus,
+.btn-primary.focus {
+  box-shadow: none !important;
 }
 
 input:focus {
-    box-shadow:none !important;
+  box-shadow: none !important;
 }
 
 .form-control:focus {
-  border-color: #008C6F !important;
+  border-color: #008c6f !important;
   box-shadow: 0 0 5px rgba(0, 140, 111, 1) !important;
 }
 
@@ -93,11 +94,11 @@ h1 {
 }
 
 h2 {
-    font-size: 1.5em;
+  font-size: 1.5em;
 }
 
 h3 {
-    font-size: 1.3em;
+  font-size: 1.3em;
 }
 
 @media (min-width: 768px) {
@@ -106,22 +107,19 @@ h3 {
   }
 
   h2 {
-      font-size: 2rem;
+    font-size: 2rem;
   }
 
   h3 {
-      font-size: 1.75rem;
+    font-size: 1.75rem;
   }
 }
 
-@media (max-width: 799px){
-
+@media (max-width: 799px) {
   .responsive-btn {
     margin-bottom: 10px;
     width: 245px;
-
   }
-
 }
 
 .progress-nav {
@@ -142,7 +140,8 @@ h3 {
   width: 80px;
 }
 
-.progress-nav-item, .progress-nav-item a {
+.progress-nav-item,
+.progress-nav-item a {
   color: black;
 }
 
@@ -151,16 +150,16 @@ h3 {
 }
 
 .progress-nav-item-active .circle {
-  background-color: #008C6F;
+  background-color: #008c6f;
 }
 
 .progress-nav-item-done .circle-inner {
-  background-color: #008C6F;
-  color: white
+  background-color: #008c6f;
+  color: white;
 }
 
 .progress-nav-item-partial .circle-inner {
-  background-color: #F1F4F8;
+  background-color: #f1f4f8;
 }
 
 .circle {
@@ -189,7 +188,7 @@ h3 {
   top: -5px;
   z-index: 1;
   border-radius: 100%;
-  background-color: #1865B5;
+  background-color: #1865b5;
   color: white;
   font-size: 0.7rem;
   width: 15px;
@@ -230,9 +229,9 @@ h3 {
 }
 
 .navbar {
-  height: 100px;
+  padding: 20px 16px;
   font-weight: bold;
-  background-image: url('../images/blanc_light_navbar.jpg');
+  background-image: url("../images/blanc_light_navbar.jpg");
   background-size: cover;
 }
 
@@ -246,17 +245,15 @@ h3 {
 .error-page {
   margin-left: 25%;
   width: 50%;
-
 }
 
 #list-info-title {
   font-size: 20px;
-  margin-left: 20px;
   font-weight: bold;
 }
 
-.new-request-btn {
-  margin-left: 30px;
+#new-request-btn {
+  margin-top: 10px;
 }
 
 .no-wildcard:after {
@@ -265,4 +262,44 @@ h3 {
 
 .fa-trash {
   color: crimson;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.table-container .table thead th {
+  vertical-align: top;
+}
+
+.permits-action-btns {
+  display: flex;
+  flex-direction: column;
+}
+
+.permits-action-btns a:not(:last-child) {
+  margin-bottom: 10px;
+}
+
+.permits-action-btns a {
+  margin-left: 0px;
+}
+
+@media (min-width: 768px) {
+  #new-request-btn {
+    margin-top: 0px;
+    margin-left: 20px;
+  }
+
+  .permits-action-btns {
+    flex-direction: row;
+  }
+
+  .permits-action-btns a:not(:last-child) {
+    margin-bottom: 0px;
+  }
+
+  .permits-action-btns a:not(:first-child) {
+    margin-left: 10px;
+  }
 }

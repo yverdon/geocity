@@ -8,8 +8,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ROOT_URLCONF = 'geomapshark.urls'
 PREFIX_URL = os.environ.get("PREFIX_URL", "")
-LOGIN_URL = '/' + PREFIX_URL + 'accounts/login/'
-LOGIN_REDIRECT_URL = '/' + PREFIX_URL + 'permit-requests/'
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'permits:permit_requests_list'
+LOGOUT_REDIRECT_URL = LOGIN_URL
 
 CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE = os.getenv("CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE")
 
@@ -72,6 +73,10 @@ INSTALLED_APPS = [
     'bootstrap_datepicker_plus',
     'django_tables2',
     'fontawesome',
+    'django_otp',
+    'django_otp.plugins.otp_static',
+    'django_otp.plugins.otp_totp',
+    'two_factor',
     'permits',
 ]
 
@@ -83,6 +88,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',

@@ -18,10 +18,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: .\geomapshark\settings.py:150
-msgid "French"
-msgstr ""
+msgid "administrative_entity"
+msgstr "Commune"
 
-#: .\geomapshark\settings.py:152
-msgid "English"
-msgstr ""
+msgid "Plus tard"
+msgstr "Later"

@@ -622,7 +622,7 @@ class PermitRequestClassifyTestCase(TestCase):
 
         response = self.client.post(approve_url, data={"validation_pdf": SimpleUploadedFile("file.pdf", "")})
 
-        self.assertRedirects(response, settings.LOGIN_URL + "?next=" + approve_url)
+        self.assertRedirects(response, "%s?next=%s" % (reverse(settings.LOGIN_URL), approve_url))
 
     def test_permit_request_validation_file_accessible_to_permit_request_author(self):
         author_user = factories.UserFactory()
