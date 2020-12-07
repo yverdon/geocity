@@ -6,6 +6,7 @@ volumes:
 services:
     web:
         image: gms_web
+        restart: unless-stopped
         depends_on:
             - "qgisserver"
         build:
@@ -20,6 +21,7 @@ services:
             - "${DJANGO_DOCKER_PORT}:9000"
     qgisserver:
         image: camptocamp/qgis-server:3.10
+        restart: unless-stopped
         volumes:
             - ./qgisserver:/qgisserver_data
         ports:
