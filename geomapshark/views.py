@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404
 
 
 def redirect_permit(request):
-    response = redirect('/permit-request')
+    response = redirect(reverse('permits:permit_requests_list'))
     return response
 
 
