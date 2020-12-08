@@ -9,11 +9,6 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 
 
-def redirect_permit(request):
-    response = redirect(reverse('permits:permit_requests_list'))
-    return response
-
-
 class CustomPasswordResetView(PasswordResetView):
 
     extra_email_context = {'custom_host': ''}
