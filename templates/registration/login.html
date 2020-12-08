@@ -10,28 +10,28 @@
   <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}">
   <link rel="stylesheet" type="text/css" href="{% static 'css/permits.css' %}">
 {% endblock %}
-{% block content-no-sidebar %}
-<div id="login-welcome-text">
-  <h3 class="text-center">{{ config.APPLICATION_TITLE }}</h3>
-  <h5 class="text-center">{{ config.APPLICATION_SUBTITLE }}</h5>
-  <br>
-  <div class="text-center">{{ config.APPLICATION_DESCRIPTION }}</div>
-</div>
+{% block content-fluid %}
+  <div id="login-welcome-text">
+    <h3 class="text-center">{{ config.APPLICATION_TITLE }}</h3>
+    <h5 class="text-center">{{ config.APPLICATION_SUBTITLE }}</h5>
+    <br>
+    <div class="text-center">{{ config.APPLICATION_DESCRIPTION }}</div>
+  </div>
 
   {% if next and user.is_authenticated %}
-    <div class="container text-center">
+    <div class="text-center">
       <p id="login-issue">{% trans "Votre compte ne dispose pas des droits nécessaires pour accéder à cette page" %}</p>
     </div>
   {% endif %}
 
   {% if wizard.steps.current == 'auth' %}
     {% if form.errors %}
-      <div class="container text-center mt-3">
+      <div class="text-center mt-3">
         <p class="text-danger font-weight-bold">{% trans "Votre mot de passe et votre nom d'utilisateur ne correspondent pas" %}</p>
       </div>   
     {% endif %}
   {% endif %}
-  <div id="login-container" class="p-md-5">
+  <div id="login-container">
   {% if wizard.steps.current == 'auth' %}
     <form method="post" action="">
       {% csrf_token %}
@@ -58,7 +58,6 @@
     <form method="post" action="">
       {% csrf_token %}
       {% include "two_factor/_wizard_forms.html" %}
-      {% include "two_factor/_wizard_actions.html" %}
       {% if backup_tokens %}
         <p class="mt-4">{% trans "As a last resort, you can use a backup token:" %}</p>
         <p>
@@ -66,6 +65,7 @@
                   class="btn btn-secondary btn-block">{% trans "Use Backup Token" %}</button>
         </p>
       {% endif %}
+      {% include "two_factor/_wizard_actions.html" %}
     </form>
   {% elif wizard.steps.current == 'backup' %}
     <p>{% blocktrans trimmed %}Use this form for entering backup tokens for logging in.

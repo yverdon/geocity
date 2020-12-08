@@ -3,19 +3,19 @@
 }
 
 .main-app-item {
-    display: inline-block;
-    width: 150px;
+  display: inline-block;
+  width: 150px;
 }
 
 body {
-    background-image: url('../images/blanc_light_compact.jpg');
+  background-image: url("../images/blanc_light_compact.jpg");
 }
 
 .navbar {
   opacity: 0;
 }
 
-.semi-transparent-container{
+.semi-transparent-container {
   background-color: white;
   opacity: 0.85;
   padding-top: 50px;
@@ -28,7 +28,7 @@ body {
   margin-left: auto;
   margin-right: auto;
   border: 0;
-  padding: 5px;
+  padding: 30px;
   background-color: white;
   opacity: 0.85;
 }
@@ -41,13 +41,13 @@ body {
 }
 
 @media (max-width: 768px) {
-
   #login-container {
     border: 0;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
     border-radius: 5px;
-    margin-top: 30px;
+    margin-top: -10px;
+    padding: 20px;
   }
 
   .text-center {
@@ -59,7 +59,6 @@ body {
   }
 
   #login-welcome-text {
-    position: absolute;
     height: 100px;
     top: 5px;
     margin-top: 5px;
@@ -74,5 +73,4 @@ body {
   #login-welcome-text div {
     visibility: hidden;
   }
-
 }

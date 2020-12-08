@@ -5,21 +5,19 @@
 
 {% block scripts %}
 {% endblock %}
-{% block content-no-sidebar %}
-<div class="container">
+{% block content %}
   {% permit_progressbar permit_request 'geo_time' %}
   <h3>{% trans "Renseignez le planning et la localisation" %}</h3>
   <hr>
   <form method="post">
     {% csrf_token %}
     <div id="forms-container">
-         {{ form.media }}
-         {% bootstrap_form form layout='horizontal' %}
+      {{ form.media }}
+      {% bootstrap_form form layout='horizontal' %}
     </div>
     {% buttons %}
       <a href="{% url 'permits:permit_request_properties' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
       <button class="btn btn-primary">{% trans "Enregistrer et poursuivre" %}</button>
     {% endbuttons %}
   </form>
-</div>
 {% endblock %}

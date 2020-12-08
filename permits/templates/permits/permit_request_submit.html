@@ -3,8 +3,7 @@
 {% load i18n %}
 {% load permits_extras %}
 
-{% block content-no-sidebar %}
-<div class="container">
+{% block content %}
   {% permit_progressbar permit_request 'submit' %}
   <h3>{% trans "Résumé et envoi" %}</h3>
   <hr>
@@ -30,12 +29,11 @@
       <a class="btn btn-primary" href="{{ incomplete_steps|first }}">{% trans "Renseigner les informations manquantes" %}</a>
     {% else %}
       <hr>
+      <a href="{% url 'permits:permit_request_actors' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
       <a class="btn btn-primary" href="{% url 'permits:permit_request_submit_confirmation' permit_request_id=permit_request.pk %}" class="mr-2">
       {% trans "Envoyer" %}</a>
-      <a href="{% url 'permits:permit_request_actors' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
     {% endif %}
     {% endbuttons %}
   </form>
-</div>
 <br><br>
-{% endblock content-no-sidebar %}
+{% endblock %}

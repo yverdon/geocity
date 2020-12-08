@@ -3,9 +3,8 @@
 {% load i18n %}
 {% load permits_extras %}
 
-{% block content-no-sidebar %}
-<div class="container">
-  {% permit_progressbar permit_request 'appendices' %}
+{% block content %}
+{% permit_progressbar permit_request 'appendices' %}
   <h3>{% trans "Ajouter des documents" %}</h3>
   <hr>
   <form method="post" enctype="multipart/form-data">
@@ -32,5 +31,4 @@
     </button>
     {% endbuttons %}
   </form>
-</div>
 {% endblock %}
