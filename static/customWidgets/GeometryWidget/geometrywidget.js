@@ -198,6 +198,8 @@
       this.hideMapButtons();
     }
 
+    this.clearWarning();
+
     this._addEventListeners();
     this.ready = true;
   }
@@ -325,10 +327,7 @@
         var features = kml.readFeatures(reader.result);
 
         if (features.length > 50) {
-          $("[data-role='outOfAdministrativeLimits']", this.el).show();
-          $("[data-role='outOfAdministrativeLimits']", this.el).html(
-            "Votre fichier dépasse la limite de 50 entités, il n'a pas été importé!"
-          );
+          this.showWarning("Votre fichier dépasse la limite de 50 entités, il n'a pas été importé!");
         } else {
           for (var i = 0; i < features.length; i++) {
             var coord = features[i].getGeometry().getCoordinates();
@@ -556,7 +555,7 @@
       type: geotype,
       condition: (e) => {
         if (this.options.restriction_area_enabled) {
-          $("[data-role='outOfAdministrativeLimits']", this.el).hide();
+          this.clearWarning();
           let coords = e.coordinate;
           let features = this.map.getFeaturesAtPixel(e.pixel, {
             layerFilter: (layer) => {
@@ -566,9 +565,7 @@
           if (features && features.length > 0) {
             return true;
           } else {
-            $("[data-role='outOfAdministrativeLimits']", this.el).show().html(
-              "Votre saisie sort du territoire du territoire concerné"
-            );
+            this.showWarning("Votre saisie sort du territoire du territoire concerné");
             return false;
           }
         } else {
@@ -603,6 +600,16 @@
     */
   geometryWidget.prototype.hideMapButtons = function () {
     $("#delete-selected").addClass("disabled");
+  };
+
+  geometryWidget.prototype.clearWarning = function() {
+    $("[data-role='outOfAdministrativeLimits']", this.el).hide();
+  };
+
+  geometryWidget.prototype.showWarning = function(text) {
+    const $node = $("[data-role='outOfAdministrativeLimits']", this.el);
+    $node.text(text);
+    $node.show();
   };
 
   /*
