@@ -4,17 +4,7 @@
 {% load static %}
 {% load permits_extras %}
 
-<style type="text/css">{% block map_css %}{% get_current_language_bidi as LANGUAGE_BIDI %}
-  {# TODO cleanup #}
-    #{{ id }}_map { width: {{ map_width }}; height: {{ map_height }}px; }
-    #{{ id }}_map .aligned label { float: none; }
-    #{{ id }}_div_map { position: relative; vertical-align: top; }
-    {% if not display_raw %}#{{ id }} { display: none; }{% endif %}
-  .map { height: {{ map_height  }}px; }
-    {% endblock %}
-</style>
-
-<div id="geometry-widget-{{ id }}" data-initialize="{% if "__prefix__" in id %}0{% else %}1{% endif %}" data-map-target="{{ id }}_map" data-options="{{ options|json }}" data-geometry-widget>
+<div id="geometry-widget-{{ id }}" data-initialize="{% if "__prefix__" in id %}0{% else %}1{% endif %}" data-map-target="{{ id }}_map" data-options="{{ options|json }}" data-geometry-widget >
   {% if options.edit_geom %}
     <div>
       <button type="button" class="btn btn-outline-warning" title="Cliquer dans la carte pour ajouter des dessins"
@@ -79,11 +69,11 @@
     </div>
   {% endif %}
   <div data-role="outOfAdministrativeLimits"></div>
-  <div class="map" data-role="map">
+  <div class="map" data-role="map" style="width: {{ map_width }}; height: {{ map_height }}px;">
     <img class="switchbaselayers" src="{% static 'images/switchbaselayers.png'%}" width="100" height="40" alt="" data-action="switchBaseLayers">
   </div>
   {% if display_raw %}<p>{% trans "Debugging window (serialized value)" %}</p>{% endif %}
-  <textarea id="{{ id }}" class="vSerializedField required" cols="150" rows="10" name="{{ name }}" data-role="serialized">{{ serialized }}</textarea>
+  <textarea id="{{ id }}" class="vSerializedField required{% if not display_raw %} d-none{% endif %}" cols="150" rows="10" name="{{ name }}" data-role="serialized">{{ serialized }}</textarea>
 </div>
 
 <script>
