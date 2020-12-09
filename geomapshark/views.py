@@ -1,12 +1,12 @@
-from django.shortcuts import redirect
-from django.contrib.auth.views import PasswordResetView
+from django.conf import settings
 from django.contrib.auth import login
-from django.http import HttpResponseRedirect
-from permits import forms, models
-from django.urls import reverse
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404
+from django.contrib.auth.views import PasswordResetView
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+
+from permits import forms, models
 
 
 class CustomPasswordResetView(PasswordResetView):
@@ -33,9 +33,9 @@ def permit_author_create(request):
         permitauthorform.save()
 
         login(request, new_user)
-
-        return HttpResponseRedirect(
-            reverse('two_factor:profile'))
+        if settings.ENABLE_2FA:
+            return HttpResponseRedirect(
+                reverse('two_factor:profile'))
 
     return render(request, "permits/permit_request_author.html", {'permitauthorform': permitauthorform, 'djangouserform': djangouserform})
 

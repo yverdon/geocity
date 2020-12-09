@@ -100,6 +100,23 @@ _Capabilities of the print server_
 http://localhost:9096?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities
 ```
 
+## Two factor authentification
+
+You can enable 2FA by setting the variable `ENABLE_2FA` to `true`. Defaults to `false`.
+
+### Access to admin views under 2FA
+
+Super users require to enable 2FA to have access to the admin app.
+
+Follow the following steps:
+
+1. Go to the `/account/login/` and sign in with your super user credentials.
+2. Follow the steps to activate 2FA
+3. Open `/admin/`
+
+Next time you sign in, you will be asked for a token.
+Once you provided your token go to `/admin/` to access the admin app.
+
 ## Dependency management
 
 Dependencies are managed with [`pip-tools`](https://github.com/jazzband/pip-tools).

@@ -1,4 +1,5 @@
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -52,6 +53,9 @@ EMAIL_BACKEND = (
 
 DEFAULT_CHARSET = "utf-8"
 
+# 2FA activation
+ENABLE_2FA = os.getenv('ENABLE_2FA', 'false').lower() == 'true'
+
 # Application definition
 INSTALLED_APPS = [
     'grappelli',
@@ -73,12 +77,18 @@ INSTALLED_APPS = [
     'bootstrap_datepicker_plus',
     'django_tables2',
     'fontawesome',
-    'django_otp',
-    'django_otp.plugins.otp_static',
-    'django_otp.plugins.otp_totp',
-    'two_factor',
-    'permits',
 ]
+
+if ENABLE_2FA:
+    INSTALLED_APPS += [
+        'django_otp',
+        'django_otp.plugins.otp_static',
+        'django_otp.plugins.otp_totp',
+        'two_factor',
+    ]
+
+# project applications
+INSTALLED_APPS += ['permits']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -88,7 +98,12 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django_otp.middleware.OTPMiddleware',
+]
+
+if ENABLE_2FA:
+    MIDDLEWARE += ['django_otp.middleware.OTPMiddleware']
+
+MIDDLEWARE += [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -118,6 +133,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'geomapshark.context_processors.two_factor_setting',
             ],
         },
     },
