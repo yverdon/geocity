@@ -5,7 +5,7 @@ from django.contrib.auth.views import redirect_to_login
 from django.http import HttpResponseRedirect
 from django.utils.http import is_safe_url
 from two_factor.urls import urlpatterns as tf_urls
-from two_factor.views import LoginView, ProfileView
+from two_factor.views import LoginView, ProfileView, SetupCompleteView
 from two_factor.admin import AdminSiteOTPRequired, AdminSiteOTPRequiredMixin
 from . import settings, views
 from permits import views as permits_views
@@ -63,7 +63,8 @@ urlpatterns = [
     path('grappelli/', include('grappelli.urls')),  # grappelli URLS
     path('admin/', admin.site.urls),
     path('account/login/', LoginView.as_view(template_name='registration/login.html'), name='login'), # two factor
-    path('account/two_factor/', ProfileView.as_view(template_name='two_factor/profile.html'), name='profile'),
+    path('account/two_factor/', ProfileView.as_view(template_name='two_factor/profile.html'), name='profile'), # two factor
+    path('account/two_factor/setup/complete/', SetupCompleteView.as_view(template_name='two_factor/setup_complete.html'), name='setup_complete'),
     path('account/logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('account/password_reset/', views.CustomPasswordResetView.as_view(template_name='registration/password_reset.html'), name='password_reset'),
     path('account/password_reset_confirm/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
