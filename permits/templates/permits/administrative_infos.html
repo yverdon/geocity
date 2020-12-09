@@ -1,13 +1,9 @@
-{% extends "base_permits.html" %}
+{% extends "base_generic.html" %}
 
 {% load static %}
 {% load i18n %}
 {% load bootstrap4 %}
 {% load render_table from django_tables2 %}
-
-{% block navbartitle %}
-  <a class="navbar-brand" href="{% url 'permits:permit_requests_list'%}">{% trans "Demandes d'autorisations" %}</a>
-{% endblock %}
 
 {% block content-fluid %}
   <div>
