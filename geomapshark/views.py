@@ -22,12 +22,11 @@ class CustomPasswordResetView(PasswordResetView):
 
 
 def permit_author_create(request):
-
     djangouserform = forms.NewDjangoAuthUserForm(request.POST or None)
     permitauthorform = forms.GenericAuthorForm(request.POST or None)
+    is_valid = djangouserform.is_valid() and permitauthorform.is_valid()
 
-    if djangouserform.is_valid() and permitauthorform.is_valid():
-
+    if is_valid:
         new_user = djangouserform.save()
         permitauthorform.instance.user = new_user
         permitauthorform.save()
@@ -39,7 +38,14 @@ def permit_author_create(request):
         return HttpResponseRedirect(
             reverse('permits:permit_requests_list'))
 
-    return render(request, "permits/permit_request_author.html", {'permitauthorform': permitauthorform, 'djangouserform': djangouserform})
+    return render(
+        request,
+        'permits/permit_request_author.html',
+        {
+            'permitauthorform': permitauthorform,
+            'djangouserform': djangouserform
+        }
+    )
 
 
 @login_required
