@@ -32,7 +32,6 @@ urlpatterns = [
     path('', permits_views.permit_request_select_administrative_entity),
     path('permit-requests/', include('permits.urls')),
     path('grappelli/', include('grappelli.urls')),  # grappelli URLS
-    path('admin/', admin.site.urls),
 ]
 
 if settings.ENABLE_2FA:
