@@ -1,29 +1,26 @@
 import logging
 import mimetypes
-import urllib.parse
 import os
+import urllib.parse
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
-from django.core.exceptions import PermissionDenied
-from django.core.exceptions import SuspiciousOperation
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.db.models import Prefetch
-from django.utils.decorators import method_decorator
+from django.http import Http404, HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views import View
-from django_tables2.views import SingleTableMixin, SingleTableView
-from django_tables2.export.views import ExportMixin
 from django_filters.views import FilterView
-from . import fields, forms, models, services, tables, filters, printpermit
-from django.utils import timezone
-from django.http import Http404, HttpResponse, StreamingHttpResponse
+from django_tables2.export.views import ExportMixin
+from django_tables2.views import SingleTableMixin, SingleTableView
 
-
+from . import fields, filters, forms, models, printpermit, services, tables
 from .exceptions import BadPermitRequestStatus
-
 
 logger = logging.getLogger(__name__)
 

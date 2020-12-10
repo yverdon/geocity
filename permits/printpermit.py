@@ -1,14 +1,16 @@
 import os
-from weasyprint import HTML, CSS
 import urllib.parse
-from django.shortcuts import render
-from django.conf import settings
-from . import services, models
 from base64 import b64encode
+
 import requests
+from django.conf import settings
 from django.contrib.gis.db.models import Extent
 from django.core.files.base import ContentFile
+from django.shortcuts import render
 from django.utils import timezone
+from weasyprint import CSS, HTML
+
+from . import models, services
 
 
 def get_map_url(geo_times, permit_id):

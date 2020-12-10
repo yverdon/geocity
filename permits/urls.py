@@ -1,5 +1,6 @@
 from django.urls import include, path
-from . import views, geoviews
+
+from . import geoviews, views
 
 app_name = 'permits'
 

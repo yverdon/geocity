@@ -1,9 +1,12 @@
+from django import forms
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-from django import forms
 from simple_history.admin import SimpleHistoryAdmin
-from . import models
+
 from geomapshark import settings
+
+from . import models
+
 from. import forms as permit_forms
 
 

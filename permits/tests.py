@@ -1,13 +1,12 @@
 import urllib.parse
 
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-
-from bs4 import BeautifulSoup
 
 from . import factories, models, services, views
 

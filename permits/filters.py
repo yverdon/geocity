@@ -1,7 +1,8 @@
-from django.utils.translation import gettext_lazy as _
-from django.db.models import Max, Min
 import django_filters
 from bootstrap_datepicker_plus import DatePickerInput
+from django.db.models import Max, Min
+from django.utils.translation import gettext_lazy as _
+
 from . import models, services
 
 

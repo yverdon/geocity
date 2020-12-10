@@ -1,10 +1,9 @@
+import factory
+import faker
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.utils.text import Truncator
-
-import factory
-import faker
 
 from . import models
 

@@ -1,19 +1,17 @@
 import dataclasses
-from django.contrib.auth.models import User, Group
-from django.contrib.postgres.fields import JSONField
-from django.core.validators import FileExtensionValidator
-from django.core.validators import MaxValueValidator, MinValueValidator
-from django.core.validators import RegexValidator
-from django.db import models
+
+from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
+from django.contrib.postgres.fields import JSONField
+from django.core.validators import FileExtensionValidator, MaxValueValidator, MinValueValidator, RegexValidator
+from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
-from django.urls import reverse
 from simple_history.models import HistoricalRecords
 
 from . import fields
-
 
 # Contact types
 ACTOR_TYPE_OTHER = 0

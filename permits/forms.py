@@ -1,21 +1,21 @@
-from django.conf import settings
+import json
+from datetime import datetime, timedelta
+
+from bootstrap_datepicker_plus import DateTimePickerInput
 from django import forms
-from django.contrib.auth.models import Permission
+from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis import forms as geoforms
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import transaction
-from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
-import json
-from . import models, services
-from django.core.validators import MaxValueValidator, MinValueValidator
-from django.core.validators import RegexValidator
-from django.utils.safestring import mark_safe
-from bootstrap_datepicker_plus import DateTimePickerInput
-from datetime import datetime, timedelta
-from django.contrib.auth.models import User
 from django.urls import reverse
+from django.utils import timezone
+from django.utils.safestring import mark_safe
+from django.utils.translation import gettext_lazy as _
+
+from . import models, services
 
 
 def get_field_cls_for_property(prop):
