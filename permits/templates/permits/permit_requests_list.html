@@ -36,7 +36,7 @@
   <br><br>
   {% trans "Les demandes envoyées ne peuvent plus être modifiées" %}
   {{ filter.form.media }}
-  <form method="get">
+  <form class="permits-list" method="get">
     <div class="collapse" id="collapseFilter">
       <hr>
       {% bootstrap_form filter.form layout='horizontal' %}
@@ -44,5 +44,7 @@
     </div>
   </form>
   <br>
-  {% render_table table %}
+  <div class="permits-list">
+    {% render_table table %}
+  </div>
 {% endblock %}

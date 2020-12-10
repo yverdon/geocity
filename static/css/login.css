@@ -21,6 +21,7 @@ body {
 #login-container {
   max-width: 500px;
   margin-top: 25px;
+  margin-bottom: 16px;
   margin-left: auto;
   margin-right: auto;
   border: 0;

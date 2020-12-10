@@ -272,6 +272,10 @@ h3 {
   vertical-align: top;
 }
 
+.permits-list {
+  max-width: 1600px;
+}
+
 .permits-action-btns {
   display: flex;
   flex-direction: column;

@@ -79,7 +79,7 @@
     {% endif %}
   </nav>
   {% if messages %}
-    <div class="container-fluid">
+    <div class="container-fluid mb-4">
       {% for message in messages %}
         <div class="alert
           {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
@@ -91,7 +91,7 @@
       {% endfor %}
     </div>
   {% endif %}
-    <div class="container">
+    <div class="container mb-4">
       {% block content %}{% endblock %}
     </div>
     <div class="container-fluid">
