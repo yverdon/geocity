@@ -36,6 +36,8 @@ def permit_author_create(request):
         if settings.ENABLE_2FA:
             return HttpResponseRedirect(
                 reverse('two_factor:profile'))
+        return HttpResponseRedirect(
+            reverse('permits:permit_requests_list'))
 
     return render(request, "permits/permit_request_author.html", {'permitauthorform': permitauthorform, 'djangouserform': djangouserform})
 
