@@ -25,7 +25,9 @@
     {% block navbartitle %}
       <div class="d-flex align-items-center">
         <a class="navbar-brand" href="{% url 'permits:permit_requests_list'%}">{% trans "Demandes d'autorisations" %}</a>
+        {% if user.is_authenticated %}
         <a id="infoLink" class="nav-link d-none d-md-block" href="{% url 'permits:administrative_infos' %}"><i class="fa fa-file"></i> Infos</a>
+        {% endif %}
       </div>
     {% endblock %}
 
