@@ -20,3 +20,4 @@ private_documents/
 /qgisserver/*.conf
 *.env
 *.bak
+.coverage
