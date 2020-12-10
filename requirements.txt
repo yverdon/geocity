@@ -15,13 +15,15 @@ cssselect2==0.3.0         # via cairosvg, weasyprint
 defusedxml==0.6.0         # via cairosvg
 django-bootstrap-datepicker-plus==3.0.5  # via -r requirements.in
 django-bootstrap4==2.1.1  # via -r requirements.in
+django-constance[database]==2.8.0  # via -r requirements.in
 django-cors-headers==3.5.0  # via -r requirements.in
 django-filter==2.3.0      # via -r requirements.in
 django-fontawesome==1.0   # via -r requirements.in
 django-grappelli==2.14.2  # via -r requirements.in
+django-picklefield==3.0.1  # via django-constance
 django-simple-history==2.11.0  # via -r requirements.in
 django-tables2==2.3.1     # via -r requirements.in
-django==2.2.13            # via -r requirements.in, django-bootstrap-datepicker-plus, django-bootstrap4, django-cors-headers, django-filter, django-tables2, djangorestframework
+django==2.2.13            # via -r requirements.in, django-bootstrap-datepicker-plus, django-bootstrap4, django-cors-headers, django-filter, django-picklefield, django-tables2, djangorestframework
 djangorestframework-gis==0.15  # via -r requirements.in
 djangorestframework==3.11.1  # via -r requirements.in, djangorestframework-gis
 gdal==3.1.0               # via -r requirements.in
@@ -39,7 +41,7 @@ python-dotenv==0.13.0     # via -r requirements.in
 pytz==2020.1              # via -r requirements.in, django
 pyyaml==5.3.1             # via -r requirements.in, django-fontawesome
 requests==2.24.0          # via -r requirements.in
-six==1.15.0               # via html5lib, pip-tools
+six==1.15.0               # via django-simple-history, html5lib, pip-tools
 soupsieve==2.0.1          # via beautifulsoup4
 sqlparse==0.3.1           # via django
 tablib==2.0.0             # via -r requirements.in

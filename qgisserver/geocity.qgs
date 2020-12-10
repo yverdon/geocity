@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis version="3.10.0-A Coruña" projectname="">
+<qgis projectname="" version="3.14.16-Pi" saveUserFull="Monod Olivier" saveUser="OLM" saveDateTime="2020-11-13T11:20:01">
   <homePath path=""/>
   <title></title>
   <autotransaction active="0"/>
@@ -7,13 +7,14 @@
   <trust active="0"/>
   <projectCrs>
     <spatialrefsys>
+      <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Liechtenstein and Switzerland"],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
       <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
       <srsid>47</srsid>
       <srid>2056</srid>
       <authid>EPSG:2056</authid>
       <description>CH1903+ / LV95</description>
       <projectionacronym>somerc</projectionacronym>
-      <ellipsoidacronym>bessel</ellipsoidacronym>
+      <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
       <geographicflag>false</geographicflag>
     </spatialrefsys>
   </projectCrs>
@@ -21,181 +22,95 @@
     <customproperties/>
     <layer-tree-group name="geocity" expanded="1" checked="Qt::Checked">
       <customproperties/>
-      <layer-tree-layer name="permits_permitrequestgeotime_points" source="service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table=&quot;(select id, permit_request_id,starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 1) as geom from geocity.permits_permitrequestgeotime&#xa;)&quot; (geom) sql=" id="permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376" providerKey="postgres" expanded="1" checked="Qt::Checked">
+      <layer-tree-layer name="permits_permitrequestgeotime_points" source="service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table=&quot;(select id, permit_request_id,starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 1) as geom from permits_permitrequestgeotime&#xa;)&quot; (geom)" providerKey="postgres" expanded="1" legend_exp="" patch_size="0,0" legend_split_behavior="0" checked="Qt::Checked" id="permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer name="permits_permitrequestgeotimes_lines" source="service='pg_geocity' key='_uid_' checkPrimaryKeyUnicity='1' table=&quot;(SELECT row_number() over () AS _uid_,* FROM (select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 2) as geom from geocity.permits_permitrequestgeotime&#xa;) AS _subq_1_&#xa;)&quot; (geom) sql=" id="permits_permitrequestgeotimes_lines_7b7c51f4_711d_40db_8a9d_31840309d56f" providerKey="postgres" expanded="1" checked="Qt::Checked">
+      <layer-tree-layer name="permits_permitrequestgeotimes_lines" source="service='pg_geocity' key='_uid_' checkPrimaryKeyUnicity='1' table=&quot;(SELECT row_number() over () AS _uid_,* FROM (select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 2) as geom from permits_permitrequestgeotime&#xa;) AS _subq_1_&#xa;)&quot; (geom)" providerKey="postgres" expanded="1" legend_exp="" patch_size="0,0" legend_split_behavior="0" checked="Qt::Checked" id="permits_permitrequestgeotimes_lines_7b7c51f4_711d_40db_8a9d_31840309d56f">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer name="permits_permitrequestgeotime_polygons" source="service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table=&quot;(select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 3) as geom from geocity.permits_permitrequestgeotime&#xa;)&quot; (geom) sql=" id="permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e" providerKey="postgres" expanded="1" checked="Qt::Checked">
+      <layer-tree-layer name="permits_permitrequestgeotime_polygons" source="service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table=&quot;(select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 3) as geom from permits_permitrequestgeotime&#xa;)&quot; (geom)" providerKey="postgres" expanded="1" legend_exp="" patch_size="0,0" legend_split_behavior="0" checked="Qt::Checked" id="permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer name="permits_permitadministrativeentity" source="service='pg_geocity' sslmode=disable key='id' srid=2056 type=MultiPolygon checkPrimaryKeyUnicity='0' table=&quot;geocity.;.&quot;permits_permitadministrativeentity&quot; (geom) sql=" id="gpf_administrativeentity_1f9b32c8_25d9_4418_9b3f_565e0f6df0b1" providerKey="postgres" expanded="1" checked="Qt::Checked">
+      <layer-tree-layer name="permits_permitadministrativeentity" source="service='pg_geocity' key='_uid_' checkPrimaryKeyUnicity='1' table=&quot;(SELECT row_number() over () AS _uid_,* FROM (select * from permits_permitadministrativeentity&#xa;) AS _subq_1_&#xa;)&quot; (geom)" providerKey="postgres" expanded="1" legend_exp="" patch_size="-1,-1" legend_split_behavior="0" checked="Qt::Checked" id="permits_permitadministrativeentity_e14a195c_0869_414b_8b25_b15fefff8143">
         <customproperties/>
       </layer-tree-layer>
     </layer-tree-group>
     <layer-tree-group name="basemaps" expanded="1" checked="Qt::Checked">
       <customproperties/>
-      <layer-tree-layer name="Fond ASIT VD - cadastral" source="crs=EPSG:2056&amp;dpiMode=7&amp;format=image/png&amp;layers=asitvd.fond_cadastral&amp;styles=default&amp;tileMatrixSet=2056&amp;url=https://ows.asitvd.ch/wmts/?service%3DWMTS%26version%3D1.0.0%26request%3DGetCapabilities" id="Fond_ASIT_VD___cadastral_ec976cae_fb72_40c4_97b6_7c5dd60081ab" providerKey="wms" expanded="1" checked="Qt::Checked">
+      <layer-tree-layer name="Fond ASIT VD - cadastral" source="crs=EPSG:2056&amp;dpiMode=7&amp;format=image/png&amp;layers=asitvd.fond_cadastral&amp;styles=default&amp;tileMatrixSet=2056&amp;url=https://ows.asitvd.ch/wmts/?service%3DWMTS%26version%3D1.0.0%26request%3DGetCapabilities" providerKey="wms" expanded="1" legend_exp="" patch_size="0,0" legend_split_behavior="0" checked="Qt::Checked" id="Fond_ASIT_VD___cadastral_ec976cae_fb72_40c4_97b6_7c5dd60081ab">
         <customproperties/>
       </layer-tree-layer>
     </layer-tree-group>
     <custom-order enabled="0">
-      <item>gpf_administrativeentity_1f9b32c8_25d9_4418_9b3f_565e0f6df0b1</item>
       <item>Fond_ASIT_VD___cadastral_ec976cae_fb72_40c4_97b6_7c5dd60081ab</item>
       <item>permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376</item>
       <item>permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e</item>
       <item>permits_permitrequestgeotimes_lines_7b7c51f4_711d_40db_8a9d_31840309d56f</item>
+      <item>permits_permitadministrativeentity_e14a195c_0869_414b_8b25_b15fefff8143</item>
     </custom-order>
   </layer-tree-group>
-  <snapping-settings intersection-snapping="0" mode="2" type="1" enabled="0" unit="1" tolerance="12">
+  <snapping-settings mode="2" scaleDependencyMode="0" tolerance="12" intersection-snapping="0" self-snapping="0" unit="1" type="1" enabled="0" minScale="0" maxScale="0">
     <individual-layer-settings>
-      <layer-setting id="permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e" units="1" type="1" enabled="0" tolerance="12"/>
-      <layer-setting id="permits_permitrequestgeotimes_lines_7b7c51f4_711d_40db_8a9d_31840309d56f" units="1" type="1" enabled="0" tolerance="12"/>
-      <layer-setting id="permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376" units="1" type="1" enabled="0" tolerance="12"/>
-      <layer-setting id="gpf_administrativeentity_1f9b32c8_25d9_4418_9b3f_565e0f6df0b1" units="1" type="1" enabled="0" tolerance="12"/>
+      <layer-setting units="1" tolerance="12" type="1" id="permits_permitrequestgeotimes_lines_7b7c51f4_711d_40db_8a9d_31840309d56f" enabled="0" minScale="0" maxScale="0"/>
+      <layer-setting units="1" tolerance="12" type="1" id="permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e" enabled="0" minScale="0" maxScale="0"/>
+      <layer-setting units="1" tolerance="12" type="1" id="permits_permitadministrativeentity_e14a195c_0869_414b_8b25_b15fefff8143" enabled="0" minScale="0" maxScale="0"/>
+      <layer-setting units="1" tolerance="12" type="1" id="permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376" enabled="0" minScale="0" maxScale="0"/>
     </individual-layer-settings>
   </snapping-settings>
   <relations/>
   <mapcanvas name="theMapCanvas" annotationsVisible="1">
     <units>meters</units>
     <extent>
-      <xmin>2538134.63615744281560183</xmin>
-      <ymin>1180275.38699488760903478</ymin>
-      <xmax>2540678.73863951209932566</xmax>
-      <ymax>1181929.53803185978904366</ymax>
+      <xmin>2538642.75500219268724322</xmin>
+      <ymin>1180827.16940174507908523</ymin>
+      <xmax>2539596.79343296913430095</xmax>
+      <ymax>1181447.47604060987941921</ymax>
     </extent>
     <rotation>0</rotation>
     <destinationsrs>
       <spatialrefsys>
+        <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Liechtenstein and Switzerland"],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
         <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
         <srsid>47</srsid>
         <srid>2056</srid>
         <authid>EPSG:2056</authid>
         <description>CH1903+ / LV95</description>
         <projectionacronym>somerc</projectionacronym>
-        <ellipsoidacronym>bessel</ellipsoidacronym>
+        <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
         <geographicflag>false</geographicflag>
       </spatialrefsys>
     </destinationsrs>
     <rendermaptile>0</rendermaptile>
     <expressionContextScope/>
   </mapcanvas>
-  <DataPlotly>
-    <Option type="Map">
-      <Option name="dynamic_properties" type="Map">
-        <Option name="name" type="QString" value=""/>
-        <Option name="properties"/>
-        <Option name="type" type="QString" value="collection"/>
-      </Option>
-      <Option name="plot_layout" type="Map">
-        <Option name="additional_info_expression" type="QString" value=""/>
-        <Option name="bar_mode" type="QString" value="group"/>
-        <Option name="bargaps" type="double" value="0"/>
-        <Option name="bins_check" type="bool" value="false"/>
-        <Option name="legend" type="bool" value="true"/>
-        <Option name="legend_orientation" type="QString" value="v"/>
-        <Option name="legend_title" type="invalid"/>
-        <Option name="polar" type="Map">
-          <Option name="angularaxis" type="Map">
-            <Option name="direction" type="QString" value="clockwise"/>
-          </Option>
-        </Option>
-        <Option name="range_slider" type="Map">
-          <Option name="borderwidth" type="int" value="1"/>
-          <Option name="visible" type="bool" value="false"/>
-        </Option>
-        <Option name="title" type="QString" value=""/>
-        <Option name="x_inv" type="invalid"/>
-        <Option name="x_max" type="invalid"/>
-        <Option name="x_min" type="invalid"/>
-        <Option name="x_title" type="QString" value=""/>
-        <Option name="x_type" type="QString" value="linear"/>
-        <Option name="xaxis" type="invalid"/>
-        <Option name="y_inv" type="invalid"/>
-        <Option name="y_max" type="invalid"/>
-        <Option name="y_min" type="invalid"/>
-        <Option name="y_title" type="QString" value=""/>
-        <Option name="y_type" type="QString" value="linear"/>
-        <Option name="z_title" type="QString" value=""/>
-      </Option>
-      <Option name="plot_properties" type="Map">
-        <Option name="additional_hover_text" type="invalid"/>
-        <Option name="bins" type="int" value="10"/>
-        <Option name="box_orientation" type="QString" value="v"/>
-        <Option name="box_outliers" type="bool" value="false"/>
-        <Option name="box_stat" type="bool" value="false"/>
-        <Option name="color_scale" type="invalid"/>
-        <Option name="color_scale_data_defined_in_check" type="bool" value="false"/>
-        <Option name="color_scale_data_defined_in_invert_check" type="bool" value="false"/>
-        <Option name="cont_type" type="QString" value="fill"/>
-        <Option name="contour_type_combo" type="QString" value="Plein"/>
-        <Option name="cumulative" type="bool" value="false"/>
-        <Option name="custom" type="List">
-          <Option type="QString" value=""/>
-        </Option>
-        <Option name="hover_label_position" type="QString" value="auto"/>
-        <Option name="hover_label_text" type="invalid"/>
-        <Option name="hover_text" type="QString" value="all"/>
-        <Option name="in_color" type="QString" value="#8ebad9"/>
-        <Option name="invert_color_scale" type="bool" value="false"/>
-        <Option name="invert_hist" type="QString" value="increasing"/>
-        <Option name="line_combo" type="QString" value="ligne pleine"/>
-        <Option name="line_dash" type="QString" value="solid"/>
-        <Option name="marker" type="QString" value="markers"/>
-        <Option name="marker_size" type="double" value="10"/>
-        <Option name="marker_symbol" type="int" value="0"/>
-        <Option name="marker_type_combo" type="QString" value="Points"/>
-        <Option name="marker_width" type="double" value="1"/>
-        <Option name="name" type="QString" value=""/>
-        <Option name="normalization" type="QString" value=""/>
-        <Option name="opacity" type="double" value="1"/>
-        <Option name="out_color" type="QString" value="#1f77b4"/>
-        <Option name="point_combo" type="QString" value=""/>
-        <Option name="selected_features_only" type="bool" value="false"/>
-        <Option name="show_colorscale_legend" type="bool" value="false"/>
-        <Option name="show_lines" type="bool" value="true"/>
-        <Option name="show_lines_check" type="bool" value="true"/>
-        <Option name="show_mean_line" type="bool" value="true"/>
-        <Option name="violin_box" type="bool" value="false"/>
-        <Option name="violin_side" type="QString" value="both"/>
-        <Option name="visible_features_only" type="bool" value="false"/>
-        <Option name="x_name" type="QString" value=""/>
-        <Option name="y_name" type="QString" value=""/>
-        <Option name="z_name" type="QString" value=""/>
-      </Option>
-      <Option name="plot_type" type="QString" value="scatter"/>
-      <Option name="source_layer_id" type="QString" value="gpf_administrativeentity_1f9b32c8_25d9_4418_9b3f_565e0f6df0b1"/>
-    </Option>
-  </DataPlotly>
   <projectModels/>
   <legend updateDrawingOrder="true">
     <legendgroup open="true" name="geocity" checked="Qt::Checked">
-      <legendlayer open="true" name="permits_permitrequestgeotime_points" showFeatureCount="0" checked="Qt::Checked" drawingOrder="-1">
-        <filegroup open="true" hidden="false">
-          <legendlayerfile layerid="permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376" visible="1" isInOverview="0"/>
+      <legendlayer open="true" name="permits_permitrequestgeotime_points" showFeatureCount="0" drawingOrder="-1" checked="Qt::Checked">
+        <filegroup hidden="false" open="true">
+          <legendlayerfile visible="1" layerid="permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376" isInOverview="0"/>
         </filegroup>
       </legendlayer>
-      <legendlayer open="true" name="permits_permitrequestgeotimes_lines" showFeatureCount="0" checked="Qt::Checked" drawingOrder="-1">
-        <filegroup open="true" hidden="false">
-          <legendlayerfile layerid="permits_permitrequestgeotimes_lines_7b7c51f4_711d_40db_8a9d_31840309d56f" visible="1" isInOverview="0"/>
+      <legendlayer open="true" name="permits_permitrequestgeotimes_lines" showFeatureCount="0" drawingOrder="-1" checked="Qt::Checked">
+        <filegroup hidden="false" open="true">
+          <legendlayerfile visible="1" layerid="permits_permitrequestgeotimes_lines_7b7c51f4_711d_40db_8a9d_31840309d56f" isInOverview="0"/>
         </filegroup>
       </legendlayer>
-      <legendlayer open="true" name="permits_permitrequestgeotime_polygons" showFeatureCount="0" checked="Qt::Checked" drawingOrder="-1">
-        <filegroup open="true" hidden="false">
-          <legendlayerfile layerid="permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e" visible="1" isInOverview="0"/>
+      <legendlayer open="true" name="permits_permitrequestgeotime_polygons" showFeatureCount="0" drawingOrder="-1" checked="Qt::Checked">
+        <filegroup hidden="false" open="true">
+          <legendlayerfile visible="1" layerid="permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e" isInOverview="0"/>
         </filegroup>
       </legendlayer>
-      <legendlayer open="true" name="permits_permitadministrativeentity" showFeatureCount="0" checked="Qt::Checked" drawingOrder="-1">
-        <filegroup open="true" hidden="false">
-          <legendlayerfile layerid="gpf_administrativeentity_1f9b32c8_25d9_4418_9b3f_565e0f6df0b1" visible="1" isInOverview="0"/>
+      <legendlayer open="true" name="permits_permitadministrativeentity" showFeatureCount="0" drawingOrder="-1" checked="Qt::Checked">
+        <filegroup hidden="false" open="true">
+          <legendlayerfile visible="1" layerid="permits_permitadministrativeentity_e14a195c_0869_414b_8b25_b15fefff8143" isInOverview="0"/>
         </filegroup>
       </legendlayer>
     </legendgroup>
     <legendgroup open="true" name="basemaps" checked="Qt::Checked">
-      <legendlayer open="true" name="Fond ASIT VD - cadastral" showFeatureCount="0" checked="Qt::Checked" drawingOrder="-1">
-        <filegroup open="true" hidden="false">
-          <legendlayerfile layerid="Fond_ASIT_VD___cadastral_ec976cae_fb72_40c4_97b6_7c5dd60081ab" visible="1" isInOverview="0"/>
+      <legendlayer open="true" name="Fond ASIT VD - cadastral" showFeatureCount="0" drawingOrder="-1" checked="Qt::Checked">
+        <filegroup hidden="false" open="true">
+          <legendlayerfile visible="1" layerid="Fond_ASIT_VD___cadastral_ec976cae_fb72_40c4_97b6_7c5dd60081ab" isInOverview="0"/>
         </filegroup>
       </legendlayer>
     </legendgroup>
@@ -203,7 +118,7 @@
   <mapViewDocks/>
   <mapViewDocks3D/>
   <projectlayers>
-    <maplayer refreshOnNotifyEnabled="0" maxScale="0" autoRefreshTime="0" minScale="1e+08" autoRefreshEnabled="0" styleCategories="AllStyleCategories" type="raster" refreshOnNotifyMessage="" hasScaleBasedVisibilityFlag="0">
+    <maplayer autoRefreshTime="0" hasScaleBasedVisibilityFlag="0" styleCategories="AllStyleCategories" refreshOnNotifyMessage="" type="raster" autoRefreshEnabled="0" refreshOnNotifyEnabled="0" minScale="1e+08" maxScale="0">
       <extent>
         <xmin>2419995.7488073636777699</xmin>
         <ymin>1027366.07117159338667989</ymin>
@@ -218,13 +133,14 @@
       <layername>Fond ASIT VD - cadastral</layername>
       <srs>
         <spatialrefsys>
+          <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Liechtenstein and Switzerland"],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
           <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
           <srsid>47</srsid>
           <srid>2056</srid>
           <authid>EPSG:2056</authid>
           <description>CH1903+ / LV95</description>
           <projectionacronym>somerc</projectionacronym>
-          <ellipsoidacronym>bessel</ellipsoidacronym>
+          <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
           <geographicflag>false</geographicflag>
         </spatialrefsys>
       </srs>
@@ -240,6 +156,7 @@
         <encoding></encoding>
         <crs>
           <spatialrefsys>
+            <wkt></wkt>
             <proj4></proj4>
             <srsid>0</srsid>
             <srid>0</srid>
@@ -247,14 +164,14 @@
             <description></description>
             <projectionacronym></projectionacronym>
             <ellipsoidacronym></ellipsoidacronym>
-            <geographicflag>false</geographicflag>
+            <geographicflag>true</geographicflag>
           </spatialrefsys>
         </crs>
         <extent/>
       </resourceMetadata>
       <provider>wms</provider>
       <noData>
-        <noDataList useSrcNoData="0" bandNo="1"/>
+        <noDataList bandNo="1" useSrcNoData="0"/>
       </noData>
       <map-layer-style-manager current="défaut">
         <map-layer-style name="défaut"/>
@@ -264,11 +181,17 @@
         <Removable>1</Removable>
         <Searchable>0</Searchable>
       </flags>
+      <temporal mode="0" fetchMode="0" enabled="0">
+        <fixedRange>
+          <start></start>
+          <end></end>
+        </fixedRange>
+      </temporal>
       <customproperties>
-        <property key="identify/format" value="Undefined"/>
+        <property value="Undefined" key="identify/format"/>
       </customproperties>
       <pipe>
-        <rasterrenderer type="singlebandcolordata" opacity="1" band="1" alphaBand="-1">
+        <rasterrenderer alphaBand="-1" opacity="1" nodataColor="" type="singlebandcolordata" band="1">
           <rasterTransparency/>
           <minMaxOrigin>
             <limits>None</limits>
@@ -280,33 +203,36 @@
           </minMaxOrigin>
         </rasterrenderer>
         <brightnesscontrast brightness="0" contrast="0"/>
-        <huesaturation colorizeStrength="100" grayscaleMode="0" colorizeOn="0" colorizeBlue="128" colorizeRed="255" colorizeGreen="128" saturation="0"/>
+        <huesaturation grayscaleMode="0" colorizeRed="255" colorizeStrength="100" colorizeOn="0" saturation="0" colorizeGreen="128" colorizeBlue="128"/>
         <rasterresampler maxOversampling="2"/>
       </pipe>
       <blendMode>0</blendMode>
     </maplayer>
-    <maplayer simplifyAlgorithm="0" autoRefreshTime="0" simplifyMaxScale="1" simplifyDrawingTol="1" minScale="1e+08" geometry="Polygon" type="vector" wkbType="MultiPolygon" simplifyLocal="1" hasScaleBasedVisibilityFlag="0" readOnly="0" refreshOnNotifyEnabled="0" refreshOnNotifyMessage="" maxScale="0" autoRefreshEnabled="0" simplifyDrawingHints="1" labelsEnabled="0" styleCategories="AllStyleCategories">
+    <maplayer styleCategories="AllStyleCategories" simplifyLocal="1" minScale="100000000" readOnly="0" simplifyMaxScale="1" simplifyAlgorithm="0" wkbType="MultiPolygon" refreshOnNotifyEnabled="0" simplifyDrawingHints="1" maxScale="0" geometry="Polygon" type="vector" autoRefreshEnabled="0" refreshOnNotifyMessage="" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" autoRefreshTime="0" simplifyDrawingTol="1">
       <extent>
         <xmin>2536123</xmin>
         <ymin>1176432</ymin>
         <xmax>2543281</xmax>
         <ymax>1186887</ymax>
       </extent>
-      <id>gpf_administrativeentity_1f9b32c8_25d9_4418_9b3f_565e0f6df0b1</id>
-      <datasource>service='pg_geocity' sslmode=disable key='id' srid=2056 type=MultiPolygon checkPrimaryKeyUnicity='0' table="geocity"."permits_permitadministrativeentity" (geom) sql=</datasource>
+      <id>permits_permitadministrativeentity_e14a195c_0869_414b_8b25_b15fefff8143</id>
+      <datasource>service='pg_geocity' key='_uid_' checkPrimaryKeyUnicity='1' table="(SELECT row_number() over () AS _uid_,* FROM (select * from permits_permitadministrativeentity
+) AS _subq_1_
+)" (geom)</datasource>
       <keywordList>
         <value></value>
       </keywordList>
       <layername>permits_permitadministrativeentity</layername>
       <srs>
         <spatialrefsys>
+          <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Liechtenstein and Switzerland"],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
           <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
           <srsid>47</srsid>
           <srid>2056</srid>
           <authid>EPSG:2056</authid>
           <description>CH1903+ / LV95</description>
           <projectionacronym>somerc</projectionacronym>
-          <ellipsoidacronym>bessel</ellipsoidacronym>
+          <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
           <geographicflag>false</geographicflag>
         </spatialrefsys>
       </srs>
@@ -322,19 +248,20 @@
         <encoding></encoding>
         <crs>
           <spatialrefsys>
+            <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Liechtenstein and Switzerland"],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
             <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
             <srsid>47</srsid>
             <srid>2056</srid>
             <authid>EPSG:2056</authid>
             <description>CH1903+ / LV95</description>
             <projectionacronym>somerc</projectionacronym>
-            <ellipsoidacronym>bessel</ellipsoidacronym>
+            <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
             <geographicflag>false</geographicflag>
           </spatialrefsys>
         </crs>
         <extent/>
       </resourceMetadata>
-      <provider encoding="UTF-8">postgres</provider>
+      <provider encoding="">postgres</provider>
       <vectorjoins/>
       <layerDependencies/>
       <dataDependencies/>
@@ -349,11 +276,17 @@
         <Removable>1</Removable>
         <Searchable>1</Searchable>
       </flags>
-      <renderer-v2 preprocessing="0" type="invertedPolygonRenderer" enableorderby="0" forceraster="0">
-        <renderer-v2 type="singleSymbol" enableorderby="0" forceraster="0" symbollevels="0">
+      <temporal accumulate="0" mode="0" startField="" endField="" durationUnit="min" endExpression="" fixedDuration="0" enabled="0" startExpression="" durationField="">
+        <fixedRange>
+          <start></start>
+          <end></end>
+        </fixedRange>
+      </temporal>
+      <renderer-v2 preprocessing="0" forceraster="0" type="invertedPolygonRenderer" enableorderby="0">
+        <renderer-v2 forceraster="0" symbollevels="0" type="singleSymbol" enableorderby="0">
           <symbols>
-            <symbol alpha="0.7" name="0" clip_to_extent="1" force_rhr="0" type="fill">
-              <layer locked="0" pass="0" enabled="1" class="ShapeburstFill">
+            <symbol name="0" alpha="0.7" clip_to_extent="1" type="fill" force_rhr="0">
+              <layer class="ShapeburstFill" locked="0" enabled="1" pass="0">
                 <prop k="blur_radius" v="0"/>
                 <prop k="color" v="164,164,164,255"/>
                 <prop k="color1" v="0,0,255,255"/>
@@ -372,9 +305,9 @@
                 <prop k="use_whole_shape" v="0"/>
                 <data_defined_properties>
                   <Option type="Map">
-                    <Option name="name" type="QString" value=""/>
+                    <Option value="" name="name" type="QString"/>
                     <Option name="properties"/>
-                    <Option name="type" type="QString" value="collection"/>
+                    <Option value="collection" name="type" type="QString"/>
                   </Option>
                 </data_defined_properties>
               </layer>
@@ -385,7 +318,7 @@
         </renderer-v2>
       </renderer-v2>
       <customproperties>
-        <property key="embeddedWidgets/count" value="0"/>
+        <property value="0" key="embeddedWidgets/count"/>
         <property key="variableNames"/>
         <property key="variableValues"/>
       </customproperties>
@@ -393,17 +326,46 @@
       <featureBlendMode>0</featureBlendMode>
       <layerOpacity>1</layerOpacity>
       <SingleCategoryDiagramRenderer diagramType="Histogram" attributeLegend="1">
-        <DiagramCategory height="15" width="15" enabled="0" scaleDependency="Area" diagramOrientation="Up" labelPlacementMethod="XHeight" penAlpha="255" maxScaleDenominator="1e+08" scaleBasedVisibility="0" rotationOffset="270" minimumSize="0" sizeType="MM" penWidth="0" minScaleDenominator="0" sizeScale="3x:0,0,0,0,0,0" penColor="#000000" opacity="1" backgroundAlpha="255" barWidth="5" lineSizeType="MM" lineSizeScale="3x:0,0,0,0,0,0" backgroundColor="#ffffff">
+        <DiagramCategory penWidth="0" labelPlacementMethod="XHeight" barWidth="5" spacingUnit="MM" maxScaleDenominator="1e+08" sizeType="MM" rotationOffset="270" diagramOrientation="Up" sizeScale="3x:0,0,0,0,0,0" direction="1" lineSizeScale="3x:0,0,0,0,0,0" lineSizeType="MM" showAxis="0" scaleBasedVisibility="0" penColor="#000000" enabled="0" backgroundAlpha="255" spacing="0" penAlpha="255" minScaleDenominator="0" scaleDependency="Area" height="15" opacity="1" spacingUnitScale="3x:0,0,0,0,0,0" backgroundColor="#ffffff" width="15" minimumSize="0">
           <fontProperties style="" description="MS Shell Dlg 2,8.25,-1,5,50,0,0,0,0,0"/>
           <attribute field="" color="#000000" label=""/>
+          <axisSymbol>
+            <symbol name="" alpha="1" clip_to_extent="1" type="line" force_rhr="0">
+              <layer class="SimpleLine" locked="0" enabled="1" pass="0">
+                <prop k="capstyle" v="square"/>
+                <prop k="customdash" v="5;2"/>
+                <prop k="customdash_map_unit_scale" v="3x:0,0,0,0,0,0"/>
+                <prop k="customdash_unit" v="MM"/>
+                <prop k="draw_inside_polygon" v="0"/>
+                <prop k="joinstyle" v="bevel"/>
+                <prop k="line_color" v="35,35,35,255"/>
+                <prop k="line_style" v="solid"/>
+                <prop k="line_width" v="0.26"/>
+                <prop k="line_width_unit" v="MM"/>
+                <prop k="offset" v="0"/>
+                <prop k="offset_map_unit_scale" v="3x:0,0,0,0,0,0"/>
+                <prop k="offset_unit" v="MM"/>
+                <prop k="ring_filter" v="0"/>
+                <prop k="use_custom_dash" v="0"/>
+                <prop k="width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
+                <data_defined_properties>
+                  <Option type="Map">
+                    <Option value="" name="name" type="QString"/>
+                    <Option name="properties"/>
+                    <Option value="collection" name="type" type="QString"/>
+                  </Option>
+                </data_defined_properties>
+              </layer>
+            </symbol>
+          </axisSymbol>
         </DiagramCategory>
       </SingleCategoryDiagramRenderer>
-      <DiagramLayerSettings placement="1" zIndex="0" priority="0" dist="0" showAll="1" linePlacementFlags="18" obstacle="0">
+      <DiagramLayerSettings obstacle="0" zIndex="0" linePlacementFlags="18" dist="0" showAll="1" placement="1" priority="0">
         <properties>
           <Option type="Map">
-            <Option name="name" type="QString" value=""/>
+            <Option value="" name="name" type="QString"/>
             <Option name="properties"/>
-            <Option name="type" type="QString" value="collection"/>
+            <Option value="collection" name="type" type="QString"/>
           </Option>
         </properties>
       </DiagramLayerSettings>
@@ -411,29 +373,38 @@
         <activeChecks/>
         <checkConfiguration type="Map">
           <Option name="QgsGeometryGapCheck" type="Map">
-            <Option name="allowedGapsBuffer" type="double" value="0"/>
-            <Option name="allowedGapsEnabled" type="bool" value="false"/>
-            <Option name="allowedGapsLayer" type="QString" value=""/>
+            <Option value="0" name="allowedGapsBuffer" type="double"/>
+            <Option value="false" name="allowedGapsEnabled" type="bool"/>
+            <Option value="" name="allowedGapsLayer" type="QString"/>
           </Option>
         </checkConfiguration>
       </geometryOptions>
+      <referencedLayers/>
+      <referencingLayers/>
       <fieldConfiguration>
+        <field name="_uid_">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
         <field name="id">
-          <editWidget type="TextEdit">
+          <editWidget type="">
             <config>
               <Option/>
             </config>
           </editWidget>
         </field>
         <field name="name">
-          <editWidget type="TextEdit">
+          <editWidget type="">
             <config>
               <Option/>
             </config>
           </editWidget>
         </field>
         <field name="ofs_id">
-          <editWidget type="Range">
+          <editWidget type="">
             <config>
               <Option/>
             </config>
@@ -461,49 +432,49 @@
           </editWidget>
         </field>
         <field name="link">
-          <editWidget type="TextEdit">
+          <editWidget type="">
             <config>
               <Option/>
             </config>
           </editWidget>
         </field>
         <field name="logo_main">
-          <editWidget type="TextEdit">
+          <editWidget type="">
             <config>
               <Option/>
             </config>
           </editWidget>
         </field>
         <field name="logo_secondary">
-          <editWidget type="TextEdit">
+          <editWidget type="">
             <config>
               <Option/>
             </config>
           </editWidget>
         </field>
         <field name="title_signature_1">
-          <editWidget type="TextEdit">
+          <editWidget type="">
             <config>
               <Option/>
             </config>
           </editWidget>
         </field>
         <field name="image_signature_1">
-          <editWidget type="TextEdit">
+          <editWidget type="">
             <config>
               <Option/>
             </config>
           </editWidget>
         </field>
         <field name="title_signature_2">
-          <editWidget type="TextEdit">
+          <editWidget type="">
             <config>
               <Option/>
             </config>
           </editWidget>
         </field>
         <field name="image_signature_2">
-          <editWidget type="TextEdit">
+          <editWidget type="">
             <config>
               <Option/>
             </config>
@@ -518,40 +489,43 @@
         </field>
       </fieldConfiguration>
       <aliases>
-        <alias name="" index="0" field="id"/>
-        <alias name="" index="1" field="name"/>
-        <alias name="" index="2" field="ofs_id"/>
-        <alias name="" index="3" field="archive_link"/>
-        <alias name="" index="4" field="legal_document"/>
-        <alias name="" index="5" field="general_informations"/>
-        <alias name="" index="6" field="link"/>
-        <alias name="" index="7" field="logo_main"/>
-        <alias name="" index="8" field="logo_secondary"/>
-        <alias name="" index="9" field="title_signature_1"/>
-        <alias name="" index="10" field="image_signature_1"/>
-        <alias name="" index="11" field="title_signature_2"/>
-        <alias name="" index="12" field="image_signature_2"/>
-        <alias name="" index="13" field="phone"/>
+        <alias name="" field="_uid_" index="0"/>
+        <alias name="" field="id" index="1"/>
+        <alias name="" field="name" index="2"/>
+        <alias name="" field="ofs_id" index="3"/>
+        <alias name="" field="archive_link" index="4"/>
+        <alias name="" field="legal_document" index="5"/>
+        <alias name="" field="general_informations" index="6"/>
+        <alias name="" field="link" index="7"/>
+        <alias name="" field="logo_main" index="8"/>
+        <alias name="" field="logo_secondary" index="9"/>
+        <alias name="" field="title_signature_1" index="10"/>
+        <alias name="" field="image_signature_1" index="11"/>
+        <alias name="" field="title_signature_2" index="12"/>
+        <alias name="" field="image_signature_2" index="13"/>
+        <alias name="" field="phone" index="14"/>
       </aliases>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <defaults>
-        <default applyOnUpdate="0" expression="" field="id"/>
-        <default applyOnUpdate="0" expression="" field="name"/>
-        <default applyOnUpdate="0" expression="" field="ofs_id"/>
-        <default applyOnUpdate="0" expression="" field="archive_link"/>
-        <default applyOnUpdate="0" expression="" field="legal_document"/>
-        <default applyOnUpdate="0" expression="" field="general_informations"/>
-        <default applyOnUpdate="0" expression="" field="link"/>
-        <default applyOnUpdate="0" expression="" field="logo_main"/>
-        <default applyOnUpdate="0" expression="" field="logo_secondary"/>
-        <default applyOnUpdate="0" expression="" field="title_signature_1"/>
-        <default applyOnUpdate="0" expression="" field="image_signature_1"/>
-        <default applyOnUpdate="0" expression="" field="title_signature_2"/>
-        <default applyOnUpdate="0" expression="" field="image_signature_2"/>
-        <default applyOnUpdate="0" expression="" field="phone"/>
+        <default expression="" field="_uid_" applyOnUpdate="0"/>
+        <default expression="" field="id" applyOnUpdate="0"/>
+        <default expression="" field="name" applyOnUpdate="0"/>
+        <default expression="" field="ofs_id" applyOnUpdate="0"/>
+        <default expression="" field="archive_link" applyOnUpdate="0"/>
+        <default expression="" field="legal_document" applyOnUpdate="0"/>
+        <default expression="" field="general_informations" applyOnUpdate="0"/>
+        <default expression="" field="link" applyOnUpdate="0"/>
+        <default expression="" field="logo_main" applyOnUpdate="0"/>
+        <default expression="" field="logo_secondary" applyOnUpdate="0"/>
+        <default expression="" field="title_signature_1" applyOnUpdate="0"/>
+        <default expression="" field="image_signature_1" applyOnUpdate="0"/>
+        <default expression="" field="title_signature_2" applyOnUpdate="0"/>
+        <default expression="" field="image_signature_2" applyOnUpdate="0"/>
+        <default expression="" field="phone" applyOnUpdate="0"/>
       </defaults>
       <constraints>
+        <constraint constraints="3" exp_strength="0" notnull_strength="1" field="_uid_" unique_strength="1"/>
         <constraint constraints="3" exp_strength="0" notnull_strength="1" field="id" unique_strength="1"/>
         <constraint constraints="1" exp_strength="0" notnull_strength="1" field="name" unique_strength="0"/>
         <constraint constraints="1" exp_strength="0" notnull_strength="1" field="ofs_id" unique_strength="0"/>
@@ -568,41 +542,42 @@
         <constraint constraints="1" exp_strength="0" notnull_strength="1" field="phone" unique_strength="0"/>
       </constraints>
       <constraintExpressions>
-        <constraint exp="" desc="" field="id"/>
-        <constraint exp="" desc="" field="name"/>
-        <constraint exp="" desc="" field="ofs_id"/>
-        <constraint exp="" desc="" field="archive_link"/>
-        <constraint exp="" desc="" field="legal_document"/>
-        <constraint exp="" desc="" field="general_informations"/>
-        <constraint exp="" desc="" field="link"/>
-        <constraint exp="" desc="" field="logo_main"/>
-        <constraint exp="" desc="" field="logo_secondary"/>
-        <constraint exp="" desc="" field="title_signature_1"/>
-        <constraint exp="" desc="" field="image_signature_1"/>
-        <constraint exp="" desc="" field="title_signature_2"/>
-        <constraint exp="" desc="" field="image_signature_2"/>
-        <constraint exp="" desc="" field="phone"/>
+        <constraint exp="" field="_uid_" desc=""/>
+        <constraint exp="" field="id" desc=""/>
+        <constraint exp="" field="name" desc=""/>
+        <constraint exp="" field="ofs_id" desc=""/>
+        <constraint exp="" field="archive_link" desc=""/>
+        <constraint exp="" field="legal_document" desc=""/>
+        <constraint exp="" field="general_informations" desc=""/>
+        <constraint exp="" field="link" desc=""/>
+        <constraint exp="" field="logo_main" desc=""/>
+        <constraint exp="" field="logo_secondary" desc=""/>
+        <constraint exp="" field="title_signature_1" desc=""/>
+        <constraint exp="" field="image_signature_1" desc=""/>
+        <constraint exp="" field="title_signature_2" desc=""/>
+        <constraint exp="" field="image_signature_2" desc=""/>
+        <constraint exp="" field="phone" desc=""/>
       </constraintExpressions>
       <expressionfields/>
       <attributeactions>
-        <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"/>
+        <defaultAction value="{00000000-0000-0000-0000-000000000000}" key="Canvas"/>
       </attributeactions>
-      <attributetableconfig actionWidgetStyle="dropDown" sortOrder="0" sortExpression="">
+      <attributetableconfig sortOrder="0" sortExpression="" actionWidgetStyle="dropDown">
         <columns>
-          <column name="id" type="field" hidden="0" width="-1"/>
-          <column name="name" type="field" hidden="0" width="243"/>
-          <column name="ofs_id" type="field" hidden="0" width="-1"/>
-          <column type="actions" hidden="1" width="-1"/>
-          <column name="image_signature_1" type="field" hidden="0" width="-1"/>
-          <column name="image_signature_2" type="field" hidden="0" width="-1"/>
-          <column name="link" type="field" hidden="0" width="-1"/>
-          <column name="logo_main" type="field" hidden="0" width="-1"/>
-          <column name="logo_secondary" type="field" hidden="0" width="-1"/>
-          <column name="title_signature_1" type="field" hidden="0" width="-1"/>
-          <column name="title_signature_2" type="field" hidden="0" width="-1"/>
-          <column name="archive_link" type="field" hidden="0" width="-1"/>
-          <column name="legal_document" type="field" hidden="0" width="-1"/>
-          <column name="phone" type="field" hidden="0" width="-1"/>
+          <column hidden="0" name="id" type="field" width="-1"/>
+          <column hidden="0" name="name" type="field" width="243"/>
+          <column hidden="0" name="ofs_id" type="field" width="-1"/>
+          <column hidden="1" type="actions" width="-1"/>
+          <column hidden="0" name="image_signature_1" type="field" width="-1"/>
+          <column hidden="0" name="image_signature_2" type="field" width="-1"/>
+          <column hidden="0" name="link" type="field" width="-1"/>
+          <column hidden="0" name="logo_main" type="field" width="-1"/>
+          <column hidden="0" name="logo_secondary" type="field" width="-1"/>
+          <column hidden="0" name="title_signature_1" type="field" width="-1"/>
+          <column hidden="0" name="title_signature_2" type="field" width="-1"/>
+          <column hidden="0" name="archive_link" type="field" width="-1"/>
+          <column hidden="0" name="legal_document" type="field" width="-1"/>
+          <column hidden="0" name="phone" type="field" width="-1"/>
         </columns>
       </attributetableconfig>
       <conditionalstyles>
@@ -632,16 +607,16 @@ def my_form_open(dialog, layer, feature):
       <featformsuppress>0</featformsuppress>
       <editorlayout>generatedlayout</editorlayout>
       <editable>
-        <field editable="1" name="id"/>
-        <field editable="1" name="image_signature_1"/>
-        <field editable="1" name="image_signature_2"/>
-        <field editable="1" name="link"/>
-        <field editable="1" name="logo_main"/>
-        <field editable="1" name="logo_secondary"/>
-        <field editable="1" name="name"/>
-        <field editable="1" name="ofs_id"/>
-        <field editable="1" name="title_signature_1"/>
-        <field editable="1" name="title_signature_2"/>
+        <field name="id" editable="1"/>
+        <field name="image_signature_1" editable="1"/>
+        <field name="image_signature_2" editable="1"/>
+        <field name="link" editable="1"/>
+        <field name="logo_main" editable="1"/>
+        <field name="logo_secondary" editable="1"/>
+        <field name="name" editable="1"/>
+        <field name="ofs_id" editable="1"/>
+        <field name="title_signature_1" editable="1"/>
+        <field name="title_signature_2" editable="1"/>
       </editable>
       <labelOnTop>
         <field name="id" labelOnTop="0"/>
@@ -655,11 +630,12 @@ def my_form_open(dialog, layer, feature):
         <field name="title_signature_1" labelOnTop="0"/>
         <field name="title_signature_2" labelOnTop="0"/>
       </labelOnTop>
+      <dataDefinedFieldProperties/>
       <widgets/>
       <previewExpression>id</previewExpression>
       <mapTip></mapTip>
     </maplayer>
-    <maplayer refreshOnNotifyEnabled="0" geometry="Unknown geometry" maxScale="0" readOnly="0" autoRefreshTime="0" minScale="1e+08" autoRefreshEnabled="0" styleCategories="AllStyleCategories" type="vector" refreshOnNotifyMessage="" wkbType="GeometryCollection" hasScaleBasedVisibilityFlag="0">
+    <maplayer autoRefreshTime="0" hasScaleBasedVisibilityFlag="0" geometry="Unknown geometry" styleCategories="AllStyleCategories" readOnly="0" wkbType="GeometryCollection" refreshOnNotifyMessage="" type="vector" autoRefreshEnabled="0" refreshOnNotifyEnabled="0" minScale="1e+08" maxScale="0">
       <id>permits_permitrequestgeotime_e236401a_57e3_466c_8439_f9c14b5900b0</id>
       <datasource>service='pg_geocity' key='id' type=GeometryCollection checkPrimaryKeyUnicity='1' table="geocity"."permits_permitrequestgeotime" (geom) sql=</datasource>
       <keywordList>
@@ -668,6 +644,7 @@ def my_form_open(dialog, layer, feature):
       <layername>permits_permitrequestgeotime</layername>
       <srs>
         <spatialrefsys>
+          <wkt></wkt>
           <proj4></proj4>
           <srsid>0</srsid>
           <srid>0</srid>
@@ -675,7 +652,7 @@ def my_form_open(dialog, layer, feature):
           <description></description>
           <projectionacronym></projectionacronym>
           <ellipsoidacronym></ellipsoidacronym>
-          <geographicflag>false</geographicflag>
+          <geographicflag>true</geographicflag>
         </spatialrefsys>
       </srs>
       <resourceMetadata>
@@ -690,13 +667,14 @@ def my_form_open(dialog, layer, feature):
         <encoding></encoding>
         <crs>
           <spatialrefsys>
+            <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Liechtenstein and Switzerland"],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
             <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
             <srsid>47</srsid>
             <srid>2056</srid>
             <authid>EPSG:2056</authid>
             <description>CH1903+ / LV95</description>
             <projectionacronym>somerc</projectionacronym>
-            <ellipsoidacronym>bessel</ellipsoidacronym>
+            <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
             <geographicflag>false</geographicflag>
           </spatialrefsys>
         </crs>
@@ -717,94 +695,31 @@ def my_form_open(dialog, layer, feature):
         <Removable>1</Removable>
         <Searchable>1</Searchable>
       </flags>
+      <temporal accumulate="0" mode="0" startField="" endField="" durationUnit="min" endExpression="" fixedDuration="0" enabled="0" startExpression="" durationField="">
+        <fixedRange>
+          <start></start>
+          <end></end>
+        </fixedRange>
+      </temporal>
       <customproperties/>
       <geometryOptions removeDuplicateNodes="0" geometryPrecision="0">
         <activeChecks type="StringList">
-          <Option type="QString" value=""/>
+          <Option value="" type="QString"/>
         </activeChecks>
         <checkConfiguration/>
       </geometryOptions>
-      <fieldConfiguration>
-        <field name="id">
-          <editWidget type="">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field name="starts_at">
-          <editWidget type="">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field name="ends_at">
-          <editWidget type="">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field name="comment">
-          <editWidget type="">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field name="external_link">
-          <editWidget type="">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-        <field name="permit_request_id">
-          <editWidget type="">
-            <config>
-              <Option/>
-            </config>
-          </editWidget>
-        </field>
-      </fieldConfiguration>
-      <aliases>
-        <alias name="" index="0" field="id"/>
-        <alias name="" index="1" field="starts_at"/>
-        <alias name="" index="2" field="ends_at"/>
-        <alias name="" index="3" field="comment"/>
-        <alias name="" index="4" field="external_link"/>
-        <alias name="" index="5" field="permit_request_id"/>
-      </aliases>
+      <referencedLayers/>
+      <referencingLayers/>
+      <fieldConfiguration/>
+      <aliases/>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
-      <defaults>
-        <default applyOnUpdate="0" expression="" field="id"/>
-        <default applyOnUpdate="0" expression="" field="starts_at"/>
-        <default applyOnUpdate="0" expression="" field="ends_at"/>
-        <default applyOnUpdate="0" expression="" field="comment"/>
-        <default applyOnUpdate="0" expression="" field="external_link"/>
-        <default applyOnUpdate="0" expression="" field="permit_request_id"/>
-      </defaults>
-      <constraints>
-        <constraint constraints="3" exp_strength="0" notnull_strength="1" field="id" unique_strength="1"/>
-        <constraint constraints="1" exp_strength="0" notnull_strength="1" field="starts_at" unique_strength="0"/>
-        <constraint constraints="1" exp_strength="0" notnull_strength="1" field="ends_at" unique_strength="0"/>
-        <constraint constraints="1" exp_strength="0" notnull_strength="1" field="comment" unique_strength="0"/>
-        <constraint constraints="1" exp_strength="0" notnull_strength="1" field="external_link" unique_strength="0"/>
-        <constraint constraints="1" exp_strength="0" notnull_strength="1" field="permit_request_id" unique_strength="0"/>
-      </constraints>
-      <constraintExpressions>
-        <constraint exp="" desc="" field="id"/>
-        <constraint exp="" desc="" field="starts_at"/>
-        <constraint exp="" desc="" field="ends_at"/>
-        <constraint exp="" desc="" field="comment"/>
-        <constraint exp="" desc="" field="external_link"/>
-        <constraint exp="" desc="" field="permit_request_id"/>
-      </constraintExpressions>
+      <defaults/>
+      <constraints/>
+      <constraintExpressions/>
       <expressionfields/>
       <attributeactions/>
-      <attributetableconfig actionWidgetStyle="dropDown" sortOrder="0" sortExpression="">
+      <attributetableconfig sortOrder="0" sortExpression="" actionWidgetStyle="dropDown">
         <columns/>
       </attributetableconfig>
       <conditionalstyles>
@@ -821,33 +736,35 @@ def my_form_open(dialog, layer, feature):
       <editorlayout>generatedlayout</editorlayout>
       <editable/>
       <labelOnTop/>
+      <dataDefinedFieldProperties/>
       <widgets/>
       <previewExpression></previewExpression>
       <mapTip></mapTip>
     </maplayer>
-    <maplayer simplifyAlgorithm="0" autoRefreshTime="0" simplifyMaxScale="1" simplifyDrawingTol="1" minScale="1e+08" geometry="Point" type="vector" wkbType="MultiPoint" simplifyLocal="1" hasScaleBasedVisibilityFlag="0" readOnly="0" refreshOnNotifyEnabled="0" refreshOnNotifyMessage="" maxScale="0" autoRefreshEnabled="0" simplifyDrawingHints="1" labelsEnabled="0" styleCategories="AllStyleCategories">
+    <maplayer styleCategories="AllStyleCategories" simplifyLocal="1" minScale="100000000" readOnly="0" simplifyMaxScale="1" simplifyAlgorithm="0" wkbType="MultiPoint" refreshOnNotifyEnabled="0" simplifyDrawingHints="1" maxScale="0" geometry="Point" type="vector" autoRefreshEnabled="0" refreshOnNotifyMessage="" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" autoRefreshTime="0" simplifyDrawingTol="1">
       <extent>
         <xmin>2539076.69139447994530201</xmin>
-        <ymin>1180629.0931220599450171</ymin>
-        <xmax>2539080.44573944993317127</xmax>
+        <ymin>1181128.47008801996707916</ymin>
+        <xmax>2539076.69139447994530201</xmax>
         <ymax>1181128.47008801996707916</ymax>
       </extent>
       <id>permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376</id>
-      <datasource>service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table="(select id, permit_request_id,starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 1) as geom from geocity.permits_permitrequestgeotime
-)" (geom) sql=</datasource>
+      <datasource>service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table="(select id, permit_request_id,starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 1) as geom from permits_permitrequestgeotime
+)" (geom)</datasource>
       <keywordList>
         <value></value>
       </keywordList>
       <layername>permits_permitrequestgeotime_points</layername>
       <srs>
         <spatialrefsys>
+          <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Liechtenstein and Switzerland"],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
           <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
           <srsid>47</srsid>
           <srid>2056</srid>
           <authid>EPSG:2056</authid>
           <description>CH1903+ / LV95</description>
           <projectionacronym>somerc</projectionacronym>
-          <ellipsoidacronym>bessel</ellipsoidacronym>
+          <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
           <geographicflag>false</geographicflag>
         </spatialrefsys>
       </srs>
@@ -863,13 +780,14 @@ def my_form_open(dialog, layer, feature):
         <encoding></encoding>
         <crs>
           <spatialrefsys>
+            <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Liechtenstein and Switzerland"],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
             <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
             <srsid>47</srsid>
             <srid>2056</srid>
             <authid>EPSG:2056</authid>
             <description>CH1903+ / LV95</description>
             <projectionacronym>somerc</projectionacronym>
-            <ellipsoidacronym>bessel</ellipsoidacronym>
+            <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
             <geographicflag>false</geographicflag>
           </spatialrefsys>
         </crs>
@@ -890,10 +808,16 @@ def my_form_open(dialog, layer, feature):
         <Removable>1</Removable>
         <Searchable>1</Searchable>
       </flags>
-      <renderer-v2 type="singleSymbol" enableorderby="0" forceraster="0" symbollevels="0">
+      <temporal accumulate="0" mode="0" startField="" endField="" durationUnit="min" endExpression="" fixedDuration="0" enabled="0" startExpression="" durationField="">
+        <fixedRange>
+          <start></start>
+          <end></end>
+        </fixedRange>
+      </temporal>
+      <renderer-v2 forceraster="0" symbollevels="0" type="singleSymbol" enableorderby="0">
         <symbols>
-          <symbol alpha="1" name="0" clip_to_extent="1" force_rhr="0" type="marker">
-            <layer locked="0" pass="0" enabled="1" class="SimpleMarker">
+          <symbol name="0" alpha="1" clip_to_extent="1" type="marker" force_rhr="0">
+            <layer class="SimpleMarker" locked="0" enabled="1" pass="0">
               <prop k="angle" v="0"/>
               <prop k="color" v="5,143,255,255"/>
               <prop k="horizontal_anchor_point" v="1"/>
@@ -914,9 +838,9 @@ def my_form_open(dialog, layer, feature):
               <prop k="vertical_anchor_point" v="1"/>
               <data_defined_properties>
                 <Option type="Map">
-                  <Option name="name" type="QString" value=""/>
+                  <Option value="" name="name" type="QString"/>
                   <Option name="properties"/>
-                  <Option name="type" type="QString" value="collection"/>
+                  <Option value="collection" name="type" type="QString"/>
                 </Option>
               </data_defined_properties>
             </layer>
@@ -931,10 +855,12 @@ def my_form_open(dialog, layer, feature):
       <layerOpacity>1</layerOpacity>
       <geometryOptions removeDuplicateNodes="0" geometryPrecision="0">
         <activeChecks type="StringList">
-          <Option type="QString" value=""/>
+          <Option value="" type="QString"/>
         </activeChecks>
         <checkConfiguration/>
       </geometryOptions>
+      <referencedLayers/>
+      <referencingLayers/>
       <fieldConfiguration>
         <field name="id">
           <editWidget type="">
@@ -980,22 +906,22 @@ def my_form_open(dialog, layer, feature):
         </field>
       </fieldConfiguration>
       <aliases>
-        <alias name="" index="0" field="id"/>
-        <alias name="" index="1" field="permit_request_id"/>
-        <alias name="" index="2" field="starts_at"/>
-        <alias name="" index="3" field="ends_at"/>
-        <alias name="" index="4" field="comment"/>
-        <alias name="" index="5" field="external_link"/>
+        <alias name="" field="id" index="0"/>
+        <alias name="" field="permit_request_id" index="1"/>
+        <alias name="" field="starts_at" index="2"/>
+        <alias name="" field="ends_at" index="3"/>
+        <alias name="" field="comment" index="4"/>
+        <alias name="" field="external_link" index="5"/>
       </aliases>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <defaults>
-        <default applyOnUpdate="0" expression="" field="id"/>
-        <default applyOnUpdate="0" expression="" field="permit_request_id"/>
-        <default applyOnUpdate="0" expression="" field="starts_at"/>
-        <default applyOnUpdate="0" expression="" field="ends_at"/>
-        <default applyOnUpdate="0" expression="" field="comment"/>
-        <default applyOnUpdate="0" expression="" field="external_link"/>
+        <default expression="" field="id" applyOnUpdate="0"/>
+        <default expression="" field="permit_request_id" applyOnUpdate="0"/>
+        <default expression="" field="starts_at" applyOnUpdate="0"/>
+        <default expression="" field="ends_at" applyOnUpdate="0"/>
+        <default expression="" field="comment" applyOnUpdate="0"/>
+        <default expression="" field="external_link" applyOnUpdate="0"/>
       </defaults>
       <constraints>
         <constraint constraints="3" exp_strength="0" notnull_strength="1" field="id" unique_strength="1"/>
@@ -1006,18 +932,18 @@ def my_form_open(dialog, layer, feature):
         <constraint constraints="1" exp_strength="0" notnull_strength="1" field="external_link" unique_strength="0"/>
       </constraints>
       <constraintExpressions>
-        <constraint exp="" desc="" field="id"/>
-        <constraint exp="" desc="" field="permit_request_id"/>
-        <constraint exp="" desc="" field="starts_at"/>
-        <constraint exp="" desc="" field="ends_at"/>
-        <constraint exp="" desc="" field="comment"/>
-        <constraint exp="" desc="" field="external_link"/>
+        <constraint exp="" field="id" desc=""/>
+        <constraint exp="" field="permit_request_id" desc=""/>
+        <constraint exp="" field="starts_at" desc=""/>
+        <constraint exp="" field="ends_at" desc=""/>
+        <constraint exp="" field="comment" desc=""/>
+        <constraint exp="" field="external_link" desc=""/>
       </constraintExpressions>
       <expressionfields/>
       <attributeactions>
-        <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"/>
+        <defaultAction value="{00000000-0000-0000-0000-000000000000}" key="Canvas"/>
       </attributeactions>
-      <attributetableconfig actionWidgetStyle="dropDown" sortOrder="0" sortExpression="">
+      <attributetableconfig sortOrder="0" sortExpression="" actionWidgetStyle="dropDown">
         <columns/>
       </attributetableconfig>
       <conditionalstyles>
@@ -1034,33 +960,35 @@ def my_form_open(dialog, layer, feature):
       <editorlayout>generatedlayout</editorlayout>
       <editable/>
       <labelOnTop/>
+      <dataDefinedFieldProperties/>
       <widgets/>
       <previewExpression></previewExpression>
       <mapTip></mapTip>
     </maplayer>
-    <maplayer simplifyAlgorithm="0" autoRefreshTime="0" simplifyMaxScale="1" simplifyDrawingTol="1" minScale="1e+08" geometry="Polygon" type="vector" wkbType="MultiPolygon" simplifyLocal="1" hasScaleBasedVisibilityFlag="0" readOnly="0" refreshOnNotifyEnabled="0" refreshOnNotifyMessage="" maxScale="0" autoRefreshEnabled="0" simplifyDrawingHints="1" labelsEnabled="0" styleCategories="AllStyleCategories">
+    <maplayer styleCategories="AllStyleCategories" simplifyLocal="1" minScale="100000000" readOnly="0" simplifyMaxScale="1" simplifyAlgorithm="0" wkbType="MultiPolygon" refreshOnNotifyEnabled="0" simplifyDrawingHints="1" maxScale="0" geometry="Polygon" type="vector" autoRefreshEnabled="0" refreshOnNotifyMessage="" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" autoRefreshTime="0" simplifyDrawingTol="1">
       <extent>
-        <xmin>2538855.94573944993317127</xmin>
-        <ymin>1180298.0931220599450171</ymin>
-        <xmax>2539367.94573944993317127</xmax>
+        <xmin>2539101.27560022007673979</xmin>
+        <ymin>1181128.03878617007285357</ymin>
+        <xmax>2539111.62684474978595972</xmax>
         <ymax>1181140.1152381100691855</ymax>
       </extent>
       <id>permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e</id>
-      <datasource>service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table="(select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 3) as geom from geocity.permits_permitrequestgeotime
-)" (geom) sql=</datasource>
+      <datasource>service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table="(select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 3) as geom from permits_permitrequestgeotime
+)" (geom)</datasource>
       <keywordList>
         <value></value>
       </keywordList>
       <layername>permits_permitrequestgeotime_polygons</layername>
       <srs>
         <spatialrefsys>
+          <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Liechtenstein and Switzerland"],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
           <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
           <srsid>47</srsid>
           <srid>2056</srid>
           <authid>EPSG:2056</authid>
           <description>CH1903+ / LV95</description>
           <projectionacronym>somerc</projectionacronym>
-          <ellipsoidacronym>bessel</ellipsoidacronym>
+          <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
           <geographicflag>false</geographicflag>
         </spatialrefsys>
       </srs>
@@ -1076,13 +1004,14 @@ def my_form_open(dialog, layer, feature):
         <encoding></encoding>
         <crs>
           <spatialrefsys>
+            <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Liechtenstein and Switzerland"],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
             <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
             <srsid>47</srsid>
             <srid>2056</srid>
             <authid>EPSG:2056</authid>
             <description>CH1903+ / LV95</description>
             <projectionacronym>somerc</projectionacronym>
-            <ellipsoidacronym>bessel</ellipsoidacronym>
+            <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
             <geographicflag>false</geographicflag>
           </spatialrefsys>
         </crs>
@@ -1103,10 +1032,16 @@ def my_form_open(dialog, layer, feature):
         <Removable>1</Removable>
         <Searchable>1</Searchable>
       </flags>
-      <renderer-v2 type="singleSymbol" enableorderby="0" forceraster="0" symbollevels="0">
+      <temporal accumulate="0" mode="0" startField="" endField="" durationUnit="min" endExpression="" fixedDuration="0" enabled="0" startExpression="" durationField="">
+        <fixedRange>
+          <start></start>
+          <end></end>
+        </fixedRange>
+      </temporal>
+      <renderer-v2 forceraster="0" symbollevels="0" type="singleSymbol" enableorderby="0">
         <symbols>
-          <symbol alpha="1" name="0" clip_to_extent="1" force_rhr="0" type="fill">
-            <layer locked="0" pass="0" enabled="1" class="SimpleFill">
+          <symbol name="0" alpha="1" clip_to_extent="1" type="fill" force_rhr="0">
+            <layer class="SimpleFill" locked="0" enabled="1" pass="0">
               <prop k="border_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
               <prop k="color" v="5,143,255,255"/>
               <prop k="joinstyle" v="bevel"/>
@@ -1120,9 +1055,9 @@ def my_form_open(dialog, layer, feature):
               <prop k="style" v="solid"/>
               <data_defined_properties>
                 <Option type="Map">
-                  <Option name="name" type="QString" value=""/>
+                  <Option value="" name="name" type="QString"/>
                   <Option name="properties"/>
-                  <Option name="type" type="QString" value="collection"/>
+                  <Option value="collection" name="type" type="QString"/>
                 </Option>
               </data_defined_properties>
             </layer>
@@ -1132,17 +1067,19 @@ def my_form_open(dialog, layer, feature):
         <sizescale/>
       </renderer-v2>
       <customproperties>
-        <property key="dualview/previewExpressions" value="&quot;id&quot;"/>
+        <property value="&quot;id&quot;" key="dualview/previewExpressions"/>
       </customproperties>
       <blendMode>0</blendMode>
       <featureBlendMode>0</featureBlendMode>
       <layerOpacity>1</layerOpacity>
       <geometryOptions removeDuplicateNodes="0" geometryPrecision="0">
         <activeChecks type="StringList">
-          <Option type="QString" value=""/>
+          <Option value="" type="QString"/>
         </activeChecks>
         <checkConfiguration/>
       </geometryOptions>
+      <referencedLayers/>
+      <referencingLayers/>
       <fieldConfiguration>
         <field name="id">
           <editWidget type="">
@@ -1188,22 +1125,22 @@ def my_form_open(dialog, layer, feature):
         </field>
       </fieldConfiguration>
       <aliases>
-        <alias name="" index="0" field="id"/>
-        <alias name="" index="1" field="permit_request_id"/>
-        <alias name="" index="2" field="starts_at"/>
-        <alias name="" index="3" field="ends_at"/>
-        <alias name="" index="4" field="comment"/>
-        <alias name="" index="5" field="external_link"/>
+        <alias name="" field="id" index="0"/>
+        <alias name="" field="permit_request_id" index="1"/>
+        <alias name="" field="starts_at" index="2"/>
+        <alias name="" field="ends_at" index="3"/>
+        <alias name="" field="comment" index="4"/>
+        <alias name="" field="external_link" index="5"/>
       </aliases>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <defaults>
-        <default applyOnUpdate="0" expression="" field="id"/>
-        <default applyOnUpdate="0" expression="" field="permit_request_id"/>
-        <default applyOnUpdate="0" expression="" field="starts_at"/>
-        <default applyOnUpdate="0" expression="" field="ends_at"/>
-        <default applyOnUpdate="0" expression="" field="comment"/>
-        <default applyOnUpdate="0" expression="" field="external_link"/>
+        <default expression="" field="id" applyOnUpdate="0"/>
+        <default expression="" field="permit_request_id" applyOnUpdate="0"/>
+        <default expression="" field="starts_at" applyOnUpdate="0"/>
+        <default expression="" field="ends_at" applyOnUpdate="0"/>
+        <default expression="" field="comment" applyOnUpdate="0"/>
+        <default expression="" field="external_link" applyOnUpdate="0"/>
       </defaults>
       <constraints>
         <constraint constraints="3" exp_strength="0" notnull_strength="1" field="id" unique_strength="1"/>
@@ -1214,26 +1151,26 @@ def my_form_open(dialog, layer, feature):
         <constraint constraints="1" exp_strength="0" notnull_strength="1" field="external_link" unique_strength="0"/>
       </constraints>
       <constraintExpressions>
-        <constraint exp="" desc="" field="id"/>
-        <constraint exp="" desc="" field="permit_request_id"/>
-        <constraint exp="" desc="" field="starts_at"/>
-        <constraint exp="" desc="" field="ends_at"/>
-        <constraint exp="" desc="" field="comment"/>
-        <constraint exp="" desc="" field="external_link"/>
+        <constraint exp="" field="id" desc=""/>
+        <constraint exp="" field="permit_request_id" desc=""/>
+        <constraint exp="" field="starts_at" desc=""/>
+        <constraint exp="" field="ends_at" desc=""/>
+        <constraint exp="" field="comment" desc=""/>
+        <constraint exp="" field="external_link" desc=""/>
       </constraintExpressions>
       <expressionfields/>
       <attributeactions>
-        <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"/>
+        <defaultAction value="{00000000-0000-0000-0000-000000000000}" key="Canvas"/>
       </attributeactions>
-      <attributetableconfig actionWidgetStyle="dropDown" sortOrder="0" sortExpression="">
+      <attributetableconfig sortOrder="0" sortExpression="" actionWidgetStyle="dropDown">
         <columns>
-          <column name="id" type="field" hidden="0" width="-1"/>
-          <column name="starts_at" type="field" hidden="0" width="-1"/>
-          <column name="ends_at" type="field" hidden="0" width="-1"/>
-          <column name="comment" type="field" hidden="0" width="-1"/>
-          <column name="external_link" type="field" hidden="0" width="-1"/>
-          <column type="actions" hidden="1" width="-1"/>
-          <column name="permit_request_id" type="field" hidden="0" width="150"/>
+          <column hidden="0" name="id" type="field" width="-1"/>
+          <column hidden="0" name="starts_at" type="field" width="-1"/>
+          <column hidden="0" name="ends_at" type="field" width="-1"/>
+          <column hidden="0" name="comment" type="field" width="-1"/>
+          <column hidden="0" name="external_link" type="field" width="-1"/>
+          <column hidden="1" type="actions" width="-1"/>
+          <column hidden="0" name="permit_request_id" type="field" width="150"/>
         </columns>
       </attributetableconfig>
       <conditionalstyles>
@@ -1250,34 +1187,36 @@ def my_form_open(dialog, layer, feature):
       <editorlayout>generatedlayout</editorlayout>
       <editable/>
       <labelOnTop/>
+      <dataDefinedFieldProperties/>
       <widgets/>
       <previewExpression>"id"</previewExpression>
       <mapTip></mapTip>
     </maplayer>
-    <maplayer simplifyAlgorithm="0" autoRefreshTime="0" simplifyMaxScale="1" simplifyDrawingTol="1" minScale="1e+08" geometry="Line" type="vector" wkbType="MultiLineString" simplifyLocal="1" hasScaleBasedVisibilityFlag="0" readOnly="0" refreshOnNotifyEnabled="0" refreshOnNotifyMessage="" maxScale="0" autoRefreshEnabled="0" simplifyDrawingHints="1" labelsEnabled="0" styleCategories="AllStyleCategories">
+    <maplayer styleCategories="AllStyleCategories" simplifyLocal="1" minScale="100000000" readOnly="0" simplifyMaxScale="1" simplifyAlgorithm="0" wkbType="MultiLineString" refreshOnNotifyEnabled="0" simplifyDrawingHints="1" maxScale="0" geometry="Line" type="vector" autoRefreshEnabled="0" refreshOnNotifyMessage="" hasScaleBasedVisibilityFlag="0" labelsEnabled="0" autoRefreshTime="0" simplifyDrawingTol="1">
       <extent>
-        <xmin>2538793.94573944993317127</xmin>
-        <ymin>1180552.0931220599450171</ymin>
-        <xmax>2539379.94573944993317127</xmax>
+        <xmin>2539094.37477053981274366</xmin>
+        <ymin>1181119.41274906997568905</ymin>
+        <xmax>2539096.09997795987874269</xmax>
         <ymax>1181134.07701214007101953</ymax>
       </extent>
       <id>permits_permitrequestgeotimes_lines_7b7c51f4_711d_40db_8a9d_31840309d56f</id>
-      <datasource>service='pg_geocity' key='_uid_' checkPrimaryKeyUnicity='1' table="(SELECT row_number() over () AS _uid_,* FROM (select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 2) as geom from geocity.permits_permitrequestgeotime
+      <datasource>service='pg_geocity' key='_uid_' checkPrimaryKeyUnicity='1' table="(SELECT row_number() over () AS _uid_,* FROM (select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 2) as geom from permits_permitrequestgeotime
 ) AS _subq_1_
-)" (geom) sql=</datasource>
+)" (geom)</datasource>
       <keywordList>
         <value></value>
       </keywordList>
       <layername>permits_permitrequestgeotimes_lines</layername>
       <srs>
         <spatialrefsys>
+          <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Liechtenstein and Switzerland"],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
           <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
           <srsid>47</srsid>
           <srid>2056</srid>
           <authid>EPSG:2056</authid>
           <description>CH1903+ / LV95</description>
           <projectionacronym>somerc</projectionacronym>
-          <ellipsoidacronym>bessel</ellipsoidacronym>
+          <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
           <geographicflag>false</geographicflag>
         </spatialrefsys>
       </srs>
@@ -1293,13 +1232,14 @@ def my_form_open(dialog, layer, feature):
         <encoding></encoding>
         <crs>
           <spatialrefsys>
+            <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Liechtenstein and Switzerland"],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
             <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
             <srsid>47</srsid>
             <srid>2056</srid>
             <authid>EPSG:2056</authid>
             <description>CH1903+ / LV95</description>
             <projectionacronym>somerc</projectionacronym>
-            <ellipsoidacronym>bessel</ellipsoidacronym>
+            <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
             <geographicflag>false</geographicflag>
           </spatialrefsys>
         </crs>
@@ -1320,10 +1260,16 @@ def my_form_open(dialog, layer, feature):
         <Removable>1</Removable>
         <Searchable>1</Searchable>
       </flags>
-      <renderer-v2 type="singleSymbol" enableorderby="0" forceraster="0" symbollevels="0">
+      <temporal accumulate="0" mode="0" startField="" endField="" durationUnit="min" endExpression="" fixedDuration="0" enabled="0" startExpression="" durationField="">
+        <fixedRange>
+          <start></start>
+          <end></end>
+        </fixedRange>
+      </temporal>
+      <renderer-v2 forceraster="0" symbollevels="0" type="singleSymbol" enableorderby="0">
         <symbols>
-          <symbol alpha="1" name="0" clip_to_extent="1" force_rhr="0" type="line">
-            <layer locked="0" pass="0" enabled="1" class="SimpleLine">
+          <symbol name="0" alpha="1" clip_to_extent="1" type="line" force_rhr="0">
+            <layer class="SimpleLine" locked="0" enabled="1" pass="0">
               <prop k="capstyle" v="square"/>
               <prop k="customdash" v="5;2"/>
               <prop k="customdash_map_unit_scale" v="3x:0,0,0,0,0,0"/>
@@ -1342,9 +1288,9 @@ def my_form_open(dialog, layer, feature):
               <prop k="width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
               <data_defined_properties>
                 <Option type="Map">
-                  <Option name="name" type="QString" value=""/>
+                  <Option value="" name="name" type="QString"/>
                   <Option name="properties"/>
-                  <Option name="type" type="QString" value="collection"/>
+                  <Option value="collection" name="type" type="QString"/>
                 </Option>
               </data_defined_properties>
             </layer>
@@ -1359,10 +1305,12 @@ def my_form_open(dialog, layer, feature):
       <layerOpacity>1</layerOpacity>
       <geometryOptions removeDuplicateNodes="0" geometryPrecision="0">
         <activeChecks type="StringList">
-          <Option type="QString" value=""/>
+          <Option value="" type="QString"/>
         </activeChecks>
         <checkConfiguration/>
       </geometryOptions>
+      <referencedLayers/>
+      <referencingLayers/>
       <fieldConfiguration>
         <field name="_uid_">
           <editWidget type="">
@@ -1415,24 +1363,24 @@ def my_form_open(dialog, layer, feature):
         </field>
       </fieldConfiguration>
       <aliases>
-        <alias name="" index="0" field="_uid_"/>
-        <alias name="" index="1" field="id"/>
-        <alias name="" index="2" field="permit_request_id"/>
-        <alias name="" index="3" field="starts_at"/>
-        <alias name="" index="4" field="ends_at"/>
-        <alias name="" index="5" field="comment"/>
-        <alias name="" index="6" field="external_link"/>
+        <alias name="" field="_uid_" index="0"/>
+        <alias name="" field="id" index="1"/>
+        <alias name="" field="permit_request_id" index="2"/>
+        <alias name="" field="starts_at" index="3"/>
+        <alias name="" field="ends_at" index="4"/>
+        <alias name="" field="comment" index="5"/>
+        <alias name="" field="external_link" index="6"/>
       </aliases>
       <excludeAttributesWMS/>
       <excludeAttributesWFS/>
       <defaults>
-        <default applyOnUpdate="0" expression="" field="_uid_"/>
-        <default applyOnUpdate="0" expression="" field="id"/>
-        <default applyOnUpdate="0" expression="" field="permit_request_id"/>
-        <default applyOnUpdate="0" expression="" field="starts_at"/>
-        <default applyOnUpdate="0" expression="" field="ends_at"/>
-        <default applyOnUpdate="0" expression="" field="comment"/>
-        <default applyOnUpdate="0" expression="" field="external_link"/>
+        <default expression="" field="_uid_" applyOnUpdate="0"/>
+        <default expression="" field="id" applyOnUpdate="0"/>
+        <default expression="" field="permit_request_id" applyOnUpdate="0"/>
+        <default expression="" field="starts_at" applyOnUpdate="0"/>
+        <default expression="" field="ends_at" applyOnUpdate="0"/>
+        <default expression="" field="comment" applyOnUpdate="0"/>
+        <default expression="" field="external_link" applyOnUpdate="0"/>
       </defaults>
       <constraints>
         <constraint constraints="3" exp_strength="0" notnull_strength="1" field="_uid_" unique_strength="1"/>
@@ -1444,19 +1392,19 @@ def my_form_open(dialog, layer, feature):
         <constraint constraints="1" exp_strength="0" notnull_strength="1" field="external_link" unique_strength="0"/>
       </constraints>
       <constraintExpressions>
-        <constraint exp="" desc="" field="_uid_"/>
-        <constraint exp="" desc="" field="id"/>
-        <constraint exp="" desc="" field="permit_request_id"/>
-        <constraint exp="" desc="" field="starts_at"/>
-        <constraint exp="" desc="" field="ends_at"/>
-        <constraint exp="" desc="" field="comment"/>
-        <constraint exp="" desc="" field="external_link"/>
+        <constraint exp="" field="_uid_" desc=""/>
+        <constraint exp="" field="id" desc=""/>
+        <constraint exp="" field="permit_request_id" desc=""/>
+        <constraint exp="" field="starts_at" desc=""/>
+        <constraint exp="" field="ends_at" desc=""/>
+        <constraint exp="" field="comment" desc=""/>
+        <constraint exp="" field="external_link" desc=""/>
       </constraintExpressions>
       <expressionfields/>
       <attributeactions>
-        <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"/>
+        <defaultAction value="{00000000-0000-0000-0000-000000000000}" key="Canvas"/>
       </attributeactions>
-      <attributetableconfig actionWidgetStyle="dropDown" sortOrder="0" sortExpression="">
+      <attributetableconfig sortOrder="0" sortExpression="" actionWidgetStyle="dropDown">
         <columns/>
       </attributetableconfig>
       <conditionalstyles>
@@ -1473,17 +1421,18 @@ def my_form_open(dialog, layer, feature):
       <editorlayout>generatedlayout</editorlayout>
       <editable/>
       <labelOnTop/>
+      <dataDefinedFieldProperties/>
       <widgets/>
       <previewExpression></previewExpression>
       <mapTip></mapTip>
     </maplayer>
   </projectlayers>
   <layerorder>
-    <layer id="gpf_administrativeentity_1f9b32c8_25d9_4418_9b3f_565e0f6df0b1"/>
     <layer id="Fond_ASIT_VD___cadastral_ec976cae_fb72_40c4_97b6_7c5dd60081ab"/>
     <layer id="permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376"/>
     <layer id="permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e"/>
     <layer id="permits_permitrequestgeotimes_lines_7b7c51f4_711d_40db_8a9d_31840309d56f"/>
+    <layer id="permits_permitadministrativeentity_e14a195c_0869_414b_8b25_b15fefff8143"/>
   </layerorder>
   <properties>
     <DefaultStyles>
@@ -1494,6 +1443,9 @@ def my_form_open(dialog, layer, feature):
       <Opacity type="double">1</Opacity>
       <RandomColors type="bool">true</RandomColors>
     </DefaultStyles>
+    <Digitizing>
+      <AvoidIntersectionsMode type="int">2</AvoidIntersectionsMode>
+    </Digitizing>
     <Gui>
       <CanvasColorBluePart type="int">255</CanvasColorBluePart>
       <CanvasColorGreenPart type="int">255</CanvasColorGreenPart>
@@ -1518,10 +1470,13 @@ def my_form_open(dialog, layer, feature):
     </Measurement>
     <PAL>
       <CandidatesLine type="int">50</CandidatesLine>
+      <CandidatesLinePerCM type="double">5</CandidatesLinePerCM>
       <CandidatesPoint type="int">16</CandidatesPoint>
       <CandidatesPolygon type="int">30</CandidatesPolygon>
+      <CandidatesPolygonPerCM type="double">2.5</CandidatesPolygonPerCM>
       <DrawRectOnly type="bool">false</DrawRectOnly>
       <DrawUnplaced type="bool">false</DrawUnplaced>
+      <PlacementEngineVersion type="int">0</PlacementEngineVersion>
       <SearchMethod type="int">0</SearchMethod>
       <ShowingAllLabels type="bool">false</ShowingAllLabels>
       <ShowingCandidates type="bool">false</ShowingCandidates>
@@ -1544,6 +1499,7 @@ def my_form_open(dialog, layer, feature):
     <WCSUrl type="QString"></WCSUrl>
     <WFSLayers type="QStringList">
       <value>gpf_administrativeentity_1f9b32c8_25d9_4418_9b3f_565e0f6df0b1</value>
+      <value>permits_permitadministrativeentity_e14a195c_0869_414b_8b25_b15fefff8143</value>
       <value>permits_permitrequestgeotime_e236401a_57e3_466c_8439_f9c14b5900b0</value>
       <value>permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376</value>
       <value>permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e</value>
@@ -1564,6 +1520,7 @@ def my_form_open(dialog, layer, feature):
       <permit_permitrequestgeotime_lines_e549efd2_98e7_4245_8f51_1b8b664f3bd4 type="int">2</permit_permitrequestgeotime_lines_e549efd2_98e7_4245_8f51_1b8b664f3bd4>
       <permit_permitrequestgeotime_points_aec07cd4_58fa_49bb_9929_d17b59ec39dd type="int">2</permit_permitrequestgeotime_points_aec07cd4_58fa_49bb_9929_d17b59ec39dd>
       <permit_permitrequestgeotime_polygons_785b46e9_ff5f_4719_9796_c2562993dc06 type="int">2</permit_permitrequestgeotime_polygons_785b46e9_ff5f_4719_9796_c2562993dc06>
+      <permits_permitadministrativeentity_e14a195c_0869_414b_8b25_b15fefff8143 type="int">0</permits_permitadministrativeentity_e14a195c_0869_414b_8b25_b15fefff8143>
       <permits_permitrequestgeotime_e236401a_57e3_466c_8439_f9c14b5900b0 type="int">0</permits_permitrequestgeotime_e236401a_57e3_466c_8439_f9c14b5900b0>
       <permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376 type="int">0</permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376>
       <permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e type="int">0</permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e>
@@ -1632,6 +1589,13 @@ def my_form_open(dialog, layer, feature):
     </WMTSPngLayers>
     <WMTSUrl type="QString"></WMTSUrl>
   </properties>
+  <dataDefinedServerProperties>
+    <Option type="Map">
+      <Option value="" name="name" type="QString"/>
+      <Option name="properties"/>
+      <Option value="collection" name="type" type="QString"/>
+    </Option>
+  </dataDefinedServerProperties>
   <visibility-presets/>
   <transformContext/>
   <projectMetadata>
@@ -1656,12 +1620,12 @@ def my_form_open(dialog, layer, feature):
   </projectMetadata>
   <Annotations/>
   <Layouts>
-    <Layout printResolution="300" name="permits" units="mm" worldFileMap="{c6479aea-550d-4436-896d-b50c1cf7c0a6}">
-      <Snapper snapToGrid="0" snapToGuides="1" snapToItems="1" tolerance="5"/>
-      <Grid resolution="10" resUnits="mm" offsetX="0" offsetUnits="mm" offsetY="0"/>
+    <Layout units="mm" name="permits" worldFileMap="{c6479aea-550d-4436-896d-b50c1cf7c0a6}" printResolution="300">
+      <Snapper snapToItems="1" tolerance="5" snapToGuides="1" snapToGrid="0"/>
+      <Grid offsetX="0" offsetUnits="mm" resolution="10" resUnits="mm" offsetY="0"/>
       <PageCollection>
-        <symbol alpha="1" name="" clip_to_extent="1" force_rhr="0" type="fill">
-          <layer locked="0" pass="0" enabled="1" class="SimpleFill">
+        <symbol name="" alpha="1" clip_to_extent="1" type="fill" force_rhr="0">
+          <layer class="SimpleFill" locked="0" enabled="1" pass="0">
             <prop k="border_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
             <prop k="color" v="255,255,255,255"/>
             <prop k="joinstyle" v="miter"/>
@@ -1675,28 +1639,28 @@ def my_form_open(dialog, layer, feature):
             <prop k="style" v="solid"/>
             <data_defined_properties>
               <Option type="Map">
-                <Option name="name" type="QString" value=""/>
+                <Option value="" name="name" type="QString"/>
                 <Option name="properties"/>
-                <Option name="type" type="QString" value="collection"/>
+                <Option value="collection" name="type" type="QString"/>
               </Option>
             </data_defined_properties>
           </layer>
         </symbol>
-        <LayoutItem groupUuid="" id="" frame="false" zValue="0" templateUuid="{0dc785dc-e319-45a1-b58b-afa38bbb6c31}" frameJoinStyle="miter" referencePoint="0" blendMode="0" itemRotation="0" type="65638" positionOnPage="0,0,mm" size="297,210,mm" background="true" excludeFromExports="0" opacity="1" visibility="1" uuid="{0dc785dc-e319-45a1-b58b-afa38bbb6c31}" positionLock="false" outlineWidthM="0.3,mm" position="0,0,mm">
-          <FrameColor alpha="255" green="0" blue="0" red="0"/>
-          <BackgroundColor alpha="255" green="255" blue="255" red="255"/>
+        <LayoutItem positionOnPage="0,0,mm" groupUuid="" id="" blendMode="0" referencePoint="0" frame="false" outlineWidthM="0.3,mm" positionLock="false" excludeFromExports="0" type="65638" templateUuid="{0dc785dc-e319-45a1-b58b-afa38bbb6c31}" position="0,0,mm" size="297,210,mm" zValue="0" frameJoinStyle="miter" itemRotation="0" opacity="1" uuid="{0dc785dc-e319-45a1-b58b-afa38bbb6c31}" background="true" visibility="1">
+          <FrameColor red="0" green="0" alpha="255" blue="0"/>
+          <BackgroundColor red="255" green="255" alpha="255" blue="255"/>
           <LayoutObject>
             <dataDefinedProperties>
               <Option type="Map">
-                <Option name="name" type="QString" value=""/>
+                <Option value="" name="name" type="QString"/>
                 <Option name="properties"/>
-                <Option name="type" type="QString" value="collection"/>
+                <Option value="collection" name="type" type="QString"/>
               </Option>
             </dataDefinedProperties>
             <customproperties/>
           </LayoutObject>
-          <symbol alpha="1" name="" clip_to_extent="1" force_rhr="0" type="fill">
-            <layer locked="0" pass="0" enabled="1" class="SimpleFill">
+          <symbol name="" alpha="1" clip_to_extent="1" type="fill" force_rhr="0">
+            <layer class="SimpleFill" locked="0" enabled="1" pass="0">
               <prop k="border_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
               <prop k="color" v="255,255,255,255"/>
               <prop k="joinstyle" v="miter"/>
@@ -1710,9 +1674,9 @@ def my_form_open(dialog, layer, feature):
               <prop k="style" v="solid"/>
               <data_defined_properties>
                 <Option type="Map">
-                  <Option name="name" type="QString" value=""/>
+                  <Option value="" name="name" type="QString"/>
                   <Option name="properties"/>
-                  <Option name="type" type="QString" value="collection"/>
+                  <Option value="collection" name="type" type="QString"/>
                 </Option>
               </data_defined_properties>
             </layer>
@@ -1720,73 +1684,37 @@ def my_form_open(dialog, layer, feature):
         </LayoutItem>
         <GuideCollection visible="1"/>
       </PageCollection>
-      <LayoutItem groupUuid="" id="" frame="false" zValue="9" templateUuid="{8f5ffc79-856a-4811-8fb4-d573680cce58}" valign="32" frameJoinStyle="miter" referencePoint="0" blendMode="0" htmlState="0" labelText="Données cartographiques: mapnv, ASITVD, contributeurs OpenStreetMap et canton de Vaud.&#xa;Informations dépourvues de foi publique. La Ville ne répond en aucun cas de dommages résultant de l'utilisation de données erronées ou obsolètes" itemRotation="0" type="65641" positionOnPage="233.923,128.782,mm" marginY="0" halign="8" size="49.9587,36.0925,mm" background="false" excludeFromExports="0" opacity="1" visibility="1" uuid="{8f5ffc79-856a-4811-8fb4-d573680cce58}" positionLock="false" outlineWidthM="0.3,mm" position="233.923,128.782,mm" marginX="0">
-        <FrameColor alpha="255" green="0" blue="0" red="0"/>
-        <BackgroundColor alpha="255" green="255" blue="255" red="255"/>
+      <LayoutItem positionOnPage="233.923,128.782,mm" groupUuid="" marginX="0" id="" blendMode="0" referencePoint="0" htmlState="0" labelText="Données cartographiques: mapnv, ASITVD, contributeurs OpenStreetMap et canton de Vaud.&#xa;Informations dépourvues de foi publique. La Ville ne répond en aucun cas de dommages résultant de l'utilisation de données erronées ou obsolètes" frame="false" halign="8" outlineWidthM="0.3,mm" positionLock="false" excludeFromExports="0" type="65641" templateUuid="{8f5ffc79-856a-4811-8fb4-d573680cce58}" position="233.923,128.782,mm" size="49.9587,36.0925,mm" zValue="9" frameJoinStyle="miter" itemRotation="0" opacity="1" uuid="{8f5ffc79-856a-4811-8fb4-d573680cce58}" valign="32" background="false" visibility="1" marginY="0">
+        <FrameColor red="0" green="0" alpha="255" blue="0"/>
+        <BackgroundColor red="255" green="255" alpha="255" blue="255"/>
         <LayoutObject>
           <dataDefinedProperties>
             <Option type="Map">
-              <Option name="name" type="QString" value=""/>
+              <Option value="" name="name" type="QString"/>
               <Option name="properties"/>
-              <Option name="type" type="QString" value="collection"/>
+              <Option value="collection" name="type" type="QString"/>
             </Option>
           </dataDefinedProperties>
           <customproperties/>
         </LayoutObject>
         <LabelFont style="Normal" description="Arial,8,-1,5,50,0,0,0,0,0,Normal"/>
-        <FontColor alpha="255" green="75" blue="75" red="75"/>
+        <FontColor red="75" green="75" alpha="255" blue="75"/>
       </LayoutItem>
-      <LayoutItem groupUuid="" id="" frame="false" zValue="5" templateUuid="{1b4e971f-30ba-4f7a-a253-260e62c4ff5f}" frameJoinStyle="miter" referencePoint="0" cornerRadiusMeasure="0,mm" blendMode="0" shapeType="2" itemRotation="0" type="65643" positionOnPage="239.875,160.484,mm" size="11.5385,17.1018,mm" background="false" excludeFromExports="0" opacity="1" visibility="1" uuid="{1b4e971f-30ba-4f7a-a253-260e62c4ff5f}" positionLock="false" outlineWidthM="0.3,mm" position="239.875,160.484,mm">
-        <FrameColor alpha="255" green="0" blue="0" red="0"/>
-        <BackgroundColor alpha="255" green="255" blue="255" red="255"/>
+      <LayoutItem positionOnPage="234.053,159.464,mm" groupUuid="" id="" blendMode="0" referencePoint="0" frame="false" cornerRadiusMeasure="0,mm" outlineWidthM="0.3,mm" positionLock="false" excludeFromExports="0" type="65643" templateUuid="{a3fd81b6-cc93-4c8a-96be-d055dcf1d769}" position="234.053,159.464,mm" size="22.9762,22.9762,mm" shapeType="0" zValue="5" frameJoinStyle="miter" itemRotation="0" opacity="1" uuid="{a3fd81b6-cc93-4c8a-96be-d055dcf1d769}" background="false" visibility="1">
+        <FrameColor red="0" green="0" alpha="255" blue="0"/>
+        <BackgroundColor red="255" green="255" alpha="255" blue="255"/>
         <LayoutObject>
           <dataDefinedProperties>
             <Option type="Map">
-              <Option name="name" type="QString" value=""/>
+              <Option value="" name="name" type="QString"/>
               <Option name="properties"/>
-              <Option name="type" type="QString" value="collection"/>
+              <Option value="collection" name="type" type="QString"/>
             </Option>
           </dataDefinedProperties>
           <customproperties/>
         </LayoutObject>
-        <symbol alpha="1" name="" clip_to_extent="1" force_rhr="0" type="fill">
-          <layer locked="0" pass="0" enabled="1" class="SimpleFill">
-            <prop k="border_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
-            <prop k="color" v="255,255,255,255"/>
-            <prop k="joinstyle" v="miter"/>
-            <prop k="offset" v="0,0"/>
-            <prop k="offset_map_unit_scale" v="3x:0,0,0,0,0,0"/>
-            <prop k="offset_unit" v="MM"/>
-            <prop k="outline_color" v="0,0,0,255"/>
-            <prop k="outline_style" v="solid"/>
-            <prop k="outline_width" v="0.3"/>
-            <prop k="outline_width_unit" v="MM"/>
-            <prop k="style" v="solid"/>
-            <data_defined_properties>
-              <Option type="Map">
-                <Option name="name" type="QString" value=""/>
-                <Option name="properties"/>
-                <Option name="type" type="QString" value="collection"/>
-              </Option>
-            </data_defined_properties>
-          </layer>
-        </symbol>
-      </LayoutItem>
-      <LayoutItem groupUuid="" id="" frame="false" zValue="5" templateUuid="{a3fd81b6-cc93-4c8a-96be-d055dcf1d769}" frameJoinStyle="miter" referencePoint="0" cornerRadiusMeasure="0,mm" blendMode="0" shapeType="0" itemRotation="0" type="65643" positionOnPage="234.053,159.464,mm" size="22.9762,22.9762,mm" background="false" excludeFromExports="0" opacity="1" visibility="1" uuid="{a3fd81b6-cc93-4c8a-96be-d055dcf1d769}" positionLock="false" outlineWidthM="0.3,mm" position="234.053,159.464,mm">
-        <FrameColor alpha="255" green="0" blue="0" red="0"/>
-        <BackgroundColor alpha="255" green="255" blue="255" red="255"/>
-        <LayoutObject>
-          <dataDefinedProperties>
-            <Option type="Map">
-              <Option name="name" type="QString" value=""/>
-              <Option name="properties"/>
-              <Option name="type" type="QString" value="collection"/>
-            </Option>
-          </dataDefinedProperties>
-          <customproperties/>
-        </LayoutObject>
-        <symbol alpha="1" name="" clip_to_extent="1" force_rhr="0" type="fill">
-          <layer locked="0" pass="0" enabled="1" class="SimpleFill">
+        <symbol name="" alpha="1" clip_to_extent="1" type="fill" force_rhr="0">
+          <layer class="SimpleFill" locked="0" enabled="1" pass="0">
             <prop k="border_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
             <prop k="color" v="0,0,0,255"/>
             <prop k="joinstyle" v="bevel"/>
@@ -1800,72 +1728,123 @@ def my_form_open(dialog, layer, feature):
             <prop k="style" v="solid"/>
             <data_defined_properties>
               <Option type="Map">
-                <Option name="name" type="QString" value=""/>
+                <Option value="" name="name" type="QString"/>
                 <Option name="properties"/>
-                <Option name="type" type="QString" value="collection"/>
+                <Option value="collection" name="type" type="QString"/>
               </Option>
             </data_defined_properties>
           </layer>
         </symbol>
       </LayoutItem>
-      <LayoutItem groupUuid="" id="" frame="false" zValue="4" templateUuid="{e15dc63b-0dc3-4f35-8c35-587547bf6866}" valign="32" frameJoinStyle="miter" referencePoint="0" blendMode="0" htmlState="0" labelText="Plan de situation" itemRotation="0" type="65641" positionOnPage="100.772,13.208,mm" marginY="0" halign="8" size="88.8886,8.97395,mm" background="false" excludeFromExports="0" opacity="1" visibility="1" uuid="{e15dc63b-0dc3-4f35-8c35-587547bf6866}" positionLock="false" outlineWidthM="0.3,mm" position="100.772,13.208,mm" marginX="0">
-        <FrameColor alpha="255" green="0" blue="0" red="0"/>
-        <BackgroundColor alpha="255" green="255" blue="255" red="255"/>
+      <LayoutItem positionOnPage="239.875,160.484,mm" groupUuid="" id="" blendMode="0" referencePoint="0" frame="false" cornerRadiusMeasure="0,mm" outlineWidthM="0.3,mm" positionLock="false" excludeFromExports="0" type="65643" templateUuid="{1b4e971f-30ba-4f7a-a253-260e62c4ff5f}" position="239.875,160.484,mm" size="11.5385,17.1018,mm" shapeType="2" zValue="5" frameJoinStyle="miter" itemRotation="0" opacity="1" uuid="{1b4e971f-30ba-4f7a-a253-260e62c4ff5f}" background="false" visibility="1">
+        <FrameColor red="0" green="0" alpha="255" blue="0"/>
+        <BackgroundColor red="255" green="255" alpha="255" blue="255"/>
         <LayoutObject>
           <dataDefinedProperties>
             <Option type="Map">
-              <Option name="name" type="QString" value=""/>
+              <Option value="" name="name" type="QString"/>
               <Option name="properties"/>
-              <Option name="type" type="QString" value="collection"/>
+              <Option value="collection" name="type" type="QString"/>
+            </Option>
+          </dataDefinedProperties>
+          <customproperties/>
+        </LayoutObject>
+        <symbol name="" alpha="1" clip_to_extent="1" type="fill" force_rhr="0">
+          <layer class="SimpleFill" locked="0" enabled="1" pass="0">
+            <prop k="border_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
+            <prop k="color" v="255,255,255,255"/>
+            <prop k="joinstyle" v="miter"/>
+            <prop k="offset" v="0,0"/>
+            <prop k="offset_map_unit_scale" v="3x:0,0,0,0,0,0"/>
+            <prop k="offset_unit" v="MM"/>
+            <prop k="outline_color" v="0,0,0,255"/>
+            <prop k="outline_style" v="solid"/>
+            <prop k="outline_width" v="0.3"/>
+            <prop k="outline_width_unit" v="MM"/>
+            <prop k="style" v="solid"/>
+            <data_defined_properties>
+              <Option type="Map">
+                <Option value="" name="name" type="QString"/>
+                <Option name="properties"/>
+                <Option value="collection" name="type" type="QString"/>
+              </Option>
+            </data_defined_properties>
+          </layer>
+        </symbol>
+      </LayoutItem>
+      <LayoutItem positionOnPage="100.772,13.208,mm" groupUuid="" marginX="0" id="" blendMode="0" referencePoint="0" htmlState="0" labelText="Plan de situation" frame="false" halign="8" outlineWidthM="0.3,mm" positionLock="false" excludeFromExports="0" type="65641" templateUuid="{e15dc63b-0dc3-4f35-8c35-587547bf6866}" position="100.772,13.208,mm" size="88.8886,8.97395,mm" zValue="4" frameJoinStyle="miter" itemRotation="0" opacity="1" uuid="{e15dc63b-0dc3-4f35-8c35-587547bf6866}" valign="32" background="false" visibility="1" marginY="0">
+        <FrameColor red="0" green="0" alpha="255" blue="0"/>
+        <BackgroundColor red="255" green="255" alpha="255" blue="255"/>
+        <LayoutObject>
+          <dataDefinedProperties>
+            <Option type="Map">
+              <Option value="" name="name" type="QString"/>
+              <Option name="properties"/>
+              <Option value="collection" name="type" type="QString"/>
             </Option>
           </dataDefinedProperties>
           <customproperties/>
         </LayoutObject>
         <LabelFont style="Bold" description="Arial,18,-1,5,75,0,0,0,0,0,Gras"/>
-        <FontColor alpha="255" green="0" blue="0" red="0"/>
+        <FontColor red="0" green="0" alpha="255" blue="0"/>
       </LayoutItem>
-      <LayoutItem groupUuid="" id="map0" frame="false" zValue="2" templateUuid="{c6479aea-550d-4436-896d-b50c1cf7c0a6}" frameJoinStyle="miter" referencePoint="0" followPreset="false" blendMode="0" mapRotation="0" keepLayerSet="true" labelMargin="0,mm" itemRotation="0" type="65639" positionOnPage="194.144,320.666,px" drawCanvasItems="true" size="2500,1800,px" mapFlags="0" background="true" excludeFromExports="0" opacity="1" visibility="1" followPresetName="" uuid="{c6479aea-550d-4436-896d-b50c1cf7c0a6}" positionLock="false" outlineWidthM="0.3,mm" position="194.144,320.666,px">
-        <FrameColor alpha="255" green="0" blue="0" red="0"/>
-        <BackgroundColor alpha="255" green="255" blue="255" red="255"/>
+      <LayoutItem keepLayerSet="true" positionOnPage="194.144,320.666,px" drawCanvasItems="true" groupUuid="" id="map0" blendMode="0" labelMargin="0,mm" referencePoint="0" frame="false" followPresetName="" outlineWidthM="0.3,mm" positionLock="false" excludeFromExports="0" mapRotation="0" type="65639" templateUuid="{c6479aea-550d-4436-896d-b50c1cf7c0a6}" position="194.144,320.666,px" size="2500,1800,px" followPreset="false" zValue="2" frameJoinStyle="miter" isTemporal="0" mapFlags="0" itemRotation="0" opacity="1" uuid="{c6479aea-550d-4436-896d-b50c1cf7c0a6}" background="true" visibility="1">
+        <FrameColor red="0" green="0" alpha="255" blue="0"/>
+        <BackgroundColor red="255" green="255" alpha="255" blue="255"/>
         <LayoutObject>
           <dataDefinedProperties>
             <Option type="Map">
-              <Option name="name" type="QString" value=""/>
+              <Option value="" name="name" type="QString"/>
               <Option name="properties" type="Map">
                 <Option name="dataDefinedHeight" type="Map">
-                  <Option name="active" type="bool" value="true"/>
-                  <Option name="expression" type="QString" value="1800"/>
-                  <Option name="type" type="int" value="3"/>
+                  <Option value="true" name="active" type="bool"/>
+                  <Option value="1800" name="expression" type="QString"/>
+                  <Option value="3" name="type" type="int"/>
                 </Option>
                 <Option name="dataDefinedWidth" type="Map">
-                  <Option name="active" type="bool" value="true"/>
-                  <Option name="expression" type="QString" value="2500"/>
-                  <Option name="type" type="int" value="3"/>
+                  <Option value="true" name="active" type="bool"/>
+                  <Option value="2500" name="expression" type="QString"/>
+                  <Option value="3" name="type" type="int"/>
                 </Option>
               </Option>
-              <Option name="type" type="QString" value="collection"/>
+              <Option value="collection" name="type" type="QString"/>
             </Option>
           </dataDefinedProperties>
           <customproperties/>
         </LayoutObject>
-        <Extent xmin="2533583.38120744889602065" ymax="1185715.83516433252952993" ymin="1176951.98717430816031992" xmax="2545755.39230470499023795"/>
+        <Extent xmin="2533583.38120744889602065" ymin="1176951.98717430816031992" ymax="1185715.83516433252952993" xmax="2545755.39230470499023795"/>
         <LayerSet>
-          <Layer name="permits_permitrequestgeotime_points" source="service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table=&quot;(select id, permit_request_id,starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 1) as geom from geocity.permits_permitrequestgeotime&#xa;)&quot; (geom) sql=" provider="postgres">permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376</Layer>
-          <Layer name="permits_permitrequestgeotimes_lines" source="service='pg_geocity' key='_uid_' checkPrimaryKeyUnicity='1' table=&quot;(SELECT row_number() over () AS _uid_,* FROM (select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 2) as geom from geocity.permits_permitrequestgeotime&#xa;) AS _subq_1_&#xa;)&quot; (geom) sql=" provider="postgres">permits_permitrequestgeotimes_lines_7b7c51f4_711d_40db_8a9d_31840309d56f</Layer>
-          <Layer name="permits_permitrequestgeotime_polygons" source="service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table=&quot;(select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 3) as geom from geocity.permits_permitrequestgeotime&#xa;)&quot; (geom) sql=" provider="postgres">permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e</Layer>
-          <Layer name="Fond ASIT VD - cadastral" source="crs=EPSG:2056&amp;dpiMode=7&amp;format=image/png&amp;layers=asitvd.fond_cadastral&amp;styles=default&amp;tileMatrixSet=2056&amp;url=https://ows.asitvd.ch/wmts/?service%3DWMTS%26version%3D1.0.0%26request%3DGetCapabilities" provider="wms">Fond_ASIT_VD___cadastral_ec976cae_fb72_40c4_97b6_7c5dd60081ab</Layer>
+          <Layer name="permits_permitrequestgeotime_points" provider="postgres" source="service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table=&quot;(select id, permit_request_id,starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 1) as geom from permits_permitrequestgeotime&#xa;)&quot; (geom)">permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376</Layer>
+          <Layer name="permits_permitrequestgeotimes_lines" provider="postgres" source="service='pg_geocity' key='_uid_' checkPrimaryKeyUnicity='1' table=&quot;(SELECT row_number() over () AS _uid_,* FROM (select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 2) as geom from permits_permitrequestgeotime&#xa;) AS _subq_1_&#xa;)&quot; (geom)">permits_permitrequestgeotimes_lines_7b7c51f4_711d_40db_8a9d_31840309d56f</Layer>
+          <Layer name="permits_permitrequestgeotime_polygons" provider="postgres" source="service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table=&quot;(select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 3) as geom from permits_permitrequestgeotime&#xa;)&quot; (geom)">permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e</Layer>
+          <Layer name="Fond ASIT VD - cadastral" provider="wms" source="crs=EPSG:2056&amp;dpiMode=7&amp;format=image/png&amp;layers=asitvd.fond_cadastral&amp;styles=default&amp;tileMatrixSet=2056&amp;url=https://ows.asitvd.ch/wmts/?service%3DWMTS%26version%3D1.0.0%26request%3DGetCapabilities">Fond_ASIT_VD___cadastral_ec976cae_fb72_40c4_97b6_7c5dd60081ab</Layer>
         </LayerSet>
         <AtlasMap atlasDriven="0" scalingMode="2" margin="0.10000000000000001"/>
         <labelBlockingItems/>
       </LayoutItem>
       <customproperties>
-        <property key="atlasRasterFormat" value="png"/>
+        <property value="png" key="atlasRasterFormat"/>
       </customproperties>
-      <Atlas coverageLayer="" filenamePattern="'output_'||@atlas_featurenumber" filterFeatures="0" pageNameExpression="" enabled="0" hideCoverage="0" sortFeatures="0"/>
+      <Atlas filterFeatures="0" pageNameExpression="" hideCoverage="0" sortFeatures="0" coverageLayer="" enabled="0" filenamePattern="'output_'||@atlas_featurenumber"/>
     </Layout>
   </Layouts>
   <Bookmarks/>
   <ProjectViewSettings UseProjectScales="0">
     <Scales/>
   </ProjectViewSettings>
+  <ProjectTimeSettings frameRate="1" timeStepUnit="h" timeStep="1" cumulativeTemporalRange="0"/>
+  <ProjectDisplaySettings>
+    <BearingFormat id="bearing">
+      <Option type="Map">
+        <Option value="" name="decimal_separator" type="QChar"/>
+        <Option value="6" name="decimals" type="int"/>
+        <Option value="0" name="direction_format" type="int"/>
+        <Option value="0" name="rounding_type" type="int"/>
+        <Option value="false" name="show_plus" type="bool"/>
+        <Option value="true" name="show_thousand_separator" type="bool"/>
+        <Option value="false" name="show_trailing_zeros" type="bool"/>
+        <Option value="" name="thousand_separator" type="QChar"/>
+      </Option>
+    </BearingFormat>
+  </ProjectDisplaySettings>
 </qgis>

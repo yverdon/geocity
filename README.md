@@ -1,5 +1,7 @@
 # geomapshark - a geocyberadministration tool for cities
 
+Discover geocity features and usage [here](https://project.mapnv.ch/projects/geocity-wiki/wiki/geocity)
+
 ## Getting started with the full Docker demo version
 
 ### Step by step guide to the working full docker non persistent DEMO
@@ -8,11 +10,7 @@ This will bring up a demo instance with preset fixtures served by the
 Django developpment server in reload mode.
 
 ```
-mkdir geocity
-git init
-git remote add upstream https://github.com/yverdon/geocity
-git fetch upstream
-git checkout upstream/master
+git clone git@github.com:yverdon/geocity.git && cd geocity
 cp -n env.demo .env
 docker-compose -f docker-compose-dev.yml build
 docker-compose -f docker-compose-dev.yml down --remove-orphans && docker-compose -f docker-compose-dev.yml up
@@ -33,7 +31,8 @@ The demo application is now running on _localhost:9095_
 
 ### Setup your Environment file
 
-Edit the variables in `.env` according to your environment.
+Edit the variables in `.env` according to your environment.    
+Set the global environment switcher to `ENV=DEV` in the `.env` file.
 
 Keep in mind that you are in a Docker environment. Thus you might need to set, on Linux environment something like:
 
@@ -46,11 +45,7 @@ So that the Django container can reach your `postgres` user on the host machine.
 ## Production containers administrations
 
 ```
-mkdir geocity
-git init
-git remote add upstream https://github.com/yverdon/geocity
-git fetch upstream
-git checkout upstream/master
+git clone git@github.com:yverdon/geocity.git && cd geocity
 cp -n env.demo .env
 docker-compose build
 docker-compose down --remove-orphans && docker-compose up

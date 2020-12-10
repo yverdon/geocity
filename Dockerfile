@@ -19,5 +19,18 @@ ENV PYTHONUNBUFFERED 1
 COPY . /code/
 WORKDIR /code
 
-RUN if [ "$dev_dependencies" = "true" ] ; then pip3 install -r requirements_dev.txt && echo "Installed development depencies"; \
-    else pip3 install -r requirements.txt && echo "Installed production depencies"; fi
+RUN if [ "$dev_dependencies" = "true" ] ; \
+    then \
+    DEBUG=True \
+    && echo "Installing development dependencies..." \
+    && pip3 install -r requirements_dev.txt \
+    && echo "########################################" \
+    && echo "# Installed development dependencies   #" \
+    && echo "########################################"; \
+    else \
+    DEBUG=False \
+    && pip3 install -r requirements.txt \
+    && echo "########################################" \
+    && echo "# Installed production dependencies    #" \
+    && echo "########################################"; \
+    fi

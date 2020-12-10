@@ -47,6 +47,7 @@ class DepartmentPermitRequestsTable(tables.Table):
     administrative_entity = tables.Column(verbose_name=_("Entité administrative"),
                                           orderable=False
                                           )
+    author__user__last_name = tables.Column(verbose_name=_("Auteur de la demande"))
 
     class Meta:
         model = models.PermitRequest
