@@ -5,4 +5,4 @@ omit =
   venv/*
   manage.py
   geomapshark/settings*
-  geomapshark/core/wsgi.py
+  geomapshark/wsgi.py

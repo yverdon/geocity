@@ -35,6 +35,20 @@ class UserFactory(factory.django.DjangoModelFactory):
         return manager.create_user(*args, **kwargs)
 
 
+class SuperUserFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = get_user_model()
+
+    username = factory.Faker("user_name")
+    email = factory.Faker("email")
+    password = "password"
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        manager = cls._get_manager(model_class)
+        return manager.create_superuser(*args, **kwargs)
+
+
 class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
     ofs_id = 0
     name = factory.Faker('company')
