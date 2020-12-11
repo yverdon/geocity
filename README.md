@@ -1,4 +1,4 @@
-# geomapshark - a geocyberadministration tool for cities
+# geomapshark - a geocyberadministration tool for cities ![.github/workflows/main.yml](https://github.com/yverdon/geocity/workflows/.github/workflows/main.yml/badge.svg)
 
 Discover geocity features and usage [here](https://project.mapnv.ch/projects/geocity-wiki/wiki/geocity)
 
@@ -56,7 +56,7 @@ root@de8f58bf2e2c:/code# ./run_tests.sh
 We use [Black](https://github.com/psf/black) as code formatter. Just use the following command to automatically format your code:
 
 ```
-$ balck .
+$ docker-compose exec web black .
 ```
 
 ## Setup for full Docker persistent instance served by gunicorn webserver

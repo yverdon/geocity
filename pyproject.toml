@@ -16,6 +16,7 @@ exclude = '''
     | build
     | dist
     | migrations
+    | ^.*/migrations/.*$
   )/
 )
 '''

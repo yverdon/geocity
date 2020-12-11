@@ -41,9 +41,9 @@ class DepartmentPermitRequestsTable(tables.Table):
     works_objects_html = tables.Column(
         verbose_name=_("Objets et types de travaux"), orderable=False
     )
-    administrative_entity = tables.Column(verbose_name=_("Entité administrative"),
-                                          orderable=False
-                                          )
+    administrative_entity = tables.Column(
+        verbose_name=_("Entité administrative"), orderable=False
+    )
     author__user__last_name = tables.Column(verbose_name=_("Auteur de la demande"))
 
     class Meta:
@@ -56,7 +56,7 @@ class DepartmentPermitRequestsTable(tables.Table):
             "starts_at_min",
             "ends_at_max",
             "works_objects_html",
-            "administrative_entity"
+            "administrative_entity",
         )
         template_name = "django_tables2/bootstrap.html"
 
