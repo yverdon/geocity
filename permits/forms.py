@@ -35,32 +35,38 @@ class AdministrativeEntityForm(forms.Form):
         queryset=models.PermitAdministrativeEntity.objects.none(),
         label=_("Entité administrative"),
         empty_label=None,
-        widget=forms.RadioSelect()
+        widget=forms.RadioSelect(),
     )
 
     def __init__(self, *args, **kwargs):
-        self.instance = kwargs.pop('instance', None)
+        self.instance = kwargs.pop("instance", None)
 
         if self.instance:
-            initial = {**kwargs.get('initial', {}),
-                       'administrative_entity': self.instance.administrative_entity}
+            initial = {
+                **kwargs.get("initial", {}),
+                "administrative_entity": self.instance.administrative_entity,
+            }
         else:
             initial = {}
 
-        kwargs['initial'] = initial
+        kwargs["initial"] = initial
 
         super().__init__(*args, **kwargs)
 
-        self.fields['administrative_entity'].queryset = services.get_administrative_entities()
+        self.fields[
+            "administrative_entity"
+        ].queryset = services.get_administrative_entities()
 
     def save(self, author):
         if not self.instance:
             return models.PermitRequest.objects.create(
-                administrative_entity=self.cleaned_data['administrative_entity'], author=author
+                administrative_entity=self.cleaned_data["administrative_entity"],
+                author=author,
             )
         else:
             services.set_administrative_entity(
-                self.instance, self.cleaned_data['administrative_entity'])
+                self.instance, self.cleaned_data["administrative_entity"]
+            )
             return self.instance
 
 
@@ -69,22 +75,25 @@ class WorksTypesForm(forms.Form):
         queryset=models.WorksType.objects.none(),
         widget=forms.CheckboxSelectMultiple(),
         label=_("Types de travaux"),
-        error_messages={'required': _('Sélectionnez au moins un type de demande')},
+        error_messages={"required": _("Sélectionnez au moins un type de demande")},
     )
 
     def __init__(self, instance, *args, **kwargs):
         self.instance = instance
-        kwargs['initial'] = {
-            'types': services.get_permit_request_works_types(self.instance)
-        } if self.instance else {}
+        kwargs["initial"] = (
+            {"types": services.get_permit_request_works_types(self.instance)}
+            if self.instance
+            else {}
+        )
 
         super().__init__(*args, **kwargs)
 
-        self.fields['types'].queryset = services.get_works_types(
-            self.instance.administrative_entity)
+        self.fields["types"].queryset = services.get_works_types(
+            self.instance.administrative_entity
+        )
 
     def save(self):
-        services.set_works_types(self.instance, self.cleaned_data['types'])
+        services.set_works_types(self.instance, self.cleaned_data["types"])
 
 
 class WorksObjectsTypeChoiceField(forms.ModelMultipleChoiceField):
@@ -93,30 +102,36 @@ class WorksObjectsTypeChoiceField(forms.ModelMultipleChoiceField):
 
 
 class WorksObjectsForm(forms.Form):
-    prefix = 'works_objects'
+    prefix = "works_objects"
 
     def __init__(self, instance, works_types, *args, **kwargs):
         self.instance = instance
 
         initial = {}
-        for type_id, object_id in self.instance.works_object_types.values_list('works_type__id', 'id'):
+        for type_id, object_id in self.instance.works_object_types.values_list(
+            "works_type__id", "id"
+        ):
             initial.setdefault(str(type_id), []).append(object_id)
 
-        super().__init__(*args, **{**kwargs, 'initial': initial})
+        super().__init__(*args, **{**kwargs, "initial": initial})
 
-        for works_type in works_types.prefetch_related('works_object_types'):
+        for works_type in works_types.prefetch_related("works_object_types"):
             self.fields[str(works_type.pk)] = WorksObjectsTypeChoiceField(
                 queryset=works_type.works_object_types.filter(
                     administrative_entities=self.instance.administrative_entity
                 ).distinct(),
-                widget=forms.CheckboxSelectMultiple(), label=works_type.name,
-                error_messages={'required': _(
-                    'Sélectionnez au moins un objet par type de demande')},
+                widget=forms.CheckboxSelectMultiple(),
+                label=works_type.name,
+                error_messages={
+                    "required": _("Sélectionnez au moins un objet par type de demande")
+                },
             )
 
     @transaction.atomic
     def save(self):
-        works_object_types = [item for sublist in self.cleaned_data.values() for item in sublist]
+        works_object_types = [
+            item for sublist in self.cleaned_data.values() for item in sublist
+        ]
 
         services.set_works_object_types(self.instance, works_object_types)
 
@@ -126,17 +141,17 @@ class WorksObjectsForm(forms.Form):
 class PartialValidationMixin:
     def __init__(self, *args, **kwargs):
         # Set to `False` to disable required fields validation (useful to allow saving incomplete forms)
-        self.enable_required = kwargs.pop('enable_required', True)
+        self.enable_required = kwargs.pop("enable_required", True)
         super().__init__(*args, **kwargs)
 
 
 class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
-    prefix = 'properties'
-    required_css_class = 'required'
+    prefix = "properties"
+    required_css_class = "required"
 
     def __init__(self, instance, *args, **kwargs):
         self.instance = instance
-        disable_fields = kwargs.pop('disable_fields', False)
+        disable_fields = kwargs.pop("disable_fields", False)
 
         # Compute initial values for fields
         initial = {}
@@ -144,10 +159,12 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         for prop_value in prop_values:
             initial[
                 self.get_field_name(
-                    prop_value.works_object_type_choice.works_object_type, prop_value.property)
+                    prop_value.works_object_type_choice.works_object_type,
+                    prop_value.property,
+                )
             ] = services.get_property_value(prop_value)
 
-        kwargs['initial'] = {**initial, **kwargs.get('initial', {})}
+        kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
 
         super().__init__(*args, **kwargs)
 
@@ -167,7 +184,10 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         Return a list of tuples `(WorksObjectType, List[Field])` for each object type and their properties.
         """
         return [
-            (object_type, [self[self.get_field_name(object_type, prop)] for prop in props])
+            (
+                object_type,
+                [self[self.get_field_name(object_type, prop)] for prop in props],
+            )
             for object_type, props in self.get_properties_by_object_type()
         ]
 
@@ -202,9 +222,10 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         """
         field_class = get_field_cls_for_property(prop)
         if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_TEXT:
-            field_instance = field_class(**self.get_field_kwargs(prop),
-                                         widget=forms.Textarea(attrs={'rows': 1, }),
-                                         )
+            field_instance = field_class(
+                **self.get_field_kwargs(prop),
+                widget=forms.Textarea(attrs={"rows": 1,}),
+            )
         else:
             field_instance = field_class(**self.get_field_kwargs(prop),)
         return field_instance
@@ -214,8 +235,8 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         Return the options used when instanciating the field for the given `prop`.
         """
         return {
-            'required': self.enable_required and prop.is_mandatory,
-            'label': prop.name
+            "required": self.enable_required and prop.is_mandatory,
+            "label": prop.name,
         }
 
     def save(self):
@@ -224,12 +245,12 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                 permit_request=self.instance,
                 object_type=works_object_type,
                 prop=prop,
-                value=self.cleaned_data[self.get_field_name(works_object_type, prop)]
+                value=self.cleaned_data[self.get_field_name(works_object_type, prop)],
             )
 
 
 class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
-    prefix = 'appendices'
+    prefix = "appendices"
 
     def get_properties_by_object_type(self):
         return services.get_appendices(self.instance)
@@ -241,30 +262,24 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
         return services.get_appendices_values(self.instance)
 
     def get_field_kwargs(self, prop):
-        return {**super().get_field_kwargs(prop), **{'widget': forms.ClearableFileInput}}
+        return {
+            **super().get_field_kwargs(prop),
+            **{"widget": forms.ClearableFileInput},
+        }
 
 
 class NewDjangoAuthUserForm(UserCreationForm):
 
-    first_name = forms.CharField(
-        label=_('Prénom'),
-        max_length=30,
-    )
-    last_name = forms.CharField(
-        label=_('Nom'),
-        max_length=150,
-    )
-    email = forms.EmailField(
-        label=_('Email'),
-        max_length=254,
-    )
-    required_css_class = 'required'
+    first_name = forms.CharField(label=_("Prénom"), max_length=30,)
+    last_name = forms.CharField(label=_("Nom"), max_length=150,)
+    email = forms.EmailField(label=_("Email"), max_length=254,)
+    required_css_class = "required"
 
     def save(self, commit=True):
         user = super(NewDjangoAuthUserForm, self).save(commit=False)
-        user.email = self.cleaned_data['email']
-        user.first_name = self.cleaned_data['first_name']
-        user.last_name = self.cleaned_data['last_name']
+        user.email = self.cleaned_data["email"]
+        user.first_name = self.cleaned_data["first_name"]
+        user.last_name = self.cleaned_data["last_name"]
 
         if commit:
             user.save()
@@ -273,309 +288,255 @@ class NewDjangoAuthUserForm(UserCreationForm):
 
 
 class DjangoAuthUserForm(forms.ModelForm):
-    """ User
-    """
+    """User"""
+
     first_name = forms.CharField(
         max_length=30,
-        label=_('Prénom'),
+        label=_("Prénom"),
         widget=forms.TextInput(
-            attrs={
-                'placeholder': 'ex: Marcel',
-                'required': 'required'
-            }
-        )
+            attrs={"placeholder": "ex: Marcel", "required": "required"}
+        ),
     )
     last_name = forms.CharField(
         max_length=150,
-        label=_('Nom'),
+        label=_("Nom"),
         widget=forms.TextInput(
-            attrs={
-                'placeholder': 'ex: Dupond',
-                'required': 'required'
-            }
-        )
+            attrs={"placeholder": "ex: Dupond", "required": "required"}
+        ),
     )
     email = forms.EmailField(
         max_length=254,
-        label=_('Email'),
+        label=_("Email"),
         widget=forms.TextInput(
-            attrs={
-                'placeholder': 'ex: example@example.com',
-                'required': 'required'
-            }
-        )
+            attrs={"placeholder": "ex: example@example.com", "required": "required"}
+        ),
     )
-    required_css_class = 'required'
+    required_css_class = "required"
 
     class Meta:
         model = User
-        fields = [
-            'first_name',
-            'last_name',
-            'email'
-        ]
+        fields = ["first_name", "last_name", "email"]
 
 
 class GenericAuthorForm(forms.ModelForm):
 
-    required_css_class = 'required'
+    required_css_class = "required"
     address = forms.CharField(
         max_length=100,
-        label=_('Adresse'),
+        label=_("Adresse"),
         widget=forms.TextInput(
             attrs={
-                "data_remote_autocomplete": json.dumps({
-                    "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
-                    "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
-                    "search_prefix": "false",
-                    "origins": "address",
-                    "zipcode_field": "zipcode",
-                    "city_field": "city",
-                    "placeholder": "ex: Place Pestalozzi 2 Yverdon",
-                    "single_contact": "true"}),
-                'required': 'required',
+                "data_remote_autocomplete": json.dumps(
+                    {
+                        "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
+                        "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
+                        "search_prefix": "false",
+                        "origins": "address",
+                        "zipcode_field": "zipcode",
+                        "city_field": "city",
+                        "placeholder": "ex: Place Pestalozzi 2 Yverdon",
+                        "single_contact": "true",
+                    }
+                ),
+                "required": "required",
             }
         ),
     )
 
     zipcode = forms.IntegerField(
-        label=_('NPA'),
-        validators=[
-            MinValueValidator(1000),
-            MaxValueValidator(9999)
-        ],
-        widget=forms.NumberInput(
-            attrs={
-                'required': 'required'
-            }
-        )
+        label=_("NPA"),
+        validators=[MinValueValidator(1000), MaxValueValidator(9999)],
+        widget=forms.NumberInput(attrs={"required": "required"}),
     )
     city = forms.CharField(
         max_length=100,
-        label=_('Ville'),
+        label=_("Ville"),
         widget=forms.TextInput(
-            attrs={
-                'placeholder': 'ex: Yverdon',
-                'required': 'required'
-            }
-        )
+            attrs={"placeholder": "ex: Yverdon", "required": "required"}
+        ),
     )
 
     class Meta:
         model = models.PermitAuthor
         fields = [
-            'address',
-            'zipcode',
-            'city',
-            'phone_first',
-            'phone_second',
-            'company_name',
-            'vat_number',
+            "address",
+            "zipcode",
+            "city",
+            "phone_first",
+            "phone_second",
+            "company_name",
+            "vat_number",
         ]
         help_texts = {
-            'vat_number':
-                'Trouvez votre numéro <a href="https://www.uid.admin.ch/Search.aspx?lang=fr" target="_blank">TVA</a>',
+            "vat_number": 'Trouvez votre numéro <a href="https://www.uid.admin.ch/Search.aspx?lang=fr" target="_blank">TVA</a>',
         }
         widgets = {
-            'phone_first': forms.TextInput(
-                attrs={
-                    'placeholder': 'ex: 024 111 22 22'
-                }
-            ),
-            'phone_second': forms.TextInput(
-                attrs={
-                    'placeholder': 'ex: 079 111 22 22'
-                }
-            ),
-            'vat_number': forms.TextInput(
-                attrs={
-                    'placeholder': 'ex: CHE-123.456.789'
-                }
-            ),
-            'company_name': forms.TextInput(
-                attrs={
-                    'placeholder': 'ex: Construction SA'
-                }
+            "phone_first": forms.TextInput(attrs={"placeholder": "ex: 024 111 22 22"}),
+            "phone_second": forms.TextInput(attrs={"placeholder": "ex: 079 111 22 22"}),
+            "vat_number": forms.TextInput(attrs={"placeholder": "ex: CHE-123.456.789"}),
+            "company_name": forms.TextInput(
+                attrs={"placeholder": "ex: Construction SA"}
             ),
         }
 
 
 class PermitRequestCreditorForm(forms.ModelForm):
-
     class Meta:
         model = models.PermitRequest
-        fields = ['creditor_type']
+        fields = ["creditor_type"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        required_actor_types = set(models.PermitActorType.objects.filter(
-            works_type__in=services.get_permit_request_works_types(self.instance)
-        ).values_list('type', flat=True))
+        required_actor_types = set(
+            models.PermitActorType.objects.filter(
+                works_type__in=services.get_permit_request_works_types(self.instance)
+            ).values_list("type", flat=True)
+        )
 
         choices = [
             (creditor_type, label)
-            for creditor_type, label in self.fields['creditor_type'].choices
+            for creditor_type, label in self.fields["creditor_type"].choices
             if creditor_type in required_actor_types
         ]
-        choices.insert(0, ('', '----'))
-        self.fields['creditor_type'].choices = choices
+        choices.insert(0, ("", "----"))
+        self.fields["creditor_type"].choices = choices
 
 
 class PermitRequestActorForm(forms.ModelForm):
-    """ Contacts
-    """
-    required_css_class = 'required'
+    """Contacts"""
+
+    required_css_class = "required"
     actor_fields = [
-        'first_name',
-        'last_name',
-        'company_name',
-        'vat_number',
-        'address',
-        'address',
-        'city',
-        'phone',
-        'zipcode',
-        'email'
+        "first_name",
+        "last_name",
+        "company_name",
+        "vat_number",
+        "address",
+        "address",
+        "city",
+        "phone",
+        "zipcode",
+        "email",
     ]
 
     first_name = forms.CharField(
         max_length=150,
-        label=_('Prénom'),
+        label=_("Prénom"),
         widget=forms.TextInput(
-            attrs={
-                'placeholder': 'ex: Marcel',
-                'required': 'required'
-            }
-        )
+            attrs={"placeholder": "ex: Marcel", "required": "required"}
+        ),
     )
     last_name = forms.CharField(
         max_length=100,
-        label=_('Nom'),
+        label=_("Nom"),
         widget=forms.TextInput(
-            attrs={
-                'placeholder': 'ex: Dupond',
-                'required': 'required'
-            }
-        )
+            attrs={"placeholder": "ex: Dupond", "required": "required"}
+        ),
     )
     phone = forms.CharField(
         min_length=10,
         max_length=16,
-        label=_('Téléphone'),
+        label=_("Téléphone"),
         widget=forms.TextInput(
-            attrs={
-                'placeholder': 'ex: 024 111 22 22',
-                'required': 'required'
-            }
+            attrs={"placeholder": "ex: 024 111 22 22", "required": "required"}
         ),
         validators=[
             RegexValidator(
-                regex=r'^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$',
+                regex=r"^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
                 message=mark_safe(
                     'Veuillez saisir un <a target="_blank" href="https://www.bakom.admin.ch/bakom/fr/page-daccueil/telecommunication/numerotation-et-telephonie.html">numéro de téléphone suisse valide</a>.'
-                )
+                ),
             )
-        ]
+        ],
     )
     email = forms.EmailField(
         max_length=100,
-        label=_('Email'),
+        label=_("Email"),
         widget=forms.TextInput(
-            attrs={
-                'placeholder': 'ex: example@example.com',
-                'required': 'required'
-            }
-        )
+            attrs={"placeholder": "ex: example@example.com", "required": "required"}
+        ),
     )
     address = forms.CharField(
         max_length=100,
-        label=_('Adresse'),
+        label=_("Adresse"),
         widget=forms.TextInput(
             attrs={
-                "data_remote_autocomplete": json.dumps({
-                    "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
-                    "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
-                    "search_prefix": "false",
-                    "origins": "address",
-                    "zipcode_field": "zipcode",
-                    "city_field": "city",
-                    "placeholder": "ex: Place Pestalozzi 2 Yverdon", }),
-                'required': 'required',
+                "data_remote_autocomplete": json.dumps(
+                    {
+                        "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
+                        "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
+                        "search_prefix": "false",
+                        "origins": "address",
+                        "zipcode_field": "zipcode",
+                        "city_field": "city",
+                        "placeholder": "ex: Place Pestalozzi 2 Yverdon",
+                    }
+                ),
+                "required": "required",
             }
         ),
     )
 
     zipcode = forms.IntegerField(
-        label=_('NPA'),
-        validators=[
-            MinValueValidator(1000),
-            MaxValueValidator(9999)
-        ],
-        widget=forms.NumberInput(
-            attrs={
-                'required': 'required'
-            }
-        )
+        label=_("NPA"),
+        validators=[MinValueValidator(1000), MaxValueValidator(9999)],
+        widget=forms.NumberInput(attrs={"required": "required"}),
     )
     city = forms.CharField(
         max_length=100,
-        label=_('Ville'),
+        label=_("Ville"),
         widget=forms.TextInput(
-            attrs={
-                'placeholder': 'ex: Yverdon',
-                'required': 'required'
-            }
-        )
+            attrs={"placeholder": "ex: Yverdon", "required": "required"}
+        ),
     )
     company_name = forms.CharField(
         required=False,
-        label=_('Raison sociale'),
+        label=_("Raison sociale"),
         max_length=100,
-        widget=forms.TextInput(
-            attrs={
-                'placeholder': 'ex: Construction SA'
-            }
-        )
+        widget=forms.TextInput(attrs={"placeholder": "ex: Construction SA"}),
     )
     vat_number = forms.CharField(
         required=False,
-        label=_('Numéro TVA'),
+        label=_("Numéro TVA"),
         max_length=19,
         validators=[
             RegexValidator(
-                regex=r'^(CHE-)\d{3}\.\d{3}\.\d{3}(\sTVA)?$',
-                message='Le code d\'entreprise doit être de type \
+                regex=r"^(CHE-)\d{3}\.\d{3}\.\d{3}(\sTVA)?$",
+                message="Le code d'entreprise doit être de type \
                          CHE-123.456.789 (TVA) \
                          et vous pouvez le trouver sur \
                          le registe fédéral des entreprises \
-                         https://www.uid.admin.ch/search.aspx'
+                         https://www.uid.admin.ch/search.aspx",
             )
         ],
-        widget=forms.TextInput(
-            attrs={
-                'placeholder': 'ex: CHE-123.456.789 (TVA)'
-            }
-        ),
+        widget=forms.TextInput(attrs={"placeholder": "ex: CHE-123.456.789 (TVA)"}),
     )
 
     class Meta:
         model = models.PermitRequestActor
-        fields = ['actor_type']
-        widgets = {'actor_type': forms.Select(
-            attrs={'readonly': 'readonly', 'class': "hide-arrow"}
-        ),
+        fields = ["actor_type"]
+        widgets = {
+            "actor_type": forms.Select(
+                attrs={"readonly": "readonly", "class": "hide-arrow"}
+            ),
         }
 
     def __init__(self, *args, **kwargs):
-        instance = kwargs.get('instance')
+        instance = kwargs.get("instance")
 
         if instance and instance.pk:
-            kwargs['initial'] = {**kwargs.get('initial', {}), **{
-                **kwargs.get('initial', {}),
-                **{field: getattr(instance.actor, field) for field in self.actor_fields},
-                **{'actor_type': instance.actor_type}
-            }}
+            kwargs["initial"] = {
+                **kwargs.get("initial", {}),
+                **{
+                    **kwargs.get("initial", {}),
+                    **{
+                        field: getattr(instance.actor, field)
+                        for field in self.actor_fields
+                    },
+                    **{"actor_type": instance.actor_type},
+                },
+            }
 
         super().__init__(*args, **kwargs)
 
@@ -604,146 +565,166 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequest
         fields = [
-            'status',
-            'price',
-            'exemption',
-            'opposition',
-            'comment',
-            'archeology_status'
+            "status",
+            "price",
+            "exemption",
+            "opposition",
+            "comment",
+            "archeology_status",
         ]
         widgets = {
-            'exemption': forms.Textarea(attrs={'rows': 3}),
-            'opposition': forms.Textarea(attrs={'rows': 3}),
-            'comment': forms.Textarea(attrs={'rows': 3}),
+            "exemption": forms.Textarea(attrs={"rows": 3}),
+            "opposition": forms.Textarea(attrs={"rows": 3}),
+            "comment": forms.Textarea(attrs={"rows": 3}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        instance = kwargs.pop('instance', None)
+        instance = kwargs.pop("instance", None)
         availables_choices = []
         if instance:
             available_statuses_for_administrative_entity = list(
-                services.get_status_choices_for_administrative_entity(instance.administrative_entity)
+                services.get_status_choices_for_administrative_entity(
+                    instance.administrative_entity
+                )
             )
-            filter1 = [tup for tup in models.PermitRequest.STATUS_CHOICES if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)]
-            filter2 = [el for el in filter1 if any(i in el for i in available_statuses_for_administrative_entity)]
-            self.fields['status'].choices = tuple(filter2)
+            filter1 = [
+                tup
+                for tup in models.PermitRequest.STATUS_CHOICES
+                if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)
+            ]
+            filter2 = [
+                el
+                for el in filter1
+                if any(i in el for i in available_statuses_for_administrative_entity)
+            ]
+            self.fields["status"].choices = tuple(filter2)
 
 
 # extend django gis osm openlayers widget
 class GeometryWidget(geoforms.OSMWidget):
 
-    template_name = 'geometrywidget/geometrywidget.html'
+    template_name = "geometrywidget/geometrywidget.html"
     map_srid = 2056
 
     @property
     def media(self):
         return forms.Media(
-            css={'all': ('libs/js/openlayers6/ol.css',)},
-            js=('libs/js/openlayers6/ol.js',
-                'libs/js/proj4js/proj4-src.js',
-                'customWidgets/GeometryWidget/geometrywidget.js'
-                ))
+            css={"all": ("libs/js/openlayers6/ol.css",)},
+            js=(
+                "libs/js/openlayers6/ol.js",
+                "libs/js/proj4js/proj4-src.js",
+                "customWidgets/GeometryWidget/geometrywidget.js",
+            ),
+        )
 
 
 class PermitRequestGeoTimeForm(forms.ModelForm):
 
-    required_css_class = 'required'
+    required_css_class = "required"
     starts_at = forms.DateTimeField(
         label=_("Date planifiée de début"),
-        input_formats = ["%d/%m/%Y %H:%M"],
-        widget = DateTimePickerInput(
-            options = {
+        input_formats=["%d/%m/%Y %H:%M"],
+        widget=DateTimePickerInput(
+            options={
                 "format": "DD/MM/YYYY HH:MM",
                 "locale": "fr-CH",
                 "useCurrent": False,
                 "minDate": (
-                        datetime.today() +
-                        timedelta(days=int(settings.MIN_START_DELAY))
-                    ).strftime('%Y/%m/%d')
+                    datetime.today() + timedelta(days=int(settings.MIN_START_DELAY))
+                ).strftime("%Y/%m/%d"),
             }
-        ).start_of('event days'),
+        ).start_of("event days"),
     )
     ends_at = forms.DateTimeField(
         label=_("Date planifiée de fin"),
-        input_formats = ["%d/%m/%Y %H:%M"],
-        widget = DateTimePickerInput(
+        input_formats=["%d/%m/%Y %H:%M"],
+        widget=DateTimePickerInput(
             options={
                 "format": "DD/MM/YYYY HH:MM",
                 "locale": "fr-CH",
                 "useCurrent": False,
             }
-        ).end_of('event days'),
+        ).end_of("event days"),
     )
+
     class Meta:
 
         model = models.PermitRequestGeoTime
         fields = [
-            'geom',
-            'starts_at',
-            'ends_at',
-            'comment',
-            'external_link',
+            "geom",
+            "starts_at",
+            "ends_at",
+            "comment",
+            "external_link",
         ]
         help_texts = {
-            'starts_at': "Date de début du chantier ou d'occupation du territoire. Si l'heure n'est pas pertinente, insérer 00:00.",
-            'ends_at': "Date de fin du chantier ou d'occupation du territoire. Si l'heure n'est pas pertinente, insérer 23:59.",
+            "starts_at": "Date de début du chantier ou d'occupation du territoire. Si l'heure n'est pas pertinente, insérer 00:00.",
+            "ends_at": "Date de fin du chantier ou d'occupation du territoire. Si l'heure n'est pas pertinente, insérer 23:59.",
         }
         widgets = {
-            'geom': GeometryWidget(attrs={
-                'map_width': '100%',
-                'map_height': 400,
-                'default_center': [2539057, 1181111],
-                'default_zoom': 10,
-                'display_raw': False,
-                'edit_geom': True,
-                'min_zoom': 5,
-                'wmts_capabilities_url': settings.WMTS_GETCAP,
-                'wmts_layer': settings.WMTS_LAYER,
-                'wmts_capabilities_url_alternative': settings.WMTS_GETCAP_ALTERNATIVE,
-                'wmts_layer_alternative': settings.WMTS_LAYER_ALTERNATIVE,
-                'restriction_area_enabled': True,
-                'geometry_db_type': 'GeometryCollection',
-            }),
-            'comment':  forms.Textarea(attrs={'rows': 2}),
+            "geom": GeometryWidget(
+                attrs={
+                    "map_width": "100%",
+                    "map_height": 400,
+                    "default_center": [2539057, 1181111],
+                    "default_zoom": 10,
+                    "display_raw": False,
+                    "edit_geom": True,
+                    "min_zoom": 5,
+                    "wmts_capabilities_url": settings.WMTS_GETCAP,
+                    "wmts_layer": settings.WMTS_LAYER,
+                    "wmts_capabilities_url_alternative": settings.WMTS_GETCAP_ALTERNATIVE,
+                    "wmts_layer_alternative": settings.WMTS_LAYER_ALTERNATIVE,
+                    "restriction_area_enabled": True,
+                    "geometry_db_type": "GeometryCollection",
+                }
+            ),
+            "comment": forms.Textarea(attrs={"rows": 2}),
         }
 
     def __init__(self, *args, **kwargs):
-        permit_request = kwargs.pop('permit_request', None)
+        permit_request = kwargs.pop("permit_request", None)
         super().__init__(*args, **kwargs)
         if permit_request:
             # Pass administrative entity id to the widget
-            self.fields['geom'].widget.attrs['administrative_entity_json_url'] = \
-                reverse("permits:administrative_entities_geojson",
-                        args=[permit_request.administrative_entity_id])
-            self.fields['geom'].widget.attrs['administrative_entity_id'] = str(
-                permit_request.administrative_entity.id)
+            self.fields["geom"].widget.attrs[
+                "administrative_entity_json_url"
+            ] = reverse(
+                "permits:administrative_entities_geojson",
+                args=[permit_request.administrative_entity_id],
+            )
+            self.fields["geom"].widget.attrs["administrative_entity_id"] = str(
+                permit_request.administrative_entity.id
+            )
             # Pass WMS layers to the widgets
-            wms_layers = [item.works_object_type.works_object.wms_layers.strip()
-                          for item in services.get_works_object_type_choices(
-                            permit_request).order_by('-works_object_type__works_object__wms_layers_order')
-                          if item.works_object_type.works_object.wms_layers != '']
-            self.fields['geom'].widget.attrs['wms_layers'] = ','.join(wms_layers)
+            wms_layers = [
+                item.works_object_type.works_object.wms_layers.strip()
+                for item in services.get_works_object_type_choices(
+                    permit_request
+                ).order_by("-works_object_type__works_object__wms_layers_order")
+                if item.works_object_type.works_object.wms_layers != ""
+            ]
+            self.fields["geom"].widget.attrs["wms_layers"] = ",".join(wms_layers)
 
 
 class PermitRequestValidationDepartmentSelectionForm(forms.Form):
     departments = forms.ModelMultipleChoiceField(
         queryset=models.PermitDepartment.objects.none(),
         widget=forms.CheckboxSelectMultiple(),
-        label=_("Services chargés de la validation")
+        label=_("Services chargés de la validation"),
     )
 
     def __init__(self, instance, *args, **kwargs):
         self.permit_request = instance
         permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
         validate_permission = Permission.objects.get(
-            codename='validate_permit_request',
-            content_type=permit_request_ct
+            codename="validate_permit_request", content_type=permit_request_ct
         )
         permit_request_departments = models.PermitDepartment.objects.filter(
             administrative_entity=self.permit_request.administrative_entity,
-            group__permissions=validate_permission
+            group__permissions=validate_permission,
         ).distinct()
 
         departments = []
@@ -751,8 +732,9 @@ class PermitRequestValidationDepartmentSelectionForm(forms.Form):
             departements = departments.append(validation.department)
         kwargs["initial"] = dict(
             kwargs.get("initial", {}),
-            departments=departments if departments else permit_request_departments.filter(
-                is_default_validator=True)
+            departments=departments
+            if departments
+            else permit_request_departments.filter(is_default_validator=True),
         )
 
         super().__init__(*args, **kwargs)
@@ -766,12 +748,12 @@ class PermitRequestValidationForm(forms.ModelForm):
             "validation_status",
             "comment_before",
             "comment_during",
-            "comment_after"
+            "comment_after",
         ]
         widgets = {
-            'comment_before': forms.Textarea(attrs={'rows': 3}),
-            'comment_during': forms.Textarea(attrs={'rows': 3}),
-            'comment_after': forms.Textarea(attrs={'rows': 3}),
+            "comment_before": forms.Textarea(attrs={"rows": 3}),
+            "comment_during": forms.Textarea(attrs={"rows": 3}),
+            "comment_after": forms.Textarea(attrs={"rows": 3}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -779,7 +761,12 @@ class PermitRequestValidationForm(forms.ModelForm):
 
         # Show "----" instead of "en attente" for the default status
         self.fields["validation_status"].choices = [
-            (value, label if value != models.PermitRequestValidation.STATUS_REQUESTED else "-" * 9)
+            (
+                value,
+                label
+                if value != models.PermitRequestValidation.STATUS_REQUESTED
+                else "-" * 9,
+            )
             for value, label in self.fields["validation_status"].choices
         ]
 
@@ -799,19 +786,23 @@ class PermitRequestValidationPokeForm(forms.Form):
 
 class PermitRequestClassifyForm(forms.ModelForm):
     # Status field is set as initial value when instanciating the form in the view
-    status = forms.ChoiceField(choices=(
-        (status, label)
-        for status, label in models.PermitRequest.STATUS_CHOICES
-        if status in [models.PermitRequest.STATUS_APPROVED, models.PermitRequest.STATUS_REJECTED]
-    ), widget=forms.HiddenInput, disabled=True)
+    status = forms.ChoiceField(
+        choices=(
+            (status, label)
+            for status, label in models.PermitRequest.STATUS_CHOICES
+            if status
+            in [
+                models.PermitRequest.STATUS_APPROVED,
+                models.PermitRequest.STATUS_REJECTED,
+            ]
+        ),
+        widget=forms.HiddenInput,
+        disabled=True,
+    )
 
     class Meta:
         model = models.PermitRequest
-        fields = [
-            "is_public",
-            "status",
-            "validation_pdf"
-        ]
+        fields = ["is_public", "status", "validation_pdf"]
 
     def save(self, commit=True):
         permit_request = super().save(commit=False)

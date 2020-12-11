@@ -26,6 +26,39 @@ To debug and view the resulting `docker-compose-dev.yml` file use (uses the `.en
 docker-compose -f docker-compose-dev.yml config
 ```
 
+### Run the tests from within the docker container
+
+List running containers:
+
+```bash
+$ docker ps -a
+
+CONTAINER ID        IMAGE                         COMMAND                  CREATED             STATUS              PORTS                    NAMES
+de8f58bf2e2c        gms_web                       "/code/entrypoint_de…"   16 hours ago        Up 16 hours         0.0.0.0:9095->9000/tcp   geocity_web_1
+ab542f438d62        camptocamp/qgis-server:3.10   "/usr/local/bin/star…"   16 hours ago        Up 16 hours         0.0.0.0:9096->80/tcp     geocity_qgisserver_1
+ffaa9f6c1b21        camptocamp/postgres:11        "docker-entrypoint.s…"   16 hours ago        Up 16 hours         0.0.0.0:9097->5432/tcp   geocity_postgres_1
+```
+
+Enter the container:
+
+```bash
+$ docker exec -it de8f58bf2e2c bash
+```
+
+Run the tests:
+
+```bash
+root@de8f58bf2e2c:/code# ./run_tests.sh
+```
+
+## Linting
+
+We use [Black](https://github.com/psf/black) as code formatter. Just use the following command to automatically format your code:
+
+```
+$ balck .
+```
+
 ## Setup for full Docker persistent instance served by gunicorn webserver
 
 #### Create new PostGIS DB
