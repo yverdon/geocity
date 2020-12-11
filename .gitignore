@@ -21,3 +21,4 @@ private_documents/
 *.env
 *.bak
 .coverage
+env.backup
