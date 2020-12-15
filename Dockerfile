@@ -1,4 +1,4 @@
-FROM loicgasser/docker-geocity:latest
+FROM sitdocker/geocity-base:latest
 
 ARG dev_dependencies
 
