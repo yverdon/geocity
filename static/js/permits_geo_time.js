@@ -81,7 +81,7 @@
         let geometryWidgetNode = collapseNode.querySelector("[data-geometry-widget]");
         let elementId;
 
-        if (geometryWidgetNode === undefined) {
+        if (!geometryWidgetNode) {
           return;
         }
 
