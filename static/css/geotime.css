@@ -54,33 +54,18 @@ label.custom-file-label:after {
   content: "Parcourir...";
 }
 
-#mapButtons a:not(:last-child) {
-  margin-bottom: 10px;
-}
-
-#mapButtons a {
-  margin-left: 0px;
-}
-
-#set-point-manual {
+.map-buttons a {
   margin-top: 10px;
+}
+
+.map-buttons button {
+  margin-right: 10px;
+  margin-bottom: 10px;
 }
 
 /* Large devices (desktops, 992px and up) */
 @media (min-width: 992px) {
-  #mapButtons a {
+  .map-buttons button {
     flex-direction: row;
-  }
-
-  #mapButtons a:not(:last-child) {
-    margin-bottom: 0px;
-  }
-
-  #mapButtons a:not(:first-child) {
-    margin-left: 10px;
-  }
-
-  #set-point-manual {
-    margin-top: 0px;
   }
 }

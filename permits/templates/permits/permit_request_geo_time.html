@@ -1,13 +1,13 @@
 {% extends "base_generic.html" %}
 {% load bootstrap4 %}
 {% load i18n %}
+{% load static %}
 {% load permits_extras %}
-{% load staticfiles %}
 
 {% block scripts %}
 {% endblock %}
 {% block content %}
-<div class="container" id="permit-request-geo-time">
+<div id="permit-request-geo-time">
   {% permit_progressbar permit_request 'geo_time' %}
   <h3>{% trans "Renseignez le planning et la localisation" %}</h3>
   <hr>
@@ -35,6 +35,14 @@
   <div class="d-none" data-geo-time-role="emptyForm">
     {% include "permits/_geo_time_form.html" with form=formset.empty_form form_id="__prefix__" form_number="__prefix__" open=False %}
   </div>
+</div>
+
+<script src="{% static "js/permits_geo_time.js" %}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    new window.PermitsGeoTime(document.getElementById("permit-request-geo-time"));
+  });
+</script>
 </div>
 
 <script src="{% static "js/permits_geo_time.js" %}"></script>
