@@ -11,6 +11,11 @@ class OwnPermitRequestsTable(tables.Table):
         verbose_name=_('Actions'),
         orderable=False
     )
+    status = tables.Column(attrs={
+        'td': {
+            'class': lambda record: "status" + str(record.status)
+        }
+    })
     starts_at_min = tables.Column(verbose_name=_("Début"))
     ends_at_max = tables.Column(verbose_name=_("Fin"))
     works_objects_html = tables.Column(
