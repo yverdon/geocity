@@ -2,22 +2,45 @@
 {% load bootstrap4 %}
 {% load i18n %}
 {% load permits_extras %}
+{% load staticfiles %}
 
 {% block scripts %}
 {% endblock %}
 {% block content %}
+<div class="container" id="permit-request-geo-time">
   {% permit_progressbar permit_request 'geo_time' %}
   <h3>{% trans "Renseignez le planning et la localisation" %}</h3>
   <hr>
   <form method="post">
-    {% csrf_token %}
-    <div id="forms-container">
-      {{ form.media }}
-      {% bootstrap_form form layout='horizontal' %}
+    <div data-geo-time-role="forms" data-nb-forms="{{ formset.forms|length }}">
+      {% for form in formset.forms %}
+        {{ form.media }}
+        {% include "permits/_geo_time_form.html" with form=form form_id=forloop.counter0 form_number=forloop.counter open=forloop.last %}
+      {% endfor %}
     </div>
+
+    {% csrf_token %}
+
+    <div data-geo-time-role="managementForm">
+      {{ formset.management_form }}
+    </div>
+
     {% buttons %}
       <a href="{% url 'permits:permit_request_properties' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
+      <button class="btn btn-secondary" type="button" data-geo-time-role="addForm">{% trans "Ajouter un nouveau" %}</button>
       <button class="btn btn-primary">{% trans "Enregistrer et poursuivre" %}</button>
     {% endbuttons %}
   </form>
+
+  <div class="d-none" data-geo-time-role="emptyForm">
+    {% include "permits/_geo_time_form.html" with form=formset.empty_form form_id="__prefix__" form_number="__prefix__" open=False %}
+  </div>
+</div>
+
+<script src="{% static "js/permits_geo_time.js" %}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    new window.PermitsGeoTime(document.getElementById("permit-request-geo-time"));
+  });
+</script>
 {% endblock %}

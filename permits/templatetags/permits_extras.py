@@ -1,6 +1,9 @@
+import json
 import os.path
 
 from django import template
+from django.forms import modelformset_factory
+from permits import services, forms, models
 from django.utils.translation import gettext as _
 
 from permits import forms, models, services
@@ -29,16 +32,19 @@ def permit_request_summary(context, permit_request):
 
     objects_infos = services.get_permit_objects(permit_request)
     contacts = services.get_contacts_summary(permit_request)
-    geo_time_instance = permit_request.geo_time.first()
-    geo_time_form = forms.PermitRequestGeoTimeForm(instance=geo_time_instance)
-    geo_time_form.fields["geom"].widget.attrs["edit_geom"] = False
-    geo_time_form.fields["geom"].widget.attrs["administrative_entity_json_url"] = (
-        "/permit-requests/adminentitiesgeojson/"
-        + str(permit_request.administrative_entity.id)
+
+    PermitRequestGeoTimeFormSet = modelformset_factory(
+        models.PermitRequestGeoTime,
+        form=forms.PermitRequestGeoTimeForm,
+        extra=0,
     )
-    geo_time_form.fields["geom"].widget.attrs["administrative_entity_id"] = str(
-        permit_request.administrative_entity.id
+
+    geo_time_formset = PermitRequestGeoTimeFormSet(
+        None,
+        form_kwargs={"permit_request": permit_request, "disable_fields": True},
+        queryset=permit_request.geo_time.all()
     )
+
     if permit_request.creditor_type is not None:
         creditor = models.ACTOR_TYPE_CHOICES[permit_request.creditor_type][1]
     elif permit_request.author.user and permit_request.creditor_type is None:
@@ -51,15 +57,16 @@ def permit_request_summary(context, permit_request):
     else:
         creditor = ""
 
-    for elem in ["starts_at", "ends_at", "external_link", "comment"]:
-        geo_time_form.fields[elem].widget.attrs["readonly"] = True
-
     return {
-        "creditor": creditor,
-        "contacts": contacts,
-        "objects_infos": objects_infos,
-        "geo_time_form": geo_time_form if geo_time_instance else None,
-        "intersected_geometries": permit_request.intersected_geometries
-        if permit_request.intersected_geometries != ""
-        else None,
+        'creditor': creditor,
+        'contacts': contacts,
+        'objects_infos': objects_infos,
+        'geo_time_formset': geo_time_formset,
+        'intersected_geometries': permit_request.intersected_geometries
+        if permit_request.intersected_geometries != '' else None,
     }
+
+
+@register.filter(name="json")
+def json_(value):
+    return json.dumps(value)
