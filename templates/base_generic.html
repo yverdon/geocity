@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{% block title %}{% endblock %}Demandes d'autorisations</title>
-    {% load staticfiles %}
+    {% load static %}
     {% load i18n %}
     {% load bootstrap4 %}
     {% bootstrap_css %}
     {% bootstrap_javascript jquery='full' %}
     {% block script%}{% endblock %}
     {% block stylesheets%}
-      {% load fontawesome %}
-      {% fontawesome_stylesheet %}
+      {% load fontawesome_5 %}
+
       <link rel="stylesheet" type="text/css" href="{% static 'css/permits.css' %}">
     {% endblock %}
     <link rel="icon" href="{% static 'images/logo.svg'%}" type="image/svg" sizes="16x16">
@@ -35,7 +35,7 @@
       <!-- On desktop -->
       <div class="position-relative d-none d-md-block">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          <i class="fa fa-user"></i> 
+          <i class="fa fa-user"></i>
           {% block connected_user %}<b>{{ user.get_username }}</b>{% endblock %}
         </a>
         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
@@ -49,7 +49,7 @@
       </div>
 
       <!-- On mobile -->
-      
+
       <button class="navbar-toggler d-flex d-md-none" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
