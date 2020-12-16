@@ -268,44 +268,6 @@ h3 {
   margin-left: 0px;
 }
 
-@media (max-width: 799px) {
-  .responsive-btn {
-    margin-bottom: 10px;
-    width: 245px;
-  }
-}
-
-@media (min-width: 768px) {
-  #new-request-btn {
-    margin-top: 0px;
-    margin-left: 20px;
-  }
-
-  .permits-action-btns {
-    flex-direction: row;
-  }
-
-  .permits-action-btns a:not(:last-child) {
-    margin-bottom: 0px;
-  }
-
-  .permits-action-btns a:not(:first-child) {
-    margin-left: 10px;
-  }
-
-  h1 {
-    font-size: 2.5rem;
-  }
-
-  h2 {
-    font-size: 2rem;
-  }
-
-  h3 {
-    font-size: 1.75rem;
-  }
-}
-
 /* Status styling */
 [class^="status"] {
   color: black;
@@ -342,4 +304,89 @@ h3 {
 .status7 {
   /* STATUS_RECEIVED */
   color: #A0B46F;
+}
+
+
+/* /////////////////////////////////// */
+/* Responsive for smaller devices */
+/* /////////////////////////////////// */
+
+
+@media (max-width: 799px) {
+  .responsive-btn {
+    margin-bottom: 10px;
+    width: 245px;
+  }
+}
+
+@media (max-width: 768px) {
+
+  #new-request-btn {
+    margin-top: 0px;
+    margin-left: 20px;
+  }
+
+  .permits-action-btns {
+    flex-direction: row;
+  }
+
+  .permits-action-btns a:not(:last-child) {
+    margin-bottom: 0px;
+  }
+
+  .permits-action-btns a:not(:first-child) {
+    margin-left: 10px;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  h2 {
+    font-size: 1.4rem;
+  }
+
+  h3 {
+    font-size: 1.2rem;
+  }
+
+  h4 {
+    font-size: 1rem;
+  }
+
+  .progress-nav a {
+    color: transparent;
+  }
+
+  .progress-nav-item {
+    flex: 1 1 auto;
+    width: 20px;
+    height: 30px;
+  }
+
+  .circle {
+    width: 25px;
+    height: 25px;
+    border-radius: 0;
+  }
+
+  .circle-inner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 22px;
+    height: 22px;
+    line-height: 15px;
+    border-radius: 0;
+    color: black;
+  }
+
+  .pill {
+    right: -8px;
+    top: -8px;
+    width: 15px;
+    height: 15px;
+    line-height: 15px;
+  }
+
 }
