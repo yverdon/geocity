@@ -1,46 +1,51 @@
+body {
+  color: var(--text-color);
+  background-color: var(--background-color);
+} 
+
 /* Global boostrap4 styling  */
 .btn {
   border-radius: 0 !important;
 }
 
 .btn-primary {
-  background-color: #008c6f;
-  border-color: #008c6f;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
 }
 
 .btn-primary:not(:disabled):not(.disabled):active {
   color: #fff;
-  background-color: #008c6f;
-  border-color: #008c6f;
-  box-shadow: 0 0 0 0.2rem #008c6f !important;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem var(--primary-color) !important;
 }
 
 .btn-outline-primary:not(:disabled):not(.disabled):active {
   color: #fff;
-  background-color: #008c6f;
-  border-color: #008c6f;
-  box-shadow: 0 0 0 0.2rem #008c6f !important;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem var(--primary-color) !important;
 }
 
 .btn-primary:hover {
-  background-color: #01755d;
+  background-color: var(--secondary-color);
 }
 
 .btn-outline-primary {
-  border-color: #008c6f;
-  color: #008c6f;
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .btn-outline-primary:hover {
-  background-color: #01755d;
+  background-color: var(--secondary-color);
 }
 
 a {
-  color: #008c6f;
+  color: var(--primary-color);
 }
 
 a:hover {
-  color: #01755d;
+  color: var(--secondary-color);
 }
 
 .btn-primary:not(:disabled):not(.disabled):active:focus,
@@ -54,8 +59,12 @@ input:focus {
 }
 
 .form-control:focus {
-  border-color: #008c6f !important;
-  box-shadow: 0 0 5px rgba(0, 140, 111, 1) !important;
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 5px var(--primary-color) !important;
+}
+
+.table {
+	color: var(--table-color);
 }
 
 /* App specific */
@@ -87,6 +96,10 @@ input:focus {
 
 .responsive-btn {
   width: 245px;
+}
+
+h1, h2, h3 {
+  color: var(--title-color);
 }
 
 h1 {
@@ -121,7 +134,7 @@ h3 {
 
 .progress-nav-item,
 .progress-nav-item a {
-  color: black;
+  color: var(--text-color);
 }
 
 .progress-nav-item-active {
@@ -129,16 +142,20 @@ h3 {
 }
 
 .progress-nav-item-active .circle {
-  background-color: #008c6f;
+  background-color: var(--primary-color);
 }
 
 .progress-nav-item-done .circle-inner {
-  background-color: #008c6f;
+  background-color: var(--primary-color);
   color: white;
 }
 
 .progress-nav-item-partial .circle-inner {
   background-color: #f1f4f8;
+}
+
+.navbar-light .navbar-brand {
+	color: var(--title-color);
 }
 
 .circle {
@@ -378,7 +395,7 @@ h3 {
     height: 22px;
     line-height: 15px;
     border-radius: 0;
-    color: black;
+    color: var(--title-color);
   }
 
   .pill {

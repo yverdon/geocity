@@ -17,6 +17,16 @@
       <link rel="stylesheet" type="text/css" href="{% static 'css/permits.css' %}">
     {% endblock %}
     <link rel="icon" href="{% static 'images/logo.svg'%}" type="image/svg" sizes="16x16">
+    <style>
+      :root {
+      --background-color: {{ config.BACKGROUND_COLOR }};
+      --primary-color : {{ config.PRIMARY_COLOR }};
+      --secondary-color : {{ config.SECONDARY_COLOR }};
+      --text-color: {{ config.TEXT_COLOR }};
+      --title-color: {{ config.TITLE_COLOR }};
+      --table-color: {{ config.TABLE_COLOR }};
+      }
+    </style>
 </head>
 <body>
 

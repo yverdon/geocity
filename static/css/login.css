@@ -12,7 +12,7 @@ body {
 }
 
 .semi-transparent-container {
-  background-color: white;
+  background-color: var(--background-color);
   opacity: 0.85;
   padding-top: 50px;
   padding-bottom: 50px;
@@ -26,13 +26,13 @@ body {
   margin-right: auto;
   border: 0;
   padding: 30px;
-  background-color: white;
+  background-color: var(--background-color);
   opacity: 0.85;
 }
 
 #login-welcome-text {
   padding: 25px 25px 25px 25px;
-  background-color: white;
+  background-color: var(--background-color);
   opacity: 0.85;
   width: 100%;
 }
