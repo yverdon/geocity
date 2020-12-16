@@ -34,15 +34,13 @@ def permit_request_summary(context, permit_request):
     contacts = services.get_contacts_summary(permit_request)
 
     PermitRequestGeoTimeFormSet = modelformset_factory(
-        models.PermitRequestGeoTime,
-        form=forms.PermitRequestGeoTimeForm,
-        extra=0,
+        models.PermitRequestGeoTime, form=forms.PermitRequestGeoTimeForm, extra=0,
     )
 
     geo_time_formset = PermitRequestGeoTimeFormSet(
         None,
         form_kwargs={"permit_request": permit_request, "disable_fields": True},
-        queryset=permit_request.geo_time.all()
+        queryset=permit_request.geo_time.all(),
     )
 
     if permit_request.creditor_type is not None:
@@ -58,12 +56,13 @@ def permit_request_summary(context, permit_request):
         creditor = ""
 
     return {
-        'creditor': creditor,
-        'contacts': contacts,
-        'objects_infos': objects_infos,
-        'geo_time_formset': geo_time_formset,
-        'intersected_geometries': permit_request.intersected_geometries
-        if permit_request.intersected_geometries != '' else None,
+        "creditor": creditor,
+        "contacts": contacts,
+        "objects_infos": objects_infos,
+        "geo_time_formset": geo_time_formset,
+        "intersected_geometries": permit_request.intersected_geometries
+        if permit_request.intersected_geometries != ""
+        else None,
     }
 
 

@@ -450,9 +450,16 @@ def get_progressbar_steps(request, permit_request):
 
     properties_errors = len(properties_form.errors) if properties_form else 0
     appendices_errors = len(appendices_form.errors) if appendices_form else 0
-    geo_time_errors = 0 if models.PermitRequestGeoTime.objects.filter(
-        permit_request=permit_request).exists() else 1
-    actor_errors = len(get_missing_actors_types(permit_request)) if permit_request else 0
+    geo_time_errors = (
+        0
+        if models.PermitRequestGeoTime.objects.filter(
+            permit_request=permit_request
+        ).exists()
+        else 1
+    )
+    actor_errors = (
+        len(get_missing_actors_types(permit_request)) if permit_request else 0
+    )
     total_errors = sum([properties_errors, appendices_errors, actor_errors])
 
     steps = {

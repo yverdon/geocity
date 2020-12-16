@@ -611,11 +611,13 @@ class GeometryWidget(geoforms.OSMWidget):
     @property
     def media(self):
         return forms.Media(
-            css={'all': ('libs/js/openlayers6/ol.css', "css/geotime.css" )},
-            js=('libs/js/openlayers6/ol.js',
-                'libs/js/proj4js/proj4-src.js',
-                'customWidgets/GeometryWidget/geometrywidget.js'
-                ))
+            css={"all": ("libs/js/openlayers6/ol.css", "css/geotime.css")},
+            js=(
+                "libs/js/openlayers6/ol.js",
+                "libs/js/proj4js/proj4-src.js",
+                "customWidgets/GeometryWidget/geometrywidget.js",
+            ),
+        )
 
 
 class PermitRequestGeoTimeForm(forms.ModelForm):
@@ -662,26 +664,32 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             "ends_at": "Date de fin du chantier ou d'occupation du territoire. Si l'heure n'est pas pertinente, insérer 23:59.",
         }
         widgets = {
-            'geom': GeometryWidget(),
-            'comment':  forms.Textarea(attrs={'rows': 2}),
+            "geom": GeometryWidget(),
+            "comment": forms.Textarea(attrs={"rows": 2}),
         }
 
     def __init__(self, *args, **kwargs):
-        self.permit_request = kwargs.pop('permit_request', None)
-        disable_fields = kwargs.pop('disable_fields', False)
+        self.permit_request = kwargs.pop("permit_request", None)
+        disable_fields = kwargs.pop("disable_fields", False)
 
         super().__init__(*args, **kwargs)
 
-        self.fields["geom"].widget.attrs["options"] = self.get_widget_options(self.permit_request)
+        self.fields["geom"].widget.attrs["options"] = self.get_widget_options(
+            self.permit_request
+        )
         if disable_fields:
             self.fields["geom"].widget.attrs["options"]["edit_geom"] = False
             for field in self.fields.values():
                 field.disabled = True
 
     def get_widget_options(self, permit_request):
-        works_object_type_choices = services.get_works_object_type_choices(permit_request).select_related(
-            "works_object_type__works_object"
-        ).order_by('-works_object_type__works_object__wms_layers_order') if permit_request else []
+        works_object_type_choices = (
+            services.get_works_object_type_choices(permit_request)
+            .select_related("works_object_type__works_object")
+            .order_by("-works_object_type__works_object__wms_layers_order")
+            if permit_request
+            else []
+        )
 
         wms_layers = [
             works_object_type_choice.works_object_type.works_object.wms_layers.strip()
@@ -691,11 +699,16 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
 
         options = {
             "administrative_entity_url": reverse(
-                "permits:administrative_entities_geojson", kwargs={
+                "permits:administrative_entities_geojson",
+                kwargs={
                     "administrative_entity_id": permit_request.administrative_entity_id
-                }
-            ) if permit_request else None,
-            "administrative_entity_id": permit_request.administrative_entity_id if permit_request else None,
+                },
+            )
+            if permit_request
+            else None,
+            "administrative_entity_id": permit_request.administrative_entity_id
+            if permit_request
+            else None,
             "wms_layers": wms_layers,
             "map_width": "100%",
             "map_height": 400,

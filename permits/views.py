@@ -4,7 +4,11 @@ import os
 import urllib.parse
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
+from django.contrib.auth.decorators import (
+    login_required,
+    permission_required,
+    user_passes_test,
+)
 from django.core.exceptions import PermissionDenied
 from django.core.exceptions import SuspiciousOperation
 from django.db import transaction
@@ -619,22 +623,24 @@ def permit_request_actors(request, permit_request_id):
 
 @login_required
 def permit_request_geo_time(request, permit_request_id):
-    permit_request = services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+    permit_request = services.get_permit_request_for_user_or_404(
+        request.user, permit_request_id
+    )
     PermitRequestGeoTimeFormSet = modelformset_factory(
         models.PermitRequestGeoTime,
         form=forms.PermitRequestGeoTimeForm,
         extra=0,
         min_num=1,
-        can_delete=True
+        can_delete=True,
     )
 
     formset = PermitRequestGeoTimeFormSet(
         request.POST if request.method == "POST" else None,
         form_kwargs={"permit_request": permit_request},
-        queryset=permit_request.geo_time.all()
+        queryset=permit_request.geo_time.all(),
     )
 
-    if request.method == 'POST':
+    if request.method == "POST":
         if formset.is_valid():
             with transaction.atomic():
                 formset.save()
@@ -647,10 +653,11 @@ def permit_request_geo_time(request, permit_request_id):
                 "permits:permit_request_appendices", permit_request_id=permit_request_id
             )
 
-    return render(request, "permits/permit_request_geo_time.html", {
-        'formset': formset,
-        'permit_request': permit_request,
-    })
+    return render(
+        request,
+        "permits/permit_request_geo_time.html",
+        {"formset": formset, "permit_request": permit_request,},
+    )
 
 
 @login_required
