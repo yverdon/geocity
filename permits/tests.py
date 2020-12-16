@@ -57,6 +57,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         models.WorksObjectType.objects.create(
             works_type=self.works_types[0], works_object=self.works_objects[0]
         )
+        models.WorksObjectType.objects.create(
+            works_type=self.works_types[1], works_object=self.works_objects[1]
+        )
 
     def test_types_step_submit_redirects_to_objects_with_types_qs(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)

@@ -115,7 +115,7 @@ class WorksObjectsForm(forms.Form):
 
         super().__init__(*args, **{**kwargs, "initial": initial})
 
-        for works_type in works_types.prefetch_related("works_object_types"):
+        for works_type in works_types:
             self.fields[str(works_type.pk)] = WorksObjectsTypeChoiceField(
                 queryset=works_type.works_object_types.filter(
                     administrative_entities=self.instance.administrative_entity
