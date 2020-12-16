@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{% block title %}{% endblock %}Demandes d'autorisations</title>
-    {% load staticfiles %}
+    {% load static %}
     {% load i18n %}
     {% load bootstrap4 %}
     {% bootstrap_css %}
     {% bootstrap_javascript jquery='full' %}
-    {% block script%}{% endblock %}
+    {% block script%}
+      <script src="https://use.fontawesome.com/006d51a83c.js"></script>
+    {% endblock %}
     {% block stylesheets%}
-      {% load fontawesome %}
-      {% fontawesome_stylesheet %}
       <link rel="stylesheet" type="text/css" href="{% static 'css/permits.css' %}">
     {% endblock %}
     <link rel="icon" href="{% static 'images/logo.svg'%}" type="image/svg" sizes="16x16">

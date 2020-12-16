@@ -5,6 +5,7 @@
 #    pip-compile requirements_dev.in
 #
 appdirs==1.4.4            # via black
+asgiref==3.3.1            # via -r requirements.txt, django
 attrs==20.3.0             # via black
 babel==2.9.0              # via -r requirements.txt, django-phonenumber-field
 beautifulsoup4==4.9.3     # via -r requirements.txt, django-bootstrap4
@@ -24,7 +25,6 @@ django-constance[database]==2.8.0  # via -r requirements.txt
 django-cors-headers==3.5.0  # via -r requirements.txt
 django-debug-toolbar==3.2  # via -r requirements_dev.in
 django-filter==2.4.0      # via -r requirements.txt
-django-fontawesome==1.0   # via -r requirements.txt
 django-formtools==2.2     # via -r requirements.txt, django-two-factor-auth
 django-grappelli==2.14.3  # via -r requirements.txt
 django-otp==1.0.2         # via -r requirements.txt, django-two-factor-auth
@@ -33,7 +33,7 @@ django-picklefield==3.0.1  # via -r requirements.txt, django-constance
 django-simple-history==2.12.0  # via -r requirements.txt
 django-tables2==2.3.3     # via -r requirements.txt
 django-two-factor-auth[phonenumbers]==1.13  # via -r requirements.txt
-django==2.2.17            # via -r requirements.txt, django-bootstrap-datepicker-plus, django-bootstrap4, django-cors-headers, django-debug-toolbar, django-filter, django-formtools, django-otp, django-phonenumber-field, django-picklefield, django-tables2, django-two-factor-auth, djangorestframework
+django==3.1.4             # via -r requirements.txt, django-bootstrap-datepicker-plus, django-bootstrap4, django-cors-headers, django-debug-toolbar, django-filter, django-formtools, django-otp, django-phonenumber-field, django-picklefield, django-tables2, django-two-factor-auth, djangorestframework
 djangorestframework-gis==0.16  # via -r requirements.txt
 djangorestframework==3.12.2  # via -r requirements.txt, djangorestframework-gis
 factory-boy==3.1.0        # via -r requirements_dev.in
@@ -54,7 +54,7 @@ pyphen==0.10.0            # via -r requirements.txt, weasyprint
 python-dateutil==2.8.1    # via faker
 python-dotenv==0.15.0     # via -r requirements.txt
 pytz==2020.4              # via -r requirements.txt, babel, django
-pyyaml==5.3.1             # via -r requirements.txt, django-fontawesome
+pyyaml==5.3.1             # via -r requirements.txt
 qrcode==6.1               # via -r requirements.txt, django-two-factor-auth
 regex==2020.11.13         # via black
 requests==2.25.0          # via -r requirements.txt

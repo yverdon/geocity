@@ -83,7 +83,6 @@ INSTALLED_APPS = [
     "bootstrap4",
     "bootstrap_datepicker_plus",
     "django_tables2",
-    "fontawesome",
 ]
 
 if ENABLE_2FA:
