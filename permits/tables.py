@@ -10,6 +10,9 @@ class OwnPermitRequestsTable(tables.Table):
         verbose_name=_("Actions"),
         orderable=False,
     )
+    status = tables.TemplateColumn(
+        template_name="tables/_permit_request_status.html",
+    )
     starts_at_min = tables.Column(verbose_name=_("Début"))
     ends_at_max = tables.Column(verbose_name=_("Fin"))
     works_objects_html = tables.Column(
@@ -35,6 +38,9 @@ class DepartmentPermitRequestsTable(tables.Table):
         template_name="tables/_permit_request_actions.html",
         verbose_name=_("Actions"),
         orderable=False,
+    )
+    status = tables.TemplateColumn(
+        template_name="tables/_permit_request_status.html",
     )
     starts_at_min = tables.Column(verbose_name=_("Début"))
     ends_at_max = tables.Column(verbose_name=_("Fin"))
