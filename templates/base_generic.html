@@ -10,10 +10,10 @@
     {% load bootstrap4 %}
     {% bootstrap_css %}
     {% bootstrap_javascript jquery='full' %}
-    {% block script%}{% endblock %}
+    {% block script%}
+      <script src="https://use.fontawesome.com/006d51a83c.js"></script>
+    {% endblock %}
     {% block stylesheets%}
-      {% load fontawesome_5 %}
-
       <link rel="stylesheet" type="text/css" href="{% static 'css/permits.css' %}">
     {% endblock %}
     <link rel="icon" href="{% static 'images/logo.svg'%}" type="image/svg" sizes="16x16">

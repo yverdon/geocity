@@ -171,16 +171,16 @@ Make sure you commit both the `requirements.in` and the `requirements.txt` files
 To upgrade all the packages to their latest available version, run:
 
 ```
-docker-compose exec web pip-tools compile -U requirements.in
+docker-compose exec web pip-compile -U requirements.in
 docker-compose exec web pip install -r requirements.txt
 ```
 
-To upgrade only a specific package, use `pip-tools compile -P <packagename>`.
+To upgrade only a specific package, use `pip-compile -P <packagename>`.
 The following commands will upgrade Django to its latest version, making sure
 it's compatible with other packages listed in the `requirements.in` file:
 
 ```
-docker-compose exec web pip-tools compile -P django requirements.in
+docker-compose exec web pip-compile -P django requirements.in
 docker-compose exec web pip install -r requirements.txt
 ```
 
