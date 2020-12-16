@@ -701,9 +701,11 @@
     }
 
     const manualCoordinates = this.el.querySelector(`[data-action='addPointFeature']`);
-    manualCoordinates.addEventListener("click", e => {
-      this.addPointFeature();
-    });
+    if (manualCoordinates) {
+      manualCoordinates.addEventListener("click", e => {
+        this.addPointFeature();
+      });
+    }
 
     [...this.el.querySelectorAll("[data-action='addKML']")].forEach(node => {
       node.addEventListener("change", () => widget.addKML());
