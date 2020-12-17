@@ -639,7 +639,7 @@
     */
   geometryWidget.prototype.addPointFeature = function () {
     var east = parseFloat(this.el.querySelector("[name='east_coord']").value);
-    var north = parseFloat(this.el.querySelector("[name='north_coord']")[0].value);
+    var north = parseFloat(this.el.querySelector("[name='north_coord']").value);
     var feature = new ol.Feature({
       geometry: new ol.geom.MultiPoint([[east, north]]),
     });
@@ -692,8 +692,9 @@
       enableDrawing: e => this.enableDrawing(),
       selectFeatures: e => this.selectFeatures(),
       removeSelectedFeatures: e => this.removeSelectedFeatures(),
-      setDrawInteraction: e => this.setDrawInteraction(e.originalTarget.dataset.interactionType),
+      setDrawInteraction: e => this.setDrawInteraction(e.target.dataset.interactionType),
       switchBaseLayers: e => this.switchBaseLayers(),
+      addPointFeature: e => this.addPointFeature(),
     };
 
     for (let clickAction in clickActions) {
