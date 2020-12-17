@@ -2,9 +2,9 @@ name: Geocity CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -19,7 +19,7 @@ jobs:
       run: docker-compose -f docker-compose-dev.yml down --remove-orphans && docker-compose -f docker-compose-dev.yml up -d
     - name: Sanity Checks
       run: |
-        WEB_OK=$(docker ps -aq --filter status="running" --filter name="geocity_web_1") && if [ -z "$WEB_OK" ]; then exit 1; fi 
+        WEB_OK=$(docker ps -aq --filter status="running" --filter name="geocity_web_1") && if [ -z "$WEB_OK" ]; then exit 1; fi
         POSTGRES_OK=$(docker ps -aq --filter status="running" --filter name="geocity_postgres_1") && if [ -z "$POSTGRES_OK" ]; then exit 1; fi
         QGISSERVER_OK=$(docker ps -aq --filter status="running" --filter name="geocity_qgisserver_1") && if [ -z "$QGISSERVER_OK" ]; then exit 1; fi
     - name: "Lint Code"
