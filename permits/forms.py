@@ -628,7 +628,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         input_formats=["%d/%m/%Y %H:%M"],
         widget=DateTimePickerInput(
             options={
-                "format": "DD/MM/YYYY HH:MM",
+                "format": "DD/MM/YYYY HH:mm",
                 "locale": "fr-CH",
                 "useCurrent": False,
                 "minDate": (
@@ -642,7 +642,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         input_formats=["%d/%m/%Y %H:%M"],
         widget=DateTimePickerInput(
             options={
-                "format": "DD/MM/YYYY HH:MM",
+                "format": "DD/MM/YYYY HH:mm",
                 "locale": "fr-CH",
                 "useCurrent": False,
             }

@@ -8,7 +8,7 @@
         {% trans "Planning et localisation" %} <span data-geo-time-role="formNumber">{{ form_number }}</span>
       </h4>
     </a>
-    <div class="map-buttons collapse{% if open %} show{% endif %}" id="planning-{{ form_id }}" data-geo-time-role="form">
+    <div class="collapse{% if open or form.errors %} show{% endif %}" id="planning-{{ form_id }}" data-geo-time-role="form">
       {% bootstrap_form form layout='horizontal' %}
     </div>
   </div>

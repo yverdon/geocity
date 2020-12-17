@@ -690,8 +690,9 @@
       enableDrawing: e => this.enableDrawing(),
       selectFeatures: e => this.selectFeatures(),
       removeSelectedFeatures: e => this.removeSelectedFeatures(),
-      setDrawInteraction: e => this.setDrawInteraction(e.srcElement.dataset.interactionType),
+      setDrawInteraction: e => this.setDrawInteraction(e.target.dataset.interactionType),
       switchBaseLayers: e => this.switchBaseLayers(),
+      addPointFeature: e => this.addPointFeature(),
     };
 
     for (let clickAction in clickActions) {
