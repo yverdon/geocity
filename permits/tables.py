@@ -16,6 +16,9 @@ class OwnPermitRequestsTable(tables.Table):
     works_objects_html = tables.Column(
         verbose_name=_("Objets et types de travaux"), orderable=False
     )
+    administrative_entity = tables.Column(
+        verbose_name=_("Entité administrative"), orderable=False
+    )
 
     class Meta:
         model = models.PermitRequest
@@ -25,8 +28,8 @@ class OwnPermitRequestsTable(tables.Table):
             "status",
             "starts_at_min",
             "ends_at_max",
-            "administrative_entity",
             "works_objects_html",
+            "administrative_entity",
         )
         template_name = "django_tables2/bootstrap.html"
 
