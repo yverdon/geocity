@@ -1,4 +1,4 @@
-# geomapshark - a geocyberadministration tool for cities ![.github/workflows/main.yml](https://github.com/yverdon/geocity/workflows/.github/workflows/main.yml/badge.svg)
+# geomapshark - a geocyberadministration tool for cities ![Geocity CI](https://github.com/yverdon/geocity/workflows/Geocity%20CI/badge.svg?branch=main)
 
 Discover geocity features and usage [here](https://project.mapnv.ch/projects/geocity-wiki/wiki/geocity)
 
