@@ -119,8 +119,19 @@ MIDDLEWARE += [
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 
 CONSTANCE_CONFIG_FIELDSETS = {
-    'General Options': ('APPLICATION_TITLE', 'APPLICATION_SUBTITLE', 'APPLICATION_DESCRIPTION'),
-    'Theme Options': ('BACKGROUND_COLOR', 'PRIMARY_COLOR', 'SECONDARY_COLOR', 'TEXT_COLOR', 'TITLE_COLOR', 'TABLE_COLOR',),
+    "General Options": (
+        "APPLICATION_TITLE",
+        "APPLICATION_SUBTITLE",
+        "APPLICATION_DESCRIPTION",
+    ),
+    "Theme Options": (
+        "BACKGROUND_COLOR",
+        "PRIMARY_COLOR",
+        "SECONDARY_COLOR",
+        "TEXT_COLOR",
+        "TITLE_COLOR",
+        "TABLE_COLOR",
+    ),
 }
 
 CONSTANCE_CONFIG = {
@@ -139,36 +150,12 @@ CONSTANCE_CONFIG = {
         "Description de la page de login",
         str,
     ),
-    "BACKGROUND_COLOR": (
-        "#FFFFFF",
-        "Couleur unie du fond",
-        str,
-    ),
-    "PRIMARY_COLOR": (
-        "#008c6f",
-        "Couleur de theme principale",
-        str,
-    ),
-    "SECONDARY_COLOR": (
-        "#01755d",
-        "Couleur de theme secondaire",
-        str,
-    ),
-    "TEXT_COLOR": (
-        "#000000",
-        "Couleur du texte",
-        str,
-    ),
-    "TITLE_COLOR": (
-        "#000000",
-        "Couleur du titre",
-        str,
-    ),
-    "TABLE_COLOR": (
-        "#212529",
-        "Couleur du texte dans les tableaux",
-        str,
-    ),
+    "BACKGROUND_COLOR": ("#FFFFFF", "Couleur unie du fond", str,),
+    "PRIMARY_COLOR": ("#008c6f", "Couleur de theme principale", str,),
+    "SECONDARY_COLOR": ("#01755d", "Couleur de theme secondaire", str,),
+    "TEXT_COLOR": ("#000000", "Couleur du texte", str,),
+    "TITLE_COLOR": ("#000000", "Couleur du titre", str,),
+    "TABLE_COLOR": ("#212529", "Couleur du texte dans les tableaux", str,),
 }
 
 TEMPLATES = [
