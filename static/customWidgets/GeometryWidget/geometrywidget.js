@@ -556,7 +556,6 @@
       condition: (e) => {
         if (this.options.restriction_area_enabled) {
           this.clearWarning();
-          let coords = e.coordinate;
           let features = this.map.getFeaturesAtPixel(e.pixel, {
             layerFilter: (layer) => {
               return layer === this.vectorMaskLayer;
@@ -573,7 +572,6 @@
         }
       },
     });
-
     this.map.addInteraction(this.interactions.draw);
   };
 
@@ -639,7 +637,7 @@
     */
   geometryWidget.prototype.addPointFeature = function () {
     var east = parseFloat(this.el.querySelector("[name='east_coord']").value);
-    var north = parseFloat(this.el.querySelector("[name='north_coord']")[0].value);
+    var north = parseFloat(this.el.querySelector("[name='north_coord']").value);
     var feature = new ol.Feature({
       geometry: new ol.geom.MultiPoint([[east, north]]),
     });
@@ -692,8 +690,9 @@
       enableDrawing: e => this.enableDrawing(),
       selectFeatures: e => this.selectFeatures(),
       removeSelectedFeatures: e => this.removeSelectedFeatures(),
-      setDrawInteraction: e => this.setDrawInteraction(e.originalTarget.dataset.interactionType),
+      setDrawInteraction: e => this.setDrawInteraction(e.target.dataset.interactionType),
       switchBaseLayers: e => this.switchBaseLayers(),
+      addPointFeature: e => this.addPointFeature(),
     };
 
     for (let clickAction in clickActions) {
@@ -702,6 +701,12 @@
       });
     }
 
+    const manualCoordinates = this.el.querySelector(`[data-action='addPointFeature']`);
+    if (manualCoordinates) {
+      manualCoordinates.addEventListener("click", e => {
+        this.addPointFeature();
+      });
+    }
 
     [...this.el.querySelectorAll("[data-action='addKML']")].forEach(node => {
       node.addEventListener("change", () => widget.addKML());

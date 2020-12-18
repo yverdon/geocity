@@ -3,7 +3,6 @@ Django<4
 django-bootstrap-datepicker-plus
 django-bootstrap4
 django-filter
-django-fontawesome
 django-tables2
 gdal
 gunicorn

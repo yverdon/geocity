@@ -20,7 +20,6 @@ django-bootstrap4==2.3.1  # via -r requirements.in
 django-constance[database]==2.8.0  # via -r requirements.in
 django-cors-headers==3.5.0  # via -r requirements.in
 django-filter==2.4.0      # via -r requirements.in
-django-fontawesome==1.0   # via -r requirements.in
 django-formtools==2.2     # via django-two-factor-auth
 django-grappelli==2.14.3  # via -r requirements.in
 django-otp==1.0.2         # via django-two-factor-auth
@@ -46,7 +45,7 @@ pycparser==2.20           # via cffi
 pyphen==0.10.0            # via weasyprint
 python-dotenv==0.15.0     # via -r requirements.in
 pytz==2020.4              # via -r requirements.in, babel, django
-pyyaml==5.3.1             # via -r requirements.in, django-fontawesome
+pyyaml==5.3.1             # via -r requirements.in
 qrcode==6.1               # via django-two-factor-auth
 requests==2.25.0          # via -r requirements.in
 six==1.15.0               # via django-simple-history, html5lib, pip-tools, qrcode

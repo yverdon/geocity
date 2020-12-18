@@ -54,11 +54,11 @@
 
       this.formsContainerNode.appendChild(newNode);
 
-      [...this.formsContainerNode.querySelectorAll(".collapse")].forEach(node => {
+      this._getCollapses().forEach(node => {
         jQuery(node).collapse("hide");
       });
 
-      let collapseNode = newNode.querySelector(".collapse");
+      let collapseNode = newNode.querySelector("[data-geo-time-role='form'].collapse");
       this._fixMapSizeOnCollapseOpen(collapseNode);
       jQuery(collapseNode).collapse("show");
 
@@ -71,17 +71,25 @@
     _addEventListeners() {
       this.addButtonNode.addEventListener("click", this.addForm.bind(this));
 
-      [...this.formsContainerNode.querySelectorAll(".collapse")].forEach(
-        this._fixMapSizeOnCollapseOpen
-      );
+      this._getCollapses().forEach(this._fixMapSizeOnCollapseOpen);
+    }
+
+    _getCollapses() {
+      return [...this.formsContainerNode.querySelectorAll("[data-geo-time-role='form'].collapse")];
     }
 
     _fixMapSizeOnCollapseOpen(collapseNode) {
       jQuery(collapseNode).on("shown.bs.collapse", (e) => {
+        // When sub-collapses are shown, this event seems to bubble up to the
+        // parent collapse, in that case we can safely ignore it
+        if (e.target.dataset.geoTimeRole !== "form") {
+          return;
+        }
+
         let geometryWidgetNode = collapseNode.querySelector("[data-geometry-widget]");
         let elementId;
 
-        if (geometryWidgetNode === undefined) {
+        if (!geometryWidgetNode) {
           return;
         }
 
