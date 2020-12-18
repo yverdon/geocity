@@ -1,4 +1,6 @@
-# geomapshark - a geocyberadministration tool for cities
+# geomapshark - a geocyberadministration tool for cities ![Geocity CI](https://github.com/yverdon/geocity/workflows/Geocity%20CI/badge.svg?branch=main)
+
+Discover geocity features and usage [here](https://project.mapnv.ch/projects/geocity-wiki/wiki/geocity)
 
 ## Getting started with the full Docker demo version
 
@@ -7,7 +9,7 @@
 This will bring up a demo instance with preset fixtures served by the
 Django developpment server in reload mode.
 
-```
+```bash
 git clone git@github.com:yverdon/geocity.git && cd geocity
 cp -n env.demo .env
 docker-compose -f docker-compose-dev.yml build
@@ -17,6 +19,45 @@ docker-compose -f docker-compose-dev.yml down --remove-orphans && docker-compose
 This process will create the .env file only if it does not already exist
 
 The demo application is now running on _localhost:9095_
+
+To debug and view the resulting `docker-compose-dev.yml` file use (uses the `.env` file for variables substitution):
+
+```bash
+docker-compose -f docker-compose-dev.yml config
+```
+
+### Run the tests from within the docker container
+
+List running containers:
+
+```bash
+$ docker ps -a
+
+CONTAINER ID        IMAGE                         COMMAND                  CREATED             STATUS              PORTS                    NAMES
+de8f58bf2e2c        gms_web                       "/code/entrypoint_de…"   16 hours ago        Up 16 hours         0.0.0.0:9095->9000/tcp   geocity_web_1
+ab542f438d62        camptocamp/qgis-server:3.10   "/usr/local/bin/star…"   16 hours ago        Up 16 hours         0.0.0.0:9096->80/tcp     geocity_qgisserver_1
+ffaa9f6c1b21        camptocamp/postgres:11        "docker-entrypoint.s…"   16 hours ago        Up 16 hours         0.0.0.0:9097->5432/tcp   geocity_postgres_1
+```
+
+Enter the container:
+
+```bash
+$ docker exec -it de8f58bf2e2c bash
+```
+
+Run the tests:
+
+```bash
+root@de8f58bf2e2c:/code# ./run_tests.sh
+```
+
+## Linting
+
+We use [Black](https://github.com/psf/black) as code formatter. Just use the following command to automatically format your code:
+
+```
+$ docker-compose exec web black .
+```
 
 ## Setup for full Docker persistent instance served by gunicorn webserver
 
@@ -92,6 +133,23 @@ _Capabilities of the print server_
 http://localhost:9096?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities
 ```
 
+## Two factor authentification
+
+You can enable 2FA by setting the variable `ENABLE_2FA` to `true`. Defaults to `false`.
+
+### Access to admin views under 2FA
+
+Super users require to enable 2FA to have access to the admin app.
+
+Follow the following steps:
+
+1. Go to the `/account/login/` and sign in with your super user credentials.
+2. Follow the steps to activate 2FA
+3. Open `/admin/`
+
+Next time you sign in, you will be asked for a token.
+Once you provided your token go to `/admin/` to access the admin app.
+
 ## Dependency management
 
 Dependencies are managed with [`pip-tools`](https://github.com/jazzband/pip-tools).
@@ -113,16 +171,16 @@ Make sure you commit both the `requirements.in` and the `requirements.txt` files
 To upgrade all the packages to their latest available version, run:
 
 ```
-docker-compose exec web pip-tools compile -U requirements.in
+docker-compose exec web pip-compile -U requirements.in
 docker-compose exec web pip install -r requirements.txt
 ```
 
-To upgrade only a specific package, use `pip-tools compile -P <packagename>`.
+To upgrade only a specific package, use `pip-compile -P <packagename>`.
 The following commands will upgrade Django to its latest version, making sure
 it's compatible with other packages listed in the `requirements.in` file:
 
 ```
-docker-compose exec web pip-tools compile -P django requirements.in
+docker-compose exec web pip-compile -P django requirements.in
 docker-compose exec web pip install -r requirements.txt
 ```
 

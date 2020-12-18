@@ -1,10 +1,9 @@
-{% extends "base_permits.html" %}
+{% extends "base_generic.html" %}
 {% load bootstrap4 %}
 {% load i18n %}
 {% load permits_extras %}
 
-{% block content-no-sidebar %}
-<div class="container">
+{% block content %}
   {% permit_progressbar permit_request 'properties' %}
   <h3>{{ config.PROPERTIES_STEP }} </h3>
   <hr>
@@ -23,5 +22,4 @@
       <button class="btn btn-primary">{% trans "Enregistrer et continuer" %}</button>
     {% endbuttons %}
   </form>
-</div>
 {% endblock %}

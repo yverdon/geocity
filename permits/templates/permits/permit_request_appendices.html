@@ -1,9 +1,9 @@
-{% extends "base_permits.html" %}
+{% extends "base_generic.html" %}
 {% load bootstrap4 %}
 {% load i18n %}
 {% load permits_extras %}
 
-{% block content-no-sidebar %}
+{% block content %}
 <div class="container">
   {% permit_progressbar permit_request 'appendices' %}
   <h3>{{ config.APPENDICES_STEP }}</h3>
@@ -32,5 +32,4 @@
     </button>
     {% endbuttons %}
   </form>
-</div>
 {% endblock %}

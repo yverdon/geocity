@@ -6,6 +6,7 @@ volumes:
 services:
     web:
         image: gms_web
+        restart: unless-stopped
         depends_on:
             - "qgisserver"
             - "postgres"
@@ -24,6 +25,9 @@ services:
 
     qgisserver:
         image: camptocamp/qgis-server:3.10
+        restart: unless-stopped
+        depends_on:
+            - "postgres"
         volumes:
             - .:/data
         ports:
@@ -36,8 +40,10 @@ services:
 
     postgres:
         image: camptocamp/postgres:11
+        restart: unless-stopped
         environment:
-            - POSTGRES_USER=geocity
-            - POSTGRES_PASSWORD=geocity
+            - POSTGRES_USER=${PGUSER}
+            - POSTGRES_PASSWORD=${PGPASSWORD}
+            - POSTGRES_DB=${PGDATABASE}
         ports:
             - "${POSTGRES_DOCKER_PORT}:5432"

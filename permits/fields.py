@@ -42,7 +42,9 @@ class PermitRequestFileField(models.FileField):
         file fields *cannot* be used until the permit request instance has an id (ie. is persisted in the database).
         """
         if not instance.pk:
-            raise ValueError("Permit request must be saved before this file field can be used")
+            raise ValueError(
+                "Permit request must be saved before this file field can be used"
+            )
 
         if callable(self.upload_to):
             filename = self.upload_to(instance, filename)

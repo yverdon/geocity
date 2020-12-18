@@ -1,12 +1,13 @@
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
+
 from . import models
 
 
 class PermitAdministrativeEntitySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.PermitAdministrativeEntity
-        fields = ('name', )
+        fields = ("name",)
 
 
 class MetaTypesField(serializers.RelatedField):
@@ -17,12 +18,14 @@ class MetaTypesField(serializers.RelatedField):
 
 class PermitRequestSerializer(serializers.ModelSerializer):
 
-    administrative_entity = PermitAdministrativeEntitySerializer(many=False, read_only=True)
-    meta_types = MetaTypesField(source='works_object_types', read_only=True)
+    administrative_entity = PermitAdministrativeEntitySerializer(
+        many=False, read_only=True
+    )
+    meta_types = MetaTypesField(source="works_object_types", read_only=True)
 
     class Meta:
         model = models.PermitRequest
-        fields = ('status', 'administrative_entity', 'works_object_types', 'meta_types')
+        fields = ("status", "administrative_entity", "works_object_types", "meta_types")
 
 
 class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
@@ -33,9 +36,9 @@ class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
         model = models.PermitRequestGeoTime
         geo_field = "geom"
         fields = (
-            'permit_request',
-            'starts_at',
-            'ends_at',
-            'comment',
-            'external_link',
-            )
+            "permit_request",
+            "starts_at",
+            "ends_at",
+            "comment",
+            "external_link",
+        )

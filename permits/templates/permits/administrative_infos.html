@@ -1,13 +1,9 @@
-{% extends "base_permits.html" %}
+{% extends "base_generic.html" %}
 
 {% load static %}
 {% load i18n %}
 {% load bootstrap4 %}
 {% load render_table from django_tables2 %}
-
-{% block navbartitle %}
-  <a class="navbar-brand" href="{% url 'permits:permit_requests_list'%}">{% trans "Demandes d'autorisations" %}</a>
-{% endblock %}
 
 {% block content %}
   <div>
@@ -16,10 +12,12 @@
       <h4>{{ item.name }}</h4>
       <h5>Informations</h5>
       <p>{{ item.general_informations }}</p>
+      {% if item.legal_document %}
       <h5>Documents</h5>
       <p>
       <a href="{{item.legal_document.url}}" target="_blank">{% trans 'Télécharger les directives PDF' %}</a>
       </p>
+      {% endif %}
       <hr>
     {% endfor %}
   </div>

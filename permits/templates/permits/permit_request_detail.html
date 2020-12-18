@@ -1,244 +1,242 @@
-{% extends "base_permits.html" %}
+{% extends "base_generic.html" %}
 
 {% load i18n %}
 {% load bootstrap4 %}
 {% load permits_extras %}
 {% load render_table from django_tables2 %}
 
-{% block content-no-sidebar %}
-  <div class="container">
-    <h1>{% blocktrans with request_id=permit_request.pk %}Demande #{{ request_id }}{% endblocktrans %}
-      {% if has_validations and nb_pending_validations == 0 or permit_request.status == 2 %}
-        {% if perms.permits.amend_permit_request %}
-          <a class="btn btn-primary" href="{% url 'permits:printpdf' permit_request_id=permit_request.pk %}" class="mr-2"><i class="fa fa-print"></i> {% trans "Imprimer" %}</a>
-        {% endif %}
-      {% endif %}
-    </h1>
+{% block content %}
+<h1>{% blocktrans with request_id=permit_request.pk %}Demande #{{ request_id }}{% endblocktrans %}
+  {% if has_validations and nb_pending_validations == 0 or permit_request.status == 2 %}
+    {% if perms.permits.amend_permit_request %}
+      <a class="btn btn-primary" href="{% url 'permits:printpdf' permit_request_id=permit_request.pk %}" class="mr-2"><i class="fa fa-print"></i> {% trans "Imprimer" %}</a>
+    {% endif %}
+  {% endif %}
+</h1>
 
-    <p title="">
-    </p>
+<p title="">
+</p>
 
-    {% if forms.amend or forms.request_validation or forms.validate or forms.poke %}
-      <h2>{% trans "Actions" %}</h2>
-      <ul class="nav nav-tabs" id="actions-tabs" role="tablist">
-        {% if forms.amend %}
-          <li class="nav-item">
-            <a class="nav-link{% if active_form == "amend" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">{% trans "Traiter" %}</a>
-          </li>
-        {% endif %}
+{% if forms.amend or forms.request_validation or forms.validate or forms.poke %}
+  <h2>{% trans "Actions" %}</h2>
+  <ul class="nav nav-tabs" id="actions-tabs" role="tablist">
+    {% if forms.amend %}
+      <li class="nav-item">
+        <a class="nav-link{% if active_form == "amend" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">{% trans "Traiter" %}</a>
+      </li>
+    {% endif %}
 
-        {% if forms.request_validation %}
-          <li class="nav-item">
-            <a class="nav-link{% if active_form == "request_validation" %} active{% endif %}" id="request-validation-tab" data-toggle="tab" href="#request-validation" role="tab" aria-controls="request-validation" aria-selected="{% if active_form == "request_validation" %}true{% else %}false{% endif %}">{% trans "Envoyer pour validation" %}</a>
-          </li>
-        {% endif %}
+    {% if forms.request_validation %}
+      <li class="nav-item">
+        <a class="nav-link{% if active_form == "request_validation" %} active{% endif %}" id="request-validation-tab" data-toggle="tab" href="#request-validation" role="tab" aria-controls="request-validation" aria-selected="{% if active_form == "request_validation" %}true{% else %}false{% endif %}">{% trans "Envoyer pour validation" %}</a>
+      </li>
+    {% endif %}
 
-        {% if forms.validate %}
-          <li class="nav-item">
-            <a class="nav-link{% if active_form == "validate" %} active{% endif %}" id="validate-tab" data-toggle="tab" href="#validate" role="tab" aria-controls="validate" aria-selected="{% if active_form == "validate" %}true{% else %}false{% endif %}">
-              {% trans "Valider" %}
-            </a>
-          </li>
-        {% endif %}
+    {% if forms.validate %}
+      <li class="nav-item">
+        <a class="nav-link{% if active_form == "validate" %} active{% endif %}" id="validate-tab" data-toggle="tab" href="#validate" role="tab" aria-controls="validate" aria-selected="{% if active_form == "validate" %}true{% else %}false{% endif %}">
+          {% trans "Valider" %}
+        </a>
+      </li>
+    {% endif %}
 
-        {% if forms.poke or can_classify %}
-          <li class="nav-item">
-            <a class="nav-link{% if active_form == "poke" %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#classify" role="tab" aria-controls="classify" aria-selected="{% if active_form == "poke" %}true{% else %}false{% endif %}">
-              {% trans "Classer" %}
-            </a>
-          </li>
-        {% endif %}
-      </ul>
-      <div class="pt-3 tab-content box box--default box--tabbed">
-        {% if forms.amend %}
-          <div class="tab-pane{% if active_form == "amend" %} show active{% endif %}" id="amend" role="tabpanel" aria-labelledby="amend-tab">
-            <form method="post">
-              {% csrf_token %}
+    {% if forms.poke or can_classify %}
+      <li class="nav-item">
+        <a class="nav-link{% if active_form == "poke" %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#classify" role="tab" aria-controls="classify" aria-selected="{% if active_form == "poke" %}true{% else %}false{% endif %}">
+          {% trans "Classer" %}
+        </a>
+      </li>
+    {% endif %}
+  </ul>
+  <div class="pt-3 tab-content box box--default box--tabbed">
+    {% if forms.amend %}
+      <div class="tab-pane{% if active_form == "amend" %} show active{% endif %}" id="amend" role="tabpanel" aria-labelledby="amend-tab">
+        <form method="post">
+          {% csrf_token %}
 
-              {% bootstrap_form forms.amend layout='horizontal' %}
+          {% bootstrap_form forms.amend layout='horizontal' %}
 
-              <div class="text-right">
-                <input name="action" type="hidden" value="amend">
-                <button class="btn btn-primary" {% if forms.amend.disabled %}disabled{% endif %}>{% trans "Traiter" %}</button>
-              </div>
-            </form>
+          <div class="text-right">
+            <input name="action" type="hidden" value="amend">
+            <button class="btn btn-primary" {% if forms.amend.disabled %}disabled{% endif %}>{% trans "Traiter" %}</button>
           </div>
-        {% endif %}
-
-        {% if forms.request_validation %}
-          <div class="tab-pane{% if active_form == "request_validation" %} show active{% endif %}" id="request-validation" role="tabpanel" aria-labelledby="request-validation-tab">
-            <form method="post">
-              {% csrf_token %}
-
-              {% bootstrap_form forms.request_validation layout='horizontal' %}
-
-              <div class="text-right">
-                <input name="action" type="hidden" value="request_validation">
-                <button class="btn btn-primary" {% if forms.request_validation.disabled %}disabled{% endif %}>{% trans "Envoyer pour validation" %}</button>
-              </div>
-            </form>
-          </div>
-        {% endif %}
-
-        {% if forms.validate %}
-          <div class="tab-pane{% if active_form == "validate" %} show active{% endif  %}" id="validate" role="tabpanel" aria-labelledby="validate-tab">
-            <form method="post">
-              {% csrf_token %}
-
-              {% bootstrap_form forms.validate layout='horizontal' %}
-
-              <div class="text-right">
-                <input name="action" type="hidden" value="validate">
-                <button class="btn btn-primary" {% if forms.validate.disabled %}disabled{% endif %}>{% trans "Valider" %}</button>
-              </div>
-            </form>
-          </div>
-        {% endif %}
-
-        {% if forms.poke or can_classify %}
-          <div class="tab-pane{% if active_form == "poke" or not active_form and can_classify %} show active{% endif  %}" id="classify" role="tabpanel" aria-labelledby="classify-tab">
-            <form method="post">
-              {% csrf_token %}
-
-              <dl>
-              {% for validation in validations %}
-                <dt>{{ validation.department.group.name }}</dt>
-                <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
-                  {{ validation.get_validation_status_display }}
-
-                  {% if validation.comment_before %}
-                    <br>
-                    {% trans "Commentaire (avant)" %}: {{ validation.comment_before }}
-                  {% endif %}
-                  {% if validation.comment_during %}
-                    <br>
-                    {% trans "Commentaire (pendant)" %}: {{ validation.comment_during }}
-                  {% endif %}
-                  {% if validation.comment_after %}
-                    <br>
-                    {% trans "Commentaire (après)" %}: {{ validation.comment_after }}
-                  {% endif %}
-                </dd>
-              {% endfor %}
-              </dl>
-
-              {% if nb_pending_validations and not forms.poke.disabled %}
-                <div class="text-right">
-                  <button name="action" value="poke" class="btn btn-primary">
-                    {% blocktrans trimmed count counter=nb_pending_validations %}
-                      Envoyer un rappel au service
-                    {% plural %}
-                      Envoyer des rappels à {{ counter }} services
-                    {% endblocktrans %}
-                  </button>
-                </div>
-              {% elif has_permission_to_classify %}
-                <div class="text-right">
-                  <a href="{% if not can_classify %}#{% else %}{% url 'permits:permit_request_reject' permit_request_id=permit_request.pk %}{% endif %}" class="btn btn-primary {% if not can_classify %} disabled{% endif %}"{% if not can_classify %} aria-disabled="true"{% endif %}>
-                    {% trans "Refuser" %}
-                  </a>
-                  <a href="{% if not can_classify %}#{% else %}{% url 'permits:permit_request_approve' permit_request_id=permit_request.pk %}{% endif %}" class="btn btn-primary{% if not can_classify %} disabled{% endif %}"{% if not can_classify %} aria-disabled="true"{% endif %}>
-                    {% trans "Approuver" %}
-                  </a>
-                </div>
-              {% endif %}
-            </form>
-          </div>
-        {% endif %}
+        </form>
       </div>
     {% endif %}
 
-    <h2>{% trans "Données de base" %}</h2>
-    <dl>
-      <dt>{% trans "Date de création" %}</dt>
-      <dd title="{{ permit_request.created_at }}">
-        {% blocktrans with request_date=permit_request.created_at|timesince %}Il y a {{ request_date }}{% endblocktrans %}
-      </dd>
-      <dt>{% trans "Statut" %}</dt>
-      <dd>
-        {% if permit_request.validation_pdf %}<a href="{{ permit_request.validation_pdf.url }}">{% endif %}
-        {{ permit_request.get_status_display }}{% if permit_request.validated_at %} {% blocktrans with validated_at=permit_request.validated_at %}le {{ validated_at }}{% endblocktrans %}{% endif %}
-        {% if permit_request.validation_pdf %}</a>{% endif %}
-      </dd>
-      <dt>{% trans "Auteur-e" %}</dt>
-      <dd>
-        <a href="mailto:{{ permit_request.author }} <{{ permit_request.author.user.email }}>" target="_blank">
-          {{ permit_request.author.user.first_name }} {{ permit_request.author.user.last_name }} &lt;{{ permit_request.author.user.email }}&gt;
-        </a>
-      </dd>
-      {% if permit_request.validation_pdf %}
-        <dt>{% trans "Permis délivré" %}</dt>
-        <dd>
-          <a href="{{permit_request.validation_pdf.url}}" target="_blank">
-            Télécharger le document PDF
-          </a>
-        </dd>
-      {% endif %}
-      <dt>{% trans "Publié" %}</dt>
-      <dd>
-        {{permit_request.is_public|yesno:"Oui,Non" }}
-      </dd>
-    </dl>
+    {% if forms.request_validation %}
+      <div class="tab-pane{% if active_form == "request_validation" %} show active{% endif %}" id="request-validation" role="tabpanel" aria-labelledby="request-validation-tab">
+        <form method="post">
+          {% csrf_token %}
 
+          {% bootstrap_form forms.request_validation layout='horizontal' %}
 
-    {% if validations %}
-      <h2>{% trans "Données du service pilote" %}</h2>
-      <dl>
-        <dt><dt>{{ validation.department.group.name }}</dt>
-        {% if permit_request.status %}
-          <h5>{% trans "État" %}:</h5> {{ permit_request.get_status_display }}
-        {% endif %}
-        {% if permit_request.price %}
-          <h5>{% trans "Prix" %}:</h5> {{ permit_request.price }}
-        {% endif %}
-        {% if permit_request.exemption %}
-          <h5>{% trans "Dérogation" %}:</h5> {{ permit_request.exemption }}
-        {% endif %}
-        {% if permit_request.opposition %}
-          <h5>{% trans "Opposition" %}:</h5> {{ permit_request.opposition }}
-        {% endif %}
-        {% if permit_request.comment %}
-          <h5>{% trans "Commentaire" %}:</h5> {{ permit_request.comment }}
-        {% endif %}
-        {% if permit_request.exemption %}
-          <h5>{% trans "Statut archéologique" %}:</h5> {{ permit_request.get_archeology_status_display }}
-        {% endif %}
-      </dl>
-      </dl>
-
-
-      <h2>{% trans "Statut des validations" %}</h2>
-      <dl>
-        {% for validation in validations %}
-          <dt>{{ validation.department.group.name }}</dt>
-          <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
-            {{ validation.get_validation_status_display }} par
-              {% if validation.validated_by %}
-                {{ validation.validated_by.permitauthor.user.first_name }} {{ validation.validated_by.permitauthor.user.last_name }} le {{ validation.validated_at }}
-              {% endif %}
-            {% if validation.comment_before %}
-              <br>
-              <h5>{% trans "Commentaire (avant)" %}:</h5> {{ validation.comment_before }}
-            {% endif %}
-            {% if validation.comment_during %}
-              <br>
-              <h5>{% trans "Commentaire (pendant)" %}:</h5> {{ validation.comment_during }}
-            {% endif %}
-            {% if validation.comment_after %}
-              <br>
-              <h5>{% trans "Commentaire (après)" %}:</h5> {{ validation.comment_after }}
-            {% endif %}
-          </dd>
-        {% endfor %}
-      </dl>
-      <br>
+          <div class="text-right">
+            <input name="action" type="hidden" value="request_validation">
+            <button class="btn btn-primary" {% if forms.request_validation.disabled %}disabled{% endif %}>{% trans "Envoyer pour validation" %}</button>
+          </div>
+        </form>
+      </div>
     {% endif %}
 
-    <h2>{% trans "Résumé" %}</h2>
-      {% permit_request_summary permit_request %}
+    {% if forms.validate %}
+      <div class="tab-pane{% if active_form == "validate" %} show active{% endif  %}" id="validate" role="tabpanel" aria-labelledby="validate-tab">
+        <form method="post">
+          {% csrf_token %}
 
-    <p class="mt-4">
-      <a href="{% url 'permits:permit_requests_list' %}">{% trans "Retour à la liste des demandes" %}</a>
-    </p>
+          {% bootstrap_form forms.validate layout='horizontal' %}
+
+          <div class="text-right">
+            <input name="action" type="hidden" value="validate">
+            <button class="btn btn-primary" {% if forms.validate.disabled %}disabled{% endif %}>{% trans "Valider" %}</button>
+          </div>
+        </form>
+      </div>
+    {% endif %}
+
+    {% if forms.poke or can_classify %}
+      <div class="tab-pane{% if active_form == "poke" or not active_form and can_classify %} show active{% endif  %}" id="classify" role="tabpanel" aria-labelledby="classify-tab">
+        <form method="post">
+          {% csrf_token %}
+
+          <dl>
+          {% for validation in validations %}
+            <dt>{{ validation.department.group.name }}</dt>
+            <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
+              {{ validation.get_validation_status_display }}
+
+              {% if validation.comment_before %}
+                <br>
+                {% trans "Commentaire (avant)" %}: {{ validation.comment_before }}
+              {% endif %}
+              {% if validation.comment_during %}
+                <br>
+                {% trans "Commentaire (pendant)" %}: {{ validation.comment_during }}
+              {% endif %}
+              {% if validation.comment_after %}
+                <br>
+                {% trans "Commentaire (après)" %}: {{ validation.comment_after }}
+              {% endif %}
+            </dd>
+          {% endfor %}
+          </dl>
+
+          {% if nb_pending_validations and not forms.poke.disabled %}
+            <div class="text-right">
+              <button name="action" value="poke" class="btn btn-primary">
+                {% blocktrans trimmed count counter=nb_pending_validations %}
+                  Envoyer un rappel au service
+                {% plural %}
+                  Envoyer des rappels à {{ counter }} services
+                {% endblocktrans %}
+              </button>
+            </div>
+          {% elif has_permission_to_classify %}
+            <div class="text-right">
+              <a href="{% if not can_classify %}#{% else %}{% url 'permits:permit_request_reject' permit_request_id=permit_request.pk %}{% endif %}" class="btn btn-primary {% if not can_classify %} disabled{% endif %}"{% if not can_classify %} aria-disabled="true"{% endif %}>
+                {% trans "Refuser" %}
+              </a>
+              <a href="{% if not can_classify %}#{% else %}{% url 'permits:permit_request_approve' permit_request_id=permit_request.pk %}{% endif %}" class="btn btn-primary{% if not can_classify %} disabled{% endif %}"{% if not can_classify %} aria-disabled="true"{% endif %}>
+                {% trans "Approuver" %}
+              </a>
+            </div>
+          {% endif %}
+        </form>
+      </div>
+    {% endif %}
   </div>
+{% endif %}
+
+<h2>{% trans "Données de base" %}</h2>
+<dl>
+  <dt>{% trans "Date de création" %}</dt>
+  <dd title="{{ permit_request.created_at }}">
+    {% blocktrans with request_date=permit_request.created_at|timesince %}Il y a {{ request_date }}{% endblocktrans %}
+  </dd>
+  <dt>{% trans "Statut" %}</dt>
+  <dd>
+    {% if permit_request.validation_pdf %}<a href="{{ permit_request.validation_pdf.url }}">{% endif %}
+    {{ permit_request.get_status_display }}{% if permit_request.validated_at %} {% blocktrans with validated_at=permit_request.validated_at %}le {{ validated_at }}{% endblocktrans %}{% endif %}
+    {% if permit_request.validation_pdf %}</a>{% endif %}
+  </dd>
+  <dt>{% trans "Auteur-e" %}</dt>
+  <dd>
+    <a href="mailto:{{ permit_request.author }} <{{ permit_request.author.user.email }}>" target="_blank">
+      {{ permit_request.author.user.first_name }} {{ permit_request.author.user.last_name }} &lt;{{ permit_request.author.user.email }}&gt;
+    </a>
+  </dd>
+  {% if permit_request.validation_pdf %}
+    <dt>{% trans "Permis délivré" %}</dt>
+    <dd>
+      <a href="{{permit_request.validation_pdf.url}}" target="_blank">
+        Télécharger le document PDF
+      </a>
+    </dd>
+  {% endif %}
+  <dt>{% trans "Publié" %}</dt>
+  <dd>
+    {{permit_request.is_public|yesno:"Oui,Non" }}
+  </dd>
+</dl>
+
+
+{% if validations %}
+  <h2>{% trans "Données du service pilote" %}</h2>
+  <dl>
+    <dt><dt>{{ validation.department.group.name }}</dt>
+    {% if permit_request.status %}
+      <h5>{% trans "État" %}:</h5> {{ permit_request.get_status_display }}
+    {% endif %}
+    {% if permit_request.price %}
+      <h5>{% trans "Prix" %}:</h5> {{ permit_request.price }}
+    {% endif %}
+    {% if permit_request.exemption %}
+      <h5>{% trans "Dérogation" %}:</h5> {{ permit_request.exemption }}
+    {% endif %}
+    {% if permit_request.opposition %}
+      <h5>{% trans "Opposition" %}:</h5> {{ permit_request.opposition }}
+    {% endif %}
+    {% if permit_request.comment %}
+      <h5>{% trans "Commentaire" %}:</h5> {{ permit_request.comment }}
+    {% endif %}
+    {% if permit_request.exemption %}
+      <h5>{% trans "Statut archéologique" %}:</h5> {{ permit_request.get_archeology_status_display }}
+    {% endif %}
+  </dl>
+  </dl>
+
+
+  <h2>{% trans "Statut des validations" %}</h2>
+  <dl>
+    {% for validation in validations %}
+      <dt>{{ validation.department.group.name }}</dt>
+      <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
+        {{ validation.get_validation_status_display }} par
+          {% if validation.validated_by %}
+            {{ validation.validated_by.permitauthor.user.first_name }} {{ validation.validated_by.permitauthor.user.last_name }} le {{ validation.validated_at }}
+          {% endif %}
+        {% if validation.comment_before %}
+          <br>
+          <h5>{% trans "Commentaire (avant)" %}:</h5> {{ validation.comment_before }}
+        {% endif %}
+        {% if validation.comment_during %}
+          <br>
+          <h5>{% trans "Commentaire (pendant)" %}:</h5> {{ validation.comment_during }}
+        {% endif %}
+        {% if validation.comment_after %}
+          <br>
+          <h5>{% trans "Commentaire (après)" %}:</h5> {{ validation.comment_after }}
+        {% endif %}
+      </dd>
+    {% endfor %}
+  </dl>
+  <br>
+{% endif %}
+
+<h2>{% trans "Résumé" %}</h2>
+  {% permit_request_summary permit_request %}
+
+<p class="mt-4">
+  <a href="{% url 'permits:permit_requests_list' %}">{% trans "Retour à la liste des demandes" %}</a>
+</p>
 {% endblock %}

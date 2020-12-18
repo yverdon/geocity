@@ -2,10 +2,12 @@ version: "3"
 
 volumes:
     gmsdata:
+    qgisserver_data:
 
 services:
     web:
         image: gms_web
+        restart: unless-stopped
         depends_on:
             - "qgisserver"
         build:
@@ -20,6 +22,7 @@ services:
             - "${DJANGO_DOCKER_PORT}:9000"
     qgisserver:
         image: camptocamp/qgis-server:3.10
+        restart: unless-stopped
         volumes:
             - ./qgisserver:/qgisserver_data
         ports:
@@ -29,7 +32,3 @@ services:
             - PGSERVICEFILE=/qgisserver_data/pg_service.conf
             - QGIS_SERVER_PARALLEL_RENDERING=true
             - QGIS_SERVER_IGNORE_BAD_LAYERS=true
-
-volumes:
-    qgisserver_data:
-

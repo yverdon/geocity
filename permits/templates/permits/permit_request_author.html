@@ -2,9 +2,7 @@
 {% load static %}
 {% load i18n %}
 {% load bootstrap4 %}
-{% block navbartitle %}
-  <a class="navbar-brand" href="{% url 'permits:permit_requests_list'%}">{% trans "Demandes d'autorisations" %}</a>
-{% endblock %}
+
 {% block stylesheets %}
   {{ block.super }}
   <link rel="stylesheet" type="text/css" href="{% static 'libs/js/jquery-ui-custom/jquery-ui.min.css' %}">
@@ -15,7 +13,7 @@
   <script src="{% static 'libs/js/jquery-ui-custom/jquery-ui.js' %}"></script>
   <script src="{% static 'customWidgets/RemoteAutocomplete/remoteautocomplete.js' %}"></script>
 {% endblock %}
-{% block content %}
+{% block content-fluid %}
 <div class = "container">
   <br>
   <h3>{% trans "Mon compte" %}</h3>
@@ -25,9 +23,12 @@
     {% if djangouserform %}
       {% bootstrap_form djangouserform layout='horizontal'%}
     {% endif %}
-		{% bootstrap_form permitauthorform layout='horizontal'%}
-    {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary" value="Enregistrer" %}
-    <a href="{% url 'permits:permit_requests_list' %}" class="mr-2">{% trans "Annuler" %}</a>
-    <br>
+    {% if permitauthorform %}
+		  {% bootstrap_form permitauthorform layout='horizontal'%}
+    {% endif %}
+    {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary mr-3" value="Enregistrer" %}
+    <a href="{% url 'permits:permit_requests_list' %}">{% trans "Annuler" %}</a>
+	</form>
+  <br>
 </div>
 {% endblock %}

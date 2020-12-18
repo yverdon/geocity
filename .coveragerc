@@ -1,0 +1,8 @@
+
+[run]
+omit =
+  .venv/*
+  venv/*
+  manage.py
+  geomapshark/settings*
+  geomapshark/wsgi.py

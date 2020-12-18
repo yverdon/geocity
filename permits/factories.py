@@ -1,10 +1,9 @@
+import factory
+import faker
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.utils.text import Truncator
-
-import factory
-import faker
 
 from . import models
 
@@ -13,11 +12,11 @@ class PermitAuthorFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PermitAuthor
 
-    address = factory.Faker('word')
-    zipcode = factory.Faker('zipcode')
-    city = factory.Faker('city')
-    phone_first = Truncator(factory.Faker('phone_number')).chars(19)
-    phone_second = Truncator(factory.Faker('phone_number')).chars(19)
+    address = factory.Faker("word")
+    zipcode = factory.Faker("zipcode")
+    city = factory.Faker("city")
+    phone_first = Truncator(factory.Faker("phone_number")).chars(19)
+    phone_second = Truncator(factory.Faker("phone_number")).chars(19)
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -36,9 +35,23 @@ class UserFactory(factory.django.DjangoModelFactory):
         return manager.create_user(*args, **kwargs)
 
 
+class SuperUserFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = get_user_model()
+
+    username = factory.Faker("user_name")
+    email = factory.Faker("email")
+    password = "password"
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        manager = cls._get_manager(model_class)
+        return manager.create_superuser(*args, **kwargs)
+
+
 class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
     ofs_id = 0
-    name = factory.Faker('company')
+    name = factory.Faker("company")
 
     class Meta:
         model = models.PermitAdministrativeEntity
@@ -50,7 +63,9 @@ class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
 
         extracted = extracted or [v[0] for v in models.PermitRequest.STATUS_CHOICES]
         for status in extracted:
-            models.PermitWorkflowStatus.objects.create(status=status, administrative_entity=self)
+            models.PermitWorkflowStatus.objects.create(
+                status=status, administrative_entity=self
+            )
 
 
 class PermitDepartmentFactory(factory.django.DjangoModelFactory):
@@ -78,7 +93,9 @@ class GroupFactory(factory.django.DjangoModelFactory):
 
         if not extracted:
             permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
-            amend_permission = Permission.objects.get(codename="amend_permit_request", content_type=permit_request_ct)
+            amend_permission = Permission.objects.get(
+                codename="amend_permit_request", content_type=permit_request_ct
+            )
             extracted = [amend_permission]
 
         for permission in extracted:
@@ -97,7 +114,8 @@ class SecretariatGroupFactory(GroupFactory):
             permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
             extracted = list(
                 Permission.objects.filter(
-                    codename__in=["amend_permit_request", "classify_permit_request"], content_type=permit_request_ct
+                    codename__in=["amend_permit_request", "classify_permit_request"],
+                    content_type=permit_request_ct,
                 )
             )
 
@@ -115,7 +133,9 @@ class ValidatorGroupFactory(GroupFactory):
 
         if not extracted:
             permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
-            validate_permission = Permission.objects.get(codename="validate_permit_request", content_type=permit_request_ct)
+            validate_permission = Permission.objects.get(
+                codename="validate_permit_request", content_type=permit_request_ct
+            )
             extracted = [validate_permission]
 
         for permission in extracted:
@@ -152,23 +172,23 @@ class PermitRequestActorFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PermitActor
 
-    first_name = factory.Faker('first_name')
-    last_name = factory.Faker('last_name')
-    email = factory.Faker('email')
+    first_name = factory.Faker("first_name")
+    last_name = factory.Faker("last_name")
+    email = factory.Faker("email")
 
 
 class WorksObjectFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.WorksObject
 
-    name = factory.Faker('word')
+    name = factory.Faker("word")
 
 
 class WorksTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.WorksType
 
-    name = factory.Faker('word')
+    name = factory.Faker("word")
 
 
 class PermitRequestFactory(factory.django.DjangoModelFactory):
@@ -183,7 +203,7 @@ class WorksObjectPropertyFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.WorksObjectProperty
 
-    name = factory.Faker('word')
+    name = factory.Faker("word")
     input_type = models.WorksObjectProperty.INPUT_TYPE_TEXT
 
 
@@ -207,7 +227,7 @@ class WorksObjectPropertyValueFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.WorksObjectPropertyValue
 
-    value = factory.LazyFunction(lambda: {'val': faker.Faker().word()})
+    value = factory.LazyFunction(lambda: {"val": faker.Faker().word()})
     property = factory.SubFactory(WorksObjectPropertyFactory)
     works_object_type_choice = factory.SubFactory(WorksObjectTypeChoiceFactory)
 
@@ -217,4 +237,6 @@ class PermitRequestValidationFactory(factory.django.DjangoModelFactory):
         model = models.PermitRequestValidation
 
     department = factory.SubFactory(PermitDepartmentFactory)
-    permit_request = factory.SubFactory(PermitRequestFactory, status=models.PermitRequest.STATUS_AWAITING_VALIDATION)
+    permit_request = factory.SubFactory(
+        PermitRequestFactory, status=models.PermitRequest.STATUS_AWAITING_VALIDATION
+    )

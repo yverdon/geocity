@@ -6,7 +6,7 @@
   font-size: 0.8em;
 }
 
-#switchbaselayers {
+.switchbaselayers {
   border-radius: 3px;
   border: 3px solid #ebe834;
   position: absolute;
@@ -14,7 +14,7 @@
   bottom: 10px;
   z-index: 1000;
 }
-#switchbaselayers:hover {
+.switchbaselayers:hover {
   box-shadow: 0 0 2px 2px yellow;
   cursor: pointer;
 }
@@ -24,7 +24,7 @@
   font-weight: bold;
 }
 
-#out-of-administrative-limits {
+[data-role='outOfAdministrativeLimits'] {
   background-color: #f5d142;
   border-radius: 3px;
   border: 3px solid #f5bf42;
@@ -38,14 +38,34 @@
   opacity: 80%;
 }
 
-#manual-coordinates input {
+.manual-coordinates input {
   width: 120px;
 }
 
 label.custom-file-label {
   font-weight: normal;
+  overflow: hidden;
+  white-space: nowrap;
+  padding-right: 110px;
+  text-overflow: ellipsis;
 }
 
 label.custom-file-label:after {
   content: "Parcourir...";
+}
+
+.map-buttons a {
+  margin-top: 10px;
+}
+
+.map-buttons button {
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+  .map-buttons button {
+    flex-direction: row;
+  }
 }

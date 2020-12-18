@@ -1,19 +1,22 @@
 import dataclasses
-from django.contrib.auth.models import User, Group
-from django.contrib.postgres.fields import JSONField
-from django.core.validators import FileExtensionValidator
-from django.core.validators import MaxValueValidator, MinValueValidator
-from django.core.validators import RegexValidator
-from django.db import models
+
+from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
+from django.contrib.postgres.fields import JSONField
+from django.core.validators import (
+    FileExtensionValidator,
+    MaxValueValidator,
+    MinValueValidator,
+    RegexValidator,
+)
+from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
-from django.urls import reverse
 from simple_history.models import HistoricalRecords
 
 from . import fields
-
 
 # Contact types
 ACTOR_TYPE_OTHER = 0
@@ -49,163 +52,120 @@ ACTIONS = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE, ACTION_POKE
 
 class PermitDepartment(models.Model):
 
-    group = models.OneToOneField(
-        Group,
-        on_delete=models.CASCADE
-    )
-    description = models.CharField(
-        _('description'),
-        max_length=100,
-        default='Service'
-    )
-    is_validator = models.BooleanField(
-        _("is_validator")
-    )
-    is_admin = models.BooleanField(
-        _("is_admin")
-    )
-    is_archeologist = models.BooleanField(
-        _("is_archeologist")
-    )
+    group = models.OneToOneField(Group, on_delete=models.CASCADE)
+    description = models.CharField(_("description"), max_length=100, default="Service")
+    is_validator = models.BooleanField(_("is_validator"))
+    is_admin = models.BooleanField(_("is_admin"))
+    is_archeologist = models.BooleanField(_("is_archeologist"))
     administrative_entity = models.ForeignKey(
-        'PermitAdministrativeEntity',
+        "PermitAdministrativeEntity",
         null=True,
         on_delete=models.SET_NULL,
-        related_name='departments',
-        verbose_name=_("permit_administrative_entity")
+        related_name="departments",
+        verbose_name=_("permit_administrative_entity"),
     )
     is_default_validator = models.BooleanField(
-        _("sélectionné par défaut pour les validations"),
-        default=False
+        _("sélectionné par défaut pour les validations"), default=False
     )
 
     class Meta:
         verbose_name = _("2.1 Configuration du service (pilote, validateur...)")
-        verbose_name_plural = _("2.1 Configuration des services (pilote, validateur...)")
+        verbose_name_plural = _(
+            "2.1 Configuration des services (pilote, validateur...)"
+        )
 
     def __str__(self):
         return str(self.group)
 
 
 class PermitAdministrativeEntity(models.Model):
-    name = models.CharField(
-        _('name'),
-        max_length=128
-    )
-    ofs_id = models.PositiveIntegerField(
-        _("ofs_id")
-    )
-    link = models.URLField(
-        _("Lien"),
-        max_length=200,
-        blank=True
-    )
-    archive_link = models.URLField(
-        _("Archives externes"),
-        max_length=1024,
-        blank=True
-    )
+    name = models.CharField(_("name"), max_length=128)
+    ofs_id = models.PositiveIntegerField(_("ofs_id"))
+    link = models.URLField(_("Lien"), max_length=200, blank=True)
+    archive_link = models.URLField(_("Archives externes"), max_length=1024, blank=True)
     legal_document = fields.AministrativeEntityFileField(
-        _('Directive'), blank=True, upload_to='administrative_entity_files/')
+        _("Directive"), blank=True, upload_to="administrative_entity_files/"
+    )
     general_informations = models.CharField(
-        _("Informations"),
-        blank=True,
-        max_length=1024,
+        _("Informations"), blank=True, max_length=1024,
     )
-    link = models.URLField(
-        _("Lien"),
-        max_length=200,
-        blank=True
-    )
+    link = models.URLField(_("Lien"), max_length=200, blank=True)
     logo_main = fields.AministrativeEntityFileField(
-        _('Logo principal'), blank=True, upload_to='administrative_entity_files/')
+        _("Logo principal"), blank=True, upload_to="administrative_entity_files/"
+    )
     logo_secondary = fields.AministrativeEntityFileField(
-        _('Logo secondaire'), blank=True, upload_to='administrative_entity_files/')
+        _("Logo secondaire"), blank=True, upload_to="administrative_entity_files/"
+    )
     title_signature_1 = models.CharField(
-        _('Signature Gauche'),
-        max_length=128,
-        blank=True
+        _("Signature Gauche"), max_length=128, blank=True
     )
     image_signature_1 = fields.AministrativeEntityFileField(
-        _('Signature gauche'), blank=True, upload_to='administrative_entity_files/')
+        _("Signature gauche"), blank=True, upload_to="administrative_entity_files/"
+    )
     title_signature_2 = models.CharField(
-        _('Signature Droite'),
-        max_length=128,
-        blank=True
+        _("Signature Droite"), max_length=128, blank=True
     )
     image_signature_2 = fields.AministrativeEntityFileField(
-        _('Signature droite'), blank=True, upload_to='administrative_entity_files/')
+        _("Signature droite"), blank=True, upload_to="administrative_entity_files/"
+    )
     phone = models.CharField(
         _("Téléphone"),
         blank=True,
         max_length=20,
         validators=[
             RegexValidator(
-                regex=r'^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$',
-                message='Seuls les chiffres et les espaces sont autorisés.'
+                regex=r"^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
+                message="Seuls les chiffres et les espaces sont autorisés.",
             )
-        ]
+        ],
     )
-    geom = geomodels.MultiPolygonField(
-        _("geom"),
-        null=True,
-        srid=2056
-    )
+    geom = geomodels.MultiPolygonField(_("geom"), null=True, srid=2056)
 
     class Meta:
-        verbose_name = _('1.1 Configuration de l\'entité administrative (commune, organisation)')
-        verbose_name_plural = _('1.1 Configuration de l\'entité administrative (commune, organisation)')
+        verbose_name = _(
+            "1.1 Configuration de l'entité administrative (commune, organisation)"
+        )
+        verbose_name_plural = _(
+            "1.1 Configuration de l'entité administrative (commune, organisation)"
+        )
 
     def __str__(self):
         return self.name
 
 
 class PermitAuthor(models.Model):
-    """ User
-    """
-    company_name = models.CharField(
-        _("Raison Sociale"),
-        max_length=100, blank=True
-    )
+    """User"""
+
+    company_name = models.CharField(_("Raison Sociale"), max_length=100, blank=True)
     vat_number = models.CharField(
         _("Numéro TVA"),
         max_length=19,
         blank=True,
         validators=[
             RegexValidator(
-                regex=r'^(CHE-)+\d{3}\.\d{3}\.\d{3}(\sTVA)?$',
-                message='Le code d\'entreprise doit être de type \
+                regex=r"^(CHE-)+\d{3}\.\d{3}\.\d{3}(\sTVA)?$",
+                message="Le code d'entreprise doit être de type \
                          CHE-123.456.789 (TVA) \
                          et vous pouvez le trouver sur \
                          le registe fédéral des entreprises \
-                         https://www.uid.admin.ch/search.aspx'
+                         https://www.uid.admin.ch/search.aspx",
             )
-        ]
-    )
-    address = models.CharField(
-        _("Rue"),
-        max_length=100,
-    )
-    zipcode = models.PositiveIntegerField(
-        _("NPA"),
-        validators=[
-            MinValueValidator(1000),
-            MaxValueValidator(9999)
         ],
     )
-    city = models.CharField(
-        _("Ville"),
-        max_length=100,
+    address = models.CharField(_("Rue"), max_length=100,)
+    zipcode = models.PositiveIntegerField(
+        _("NPA"), validators=[MinValueValidator(1000), MaxValueValidator(9999)],
     )
+    city = models.CharField(_("Ville"), max_length=100,)
     phone_first = models.CharField(
         _("Téléphone principal"),
         max_length=20,
         validators=[
             RegexValidator(
-                regex=r'^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$',
-                message='Seuls les chiffres et les espaces sont autorisés.'
+                regex=r"^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
+                message="Seuls les chiffres et les espaces sont autorisés.",
             )
-        ]
+        ],
     )
     phone_second = models.CharField(
         _("Téléphone secondaire"),
@@ -213,71 +173,50 @@ class PermitAuthor(models.Model):
         max_length=20,
         validators=[
             RegexValidator(
-                regex=r'^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$',
-                message='Seuls les chiffres et les espaces sont autorisés.'
+                regex=r"^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
+                message="Seuls les chiffres et les espaces sont autorisés.",
             )
-        ]
+        ],
     )
     user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
     history = HistoricalRecords()
+
     class Meta:
-        verbose_name = _('3.2 Consultation de l\'auteur')
-        verbose_name_plural = _('3.2 Consultation des auteurs')
+        verbose_name = _("3.2 Consultation de l'auteur")
+        verbose_name_plural = _("3.2 Consultation des auteurs")
 
     def get_absolute_url(self):
 
-        return reverse('permits:genericauthorview', args=[str(self.id)])
+        return reverse("permits:genericauthorview", args=[str(self.id)])
 
     def __str__(self):
 
-        return str(self.user.first_name) + ' ' + str(self.user.last_name) if self.user else str(self.pk)
+        return (
+            str(self.user.first_name) + " " + str(self.user.last_name)
+            if self.user
+            else str(self.pk)
+        )
 
 
 class PermitActor(models.Model):
-    """ Contacts
-    """
-    first_name = models.CharField(
-        _("Prénom"),
-        max_length=150,
-    )
-    last_name = models.CharField(
-        _("Nom"),
-        max_length=100,
-    )
-    company_name = models.CharField(
-        _("Entreprise"),
-        max_length=100,
-    )
-    vat_number = models.CharField(
-        _("Numéro TVA"),
-        max_length=19,
-        blank=True
-    )
-    address = models.CharField(
-        _("Adresse"),
-        max_length=100,
-    )
-    zipcode = models.PositiveIntegerField(
-        _("NPA"),
-    )
-    city = models.CharField(
-        _("Ville"),
-        max_length=100,
-    )
-    phone = models.CharField(
-        _("Téléphone"),
-        max_length=20,
-    )
-    email = models.EmailField(
-        _("Email"),
-    )
-    history = HistoricalRecords()
-    class Meta:
-        verbose_name = _('Contact')
+    """Contacts"""
 
+    first_name = models.CharField(_("Prénom"), max_length=150,)
+    last_name = models.CharField(_("Nom"), max_length=100,)
+    company_name = models.CharField(_("Entreprise"), max_length=100,)
+    vat_number = models.CharField(_("Numéro TVA"), max_length=19, blank=True)
+    address = models.CharField(_("Adresse"), max_length=100,)
+    zipcode = models.PositiveIntegerField(_("NPA"),)
+    city = models.CharField(_("Ville"), max_length=100,)
+    phone = models.CharField(_("Téléphone"), max_length=20,)
+    email = models.EmailField(_("Email"),)
+    history = HistoricalRecords()
+
+    class Meta:
+        verbose_name = _("Contact")
 
     def __str__(self):
-        return self.first_name + ' ' + self.last_name
+        return self.first_name + " " + self.last_name
 
 
 class WorksObjectTypeChoice(models.Model):
@@ -285,31 +224,24 @@ class WorksObjectTypeChoice(models.Model):
     This intermediary model represents the selected objects for a permit
     request. Property values will then point to this model.
     """
-    permit_request = models.ForeignKey(
-        'PermitRequest',
-        on_delete=models.CASCADE
-    )
-    works_object_type = models.ForeignKey(
-        'WorksObjectType',
-        on_delete=models.CASCADE
-    )
+
+    permit_request = models.ForeignKey("PermitRequest", on_delete=models.CASCADE)
+    works_object_type = models.ForeignKey("WorksObjectType", on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = [('permit_request', 'works_object_type')]
+        unique_together = [("permit_request", "works_object_type")]
 
 
 class PermitActorType(models.Model):
 
     type = models.PositiveSmallIntegerField(
-        _("type de contact"),
-        choices=ACTOR_TYPE_CHOICES,
-        default=ACTOR_TYPE_OTHER
+        _("type de contact"), choices=ACTOR_TYPE_CHOICES, default=ACTOR_TYPE_OTHER
     )
     works_type = models.ForeignKey(
-        'WorksType',
+        "WorksType",
         on_delete=models.CASCADE,
         verbose_name=_("type de travaux"),
-        related_name='works_contact_types'
+        related_name="works_contact_types",
     )
 
     class Meta:
@@ -317,23 +249,16 @@ class PermitActorType(models.Model):
         verbose_name_plural = _("1.6 Configuration des contacts")
 
     def __str__(self):
-        return self.get_type_display() + ' (' + str(self.works_type) + ')'
+        return self.get_type_display() + " (" + str(self.works_type) + ")"
 
 
 class PermitRequestActor(models.Model):
-    actor = models.ForeignKey(
-        PermitActor,
-        on_delete=models.CASCADE
-    )
+    actor = models.ForeignKey(PermitActor, on_delete=models.CASCADE)
     permit_request = models.ForeignKey(
-        'PermitRequest',
-        on_delete=models.CASCADE,
-        related_name='permit_request_actors'
+        "PermitRequest", on_delete=models.CASCADE, related_name="permit_request_actors"
     )
     actor_type = models.PositiveSmallIntegerField(
-        _("type de contact"),
-        choices=ACTOR_TYPE_CHOICES,
-        default=ACTOR_TYPE_OTHER
+        _("type de contact"), choices=ACTOR_TYPE_CHOICES, default=ACTOR_TYPE_OTHER
     )
 
     class Meta:
@@ -394,85 +319,52 @@ class PermitRequest(models.Model):
     )
 
     status = models.PositiveSmallIntegerField(
-        _("état"),
-        choices=STATUS_CHOICES,
-        default=STATUS_DRAFT
+        _("état"), choices=STATUS_CHOICES, default=STATUS_DRAFT
     )
-    created_at = models.DateTimeField(
-        _("date de création"),
-        default=timezone.now
-    )
-    validated_at = models.DateTimeField(
-        _("date de validation"),
-        null=True
-    )
-    printed_at = models.DateTimeField(
-        _("date d'impression"),
-        null=True
-    )
-    printed_by = models.CharField(
-        _("imprimé par"),
-        max_length=255,
-        blank=True
-    )
+    created_at = models.DateTimeField(_("date de création"), default=timezone.now)
+    validated_at = models.DateTimeField(_("date de validation"), null=True)
+    printed_at = models.DateTimeField(_("date d'impression"), null=True)
+    printed_by = models.CharField(_("imprimé par"), max_length=255, blank=True)
     printed_file = fields.AministrativeEntityFileField(
-            _('Permis imprimé'), null=True, blank=True, upload_to='printed_permits/')
+        _("Permis imprimé"), null=True, blank=True, upload_to="printed_permits/"
+    )
     works_object_types = models.ManyToManyField(
-        'WorksObjectType',
-        through=WorksObjectTypeChoice,
-        related_name='permit_requests'
+        "WorksObjectType", through=WorksObjectTypeChoice, related_name="permit_requests"
     )
     administrative_entity = models.ForeignKey(
         PermitAdministrativeEntity,
         on_delete=models.CASCADE,
         verbose_name=_("commune"),
-        related_name='permit_requests'
+        related_name="permit_requests",
     )
     author = models.ForeignKey(
-        'PermitAuthor',
+        "PermitAuthor",
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("auteur"),
-        related_name='permit_requests'
+        related_name="permit_requests",
     )
     actors = models.ManyToManyField(
-        'PermitActor',
-        related_name='+',
-        through=PermitRequestActor
+        "PermitActor", related_name="+", through=PermitRequestActor
     )
     archeology_status = models.PositiveSmallIntegerField(
         _("Statut archéologique"),
         choices=ARCHEOLOGY_STATUS_CHOICES,
-        default=ARCHEOLOGY_STATUS_IRRELEVANT
+        default=ARCHEOLOGY_STATUS_IRRELEVANT,
     )
     intersected_geometries = models.TextField(
-        _("Entités géométriques concernées"),
-        max_length=1024,
-        null=True
+        _("Entités géométriques concernées"), max_length=1024, null=True
     )
     price = models.DecimalField(
-        _("Émolument"),
-        decimal_places=2,
-        max_digits=7,
-        null=True,
-        blank=True
+        _("Émolument"), decimal_places=2, max_digits=7, null=True, blank=True
     )
-    exemption = models.TextField(
-        _("Dérogation"),
-        blank=True
-    )
-    opposition = models.TextField(
-        _("Opposition"),
-        blank=True
-    )
-    comment = models.TextField(
-        _("Analyse du service pilote"),
-        blank=True
-    )
+    exemption = models.TextField(_("Dérogation"), blank=True)
+    opposition = models.TextField(_("Opposition"), blank=True)
+    comment = models.TextField(_("Analyse du service pilote"), blank=True)
     validation_pdf = fields.PermitRequestFileField(
         _("pdf de validation"),
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
-        upload_to="validations"
+        upload_to="validations",
     )
     creditor_type = models.PositiveSmallIntegerField(
         _("Destinaire de la facture"),
@@ -480,19 +372,17 @@ class PermitRequest(models.Model):
         null=True,
         blank=True,
     )
-    is_public = models.BooleanField(
-        _("Publier"),
-        default=False
-    )
+    is_public = models.BooleanField(_("Publier"), default=False)
     history = HistoricalRecords()
+
     class Meta:
         verbose_name = _("3.1 Consultation de la demande")
         verbose_name_plural = _("3.1 Consultation des demandes")
         permissions = [
-            ('amend_permit_request', _("Traiter les demandes de permis")),
-            ('validate_permit_request', _("Valider les demandes de permis")),
-            ('classify_permit_request', _("Classer les demandes de permis")),
-            ('edit_permit_request', _("Éditer les demandes de permis")),
+            ("amend_permit_request", _("Traiter les demandes de permis")),
+            ("validate_permit_request", _("Valider les demandes de permis")),
+            ("classify_permit_request", _("Classer les demandes de permis")),
+            ("edit_permit_request", _("Éditer les demandes de permis")),
         ]
 
     def is_draft(self):
@@ -537,10 +427,7 @@ class PermitRequest(models.Model):
 
 
 class WorksType(models.Model):
-    name = models.CharField(
-        _("nom"),
-        max_length=255
-    )
+    name = models.CharField(_("nom"), max_length=255)
 
     META_TYPE_OTHER = 0
     META_TYPE_ROADWORK = 1
@@ -560,9 +447,7 @@ class WorksType(models.Model):
     )
 
     meta_type = models.IntegerField(
-        _("Type générique"),
-        choices=META_TYPE_CHOICES,
-        default=META_TYPE_OTHER
+        _("Type générique"), choices=META_TYPE_CHOICES, default=META_TYPE_OTHER
     )
 
     class Meta:
@@ -577,34 +462,32 @@ class WorksObjectType(models.Model):
     """
     Represents a works object for a specific works type.
     """
+
     works_type = models.ForeignKey(
-        'WorksType',
+        "WorksType",
         on_delete=models.CASCADE,
         verbose_name=_("type de travaux"),
-        related_name='works_object_types'
+        related_name="works_object_types",
     )
     works_object = models.ForeignKey(
-        'WorksObject',
+        "WorksObject",
         on_delete=models.CASCADE,
         verbose_name=_("objet des travaux"),
-        related_name='works_object_types'
+        related_name="works_object_types",
     )
     administrative_entities = models.ManyToManyField(
         PermitAdministrativeEntity,
         verbose_name=_("communes"),
-        related_name='works_object_types'
+        related_name="works_object_types",
     )
 
     class Meta:
         verbose_name = _("1.4 Configuration type-objet-entité administrative")
         verbose_name_plural = _("1.4 Configurations type-objet-entité administrative")
-        unique_together = [('works_type', 'works_object')]
+        unique_together = [("works_type", "works_object")]
 
     def __str__(self):
-        return "{} ({})".format(
-            self.works_object.name,
-            self.works_type.name
-        )
+        return "{} ({})".format(self.works_object.name, self.works_type.name)
 
 
 class WorksObject(models.Model):
@@ -612,21 +495,16 @@ class WorksObject(models.Model):
     works_types = models.ManyToManyField(
         WorksType,
         through=WorksObjectType,
-        related_name='works_objects',
-        verbose_name=_("types")
+        related_name="works_objects",
+        verbose_name=_("types"),
     )
-    wms_layers = models.URLField(
-        _("Couche(s) WMS"),
-        blank=True,
-        max_length=1024
-    )
+    wms_layers = models.URLField(_("Couche(s) WMS"), blank=True, max_length=1024)
     wms_layers_order = models.PositiveIntegerField(
-        _("Ordre de(s) couche(s)"),
-        default=1
+        _("Ordre de(s) couche(s)"), default=1
     )
 
     class Meta:
-        verbose_name = _("1.3 Configuration de l\'objet")
+        verbose_name = _("1.3 Configuration de l'objet")
         verbose_name_plural = _("1.3 Configuration des objets")
 
     def __str__(self):
@@ -634,10 +512,10 @@ class WorksObject(models.Model):
 
 
 class WorksObjectProperty(models.Model):
-    INPUT_TYPE_TEXT = 'text'
-    INPUT_TYPE_CHECKBOX = 'checkbox'
-    INPUT_TYPE_NUMBER = 'number'
-    INPUT_TYPE_FILE = 'file'
+    INPUT_TYPE_TEXT = "text"
+    INPUT_TYPE_CHECKBOX = "checkbox"
+    INPUT_TYPE_NUMBER = "number"
+    INPUT_TYPE_FILE = "file"
     INPUT_TYPE_CHOICES = (
         (INPUT_TYPE_TEXT, _("Texte")),
         (INPUT_TYPE_CHECKBOX, _("Case à cocher")),
@@ -645,23 +523,13 @@ class WorksObjectProperty(models.Model):
         (INPUT_TYPE_FILE, _("Fichier")),
     )
 
-    name = models.CharField(
-        _("nom"),
-        max_length=255
-    )
+    name = models.CharField(_("nom"), max_length=255)
     input_type = models.CharField(
-        _("type de caractéristique"),
-        max_length=30,
-        choices=INPUT_TYPE_CHOICES
+        _("type de caractéristique"), max_length=30, choices=INPUT_TYPE_CHOICES
     )
-    is_mandatory = models.BooleanField(
-        _("obligatoire"),
-        default=False
-    )
+    is_mandatory = models.BooleanField(_("obligatoire"), default=False)
     works_object_types = models.ManyToManyField(
-        WorksObjectType,
-        verbose_name=_("objets des travaux"),
-        related_name='properties'
+        WorksObjectType, verbose_name=_("objets des travaux"), related_name="properties"
     )
 
     class Meta:
@@ -676,24 +544,26 @@ class WorksObjectPropertyValue(models.Model):
     """
     Value of a property for a selected object in a permit request.
     """
+
     property = models.ForeignKey(
         WorksObjectProperty,
         verbose_name=_("caractéristique"),
         on_delete=models.PROTECT,
-        related_name='+'
+        related_name="+",
     )
     works_object_type_choice = models.ForeignKey(
         WorksObjectTypeChoice,
         verbose_name=_("objet des travaux"),
         on_delete=models.CASCADE,
-        related_name='properties'
+        related_name="properties",
     )
     # Storing the value in a JSON field allows to keep the value type
     # (eg. boolean, int) instead of transforming everything to str
     value = JSONField()
     history = HistoricalRecords()
+
     class Meta:
-        unique_together = [('property', 'works_object_type_choice')]
+        unique_together = [("property", "works_object_type_choice")]
 
 
 class PermitRequestValidation(models.Model):
@@ -707,42 +577,23 @@ class PermitRequestValidation(models.Model):
     )
 
     permit_request = models.ForeignKey(
-        PermitRequest,
-        on_delete=models.CASCADE,
-        related_name="validations"
+        PermitRequest, on_delete=models.CASCADE, related_name="validations"
     )
     department = models.ForeignKey(
         "PermitDepartment",
         on_delete=models.CASCADE,
-        related_name="permit_request_validations"
+        related_name="permit_request_validations",
     )
     validation_status = models.IntegerField(
-        _("Statut de validation"),
-        choices=STATUS_CHOICES,
-        default=STATUS_REQUESTED
+        _("Statut de validation"), choices=STATUS_CHOICES, default=STATUS_REQUESTED
     )
-    comment_before = models.TextField(
-        _("Commentaires (avant)"),
-        blank=True
-    )
-    comment_during = models.TextField(
-        _("Commentaires (pendant)"),
-        blank=True
-    )
-    comment_after = models.TextField(
-        _("Commentaires (après)"),
-        blank=True
-    )
-    validated_by = models.ForeignKey(
-        User,
-        null=True,
-        on_delete=models.SET_NULL
-    )
-    validated_at = models.DateTimeField(
-        _("Validé le"),
-        null=True
-    )
+    comment_before = models.TextField(_("Commentaires (avant)"), blank=True)
+    comment_during = models.TextField(_("Commentaires (pendant)"), blank=True)
+    comment_after = models.TextField(_("Commentaires (après)"), blank=True)
+    validated_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    validated_at = models.DateTimeField(_("Validé le"), null=True)
     history = HistoricalRecords()
+
     class Meta:
         unique_together = ("permit_request", "department")
         verbose_name = _("3.5 Consultation de la validation par le service")
@@ -765,32 +616,17 @@ class PermitRequestGeoTime(models.Model):
     """
     Permit location in space and time
     """
+
     permit_request = models.ForeignKey(
-        'PermitRequest',
-        on_delete=models.CASCADE,
-        related_name='geo_time'
+        "PermitRequest", on_delete=models.CASCADE, related_name="geo_time"
     )
-    starts_at = models.DateTimeField(
-        _("Date planifiée de début")
-    )
-    ends_at = models.DateTimeField(
-        _("Date planifiée de fin")
-    )
-    comment = models.CharField(
-        _("Commentaire"),
-        max_length=1024,
-        blank=True
-    )
-    external_link = models.URLField(
-        _("Lien externe"),
-        blank=True
-    )
-    geom = geomodels.GeometryCollectionField(
-        _("Localisation"),
-        null=True,
-        srid=2056
-    )
+    starts_at = models.DateTimeField(_("Date planifiée de début"))
+    ends_at = models.DateTimeField(_("Date planifiée de fin"))
+    comment = models.CharField(_("Commentaire"), max_length=1024, blank=True)
+    external_link = models.URLField(_("Lien externe"), blank=True)
+    geom = geomodels.GeometryCollectionField(_("Localisation"), null=True, srid=2056)
     history = HistoricalRecords()
+
     class Meta:
         verbose_name = _("3.3 Consultation de l'agenda et de la géométrie")
         verbose_name_plural = _("3.3 Consultation des agenda et géométries")
@@ -800,53 +636,37 @@ class GeomLayer(models.Model):
     """
     Geometric entities that might be touched by the PermitRequest
     """
+
     layer_name = models.CharField(
-        _("Nom de la couche source"),
-        max_length=128,
-        blank=True
+        _("Nom de la couche source"), max_length=128, blank=True
     )
-    description = models.CharField(
-        _("Commentaire"),
-        max_length=1024,
-        blank=True
-    )
-    source_id = models.CharField(
-        _("Id entité"),
-        max_length=128,
-        blank=True
-    )
+    description = models.CharField(_("Commentaire"), max_length=1024, blank=True)
+    source_id = models.CharField(_("Id entité"), max_length=128, blank=True)
     source_subid = models.CharField(
-        _("Id entité secondaire"),
-        max_length=128,
-        blank=True
+        _("Id entité secondaire"), max_length=128, blank=True
     )
-    external_link = models.URLField(
-        _("Lien externe"),
-        blank=True
-    )
-    geom = geomodels.MultiPolygonField(
-        _("Géométrie"),
-        null=True,
-        srid=2056
-    )
+    external_link = models.URLField(_("Lien externe"), blank=True)
+    geom = geomodels.MultiPolygonField(_("Géométrie"), null=True, srid=2056)
 
     class Meta:
         verbose_name = _("3.4 Consultation de l'entité géographique à intersecter")
-        verbose_name_plural = _("3.4 Consultation des entités géographiques à intersecter")
+        verbose_name_plural = _(
+            "3.4 Consultation des entités géographiques à intersecter"
+        )
 
 
 class PermitWorkflowStatus(models.Model):
     """
     Represents a status in the administrative workflow
     """
+
     status = models.PositiveSmallIntegerField(
-        _("statut"),
-        choices=PermitRequest.STATUS_CHOICES,
+        _("statut"), choices=PermitRequest.STATUS_CHOICES,
     )
     administrative_entity = models.ForeignKey(
-        'PermitAdministrativeEntity',
+        "PermitAdministrativeEntity",
         on_delete=models.CASCADE,
-        related_name='enabled_statuses'
+        related_name="enabled_statuses",
     )
 
     def __str__(self):
@@ -855,4 +675,4 @@ class PermitWorkflowStatus(models.Model):
     class Meta:
         verbose_name = _("Status disponible pour l'entité administrative")
         verbose_name_plural = _("Status disponibles pour l'entité administratives")
-        unique_together = ('status', 'administrative_entity')
+        unique_together = ("status", "administrative_entity")

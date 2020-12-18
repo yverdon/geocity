@@ -7,7 +7,10 @@
 
   var geojsonFormat = new ol.format.GeoJSON();
 
-  function geometryWidget(options) {
+  function geometryWidget(el) {
+    let options = JSON.parse(el.dataset.options);
+    this.el = el;
+    this.serializedEl = el.querySelector("[data-role='serialized']");
     this.map = null;
     this.wmtsLayer = new ol.layer.Tile({});
     this.wmtsLayerAlternative = new ol.layer.Tile({});
@@ -36,7 +39,7 @@
 
     var layer_list = [];
 
-    this.options.wms_layers.split(",").forEach(function (item, index) {
+    this.options.wms_layers.forEach(function (item, index) {
       layer_list.push(
         new ol.layer.Image({
           source: new ol.source.ImageWMS({
@@ -70,7 +73,7 @@
     this.vectorMaskLayer = new ol.layer.Vector({
       source: new ol.source.Vector({
         url: (e) => {
-          return this.options.administrative_entity_json_url;
+          return this.options.administrative_entity_url;
         },
         zIndex: 9999,
         format: new ol.format.GeoJSON(),
@@ -110,19 +113,19 @@
       updateWhileAnimating: true, // optional, for instant visual feedback
       updateWhileInteracting: true, // optional, for instant visual feedback
     });
-    var initial_value = document.getElementById(this.options.id).value;
+    var initial_value = this.serializedEl.value;
     var extent = ol.extent.createEmpty();
     if (this.options.geometry_db_type != "GeometryCollection") {
-      $("#edit-points").hide();
-      $("#edit-lines").hide();
-      $("#edit-polygons").hide();
+      $("[data-action='editPoints']", this.el).hide();
+      $("[data-action='editLines']", this.el).hide();
+      $("[data-action='editPolygons']", this.el).hide();
 
       if (this.options.geometry_db_type == "MultiPolygon") {
-        $("#set-point-manual").hide();
-        $("#manual-coordinates").hide();
+        $("[data-action='setPointManual']", this.el).hide();
+        $("[data-action='manualCoordinates']", this.el).hide();
       } else if (this.options.geometry_db_type == "MultiLineString") {
-        $("#set-point-manual").hide();
-        $("#manual-coordinates").hide();
+        $("[data-action='setPointManual']", this.el).hide();
+        $("[dataction='manualCoordinates']", this.el).hide();
       }
     }
     if (initial_value) {
@@ -189,12 +192,15 @@
     this.createInteractions();
 
     // disable edit (for use in read-only views)
-    if (this.options.edit_geom == "False") {
+    if (!this.options.edit_geom) {
       this.disableDrawing();
       this.interactions.modify.setActive(false);
       this.hideMapButtons();
     }
 
+    this.clearWarning();
+
+    this._addEventListeners();
     this.ready = true;
   }
 
@@ -234,7 +240,7 @@
           },
         }),
       ],
-      target: this.options.map_id,
+      target: this.el.querySelector("[data-role=map]"),
       view: new ol.View({
         zoom: this.options.default_zoom,
         minZoom: this.options.min_zoom,
@@ -242,7 +248,7 @@
         center: this.options.default_center,
       }),
     });
-    if (restriction_area_enabled == "True") {
+    if (restriction_area_enabled) {
       map.addLayer(vectorMaskLayer);
       map.addLayer(rasterMaskLayer);
     }
@@ -308,7 +314,11 @@
     Function to load KML data
   */
   geometryWidget.prototype.addKML = function () {
-    var file = document.getElementById("selectfile").files[0];
+    const filePicker = this.el.querySelector("[data-action='addKML']");
+    if (!filePicker) {
+      return;
+    }
+    const file = filePicker.files[0];
 
     if (file) {
       var reader = new FileReader();
@@ -317,10 +327,7 @@
         var features = kml.readFeatures(reader.result);
 
         if (features.length > 50) {
-          $("#out-of-administrative-limits").show();
-          $("#out-of-administrative-limits").html(
-            "Votre fichier dépasse la limite de 50 entités, il n'a pas été importé!"
-          );
+          this.showWarning("Votre fichier dépasse la limite de 50 entités, il n'a pas été importé!");
         } else {
           for (var i = 0; i < features.length; i++) {
             var coord = features[i].getGeometry().getCoordinates();
@@ -547,9 +554,8 @@
       source: this.vectorSource,
       type: geotype,
       condition: (e) => {
-        if (this.options.restriction_area_enabled == "True") {
-          $("#out-of-administrative-limits").hide();
-          let coords = e.coordinate;
+        if (this.options.restriction_area_enabled) {
+          this.clearWarning();
           let features = this.map.getFeaturesAtPixel(e.pixel, {
             layerFilter: (layer) => {
               return layer === this.vectorMaskLayer;
@@ -558,10 +564,7 @@
           if (features && features.length > 0) {
             return true;
           } else {
-            $("#out-of-administrative-limits").show();
-            $("#out-of-administrative-limits").html(
-              "Votre saisie sort du territoire du territoire concerné"
-            );
+            this.showWarning("Votre saisie sort du territoire du territoire concerné");
             return false;
           }
         } else {
@@ -569,7 +572,6 @@
         }
       },
     });
-
     this.map.addInteraction(this.interactions.draw);
   };
 
@@ -598,6 +600,16 @@
     $("#delete-selected").addClass("disabled");
   };
 
+  geometryWidget.prototype.clearWarning = function() {
+    $("[data-role='outOfAdministrativeLimits']", this.el).hide();
+  };
+
+  geometryWidget.prototype.showWarning = function(text) {
+    const $node = $("[data-role='outOfAdministrativeLimits']", this.el);
+    $node.text(text);
+    $node.show();
+  };
+
   /*
     Enable feature selection and disable other interactions
     */
@@ -624,8 +636,8 @@
     Add point from manuelly edited coordinates (ch1903+)
     */
   geometryWidget.prototype.addPointFeature = function () {
-    var east = parseFloat($("#east_coord")[0].value);
-    var north = parseFloat($("#north_coord")[0].value);
+    var east = parseFloat(this.el.querySelector("[name='east_coord']").value);
+    var north = parseFloat(this.el.querySelector("[name='north_coord']").value);
     var feature = new ol.Feature({
       geometry: new ol.geom.MultiPoint([[east, north]]),
     });
@@ -645,7 +657,7 @@
   geometryWidget.prototype.serializeFeatures = function () {
     var features = this.vectorSource.getFeatures();
     if (features.length == 0) {
-      document.getElementById(this.options.id).value = "";
+      this.serializedEl.value = "";
       return;
     }
     var geometries = [];
@@ -669,8 +681,59 @@
     var geojsongeom = geojsonFormat.writeGeometry(geometry, {
       decimals: 2,
     });
-    document.getElementById(this.options.id).value = geojsongeom;
+    this.serializedEl.value = geojsongeom;
   };
 
+  geometryWidget.prototype._addEventListeners = function () {
+    const widget = this;
+    const clickActions = {
+      enableDrawing: e => this.enableDrawing(),
+      selectFeatures: e => this.selectFeatures(),
+      removeSelectedFeatures: e => this.removeSelectedFeatures(),
+      setDrawInteraction: e => this.setDrawInteraction(e.target.dataset.interactionType),
+      switchBaseLayers: e => this.switchBaseLayers(),
+      addPointFeature: e => this.addPointFeature(),
+    };
+
+    for (let clickAction in clickActions) {
+      [...this.el.querySelectorAll(`[data-action='${clickAction}']`)].forEach(node => {
+        node.addEventListener("click", clickActions[clickAction]);
+      });
+    }
+
+    const manualCoordinates = this.el.querySelector(`[data-action='addPointFeature']`);
+    if (manualCoordinates) {
+      manualCoordinates.addEventListener("click", e => {
+        this.addPointFeature();
+      });
+    }
+
+    [...this.el.querySelectorAll("[data-action='addKML']")].forEach(node => {
+      node.addEventListener("change", () => widget.addKML());
+    });
+  };
+
+  function geometryWidgetManager() {
+    this.boundNodes = {};
+  }
+
+  geometryWidgetManager.prototype.rebind = function() {
+    [...document.querySelectorAll("[data-geometry-widget]:not([data-initialize='0'])")].forEach(node => {
+      if (node.attributes.id.value in this.boundNodes) {
+        return;
+      }
+
+      let widget = new geometryWidget(node);
+      this.boundNodes[node.attributes.id.value] = widget;
+    });
+  }
+
+  geometryWidgetManager.prototype.updateSize = function() {
+    for (let elem in this.boundNodes) {
+      this.boundNodes[elem].map.updateSize();
+    }
+  }
+
   window.geometryWidget = geometryWidget;
+  window.geometryWidgetManager = new geometryWidgetManager();
 })();
