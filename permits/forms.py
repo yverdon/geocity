@@ -565,6 +565,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequest
         fields = [
+            "is_public",
             "status",
             "price",
             "exemption",
