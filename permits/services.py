@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from constance import config
 
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
@@ -44,6 +45,9 @@ def set_object_property_value(permit_request, object_type, prop, value):
     else:
         if is_file:
 
+            # Prevent large file upload
+            if value.size > config.MAX_FILE_UPLOAD_SIZE:
+                return
             # Use private storage to prevent uploaded files exposition to the outside world
             private_storage = fields.PrivateFileSystemStorage()
             # If the given File has a `url` attribute, it means the value comes from the `initial` form data, so the

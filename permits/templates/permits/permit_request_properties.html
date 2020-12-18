@@ -5,7 +5,7 @@
 
 {% block content %}
   {% permit_progressbar permit_request 'properties' %}
-  <h3>{% trans "Renseignez les caractéristiques des objets" %}</h3>
+  <h3>{{ config.PROPERTIES_STEP }} </h3>
   <hr>
   <form method="post">
     {% csrf_token %}

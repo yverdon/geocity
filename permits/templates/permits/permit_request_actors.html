@@ -21,7 +21,7 @@
     <h4>Adresse de facturation si différente de celle de l'auteur</h4>
     {% bootstrap_form creditorform layout='horizontal' %}
     <hr>
-    <h3>{% trans "Renseignez les contacts" %}</h3>
+    <h3>{{ config.ACTORS_STEP }}</h3>
     <div id="forms-container">
         {% for form in formset %}
           {% bootstrap_form form layout='horizontal' %}

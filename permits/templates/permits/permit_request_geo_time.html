@@ -9,7 +9,7 @@
 {% block content %}
 <div id="permit-request-geo-time">
   {% permit_progressbar permit_request 'geo_time' %}
-  <h3>{% trans "Renseignez le planning et la localisation" %}</h3>
+  <h3>{{ config.GEO_TIME_STEP }}</h3>
   <hr>
   <form method="post">
     <div data-geo-time-role="forms" data-nb-forms="{{ formset.forms|length }}">

@@ -5,7 +5,7 @@
 
 {% block content %}
   {% permit_progressbar permit_request 'works_types' %}
-  <h3>{% trans "Sélectionnez le ou les type(s) de travaux / événement(s) prévu(s)" %}</h3>
+  <h3>{{ config.WORKS_TYPES_STEP }}</h3>
   <hr>
   <form method="post">
     {% bootstrap_form_errors works_types_form %}
