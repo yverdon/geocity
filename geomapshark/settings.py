@@ -124,6 +124,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "APPLICATION_SUBTITLE",
         "APPLICATION_DESCRIPTION",
         "MAX_FILE_UPLOAD_SIZE",
+        "GEOCALENDAR_URL",
     ),
     "Theme Options": (
         "BACKGROUND_COLOR",
