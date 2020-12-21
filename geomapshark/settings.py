@@ -123,6 +123,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "APPLICATION_TITLE",
         "APPLICATION_SUBTITLE",
         "APPLICATION_DESCRIPTION",
+        "MAX_FILE_UPLOAD_SIZE",
     ),
     "Theme Options": (
         "BACKGROUND_COLOR",
@@ -164,6 +165,11 @@ CONSTANCE_CONFIG = {
         10485760,
         "Taille maximum des fichiers uploadé, penser à modifier également APPENDICES_STEP pour informer l'utilisateur de la taille maximale autorisée",
         int,
+    ),
+    "GEOCALENDAR_URL": (
+        "https://geocity.mapnv.ch/geocalendar",
+        "URL de l'application calendrier cartographique",
+        str,
     ),
     "LOCATION_STEP": ("Sélectionnez la commune / l'entité", "", str),
     "WORKS_TYPES_STEP": (
