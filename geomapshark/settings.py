@@ -119,14 +119,14 @@ MIDDLEWARE += [
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 
 CONSTANCE_CONFIG_FIELDSETS = {
-    "General Options": (
+    "1 - General Options": (
         "APPLICATION_TITLE",
         "APPLICATION_SUBTITLE",
         "APPLICATION_DESCRIPTION",
         "MAX_FILE_UPLOAD_SIZE",
         "GEOCALENDAR_URL",
     ),
-    "Theme Options": (
+    "2 - Theme Options": (
         "BACKGROUND_COLOR",
         "PRIMARY_COLOR",
         "SECONDARY_COLOR",
@@ -134,7 +134,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "TITLE_COLOR",
         "TABLE_COLOR",
     ),
-    "Step Options": (
+    "3 - Step Options": (
         "LOCATION_STEP",
         "WORKS_TYPES_STEP",
         "OBJECTS_TYPES_STEP",
@@ -144,6 +144,15 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "ACTORS_STEP",
         "SUBMIT_STEP",
     ),
+    "4 - Front app Options": (
+        "META_TYPE_OTHER",
+        "META_TYPE_ROADWORK",
+        "META_TYPE_BUILDINGWORK",
+        "META_TYPE_EVENT_SPORT",
+        "META_TYPE_EVENT_CULTURE",
+        "META_TYPE_EVENT_COMMERCIAL",
+        "META_TYPE_EVENT_POLICE",
+    )
 }
 
 CONSTANCE_CONFIG = {
@@ -205,6 +214,13 @@ CONSTANCE_CONFIG = {
     "TEXT_COLOR": ("#000000", "Couleur du texte", str,),
     "TITLE_COLOR": ("#000000", "Couleur du titre", str,),
     "TABLE_COLOR": ("#212529", "Couleur du texte dans les tableaux", str,),
+    "META_TYPE_OTHER": ("'name': 'question-mark''label': 'Autres''color': '[0, 140, 111, 1]'", "Style et label pour le geocity-front", str,),
+    "META_TYPE_ROADWORK": ("'name': 'construction','label': 'Construction','color': '[201, 2, 25, 1]'", "Style et label pour le geocity-front", str,),
+    "META_TYPE_BUILDINGWORK": ("'name': 'cone','label': 'Chantier','color': '[255, 166, 0, 1]'", "Style et label pour le geocity-front", str,),
+    "META_TYPE_EVENT_SPORT": ("'name': 'sport','label': 'Evénement sportif','color': '[39, 115, 230, 1]'", "Style et label pour le geocity-front", str,),
+    "META_TYPE_EVENT_CULTURE": ("'name': 'culture','label': 'Evénement culturel','color': '[27, 76, 150, 1]'", "Style et label pour le geocity-front", str,),
+    "META_TYPE_EVENT_COMMERCIAL": ("'name': 'commercial','label': 'Evénement commercial','color': '[14, 36, 69, 1]'", "Style et label pour le geocity-front", str,),
+    "META_TYPE_EVENT_POLICE": ("'name': 'police','label': 'Dispositif de plolice','color': '[4, 0, 255, 1]'", "Style et label pour le geocity-front", str,),
 }
 
 TEMPLATES = [
