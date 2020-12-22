@@ -60,18 +60,9 @@ def administrative_entities_geojson(request, administrative_entity_id):
 # ///////////////////////////////////
 
 
-class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
+class PermitRequestGeoTimeViewSet(viewsets.ViewSet):
 
-    # serializer_class = serializers.PermitRequestGeoTimeSerializer
-
-    def get_serializer(self, *args, **kwargs):
-        """
-        Return the serializer instance that should be used for validating and
-        deserializing input, and for serializing output.
-        """
-        serializer_class = serializers.GeocitySerializer
-        kwargs["context"] = self.get_serializer_context()
-        return serializer_class(*args, **kwargs)
+    serializer_class = serializers.PermitRequestGeoTimeSerializer
 
     def get_queryset(self):
         """
