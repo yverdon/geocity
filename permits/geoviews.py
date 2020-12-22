@@ -60,7 +60,7 @@ def administrative_entities_geojson(request, administrative_entity_id):
 # ///////////////////////////////////
 
 
-class PermitRequestGeoTimeViewSet(viewsets.ViewSet):
+class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = serializers.PermitRequestGeoTimeSerializer
 
