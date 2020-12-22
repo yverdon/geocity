@@ -25,7 +25,6 @@ if settings.ENABLE_2FA:
 
 router = routers.DefaultRouter()
 router.register(r"events", geoviews.PermitRequestGeoTimeViewSet, "events")
-router.register(r"front-config", geoviews.GeocityViewConfigViewSet, "front-config")
 
 
 # Django-configuration

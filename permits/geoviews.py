@@ -61,37 +61,6 @@ def administrative_entities_geojson(request, administrative_entity_id):
 # ///////////////////////////////////
 
 
-class GeocityViewConfigViewSet(viewsets.ViewSet):
-    def list(self, request):
-
-        config = {
-            "meta_types": dict(
-                (str(x), y) for x, y in models.WorksType.META_TYPE_CHOICES
-            )
-        }
-
-        config["map_config"] = {
-            "wmts_capabilities": settings.WMTS_GETCAP,
-            "wmts_layer": settings.WMTS_LAYER,
-            "wmts_capabilities_alternative": settings.WMTS_GETCAP_ALTERNATIVE,
-            "wmts_layer_aternative": settings.WMTS_LAYER_ALTERNATIVE,
-        }
-
-        geojson = json.loads(
-            serialize(
-                "geojson",
-                models.PermitAdministrativeEntity.objects.all(),
-                geometry_field="geom",
-                srid=2056,
-                fields=("id", "name", "ofs_id", "link",),
-            )
-        )
-
-        config["administrative_entities"] = geojson
-
-        return JsonResponse(config, safe=False)
-
-
 class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = serializers.PermitRequestGeoTimeSerializer

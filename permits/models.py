@@ -16,7 +16,7 @@ from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 
-from . import fields
+from . import fields, metatypes
 
 # Contact types
 ACTOR_TYPE_OTHER = 0
@@ -428,26 +428,8 @@ class PermitRequest(models.Model):
 
 class WorksType(models.Model):
     name = models.CharField(_("nom"), max_length=255)
-
-    META_TYPE_OTHER = 0
-    META_TYPE_ROADWORK = 1
-    META_TYPE_BUILDINGWORK = 2
-    META_TYPE_EVENT_SPORT = 3
-    META_TYPE_EVENT_CULTURE = 4
-    META_TYPE_EVENT_COMMERCIAL = 5
-    META_TYPE_EVENT_POLICE = 6
-    META_TYPE_CHOICES = (
-        (META_TYPE_OTHER, _("Autres")),
-        (META_TYPE_ROADWORK, _("Chantier")),
-        (META_TYPE_BUILDINGWORK, _("Construction")),
-        (META_TYPE_EVENT_SPORT, _("Événement sportif")),
-        (META_TYPE_EVENT_CULTURE, _("Événement culturel")),
-        (META_TYPE_EVENT_COMMERCIAL, _("Événement commercial")),
-        (META_TYPE_EVENT_POLICE, _("Dispositif de police")),
-    )
-
     meta_type = models.IntegerField(
-        _("Type générique"), choices=META_TYPE_CHOICES, default=META_TYPE_OTHER
+        _("Type générique"), choices=metatypes.meta_type_choices(), default=0
     )
 
     class Meta:

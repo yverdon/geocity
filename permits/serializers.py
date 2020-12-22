@@ -1,7 +1,13 @@
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
+from . import models, metatypes
 
-from . import models
+
+class WorksMetaTypeSerializer(serializers.Serializer):
+    id =serializers.IntegerField()
+    name = serializers.CharField(max_length=200)
+    label = serializers.CharField(max_length=200)
+    color = serializers.ListField()
 
 
 class PermitAdministrativeEntitySerializer(serializers.ModelSerializer):
@@ -42,3 +48,4 @@ class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
             "comment",
             "external_link",
         )
+
