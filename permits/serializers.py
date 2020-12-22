@@ -4,7 +4,7 @@ from . import models, metatypes
 
 
 class WorksMetaTypeSerializer(serializers.Serializer):
-    id =serializers.IntegerField()
+    id = serializers.IntegerField()
     name = serializers.CharField(max_length=200)
     label = serializers.CharField(max_length=200)
     color = serializers.ListField()
@@ -49,3 +49,7 @@ class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
             "external_link",
         )
 
+
+class GeocitySerializer(serializers.Serializer):
+    data = PermitRequestGeoTimeSerializer(many=True)
+    config = WorksMetaTypeSerializer(metatypes.META_TYPE_CHOICES, many=True)

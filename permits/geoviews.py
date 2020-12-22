@@ -9,7 +9,6 @@ from django.db.models import Prefetch, Q
 from django.http import FileResponse, HttpResponseNotFound, JsonResponse
 from django.utils.translation import gettext_lazy as _
 from rest_framework import viewsets
-
 from geomapshark import settings
 
 from . import models, serializers, services
@@ -63,7 +62,16 @@ def administrative_entities_geojson(request, administrative_entity_id):
 
 class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
 
-    serializer_class = serializers.PermitRequestGeoTimeSerializer
+    # serializer_class = serializers.PermitRequestGeoTimeSerializer
+
+    def get_serializer(self, *args, **kwargs):
+        """
+        Return the serializer instance that should be used for validating and
+        deserializing input, and for serializing output.
+        """
+        serializer_class = serializers.GeocitySerializer
+        kwargs["context"] = self.get_serializer_context()
+        return serializer_class(*args, **kwargs)
 
     def get_queryset(self):
         """
