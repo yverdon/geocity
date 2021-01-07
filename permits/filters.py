@@ -56,17 +56,10 @@ class OwnPermitRequestFilterSet(BasePermitRequestFilterSet):
     pass
 
 
-def permit_request_authors(request):
-    return models.PermitAuthor.objects.filter(
-        pk__in=services.get_permit_requests_list_for_user(request.user).values_list(
-            "author"
-        )
-    ).order_by("user__first_name", "user__last_name")
-
-
 class DepartmentPermitRequestFilterSet(BasePermitRequestFilterSet):
-    author = django_filters.filters.ModelMultipleChoiceFilter(
-        queryset=permit_request_authors, label=_("Auteur de la demande")
+    author__user__last_name = django_filters.filters.CharFilter(
+        lookup_expr='icontains',
+        label=_("Auteur de la demande"),
     )
     works_object_types__works_object = django_filters.filters.ModelChoiceFilter(
         queryset=models.WorksObject.objects.order_by("name"),
@@ -78,4 +71,4 @@ class DepartmentPermitRequestFilterSet(BasePermitRequestFilterSet):
 
     class Meta:
         model = models.PermitRequest
-        fields = ["status"]
+        fields = ['status']
