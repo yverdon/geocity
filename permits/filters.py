@@ -58,8 +58,7 @@ class OwnPermitRequestFilterSet(BasePermitRequestFilterSet):
 
 class DepartmentPermitRequestFilterSet(BasePermitRequestFilterSet):
     author__user__last_name = django_filters.filters.CharFilter(
-        lookup_expr='icontains',
-        label=_("Auteur de la demande"),
+        lookup_expr="icontains", label=_("Auteur de la demande"),
     )
     works_object_types__works_object = django_filters.filters.ModelChoiceFilter(
         queryset=models.WorksObject.objects.order_by("name"),
@@ -71,4 +70,4 @@ class DepartmentPermitRequestFilterSet(BasePermitRequestFilterSet):
 
     class Meta:
         model = models.PermitRequest
-        fields = ['status']
+        fields = ["status"]
