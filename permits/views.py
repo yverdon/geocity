@@ -128,11 +128,16 @@ class PermitRequestDetailView(View):
         available_actions = [action for action in current_actions if forms[action]]
 
         try:
-            active_form = [
+            active_forms = [
                 action
                 for action in available_actions
                 if not getattr(forms[action], "disabled", False)
-            ][0]
+            ]
+            if "poke" in active_forms and "validate" in active_forms:
+                active_form = active_forms[active_forms.index("validate")]
+            else:
+                active_form = active_forms[0]
+
         except IndexError:
             active_form = available_actions[-1] if len(available_actions) > 0 else None
 
