@@ -92,31 +92,32 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
             "geom": permit_forms.GeometryWidget(
                 attrs={
                     "options": {
-                    "map_width": "100%",
-                    "map_height": 400,
-                    "default_center": [2539057, 1181111],
-                    "default_zoom": 10,
-                    "display_raw": False,
-                    "edit_geom": True,
-                    "min_zoom": 5,
-                    "wmts_capabilities_url": settings.WMTS_GETCAP,
-                    "wmts_layer": settings.WMTS_LAYER,
-                    "wmts_capabilities_url_alternative": settings.WMTS_GETCAP_ALTERNATIVE,
-                    "wmts_layer_alternative": settings.WMTS_LAYER_ALTERNATIVE,
-                    "restriction_area_enabled": False,
-                    "geometry_db_type": "MultiPolygon",
-                    "wms_layers": [],
+                        "map_width": "100%",
+                        "map_height": 400,
+                        "default_center": [2539057, 1181111],
+                        "default_zoom": 10,
+                        "display_raw": False,
+                        "edit_geom": True,
+                        "min_zoom": 5,
+                        "wmts_capabilities_url": settings.WMTS_GETCAP,
+                        "wmts_layer": settings.WMTS_LAYER,
+                        "wmts_capabilities_url_alternative": settings.WMTS_GETCAP_ALTERNATIVE,
+                        "wmts_layer_alternative": settings.WMTS_LAYER_ALTERNATIVE,
+                        "restriction_area_enabled": False,
+                        "geometry_db_type": "MultiPolygon",
+                        "wms_layers": [],
                     },
                 }
             ),
         }
+
     class Media:
-        js = (
-            'https://code.jquery.com/jquery-3.5.1.slim.min.js',
-        )
+        js = ("https://code.jquery.com/jquery-3.5.1.slim.min.js",)
         css = {
-            'all': ('https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css',
-                    'css/admin.css',)
+            "all": (
+                "https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css",
+                "css/admin.css",
+            )
         }
 
 
