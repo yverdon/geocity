@@ -91,6 +91,7 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
             "general_informations": forms.Textarea(attrs={"rows": 5,}),
             "geom": permit_forms.GeometryWidget(
                 attrs={
+                    "options": {
                     "map_width": "100%",
                     "map_height": 400,
                     "default_center": [2539057, 1181111],
@@ -104,8 +105,18 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
                     "wmts_layer_alternative": settings.WMTS_LAYER_ALTERNATIVE,
                     "restriction_area_enabled": False,
                     "geometry_db_type": "MultiPolygon",
+                    "wms_layers": [],
+                    },
                 }
             ),
+        }
+    class Media:
+        js = (
+            'https://code.jquery.com/jquery-3.5.1.slim.min.js',
+        )
+        css = {
+            'all': ('https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css',
+                    'css/admin.css',)
         }
 
 
