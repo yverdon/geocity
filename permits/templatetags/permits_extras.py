@@ -44,7 +44,7 @@ def permit_request_summary(context, permit_request):
     )
 
     if permit_request.creditor_type is not None:
-        creditor = models.ACTOR_TYPE_CHOICES[permit_request.creditor_type][1]
+        creditor = permit_request.get_creditor_type_display()
     elif permit_request.author.user and permit_request.creditor_type is None:
         creditor = (
             _("Auteur de la demande, ")
