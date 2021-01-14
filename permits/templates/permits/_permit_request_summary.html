@@ -38,9 +38,8 @@
   <br>
   <h4>{% trans "Contacts" %}</h4>
   <b>Destinataire de la facture</b>: {{ creditor }}
-  {% for contact_type, contact_infos in contacts %}
+    {% for contact_type, contact_infos in contacts %}
     <h5>{{ contact_type }}</h5>
-
     <dl>
       {% for field_label, field_value in contact_infos %}
         {% if field_value %}
