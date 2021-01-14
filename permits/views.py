@@ -767,36 +767,6 @@ def permit_request_submit(request, permit_request_id):
 
 @redirect_bad_status_to_detail
 @login_required
-def permit_request_submit_confirmation(request, permit_request_id):
-
-    permit_request = get_permit_request_for_edition(request.user, permit_request_id)
-
-    incomplete_steps = [
-        step.url
-        for step in services.get_progressbar_steps(request, permit_request).values()
-        if step.errors_count and step.url
-    ]
-
-    if request.method == "POST":
-        if incomplete_steps:
-            raise SuspiciousOperation
-
-        services.submit_permit_request(permit_request, request.build_absolute_uri)
-        return redirect("permits:permit_requests_list")
-
-    return render(
-        request,
-        "permits/permit_request_send_confirmation.html",
-        {
-            "permit_request": get_permit_request_for_edition(
-                request.user, permit_request_id
-            )
-        },
-    )
-
-
-@redirect_bad_status_to_detail
-@login_required
 def permit_request_submit_confirmed(request, permit_request_id):
 
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
