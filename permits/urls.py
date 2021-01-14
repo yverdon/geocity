@@ -59,7 +59,7 @@ urlpatterns = [
         name="permit_request_file_download",
     ),
     path(
-        "administrative-entity-files/<path:path>",
+        "admin-data/<path:path>",
         views.administrative_entity_file_download,
         name="administrative_entity_file_download",
     ),
