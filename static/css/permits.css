@@ -1,7 +1,7 @@
 body {
   color: var(--text-color);
   background-color: var(--background-color);
-} 
+}
 
 /* Global boostrap4 styling  */
 .btn {
@@ -346,6 +346,7 @@ div.input-group {
   margin: 10px 0;
   position: relative;
 }
+
 div.input-group label {
   padding: 12px 30px;
   width: 100%;
@@ -358,6 +359,7 @@ div.input-group label {
   transition: color 200ms ease-in;
   overflow: hidden;
 }
+
 div.input-group label::before {
   width: 20px;
   height: 10px;

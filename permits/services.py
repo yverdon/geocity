@@ -157,7 +157,7 @@ def get_works_types(administrative_entity):
 
 
 def get_administrative_entities():
-    return models.PermitAdministrativeEntity.objects.order_by("name")
+    return models.PermitAdministrativeEntity.objects.order_by("ofs_id", "name")
 
 
 def get_permit_request_works_types(permit_request):
