@@ -34,9 +34,14 @@ def regroup_by_ofs_id(entities):
     return groupby(entities.order_by("ofs_id"), lambda entity: entity.ofs_id)
 
 
-class AdministrativeEntityFormWidget(forms.RadioSelect):
-    template_name = "permits/widgets/administrative_entity_select.html"
+class GroupedCheckboxWidgetWidget(forms.RadioSelect):
+    template_name = "permits/widgets/groupedcheckbox.html"
 
+    @property
+    def media(self):
+        return forms.Media(
+            css={"all": ("customWidgets/GroupedCheckbox/groupedcheckbox.css")},
+        )
 
 class AdministrativeEntityForm(forms.Form):
 
@@ -44,7 +49,7 @@ class AdministrativeEntityForm(forms.Form):
         queryset=models.PermitAdministrativeEntity.objects.none(),
         label=_("Entité administrative"),
         empty_label=None,
-        widget=AdministrativeEntityFormWidget(),
+        widget=GroupedCheckboxWidgetWidget(),
     )
 
 
@@ -69,6 +74,7 @@ class AdministrativeEntityForm(forms.Form):
                 for ofs_id, entities in regroup_by_ofs_id(services.get_administrative_entities())]
 
     def save(self, author):
+
         if not self.instance:
             return models.PermitRequest.objects.create(
                 administrative_entity=self.cleaned_data["administrative_entity"],
