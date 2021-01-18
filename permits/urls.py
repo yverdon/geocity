@@ -32,11 +32,6 @@ existing_permit_request_urlpatterns = [
     path("actors/", views.permit_request_actors, name="permit_request_actors"),
     path("submit/", views.permit_request_submit, name="permit_request_submit"),
     path(
-        "submitconfirmation/",
-        views.permit_request_submit_confirmation,
-        name="permit_request_submit_confirmation",
-    ),
-    path(
         "submitconfirmed/",
         views.permit_request_submit_confirmed,
         name="permit_request_submit_confirmed",
@@ -59,7 +54,7 @@ urlpatterns = [
         name="permit_request_file_download",
     ),
     path(
-        "administrative-entity-files/<path:path>",
+        "admin-data/<path:path>",
         views.administrative_entity_file_download,
         name="administrative_entity_file_download",
     ),
