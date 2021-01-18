@@ -281,6 +281,8 @@ gettext = lambda x: x
 LANGUAGES = (
     ("fr", gettext("French")),
     ("en", gettext("English")),
+    ("de", gettext("German")),
+    ("it", gettext("Italian")),
 )
 
 LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)

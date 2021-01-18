@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-09-10 10:56+0200\n"
+"POT-Creation-Date: 2021-01-18 10:43+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,8 +18,1350 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-msgid "administrative_entity"
+#: geomapshark/settings.py:282
+msgid "French"
+msgstr ""
+
+#: geomapshark/settings.py:283
+msgid "English"
+msgstr ""
+
+#: geomapshark/settings.py:284
+msgid "German"
+msgstr ""
+
+#: permits/admin.py:35
+msgid "Communes"
+msgstr ""
+
+#: permits/admin.py:67 permits/models.py:532
+msgid "objets des travaux"
+msgstr ""
+
+#: permits/filters.py:12 permits/filters.py:68
+msgid "Type de travaux"
+msgstr ""
+
+#: permits/filters.py:17
+msgid "Date de création le"
+msgstr ""
+
+#: permits/filters.py:26
+msgid "Début après le"
+msgstr ""
+
+#: permits/filters.py:35
+msgid "Fin avant le"
+msgstr ""
+
+#: permits/filters.py:61 permits/tables.py:52
+#: permits/templates/permits/print/printpermit.html:170
+msgid "Auteur de la demande"
+msgstr ""
+
+#: permits/filters.py:65
+msgid "Objet des travaux"
+msgstr ""
+
+#: permits/forms.py:36 permits/tables.py:20 permits/tables.py:50
+#, fuzzy
+#| msgid "administrative_entity"
+msgid "Entité administrative"
 msgstr "Commune"
 
+#: permits/forms.py:77
+msgid "Types de travaux"
+msgstr ""
+
+#: permits/forms.py:78
+msgid "Sélectionnez au moins un type de demande"
+msgstr ""
+
+#: permits/forms.py:126
+msgid "Sélectionnez au moins un objet par type de demande"
+msgstr ""
+
+#: permits/forms.py:273 permits/forms.py:295 permits/forms.py:425
+#: permits/models.py:204
+msgid "Prénom"
+msgstr ""
+
+#: permits/forms.py:274 permits/forms.py:302 permits/forms.py:432
+#: permits/models.py:205
+msgid "Nom"
+msgstr ""
+
+#: permits/forms.py:275 permits/forms.py:309 permits/forms.py:455
+#: permits/models.py:212
+msgid "Email"
+msgstr ""
+
+#: permits/forms.py:326 permits/forms.py:462 permits/models.py:208
+msgid "Adresse"
+msgstr ""
+
+#: permits/forms.py:347 permits/forms.py:482 permits/models.py:157
+#: permits/models.py:209
+msgid "NPA"
+msgstr ""
+
+#: permits/forms.py:353 permits/forms.py:488 permits/models.py:159
+#: permits/models.py:210
+msgid "Ville"
+msgstr ""
+
+#: permits/forms.py:440 permits/models.py:112 permits/models.py:211
+msgid "Téléphone"
+msgstr ""
+
+#: permits/forms.py:495
+msgid "Raison sociale"
+msgstr ""
+
+#: permits/forms.py:501 permits/models.py:141 permits/models.py:207
+msgid "Numéro TVA"
+msgstr ""
+
+#: permits/forms.py:628 permits/models.py:623
+msgid "Date planifiée de début"
+msgstr ""
+
+#: permits/forms.py:642 permits/models.py:624
+msgid "Date planifiée de fin"
+msgstr ""
+
+#: permits/forms.py:746
+msgid "Services chargés de la validation"
+msgstr ""
+
+#: permits/geoviews.py:33
+msgid ""
+"Seules les requêtes GetMap sur la couchepermits_permitadministrativeentity "
+"sont autorisées"
+msgstr ""
+
+#: permits/models.py:32 permits/models.py:440
+msgid "Autres"
+msgstr ""
+
+#: permits/models.py:33
+msgid "Propriétaire"
+msgstr ""
+
+#: permits/models.py:34 permits/models.py:206
+msgid "Entreprise"
+msgstr ""
+
+#: permits/models.py:35
+msgid "Maître d'ouvrage"
+msgstr ""
+
+#: permits/models.py:36
+msgid "Requérant si différent de l'auteur de la demande"
+msgstr ""
+
+#: permits/models.py:37
+msgid "Sécurité"
+msgstr ""
+
+#: permits/models.py:38
+msgid "Association"
+msgstr ""
+
+#: permits/models.py:39
+msgid "Architecte/Ingénieur"
+msgstr ""
+
+#: permits/models.py:40
+msgid "Direction des travaux"
+msgstr ""
+
+#: permits/models.py:56
+msgid "description"
+msgstr ""
+
+#: permits/models.py:57
+msgid "is_validator"
+msgstr ""
+
+#: permits/models.py:58
+msgid "is_admin"
+msgstr ""
+
+#: permits/models.py:59
+msgid "is_archeologist"
+msgstr ""
+
+#: permits/models.py:65
+#, fuzzy
+#| msgid "administrative_entity"
+msgid "permit_administrative_entity"
+msgstr "Commune"
+
+#: permits/models.py:68
+msgid "sélectionné par défaut pour les validations"
+msgstr ""
+
+#: permits/models.py:72
+msgid "2.1 Configuration du service (pilote, validateur...)"
+msgstr ""
+
+#: permits/models.py:74
+msgid "2.1 Configuration des services (pilote, validateur...)"
+msgstr ""
+
+#: permits/models.py:82
+msgid "name"
+msgstr ""
+
+#: permits/models.py:83
+msgid "ofs_id"
+msgstr ""
+
+#: permits/models.py:84 permits/models.py:92
+msgid "Lien"
+msgstr ""
+
+#: permits/models.py:85
+msgid "Archives externes"
+msgstr ""
+
+#: permits/models.py:87
+msgid "Directive"
+msgstr ""
+
+#: permits/models.py:90 permits/templates/permits/print/printpermit.html:30
+msgid "Informations"
+msgstr ""
+
+#: permits/models.py:94
+msgid "Logo principal"
+msgstr ""
+
+#: permits/models.py:97
+msgid "Logo secondaire"
+msgstr ""
+
+#: permits/models.py:100
+msgid "Signature Gauche"
+msgstr ""
+
+#: permits/models.py:103
+msgid "Signature gauche"
+msgstr ""
+
+#: permits/models.py:106
+msgid "Signature Droite"
+msgstr ""
+
+#: permits/models.py:109
+msgid "Signature droite"
+msgstr ""
+
+#: permits/models.py:122
+msgid "geom"
+msgstr ""
+
+#: permits/models.py:126 permits/models.py:129
+msgid "1.1 Configuration de l'entité administrative (commune, organisation)"
+msgstr ""
+
+#: permits/models.py:139
+msgid "Raison Sociale"
+msgstr ""
+
+#: permits/models.py:155
+msgid "Rue"
+msgstr ""
+
+#: permits/models.py:161
+msgid "Téléphone principal"
+msgstr ""
+
+#: permits/models.py:171
+msgid "Téléphone secondaire"
+msgstr ""
+
+#: permits/models.py:185
+msgid "3.2 Consultation de l'auteur"
+msgstr ""
+
+#: permits/models.py:186
+msgid "3.2 Consultation des auteurs"
+msgstr ""
+
+#: permits/models.py:216
+msgid "Contact"
+msgstr ""
+
+#: permits/models.py:238 permits/models.py:261
+msgid "type de contact"
+msgstr ""
+
+#: permits/models.py:243 permits/models.py:469
+msgid "type de travaux"
+msgstr ""
+
+#: permits/models.py:248
+msgid "1.6 Configuration du contact"
+msgstr ""
+
+#: permits/models.py:249
+msgid "1.6 Configuration des contacts"
+msgstr ""
+
+#: permits/models.py:265
+msgid "Relation permis-contact"
+msgstr ""
+
+#: permits/models.py:266
+msgid "Relations permis-contact"
+msgstr ""
+
+#: permits/models.py:283
+msgid "Brouillon"
+msgstr ""
+
+#: permits/models.py:284
+msgid "Envoyée, en attente de traitement"
+msgstr ""
+
+#: permits/models.py:285
+msgid "Demande de compléments"
+msgstr ""
+
+#: permits/models.py:286
+msgid "En traitement"
+msgstr ""
+
+#: permits/models.py:287
+msgid "En validation"
+msgstr ""
+
+#: permits/models.py:288
+msgid "Approuvée"
+msgstr ""
+
+#: permits/models.py:289
+msgid "Refusée"
+msgstr ""
+
+#: permits/models.py:290
+msgid "Annonce réceptionnée"
+msgstr ""
+
+#: permits/models.py:314
+msgid "Non pertinent"
+msgstr ""
+
+#: permits/models.py:315
+msgid "Inconnu"
+msgstr ""
+
+#: permits/models.py:316
+msgid "Pas fouillé"
+msgstr ""
+
+#: permits/models.py:317
+msgid "Partiellement fouillé"
+msgstr ""
+
+#: permits/models.py:318
+msgid "Déjà fouillé"
+msgstr ""
+
+#: permits/models.py:322
+msgid "état"
+msgstr ""
+
+#: permits/models.py:324
+msgid "date de création"
+msgstr ""
+
+#: permits/models.py:325
+msgid "date de validation"
+msgstr ""
+
+#: permits/models.py:326
+msgid "date d'impression"
+msgstr ""
+
+#: permits/models.py:327
+msgid "imprimé par"
+msgstr ""
+
+#: permits/models.py:329
+msgid "Permis imprimé"
+msgstr ""
+
+#: permits/models.py:337
+msgid "commune"
+msgstr ""
+
+#: permits/models.py:344
+msgid "auteur"
+msgstr ""
+
+#: permits/models.py:351
+#: permits/templates/permits/permit_request_detail.html:203
+#: permits/templates/permits/print/printpermit.html:312
+msgid "Statut archéologique"
+msgstr ""
+
+#: permits/models.py:356
+msgid "Entités géométriques concernées"
+msgstr ""
+
+#: permits/models.py:359 permits/templates/permits/print/printpermit.html:316
+msgid "Émolument"
+msgstr ""
+
+#: permits/models.py:361
+#: permits/templates/permits/permit_request_detail.html:194
+#: permits/templates/permits/print/printpermit.html:300
+msgid "Dérogation"
+msgstr ""
+
+#: permits/models.py:362
+#: permits/templates/permits/permit_request_detail.html:197
+#: permits/templates/permits/print/printpermit.html:304
+msgid "Opposition"
+msgstr ""
+
+#: permits/models.py:363
+msgid "Analyse du service pilote"
+msgstr ""
+
+#: permits/models.py:365
+msgid "pdf de validation"
+msgstr ""
+
+#: permits/models.py:370
+msgid "Destinaire de la facture"
+msgstr ""
+
+#: permits/models.py:375
+msgid "Publier"
+msgstr ""
+
+#: permits/models.py:379
+msgid "3.1 Consultation de la demande"
+msgstr ""
+
+#: permits/models.py:380
+msgid "3.1 Consultation des demandes"
+msgstr ""
+
+#: permits/models.py:382
+msgid "Traiter les demandes de permis"
+msgstr ""
+
+#: permits/models.py:383
+msgid "Valider les demandes de permis"
+msgstr ""
+
+#: permits/models.py:384
+msgid "Classer les demandes de permis"
+msgstr ""
+
+#: permits/models.py:385
+msgid "Éditer les demandes de permis"
+msgstr ""
+
+#: permits/models.py:430 permits/models.py:494 permits/models.py:526
+msgid "nom"
+msgstr ""
+
+#: permits/models.py:441
+msgid "Chantier"
+msgstr ""
+
+#: permits/models.py:442
+msgid "Construction"
+msgstr ""
+
+#: permits/models.py:443
+msgid "Événement sportif"
+msgstr ""
+
+#: permits/models.py:444
+msgid "Événement culturel"
+msgstr ""
+
+#: permits/models.py:445
+msgid "Événement commercial"
+msgstr ""
+
+#: permits/models.py:446
+msgid "Dispositif de police"
+msgstr ""
+
+#: permits/models.py:450
+msgid "Type générique"
+msgstr ""
+
+#: permits/models.py:454
+msgid "1.2 Configuration du type"
+msgstr ""
+
+#: permits/models.py:455
+msgid "1.2 Configuration des types"
+msgstr ""
+
+#: permits/models.py:475 permits/models.py:556
+msgid "objet des travaux"
+msgstr ""
+
+#: permits/models.py:480
+msgid "communes"
+msgstr ""
+
+#: permits/models.py:485
+msgid "1.4 Configuration type-objet-entité administrative"
+msgstr ""
+
+#: permits/models.py:486
+msgid "1.4 Configurations type-objet-entité administrative"
+msgstr ""
+
+#: permits/models.py:499
+msgid "types"
+msgstr ""
+
+#: permits/models.py:501
+msgid "Couche(s) WMS"
+msgstr ""
+
+#: permits/models.py:503
+msgid "Ordre de(s) couche(s)"
+msgstr ""
+
+#: permits/models.py:507
+msgid "1.3 Configuration de l'objet"
+msgstr ""
+
+#: permits/models.py:508
+msgid "1.3 Configuration des objets"
+msgstr ""
+
+#: permits/models.py:520
+msgid "Texte"
+msgstr ""
+
+#: permits/models.py:521
+msgid "Case à cocher"
+msgstr ""
+
+#: permits/models.py:522
+msgid "Nombre"
+msgstr ""
+
+#: permits/models.py:523
+msgid "Fichier"
+msgstr ""
+
+#: permits/models.py:528
+msgid "type de caractéristique"
+msgstr ""
+
+#: permits/models.py:530
+msgid "obligatoire"
+msgstr ""
+
+#: permits/models.py:536
+msgid "1.5 Configuration du champ"
+msgstr ""
+
+#: permits/models.py:537
+msgid "1.5 Configuration des champs"
+msgstr ""
+
+#: permits/models.py:550
+msgid "caractéristique"
+msgstr ""
+
+#: permits/models.py:574
+msgid "En attente"
+msgstr ""
+
+#: permits/models.py:575
+msgid "Approuvé"
+msgstr ""
+
+#: permits/models.py:576
+msgid "Refusé"
+msgstr ""
+
+#: permits/models.py:588
+msgid "Statut de validation"
+msgstr ""
+
+#: permits/models.py:590
+msgid "Commentaires (avant)"
+msgstr ""
+
+#: permits/models.py:591
+msgid "Commentaires (pendant)"
+msgstr ""
+
+#: permits/models.py:592
+msgid "Commentaires (après)"
+msgstr ""
+
+#: permits/models.py:594
+msgid "Validé le"
+msgstr ""
+
+#: permits/models.py:599
+msgid "3.5 Consultation de la validation par le service"
+msgstr ""
+
+#: permits/models.py:600
+msgid "3.5 Consultation des validations par les services"
+msgstr ""
+
+#: permits/models.py:625 permits/models.py:643
+#: permits/templates/permits/permit_request_detail.html:200
+#: permits/templates/permits/print/printpermit.html:275
+#: permits/templates/permits/print/printpermit.html:308
+msgid "Commentaire"
+msgstr ""
+
+#: permits/models.py:626 permits/models.py:648
+msgid "Lien externe"
+msgstr ""
+
+#: permits/models.py:627
+msgid "Localisation"
+msgstr ""
+
+#: permits/models.py:631
+msgid "3.3 Consultation de l'agenda et de la géométrie"
+msgstr ""
+
+#: permits/models.py:632
+msgid "3.3 Consultation des agenda et géométries"
+msgstr ""
+
+#: permits/models.py:641
+msgid "Nom de la couche source"
+msgstr ""
+
+#: permits/models.py:644
+msgid "Id entité"
+msgstr ""
+
+#: permits/models.py:646
+msgid "Id entité secondaire"
+msgstr ""
+
+#: permits/models.py:649
+msgid "Géométrie"
+msgstr ""
+
+#: permits/models.py:652
+msgid "3.4 Consultation de l'entité géographique à intersecter"
+msgstr ""
+
+#: permits/models.py:654
+msgid "3.4 Consultation des entités géographiques à intersecter"
+msgstr ""
+
+#: permits/models.py:664
+msgid "statut"
+msgstr ""
+
+#: permits/models.py:676
+msgid "Status disponible pour l'entité administrative"
+msgstr ""
+
+#: permits/models.py:677
+msgid "Status disponibles pour l'entité administratives"
+msgstr ""
+
+#: permits/services.py:393
+#, python-format
+msgid "Contact de type \"%s\" manquant."
+msgstr ""
+
+#: permits/services.py:471
+msgid "Entité"
+msgstr ""
+
+#: permits/services.py:477
+msgid "Type"
+msgstr ""
+
+#: permits/services.py:483
+msgid "Objets"
+msgstr ""
+
+#: permits/services.py:489 permits/templates/permits/print/printpermit.html:120
+msgid "Détails"
+msgstr ""
+
+#: permits/services.py:498
+msgid "Agenda et plan"
+msgstr ""
+
+#: permits/services.py:505 permits/templates/permits/print/printpermit.html:139
+msgid "Documents"
+msgstr ""
+
+#: permits/services.py:514
+#: permits/templates/permits/_permit_request_summary.html:39
+msgid "Contacts"
+msgstr ""
+
+#: permits/services.py:521
+#: permits/templates/permits/permit_request_submit.html:8
+msgid "Résumé et envoi"
+msgstr ""
+
+#: permits/tables.py:10 permits/tables.py:40
+#: permits/templates/permits/permit_request_detail.html:21
+msgid "Actions"
+msgstr ""
+
+#: permits/tables.py:14 permits/tables.py:44
+msgid "Début"
+msgstr ""
+
+#: permits/tables.py:15 permits/tables.py:45
+msgid "Fin"
+msgstr ""
+
+#: permits/tables.py:17 permits/tables.py:47
+msgid "Objets et types de travaux"
+msgstr ""
+
+#: permits/templates/geometrywidget/geometrywidget.html:75
+msgid "Debugging window (serialized value)"
+msgstr ""
+
+#: permits/templates/permits/_geo_time_form.html:8
+msgid "Planning et localisation"
+msgstr ""
+
+#: permits/templates/permits/_permit_request_summary.html:12
+#: permits/templates/permits/_permit_request_summary.html:23
+msgid "Information non fournie"
+msgstr ""
+
+#: permits/templates/permits/_permit_request_summary.html:59
+msgid "Éléments géographiques touchés par la demande (automatique)"
+msgstr ""
+
+#: permits/templates/permits/administrative_infos.html:18
+msgid "Télécharger les directives PDF"
+msgstr ""
+
+#: permits/templates/permits/emails/permit_request_acknowledgment.txt:1
+#, python-format
+msgid "Bonjour %(name)s"
+msgstr ""
+
+#: permits/templates/permits/emails/permit_request_acknowledgment.txt:3
+msgid ""
+"Nous vous confirmons bonne réception de votre demande et vous en remercions."
+msgstr ""
+
+#: permits/templates/permits/emails/permit_request_acknowledgment.txt:5
+msgid "Vous pouvez la consulter sur le lien suivant"
+msgstr ""
+
+#: permits/templates/permits/emails/permit_request_acknowledgment.txt:7
+#: permits/templates/permits/emails/permit_request_submitted.txt:7
+#: permits/templates/permits/emails/permit_request_validation_reminder.txt:7
+#: permits/templates/permits/emails/permit_request_validation_request.txt:7
+msgid "Avec nos meilleures salutations,"
+msgstr ""
+
+#: permits/templates/permits/emails/permit_request_submitted.txt:1
+#: permits/templates/permits/emails/permit_request_validation_reminder.txt:1
+#: permits/templates/permits/emails/permit_request_validation_request.txt:1
+msgid "Bonjour,"
+msgstr ""
+
+#: permits/templates/permits/emails/permit_request_submitted.txt:3
+msgid ""
+"Une nouvelle demande de permis vient d'être soumise. Vous pouvez la "
+"consulter en cliquant sur le lien suivant:"
+msgstr ""
+
+#: permits/templates/permits/emails/permit_request_validation_reminder.txt:3
+msgid "La demande suivante est en attente de validation de votre part:"
+msgstr ""
+
+#: permits/templates/permits/emails/permit_request_validation_request.txt:3
+msgid ""
+"Une nouvelle demande attend votre validation. Vous pouvez la consulter et la "
+"valider sur le lien suivant:"
+msgstr ""
+
+#: permits/templates/permits/permit_request_actors.html:32
+#: permits/templates/permits/permit_request_appendices.html:25
+#: permits/templates/permits/permit_request_classify.html:16
+#: permits/templates/permits/permit_request_geo_time.html:29
+#: permits/templates/permits/permit_request_properties.html:21
+#: permits/templates/permits/permit_request_select_objects.html:20
+#: permits/templates/permits/permit_request_select_types.html:18
+#: permits/templates/permits/permit_request_submit.html:41
+msgid "Retour"
+msgstr ""
+
+#: permits/templates/permits/permit_request_actors.html:33
+#: permits/templates/permits/permit_request_appendices.html:28
+#: permits/templates/permits/permit_request_properties.html:22
+#: permits/templates/permits/permit_request_select_objects.html:21
+msgid "Enregistrer et continuer"
+msgstr ""
+
+#: permits/templates/permits/permit_request_appendices.html:20
+msgid "Aucune annexe requise pour cette demande de permis."
+msgstr ""
+
+#: permits/templates/permits/permit_request_appendices.html:30
+#: permits/templates/permits/permit_request_select_administrative_entity.html:20
+#: permits/templates/permits/permit_request_select_types.html:19
+msgid "Continuer"
+msgstr ""
+
+#: permits/templates/permits/permit_request_author.html:19
+msgid "Mon compte"
+msgstr ""
+
+#: permits/templates/permits/permit_request_author.html:30
+#: permits/templates/permits/permit_request_delete.html:17
+msgid "Annuler"
+msgstr ""
+
+#: permits/templates/permits/permit_request_classify.html:19
+msgid "Approuver la demande"
+msgstr ""
+
+#: permits/templates/permits/permit_request_classify.html:21
+msgid "Refuser la demande"
+msgstr ""
+
+#: permits/templates/permits/permit_request_delete.html:7
+msgid "Effacer la demande ?"
+msgstr ""
+
+#: permits/templates/permits/permit_request_delete.html:9
+msgid "Êtes vous sûr de vouloir supprimer la demande n°"
+msgstr ""
+
+#: permits/templates/permits/permit_request_delete.html:10
+msgid "Détails de la demande:"
+msgstr ""
+
+#: permits/templates/permits/permit_request_delete.html:12
+msgid "Requérant:"
+msgstr ""
+
+#: permits/templates/permits/permit_request_delete.html:14
+msgid "Demande du:"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:9
+#, python-format
+msgid "Demande #%(request_id)s"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:12
+msgid "Imprimer"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:25
+#: permits/templates/permits/permit_request_detail.html:61
+msgid "Traiter"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:31
+#: permits/templates/permits/permit_request_detail.html:76
+msgid "Envoyer pour validation"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:38
+#: permits/templates/permits/permit_request_detail.html:91
+msgid "Valider"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:46
+msgid "Classer"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:110
+#: permits/templates/permits/permit_request_detail.html:220
+msgid "Commentaire (avant)"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:114
+#: permits/templates/permits/permit_request_detail.html:224
+msgid "Commentaire (pendant)"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:118
+#: permits/templates/permits/permit_request_detail.html:228
+msgid "Commentaire (après)"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:127
+#, python-format
+msgid "Envoyer un rappel au service"
+msgid_plural "Envoyer des rappels à %(counter)s services"
+msgstr[0] ""
+msgstr[1] ""
+
+#: permits/templates/permits/permit_request_detail.html:137
+msgid "Refuser"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:140
+msgid "Approuver"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:150
+msgid "Données de base"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:152
+#: permits/templates/permits/print/printpermit.html:34
+msgid "Date de création"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:154
+#, python-format
+msgid "Il y a %(request_date)s"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:156
+#: permits/templates/permits/print/printpermit.html:42
+msgid "Statut"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:159
+#: permits/templates/permits/print/printpermit.html:45
+#, python-format
+msgid "le %(validated_at)s"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:162
+#: permits/templates/permits/print/printpermit.html:50
+msgid "Auteur-e"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:169
+msgid "Permis délivré"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:176
+msgid "Publié"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:184
+msgid "Données du service pilote"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:188
+msgid "État"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:191
+msgid "Prix"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:209
+msgid "Statut des validations"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:236
+msgid "Résumé"
+msgstr ""
+
+#: permits/templates/permits/permit_request_detail.html:240
+msgid "Retour à la liste des demandes"
+msgstr ""
+
+#: permits/templates/permits/permit_request_geo_time.html:30
+msgid "Ajouter un nouveau"
+msgstr ""
+
+#: permits/templates/permits/permit_request_geo_time.html:31
+msgid "Enregistrer et poursuivre"
+msgstr ""
+
+#: permits/templates/permits/permit_request_submit.html:12
+msgid ""
+"Votre demande n'est pas complète mais elle est sauvegardée. Vous pouvez "
+"revenir dans l'application ultérieurement afin de la compléter. Une fois "
+"toutes les informations saisies, vous pourrez l'envoyer."
+msgstr ""
+
+#: permits/templates/permits/permit_request_submit.html:20
+msgid "Vous trouverez ci-dessous un récapitulatif de votre demande."
+msgstr ""
+
+#: permits/templates/permits/permit_request_submit.html:29
+msgid "Renseigner les informations manquantes"
+msgstr ""
+
+#: permits/templates/permits/permit_request_submit.html:35
+msgid "Télécharger le PDF"
+msgstr ""
+
+#: permits/templates/permits/permit_request_submit.html:43
+#: permits/templates/tables/_permit_request_actions.html:33
+msgid "Envoyer"
+msgstr ""
+
+#: permits/templates/permits/permit_requests_list.html:11
+msgid "Vue d'ensemble de vos demandes"
+msgstr ""
+
+#: permits/templates/permits/permit_requests_list.html:14
+#: templates/two_factor/setup_complete.html:19
+msgid "Créer une nouvelle demande"
+msgstr ""
+
+#: permits/templates/permits/permit_requests_list.html:23
+msgid "Filtrer"
+msgstr ""
+
+#: permits/templates/permits/permit_requests_list.html:25
+msgid "Effacer le filtre"
+msgstr ""
+
+#: permits/templates/permits/permit_requests_list.html:29
+msgid "Archives"
+msgstr ""
+
+#: permits/templates/permits/permit_requests_list.html:38
+msgid "Les demandes envoyées ne peuvent plus être modifiées"
+msgstr ""
+
+#: permits/templates/permits/print/printpermit.html:26
+msgid "Permis N°"
+msgstr ""
+
+#: permits/templates/permits/print/printpermit.html:60
+msgid "Objet(s) du permis"
+msgstr ""
+
+#: permits/templates/permits/print/printpermit.html:76
+msgid "Agenda"
+msgstr ""
+
+#: permits/templates/permits/print/printpermit.html:81
+msgid "Date de début :"
+msgstr ""
+
+#: permits/templates/permits/print/printpermit.html:89
+msgid "Date de fin :"
+msgstr ""
+
+#: permits/templates/permits/print/printpermit.html:98
+msgid "Commentaire :"
+msgstr ""
+
+#: permits/templates/permits/print/printpermit.html:108
+msgid "Lien externe :"
+msgstr ""
+
+#: permits/templates/permits/print/printpermit.html:144
+msgid "Document :"
+msgstr ""
+
+#: permits/templates/permits/print/printpermit.html:160
+msgid "Éléments géographiques touchés par la demande"
+msgstr ""
+
+#: permits/templates/permits/print/printpermit.html:240
+msgid "Contact(s)"
+msgstr ""
+
+#: permits/templates/permits/print/printpermit.html:263
+msgid "Plan de situation"
+msgstr ""
+
+#: permits/templates/permits/print/printpermit.html:271
+msgid "Remarques des services consultés"
+msgstr ""
+
+#: permits/templates/permits/print/printpermit.html:274
+msgid "Service"
+msgstr ""
+
+#: permits/templates/permits/print/printpermit.html:283
+msgid "Avant"
+msgstr ""
+
+#: permits/templates/permits/print/printpermit.html:285
+msgid "Pendant"
+msgstr ""
+
+#: permits/templates/permits/print/printpermit.html:287
+msgid "Après"
+msgstr ""
+
+#: permits/templates/permits/print/printpermit.html:297
+msgid "Commentaires du service pilote"
+msgstr ""
+
+#: permits/templates/permits/print/printpermit.html:323
+msgid "Signatures"
+msgstr ""
+
+#: permits/templates/permits/print/printpermit.html:336
+msgid "pdf du "
+msgstr ""
+
+#: permits/templates/tables/_permit_request_actions.html:6
+msgid "Voir"
+msgstr ""
+
+#: permits/templates/tables/_permit_request_actions.html:14
+msgid "Modifier"
+msgstr ""
+
+#: permits/templates/tables/_permit_request_actions.html:23
+msgid "Supprimer la demande"
+msgstr ""
+
+#: permits/templatetags/permits_extras.py:50
+msgid "Auteur de la demande, "
+msgstr ""
+
+#: permits/views.py:325
+#, python-format
+msgid "La demande de permis #%s a bien été complétée par le service pilote."
+msgstr ""
+
+#: permits/views.py:333
+#, python-format
+msgid ""
+"Le statut de la demande a été passé à en attente de compléments. Vous devez "
+"maintenant contacter le requérant par email (%s) afin de lui demander de "
+"fournir les informations manquantes."
+msgstr ""
+
+#: permits/views.py:351
+#, python-format
+msgid "La demande de permis #%s a bien été transmise pour validation."
+msgstr ""
+
+#: permits/views.py:366
+msgid "La demande a bien été validée."
+msgstr ""
+
+#: permits/views.py:371
+msgid "La demande a bien été refusée."
+msgstr ""
+
+#: permits/views.py:373
+msgid "Les commentaires ont été enregistrés."
+msgstr ""
+
+#: permits/views.py:383
+#, python-format
+msgid "%s rappel a bien été envoyé."
+msgid_plural "%s rappels ont bien été envoyés"
+msgstr[0] ""
+msgstr[1] ""
+
+#: permits/views.py:840
+#, python-format
+msgid "Approbation de la demande #%s"
+msgstr ""
+
+#: permits/views.py:840
+#, python-format
+msgid "Refus de la demande #%s"
+msgstr ""
+
+#: templates/404.html:14 templates/500.html:14
+msgid "Quelque chose n'a pas fonctionné!"
+msgstr ""
+
+#: templates/404.html:15 templates/500.html:15
+msgid "Cette page n'existe pas"
+msgstr ""
+
+#: templates/base_generic.html:37
+msgid "Demandes d'autorisations"
+msgstr ""
+
+#: templates/base_generic.html:52 templates/base_generic.html:73
+msgid "Changer mon mot de passe"
+msgstr ""
+
+#: templates/base_generic.html:53 templates/base_generic.html:76
+msgid "Modifier mon compte"
+msgstr ""
+
+#: templates/base_generic.html:55 templates/base_generic.html:80
+#: templates/two_factor/profile.html:6
+msgid "Account Security"
+msgstr ""
+
+#: templates/base_generic.html:57 templates/base_generic.html:84
+msgid "Me déconnecter"
+msgstr ""
+
+#: templates/base_generic.html:70
+msgid "Informations des communes / entités"
+msgstr ""
+
+#: templates/registration/login.html:20 templates/two_factor/login.html:23
+msgid ""
+"Votre compte ne dispose pas des droits nécessaires pour accéder à cette page"
+msgstr ""
+
+#: templates/registration/login.html:26 templates/two_factor/login.html:30
+msgid "Votre mot de passe et votre nom d'utilisateur ne correspondent pas"
+msgstr ""
+
+#: templates/registration/login.html:34 templates/two_factor/login.html:39
+msgid "Connexion"
+msgstr ""
+
+#: templates/registration/login.html:37 templates/two_factor/login.html:42
+msgid "Connectez-vous à l'aide de vos identifiants"
+msgstr ""
+
+#: templates/registration/login.html:40 templates/two_factor/login.html:45
+msgid "Suivant"
+msgstr ""
+
+#: templates/registration/login.html:47 templates/two_factor/login.html:52
+msgid "Créer un compte"
+msgstr ""
+
+#: templates/registration/login.html:48 templates/two_factor/login.html:53
+msgid "Perdu votre mot de passe ?"
+msgstr ""
+
+#: templates/two_factor/_wizard_actions.html:4
+msgid "Next"
+msgstr ""
+
+#: templates/two_factor/_wizard_actions.html:6
+msgid "Cancel"
+msgstr ""
+
+#: templates/two_factor/login.html:56
+msgid "Please enter the tokens generated by your token generator."
+msgstr ""
+
+#: templates/two_factor/login.html:63
+msgid "As a last resort, you can use a backup token:"
+msgstr ""
+
+#: templates/two_factor/login.html:66
+msgid "Use Backup Token"
+msgstr ""
+
+#: templates/two_factor/login.html:71
+msgid ""
+"Use this form for entering backup tokens for logging in. These tokens have "
+"been generated for you to print and keep safe. Please enter one of these "
+"backup tokens to login to your account."
+msgstr ""
+
+#: templates/two_factor/profile.html:10
+msgid "Tokens will be generated by your token generator."
+msgstr ""
+
+#: templates/two_factor/profile.html:12
+#, python-format
+msgid "Primary method: %(primary)s"
+msgstr ""
+
+#: templates/two_factor/profile.html:14
+msgid "Tokens will be generated by your YubiKey."
+msgstr ""
+
+#: templates/two_factor/profile.html:18
+msgid "Backup Phone Numbers"
+msgstr ""
+
+#: templates/two_factor/profile.html:19
+msgid ""
+"If your primary method is not available, we are able to send backup tokens "
+"to the phone numbers listed below."
+msgstr ""
+
+#: templates/two_factor/profile.html:29
+msgid "Unregister"
+msgstr ""
+
+#: templates/two_factor/profile.html:35
+#: templates/two_factor/setup_complete.html:30
+msgid "Add Phone Number"
+msgstr ""
+
+#: templates/two_factor/profile.html:38
+msgid "Backup Tokens"
+msgstr ""
+
+#: templates/two_factor/profile.html:40
+msgid ""
+"If you don't have any device with you, you can access your account using "
+"backup tokens."
+msgstr ""
+
+#: templates/two_factor/profile.html:42
+#, python-format
+msgid "You have only one backup token remaining."
+msgid_plural "You have %(counter)s backup tokens remaining."
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/two_factor/profile.html:49
+msgid "Show Codes"
+msgstr ""
+
+#: templates/two_factor/profile.html:51 templates/two_factor/profile.html:55
+msgid "Disable Two-Factor Authentication"
+msgstr ""
+
+#: templates/two_factor/profile.html:52
+msgid ""
+"However we strongly discourage you to do so, you can also disable two-factor "
+"authentication for your account."
+msgstr ""
+
+#: templates/two_factor/profile.html:57
+msgid ""
+"Two-factor authentication is not enabled for your account. Enable two-factor "
+"authentication for enhanced account security."
+msgstr ""
+
+#: templates/two_factor/profile.html:62
+#: templates/two_factor/setup_complete.html:6
+msgid "Enable Two-Factor Authentication"
+msgstr ""
+
+#: templates/two_factor/profile.html:64
 msgid "Plus tard"
 msgstr "Later"
+
+#: templates/two_factor/setup_complete.html:8
+msgid "Congratulations, you've successfully enabled two-factor authentication."
+msgstr ""
+
+#: templates/two_factor/setup_complete.html:14
+#: templates/two_factor/setup_complete.html:28
+msgid "Back to Account Security"
+msgstr ""
+
+#: templates/two_factor/setup_complete.html:16
+msgid "Voir mes demandes"
+msgstr ""
+
+#: templates/two_factor/setup_complete.html:23
+msgid ""
+"However, it might happen that you don't have access to your primary token "
+"device. To enable account recovery, add a phone number."
+msgstr ""
