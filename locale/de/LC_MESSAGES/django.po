@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-01-18 10:43+0100\n"
+"POT-Creation-Date: 2021-01-18 10:44+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: geomapshark/settings.py:282
 msgid "French"
@@ -64,10 +64,8 @@ msgid "Objet des travaux"
 msgstr ""
 
 #: permits/forms.py:36 permits/tables.py:20 permits/tables.py:50
-#, fuzzy
-#| msgid "administrative_entity"
 msgid "Entité administrative"
-msgstr "Commune"
+msgstr ""
 
 #: permits/forms.py:77
 msgid "Types de travaux"
@@ -193,10 +191,8 @@ msgid "is_archeologist"
 msgstr ""
 
 #: permits/models.py:65
-#, fuzzy
-#| msgid "administrative_entity"
 msgid "permit_administrative_entity"
-msgstr "Commune"
+msgstr ""
 
 #: permits/models.py:68
 msgid "sélectionné par défaut pour les validations"
@@ -1345,7 +1341,7 @@ msgstr ""
 
 #: templates/two_factor/profile.html:64
 msgid "Plus tard"
-msgstr "Plus tard"
+msgstr ""
 
 #: templates/two_factor/setup_complete.html:8
 msgid "Congratulations, you've successfully enabled two-factor authentication."
