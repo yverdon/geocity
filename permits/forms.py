@@ -14,6 +14,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
+from itertools import groupby
 
 from . import models, services
 
@@ -29,14 +30,23 @@ def get_field_cls_for_property(prop):
     return input_type_mapping[prop.input_type]
 
 
+def regroup_by_ofs_id(entities):
+    return groupby(entities.order_by("ofs_id"), lambda entity: entity.ofs_id)
+
+
+class AdministrativeEntityFormWidget(forms.RadioSelect):
+    template_name = "permits/widgets/administrative_entity_select.html"
+
+
 class AdministrativeEntityForm(forms.Form):
 
     administrative_entity = forms.ModelChoiceField(
         queryset=models.PermitAdministrativeEntity.objects.none(),
         label=_("Entité administrative"),
         empty_label=None,
-        widget=forms.RadioSelect(),
+        widget=AdministrativeEntityFormWidget(),
     )
+
 
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop("instance", None)
@@ -54,8 +64,9 @@ class AdministrativeEntityForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         self.fields[
-            "administrative_entity"
-        ].queryset = services.get_administrative_entities()
+                    "administrative_entity"
+                ].choices = [(ofs_id, [(entity.pk, entity.name) for entity in entities])
+                for ofs_id, entities in regroup_by_ofs_id(services.get_administrative_entities())]
 
     def save(self, author):
         if not self.instance:

@@ -11,15 +11,8 @@
   <hr>
   <form method="post">
     {% bootstrap_form_errors form %}
-
     {% csrf_token %}
-
-    {% for field in form.administrative_entity %}
-      <div class="input-group">
-        {{field.tag}}
-        <label for="{{field.id_for_label}}">{{field.choice_label}}</label>
-      </div>
-    {% endfor %}
+    {% bootstrap_field form.administrative_entity show_label=False %}
 
     {% buttons %}
       <button class="btn btn-primary">{% trans "Continuer" %}</button>

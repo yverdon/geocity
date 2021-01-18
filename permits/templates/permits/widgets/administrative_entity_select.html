@@ -1,0 +1,12 @@
+
+{% with id=widget.attrs.id %}<ul{% if id %} id="{{ id }}"{% endif %}{% if widget.attrs.class %} class="{{ widget.attrs.class }}"{% endif %}>{% for group, options, index in widget.optgroups %}{% if group %}
+  <li><br>
+    <ul{% if id %} id="{{ id }}_{{ index }}"{% endif %}>{% endif %}{% for option in options %}
+    <div class="input-group">
+      <label for="{{option.id}}">{{option.label}}</label>
+    </div>
+
+    {% endfor %}{% if group %}
+  </ul>
+</li>{% endif %}{% endfor %}
+</ul>{% endwith %}
