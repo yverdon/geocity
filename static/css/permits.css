@@ -417,6 +417,11 @@ div.input-group input {
   visibility: hidden;
 }
 
+.administrative-entity-fieldgroup {
+  border-style: solid;
+  margin-top: 20px;
+}
+
 /* /////////////////////////////////// */
 /* Responsive for smaller devices */
 /* /////////////////////////////////// */
