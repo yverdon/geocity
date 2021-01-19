@@ -12,6 +12,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from constance import config
+from django.utils.dateparse import parse_date
 
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
@@ -251,8 +252,13 @@ def set_administrative_entity(permit_request, administrative_entity):
 
 def get_property_value(object_property_value):
     value = object_property_value.value["val"]
-
     if (
+        object_property_value.property.input_type
+        == models.WorksObjectProperty.INPUT_TYPE_DATE
+    ):
+        value = parse_date(value)
+
+    elif (
         object_property_value.property.input_type
         == models.WorksObjectProperty.INPUT_TYPE_FILE
     ):
