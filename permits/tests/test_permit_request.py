@@ -1,6 +1,6 @@
+# TODO split this file into multiple files
 import urllib.parse
 
-from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -9,7 +9,9 @@ from django.urls import reverse
 from django.utils import timezone
 from datetime import date
 
-from . import factories, models, services, views
+from permits import models, services
+from . import factories
+from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_parser
 
 
 def to_works_objects_dict(works_object_types):
@@ -25,28 +27,6 @@ def get_permit_request_works_types_ids(permit_request):
         .values_list("works_type__pk", flat=True)
         .distinct()
     )
-
-
-def get_parser(content):
-    return BeautifulSoup(content, features="html5lib")
-
-
-def get_emails(subject):
-    return [email for email in mail.outbox if email.subject == subject]
-
-
-class LoggedInUserMixin:
-    def setUp(self):
-        self.user = factories.UserFactory()
-        self.client.login(username=self.user.username, password="password")
-
-
-class LoggedInSecretariatMixin:
-    def setUp(self):
-        self.group = factories.SecretariatGroupFactory()
-        self.administrative_entity = self.group.permitdepartment.administrative_entity
-        self.user = factories.SecretariatUserFactory(groups=[self.group])
-        self.client.login(username=self.user.username, password="password")
 
 
 class PermitRequestTestCase(LoggedInUserMixin, TestCase):

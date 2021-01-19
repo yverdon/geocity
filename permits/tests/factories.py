@@ -5,7 +5,7 @@ from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.utils.text import Truncator
 
-from . import models
+from permits import models
 
 
 class PermitAuthorFactory(factory.django.DjangoModelFactory):
@@ -68,18 +68,6 @@ class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
             )
 
 
-class PermitDepartmentFactory(factory.django.DjangoModelFactory):
-    is_default_validator = False
-    is_validator = False
-    is_admin = False
-    is_archeologist = False
-    administrative_entity = factory.SubFactory(PermitAdministrativeEntityFactory)
-    group = factory.SubFactory("permits.factories.GroupFactory")
-
-    class Meta:
-        model = models.PermitDepartment
-
-
 class GroupFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("company")
 
@@ -100,6 +88,18 @@ class GroupFactory(factory.django.DjangoModelFactory):
 
         for permission in extracted:
             self.permissions.add(permission)
+
+
+class PermitDepartmentFactory(factory.django.DjangoModelFactory):
+    is_default_validator = False
+    is_validator = False
+    is_admin = False
+    is_archeologist = False
+    administrative_entity = factory.SubFactory(PermitAdministrativeEntityFactory)
+    group = factory.SubFactory(GroupFactory)
+
+    class Meta:
+        model = models.PermitDepartment
 
 
 class SecretariatGroupFactory(GroupFactory):

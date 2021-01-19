@@ -536,6 +536,23 @@ def get_progressbar_steps(request, permit_request):
         ),
     }
 
+    if permit_request:
+        works_object_types = (
+            permit_request.administrative_entity.works_object_types.all()
+        )
+        works_objects = {
+            works_object_type.works_object for works_object_type in works_object_types
+        }
+        works_types = {
+            works_object_type.works_type for works_object_type in works_object_types
+        }
+
+        if len(works_objects) <= 1:
+            del steps["objects_types"]
+
+        if len(works_types) <= 1:
+            del steps["works_types"]
+
     return steps
 
 
