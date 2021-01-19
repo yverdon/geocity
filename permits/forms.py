@@ -120,7 +120,9 @@ class WorksObjectsForm(forms.Form):
             self.fields[str(works_type.pk)] = WorksObjectsTypeChoiceField(
                 queryset=works_type.works_object_types.filter(
                     administrative_entities=self.instance.administrative_entity
-                ).distinct(),
+                )
+                .distinct()
+                .select_related("works_object"),
                 widget=forms.CheckboxSelectMultiple(),
                 label=works_type.name,
                 error_messages={
