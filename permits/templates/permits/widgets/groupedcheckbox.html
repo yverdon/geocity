@@ -4,7 +4,11 @@
     {% if group %}<div class="administrative-entity-fieldgroup">{% endif %}
     {% for option in options %}
       <div class="input-group">
-        <input type="radio" name="administrative_entity" value="{{option.value}}" id="{{option.attrs.id}}" required="">
+        <input type="radio" name="administrative_entity" value={{option.value}} id="{{option.attrs.id}}" required="" 
+        {% if option.selected %}
+        checked
+        {% endif %}
+        >
         <label for="{{option.attrs.id}}">{{option.label}}</label>
       </div>
     {% endfor %}

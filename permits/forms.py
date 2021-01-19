@@ -43,15 +43,12 @@ class GroupedCheckboxWidgetWidget(forms.RadioSelect):
             css={"all": ("customWidgets/GroupedCheckbox/groupedcheckbox.css")},
         )
 
+
 class AdministrativeEntityForm(forms.Form):
 
-    administrative_entity = forms.ModelChoiceField(
-        queryset=models.PermitAdministrativeEntity.objects.none(),
-        label=_("Entité administrative"),
-        empty_label=None,
-        widget=GroupedCheckboxWidgetWidget(),
+    administrative_entity = forms.ChoiceField(
+        label=_("Entité administrative"), widget=GroupedCheckboxWidgetWidget(),
     )
-
 
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop("instance", None)
@@ -68,21 +65,28 @@ class AdministrativeEntityForm(forms.Form):
 
         super().__init__(*args, **kwargs)
 
-        self.fields[
-                    "administrative_entity"
-                ].choices = [(ofs_id, [(entity.pk, entity.name) for entity in entities])
-                for ofs_id, entities in regroup_by_ofs_id(services.get_administrative_entities())]
+        self.fields["administrative_entity"].choices = [
+            (ofs_id, [(entity.pk, entity.name) for entity in entities])
+            for ofs_id, entities in regroup_by_ofs_id(
+                services.get_administrative_entities()
+            )
+        ]
+
+        print(dir(self.fields["administrative_entity"]))
 
     def save(self, author):
 
+        administrative_entity_instance = models.PermitAdministrativeEntity.objects.get(
+            pk=self.cleaned_data["administrative_entity"]
+        )
+
         if not self.instance:
             return models.PermitRequest.objects.create(
-                administrative_entity=self.cleaned_data["administrative_entity"],
-                author=author,
+                administrative_entity=administrative_entity_instance, author=author,
             )
         else:
             services.set_administrative_entity(
-                self.instance, self.cleaned_data["administrative_entity"]
+                self.instance, administrative_entity_instance
             )
             return self.instance
 
