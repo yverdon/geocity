@@ -3,10 +3,6 @@
 {% load i18n %}
 {% load permits_extras %}
 {% load static %}
-{% block stylesheets%}
-  <link rel="stylesheet" type="text/css" href="{% static 'customWidgets/GroupedCheckbox/groupedcheckbox.css' %}">
-  <link rel="stylesheet" type="text/css" href="{% static 'css/permits.css' %}">
-{% endblock %}
 
 
 {% block content %}
@@ -18,7 +14,7 @@
   <form method="post">
     {% bootstrap_form_errors form %}
     {% csrf_token %}
-
+    {{ form.media }}
     {% bootstrap_field form.administrative_entity show_label=False %}
 
     {% buttons %}

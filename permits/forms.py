@@ -37,11 +37,10 @@ def regroup_by_ofs_id(entities):
 class GroupedCheckboxWidgetWidget(forms.RadioSelect):
     template_name = "permits/widgets/groupedcheckbox.html"
 
-    @property
-    def media(self):
-        return forms.Media(
-            css={"all": ("customWidgets/GroupedCheckbox/groupedcheckbox.css")},
-        )
+    class Media:
+            css = {
+                'all': ('customWidgets/GroupedCheckbox/groupedcheckbox.css',)
+            }
 
 
 class AdministrativeEntityForm(forms.Form):
@@ -56,7 +55,7 @@ class AdministrativeEntityForm(forms.Form):
         if self.instance:
             initial = {
                 **kwargs.get("initial", {}),
-                "administrative_entity": self.instance.administrative_entity,
+                "administrative_entity": self.instance.administrative_entity.pk,
             }
         else:
             initial = {}
@@ -71,8 +70,6 @@ class AdministrativeEntityForm(forms.Form):
                 services.get_administrative_entities()
             )
         ]
-
-        print(dir(self.fields["administrative_entity"]))
 
     def save(self, author):
 
