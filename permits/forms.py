@@ -38,9 +38,7 @@ class GroupedCheckboxWidgetWidget(forms.RadioSelect):
     template_name = "permits/widgets/groupedcheckbox.html"
 
     class Media:
-            css = {
-                'all': ('customWidgets/GroupedCheckbox/groupedcheckbox.css',)
-            }
+        css = {"all": ("customWidgets/GroupedCheckbox/groupedcheckbox.css",)}
 
 
 class AdministrativeEntityForm(forms.Form):
