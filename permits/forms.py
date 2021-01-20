@@ -231,9 +231,15 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
             field_instance = field_class(
                 **self.get_field_kwargs(prop),
                 widget=DatePickerInput(
+                    attrs={
+                        "oninvalid": "this.setCustomValidity('{}')".format(
+                            _("Ce champ est obligatoire.")
+                        ),
+                        "required": prop.is_mandatory,
+                    },
                     options={
                         "format": "DD/MM/YYYY",
-                        "locale": "fr-CH",
+                        "locale": "fr-ch",
                         "useCurrent": False,
                         "minDate": "1900/01/01",
                         "maxDate": "2100/12/31",
