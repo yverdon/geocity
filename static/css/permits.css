@@ -261,7 +261,7 @@ h3 {
 }
 
 .table-container {
-  overflow-x: auto;
+  overflow-x: visible;
 }
 
 .table-container .table thead th {
