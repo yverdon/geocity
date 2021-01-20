@@ -59,6 +59,17 @@ $(function () {
             $("#" + item.id).val(data.feature.attributes.strname + " " + nmr);
 
             if (
+              dataRemoteAutocomplete.single_adress_field == "true"
+            ) {
+              $("#" + item.id).val(
+                data.feature.attributes.strname +
+                " " + nmr + ", " + data.feature.attributes.dplz4 +
+                " " + data.feature.attributes.dplzname
+              );
+              return;
+            }
+
+            if (
               dataRemoteAutocomplete.zipcode_field != "" &&
               typeof dataRemoteAutocomplete.single_contact == "undefined"
             ) {
@@ -70,6 +81,7 @@ $(function () {
                 data.feature.attributes.dplz4
               );
             }
+
             if (
               dataRemoteAutocomplete.city_field != "" &&
               typeof dataRemoteAutocomplete.single_contact == "undefined"

@@ -24,6 +24,7 @@ def get_field_cls_for_property(prop):
         models.WorksObjectProperty.INPUT_TYPE_CHECKBOX: forms.BooleanField,
         models.WorksObjectProperty.INPUT_TYPE_NUMBER: forms.FloatField,
         models.WorksObjectProperty.INPUT_TYPE_FILE: forms.FileField,
+        models.WorksObjectProperty.INPUT_TYPE_ADDRESS: forms.CharField,
     }
 
     return input_type_mapping[prop.input_type]
@@ -226,6 +227,29 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                 **self.get_field_kwargs(prop),
                 widget=forms.Textarea(attrs={"rows": 1,}),
             )
+        elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_ADDRESS:
+
+            field_instance = field_class(
+                **self.get_field_kwargs(prop),
+                widget=forms.TextInput(
+                    attrs={
+                        "data_remote_autocomplete": json.dumps(
+                            {
+                                "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
+                                "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
+                                "search_prefix": "false",
+                                "origins": "address",
+                                "zipcode_field": "",
+                                "city_field": "",
+                                "placeholder": "ex: Place Pestalozzi, 1400 Yverdon",
+                                "single_contact": "true",
+                                "single_adress_field": "true",
+                            }
+                        ),
+                        "required": "required",
+                    }
+                ),
+            )
         else:
             field_instance = field_class(**self.get_field_kwargs(prop),)
         return field_instance
@@ -334,8 +358,9 @@ class GenericAuthorForm(forms.ModelForm):
                         "origins": "address",
                         "zipcode_field": "zipcode",
                         "city_field": "city",
-                        "placeholder": "ex: Place Pestalozzi 2 Yverdon",
+                        "placeholder": "ex: Place Pestalozzi 2, 1400 Yverdon",
                         "single_contact": "true",
+                        "single_adress_field": "false",
                     }
                 ),
                 "required": "required",
@@ -470,7 +495,8 @@ class PermitRequestActorForm(forms.ModelForm):
                         "origins": "address",
                         "zipcode_field": "zipcode",
                         "city_field": "city",
-                        "placeholder": "ex: Place Pestalozzi 2 Yverdon",
+                        "placeholder": "ex: Place Pestalozzi 2, 1400 Yverdon",
+                        "single_adress_field": "false"
                     }
                 ),
                 "required": "required",
