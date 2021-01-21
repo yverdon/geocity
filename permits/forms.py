@@ -496,7 +496,7 @@ class PermitRequestActorForm(forms.ModelForm):
                         "zipcode_field": "zipcode",
                         "city_field": "city",
                         "placeholder": "ex: Place Pestalozzi 2, 1400 Yverdon",
-                        "single_adress_field": "false"
+                        "single_adress_field": "false",
                     }
                 ),
                 "required": "required",

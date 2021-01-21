@@ -847,3 +847,58 @@ class PermitRequestClassifyTestCase(TestCase):
 
         validation.permit_request.refresh_from_db()
         self.assertIsNotNone(validation.permit_request.validated_at)
+
+    def test_missing_mandatory_address_property_gives_invalid_feedback(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory(permit_request=permit_request)
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactory(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS, is_mandatory=True
+        )
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        data = {
+            "properties-{}_{}".format(works_object_type.pk, prop.pk): ""
+            for works_object_type in permit_request.works_object_types.all()
+        }
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=data,
+        )
+        parser = get_parser(response.content)
+        parser.select(".invalid-feedback")
+        self.assertEqual(1, len(parser.select(".invalid-feedback")))
+
+    def test_properties_step_submit_updates_permit_request_with_address(self):
+        new_prop = factories.WorksObjectPropertyFactory(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS
+        )
+        new_prop.works_object_types.set(self.permit_request.works_object_types.all())
+        data = {
+            "properties-{}_{}".format(
+                works_object_type.pk, new_prop.pk
+            ): "value-{}".format(works_object_type.pk)
+            for works_object_type in self.permit_request.works_object_types.all()
+        }
+        self.client.post(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            ),
+            data=data,
+        )
+        self.assertEqual(
+            set(
+                item["val"]
+                for item in services.get_properties_values(
+                    self.permit_request
+                ).values_list("value", flat=True)
+            ),
+            set(data.values()),
+        )
