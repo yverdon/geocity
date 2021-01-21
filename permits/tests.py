@@ -403,8 +403,10 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
             )
         )
 
-        self.assertContains(response,
-        'data_remote_autocomplete="{&quot;apiurl&quot;: &quot;https://api3.geo.admin.ch/rest/services/api/SearchServer?&quot')
+        self.assertContains(
+            response,
+            'data_remote_autocomplete="{&quot;apiurl&quot;: &quot;https://api3.geo.admin.ch/rest/services/api/SearchServer?&quot',
+        )
 
 
 class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):

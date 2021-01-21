@@ -81,7 +81,7 @@ class PermitDepartmentFactory(factory.django.DjangoModelFactory):
 
 
 class GroupFactory(factory.django.DjangoModelFactory):
-    name = factory.Sequence(lambda n: 'Company{}'.format(n))
+    name = factory.Sequence(lambda n: "Company{}".format(n))
 
     class Meta:
         model = Group
