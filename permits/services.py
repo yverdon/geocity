@@ -467,15 +467,30 @@ def get_works_types_step(permit_request, completed):
 def get_works_objects_step(permit_request, enabled, works_types):
     # If there are default works objects types it means the object types can be
     # automatically selected and so the step shouldn’t be visible
-    if permit_request and (
-        get_default_works_object_types(
-            permit_request.administrative_entity,
-            works_types=works_types
+    if permit_request:
+        selected_works_types = (
+            works_types
             or permit_request.works_object_types.values_list("works_type", flat=True)
-            or None,
         )
-    ):
-        return None
+        candidate_works_object_types = (
+            models.WorksObjectType.objects.filter(works_type__in=selected_works_types)
+            if selected_works_types
+            else permit_request.administrative_entity.works_object_types.all()
+        )
+
+        if (
+            get_default_works_object_types(
+                permit_request.administrative_entity,
+                works_types=selected_works_types or None,
+            )
+            # Also check if the candidates works types would all result in a single
+            # works object (which will anyway get automatically selected)
+            or candidate_works_object_types.values_list("works_object", flat=True)
+            .distinct()
+            .count()
+            <= 1
+        ):
+            return None
 
     return models.Step(
         name=_("Objets"),
@@ -997,8 +1012,17 @@ def get_default_works_object_types(administrative_entity, works_types=None):
     available_works_objects = {
         works_object_type.works_object_id for works_object_type in works_object_types
     }
+    available_works_types = {
+        works_object_type.works_type_id for works_object_type in works_object_types
+    }
 
-    if len(available_works_objects) > 1:
+    # If `works_types` are not set, ie. the user has only selected an administrative
+    # entity but no works types yes, and there’s more than 1 works type available, don’t
+    # return any default works object type so the user can choose the works type(s)
+    # first
+    if (works_types is None and len(available_works_types) > 1) or len(
+        available_works_objects
+    ) > 1:
         return []
 
     return works_object_types
