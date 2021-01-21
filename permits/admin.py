@@ -69,7 +69,7 @@ class WorksObjectPropertyForm(forms.ModelForm):
 
     class Meta:
         model = models.WorksObjectProperty
-        fields = ["name", "input_type", "is_mandatory", "works_object_types"]
+        fields = ["name", "order", "input_type", "is_mandatory", "works_object_types"]
 
 
 class WorksObjectPropertyAdmin(admin.ModelAdmin):
