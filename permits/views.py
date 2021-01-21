@@ -676,7 +676,7 @@ def permit_request_appendices(request, permit_request_id):
             **progress_bar_context(
                 request=request,
                 permit_request=permit_request,
-                current_step_type=models.StepType.WORKS_APPENDICES,
+                current_step_type=models.StepType.APPENDICES,
             ),
         },
     )
