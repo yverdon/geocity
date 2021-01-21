@@ -4,7 +4,12 @@ import enum
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import JSONField
-from django.core.validators import FileExtensionValidator, MaxValueValidator, MinValueValidator, RegexValidator
+from django.core.validators import (
+    FileExtensionValidator,
+    MaxValueValidator,
+    MinValueValidator,
+    RegexValidator,
+)
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -56,8 +61,9 @@ class Step:
 
 
 class StepType(enum.Enum):
+    ADMINISTRATIVE_ENTITY = "administrative_entity"
     WORKS_TYPES = "works_types"
-    OBJECTS_TYPES = "objects_types"
+    WORKS_OBJECTS = "works_objects"
     LOCATION = "location"
     PROPERTIES = "properties"
     GEO_TIME = "geo_time"

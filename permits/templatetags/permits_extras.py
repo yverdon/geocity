@@ -10,8 +10,7 @@ register = template.Library()
 
 
 @register.inclusion_tag("permits/_permit_progressbar.html", takes_context=True)
-def permit_progressbar(context, permit_request, active_step):
-    steps = services.get_progressbar_steps(context["request"], permit_request)
+def permit_progressbar(context, steps, active_step):
     steps_states = {
         "steps": steps,
         "active_step": active_step,

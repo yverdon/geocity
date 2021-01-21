@@ -92,6 +92,18 @@ def disable_form(form):
     return form
 
 
+def progress_bar_context(request, permit_request, current_step_type):
+    steps = services.get_progress_bar_steps(
+        request=request, permit_request=permit_request
+    )
+    try:
+        previous_step = services.get_previous_step(steps, current_step_type)
+    except IndexError:
+        previous_step = None
+
+    return {"steps": steps, "previous_step": previous_step}
+
+
 @method_decorator(login_required, name="dispatch")
 class PermitRequestDetailView(View):
 
@@ -449,7 +461,15 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
     return render(
         request,
         "permits/permit_request_select_administrative_entity.html",
-        {"form": administrative_entity_form, "permit_request": permit_request},
+        {
+            "form": administrative_entity_form,
+            "permit_request": permit_request,
+            **progress_bar_context(
+                request=request,
+                permit_request=permit_request,
+                current_step_type=models.StepType.ADMINISTRATIVE_ENTITY,
+            ),
+        },
     )
 
 
@@ -502,7 +522,15 @@ def permit_request_select_types(request, permit_request_id):
     return render(
         request,
         "permits/permit_request_select_types.html",
-        {"works_types_form": works_types_form, "permit_request": permit_request},
+        {
+            "works_types_form": works_types_form,
+            "permit_request": permit_request,
+            **progress_bar_context(
+                request=request,
+                permit_request=permit_request,
+                current_step_type=models.StepType.WORKS_TYPES,
+            ),
+        },
     )
 
 
@@ -557,7 +585,15 @@ def permit_request_select_objects(request, permit_request_id):
     return render(
         request,
         "permits/permit_request_select_objects.html",
-        {"works_objects_form": works_objects_form, "permit_request": permit_request},
+        {
+            "works_objects_form": works_objects_form,
+            "permit_request": permit_request,
+            **progress_bar_context(
+                request=request,
+                permit_request=permit_request,
+                current_step_type=models.StepType.WORKS_OBJECTS,
+            ),
+        },
     )
 
 
@@ -594,6 +630,11 @@ def permit_request_properties(request, permit_request_id):
             "permit_request": permit_request,
             "object_types": fields_by_object_type,
             "permit_request_form": form,
+            **progress_bar_context(
+                request=request,
+                permit_request=permit_request,
+                current_step_type=models.StepType.PROPERTIES,
+            ),
         },
     )
 
@@ -629,7 +670,15 @@ def permit_request_appendices(request, permit_request_id):
     return render(
         request,
         "permits/permit_request_appendices.html",
-        {"permit_request": permit_request, "object_types": fields_by_object_type,},
+        {
+            "permit_request": permit_request,
+            "object_types": fields_by_object_type,
+            **progress_bar_context(
+                request=request,
+                permit_request=permit_request,
+                current_step_type=models.StepType.WORKS_APPENDICES,
+            ),
+        },
     )
 
 
@@ -667,6 +716,11 @@ def permit_request_actors(request, permit_request_id):
             "formset": formset,
             "creditorform": creditorform,
             "permit_request": permit_request,
+            **progress_bar_context(
+                request=request,
+                permit_request=permit_request,
+                current_step_type=models.StepType.ACTORS,
+            ),
         },
     )
 
@@ -706,7 +760,15 @@ def permit_request_geo_time(request, permit_request_id):
     return render(
         request,
         "permits/permit_request_geo_time.html",
-        {"formset": formset, "permit_request": permit_request,},
+        {
+            "formset": formset,
+            "permit_request": permit_request,
+            **progress_bar_context(
+                request=request,
+                permit_request=permit_request,
+                current_step_type=models.StepType.GEO_TIME,
+            ),
+        },
     )
 
 
@@ -797,7 +859,7 @@ def permit_request_submit(request, permit_request_id):
 
     incomplete_steps = [
         step.url
-        for step in services.get_progressbar_steps(request, permit_request).values()
+        for step in services.get_progress_bar_steps(request, permit_request).values()
         if step.errors_count and step.url
     ]
 
@@ -811,7 +873,15 @@ def permit_request_submit(request, permit_request_id):
     return render(
         request,
         "permits/permit_request_submit.html",
-        {"permit_request": permit_request, "incomplete_steps": incomplete_steps,},
+        {
+            "permit_request": permit_request,
+            "incomplete_steps": incomplete_steps,
+            **progress_bar_context(
+                request=request,
+                permit_request=permit_request,
+                current_step_type=models.StepType.SUBMIT,
+            ),
+        },
     )
 
 
@@ -823,7 +893,7 @@ def permit_request_submit_confirmed(request, permit_request_id):
 
     incomplete_steps = [
         step.url
-        for step in services.get_progressbar_steps(request, permit_request).values()
+        for step in services.get_progress_bar_steps(request, permit_request).values()
         if step.errors_count and step.url
     ]
 

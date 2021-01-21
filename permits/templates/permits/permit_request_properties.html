@@ -4,7 +4,7 @@
 {% load permits_extras %}
 
 {% block content %}
-  {% permit_progressbar permit_request StepType.PROPERTIES %}
+  {% permit_progressbar steps StepType.PROPERTIES %}
   <h3>{{ config.PROPERTIES_STEP }} </h3>
   <hr>
   <form method="post">
@@ -18,7 +18,10 @@
     {% endfor %}
 
     {% buttons %}
-      <a href="{% url 'permits:permit_request_select_objects' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
+      {% if previous_step.url %}
+        <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
+      {% endif %}
+
       <button class="btn btn-primary">{% trans "Enregistrer et continuer" %}</button>
     {% endbuttons %}
   </form>

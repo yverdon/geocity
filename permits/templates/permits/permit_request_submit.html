@@ -4,7 +4,7 @@
 {% load permits_extras %}
 
 {% block content %}
-  {% permit_progressbar permit_request StepType.SUBMIT %}
+  {% permit_progressbar steps StepType.SUBMIT %}
   <h3>{% trans "Résumé et envoi" %}</h3>
   <hr>
   {% if incomplete_steps  %}
@@ -38,7 +38,9 @@
           {{ permit_request.administrative_entity.general_informations }}
       </div>
       <hr>
-      <a href="{% url 'permits:permit_request_actors' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
+      {% if previous_step.url %}
+        <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
+      {% endif %}
       <a class="btn btn-primary" href="{% url 'permits:permit_request_submit_confirmed' permit_request_id=permit_request.pk %}" class="mr-2">
       {% trans "Envoyer" %}</a>
     {% endif %}

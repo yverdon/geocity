@@ -1,3 +1,4 @@
+import itertools
 import os
 
 from constance import config
@@ -602,7 +603,7 @@ def get_submit_step(permit_request, enabled, total_errors):
     )
 
 
-def get_progressbar_steps(request, permit_request):
+def get_progress_bar_steps(request, permit_request):
     """
     Return a dict of `Step` items that can be used to track the user progress through
     the permit request wizard.
@@ -616,7 +617,7 @@ def get_progressbar_steps(request, permit_request):
             permit_request=permit_request,
             completed=has_objects_types or selected_works_types,
         ),
-        models.StepType.OBJECTS_TYPES: get_objects_types_step(
+        models.StepType.WORKS_OBJECTS: get_objects_types_step(
             permit_request=permit_request,
             enabled=has_objects_types,
             works_types=selected_works_types,
@@ -645,6 +646,16 @@ def get_progressbar_steps(request, permit_request):
     return {
         step_type: step for step_type, step in all_steps.items() if step is not None
     }
+
+
+def get_previous_step(steps, current_step):
+    """
+    Return the previous step in the list or raise `IndexError` if there’s no such
+    step.
+    """
+    return list(
+        itertools.takewhile(lambda step: step[0] != current_step, steps.items())
+    )[-1][1]
 
 
 def submit_permit_request(permit_request, absolute_uri_func):
