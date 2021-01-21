@@ -17,7 +17,9 @@
     {% endfor %}
 
     {% buttons %}
-      <a href="{% url 'permits:permit_request_select_types' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
+      {% if previous_step.url %}
+        <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
+      {% endif %}
       <button class="btn btn-primary">{% trans "Enregistrer et continuer" %}</button>
     {% endbuttons %}
   </form>
