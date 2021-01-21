@@ -336,7 +336,7 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
         permit_request.administrative_entity.works_object_types.set(
             permit_request.works_object_types.all()
         )
-        prop = factories.WorksObjectPropertyFactory(
+        prop = factories.WorksObjectPropertyFactoryTypeAddress(
             input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS, is_mandatory=True
         )
         prop.works_object_types.set(permit_request.works_object_types.all())
@@ -358,7 +358,7 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(1, len(parser.select(".invalid-feedback")))
 
     def test_properties_step_submit_updates_permit_request_with_address(self):
-        new_prop = factories.WorksObjectPropertyFactory(
+        new_prop = factories.WorksObjectPropertyFactoryTypeAddress(
             input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS
         )
         new_prop.works_object_types.set(self.permit_request.works_object_types.all())
@@ -432,31 +432,6 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
                 ' name="works_objects-{id}" title="" type="checkbox" value="{value}"/>'
             ).format(id=works_object_type.works_type.pk, value=works_object_type.pk)
             self.assertInHTML(expected, content)
-
-    def test_properties_step_prefills_properties_for_existing_permit_request(self):
-        works_object_type_choice = services.get_works_object_type_choices(
-            self.permit_request
-        ).first()
-        prop = factories.WorksObjectPropertyFactory()
-        prop.works_object_types.add(works_object_type_choice.works_object_type)
-        prop_value = factories.WorksObjectPropertyValueFactory(
-            works_object_type_choice=works_object_type_choice, property=prop
-        )
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_properties",
-                kwargs={"permit_request_id": self.permit_request.pk},
-            )
-        )
-        content = response.content.decode()
-        expected = '<textarea name="properties-{obj_type_id}_{prop_id}" cols="40" rows="1" class="form-control" title="" id="id_properties-{obj_type_id}_{prop_id}">{value}</textarea>'.format(
-            obj_type_id=works_object_type_choice.works_object_type.pk,
-            prop_id=prop.pk,
-            prop_name=prop.name,
-            value=prop_value.value["val"],
-        )
-
-        self.assertInHTML(expected, content)
 
 
 class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):

@@ -207,6 +207,14 @@ class WorksObjectPropertyFactory(factory.django.DjangoModelFactory):
     input_type = models.WorksObjectProperty.INPUT_TYPE_TEXT
 
 
+class WorksObjectPropertyFactoryTypeAddress(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.WorksObjectProperty
+
+    name = factory.Faker("word")
+    input_type = models.WorksObjectProperty.INPUT_TYPE_ADDRESS
+
+
 class WorksObjectTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.WorksObjectType
