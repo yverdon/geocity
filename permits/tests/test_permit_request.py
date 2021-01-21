@@ -1,5 +1,6 @@
 # TODO split this file into multiple files
 import urllib.parse
+from datetime import date
 
 from django.conf import settings
 from django.core import mail
@@ -7,9 +8,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-from datetime import date
-
 from permits import models, services
+
 from . import factories
 from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_parser
 
@@ -218,6 +218,58 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
         parser = get_parser(response.content)
         self.assertEqual(len(parser.select(".invalid-feedback")), 1)
+
+    def test_works_object_automatically_set_when_only_one_works_object(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object = factories.WorksObjectFactory()
+        permit_request.administrative_entity.works_object_types.set(
+            factories.WorksObjectTypeFactory.create_batch(2, works_object=works_object)
+        )
+        works_type_id = permit_request.administrative_entity.works_object_types.values_list(
+            "works_type_id", flat=True
+        ).first()
+
+        self.client.post(
+            reverse(
+                "permits:permit_request_select_types",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data={"types": [works_type_id]},
+        )
+
+        permit_request.refresh_from_db()
+        works_object_types = permit_request.works_object_types.all()
+
+        self.assertEqual(
+            len(works_object_types),
+            1,
+            "Permit request should have one works object type set",
+        )
+        self.assertEqual(works_object_types[0].works_object, works_object)
+        self.assertEqual(works_object_types[0].works_type_id, works_type_id)
+
+    def test_works_type_automatically_set_when_only_one_works_object(self):
+        works_type = factories.WorksTypeFactory()
+        administrative_entity = factories.PermitAdministrativeEntityFactory()
+        administrative_entity.works_object_types.set(
+            factories.WorksObjectTypeFactory.create_batch(2, works_type=works_type)
+        )
+
+        response = self.client.post(
+            reverse("permits:permit_request_select_administrative_entity",),
+            data={"administrative_entity": administrative_entity.pk},
+        )
+
+        permit_request = models.PermitRequest.objects.get()
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "permits:permit_request_select_objects",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+            + f"?types={works_type.pk}",
+        )
 
 
 class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):

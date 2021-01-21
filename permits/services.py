@@ -1,5 +1,6 @@
 import os
 
+from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import SuspiciousOperation
@@ -10,9 +11,8 @@ from django.forms import modelformset_factory
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
-from django.utils.translation import gettext_lazy as _
-from constance import config
 from django.utils.dateparse import parse_date
+from django.utils.translation import gettext_lazy as _
 
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
@@ -158,6 +158,14 @@ def get_works_types(administrative_entity):
         pk__in=models.WorksObjectType.objects.filter(
             administrative_entities=administrative_entity
         ).values_list("works_type_id", flat=True)
+    ).order_by("name")
+
+
+def get_works_objects(administrative_entity):
+    return models.WorksObject.objects.filter(
+        pk__in=models.WorksObjectType.objects.filter(
+            administrative_entities=administrative_entity
+        ).values_list("works_object_id", flat=True)
     ).order_by("name")
 
 
@@ -875,3 +883,32 @@ def get_actions_for_administrative_entity(permit_request):
     distinct_available_actions = list(dict.fromkeys(available_actions))
 
     return distinct_available_actions
+
+
+def get_default_works_object_types(administrative_entity, works_types=None):
+    """
+    Return the `WorksObjectType` that should be automatically selected for the given
+    `administrative_entity`. `works_types` should be the works types the user has
+    selected.
+    """
+    works_object_types = administrative_entity.works_object_types.all()
+
+    if works_types is not None:
+        works_object_types = works_object_types.filter(works_type__in=works_types)
+
+    available_works_objects = {
+        works_object_type.works_object_id for works_object_type in works_object_types
+    }
+    available_works_types = {
+        works_object_type.works_type_id for works_object_type in works_object_types
+    }
+
+    # If `works_types` are not set, ie. the user has only selected an administrative
+    # entity but no works types yes, and there’s more than 1 works type available, don’t
+    # return any default works object type so the user can choose
+    if (works_types is None and len(available_works_types) > 1) or len(
+        available_works_objects
+    ) > 1:
+        return []
+
+    return works_object_types

@@ -9,16 +9,15 @@ from django.contrib.auth.decorators import (
     permission_required,
     user_passes_test,
 )
-from django.core.exceptions import PermissionDenied
-from django.core.exceptions import SuspiciousOperation
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.db import transaction
 from django.db.models import Prefetch
-from django.http import Http404, HttpResponse, StreamingHttpResponse
 from django.forms import modelformset_factory
-from django.utils.decorators import method_decorator
+from django.http import Http404, HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views import View
@@ -408,12 +407,40 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
                 author=request.user.permitauthor
             )
 
-            return redirect(
-                reverse(
-                    "permits:permit_request_select_types",
-                    kwargs={"permit_request_id": permit_request.pk},
-                )
+            works_object_types = services.get_default_works_object_types(
+                administrative_entity=permit_request.administrative_entity
             )
+            if works_object_types:
+                services.set_works_object_types(
+                    permit_request=permit_request,
+                    new_works_object_types=works_object_types,
+                )
+
+                return redirect(
+                    reverse(
+                        "permits:permit_request_properties",
+                        kwargs={"permit_request_id": permit_request.pk},
+                    )
+                )
+            else:
+                works_types = services.get_works_types(
+                    permit_request.administrative_entity
+                )
+                if len(works_types) == 1:
+                    return redirect(
+                        reverse(
+                            "permits:permit_request_select_objects",
+                            kwargs={"permit_request_id": permit_request.pk},
+                        )
+                        + f"?types={works_types[0].pk}"
+                    )
+                else:
+                    return redirect(
+                        reverse(
+                            "permits:permit_request_select_types",
+                            kwargs={"permit_request_id": permit_request.pk},
+                        )
+                    )
     else:
         administrative_entity_form = forms.AdministrativeEntityForm(
             instance=permit_request
@@ -422,7 +449,7 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
     return render(
         request,
         "permits/permit_request_select_administrative_entity.html",
-        {"form": administrative_entity_form, "permit_request": permit_request,},
+        {"form": administrative_entity_form, "permit_request": permit_request},
     )
 
 
@@ -440,20 +467,34 @@ def permit_request_select_types(request, permit_request_id):
             data=request.POST, instance=permit_request
         )
         if works_types_form.is_valid():
-            works_types_form.save()
             redirect_kwargs = {"permit_request_id": permit_request_id}
+            selected_works_types = [
+                obj.pk for obj in works_types_form.cleaned_data["types"]
+            ]
+
+            with transaction.atomic():
+                works_types_form.save()
+
+                works_object_types = services.get_default_works_object_types(
+                    administrative_entity=permit_request.administrative_entity,
+                    works_types=selected_works_types,
+                )
+                if works_object_types:
+                    services.set_works_object_types(
+                        permit_request=permit_request,
+                        new_works_object_types=works_object_types,
+                    )
+                    return redirect(
+                        reverse(
+                            "permits:permit_request_properties",
+                            kwargs={"permit_request_id": permit_request.pk},
+                        )
+                    )
 
             return redirect(
                 reverse("permits:permit_request_select_objects", kwargs=redirect_kwargs)
                 + "?"
-                + urllib.parse.urlencode(
-                    {
-                        "types": [
-                            obj.pk for obj in works_types_form.cleaned_data["types"]
-                        ]
-                    },
-                    doseq=True,
-                )
+                + urllib.parse.urlencode({"types": selected_works_types}, doseq=True,)
             )
     else:
         works_types_form = forms.WorksTypesForm(instance=permit_request)
