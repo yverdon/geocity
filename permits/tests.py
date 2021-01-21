@@ -385,6 +385,27 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
             set(data.values()),
         )
 
+    def test_property_of_type_adress_has_required_dataattribute_for_widget(self):
+        new_prop = factories.WorksObjectPropertyFactoryTypeAddress(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS
+        )
+        new_prop.works_object_types.set(self.permit_request.works_object_types.all())
+        data = {
+            "properties-{}_{}".format(
+                works_object_type.pk, new_prop.pk
+            ): "value-{}".format(works_object_type.pk)
+            for works_object_type in self.permit_request.works_object_types.all()
+        }
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            )
+        )
+
+        self.assertContains(response,
+        'data_remote_autocomplete="{&quot;apiurl&quot;: &quot;https://api3.geo.admin.ch/rest/services/api/SearchServer?&quot')
+
 
 class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
