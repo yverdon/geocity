@@ -1,5 +1,6 @@
 import itertools
 import os
+import urllib
 
 from constance import config
 from django.conf import settings
@@ -463,12 +464,11 @@ def get_works_types_step(permit_request, completed):
     )
 
 
-def get_objects_types_step(permit_request, enabled, works_types):
+def get_works_objects_step(permit_request, enabled, works_types):
+    # If there are default works objects types it means the object types can be
+    # automatically selected and so the step shouldn’t be visible
     if permit_request and (
-        len(get_works_objects(permit_request.administrative_entity)) <= 1
-        # If there are default works objects types it means the object types can be
-        # automatically selected and so the step shouldn’t be visible
-        or get_default_works_object_types(
+        get_default_works_object_types(
             permit_request.administrative_entity,
             works_types=works_types
             or permit_request.works_object_types.values_list("works_type", flat=True)
@@ -479,8 +479,12 @@ def get_objects_types_step(permit_request, enabled, works_types):
 
     return models.Step(
         name=_("Objets"),
-        url=reverse_permit_request_url(
-            "permits:permit_request_select_objects", permit_request
+        url=(
+            reverse_permit_request_url(
+                "permits:permit_request_select_objects", permit_request
+            )
+            + "?"
+            + urllib.parse.urlencode({"types": works_types}, doseq=True,)
         )
         if permit_request
         else "",
@@ -555,14 +559,12 @@ def get_appendices_step(permit_request, enabled):
     )
     appendices_errors = len(appendices_form.errors) if appendices_form else 0
 
-    return (
-        models.Step(
-            name=_("Documents"),
-            url=appendices_url,
-            completed=enabled and appendices_errors == 0,
-            errors_count=appendices_errors,
-            enabled=enabled,
-        ),
+    return models.Step(
+        name=_("Documents"),
+        url=appendices_url,
+        completed=enabled and appendices_errors == 0,
+        errors_count=appendices_errors,
+        enabled=enabled,
     )
 
 
@@ -608,38 +610,40 @@ def get_progress_bar_steps(request, permit_request):
     Return a dict of `Step` items that can be used to track the user progress through
     the permit request wizard.
     """
-    has_objects_types = permit_request.works_object_types.exists()
+    has_works_objects_types = (
+        permit_request.works_object_types.exists() if permit_request else False
+    )
     selected_works_types = request.GET.getlist("types")
 
     all_steps = {
         models.StepType.LOCATION: get_location_step(permit_request),
         models.StepType.WORKS_TYPES: get_works_types_step(
             permit_request=permit_request,
-            completed=has_objects_types or selected_works_types,
+            completed=has_works_objects_types or selected_works_types,
         ),
-        models.StepType.WORKS_OBJECTS: get_objects_types_step(
+        models.StepType.WORKS_OBJECTS: get_works_objects_step(
             permit_request=permit_request,
-            enabled=has_objects_types,
+            enabled=has_works_objects_types,
             works_types=selected_works_types,
         ),
         models.StepType.PROPERTIES: get_properties_step(
-            permit_request=permit_request, enabled=has_objects_types
+            permit_request=permit_request, enabled=has_works_objects_types
         ),
         models.StepType.GEO_TIME: get_geo_time_step(
-            permit_request=permit_request, enabled=has_objects_types
+            permit_request=permit_request, enabled=has_works_objects_types
         ),
         models.StepType.APPENDICES: get_appendices_step(
-            permit_request=permit_request, enabled=has_objects_types
+            permit_request=permit_request, enabled=has_works_objects_types
         ),
         models.StepType.ACTORS: get_actors_step(
-            permit_request=permit_request, enabled=has_objects_types
+            permit_request=permit_request, enabled=has_works_objects_types
         ),
     }
 
     total_errors = sum([step.errors_count for step in all_steps.values() if step])
     all_steps[models.StepType.SUBMIT] = get_submit_step(
         permit_request=permit_request,
-        enabled=has_objects_types,
+        enabled=has_works_objects_types,
         total_errors=total_errors,
     )
 
@@ -983,7 +987,7 @@ def get_default_works_object_types(administrative_entity, works_types=None):
     """
     Return the `WorksObjectType` that should be automatically selected for the given
     `administrative_entity`. `works_types` should be the works types the user has
-    selected.
+    selected, if any.
     """
     works_object_types = administrative_entity.works_object_types.all()
 
@@ -993,16 +997,8 @@ def get_default_works_object_types(administrative_entity, works_types=None):
     available_works_objects = {
         works_object_type.works_object_id for works_object_type in works_object_types
     }
-    available_works_types = {
-        works_object_type.works_type_id for works_object_type in works_object_types
-    }
 
-    # If `works_types` are not set, ie. the user has only selected an administrative
-    # entity but no works types yes, and there’s more than 1 works type available, don’t
-    # return any default works object type so the user can choose
-    if (works_types is None and len(available_works_types) > 1) or len(
-        available_works_objects
-    ) > 1:
+    if len(available_works_objects) > 1:
         return []
 
     return works_object_types

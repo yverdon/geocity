@@ -193,6 +193,13 @@ class WorksTypeFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("word")
 
 
+class PermitActorTypeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitActorType
+
+    works_type = factory.SubFactory(WorksTypeFactory)
+
+
 class PermitRequestFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PermitRequest

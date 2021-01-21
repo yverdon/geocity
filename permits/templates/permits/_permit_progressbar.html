@@ -19,7 +19,11 @@
         </div>
       </div>
       <br>
-      {{ step.name }}
+
+      {# Wrap the step name so it’s easier to extract in the tests #}
+      <span class="step-name">
+        {{ step.name }}
+      </span>
 
       {% if step.url and step.enabled %}
         </a>
