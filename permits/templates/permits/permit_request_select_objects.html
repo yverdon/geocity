@@ -4,7 +4,7 @@
 {% load permits_extras %}
 
 {% block content %}
-  {% permit_progressbar permit_request 'objects_types' %}
+  {% permit_progressbar permit_request StepType.OBJECTS_TYPES %}
   <h3>{{ config.OBJECTS_TYPES_STEP }}</h3>
   <hr>
   <form method="post">

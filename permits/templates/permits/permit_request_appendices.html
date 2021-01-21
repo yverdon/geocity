@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class="container">
-  {% permit_progressbar permit_request 'appendices' %}
+  {% permit_progressbar permit_request StepType.APPENDICES %}
   <h3>{{ config.APPENDICES_STEP }}</h3>
   <hr>
   <form method="post" enctype="multipart/form-data">

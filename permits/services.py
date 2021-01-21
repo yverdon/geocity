@@ -16,6 +16,7 @@ from django.utils.translation import gettext_lazy as _
 
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
+from .utils import reverse_permit_request_url
 
 
 def get_works_object_type_choices(permit_request):
@@ -378,6 +379,12 @@ def get_permitactorformset_initiated(permit_request, data=None):
     return formset
 
 
+def get_permit_actor_types(permit_request):
+    return models.PermitActorType.objects.filter(
+        works_type__in=get_permit_request_works_types(permit_request)
+    )
+
+
 def get_missing_actors_types(permit_request):
     """
     Return PermitRequestActor yet to be filled
@@ -386,9 +393,7 @@ def get_missing_actors_types(permit_request):
         permit_request.permit_request_actors.values_list("actor_type", flat=True)
     )
     required_actor_types = set(
-        models.PermitActorType.objects.filter(
-            works_type__in=get_permit_request_works_types(permit_request)
-        ).values_list("type", flat=True)
+        get_permit_actor_types(permit_request).values_list("type", flat=True)
     )
 
     return required_actor_types - existing_actor_types
@@ -418,49 +423,127 @@ def get_total_error_count(permit_request):
     )
 
 
-def get_progressbar_steps(request, permit_request):
-    """
-    Return a dict of `Step` items that can be used to track the user progress through the permit request wizard.
-    """
+#########
+# STEPS #
+#########
 
-    def reverse_permit_request_url(name):
-        if permit_request:
-            return reverse(name, kwargs={"permit_request_id": permit_request.pk})
-        else:
-            return None
 
-    has_objects_types = permit_request.works_object_types.exists()
-
-    localisation_url = (
-        reverse_permit_request_url(
-            "permits:permit_request_select_administrative_entity"
+def get_location_step(permit_request):
+    return models.Step(
+        name=_("Entité"),
+        url=reverse_permit_request_url(
+            "permits:permit_request_select_administrative_entity", permit_request
         )
         if permit_request
-        else reverse("permits:permit_request_select_administrative_entity")
+        else reverse("permits:permit_request_select_administrative_entity"),
+        completed=permit_request is not None,
+        enabled=True,
     )
 
-    works_types_url = reverse_permit_request_url("permits:permit_request_select_types")
 
-    if permit_request and has_objects_types:
-        objects_types_url = reverse_permit_request_url(
-            "permits:permit_request_select_objects"
+def get_works_types_step(permit_request, completed):
+    # When there’s only 1 works type it will be automatically selected, so there’s no
+    # reason to show the step
+    if (
+        permit_request
+        and len(get_works_types(permit_request.administrative_entity)) <= 1
+    ):
+        return None
+
+    return models.Step(
+        name=_("Type"),
+        url=reverse_permit_request_url(
+            "permits:permit_request_select_types", permit_request
         )
-        properties_url = reverse_permit_request_url("permits:permit_request_properties")
-        appendices_url = reverse_permit_request_url("permits:permit_request_appendices")
-        geo_time_url = reverse_permit_request_url("permits:permit_request_geo_time")
-        actors_url = reverse_permit_request_url("permits:permit_request_actors")
-        submit_url = reverse_permit_request_url("permits:permit_request_submit")
-    else:
-        objects_types_url = (
-            properties_url
-        ) = appendices_url = actors_url = submit_url = geo_time_url = ""
+        if permit_request
+        else None,
+        completed=completed,
+        enabled=True,
+    )
 
+
+def get_objects_types_step(permit_request, enabled, works_types):
+    if permit_request and (
+        len(get_works_objects(permit_request.administrative_entity)) <= 1
+        # If there are default works objects types it means the object types can be
+        # automatically selected and so the step shouldn’t be visible
+        or get_default_works_object_types(
+            permit_request.administrative_entity,
+            works_types=works_types
+            or permit_request.works_object_types.values_list("works_type", flat=True)
+            or None,
+        )
+    ):
+        return None
+
+    return models.Step(
+        name=_("Objets"),
+        url=reverse_permit_request_url(
+            "permits:permit_request_select_objects", permit_request
+        )
+        if permit_request
+        else "",
+        completed=enabled,
+        enabled=enabled,
+    )
+
+
+def get_properties_step(permit_request, enabled):
     properties_form = (
         forms.WorksObjectsPropertiesForm(
             instance=permit_request, enable_required=True, disable_fields=True, data={}
         )
         if permit_request
         else None
+    )
+    properties_errors = len(properties_form.errors) if properties_form else 0
+    properties_url = (
+        reverse_permit_request_url("permits:permit_request_properties", permit_request)
+        if permit_request
+        else ""
+    )
+
+    return models.Step(
+        name=_("Détails"),
+        url=properties_url,
+        completed=enabled and properties_form and not properties_form.errors,
+        errors_count=properties_errors,
+        enabled=enabled,
+    )
+
+
+def get_geo_time_step(permit_request, enabled):
+    geo_time_errors = (
+        0
+        if permit_request is None
+        or models.PermitRequestGeoTime.objects.filter(
+            permit_request=permit_request
+        ).exists()
+        else 1
+    )
+    geo_time_url = (
+        reverse_permit_request_url("permits:permit_request_geo_time", permit_request)
+        if permit_request
+        else ""
+    )
+
+    return models.Step(
+        name=_("Agenda et plan"),
+        url=geo_time_url,
+        completed=geo_time_errors == 0,
+        errors_count=geo_time_errors,
+        enabled=enabled,
+    )
+
+
+def get_appendices_step(permit_request, enabled):
+    if permit_request and len(get_appendices(permit_request)) == 0:
+        return None
+
+    appendices_url = (
+        reverse_permit_request_url("permits:permit_request_appendices", permit_request)
+        if permit_request
+        else ""
     )
     appendices_form = (
         forms.WorksObjectsAppendicesForm(
@@ -469,99 +552,99 @@ def get_progressbar_steps(request, permit_request):
         if permit_request
         else None
     )
-
-    properties_errors = len(properties_form.errors) if properties_form else 0
     appendices_errors = len(appendices_form.errors) if appendices_form else 0
-    geo_time_errors = (
-        0
-        if models.PermitRequestGeoTime.objects.filter(
-            permit_request=permit_request
-        ).exists()
-        else 1
+
+    return (
+        models.Step(
+            name=_("Documents"),
+            url=appendices_url,
+            completed=enabled and appendices_errors == 0,
+            errors_count=appendices_errors,
+            enabled=enabled,
+        ),
     )
+
+
+def get_actors_step(permit_request, enabled):
+    if permit_request and len(get_permit_actor_types(permit_request)) == 0:
+        return None
+
     actor_errors = (
         len(get_missing_actors_types(permit_request)) if permit_request else 0
     )
-    total_errors = sum([properties_errors, appendices_errors, actor_errors])
+    actors_url = (
+        reverse_permit_request_url("permits:permit_request_actors", permit_request)
+        if permit_request
+        else ""
+    )
+    return models.Step(
+        name=_("Contacts"),
+        url=actors_url,
+        enabled=enabled,
+        errors_count=actor_errors,
+        completed=not actor_errors,
+    )
 
-    steps = {
-        "location": models.Step(
-            name=_("Entité"),
-            url=localisation_url,
-            completed=bool(permit_request),
-            enabled=True,
+
+def get_submit_step(permit_request, enabled, total_errors):
+    submit_url = (
+        reverse_permit_request_url("permits:permit_request_submit", permit_request)
+        if permit_request
+        else ""
+    )
+
+    return models.Step(
+        name=_("Résumé et envoi"),
+        url=submit_url,
+        enabled=enabled,
+        errors_count=total_errors,
+        completed=total_errors == 0,
+    )
+
+
+def get_progressbar_steps(request, permit_request):
+    """
+    Return a dict of `Step` items that can be used to track the user progress through
+    the permit request wizard.
+    """
+    has_objects_types = permit_request.works_object_types.exists()
+    selected_works_types = request.GET.getlist("types")
+
+    all_steps = {
+        models.StepType.LOCATION: get_location_step(permit_request),
+        models.StepType.WORKS_TYPES: get_works_types_step(
+            permit_request=permit_request,
+            completed=has_objects_types or selected_works_types,
         ),
-        "works_types": models.Step(
-            name=_("Type"),
-            url=works_types_url,
-            completed=has_objects_types or request.GET.getlist("types"),
-            enabled=True,
-        ),
-        "objects_types": models.Step(
-            name=_("Objets"),
-            url=objects_types_url,
-            completed=has_objects_types,
+        models.StepType.OBJECTS_TYPES: get_objects_types_step(
+            permit_request=permit_request,
             enabled=has_objects_types,
+            works_types=selected_works_types,
         ),
-        "properties": models.Step(
-            name=_("Détails"),
-            url=properties_url,
-            completed=has_objects_types
-            and properties_form
-            and not properties_form.errors,
-            errors_count=properties_errors,
-            enabled=has_objects_types,
+        models.StepType.PROPERTIES: get_properties_step(
+            permit_request=permit_request, enabled=has_objects_types
         ),
-        "geo_time": models.Step(
-            name=_("Agenda et plan"),
-            url=geo_time_url,
-            completed=geo_time_errors == 0,
-            errors_count=geo_time_errors,
-            enabled=has_objects_types,
+        models.StepType.GEO_TIME: get_geo_time_step(
+            permit_request=permit_request, enabled=has_objects_types
         ),
-        "appendices": models.Step(
-            name=_("Documents"),
-            url=appendices_url,
-            completed=has_objects_types
-            and appendices_form
-            and not appendices_form.errors,
-            errors_count=appendices_errors,
-            enabled=has_objects_types,
+        models.StepType.APPENDICES: get_appendices_step(
+            permit_request=permit_request, enabled=has_objects_types
         ),
-        "actors": models.Step(
-            name=_("Contacts"),
-            url=actors_url,
-            enabled=has_objects_types,
-            errors_count=actor_errors,
-            completed=not actor_errors,
-        ),
-        "submit": models.Step(
-            name=_("Résumé et envoi"),
-            url=submit_url,
-            enabled=has_objects_types,
-            errors_count=total_errors,
-            completed=total_errors == 0,
+        models.StepType.ACTORS: get_actors_step(
+            permit_request=permit_request, enabled=has_objects_types
         ),
     }
 
-    if permit_request:
-        works_object_types = (
-            permit_request.administrative_entity.works_object_types.all()
-        )
-        works_objects = {
-            works_object_type.works_object for works_object_type in works_object_types
-        }
-        works_types = {
-            works_object_type.works_type for works_object_type in works_object_types
-        }
+    total_errors = sum([step.errors_count for step in all_steps.values() if step])
+    all_steps[models.StepType.SUBMIT] = get_submit_step(
+        permit_request=permit_request,
+        enabled=has_objects_types,
+        total_errors=total_errors,
+    )
 
-        if len(works_objects) <= 1:
-            del steps["objects_types"]
-
-        if len(works_types) <= 1:
-            del steps["works_types"]
-
-    return steps
+    return {
+        step_type: step for step_type, step in all_steps.items() if step is not None
+    }
 
 
 def submit_permit_request(permit_request, absolute_uri_func):

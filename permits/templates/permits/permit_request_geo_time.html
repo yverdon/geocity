@@ -8,7 +8,7 @@
 {% endblock %}
 {% block content %}
 <div id="permit-request-geo-time">
-  {% permit_progressbar permit_request 'geo_time' %}
+  {% permit_progressbar permit_request StepType.GEO_TIME %}
   <h3>{{ config.GEO_TIME_STEP }}</h3>
   <hr>
   <form method="post">

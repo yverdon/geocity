@@ -3,9 +3,7 @@ import os.path
 
 from django import template
 from django.forms import modelformset_factory
-from permits import services, forms, models
 from django.utils.translation import gettext as _
-
 from permits import forms, models, services
 
 register = template.Library()

@@ -1,14 +1,10 @@
 import dataclasses
+import enum
 
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import JSONField
-from django.core.validators import (
-    FileExtensionValidator,
-    MaxValueValidator,
-    MinValueValidator,
-    RegexValidator,
-)
+from django.core.validators import FileExtensionValidator, MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -48,6 +44,30 @@ ACTION_POKE = "poke"
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
 ACTIONS = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE, ACTION_POKE]
+
+
+@dataclasses.dataclass
+class Step:
+    name: str
+    url: str
+    completed: bool = False
+    enabled: bool = False
+    errors_count: int = 0
+
+
+class StepType(enum.Enum):
+    WORKS_TYPES = "works_types"
+    OBJECTS_TYPES = "objects_types"
+    LOCATION = "location"
+    PROPERTIES = "properties"
+    GEO_TIME = "geo_time"
+    APPENDICES = "appendices"
+    ACTORS = "actors"
+    SUBMIT = "submit"
+
+
+# Required to be able to use the enum in Django templates
+StepType.do_not_call_in_templates = True
 
 
 class PermitDepartment(models.Model):
@@ -603,15 +623,6 @@ class PermitRequestValidation(models.Model):
 
     def is_pending(self):
         return self.validation_status == self.STATUS_REQUESTED
-
-
-@dataclasses.dataclass
-class Step:
-    name: str
-    url: str
-    completed: bool = False
-    enabled: bool = False
-    errors_count: int = 0
 
 
 class PermitRequestGeoTime(models.Model):

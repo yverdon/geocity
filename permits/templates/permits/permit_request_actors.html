@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block content %}
-  {% permit_progressbar permit_request 'actors' %}
+  {% permit_progressbar permit_request StepType.ACTORS %}
   <form method="post">
     {% csrf_token %}
     {{ formset.management_form }}

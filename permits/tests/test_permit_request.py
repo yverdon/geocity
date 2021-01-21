@@ -53,7 +53,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
                 "permits:permit_request_select_types",
                 kwargs={"permit_request_id": permit_request.pk},
             ),
-            data={"types": self.works_types[0].pk},
+            data={"types": [self.works_types[0].pk, self.works_types[1].pk]},
         )
 
         self.assertRedirects(
@@ -62,7 +62,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
                 "permits:permit_request_select_objects",
                 kwargs={"permit_request_id": permit_request.pk},
             )
-            + "?types={}".format(self.works_types[0].pk),
+            + "?types={}&types={}".format(
+                self.works_types[0].pk, self.works_types[1].pk
+            ),
         )
 
     def test_objects_step_without_qs_redirects_to_types_step(self):
@@ -177,11 +179,13 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         # This one should not receive the notification
         factories.SecretariatUserFactory(email="secretariat@lausanne.ch")
 
-        permit_request = factories.PermitRequestFactory(
-            administrative_entity=group.permitdepartment.administrative_entity,
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_DRAFT,
-        )
+        permit_request = factories.PermitRequestGeoTimeFactory(
+            permit_request=factories.PermitRequestFactory(
+                administrative_entity=group.permitdepartment.administrative_entity,
+                author=self.user.permitauthor,
+                status=models.PermitRequest.STATUS_DRAFT,
+            )
+        ).permit_request
         self.client.post(
             reverse(
                 "permits:permit_request_submit",

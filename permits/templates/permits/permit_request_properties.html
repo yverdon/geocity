@@ -4,7 +4,7 @@
 {% load permits_extras %}
 
 {% block content %}
-  {% permit_progressbar permit_request 'properties' %}
+  {% permit_progressbar permit_request StepType.PROPERTIES %}
   <h3>{{ config.PROPERTIES_STEP }} </h3>
   <hr>
   <form method="post">

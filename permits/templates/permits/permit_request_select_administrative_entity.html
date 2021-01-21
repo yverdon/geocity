@@ -5,7 +5,7 @@
 
 {% block content %}
   {% if permit_request %}
-    {% permit_progressbar permit_request 'location' %}
+    {% permit_progressbar permit_request StepType.LOCATION %}
   {% endif %}
   <h3>{{ config.LOCATION_STEP }}</h3>
   <hr>

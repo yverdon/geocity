@@ -1,10 +1,12 @@
+from datetime import timezone
+
 import factory
 import faker
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.gis.geos import GeometryCollection, Point
 from django.utils.text import Truncator
-
 from permits import models
 
 
@@ -239,4 +241,16 @@ class PermitRequestValidationFactory(factory.django.DjangoModelFactory):
     department = factory.SubFactory(PermitDepartmentFactory)
     permit_request = factory.SubFactory(
         PermitRequestFactory, status=models.PermitRequest.STATUS_AWAITING_VALIDATION
+    )
+
+
+class PermitRequestGeoTimeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitRequestGeoTime
+
+    permit_request = factory.SubFactory(PermitRequestFactory)
+    starts_at = factory.Faker("date_time", tzinfo=timezone.utc)
+    ends_at = factory.Faker("date_time", tzinfo=timezone.utc)
+    geom = factory.LazyFunction(
+        lambda: GeometryCollection(Point(faker.Faker().latlng()))
     )
