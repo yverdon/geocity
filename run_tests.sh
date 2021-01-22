@@ -1,5 +1,5 @@
 #!/bin/sh
-
+set -e
 # Save env variables
 if [ -f .env ]; then
   cp -f .env env.backup

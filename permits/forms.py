@@ -423,24 +423,18 @@ class PermitRequestActorForm(forms.ModelForm):
     first_name = forms.CharField(
         max_length=150,
         label=_("Prénom"),
-        widget=forms.TextInput(
-            attrs={"placeholder": "ex: Marcel", "required": "required"}
-        ),
+        widget=forms.TextInput(attrs={"placeholder": "ex: Marcel",}),
     )
     last_name = forms.CharField(
         max_length=100,
         label=_("Nom"),
-        widget=forms.TextInput(
-            attrs={"placeholder": "ex: Dupond", "required": "required"}
-        ),
+        widget=forms.TextInput(attrs={"placeholder": "ex: Dupond",}),
     )
     phone = forms.CharField(
         min_length=10,
         max_length=16,
         label=_("Téléphone"),
-        widget=forms.TextInput(
-            attrs={"placeholder": "ex: 024 111 22 22", "required": "required"}
-        ),
+        widget=forms.TextInput(attrs={"placeholder": "ex: 024 111 22 22",}),
         validators=[
             RegexValidator(
                 regex=r"^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
@@ -453,9 +447,7 @@ class PermitRequestActorForm(forms.ModelForm):
     email = forms.EmailField(
         max_length=100,
         label=_("Email"),
-        widget=forms.TextInput(
-            attrs={"placeholder": "ex: example@example.com", "required": "required"}
-        ),
+        widget=forms.TextInput(attrs={"placeholder": "ex: example@example.com",}),
     )
     address = forms.CharField(
         max_length=100,
@@ -473,7 +465,6 @@ class PermitRequestActorForm(forms.ModelForm):
                         "placeholder": "ex: Place Pestalozzi 2 Yverdon",
                     }
                 ),
-                "required": "required",
             }
         ),
     )
@@ -481,14 +472,12 @@ class PermitRequestActorForm(forms.ModelForm):
     zipcode = forms.IntegerField(
         label=_("NPA"),
         validators=[MinValueValidator(1000), MaxValueValidator(9999)],
-        widget=forms.NumberInput(attrs={"required": "required"}),
+        widget=forms.NumberInput(),
     )
     city = forms.CharField(
         max_length=100,
         label=_("Ville"),
-        widget=forms.TextInput(
-            attrs={"placeholder": "ex: Yverdon", "required": "required"}
-        ),
+        widget=forms.TextInput(attrs={"placeholder": "ex: Yverdon",}),
     )
     company_name = forms.CharField(
         required=False,

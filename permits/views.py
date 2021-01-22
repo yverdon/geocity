@@ -603,7 +603,8 @@ def permit_request_actors(request, permit_request_id):
         )
         if formset.is_valid() and creditorform.is_valid():
             for form in formset:
-                form.save(permit_request=permit_request)
+                if form.has_changed():
+                    form.save(permit_request=permit_request)
             models.PermitRequest.objects.filter(pk=permit_request_id).update(
                 creditor_type=creditorform.instance.creditor_type
             )
