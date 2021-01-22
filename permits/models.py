@@ -201,15 +201,15 @@ class PermitAuthor(models.Model):
 class PermitActor(models.Model):
     """Contacts"""
 
-    first_name = models.CharField(_("Prénom"), max_length=150, blank=True)
-    last_name = models.CharField(_("Nom"), max_length=100, blank=True)
+    first_name = models.CharField(_("Prénom"), max_length=150,)
+    last_name = models.CharField(_("Nom"), max_length=100,)
     company_name = models.CharField(_("Entreprise"), max_length=100, blank=True)
     vat_number = models.CharField(_("Numéro TVA"), max_length=19, blank=True,)
-    address = models.CharField(_("Adresse"), max_length=100, blank=True)
-    zipcode = models.PositiveIntegerField(_("NPA"), blank=True)
-    city = models.CharField(_("Ville"), max_length=100, blank=True)
-    phone = models.CharField(_("Téléphone"), max_length=20, blank=True)
-    email = models.EmailField(_("Email"), blank=True)
+    address = models.CharField(_("Adresse"), max_length=100,)
+    zipcode = models.PositiveIntegerField(_("NPA"),)
+    city = models.CharField(_("Ville"), max_length=100,)
+    phone = models.CharField(_("Téléphone"), max_length=20,)
+    email = models.EmailField(_("Email"),)
     history = HistoricalRecords()
 
     class Meta:
