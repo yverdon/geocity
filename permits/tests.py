@@ -60,6 +60,16 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         models.WorksObjectType.objects.create(
             works_type=self.works_types[1], works_object=self.works_objects[1]
         )
+        models.PermitActorType.objects.create(
+            type = models.ACTOR_TYPE_OTHER,
+            is_mandatory = True,
+            works_type = self.works_types[0],
+        )
+        models.PermitActorType.objects.create(
+            type = models.ACTOR_TYPE_REQUESTOR,
+            is_mandatory = False,
+            works_type = self.works_types[1],
+        )
 
     def test_types_step_submit_redirects_to_objects_with_types_qs(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
@@ -150,6 +160,32 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             response,
             reverse(
                 "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+
+    def test_non_required_actors_can_be_left_blank(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory.create_batch(
+            3, permit_request=permit_request
+        )
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactory()
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_actors",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "permits:permit_request_submit",
                 kwargs={"permit_request_id": permit_request.pk},
             ),
         )
