@@ -60,16 +60,6 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         models.WorksObjectType.objects.create(
             works_type=self.works_types[1], works_object=self.works_objects[1]
         )
-        models.PermitActorType.objects.create(
-            type = models.ACTOR_TYPE_OTHER,
-            is_mandatory = True,
-            works_type = self.works_types[0],
-        )
-        models.PermitActorType.objects.create(
-            type = models.ACTOR_TYPE_REQUESTOR,
-            is_mandatory = False,
-            works_type = self.works_types[1],
-        )
 
     def test_types_step_submit_redirects_to_objects_with_types_qs(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
@@ -164,32 +154,6 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             ),
         )
 
-    def test_non_required_actors_can_be_left_blank(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        factories.WorksObjectTypeChoiceFactory.create_batch(
-            3, permit_request=permit_request
-        )
-        permit_request.administrative_entity.works_object_types.set(
-            permit_request.works_object_types.all()
-        )
-        prop = factories.WorksObjectPropertyFactory()
-        prop.works_object_types.set(permit_request.works_object_types.all())
-
-        response = self.client.post(
-            reverse(
-                "permits:permit_request_actors",
-                kwargs={"permit_request_id": permit_request.pk},
-            )
-        )
-
-        self.assertRedirects(
-            response,
-            reverse(
-                "permits:permit_request_submit",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-        )
-
     def test_user_can_only_see_own_requests(self):
         permit_request = factories.PermitRequestFactory(
             author=factories.UserFactory().permitauthor
@@ -247,6 +211,96 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         self.assertEqual(len(emails), 1)
         self.assertEqual(emails[0].to, ["secretariat@yverdon.ch"])
+
+
+class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
+    def setUp(self):
+        super().setUp()
+        self.works_types = factories.WorksTypeFactory.create_batch(1)
+        self.works_objects = factories.WorksObjectFactory.create_batch(1)
+        models.WorksObjectType.objects.create(
+            works_type=self.works_types[0], works_object=self.works_objects[0]
+        )
+        actor_required = models.PermitActorType.objects.create(
+            type = models.ACTOR_TYPE_OTHER,
+            is_mandatory = True,
+            works_type = self.works_types[0],
+        )
+
+        self.test_formset_data = {
+                    'form-TOTAL_FORMS': ['1'],
+                    'form-INITIAL_FORMS': ['0'],
+                    'form-MIN_NUM_FORMS': ['0'],
+                    'form-MAX_NUM_FORMS': ['1000'],
+                    'creditor_type': [''],
+                    'form-0-actor_type': ['0'],
+                    'form-0-first_name': ['John'],
+                    'form-0-last_name': ['Doe'],
+                    'form-0-phone': ['000 000 00 00'],
+                    'form-0-email': ['john@doe.com'],
+                    'form-0-address': ['Main street 1'],
+                    'form-0-zipcode': ['2000'],
+                    'form-0-city': ['City'],
+                    'form-0-company_name': [''],
+                    'form-0-vat_number': [''],
+                    'form-0-id': ['']
+        }
+
+
+    def test_permitrequestactor_creates(self):
+
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor,
+            status=models.PermitRequest.STATUS_DRAFT)
+
+        factories.WorksObjectTypeChoiceFactory.create_batch(
+            1, permit_request=permit_request
+        )
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactory()
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_actors",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            follow=True,
+            data=self.test_formset_data,
+        )
+        permit_request_actor = models.PermitRequestActor.objects.first()
+        self.assertEqual(permit_request_actor.actor.first_name, 'John')
+        self.assertEqual(permit_request_actor.permit_request, permit_request)
+
+    def test_permitrequestactor_required_cannot_have_empty_field(self):
+
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor,
+            status=models.PermitRequest.STATUS_DRAFT)
+
+        factories.WorksObjectTypeChoiceFactory.create_batch(
+            1, permit_request=permit_request
+        )
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactory()
+        prop.works_object_types.set(permit_request.works_object_types.all())
+        self.test_formset_data['form-0-last_name'] = ''
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_actors",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            follow=True,
+            data=self.test_formset_data,
+        )
+
+        # Check that if form not valid, it does not redirect
+        self.assertEqual(response.status_code, 200)
 
 
 class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
