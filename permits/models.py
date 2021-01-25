@@ -49,6 +49,7 @@ ACTION_POKE = "poke"
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
 ACTIONS = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE, ACTION_POKE]
+AMEND_CUSTOM_FIELDS_PREFIX = "amend_custom_field_"
 
 
 @dataclasses.dataclass
@@ -374,20 +375,9 @@ class PermitRequest(models.Model):
     actors = models.ManyToManyField(
         "PermitActor", related_name="+", through=PermitRequestActor
     )
-    archeology_status = models.PositiveSmallIntegerField(
-        _("Statut archéologique"),
-        choices=ARCHEOLOGY_STATUS_CHOICES,
-        default=ARCHEOLOGY_STATUS_IRRELEVANT,
-    )
     intersected_geometries = models.TextField(
         _("Entités géométriques concernées"), max_length=1024, null=True
     )
-    price = models.DecimalField(
-        _("Émolument"), decimal_places=2, max_digits=7, null=True, blank=True
-    )
-    exemption = models.TextField(_("Dérogation"), blank=True)
-    opposition = models.TextField(_("Opposition"), blank=True)
-    comment = models.TextField(_("Analyse du service pilote"), blank=True)
     validation_pdf = fields.PermitRequestFileField(
         _("pdf de validation"),
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
@@ -401,6 +391,7 @@ class PermitRequest(models.Model):
     )
     is_public = models.BooleanField(_("Publier"), default=False)
     history = HistoricalRecords()
+    amend_custom_properties = JSONField(default=dict)
 
     class Meta:
         verbose_name = _("3.1 Consultation de la demande")
@@ -706,3 +697,22 @@ class PermitWorkflowStatus(models.Model):
         verbose_name = _("Status disponible pour l'entité administrative")
         verbose_name_plural = _("Status disponibles pour l'entité administratives")
         unique_together = ("status", "administrative_entity")
+
+
+class PermitRequestAmendProperty(models.Model):
+    name = models.CharField(_("nom"), max_length=255)
+    is_mandatory = models.BooleanField(_("obligatoire"), default=False)
+    works_object_types = models.ManyToManyField(
+        WorksObjectType,
+        verbose_name=_("objets des travaux"),
+        related_name="%(class)s_properties",
+    )
+
+    class Meta:
+        verbose_name = _("2.2 Configuration de champ de traitement de demande")
+        verbose_name_plural = _(
+            "2.2 Configuration des champs de traitement des demandes"
+        )
+
+    def __str__(self):
+        return self.name

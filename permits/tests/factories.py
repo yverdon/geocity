@@ -274,3 +274,10 @@ class PermitRequestGeoTimeFactory(factory.django.DjangoModelFactory):
     geom = factory.LazyFunction(
         lambda: GeometryCollection(Point(faker.Faker().latlng()))
     )
+
+
+class PermitRequestAmendPropertyFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitRequestAmendProperty
+
+    name = factory.Faker("word")

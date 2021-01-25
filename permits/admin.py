@@ -30,6 +30,18 @@ def works_object_type_administrative_entities(obj):
     )
 
 
+def get_works_object_type():
+    return WorksObjectTypeWithAdministrativeEntities(
+        queryset=(
+            models.WorksObjectType.objects.select_related("works_object", "works_type")
+            .order_by("works_object__name", "works_type__name")
+            .prefetch_related("administrative_entities")
+        ),
+        widget=forms.CheckboxSelectMultiple,
+        label=_("objets des travaux").capitalize(),
+    )
+
+
 works_object_type_administrative_entities.short_description = _("Communes")
 
 
@@ -55,15 +67,7 @@ class WorksObjectTypeWithAdministrativeEntities(forms.ModelMultipleChoiceField):
 
 
 class WorksObjectPropertyForm(forms.ModelForm):
-    works_object_types = WorksObjectTypeWithAdministrativeEntities(
-        queryset=(
-            models.WorksObjectType.objects.select_related("works_object", "works_type")
-            .order_by("works_object__name", "works_type__name")
-            .prefetch_related("administrative_entities")
-        ),
-        widget=forms.CheckboxSelectMultiple,
-        label=_("objets des travaux").capitalize(),
-    )
+    works_object_types = get_works_object_type()
 
     class Meta:
         model = models.WorksObjectProperty
@@ -150,8 +154,29 @@ class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
     ]
 
 
+class PermitRequestAmendPropertyForm(forms.ModelForm):
+    works_object_types = get_works_object_type()
+
+    class Meta:
+        model = models.PermitRequestAmendProperty
+        fields = ["name", "is_mandatory", "works_object_types"]
+
+
+class PermitRequestAmendPropertyAdmin(admin.ModelAdmin):
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.short_description = (
+        "2.2 Configuration des champs de traitement des demandes"
+    )
+    sortable_str.admin_order_field = "name"
+    list_display = ["sortable_str", "is_mandatory"]
+    form = PermitRequestAmendPropertyForm
+
+
 admin.site.register(models.PermitRequest, PermitRequestHistoryAdmin)
 admin.site.register(models.WorksObjectType, WorksObjectTypeAdmin)
 admin.site.register(models.WorksObjectProperty, WorksObjectPropertyAdmin)
 admin.site.register(models.PermitAdministrativeEntity, PermitAdministrativeEntityAdmin)
 admin.site.register(models.WorksObject, WorksObjectAdmin)
+admin.site.register(models.PermitRequestAmendProperty, PermitRequestAmendPropertyAdmin)

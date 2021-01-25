@@ -589,21 +589,13 @@ class PermitRequestActorForm(forms.ModelForm):
 
 
 class PermitRequestAdditionalInformationForm(forms.ModelForm):
+    required_css_class = "required"
+
     class Meta:
         model = models.PermitRequest
-        fields = [
-            "is_public",
-            "status",
-            "price",
-            "exemption",
-            "opposition",
-            "comment",
-            "archeology_status",
-        ]
+        fields = ["is_public", "status", "amend_custom_properties"]
         widgets = {
-            "exemption": forms.Textarea(attrs={"rows": 3}),
-            "opposition": forms.Textarea(attrs={"rows": 3}),
-            "comment": forms.Textarea(attrs={"rows": 3}),
+            "amend_custom_properties": forms.HiddenInput(),
         }
 
     def __init__(self, *args, **kwargs):
@@ -628,6 +620,34 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                 if any(i in el for i in available_statuses_for_administrative_entity)
             ]
             self.fields["status"].choices = tuple(filter2)
+
+            for field in services.get_permit_request_amend_custom_properties(
+                self.instance
+            ):
+                field_name = f"{models.AMEND_CUSTOM_FIELDS_PREFIX}{field.id}"
+                self.fields[field_name] = forms.CharField(
+                    label=field.name,
+                    required=False,
+                    widget=forms.Textarea(attrs={"rows": 3,}),
+                )
+                if field.is_mandatory:
+                    self.fields[field_name].required = True
+            self.fields["amend_custom_properties"].required = False
+
+    def save(self, commit=True):
+        permit_request = super().save(commit=False)
+
+        prefix = models.AMEND_CUSTOM_FIELDS_PREFIX
+        amend_props = {}
+        for key, value in self.cleaned_data.items():
+            if key.startswith(prefix) and value:
+                amend_props[key[len(prefix) :]] = value
+        permit_request.amend_custom_properties = amend_props
+
+        if commit:
+            permit_request.save()
+
+        return permit_request
 
 
 # extend django gis osm openlayers widget

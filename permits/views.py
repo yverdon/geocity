@@ -243,6 +243,10 @@ class PermitRequestDetailView(View):
                 == models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
                 else {}
             )
+            for key, value in self.permit_request.amend_custom_properties.items():
+                initial[f"{models.AMEND_CUSTOM_FIELDS_PREFIX}{key}"] = (
+                    value if value else ""
+                )
 
             form = forms.PermitRequestAdditionalInformationForm(
                 instance=self.permit_request, initial=initial, data=data

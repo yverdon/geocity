@@ -753,42 +753,57 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             administrative_entity=self.administrative_entity,
             author=user.permitauthor,
         )
-        self.client.post(
+        response = self.client.post(
             reverse(
                 "permits:permit_request_detail",
                 kwargs={"permit_request_id": permit_request.pk},
             ),
             data={
-                "price": 300,
                 "status": models.PermitRequest.STATUS_PROCESSING,
                 "action": models.ACTION_AMEND,
             },
         )
 
         permit_request.refresh_from_db()
-
-        self.assertIsNone(permit_request.price)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            permit_request.status, models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
+        )
 
     def test_secretariat_can_amend_request(self):
+        models.WorksObjectType.objects.create(
+            works_type=factories.WorksTypeFactory.create(),
+            works_object=factories.WorksObjectFactory.create(),
+        )
+        amend_property = factories.PermitRequestAmendPropertyFactory.create()
+        amend_property.works_object_types.set(models.WorksObjectType.objects.all())
+
         permit_request = factories.PermitRequestFactory(
             status=models.PermitRequest.STATUS_PROCESSING,
             administrative_entity=self.administrative_entity,
+            amend_custom_properties={"6": "I'm a custom property"},
         )
+        permit_request.works_object_types.set(models.WorksObjectType.objects.all())
+
         self.client.post(
             reverse(
                 "permits:permit_request_detail",
                 kwargs={"permit_request_id": permit_request.pk},
             ),
             data={
-                "price": 300,
-                "status": models.PermitRequest.STATUS_PROCESSING,
+                "status": models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+                f"{models.AMEND_CUSTOM_FIELDS_PREFIX}{amend_property.works_object_types.first().pk}": "So I decided to change",
                 "action": models.ACTION_AMEND,
-                "archeology_status": models.PermitRequest.ARCHEOLOGY_STATUS_IRRELEVANT,
             },
         )
 
         permit_request.refresh_from_db()
-        self.assertEqual(permit_request.price, 300)
+        self.assertTrue(
+            "So I decided to change" in permit_request.amend_custom_properties.values()
+        )
+        self.assertFalse(
+            "I'm a custom property" in permit_request.amend_custom_properties.values()
+        )
 
     def test_secretariat_can_see_submitted_requests(self):
         permit_request = factories.PermitRequestFactory(
@@ -800,9 +815,11 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(list(response.context["permitrequest_list"]), [permit_request])
 
     def test_ask_for_supplements_shows_specific_message(self):
+        user = factories.UserFactory()
         permit_request = factories.PermitRequestFactory(
             status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
             administrative_entity=self.administrative_entity,
+            author=user.permitauthor,
         )
         response = self.client.post(
             reverse(
@@ -828,7 +845,10 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
                 "permits:permit_request_detail",
                 kwargs={"permit_request_id": permit_request.pk},
             ),
-            data={"price": 200, "action": models.ACTION_AMEND},
+            data={
+                "status": models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+                "action": models.ACTION_AMEND,
+            },
         )
 
         self.assertEqual(response.status_code, 400)

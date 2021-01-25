@@ -1109,6 +1109,17 @@ def get_actions_for_administrative_entity(permit_request):
     return distinct_available_actions
 
 
+def get_permit_request_amend_custom_properties(permit_request):
+
+    works_object_types = permit_request.works_object_types.order_by(
+        "works_object__name", "works_type__name"
+    )
+
+    return models.PermitRequestAmendProperty.objects.filter(
+        works_object_types__in=works_object_types
+    ).order_by("name")
+
+
 def get_default_works_object_types(administrative_entity, works_types=None):
     """
     Return the `WorksObjectType` that should be automatically selected for the given
