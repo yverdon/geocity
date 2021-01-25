@@ -54,6 +54,7 @@ ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 
 # Application definition
 INSTALLED_APPS = [
+    "adminsortable2",
     "grappelli",
     "django.contrib.admin",
     "django.contrib.auth",

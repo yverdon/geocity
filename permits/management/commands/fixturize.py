@@ -208,7 +208,7 @@ class Command(BaseCommand):
                 name="Hauteur [m]", input_type="number", is_mandatory=True
             ),
             "plan": models.WorksObjectProperty.objects.create(
-                name="Plan de situation", input_type="file", is_mandatory=True
+                name="Plan de situation", input_type="file", is_mandatory=True,
             ),
             "adresse": models.WorksObjectProperty.objects.create(
                 name="Adresse", input_type="address", is_mandatory=True

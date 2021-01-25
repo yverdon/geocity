@@ -21,6 +21,7 @@ whitenoise
 tablib
 pycairo
 python-dotenv
+django-admin-sortable2
 django-grappelli
 django-simple-history
 djangorestframework
