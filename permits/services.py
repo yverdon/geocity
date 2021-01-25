@@ -430,7 +430,7 @@ def get_total_error_count(permit_request):
 #########
 
 
-def get_location_step(permit_request):
+def get_administrative_entity_step(permit_request):
     return models.Step(
         name=_("Entité"),
         url=reverse_permit_request_url(
@@ -492,14 +492,30 @@ def get_works_objects_step(permit_request, enabled, works_types):
         ):
             return None
 
+    # If the user is editing a permit request and the administrative entity only has 1
+    # works type, there won’t be a works type step, so the works object step should have
+    # it in the URL
+    if permit_request and not works_types:
+        administrative_entity_works_types = permit_request.administrative_entity.works_object_types.values_list(
+            "works_type", flat=True
+        ).distinct()
+
+        if len(administrative_entity_works_types) == 1:
+            works_types = administrative_entity_works_types
+
+    works_types_qs = (
+        urllib.parse.urlencode({"types": works_types}, doseq=True,)
+        if works_types
+        else ""
+    )
+
     return models.Step(
         name=_("Objets"),
         url=(
             reverse_permit_request_url(
                 "permits:permit_request_select_objects", permit_request
             )
-            + "?"
-            + urllib.parse.urlencode({"types": works_types}, doseq=True,)
+            + (f"?{works_types_qs}" if works_types_qs else "")
         )
         if permit_request
         else "",
@@ -623,7 +639,8 @@ def get_submit_step(permit_request, enabled, total_errors):
 def get_progress_bar_steps(request, permit_request):
     """
     Return a dict of `Step` items that can be used to track the user progress through
-    the permit request wizard.
+    the permit request wizard. The dict only contains reachable steps (which don’t
+    necessarily have a `url` though, eg. before selecting the administrative entity).
     """
     has_works_objects_types = (
         permit_request.works_object_types.exists() if permit_request else False
@@ -631,7 +648,9 @@ def get_progress_bar_steps(request, permit_request):
     selected_works_types = request.GET.getlist("types")
 
     all_steps = {
-        models.StepType.LOCATION: get_location_step(permit_request),
+        models.StepType.ADMINISTRATIVE_ENTITY: get_administrative_entity_step(
+            permit_request
+        ),
         models.StepType.WORKS_TYPES: get_works_types_step(
             permit_request=permit_request,
             completed=has_works_objects_types or selected_works_types,
@@ -675,6 +694,16 @@ def get_previous_step(steps, current_step):
     return list(
         itertools.takewhile(lambda step: step[0] != current_step, steps.items())
     )[-1][1]
+
+
+def get_next_step(steps, current_step):
+    """
+    Return the next step in the list or raise `IndexError` if there’s no such
+    step.
+    """
+    return list(
+        itertools.dropwhile(lambda step: step[0] != current_step, steps.items())
+    )[1][1]
 
 
 def submit_permit_request(permit_request, absolute_uri_func):

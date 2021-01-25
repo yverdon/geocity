@@ -64,7 +64,6 @@ class StepType(enum.Enum):
     ADMINISTRATIVE_ENTITY = "administrative_entity"
     WORKS_TYPES = "works_types"
     WORKS_OBJECTS = "works_objects"
-    LOCATION = "location"
     PROPERTIES = "properties"
     GEO_TIME = "geo_time"
     APPENDICES = "appendices"

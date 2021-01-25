@@ -89,6 +89,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
     def test_objects_step_submit_saves_selected_object_types(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        # Create another works object type so that the works object step is not skipped
+        factories.WorksObjectTypeFactory(works_type=self.works_types[0])
+
         works_object_type = models.WorksObjectType.objects.first()
         permit_request.administrative_entity.works_object_types.set(
             models.WorksObjectType.objects.all()
