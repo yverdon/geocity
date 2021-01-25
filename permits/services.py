@@ -256,7 +256,7 @@ def get_property_value(object_property_value):
         object_property_value.property.input_type
         == models.WorksObjectProperty.INPUT_TYPE_DATE
     ):
-        value = parse_date(value)
+        return parse_date(value)
 
     elif (
         object_property_value.property.input_type

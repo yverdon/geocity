@@ -231,12 +231,6 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
             field_instance = field_class(
                 **self.get_field_kwargs(prop),
                 widget=DatePickerInput(
-                    attrs={
-                        "oninvalid": "this.setCustomValidity('{}')".format(
-                            _("Ce champ est obligatoire.")
-                        ),
-                        "required": prop.is_mandatory,
-                    },
                     options={
                         "format": "DD/MM/YYYY",
                         "locale": "fr-ch",
@@ -261,19 +255,13 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
 
     def save(self):
         for works_object_type, prop in self.get_properties():
+            value = self.cleaned_data[self.get_field_name(works_object_type, prop)]
             services.set_object_property_value(
                 permit_request=self.instance,
                 object_type=works_object_type,
                 prop=prop,
-                value=self.cleaned_data[self.get_field_name(works_object_type, prop)],
+                value=value.isoformat() if isinstance(value, date) else value,
             )
-
-    def clean(self):
-        cleaned_data = super().clean()
-        for key, value in cleaned_data.items():
-            if isinstance(value, date):
-                cleaned_data[key] = value.isoformat()
-        return cleaned_data
 
 
 class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):

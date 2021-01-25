@@ -237,8 +237,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             data=data,
         )
         parser = get_parser(response.content)
-        parser.select(".invalid-feedback")
-        self.assertEqual(1, len(parser.select(".invalid-feedback")))
+        self.assertEqual(len(parser.select(".invalid-feedback")), 1)
 
 
 class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
@@ -359,16 +358,14 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
         )
 
     def test_properties_step_submit_updates_permit_request_with_date(self):
-        new_prop = factories.WorksObjectPropertyFactory(
-            input_type=models.WorksObjectProperty.INPUT_TYPE_DATE
+
+        date_prop = factories.WorksObjectPropertyFactory(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_DATE, name="date"
         )
-        new_prop.works_object_types.set(self.permit_request.works_object_types.all())
-        data = {
-            "properties-{}_{}".format(
-                works_object_type.pk, new_prop.pk
-            ): date.today().isoformat()
-            for works_object_type in self.permit_request.works_object_types.all()
-        }
+        today_iso = date.today().isoformat()
+        works_object_type = self.permit_request.works_object_types.first()
+        date_prop.works_object_types.set([works_object_type])
+        data = {f"properties-{works_object_type.pk}_{date_prop.pk}": today_iso}
         self.client.post(
             reverse(
                 "permits:permit_request_properties",
@@ -376,14 +373,12 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
             ),
             data=data,
         )
+
         self.assertEqual(
-            set(
-                item["val"]
-                for item in services.get_properties_values(
-                    self.permit_request
-                ).values_list("value", flat=True)
-            ),
-            set(data.values()),
+            services.get_properties_values(self.permit_request)
+            .get(property__name="date")
+            .value,
+            {"val": today_iso},
         )
 
 
