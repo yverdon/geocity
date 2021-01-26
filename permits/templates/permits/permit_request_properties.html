@@ -9,7 +9,7 @@
   <hr>
   <form method="post">
     {% csrf_token %}
-
+    {{ permit_request_form.media }}
     {% for object_type, fields in object_types %}
       <h4>{{ object_type }}</h4>
       {% for field in fields %}

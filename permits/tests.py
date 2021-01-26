@@ -7,6 +7,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from datetime import date
 
 from . import factories, models, services, views
 
@@ -212,6 +213,32 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(len(emails), 1)
         self.assertEqual(emails[0].to, ["secretariat@yverdon.ch"])
 
+    def test_missing_mandatory_date_property_gives_invalid_feedback(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory(permit_request=permit_request)
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactory(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_DATE, is_mandatory=True
+        )
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        data = {
+            "properties-{}_{}".format(works_object_type.pk, prop.pk): ""
+            for works_object_type in permit_request.works_object_types.all()
+        }
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=data,
+        )
+        parser = get_parser(response.content)
+        self.assertEqual(len(parser.select(".invalid-feedback")), 1)
+
 
 class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
@@ -328,6 +355,33 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
                 ).values_list("value", flat=True)
             ),
             set(data.values()),
+        )
+
+    def test_properties_step_submit_updates_permit_request_with_date(self):
+
+        date_prop = factories.WorksObjectPropertyFactory(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_DATE, name="datum"
+        )
+        today_iso = date.today().isoformat()
+        works_object_type = self.permit_request.works_object_types.first()
+        date_prop.works_object_types.set([works_object_type])
+        data = {f"properties-{works_object_type.pk}_{date_prop.pk}": today_iso}
+        self.client.post(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            ),
+            data=data,
+        )
+
+        prop_val = services.get_properties_values(self.permit_request).get(
+            property__name="datum"
+        )
+        self.assertEqual(
+            prop_val.value, {"val": today_iso},
+        )
+        self.assertEqual(
+            prop_val.property.input_type, models.WorksObjectProperty.INPUT_TYPE_DATE,
         )
 
 

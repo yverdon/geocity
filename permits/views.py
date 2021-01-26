@@ -549,7 +549,11 @@ def permit_request_properties(request, permit_request_id):
     return render(
         request,
         "permits/permit_request_properties.html",
-        {"permit_request": permit_request, "object_types": fields_by_object_type,},
+        {
+            "permit_request": permit_request,
+            "object_types": fields_by_object_type,
+            "permit_request_form": form,
+        },
     )
 
 
