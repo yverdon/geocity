@@ -204,7 +204,7 @@ class PermitActor(models.Model):
     first_name = models.CharField(_("Prénom"), max_length=150,)
     last_name = models.CharField(_("Nom"), max_length=100,)
     company_name = models.CharField(_("Entreprise"), max_length=100, blank=True)
-    vat_number = models.CharField(_("Numéro TVA"), max_length=19, blank=True,)
+    vat_number = models.CharField(_("Numéro TVA"), max_length=19, blank=True)
     address = models.CharField(_("Adresse"), max_length=100,)
     zipcode = models.PositiveIntegerField(_("NPA"),)
     city = models.CharField(_("Ville"), max_length=100,)
