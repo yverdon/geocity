@@ -252,9 +252,7 @@ class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
             author=self.user.permitauthor, status=models.PermitRequest.STATUS_DRAFT
         )
 
-        factories.WorksObjectTypeChoiceFactory.create_batch(
-            1, permit_request=permit_request
-        )
+        factories.WorksObjectTypeChoiceFactory(permit_request=permit_request)
         permit_request.administrative_entity.works_object_types.set(
             permit_request.works_object_types.all()
         )
@@ -266,7 +264,6 @@ class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
                 "permits:permit_request_actors",
                 kwargs={"permit_request_id": permit_request.pk},
             ),
-            follow=True,
             data=self.test_formset_data,
         )
         permit_request_actor = models.PermitRequestActor.objects.first()

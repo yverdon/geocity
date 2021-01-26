@@ -333,14 +333,26 @@ def get_permit_requests_list_for_user(user):
         )
 
 
+def get_actors_types(permit_request):
+    return models.PermitActorType.objects.filter(
+        works_type__in=get_permit_request_works_types(permit_request)
+    ).values_list("type", "is_mandatory")
+
+
+def get_missing_actors_types(permit_request):
+    existing_actor_types = set(
+        permit_request.permit_request_actors.values_list("actor_type", flat=True)
+    )
+    required_actor_types = set(actor_type for actor_type, is_mandatory in get_actors_types(permit_request) if is_mandatory)
+
+    return required_actor_types - existing_actor_types
+
+
 def get_permitactorformset_initiated(permit_request, data=None):
-    """
-    Return PermitActorFormSet with initial values set
-    """
-    configured_actor_types = get_all_configured_actors_types(permit_request)
-    actor_initial_forms = [
-        {"actor_type": actor_type} for actor_type in configured_actor_types
-    ]
+    
+    configured_actor_types = get_actors_types(permit_request)
+
+    actor_initial_forms = [{"actor_type": actor_type[0]} for actor_type in configured_actor_types]
 
     PermitActorFormSet = modelformset_factory(
         models.PermitRequestActor,
@@ -356,49 +368,12 @@ def get_permitactorformset_initiated(permit_request, data=None):
         data=data,
     )
 
-    required_actor_types = models.PermitActorType.objects.filter(
-        works_type__in=get_permit_request_works_types(permit_request)
-    ).values("type", "is_mandatory")
+    mandatory_actor_types = {actor_type for actor_type, is_mandatory in configured_actor_types if is_mandatory}
 
     for form in formset:
-        for actor_type in required_actor_types:
-            if form.initial["actor_type"] == actor_type["type"]:
-                form.empty_permitted = not actor_type["is_mandatory"]
-
+        form.empty_permitted = form.initial["actor_type"] not in mandatory_actor_types
+    
     return formset
-
-
-def get_missing_actors_types(permit_request):
-    """
-    Return PermitRequestActor yet to be filled
-    """
-    existing_actor_types = set(
-        permit_request.permit_request_actors.values_list("actor_type", flat=True)
-    )
-    required_actor_types = set(
-        models.PermitActorType.objects.filter(
-            works_type__in=get_permit_request_works_types(permit_request),
-            is_mandatory=True,
-        ).values_list("type", flat=True)
-    )
-
-    return required_actor_types - existing_actor_types
-
-
-def get_all_configured_actors_types(permit_request):
-    """
-    Return PermitRequestActor yet to be filled
-    """
-    existing_actor_types = set(
-        permit_request.permit_request_actors.values_list("actor_type", flat=True)
-    )
-    required_actor_types = set(
-        models.PermitActorType.objects.filter(
-            works_type__in=get_permit_request_works_types(permit_request)
-        ).values_list("type", flat=True)
-    )
-
-    return required_actor_types - existing_actor_types
 
 
 def get_total_error_count(permit_request):
@@ -412,7 +387,7 @@ def get_total_error_count(permit_request):
         instance=permit_request, enable_required=True, disable_fields=True, data={}
     )
 
-    missing_actor_types = get_missing_actors_types(permit_request)
+    missing_actor_types = get_missing_actors_types(permit_request, is_mandatory=True)
 
     actor_errors = [
         _('Contact de type "%s" manquant.') % models.ACTOR_TYPE_CHOICES[actor_type][1]

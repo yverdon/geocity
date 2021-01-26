@@ -175,7 +175,7 @@ class PermitActorFactory(factory.django.DjangoModelFactory):
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")
     email = factory.Faker("email")
-    address = factory.Faker("word")
+    address = factory.Faker("street_address")
     zipcode = factory.Faker("zipcode")
     city = factory.Faker("city")
     phone = Truncator(factory.Faker("phone_number")).chars(19)
