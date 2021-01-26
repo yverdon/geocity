@@ -255,12 +255,11 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
 
     def save(self):
         for works_object_type, prop in self.get_properties():
-            value = self.cleaned_data[self.get_field_name(works_object_type, prop)]
             services.set_object_property_value(
                 permit_request=self.instance,
                 object_type=works_object_type,
                 prop=prop,
-                value=value.isoformat() if isinstance(value, date) else value,
+                value=self.cleaned_data[self.get_field_name(works_object_type, prop)],
             )
 
 

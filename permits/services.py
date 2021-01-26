@@ -40,6 +40,7 @@ def set_object_property_value(permit_request, object_type, prop, value):
         property=prop,
     )
     is_file = prop.input_type == models.WorksObjectProperty.INPUT_TYPE_FILE
+    is_date = prop.input_type == models.WorksObjectProperty.INPUT_TYPE_DATE
 
     if value == "" or value is None:
         existing_value_obj.delete()
@@ -77,6 +78,9 @@ def set_object_property_value(permit_request, object_type, prop, value):
             )
             private_storage.save(path, value)
             value = path
+
+        elif is_date:
+            value = value.isoformat()
 
         value_dict = {"val": value}
         nb_objs = existing_value_obj.update(value=value_dict)

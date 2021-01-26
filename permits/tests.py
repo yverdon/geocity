@@ -360,7 +360,7 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
     def test_properties_step_submit_updates_permit_request_with_date(self):
 
         date_prop = factories.WorksObjectPropertyFactory(
-            input_type=models.WorksObjectProperty.INPUT_TYPE_DATE, name="date"
+            input_type=models.WorksObjectProperty.INPUT_TYPE_DATE, name="datum"
         )
         today_iso = date.today().isoformat()
         works_object_type = self.permit_request.works_object_types.first()
@@ -374,11 +374,14 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
             data=data,
         )
 
+        prop_val = services.get_properties_values(self.permit_request).get(
+            property__name="datum"
+        )
         self.assertEqual(
-            services.get_properties_values(self.permit_request)
-            .get(property__name="date")
-            .value,
-            {"val": today_iso},
+            prop_val.value, {"val": today_iso},
+        )
+        self.assertEqual(
+            prop_val.property.input_type, models.WorksObjectProperty.INPUT_TYPE_DATE,
         )
 
 
