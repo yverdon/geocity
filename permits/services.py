@@ -616,7 +616,7 @@ def get_actors_step(permit_request, enabled):
         url=actors_url,
         enabled=enabled,
         errors_count=actor_errors,
-        completed=not actor_errors,
+        completed=actor_errors == 0,
     )
 
 
