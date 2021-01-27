@@ -232,10 +232,11 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_DATE:
             field_instance = field_class(
                 **self.get_field_kwargs(prop),
+                input_formats=[settings.DATE_INPUT_FORMAT],
                 widget=DatePickerInput(
                     options={
-                        "format": "DD/MM/YYYY",
-                        "locale": "fr-ch",
+                        "format": "DD.MM.YYYY",
+                        "locale": "fr-CH",
                         "useCurrent": False,
                         "minDate": "1900/01/01",
                         "maxDate": "2100/12/31",
@@ -642,10 +643,10 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
     required_css_class = "required"
     starts_at = forms.DateTimeField(
         label=_("Date planifiée de début"),
-        input_formats=["%d/%m/%Y %H:%M"],
+        input_formats=[settings.DATETIME_INPUT_FORMAT],
         widget=DateTimePickerInput(
             options={
-                "format": "DD/MM/YYYY HH:mm",
+                "format": "DD.MM.YYYY HH:mm",
                 "locale": "fr-CH",
                 "useCurrent": False,
                 "minDate": (
@@ -656,10 +657,10 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
     )
     ends_at = forms.DateTimeField(
         label=_("Date planifiée de fin"),
-        input_formats=["%d/%m/%Y %H:%M"],
+        input_formats=[settings.DATETIME_INPUT_FORMAT],
         widget=DateTimePickerInput(
             options={
-                "format": "DD/MM/YYYY HH:mm",
+                "format": "DD.MM.YYYY HH:mm",
                 "locale": "fr-CH",
                 "useCurrent": False,
             }
