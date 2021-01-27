@@ -401,10 +401,14 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
         date_prop = factories.WorksObjectPropertyFactory(
             input_type=models.WorksObjectProperty.INPUT_TYPE_DATE, name="datum"
         )
-        today_iso = date.today().isoformat()
+        today = date.today()
         works_object_type = self.permit_request.works_object_types.first()
         date_prop.works_object_types.set([works_object_type])
-        data = {f"properties-{works_object_type.pk}_{date_prop.pk}": today_iso}
+        data = {
+            f"properties-{works_object_type.pk}_{date_prop.pk}": today.strftime(
+                settings.DATE_INPUT_FORMAT
+            )
+        }
         self.client.post(
             reverse(
                 "permits:permit_request_properties",
@@ -417,7 +421,7 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
             property__name="datum"
         )
         self.assertEqual(
-            prop_val.value, {"val": today_iso},
+            prop_val.value, {"val": today.isoformat()},
         )
         self.assertEqual(
             prop_val.property.input_type, models.WorksObjectProperty.INPUT_TYPE_DATE,
