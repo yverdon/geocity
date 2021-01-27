@@ -433,6 +433,8 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
                 works_object_type.pk, new_prop.pk
             ): "value-{}".format(works_object_type.pk)
             for works_object_type in self.permit_request.works_object_types.all()
+        }
+
     def test_properties_step_submit_updates_permit_request_with_date(self):
 
         date_prop = factories.WorksObjectPropertyFactory(
