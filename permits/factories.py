@@ -244,3 +244,8 @@ class PermitRequestValidationFactory(factory.django.DjangoModelFactory):
     permit_request = factory.SubFactory(
         PermitRequestFactory, status=models.PermitRequest.STATUS_AWAITING_VALIDATION
     )
+
+
+class PermitActorTypeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitActorType

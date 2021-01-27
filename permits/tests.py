@@ -216,16 +216,6 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
         super().setUp()
-        self.works_types = factories.WorksTypeFactory.create_batch(1)
-        self.works_objects = factories.WorksObjectFactory.create_batch(1)
-        models.WorksObjectType.objects.create(
-            works_type=self.works_types[0], works_object=self.works_objects[0]
-        )
-        actor_required = models.PermitActorType.objects.create(
-            type=models.ACTOR_TYPE_OTHER,
-            is_mandatory=True,
-            works_type=self.works_types[0],
-        )
 
         self.test_formset_data = {
             "form-TOTAL_FORMS": ["1"],
@@ -233,7 +223,7 @@ class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
             "form-MIN_NUM_FORMS": ["0"],
             "form-MAX_NUM_FORMS": ["1000"],
             "creditor_type": [""],
-            "form-0-actor_type": ["0"],
+            "form-0-actor_type": "",
             "form-0-first_name": ["John"],
             "form-0-last_name": ["Doe"],
             "form-0-phone": ["000 000 00 00"],
@@ -248,16 +238,24 @@ class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
 
     def test_permitrequestactor_creates(self):
 
+        works_object_type = factories.WorksObjectTypeFactory()
+
+        works_type = works_object_type.works_type
+        works_object = works_object_type.works_object
+
+        actor_required = factories.PermitActorTypeFactory(
+            is_mandatory=True, works_type=works_type
+        )
+
+        self.test_formset_data["form-0-actor_type"] = actor_required.type
+
         permit_request = factories.PermitRequestFactory(
             author=self.user.permitauthor, status=models.PermitRequest.STATUS_DRAFT
         )
 
-        factories.WorksObjectTypeChoiceFactory(permit_request=permit_request)
-        permit_request.administrative_entity.works_object_types.set(
-            permit_request.works_object_types.all()
-        )
+        permit_request.administrative_entity.works_object_types.set([works_object_type])
         prop = factories.WorksObjectPropertyFactory()
-        prop.works_object_types.set(permit_request.works_object_types.all())
+        prop.works_object_types.set([works_object_type])
 
         response = self.client.post(
             reverse(
@@ -272,13 +270,7 @@ class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
 
     def test_permitrequestactor_required_cannot_have_empty_field(self):
 
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor, status=models.PermitRequest.STATUS_DRAFT
-        )
-
-        factories.WorksObjectTypeChoiceFactory.create_batch(
-            1, permit_request=permit_request
-        )
+        factories.WorksObjectTypeChoiceFactory()
         permit_request.administrative_entity.works_object_types.set(
             permit_request.works_object_types.all()
         )
