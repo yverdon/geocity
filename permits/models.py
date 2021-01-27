@@ -1,4 +1,5 @@
 import dataclasses
+import enum
 
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
@@ -48,6 +49,30 @@ ACTION_POKE = "poke"
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
 ACTIONS = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE, ACTION_POKE]
+
+
+@dataclasses.dataclass
+class Step:
+    name: str
+    url: str
+    completed: bool = False
+    enabled: bool = False
+    errors_count: int = 0
+
+
+class StepType(enum.Enum):
+    ADMINISTRATIVE_ENTITY = "administrative_entity"
+    WORKS_TYPES = "works_types"
+    WORKS_OBJECTS = "works_objects"
+    PROPERTIES = "properties"
+    GEO_TIME = "geo_time"
+    APPENDICES = "appendices"
+    ACTORS = "actors"
+    SUBMIT = "submit"
+
+
+# Required to be able to use the enum in Django templates
+StepType.do_not_call_in_templates = True
 
 
 class PermitDepartment(models.Model):
@@ -516,11 +541,13 @@ class WorksObjectProperty(models.Model):
     INPUT_TYPE_CHECKBOX = "checkbox"
     INPUT_TYPE_NUMBER = "number"
     INPUT_TYPE_FILE = "file"
+    INPUT_TYPE_DATE = "date"
     INPUT_TYPE_CHOICES = (
         (INPUT_TYPE_TEXT, _("Texte")),
         (INPUT_TYPE_CHECKBOX, _("Case à cocher")),
         (INPUT_TYPE_NUMBER, _("Nombre")),
         (INPUT_TYPE_FILE, _("Fichier")),
+        (INPUT_TYPE_DATE, _("Date")),
     )
 
     name = models.CharField(_("nom"), max_length=255)
@@ -601,15 +628,6 @@ class PermitRequestValidation(models.Model):
 
     def is_pending(self):
         return self.validation_status == self.STATUS_REQUESTED
-
-
-@dataclasses.dataclass
-class Step:
-    name: str
-    url: str
-    completed: bool = False
-    enabled: bool = False
-    errors_count: int = 0
 
 
 class PermitRequestGeoTime(models.Model):

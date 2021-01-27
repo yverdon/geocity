@@ -9,16 +9,15 @@ from django.contrib.auth.decorators import (
     permission_required,
     user_passes_test,
 )
-from django.core.exceptions import PermissionDenied
-from django.core.exceptions import SuspiciousOperation
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.db import transaction
 from django.db.models import Prefetch
-from django.http import Http404, HttpResponse, StreamingHttpResponse
 from django.forms import modelformset_factory
-from django.utils.decorators import method_decorator
+from django.http import Http404, HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views import View
@@ -91,6 +90,22 @@ def disable_form(form):
     form.disabled = True
 
     return form
+
+
+def progress_bar_context(request, permit_request, current_step_type):
+    steps = services.get_progress_bar_steps(
+        request=request, permit_request=permit_request
+    )
+
+    if current_step_type not in steps:
+        raise Http404()
+
+    try:
+        previous_step = services.get_previous_step(steps, current_step_type)
+    except IndexError:
+        previous_step = None
+
+    return {"steps": steps, "previous_step": previous_step}
 
 
 @method_decorator(login_required, name="dispatch")
@@ -398,6 +413,12 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
     else:
         permit_request = None
 
+    steps_context = progress_bar_context(
+        request=request,
+        permit_request=permit_request,
+        current_step_type=models.StepType.ADMINISTRATIVE_ENTITY,
+    )
+
     if request.method == "POST":
         administrative_entity_form = forms.AdministrativeEntityForm(
             instance=permit_request, data=request.POST
@@ -408,11 +429,21 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
                 author=request.user.permitauthor
             )
 
-            return redirect(
-                reverse(
-                    "permits:permit_request_select_types",
-                    kwargs={"permit_request_id": permit_request.pk},
+            works_object_types = services.get_default_works_object_types(
+                administrative_entity=permit_request.administrative_entity
+            )
+            if works_object_types:
+                services.set_works_object_types(
+                    permit_request=permit_request,
+                    new_works_object_types=works_object_types,
                 )
+
+            steps = services.get_progress_bar_steps(
+                request=request, permit_request=permit_request
+            )
+
+            return redirect(
+                services.get_next_step(steps, models.StepType.ADMINISTRATIVE_ENTITY).url
             )
     else:
         administrative_entity_form = forms.AdministrativeEntityForm(
@@ -422,7 +453,11 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
     return render(
         request,
         "permits/permit_request_select_administrative_entity.html",
-        {"form": administrative_entity_form, "permit_request": permit_request,},
+        {
+            "form": administrative_entity_form,
+            "permit_request": permit_request,
+            **steps_context,
+        },
     )
 
 
@@ -434,26 +469,46 @@ def permit_request_select_types(request, permit_request_id):
     object, works type) couples in the database.
     """
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
+    steps_context = progress_bar_context(
+        request=request,
+        permit_request=permit_request,
+        current_step_type=models.StepType.WORKS_TYPES,
+    )
 
     if request.method == "POST":
         works_types_form = forms.WorksTypesForm(
             data=request.POST, instance=permit_request
         )
         if works_types_form.is_valid():
-            works_types_form.save()
             redirect_kwargs = {"permit_request_id": permit_request_id}
+            selected_works_types = [
+                obj.pk for obj in works_types_form.cleaned_data["types"]
+            ]
+
+            with transaction.atomic():
+                works_types_form.save()
+
+                works_object_types = services.get_default_works_object_types(
+                    administrative_entity=permit_request.administrative_entity,
+                    works_types=selected_works_types,
+                )
+                if works_object_types:
+                    services.set_works_object_types(
+                        permit_request=permit_request,
+                        new_works_object_types=works_object_types,
+                    )
+                    steps = services.get_progress_bar_steps(
+                        request=request, permit_request=permit_request
+                    )
+
+                    return redirect(
+                        services.get_next_step(steps, models.StepType.WORKS_TYPES).url
+                    )
 
             return redirect(
                 reverse("permits:permit_request_select_objects", kwargs=redirect_kwargs)
                 + "?"
-                + urllib.parse.urlencode(
-                    {
-                        "types": [
-                            obj.pk for obj in works_types_form.cleaned_data["types"]
-                        ]
-                    },
-                    doseq=True,
-                )
+                + urllib.parse.urlencode({"types": selected_works_types}, doseq=True,)
             )
     else:
         works_types_form = forms.WorksTypesForm(instance=permit_request)
@@ -461,7 +516,11 @@ def permit_request_select_types(request, permit_request_id):
     return render(
         request,
         "permits/permit_request_select_types.html",
-        {"works_types_form": works_types_form, "permit_request": permit_request},
+        {
+            "works_types_form": works_types_form,
+            "permit_request": permit_request,
+            **steps_context,
+        },
     )
 
 
@@ -473,23 +532,29 @@ def permit_request_select_objects(request, permit_request_id):
     is set) or creating a new permit request.
     """
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
+    steps_context = progress_bar_context(
+        request=request,
+        permit_request=permit_request,
+        current_step_type=models.StepType.WORKS_OBJECTS,
+    )
 
     if request.GET:
         works_types_form = forms.WorksTypesForm(
             data=request.GET, instance=permit_request
         )
-        if not works_types_form.is_valid():
-            return redirect(
-                "permits:permit_request_select_types",
-                permit_request_id=permit_request.pk,
-            )
-        works_types = works_types_form.cleaned_data["types"]
+        if works_types_form.is_valid():
+            works_types = works_types_form.cleaned_data["types"]
+        else:
+            try:
+                return redirect(steps_context["steps"][models.StepType.WORKS_TYPES].url)
+            except KeyError:
+                raise Http404
     else:
         if not permit_request.works_object_types.exists():
-            return redirect(
-                "permits:permit_request_select_types",
-                permit_request_id=permit_request.pk,
-            )
+            try:
+                return redirect(steps_context["steps"][models.StepType.WORKS_TYPES].url)
+            except KeyError:
+                raise Http404
 
         works_types = models.WorksType.objects.none()
 
@@ -505,8 +570,12 @@ def permit_request_select_objects(request, permit_request_id):
 
         if works_objects_form.is_valid():
             permit_request = works_objects_form.save()
+            steps = services.get_progress_bar_steps(
+                request=request, permit_request=permit_request
+            )
+
             return redirect(
-                "permits:permit_request_properties", permit_request_id=permit_request.pk
+                services.get_next_step(steps, models.StepType.WORKS_OBJECTS).url
             )
     else:
         works_objects_form = forms.WorksObjectsForm(
@@ -516,7 +585,11 @@ def permit_request_select_objects(request, permit_request_id):
     return render(
         request,
         "permits/permit_request_select_objects.html",
-        {"works_objects_form": works_objects_form, "permit_request": permit_request},
+        {
+            "works_objects_form": works_objects_form,
+            "permit_request": permit_request,
+            **steps_context,
+        },
     )
 
 
@@ -527,6 +600,11 @@ def permit_request_properties(request, permit_request_id):
     Step to input properties values for the given permit request.
     """
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
+    steps_context = progress_bar_context(
+        request=request,
+        permit_request=permit_request,
+        current_step_type=models.StepType.PROPERTIES,
+    )
 
     if request.method == "POST":
         # Disable `required` fields validation to allow partial save
@@ -536,8 +614,11 @@ def permit_request_properties(request, permit_request_id):
 
         if form.is_valid():
             form.save()
+
             return redirect(
-                "permits:permit_request_geo_time", permit_request_id=permit_request.pk
+                services.get_next_step(
+                    steps_context["steps"], models.StepType.PROPERTIES
+                ).url
             )
     else:
         form = forms.WorksObjectsPropertiesForm(
@@ -549,7 +630,12 @@ def permit_request_properties(request, permit_request_id):
     return render(
         request,
         "permits/permit_request_properties.html",
-        {"permit_request": permit_request, "object_types": fields_by_object_type,},
+        {
+            "permit_request": permit_request,
+            "object_types": fields_by_object_type,
+            "permit_request_form": form,
+            **steps_context,
+        },
     )
 
 
@@ -560,6 +646,11 @@ def permit_request_appendices(request, permit_request_id):
     Step to upload appendices for the given permit request.
     """
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
+    steps_context = progress_bar_context(
+        request=request,
+        permit_request=permit_request,
+        current_step_type=models.StepType.APPENDICES,
+    )
 
     if request.method == "POST":
         form = forms.WorksObjectsAppendicesForm(
@@ -572,7 +663,9 @@ def permit_request_appendices(request, permit_request_id):
         if form.is_valid():
             form.save()
             return redirect(
-                "permits:permit_request_actors", permit_request_id=permit_request.pk
+                services.get_next_step(
+                    steps_context["steps"], models.StepType.APPENDICES
+                ).url
             )
     else:
         form = forms.WorksObjectsAppendicesForm(
@@ -584,7 +677,11 @@ def permit_request_appendices(request, permit_request_id):
     return render(
         request,
         "permits/permit_request_appendices.html",
-        {"permit_request": permit_request, "object_types": fields_by_object_type,},
+        {
+            "permit_request": permit_request,
+            "object_types": fields_by_object_type,
+            **steps_context,
+        },
     )
 
 
@@ -592,6 +689,11 @@ def permit_request_appendices(request, permit_request_id):
 @login_required
 def permit_request_actors(request, permit_request_id):
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
+    steps_context = progress_bar_context(
+        request=request,
+        permit_request=permit_request,
+        current_step_type=models.StepType.ACTORS,
+    )
 
     creditorform = forms.PermitRequestCreditorForm(
         request.POST or None, instance=permit_request
@@ -609,7 +711,9 @@ def permit_request_actors(request, permit_request_id):
             )
 
             return redirect(
-                "permits:permit_request_submit", permit_request_id=permit_request.pk
+                services.get_next_step(
+                    steps_context["steps"], models.StepType.ACTORS
+                ).url
             )
     else:
 
@@ -622,6 +726,7 @@ def permit_request_actors(request, permit_request_id):
             "formset": formset,
             "creditorform": creditorform,
             "permit_request": permit_request,
+            **steps_context,
         },
     )
 
@@ -631,6 +736,12 @@ def permit_request_geo_time(request, permit_request_id):
     permit_request = services.get_permit_request_for_user_or_404(
         request.user, permit_request_id
     )
+    steps_context = progress_bar_context(
+        request=request,
+        permit_request=permit_request,
+        current_step_type=models.StepType.GEO_TIME,
+    )
+
     PermitRequestGeoTimeFormSet = modelformset_factory(
         models.PermitRequestGeoTime,
         form=forms.PermitRequestGeoTimeForm,
@@ -655,13 +766,15 @@ def permit_request_geo_time(request, permit_request_id):
                         obj.delete()
 
             return redirect(
-                "permits:permit_request_appendices", permit_request_id=permit_request_id
+                services.get_next_step(
+                    steps_context["steps"], models.StepType.GEO_TIME
+                ).url
             )
 
     return render(
         request,
         "permits/permit_request_geo_time.html",
-        {"formset": formset, "permit_request": permit_request,},
+        {"formset": formset, "permit_request": permit_request, **steps_context,},
     )
 
 
@@ -752,7 +865,7 @@ def permit_request_submit(request, permit_request_id):
 
     incomplete_steps = [
         step.url
-        for step in services.get_progressbar_steps(request, permit_request).values()
+        for step in services.get_progress_bar_steps(request, permit_request).values()
         if step.errors_count and step.url
     ]
 
@@ -766,7 +879,15 @@ def permit_request_submit(request, permit_request_id):
     return render(
         request,
         "permits/permit_request_submit.html",
-        {"permit_request": permit_request, "incomplete_steps": incomplete_steps,},
+        {
+            "permit_request": permit_request,
+            "incomplete_steps": incomplete_steps,
+            **progress_bar_context(
+                request=request,
+                permit_request=permit_request,
+                current_step_type=models.StepType.SUBMIT,
+            ),
+        },
     )
 
 
@@ -778,7 +899,7 @@ def permit_request_submit_confirmed(request, permit_request_id):
 
     incomplete_steps = [
         step.url
-        for step in services.get_progressbar_steps(request, permit_request).values()
+        for step in services.get_progress_bar_steps(request, permit_request).values()
         if step.errors_count and step.url
     ]
 
