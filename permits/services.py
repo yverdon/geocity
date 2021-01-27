@@ -640,7 +640,7 @@ def get_appendices_step(permit_request, enabled):
 
 
 def get_actors_step(permit_request, enabled):
-    if permit_request and len(get_permit_actor_types(permit_request)) == 0:
+    if permit_request and len(get_actors_types(permit_request)) == 0:
         return None
 
     actor_errors = (
