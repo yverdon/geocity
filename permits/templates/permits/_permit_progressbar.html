@@ -8,7 +8,7 @@
       {% if step.completed and step.enabled %}progress-nav-item-done{% endif %}
       {% if step.errors_count and step.enabled %}progress-nav-item-partial{% endif %}
       ">
-      {% if step.url %}
+      {% if step.url and step.enabled %}
         <a class="progress-nav-link" href="{{ step.url }}">
       {% endif %}
 
@@ -19,9 +19,13 @@
         </div>
       </div>
       <br>
-      {{ step.name }}
 
-      {% if step.url %}
+      {# Wrap the step name so it’s easier to extract in the tests #}
+      <span class="step-name">
+        {{ step.name }}
+      </span>
+
+      {% if step.url and step.enabled %}
         </a>
       {% endif %}
     </li>
