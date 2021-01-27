@@ -805,6 +805,36 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             "I'm a custom property" in permit_request.amend_custom_properties.values()
         )
 
+    def test_secretariat_amend_raises_error_on_missing_mandatory_custom_property(self):
+        models.WorksObjectType.objects.create(
+            works_type=factories.WorksTypeFactory.create(),
+            works_object=factories.WorksObjectFactory.create(),
+        )
+        amend_property = factories.PermitRequestAmendPropertyFactory.create(
+            is_mandatory=True
+        )
+        amend_property.works_object_types.set(models.WorksObjectType.objects.all())
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_PROCESSING,
+            administrative_entity=self.administrative_entity,
+        )
+        permit_request.works_object_types.set(models.WorksObjectType.objects.all())
+
+        self.assertRaises(
+            TypeError,
+            lambda: self.client.post(
+                reverse(
+                    "permits:permit_request_detail",
+                    kwargs={"permit_request_id": permit_request.pk},
+                ),
+                data={
+                    "status": models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+                    f"{models.AMEND_CUSTOM_FIELDS_PREFIX}{amend_property.works_object_types.first().pk}": "",
+                    "action": models.ACTION_AMEND,
+                },
+            ),
+        )
+
     def test_secretariat_can_see_submitted_requests(self):
         permit_request = factories.PermitRequestFactory(
             status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
