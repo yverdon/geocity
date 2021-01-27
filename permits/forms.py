@@ -252,8 +252,9 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                     }
                 ),
             )
-            field_instance.widget.attrs["placeholder"] = _("ex: Place Pestalozzi, 1400 Yverdon")
-
+            field_instance.widget.attrs["placeholder"] = _(
+                "ex: Place Pestalozzi, 1400 Yverdon"
+            )
 
         elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_DATE:
             field_instance = field_class(
