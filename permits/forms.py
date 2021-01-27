@@ -241,15 +241,17 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                                 "origins": "address",
                                 "zipcode_field": "",
                                 "city_field": "",
-                                "placeholder": "ex: Place Pestalozzi, 1400 Yverdon",
+                                "placeholder": "",
                                 "single_contact": "true",
                                 "single_adress_field": "true",
                             }
                         ),
-                        "required": "required",
                     }
                 ),
             )
+            field_instance.widget.attrs["placeholder"] = _("ex: Place Pestalozzi, 1400 Yverdon")
+
+
         else:
             field_instance = field_class(**self.get_field_kwargs(prop),)
         return field_instance
