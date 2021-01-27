@@ -1,5 +1,6 @@
 import os
 
+from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import SuspiciousOperation
@@ -11,7 +12,6 @@ from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from constance import config
 
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
@@ -334,25 +334,60 @@ def get_permit_requests_list_for_user(user):
 
 
 def get_actors_types(permit_request):
+    """
+        Get actors type defined for each work type defined for the permit_request
+    """
     return models.PermitActorType.objects.filter(
         works_type__in=get_permit_request_works_types(permit_request)
     ).values_list("type", "is_mandatory")
 
 
-def get_missing_actors_types(permit_request):
-    existing_actor_types = set(
-        permit_request.permit_request_actors.values_list("actor_type", flat=True)
-    )
-    required_actor_types = set(actor_type for actor_type, is_mandatory in get_actors_types(permit_request) if is_mandatory)
+def filter_only_missing_actor_types(actor_types, permit_request):
+    """
+        Filter the given `actor_types` to return only the ones that have not been set in the given `permit_request`.
+    """
 
-    return required_actor_types - existing_actor_types
+    existing_actor_types = permit_request.permit_request_actors.values_list("actor_type", flat=True)
+
+    return [
+        actor_type
+        for actor_type in actor_types
+        if actor_type[0] not in existing_actor_types
+    ]
+
+
+def get_missing_required_actor_types(permit_request):
+    """
+        Get actors type required but not filled
+    """
+
+    return filter_only_missing_actor_types(
+        [
+            (actor_type, is_mandatory)
+            for actor_type, is_mandatory in get_actors_types(permit_request)
+            if is_mandatory
+        ],
+        permit_request,
+    )
+
 
 
 def get_permitactorformset_initiated(permit_request, data=None):
-    
+    """
+    Return PermitActorFormSet with initial values set
+    """
+
+    #Queryset with all configured actor type for this permit_request
     configured_actor_types = get_actors_types(permit_request)
 
-    actor_initial_forms = [{"actor_type": actor_type[0]} for actor_type in configured_actor_types]
+    # Get actor type that are not filled yet for the permit_request
+    missing_actor_types = filter_only_missing_actor_types(
+        configured_actor_types, permit_request
+    )
+
+    actor_initial_forms = [
+        {"actor_type": actor_type[0]} for actor_type in missing_actor_types
+    ]
 
     PermitActorFormSet = modelformset_factory(
         models.PermitRequestActor,
@@ -367,8 +402,12 @@ def get_permitactorformset_initiated(permit_request, data=None):
         ),
         data=data,
     )
-
-    mandatory_actor_types = {actor_type for actor_type, is_mandatory in configured_actor_types if is_mandatory}
+    
+    mandatory_actor_types = {
+        actor_type
+        for actor_type, is_mandatory in configured_actor_types
+        if is_mandatory
+    }
 
     for form in formset:
         form.empty_permitted = form.initial["actor_type"] not in mandatory_actor_types
@@ -387,7 +426,7 @@ def get_total_error_count(permit_request):
         instance=permit_request, enable_required=True, disable_fields=True, data={}
     )
 
-    missing_actor_types = get_missing_actors_types(permit_request, is_mandatory=True)
+    missing_actor_types = get_missing_required_actor_types(permit_request)
 
     actor_errors = [
         _('Contact de type "%s" manquant.') % models.ACTOR_TYPE_CHOICES[actor_type][1]
@@ -462,7 +501,7 @@ def get_progressbar_steps(request, permit_request):
         else 1
     )
     actor_errors = (
-        len(get_missing_actors_types(permit_request)) if permit_request else 0
+        len(get_missing_required_actor_types(permit_request)) if permit_request else 0
     )
     total_errors = sum([properties_errors, appendices_errors, actor_errors])
 
