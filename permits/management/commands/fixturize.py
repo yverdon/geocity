@@ -7,6 +7,7 @@ from django.core import management
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from django.utils import timezone
+
 from geomapshark import settings
 from permits import models
 
@@ -257,9 +258,7 @@ class Command(BaseCommand):
             )
 
             for works_obj, *props in objs:
-                works_obj_obj, created = models.WorksObject.objects.get_or_create(
-                    name=works_obj
-                )
+                works_obj_obj = models.WorksObject.objects.create(name=works_obj)
                 works_object_type = models.WorksObjectType.objects.create(
                     works_type=works_type_obj, works_object=works_obj_obj
                 )

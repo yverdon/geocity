@@ -1,13 +1,11 @@
-from datetime import timezone
-
 import factory
 import faker
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.gis.geos import GeometryCollection, Point
 from django.utils.text import Truncator
-from permits import models
+
+from . import models
 
 
 class PermitAuthorFactory(factory.django.DjangoModelFactory):
@@ -70,6 +68,18 @@ class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
             )
 
 
+class PermitDepartmentFactory(factory.django.DjangoModelFactory):
+    is_default_validator = False
+    is_validator = False
+    is_admin = False
+    is_archeologist = False
+    administrative_entity = factory.SubFactory(PermitAdministrativeEntityFactory)
+    group = factory.SubFactory("permits.factories.GroupFactory")
+
+    class Meta:
+        model = models.PermitDepartment
+
+
 class GroupFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("company")
 
@@ -90,18 +100,6 @@ class GroupFactory(factory.django.DjangoModelFactory):
 
         for permission in extracted:
             self.permissions.add(permission)
-
-
-class PermitDepartmentFactory(factory.django.DjangoModelFactory):
-    is_default_validator = False
-    is_validator = False
-    is_admin = False
-    is_archeologist = False
-    administrative_entity = factory.SubFactory(PermitAdministrativeEntityFactory)
-    group = factory.SubFactory(GroupFactory)
-
-    class Meta:
-        model = models.PermitDepartment
 
 
 class SecretariatGroupFactory(GroupFactory):
@@ -193,13 +191,6 @@ class WorksTypeFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("word")
 
 
-class PermitActorTypeFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.PermitActorType
-
-    works_type = factory.SubFactory(WorksTypeFactory)
-
-
 class PermitRequestFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PermitRequest
@@ -248,16 +239,4 @@ class PermitRequestValidationFactory(factory.django.DjangoModelFactory):
     department = factory.SubFactory(PermitDepartmentFactory)
     permit_request = factory.SubFactory(
         PermitRequestFactory, status=models.PermitRequest.STATUS_AWAITING_VALIDATION
-    )
-
-
-class PermitRequestGeoTimeFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.PermitRequestGeoTime
-
-    permit_request = factory.SubFactory(PermitRequestFactory)
-    starts_at = factory.Faker("date_time", tzinfo=timezone.utc)
-    ends_at = factory.Faker("date_time", tzinfo=timezone.utc)
-    geom = factory.LazyFunction(
-        lambda: GeometryCollection(Point(faker.Faker().latlng()))
     )

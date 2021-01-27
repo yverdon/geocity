@@ -3,14 +3,17 @@ import os.path
 
 from django import template
 from django.forms import modelformset_factory
+from permits import services, forms, models
 from django.utils.translation import gettext as _
+
 from permits import forms, models, services
 
 register = template.Library()
 
 
 @register.inclusion_tag("permits/_permit_progressbar.html", takes_context=True)
-def permit_progressbar(context, steps, active_step):
+def permit_progressbar(context, permit_request, active_step):
+    steps = services.get_progressbar_steps(context["request"], permit_request)
     steps_states = {
         "steps": steps,
         "active_step": active_step,
