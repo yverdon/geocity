@@ -3,7 +3,7 @@ from django.shortcuts import resolve_url
 from django.test import TestCase
 from django.urls import reverse
 
-from permits import factories
+from permits.tests import factories
 
 
 class TestLoginMixin:

@@ -1,7 +1,7 @@
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
-from bootstrap_datepicker_plus import DateTimePickerInput
+from bootstrap_datepicker_plus import DatePickerInput, DateTimePickerInput
 from django import forms
 from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
@@ -24,6 +24,7 @@ def get_field_cls_for_property(prop):
         models.WorksObjectProperty.INPUT_TYPE_CHECKBOX: forms.BooleanField,
         models.WorksObjectProperty.INPUT_TYPE_NUMBER: forms.FloatField,
         models.WorksObjectProperty.INPUT_TYPE_FILE: forms.FileField,
+        models.WorksObjectProperty.INPUT_TYPE_DATE: forms.DateField,
     }
 
     return input_type_mapping[prop.input_type]
@@ -119,7 +120,9 @@ class WorksObjectsForm(forms.Form):
             self.fields[str(works_type.pk)] = WorksObjectsTypeChoiceField(
                 queryset=works_type.works_object_types.filter(
                     administrative_entities=self.instance.administrative_entity
-                ).distinct(),
+                )
+                .distinct()
+                .select_related("works_object"),
                 widget=forms.CheckboxSelectMultiple(),
                 label=works_type.name,
                 error_messages={
@@ -225,6 +228,20 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
             field_instance = field_class(
                 **self.get_field_kwargs(prop),
                 widget=forms.Textarea(attrs={"rows": 1,}),
+            )
+        elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_DATE:
+            field_instance = field_class(
+                **self.get_field_kwargs(prop),
+                input_formats=[settings.DATE_INPUT_FORMAT],
+                widget=DatePickerInput(
+                    options={
+                        "format": "DD.MM.YYYY",
+                        "locale": "fr-CH",
+                        "useCurrent": False,
+                        "minDate": "1900/01/01",
+                        "maxDate": "2100/12/31",
+                    },
+                ),
             )
         else:
             field_instance = field_class(**self.get_field_kwargs(prop),)
@@ -615,10 +632,10 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
     required_css_class = "required"
     starts_at = forms.DateTimeField(
         label=_("Date planifiée de début"),
-        input_formats=["%d/%m/%Y %H:%M"],
+        input_formats=[settings.DATETIME_INPUT_FORMAT],
         widget=DateTimePickerInput(
             options={
-                "format": "DD/MM/YYYY HH:mm",
+                "format": "DD.MM.YYYY HH:mm",
                 "locale": "fr-CH",
                 "useCurrent": False,
                 "minDate": (
@@ -629,10 +646,10 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
     )
     ends_at = forms.DateTimeField(
         label=_("Date planifiée de fin"),
-        input_formats=["%d/%m/%Y %H:%M"],
+        input_formats=[settings.DATETIME_INPUT_FORMAT],
         widget=DateTimePickerInput(
             options={
-                "format": "DD/MM/YYYY HH:mm",
+                "format": "DD.MM.YYYY HH:mm",
                 "locale": "fr-CH",
                 "useCurrent": False,
             }
