@@ -507,6 +507,8 @@ class WorksObjectType(models.Model):
         verbose_name=_("communes"),
         related_name="works_object_types",
     )
+    needs_geometry = models.BooleanField(_("avec geometrie"), default=True)
+    needs_date = models.BooleanField(_("avec période de temps"), default=True)
 
     class Meta:
         verbose_name = _("1.4 Configuration type-objet-entité administrative")
@@ -642,8 +644,10 @@ class PermitRequestGeoTime(models.Model):
     permit_request = models.ForeignKey(
         "PermitRequest", on_delete=models.CASCADE, related_name="geo_time"
     )
-    starts_at = models.DateTimeField(_("Date planifiée de début"))
-    ends_at = models.DateTimeField(_("Date planifiée de fin"))
+    starts_at = models.DateTimeField(
+        _("Date planifiée de début"), blank=True, null=True
+    )
+    ends_at = models.DateTimeField(_("Date planifiée de fin"), blank=True, null=True)
     comment = models.CharField(_("Commentaire"), max_length=1024, blank=True)
     external_link = models.URLField(_("Lien externe"), blank=True)
     geom = geomodels.GeometryCollectionField(_("Localisation"), null=True, srid=2056)

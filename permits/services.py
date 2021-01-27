@@ -603,6 +603,12 @@ def get_geo_time_step(permit_request, enabled):
         else ""
     )
 
+    if enabled and not (
+        geotime_needs_info(permit_request, "date")
+        or geotime_needs_info(permit_request, "geometry")
+    ):
+        return None
+
     return models.Step(
         name=_("Agenda et plan"),
         url=geo_time_url,
@@ -610,6 +616,15 @@ def get_geo_time_step(permit_request, enabled):
         errors_count=geo_time_errors,
         enabled=enabled,
     )
+
+
+def geotime_needs_info(permit_request, info):
+    if permit_request_has_works_object_types(permit_request):
+        return True in permit_request.works_object_types.values_list(
+            f"needs_{info}", flat=True
+        )
+    else:
+        return False
 
 
 def get_appendices_step(permit_request, enabled):
@@ -682,9 +697,7 @@ def get_progress_bar_steps(request, permit_request):
     the permit request wizard. The dict only contains reachable steps (which don’t
     necessarily have a `url` though, eg. before selecting the administrative entity).
     """
-    has_works_objects_types = (
-        permit_request.works_object_types.exists() if permit_request else False
-    )
+    has_works_objects_types = permit_request_has_works_object_types(permit_request)
     selected_works_types = request.GET.getlist("types")
 
     all_steps = {
@@ -726,6 +739,10 @@ def get_progress_bar_steps(request, permit_request):
     }
 
 
+def permit_request_has_works_object_types(permit_request):
+    return permit_request.works_object_types.exists() if permit_request else False
+
+
 def get_previous_step(steps, current_step):
     """
     Return the previous step in the list or raise `IndexError` if there’s no such
@@ -755,9 +772,10 @@ def submit_permit_request(permit_request, absolute_uri_func):
         raise SuspiciousOperation
 
     permit_request.status = models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
-    permit_request.intersected_geometries = geoservices.get_intersected_geometries(
-        permit_request
-    )
+    if geotime_needs_info(permit_request, "geometry"):
+        permit_request.intersected_geometries = geoservices.get_intersected_geometries(
+            permit_request
+        )
     permit_request.save()
     permit_request_url = absolute_uri_func(
         reverse(
