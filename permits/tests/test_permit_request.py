@@ -1,15 +1,17 @@
+# TODO split this file into multiple files
 import urllib.parse
+from datetime import date
 
-from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-from datetime import date
+from permits import models, services
 
-from . import factories, models, services, views
+from . import factories
+from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_parser
 
 
 def to_works_objects_dict(works_object_types):
@@ -25,28 +27,6 @@ def get_permit_request_works_types_ids(permit_request):
         .values_list("works_type__pk", flat=True)
         .distinct()
     )
-
-
-def get_parser(content):
-    return BeautifulSoup(content, features="html5lib")
-
-
-def get_emails(subject):
-    return [email for email in mail.outbox if email.subject == subject]
-
-
-class LoggedInUserMixin:
-    def setUp(self):
-        self.user = factories.UserFactory()
-        self.client.login(username=self.user.username, password="password")
-
-
-class LoggedInSecretariatMixin:
-    def setUp(self):
-        self.group = factories.SecretariatGroupFactory()
-        self.administrative_entity = self.group.permitdepartment.administrative_entity
-        self.user = factories.SecretariatUserFactory(groups=[self.group])
-        self.client.login(username=self.user.username, password="password")
 
 
 class PermitRequestTestCase(LoggedInUserMixin, TestCase):
@@ -73,7 +53,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
                 "permits:permit_request_select_types",
                 kwargs={"permit_request_id": permit_request.pk},
             ),
-            data={"types": self.works_types[0].pk},
+            data={"types": [self.works_types[0].pk, self.works_types[1].pk]},
         )
 
         self.assertRedirects(
@@ -82,7 +62,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
                 "permits:permit_request_select_objects",
                 kwargs={"permit_request_id": permit_request.pk},
             )
-            + "?types={}".format(self.works_types[0].pk),
+            + "?types={}&types={}".format(
+                self.works_types[0].pk, self.works_types[1].pk
+            ),
         )
 
     def test_objects_step_without_qs_redirects_to_types_step(self):
@@ -107,6 +89,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
     def test_objects_step_submit_saves_selected_object_types(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        # Create another works object type so that the works object step is not skipped
+        factories.WorksObjectTypeFactory(works_type=self.works_types[0])
+
         works_object_type = models.WorksObjectType.objects.first()
         permit_request.administrative_entity.works_object_types.set(
             models.WorksObjectType.objects.all()
@@ -197,11 +182,13 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         # This one should not receive the notification
         factories.SecretariatUserFactory(email="secretariat@lausanne.ch")
 
-        permit_request = factories.PermitRequestFactory(
-            administrative_entity=group.permitdepartment.administrative_entity,
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_DRAFT,
-        )
+        permit_request = factories.PermitRequestGeoTimeFactory(
+            permit_request=factories.PermitRequestFactory(
+                administrative_entity=group.permitdepartment.administrative_entity,
+                author=self.user.permitauthor,
+                status=models.PermitRequest.STATUS_DRAFT,
+            )
+        ).permit_request
         self.client.post(
             reverse(
                 "permits:permit_request_submit",
@@ -238,6 +225,58 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
         parser = get_parser(response.content)
         self.assertEqual(len(parser.select(".invalid-feedback")), 1)
+
+    def test_works_object_automatically_set_when_only_one_works_object(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object = factories.WorksObjectFactory()
+        permit_request.administrative_entity.works_object_types.set(
+            factories.WorksObjectTypeFactory.create_batch(2, works_object=works_object)
+        )
+        works_type_id = permit_request.administrative_entity.works_object_types.values_list(
+            "works_type_id", flat=True
+        ).first()
+
+        self.client.post(
+            reverse(
+                "permits:permit_request_select_types",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data={"types": [works_type_id]},
+        )
+
+        permit_request.refresh_from_db()
+        works_object_types = permit_request.works_object_types.all()
+
+        self.assertEqual(
+            len(works_object_types),
+            1,
+            "Permit request should have one works object type set",
+        )
+        self.assertEqual(works_object_types[0].works_object, works_object)
+        self.assertEqual(works_object_types[0].works_type_id, works_type_id)
+
+    def test_works_type_automatically_set_when_only_one_works_object(self):
+        works_type = factories.WorksTypeFactory()
+        administrative_entity = factories.PermitAdministrativeEntityFactory()
+        administrative_entity.works_object_types.set(
+            factories.WorksObjectTypeFactory.create_batch(2, works_type=works_type)
+        )
+
+        response = self.client.post(
+            reverse("permits:permit_request_select_administrative_entity",),
+            data={"administrative_entity": administrative_entity.pk},
+        )
+
+        permit_request = models.PermitRequest.objects.get()
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "permits:permit_request_select_objects",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+            + f"?types={works_type.pk}",
+        )
 
 
 class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
