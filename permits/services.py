@@ -412,7 +412,10 @@ def get_permitactorformset_initiated(permit_request, data=None):
     }
 
     for form in formset:
-        form.empty_permitted = form.initial["actor_type"] not in mandatory_actor_types
+        form.empty_permitted = (
+            "actor_type" not in form.initial
+            or form.initial["actor_type"] not in mandatory_actor_types
+        )
 
     return formset
 
