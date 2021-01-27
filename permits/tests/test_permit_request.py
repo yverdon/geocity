@@ -334,7 +334,6 @@ class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(permit_request_actor.actor.first_name, "John")
         self.assertEqual(permit_request_actor.permit_request, permit_request)
 
-
     def test_permitrequestactor_required_cannot_have_empty_field(self):
 
         works_object_type = factories.WorksObjectTypeFactory()
