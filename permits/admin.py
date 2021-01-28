@@ -75,7 +75,7 @@ class WorksObjectPropertyForm(forms.ModelForm):
 
 class WorksObjectPropertyAdmin(SortableAdminMixin, admin.ModelAdmin):
     def sortable_str(self, obj):
-        return obj.__str__()
+        return str(obj.__str__()) + " (position: " + str(obj.order) + ")"
 
     sortable_str.short_description = "1.5 Configuration du champ"
     list_display = ["sortable_str", "is_mandatory"]
