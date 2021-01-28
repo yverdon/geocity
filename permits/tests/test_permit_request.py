@@ -279,6 +279,97 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
 
 
+class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.test_formset_data = {
+            "form-TOTAL_FORMS": ["1"],
+            "form-INITIAL_FORMS": ["0"],
+            "form-MIN_NUM_FORMS": ["0"],
+            "form-MAX_NUM_FORMS": ["1000"],
+            "creditor_type": [""],
+            "form-0-actor_type": "",
+            "form-0-first_name": ["John"],
+            "form-0-last_name": ["Doe"],
+            "form-0-phone": ["000 000 00 00"],
+            "form-0-email": ["john@doe.com"],
+            "form-0-address": ["Main street 1"],
+            "form-0-zipcode": ["2000"],
+            "form-0-city": ["City"],
+            "form-0-company_name": [""],
+            "form-0-vat_number": [""],
+            "form-0-id": [""],
+        }
+
+    def test_permitrequestactor_creates(self):
+        works_object_type = factories.WorksObjectTypeFactory()
+        works_type = works_object_type.works_type
+
+        actor_required = factories.PermitActorTypeFactory(
+            is_mandatory=True, works_type=works_type
+        )
+
+        self.test_formset_data["form-0-actor_type"] = actor_required.type
+
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor, status=models.PermitRequest.STATUS_DRAFT
+        )
+
+        permit_request.administrative_entity.works_object_types.set([works_object_type])
+        permit_request.works_object_types.set([works_object_type])
+        prop = factories.WorksObjectPropertyFactory()
+        prop.works_object_types.set([works_object_type])
+
+        self.client.post(
+            reverse(
+                "permits:permit_request_actors",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=self.test_formset_data,
+        )
+
+        actors = list(permit_request.actors.all())
+        self.assertEqual(len(actors), 1, "Expected 1 actor created")
+        self.assertEqual(actors[0].first_name, "John")
+
+    def test_permitrequestactor_required_cannot_have_empty_field(self):
+        works_object_type = factories.WorksObjectTypeFactory()
+        works_type = works_object_type.works_type
+
+        actor_required = factories.PermitActorTypeFactory(
+            is_mandatory=True, works_type=works_type
+        )
+
+        self.test_formset_data["form-0-actor_type"] = actor_required.type
+
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor, status=models.PermitRequest.STATUS_DRAFT
+        )
+
+        permit_request.administrative_entity.works_object_types.set([works_object_type])
+        permit_request.works_object_types.set([works_object_type])
+        prop = factories.WorksObjectPropertyFactory()
+        prop.works_object_types.set([works_object_type])
+
+        self.test_formset_data["form-0-last_name"] = ""
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_actors",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            follow=True,
+            data=self.test_formset_data,
+        )
+
+        permit_request.refresh_from_db()
+        # Check that no actor was saved for this permit
+        self.assertEqual(permit_request.actors.count(), 0)
+        # Check that if form not valid, it does not redirect
+        self.assertEqual(response.status_code, 200)
+
+
 class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
         super().setUp()

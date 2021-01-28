@@ -354,14 +354,62 @@ def get_permit_requests_list_for_user(user):
         )
 
 
+def get_actors_types(permit_request):
+    """
+        Get actors type defined for each work type defined for the permit_request
+    """
+
+    return models.PermitActorType.objects.filter(
+        works_type__in=get_permit_request_works_types(permit_request)
+    ).values_list("type", "is_mandatory")
+
+
+def filter_only_missing_actor_types(actor_types, permit_request):
+    """
+        Filter the given `actor_types` to return only the ones that have not been set in the given `permit_request`.
+    """
+
+    existing_actor_types = permit_request.permit_request_actors.values_list(
+        "actor_type", flat=True
+    )
+
+    return [
+        actor_type
+        for actor_type in actor_types
+        if actor_type[0] not in existing_actor_types
+    ]
+
+
+def get_missing_required_actor_types(permit_request):
+    """
+        Get actors type required but not filled
+    """
+
+    return filter_only_missing_actor_types(
+        [
+            (actor_type, is_mandatory)
+            for actor_type, is_mandatory in get_actors_types(permit_request)
+            if is_mandatory
+        ],
+        permit_request,
+    )
+
+
 def get_permitactorformset_initiated(permit_request, data=None):
     """
     Return PermitActorFormSet with initial values set
     """
-    missing_actor_types = get_missing_actors_types(permit_request)
+
+    # Queryset with all configured actor type for this permit_request
+    configured_actor_types = get_actors_types(permit_request)
+
+    # Get actor type that are not filled yet for the permit_request
+    missing_actor_types = filter_only_missing_actor_types(
+        configured_actor_types, permit_request
+    )
 
     actor_initial_forms = [
-        {"actor_type": actor_type} for actor_type in missing_actor_types
+        {"actor_type": actor_type[0]} for actor_type in missing_actor_types
     ]
 
     PermitActorFormSet = modelformset_factory(
@@ -378,27 +426,19 @@ def get_permitactorformset_initiated(permit_request, data=None):
         data=data,
     )
 
+    mandatory_actor_types = {
+        actor_type
+        for actor_type, is_mandatory in configured_actor_types
+        if is_mandatory
+    }
+
+    for form in formset:
+        form.empty_permitted = (
+            "actor_type" not in form.initial
+            or form.initial["actor_type"] not in mandatory_actor_types
+        )
+
     return formset
-
-
-def get_permit_actor_types(permit_request):
-    return models.PermitActorType.objects.filter(
-        works_type__in=get_permit_request_works_types(permit_request)
-    )
-
-
-def get_missing_actors_types(permit_request):
-    """
-    Return PermitRequestActor yet to be filled
-    """
-    existing_actor_types = set(
-        permit_request.permit_request_actors.values_list("actor_type", flat=True)
-    )
-    required_actor_types = set(
-        get_permit_actor_types(permit_request).values_list("type", flat=True)
-    )
-
-    return required_actor_types - existing_actor_types
 
 
 def get_total_error_count(permit_request):
@@ -412,7 +452,7 @@ def get_total_error_count(permit_request):
         instance=permit_request, enable_required=True, disable_fields=True, data={}
     )
 
-    missing_actor_types = get_missing_actors_types(permit_request)
+    missing_actor_types = get_missing_required_actor_types(permit_request)
 
     actor_errors = [
         _('Contact de type "%s" manquant.') % models.ACTOR_TYPE_CHOICES[actor_type][1]
@@ -600,11 +640,11 @@ def get_appendices_step(permit_request, enabled):
 
 
 def get_actors_step(permit_request, enabled):
-    if permit_request and len(get_permit_actor_types(permit_request)) == 0:
+    if permit_request and len(get_actors_types(permit_request)) == 0:
         return None
 
     actor_errors = (
-        len(get_missing_actors_types(permit_request)) if permit_request else 0
+        len(get_missing_required_actor_types(permit_request)) if permit_request else 0
     )
     actors_url = (
         reverse_permit_request_url("permits:permit_request_actors", permit_request)

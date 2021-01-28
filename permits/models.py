@@ -228,7 +228,7 @@ class PermitActor(models.Model):
 
     first_name = models.CharField(_("Prénom"), max_length=150,)
     last_name = models.CharField(_("Nom"), max_length=100,)
-    company_name = models.CharField(_("Entreprise"), max_length=100,)
+    company_name = models.CharField(_("Entreprise"), max_length=100, blank=True)
     vat_number = models.CharField(_("Numéro TVA"), max_length=19, blank=True)
     address = models.CharField(_("Adresse"), max_length=100,)
     zipcode = models.PositiveIntegerField(_("NPA"),)
@@ -262,6 +262,7 @@ class PermitActorType(models.Model):
     type = models.PositiveSmallIntegerField(
         _("type de contact"), choices=ACTOR_TYPE_CHOICES, default=ACTOR_TYPE_OTHER
     )
+    is_mandatory = models.BooleanField(_("obligatoire"), default=True)
     works_type = models.ForeignKey(
         "WorksType",
         on_delete=models.CASCADE,
@@ -272,6 +273,7 @@ class PermitActorType(models.Model):
     class Meta:
         verbose_name = _("1.6 Configuration du contact")
         verbose_name_plural = _("1.6 Configuration des contacts")
+        unique_together = [["type", "works_type"]]
 
     def __str__(self):
         return self.get_type_display() + " (" + str(self.works_type) + ")"
