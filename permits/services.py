@@ -615,20 +615,29 @@ def get_geo_time_step(permit_request, enabled):
     ):
         return None
 
-    if not GeoTimeInfo.DATE in required_info:
-        step_name = _("Plan")
-    elif not GeoTimeInfo.GEOMETRY in required_info:
-        step_name = _("Agenda")
-    else:
-        step_name = _("Agenda et plan")
-
     return models.Step(
-        name=step_name,
+        name=get_geo_step_name_title(permit_request)["step_name"],
         url=geo_time_url,
         completed=geo_time_errors == 0,
         errors_count=geo_time_errors,
         enabled=enabled,
     )
+
+
+def get_geo_step_name_title(permit_request):
+    required_info = get_geotime_required_info(permit_request)
+    name_title = {}
+    if not GeoTimeInfo.DATE in required_info:
+        name_title["title"] = config.GEO_STEP
+        name_title["step_name"] = _("Localisation")
+    elif not GeoTimeInfo.GEOMETRY in required_info:
+        name_title["title"] = config.TIME_STEP
+        name_title["step_name"] = _("Planning")
+    else:
+        name_title["title"] = config.GEO_TIME_STEP
+        name_title["step_name"] = _("Planning et localisation")
+
+    return name_title
 
 
 def get_geotime_required_info(permit_request):

@@ -772,10 +772,17 @@ def permit_request_geo_time(request, permit_request_id):
                 ).url
             )
 
+    title_step = services.get_geo_step_name_title(permit_request)
     return render(
         request,
         "permits/permit_request_geo_time.html",
-        {"formset": formset, "permit_request": permit_request, **steps_context,},
+        {
+            "formset": formset,
+            "permit_request": permit_request,
+            **steps_context,
+            "geo_title": title_step["title"],
+            "geo_step": title_step["step_name"],
+        },
     )
 
 
