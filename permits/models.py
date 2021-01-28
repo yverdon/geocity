@@ -507,7 +507,7 @@ class WorksObjectType(models.Model):
         verbose_name=_("communes"),
         related_name="works_object_types",
     )
-    needs_geometry = models.BooleanField(_("avec geometrie"), default=True)
+    needs_geometry = models.BooleanField(_("avec géométrie"), default=True)
     needs_date = models.BooleanField(_("avec période de temps"), default=True)
 
     class Meta:

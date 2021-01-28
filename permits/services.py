@@ -602,11 +602,8 @@ def get_geo_time_step(permit_request, enabled):
         if permit_request
         else ""
     )
-
-    if enabled and not (
-        geotime_needs_info(permit_request, "date")
-        or geotime_needs_info(permit_request, "geometry")
-    ):
+    required_info = get_geotime_required_info(permit_request)
+    if enabled and not ("date" in required_info or "geometry" in required_info):
         return None
 
     return models.Step(
@@ -618,13 +615,18 @@ def get_geo_time_step(permit_request, enabled):
     )
 
 
-def geotime_needs_info(permit_request, info):
+def get_geotime_required_info(permit_request):
+    required_info = []
     if permit_request_has_works_object_types(permit_request):
-        return True in permit_request.works_object_types.values_list(
-            f"needs_{info}", flat=True
-        )
-    else:
-        return False
+        if True in permit_request.works_object_types.values_list(
+            "needs_date", flat=True
+        ):
+            required_info.append("date")
+        if True in permit_request.works_object_types.values_list(
+            "needs_geometry", flat=True
+        ):
+            required_info.append("geometry")
+    return required_info
 
 
 def get_appendices_step(permit_request, enabled):
@@ -772,7 +774,7 @@ def submit_permit_request(permit_request, absolute_uri_func):
         raise SuspiciousOperation
 
     permit_request.status = models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
-    if geotime_needs_info(permit_request, "geometry"):
+    if "geometry" in get_geotime_required_info(permit_request):
         permit_request.intersected_geometries = geoservices.get_intersected_geometries(
             permit_request
         )

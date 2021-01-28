@@ -293,15 +293,15 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertGreaterEqual(
-            len(get_parser(response.content).select(".input-group.date")), 1
+            len(get_parser(response.content).select('input[name="form-0-starts_at"]')),
+            1,
         )
+        self.assertGreaterEqual(
+            len(get_parser(response.content).select('input[name="form-0-ends_at"]')), 1
+        )
+
         self.assertEqual(
-            len(
-                get_parser(response.content).select(
-                    "#geometry-widget-id_form-__prefix__-geom"
-                )
-            ),
-            0,
+            len(get_parser(response.content).select('textarea[name="form-0-geom"]')), 0,
         )
 
     def test_geotime_step_only_geom_fields_appear_when_only_geom_is_required(self):
@@ -318,16 +318,16 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             )
         )
         self.assertEqual(response.status_code, 200)
-        self.assertGreater(
-            len(
-                get_parser(response.content).select(
-                    "#geometry-widget-id_form-__prefix__-geom"
-                )
-            ),
+        self.assertGreaterEqual(
+            len(get_parser(response.content).select('textarea[name="form-0-geom"]')), 1,
+        )
+
+        self.assertEqual(
+            len(get_parser(response.content).select('input[name="form-0-starts_at"]')),
             0,
         )
         self.assertEqual(
-            len(get_parser(response.content).select(".input-group.date")), 0
+            len(get_parser(response.content).select('input[name="form-0-ends_at"]')), 0
         )
 
     def test_geotime_step_date_and_geom_fields_appear_when_both_required(self):
@@ -344,16 +344,15 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             )
         )
         self.assertEqual(response.status_code, 200)
-        self.assertGreater(
-            len(get_parser(response.content).select(".input-group.date")), 0
+        self.assertGreaterEqual(
+            len(get_parser(response.content).select('input[name="form-0-starts_at"]')),
+            1,
         )
-        self.assertGreater(
-            len(
-                get_parser(response.content).select(
-                    "#geometry-widget-id_form-__prefix__-geom"
-                )
-            ),
-            0,
+        self.assertGreaterEqual(
+            len(get_parser(response.content).select('input[name="form-0-ends_at"]')), 1
+        )
+        self.assertGreaterEqual(
+            len(get_parser(response.content).select('textarea[name="form-0-geom"]')), 1,
         )
 
 
