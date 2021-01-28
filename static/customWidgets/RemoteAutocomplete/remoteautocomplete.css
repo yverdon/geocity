@@ -7,7 +7,6 @@
     border: 2px solid;
     border-radius: 5px;
     border-color: lightgray;
-    opacity: 0.95;
 }
 
 #gmf_search_input input {
@@ -19,7 +18,6 @@
     color: black;
     width: 350px;
     font-size: 12px;
-    opacity: 0.95;
     border-bottom-right-radius: 5px;
     border-bottom-left-radius: 5px;
 }
