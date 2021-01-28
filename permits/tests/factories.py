@@ -218,7 +218,7 @@ class WorksObjectPropertyFactory(factory.django.DjangoModelFactory):
 
     name = factory.Faker("word")
     input_type = models.WorksObjectProperty.INPUT_TYPE_TEXT
-    order = faker.Faker().pyint(min_value=0, max_value=9999, step=1)
+    order = factory.Sequence(int)
 
 
 class WorksObjectPropertyFactoryTypeAddress(factory.django.DjangoModelFactory):
