@@ -1,3 +1,4 @@
+import enum
 import itertools
 import os
 import urllib
@@ -19,6 +20,11 @@ from django.utils.translation import gettext_lazy as _
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
 from .utils import reverse_permit_request_url
+
+
+class GeoTimeInfo(enum.Enum):
+    DATE = enum.auto()
+    GEOMETRY = enum.auto()
 
 
 def get_works_object_type_choices(permit_request):
@@ -602,14 +608,51 @@ def get_geo_time_step(permit_request, enabled):
         if permit_request
         else ""
     )
+    required_info = get_geotime_required_info(permit_request)
+
+    if enabled and not (
+        GeoTimeInfo.DATE in required_info or GeoTimeInfo.GEOMETRY in required_info
+    ):
+        return None
 
     return models.Step(
-        name=_("Agenda et plan"),
+        name=get_geo_step_name_title(required_info)["step_name"],
         url=geo_time_url,
         completed=geo_time_errors == 0,
         errors_count=geo_time_errors,
         enabled=enabled,
     )
+
+
+def get_geo_step_name_title(required_info):
+    name_title = {}
+    if GeoTimeInfo.DATE not in required_info:
+        name_title["title"] = config.GEO_STEP
+        name_title["step_name"] = _("Localisation")
+    elif GeoTimeInfo.GEOMETRY not in required_info:
+        name_title["title"] = config.TIME_STEP
+        name_title["step_name"] = _("Planning")
+    else:
+        name_title["title"] = config.GEO_TIME_STEP
+        name_title["step_name"] = _("Planning et localisation")
+
+    return name_title
+
+
+def get_geotime_required_info(permit_request):
+    if not permit_request:
+        return set()
+    works_object_types = permit_request.works_object_types.all()
+    required_info = set()
+    if any(works_object_type.needs_date for works_object_type in works_object_types):
+        required_info.add(GeoTimeInfo.DATE)
+
+    if any(
+        works_object_type.needs_geometry for works_object_type in works_object_types
+    ):
+        required_info.add(GeoTimeInfo.GEOMETRY)
+
+    return required_info
 
 
 def get_appendices_step(permit_request, enabled):
@@ -755,9 +798,10 @@ def submit_permit_request(permit_request, absolute_uri_func):
         raise SuspiciousOperation
 
     permit_request.status = models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
-    permit_request.intersected_geometries = geoservices.get_intersected_geometries(
-        permit_request
-    )
+    if GeoTimeInfo.GEOMETRY in get_geotime_required_info(permit_request):
+        permit_request.intersected_geometries = geoservices.get_intersected_geometries(
+            permit_request
+        )
     permit_request.save()
     permit_request_url = absolute_uri_func(
         reverse(
