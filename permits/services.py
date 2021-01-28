@@ -610,9 +610,7 @@ def get_geo_time_step(permit_request, enabled):
     )
     required_info = get_geotime_required_info(permit_request)
 
-    if enabled and not (
-        GeoTimeInfo.DATE in required_info or GeoTimeInfo.GEOMETRY in required_info
-    ):
+    if not (GeoTimeInfo.DATE in required_info or GeoTimeInfo.GEOMETRY in required_info):
         return None
 
     return models.Step(
