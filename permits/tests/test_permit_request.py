@@ -303,11 +303,8 @@ class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
         }
 
     def test_permitrequestactor_creates(self):
-
         works_object_type = factories.WorksObjectTypeFactory()
-
         works_type = works_object_type.works_type
-        works_object = works_object_type.works_object
 
         actor_required = factories.PermitActorTypeFactory(
             is_mandatory=True, works_type=works_type
@@ -320,26 +317,25 @@ class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
         )
 
         permit_request.administrative_entity.works_object_types.set([works_object_type])
+        permit_request.works_object_types.set([works_object_type])
         prop = factories.WorksObjectPropertyFactory()
         prop.works_object_types.set([works_object_type])
 
-        response = self.client.post(
+        self.client.post(
             reverse(
                 "permits:permit_request_actors",
                 kwargs={"permit_request_id": permit_request.pk},
             ),
             data=self.test_formset_data,
         )
-        permit_request_actor = models.PermitRequestActor.objects.first()
-        self.assertEqual(permit_request_actor.actor.first_name, "John")
-        self.assertEqual(permit_request_actor.permit_request, permit_request)
+
+        actors = list(permit_request.actors.all())
+        self.assertEqual(len(actors), 1, "Expected 1 actor created")
+        self.assertEqual(actors[0].first_name, "John")
 
     def test_permitrequestactor_required_cannot_have_empty_field(self):
-
         works_object_type = factories.WorksObjectTypeFactory()
-
         works_type = works_object_type.works_type
-        works_object = works_object_type.works_object
 
         actor_required = factories.PermitActorTypeFactory(
             is_mandatory=True, works_type=works_type
@@ -352,6 +348,7 @@ class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
         )
 
         permit_request.administrative_entity.works_object_types.set([works_object_type])
+        permit_request.works_object_types.set([works_object_type])
         prop = factories.WorksObjectPropertyFactory()
         prop.works_object_types.set([works_object_type])
 
@@ -367,7 +364,7 @@ class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
         )
 
         permit_request.refresh_from_db()
-        # Check that no actor was savec for this permit
+        # Check that no actor was saved for this permit
         self.assertEqual(permit_request.actors.count(), 0)
         # Check that if form not valid, it does not redirect
         self.assertEqual(response.status_code, 200)
