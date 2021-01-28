@@ -770,20 +770,22 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             permit_request.status, models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
         )
 
-    def test_secretariat_can_amend_request(self):
-        models.WorksObjectType.objects.create(
-            works_type=factories.WorksTypeFactory.create(),
-            works_object=factories.WorksObjectFactory.create(),
-        )
-        amend_property = factories.PermitRequestAmendPropertyFactory.create()
-        amend_property.works_object_types.set(models.WorksObjectType.objects.all())
-
+    def test_secretariat_can_amend_request_with_custom_property(self):
         permit_request = factories.PermitRequestFactory(
             status=models.PermitRequest.STATUS_PROCESSING,
             administrative_entity=self.administrative_entity,
-            amend_custom_properties={"6": "I'm a custom property"},
         )
-        permit_request.works_object_types.set(models.WorksObjectType.objects.all())
+        works_object_type_choice = factories.WorksObjectTypeChoiceFactory(
+            permit_request=permit_request
+        )
+        prop = factories.PermitRequestAmendPropertyFactory()
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        factories.PermitRequestAmendPropertyValuesFactory(
+            property=prop,
+            works_object_type_choice=works_object_type_choice,
+            value="The original custom property value",
+        )
 
         self.client.post(
             reverse(
@@ -791,49 +793,15 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
                 kwargs={"permit_request_id": permit_request.pk},
             ),
             data={
-                "status": models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-                f"{models.AMEND_CUSTOM_FIELDS_PREFIX}{amend_property.works_object_types.first().pk}": "So I decided to change",
                 "action": models.ACTION_AMEND,
+                f"amend_custom_field-{permit_request.works_object_types.first().pk}_{prop.pk}": "I am a new property value, I am alive!",
+                "amend_custom_field-status": models.PermitRequest.STATUS_PROCESSING,
             },
         )
+        property_value = models.PermitRequestAmendPropertyValue.objects.first().value
 
-        permit_request.refresh_from_db()
-        self.assertTrue(
-            "So I decided to change" in permit_request.amend_custom_properties.values()
-        )
-        self.assertFalse(
-            "I'm a custom property" in permit_request.amend_custom_properties.values()
-        )
-
-    def test_secretariat_amend_raises_error_on_missing_mandatory_custom_property(self):
-        models.WorksObjectType.objects.create(
-            works_type=factories.WorksTypeFactory.create(),
-            works_object=factories.WorksObjectFactory.create(),
-        )
-        amend_property = factories.PermitRequestAmendPropertyFactory.create(
-            is_mandatory=True
-        )
-        amend_property.works_object_types.set(models.WorksObjectType.objects.all())
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_PROCESSING,
-            administrative_entity=self.administrative_entity,
-        )
-        permit_request.works_object_types.set(models.WorksObjectType.objects.all())
-
-        self.assertRaises(
-            TypeError,
-            lambda: self.client.post(
-                reverse(
-                    "permits:permit_request_detail",
-                    kwargs={"permit_request_id": permit_request.pk},
-                ),
-                data={
-                    "status": models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-                    f"{models.AMEND_CUSTOM_FIELDS_PREFIX}{amend_property.works_object_types.first().pk}": "",
-                    "action": models.ACTION_AMEND,
-                },
-            ),
-        )
+        self.assertEqual(property_value, "I am a new property value, I am alive!")
+        self.assertNotEqual(property_value, "The original custom property value")
 
     def test_secretariat_can_see_submitted_requests(self):
         permit_request = factories.PermitRequestFactory(
@@ -845,11 +813,9 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(list(response.context["permitrequest_list"]), [permit_request])
 
     def test_ask_for_supplements_shows_specific_message(self):
-        user = factories.UserFactory()
         permit_request = factories.PermitRequestFactory(
             status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
             administrative_entity=self.administrative_entity,
-            author=user.permitauthor,
         )
         response = self.client.post(
             reverse(

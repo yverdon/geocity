@@ -54,7 +54,16 @@
         <form method="post">
           {% csrf_token %}
 
-          {% bootstrap_form forms.amend layout='horizontal' %}
+          {% for field in base_fields %}
+            {% bootstrap_field field layout='horizontal'%}
+          {% endfor %}
+
+          {% for object_type, fields in object_types %}
+            <h4 class="my-5">{{ object_type }}</h4>
+            {% for field in fields %}
+              {% bootstrap_field field layout='horizontal'%}
+            {% endfor %}
+          {% endfor %}
 
           <div class="text-right">
             <input name="action" type="hidden" value="amend">

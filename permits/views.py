@@ -189,6 +189,14 @@ class PermitRequestDetailView(View):
                 "can_classify": services.can_classify_permit_request(
                     self.request.user, self.permit_request
                 ),
+                "object_types": forms.get(
+                    models.ACTION_AMEND
+                ).get_fields_by_object_type()
+                if forms.get(models.ACTION_AMEND)
+                else None,
+                "base_fields": forms.get(models.ACTION_AMEND).get_base_fields()
+                if forms.get(models.ACTION_AMEND)
+                else None,
             },
         }
 
@@ -243,10 +251,6 @@ class PermitRequestDetailView(View):
                 == models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
                 else {}
             )
-            for key, value in self.permit_request.amend_custom_properties.items():
-                initial[f"{models.AMEND_CUSTOM_FIELDS_PREFIX}{key}"] = (
-                    value if value else ""
-                )
 
             form = forms.PermitRequestAdditionalInformationForm(
                 instance=self.permit_request, initial=initial, data=data

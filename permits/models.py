@@ -49,7 +49,6 @@ ACTION_POKE = "poke"
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
 ACTIONS = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE, ACTION_POKE]
-AMEND_CUSTOM_FIELDS_PREFIX = "amend_custom_field_"
 
 
 @dataclasses.dataclass
@@ -391,7 +390,6 @@ class PermitRequest(models.Model):
     )
     is_public = models.BooleanField(_("Publier"), default=False)
     history = HistoricalRecords()
-    amend_custom_properties = JSONField(default=dict)
 
     class Meta:
         verbose_name = _("3.1 Consultation de la demande")
@@ -705,7 +703,7 @@ class PermitRequestAmendProperty(models.Model):
     works_object_types = models.ManyToManyField(
         WorksObjectType,
         verbose_name=_("objets des travaux"),
-        related_name="%(class)s_properties",
+        related_name="amend_properties",
     )
 
     class Meta:
@@ -716,3 +714,27 @@ class PermitRequestAmendProperty(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class PermitRequestAmendPropertyValue(models.Model):
+    """
+    Value of a property for a selected object to be amended by the Secretariat.
+    """
+
+    property = models.ForeignKey(
+        PermitRequestAmendProperty,
+        verbose_name=_("caractéristique"),
+        on_delete=models.PROTECT,
+        related_name="+",
+    )
+    works_object_type_choice = models.ForeignKey(
+        WorksObjectTypeChoice,
+        verbose_name=_("objet des travaux"),
+        on_delete=models.CASCADE,
+        related_name="amend_properties",
+    )
+    value = models.TextField(_("traitement info"), blank=True)
+    history = HistoricalRecords()
+
+    class Meta:
+        unique_together = [("property", "works_object_type_choice")]

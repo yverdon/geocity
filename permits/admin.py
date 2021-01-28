@@ -30,8 +30,8 @@ def works_object_type_administrative_entities(obj):
     )
 
 
-def get_works_object_type():
-    return WorksObjectTypeWithAdministrativeEntities(
+def get_works_object_types_fields():
+    return WorksObjectTypeWithAdministrativeEntitiesField(
         queryset=(
             models.WorksObjectType.objects.select_related("works_object", "works_type")
             .order_by("works_object__name", "works_type__name")
@@ -58,7 +58,7 @@ class WorksObjectTypeAdmin(admin.ModelAdmin):
         )
 
 
-class WorksObjectTypeWithAdministrativeEntities(forms.ModelMultipleChoiceField):
+class WorksObjectTypeWithAdministrativeEntitiesField(forms.ModelMultipleChoiceField):
     def label_from_instance(self, obj):
         entities = ", ".join(
             entity.name for entity in obj.administrative_entities.all()
@@ -67,7 +67,7 @@ class WorksObjectTypeWithAdministrativeEntities(forms.ModelMultipleChoiceField):
 
 
 class WorksObjectPropertyForm(forms.ModelForm):
-    works_object_types = get_works_object_type()
+    works_object_types = get_works_object_types_fields()
 
     class Meta:
         model = models.WorksObjectProperty
@@ -155,7 +155,7 @@ class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
 
 
 class PermitRequestAmendPropertyForm(forms.ModelForm):
-    works_object_types = get_works_object_type()
+    works_object_types = get_works_object_types_fields()
 
     class Meta:
         model = models.PermitRequestAmendProperty
@@ -163,15 +163,17 @@ class PermitRequestAmendPropertyForm(forms.ModelForm):
 
 
 class PermitRequestAmendPropertyAdmin(admin.ModelAdmin):
+
+    list_display = ["sortable_str", "is_mandatory"]
+    form = PermitRequestAmendPropertyForm
+
     def sortable_str(self, obj):
-        return obj.__str__()
+        return str(obj)
 
     sortable_str.short_description = (
         "2.2 Configuration des champs de traitement des demandes"
     )
     sortable_str.admin_order_field = "name"
-    list_display = ["sortable_str", "is_mandatory"]
-    form = PermitRequestAmendPropertyForm
 
 
 admin.site.register(models.PermitRequest, PermitRequestHistoryAdmin)

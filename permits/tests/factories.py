@@ -281,3 +281,12 @@ class PermitRequestAmendPropertyFactory(factory.django.DjangoModelFactory):
         model = models.PermitRequestAmendProperty
 
     name = factory.Faker("word")
+
+
+class PermitRequestAmendPropertyValuesFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitRequestAmendPropertyValue
+
+    property = factory.SubFactory(PermitRequestAmendPropertyFactory)
+    works_object_type_choice = factory.SubFactory(WorksObjectTypeChoiceFactory)
+    value = factory.Faker("word")

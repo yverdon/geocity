@@ -590,13 +590,11 @@ class PermitRequestActorForm(forms.ModelForm):
 
 class PermitRequestAdditionalInformationForm(forms.ModelForm):
     required_css_class = "required"
+    prefix = "amend_custom_field"
 
     class Meta:
         model = models.PermitRequest
-        fields = ["is_public", "status", "amend_custom_properties"]
-        widgets = {
-            "amend_custom_properties": forms.HiddenInput(),
-        }
+        fields = ["is_public", "status"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -621,32 +619,76 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
             ]
             self.fields["status"].choices = tuple(filter2)
 
-            for field in services.get_permit_request_amend_custom_properties(
-                self.instance
-            ):
-                field_name = f"{models.AMEND_CUSTOM_FIELDS_PREFIX}{field.id}"
+            # Initial values
+            initial = {}
+            prop_values = self.get_values()
+            for prop_value in prop_values:
+                initial[
+                    self.get_field_name(
+                        prop_value.works_object_type_choice.works_object_type,
+                        prop_value.property,
+                    )
+                ] = prop_value.value
+
+            kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
+
+            for works_object_type, prop in self.get_properties():
+                field_name = self.get_field_name(works_object_type, prop)
                 self.fields[field_name] = forms.CharField(
-                    label=field.name,
-                    required=False,
+                    label=prop.name,
+                    required=prop.is_mandatory,
                     widget=forms.Textarea(attrs={"rows": 3,}),
+                    initial=initial[field_name] if field_name in initial.keys() else "",
                 )
-                if field.is_mandatory:
-                    self.fields[field_name].required = True
-            self.fields["amend_custom_properties"].required = False
+
+    def get_field_name(self, works_object_type, prop):
+        return "{}_{}".format(works_object_type.pk, prop.pk)
+
+    def get_properties(self):
+        """
+        Return a list of tuples `(WorksObjectType, WorksObjectTypeProperty)` for the
+        amend properties of the current permit request. Used to create the form fields.
+        """
+        return services.get_permit_request_amend_custom_properties(self.instance)
+
+    def get_values(self):
+        """
+        Return a `PermitRequestAmendPropertyValue` object for the current permit request. They're used to set the initial
+        value of the form fields.
+        """
+        return services.get_amend_custom_properties_values(self.instance)
+
+    def get_fields_by_object_type(self):
+        """
+        Return a list of tuples `(WorksObjectType, List[Field])` for each object type and their properties.
+        """
+        return [
+            (
+                object_type,
+                [self[self.get_field_name(object_type, prop)] for prop in props],
+            )
+            for object_type, props in services.get_permit_request_amend_custom_properties_by_object_type(
+                self.instance
+            )
+        ]
+
+    def get_base_fields(self):
+        """
+        Return a list of base fields for the current Model Form.
+        """
+        return [self[field] for field in self.base_fields]
 
     def save(self, commit=True):
         permit_request = super().save(commit=False)
-
-        prefix = models.AMEND_CUSTOM_FIELDS_PREFIX
-        amend_props = {}
-        for key, value in self.cleaned_data.items():
-            if key.startswith(prefix) and value:
-                amend_props[key[len(prefix) :]] = value
-        permit_request.amend_custom_properties = amend_props
-
+        for works_object_type, prop in self.get_properties():
+            services.set_amend_custom_property_value(
+                permit_request=self.instance,
+                object_type=works_object_type,
+                prop=prop,
+                value=self.cleaned_data[self.get_field_name(works_object_type, prop)],
+            )
         if commit:
             permit_request.save()
-
         return permit_request
 
 
