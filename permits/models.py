@@ -262,13 +262,13 @@ class PermitActorType(models.Model):
     type = models.PositiveSmallIntegerField(
         _("type de contact"), choices=ACTOR_TYPE_CHOICES, default=ACTOR_TYPE_OTHER
     )
-    is_mandatory = models.BooleanField(_("obligatoire"), default=True)
     works_type = models.ForeignKey(
         "WorksType",
         on_delete=models.CASCADE,
         verbose_name=_("type de travaux"),
         related_name="works_contact_types",
     )
+    is_mandatory = models.BooleanField(_("obligatoire"), default=True)
 
     class Meta:
         verbose_name = _("1.6 Configuration du contact")
