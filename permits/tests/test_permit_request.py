@@ -515,16 +515,29 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(1, len(parser.select(".invalid-feedback")))
 
     def test_properties_step_submit_updates_permit_request_with_address(self):
-        new_prop = factories.WorksObjectPropertyFactoryTypeAddress(
+        address_prop = factories.WorksObjectPropertyFactoryTypeAddress(
             input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS
         )
-        new_prop.works_object_types.set(self.permit_request.works_object_types.all())
+        address_prop.works_object_types.set(
+            self.permit_request.works_object_types.all()
+        )
+        works_object_type = self.permit_request.works_object_types.first()
         data = {
-            "properties-{}_{}".format(
-                works_object_type.pk, new_prop.pk
-            ): "value-{}".format(works_object_type.pk)
-            for works_object_type in self.permit_request.works_object_types.all()
+            f"properties-{works_object_type.pk}_{address_prop.pk}": "Hôtel Martinez, Cannes"
         }
+        self.client.post(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            ),
+            data=data,
+        )
+
+        self.permit_request.refresh_from_db()
+        prop_val = services.get_properties_values(self.permit_request).get(
+            property__input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS
+        )
+        self.assertEqual(prop_val.value, {"val": "Hôtel Martinez, Cannes"})
 
     def test_properties_step_submit_updates_permit_request_with_date(self):
 
