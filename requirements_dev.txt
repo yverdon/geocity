@@ -19,6 +19,7 @@ click==7.1.2              # via -r requirements.txt, black, pip-tools
 coverage==5.3             # via -r requirements_dev.in
 cssselect2==0.4.1         # via -r requirements.txt, cairosvg, weasyprint
 defusedxml==0.6.0         # via -r requirements.txt, cairosvg
+django-admin-sortable2==0.7.7  # via -r requirements.txt
 django-bootstrap-datepicker-plus==3.0.5  # via -r requirements.txt
 django-bootstrap4==2.3.1  # via -r requirements.txt
 django-constance[database]==2.8.0  # via -r requirements.txt

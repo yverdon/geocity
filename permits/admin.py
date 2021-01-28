@@ -1,14 +1,12 @@
+from adminsortable2.admin import SortableAdminMixin
 from django import forms
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
+from geomapshark import settings
 from simple_history.admin import SimpleHistoryAdmin
 
-from geomapshark import settings
-
-from . import models
-
 from . import forms as permit_forms
-
+from . import models
 
 admin.site.register(models.WorksType)
 admin.site.register(models.PermitActorType)
@@ -69,16 +67,11 @@ class WorksObjectPropertyForm(forms.ModelForm):
 
     class Meta:
         model = models.WorksObjectProperty
-        fields = ["name", "input_type", "is_mandatory", "works_object_types"]
+        fields = ["name", "order", "input_type", "is_mandatory", "works_object_types"]
 
 
-class WorksObjectPropertyAdmin(admin.ModelAdmin):
-    def sortable_str(self, obj):
-        return obj.__str__()
-
-    sortable_str.short_description = "1.5 Configuration du champ"
-    sortable_str.admin_order_field = "name"
-    list_display = ["sortable_str", "is_mandatory"]
+class WorksObjectPropertyAdmin(SortableAdminMixin, admin.ModelAdmin):
+    list_display = ["__str__", "is_mandatory"]
     form = WorksObjectPropertyForm
 
 

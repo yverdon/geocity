@@ -695,6 +695,53 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
             ).format(id=works_object_type.works_type.pk, value=works_object_type.pk)
             self.assertInHTML(expected, content)
 
+    def test_properties_step_prefills_properties_for_existing_permit_request(self):
+        works_object_type_choice = services.get_works_object_type_choices(
+            self.permit_request
+        ).first()
+        prop = factories.WorksObjectPropertyFactory()
+        prop.works_object_types.add(works_object_type_choice.works_object_type)
+        prop_value = factories.WorksObjectPropertyValueFactory(
+            works_object_type_choice=works_object_type_choice, property=prop
+        )
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            )
+        )
+        content = response.content.decode()
+        expected = '<textarea name="properties-{obj_type_id}_{prop_id}" cols="40" rows="1" class="form-control" title="" id="id_properties-{obj_type_id}_{prop_id}">{value}</textarea>'.format(
+            obj_type_id=works_object_type_choice.works_object_type.pk,
+            prop_id=prop.pk,
+            prop_name=prop.name,
+            value=prop_value.value["val"],
+        )
+
+        self.assertInHTML(expected, content)
+
+    def test_properties_step_order_properties_for_existing_permit_request(self):
+
+        works_object_type_choice = services.get_works_object_type_choices(
+            self.permit_request
+        ).first()
+
+        prop_1 = factories.WorksObjectPropertyFactory(order=10)
+        prop_2 = factories.WorksObjectPropertyFactory(order=2)
+        prop_1.works_object_types.add(works_object_type_choice.works_object_type)
+        prop_2.works_object_types.add(works_object_type_choice.works_object_type)
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            )
+        )
+        content = response.content.decode()
+        position_1 = content.find(prop_1.name)
+        position_2 = content.find(prop_2.name)
+        self.assertGreater(position_1, position_2)
+
 
 class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
     def test_non_secretariat_user_cannot_amend_request(self):

@@ -201,7 +201,7 @@ def _get_properties_filtered(permit_request, props_filter):
     props_by_object_type = [
         (
             works_object_type,
-            props_filter(works_object_type.properties.all()).order_by("name"),
+            props_filter(works_object_type.properties.all()).order_by("order", "name"),
         )
         for works_object_type in permit_request.works_object_types.order_by(
             "works_object__name", "works_type__name"
