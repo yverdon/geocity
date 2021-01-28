@@ -704,12 +704,12 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
 
         required_info = services.get_geotime_required_info(self.permit_request)
 
-        if not "date" in required_info:
+        if not services.GeoTimeInfo.DATE in required_info:
             del self.fields["starts_at"]
             del self.fields["ends_at"]
 
-        if not "geometry" in required_info:
-            self.fields.pop("geom")
+        if not services.GeoTimeInfo.GEOMETRY in required_info:
+            del self.fields["geom"]
         else:
             self.fields["geom"].widget.attrs["options"] = self.get_widget_options(
                 self.permit_request

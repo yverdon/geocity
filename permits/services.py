@@ -1,3 +1,4 @@
+import enum
 import itertools
 import os
 import urllib
@@ -19,6 +20,11 @@ from django.utils.translation import gettext_lazy as _
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
 from .utils import reverse_permit_request_url
+
+
+class GeoTimeInfo(enum.Enum):
+    DATE = enum.auto()
+    GEOMETRY = enum.auto()
 
 
 def get_works_object_type_choices(permit_request):
@@ -603,11 +609,21 @@ def get_geo_time_step(permit_request, enabled):
         else ""
     )
     required_info = get_geotime_required_info(permit_request)
-    if enabled and not ("date" in required_info or "geometry" in required_info):
+
+    if enabled and not (
+        GeoTimeInfo.DATE in required_info or GeoTimeInfo.GEOMETRY in required_info
+    ):
         return None
 
+    if not GeoTimeInfo.DATE in required_info:
+        step_name = _("Plan")
+    elif not GeoTimeInfo.GEOMETRY in required_info:
+        step_name = _("Agenda")
+    else:
+        step_name = _("Agenda et plan")
+
     return models.Step(
-        name=_("Agenda et plan"),
+        name=step_name,
         url=geo_time_url,
         completed=geo_time_errors == 0,
         errors_count=geo_time_errors,
@@ -616,16 +632,18 @@ def get_geo_time_step(permit_request, enabled):
 
 
 def get_geotime_required_info(permit_request):
-    required_info = []
-    if permit_request_has_works_object_types(permit_request):
-        if True in permit_request.works_object_types.values_list(
-            "needs_date", flat=True
-        ):
-            required_info.append("date")
-        if True in permit_request.works_object_types.values_list(
-            "needs_geometry", flat=True
-        ):
-            required_info.append("geometry")
+    works_object_types = (
+        permit_request.works_object_types.all() if permit_request else ()
+    )
+    required_info = set()
+    if any(works_object_type.needs_date for works_object_type in works_object_types):
+        required_info.add(GeoTimeInfo.DATE)
+
+    if any(
+        works_object_type.needs_geometry for works_object_type in works_object_types
+    ):
+        required_info.add(GeoTimeInfo.GEOMETRY)
+
     return required_info
 
 
@@ -699,7 +717,9 @@ def get_progress_bar_steps(request, permit_request):
     the permit request wizard. The dict only contains reachable steps (which don’t
     necessarily have a `url` though, eg. before selecting the administrative entity).
     """
-    has_works_objects_types = permit_request_has_works_object_types(permit_request)
+    has_works_objects_types = (
+        permit_request.works_object_types.exists() if permit_request else False
+    )
     selected_works_types = request.GET.getlist("types")
 
     all_steps = {
@@ -741,10 +761,6 @@ def get_progress_bar_steps(request, permit_request):
     }
 
 
-def permit_request_has_works_object_types(permit_request):
-    return permit_request.works_object_types.exists() if permit_request else False
-
-
 def get_previous_step(steps, current_step):
     """
     Return the previous step in the list or raise `IndexError` if there’s no such
@@ -774,7 +790,7 @@ def submit_permit_request(permit_request, absolute_uri_func):
         raise SuspiciousOperation
 
     permit_request.status = models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
-    if "geometry" in get_geotime_required_info(permit_request):
+    if GeoTimeInfo.GEOMETRY in get_geotime_required_info(permit_request):
         permit_request.intersected_geometries = geoservices.get_intersected_geometries(
             permit_request
         )
