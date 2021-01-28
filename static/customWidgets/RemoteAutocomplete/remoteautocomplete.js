@@ -56,11 +56,19 @@ $(function () {
               nmr = "";
             }
             var formPrefix = event.target.attributes.id.value.substring(0, 9);
-            $("#" + item.id).val(data.feature.attributes.strname + " " + nmr);
+            item.value = data.feature.attributes.strname + " " + nmr;
+            if (
+              dataRemoteAutocomplete.single_address_field
+            ) {
+              item.value =
+                data.feature.attributes.strname + " " + nmr + ", " +
+                data.feature.attributes.dplz4 + " " + data.feature.attributes.dplzname;
+              return;
+            }
 
             if (
               dataRemoteAutocomplete.zipcode_field != "" &&
-              typeof dataRemoteAutocomplete.single_contact == "undefined"
+              !dataRemoteAutocomplete.single_contact
             ) {
               var field =
                 "#" + formPrefix + "-" + dataRemoteAutocomplete.zipcode_field;
@@ -70,9 +78,10 @@ $(function () {
                 data.feature.attributes.dplz4
               );
             }
+
             if (
               dataRemoteAutocomplete.city_field != "" &&
-              typeof dataRemoteAutocomplete.single_contact == "undefined"
+              !dataRemoteAutocomplete.single_contact
             ) {
               var field =
                 "#" + formPrefix + "-" + dataRemoteAutocomplete.city_field;

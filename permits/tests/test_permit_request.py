@@ -487,6 +487,58 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
             set(data.values()),
         )
 
+    def test_missing_mandatory_address_property_gives_invalid_feedback(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory(permit_request=permit_request)
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactoryTypeAddress(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS, is_mandatory=True
+        )
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        data = {
+            "properties-{}_{}".format(works_object_type.pk, prop.pk): ""
+            for works_object_type in permit_request.works_object_types.all()
+        }
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=data,
+        )
+        parser = get_parser(response.content)
+        parser.select(".invalid-feedback")
+        self.assertEqual(1, len(parser.select(".invalid-feedback")))
+
+    def test_properties_step_submit_updates_permit_request_with_address(self):
+        address_prop = factories.WorksObjectPropertyFactoryTypeAddress(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS
+        )
+        address_prop.works_object_types.set(
+            self.permit_request.works_object_types.all()
+        )
+        works_object_type = self.permit_request.works_object_types.first()
+        data = {
+            f"properties-{works_object_type.pk}_{address_prop.pk}": "Hôtel Martinez, Cannes"
+        }
+        self.client.post(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            ),
+            data=data,
+        )
+
+        self.permit_request.refresh_from_db()
+        prop_val = services.get_properties_values(self.permit_request).get(
+            property__input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS
+        )
+        self.assertEqual(prop_val.value, {"val": "Hôtel Martinez, Cannes"})
+
     def test_properties_step_submit_updates_permit_request_with_date(self):
 
         date_prop = factories.WorksObjectPropertyFactory(
@@ -565,31 +617,6 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
                 ' name="works_objects-{id}" title="" type="checkbox" value="{value}"/>'
             ).format(id=works_object_type.works_type.pk, value=works_object_type.pk)
             self.assertInHTML(expected, content)
-
-    def test_properties_step_prefills_properties_for_existing_permit_request(self):
-        works_object_type_choice = services.get_works_object_type_choices(
-            self.permit_request
-        ).first()
-        prop = factories.WorksObjectPropertyFactory()
-        prop.works_object_types.add(works_object_type_choice.works_object_type)
-        prop_value = factories.WorksObjectPropertyValueFactory(
-            works_object_type_choice=works_object_type_choice, property=prop
-        )
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_properties",
-                kwargs={"permit_request_id": self.permit_request.pk},
-            )
-        )
-        content = response.content.decode()
-        expected = '<textarea name="properties-{obj_type_id}_{prop_id}" cols="40" rows="1" class="form-control" title="" id="id_properties-{obj_type_id}_{prop_id}">{value}</textarea>'.format(
-            obj_type_id=works_object_type_choice.works_object_type.pk,
-            prop_id=prop.pk,
-            prop_name=prop.name,
-            value=prop_value.value["val"],
-        )
-
-        self.assertInHTML(expected, content)
 
 
 class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):

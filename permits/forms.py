@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta, date
+from datetime import date, datetime, timedelta
 
 from bootstrap_datepicker_plus import DatePickerInput, DateTimePickerInput
 from django import forms
@@ -13,9 +13,46 @@ from django.db import transaction
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
 from . import models, services
+
+
+class AddressWidget(forms.widgets.TextInput):
+    @property
+    def media(self):
+        return forms.Media(
+            css={
+                "all": (
+                    "customWidgets/RemoteAutocomplete/remoteautocomplete.css",
+                    "libs/js/jquery-ui-custom/jquery-ui.min.css",
+                )
+            },
+            js=(
+                "customWidgets/RemoteAutocomplete/remoteautocomplete.js",
+                "libs/js/jquery-ui-custom/jquery-ui.js",
+            ),
+        )
+
+    def __init__(self, attrs=None, autocomplete_options=None):
+        autocomplete_options = {
+            "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
+            "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
+            "origins": "address",
+            "zipcode_field": "zipcode",
+            "city_field": "city",
+            "placeholder": gettext("ex: Place Pestalozzi 2, 1400 Yverdon"),
+            "single_contact": True,
+            "single_address_field": False,
+            **(autocomplete_options or {}),
+        }
+        super().__init__(
+            {
+                **(attrs or {}),
+                "data_remote_autocomplete": json.dumps(autocomplete_options),
+            }
+        )
 
 
 def get_field_cls_for_property(prop):
@@ -24,6 +61,7 @@ def get_field_cls_for_property(prop):
         models.WorksObjectProperty.INPUT_TYPE_CHECKBOX: forms.BooleanField,
         models.WorksObjectProperty.INPUT_TYPE_NUMBER: forms.FloatField,
         models.WorksObjectProperty.INPUT_TYPE_FILE: forms.FileField,
+        models.WorksObjectProperty.INPUT_TYPE_ADDRESS: forms.CharField,
         models.WorksObjectProperty.INPUT_TYPE_DATE: forms.DateField,
     }
 
@@ -229,6 +267,15 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                 **self.get_field_kwargs(prop),
                 widget=forms.Textarea(attrs={"rows": 1,}),
             )
+        elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_ADDRESS:
+
+            field_instance = field_class(
+                **self.get_field_kwargs(prop),
+                widget=AddressWidget(
+                    autocomplete_options={"single_address_field": True}
+                ),
+            )
+
         elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_DATE:
             field_instance = field_class(
                 **self.get_field_kwargs(prop),
@@ -339,25 +386,7 @@ class GenericAuthorForm(forms.ModelForm):
 
     required_css_class = "required"
     address = forms.CharField(
-        max_length=100,
-        label=_("Adresse"),
-        widget=forms.TextInput(
-            attrs={
-                "data_remote_autocomplete": json.dumps(
-                    {
-                        "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
-                        "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
-                        "search_prefix": "false",
-                        "origins": "address",
-                        "zipcode_field": "zipcode",
-                        "city_field": "city",
-                        "placeholder": "ex: Place Pestalozzi 2 Yverdon",
-                        "single_contact": "true",
-                    }
-                ),
-                "required": "required",
-            }
-        ),
+        max_length=100, label=_("Adresse"), widget=AddressWidget()
     )
 
     zipcode = forms.IntegerField(
@@ -469,20 +498,12 @@ class PermitRequestActorForm(forms.ModelForm):
     address = forms.CharField(
         max_length=100,
         label=_("Adresse"),
-        widget=forms.TextInput(
-            attrs={
-                "data_remote_autocomplete": json.dumps(
-                    {
-                        "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
-                        "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
-                        "search_prefix": "false",
-                        "origins": "address",
-                        "zipcode_field": "zipcode",
-                        "city_field": "city",
-                        "placeholder": "ex: Place Pestalozzi 2 Yverdon",
-                    }
-                ),
-            }
+        widget=AddressWidget(
+            attrs={"required": "required"},
+            autocomplete_options={
+                "single_address_field": False,
+                "single_contact": False,
+            },
         ),
     )
 

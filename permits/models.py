@@ -543,12 +543,14 @@ class WorksObjectProperty(models.Model):
     INPUT_TYPE_CHECKBOX = "checkbox"
     INPUT_TYPE_NUMBER = "number"
     INPUT_TYPE_FILE = "file"
+    INPUT_TYPE_ADDRESS = "address"
     INPUT_TYPE_DATE = "date"
     INPUT_TYPE_CHOICES = (
         (INPUT_TYPE_TEXT, _("Texte")),
         (INPUT_TYPE_CHECKBOX, _("Case à cocher")),
         (INPUT_TYPE_NUMBER, _("Nombre")),
         (INPUT_TYPE_FILE, _("Fichier")),
+        (INPUT_TYPE_ADDRESS, _("Adresse")),
         (INPUT_TYPE_DATE, _("Date")),
     )
 

@@ -210,6 +210,9 @@ class Command(BaseCommand):
             "plan": models.WorksObjectProperty.objects.create(
                 name="Plan de situation", input_type="file", is_mandatory=True
             ),
+            "adresse": models.WorksObjectProperty.objects.create(
+                name="Adresse", input_type="address", is_mandatory=True
+            ),
         }
         objects = [
             (
@@ -217,12 +220,14 @@ class Command(BaseCommand):
                 properties["width"],
                 properties["height"],
                 properties["comment"],
+                properties["adresse"],
             ),
             (
                 "Barbecues, fours à pain ou pizza",
                 properties["width"],
                 properties["height"],
                 properties["comment"],
+                properties["adresse"],
             ),
             (
                 "Avant-toits",
@@ -230,6 +235,7 @@ class Command(BaseCommand):
                 properties["height"],
                 properties["plan"],
                 properties["comment"],
+                properties["adresse"],
             ),
         ]
         works_types = [
