@@ -37,7 +37,7 @@ class AddressWidget(forms.widgets.TextInput):
             "city_field": "city",
             "placeholder": gettext("ex: Place Pestalozzi 2, 1400 Yverdon"),
             "single_contact": True,
-            "single_adress_field": False,
+            "single_address_field": False,
             **(autocomplete_options or {}),
         }
         super().__init__(
@@ -265,7 +265,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
             field_instance = field_class(
                 **self.get_field_kwargs(prop),
                 widget=AddressWidget(
-                    autocomplete_options={"single_adress_field": True}
+                    autocomplete_options={"single_address_field": True}
                 ),
             )
 
@@ -494,7 +494,7 @@ class PermitRequestActorForm(forms.ModelForm):
         widget=AddressWidget(
             attrs={"required": "required"},
             autocomplete_options={
-                "single_adress_field": False,
+                "single_address_field": False,
                 "single_contact": False,
             },
         ),

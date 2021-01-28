@@ -58,7 +58,7 @@ $(function () {
             var formPrefix = event.target.attributes.id.value.substring(0, 9);
             item.value = data.feature.attributes.strname + " " + nmr;
             if (
-              dataRemoteAutocomplete.single_adress_field
+              dataRemoteAutocomplete.single_address_field
             ) {
               item.value =
                 data.feature.attributes.strname + " " + nmr + ", " +
