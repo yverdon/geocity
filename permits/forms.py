@@ -32,7 +32,6 @@ class AddressWidget(forms.widgets.TextInput):
         autocomplete_options = {
             "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
             "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
-            "search_prefix": "false",
             "origins": "address",
             "zipcode_field": "zipcode",
             "city_field": "city",
