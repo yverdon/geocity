@@ -228,7 +228,7 @@ class PermitActor(models.Model):
 
     first_name = models.CharField(_("Prénom"), max_length=150,)
     last_name = models.CharField(_("Nom"), max_length=100,)
-    company_name = models.CharField(_("Entreprise"), max_length=100,)
+    company_name = models.CharField(_("Entreprise"), max_length=100, blank=True)
     vat_number = models.CharField(_("Numéro TVA"), max_length=19, blank=True)
     address = models.CharField(_("Adresse"), max_length=100,)
     zipcode = models.PositiveIntegerField(_("NPA"),)
@@ -268,10 +268,12 @@ class PermitActorType(models.Model):
         verbose_name=_("type de travaux"),
         related_name="works_contact_types",
     )
+    is_mandatory = models.BooleanField(_("obligatoire"), default=True)
 
     class Meta:
         verbose_name = _("1.6 Configuration du contact")
         verbose_name_plural = _("1.6 Configuration des contacts")
+        unique_together = [["type", "works_type"]]
 
     def __str__(self):
         return self.get_type_display() + " (" + str(self.works_type) + ")"

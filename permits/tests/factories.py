@@ -170,13 +170,17 @@ class ValidatorUserFactory(UserFactory):
             self.groups.add(group)
 
 
-class PermitRequestActorFactory(factory.django.DjangoModelFactory):
+class PermitActorFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PermitActor
 
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")
     email = factory.Faker("email")
+    address = factory.Faker("street_address")
+    zipcode = factory.Faker("zipcode")
+    city = factory.Faker("city")
+    phone = Truncator(factory.Faker("phone_number")).chars(19)
 
 
 class WorksObjectFactory(factory.django.DjangoModelFactory):
