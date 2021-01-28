@@ -3,13 +3,6 @@
 from django.db import migrations, models
 
 
-def reorder(apps, schema_editor):
-    WorksObjectProperty = apps.get_model("permits", "worksobjectproperty")
-    for index, item in enumerate(WorksObjectProperty.objects.all()):
-        item.order = index
-        item.save()
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -30,5 +23,4 @@ class Migration(migrations.Migration):
             name="order",
             field=models.PositiveIntegerField(default=0, verbose_name="ordre"),
         ),
-        migrations.RunPython(reorder),
     ]
