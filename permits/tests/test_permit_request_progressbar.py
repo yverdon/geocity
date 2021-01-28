@@ -206,6 +206,8 @@ class PermitRequestProgressBarTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         nav_items = extract_nav_items(response.content)
         self.assertNotIn("Planning et localisation", nav_items)
+        self.assertNotIn("Planning", nav_items)
+        self.assertNotIn("Localisation", nav_items)
 
     def test_geotime_step_appears_when_date_and_geometry_are_required(self):
         permit_request = self.create_permit_request()
@@ -242,6 +244,8 @@ class PermitRequestProgressBarTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         nav_items = extract_nav_items(response.content)
         self.assertIn("Planning", nav_items)
+        self.assertNotIn("Planning et localisation", nav_items)
+        self.assertNotIn("Localisation", nav_items)
 
     def test_geotime_step_appears_when_only_geometry_is_required(self):
         permit_request = self.create_permit_request()
@@ -260,3 +264,5 @@ class PermitRequestProgressBarTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         nav_items = extract_nav_items(response.content)
         self.assertIn("Localisation", nav_items)
+        self.assertNotIn("Planning et localisation", nav_items)
+        self.assertNotIn("Planning", nav_items)

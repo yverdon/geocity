@@ -616,7 +616,7 @@ def get_geo_time_step(permit_request, enabled):
         return None
 
     return models.Step(
-        name=get_geo_step_name_title(permit_request)["step_name"],
+        name=get_geo_step_name_title(required_info)["step_name"],
         url=geo_time_url,
         completed=geo_time_errors == 0,
         errors_count=geo_time_errors,
@@ -624,13 +624,12 @@ def get_geo_time_step(permit_request, enabled):
     )
 
 
-def get_geo_step_name_title(permit_request):
-    required_info = get_geotime_required_info(permit_request)
+def get_geo_step_name_title(required_info):
     name_title = {}
-    if not GeoTimeInfo.DATE in required_info:
+    if GeoTimeInfo.DATE not in required_info:
         name_title["title"] = config.GEO_STEP
         name_title["step_name"] = _("Localisation")
-    elif not GeoTimeInfo.GEOMETRY in required_info:
+    elif GeoTimeInfo.GEOMETRY not in required_info:
         name_title["title"] = config.TIME_STEP
         name_title["step_name"] = _("Planning")
     else:
@@ -641,9 +640,9 @@ def get_geo_step_name_title(permit_request):
 
 
 def get_geotime_required_info(permit_request):
-    works_object_types = (
-        permit_request.works_object_types.all() if permit_request else ()
-    )
+    if not permit_request:
+        return set()
+    works_object_types = permit_request.works_object_types.all()
     required_info = set()
     if any(works_object_type.needs_date for works_object_type in works_object_types):
         required_info.add(GeoTimeInfo.DATE)
