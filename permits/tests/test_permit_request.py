@@ -740,7 +740,7 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
         content = response.content.decode()
         position_1 = content.find(prop_1.name)
         position_2 = content.find(prop_2.name)
-        self.assertGreater(position_2, position_1)
+        self.assertGreater(position_1, position_2)
 
 
 class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
