@@ -21,6 +21,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="worksobjectproperty",
             name="order",
-            field=models.PositiveIntegerField(default=0, verbose_name="ordre"),
+            field=models.PositiveIntegerField(
+                db_index=True, default=0, verbose_name="ordre"
+            ),
         ),
     ]

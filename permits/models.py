@@ -560,7 +560,9 @@ class WorksObjectProperty(models.Model):
     input_type = models.CharField(
         _("type de caractéristique"), max_length=30, choices=INPUT_TYPE_CHOICES
     )
-    order = models.PositiveIntegerField(_("ordre"), default=0, blank=False, null=False)
+    order = models.PositiveIntegerField(
+        _("ordre"), default=0, blank=False, null=False, db_index=True
+    )
     is_mandatory = models.BooleanField(_("obligatoire"), default=False)
     works_object_types = models.ManyToManyField(
         WorksObjectType, verbose_name=_("objets des travaux"), related_name="properties"
