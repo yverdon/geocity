@@ -23,12 +23,19 @@ class AddressWidget(forms.widgets.TextInput):
     @property
     def media(self):
         return forms.Media(
-            css={"all": ("customWidgets/RemoteAutocomplete/remoteautocomplete.css",)},
-            js=("customWidgets/RemoteAutocomplete/remoteautocomplete.js",),
+            css={
+                "all": (
+                    "customWidgets/RemoteAutocomplete/remoteautocomplete.css",
+                    "libs/js/jquery-ui-custom/jquery-ui.min.css",
+                )
+            },
+            js=(
+                "customWidgets/RemoteAutocomplete/remoteautocomplete.js",
+                "libs/js/jquery-ui-custom/jquery-ui.js",
+            ),
         )
 
     def __init__(self, attrs=None, autocomplete_options=None):
-
         autocomplete_options = {
             "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
             "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",

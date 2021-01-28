@@ -2,16 +2,6 @@
 {% load bootstrap4 %}
 {% load i18n %}
 {% load permits_extras %}
-{% load static %}
-
-{% block stylesheets %}
-  {{ block.super }}
-  <link rel="stylesheet" type="text/css" href="{% static 'libs/js/jquery-ui-custom/jquery-ui.min.css' %}">
-{% endblock %}
-
-{% block scripts %}
-  <script src="{% static 'libs/js/jquery-ui-custom/jquery-ui.js' %}"></script>
-{% endblock %}
 
 {% block content %}
   {% permit_progressbar steps StepType.PROPERTIES %}
