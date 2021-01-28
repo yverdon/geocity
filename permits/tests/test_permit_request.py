@@ -278,6 +278,84 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             + f"?types={works_type.pk}",
         )
 
+    def test_geotime_step_only_date_fields_appear_when_only_date_is_required(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object_type = factories.WorksObjectTypeFactory(
+            needs_geometry=False, needs_date=True
+        )
+        permit_request.works_object_types.set([works_object_type])
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertGreaterEqual(
+            len(get_parser(response.content).select(".input-group.date")), 1
+        )
+        self.assertEqual(
+            len(
+                get_parser(response.content).select(
+                    "#geometry-widget-id_form-__prefix__-geom"
+                )
+            ),
+            0,
+        )
+
+    def test_geotime_step_only_geom_fields_appear_when_only_geom_is_required(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object_type = factories.WorksObjectTypeFactory(
+            needs_geometry=True, needs_date=False
+        )
+        permit_request.works_object_types.set([works_object_type])
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertGreater(
+            len(
+                get_parser(response.content).select(
+                    "#geometry-widget-id_form-__prefix__-geom"
+                )
+            ),
+            0,
+        )
+        self.assertEqual(
+            len(get_parser(response.content).select(".input-group.date")), 0
+        )
+
+    def test_geotime_step_date_and_geom_fields_appear_when_both_required(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object_type = factories.WorksObjectTypeFactory(
+            needs_geometry=True, needs_date=True
+        )
+        permit_request.works_object_types.set([works_object_type])
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertGreater(
+            len(get_parser(response.content).select(".input-group.date")), 0
+        )
+        self.assertGreater(
+            len(
+                get_parser(response.content).select(
+                    "#geometry-widget-id_form-__prefix__-geom"
+                )
+            ),
+            0,
+        )
+
 
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
