@@ -1,15 +1,12 @@
+from adminsortable2.admin import SortableAdminMixin
 from django import forms
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-from adminsortable2.admin import SortableAdminMixin
+from geomapshark import settings
 from simple_history.admin import SimpleHistoryAdmin
 
-from geomapshark import settings
-
-from . import models
-
 from . import forms as permit_forms
-
+from . import models
 
 admin.site.register(models.WorksType)
 admin.site.register(models.PermitActorType)
@@ -74,13 +71,8 @@ class WorksObjectPropertyForm(forms.ModelForm):
 
 
 class WorksObjectPropertyAdmin(SortableAdminMixin, admin.ModelAdmin):
-    def sortable_str(self, obj):
-        return str(obj.__str__()) + " (position: " + str(obj.order) + ")"
-
-    sortable_str.short_description = "1.5 Configuration du champ"
-    list_display = ["sortable_str", "is_mandatory"]
+    list_display = ["__str__", "is_mandatory"]
     form = WorksObjectPropertyForm
-    pass
 
 
 class PermitAdministrativeEntityAdminForm(forms.ModelForm):
