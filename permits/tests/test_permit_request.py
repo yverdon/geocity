@@ -770,7 +770,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             permit_request.status, models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
         )
 
-    def test_secretariat_can_amend_request_with_custom_property(self):
+    def test_secretariat_can_amend_request_with_custom_property_field(self):
         permit_request = factories.PermitRequestFactory(
             status=models.PermitRequest.STATUS_PROCESSING,
             administrative_entity=self.administrative_entity,
@@ -802,6 +802,40 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
 
         self.assertEqual(property_value, "I am a new property value, I am alive!")
         self.assertNotEqual(property_value, "The original custom property value")
+
+    def test_secretariat_amends_request_passing_empty_custom_property_field_deletes_value(
+        self,
+    ):
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_PROCESSING,
+            administrative_entity=self.administrative_entity,
+        )
+        works_object_type_choice = factories.WorksObjectTypeChoiceFactory(
+            permit_request=permit_request
+        )
+        prop = factories.PermitRequestAmendPropertyFactory()
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        factories.PermitRequestAmendPropertyValuesFactory(
+            property=prop,
+            works_object_type_choice=works_object_type_choice,
+            value="The original custom property value",
+        )
+
+        self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data={
+                "action": models.ACTION_AMEND,
+                f"amend_custom_field-{permit_request.works_object_types.first().pk}_{prop.pk}": "",
+                "amend_custom_field-status": models.PermitRequest.STATUS_PROCESSING,
+            },
+        )
+        property_value = len(models.PermitRequestAmendPropertyValue.objects.all())
+
+        self.assertEqual(property_value, 0)
 
     def test_secretariat_can_see_submitted_requests(self):
         permit_request = factories.PermitRequestFactory(
