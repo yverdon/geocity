@@ -1111,12 +1111,10 @@ def get_actions_for_administrative_entity(permit_request):
 
 def get_permit_request_amend_custom_properties(permit_request):
 
-    works_object_types = permit_request.works_object_types.all()
-
-    for works_object_type in works_object_types:
-        props = models.PermitRequestAmendProperty.objects.all().filter(
-            works_object_types=works_object_type
-        )
+    props_by_object_type = get_permit_request_amend_custom_properties_by_object_type(
+        permit_request
+    )
+    for works_object_type, props in props_by_object_type:
         for prop in props:
             yield (works_object_type, prop)
 
