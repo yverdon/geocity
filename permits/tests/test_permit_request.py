@@ -842,7 +842,10 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             },
             follow=True,
         )
-
+        permit_request.refresh_from_db()
+        self.assertEqual(
+            permit_request.status, models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
+        )
         self.assertContains(response, "compléments")
 
     def test_secretariat_cannot_amend_permit_request_with_validation_requested(self):

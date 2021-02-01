@@ -19,6 +19,7 @@ class PermitAuthorFactory(factory.django.DjangoModelFactory):
     city = factory.Faker("city")
     phone_first = Truncator(factory.Faker("phone_number")).chars(19)
     phone_second = Truncator(factory.Faker("phone_number")).chars(19)
+    user = factory.SubFactory("permits.tests.factories.UserFactory", actor=None)
 
 
 class UserFactory(factory.django.DjangoModelFactory):
