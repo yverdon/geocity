@@ -785,7 +785,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         props = factories.PermitRequestAmendPropertyFactory.create_batch(props_quantity)
         data = {
             "action": models.ACTION_AMEND,
-            "amend_custom_field-status": models.PermitRequest.STATUS_PROCESSING,
+            "status": models.PermitRequest.STATUS_PROCESSING,
         }
 
         works_object_types_pk = permit_request.works_object_types.first().pk
@@ -795,13 +795,11 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
                 property=prop, works_object_type_choice=works_object_type_choice,
             )
             data[
-                f"amend_custom_field-{works_object_types_pk}_{prop.pk}"
+                f"{works_object_types_pk}_{prop.pk}"
             ] = "I am a new property value, I am alive!"
 
         # The delete latter property value by setting it to an empty string
-        data[
-            f"amend_custom_field-{permit_request.works_object_types.first().pk}_{props[-1].pk}"
-        ] = ""
+        data[f"{permit_request.works_object_types.first().pk}_{props[-1].pk}"] = ""
 
         self.client.post(
             reverse(

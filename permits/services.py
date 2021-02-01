@@ -1121,13 +1121,11 @@ def get_permit_request_amend_custom_properties(permit_request):
 
 def get_permit_request_amend_custom_properties_by_object_type(permit_request):
 
-    works_object_types = permit_request.works_object_types.all()
-
+    works_object_types = permit_request.works_object_types.prefetch_related(
+        "amend_properties"
+    )
     for works_object_type in works_object_types:
-        props = models.PermitRequestAmendProperty.objects.filter(
-            works_object_types=works_object_type
-        )
-        yield (works_object_type, props)
+        yield (works_object_type, works_object_type.amend_properties.all())
 
 
 def get_default_works_object_types(administrative_entity, works_types=None):

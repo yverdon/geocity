@@ -590,16 +590,30 @@ class PermitRequestActorForm(forms.ModelForm):
 
 class PermitRequestAdditionalInformationForm(forms.ModelForm):
     required_css_class = "required"
-    prefix = "amend_custom_field"
 
     class Meta:
         model = models.PermitRequest
         fields = ["is_public", "status"]
 
     def __init__(self, *args, **kwargs):
+        self.instance = kwargs.get("instance", None)
+
+        # Initial values
+        initial = {}
+        for prop_value in self.get_values():
+            initial[
+                self.get_field_name(
+                    prop_value.works_object_type_choice.works_object_type_id,
+                    prop_value.property_id,
+                )
+            ] = prop_value.value
+
+        kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
+
+        instance = kwargs.get("instance", None)
+
         super().__init__(*args, **kwargs)
 
-        instance = kwargs.pop("instance", None)
         availables_choices = []
         if instance:
             available_statuses_for_administrative_entity = list(
@@ -619,25 +633,12 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
             ]
             self.fields["status"].choices = tuple(filter2)
 
-            # Initial values
-            initial = {}
-            for prop_value in self.get_values():
-                initial[
-                    self.get_field_name(
-                        prop_value.works_object_type_choice.works_object_type_id,
-                        prop_value.property_id,
-                    )
-                ] = prop_value.value
-
-            kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
-
             for works_object_type, prop in self.get_properties():
                 field_name = self.get_field_name(works_object_type.id, prop.id)
                 self.fields[field_name] = forms.CharField(
                     label=prop.name,
                     required=prop.is_mandatory,
                     widget=forms.Textarea(attrs={"rows": 3,}),
-                    initial=initial[field_name] if field_name in initial.keys() else "",
                 )
 
     def get_field_name(self, works_object_type_id, prop_id):
@@ -645,7 +646,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
 
     def get_properties(self):
         """
-        Return a list of tuples `(WorksObjectType, WorksObjectTypeProperty)` for the
+        Return a list of tuples `(WorksObjectType, PermitRequestAmendProperty)` for the
         amend properties of the current permit request. Used to create the form fields.
         """
         return services.get_permit_request_amend_custom_properties(self.instance)
