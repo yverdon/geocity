@@ -788,18 +788,19 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             "amend_custom_field-status": models.PermitRequest.STATUS_PROCESSING,
         }
 
+        works_object_types_pk = permit_request.works_object_types.first().pk
         for prop in props:
             prop.works_object_types.set(permit_request.works_object_types.all())
-            factories.PermitRequestAmendPropertyValuesFactory(
+            factories.PermitRequestAmendPropertyValueFactory(
                 property=prop, works_object_type_choice=works_object_type_choice,
             )
             data[
-                f"amend_custom_field-{permit_request.works_object_types.first().pk}_{prop.pk}"
+                f"amend_custom_field-{works_object_types_pk}_{prop.pk}"
             ] = "I am a new property value, I am alive!"
 
         # The delete latter property value by setting it to an empty string
         data[
-            f"amend_custom_field-{permit_request.works_object_types.first().pk}_{prop.pk}"
+            f"amend_custom_field-{permit_request.works_object_types.first().pk}_{props[-1].pk}"
         ] = ""
 
         self.client.post(
@@ -810,13 +811,12 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             data=data,
         )
 
-        new_properties_values_qs = (
-            models.PermitRequestAmendPropertyValue.objects.all().values()
+        new_properties_values_qs = models.PermitRequestAmendPropertyValue.objects.values_list(
+            "value", flat=True
         )
         self.assertEqual(len(new_properties_values_qs), props_quantity - 1)
         self.assertIn(
-            "I am a new property value, I am alive!",
-            new_properties_values_qs.values_list("value", flat=True),
+            "I am a new property value, I am alive!", new_properties_values_qs,
         )
 
     def test_secretariat_can_see_submitted_requests(self):

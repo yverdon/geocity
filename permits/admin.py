@@ -30,7 +30,7 @@ def works_object_type_administrative_entities(obj):
     )
 
 
-def get_works_object_types_fields():
+def get_works_object_types_field():
     return WorksObjectTypeWithAdministrativeEntitiesField(
         queryset=(
             models.WorksObjectType.objects.select_related("works_object", "works_type")
@@ -67,7 +67,7 @@ class WorksObjectTypeWithAdministrativeEntitiesField(forms.ModelMultipleChoiceFi
 
 
 class WorksObjectPropertyForm(forms.ModelForm):
-    works_object_types = get_works_object_types_fields()
+    works_object_types = get_works_object_types_field()
 
     class Meta:
         model = models.WorksObjectProperty
@@ -155,7 +155,7 @@ class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
 
 
 class PermitRequestAmendPropertyForm(forms.ModelForm):
-    works_object_types = get_works_object_types_fields()
+    works_object_types = get_works_object_types_field()
 
     class Meta:
         model = models.PermitRequestAmendProperty

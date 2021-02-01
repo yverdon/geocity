@@ -621,19 +621,18 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
 
             # Initial values
             initial = {}
-            prop_values = self.get_values()
-            for prop_value in prop_values:
+            for prop_value in self.get_values():
                 initial[
                     self.get_field_name(
-                        prop_value.works_object_type_choice.works_object_type,
-                        prop_value.property,
+                        prop_value.works_object_type_choice.works_object_type_id,
+                        prop_value.property_id,
                     )
                 ] = prop_value.value
 
             kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
 
             for works_object_type, prop in self.get_properties():
-                field_name = self.get_field_name(works_object_type, prop)
+                field_name = self.get_field_name(works_object_type.id, prop.id)
                 self.fields[field_name] = forms.CharField(
                     label=prop.name,
                     required=prop.is_mandatory,
@@ -641,8 +640,8 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                     initial=initial[field_name] if field_name in initial.keys() else "",
                 )
 
-    def get_field_name(self, works_object_type, prop):
-        return "{}_{}".format(works_object_type.pk, prop.pk)
+    def get_field_name(self, works_object_type_id, prop_id):
+        return "{}_{}".format(works_object_type_id, prop_id)
 
     def get_properties(self):
         """
@@ -653,8 +652,9 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
 
     def get_values(self):
         """
-        Return a `PermitRequestAmendPropertyValue` object for the current permit request. They're used to set the initial
-        value of the form fields.
+        Return a queryset of `PermitRequestAmendPropertyValue` for the custom properties
+        on the current permit request. They're used to set the initial value of the form
+        fields.
         """
         return services.get_amend_custom_properties_values(self.instance)
 
@@ -665,7 +665,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
         return [
             (
                 object_type,
-                [self[self.get_field_name(object_type, prop)] for prop in props],
+                [self[self.get_field_name(object_type.id, prop.id)] for prop in props],
             )
             for object_type, props in services.get_permit_request_amend_custom_properties_by_object_type(
                 self.instance
@@ -685,7 +685,9 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                 permit_request=self.instance,
                 object_type=works_object_type,
                 prop=prop,
-                value=self.cleaned_data[self.get_field_name(works_object_type, prop)],
+                value=self.cleaned_data[
+                    self.get_field_name(works_object_type.id, prop.id)
+                ],
             )
         if commit:
             permit_request.save()
