@@ -726,8 +726,8 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
             self.permit_request
         ).first()
 
-        prop_1 = factories.WorksObjectPropertyFactory(order=10)
-        prop_2 = factories.WorksObjectPropertyFactory(order=2)
+        prop_1 = factories.WorksObjectPropertyFactory(order=10, name=str(uuid.uuid4()))
+        prop_2 = factories.WorksObjectPropertyFactory(order=2, name=str(uuid.uuid4()))
         prop_1.works_object_types.add(works_object_type_choice.works_object_type)
         prop_2.works_object_types.add(works_object_type_choice.works_object_type)
 
