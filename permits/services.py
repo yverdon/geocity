@@ -428,7 +428,7 @@ def get_permitactorformset_initiated(permit_request, data=None):
         initial=actor_initial_forms,
         queryset=models.PermitRequestActor.objects.filter(
             permit_request=permit_request
-        ),
+        ).select_related("actor"),
         data=data,
     )
 
@@ -1123,7 +1123,8 @@ def get_permit_request_amend_custom_properties_by_object_type(permit_request):
 
     works_object_types = permit_request.works_object_types.prefetch_related(
         "amend_properties"
-    )
+    ).select_related("works_object", "works_type")
+
     for works_object_type in works_object_types:
         yield (works_object_type, works_object_type.amend_properties.all())
 
