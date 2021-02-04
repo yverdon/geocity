@@ -24,6 +24,7 @@
     <h3>{{ config.ACTORS_STEP }}</h3>
     <div id="forms-container">
         {% for form in formset %}
+           {{ form.media }}
           {% bootstrap_form form layout='horizontal' %}
       <hr>
         {% endfor %}
