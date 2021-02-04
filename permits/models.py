@@ -1,4 +1,5 @@
 import dataclasses
+import enum
 
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
@@ -48,6 +49,30 @@ ACTION_POKE = "poke"
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
 ACTIONS = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE, ACTION_POKE]
+
+
+@dataclasses.dataclass
+class Step:
+    name: str
+    url: str
+    completed: bool = False
+    enabled: bool = False
+    errors_count: int = 0
+
+
+class StepType(enum.Enum):
+    ADMINISTRATIVE_ENTITY = "administrative_entity"
+    WORKS_TYPES = "works_types"
+    WORKS_OBJECTS = "works_objects"
+    PROPERTIES = "properties"
+    GEO_TIME = "geo_time"
+    APPENDICES = "appendices"
+    ACTORS = "actors"
+    SUBMIT = "submit"
+
+
+# Required to be able to use the enum in Django templates
+StepType.do_not_call_in_templates = True
 
 
 class PermitDepartment(models.Model):
@@ -203,7 +228,7 @@ class PermitActor(models.Model):
 
     first_name = models.CharField(_("Prénom"), max_length=150,)
     last_name = models.CharField(_("Nom"), max_length=100,)
-    company_name = models.CharField(_("Entreprise"), max_length=100,)
+    company_name = models.CharField(_("Entreprise"), max_length=100, blank=True)
     vat_number = models.CharField(_("Numéro TVA"), max_length=19, blank=True)
     address = models.CharField(_("Adresse"), max_length=100,)
     zipcode = models.PositiveIntegerField(_("NPA"),)
@@ -243,10 +268,12 @@ class PermitActorType(models.Model):
         verbose_name=_("type de travaux"),
         related_name="works_contact_types",
     )
+    is_mandatory = models.BooleanField(_("obligatoire"), default=True)
 
     class Meta:
         verbose_name = _("1.6 Configuration du contact")
         verbose_name_plural = _("1.6 Configuration des contacts")
+        unique_together = [["type", "works_type"]]
 
     def __str__(self):
         return self.get_type_display() + " (" + str(self.works_type) + ")"
@@ -347,20 +374,9 @@ class PermitRequest(models.Model):
     actors = models.ManyToManyField(
         "PermitActor", related_name="+", through=PermitRequestActor
     )
-    archeology_status = models.PositiveSmallIntegerField(
-        _("Statut archéologique"),
-        choices=ARCHEOLOGY_STATUS_CHOICES,
-        default=ARCHEOLOGY_STATUS_IRRELEVANT,
-    )
     intersected_geometries = models.TextField(
         _("Entités géométriques concernées"), max_length=1024, null=True
     )
-    price = models.DecimalField(
-        _("Émolument"), decimal_places=2, max_digits=7, null=True, blank=True
-    )
-    exemption = models.TextField(_("Dérogation"), blank=True)
-    opposition = models.TextField(_("Opposition"), blank=True)
-    comment = models.TextField(_("Analyse du service pilote"), blank=True)
     validation_pdf = fields.PermitRequestFileField(
         _("pdf de validation"),
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
@@ -480,6 +496,8 @@ class WorksObjectType(models.Model):
         verbose_name=_("communes"),
         related_name="works_object_types",
     )
+    needs_geometry = models.BooleanField(_("avec géométrie"), default=True)
+    needs_date = models.BooleanField(_("avec période de temps"), default=True)
 
     class Meta:
         verbose_name = _("1.4 Configuration type-objet-entité administrative")
@@ -516,23 +534,31 @@ class WorksObjectProperty(models.Model):
     INPUT_TYPE_CHECKBOX = "checkbox"
     INPUT_TYPE_NUMBER = "number"
     INPUT_TYPE_FILE = "file"
+    INPUT_TYPE_ADDRESS = "address"
+    INPUT_TYPE_DATE = "date"
     INPUT_TYPE_CHOICES = (
         (INPUT_TYPE_TEXT, _("Texte")),
         (INPUT_TYPE_CHECKBOX, _("Case à cocher")),
         (INPUT_TYPE_NUMBER, _("Nombre")),
         (INPUT_TYPE_FILE, _("Fichier")),
+        (INPUT_TYPE_ADDRESS, _("Adresse")),
+        (INPUT_TYPE_DATE, _("Date")),
     )
 
     name = models.CharField(_("nom"), max_length=255)
     input_type = models.CharField(
         _("type de caractéristique"), max_length=30, choices=INPUT_TYPE_CHOICES
     )
+    order = models.PositiveIntegerField(
+        _("ordre"), default=0, blank=False, null=False, db_index=True
+    )
     is_mandatory = models.BooleanField(_("obligatoire"), default=False)
     works_object_types = models.ManyToManyField(
         WorksObjectType, verbose_name=_("objets des travaux"), related_name="properties"
     )
 
-    class Meta:
+    class Meta(object):
+        ordering = ["order"]
         verbose_name = _("1.5 Configuration du champ")
         verbose_name_plural = _("1.5 Configuration des champs")
 
@@ -603,15 +629,6 @@ class PermitRequestValidation(models.Model):
         return self.validation_status == self.STATUS_REQUESTED
 
 
-@dataclasses.dataclass
-class Step:
-    name: str
-    url: str
-    completed: bool = False
-    enabled: bool = False
-    errors_count: int = 0
-
-
 class PermitRequestGeoTime(models.Model):
     """
     Permit location in space and time
@@ -620,8 +637,10 @@ class PermitRequestGeoTime(models.Model):
     permit_request = models.ForeignKey(
         "PermitRequest", on_delete=models.CASCADE, related_name="geo_time"
     )
-    starts_at = models.DateTimeField(_("Date planifiée de début"))
-    ends_at = models.DateTimeField(_("Date planifiée de fin"))
+    starts_at = models.DateTimeField(
+        _("Date planifiée de début"), blank=True, null=True
+    )
+    ends_at = models.DateTimeField(_("Date planifiée de fin"), blank=True, null=True)
     comment = models.CharField(_("Commentaire"), max_length=1024, blank=True)
     external_link = models.URLField(_("Lien externe"), blank=True)
     geom = geomodels.GeometryCollectionField(_("Localisation"), null=True, srid=2056)
@@ -676,3 +695,46 @@ class PermitWorkflowStatus(models.Model):
         verbose_name = _("Status disponible pour l'entité administrative")
         verbose_name_plural = _("Status disponibles pour l'entité administratives")
         unique_together = ("status", "administrative_entity")
+
+
+class PermitRequestAmendProperty(models.Model):
+    name = models.CharField(_("nom"), max_length=255)
+    is_mandatory = models.BooleanField(_("obligatoire"), default=False)
+    works_object_types = models.ManyToManyField(
+        WorksObjectType,
+        verbose_name=_("objets des travaux"),
+        related_name="amend_properties",
+    )
+
+    class Meta:
+        verbose_name = _("2.2 Configuration de champ de traitement de demande")
+        verbose_name_plural = _(
+            "2.2 Configuration des champs de traitement des demandes"
+        )
+
+    def __str__(self):
+        return self.name
+
+
+class PermitRequestAmendPropertyValue(models.Model):
+    """
+    Value of a property for a selected object to be amended by the Secretariat.
+    """
+
+    property = models.ForeignKey(
+        PermitRequestAmendProperty,
+        verbose_name=_("caractéristique"),
+        on_delete=models.PROTECT,
+        related_name="+",
+    )
+    works_object_type_choice = models.ForeignKey(
+        WorksObjectTypeChoice,
+        verbose_name=_("objet des travaux"),
+        on_delete=models.CASCADE,
+        related_name="amend_properties",
+    )
+    value = models.TextField(_("traitement info"), blank=True)
+    history = HistoricalRecords()
+
+    class Meta:
+        unique_together = [("property", "works_object_type_choice")]

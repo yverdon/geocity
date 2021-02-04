@@ -32,19 +32,8 @@ os.environ["GDAL_DATA"] = os.path.join(BASE_DIR, "gdal_data")
 GDAL_DATA = os.environ["GDAL_DATA"]
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
 
-DATE_INPUT_FORMAT = [
-    "%Y-%m-%d",
-    "%m/%d/%Y",
-    "%m/%d/%y",  # '2006-10-25', '10/25/2006', '10/25/06'
-    "%b %d %Y",
-    "%b %d, %Y",  # 'Oct 25 2006', 'Oct 25, 2006'
-    "%d %b %Y",
-    "%d %b, %Y",  # '25 Oct 2006', '25 Oct, 2006'
-    "%B %d %Y",
-    "%B %d, %Y",  # 'October 25 2006', 'October 25, 2006'
-    "%d %B %Y",
-    "%d %B, %Y",  # '25 October 2006', '25 October, 2006'
-]
+DATE_INPUT_FORMAT = "%d.%m.%Y"
+DATETIME_INPUT_FORMAT = "%d.%m.%Y %H:%M"
 
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 EMAIL_HOST = os.getenv("EMAIL_HOST")
@@ -65,6 +54,7 @@ ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 
 # Application definition
 INSTALLED_APPS = [
+    "adminsortable2",
     "grappelli",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -138,9 +128,11 @@ CONSTANCE_CONFIG_FIELDSETS = {
     "Step Options": (
         "LOCATION_STEP",
         "WORKS_TYPES_STEP",
-        "OBJECTS_TYPES_STEP",
+        "WORKS_OBJECTS_STEP",
         "PROPERTIES_STEP",
         "GEO_TIME_STEP",
+        "TIME_STEP",
+        "GEO_STEP",
         "APPENDICES_STEP",
         "ACTORS_STEP",
         "SUBMIT_STEP",
@@ -179,9 +171,11 @@ CONSTANCE_CONFIG = {
         "",
         str,
     ),
-    "OBJECTS_TYPES_STEP": ("Sélectionnez les objets", "", str),
+    "WORKS_OBJECTS_STEP": ("Sélectionnez les objets", "", str),
     "PROPERTIES_STEP": ("Renseignez les caractéristiques des objets", "", str),
     "GEO_TIME_STEP": ("Renseignez le planning et la localisation", "", str),
+    "TIME_STEP": ("Renseignez le planning", "", str),
+    "GEO_STEP": ("Renseignez la localisation", "", str),
     "APPENDICES_STEP": ("Ajouter des documents", "", str),
     "ACTORS_STEP": ("Renseignez les contacts", "", str),
     "SUBMIT_STEP": ("Résumé et envoi", "", str),
@@ -221,6 +215,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "geomapshark.context_processors.two_factor_setting",
+                "permits.context_processors.step_type",
             ],
         },
     },

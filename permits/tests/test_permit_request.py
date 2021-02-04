@@ -1,14 +1,17 @@
+# TODO split this file into multiple files
 import urllib.parse
+from datetime import date
 
-from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from permits import models, services
 
-from . import factories, models, services, views
+from . import factories
+from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_parser
 
 
 def to_works_objects_dict(works_object_types):
@@ -24,28 +27,6 @@ def get_permit_request_works_types_ids(permit_request):
         .values_list("works_type__pk", flat=True)
         .distinct()
     )
-
-
-def get_parser(content):
-    return BeautifulSoup(content, features="html5lib")
-
-
-def get_emails(subject):
-    return [email for email in mail.outbox if email.subject == subject]
-
-
-class LoggedInUserMixin:
-    def setUp(self):
-        self.user = factories.UserFactory()
-        self.client.login(username=self.user.username, password="password")
-
-
-class LoggedInSecretariatMixin:
-    def setUp(self):
-        self.group = factories.SecretariatGroupFactory()
-        self.administrative_entity = self.group.permitdepartment.administrative_entity
-        self.user = factories.SecretariatUserFactory(groups=[self.group])
-        self.client.login(username=self.user.username, password="password")
 
 
 class PermitRequestTestCase(LoggedInUserMixin, TestCase):
@@ -72,7 +53,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
                 "permits:permit_request_select_types",
                 kwargs={"permit_request_id": permit_request.pk},
             ),
-            data={"types": self.works_types[0].pk},
+            data={"types": [self.works_types[0].pk, self.works_types[1].pk]},
         )
 
         self.assertRedirects(
@@ -81,7 +62,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
                 "permits:permit_request_select_objects",
                 kwargs={"permit_request_id": permit_request.pk},
             )
-            + "?types={}".format(self.works_types[0].pk),
+            + "?types={}&types={}".format(
+                self.works_types[0].pk, self.works_types[1].pk
+            ),
         )
 
     def test_objects_step_without_qs_redirects_to_types_step(self):
@@ -106,6 +89,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
     def test_objects_step_submit_saves_selected_object_types(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        # Create another works object type so that the works object step is not skipped
+        factories.WorksObjectTypeFactory(works_type=self.works_types[0])
+
         works_object_type = models.WorksObjectType.objects.first()
         permit_request.administrative_entity.works_object_types.set(
             models.WorksObjectType.objects.all()
@@ -196,11 +182,13 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         # This one should not receive the notification
         factories.SecretariatUserFactory(email="secretariat@lausanne.ch")
 
-        permit_request = factories.PermitRequestFactory(
-            administrative_entity=group.permitdepartment.administrative_entity,
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_DRAFT,
-        )
+        permit_request = factories.PermitRequestGeoTimeFactory(
+            permit_request=factories.PermitRequestFactory(
+                administrative_entity=group.permitdepartment.administrative_entity,
+                author=self.user.permitauthor,
+                status=models.PermitRequest.STATUS_DRAFT,
+            )
+        ).permit_request
         self.client.post(
             reverse(
                 "permits:permit_request_submit",
@@ -211,6 +199,252 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         self.assertEqual(len(emails), 1)
         self.assertEqual(emails[0].to, ["secretariat@yverdon.ch"])
+
+    def test_missing_mandatory_date_property_gives_invalid_feedback(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory(permit_request=permit_request)
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactory(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_DATE, is_mandatory=True
+        )
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        data = {
+            "properties-{}_{}".format(works_object_type.pk, prop.pk): ""
+            for works_object_type in permit_request.works_object_types.all()
+        }
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=data,
+        )
+        parser = get_parser(response.content)
+        self.assertEqual(len(parser.select(".invalid-feedback")), 1)
+
+    def test_works_object_automatically_set_when_only_one_works_object(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object = factories.WorksObjectFactory()
+        permit_request.administrative_entity.works_object_types.set(
+            factories.WorksObjectTypeFactory.create_batch(2, works_object=works_object)
+        )
+        works_type_id = permit_request.administrative_entity.works_object_types.values_list(
+            "works_type_id", flat=True
+        ).first()
+
+        self.client.post(
+            reverse(
+                "permits:permit_request_select_types",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data={"types": [works_type_id]},
+        )
+
+        permit_request.refresh_from_db()
+        works_object_types = permit_request.works_object_types.all()
+
+        self.assertEqual(
+            len(works_object_types),
+            1,
+            "Permit request should have one works object type set",
+        )
+        self.assertEqual(works_object_types[0].works_object, works_object)
+        self.assertEqual(works_object_types[0].works_type_id, works_type_id)
+
+    def test_works_type_automatically_set_when_only_one_works_object(self):
+        works_type = factories.WorksTypeFactory()
+        administrative_entity = factories.PermitAdministrativeEntityFactory()
+        administrative_entity.works_object_types.set(
+            factories.WorksObjectTypeFactory.create_batch(2, works_type=works_type)
+        )
+
+        response = self.client.post(
+            reverse("permits:permit_request_select_administrative_entity",),
+            data={"administrative_entity": administrative_entity.pk},
+        )
+
+        permit_request = models.PermitRequest.objects.get()
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "permits:permit_request_select_objects",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+            + f"?types={works_type.pk}",
+        )
+
+    def test_geotime_step_only_date_fields_appear_when_only_date_is_required(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object_type = factories.WorksObjectTypeFactory(
+            needs_geometry=False, needs_date=True
+        )
+        permit_request.works_object_types.set([works_object_type])
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertGreaterEqual(
+            len(get_parser(response.content).select('input[name="form-0-starts_at"]')),
+            1,
+        )
+        self.assertGreaterEqual(
+            len(get_parser(response.content).select('input[name="form-0-ends_at"]')), 1
+        )
+
+        self.assertEqual(
+            len(get_parser(response.content).select('textarea[name="form-0-geom"]')), 0,
+        )
+
+    def test_geotime_step_only_geom_fields_appear_when_only_geom_is_required(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object_type = factories.WorksObjectTypeFactory(
+            needs_geometry=True, needs_date=False
+        )
+        permit_request.works_object_types.set([works_object_type])
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertGreaterEqual(
+            len(get_parser(response.content).select('textarea[name="form-0-geom"]')), 1,
+        )
+
+        self.assertEqual(
+            len(get_parser(response.content).select('input[name="form-0-starts_at"]')),
+            0,
+        )
+        self.assertEqual(
+            len(get_parser(response.content).select('input[name="form-0-ends_at"]')), 0
+        )
+
+    def test_geotime_step_date_and_geom_fields_appear_when_both_required(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object_type = factories.WorksObjectTypeFactory(
+            needs_geometry=True, needs_date=True
+        )
+        permit_request.works_object_types.set([works_object_type])
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertGreaterEqual(
+            len(get_parser(response.content).select('input[name="form-0-starts_at"]')),
+            1,
+        )
+        self.assertGreaterEqual(
+            len(get_parser(response.content).select('input[name="form-0-ends_at"]')), 1
+        )
+        self.assertGreaterEqual(
+            len(get_parser(response.content).select('textarea[name="form-0-geom"]')), 1,
+        )
+
+
+class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
+    def setUp(self):
+        super().setUp()
+
+        self.test_formset_data = {
+            "form-TOTAL_FORMS": ["1"],
+            "form-INITIAL_FORMS": ["0"],
+            "form-MIN_NUM_FORMS": ["0"],
+            "form-MAX_NUM_FORMS": ["1000"],
+            "creditor_type": [""],
+            "form-0-actor_type": "",
+            "form-0-first_name": ["John"],
+            "form-0-last_name": ["Doe"],
+            "form-0-phone": ["000 000 00 00"],
+            "form-0-email": ["john@doe.com"],
+            "form-0-address": ["Main street 1"],
+            "form-0-zipcode": ["2000"],
+            "form-0-city": ["City"],
+            "form-0-company_name": [""],
+            "form-0-vat_number": [""],
+            "form-0-id": [""],
+        }
+
+    def test_permitrequestactor_creates(self):
+        works_object_type = factories.WorksObjectTypeFactory()
+        works_type = works_object_type.works_type
+
+        actor_required = factories.PermitActorTypeFactory(
+            is_mandatory=True, works_type=works_type
+        )
+
+        self.test_formset_data["form-0-actor_type"] = actor_required.type
+
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor, status=models.PermitRequest.STATUS_DRAFT
+        )
+
+        permit_request.administrative_entity.works_object_types.set([works_object_type])
+        permit_request.works_object_types.set([works_object_type])
+        prop = factories.WorksObjectPropertyFactory()
+        prop.works_object_types.set([works_object_type])
+
+        self.client.post(
+            reverse(
+                "permits:permit_request_actors",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=self.test_formset_data,
+        )
+
+        actors = list(permit_request.actors.all())
+        self.assertEqual(len(actors), 1, "Expected 1 actor created")
+        self.assertEqual(actors[0].first_name, "John")
+
+    def test_permitrequestactor_required_cannot_have_empty_field(self):
+        works_object_type = factories.WorksObjectTypeFactory()
+        works_type = works_object_type.works_type
+
+        actor_required = factories.PermitActorTypeFactory(
+            is_mandatory=True, works_type=works_type
+        )
+
+        self.test_formset_data["form-0-actor_type"] = actor_required.type
+
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor, status=models.PermitRequest.STATUS_DRAFT
+        )
+
+        permit_request.administrative_entity.works_object_types.set([works_object_type])
+        permit_request.works_object_types.set([works_object_type])
+        prop = factories.WorksObjectPropertyFactory()
+        prop.works_object_types.set([works_object_type])
+
+        self.test_formset_data["form-0-last_name"] = ""
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_actors",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            follow=True,
+            data=self.test_formset_data,
+        )
+
+        permit_request.refresh_from_db()
+        # Check that no actor was saved for this permit
+        self.assertEqual(permit_request.actors.count(), 0)
+        # Check that if form not valid, it does not redirect
+        self.assertEqual(response.status_code, 200)
 
 
 class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
@@ -330,6 +564,89 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
             set(data.values()),
         )
 
+    def test_missing_mandatory_address_property_gives_invalid_feedback(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory(permit_request=permit_request)
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactoryTypeAddress(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS, is_mandatory=True
+        )
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        data = {
+            "properties-{}_{}".format(works_object_type.pk, prop.pk): ""
+            for works_object_type in permit_request.works_object_types.all()
+        }
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=data,
+        )
+        parser = get_parser(response.content)
+        parser.select(".invalid-feedback")
+        self.assertEqual(1, len(parser.select(".invalid-feedback")))
+
+    def test_properties_step_submit_updates_permit_request_with_address(self):
+        address_prop = factories.WorksObjectPropertyFactoryTypeAddress(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS
+        )
+        address_prop.works_object_types.set(
+            self.permit_request.works_object_types.all()
+        )
+        works_object_type = self.permit_request.works_object_types.first()
+        data = {
+            f"properties-{works_object_type.pk}_{address_prop.pk}": "Hôtel Martinez, Cannes"
+        }
+        self.client.post(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            ),
+            data=data,
+        )
+
+        self.permit_request.refresh_from_db()
+        prop_val = services.get_properties_values(self.permit_request).get(
+            property__input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS
+        )
+        self.assertEqual(prop_val.value, {"val": "Hôtel Martinez, Cannes"})
+
+    def test_properties_step_submit_updates_permit_request_with_date(self):
+
+        date_prop = factories.WorksObjectPropertyFactory(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_DATE, name="datum"
+        )
+        today = date.today()
+        works_object_type = self.permit_request.works_object_types.first()
+        date_prop.works_object_types.set([works_object_type])
+        data = {
+            f"properties-{works_object_type.pk}_{date_prop.pk}": today.strftime(
+                settings.DATE_INPUT_FORMAT
+            )
+        }
+        self.client.post(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            ),
+            data=data,
+        )
+
+        prop_val = services.get_properties_values(self.permit_request).get(
+            property__name="datum"
+        )
+        self.assertEqual(
+            prop_val.value, {"val": today.isoformat()},
+        )
+        self.assertEqual(
+            prop_val.property.input_type, models.WorksObjectProperty.INPUT_TYPE_DATE,
+        )
+
 
 class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
@@ -403,6 +720,28 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
 
         self.assertInHTML(expected, content)
 
+    def test_properties_step_order_properties_for_existing_permit_request(self):
+
+        works_object_type_choice = services.get_works_object_type_choices(
+            self.permit_request
+        ).first()
+
+        prop_1 = factories.WorksObjectPropertyFactory(order=10)
+        prop_2 = factories.WorksObjectPropertyFactory(order=2)
+        prop_1.works_object_types.add(works_object_type_choice.works_object_type)
+        prop_2.works_object_types.add(works_object_type_choice.works_object_type)
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            )
+        )
+        content = response.content.decode()
+        position_1 = content.find(prop_1.name)
+        position_2 = content.find(prop_2.name)
+        self.assertGreater(position_1, position_2)
+
 
 class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
     def test_non_secretariat_user_cannot_amend_request(self):
@@ -414,42 +753,69 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             administrative_entity=self.administrative_entity,
             author=user.permitauthor,
         )
-        self.client.post(
+        response = self.client.post(
             reverse(
                 "permits:permit_request_detail",
                 kwargs={"permit_request_id": permit_request.pk},
             ),
             data={
-                "price": 300,
                 "status": models.PermitRequest.STATUS_PROCESSING,
                 "action": models.ACTION_AMEND,
             },
         )
 
         permit_request.refresh_from_db()
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            permit_request.status, models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
+        )
 
-        self.assertIsNone(permit_request.price)
-
-    def test_secretariat_can_amend_request(self):
+    def test_secretariat_can_amend_request_with_custom_property_field_and_delete_property_value(
+        self,
+    ):
+        props_quantity = 3
         permit_request = factories.PermitRequestFactory(
             status=models.PermitRequest.STATUS_PROCESSING,
             administrative_entity=self.administrative_entity,
         )
+        works_object_type_choice = factories.WorksObjectTypeChoiceFactory(
+            permit_request=permit_request
+        )
+
+        props = factories.PermitRequestAmendPropertyFactory.create_batch(props_quantity)
+        data = {
+            "action": models.ACTION_AMEND,
+            "status": models.PermitRequest.STATUS_PROCESSING,
+        }
+
+        works_object_types_pk = permit_request.works_object_types.first().pk
+        for prop in props:
+            prop.works_object_types.set(permit_request.works_object_types.all())
+            factories.PermitRequestAmendPropertyValueFactory(
+                property=prop, works_object_type_choice=works_object_type_choice,
+            )
+            data[
+                f"{works_object_types_pk}_{prop.pk}"
+            ] = "I am a new property value, I am alive!"
+
+        # The delete latter property value by setting it to an empty string
+        data[f"{works_object_types_pk}_{props[-1].pk}"] = ""
+
         self.client.post(
             reverse(
                 "permits:permit_request_detail",
                 kwargs={"permit_request_id": permit_request.pk},
             ),
-            data={
-                "price": 300,
-                "status": models.PermitRequest.STATUS_PROCESSING,
-                "action": models.ACTION_AMEND,
-                "archeology_status": models.PermitRequest.ARCHEOLOGY_STATUS_IRRELEVANT,
-            },
+            data=data,
         )
 
-        permit_request.refresh_from_db()
-        self.assertEqual(permit_request.price, 300)
+        new_properties_values_qs = models.PermitRequestAmendPropertyValue.objects.values_list(
+            "value", flat=True
+        )
+        self.assertEqual(len(new_properties_values_qs), props_quantity - 1)
+        self.assertIn(
+            "I am a new property value, I am alive!", new_properties_values_qs,
+        )
 
     def test_secretariat_can_see_submitted_requests(self):
         permit_request = factories.PermitRequestFactory(
@@ -476,7 +842,10 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             },
             follow=True,
         )
-
+        permit_request.refresh_from_db()
+        self.assertEqual(
+            permit_request.status, models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
+        )
         self.assertContains(response, "compléments")
 
     def test_secretariat_cannot_amend_permit_request_with_validation_requested(self):
@@ -489,7 +858,10 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
                 "permits:permit_request_detail",
                 kwargs={"permit_request_id": permit_request.pk},
             ),
-            data={"price": 200, "action": models.ACTION_AMEND},
+            data={
+                "status": models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+                "action": models.ACTION_AMEND,
+            },
         )
 
         self.assertEqual(response.status_code, 400)

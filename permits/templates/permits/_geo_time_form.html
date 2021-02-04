@@ -5,7 +5,7 @@
   <div class="card-body">
     <a data-toggle="collapse" href="#planning-{{ form_id }}">
       <h4 class="card-title">
-        {% trans "Planning et localisation" %} <span data-geo-time-role="formNumber">{{ form_number }}</span>
+        {{ geo_step }} <span data-geo-time-role="formNumber">{{ form_number }}</span>
       </h4>
     </a>
     <div class="collapse{% if open or form.errors %} show{% endif %}" id="planning-{{ form_id }}" data-geo-time-role="form">

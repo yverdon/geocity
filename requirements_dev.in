@@ -4,3 +4,4 @@ coverage
 django-debug-toolbar
 factory_boy
 Faker
+ipdb

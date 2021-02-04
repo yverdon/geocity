@@ -1,11 +1,13 @@
+from datetime import timezone
+
 import factory
 import faker
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.gis.geos import GeometryCollection, Point
 from django.utils.text import Truncator
-
-from . import models
+from permits import models
 
 
 class PermitAuthorFactory(factory.django.DjangoModelFactory):
@@ -17,6 +19,7 @@ class PermitAuthorFactory(factory.django.DjangoModelFactory):
     city = factory.Faker("city")
     phone_first = Truncator(factory.Faker("phone_number")).chars(19)
     phone_second = Truncator(factory.Faker("phone_number")).chars(19)
+    user = factory.SubFactory("permits.tests.factories.UserFactory", actor=None)
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -68,20 +71,8 @@ class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
             )
 
 
-class PermitDepartmentFactory(factory.django.DjangoModelFactory):
-    is_default_validator = False
-    is_validator = False
-    is_admin = False
-    is_archeologist = False
-    administrative_entity = factory.SubFactory(PermitAdministrativeEntityFactory)
-    group = factory.SubFactory("permits.factories.GroupFactory")
-
-    class Meta:
-        model = models.PermitDepartment
-
-
 class GroupFactory(factory.django.DjangoModelFactory):
-    name = factory.Faker("company")
+    name = factory.Sequence(lambda n: "Company{}".format(n))
 
     class Meta:
         model = Group
@@ -100,6 +91,18 @@ class GroupFactory(factory.django.DjangoModelFactory):
 
         for permission in extracted:
             self.permissions.add(permission)
+
+
+class PermitDepartmentFactory(factory.django.DjangoModelFactory):
+    is_default_validator = False
+    is_validator = False
+    is_admin = False
+    is_archeologist = False
+    administrative_entity = factory.SubFactory(PermitAdministrativeEntityFactory)
+    group = factory.SubFactory(GroupFactory)
+
+    class Meta:
+        model = models.PermitDepartment
 
 
 class SecretariatGroupFactory(GroupFactory):
@@ -168,13 +171,17 @@ class ValidatorUserFactory(UserFactory):
             self.groups.add(group)
 
 
-class PermitRequestActorFactory(factory.django.DjangoModelFactory):
+class PermitActorFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PermitActor
 
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")
     email = factory.Faker("email")
+    address = factory.Faker("street_address")
+    zipcode = factory.Faker("zipcode")
+    city = factory.Faker("city")
+    phone = Truncator(factory.Faker("phone_number")).chars(19)
 
 
 class WorksObjectFactory(factory.django.DjangoModelFactory):
@@ -191,6 +198,13 @@ class WorksTypeFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("word")
 
 
+class PermitActorTypeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitActorType
+
+    works_type = factory.SubFactory(WorksTypeFactory)
+
+
 class PermitRequestFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PermitRequest
@@ -205,6 +219,15 @@ class WorksObjectPropertyFactory(factory.django.DjangoModelFactory):
 
     name = factory.Faker("word")
     input_type = models.WorksObjectProperty.INPUT_TYPE_TEXT
+    order = factory.Sequence(int)
+
+
+class WorksObjectPropertyFactoryTypeAddress(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.WorksObjectProperty
+
+    name = factory.Faker("word")
+    input_type = models.WorksObjectProperty.INPUT_TYPE_ADDRESS
 
 
 class WorksObjectTypeFactory(factory.django.DjangoModelFactory):
@@ -240,3 +263,31 @@ class PermitRequestValidationFactory(factory.django.DjangoModelFactory):
     permit_request = factory.SubFactory(
         PermitRequestFactory, status=models.PermitRequest.STATUS_AWAITING_VALIDATION
     )
+
+
+class PermitRequestGeoTimeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitRequestGeoTime
+
+    permit_request = factory.SubFactory(PermitRequestFactory)
+    starts_at = factory.Faker("date_time", tzinfo=timezone.utc)
+    ends_at = factory.Faker("date_time", tzinfo=timezone.utc)
+    geom = factory.LazyFunction(
+        lambda: GeometryCollection(Point(faker.Faker().latlng()))
+    )
+
+
+class PermitRequestAmendPropertyFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitRequestAmendProperty
+
+    name = factory.Faker("word")
+
+
+class PermitRequestAmendPropertyValueFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitRequestAmendPropertyValue
+
+    property = factory.SubFactory(PermitRequestAmendPropertyFactory)
+    works_object_type_choice = factory.SubFactory(WorksObjectTypeChoiceFactory)
+    value = factory.Faker("word")
