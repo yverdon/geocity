@@ -598,7 +598,6 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.get("instance", None)
 
-        # Initial values
         initial = {}
         for prop_value in self.get_values():
             initial[
@@ -607,18 +606,14 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                     prop_value.property_id,
                 )
             ] = prop_value.value
-
         kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
-
-        instance = kwargs.get("instance", None)
 
         super().__init__(*args, **kwargs)
 
-        availables_choices = []
-        if instance:
+        if self.instance:
             available_statuses_for_administrative_entity = list(
                 services.get_status_choices_for_administrative_entity(
-                    instance.administrative_entity
+                    self.instance.administrative_entity
                 )
             )
             filter1 = [
@@ -638,7 +633,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                 self.fields[field_name] = forms.CharField(
                     label=prop.name,
                     required=prop.is_mandatory,
-                    widget=forms.Textarea(attrs={"rows": 3,}),
+                    widget=forms.Textarea(attrs={"rows": 3}),
                 )
 
     def get_field_name(self, works_object_type_id, prop_id):

@@ -799,7 +799,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             ] = "I am a new property value, I am alive!"
 
         # The delete latter property value by setting it to an empty string
-        data[f"{permit_request.works_object_types.first().pk}_{props[-1].pk}"] = ""
+        data[f"{works_object_types_pk}_{props[-1].pk}"] = ""
 
         self.client.post(
             reverse(
