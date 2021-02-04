@@ -499,7 +499,6 @@ class PermitRequestActorForm(forms.ModelForm):
         max_length=100,
         label=_("Adresse"),
         widget=AddressWidget(
-            attrs={"required": "required"},
             autocomplete_options={
                 "single_address_field": False,
                 "single_contact": False,
