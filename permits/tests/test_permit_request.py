@@ -9,6 +9,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from permits import models, services
+import uuid
 
 from . import factories
 from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_parser
