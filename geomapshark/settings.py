@@ -73,7 +73,7 @@ INSTALLED_APPS = [
     "bootstrap4",
     "bootstrap_datepicker_plus",
     "django_tables2",
-    'django_tables2_column_shifter',
+    "django_tables2_column_shifter",
 ]
 
 if ENABLE_2FA:
