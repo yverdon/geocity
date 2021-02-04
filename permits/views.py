@@ -569,6 +569,12 @@ def permit_request_select_objects(request, permit_request_id):
         )
 
         if works_objects_form.is_valid():
+            # Reset the geometry/date if the object type has changed
+            if len(works_objects_form.changed_data):
+                models.PermitRequestGeoTime.objects.filter(
+                    permit_request_id=permit_request_id
+                ).delete()
+
             permit_request = works_objects_form.save()
             steps = services.get_progress_bar_steps(
                 request=request, permit_request=permit_request
