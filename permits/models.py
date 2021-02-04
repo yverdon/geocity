@@ -374,20 +374,9 @@ class PermitRequest(models.Model):
     actors = models.ManyToManyField(
         "PermitActor", related_name="+", through=PermitRequestActor
     )
-    archeology_status = models.PositiveSmallIntegerField(
-        _("Statut archéologique"),
-        choices=ARCHEOLOGY_STATUS_CHOICES,
-        default=ARCHEOLOGY_STATUS_IRRELEVANT,
-    )
     intersected_geometries = models.TextField(
         _("Entités géométriques concernées"), max_length=1024, null=True
     )
-    price = models.DecimalField(
-        _("Émolument"), decimal_places=2, max_digits=7, null=True, blank=True
-    )
-    exemption = models.TextField(_("Dérogation"), blank=True)
-    opposition = models.TextField(_("Opposition"), blank=True)
-    comment = models.TextField(_("Analyse du service pilote"), blank=True)
     validation_pdf = fields.PermitRequestFileField(
         _("pdf de validation"),
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
@@ -706,3 +695,46 @@ class PermitWorkflowStatus(models.Model):
         verbose_name = _("Status disponible pour l'entité administrative")
         verbose_name_plural = _("Status disponibles pour l'entité administratives")
         unique_together = ("status", "administrative_entity")
+
+
+class PermitRequestAmendProperty(models.Model):
+    name = models.CharField(_("nom"), max_length=255)
+    is_mandatory = models.BooleanField(_("obligatoire"), default=False)
+    works_object_types = models.ManyToManyField(
+        WorksObjectType,
+        verbose_name=_("objets des travaux"),
+        related_name="amend_properties",
+    )
+
+    class Meta:
+        verbose_name = _("2.2 Configuration de champ de traitement de demande")
+        verbose_name_plural = _(
+            "2.2 Configuration des champs de traitement des demandes"
+        )
+
+    def __str__(self):
+        return self.name
+
+
+class PermitRequestAmendPropertyValue(models.Model):
+    """
+    Value of a property for a selected object to be amended by the Secretariat.
+    """
+
+    property = models.ForeignKey(
+        PermitRequestAmendProperty,
+        verbose_name=_("caractéristique"),
+        on_delete=models.PROTECT,
+        related_name="+",
+    )
+    works_object_type_choice = models.ForeignKey(
+        WorksObjectTypeChoice,
+        verbose_name=_("objet des travaux"),
+        on_delete=models.CASCADE,
+        related_name="amend_properties",
+    )
+    value = models.TextField(_("traitement info"), blank=True)
+    history = HistoricalRecords()
+
+    class Meta:
+        unique_together = [("property", "works_object_type_choice")]

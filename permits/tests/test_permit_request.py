@@ -753,42 +753,69 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             administrative_entity=self.administrative_entity,
             author=user.permitauthor,
         )
-        self.client.post(
+        response = self.client.post(
             reverse(
                 "permits:permit_request_detail",
                 kwargs={"permit_request_id": permit_request.pk},
             ),
             data={
-                "price": 300,
                 "status": models.PermitRequest.STATUS_PROCESSING,
                 "action": models.ACTION_AMEND,
             },
         )
 
         permit_request.refresh_from_db()
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            permit_request.status, models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
+        )
 
-        self.assertIsNone(permit_request.price)
-
-    def test_secretariat_can_amend_request(self):
+    def test_secretariat_can_amend_request_with_custom_property_field_and_delete_property_value(
+        self,
+    ):
+        props_quantity = 3
         permit_request = factories.PermitRequestFactory(
             status=models.PermitRequest.STATUS_PROCESSING,
             administrative_entity=self.administrative_entity,
         )
+        works_object_type_choice = factories.WorksObjectTypeChoiceFactory(
+            permit_request=permit_request
+        )
+
+        props = factories.PermitRequestAmendPropertyFactory.create_batch(props_quantity)
+        data = {
+            "action": models.ACTION_AMEND,
+            "status": models.PermitRequest.STATUS_PROCESSING,
+        }
+
+        works_object_types_pk = permit_request.works_object_types.first().pk
+        for prop in props:
+            prop.works_object_types.set(permit_request.works_object_types.all())
+            factories.PermitRequestAmendPropertyValueFactory(
+                property=prop, works_object_type_choice=works_object_type_choice,
+            )
+            data[
+                f"{works_object_types_pk}_{prop.pk}"
+            ] = "I am a new property value, I am alive!"
+
+        # The delete latter property value by setting it to an empty string
+        data[f"{works_object_types_pk}_{props[-1].pk}"] = ""
+
         self.client.post(
             reverse(
                 "permits:permit_request_detail",
                 kwargs={"permit_request_id": permit_request.pk},
             ),
-            data={
-                "price": 300,
-                "status": models.PermitRequest.STATUS_PROCESSING,
-                "action": models.ACTION_AMEND,
-                "archeology_status": models.PermitRequest.ARCHEOLOGY_STATUS_IRRELEVANT,
-            },
+            data=data,
         )
 
-        permit_request.refresh_from_db()
-        self.assertEqual(permit_request.price, 300)
+        new_properties_values_qs = models.PermitRequestAmendPropertyValue.objects.values_list(
+            "value", flat=True
+        )
+        self.assertEqual(len(new_properties_values_qs), props_quantity - 1)
+        self.assertIn(
+            "I am a new property value, I am alive!", new_properties_values_qs,
+        )
 
     def test_secretariat_can_see_submitted_requests(self):
         permit_request = factories.PermitRequestFactory(
@@ -815,7 +842,10 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             },
             follow=True,
         )
-
+        permit_request.refresh_from_db()
+        self.assertEqual(
+            permit_request.status, models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
+        )
         self.assertContains(response, "compléments")
 
     def test_secretariat_cannot_amend_permit_request_with_validation_requested(self):
@@ -828,7 +858,10 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
                 "permits:permit_request_detail",
                 kwargs={"permit_request_id": permit_request.pk},
             ),
-            data={"price": 200, "action": models.ACTION_AMEND},
+            data={
+                "status": models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+                "action": models.ACTION_AMEND,
+            },
         )
 
         self.assertEqual(response.status_code, 400)

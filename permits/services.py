@@ -428,7 +428,7 @@ def get_permitactorformset_initiated(permit_request, data=None):
         initial=actor_initial_forms,
         queryset=models.PermitRequestActor.objects.filter(
             permit_request=permit_request
-        ),
+        ).select_related("actor"),
         data=data,
     )
 
@@ -1109,6 +1109,26 @@ def get_actions_for_administrative_entity(permit_request):
     return distinct_available_actions
 
 
+def get_permit_request_amend_custom_properties(permit_request):
+
+    props_by_object_type = get_permit_request_amend_custom_properties_by_object_type(
+        permit_request
+    )
+    for works_object_type, props in props_by_object_type:
+        for prop in props:
+            yield (works_object_type, prop)
+
+
+def get_permit_request_amend_custom_properties_by_object_type(permit_request):
+
+    works_object_types = permit_request.works_object_types.prefetch_related(
+        "amend_properties"
+    ).select_related("works_object", "works_type")
+
+    for works_object_type in works_object_types:
+        yield (works_object_type, works_object_type.amend_properties.all())
+
+
 def get_default_works_object_types(administrative_entity, works_types=None):
     """
     Return the `WorksObjectType` that should be automatically selected for the given
@@ -1137,3 +1157,49 @@ def get_default_works_object_types(administrative_entity, works_types=None):
         return []
 
     return works_object_types
+
+
+@transaction.atomic
+def set_amend_custom_property_value(permit_request, object_type, prop, value):
+    """
+    Create or update the `PermitRequestAmendPropertyValues` object for the given
+    property, object type and permit request. The record will be deleted if value is
+    an empty string or None. Value is only str type.
+    """
+    existing_value_obj = models.PermitRequestAmendPropertyValue.objects.filter(
+        works_object_type_choice__permit_request=permit_request,
+        works_object_type_choice__works_object_type=object_type,
+        property=prop,
+    )
+
+    if value == "" or value is None:
+        existing_value_obj.delete()
+    else:
+        nb_objs = existing_value_obj.update(value=value)
+        # No existing property value record, create it
+        if nb_objs == 0:
+            (
+                works_object_type_choice,
+                created,
+            ) = models.WorksObjectTypeChoice.objects.get_or_create(
+                permit_request=permit_request, works_object_type=object_type
+            )
+            models.PermitRequestAmendPropertyValue.objects.create(
+                works_object_type_choice=works_object_type_choice,
+                property=prop,
+                value=value,
+            )
+
+
+def get_amend_custom_properties_values(permit_request):
+    """
+    Return a queryset of `PermitRequestAmendPropertyValue` objects for the given
+    `permit_request`.
+    """
+    return models.PermitRequestAmendPropertyValue.objects.filter(
+        works_object_type_choice__permit_request=permit_request
+    ).select_related(
+        "works_object_type_choice",
+        "works_object_type_choice__works_object_type",
+        "property",
+    )

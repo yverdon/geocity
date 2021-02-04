@@ -19,6 +19,7 @@ class PermitAuthorFactory(factory.django.DjangoModelFactory):
     city = factory.Faker("city")
     phone_first = Truncator(factory.Faker("phone_number")).chars(19)
     phone_second = Truncator(factory.Faker("phone_number")).chars(19)
+    user = factory.SubFactory("permits.tests.factories.UserFactory", actor=None)
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -274,3 +275,19 @@ class PermitRequestGeoTimeFactory(factory.django.DjangoModelFactory):
     geom = factory.LazyFunction(
         lambda: GeometryCollection(Point(faker.Faker().latlng()))
     )
+
+
+class PermitRequestAmendPropertyFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitRequestAmendProperty
+
+    name = factory.Faker("word")
+
+
+class PermitRequestAmendPropertyValueFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitRequestAmendPropertyValue
+
+    property = factory.SubFactory(PermitRequestAmendPropertyFactory)
+    works_object_type_choice = factory.SubFactory(WorksObjectTypeChoiceFactory)
+    value = factory.Faker("word")

@@ -30,6 +30,18 @@ def works_object_type_administrative_entities(obj):
     )
 
 
+def get_works_object_types_field():
+    return WorksObjectTypeWithAdministrativeEntitiesField(
+        queryset=(
+            models.WorksObjectType.objects.select_related("works_object", "works_type")
+            .order_by("works_object__name", "works_type__name")
+            .prefetch_related("administrative_entities")
+        ),
+        widget=forms.CheckboxSelectMultiple,
+        label=_("objets des travaux").capitalize(),
+    )
+
+
 works_object_type_administrative_entities.short_description = _("Communes")
 
 
@@ -46,7 +58,7 @@ class WorksObjectTypeAdmin(admin.ModelAdmin):
         )
 
 
-class WorksObjectTypeWithAdministrativeEntities(forms.ModelMultipleChoiceField):
+class WorksObjectTypeWithAdministrativeEntitiesField(forms.ModelMultipleChoiceField):
     def label_from_instance(self, obj):
         entities = ", ".join(
             entity.name for entity in obj.administrative_entities.all()
@@ -55,15 +67,7 @@ class WorksObjectTypeWithAdministrativeEntities(forms.ModelMultipleChoiceField):
 
 
 class WorksObjectPropertyForm(forms.ModelForm):
-    works_object_types = WorksObjectTypeWithAdministrativeEntities(
-        queryset=(
-            models.WorksObjectType.objects.select_related("works_object", "works_type")
-            .order_by("works_object__name", "works_type__name")
-            .prefetch_related("administrative_entities")
-        ),
-        widget=forms.CheckboxSelectMultiple,
-        label=_("objets des travaux").capitalize(),
-    )
+    works_object_types = get_works_object_types_field()
 
     class Meta:
         model = models.WorksObjectProperty
@@ -150,8 +154,31 @@ class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
     ]
 
 
+class PermitRequestAmendPropertyForm(forms.ModelForm):
+    works_object_types = get_works_object_types_field()
+
+    class Meta:
+        model = models.PermitRequestAmendProperty
+        fields = ["name", "is_mandatory", "works_object_types"]
+
+
+class PermitRequestAmendPropertyAdmin(admin.ModelAdmin):
+
+    list_display = ["sortable_str", "is_mandatory"]
+    form = PermitRequestAmendPropertyForm
+
+    def sortable_str(self, obj):
+        return str(obj)
+
+    sortable_str.short_description = (
+        "2.2 Configuration des champs de traitement des demandes"
+    )
+    sortable_str.admin_order_field = "name"
+
+
 admin.site.register(models.PermitRequest, PermitRequestHistoryAdmin)
 admin.site.register(models.WorksObjectType, WorksObjectTypeAdmin)
 admin.site.register(models.WorksObjectProperty, WorksObjectPropertyAdmin)
 admin.site.register(models.PermitAdministrativeEntity, PermitAdministrativeEntityAdmin)
 admin.site.register(models.WorksObject, WorksObjectAdmin)
+admin.site.register(models.PermitRequestAmendProperty, PermitRequestAmendPropertyAdmin)
