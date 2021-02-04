@@ -588,32 +588,31 @@ class PermitRequestActorForm(forms.ModelForm):
 
 
 class PermitRequestAdditionalInformationForm(forms.ModelForm):
+    required_css_class = "required"
+
     class Meta:
         model = models.PermitRequest
-        fields = [
-            "is_public",
-            "status",
-            "price",
-            "exemption",
-            "opposition",
-            "comment",
-            "archeology_status",
-        ]
-        widgets = {
-            "exemption": forms.Textarea(attrs={"rows": 3}),
-            "opposition": forms.Textarea(attrs={"rows": 3}),
-            "comment": forms.Textarea(attrs={"rows": 3}),
-        }
+        fields = ["is_public", "status"]
 
     def __init__(self, *args, **kwargs):
+        self.instance = kwargs.get("instance", None)
+
+        initial = {}
+        for prop_value in self.get_values():
+            initial[
+                self.get_field_name(
+                    prop_value.works_object_type_choice.works_object_type_id,
+                    prop_value.property_id,
+                )
+            ] = prop_value.value
+        kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
+
         super().__init__(*args, **kwargs)
 
-        instance = kwargs.pop("instance", None)
-        availables_choices = []
-        if instance:
+        if self.instance:
             available_statuses_for_administrative_entity = list(
                 services.get_status_choices_for_administrative_entity(
-                    instance.administrative_entity
+                    self.instance.administrative_entity
                 )
             )
             filter1 = [
@@ -627,6 +626,67 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                 if any(i in el for i in available_statuses_for_administrative_entity)
             ]
             self.fields["status"].choices = tuple(filter2)
+
+            for works_object_type, prop in self.get_properties():
+                field_name = self.get_field_name(works_object_type.id, prop.id)
+                self.fields[field_name] = forms.CharField(
+                    label=prop.name,
+                    required=prop.is_mandatory,
+                    widget=forms.Textarea(attrs={"rows": 3}),
+                )
+
+    def get_field_name(self, works_object_type_id, prop_id):
+        return "{}_{}".format(works_object_type_id, prop_id)
+
+    def get_properties(self):
+        """
+        Return a list of tuples `(WorksObjectType, PermitRequestAmendProperty)` for the
+        amend properties of the current permit request. Used to create the form fields.
+        """
+        return services.get_permit_request_amend_custom_properties(self.instance)
+
+    def get_values(self):
+        """
+        Return a queryset of `PermitRequestAmendPropertyValue` for the custom properties
+        on the current permit request. They're used to set the initial value of the form
+        fields.
+        """
+        return services.get_amend_custom_properties_values(self.instance)
+
+    def get_fields_by_object_type(self):
+        """
+        Return a list of tuples `(WorksObjectType, List[Field])` for each object type and their properties.
+        """
+        return [
+            (
+                object_type,
+                [self[self.get_field_name(object_type.id, prop.id)] for prop in props],
+            )
+            for object_type, props in services.get_permit_request_amend_custom_properties_by_object_type(
+                self.instance
+            )
+        ]
+
+    def get_base_fields(self):
+        """
+        Return a list of base fields for the current Model Form.
+        """
+        return [self[field] for field in self.base_fields]
+
+    def save(self, commit=True):
+        permit_request = super().save(commit=False)
+        for works_object_type, prop in self.get_properties():
+            services.set_amend_custom_property_value(
+                permit_request=self.instance,
+                object_type=works_object_type,
+                prop=prop,
+                value=self.cleaned_data[
+                    self.get_field_name(works_object_type.id, prop.id)
+                ],
+            )
+        if commit:
+            permit_request.save()
+        return permit_request
 
 
 # extend django gis osm openlayers widget
