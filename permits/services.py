@@ -259,15 +259,16 @@ def set_works_object_types(permit_request, new_works_object_types):
     geotime_required_info = get_geotime_required_info(permit_request)
     geotime_objects = get_geotime_objects(permit_request.id)
 
-    # Reset the geometry/date if the new_works_object_type do not need Date/Geom
-    if len(geotime_required_info) == 0:
-        geotime_objects.delete()
-    # Reset the date only
-    elif geotime_required_info == set({GeoTimeInfo.GEOMETRY}):
-        geotime_objects.update(starts_at=None, ends_at=None)
-    # Reset the geometry only
-    elif geotime_required_info == set({GeoTimeInfo.DATE}):
-        geotime_objects.update(geom=None)
+    if len(geotime_objects) > 0:
+        # Reset the geometry/date if the new_works_object_type do not need Date/Geom
+        if len(geotime_required_info) == 0:
+            geotime_objects.delete()
+        # Reset the date only
+        elif geotime_required_info == set({GeoTimeInfo.GEOMETRY}):
+            geotime_objects.update(starts_at=None, ends_at=None)
+        # Reset the geometry only
+        elif geotime_required_info == set({GeoTimeInfo.DATE}):
+            geotime_objects.update(geom=None)
 
 
 @transaction.atomic
