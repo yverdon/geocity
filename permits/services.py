@@ -256,6 +256,20 @@ def set_works_object_types(permit_request, new_works_object_types):
             permit_request=permit_request, works_object_type=works_object_type
         )
 
+    geotime_objects = get_geotime_objects(permit_request.id)
+
+    if len(geotime_objects) > 0:
+        geotime_required_info = get_geotime_required_info(permit_request)
+        # Reset the geometry/date if the new_works_object_type do not need Date/Geom
+        if len(geotime_required_info) == 0:
+            geotime_objects.delete()
+        # Reset the date only
+        if GeoTimeInfo.DATE not in geotime_required_info:
+            geotime_objects.update(starts_at=None, ends_at=None)
+        # Reset the geometry only
+        if GeoTimeInfo.GEOMETRY not in geotime_required_info:
+            geotime_objects.update(geom=None)
+
 
 @transaction.atomic
 def set_administrative_entity(permit_request, administrative_entity):
@@ -597,10 +611,7 @@ def get_properties_step(permit_request, enabled):
 def get_geo_time_step(permit_request, enabled):
     geo_time_errors = (
         0
-        if permit_request is None
-        or models.PermitRequestGeoTime.objects.filter(
-            permit_request=permit_request
-        ).exists()
+        if permit_request is None or get_geotime_objects(permit_request.id).exists()
         else 1
     )
     geo_time_url = (
@@ -651,6 +662,12 @@ def get_geotime_required_info(permit_request):
         required_info.add(GeoTimeInfo.GEOMETRY)
 
     return required_info
+
+
+def get_geotime_objects(permit_request_id):
+    return models.PermitRequestGeoTime.objects.filter(
+        permit_request_id=permit_request_id
+    )
 
 
 def get_appendices_step(permit_request, enabled):
