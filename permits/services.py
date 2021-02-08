@@ -256,18 +256,18 @@ def set_works_object_types(permit_request, new_works_object_types):
             permit_request=permit_request, works_object_type=works_object_type
         )
 
-    geotime_required_info = get_geotime_required_info(permit_request)
     geotime_objects = get_geotime_objects(permit_request.id)
 
     if len(geotime_objects) > 0:
+        geotime_required_info = get_geotime_required_info(permit_request)
         # Reset the geometry/date if the new_works_object_type do not need Date/Geom
         if len(geotime_required_info) == 0:
             geotime_objects.delete()
         # Reset the date only
-        elif geotime_required_info == set({GeoTimeInfo.GEOMETRY}):
+        if GeoTimeInfo.DATE not in geotime_required_info:
             geotime_objects.update(starts_at=None, ends_at=None)
         # Reset the geometry only
-        elif geotime_required_info == set({GeoTimeInfo.DATE}):
+        if GeoTimeInfo.GEOMETRY not in geotime_required_info:
             geotime_objects.update(geom=None)
 
 
