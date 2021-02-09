@@ -26,6 +26,23 @@
         {% endif %}
       </dd>
     {% endfor %}
+
+    {% for works_object_type, props in amend_custom_properties_values.items %}
+      {% ifequal works_object_type object %}
+        {% if props.items %}
+          <h5>{% trans "Information du service responsable" %}</h5>
+            <dl>
+              {% for prop, value in props.items %}
+              <dt>{{ prop }}</dt>
+              <dd>
+                 {{ value }}
+              </dd>
+              {% endfor %}
+            </dl>
+        {% endif %}
+      {% endifequal %}
+    {% endfor %}
+
   </dl>
 {% endfor %}
 

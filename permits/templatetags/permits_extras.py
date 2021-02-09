@@ -60,6 +60,9 @@ def permit_request_summary(context, permit_request):
         "intersected_geometries": permit_request.intersected_geometries
         if permit_request.intersected_geometries != ""
         else None,
+        "amend_custom_properties_values": services.get_amend_custom_properties_values_by_object_type(
+            permit_request
+        ),
     }
 
 
