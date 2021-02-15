@@ -2,8 +2,7 @@
 {% load bootstrap4 %}
 {% load permits_extras %}
 
-{% regroup amend_custom_properties_values by works_object_type_choice as grouped_custom_properties %}
-{% for object, properties, appendices in objects_infos %}
+{% for object, properties, appendices, amend_custom_properties in objects_infos %}
   <h4>{{ object }}</h4>
   <dl>
     {% for field in properties %}
@@ -28,17 +27,15 @@
       </dd>
     {% endfor %}
 
-    {% for object_properties in grouped_custom_properties %}
-      {% ifequal object_properties.grouper.works_object_type object %}
-        <h5>{% trans "Information du service responsable" %}</h5>
+    {% if amend_custom_properties %}
+      <h5>{% trans "Information du service responsable" %}</h5>
+      {% for object_property in amend_custom_properties %}
         <dl>
-          {% for prop in object_properties.list %}
-            <dt>{{ prop.property }}</dt>
-            <dd>{{ prop.value }}</dd>
-          {% endfor %}
+          <dt>{{ object_property.property }}</dt>
+          <dd>{{ object_property.value }}</dd>
         </dl>
-      {% endifequal %}
-    {% endfor %}
+      {% endfor %}
+    {% endif %}
 
   </dl>
 {% endfor %}
