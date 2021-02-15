@@ -1203,19 +1203,3 @@ def get_amend_custom_properties_values(permit_request):
         "works_object_type_choice__works_object_type",
         "property",
     )
-
-
-def get_amend_custom_properties_values_by_object_type(permit_request):
-
-    amend_custom_properties_values_by_object_type = {}
-    for works_object_type, property in get_permit_request_amend_custom_properties(
-        permit_request
-    ):
-        amend_custom_properties_values_by_object_type[works_object_type] = {
-            prop.property.name: prop.value
-            for prop in get_amend_custom_properties_values(permit_request).filter(
-                works_object_type_choice__works_object_type=works_object_type
-            )
-        }
-
-    return amend_custom_properties_values_by_object_type
