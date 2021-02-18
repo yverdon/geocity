@@ -54,10 +54,9 @@ $(function () {
             var nmr = data.feature.attributes.deinr;
             var street = "";
             if (nmr == null || nmr === "") {
-              nmr = "";
-              street = data.feature.attributes.strname;
+              street = data.feature.attributes.strname.join(" ");
             } else {
-              street = data.feature.attributes.strname + " " + nmr;
+              street = data.feature.attributes.strname.join(" ") + " " + nmr;
             }
             var formPrefix = event.target.attributes.id.value.substring(0, 9);
             item.value = street;
