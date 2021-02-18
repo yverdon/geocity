@@ -2,18 +2,19 @@
 {% load bootstrap4 %}
 {% load i18n %}
 {% load permits_extras %}
+{% load static %}
+
 
 {% block content %}
   {% if permit_request %}
-    {% permit_progressbar permit_request 'location' %}
+    {% permit_progressbar steps StepType.ADMINISTRATIVE_ENTITY %}
   {% endif %}
   <h3>{{ config.LOCATION_STEP }}</h3>
   <hr>
   <form method="post">
     {% bootstrap_form_errors form %}
-
     {% csrf_token %}
-
+    {{ form.media }}
     {% bootstrap_field form.administrative_entity show_label=False %}
 
     {% buttons %}
