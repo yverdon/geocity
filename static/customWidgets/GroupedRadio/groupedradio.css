@@ -17,6 +17,7 @@
   z-index: 2;
   transition: color 200ms ease-in;
   overflow: hidden;
+  padding-left: 100px;
 }
 
 .input-group label::before {
@@ -46,7 +47,7 @@
   border-radius: 50%;
   z-index: 2;
   position: absolute;
-  right: 30px;
+  left: 30px;
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
