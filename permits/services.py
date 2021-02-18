@@ -3,6 +3,7 @@ import itertools
 import os
 import urllib
 
+from collections import defaultdict
 from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -1066,12 +1067,18 @@ def get_permit_objects(permit_request):
     appendices_form = forms.WorksObjectsAppendicesForm(instance=permit_request)
     properties_by_object_type = dict(properties_form.get_fields_by_object_type())
     appendices_by_object_type = dict(appendices_form.get_fields_by_object_type())
-
+    amend_custom_properties_values = get_amend_custom_properties_values(permit_request)
+    amend_custom_properties_by_object_type = defaultdict(list)
+    for value in amend_custom_properties_values:
+        amend_custom_properties_by_object_type[
+            value.works_object_type_choice.works_object_type
+        ].append(value)
     objects_infos = [
         (
             obj,
             properties_by_object_type.get(obj, []),
             appendices_by_object_type.get(obj, []),
+            amend_custom_properties_by_object_type[obj],
         )
         for obj in permit_request.works_object_types.all()
     ]
