@@ -95,13 +95,13 @@ table {
     font-family: arial, sans-serif;
     border-collapse: collapse;
     width: 100%;
-    font-size: 10px;
+    font-size: 12px;
 }
 
 td, th {
-    border: 0.5px solid #dddddd;
+    border: 0;
     text-align: left;
-    padding: 8px;
+    padding: 2px;
 }
 
 th {
@@ -111,8 +111,10 @@ th {
 .validation-table-left {
     font-weight: bold;
     width: 35%;
+    padding: 2px;
 }
 
 .validation-table-right{
     width: 65%;
+    padding: 2px;
 }
