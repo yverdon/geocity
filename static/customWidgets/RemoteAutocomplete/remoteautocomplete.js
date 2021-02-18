@@ -94,6 +94,7 @@ $(function () {
             }
           },
         });
+        return false;
       },
     });
   });
