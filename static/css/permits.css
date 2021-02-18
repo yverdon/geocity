@@ -1,7 +1,7 @@
 body {
   color: var(--text-color);
   background-color: var(--background-color);
-} 
+}
 
 /* Global boostrap4 styling  */
 .btn {
@@ -334,6 +334,7 @@ h2 {
 h3 {
   font-size: 1.3em;
 }
+
 
 /* /////////////////////////////////// */
 /* Responsive for smaller devices */
