@@ -52,20 +52,20 @@ $(function () {
           },
           success: function (data) {
             var nmr = data.feature.attributes.deinr;
-            if (nmr == null) {
-              nmr = "";
+            var street = "";
+            if (nmr == null || nmr === "") {
+              street = data.feature.attributes.strname.join(" ");
+            } else {
+              street = data.feature.attributes.strname.join(" ") + " " + nmr;
             }
             var formPrefix = event.target.attributes.id.value.substring(0, 9);
-            item.value = data.feature.attributes.strname + " " + nmr;
+            item.value = street;
             if (
               dataRemoteAutocomplete.single_address_field
             ) {
-              item.value =
-                data.feature.attributes.strname + " " + nmr + ", " +
-                data.feature.attributes.dplz4 + " " + data.feature.attributes.dplzname;
+              item.value = street + ", " + data.feature.attributes.dplz4 + " " + data.feature.attributes.dplzname;
               return;
             }
-
             if (
               dataRemoteAutocomplete.zipcode_field != "" &&
               !dataRemoteAutocomplete.single_contact
@@ -93,6 +93,7 @@ $(function () {
             }
           },
         });
+        return false;
       },
     });
   });
