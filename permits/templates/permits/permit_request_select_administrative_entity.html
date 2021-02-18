@@ -7,7 +7,7 @@
 
 {% block content %}
   {% if permit_request %}
-    {% permit_progressbar permit_request 'location' %}
+    {% permit_progressbar steps StepType.ADMINISTRATIVE_ENTITY %}
   {% endif %}
   <h3>{{ config.LOCATION_STEP }}</h3>
   <hr>

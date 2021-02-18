@@ -70,7 +70,7 @@ $ docker-compose exec web black .
 
 ### Setup your Environment file
 
-Edit the variables in `.env` according to your environment.    
+Edit the variables in `.env` according to your environment.
 Set the global environment switcher to `ENV=DEV` in the `.env` file.
 
 Keep in mind that you are in a Docker environment. Thus you might need to set, on Linux environment something like:
@@ -160,7 +160,7 @@ To install a new package, add it to `requirements.in`, without pinning it to a
 specific version unless needed. Then run:
 
 ```
-docker-compose exec web pip-tools compile requirements.in
+docker-compose exec web pip-compile requirements.in
 docker-compose exec web pip install -r requirements.txt
 ```
 

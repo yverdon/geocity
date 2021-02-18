@@ -1,7 +1,7 @@
 import json
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
-from bootstrap_datepicker_plus import DateTimePickerInput
+from bootstrap_datepicker_plus import DatePickerInput, DateTimePickerInput
 from django import forms
 from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
@@ -13,10 +13,47 @@ from django.db import transaction
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from itertools import groupby
 
 from . import models, services
+
+
+class AddressWidget(forms.widgets.TextInput):
+    @property
+    def media(self):
+        return forms.Media(
+            css={
+                "all": (
+                    "customWidgets/RemoteAutocomplete/remoteautocomplete.css",
+                    "libs/js/jquery-ui-custom/jquery-ui.min.css",
+                )
+            },
+            js=(
+                "customWidgets/RemoteAutocomplete/remoteautocomplete.js",
+                "libs/js/jquery-ui-custom/jquery-ui.js",
+            ),
+        )
+
+    def __init__(self, attrs=None, autocomplete_options=None):
+        autocomplete_options = {
+            "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
+            "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
+            "origins": "address",
+            "zipcode_field": "zipcode",
+            "city_field": "city",
+            "placeholder": gettext("ex: Place Pestalozzi 2, 1400 Yverdon"),
+            "single_contact": True,
+            "single_address_field": False,
+            **(autocomplete_options or {}),
+        }
+        super().__init__(
+            {
+                **(attrs or {}),
+                "data_remote_autocomplete": json.dumps(autocomplete_options),
+            }
+        )
 
 
 def get_field_cls_for_property(prop):
@@ -25,6 +62,8 @@ def get_field_cls_for_property(prop):
         models.WorksObjectProperty.INPUT_TYPE_CHECKBOX: forms.BooleanField,
         models.WorksObjectProperty.INPUT_TYPE_NUMBER: forms.FloatField,
         models.WorksObjectProperty.INPUT_TYPE_FILE: forms.FileField,
+        models.WorksObjectProperty.INPUT_TYPE_ADDRESS: forms.CharField,
+        models.WorksObjectProperty.INPUT_TYPE_DATE: forms.DateField,
     }
 
     return input_type_mapping[prop.input_type]
@@ -135,7 +174,9 @@ class WorksObjectsForm(forms.Form):
             self.fields[str(works_type.pk)] = WorksObjectsTypeChoiceField(
                 queryset=works_type.works_object_types.filter(
                     administrative_entities=self.instance.administrative_entity
-                ).distinct(),
+                )
+                .distinct()
+                .select_related("works_object"),
                 widget=forms.CheckboxSelectMultiple(),
                 label=works_type.name,
                 error_messages={
@@ -242,6 +283,29 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                 **self.get_field_kwargs(prop),
                 widget=forms.Textarea(attrs={"rows": 1,}),
             )
+        elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_ADDRESS:
+
+            field_instance = field_class(
+                **self.get_field_kwargs(prop),
+                widget=AddressWidget(
+                    autocomplete_options={"single_address_field": True}
+                ),
+            )
+
+        elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_DATE:
+            field_instance = field_class(
+                **self.get_field_kwargs(prop),
+                input_formats=[settings.DATE_INPUT_FORMAT],
+                widget=DatePickerInput(
+                    options={
+                        "format": "DD.MM.YYYY",
+                        "locale": "fr-CH",
+                        "useCurrent": False,
+                        "minDate": "1900/01/01",
+                        "maxDate": "2100/12/31",
+                    },
+                ),
+            )
         else:
             field_instance = field_class(**self.get_field_kwargs(prop),)
         return field_instance
@@ -338,25 +402,7 @@ class GenericAuthorForm(forms.ModelForm):
 
     required_css_class = "required"
     address = forms.CharField(
-        max_length=100,
-        label=_("Adresse"),
-        widget=forms.TextInput(
-            attrs={
-                "data_remote_autocomplete": json.dumps(
-                    {
-                        "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
-                        "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
-                        "search_prefix": "false",
-                        "origins": "address",
-                        "zipcode_field": "zipcode",
-                        "city_field": "city",
-                        "placeholder": "ex: Place Pestalozzi 2 Yverdon",
-                        "single_contact": "true",
-                    }
-                ),
-                "required": "required",
-            }
-        ),
+        max_length=100, label=_("Adresse"), widget=AddressWidget()
     )
 
     zipcode = forms.IntegerField(
@@ -439,24 +485,18 @@ class PermitRequestActorForm(forms.ModelForm):
     first_name = forms.CharField(
         max_length=150,
         label=_("Prénom"),
-        widget=forms.TextInput(
-            attrs={"placeholder": "ex: Marcel", "required": "required"}
-        ),
+        widget=forms.TextInput(attrs={"placeholder": "ex: Marcel",}),
     )
     last_name = forms.CharField(
         max_length=100,
         label=_("Nom"),
-        widget=forms.TextInput(
-            attrs={"placeholder": "ex: Dupond", "required": "required"}
-        ),
+        widget=forms.TextInput(attrs={"placeholder": "ex: Dupond",}),
     )
     phone = forms.CharField(
         min_length=10,
         max_length=16,
         label=_("Téléphone"),
-        widget=forms.TextInput(
-            attrs={"placeholder": "ex: 024 111 22 22", "required": "required"}
-        ),
+        widget=forms.TextInput(attrs={"placeholder": "ex: 024 111 22 22",}),
         validators=[
             RegexValidator(
                 regex=r"^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
@@ -469,42 +509,28 @@ class PermitRequestActorForm(forms.ModelForm):
     email = forms.EmailField(
         max_length=100,
         label=_("Email"),
-        widget=forms.TextInput(
-            attrs={"placeholder": "ex: example@example.com", "required": "required"}
-        ),
+        widget=forms.TextInput(attrs={"placeholder": "ex: example@example.com",}),
     )
     address = forms.CharField(
         max_length=100,
         label=_("Adresse"),
-        widget=forms.TextInput(
-            attrs={
-                "data_remote_autocomplete": json.dumps(
-                    {
-                        "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
-                        "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
-                        "search_prefix": "false",
-                        "origins": "address",
-                        "zipcode_field": "zipcode",
-                        "city_field": "city",
-                        "placeholder": "ex: Place Pestalozzi 2 Yverdon",
-                    }
-                ),
-                "required": "required",
-            }
+        widget=AddressWidget(
+            autocomplete_options={
+                "single_address_field": False,
+                "single_contact": False,
+            },
         ),
     )
 
     zipcode = forms.IntegerField(
         label=_("NPA"),
         validators=[MinValueValidator(1000), MaxValueValidator(9999)],
-        widget=forms.NumberInput(attrs={"required": "required"}),
+        widget=forms.NumberInput(),
     )
     city = forms.CharField(
         max_length=100,
         label=_("Ville"),
-        widget=forms.TextInput(
-            attrs={"placeholder": "ex: Yverdon", "required": "required"}
-        ),
+        widget=forms.TextInput(attrs={"placeholder": "ex: Yverdon",}),
     )
     company_name = forms.CharField(
         required=False,
@@ -578,32 +604,31 @@ class PermitRequestActorForm(forms.ModelForm):
 
 
 class PermitRequestAdditionalInformationForm(forms.ModelForm):
+    required_css_class = "required"
+
     class Meta:
         model = models.PermitRequest
-        fields = [
-            "is_public",
-            "status",
-            "price",
-            "exemption",
-            "opposition",
-            "comment",
-            "archeology_status",
-        ]
-        widgets = {
-            "exemption": forms.Textarea(attrs={"rows": 3}),
-            "opposition": forms.Textarea(attrs={"rows": 3}),
-            "comment": forms.Textarea(attrs={"rows": 3}),
-        }
+        fields = ["is_public", "status"]
 
     def __init__(self, *args, **kwargs):
+        self.instance = kwargs.get("instance", None)
+
+        initial = {}
+        for prop_value in self.get_values():
+            initial[
+                self.get_field_name(
+                    prop_value.works_object_type_choice.works_object_type_id,
+                    prop_value.property_id,
+                )
+            ] = prop_value.value
+        kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
+
         super().__init__(*args, **kwargs)
 
-        instance = kwargs.pop("instance", None)
-        availables_choices = []
-        if instance:
+        if self.instance:
             available_statuses_for_administrative_entity = list(
                 services.get_status_choices_for_administrative_entity(
-                    instance.administrative_entity
+                    self.instance.administrative_entity
                 )
             )
             filter1 = [
@@ -617,6 +642,67 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                 if any(i in el for i in available_statuses_for_administrative_entity)
             ]
             self.fields["status"].choices = tuple(filter2)
+
+            for works_object_type, prop in self.get_properties():
+                field_name = self.get_field_name(works_object_type.id, prop.id)
+                self.fields[field_name] = forms.CharField(
+                    label=prop.name,
+                    required=prop.is_mandatory,
+                    widget=forms.Textarea(attrs={"rows": 3}),
+                )
+
+    def get_field_name(self, works_object_type_id, prop_id):
+        return "{}_{}".format(works_object_type_id, prop_id)
+
+    def get_properties(self):
+        """
+        Return a list of tuples `(WorksObjectType, PermitRequestAmendProperty)` for the
+        amend properties of the current permit request. Used to create the form fields.
+        """
+        return services.get_permit_request_amend_custom_properties(self.instance)
+
+    def get_values(self):
+        """
+        Return a queryset of `PermitRequestAmendPropertyValue` for the custom properties
+        on the current permit request. They're used to set the initial value of the form
+        fields.
+        """
+        return services.get_amend_custom_properties_values(self.instance)
+
+    def get_fields_by_object_type(self):
+        """
+        Return a list of tuples `(WorksObjectType, List[Field])` for each object type and their properties.
+        """
+        return [
+            (
+                object_type,
+                [self[self.get_field_name(object_type.id, prop.id)] for prop in props],
+            )
+            for object_type, props in services.get_permit_request_amend_custom_properties_by_object_type(
+                self.instance
+            )
+        ]
+
+    def get_base_fields(self):
+        """
+        Return a list of base fields for the current Model Form.
+        """
+        return [self[field] for field in self.base_fields]
+
+    def save(self, commit=True):
+        permit_request = super().save(commit=False)
+        for works_object_type, prop in self.get_properties():
+            services.set_amend_custom_property_value(
+                permit_request=self.instance,
+                object_type=works_object_type,
+                prop=prop,
+                value=self.cleaned_data[
+                    self.get_field_name(works_object_type.id, prop.id)
+                ],
+            )
+        if commit:
+            permit_request.save()
+        return permit_request
 
 
 # extend django gis osm openlayers widget
@@ -642,10 +728,10 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
     required_css_class = "required"
     starts_at = forms.DateTimeField(
         label=_("Date planifiée de début"),
-        input_formats=["%d/%m/%Y %H:%M"],
+        input_formats=[settings.DATETIME_INPUT_FORMAT],
         widget=DateTimePickerInput(
             options={
-                "format": "DD/MM/YYYY HH:mm",
+                "format": "DD.MM.YYYY HH:mm",
                 "locale": "fr-CH",
                 "useCurrent": False,
                 "minDate": (
@@ -656,10 +742,10 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
     )
     ends_at = forms.DateTimeField(
         label=_("Date planifiée de fin"),
-        input_formats=["%d/%m/%Y %H:%M"],
+        input_formats=[settings.DATETIME_INPUT_FORMAT],
         widget=DateTimePickerInput(
             options={
-                "format": "DD/MM/YYYY HH:mm",
+                "format": "DD.MM.YYYY HH:mm",
                 "locale": "fr-CH",
                 "useCurrent": False,
             }
@@ -691,11 +777,23 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
-        self.fields["geom"].widget.attrs["options"] = self.get_widget_options(
-            self.permit_request
-        )
+        required_info = services.get_geotime_required_info(self.permit_request)
+
+        if services.GeoTimeInfo.DATE not in required_info:
+            del self.fields["starts_at"]
+            del self.fields["ends_at"]
+
+        if services.GeoTimeInfo.GEOMETRY not in required_info:
+            del self.fields["geom"]
+        else:
+            self.fields["geom"].widget.attrs["options"] = self.get_widget_options(
+                self.permit_request
+            )
+            self.fields["geom"].widget.attrs["options"][
+                "edit_geom"
+            ] = not disable_fields
+
         if disable_fields:
-            self.fields["geom"].widget.attrs["options"]["edit_geom"] = False
             for field in self.fields.values():
                 field.disabled = True
 

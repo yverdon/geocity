@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block content %}
-  {% permit_progressbar permit_request 'actors' %}
+  {% permit_progressbar steps StepType.ACTORS %}
   <form method="post">
     {% csrf_token %}
     {{ formset.management_form }}
@@ -24,26 +24,16 @@
     <h3>{{ config.ACTORS_STEP }}</h3>
     <div id="forms-container">
         {% for form in formset %}
+           {{ form.media }}
           {% bootstrap_form form layout='horizontal' %}
       <hr>
         {% endfor %}
       </div>
     {% buttons %}
-      <a href="{% url 'permits:permit_request_appendices' permit_request_id=permit_request.pk %}" class="mr-2">{% trans "Retour" %}</a>
+      {% if previous_step %}
+        <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
+      {% endif %}
       <button class="btn btn-primary">{% trans "Enregistrer et continuer" %}</button>
     {% endbuttons %}
   </form>
-{% endblock %}
-
-{% block scripts %}
-  <script src="{% static 'libs/js/jquery-ui-custom/jquery-ui.js' %}"></script>
-  <script src="{% static 'customWidgets/RemoteAutocomplete/remoteautocomplete.js' %}"></script>
-  <script>
-      $("input[required]").each(function(){
-        var label = $("label[for='" + $(this).attr('id') + "']");
-        label.css("font-weight","bold");
-        label.append(" *");
-
-      });
-  </script>
 {% endblock %}
