@@ -118,6 +118,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
     ),
     "Theme Options": (
         "BACKGROUND_COLOR",
+        "LOGIN_BACKGROUND_COLOR",
         "PRIMARY_COLOR",
         "SECONDARY_COLOR",
         "TEXT_COLOR",
@@ -140,7 +141,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
 
 CONSTANCE_CONFIG = {
     "APPLICATION_TITLE": (
-        "Demandes d'autorisations touchant le territoire communal",
+        "Demandes touchant le territoire communal",
         "Titre de la page de login",
         str,
     ),
@@ -179,7 +180,7 @@ CONSTANCE_CONFIG = {
     "ACTORS_STEP": ("Renseignez les contacts", "", str),
     "SUBMIT_STEP": ("Résumé et envoi", "", str),
     "APPLICATION_TITLE": (
-        "Demandes d'autorisations touchant le territoire communal",
+        "Demandes touchant le territoire communal",
         "Titre de la page de login",
         str,
     ),
@@ -194,6 +195,7 @@ CONSTANCE_CONFIG = {
         str,
     ),
     "BACKGROUND_COLOR": ("#FFFFFF", "Couleur unie du fond", str,),
+    "LOGIN_BACKGROUND_COLOR": ("#007f75", "Couleur unie du fond login", str,),
     "PRIMARY_COLOR": ("#008c6f", "Couleur de theme principale", str,),
     "SECONDARY_COLOR": ("#01755d", "Couleur de theme secondaire", str,),
     "TEXT_COLOR": ("#000000", "Couleur du texte", str,),

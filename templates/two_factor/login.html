@@ -12,7 +12,7 @@
 {% endblock %}
 {% block content-fluid %}
   <div id="login-welcome-text">
-    <h3 class="text-center">{{ config.APPLICATION_TITLE }}</h3>
+    <div class="text-center application-title">{{ config.APPLICATION_TITLE }}</div>
     <h5 class="text-center">{{ config.APPLICATION_SUBTITLE }}</h5>
     <br>
     <div class="text-center">{{ config.APPLICATION_DESCRIPTION }}</div>
@@ -42,7 +42,7 @@
         <p>{% trans "Connectez-vous à l'aide de vos identifiants" %}</p>
         <p>{% bootstrap_field wizard.form.username show_label=False placeholder="Identifiant" %}</p>
         <p>{% bootstrap_field wizard.form.password show_label=False placeholder="Mot de passe" %}</p>
-        <button class="btn btn-primary font-weight-bold" type="submit">{% trans "Suivant" %}</button>
+        <button class="btn btn-primary font-weight-bold" type="submit">{% trans "Me connecter" %}</button>
       </div>
       {# hidden submit button to enable [enter] key #}
       <input type="submit" value="" class="d-none" />

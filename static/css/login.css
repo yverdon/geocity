@@ -8,12 +8,12 @@
 }
 
 body {
-  background-image: url("../images/blanc_light_compact.jpg");
+  background-color: var(--login-background-color) !important;
 }
 
 .semi-transparent-container {
   background-color: var(--background-color);
-  opacity: 0.85;
+  opacity: 1;
   padding-top: 50px;
   padding-bottom: 50px;
 }
@@ -27,14 +27,32 @@ body {
   border: 0;
   padding: 30px;
   background-color: var(--background-color);
-  opacity: 0.85;
+  opacity: 1;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  -webkit-box-shadow: -1px 1px 5px 3px rgba(255, 255, 255,0.75);
+  -moz-box-shadow: -1px 1px 5px 3px rgba(255, 255, 255,0.75);
+  box-shadow: -1px 1px 5px 3px rgba(255, 255, 255,0.75);
 }
 
 #login-welcome-text {
   padding: 25px 25px 25px 25px;
-  background-color: var(--background-color);
-  opacity: 0.85;
-  width: 100%;
+  color: white;
+  max-width: 1000px;
+  margin-top: 25px;
+  margin-bottom: 16px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.application-title {
+  font-size: 30px;
+}
+
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px white inset !important;
+  box-shadow: 0 0 0px 1000px white inset !important;
 }
 
 @media (max-width: 768px) {
@@ -69,5 +87,9 @@ body {
 
   #login-welcome-text div {
     visibility: hidden;
+  }
+
+  .application-title {
+    visibility: visible !important;
   }
 }
