@@ -11,6 +11,7 @@
   <link rel="stylesheet" type="text/css" href="{% static 'css/permits.css' %}">
 {% endblock %}
 {% block content-fluid %}
+<div id="login-content">
   <div id="login-welcome-text">
     <div class="text-center application-title">{{ config.APPLICATION_TITLE }}</div>
     <h5 class="text-center">{{ config.APPLICATION_SUBTITLE }}</h5>
@@ -77,5 +78,6 @@
       {% include "two_factor/_wizard_actions.html" %}
     </form>
   {% endif %}
+    </div>
   </div>
 {% endblock %}
