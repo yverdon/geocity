@@ -13,12 +13,12 @@
 {% block content-fluid %}
 <div id="login-content">
   <div id="login-welcome-text">
-    <div class="text-center application-title">{{ config.APPLICATION_TITLE }}</div>
-    <h5 class="text-center">{{ config.APPLICATION_SUBTITLE }}</h5>
+    <h3>{{ config.APPLICATION_TITLE }}</h3>
+    <h5>{{ config.APPLICATION_SUBTITLE }}</h5>
     <br>
-    <div class="text-center">{{ config.APPLICATION_DESCRIPTION }}</div>
+    <div>{{ config.APPLICATION_DESCRIPTION }}</div>
   </div>
-
+  <div id="login-container">
   {% if next and user.is_authenticated %}
     <div class="text-center">
       <p id="login-issue">{% trans "Votre compte ne dispose pas des droits nécessaires pour accéder à cette page" %}</p>
@@ -32,18 +32,18 @@
       </div>   
     {% endif %}
   {% endif %}
-  <div id="login-container">
   {% if wizard.steps.current == 'auth' %}
     <form method="post" action="">
       {% csrf_token %}
-      <div class="text-center">
+      <div>
         <h4>{% trans "Connexion" %}</h4>
         <br>
         {{ wizard.management_form }}
         <p>{% trans "Connectez-vous à l'aide de vos identifiants" %}</p>
         <p>{% bootstrap_field wizard.form.username show_label=False placeholder="Identifiant" %}</p>
         <p>{% bootstrap_field wizard.form.password show_label=False placeholder="Mot de passe" %}</p>
-        <button class="btn btn-primary font-weight-bold" type="submit">{% trans "Me connecter" %}</button>
+        <button class="btn btn-primary font-weight-bold left-button" type="submit">{% trans "ME CONNECTER" %}</button>
+        <br>
       </div>
       {# hidden submit button to enable [enter] key #}
       <input type="submit" value="" class="d-none" />
