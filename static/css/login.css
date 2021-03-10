@@ -1,3 +1,40 @@
+@font-face {
+  font-family: Roboto;
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+  src: url('../fonts/Roboto-Bold.woff2') format('woff2'),
+    url('../fonts/Roboto-Bold.woff') format('woff');
+}
+
+@font-face {
+  font-family: Roboto;
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+  src: url('../fonts/Roboto-Italic.woff2') format('woff2'),
+    url('../fonts/Roboto-Italic.woff') format('woff');
+}
+
+@font-face {
+  font-family: Roboto;
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  src: url('../fonts/Roboto-Regular.woff2') format('woff2'),
+    url('../fonts/Roboto-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: Roboto;
+  font-weight: lighter;
+  font-style: normal;
+  font-display: swap;
+  src: url('../fonts/Roboto-Light.woff2') format('woff2'),
+    url('../fonts/Roboto-Light.woff') format('woff');
+}
+
+
 .main-app-icon {
   width: 100%;
 }
@@ -9,53 +46,52 @@
 
 body {
   background-color: var(--login-background-color) !important;
+  font-family: "Roboto", "Helvetica", "Arial";
+
 }
 
-.semi-transparent-container {
-  background-color: var(--background-color);
-  opacity: 1;
-  padding-top: 50px;
-  padding-bottom: 50px;
+#login-content {
+  margin-top: 50px;
+  background-image: url("../images/login_geocity.svg");
+  background-repeat: no-repeat;
+  background-size: 90%;
+  background-position: center bottom;
+  width: 60%;
+  height: 800px;
+  margin-right: auto;
+  margin-left: auto;
 }
 
 #login-container {
-  max-width: 500px;
-  margin-top: 25px;
-  margin-bottom: 16px;
-  margin-left: auto;
-  margin-right: auto;
-  border: 0;
+  width: 35%;
   padding: 30px;
-  background-color: var(--background-color);
-  opacity: 1;
+  background-color: #f7f7f7;
+  float: right;
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   border-radius: 5px;
-  -webkit-box-shadow: -1px 1px 5px 3px rgba(255, 255, 255,0.75);
-  -moz-box-shadow: -1px 1px 5px 3px rgba(255, 255, 255,0.75);
-  box-shadow: -1px 1px 5px 3px rgba(255, 255, 255,0.75);
 }
 
 #login-welcome-text {
-  padding: 25px 25px 25px 25px;
-  color: white;
-  max-width: 1000px;
-  margin-top: 25px;
-  margin-bottom: 16px;
-  margin-left: auto;
-  margin-right: auto;
+  width: 60%;
+  padding: 10px 10px 10px 10px;
+  color: black;
+  float: left;
+  text-align: left;
 }
 
-.application-title {
-  font-size: 30px;
-}
-
-input:-webkit-autofill {
-  -webkit-box-shadow: 0 0 0px 1000px white inset !important;
-  box-shadow: 0 0 0px 1000px white inset !important;
+.left-button {
+  float: left;
 }
 
 @media (max-width: 768px) {
+
+  #login-content {
+    width: 95%;
+    height: 600px;
+    background-size: 90%;
+  }
+
   #login-container {
     border: 0;
     -webkit-border-radius: 5px;
@@ -63,6 +99,10 @@ input:-webkit-autofill {
     border-radius: 5px;
     margin-top: -10px;
     padding: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    float: none;
+    width: 100%;
   }
 
   .text-center {
@@ -79,6 +119,10 @@ input:-webkit-autofill {
     margin-top: 5px;
     padding: 5px 5px 5px 5px;
     background: none;
+    margin-left: auto;
+    margin-right: auto;
+    float: none;
+    width: 100%;
   }
 
   #login-welcome-text h5 {

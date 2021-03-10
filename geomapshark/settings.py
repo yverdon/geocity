@@ -195,7 +195,7 @@ CONSTANCE_CONFIG = {
         str,
     ),
     "BACKGROUND_COLOR": ("#FFFFFF", "Couleur unie du fond", str,),
-    "LOGIN_BACKGROUND_COLOR": ("#007f75", "Couleur unie du fond login", str,),
+    "LOGIN_BACKGROUND_COLOR": ("#FFFFFF", "Couleur unie du fond login", str,),
     "PRIMARY_COLOR": ("#008c6f", "Couleur de theme principale", str,),
     "SECONDARY_COLOR": ("#01755d", "Couleur de theme secondaire", str,),
     "TEXT_COLOR": ("#000000", "Couleur du texte", str,),
