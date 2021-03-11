@@ -69,7 +69,8 @@
 
           <div class="text-right">
             <input name="action" type="hidden" value="amend">
-            <button class="btn btn-primary" {% if forms.amend.disabled %}disabled{% endif %}>{% trans "Traiter" %}</button>
+            <button class="btn btn-primary" {% if forms.amend.disabled %}disabled{% endif %}>{% trans "Enregistrer" %}</button>
+            <button class="btn btn-primary" name="save_continue" {% if forms.amend.disabled %}disabled{% endif %}>{% trans "Enregistrer et continuer les modifications" %}</button>
           </div>
         </form>
       </div>
