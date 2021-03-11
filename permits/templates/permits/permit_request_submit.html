@@ -19,9 +19,6 @@
   <p>
     {% trans "Vous trouverez ci-dessous un récapitulatif de votre demande." %}
   </p>
-
-  {% permit_request_summary permit_request %}
-
   <form method="post">
     {% csrf_token %}
     {% buttons %}
@@ -48,5 +45,6 @@
     {% endif %}
     {% endbuttons %}
   </form>
+  {% permit_request_summary permit_request %}
 <br><br>
 {% endblock %}

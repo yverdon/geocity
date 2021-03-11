@@ -1185,7 +1185,7 @@ msgid "Cette page n'existe pas"
 msgstr ""
 
 #: templates/base_generic.html:37
-msgid "Demandes d'autorisations"
+msgid "Demandes"
 msgstr ""
 
 #: templates/base_generic.html:52 templates/base_generic.html:73

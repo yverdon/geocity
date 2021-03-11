@@ -1,7 +1,45 @@
+/* roboto-regular - latin */
+@font-face {
+  font-family: Roboto;
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+  src: url('../fonts/Roboto-Bold.woff2') format('woff2'),
+    url('../fonts/Roboto-Bold.woff') format('woff');
+}
+
+@font-face {
+  font-family: Roboto;
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+  src: url('../fonts/Roboto-Italic.woff2') format('woff2'),
+    url('../fonts/Roboto-Italic.woff') format('woff');
+}
+
+@font-face {
+  font-family: Roboto;
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  src: url('../fonts/Roboto-Regular.woff2') format('woff2'),
+    url('../fonts/Roboto-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: Roboto;
+  font-weight: lighter;
+  font-style: normal;
+  font-display: swap;
+  src: url('../fonts/Roboto-Light.woff2') format('woff2'),
+    url('../fonts/Roboto-Light.woff') format('woff');
+}
+
 body {
   color: var(--text-color);
   background-color: var(--background-color);
-} 
+  font-family: "Roboto", "Helvetica", "Arial";
+}
 
 /* Global boostrap4 styling  */
 .btn {
@@ -334,6 +372,7 @@ h2 {
 h3 {
   font-size: 1.3em;
 }
+
 
 /* /////////////////////////////////// */
 /* Responsive for smaller devices */

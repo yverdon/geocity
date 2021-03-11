@@ -19,6 +19,7 @@ class PermitAuthorFactory(factory.django.DjangoModelFactory):
     city = factory.Faker("city")
     phone_first = Truncator(factory.Faker("phone_number")).chars(19)
     phone_second = Truncator(factory.Faker("phone_number")).chars(19)
+    user = factory.SubFactory("permits.tests.factories.UserFactory", actor=None)
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -71,7 +72,7 @@ class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
 
 
 class GroupFactory(factory.django.DjangoModelFactory):
-    name = factory.Faker("company")
+    name = factory.Sequence(lambda n: "Company{}".format(n))
 
     class Meta:
         model = Group
@@ -170,13 +171,17 @@ class ValidatorUserFactory(UserFactory):
             self.groups.add(group)
 
 
-class PermitRequestActorFactory(factory.django.DjangoModelFactory):
+class PermitActorFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PermitActor
 
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")
     email = factory.Faker("email")
+    address = factory.Faker("street_address")
+    zipcode = factory.Faker("zipcode")
+    city = factory.Faker("city")
+    phone = Truncator(factory.Faker("phone_number")).chars(19)
 
 
 class WorksObjectFactory(factory.django.DjangoModelFactory):
@@ -214,6 +219,15 @@ class WorksObjectPropertyFactory(factory.django.DjangoModelFactory):
 
     name = factory.Faker("word")
     input_type = models.WorksObjectProperty.INPUT_TYPE_TEXT
+    order = factory.Sequence(int)
+
+
+class WorksObjectPropertyFactoryTypeAddress(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.WorksObjectProperty
+
+    name = factory.Faker("word")
+    input_type = models.WorksObjectProperty.INPUT_TYPE_ADDRESS
 
 
 class WorksObjectTypeFactory(factory.django.DjangoModelFactory):
@@ -261,3 +275,19 @@ class PermitRequestGeoTimeFactory(factory.django.DjangoModelFactory):
     geom = factory.LazyFunction(
         lambda: GeometryCollection(Point(faker.Faker().latlng()))
     )
+
+
+class PermitRequestAmendPropertyFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitRequestAmendProperty
+
+    name = factory.Faker("word")
+
+
+class PermitRequestAmendPropertyValueFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitRequestAmendPropertyValue
+
+    property = factory.SubFactory(PermitRequestAmendPropertyFactory)
+    works_object_type_choice = factory.SubFactory(WorksObjectTypeChoiceFactory)
+    value = factory.Faker("word")

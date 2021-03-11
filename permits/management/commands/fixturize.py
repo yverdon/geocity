@@ -199,16 +199,19 @@ class Command(BaseCommand):
     def create_works_types(self):
         properties = {
             "comment": models.WorksObjectProperty.objects.create(
-                name="Commentaire", input_type="text", is_mandatory=True
+                name="Commentaire", input_type="text", is_mandatory=True, order=5
             ),
             "width": models.WorksObjectProperty.objects.create(
-                name="Largeur [m]", input_type="number", is_mandatory=True
+                name="Largeur [m]", input_type="number", is_mandatory=True, order=1
             ),
             "height": models.WorksObjectProperty.objects.create(
-                name="Hauteur [m]", input_type="number", is_mandatory=True
+                name="Hauteur [m]", input_type="number", is_mandatory=True, order=2
             ),
             "plan": models.WorksObjectProperty.objects.create(
-                name="Plan de situation", input_type="file", is_mandatory=True
+                name="Plan de situation", input_type="file", is_mandatory=True, order=3
+            ),
+            "adresse": models.WorksObjectProperty.objects.create(
+                name="Adresse", input_type="address", is_mandatory=True
             ),
         }
         objects = [
@@ -217,12 +220,14 @@ class Command(BaseCommand):
                 properties["width"],
                 properties["height"],
                 properties["comment"],
+                properties["adresse"],
             ),
             (
                 "Barbecues, fours à pain ou pizza",
                 properties["width"],
                 properties["height"],
                 properties["comment"],
+                properties["adresse"],
             ),
             (
                 "Avant-toits",
@@ -230,6 +235,7 @@ class Command(BaseCommand):
                 properties["height"],
                 properties["plan"],
                 properties["comment"],
+                properties["adresse"],
             ),
         ]
         works_types = [

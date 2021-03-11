@@ -337,7 +337,7 @@ class PermitRequestDetailView(View):
 
         form.save()
         success_message = (
-            _("La demande de permis #%s a bien été complétée par le service pilote.")
+            _("La demande #%s a bien été complétée par le service pilote.")
             % self.permit_request.pk
         )
 
@@ -363,7 +363,7 @@ class PermitRequestDetailView(View):
         )
         messages.success(
             self.request,
-            _("La demande de permis #%s a bien été transmise pour validation.")
+            _("La demande #%s a bien été transmise pour validation.")
             % self.permit_request.pk,
         )
         return redirect("permits:permit_requests_list")
@@ -705,7 +705,8 @@ def permit_request_actors(request, permit_request_id):
         )
         if formset.is_valid() and creditorform.is_valid():
             for form in formset:
-                form.save(permit_request=permit_request)
+                if form.has_changed():
+                    form.save(permit_request=permit_request)
             models.PermitRequest.objects.filter(pk=permit_request_id).update(
                 creditor_type=creditorform.instance.creditor_type
             )
@@ -771,10 +772,19 @@ def permit_request_geo_time(request, permit_request_id):
                 ).url
             )
 
+    title_step = services.get_geo_step_name_title(
+        services.get_geotime_required_info(permit_request)
+    )
     return render(
         request,
         "permits/permit_request_geo_time.html",
-        {"formset": formset, "permit_request": permit_request, **steps_context,},
+        {
+            "formset": formset,
+            "permit_request": permit_request,
+            "geo_title": title_step["title"],
+            "geo_step": title_step["step_name"],
+            **steps_context,
+        },
     )
 
 

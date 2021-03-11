@@ -188,3 +188,81 @@ class PermitRequestProgressBarTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         nav_items = extract_nav_items(response.content)
         self.assertIn("Documents", nav_items)
+
+    def test_geotime_step_does_not_appear_when_no_date_nor_geometry_required(self):
+        permit_request = self.create_permit_request()
+        works_object_type = factories.WorksObjectTypeFactory(
+            needs_geometry=False, needs_date=False
+        )
+        permit_request.works_object_types.set([works_object_type])
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        nav_items = extract_nav_items(response.content)
+        self.assertNotIn("Planning et localisation", nav_items)
+        self.assertNotIn("Planning", nav_items)
+        self.assertNotIn("Localisation", nav_items)
+
+    def test_geotime_step_appears_when_date_and_geometry_are_required(self):
+        permit_request = self.create_permit_request()
+        works_object_type = factories.WorksObjectTypeFactory(
+            needs_geometry=True, needs_date=True
+        )
+        permit_request.works_object_types.set([works_object_type])
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        nav_items = extract_nav_items(response.content)
+        self.assertIn("Planning et localisation", nav_items)
+
+    def test_geotime_step_appears_when_only_date_is_required(self):
+        permit_request = self.create_permit_request()
+        works_object_type = factories.WorksObjectTypeFactory(
+            needs_geometry=False, needs_date=True
+        )
+        permit_request.works_object_types.set([works_object_type])
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        nav_items = extract_nav_items(response.content)
+        self.assertIn("Planning", nav_items)
+        self.assertNotIn("Planning et localisation", nav_items)
+        self.assertNotIn("Localisation", nav_items)
+
+    def test_geotime_step_appears_when_only_geometry_is_required(self):
+        permit_request = self.create_permit_request()
+        works_object_type = factories.WorksObjectTypeFactory(
+            needs_geometry=True, needs_date=False
+        )
+        permit_request.works_object_types.set([works_object_type])
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        self.assertEqual(response.status_code, 200)
+        nav_items = extract_nav_items(response.content)
+        self.assertIn("Localisation", nav_items)
+        self.assertNotIn("Planning et localisation", nav_items)
+        self.assertNotIn("Planning", nav_items)

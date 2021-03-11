@@ -32,19 +32,8 @@ os.environ["GDAL_DATA"] = os.path.join(BASE_DIR, "gdal_data")
 GDAL_DATA = os.environ["GDAL_DATA"]
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
 
-DATE_INPUT_FORMAT = [
-    "%Y-%m-%d",
-    "%m/%d/%Y",
-    "%m/%d/%y",  # '2006-10-25', '10/25/2006', '10/25/06'
-    "%b %d %Y",
-    "%b %d, %Y",  # 'Oct 25 2006', 'Oct 25, 2006'
-    "%d %b %Y",
-    "%d %b, %Y",  # '25 Oct 2006', '25 Oct, 2006'
-    "%B %d %Y",
-    "%B %d, %Y",  # 'October 25 2006', 'October 25, 2006'
-    "%d %B %Y",
-    "%d %B, %Y",  # '25 October 2006', '25 October, 2006'
-]
+DATE_INPUT_FORMAT = "%d.%m.%Y"
+DATETIME_INPUT_FORMAT = "%d.%m.%Y %H:%M"
 
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 EMAIL_HOST = os.getenv("EMAIL_HOST")
@@ -65,6 +54,7 @@ ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 
 # Application definition
 INSTALLED_APPS = [
+    "adminsortable2",
     "grappelli",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -128,6 +118,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
     ),
     "Theme Options": (
         "BACKGROUND_COLOR",
+        "LOGIN_BACKGROUND_COLOR",
         "PRIMARY_COLOR",
         "SECONDARY_COLOR",
         "TEXT_COLOR",
@@ -140,6 +131,8 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "WORKS_OBJECTS_STEP",
         "PROPERTIES_STEP",
         "GEO_TIME_STEP",
+        "TIME_STEP",
+        "GEO_STEP",
         "APPENDICES_STEP",
         "ACTORS_STEP",
         "SUBMIT_STEP",
@@ -148,7 +141,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
 
 CONSTANCE_CONFIG = {
     "APPLICATION_TITLE": (
-        "Demandes d'autorisations touchant le territoire communal",
+        "Demandes touchant le territoire communal",
         "Titre de la page de login",
         str,
     ),
@@ -181,11 +174,13 @@ CONSTANCE_CONFIG = {
     "WORKS_OBJECTS_STEP": ("Sélectionnez les objets", "", str),
     "PROPERTIES_STEP": ("Renseignez les caractéristiques des objets", "", str),
     "GEO_TIME_STEP": ("Renseignez le planning et la localisation", "", str),
+    "TIME_STEP": ("Renseignez le planning", "", str),
+    "GEO_STEP": ("Renseignez la localisation", "", str),
     "APPENDICES_STEP": ("Ajouter des documents", "", str),
     "ACTORS_STEP": ("Renseignez les contacts", "", str),
     "SUBMIT_STEP": ("Résumé et envoi", "", str),
     "APPLICATION_TITLE": (
-        "Demandes d'autorisations touchant le territoire communal",
+        "Demandes touchant le territoire communal",
         "Titre de la page de login",
         str,
     ),
@@ -200,6 +195,7 @@ CONSTANCE_CONFIG = {
         str,
     ),
     "BACKGROUND_COLOR": ("#FFFFFF", "Couleur unie du fond", str,),
+    "LOGIN_BACKGROUND_COLOR": ("#FFFFFF", "Couleur unie du fond login", str,),
     "PRIMARY_COLOR": ("#008c6f", "Couleur de theme principale", str,),
     "SECONDARY_COLOR": ("#01755d", "Couleur de theme secondaire", str,),
     "TEXT_COLOR": ("#000000", "Couleur du texte", str,),

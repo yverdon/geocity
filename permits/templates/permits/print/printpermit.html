@@ -23,53 +23,47 @@
   <img id="logo_secondary" src="data:image/png;base64,{{logo_secondary}}" alt="">
 </div>
 <div class="banner_center">
-  <h2>{% trans "Permis N°" %}{{ permit_request.id }}</h2>
+  <h2>{% trans "Demande N°" %}{{ permit_request.id }}</h2>
 </div>
 <hr>
 <br><br>
-<h3>{% trans "Informations" %}</h3>
-<table>
-    <tr>
-      <td>
-        {% trans "Date de création" %}
-      </td>
-      <td>
-        {{ permit_request.created_at }}
-      </td>
-    </tr>
-    <tr>
-      <td>
-        {% trans "Statut" %}
-      </td>
-      <td>
-        {{ permit_request.get_status_display }}{% if permit_request.validated_at %} {% blocktrans with validated_at=permit_request.validated_at %}le {{ validated_at }}{% endblocktrans %}{% endif %}
-      </td>
-    </tr>
-    <tr>
-      <td>
-        {% trans "Auteur-e" %}
-      </td>
-      <td>
-          {{ permit_request.author.user.first_name }} {{ permit_request.author.user.last_name }} {{ permit_request.author.user.email }};
-      </td>
-    </tr>
-</table>
 
 
 {% if objects_infos %}
-  <h3>{% trans "Objet(s) du permis" %}</h3>
-    <table>
-      {% for object, properties, appendices in objects_infos %}
-        <tr>
-          <td>
-              <h4>{{ forloop.counter }}</h4>
-          </td>
-          <td>
-              <h4>{{ object }}</h4>
-          </td>
-        </tr>
+<h3>{% trans "Objet(s) de la demande" %}</h3>
+  {% for object, properties, appendices, amend_custom_properties in objects_infos %}
+  <h4>{{ object }}</h4>
+    {% for field in properties %}
+      {{ field.label }}: 
+        {% if not field.value %}
+          <em>{% trans "Information non fournie" %}</em>
+        {% else %}
+          {{ field.value }}
+        {% endif %}
+        <br>
+    {% endfor %}
+
+    {% for field in appendices %}
+      {{ field.label }}: 
+        {% if not field.value %}
+          <em>{% trans "Information non fournie" %}</em>
+        {% else %}
+          <a href="{{ field.value.url }}" target="_blank">{{ field.value.name }}</a>
+        {% endif %}
+        <br>
+    {% endfor %}
+
+    {% if amend_custom_properties %}
+      <h5>{% trans "Information du service responsable" %}</h5>
+      {% for object_property in amend_custom_properties %}
+          {{ object_property.property }}: 
+          {{ object_property.value }}
+          <br>
       {% endfor %}
-    </table>
+    {% endif %}
+
+  </dl>
+{% endfor %}
 {% endif %}
 
 {% if geo_times %}
@@ -116,54 +110,6 @@
     </table>
 {% endif %}
 
-{% if objects_infos %}
-  <h3>{% trans "Détails" %}</h3>
-  {% for object, properties, appendices in objects_infos %}
-    <h4>{{ object }}</h4>
-    {% if properties %}
-        <table>
-          {% for property in properties %}
-            <tr>
-              <td class="validation-table-left">
-                <p>{{ property.label }} :</p>
-              </td>
-              <td class="validation-table-right">
-                  <p>{{ property.value|default:"Information non fournie" }}</p>
-              </td>
-            </tr>
-          {% endfor %}
-        </table>
-    {% endif %}
-
-    {% if appendices %}
-      <h4>{% trans "Documents" %}</h4>
-        <table>
-          {% for appendice in appendices %}
-            <tr>
-              <td class="validation-table-left">
-                <p>{% trans "Document :" %}</p>
-              </td>
-              <td class="validation-table-right">
-                <p>
-                  <a href="{{ appendice.value.url }}" target="_blank">Annexe</a>
-                </p>
-              </td>
-            </tr>
-          {% endfor %}
-        </table>
-    {% endif %}
-
-  {% endfor %}
-{% endif %}
-
-{% if permit_request.intersected_geometries %}
-  <h4>{% trans "Éléments géographiques touchés par la demande" %}</h4>
-  <table>
-    <tr>
-      <td>{{ permit_request.intersected_geometries|safe }}</td>
-    </tr>
-  </table>
-{% endif %}
 
 {% if author %}
   <p style="page-break-before: always"></p>
@@ -245,10 +191,10 @@
               {% if contact_label %}
                 <tr>
                   <td class="validation-table-left">
-                    <p>{{ contact_label }}:</p>
+                    {{ contact_label }}:
                   </td>
                   <td class="validation-table-right">
-                    <p>{{ contact_value|default:"Information non fournie"}}</p>
+                    {{ contact_value|default:"Information non fournie"}}
                   </td>
                 </tr>
               {% endif %}
@@ -257,17 +203,7 @@
       {% endfor %}
 {% endif %}
 
-
-{% if map_image %}
-  <p style="page-break-before: always" ></p>
-  <h3>{% trans "Plan de situation" %}</h3>
-  <div id="print-map-container">
-    <img src="{{map_image}}" alt="" class="map-print-image">
-  </div>
-{% endif %}
-
 {% if validations %}
-  <p style="page-break-before: always" ></p>
   <h3>{% trans "Remarques des services consultés" %}</h3>
   <table>
     <tr>
@@ -275,48 +211,40 @@
       <th>{% trans "Commentaire" %}</th>
     </tr>
     {% for validation in validations %}
+    {% if validation.comment_before or validation.comment_during or validation.comment_after %}
       <tr>
         <td class="validation-table-left">
           {{validation.department}}
         </td>
         <td class="validation-table-right">
-          <h4>{% trans "Avant" %}</h4>
-            <p>{{validation.comment_before}}</p>
+          {% if validation.comment_before %}
+            <h4>{% trans "Avant" %}</h4>
+              <p>{{validation.comment_before}}</p>
+          {% endif %}
+          {% if validation.comment_during %}
           <h4>{% trans "Pendant" %}</h4>
             <p>{{validation.comment_during}}</p>
+          {% endif %}
+          {% if validation.comment_after %}
           <h4>{% trans "Après" %}</h4>
             <p>{{validation.comment_after}}</p>
+          {% endif %}
         </td>
       </tr>
+      {% endif %}
     {% endfor %}
   </table>
 {% endif %}
 
+{% if permit_request.intersected_geometries %}
+  <h4>{% trans "Éléments géographiques touchés par la demande" %}</h4>
+  <table>
+    <tr>
+      <td>{{ permit_request.intersected_geometries|safe }}</td>
+    </tr>
+  </table>
+{% endif %}
 
-<p style="page-break-before: always" ></p>
-<h3>{% trans "Commentaires du service pilote" %}</h3>
-<table>
-  <tr>
-    <td>{% trans "Dérogation" %}</td>
-    <td>{{ permit_request.exemption|default:"Information non fournie" }}</td>
-  </tr>
-  <tr>
-    <td>{% trans "Opposition" %}</td>
-    <td>{{ permit_request.exemption|default:"Information non fournie" }}</td>
-  </tr>
-  <tr>
-    <td>{% trans "Commentaire" %}</td>
-    <td>{{ permit_request.comment|default:"Information non fournie" }}</td>
-  </tr>
-  <tr>
-    <td>{% trans "Statut archéologique" %}</td>
-    <td>{{ permit_request.get_archeology_status_display|default:"Information non fournie" }}</td>
-  </tr>
-  <tr>
-    <td>{% trans "Émolument" %}</td>
-    <td>{{ permit_request.price }}</td>
-  </tr>
-</table>
 
 <p style="page-break-before: always" ></p>
 <br><br><br>
@@ -334,3 +262,12 @@
   </div>
 </div>
 <div id="print_date">{% trans "pdf du " %}{{print_date}}</div>
+
+{% if map_image %}
+  <p style="page-break-before: always" ></p>
+  <h3>{% trans "Plan de situation" %}</h3>
+  <div id="print-map-container">
+    <img src="{{map_image}}" alt="" class="map-print-image">
+  </div>
+{% endif %}
+
