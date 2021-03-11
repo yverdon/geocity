@@ -24,6 +24,7 @@
     <h3>{{ config.ACTORS_STEP }}</h3>
     <div id="forms-container">
         {% for form in formset %}
+           {{ form.media }}
           {% bootstrap_form form layout='horizontal' %}
       <hr>
         {% endfor %}
@@ -35,17 +36,4 @@
       <button class="btn btn-primary">{% trans "Enregistrer et continuer" %}</button>
     {% endbuttons %}
   </form>
-{% endblock %}
-
-{% block scripts %}
-  <script src="{% static 'libs/js/jquery-ui-custom/jquery-ui.js' %}"></script>
-  <script src="{% static 'customWidgets/RemoteAutocomplete/remoteautocomplete.js' %}"></script>
-  <script>
-      $("input[required]").each(function(){
-        var label = $("label[for='" + $(this).attr('id') + "']");
-        label.css("font-weight","bold");
-        label.append(" *");
-
-      });
-  </script>
 {% endblock %}

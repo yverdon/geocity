@@ -3,6 +3,7 @@ import itertools
 import os
 import urllib
 
+from collections import defaultdict
 from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -179,7 +180,7 @@ def get_works_objects(administrative_entity):
 
 
 def get_administrative_entities():
-    return models.PermitAdministrativeEntity.objects.order_by("name")
+    return models.PermitAdministrativeEntity.objects.order_by("ofs_id", "-name")
 
 
 def get_permit_request_works_types(permit_request):
@@ -255,6 +256,20 @@ def set_works_object_types(permit_request, new_works_object_types):
         models.WorksObjectTypeChoice.objects.get_or_create(
             permit_request=permit_request, works_object_type=works_object_type
         )
+
+    geotime_objects = get_geotime_objects(permit_request.id)
+
+    if len(geotime_objects) > 0:
+        geotime_required_info = get_geotime_required_info(permit_request)
+        # Reset the geometry/date if the new_works_object_type do not need Date/Geom
+        if len(geotime_required_info) == 0:
+            geotime_objects.delete()
+        # Reset the date only
+        if GeoTimeInfo.DATE not in geotime_required_info:
+            geotime_objects.update(starts_at=None, ends_at=None)
+        # Reset the geometry only
+        if GeoTimeInfo.GEOMETRY not in geotime_required_info:
+            geotime_objects.update(geom=None)
 
 
 @transaction.atomic
@@ -597,10 +612,7 @@ def get_properties_step(permit_request, enabled):
 def get_geo_time_step(permit_request, enabled):
     geo_time_errors = (
         0
-        if permit_request is None
-        or models.PermitRequestGeoTime.objects.filter(
-            permit_request=permit_request
-        ).exists()
+        if permit_request is None or get_geotime_objects(permit_request.id).exists()
         else 1
     )
     geo_time_url = (
@@ -651,6 +663,12 @@ def get_geotime_required_info(permit_request):
         required_info.add(GeoTimeInfo.GEOMETRY)
 
     return required_info
+
+
+def get_geotime_objects(permit_request_id):
+    return models.PermitRequestGeoTime.objects.filter(
+        permit_request_id=permit_request_id
+    )
 
 
 def get_appendices_step(permit_request, enabled):
@@ -1049,12 +1067,18 @@ def get_permit_objects(permit_request):
     appendices_form = forms.WorksObjectsAppendicesForm(instance=permit_request)
     properties_by_object_type = dict(properties_form.get_fields_by_object_type())
     appendices_by_object_type = dict(appendices_form.get_fields_by_object_type())
-
+    amend_custom_properties_values = get_amend_custom_properties_values(permit_request)
+    amend_custom_properties_by_object_type = defaultdict(list)
+    for value in amend_custom_properties_values:
+        amend_custom_properties_by_object_type[
+            value.works_object_type_choice.works_object_type
+        ].append(value)
     objects_infos = [
         (
             obj,
             properties_by_object_type.get(obj, []),
             appendices_by_object_type.get(obj, []),
+            amend_custom_properties_by_object_type[obj],
         )
         for obj in permit_request.works_object_types.all()
     ]

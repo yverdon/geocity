@@ -15,6 +15,7 @@ from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
+from itertools import groupby
 
 from . import models, services
 
@@ -68,13 +69,23 @@ def get_field_cls_for_property(prop):
     return input_type_mapping[prop.input_type]
 
 
+def regroup_by_ofs_id(entities):
+    return groupby(entities.order_by("ofs_id"), lambda entity: entity.ofs_id)
+
+
+class GroupedRadioWidget(forms.RadioSelect):
+    template_name = "permits/widgets/groupedradio.html"
+
+    class Media:
+        css = {"all": ("customWidgets/GroupedRadio/groupedradio.css",)}
+
+
 class AdministrativeEntityForm(forms.Form):
 
     administrative_entity = forms.ModelChoiceField(
-        queryset=models.PermitAdministrativeEntity.objects.none(),
         label=_("Entité administrative"),
-        empty_label=None,
-        widget=forms.RadioSelect(),
+        widget=GroupedRadioWidget(),
+        queryset=models.PermitAdministrativeEntity.objects.all(),
     )
 
     def __init__(self, *args, **kwargs):
@@ -83,7 +94,7 @@ class AdministrativeEntityForm(forms.Form):
         if self.instance:
             initial = {
                 **kwargs.get("initial", {}),
-                "administrative_entity": self.instance.administrative_entity,
+                "administrative_entity": self.instance.administrative_entity.pk,
             }
         else:
             initial = {}
@@ -92,19 +103,25 @@ class AdministrativeEntityForm(forms.Form):
 
         super().__init__(*args, **kwargs)
 
-        self.fields[
-            "administrative_entity"
-        ].queryset = services.get_administrative_entities()
+        self.fields["administrative_entity"].choices = [
+            (ofs_id, [(entity.pk, entity.name) for entity in entities])
+            for ofs_id, entities in regroup_by_ofs_id(
+                services.get_administrative_entities()
+            )
+        ]
 
     def save(self, author):
+        administrative_entity_instance = models.PermitAdministrativeEntity.objects.get(
+            pk=self.cleaned_data["administrative_entity"].pk
+        )
+
         if not self.instance:
             return models.PermitRequest.objects.create(
-                administrative_entity=self.cleaned_data["administrative_entity"],
-                author=author,
+                administrative_entity=administrative_entity_instance, author=author,
             )
         else:
             services.set_administrative_entity(
-                self.instance, self.cleaned_data["administrative_entity"]
+                self.instance, administrative_entity_instance
             )
             return self.instance
 
@@ -499,7 +516,6 @@ class PermitRequestActorForm(forms.ModelForm):
         max_length=100,
         label=_("Adresse"),
         widget=AddressWidget(
-            attrs={"required": "required"},
             autocomplete_options={
                 "single_address_field": False,
                 "single_contact": False,

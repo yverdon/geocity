@@ -2,6 +2,8 @@
 {% load bootstrap4 %}
 {% load i18n %}
 {% load permits_extras %}
+{% load static %}
+
 
 {% block content %}
   {% if permit_request %}
@@ -11,9 +13,8 @@
   <hr>
   <form method="post">
     {% bootstrap_form_errors form %}
-
     {% csrf_token %}
-
+    {{ form.media }}
     {% bootstrap_field form.administrative_entity show_label=False %}
 
     {% buttons %}
