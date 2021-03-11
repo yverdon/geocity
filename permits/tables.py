@@ -5,7 +5,7 @@ from django_tables2_column_shifter.tables import ColumnShiftTable
 from . import models
 
 
-class OwnPermitRequestsTable(tables.Table):
+class OwnPermitRequestsTable(ColumnShiftTable):
     actions = tables.TemplateColumn(
         template_name="tables/_permit_request_actions.html",
         verbose_name=_("Actions"),
