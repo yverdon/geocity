@@ -1,10 +1,11 @@
 import django_tables2 as tables
 from django.utils.translation import gettext_lazy as _
+from django_tables2_column_shifter.tables import ColumnShiftTable
 
 from . import models
 
 
-class OwnPermitRequestsTable(tables.Table):
+class OwnPermitRequestsTable(ColumnShiftTable):
     actions = tables.TemplateColumn(
         template_name="tables/_permit_request_actions.html",
         verbose_name=_("Actions"),
@@ -34,7 +35,7 @@ class OwnPermitRequestsTable(tables.Table):
         template_name = "django_tables2/bootstrap.html"
 
 
-class DepartmentPermitRequestsTable(tables.Table):
+class DepartmentPermitRequestsTable(ColumnShiftTable):
     actions = tables.TemplateColumn(
         template_name="tables/_permit_request_actions.html",
         verbose_name=_("Actions"),
