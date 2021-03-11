@@ -10,7 +10,11 @@
 body {
   background-color: var(--login-background-color) !important;
   font-family: "Roboto", "Helvetica", "Arial";
+}
 
+
+#login-container input {
+  filter: none;
 }
 
 #login-content {
@@ -27,7 +31,7 @@ body {
 
 #login-container {
   width: 35%;
-  padding: 30px;
+  padding: 25px 25px 15px 25px;
   background-color: #f7f7f7;
   float: right;
   -webkit-border-radius: 5px;
@@ -52,7 +56,8 @@ body {
   #login-content {
     width: 95%;
     height: 600px;
-    background-size: 90%;
+    background: none;
+    margin-top: 10px;
   }
 
   #login-container {
