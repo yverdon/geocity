@@ -353,7 +353,14 @@ class PermitRequestDetailView(View):
 
         messages.success(self.request, success_message)
 
-        return redirect("permits:permit_requests_list")
+        if "save_continue" in self.request.POST:
+
+            return redirect(
+                "permits:permit_request_detail",
+                permit_request_id=self.permit_request.pk,
+            )
+        else:
+            return redirect("permits:permit_requests_list")
 
     def handle_request_validation_form_submission(self, form):
         services.request_permit_request_validation(
