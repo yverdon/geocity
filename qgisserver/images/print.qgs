@@ -45,7 +45,7 @@
     </layer-tree-group>
     <layer-tree-group expanded="1" checked="Qt::Checked" name="basemaps">
       <customproperties/>
-      <layer-tree-layer expanded="1" checked="Qt::Checked" source="contextualWMSLegend=0&amp;crs=EPSG:2056&amp;dpiMode=7&amp;featureCount=10&amp;format=image/png&amp;layers=asitvd.fond_cadastral&amp;styles=default&amp;tileDimensions=DIM1%3Ddefault;ELEVATION%3D0&amp;tileMatrixSet=2056&amp;url=https://ows.asitvd.ch/wmts/?service%3DWMTS%26version%3D1.0.0%26request%3DGetCapabilities" name="asitvd-couleur" providerKey="wms" id="Fond_ASIT_VD___cadastral_f54fab18_e8dd_46a4_8115_c4107682ece2">
+      <layer-tree-layer expanded="1" checked="Qt::Checked" source="contextualWMSLegend=0&amp;crs=EPSG:2056&amp;dpiMode=7&amp;featureCount=10&amp;format=image/png&amp;layers=asitvd.fond_cadastral&amp;styles=default&amp;tileDimensions=DIM1%3Ddefault;ELEVATION%3D0&amp;tileMatrixSet=2056&amp;url=https://wmts.asit-asso.ch/wmts/?service%3DWMTS%26version%3D1.0.0%26request%3DGetCapabilities" name="asitvd-couleur" providerKey="wms" id="Fond_ASIT_VD___cadastral_f54fab18_e8dd_46a4_8115_c4107682ece2">
         <customproperties/>
       </layer-tree-layer>
     </layer-tree-group>
@@ -154,7 +154,7 @@
         <ymax>1350000</ymax>
       </extent>
       <id>Fond_ASIT_VD___cadastral_f54fab18_e8dd_46a4_8115_c4107682ece2</id>
-      <datasource>contextualWMSLegend=0&amp;crs=EPSG:2056&amp;dpiMode=7&amp;featureCount=10&amp;format=image/png&amp;layers=asitvd.fond_cadastral&amp;styles=default&amp;tileDimensions=DIM1%3Ddefault;ELEVATION%3D0&amp;tileMatrixSet=2056&amp;url=https://ows.asitvd.ch/wmts/?service%3DWMTS%26version%3D1.0.0%26request%3DGetCapabilities</datasource>
+      <datasource>contextualWMSLegend=0&amp;crs=EPSG:2056&amp;dpiMode=7&amp;featureCount=10&amp;format=image/png&amp;layers=asitvd.fond_cadastral&amp;styles=default&amp;tileDimensions=DIM1%3Ddefault;ELEVATION%3D0&amp;tileMatrixSet=2056&amp;url=https://wmts.asit-asso.ch/wmts/?service%3DWMTS%26version%3D1.0.0%26request%3DGetCapabilities</datasource>
       <shortname>asitvd</shortname>
       <title>asitvd</title>
       <keywordList>
