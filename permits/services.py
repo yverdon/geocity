@@ -187,7 +187,6 @@ def get_administrative_entities(user):
         return models.PermitAdministrativeEntity.objects.order_by("ofs_id", "-name")
 
     else:
-        print(models.PermitAdministrativeEntity.is_public.values)
         return models.PermitAdministrativeEntity.objects.filter(
             is_public=True
         ).order_by("ofs_id", "-name")
