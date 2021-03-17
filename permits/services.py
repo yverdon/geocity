@@ -179,8 +179,18 @@ def get_works_objects(administrative_entity):
     ).order_by("name")
 
 
-def get_administrative_entities():
-    return models.PermitAdministrativeEntity.objects.order_by("ofs_id", "-name")
+def get_administrative_entities(user):
+    if user.is_superuser:
+        return models.PermitAdministrativeEntity.objects.order_by("ofs_id", "-name")
+
+    if user.has_perm("see_private_demands"):
+        return models.PermitAdministrativeEntity.objects.order_by("ofs_id", "-name")
+
+    else:
+        print(models.PermitAdministrativeEntity.is_public.values)
+        return models.PermitAdministrativeEntity.objects.filter(
+            is_public=True
+        ).order_by("ofs_id", "-name")
 
 
 def get_permit_request_works_types(permit_request):
@@ -314,8 +324,8 @@ def get_property_value(object_property_value):
 
 def get_user_administrative_entities(user):
     return models.PermitAdministrativeEntity.objects.filter(
-        departments__group__in=user.groups.all()
-    )
+        departments__group__in=user.groups.all(),
+    ).order_by("ofs_id", "-name")
 
 
 def get_user_departments(user):

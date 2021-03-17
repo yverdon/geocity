@@ -145,6 +145,7 @@ class PermitAdministrativeEntity(models.Model):
         ],
     )
     geom = geomodels.MultiPolygonField(_("geom"), null=True, srid=2056)
+    is_public = models.BooleanField(_("Public"), default=False)
 
     class Meta:
         verbose_name = _(
@@ -153,6 +154,9 @@ class PermitAdministrativeEntity(models.Model):
         verbose_name_plural = _(
             "1.1 Configuration de l'entité administrative (commune, organisation)"
         )
+        permissions = [
+            ("see_private_demands", _("Voir les demandes restreintes")),
+        ]
 
     def __str__(self):
         return self.name
@@ -498,6 +502,7 @@ class WorksObjectType(models.Model):
     )
     needs_geometry = models.BooleanField(_("avec géométrie"), default=True)
     needs_date = models.BooleanField(_("avec période de temps"), default=True)
+    is_public = models.BooleanField(_("Public"), default=False)
 
     class Meta:
         verbose_name = _("1.4 Configuration type-objet-entité administrative")
@@ -520,6 +525,7 @@ class WorksObject(models.Model):
     wms_layers_order = models.PositiveIntegerField(
         _("Ordre de(s) couche(s)"), default=1
     )
+    is_public = models.BooleanField(_("Public"), default=False)
 
     class Meta:
         verbose_name = _("1.3 Configuration de l'objet")

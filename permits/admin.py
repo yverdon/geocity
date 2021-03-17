@@ -106,6 +106,12 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
                     },
                 }
             ),
+            "is_public": forms.RadioSelect(
+                choices=(
+                    (False, "Visible uniquement par les utilisateur autorisés"),
+                    (True, "Visible publiquement"),
+                ),
+            ),
         }
 
     class Media:

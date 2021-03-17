@@ -421,7 +421,7 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
 
     if request.method == "POST":
         administrative_entity_form = forms.AdministrativeEntityForm(
-            instance=permit_request, data=request.POST
+            instance=permit_request, data=request.POST, user=request.user
         )
 
         if administrative_entity_form.is_valid():
@@ -447,7 +447,7 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
             )
     else:
         administrative_entity_form = forms.AdministrativeEntityForm(
-            instance=permit_request
+            instance=permit_request, user=request.user
         )
 
     return render(
