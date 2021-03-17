@@ -60,6 +60,7 @@ class Command(BaseCommand):
         administrative_entity_yverdon = models.PermitAdministrativeEntity.objects.create(
             name="Démo Yverdon",
             ofs_id=0,
+            is_public=True,
             link="https://mapnv.ch",
             legal_document="administrative_entity_customization/demo-directive.pdf",
             general_informations="Prix par jour: 40CHF",
@@ -72,6 +73,7 @@ class Command(BaseCommand):
         administrative_entity_grandson = models.PermitAdministrativeEntity.objects.create(
             name="Démo Grandson",
             ofs_id=0,
+            is_public=False,
             link="https://mapnv.ch",
             legal_document="administrative_entity_customization/demo-directive.pdf",
             general_informations="Prix par jour: 45CHF",
