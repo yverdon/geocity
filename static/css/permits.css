@@ -299,7 +299,7 @@ h3 {
 }
 
 .table-container {
-  overflow-x: auto;
+  overflow-x: visible;
 }
 
 .table-container .table thead th {
@@ -373,6 +373,11 @@ h3 {
   font-size: 1.3em;
 }
 
+
+/* django table 2 column shifter */
+.column-shifter-container .btn-group .btn {
+  font-size: 0 !important;
+}
 
 /* /////////////////////////////////// */
 /* Responsive for smaller devices */

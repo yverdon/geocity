@@ -35,6 +35,7 @@ django-phonenumber-field==3.0.1  # via -r requirements.txt, django-two-factor-au
 django-picklefield==3.0.1  # via -r requirements.txt, django-constance
 django-simple-history==2.12.0  # via -r requirements.txt
 django-tables2==2.3.3     # via -r requirements.txt
+django-tables2-column-shifter==0.5.2  # via -r requirements.txt
 django-two-factor-auth[phonenumbers]==1.13  # via -r requirements.txt
 django==3.1.4             # via -r requirements.txt, django-admin-sortable2, django-bootstrap-datepicker-plus, django-bootstrap4, django-cors-headers, django-debug-toolbar, django-filter, django-formtools, django-otp, django-phonenumber-field, django-picklefield, django-tables2, django-two-factor-auth, djangorestframework
 djangorestframework-gis==0.16  # via -r requirements.txt
