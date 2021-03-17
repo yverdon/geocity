@@ -4,6 +4,7 @@ django-bootstrap-datepicker-plus
 django-bootstrap4
 django-filter
 django-tables2
+django-tables2-column-shifter
 gdal
 gunicorn
 html5lib
