@@ -8,7 +8,6 @@ from simple_history.admin import SimpleHistoryAdmin
 from . import forms as permit_forms
 from . import models
 
-admin.site.register(models.WorksType)
 admin.site.register(models.PermitActorType)
 admin.site.register(models.PermitDepartment)
 admin.site.register(models.PermitRequestValidation)
@@ -124,6 +123,20 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
         }
 
 
+class WorksTypeAdminForm(forms.ModelForm):
+    class Meta:
+        model = models.WorksType
+        fields = "__all__"
+        widgets = {
+            "is_public": forms.RadioSelect(
+                choices=(
+                    (False, "Visible uniquement par les utilisateur autorisés"),
+                    (True, "Visible publiquement"),
+                ),
+            ),
+        }
+
+
 class PermitWorkflowStatusInline(admin.StackedInline):
     model = models.PermitWorkflowStatus
     extra = 0
@@ -142,6 +155,12 @@ class WorksObjectAdminForm(forms.ModelForm):
                     + "mapserver&CRS=EPSG%3A2056",
                 }
             ),
+            "is_public": forms.RadioSelect(
+                choices=(
+                    (False, "Visible uniquement par les utilisateur autorisés"),
+                    (True, "Visible publiquement"),
+                ),
+            ),
         }
         help_texts = {
             "wms_layers": "URL pour la ou les couches WMS utiles à la saisie de la demande pour ce type d'objet",
@@ -158,6 +177,10 @@ class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
     inlines = [
         PermitWorkflowStatusInline,
     ]
+
+
+class WorksTypeAdmin(admin.ModelAdmin):
+    form = WorksTypeAdminForm
 
 
 class PermitRequestAmendPropertyForm(forms.ModelForm):
@@ -187,4 +210,5 @@ admin.site.register(models.WorksObjectType, WorksObjectTypeAdmin)
 admin.site.register(models.WorksObjectProperty, WorksObjectPropertyAdmin)
 admin.site.register(models.PermitAdministrativeEntity, PermitAdministrativeEntityAdmin)
 admin.site.register(models.WorksObject, WorksObjectAdmin)
+admin.site.register(models.WorksType, WorksTypeAdmin)
 admin.site.register(models.PermitRequestAmendProperty, PermitRequestAmendPropertyAdmin)

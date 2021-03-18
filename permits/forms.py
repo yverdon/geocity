@@ -137,6 +137,7 @@ class WorksTypesForm(forms.Form):
 
     def __init__(self, instance, *args, **kwargs):
         self.instance = instance
+        self.user = kwargs.pop("user", None)
         kwargs["initial"] = (
             {"types": services.get_permit_request_works_types(self.instance)}
             if self.instance
@@ -146,7 +147,7 @@ class WorksTypesForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         self.fields["types"].queryset = services.get_works_types(
-            self.instance.administrative_entity
+            self.instance.administrative_entity, self.user
         )
 
     def save(self):
@@ -163,6 +164,7 @@ class WorksObjectsForm(forms.Form):
 
     def __init__(self, instance, works_types, *args, **kwargs):
         self.instance = instance
+        self.user = kwargs.pop("user", None)
 
         initial = {}
         for type_id, object_id in self.instance.works_object_types.values_list(
@@ -175,7 +177,8 @@ class WorksObjectsForm(forms.Form):
         for works_type in works_types:
             self.fields[str(works_type.pk)] = WorksObjectsTypeChoiceField(
                 queryset=works_type.works_object_types.filter(
-                    administrative_entities=self.instance.administrative_entity
+                    administrative_entities=self.instance.administrative_entity,
+                    works_object__is_public=True,
                 )
                 .distinct()
                 .select_related("works_object"),

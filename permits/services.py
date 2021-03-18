@@ -11,6 +11,8 @@ from django.core.exceptions import SuspiciousOperation
 from django.core.mail import send_mass_mail
 from django.db import transaction
 from django.db.models import Max, Min, Q
+from django.db.models import CharField, TextField, Value as V
+from django.db.models.functions import Concat
 from django.forms import modelformset_factory
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
@@ -163,12 +165,21 @@ def get_permit_request_appendices(permit_request):
             yield (works_object_type, prop)
 
 
-def get_works_types(administrative_entity):
-    return models.WorksType.objects.filter(
-        pk__in=models.WorksObjectType.objects.filter(
-            administrative_entities=administrative_entity
-        ).values_list("works_type_id", flat=True)
-    ).order_by("name")
+def get_works_types(administrative_entity, user):
+    if user.is_superuser or user.has_perm("see_private_demands"):
+        return models.WorksType.objects.filter(
+            pk__in=models.WorksObjectType.objects.filter(
+                administrative_entities=administrative_entity
+            ).values_list("works_type_id", flat=True)
+        ).order_by("name")
+
+    else:
+        return models.WorksType.objects.filter(
+            pk__in=models.WorksObjectType.objects.filter(
+                administrative_entities=administrative_entity
+            ).values_list("works_type_id", flat=True),
+            is_public=True,
+        ).order_by("name")
 
 
 def get_works_objects(administrative_entity):
@@ -180,10 +191,7 @@ def get_works_objects(administrative_entity):
 
 
 def get_administrative_entities(user):
-    if user.is_superuser:
-        return models.PermitAdministrativeEntity.objects.order_by("ofs_id", "-name")
-
-    if user.has_perm("see_private_demands"):
+    if user.is_superuser or user.has_perm("see_private_demands"):
         return models.PermitAdministrativeEntity.objects.order_by("ofs_id", "-name")
 
     else:
@@ -518,7 +526,12 @@ def get_works_types_step(permit_request, completed):
     # reason to show the step
     if (
         permit_request
-        and len(get_works_types(permit_request.administrative_entity)) <= 1
+        and len(
+            get_works_types(
+                permit_request.administrative_entity, permit_request.author.user
+            )
+        )
+        <= 1
     ):
         return None
 
