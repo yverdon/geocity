@@ -60,7 +60,7 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
 
 
 class WorksObjectTypeAdmin(admin.ModelAdmin):
-    list_display = ["__str__", works_object_type_administrative_entities]
+    list_display = ["__str__", works_object_type_administrative_entities, "is_public"]
     list_filter = ["administrative_entities"]
     form = WorksObjectTypeAdminForm
 
@@ -195,12 +195,6 @@ class PermitRequestAmendPropertyAdmin(admin.ModelAdmin):
         "2.2 Configuration des champs de traitement des demandes"
     )
     sortable_str.admin_order_field = "name"
-    # "is_public": forms.RadioSelect(
-    #     choices=(
-    #         (False, "Visible uniquement par les utilisateur autorisés"),
-    #         (True, "Visible publiquement"),
-    #     ),
-    # ),
 
 
 admin.site.register(models.PermitRequest, PermitRequestHistoryAdmin)

@@ -176,18 +176,26 @@ def get_works_types(administrative_entity, user):
     else:
         return models.WorksType.objects.filter(
             pk__in=models.WorksObjectType.objects.filter(
-                administrative_entities=administrative_entity
+                administrative_entities=administrative_entity,
+                is_public=True,
             ).values_list("works_type_id", flat=True),
-            is_public=True,
         ).order_by("name")
 
 
 def get_works_objects(administrative_entity):
-    return models.WorksObject.objects.filter(
-        pk__in=models.WorksObjectType.objects.filter(
-            administrative_entities=administrative_entity
-        ).values_list("works_object_id", flat=True)
-    ).order_by("name")
+    if user.is_superuser or user.has_perm("see_private_demands"):
+        return models.WorksObject.objects.filter(
+            pk__in=models.WorksObjectType.objects.filter(
+                administrative_entities=administrative_entity
+            ).values_list("works_object_id", flat=True)
+        ).order_by("name")
+    else:
+        return models.WorksObject.objects.filter(
+            pk__in=models.WorksObjectType.objects.filter(
+                administrative_entities=administrative_entity,
+                is_public=True,
+            ).values_list("works_object_id", flat=True),
+        ).order_by("name")
 
 
 def get_administrative_entities(user):

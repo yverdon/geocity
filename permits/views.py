@@ -549,7 +549,7 @@ def permit_request_select_objects(request, permit_request_id):
 
     if request.GET:
         works_types_form = forms.WorksTypesForm(
-            data=request.GET, instance=permit_request
+            data=request.GET, instance=permit_request, user=request.user
         )
         if works_types_form.is_valid():
             works_types = works_types_form.cleaned_data["types"]
