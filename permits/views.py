@@ -437,7 +437,8 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
             )
 
             works_object_types = services.get_default_works_object_types(
-                administrative_entity=permit_request.administrative_entity
+                administrative_entity=permit_request.administrative_entity,
+                user=request.user,
             )
             if works_object_types:
                 services.set_works_object_types(
@@ -497,6 +498,7 @@ def permit_request_select_types(request, permit_request_id):
 
                 works_object_types = services.get_default_works_object_types(
                     administrative_entity=permit_request.administrative_entity,
+                    user=request.user,
                     works_types=selected_works_types,
                 )
                 if works_object_types:
