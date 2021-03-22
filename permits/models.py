@@ -145,7 +145,6 @@ class PermitAdministrativeEntity(models.Model):
         ],
     )
     geom = geomodels.MultiPolygonField(_("geom"), null=True, srid=2056)
-    is_public = models.BooleanField(_("Public"), default=False)
 
     class Meta:
         verbose_name = _(

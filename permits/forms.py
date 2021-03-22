@@ -176,18 +176,16 @@ class WorksObjectsForm(forms.Form):
 
         for works_type in works_types:
             if self.user.is_superuser or self.user.has_perm("see_private_demands"):
-                queryset=works_type.works_object_types.filter(
+                queryset = works_type.works_object_types.filter(
                     administrative_entities=self.instance.administrative_entity,
                 )
             else:
-                queryset=works_type.works_object_types.filter(
+                queryset = works_type.works_object_types.filter(
                     administrative_entities=self.instance.administrative_entity,
                     is_public=True,
                 )
             self.fields[str(works_type.pk)] = WorksObjectsTypeChoiceField(
-                queryset=queryset
-                .distinct()
-                .select_related("works_object"),
+                queryset=queryset.distinct().select_related("works_object"),
                 widget=forms.CheckboxSelectMultiple(),
                 label=works_type.name,
                 error_messages={
