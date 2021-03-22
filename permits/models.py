@@ -469,7 +469,6 @@ class WorksType(models.Model):
     meta_type = models.IntegerField(
         _("Type générique"), choices=META_TYPE_CHOICES, default=META_TYPE_OTHER
     )
-    is_public = models.BooleanField(_("Public"), default=False)
 
     class Meta:
         verbose_name = _("1.2 Configuration du type")
@@ -503,6 +502,7 @@ class WorksObjectType(models.Model):
     )
     needs_geometry = models.BooleanField(_("avec géométrie"), default=True)
     needs_date = models.BooleanField(_("avec période de temps"), default=True)
+    is_public = models.BooleanField(_("Public"), default=False)
 
     class Meta:
         verbose_name = _("1.4 Configuration type-objet-entité administrative")
@@ -525,7 +525,6 @@ class WorksObject(models.Model):
     wms_layers_order = models.PositiveIntegerField(
         _("Ordre de(s) couche(s)"), default=1
     )
-    is_public = models.BooleanField(_("Public"), default=False)
 
     class Meta:
         verbose_name = _("1.3 Configuration de l'objet")

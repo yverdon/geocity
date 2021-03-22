@@ -178,7 +178,7 @@ class WorksObjectsForm(forms.Form):
             self.fields[str(works_type.pk)] = WorksObjectsTypeChoiceField(
                 queryset=works_type.works_object_types.filter(
                     administrative_entities=self.instance.administrative_entity,
-                    works_object__is_public=True,
+                    # works_object__is_public=True,
                 )
                 .distinct()
                 .select_related("works_object"),
