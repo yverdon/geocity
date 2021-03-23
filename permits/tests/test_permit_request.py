@@ -1233,8 +1233,7 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         self.works_objects = factories.WorksObjectFactory.create_batch(2)
 
         self.administrative_entity = models.PermitAdministrativeEntity.objects.create(
-            name='privateEntity',
-            ofs_id=1234,
+            name="privateEntity", ofs_id=1234,
         )
         self.private_works_object_type = models.WorksObjectType.objects.create(
             works_type=self.works_types[0],
@@ -1250,10 +1249,10 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             [self.administrative_entity]
         )
 
-    def test_administrative_entity_step_without_public_demands_is_empty_to_standard_user(self):
+    def test_administrative_entity_step_without_public_demands_is_empty_to_standard_user(
+        self,
+    ):
         response = self.client.get(
-            reverse(
-                "permits:permit_request_select_administrative_entity",
-            ),
+            reverse("permits:permit_request_select_administrative_entity",),
         )
-        self.assertNotContains(response, 'privateEntity')
+        self.assertNotContains(response, "privateEntity")

@@ -267,7 +267,9 @@ class Command(BaseCommand):
                     name=works_obj
                 )
                 works_object_type = models.WorksObjectType.objects.create(
-                    works_type=works_type_obj, works_object=works_obj_obj, is_public=True
+                    works_type=works_type_obj,
+                    works_object=works_obj_obj,
+                    is_public=True,
                 )
                 works_object_type.administrative_entities.add(
                     administrative_entity_yverdon
