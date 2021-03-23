@@ -1224,3 +1224,36 @@ class PermitRequestClassifyTestCase(TestCase):
 
         validation.permit_request.refresh_from_db()
         self.assertIsNotNone(validation.permit_request.validated_at)
+
+
+class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
+    def setUp(self):
+        super().setUp()
+        self.works_types = factories.WorksTypeFactory.create_batch(2)
+        self.works_objects = factories.WorksObjectFactory.create_batch(2)
+
+        self.administrative_entity = models.PermitAdministrativeEntity.objects.create(
+            name='privateEntity',
+            ofs_id=1234,
+        )
+        self.private_works_object_type = models.WorksObjectType.objects.create(
+            works_type=self.works_types[0],
+            works_object=self.works_objects[0],
+            is_public=False,
+        )
+        self.public_works_object_type = models.WorksObjectType.objects.create(
+            works_type=self.works_types[1],
+            works_object=self.works_objects[1],
+            is_public=True,
+        )
+        self.private_works_object_type.administrative_entities.set(
+            [self.administrative_entity]
+        )
+
+    def test_administrative_entity_step_without_public_demands_is_empty_to_standard_user(self):
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_select_administrative_entity",
+            ),
+        )
+        self.assertNotContains(response, 'privateEntity')

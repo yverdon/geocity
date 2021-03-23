@@ -11,8 +11,6 @@ from django.core.exceptions import SuspiciousOperation
 from django.core.mail import send_mass_mail
 from django.db import transaction
 from django.db.models import Max, Min, Q
-from django.db.models import CharField, TextField, Value as V
-from django.db.models.functions import Concat
 from django.forms import modelformset_factory
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
