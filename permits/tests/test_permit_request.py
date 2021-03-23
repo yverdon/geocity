@@ -37,10 +37,14 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.works_objects = factories.WorksObjectFactory.create_batch(2)
 
         models.WorksObjectType.objects.create(
-            works_type=self.works_types[0], works_object=self.works_objects[0]
+            works_type=self.works_types[0],
+            works_object=self.works_objects[0],
+            is_public=True,
         )
         models.WorksObjectType.objects.create(
-            works_type=self.works_types[1], works_object=self.works_objects[1]
+            works_type=self.works_types[1],
+            works_object=self.works_objects[1],
+            is_public=True,
         )
 
     def test_types_step_submit_redirects_to_objects_with_types_qs(self):
