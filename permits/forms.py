@@ -848,9 +848,10 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         cleaned_data = super().clean()
         starts_at = cleaned_data.get("starts_at")
         ends_at = cleaned_data.get("ends_at")
-        if ends_at < starts_at:
+        print(starts_at,ends_at)
+        if ends_at <= starts_at:
             raise forms.ValidationError(
-                _("La date de fin doit être supérieur à la date de début.")
+                _("La date de fin doit être postérieure à la date de début.")
             )
 
     def save(self, commit=True):
