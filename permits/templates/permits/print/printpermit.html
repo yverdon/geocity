@@ -70,6 +70,7 @@
   <h3>{% trans "Agenda" %}</h3>
     <table>
       {% for geo_time in geo_times %}
+        {% if geo_time.starts_at %}
         <tr>
           <td class="validation-table-left">
             <p>{% trans "Date de début :" %}</p>
@@ -77,7 +78,10 @@
           <td class="validation-table-right">
               <p> {{ geo_time.starts_at }}</p>
           </td>
+          
         </tr>
+        {% endif %}
+        {% if geo_time.ends_at %}
         <tr>
           <td class="validation-table-left">
             <p>{% trans "Date de fin :" %}</p>
@@ -86,6 +90,7 @@
               <p>{{ geo_time.ends_at }}</p>
           </td>
         </tr>
+        {% endif %}
         {% if geo_time.comment %}
           <tr>
             <td class="validation-table-left">
