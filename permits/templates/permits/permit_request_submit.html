@@ -25,18 +25,22 @@
     {% if incomplete_steps %}
       <a class="btn btn-primary" href="{{ incomplete_steps|first }}">{% trans "Renseigner les informations manquantes" %}</a>
     {% else %}
-      {% if permit_request.administrative_entity.legal_document %}
+    {% if legal_document_exists or permit_request.administrative_entity.general_informations%}
         <div id="legal-infos">
+          {% if legal_document_exists %}
           <h5>Merci de prendre connaissance des directives ci-dessous</h5>
           <p>
             <b>Directives</b>
               <a href="{{permit_request.administrative_entity.legal_document.url}}" target="_blank">{% trans 'Télécharger le PDF' %}</a>
           </p>
-            <b>Autres informations</b><br>
-            {{ permit_request.administrative_entity.general_informations }}
-        </div>
-        <hr>
-      {% endif %}
+          {% endif %}
+          {% if permit_request.administrative_entity.general_informations %}
+                <b>Autres informations</b><br><br>
+                {{ permit_request.administrative_entity.general_informations }}
+            </div>
+            <hr>
+          {% endif %}
+      {% endif %}  
       {% if previous_step.url %}
         <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
       {% endif %}
