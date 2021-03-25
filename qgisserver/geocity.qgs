@@ -37,7 +37,7 @@
     </layer-tree-group>
     <layer-tree-group name="basemaps" expanded="1" checked="Qt::Checked">
       <customproperties/>
-      <layer-tree-layer name="Fond ASIT VD - cadastral" source="crs=EPSG:2056&amp;dpiMode=7&amp;format=image/png&amp;layers=asitvd.fond_cadastral&amp;styles=default&amp;tileMatrixSet=2056&amp;url=https://ows.asitvd.ch/wmts/?service%3DWMTS%26version%3D1.0.0%26request%3DGetCapabilities" providerKey="wms" expanded="1" legend_exp="" patch_size="0,0" legend_split_behavior="0" checked="Qt::Checked" id="Fond_ASIT_VD___cadastral_ec976cae_fb72_40c4_97b6_7c5dd60081ab">
+      <layer-tree-layer name="Fond ASIT VD - cadastral" source="crs=EPSG:2056&amp;dpiMode=7&amp;format=image/png&amp;layers=asitvd.fond_cadastral&amp;styles=default&amp;tileMatrixSet=2056&amp;url=https://wmts.asit-asso.ch/wmts/?service%3DWMTS%26version%3D1.0.0%26request%3DGetCapabilities" providerKey="wms" expanded="1" legend_exp="" patch_size="0,0" legend_split_behavior="0" checked="Qt::Checked" id="Fond_ASIT_VD___cadastral_ec976cae_fb72_40c4_97b6_7c5dd60081ab">
         <customproperties/>
       </layer-tree-layer>
     </layer-tree-group>
@@ -126,7 +126,7 @@
         <ymax>1350004.29247885104268789</ymax>
       </extent>
       <id>Fond_ASIT_VD___cadastral_ec976cae_fb72_40c4_97b6_7c5dd60081ab</id>
-      <datasource>crs=EPSG:2056&amp;dpiMode=7&amp;format=image/png&amp;layers=asitvd.fond_cadastral&amp;styles=default&amp;tileMatrixSet=2056&amp;url=https://ows.asitvd.ch/wmts/?service%3DWMTS%26version%3D1.0.0%26request%3DGetCapabilities</datasource>
+      <datasource>crs=EPSG:2056&amp;dpiMode=7&amp;format=image/png&amp;layers=asitvd.fond_cadastral&amp;styles=default&amp;tileMatrixSet=2056&amp;url=https://wmts.asit-asso.ch/wmts/?service%3DWMTS%26version%3D1.0.0%26request%3DGetCapabilities</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -1817,7 +1817,7 @@ def my_form_open(dialog, layer, feature):
           <Layer name="permits_permitrequestgeotime_points" provider="postgres" source="service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table=&quot;(select id, permit_request_id,starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 1) as geom from permits_permitrequestgeotime&#xa;)&quot; (geom)">permits_permitrequestgeotime_points_08962544_8c92_4288_8ee5_d49301605376</Layer>
           <Layer name="permits_permitrequestgeotimes_lines" provider="postgres" source="service='pg_geocity' key='_uid_' checkPrimaryKeyUnicity='1' table=&quot;(SELECT row_number() over () AS _uid_,* FROM (select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 2) as geom from permits_permitrequestgeotime&#xa;) AS _subq_1_&#xa;)&quot; (geom)">permits_permitrequestgeotimes_lines_7b7c51f4_711d_40db_8a9d_31840309d56f</Layer>
           <Layer name="permits_permitrequestgeotime_polygons" provider="postgres" source="service='pg_geocity' key='id' checkPrimaryKeyUnicity='1' table=&quot;(select id, permit_request_id, starts_at, ends_at, comment, external_link, ST_CollectionExtract(geom, 3) as geom from permits_permitrequestgeotime&#xa;)&quot; (geom)">permits_permitrequestgeotime_polygons_7e6b25a2_2f4a_4335_ac93_7fb17ecce36e</Layer>
-          <Layer name="Fond ASIT VD - cadastral" provider="wms" source="crs=EPSG:2056&amp;dpiMode=7&amp;format=image/png&amp;layers=asitvd.fond_cadastral&amp;styles=default&amp;tileMatrixSet=2056&amp;url=https://ows.asitvd.ch/wmts/?service%3DWMTS%26version%3D1.0.0%26request%3DGetCapabilities">Fond_ASIT_VD___cadastral_ec976cae_fb72_40c4_97b6_7c5dd60081ab</Layer>
+          <Layer name="Fond ASIT VD - cadastral" provider="wms" source="crs=EPSG:2056&amp;dpiMode=7&amp;format=image/png&amp;layers=asitvd.fond_cadastral&amp;styles=default&amp;tileMatrixSet=2056&amp;url=https://wmts.asit-asso.ch/wmts/?service%3DWMTS%26version%3D1.0.0%26request%3DGetCapabilities">Fond_ASIT_VD___cadastral_ec976cae_fb72_40c4_97b6_7c5dd60081ab</Layer>
         </LayerSet>
         <AtlasMap atlasDriven="0" scalingMode="2" margin="0.10000000000000001"/>
         <labelBlockingItems/>
