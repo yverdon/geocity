@@ -66,9 +66,14 @@ def printreport(request, permit_request):
         The PDF of the permit request.
     """
 
+    permit_has_geometry = "GeoTimeInfo.GEOMETRY" in services.get_geotime_required_info(
+        permit_request
+    )
     geo_times = permit_request.geo_time.all()
-    printurl = get_map_url(geo_times, permit_request.pk)
+    if permit_has_geometry:
+        printurl = get_map_url(geo_times, permit_request.pk)
     print_date = timezone.now()
+
     validations = permit_request.validations.all()
     objects_infos = services.get_permit_objects(permit_request)
     actor_types = dict(models.ACTOR_TYPE_CHOICES)
@@ -100,7 +105,7 @@ def printreport(request, permit_request):
             "print_date": print_date,
             "administrative_entity": administrative_entity,
             "geo_times": geo_times,
-            "map_image": printurl,
+            "map_image": printurl if permit_has_geometry else None,
             "validations": validations,
             "logo_main": b64encode(
                 administrative_entity.logo_main.open().read()
