@@ -1238,14 +1238,7 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             name="privateEntity", ofs_id=1234,
         )
         private_works_object_type = models.WorksObjectType.objects.create(
-            works_type=works_types[0],
-            works_object=works_objects[0],
-            is_public=False,
-        )
-        public_works_object_type = models.WorksObjectType.objects.create(
-            works_type=works_types[1],
-            works_object=works_objects[1],
-            is_public=True,
+            works_type=works_types[0], works_object=works_objects[0], is_public=False,
         )
         private_works_object_type.administrative_entities.set([administrative_entity])
         response = self.client.get(
