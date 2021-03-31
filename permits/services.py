@@ -164,46 +164,55 @@ def get_permit_request_appendices(permit_request):
 
 
 def get_works_types(administrative_entity, user):
-    if user.is_superuser or user.has_perm("see_private_demands"):
-        return models.WorksType.objects.filter(
+
+    queryset = (
+        models.WorksType.objects.filter(
             pk__in=models.WorksObjectType.objects.filter(
                 administrative_entities=administrative_entity
             ).values_list("works_type_id", flat=True)
-        ).order_by("name")
+        )
+        .order_by("name")
+        .distinct()
+    )
 
-    else:
-        return models.WorksType.objects.filter(
-            pk__in=models.WorksObjectType.objects.filter(
-                administrative_entities=administrative_entity, is_public=True,
-            ).values_list("works_type_id", flat=True),
-        ).order_by("name")
+    if not user.has_perm("see_private_demands"):
+        queryset = queryset.filter(works_object_types__is_public=True)
+
+    return queryset
 
 
 def get_works_objects(administrative_entity):
-    if user.is_superuser or user.has_perm("see_private_demands"):
-        return models.WorksObject.objects.filter(
+    queryset = (
+        models.WorksObject.objects.filter(
             pk__in=models.WorksObjectType.objects.filter(
                 administrative_entities=administrative_entity
             ).values_list("works_object_id", flat=True)
-        ).order_by("name")
-    else:
-        return models.WorksObject.objects.filter(
-            pk__in=models.WorksObjectType.objects.filter(
-                administrative_entities=administrative_entity, is_public=True,
-            ).values_list("works_object_id", flat=True),
-        ).order_by("name")
+        )
+        .order_by("name")
+        .distinct()
+    )
+
+    if not user.has_perm("see_private_demands"):
+        queryset = queryset.filter(works_object_types__is_public=True)
+
+    return queryset
 
 
 def get_administrative_entities(user):
-    if user.is_superuser or user.has_perm("see_private_demands"):
-        return models.PermitAdministrativeEntity.objects.order_by("ofs_id", "-name")
-
-    else:
-        return models.PermitAdministrativeEntity.objects.filter(
+    queryset = (
+        models.PermitAdministrativeEntity.objects.filter(
             pk__in=models.WorksObjectType.objects.filter(is_public=True,).values_list(
                 "administrative_entities", flat=True
             ),
-        ).order_by("ofs_id", "-name")
+        )
+        .order_by("ofs_id", "-name")
+        .distinct()
+    )
+
+    if not user.has_perm("see_private_demands"):
+        queryset = queryset = queryset.filter(works_object_types__is_public=True)
+
+    return queryset
 
 
 def get_permit_request_works_types(permit_request):
@@ -586,7 +595,7 @@ def get_works_objects_step(permit_request, enabled, works_types, user):
     # works type, there won’t be a works type step, so the works object step should have
     # it in the URL
     if permit_request and not works_types:
-        if user.is_superuser or user.has_perm("see_private_demands"):
+        if user.has_perm("see_private_demands"):
             administrative_entity_works_types = permit_request.administrative_entity.works_object_types.values_list(
                 "works_type", flat=True
             ).distinct()
@@ -1200,7 +1209,7 @@ def get_default_works_object_types(
     `administrative_entity`. `works_types` should be the works types the user has
     selected, if any.
     """
-    if user.is_superuser or user.has_perm("see_private_demands"):
+    if user.has_perm("see_private_demands"):
         works_object_types = administrative_entity.works_object_types.all()
     else:
         works_object_types = administrative_entity.works_object_types.filter(

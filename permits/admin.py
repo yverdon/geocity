@@ -50,12 +50,7 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
         model = models.WorksObjectType
         fields = "__all__"
         widgets = {
-            "is_public": forms.RadioSelect(
-                choices=(
-                    (False, "Visible uniquement par les utilisateur autorisés"),
-                    (True, "Visible publiquement"),
-                ),
-            ),
+            "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
         }
 
 

@@ -173,19 +173,21 @@ class WorksObjectsForm(forms.Form):
             initial.setdefault(str(type_id), []).append(object_id)
 
         super().__init__(*args, **{**kwargs, "initial": initial})
-
+        user_has_perm = self.user.has_perm("see_private_demands")
         for works_type in works_types:
-            if self.user.is_superuser or self.user.has_perm("see_private_demands"):
-                queryset = works_type.works_object_types.filter(
+            queryset = (
+                works_type.works_object_types.filter(
                     administrative_entities=self.instance.administrative_entity,
                 )
-            else:
-                queryset = works_type.works_object_types.filter(
-                    administrative_entities=self.instance.administrative_entity,
-                    is_public=True,
-                )
+                .distinct()
+                .select_related("works_object")
+            )
+
+            if not user_has_perm:
+                queryset = queryset.filter(is_public=True)
+
             self.fields[str(works_type.pk)] = WorksObjectsTypeChoiceField(
-                queryset=queryset.distinct().select_related("works_object"),
+                queryset=queryset,
                 widget=forms.CheckboxSelectMultiple(),
                 label=works_type.name,
                 error_messages={
@@ -618,6 +620,9 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequest
         fields = ["is_public", "status"]
+        widgets = {
+            "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
+        }
 
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.get("instance", None)

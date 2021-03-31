@@ -19,6 +19,14 @@ from simple_history.models import HistoricalRecords
 
 from . import fields
 
+# public types: for public/restricted features
+PUBLIC_ALL = True
+PUBLIC_RESTRICTED = False
+PUBLIC_TYPE_CHOICES = (
+    (PUBLIC_ALL, _("Visible par tous les utilisateurs")),
+    (PUBLIC_RESTRICTED, _("Visible uniquement par les utilisateur autorisés")),
+)
+
 # Contact types
 ACTOR_TYPE_OTHER = 0
 ACTOR_TYPE_REQUESTOR = 1
@@ -154,7 +162,7 @@ class PermitAdministrativeEntity(models.Model):
             "1.1 Configuration de l'entité administrative (commune, organisation)"
         )
         permissions = [
-            ("see_private_demands", _("Voir les demandes restreintes")),
+            ("see_private_requests", _("Voir les demandes restreintes")),
         ]
 
     def __str__(self):
