@@ -1245,3 +1245,39 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             reverse("permits:permit_request_select_administrative_entity",),
         )
         self.assertNotContains(response, "privateEntity")
+
+    def test_work_type_step_without_public_demands_is_empty_to_standard_user(
+        self,
+    ):
+
+        works_types = factories.WorksTypeFactory.create_batch(2)
+        works_objects = factories.WorksObjectFactory.create_batch(2)
+
+        administrative_entity = models.PermitAdministrativeEntity.objects.create(
+            name="privateEntity", ofs_id=1234,
+        )
+        private_works_object_type = models.WorksObjectType.objects.create(
+            works_type=works_types[0], works_object=works_objects[0], is_public=False,
+        )
+        private_works_object_type.administrative_entities.set([administrative_entity])
+
+        public_works_object_type = models.WorksObjectType.objects.create(
+            works_type=works_types[0], works_object=works_objects[0], is_public=True,
+        )
+        public_works_object_type.administrative_entities.set([administrative_entity])
+
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        permit_request.administrative_entity.works_object_types.set(
+            models.WorksObjectType.objects.all()
+        )
+        
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_select_types",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+        self.assertNotContains(response, "privateEntity")
+
+
+
