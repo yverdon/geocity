@@ -1246,13 +1246,10 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         )
         self.assertNotContains(response, "privateEntity")
 
-    def test_work_type_step_without_public_demands_is_empty_to_standard_user(
-        self,
-    ):
+    def test_work_type_step_only_show_public_demands_to_standard_user(self,):
 
-        works_types = factories.WorksTypeFactory.create_batch(2)
-        works_objects = factories.WorksObjectFactory.create_batch(2)
-
+        works_types = factories.WorksTypeFactory.create_batch(3)
+        works_objects = factories.WorksObjectFactory.create_batch(3)
         administrative_entity = models.PermitAdministrativeEntity.objects.create(
             name="privateEntity", ofs_id=1234,
         )
@@ -1261,23 +1258,72 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         )
         private_works_object_type.administrative_entities.set([administrative_entity])
 
-        public_works_object_type = models.WorksObjectType.objects.create(
-            works_type=works_types[0], works_object=works_objects[0], is_public=True,
+        public_works_object_type_1 = models.WorksObjectType.objects.create(
+            works_type=works_types[1], works_object=works_objects[1], is_public=True,
         )
-        public_works_object_type.administrative_entities.set([administrative_entity])
+        public_works_object_type_1.administrative_entities.set([administrative_entity])
+
+        public_works_object_type_2 = models.WorksObjectType.objects.create(
+            works_type=works_types[2], works_object=works_objects[2], is_public=True,
+        )
+        public_works_object_type_2.administrative_entities.set([administrative_entity])
 
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+
         permit_request.administrative_entity.works_object_types.set(
             models.WorksObjectType.objects.all()
         )
-        
+
         response = self.client.get(
             reverse(
                 "permits:permit_request_select_types",
                 kwargs={"permit_request_id": permit_request.pk},
             ),
         )
-        self.assertNotContains(response, "privateEntity")
+        public_items_count = str(response.content).count("form-check-label")
 
+        # check that only public works types show up, but not private works types
+        self.assertEqual(public_items_count, 2)
 
+    def test_work_type_step_show_public_demands_to_standard_user(self,):
 
+        works_types = factories.WorksTypeFactory.create_batch(2)
+        works_objects = factories.WorksObjectFactory.create_batch(2)
+        administrative_entity = models.PermitAdministrativeEntity.objects.create(
+            name="privateEntity", ofs_id=1234,
+        )
+
+        public_works_object_type_1 = models.WorksObjectType.objects.create(
+            works_type=works_types[0], works_object=works_objects[0], is_public=True,
+        )
+        public_works_object_type_1.administrative_entities.set([administrative_entity])
+
+        public_works_object_type_2 = models.WorksObjectType.objects.create(
+            works_type=works_types[1], works_object=works_objects[1], is_public=True,
+        )
+        public_works_object_type_2.administrative_entities.set([administrative_entity])
+
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+
+        permit_request.administrative_entity.works_object_types.set(
+            models.WorksObjectType.objects.all()
+        )
+
+        models.WorksObjectTypeChoice.objects.create(
+            permit_request=permit_request, works_object_type=public_works_object_type_1
+        )
+
+        models.WorksObjectTypeChoice.objects.create(
+            permit_request=permit_request, works_object_type=public_works_object_type_2
+        )
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_select_objects",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+            + "?types={}&types={}".format(works_types[0].pk, works_types[1].pk),
+        )
+        public_items_count = str(response.content).count("form-check-label")
+
+        self.assertEqual(public_items_count, 2)
