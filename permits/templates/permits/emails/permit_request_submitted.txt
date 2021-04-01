@@ -5,7 +5,7 @@
 {{ permit_request_url }}
 
 {% trans "Avec nos meilleures salutations," %}
-mapnv.ch
+{{ administrative_entity.name }}
 
-{% trans "Ceci est un e-mail automatique envoyé depuis geocity. Veuillez ne pas répondre à cet e-mail." %}
+{% trans "Ceci est un e-mail automatiquement. Veuillez ne pas répondre à cet e-mail." %}
 {% endautoescape %}
