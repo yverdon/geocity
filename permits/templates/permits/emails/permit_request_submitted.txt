@@ -6,4 +6,6 @@
 
 {% trans "Avec nos meilleures salutations," %}
 mapnv.ch
+
+{% trans "Ceci est un e-mail automatique envoyé depuis geocity. Veuillez ne pas répondre à cet e-mail." %}
 {% endautoescape %}
