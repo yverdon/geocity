@@ -5,4 +5,7 @@
 {% trans "Vous pouvez la consulter sur le lien suivant" %}: {{ permit_request_url }}
 
 {% trans "Avec nos meilleures salutations," %}
-{{ administrative_entity_name }}{% endautoescape %}
+{{ administrative_entity_name }}
+
+{% trans "Ceci est un e-mail automatiquement. Veuillez ne pas répondre à cet e-mail." %}
+{% endautoescape %}

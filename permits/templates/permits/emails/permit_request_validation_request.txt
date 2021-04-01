@@ -6,4 +6,6 @@
 
 {% trans "Avec nos meilleures salutations," %}
 {{ administrative_entity.name }}
+
+{% trans "Ceci est un e-mail automatiquement. Veuillez ne pas répondre à cet e-mail." %}
 {% endautoescape %}
