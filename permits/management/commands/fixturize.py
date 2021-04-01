@@ -147,6 +147,12 @@ class Command(BaseCommand):
                 codename="validate_permit_request", content_type=permit_request_ct
             )
         )
+
+        validator_group = Group.objects.get(name="Validateur Yverdon")
+        departement = models.PermitDepartment.objects.get(group=validator_group)
+        departement.is_validator = True
+        departement.save()
+
         self.stdout.write("validator-yverdon / admin")
 
         user = self.create_user(
