@@ -10,6 +10,7 @@ from django.urls import reverse
 from django.utils import timezone
 from permits import models, services
 import uuid
+from django.contrib.auth.models import Permission
 
 from . import factories
 from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_parser
@@ -1227,15 +1228,15 @@ class PermitRequestClassifyTestCase(TestCase):
 
 
 class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
-    def test_administrative_entity_step_without_public_demands_is_empty_to_standard_user(
+    def test_administrative_entity_step_without_public_requests_is_empty_to_standard_user(
         self,
     ):
 
         works_types = factories.WorksTypeFactory.create_batch(2)
         works_objects = factories.WorksObjectFactory.create_batch(2)
 
-        administrative_entity = models.PermitAdministrativeEntity.objects.create(
-            name="privateEntity", ofs_id=1234,
+        administrative_entity = factories.PermitAdministrativeEntityFactory(
+            name="privateEntity"
         )
         private_works_object_type = models.WorksObjectType.objects.create(
             works_type=works_types[0], works_object=works_objects[0], is_public=False,
@@ -1246,32 +1247,43 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         )
         self.assertNotContains(response, "privateEntity")
 
-    def test_work_type_step_only_show_public_demands_to_standard_user(self,):
+    def test_administrative_entity_step_without_public_requests_is_visible_to_user_with_specific_permissions(
+        self,
+    ):
 
-        works_types = factories.WorksTypeFactory.create_batch(3)
-        works_objects = factories.WorksObjectFactory.create_batch(3)
-        administrative_entity = models.PermitAdministrativeEntity.objects.create(
-            name="privateEntity", ofs_id=1234,
+        see_private_requests_permission = Permission.objects.get(
+            codename="see_private_requests"
+        )
+        self.user.user_permissions.add(see_private_requests_permission)
+        works_types = factories.WorksTypeFactory.create_batch(2)
+        works_objects = factories.WorksObjectFactory.create_batch(2)
+
+        administrative_entity = factories.PermitAdministrativeEntityFactory(
+            name="privateEntity"
         )
         private_works_object_type = models.WorksObjectType.objects.create(
             works_type=works_types[0], works_object=works_objects[0], is_public=False,
         )
         private_works_object_type.administrative_entities.set([administrative_entity])
-
-        public_works_object_type_1 = models.WorksObjectType.objects.create(
-            works_type=works_types[1], works_object=works_objects[1], is_public=True,
+        response = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity",),
         )
-        public_works_object_type_1.administrative_entities.set([administrative_entity])
 
-        public_works_object_type_2 = models.WorksObjectType.objects.create(
-            works_type=works_types[2], works_object=works_objects[2], is_public=True,
+        self.assertContains(response, "privateEntity")
+
+    def test_work_type_step_only_show_public_demands_to_standard_user(self,):
+
+        public_works_object_types = factories.WorksObjectTypeFactory.create_batch(
+            2, is_public=True
         )
-        public_works_object_type_2.administrative_entities.set([administrative_entity])
+        private_works_object_type = factories.WorksObjectTypeFactory(is_public=False)
+        administrative_entity = factories.PermitAdministrativeEntityFactory()
+        administrative_entity.works_object_types.set(
+            public_works_object_types + [private_works_object_type]
+        )
 
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-
-        permit_request.administrative_entity.works_object_types.set(
-            models.WorksObjectType.objects.all()
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor, administrative_entity=administrative_entity
         )
 
         response = self.client.get(
@@ -1286,6 +1298,13 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(public_items_count, 2)
 
     def test_work_type_step_show_public_demands_to_standard_user(self,):
+
+        #     public_works_object_types = factories.WorksObjectTypeFactory.create_batch(2, is_public=True)
+        # private_works_object_type = factories.WorksObjectTypeFactory(is_public=False)
+        # administrative_entity = factories.PermitAdministrativeEntityFactory()
+        # administrative_entity.works_object_types.set(public_works_object_types + [private_works_object_type])
+
+        # permit_request = factories.PermitRequestFactory(author=self.user.permitauthor, administrative_entity=administrative_entity)
 
         works_types = factories.WorksTypeFactory.create_batch(2)
         works_objects = factories.WorksObjectFactory.create_batch(2)

@@ -175,7 +175,7 @@ def get_works_types(administrative_entity, user):
         .distinct()
     )
 
-    if not user.has_perm("see_private_demands"):
+    if not user.has_perm("permits.see_private_requests"):
         queryset = queryset.filter(works_object_types__is_public=True)
 
     return queryset
@@ -192,7 +192,7 @@ def get_works_objects(administrative_entity):
         .distinct()
     )
 
-    if not user.has_perm("see_private_demands"):
+    if not user.has_perm("permits.see_private_requests"):
         queryset = queryset.filter(works_object_types__is_public=True)
 
     return queryset
@@ -209,7 +209,7 @@ def get_administrative_entities(user):
         .distinct()
     )
 
-    if not user.has_perm("see_private_demands"):
+    if not user.has_perm("permits.see_private_requests"):
         queryset = queryset = queryset.filter(works_object_types__is_public=True)
 
     return queryset
@@ -595,7 +595,7 @@ def get_works_objects_step(permit_request, enabled, works_types, user):
     # works type, there won’t be a works type step, so the works object step should have
     # it in the URL
     if permit_request and not works_types:
-        if user.has_perm("see_private_demands"):
+        if user.has_perm("permits.see_private_requests"):
             administrative_entity_works_types = permit_request.administrative_entity.works_object_types.values_list(
                 "works_type", flat=True
             ).distinct()
@@ -1210,12 +1210,12 @@ def get_default_works_object_types(
     `administrative_entity`. `works_types` should be the works types the user has
     selected, if any.
     """
-    if user.has_perm("see_private_demands"):
+    if user.has_perm("permits.see_private_requests"):
         works_object_types = administrative_entity.works_object_types.all()
     else:
         works_object_types = administrative_entity.works_object_types.filter(
             is_public=True
-        ).all()
+        )
 
     if works_types is not None:
         works_object_types = works_object_types.filter(works_type__in=works_types)

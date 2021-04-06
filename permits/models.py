@@ -20,11 +20,9 @@ from simple_history.models import HistoricalRecords
 from . import fields
 
 # public types: for public/restricted features
-PUBLIC_ALL = True
-PUBLIC_RESTRICTED = False
 PUBLIC_TYPE_CHOICES = (
-    (PUBLIC_ALL, _("Visible par tous les utilisateurs")),
-    (PUBLIC_RESTRICTED, _("Visible uniquement par les utilisateur autorisés")),
+    (True, _("Visible par tous les utilisateurs")),
+    (False, _("Visible uniquement par les utilisateur autorisés")),
 )
 
 # Contact types

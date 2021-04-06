@@ -173,7 +173,7 @@ class WorksObjectsForm(forms.Form):
             initial.setdefault(str(type_id), []).append(object_id)
 
         super().__init__(*args, **{**kwargs, "initial": initial})
-        user_has_perm = self.user.has_perm("see_private_demands")
+        user_has_perm = self.user.has_perm("permits.see_private_requests")
         for works_type in works_types:
             queryset = (
                 works_type.works_object_types.filter(
