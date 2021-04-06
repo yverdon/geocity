@@ -322,11 +322,10 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                     },
                 ),
             )
-        # TODO : Gérer l'input type pour les numériques 
+        # TODO : Gérer l'input type pour les numériques
         elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_NUMBER:
             field_instance = field_class(
                 **self.get_field_kwargs(prop),
-                input_formats=[settings.NUMBER_INPUT_FORMAT],
                 widget=forms.NumberInput(
                     attrs={
                         "placeholder": ("ex: " + prop.placeholder)
