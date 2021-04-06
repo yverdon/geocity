@@ -283,7 +283,12 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
             field_instance = field_class(
                 **self.get_field_kwargs(prop),
                 widget=forms.Textarea(
-                    attrs={"rows": 1, "placeholder": ("ex: " + prop.placeholder) if prop.placeholder != "" else ""},
+                    attrs={
+                        "rows": 1,
+                        "placeholder": ("ex: " + prop.placeholder)
+                        if prop.placeholder != ""
+                        else "",
+                    },
                 ),
             )
         elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_ADDRESS:
@@ -291,7 +296,11 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                 **self.get_field_kwargs(prop),
                 widget=AddressWidget(
                     autocomplete_options={"single_address_field": True},
-                    attrs={"placeholder": ("ex: " + prop.placeholder) if prop.placeholder != "" else ""},
+                    attrs={
+                        "placeholder": ("ex: " + prop.placeholder)
+                        if prop.placeholder != ""
+                        else ""
+                    },
                 ),
             )
 
@@ -307,14 +316,22 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                         "minDate": "1900/01/01",
                         "maxDate": "2100/12/31",
                     },
-                    attrs={"placeholder": ("ex: " + prop.placeholder) if prop.placeholder != "" else ""},
+                    attrs={
+                        "placeholder": ("ex: " + prop.placeholder)
+                        if prop.placeholder != ""
+                        else ""
+                    },
                 ),
             )
         else:
             field_instance = field_class(
                 **self.get_field_kwargs(prop),
                 widget=forms.TextInput(
-                    attrs={"placeholder": ("ex: " + prop.placeholder) if prop.placeholder != "" else ""},
+                    attrs={
+                        "placeholder": ("ex: " + prop.placeholder)
+                        if prop.placeholder != ""
+                        else ""
+                    },
                 ),
             )
         return field_instance
