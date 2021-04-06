@@ -181,27 +181,10 @@ def get_works_types(administrative_entity, user):
     return queryset
 
 
-def get_works_objects(administrative_entity):
-    queryset = (
-        models.WorksObject.objects.filter(
-            pk__in=models.WorksObjectType.objects.filter(
-                administrative_entities=administrative_entity
-            ).values_list("works_object_id", flat=True)
-        )
-        .order_by("name")
-        .distinct()
-    )
-
-    if not user.has_perm("permits.see_private_requests"):
-        queryset = queryset.filter(works_object_types__is_public=True)
-
-    return queryset
-
-
 def get_administrative_entities(user):
     queryset = (
         models.PermitAdministrativeEntity.objects.filter(
-            pk__in=models.WorksObjectType.objects.filter(is_public=True,).values_list(
+            pk__in=models.WorksObjectType.objects.values_list(
                 "administrative_entities", flat=True
             ),
         )
@@ -210,7 +193,7 @@ def get_administrative_entities(user):
     )
 
     if not user.has_perm("permits.see_private_requests"):
-        queryset = queryset = queryset.filter(works_object_types__is_public=True)
+        queryset = queryset.filter(works_object_types__is_public=True)
 
     return queryset
 
