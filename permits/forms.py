@@ -322,7 +322,6 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                     },
                 ),
             )
-        # TODO : Gérer l'input type pour les numériques
         elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_NUMBER:
             field_instance = field_class(
                 **self.get_field_kwargs(prop),
