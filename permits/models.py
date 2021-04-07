@@ -546,7 +546,7 @@ class WorksObjectProperty(models.Model):
     )
 
     name = models.CharField(_("nom"), max_length=255)
-    placeholder = models.CharField(_("placeholder"), max_length=255, blank=True)
+    placeholder = models.CharField(_("exemple de donnée à saisir"), max_length=255, blank=True)
     input_type = models.CharField(
         _("type de caractéristique"), max_length=30, choices=INPUT_TYPE_CHOICES
     )
