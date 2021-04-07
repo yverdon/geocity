@@ -115,6 +115,15 @@ _validator-yverdon:admin_
 Validatation role B:
 _eaux-yverdon:admin_
 
+## Permissions
+
+The user belonging to backoffice group can be granted specific permissions:
+- ```see_private_requests```, "Voir les demandes restreintes": allows the user to make requests that are not visible by standard user. Typically during the setup stage of a new form configuration
+- ```amend_permit_request```,"Traiter les demandes de permis": allow the user the process (amend) the requests (fill the backoffice fields), require validation for other departments and print the documents
+- ```validate_permit_request```,"Valider les demandes de permis": allow the user to fill the validation form
+- ```classify_permit_request```,"Classer les demandes de permis" allow the user to accept/reject the requests if validations services have all accepted it. 
+- ```edit_permit_request```, "Éditer les demandes de permis": allow the user to edit de requests filled by another person
+
 ### Generic Docker hints
 
 In case you get and error similar to this: `E: You don't have enough free space in /var/cache/...`,
