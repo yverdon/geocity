@@ -19,6 +19,12 @@ from simple_history.models import HistoricalRecords
 
 from . import fields
 
+# public types: for public/restricted features
+PUBLIC_TYPE_CHOICES = (
+    (True, _("Visible par tous les utilisateurs")),
+    (False, _("Visible uniquement par les utilisateur autorisés")),
+)
+
 # Contact types
 ACTOR_TYPE_OTHER = 0
 ACTOR_TYPE_REQUESTOR = 1
@@ -153,6 +159,9 @@ class PermitAdministrativeEntity(models.Model):
         verbose_name_plural = _(
             "1.1 Configuration de l'entité administrative (commune, organisation)"
         )
+        permissions = [
+            ("see_private_requests", _("Voir les demandes restreintes")),
+        ]
 
     def __str__(self):
         return self.name
@@ -498,6 +507,7 @@ class WorksObjectType(models.Model):
     )
     needs_geometry = models.BooleanField(_("avec géométrie"), default=True)
     needs_date = models.BooleanField(_("avec période de temps"), default=True)
+    is_public = models.BooleanField(_("Public"), default=False)
 
     class Meta:
         verbose_name = _("1.4 Configuration type-objet-entité administrative")

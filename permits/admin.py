@@ -8,8 +8,8 @@ from simple_history.admin import SimpleHistoryAdmin
 from . import forms as permit_forms
 from . import models
 
-admin.site.register(models.WorksType)
 admin.site.register(models.PermitActorType)
+admin.site.register(models.WorksType)
 admin.site.register(models.PermitDepartment)
 admin.site.register(models.PermitRequestValidation)
 admin.site.register(models.GeomLayer)
@@ -45,9 +45,19 @@ def get_works_object_types_field():
 works_object_type_administrative_entities.short_description = _("Communes")
 
 
+class WorksObjectTypeAdminForm(forms.ModelForm):
+    class Meta:
+        model = models.WorksObjectType
+        fields = "__all__"
+        widgets = {
+            "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
+        }
+
+
 class WorksObjectTypeAdmin(admin.ModelAdmin):
-    list_display = ["__str__", works_object_type_administrative_entities]
+    list_display = ["__str__", works_object_type_administrative_entities, "is_public"]
     list_filter = ["administrative_entities"]
+    form = WorksObjectTypeAdminForm
 
     def get_queryset(self, request):
         return (
@@ -113,6 +123,7 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
                     },
                 }
             ),
+            "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
         }
 
     class Media:
