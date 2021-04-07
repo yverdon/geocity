@@ -292,17 +292,27 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_TEXT:
             field_instance = field_class(
                 **self.get_field_kwargs(prop),
-                widget=forms.Textarea(attrs={"rows": 1,}),
+                widget=forms.Textarea(
+                    attrs={
+                        "rows": 1,
+                        "placeholder": ("ex: " + prop.placeholder)
+                        if prop.placeholder != ""
+                        else "",
+                    },
+                ),
             )
         elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_ADDRESS:
-
             field_instance = field_class(
                 **self.get_field_kwargs(prop),
                 widget=AddressWidget(
-                    autocomplete_options={"single_address_field": True}
+                    autocomplete_options={"single_address_field": True},
+                    attrs={
+                        "placeholder": ("ex: " + prop.placeholder)
+                        if prop.placeholder != ""
+                        else ""
+                    },
                 ),
             )
-
         elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_DATE:
             field_instance = field_class(
                 **self.get_field_kwargs(prop),
@@ -315,10 +325,26 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                         "minDate": "1900/01/01",
                         "maxDate": "2100/12/31",
                     },
+                    attrs={
+                        "placeholder": ("ex: " + prop.placeholder)
+                        if prop.placeholder != ""
+                        else ""
+                    },
+                ),
+            )
+        elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_NUMBER:
+            field_instance = field_class(
+                **self.get_field_kwargs(prop),
+                widget=forms.NumberInput(
+                    attrs={
+                        "placeholder": ("ex: " + prop.placeholder)
+                        if prop.placeholder != ""
+                        else ""
+                    },
                 ),
             )
         else:
-            field_instance = field_class(**self.get_field_kwargs(prop),)
+            field_instance = field_class(**self.get_field_kwargs(prop))
         return field_instance
 
     def get_field_kwargs(self, prop):

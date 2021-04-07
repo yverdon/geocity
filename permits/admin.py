@@ -81,7 +81,14 @@ class WorksObjectPropertyForm(forms.ModelForm):
 
     class Meta:
         model = models.WorksObjectProperty
-        fields = ["name", "order", "input_type", "is_mandatory", "works_object_types"]
+        fields = [
+            "name",
+            "placeholder",
+            "order",
+            "input_type",
+            "is_mandatory",
+            "works_object_types",
+        ]
 
 
 class WorksObjectPropertyAdmin(SortableAdminMixin, admin.ModelAdmin):

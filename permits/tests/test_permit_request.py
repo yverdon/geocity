@@ -717,11 +717,12 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
             )
         )
         content = response.content.decode()
-        expected = '<textarea name="properties-{obj_type_id}_{prop_id}" cols="40" rows="1" class="form-control" title="" id="id_properties-{obj_type_id}_{prop_id}">{value}</textarea>'.format(
+        expected = '<textarea name="properties-{obj_type_id}_{prop_id}" cols="40" rows="1" placeholder="ex: {placeholder}" class="form-control" title="" id="id_properties-{obj_type_id}_{prop_id}">{value}</textarea>'.format(
             obj_type_id=works_object_type_choice.works_object_type.pk,
             prop_id=prop.pk,
             prop_name=prop.name,
             value=prop_value.value["val"],
+            placeholder=prop.placeholder,
         )
 
         self.assertInHTML(expected, content)
