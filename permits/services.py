@@ -163,24 +163,39 @@ def get_permit_request_appendices(permit_request):
             yield (works_object_type, prop)
 
 
-def get_works_types(administrative_entity):
-    return models.WorksType.objects.filter(
-        pk__in=models.WorksObjectType.objects.filter(
-            administrative_entities=administrative_entity
-        ).values_list("works_type_id", flat=True)
-    ).order_by("name")
+def get_works_types(administrative_entity, user):
+
+    queryset = (
+        models.WorksType.objects.filter(
+            pk__in=models.WorksObjectType.objects.filter(
+                administrative_entities=administrative_entity
+            ).values_list("works_type_id", flat=True)
+        )
+        .order_by("name")
+        .distinct()
+    )
+
+    if not user.has_perm("permits.see_private_requests"):
+        queryset = queryset.filter(works_object_types__is_public=True)
+
+    return queryset
 
 
-def get_works_objects(administrative_entity):
-    return models.WorksObject.objects.filter(
-        pk__in=models.WorksObjectType.objects.filter(
-            administrative_entities=administrative_entity
-        ).values_list("works_object_id", flat=True)
-    ).order_by("name")
+def get_administrative_entities(user):
+    queryset = (
+        models.PermitAdministrativeEntity.objects.filter(
+            pk__in=models.WorksObjectType.objects.values_list(
+                "administrative_entities", flat=True
+            ),
+        )
+        .order_by("ofs_id", "-name")
+        .distinct()
+    )
 
+    if not user.has_perm("permits.see_private_requests"):
+        return queryset.filter(works_object_types__is_public=True)
 
-def get_administrative_entities():
-    return models.PermitAdministrativeEntity.objects.order_by("ofs_id", "-name")
+    return queryset
 
 
 def get_permit_request_works_types(permit_request):
@@ -314,8 +329,8 @@ def get_property_value(object_property_value):
 
 def get_user_administrative_entities(user):
     return models.PermitAdministrativeEntity.objects.filter(
-        departments__group__in=user.groups.all()
-    )
+        departments__group__in=user.groups.all(),
+    ).order_by("ofs_id", "-name")
 
 
 def get_user_departments(user):
@@ -509,7 +524,12 @@ def get_works_types_step(permit_request, completed):
     # reason to show the step
     if (
         permit_request
-        and len(get_works_types(permit_request.administrative_entity)) <= 1
+        and len(
+            get_works_types(
+                permit_request.administrative_entity, permit_request.author.user
+            )
+        )
+        <= 1
     ):
         return None
 
@@ -525,7 +545,7 @@ def get_works_types_step(permit_request, completed):
     )
 
 
-def get_works_objects_step(permit_request, enabled, works_types):
+def get_works_objects_step(permit_request, enabled, works_types, user):
     # If there are default works objects types it means the object types can be
     # automatically selected and so the step shouldn’t be visible
     if permit_request:
@@ -542,6 +562,7 @@ def get_works_objects_step(permit_request, enabled, works_types):
         if (
             get_default_works_object_types(
                 permit_request.administrative_entity,
+                user,
                 works_types=selected_works_types or None,
             )
             # Also check if the candidates works types would all result in a single
@@ -557,9 +578,18 @@ def get_works_objects_step(permit_request, enabled, works_types):
     # works type, there won’t be a works type step, so the works object step should have
     # it in the URL
     if permit_request and not works_types:
-        administrative_entity_works_types = permit_request.administrative_entity.works_object_types.values_list(
-            "works_type", flat=True
-        ).distinct()
+        if user.has_perm("permits.see_private_requests"):
+            administrative_entity_works_types = permit_request.administrative_entity.works_object_types.values_list(
+                "works_type", flat=True
+            ).distinct()
+        else:
+            administrative_entity_works_types = (
+                permit_request.administrative_entity.works_object_types.filter(
+                    is_public=True
+                )
+                .values_list("works_type", flat=True)
+                .distinct()
+            )
 
         if len(administrative_entity_works_types) == 1:
             works_types = administrative_entity_works_types
@@ -758,6 +788,7 @@ def get_progress_bar_steps(request, permit_request):
             permit_request=permit_request,
             enabled=has_works_objects_types,
             works_types=selected_works_types,
+            user=request.user,
         ),
         models.StepType.PROPERTIES: get_properties_step(
             permit_request=permit_request, enabled=has_works_objects_types
@@ -1154,13 +1185,20 @@ def get_permit_request_amend_custom_properties_by_object_type(permit_request):
         yield (works_object_type, works_object_type.amend_properties.all())
 
 
-def get_default_works_object_types(administrative_entity, works_types=None):
+def get_default_works_object_types(
+    administrative_entity, user, works_types=None,
+):
     """
     Return the `WorksObjectType` that should be automatically selected for the given
     `administrative_entity`. `works_types` should be the works types the user has
     selected, if any.
     """
-    works_object_types = administrative_entity.works_object_types.all()
+    if user.has_perm("permits.see_private_requests"):
+        works_object_types = administrative_entity.works_object_types.all()
+    else:
+        works_object_types = administrative_entity.works_object_types.filter(
+            is_public=True
+        )
 
     if works_types is not None:
         works_object_types = works_object_types.filter(works_type__in=works_types)

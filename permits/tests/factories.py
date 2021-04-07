@@ -238,6 +238,7 @@ class WorksObjectTypeFactory(factory.django.DjangoModelFactory):
 
     works_object = factory.SubFactory(WorksObjectFactory)
     works_type = factory.SubFactory(WorksTypeFactory)
+    is_public = True
 
 
 class WorksObjectTypeChoiceFactory(factory.django.DjangoModelFactory):
