@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0019_private_requests'),
+        ('permits', '0019_add_field_placeholder'),
     ]
 
     operations = [
