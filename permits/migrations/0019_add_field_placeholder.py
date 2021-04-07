@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0017_permit_request_amend_custom_fields'),
+        ('permits', '0018_private_requests.py'),
     ]
 
     operations = [
