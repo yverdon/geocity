@@ -6,7 +6,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import include, path
 from rest_framework import routers
 
-from permits import geoviews
+from permits import api
 from permits import views as permits_views
 
 from . import views
@@ -24,8 +24,9 @@ if settings.ENABLE_2FA:
 # Django-rest Configuration
 
 router = routers.DefaultRouter()
-router.register(r"events", geoviews.PermitRequestGeoTimeViewSet, "events")
-router.register(r"front-config", geoviews.GeocityViewConfigViewSet, "front-config")
+router.register(r"events", api.PermitRequestGeoTimeViewSet, "events")
+router.register(r"front-config", api.GeocityViewConfigViewSet, "front-config")
+router.register(r"permits", api.PermitRequestViewSet, "permits")
 
 
 # Django-configuration
@@ -33,6 +34,7 @@ urlpatterns = [
     path("", permits_views.permit_request_select_administrative_entity),
     path("permit-requests/", include("permits.urls")),
     path("grappelli/", include("grappelli.urls")),  # grappelli URLS
+    path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
 ]
 
 if settings.ENABLE_2FA:
