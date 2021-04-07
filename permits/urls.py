@@ -1,9 +1,8 @@
 from django.urls import include, path
 
-from . import geoviews, views
+from . import api, geoviews, views
 
 app_name = "permits"
-
 
 permit_request_urlpatterns = [
     path(
