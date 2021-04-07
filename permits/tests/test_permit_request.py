@@ -1247,7 +1247,7 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         )
         self.assertNotContains(response, "privateEntity")
 
-    def test_administrative_entity_step_without_public_requests_is_visible_to_user_with_specific_permissions(
+    def test_administrative_entity_step_without_public_requests_is_visible_to_user_with_specific_permission(
         self,
     ):
 
@@ -1271,7 +1271,7 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
 
         self.assertContains(response, "privateEntity")
 
-    def test_work_type_step_only_show_public_demands_to_standard_user(self,):
+    def test_work_type_step_only_show_public_requests_to_standard_user(self,):
 
         public_works_object_types = factories.WorksObjectTypeFactory.create_batch(
             2, is_public=True
@@ -1292,48 +1292,68 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"permit_request_id": permit_request.pk},
             ),
         )
-        public_items_count = str(response.content).count("form-check-label")
-
-        # check that only public works types show up, but not private works types
-        self.assertEqual(public_items_count, 2)
-
-    def test_work_type_step_show_public_demands_to_standard_user(self,):
-
-        #     public_works_object_types = factories.WorksObjectTypeFactory.create_batch(2, is_public=True)
-        # private_works_object_type = factories.WorksObjectTypeFactory(is_public=False)
-        # administrative_entity = factories.PermitAdministrativeEntityFactory()
-        # administrative_entity.works_object_types.set(public_works_object_types + [private_works_object_type])
-
-        # permit_request = factories.PermitRequestFactory(author=self.user.permitauthor, administrative_entity=administrative_entity)
-
-        works_types = factories.WorksTypeFactory.create_batch(2)
-        works_objects = factories.WorksObjectFactory.create_batch(2)
-        administrative_entity = models.PermitAdministrativeEntity.objects.create(
-            name="privateEntity", ofs_id=1234,
+        self.assertEqual(
+            len(get_parser(response.content).select(".form-check-label")), 2
         )
 
-        public_works_object_type_1 = models.WorksObjectType.objects.create(
-            works_type=works_types[0], works_object=works_objects[0], is_public=True,
-        )
-        public_works_object_type_1.administrative_entities.set([administrative_entity])
+    def test_work_type_step_show_private_requests_to_user_with_specific_permission(
+        self,
+    ):
 
-        public_works_object_type_2 = models.WorksObjectType.objects.create(
-            works_type=works_types[1], works_object=works_objects[1], is_public=True,
+        see_private_requests_permission = Permission.objects.get(
+            codename="see_private_requests"
         )
-        public_works_object_type_2.administrative_entities.set([administrative_entity])
+        self.user.user_permissions.add(see_private_requests_permission)
+        public_works_object_types = factories.WorksObjectTypeFactory.create_batch(
+            2, is_public=True
+        )
+        private_works_object_type = factories.WorksObjectTypeFactory(is_public=False)
+        administrative_entity = factories.PermitAdministrativeEntityFactory()
+        administrative_entity.works_object_types.set(
+            public_works_object_types + [private_works_object_type]
+        )
 
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor, administrative_entity=administrative_entity
+        )
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_select_types",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+        self.assertEqual(
+            len(get_parser(response.content).select(".form-check-label")), 3
+        )
+
+    def test_work_type_step_show_public_requests_to_standard_user(self,):
+
+        public_works_object_types = factories.WorksObjectTypeFactory.create_batch(
+            2, is_public=True
+        )
+        private_works_object_type = factories.WorksObjectTypeFactory(is_public=False)
+        administrative_entity = factories.PermitAdministrativeEntityFactory()
+        administrative_entity.works_object_types.set(
+            public_works_object_types + [private_works_object_type]
+        )
+
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor, administrative_entity=administrative_entity
+        )
 
         permit_request.administrative_entity.works_object_types.set(
             models.WorksObjectType.objects.all()
         )
 
         models.WorksObjectTypeChoice.objects.create(
-            permit_request=permit_request, works_object_type=public_works_object_type_1
+            permit_request=permit_request,
+            works_object_type=public_works_object_types[0],
         )
 
         models.WorksObjectTypeChoice.objects.create(
-            permit_request=permit_request, works_object_type=public_works_object_type_2
+            permit_request=permit_request,
+            works_object_type=public_works_object_types[1],
         )
 
         response = self.client.get(
@@ -1341,8 +1361,65 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
                 "permits:permit_request_select_objects",
                 kwargs={"permit_request_id": permit_request.pk},
             )
-            + "?types={}&types={}".format(works_types[0].pk, works_types[1].pk),
+            + "?types={}&types={}".format(
+                public_works_object_types[0].pk, public_works_object_types[1].pk
+            ),
         )
-        public_items_count = str(response.content).count("form-check-label")
+        self.assertEqual(
+            len(get_parser(response.content).select(".form-check-label")), 2
+        )
 
-        self.assertEqual(public_items_count, 2)
+    def test_work_type_step_show_private_requests_to_user_with_specific_permission(
+        self,
+    ):
+
+        see_private_requests_permission = Permission.objects.get(
+            codename="see_private_requests"
+        )
+        self.user.user_permissions.add(see_private_requests_permission)
+
+        public_works_object_types = factories.WorksObjectTypeFactory.create_batch(
+            2, is_public=True
+        )
+        private_works_object_type = factories.WorksObjectTypeFactory(is_public=False)
+        administrative_entity = factories.PermitAdministrativeEntityFactory()
+        administrative_entity.works_object_types.set(
+            public_works_object_types + [private_works_object_type]
+        )
+
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor, administrative_entity=administrative_entity
+        )
+
+        permit_request.administrative_entity.works_object_types.set(
+            models.WorksObjectType.objects.all()
+        )
+
+        models.WorksObjectTypeChoice.objects.create(
+            permit_request=permit_request,
+            works_object_type=public_works_object_types[0],
+        )
+
+        models.WorksObjectTypeChoice.objects.create(
+            permit_request=permit_request,
+            works_object_type=public_works_object_types[1],
+        )
+
+        models.WorksObjectTypeChoice.objects.create(
+            permit_request=permit_request, works_object_type=private_works_object_type
+        )
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_select_objects",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+            + "?types={}&types={}&types={}".format(
+                public_works_object_types[0].pk,
+                public_works_object_types[1].pk,
+                private_works_object_type.pk,
+            ),
+        )
+        self.assertEqual(
+            len(get_parser(response.content).select(".form-check-label")), 3
+        )

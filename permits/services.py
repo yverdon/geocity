@@ -193,7 +193,7 @@ def get_administrative_entities(user):
     )
 
     if not user.has_perm("permits.see_private_requests"):
-        queryset = queryset.filter(works_object_types__is_public=True)
+        return queryset.filter(works_object_types__is_public=True)
 
     return queryset
 
