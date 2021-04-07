@@ -300,6 +300,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                         else "",
                     },
                 ),
+                help_text=prop.help_text if prop.help_text != "" else "",
             )
         elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_ADDRESS:
             field_instance = field_class(
@@ -312,6 +313,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                         else ""
                     },
                 ),
+                help_text=prop.help_text if prop.help_text != "" else "",
             )
         elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_DATE:
             field_instance = field_class(
@@ -331,6 +333,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                         else ""
                     },
                 ),
+                help_text=prop.help_text if prop.help_text != "" else "",
             )
         elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_NUMBER:
             field_instance = field_class(
@@ -342,9 +345,14 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                         else ""
                     },
                 ),
+                help_text=prop.help_text if prop.help_text != "" else "",
             )
         else:
-            field_instance = field_class(**self.get_field_kwargs(prop))
+            field_instance = field_class(
+                **self.get_field_kwargs(prop),
+                help_text=prop.help_text if prop.help_text != "" else "",
+            )
+
         return field_instance
 
     def get_field_kwargs(self, prop):

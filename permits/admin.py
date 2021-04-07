@@ -84,6 +84,7 @@ class WorksObjectPropertyForm(forms.ModelForm):
         fields = [
             "name",
             "placeholder",
+            "help_text",
             "order",
             "input_type",
             "is_mandatory",

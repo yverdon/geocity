@@ -717,15 +717,21 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
             )
         )
         content = response.content.decode()
-        expected = '<textarea name="properties-{obj_type_id}_{prop_id}" cols="40" rows="1" placeholder="ex: {placeholder}" class="form-control" title="" id="id_properties-{obj_type_id}_{prop_id}">{value}</textarea>'.format(
+        expected = '<textarea name="properties-{obj_type_id}_{prop_id}" cols="40" rows="1" placeholder="ex: {placeholder}" class="form-control" title="{help_text}" id="id_properties-{obj_type_id}_{prop_id}">{value}'.format(
             obj_type_id=works_object_type_choice.works_object_type.pk,
             prop_id=prop.pk,
             prop_name=prop.name,
             value=prop_value.value["val"],
             placeholder=prop.placeholder,
+            help_text=prop.help_text,
+        )
+
+        expected_help_text = '<small class="form-text text-muted">{help_text}</small>'.format(
+            help_text=prop.help_text,
         )
 
         self.assertInHTML(expected, content)
+        self.assertInHTML(expected_help_text, content)
 
     def test_properties_step_order_properties_for_existing_permit_request(self):
 

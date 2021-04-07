@@ -559,6 +559,9 @@ class WorksObjectProperty(models.Model):
     placeholder = models.CharField(
         _("exemple de donnée à saisir"), max_length=255, blank=True
     )
+    help_text = models.CharField(
+        _("information complémentaire"), max_length=255, blank=True
+    )
     input_type = models.CharField(
         _("type de caractéristique"), max_length=30, choices=INPUT_TYPE_CHOICES
     )
