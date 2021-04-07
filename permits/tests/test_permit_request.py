@@ -648,31 +648,7 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
             prop_val.property.input_type, models.WorksObjectProperty.INPUT_TYPE_DATE,
         )
 
-    # def test_custom_properties_have_placeholder(self):
-    #     permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-    #     factories.WorksObjectTypeChoiceFactory(permit_request=permit_request)
-    #     permit_request.administrative_entity.works_object_types.set(
-    #         permit_request.works_object_types.all()
-    #     )
-    #     prop.works_object_types.set(permit_request.works_object_types.all())
-
-    #     data = {
-    #         "properties-{}_{}".format(works_object_type.pk, prop.pk): ""
-    #         for works_object_type in permit_request.works_object_types.all()
-    #     }
-
-    #     response = self.client.post(
-    #         reverse(
-    #             "permits:permit_request_properties",
-    #             kwargs={"permit_request_id": permit_request.pk},
-    #         ),
-    #         data=data,
-    #     )
-    #     parser = get_parser(response.content)
-    #     parser.select(".invalid-feedback")
-    #     self.assertEqual(1, len(parser.select(".invalid-feedback")))
-
-
+        
 class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
         super().setUp()
