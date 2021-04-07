@@ -428,7 +428,7 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
 
     if request.method == "POST":
         administrative_entity_form = forms.AdministrativeEntityForm(
-            instance=permit_request, data=request.POST
+            instance=permit_request, data=request.POST, user=request.user
         )
 
         if administrative_entity_form.is_valid():
@@ -437,7 +437,8 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
             )
 
             works_object_types = services.get_default_works_object_types(
-                administrative_entity=permit_request.administrative_entity
+                administrative_entity=permit_request.administrative_entity,
+                user=request.user,
             )
             if works_object_types:
                 services.set_works_object_types(
@@ -454,7 +455,7 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
             )
     else:
         administrative_entity_form = forms.AdministrativeEntityForm(
-            instance=permit_request
+            instance=permit_request, user=request.user
         )
 
     return render(
@@ -484,7 +485,7 @@ def permit_request_select_types(request, permit_request_id):
 
     if request.method == "POST":
         works_types_form = forms.WorksTypesForm(
-            data=request.POST, instance=permit_request
+            data=request.POST, instance=permit_request, user=request.user
         )
         if works_types_form.is_valid():
             redirect_kwargs = {"permit_request_id": permit_request_id}
@@ -497,6 +498,7 @@ def permit_request_select_types(request, permit_request_id):
 
                 works_object_types = services.get_default_works_object_types(
                     administrative_entity=permit_request.administrative_entity,
+                    user=request.user,
                     works_types=selected_works_types,
                 )
                 if works_object_types:
@@ -518,7 +520,9 @@ def permit_request_select_types(request, permit_request_id):
                 + urllib.parse.urlencode({"types": selected_works_types}, doseq=True,)
             )
     else:
-        works_types_form = forms.WorksTypesForm(instance=permit_request)
+        works_types_form = forms.WorksTypesForm(
+            instance=permit_request, user=request.user
+        )
 
     return render(
         request,
@@ -547,7 +551,7 @@ def permit_request_select_objects(request, permit_request_id):
 
     if request.GET:
         works_types_form = forms.WorksTypesForm(
-            data=request.GET, instance=permit_request
+            data=request.GET, instance=permit_request, user=request.user
         )
         if works_types_form.is_valid():
             works_types = works_types_form.cleaned_data["types"]
@@ -572,7 +576,10 @@ def permit_request_select_objects(request, permit_request_id):
 
     if request.method == "POST":
         works_objects_form = forms.WorksObjectsForm(
-            data=request.POST, instance=permit_request, works_types=works_types
+            data=request.POST,
+            instance=permit_request,
+            works_types=works_types,
+            user=request.user,
         )
 
         if works_objects_form.is_valid():
@@ -586,7 +593,7 @@ def permit_request_select_objects(request, permit_request_id):
             )
     else:
         works_objects_form = forms.WorksObjectsForm(
-            instance=permit_request, works_types=works_types
+            instance=permit_request, works_types=works_types, user=request.user
         )
 
     return render(

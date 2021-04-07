@@ -90,6 +90,7 @@ class AdministrativeEntityForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop("instance", None)
+        self.user = kwargs.pop("user", None)
 
         if self.instance:
             initial = {
@@ -106,7 +107,7 @@ class AdministrativeEntityForm(forms.Form):
         self.fields["administrative_entity"].choices = [
             (ofs_id, [(entity.pk, entity.name) for entity in entities])
             for ofs_id, entities in regroup_by_ofs_id(
-                services.get_administrative_entities()
+                services.get_administrative_entities(self.user)
             )
         ]
 
@@ -136,6 +137,7 @@ class WorksTypesForm(forms.Form):
 
     def __init__(self, instance, *args, **kwargs):
         self.instance = instance
+        self.user = kwargs.pop("user", None)
         kwargs["initial"] = (
             {"types": services.get_permit_request_works_types(self.instance)}
             if self.instance
@@ -145,7 +147,7 @@ class WorksTypesForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         self.fields["types"].queryset = services.get_works_types(
-            self.instance.administrative_entity
+            self.instance.administrative_entity, self.user
         )
 
     def save(self):
@@ -162,6 +164,7 @@ class WorksObjectsForm(forms.Form):
 
     def __init__(self, instance, works_types, *args, **kwargs):
         self.instance = instance
+        self.user = kwargs.pop("user", None)
 
         initial = {}
         for type_id, object_id in self.instance.works_object_types.values_list(
@@ -170,14 +173,21 @@ class WorksObjectsForm(forms.Form):
             initial.setdefault(str(type_id), []).append(object_id)
 
         super().__init__(*args, **{**kwargs, "initial": initial})
-
+        user_has_perm = self.user.has_perm("permits.see_private_requests")
         for works_type in works_types:
-            self.fields[str(works_type.pk)] = WorksObjectsTypeChoiceField(
-                queryset=works_type.works_object_types.filter(
-                    administrative_entities=self.instance.administrative_entity
+            queryset = (
+                works_type.works_object_types.filter(
+                    administrative_entities=self.instance.administrative_entity,
                 )
                 .distinct()
-                .select_related("works_object"),
+                .select_related("works_object")
+            )
+
+            if not user_has_perm:
+                queryset = queryset.filter(is_public=True)
+
+            self.fields[str(works_type.pk)] = WorksObjectsTypeChoiceField(
+                queryset=queryset,
                 widget=forms.CheckboxSelectMultiple(),
                 label=works_type.name,
                 error_messages={
@@ -610,6 +620,9 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequest
         fields = ["is_public", "status"]
+        widgets = {
+            "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
+        }
 
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.get("instance", None)
