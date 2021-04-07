@@ -219,7 +219,10 @@ class WorksObjectPropertyFactory(factory.django.DjangoModelFactory):
 
     name = factory.Faker("word")
     placeholder = factory.Faker("word")
+<<<<<<< HEAD
     help_text = factory.Faker("word")
+=======
+>>>>>>> main
     input_type = models.WorksObjectProperty.INPUT_TYPE_TEXT
     order = factory.Sequence(int)
 
