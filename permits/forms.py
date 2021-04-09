@@ -433,7 +433,7 @@ class DjangoAuthUserForm(forms.ModelForm):
         max_length=254,
         label=_("Email"),
         widget=forms.TextInput(
-            attrs={"placeholder": "ex: example@example.com", "required": "required"}
+            attrs={"placeholder": "ex: exemple@exemple.com", "required": "required"}
         ),
     )
     required_css_class = "required"
@@ -554,7 +554,7 @@ class PermitRequestActorForm(forms.ModelForm):
     email = forms.EmailField(
         max_length=100,
         label=_("Email"),
-        widget=forms.TextInput(attrs={"placeholder": "ex: example@example.com",}),
+        widget=forms.TextInput(attrs={"placeholder": "ex: exemple@exemple.com",}),
     )
     address = forms.CharField(
         max_length=100,
