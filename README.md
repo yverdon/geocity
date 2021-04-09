@@ -149,6 +149,10 @@ _Capabilities of the print server_
 http://localhost:9096?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities
 ```
 
+### QGISSERVER LOGS
+
+Use ```docker-compose logs -f --tail=20 qgisserver to see qgisserver``` logs
+
 ## Two factor authentification
 
 You can enable 2FA by setting the variable `ENABLE_2FA` to `true`. Defaults to `false`.
