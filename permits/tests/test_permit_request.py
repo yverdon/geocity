@@ -9,6 +9,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from permits import models, services
+import re
 import uuid
 from django.contrib.auth.models import Permission
 
@@ -47,6 +48,11 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             works_object=self.works_objects[1],
             is_public=True,
         )
+        self.geotime_step_formset_data = {
+            "form-TOTAL_FORMS": ["1"],
+            "form-INITIAL_FORMS": ["0"],
+            "form-MIN_NUM_FORMS": ["0"],
+        }
 
     def test_types_step_submit_redirects_to_objects_with_types_qs(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
@@ -308,6 +314,61 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         self.assertEqual(
             len(get_parser(response.content).select('textarea[name="form-0-geom"]')), 0,
+        )
+
+    def test_geotime_step_date_fields_cannot_be_empty_when_date_is_required(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object_type = factories.WorksObjectTypeFactory(
+            needs_geometry=False, needs_date=True
+        )
+        permit_request.works_object_types.set([works_object_type])
+        self.geotime_step_formset_data.update(
+            {"form-0-starts_at": [""], "form-0-ends_at": [""]}
+        )
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=self.geotime_step_formset_data,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(get_parser(response.content).select("div.invalid-feedback")), 2
+        )
+
+    def test_geotime_step_date_fields_ends_at_must_not_be_before_starts_at(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object_type = factories.WorksObjectTypeFactory(
+            needs_geometry=False, needs_date=True
+        )
+        permit_request.works_object_types.set([works_object_type])
+        self.geotime_step_formset_data.update(
+            {
+                "form-0-starts_at": ["2021-04-17 14:05:00+02:00"],
+                "form-0-ends_at": ["2021-04-16 14:05:00+02:00"],
+            }
+        )
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=self.geotime_step_formset_data,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(
+                get_parser(response.content).findAll(
+                    string=re.compile(
+                        "La date de fin doit être postérieure à la date de début."
+                    )
+                )
+            ),
+            1,
         )
 
     def test_geotime_step_only_geom_fields_appear_when_only_geom_is_required(self):
