@@ -10,6 +10,7 @@ from . import models
 
 admin.site.register(models.PermitActorType)
 admin.site.register(models.WorksType)
+admin.site.register(models.GeometryType)
 admin.site.register(models.PermitDepartment)
 admin.site.register(models.PermitRequestValidation)
 admin.site.register(models.GeomLayer)
@@ -51,6 +52,7 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
         fields = "__all__"
         widgets = {
             "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
+            "needs_geometry": forms.CheckboxSelectMultiple(choices=models.GEOMETRY_TYPE_CHOICES,),
         }
 
 

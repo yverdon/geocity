@@ -25,6 +25,13 @@ PUBLIC_TYPE_CHOICES = (
     (False, _("Visible uniquement par les utilisateur autorisés")),
 )
 
+# geometry types:
+GEOMETRY_TYPE_CHOICES = (
+    (1, _("points")),
+    (2, _("lignes")),
+    (3, _("surfaces")),
+)
+
 # Contact types
 ACTOR_TYPE_OTHER = 0
 ACTOR_TYPE_REQUESTOR = 1
@@ -483,6 +490,18 @@ class WorksType(models.Model):
         return self.name
 
 
+class GeometryType(models.Model):
+    name = models.CharField(_("nom"), max_length=255)
+ 
+    class Meta(object):
+        ordering = ["name"]
+        verbose_name = _("1.7 Configuration du type de géometrie")
+        verbose_name_plural = _("1.7 Configuration des types de géometrie")
+ 
+    def __str__(self):
+        return self.name
+
+
 class WorksObjectType(models.Model):
     """
     Represents a works object for a specific works type.
@@ -505,7 +524,13 @@ class WorksObjectType(models.Model):
         verbose_name=_("communes"),
         related_name="works_object_types",
     )
-    needs_geometry = models.BooleanField(_("avec géométrie"), default=True)
+    geometry_types = models.ManyToManyField(
+        GeometryType,
+        blank=True,
+        verbose_name=_("types de géométrie"),
+        related_name="works_object_types",
+    )
+    needs_geometry = models.BooleanField(_("avec géométrie"), default=True) # TO DELETE 
     needs_date = models.BooleanField(_("avec période de temps"), default=True)
     is_public = models.BooleanField(_("Public"), default=False)
 
