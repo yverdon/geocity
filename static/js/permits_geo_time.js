@@ -31,9 +31,12 @@
       let newNode = this.emptyFormNode.children[0].cloneNode(true);
       let newNodeId = parseInt(this.totalFormsInputNode.value);
       newNode.innerHTML = newNode.innerHTML.replace(/__prefix__/g, newNodeId);
+      let geometryWidgetNode = newNode.querySelector("[data-geometry-widget]");
 
       // Flag the widget to be initialized by the geometry widget manager
-      newNode.querySelector("[data-geometry-widget]").dataset.initialize = "1";
+      if (geometryWidgetNode !== null) {
+        geometryWidgetNode.dataset.initialize = "1";
+      }
       // Set the correct form number to appear in the form title
       newNode.querySelector("[data-geo-time-role='formNumber']").textContent = newNodeId + 1;
 
@@ -63,7 +66,9 @@
       jQuery(collapseNode).collapse("show");
 
       // Initialize `geometryWidget` on the newly created element
-      window.geometryWidgetManager.rebind();
+      if (window.geometryWidgetManager) {
+        window.geometryWidgetManager.rebind();
+      }
 
       this.totalFormsInputNode.value++;
     }
@@ -95,7 +100,7 @@
 
         elementId = geometryWidgetNode.attributes.id.value;
 
-        if (elementId && elementId in window.geometryWidgetManager.boundNodes) {
+        if (elementId && window.geometryWidgetManager && elementId in window.geometryWidgetManager.boundNodes) {
           window.geometryWidgetManager.boundNodes[elementId].map.updateSize();
         }
       });
