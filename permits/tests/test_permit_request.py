@@ -1,17 +1,16 @@
 # TODO split this file into multiple files
 import urllib.parse
+import uuid
 from datetime import date
 
 from django.conf import settings
+from django.contrib.auth.models import Permission
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from permits import models, services
-import re
-import uuid
-from django.contrib.auth.models import Permission
 
 from . import factories
 from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_parser
@@ -334,8 +333,11 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            len(get_parser(response.content).select("div.invalid-feedback")), 2
+        self.assertFormsetError(
+            response, "formset", 0, "starts_at", "Ce champ est obligatoire.",
+        )
+        self.assertFormsetError(
+            response, "formset", 0, "ends_at", "Ce champ est obligatoire.",
         )
 
     def test_geotime_step_date_fields_ends_at_must_not_be_before_starts_at(self):
@@ -360,15 +362,12 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            len(
-                get_parser(response.content).findAll(
-                    string=re.compile(
-                        "La date de fin doit être postérieure à la date de début."
-                    )
-                )
-            ),
-            1,
+        self.assertFormsetError(
+            response,
+            "formset",
+            0,
+            None,
+            "La date de fin doit être postérieure à la date de début.",
         )
 
     def test_geotime_step_only_geom_fields_appear_when_only_geom_is_required(self):
