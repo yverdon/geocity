@@ -35,7 +35,6 @@ def get_works_object_type_choices(permit_request):
         .prefetch_related("works_object_type__properties")
     )
 
-
 @transaction.atomic
 def set_object_property_value(permit_request, object_type, prop, value):
     """

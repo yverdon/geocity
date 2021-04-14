@@ -860,6 +860,11 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             if works_object_type_choice.works_object_type.works_object.wms_layers != ""
         ]
 
+        works_object_geometry_types = (
+            permit_request.works_object_types.all()
+            .select_related("geometry_type")
+        )
+
         options = {
             "administrative_entity_url": reverse(
                 "permits:administrative_entities_geojson",
@@ -879,6 +884,9 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             "default_zoom": 10,
             "display_raw": False,
             "edit_geom": True,
+            "edit_dot": True if True in works_object_geometry_types.values_list('geometry_type__dot', flat=True) else False,
+            "edit_line": True if True in works_object_geometry_types.values_list('geometry_type__line', flat=True) else False,
+            "edit_surface": True if True in works_object_geometry_types.values_list('geometry_type__surface', flat=True) else False,
             "min_zoom": 5,
             "wmts_capabilities_url": settings.WMTS_GETCAP,
             "wmts_layer": settings.WMTS_LAYER,

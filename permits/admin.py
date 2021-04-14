@@ -10,7 +10,6 @@ from . import models
 
 admin.site.register(models.PermitActorType)
 admin.site.register(models.WorksType)
-admin.site.register(models.GeometryType)
 admin.site.register(models.PermitDepartment)
 admin.site.register(models.PermitRequestValidation)
 admin.site.register(models.GeomLayer)
@@ -47,13 +46,23 @@ works_object_type_administrative_entities.short_description = _("Communes")
 
 
 class WorksObjectTypeAdminForm(forms.ModelForm):
+    # list_display = ["get_dot"]
+    # list_display = ["geometry_type", "the_dot"]
     class Meta:
         model = models.WorksObjectType
         fields = "__all__"
+        # fields = ('get_dot',)
+        # fields = ('geometry_type')
+        # inlines = [geometry_type]
         widgets = {
             "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
-            "needs_geometry": forms.CheckboxSelectMultiple(choices=models.GEOMETRY_TYPE_CHOICES,),
+            # "geometry_type": forms.RadioSelect(choices={geometry_type.get_dot, geometry_type.get_line}),
+            # "geometry_type": forms.CheckboxSelectMultiple(choices=models.GEOMETRY_TYPE_CHOICES,),
         }
+        # row_attrs = {"geometry_type": lambda record: GeometryType.base_columns.keys()}
+
+    # def the_dot(self, obj):
+    #      return obj.geometry_type.dot
 
 
 class WorksObjectTypeAdmin(admin.ModelAdmin):

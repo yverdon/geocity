@@ -25,12 +25,11 @@ PUBLIC_TYPE_CHOICES = (
     (False, _("Visible uniquement par les utilisateur autorisés")),
 )
 
-# geometry types:
-GEOMETRY_TYPE_CHOICES = (
-    (1, _("points")),
-    (2, _("lignes")),
-    (3, _("surfaces")),
-)
+# Geometry types
+# GEOMETRY_TYPE_CHOICES = (
+#     (True, _("points")),
+#     (False, _("lignes")),
+# )
 
 # Contact types
 ACTOR_TYPE_OTHER = 0
@@ -491,15 +490,9 @@ class WorksType(models.Model):
 
 
 class GeometryType(models.Model):
-    name = models.CharField(_("nom"), max_length=255)
- 
-    class Meta(object):
-        ordering = ["name"]
-        verbose_name = _("1.7 Configuration du type de géometrie")
-        verbose_name_plural = _("1.7 Configuration des types de géometrie")
- 
-    def __str__(self):
-        return self.name
+    dot = models.BooleanField(_("point"), default=True)
+    line = models.BooleanField(_("ligne"), default=True)
+    surface = models.BooleanField(_("surface"), default=True)
 
 
 class WorksObjectType(models.Model):
@@ -524,15 +517,17 @@ class WorksObjectType(models.Model):
         verbose_name=_("communes"),
         related_name="works_object_types",
     )
-    geometry_types = models.ManyToManyField(
-        GeometryType,
-        blank=True,
-        verbose_name=_("types de géométrie"),
+    geometry_type = models.ForeignKey(
+        "GeometryType", 
+        on_delete=models.CASCADE,
+        verbose_name=_("type de géometrie"),
         related_name="works_object_types",
     )
     needs_geometry = models.BooleanField(_("avec géométrie"), default=True) # TO DELETE 
     needs_date = models.BooleanField(_("avec période de temps"), default=True)
     is_public = models.BooleanField(_("Public"), default=False)
+
+    # list_display = ('get_dot', 'get_line', 'get_surface')
 
     class Meta:
         verbose_name = _("1.4 Configuration type-objet-entité administrative")
@@ -541,6 +536,15 @@ class WorksObjectType(models.Model):
 
     def __str__(self):
         return "{} ({})".format(self.works_object.name, self.works_type.name)
+
+    def get_dot(self):
+        return self.geometry_type.dot
+
+    def get_line(self):
+        return self.geometry_type.line
+
+    def get_surface(self):
+        return self.geometry_type.surface
 
 
 class WorksObject(models.Model):

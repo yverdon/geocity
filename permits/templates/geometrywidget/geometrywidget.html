@@ -5,7 +5,7 @@
 {% load permits_extras %}
 
 <div id="geometry-widget-{{ id }}" data-initialize="{% if "__prefix__" in id %}0{% else %}1{% endif %}" data-map-target="{{ id }}_map" data-options="{{ options|json }}" data-geometry-widget >
-  {% if options.edit_geom %}
+  {% if options.edit_dot or options.edit_line or options.edit_surface %}
     <div>
       <button type="button" class="btn btn-outline-warning" title="Cliquer dans la carte pour ajouter des dessins"
          role="button" data-action="enableDrawing">
@@ -25,24 +25,30 @@
       </div>
     </div>
     <hr>
-    <div data-action="editPoints" class="form-check form-check-inline">
-      <label class="form-check-label no-wildcard" title="Cliquer pour ajouter un point">
-        <input class="form-check-input" title="Cliquer pour ajouter un point" type="radio" name="inlineRadioOptions" checked data-action="setDrawInteraction" data-interaction-type="MultiPoint">
-        Points<img src="{% static 'images/geometrywidget/points.svg'%}" height=30>
-      </label>
-    </div>
-    <div data-action="editLines" class="form-check form-check-inline">
-      <label class="form-check-label no-wildcard" title="Double clique pour terminer la construction">
-        <input class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions" data-action="setDrawInteraction" data-interaction-type="MultiLineString">
-        Lignes<img src="{% static 'images/geometrywidget/polyline.svg'%}" height=30>
-      </label>
-    </div>
-    <div data-action="editPolygons" class="form-check form-check-inline">
-      <label class="form-check-label no-wildcard" title="Double clique pour terminer la construction">
-        <input class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions" data-action="setDrawInteraction" data-interaction-type="MultiPolygon">
-        Surfaces<img src="{% static 'images/geometrywidget/polygon.svg'%}" height=30>
-      </label>
-    </div>
+    {% if options.edit_dot %}
+      <div data-action="editPoints" class="form-check form-check-inline">
+        <label class="form-check-label no-wildcard" title="Cliquer pour ajouter un point">
+          <input class="form-check-input" title="Cliquer pour ajouter un point" type="radio" name="inlineRadioOptions" checked data-action="setDrawInteraction" data-interaction-type="MultiPoint">
+          Points<img src="{% static 'images/geometrywidget/points.svg'%}" height=30>
+        </label>
+      </div>
+    {% endif %}
+    {% if options.edit_line %}
+      <div data-action="editLines" class="form-check form-check-inline">
+        <label class="form-check-label no-wildcard" title="Double clique pour terminer la construction">
+          <input class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions" data-action="setDrawInteraction" data-interaction-type="MultiLineString">
+          Lignes<img src="{% static 'images/geometrywidget/polyline.svg'%}" height=30>
+        </label>
+      </div>
+    {% endif %}
+    {% if options.edit_surface %}
+      <div data-action="editPolygons" class="form-check form-check-inline">
+        <label class="form-check-label no-wildcard" title="Double clique pour terminer la construction">
+          <input class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions" data-action="setDrawInteraction" data-interaction-type="MultiPolygon">
+          Surfaces<img src="{% static 'images/geometrywidget/polygon.svg'%}" height=30>
+        </label>
+      </div>
+    {% endif %}
     <a data-action="setPointManual" class="btn btn-outline-primary" data-toggle="collapse" href="#manual-coordinates-{{ id }}" role="button" aria-expanded="false" aria-controls="manual-coordinates">
       Saisir des coordonnées manuellement
     </a>
