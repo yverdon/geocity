@@ -115,12 +115,6 @@ class PermitAdministrativeEntity(models.Model):
     ofs_id = models.PositiveIntegerField(_("ofs_id"))
     link = models.URLField(_("Lien"), max_length=200, blank=True)
     archive_link = models.URLField(_("Archives externes"), max_length=1024, blank=True)
-    legal_document = fields.AministrativeEntityFileField(
-        _("Directive"), blank=True, upload_to="administrative_entity_files/"
-    )
-    general_informations = models.CharField(
-        _("Informations"), blank=True, max_length=1024,
-    )
     link = models.URLField(_("Lien"), max_length=200, blank=True)
     logo_main = fields.AministrativeEntityFileField(
         _("Logo principal"), blank=True, upload_to="administrative_entity_files/"

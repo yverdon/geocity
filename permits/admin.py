@@ -154,7 +154,6 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
         fields = "__all__"
         exclude = ["enabled_status"]
         widgets = {
-            "general_informations": forms.Textarea(attrs={"rows": 5,}),
             "geom": permit_forms.GeometryWidget(
                 attrs={
                     "options": {

@@ -10,15 +10,6 @@
     <h3>Directives et informations</h3>
     {% for item in administrative_entities %}
       <h4>{{ item.name }}</h4>
-      <h5>Informations</h5>
-      <p>{{ item.general_informations }}</p>
-      {% if item.legal_document %}
-      <h5>Documents</h5>
-      <p>
-      <a href="{{item.legal_document.url}}" target="_blank">{% trans 'Télécharger les directives PDF' %}</a>
-      </p>
-      {% endif %}
-      <hr>
     {% endfor %}
   </div>
 {% endblock %}
