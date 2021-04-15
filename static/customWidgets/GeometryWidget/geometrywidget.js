@@ -522,9 +522,10 @@
 
     this.map.addInteraction(this.interactions.modify);
     this.map.addInteraction(this.interactions.select);
-    if (this.options.geometry_db_type == "GeometryCollection") {
-      this.setDrawInteraction("MultiPoint");
-    } else {
+    
+    // We don't need default DrawInteraction anymore, users are always using the default one instead of picking the best for their case
+    // If you want to put back the default DrawInteraction, add an else and add this line -> this.setDrawInteraction("MultiPoint");
+    if (!this.options.geometry_db_type == "GeometryCollection") {
       this.setDrawInteraction(this.options.geometry_db_type);
     }
     this.map.on("pointermove", function (evt) {
