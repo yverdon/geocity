@@ -2,8 +2,8 @@ import enum
 import itertools
 import os
 import urllib
-
 from collections import defaultdict
+
 from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -1264,3 +1264,12 @@ def get_amend_custom_properties_values(permit_request):
         "works_object_type_choice__works_object_type",
         "property",
     )
+
+
+def get_permit_request_directives(permit_request):
+    return [
+        (obj.directive, obj.directive_description, obj.additional_information)
+        for obj in permit_request.works_object_types.exclude(
+            directive="", directive_description="", additional_information=""
+        )
+    ]

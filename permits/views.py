@@ -905,9 +905,7 @@ def permit_request_submit(request, permit_request_id):
         "permits/permit_request_submit.html",
         {
             "permit_request": permit_request,
-            "legal_document_exists": os.path.exists(
-                permit_request.administrative_entity.legal_document.path
-            ),
+            "directives": services.get_permit_request_directives(permit_request),
             "incomplete_steps": incomplete_steps,
             **progress_bar_context(
                 request=request,

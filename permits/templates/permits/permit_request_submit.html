@@ -25,21 +25,18 @@
     {% if incomplete_steps %}
       <a class="btn btn-primary" href="{{ incomplete_steps|first }}">{% trans "Renseigner les informations manquantes" %}</a>
     {% else %}
-    {% if legal_document_exists or permit_request.administrative_entity.general_informations%}
+      {% if directives %}
         <div id="legal-infos">
-          {% if legal_document_exists %}
-          <h5>Merci de prendre connaissance des directives ci-dessous</h5>
-          <p>
-            <b>Directives</b>
-              <a href="{{permit_request.administrative_entity.legal_document.url}}" target="_blank">{% trans 'Télécharger le PDF' %}</a>
-          </p>
-          {% endif %}
-          {% if permit_request.administrative_entity.general_informations %}
-                <b>Autres informations</b><br><br>
-                {{ permit_request.administrative_entity.general_informations }}
+          <h5>{% trans "Les directives ci-dessous font partie intégrante des conditions de l’octroi de la demande" %}</h5>
+          {% for directive_file, directive_description, additional_information in directives %}
+            <div{% if not forloop.last %} class="mb-3"{% endif %}>
+              {% if directive_file and directive_description %}
+                {{ directive_description }} - {% if directive_file %}<a href="{{ directive_file.url }}" target="_blank">{% trans "Télécharger le fichier" %}</a>{% endif %}<br>
+              {% endif %}
+              {{ additional_information }}
             </div>
-            <hr>
-          {% endif %}
+          {% endfor %}
+        </div>
       {% endif %}  
       {% if previous_step.url %}
         <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
