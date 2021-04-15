@@ -1084,15 +1084,3 @@ def genericauthorview(request, pk):
         form.fields[field].disabled = True
 
     return render(request, "permits/permit_request_author.html", {"form": form})
-
-
-@login_required
-def administrative_infos(request):
-
-    administrative_entities = models.PermitAdministrativeEntity.objects.all()
-
-    return render(
-        request,
-        "permits/administrative_infos.html",
-        {"administrative_entities": administrative_entities},
-    )
