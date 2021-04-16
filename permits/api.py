@@ -99,7 +99,7 @@ class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
         2.- /rest/permits/?works-object-type=1&status=0
     """
 
-    serializer_class = serializers.PermitRequestGeoTimeSerializer
+    serializer_class = serializers.PermitRequestPrintSerializer
 
     def get_queryset(self):
         """
