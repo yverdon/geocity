@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
 from . import models
+from .geoservices import get_intersected_geometries
 from .services import (
     get_permit_request_amend_custom_properties,
     get_permit_request_properties,
@@ -13,9 +14,6 @@ class PermitAdministrativeEntitySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.PermitAdministrativeEntity
         fields = ("name",)
-
-    def to_representation(self, value):
-        return value.name
 
 
 class MetaTypesField(serializers.RelatedField):
@@ -39,6 +37,7 @@ class PermitRequestSerializer(serializers.ModelSerializer):
             "administrative_entity",
             "works_object_types",
             "creditor_type",
+            "geo_time",
             "meta_types",
         )
 
@@ -54,12 +53,14 @@ class PermitRequestAmendPropertyValueSerializer(serializers.RelatedField):
         props = models.PermitRequestAmendPropertyValue.objects.filter(
             works_object_type_choice__permit_request=value,
             works_object_type_choice__works_object_type__in=works_object_types,
-        ).values("property__name", "value", "works_object_type_choice__works_object_type__id")
+        ).values(
+            "property__name", "value", "works_object_type_choice__works_object_type__id"
+        )
 
         return {
             slugify(
                 f"{prop['works_object_type_choice__works_object_type__id']}-{prop['property__name']}"
-            ): prop['value']
+            ): prop["value"]
             for prop in props
         }
 
@@ -74,7 +75,11 @@ class WorksObjectPropertyValueSerializer(serializers.RelatedField):
         props = models.WorksObjectPropertyValue.objects.filter(
             works_object_type_choice__permit_request=value,
             works_object_type_choice__works_object_type__in=works_object_types,
-        ).values("property__name", "value__val", "works_object_type_choice__works_object_type__id")
+        ).values(
+            "property__name",
+            "value__val",
+            "works_object_type_choice__works_object_type__id",
+        )
 
         return {
             slugify(
@@ -106,6 +111,29 @@ class PermitRequestActorSerializer(serializers.RelatedField):
 
 class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
 
+    permit_request = PermitRequestSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = models.PermitRequestGeoTime
+        geo_field = "geom"
+        fields = (
+            "permit_request",
+            "starts_at",
+            "ends_at",
+            "comment",
+            "external_link",
+        )
+
+
+class GeomLayerSerializer(serializers.RelatedField):
+    def to_representation(self, value):
+        intersected_geometries = get_intersected_geometries(value)
+
+        return [ig for ig in intersected_geometries.split("<br>") if ig is not ""]
+
+
+class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
+
     PermitRequest = PermitRequestSerializer(
         source="permit_request", many=False, read_only=True
     )
@@ -118,6 +146,7 @@ class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
     PermitRequestActor = PermitRequestActorSerializer(
         source="permit_request", many=False, read_only=True
     )
+    GeomLayer = GeomLayerSerializer(source="permit_request", many=False, read_only=True)
 
     class Meta:
         model = models.PermitRequestGeoTime
@@ -131,10 +160,12 @@ class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
             "PermitRequestAmendPropertyValue",
             "WorksObjectPropertyValue",
             "PermitRequestActor",
+            "GeomLayer",
         )
 
     def to_representation(self, value):
         rep = super().to_representation(value)
+
         related_fields_to_treat = (
             "PermitRequest",
             "PermitRequestAmendPropertyValue",
@@ -152,9 +183,7 @@ class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
 
         # Prefix the properties base fields except the geom (geo_field)
         base_fields = (
-            set(self.fields.fields.keys())
-            - set(related_fields_to_treat)
-            - set(["geom"])
+            set(self.fields.fields.keys()) - set(related_fields_to_treat) - {"geom"}
         )
         for field in base_fields:
             rep["properties"][f"PermitRequestGeoTime-{field}"] = rep["properties"][
