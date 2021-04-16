@@ -54,12 +54,12 @@ class PermitRequestAmendPropertyValueSerializer(serializers.RelatedField):
         props = models.PermitRequestAmendPropertyValue.objects.filter(
             works_object_type_choice__permit_request=value,
             works_object_type_choice__works_object_type__in=works_object_types,
-        ).prefetch_related("works_object_type_choice")
+        ).values("property__name", "value", "works_object_type_choice__works_object_type__id")
 
         return {
             slugify(
-                f"{prop.works_object_type_choice.works_object_type.id}-{prop.property.name}"
-            ): prop.value
+                f"{prop['works_object_type_choice__works_object_type__id']}-{prop['property__name']}"
+            ): prop['value']
             for prop in props
         }
 
@@ -74,12 +74,12 @@ class WorksObjectPropertyValueSerializer(serializers.RelatedField):
         props = models.WorksObjectPropertyValue.objects.filter(
             works_object_type_choice__permit_request=value,
             works_object_type_choice__works_object_type__in=works_object_types,
-        ).prefetch_related("works_object_type_choice")
+        ).values("property__name", "value__val", "works_object_type_choice__works_object_type__id")
 
         return {
             slugify(
-                f"{prop.works_object_type_choice.works_object_type.id}-{prop.property.name}"
-            ): prop.value["val"]
+                f"{prop['works_object_type_choice__works_object_type__id']}-{prop['property__name']}"
+            ): prop["value__val"]
             for prop in props
         }
 
