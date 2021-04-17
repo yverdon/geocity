@@ -3,7 +3,6 @@ from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
 from . import models
-from .geoservices import get_intersected_geometries
 from .services import (
     get_permit_request_amend_custom_properties,
     get_permit_request_properties,
@@ -37,7 +36,7 @@ class PermitRequestSerializer(serializers.ModelSerializer):
             "administrative_entity",
             "works_object_types",
             "creditor_type",
-            "geo_time",
+            "intersected_geometries",
             "meta_types",
         )
 
@@ -125,24 +124,6 @@ class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
         )
 
 
-class IntersectedGeometriesSerializer(serializers.RelatedField):
-    def to_representation(self, value):
-        intersected_geometries = {}
-        if value.geo_time:
-            try:
-                intersected_geometries = {
-                    i: ig
-                    for i, ig in enumerate(
-                        get_intersected_geometries(value).split("<br>"), 1
-                    )
-                    if ig is not ""
-                }
-            except TypeError:
-                pass
-
-        return intersected_geometries
-
-
 class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
 
     PermitRequest = PermitRequestSerializer(
@@ -155,9 +136,6 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
         source="permit_request", many=False, read_only=True
     )
     PermitRequestActor = PermitRequestActorSerializer(
-        source="permit_request", many=False, read_only=True
-    )
-    GeomLayer = IntersectedGeometriesSerializer(
         source="permit_request", many=False, read_only=True
     )
 
@@ -173,18 +151,19 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
             "PermitRequestAmendPropertyValue",
             "WorksObjectPropertyValue",
             "PermitRequestActor",
-            "GeomLayer",
         )
 
     def to_representation(self, value):
         rep = super().to_representation(value)
+
+        if rep["geometry"] is None:
+            rep["geometry"] = {"type": "Point", "coordinates": []}
 
         related_fields_to_treat = (
             "PermitRequest",
             "PermitRequestAmendPropertyValue",
             "WorksObjectPropertyValue",
             "PermitRequestActor",
-            "GeomLayer",
         )
 
         rep["properties"] = dict(rep["properties"])
