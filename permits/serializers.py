@@ -125,11 +125,22 @@ class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
         )
 
 
-class GeomLayerSerializer(serializers.RelatedField):
+class IntersectedGeometriesSerializer(serializers.RelatedField):
     def to_representation(self, value):
-        intersected_geometries = get_intersected_geometries(value)
+        intersected_geometries = {}
+        if value.geo_time:
+            try:
+                intersected_geometries = {
+                    i: ig
+                    for i, ig in enumerate(
+                        get_intersected_geometries(value).split("<br>"), 1
+                    )
+                    if ig is not ""
+                }
+            except TypeError:
+                pass
 
-        return [ig for ig in intersected_geometries.split("<br>") if ig is not ""]
+        return intersected_geometries
 
 
 class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
@@ -146,7 +157,9 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
     PermitRequestActor = PermitRequestActorSerializer(
         source="permit_request", many=False, read_only=True
     )
-    GeomLayer = GeomLayerSerializer(source="permit_request", many=False, read_only=True)
+    GeomLayer = IntersectedGeometriesSerializer(
+        source="permit_request", many=False, read_only=True
+    )
 
     class Meta:
         model = models.PermitRequestGeoTime
@@ -171,6 +184,7 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
             "PermitRequestAmendPropertyValue",
             "WorksObjectPropertyValue",
             "PermitRequestActor",
+            "GeomLayer",
         )
 
         rep["properties"] = dict(rep["properties"])
