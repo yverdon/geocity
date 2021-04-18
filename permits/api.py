@@ -113,25 +113,29 @@ class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
 
         base_filter = Q()
         if work_objects_type:
-            base_filter &= Q(permit_request__works_object_types=work_objects_type)
+            base_filter &= Q(works_object_types=work_objects_type)
         if status:
-            base_filter &= Q(permit_request__status=status)
+            base_filter &= Q(status=status)
         if permitrequest_id:
-            base_filter &= Q(permit_request__pk=permitrequest_id)
+            base_filter &= Q(pk=permitrequest_id)
 
         works_object_types_prefetch = Prefetch(
-            "permit_request__works_object_types",
+            "works_object_types",
             queryset=models.WorksObjectType.objects.select_related("works_type"),
+        )
+        geotime_prefetch = Prefetch(
+            "geo_time", queryset=models.PermitRequestGeoTime.objects.only("geom")
         )
 
         qs = (
-            models.PermitRequestGeoTime.objects.filter(base_filter)
+            models.PermitRequest.objects.filter(base_filter)
             .filter(
-                Q(permit_request__in=services.get_permit_requests_list_for_user(user))
-                | Q(permit_request__is_public=True)
+                Q(id__in=services.get_permit_requests_list_for_user(user))
+                | Q(is_public=True)
             )
             .prefetch_related(works_object_types_prefetch)
-            .select_related("permit_request__administrative_entity")
+            .prefetch_related(geotime_prefetch)
+            .select_related("administrative_entity")
         )
 
         return qs

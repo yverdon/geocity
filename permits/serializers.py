@@ -22,7 +22,6 @@ class MetaTypesField(serializers.RelatedField):
 
 
 class PermitRequestSerializer(serializers.ModelSerializer):
-
     administrative_entity = PermitAdministrativeEntitySerializer(
         many=False, read_only=True
     )
@@ -41,7 +40,7 @@ class PermitRequestSerializer(serializers.ModelSerializer):
         )
 
 
-class PermitRequestAmendPropertyValueSerializer(serializers.RelatedField):
+class PermitRequestAmendPropertyValueSerializer(serializers.Serializer):
     def to_representation(self, value):
         works_object_types = [
             works_object_type
@@ -64,7 +63,7 @@ class PermitRequestAmendPropertyValueSerializer(serializers.RelatedField):
         }
 
 
-class WorksObjectPropertyValueSerializer(serializers.RelatedField):
+class WorksObjectPropertyValueSerializer(serializers.Serializer):
     def to_representation(self, value):
         works_object_types = [
             works_object_type
@@ -94,7 +93,7 @@ class PermitActorSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class PermitRequestActorSerializer(serializers.RelatedField):
+class PermitRequestActorSerializer(serializers.Serializer):
     def to_representation(self, value):
         actors = models.PermitRequestActor.objects.filter(
             permit_request=value
@@ -109,7 +108,6 @@ class PermitRequestActorSerializer(serializers.RelatedField):
 
 
 class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
-
     permit_request = PermitRequestSerializer(many=False, read_only=True)
 
     class Meta:
@@ -124,64 +122,79 @@ class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
         )
 
 
-class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
+class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
+    def to_representation(self, value):
 
-    PermitRequest = PermitRequestSerializer(
-        source="permit_request", many=False, read_only=True
-    )
+        geotime_qs = models.PermitRequestGeoTime.objects.filter(
+            permit_request_id=value.id
+        )
+
+        result = [
+            serialized_geotime.data
+            for serialized_geotime in [
+                PermitRequestGeoTimeSerializer(geotime, many=False, read_only=True)
+                for geotime in geotime_qs
+            ]
+        ]
+        return result
+
+
+class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
+    PermitRequest = PermitRequestSerializer(source="*", many=False, read_only=True)
     WorksObjectPropertyValue = WorksObjectPropertyValueSerializer(
-        source="permit_request", many=False, read_only=True
+        source="*", many=False, read_only=True
     )
     PermitRequestAmendPropertyValue = PermitRequestAmendPropertyValueSerializer(
-        source="permit_request", many=False, read_only=True
+        source="*", many=False, read_only=True
     )
     PermitRequestActor = PermitRequestActorSerializer(
-        source="permit_request", many=False, read_only=True
+        source="*", many=False, read_only=True
     )
+    Geo = PermitRequestGeoTimeGeoJSONSerializer(source="*", many=False, read_only=True)
 
     class Meta:
-        model = models.PermitRequestGeoTime
-        geo_field = "geom"
+        model = models.PermitRequest
+        geo_field = "geo_time"
         fields = (
+            "PermitRequest",
+            "PermitRequestAmendPropertyValue",
+            "WorksObjectPropertyValue",
+            "PermitRequestActor",
+            "Geo",
+        )
+
+    def to_representation(self, value):
+        geotime_fields_to_process = (
             "starts_at",
             "ends_at",
             "comment",
             "external_link",
-            "PermitRequest",
-            "PermitRequestAmendPropertyValue",
-            "WorksObjectPropertyValue",
-            "PermitRequestActor",
         )
 
-    def to_representation(self, value):
+        related_fields_to_process = set(self.fields.fields.keys()) - {"Geo", "geo_time"}
+
         rep = super().to_representation(value)
+        rep = dict(rep)
 
-        if rep["geometry"] is None:
+        if not rep["geometry"]:
             rep["geometry"] = {"type": "Point", "coordinates": []}
-
-        related_fields_to_treat = (
-            "PermitRequest",
-            "PermitRequestAmendPropertyValue",
-            "WorksObjectPropertyValue",
-            "PermitRequestActor",
-        )
-
-        rep["properties"] = dict(rep["properties"])
+        else:
+            rep["geometry"] = rep["properties"]["Geo"][0]["geometry"]
+            for field in geotime_fields_to_process:
+                try:
+                    rep["properties"][f"PermitRequestGeoTime-{field}"] = rep[
+                        "properties"
+                    ]["Geo"][0]["properties"][field]
+                except KeyError:
+                    rep["properties"][f"PermitRequestGeoTime-{field}"] = None
 
         # Flattening + Prefixing
-        for field in related_fields_to_treat:
+        rep["properties"] = dict(rep["properties"])
+        for field in related_fields_to_process:
             for k, v in rep["properties"][field].items():
                 rep["properties"][f"{field}-{k}"] = v
             del rep["properties"][field]
 
-        # Prefix the properties base fields except the geom (geo_field)
-        base_fields = (
-            set(self.fields.fields.keys()) - set(related_fields_to_treat) - {"geom"}
-        )
-        for field in base_fields:
-            rep["properties"][f"PermitRequestGeoTime-{field}"] = rep["properties"][
-                field
-            ]
-            del rep["properties"][field]
+        del rep["properties"]["Geo"]
 
         return rep
