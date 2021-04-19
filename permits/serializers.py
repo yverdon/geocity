@@ -175,17 +175,26 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
 
         rep = super().to_representation(value)
         rep = dict(rep)
+        # # DELETE ME AFTER USE
+        # import ipdb; ipdb.set_trace()
+        # # ###################
 
         if not rep["geometry"]:
             rep["geometry"] = {"type": "Point", "coordinates": []}
-        else:
-            rep["geometry"] = rep["properties"]["Geo"][0]["geometry"]
             for field in geotime_fields_to_process:
-                try:
+                rep["properties"][f"PermitRequestGeoTime-{field}"] = None
+        else:
+            if not rep["properties"]["Geo"][0]["geometry"]:
+                rep["geometry"] = {"type": "Point", "coordinates": []}
+            else:
+                rep["geometry"] = rep["properties"]["Geo"][0]["geometry"]
+            try:
+                for field in geotime_fields_to_process:
                     rep["properties"][f"PermitRequestGeoTime-{field}"] = rep[
                         "properties"
                     ]["Geo"][0]["properties"][field]
-                except KeyError:
+            except KeyError:
+                for field in geotime_fields_to_process:
                     rep["properties"][f"PermitRequestGeoTime-{field}"] = None
 
         # Flattening + Prefixing
