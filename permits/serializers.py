@@ -153,7 +153,6 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
 
 
 class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
-    PermitRequest = PermitRequestSerializer(source="*", many=False, read_only=True)
     WorksObjectPropertyValue = WorksObjectPropertyValueSerializer(
         source="*", many=False, read_only=True
     )
@@ -169,7 +168,6 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
         model = models.PermitRequest
         geo_field = "geo_time"
         fields = (
-            "PermitRequest",
             "PermitRequestAmendPropertyValue",
             "WorksObjectPropertyValue",
             "PermitRequestActor",
@@ -189,12 +187,22 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
         rep = super().to_representation(value)
         rep = dict(rep)
 
-        # Early opt-out
+        # Early opt-out if no Date ni Geom
         if not rep["geometry"]:
+            PermitRequest = PermitRequestSerializer(
+                value, many=False, read_only=True
+            ).data
+            for k, v in PermitRequest.items():
+                rep["properties"][f"PermitRequest-{k}"] = v
             rep["geometry"] = {"type": "Point", "coordinates": []}
             for field in geotime_fields_to_process:
                 rep["properties"][f"PermitRequestGeoTime-{field}"] = None
         else:
+            for k, v in rep["properties"]["Geo"][0]["properties"][
+                "permit_request"
+            ].items():
+                rep["properties"][f"PermitRequest-{k}"] = v
+
             if not rep["properties"]["Geo"][0]["geometry"]:
                 rep["geometry"] = {"type": "Point", "coordinates": []}
             else:
