@@ -287,7 +287,10 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
     def test_geotime_step_only_date_fields_appear_when_only_date_is_required(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         works_object_type = factories.WorksObjectTypeFactory(
-            needs_geometry=False, needs_date=True
+            has_geometry_point=False,
+            has_geometry_line=False,
+            has_geometry_polygon=False,
+            needs_date=True
         )
         permit_request.works_object_types.set([works_object_type])
 
@@ -313,7 +316,10 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
     def test_geotime_step_only_geom_fields_appear_when_only_geom_is_required(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         works_object_type = factories.WorksObjectTypeFactory(
-            needs_geometry=True, needs_date=False
+            has_geometry_point=False,
+            has_geometry_line=False,
+            has_geometry_polygon=False,
+            needs_date=False
         )
         permit_request.works_object_types.set([works_object_type])
 
@@ -339,7 +345,10 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
     def test_geotime_step_date_and_geom_fields_appear_when_both_required(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         works_object_type = factories.WorksObjectTypeFactory(
-            needs_geometry=True, needs_date=True
+            has_geometry_point=False,
+            has_geometry_line=False,
+            has_geometry_polygon=False,
+            needs_date=True
         )
         permit_request.works_object_types.set([works_object_type])
 

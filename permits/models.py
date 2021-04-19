@@ -508,7 +508,6 @@ class WorksObjectType(models.Model):
     has_geometry_point = models.BooleanField(_("Point"), default=True)
     has_geometry_line = models.BooleanField(_("Ligne"), default=True)
     has_geometry_polygon = models.BooleanField(_("Surface"), default=True)
-    needs_geometry = models.BooleanField(_("avec géométrie"), default=True) # TO DELETE 
     needs_date = models.BooleanField(_("avec période de temps"), default=True)
     is_public = models.BooleanField(_("Public"), default=False)
 

@@ -192,7 +192,10 @@ class PermitRequestProgressBarTestCase(LoggedInUserMixin, TestCase):
     def test_geotime_step_does_not_appear_when_no_date_nor_geometry_required(self):
         permit_request = self.create_permit_request()
         works_object_type = factories.WorksObjectTypeFactory(
-            needs_geometry=False, needs_date=False
+            has_geometry_point=False,
+            has_geometry_line=False,
+            has_geometry_polygon=False,
+            needs_date=False
         )
         permit_request.works_object_types.set([works_object_type])
 
@@ -212,7 +215,10 @@ class PermitRequestProgressBarTestCase(LoggedInUserMixin, TestCase):
     def test_geotime_step_appears_when_date_and_geometry_are_required(self):
         permit_request = self.create_permit_request()
         works_object_type = factories.WorksObjectTypeFactory(
-            needs_geometry=True, needs_date=True
+            has_geometry_point=False,
+            has_geometry_line=False,
+            has_geometry_polygon=False,
+            needs_date=True
         )
         permit_request.works_object_types.set([works_object_type])
 
@@ -230,7 +236,10 @@ class PermitRequestProgressBarTestCase(LoggedInUserMixin, TestCase):
     def test_geotime_step_appears_when_only_date_is_required(self):
         permit_request = self.create_permit_request()
         works_object_type = factories.WorksObjectTypeFactory(
-            needs_geometry=False, needs_date=True
+            has_geometry_point=False,
+            has_geometry_line=False,
+            has_geometry_polygon=False,
+            needs_date=True
         )
         permit_request.works_object_types.set([works_object_type])
 
@@ -250,7 +259,10 @@ class PermitRequestProgressBarTestCase(LoggedInUserMixin, TestCase):
     def test_geotime_step_appears_when_only_geometry_is_required(self):
         permit_request = self.create_permit_request()
         works_object_type = factories.WorksObjectTypeFactory(
-            needs_geometry=True, needs_date=False
+            has_geometry_point=False,
+            has_geometry_line=False,
+            has_geometry_polygon=False,
+            needs_date=False
         )
         permit_request.works_object_types.set([works_object_type])
 
