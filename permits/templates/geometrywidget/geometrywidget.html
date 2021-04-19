@@ -5,7 +5,7 @@
 {% load permits_extras %}
 
 <div id="geometry-widget-{{ id }}" data-initialize="{% if "__prefix__" in id %}0{% else %}1{% endif %}" data-map-target="{{ id }}_map" data-options="{{ options|json }}" data-geometry-widget >
-  {% if options.edit_dot or options.edit_line or options.edit_surface %}
+  {% if options.edit_point or options.edit_line or options.edit_polygon %}
     <div>
       <button type="button" class="btn btn-outline-warning" title="Cliquer dans la carte pour ajouter des dessins"
          role="button" data-action="enableDrawing">
@@ -25,7 +25,7 @@
       </div>
     </div>
     <hr>
-    {% if options.edit_dot %}
+    {% if options.edit_point %}
       <div data-action="editPoints" class="form-check form-check-inline">
         <label class="form-check-label no-wildcard" title="Cliquer pour ajouter un point">
           <input class="form-check-input" title="Cliquer pour ajouter un point" type="radio" name="inlineRadioOptions" data-action="setDrawInteraction" data-interaction-type="MultiPoint">
@@ -41,7 +41,7 @@
         </label>
       </div>
     {% endif %}
-    {% if options.edit_surface %}
+    {% if options.edit_polygon %}
       <div data-action="editPolygons" class="form-check form-check-inline">
         <label class="form-check-label no-wildcard" title="Double clique pour terminer la construction">
           <input class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions" data-action="setDrawInteraction" data-interaction-type="MultiPolygon">

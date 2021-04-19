@@ -273,15 +273,9 @@ class Command(BaseCommand):
                 works_obj_obj, created = models.WorksObject.objects.get_or_create(
                     name=works_obj
                 )
-                geometry_type_obj, created = models.GeometryType.objects.get_or_create(
-                    dot=0,
-                    line=1,
-                    surface=1,
-                )
                 works_object_type = models.WorksObjectType.objects.create(
                     works_type=works_type_obj,
                     works_object=works_obj_obj,
-                    geometry_type=geometry_type_obj,
                     is_public=True,
                 )
                 works_object_type.administrative_entities.add(

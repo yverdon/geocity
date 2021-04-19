@@ -483,12 +483,6 @@ class WorksType(models.Model):
         return self.name
 
 
-class GeometryType(models.Model):
-    dot = models.BooleanField(_("point"), default=True)
-    line = models.BooleanField(_("ligne"), default=True)
-    surface = models.BooleanField(_("surface"), default=True)
-
-
 class WorksObjectType(models.Model):
     """
     Represents a works object for a specific works type.
@@ -511,17 +505,12 @@ class WorksObjectType(models.Model):
         verbose_name=_("communes"),
         related_name="works_object_types",
     )
-    geometry_type = models.ForeignKey(
-        "GeometryType", 
-        on_delete=models.CASCADE,
-        verbose_name=_("type de géometrie"),
-        related_name="works_object_types",
-    )
+    has_geometry_point = models.BooleanField(_("Point"), default=True)
+    has_geometry_line = models.BooleanField(_("Ligne"), default=True)
+    has_geometry_polygon = models.BooleanField(_("Surface"), default=True)
     needs_geometry = models.BooleanField(_("avec géométrie"), default=True) # TO DELETE 
     needs_date = models.BooleanField(_("avec période de temps"), default=True)
     is_public = models.BooleanField(_("Public"), default=False)
-
-    # list_display = ('get_dot', 'get_line', 'get_surface')
 
     class Meta:
         verbose_name = _("1.4 Configuration type-objet-entité administrative")

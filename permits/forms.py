@@ -862,7 +862,6 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
 
         works_object_geometry_types = (
             permit_request.works_object_types.all()
-            .select_related("geometry_type")
         )
 
         options = {
@@ -884,9 +883,9 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             "default_zoom": 10,
             "display_raw": False,
             "edit_geom": True,
-            "edit_dot": True if True in works_object_geometry_types.values_list('geometry_type__dot', flat=True) else False,
-            "edit_line": True if True in works_object_geometry_types.values_list('geometry_type__line', flat=True) else False,
-            "edit_surface": True if True in works_object_geometry_types.values_list('geometry_type__surface', flat=True) else False,
+            "edit_point": True if True in works_object_geometry_types.values_list('has_geometry_point', flat=True) else False,
+            "edit_line": True if True in works_object_geometry_types.values_list('has_geometry_line', flat=True) else False,
+            "edit_polygon": True if True in works_object_geometry_types.values_list('has_geometry_polygon', flat=True) else False,
             "min_zoom": 5,
             "wmts_capabilities_url": settings.WMTS_GETCAP,
             "wmts_layer": settings.WMTS_LAYER,
