@@ -116,7 +116,7 @@ class PermitRequestActorSerializer(serializers.Serializer):
             actor_fields = [field.name for field in actor.actor._meta.fields]
             for field in actor_fields:
                 rep[slugify(f"{i}-{field}")] = getattr(actor.actor, field)
-            rep[f"{i}-ActorType"] = actor.actor_type
+            rep[f"{i}-actor-type"] = models.ACTOR_TYPE_CHOICES[actor.actor_type][1]
         return rep
 
 
