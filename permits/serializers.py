@@ -21,11 +21,20 @@ class MetaTypesField(serializers.RelatedField):
         return list(meta_types)
 
 
+class WorksObjectTypesNames(serializers.RelatedField):
+    def to_representation(self, value):
+        wot_names = {wot.id: str(wot) for wot in value.all()}
+        return wot_names
+
+
 class PermitRequestSerializer(serializers.ModelSerializer):
     administrative_entity = PermitAdministrativeEntitySerializer(
         many=False, read_only=True
     )
     meta_types = MetaTypesField(source="works_object_types", read_only=True)
+    works_object_types_names = WorksObjectTypesNames(
+        source="works_object_types", read_only=True
+    )
 
     class Meta:
         model = models.PermitRequest
@@ -37,6 +46,7 @@ class PermitRequestSerializer(serializers.ModelSerializer):
             "creditor_type",
             "intersected_geometries",
             "meta_types",
+            "works_object_types_names",
         )
 
 
@@ -175,28 +185,35 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
         )
 
     def to_representation(self, value):
-        geotime_fields_to_process = (
+        geotime_fields_to_process = [
             "starts_at",
             "ends_at",
             "comment",
             "external_link",
-        )
+        ]
 
-        related_fields_to_process = set(self.fields.fields.keys()) - {"Geo", "geo_time"}
+        related_fields_to_process = [
+            field_name
+            for field_name in self.fields.keys()
+            if field_name not in {"Geo", "geo_time"}
+        ]
 
         rep = super().to_representation(value)
         rep = dict(rep)
 
         # Early opt-out if no Date ni Geom
         if not rep["geometry"]:
+
             PermitRequest = PermitRequestSerializer(
                 value, many=False, read_only=True
             ).data
             for k, v in PermitRequest.items():
                 rep["properties"][f"PermitRequest-{k}"] = v
+
             rep["geometry"] = {"type": "Point", "coordinates": []}
             for field in geotime_fields_to_process:
                 rep["properties"][f"PermitRequestGeoTime-{field}"] = None
+
         else:
             for k, v in rep["properties"]["Geo"][0]["properties"][
                 "permit_request"
@@ -207,6 +224,7 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
                 rep["geometry"] = {"type": "Point", "coordinates": []}
             else:
                 rep["geometry"] = rep["properties"]["Geo"][0]["geometry"]
+
             try:
                 for field in geotime_fields_to_process:
                     rep["properties"][f"PermitRequestGeoTime-{field}"] = rep[
@@ -217,11 +235,20 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
                     rep["properties"][f"PermitRequestGeoTime-{field}"] = None
 
         # Flattening + Prefixing
-        rep["properties"] = dict(rep["properties"])
         for field in related_fields_to_process:
             for k, v in rep["properties"][field].items():
                 rep["properties"][f"{field}-{k}"] = v
             del rep["properties"][field]
+        # Some Human Readable values
+        creditor_type = rep["properties"]["PermitRequest-creditor_type"]
+        rep["properties"]["PermitRequest-creditor_type"] = (
+            models.ACTOR_TYPE_CHOICES[creditor_type]
+            if creditor_type is not None
+            else models.ACTOR_TYPE_CHOICES[0][1]
+        )
+
+        # wot = rep["properties"]["PermitRequest-works_object_types"]
+        # rep["properties"]["PermitRequest-works_object_types"] = {wot_id:  for wot_id in wot}
 
         del rep["properties"]["Geo"]
 
