@@ -47,16 +47,6 @@ ACTOR_TYPE_CHOICES = (
     (ACTOR_TYPE_WORKDIRECTOR, _("Direction des travaux")),
 )
 
-
-GEOM_TYPE_POINT = 0
-GEOM_TYPE_LINE = 1
-GEOM_TYPE_POLYGON = 2
-GEOM_TYPE_CHOICES = (
-    (GEOM_TYPE_POINT, _("Point")),
-    (GEOM_TYPE_LINE, _("Line")),
-    (GEOM_TYPE_POLYGON, _("Polygone")),
-)
-
 # Actions
 ACTION_AMEND = "amend"
 ACTION_REQUEST_VALIDATION = "request_validation"
