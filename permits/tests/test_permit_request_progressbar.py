@@ -189,13 +189,15 @@ class PermitRequestProgressBarTestCase(LoggedInUserMixin, TestCase):
         nav_items = extract_nav_items(response.content)
         self.assertIn("Documents", nav_items)
 
-    def test_geotime_step_does_not_appear_when_no_date_nor_geometry_types_are_required(self):
+    def test_geotime_step_does_not_appear_when_no_date_nor_geometry_types_are_required(
+        self,
+    ):
         permit_request = self.create_permit_request()
         works_object_type = factories.WorksObjectTypeFactory(
             has_geometry_point=False,
             has_geometry_line=False,
             has_geometry_polygon=False,
-            needs_date=False
+            needs_date=False,
         )
         permit_request.works_object_types.set([works_object_type])
 
@@ -218,7 +220,7 @@ class PermitRequestProgressBarTestCase(LoggedInUserMixin, TestCase):
             has_geometry_point=True,
             has_geometry_line=True,
             has_geometry_polygon=True,
-            needs_date=True
+            needs_date=True,
         )
         permit_request.works_object_types.set([works_object_type])
 
@@ -239,7 +241,7 @@ class PermitRequestProgressBarTestCase(LoggedInUserMixin, TestCase):
             has_geometry_point=False,
             has_geometry_line=False,
             has_geometry_polygon=False,
-            needs_date=True
+            needs_date=True,
         )
         permit_request.works_object_types.set([works_object_type])
 
@@ -262,7 +264,7 @@ class PermitRequestProgressBarTestCase(LoggedInUserMixin, TestCase):
             has_geometry_point=True,
             has_geometry_line=True,
             has_geometry_polygon=True,
-            needs_date=False
+            needs_date=False,
         )
         permit_request.works_object_types.set([works_object_type])
 

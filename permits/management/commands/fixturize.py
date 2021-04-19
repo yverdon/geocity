@@ -202,7 +202,6 @@ class Command(BaseCommand):
 
         return user
 
-
     def create_works_types(self):
         properties = {
             "comment": models.WorksObjectProperty.objects.create(

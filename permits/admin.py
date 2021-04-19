@@ -44,6 +44,7 @@ def get_works_object_types_field():
 
 works_object_type_administrative_entities.short_description = _("Communes")
 
+
 class WorksObjectTypeAdminForm(forms.ModelForm):
     class Meta:
         model = models.WorksObjectType
@@ -52,16 +53,33 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
             "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
         }
 
+
 class WorksObjectTypeAdmin(admin.ModelAdmin):
     list_display = ["__str__", works_object_type_administrative_entities, "is_public"]
     list_filter = ["administrative_entities"]
     fieldsets = (
-        (None, {
-           'fields': ('works_type', 'works_object', 'administrative_entities', 'is_public')
-        }),
-        ('Planning et localisation', {
-            'fields': ('has_geometry_point', 'has_geometry_line', 'has_geometry_polygon', 'needs_date')
-        }),
+        (
+            None,
+            {
+                "fields": (
+                    "works_type",
+                    "works_object",
+                    "administrative_entities",
+                    "is_public",
+                )
+            },
+        ),
+        (
+            "Planning et localisation",
+            {
+                "fields": (
+                    "has_geometry_point",
+                    "has_geometry_line",
+                    "has_geometry_polygon",
+                    "needs_date",
+                )
+            },
+        ),
     )
     form = WorksObjectTypeAdminForm
 
