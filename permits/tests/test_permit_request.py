@@ -313,12 +313,12 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             len(get_parser(response.content).select('textarea[name="form-0-geom"]')), 0,
         )
 
-    def test_geotime_step_only_geom_fields_appear_when_only_geom_is_required(self):
+    def test_geotime_step_only_geom_fields_appear_when_only_geom_types_are_required(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         works_object_type = factories.WorksObjectTypeFactory(
-            has_geometry_point=False,
-            has_geometry_line=False,
-            has_geometry_polygon=False,
+            has_geometry_point=True,
+            has_geometry_line=True,
+            has_geometry_polygon=True,
             needs_date=False
         )
         permit_request.works_object_types.set([works_object_type])
@@ -345,9 +345,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
     def test_geotime_step_date_and_geom_fields_appear_when_both_required(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         works_object_type = factories.WorksObjectTypeFactory(
-            has_geometry_point=False,
-            has_geometry_line=False,
-            has_geometry_polygon=False,
+            has_geometry_point=True,
+            has_geometry_line=True,
+            has_geometry_polygon=True,
             needs_date=True
         )
         permit_request.works_object_types.set([works_object_type])
@@ -369,6 +369,119 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.assertGreaterEqual(
             len(get_parser(response.content).select('textarea[name="form-0-geom"]')), 1,
         )
+
+    def test_geotime_step_only_point_geom_field_appear_when_only_point_geom_type_is_required(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object_type = factories.WorksObjectTypeFactory(
+            has_geometry_point=True,
+            has_geometry_line=False,
+            has_geometry_polygon=False,
+            needs_date=False
+        )
+        permit_request.works_object_types.set([works_object_type])
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertGreaterEqual(
+            len(get_parser(response.content).select('input[data-interaction-type="MultiPoint"]')), 1,
+        )
+
+        self.assertEqual(
+            len(get_parser(response.content).select('input[data-interaction-type="MultiLineString"]')), 0,
+        )
+        self.assertEqual(
+            len(get_parser(response.content).select('input[data-interaction-type="MultiPolygon"]')), 0,
+        )
+
+    def test_geotime_step_only_line_geom_field_appear_when_only_line_geom_type_is_required(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object_type = factories.WorksObjectTypeFactory(
+            has_geometry_point=False,
+            has_geometry_line=True,
+            has_geometry_polygon=False,
+            needs_date=False
+        )
+        permit_request.works_object_types.set([works_object_type])
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(get_parser(response.content).select('input[data-interaction-type="MultiPoint"]')), 0,
+        )
+
+        self.assertGreaterEqual(
+            len(get_parser(response.content).select('input[data-interaction-type="MultiLineString"]')), 1,
+        )
+        self.assertEqual(
+            len(get_parser(response.content).select('input[data-interaction-type="MultiPolygon"]')), 0,
+        )
+
+    def test_geotime_step_only_polygon_geom_field_appear_when_only_polygon_geom_type_is_required(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object_type = factories.WorksObjectTypeFactory(
+            has_geometry_point=False,
+            has_geometry_line=False,
+            has_geometry_polygon=True,
+            needs_date=False
+        )
+        permit_request.works_object_types.set([works_object_type])
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(get_parser(response.content).select('input[data-interaction-type="MultiPoint"]')), 0,
+        )
+
+        self.assertEqual(
+            len(get_parser(response.content).select('input[data-interaction-type="MultiLineString"]')), 0,
+        )
+        self.assertGreaterEqual(
+            len(get_parser(response.content).select('input[data-interaction-type="MultiPolygon"]')), 1,
+        )
+
+    def test_geotime_step_only_two_geom_field_appear_when_only_two_geom_type_are_required(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object_type = factories.WorksObjectTypeFactory(
+            has_geometry_point=True,
+            has_geometry_line=False,
+            has_geometry_polygon=True,
+            needs_date=False
+        )
+        permit_request.works_object_types.set([works_object_type])
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertGreaterEqual(
+            len(get_parser(response.content).select('input[data-interaction-type="MultiPoint"]')), 1,
+        )
+
+        self.assertEqual(
+            len(get_parser(response.content).select('input[data-interaction-type="MultiLineString"]')), 0,
+        )
+        self.assertGreaterEqual(
+            len(get_parser(response.content).select('input[data-interaction-type="MultiPolygon"]')), 1,
+        )
+
 
 
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
