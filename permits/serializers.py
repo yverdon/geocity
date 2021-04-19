@@ -215,24 +215,25 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
                 rep["properties"][f"PermitRequestGeoTime-{field}"] = None
 
         else:
-            for k, v in rep["properties"]["Geo"][0]["properties"][
-                "permit_request"
-            ].items():
-                rep["properties"][f"PermitRequest-{k}"] = v
+            for geo_entry, value in enumerate(rep["properties"]["Geo"]):
+                for k, v in rep["properties"]["Geo"][geo_entry]["properties"][
+                    "permit_request"
+                ].items():
+                    rep["properties"][f"PermitRequest-{k}"] = v
 
-            if not rep["properties"]["Geo"][0]["geometry"]:
-                rep["geometry"] = {"type": "Point", "coordinates": []}
-            else:
-                rep["geometry"] = rep["properties"]["Geo"][0]["geometry"]
+                if not rep["properties"]["Geo"][geo_entry]["geometry"]:
+                    rep["geometry"] = {"type": "Point", "coordinates": []}
+                else:
+                    rep["geometry"] = rep["properties"]["Geo"][geo_entry]["geometry"]
 
-            try:
-                for field in geotime_fields_to_process:
-                    rep["properties"][f"PermitRequestGeoTime-{field}"] = rep[
-                        "properties"
-                    ]["Geo"][0]["properties"][field]
-            except KeyError:
-                for field in geotime_fields_to_process:
-                    rep["properties"][f"PermitRequestGeoTime-{field}"] = None
+                try:
+                    for field in geotime_fields_to_process:
+                        rep["properties"][f"PermitRequestGeoTime-{field}"] = rep[
+                            "properties"
+                        ]["Geo"][geo_entry]["properties"][field]
+                except KeyError:
+                    for field in geotime_fields_to_process:
+                        rep["properties"][f"PermitRequestGeoTime-{field}"] = None
 
         # Flattening + Prefixing
         for field in related_fields_to_process:
@@ -246,9 +247,6 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
             if creditor_type is not None
             else models.ACTOR_TYPE_CHOICES[0][1]
         )
-
-        # wot = rep["properties"]["PermitRequest-works_object_types"]
-        # rep["properties"]["PermitRequest-works_object_types"] = {wot_id:  for wot_id in wot}
 
         del rep["properties"]["Geo"]
 
