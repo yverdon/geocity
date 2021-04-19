@@ -40,7 +40,7 @@ class PermitRequestSerializer(serializers.ModelSerializer):
         )
 
 
-class PermitRequestAmendPropertyValueSerializer(serializers.Serializer):
+class PermitRequestAmendPropertyValueSerializer(serializers.RelatedField):
     def to_representation(self, value):
         works_object_types = [
             works_object_type
@@ -55,15 +55,24 @@ class PermitRequestAmendPropertyValueSerializer(serializers.Serializer):
             "property__name", "value", "works_object_type_choice__works_object_type__id"
         )
 
-        return {
-            slugify(
-                f"{prop['works_object_type_choice__works_object_type__id']}-{prop['property__name']}"
-            ): prop["value"]
-            for prop in props
-        }
+        properties = {}
+        for prop in props:
+            if (
+                prop["works_object_type_choice__works_object_type__id"]
+                not in properties.keys()
+            ):
+                properties[prop["works_object_type_choice__works_object_type__id"]] = {
+                    prop["property__name"]: prop["value"]
+                }
+            else:
+                properties[
+                    prop["works_object_type_choice__works_object_type__id"]
+                ].update({prop["property__name"]: prop["value"]})
+
+        return properties
 
 
-class WorksObjectPropertyValueSerializer(serializers.Serializer):
+class WorksObjectPropertyValueSerializer(serializers.RelatedField):
     def to_representation(self, value):
         works_object_types = [
             works_object_type
@@ -79,18 +88,21 @@ class WorksObjectPropertyValueSerializer(serializers.Serializer):
             "works_object_type_choice__works_object_type__id",
         )
 
-        return {
-            slugify(
-                f"{prop['works_object_type_choice__works_object_type__id']}-{prop['property__name']}"
-            ): prop["value__val"]
-            for prop in props
-        }
+        properties = {}
+        for prop in props:
+            if (
+                prop["works_object_type_choice__works_object_type__id"]
+                not in properties.keys()
+            ):
+                properties[prop["works_object_type_choice__works_object_type__id"]] = {
+                    prop["property__name"]: prop["value__val"]
+                }
+            else:
+                properties[
+                    prop["works_object_type_choice__works_object_type__id"]
+                ].update({prop["property__name"]: prop["value__val"]})
 
-
-class PermitActorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.PermitActor
-        fields = "__all__"
+        return properties
 
 
 class PermitRequestActorSerializer(serializers.Serializer):
@@ -101,9 +113,10 @@ class PermitRequestActorSerializer(serializers.Serializer):
 
         rep = {}
         for i, actor in enumerate(actors, 1):
-            actor_data = PermitActorSerializer(instance=actor.actor).data
-            for k, v in actor_data.items():
-                rep[slugify(f"{i}-{k}")] = v
+            actor_fields = [field.name for field in actor.actor._meta.fields]
+            for field in actor_fields:
+                rep[slugify(f"{i}-{field}")] = getattr(actor.actor, field)
+            rep[f"{i}-ActorType"] = actor.actor_type
         return rep
 
 
@@ -175,10 +188,8 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
 
         rep = super().to_representation(value)
         rep = dict(rep)
-        # # DELETE ME AFTER USE
-        # import ipdb; ipdb.set_trace()
-        # # ###################
 
+        # Early opt-out
         if not rep["geometry"]:
             rep["geometry"] = {"type": "Point", "coordinates": []}
             for field in geotime_fields_to_process:
