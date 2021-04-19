@@ -880,7 +880,6 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             "default_center": [2539057, 1181111],
             "default_zoom": 10,
             "display_raw": False,
-            "edit_geom": True,
             "edit_point": True
             if True
             in works_object_geometry_types.values_list("has_geometry_point", flat=True)
