@@ -520,15 +520,6 @@ class WorksObjectType(models.Model):
     def __str__(self):
         return "{} ({})".format(self.works_object.name, self.works_type.name)
 
-    def get_dot(self):
-        return self.geometry_type.dot
-
-    def get_line(self):
-        return self.geometry_type.line
-
-    def get_surface(self):
-        return self.geometry_type.surface
-
 
 class WorksObject(models.Model):
     name = models.CharField(_("nom"), max_length=255)
