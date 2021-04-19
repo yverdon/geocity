@@ -25,12 +25,6 @@ PUBLIC_TYPE_CHOICES = (
     (False, _("Visible uniquement par les utilisateur autorisés")),
 )
 
-# Geometry types
-# GEOMETRY_TYPE_CHOICES = (
-#     (True, _("points")),
-#     (False, _("lignes")),
-# )
-
 # Contact types
 ACTOR_TYPE_OTHER = 0
 ACTOR_TYPE_REQUESTOR = 1
@@ -51,6 +45,16 @@ ACTOR_TYPE_CHOICES = (
     (ACTOR_TYPE_ASSOCIATION, _("Association")),
     (ACTOR_TYPE_ENGINEER, _("Architecte/Ingénieur")),
     (ACTOR_TYPE_WORKDIRECTOR, _("Direction des travaux")),
+)
+
+
+GEOM_TYPE_POINT = 0
+GEOM_TYPE_LINE = 1
+GEOM_TYPE_POLYGON = 2
+GEOM_TYPE_CHOICES = (
+    (GEOM_TYPE_POINT, _("Point")),
+    (GEOM_TYPE_LINE, _("Line")),
+    (GEOM_TYPE_POLYGON, _("Polygone")),
 )
 
 # Actions
