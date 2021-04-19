@@ -1,5 +1,7 @@
 from rest_framework import viewsets
-from django.db.models import Prefetch, Q
+from django.db.models import Prefetch, Q, F, Func, Value
+from django.contrib.gis.db.models.functions import GeoFunc
+from django.contrib.gis.db import models as geomodels
 from . import models, serializers, services
 from django.contrib.auth.decorators import (
     login_required,
@@ -92,6 +94,24 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
 # //////////////////////////////////
 
 
+class GetPoints(GeoFunc):
+    function = "ST_CollectionExtract"
+    geom_param_pos = (0,)
+    output_field = geomodels.MultiPointField(srid=2056)
+
+
+class GetLines(GeoFunc):
+    function = "ST_CollectionExtract"
+    geom_param_pos = (0,)
+    output_field = geomodels.MultiLineStringField(srid=2056)
+
+
+class GetPolygons(GeoFunc):
+    function = "ST_CollectionExtract"
+    geom_param_pos = (0,)
+    output_field = geomodels.MultiPolygonField(srid=2056)
+
+
 class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Permit request endpoint Usage:
@@ -109,6 +129,7 @@ class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
         user = self.request.user
         work_objects_type = self.request.query_params.get("works-object-type", None)
         status = self.request.query_params.get("status", None)
+        geom_type = self.request.query_params.get("geom-type", None)
         permitrequest_id = self.request.query_params.get("permit-request-id", None)
 
         base_filter = Q()
@@ -123,9 +144,19 @@ class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
             "works_object_types",
             queryset=models.WorksObjectType.objects.select_related("works_type"),
         )
-        geotime_prefetch = Prefetch(
-            "geo_time", queryset=models.PermitRequestGeoTime.objects.only("geom")
-        )
+
+        geom_qs = models.PermitRequestGeoTime.objects.only("geom")
+
+        if geom_type and geom_type == "points":
+            geom_qs = geom_qs.annotate(geom_point=GetPoints(F("geom"), 1),)
+
+        if geom_type and geom_type == "lines":
+            geom_qs = geom_qs.annotate(geom_line=GetLines(F("geom"), 2),)
+
+        if geom_type and geom_type == "polygons":
+            geom_qs = geom_qs.annotate(geom_polygons=GetPolygons(F("geom"), 3),)
+
+        geotime_prefetch = Prefetch("geo_time", queryset=geom_qs)
 
         qs = (
             models.PermitRequest.objects.filter(base_filter)
