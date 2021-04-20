@@ -612,7 +612,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             1,
         )
 
-    def test_summary_and_send_step_has_directive_and_directive_description_and_additional_information(self):
+    def test_summary_and_send_step_has_directive_and_directive_description_and_additional_information(
+        self,
+    ):
         group = factories.SecretariatGroupFactory()
         works_object_type = factories.WorksObjectTypeFactory(
             directive=SimpleUploadedFile("file.pdf", "contents".encode()),
@@ -629,7 +631,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         ).permit_request
 
         permit_request.works_object_types.set([works_object_type])
-        
+
         response = self.client.get(
             reverse(
                 "permits:permit_request_submit",
