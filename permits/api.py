@@ -2,6 +2,8 @@ from rest_framework import viewsets
 from django.db.models import Prefetch, Q, F, CharField
 from django.contrib.gis.db.models.functions import GeomOutputGeoFunc
 from . import models, serializers, services
+from rest_framework.exceptions import APIException
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.decorators import (
     login_required,
     permission_required,
@@ -104,6 +106,7 @@ class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
     Permit request endpoint Usage:
         1.- /rest/permits/?permit-request-id=1
         2.- /rest/permits/?works-object-type=1&status=0
+        3.- /rest/permits/?geom-type=lines | points | polygons
     """
 
     serializer_class = serializers.PermitRequestPrintSerializer
@@ -114,18 +117,40 @@ class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
         view permissions
         """
         user = self.request.user
+
+        if not user.is_authenticated:
+            raise APIException(
+                _("Vous devez vous authentifier avec le bon compte utilisateur")
+            )
+
         work_objects_type = self.request.query_params.get("works-object-type", None)
         status = self.request.query_params.get("status", None)
         geom_type = self.request.query_params.get("geom-type", None)
         permitrequest_id = self.request.query_params.get("permit-request-id", None)
 
         base_filter = Q()
+
         if work_objects_type:
-            base_filter &= Q(works_object_types=work_objects_type)
+            if work_objects_type.isdigit():
+                base_filter &= Q(works_object_types=work_objects_type)
+            else:
+                raise APIException(
+                    _("Le paramètre works-object-type doit être un nombre")
+                )
+
         if status:
-            base_filter &= Q(status=status)
+            if status.isdigit():
+                base_filter &= Q(status=status)
+            else:
+                raise APIException(_("Le paramètre status doit être un nombre"))
+
         if permitrequest_id:
-            base_filter &= Q(pk=permitrequest_id)
+            if permitrequest_id.isdigit():
+                base_filter &= Q(pk=permitrequest_id)
+            else:
+                raise APIException(
+                    _("Le paramètre permit-request-id doit être un nombre")
+                )
 
         works_object_types_prefetch = Prefetch(
             "works_object_types",
@@ -135,6 +160,12 @@ class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
         geom_qs = models.PermitRequestGeoTime.objects.only("geom")
 
         if geom_type:
+            if geom_type not in ("lines", "points", "polygons"):
+                raise APIException(
+                    _(
+                        "Les valeurs possibles du paramètre geom-type sont: lines, points ou polygons"
+                    )
+                )
             geom_qs = geom_qs.annotate(geom_type=GeomToText(F("geom"),))
             if geom_type == "lines":
                 geom_qs = geom_qs.filter(geom_type__icontains="line")
@@ -146,15 +177,21 @@ class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
 
         geotime_prefetch = Prefetch("geo_time", queryset=geom_qs)
 
-        qs = (
-            models.PermitRequest.objects.filter(base_filter)
-            .filter(
-                Q(id__in=services.get_permit_requests_list_for_user(user))
-                | Q(is_public=True)
+        try:
+            qs = (
+                models.PermitRequest.objects.filter(base_filter)
+                .filter(
+                    Q(id__in=services.get_permit_requests_list_for_user(user))
+                    | Q(is_public=True)
+                )
+                .prefetch_related(works_object_types_prefetch)
+                .prefetch_related(geotime_prefetch)
+                .select_related("administrative_entity")
             )
-            .prefetch_related(works_object_types_prefetch)
-            .prefetch_related(geotime_prefetch)
-            .select_related("administrative_entity")
-        )
+        except ValueError as e:
+            raise APIException(e)
+
+        if not qs and permitrequest_id:
+            raise APIException(_("La demande de permis n'existe pas."))
 
         return qs
