@@ -352,7 +352,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             has_geometry_point=False,
             has_geometry_line=False,
             has_geometry_polygon=False,
-            needs_date=True
+            needs_date=True,
         )
         permit_request.works_object_types.set([works_object_type])
         self.geotime_step_formset_data.update(
