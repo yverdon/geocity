@@ -22,5 +22,4 @@ private_documents/
 *.bak
 .coverage
 env.backup
-/media/*
-!/media/lorem-ipsum.pdf
+/media/
