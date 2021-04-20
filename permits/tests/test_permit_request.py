@@ -638,15 +638,28 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"permit_request_id": permit_request.pk},
             )
         )
-        content = response.content.decode()
 
-        expected = '<div>{directive_description} - <a href="/media/{directive}" target="_blank">Télécharger le fichier</a><br/>{additional_information}</div>'.format(
-            directive_description=works_object_type.directive_description,
-            directive=works_object_type.directive,
-            additional_information=works_object_type.additional_information,
+        self.assertGreaterEqual(
+            len(
+                get_parser(response.content).select(
+                    'span[name="directive_description"]'
+                )
+            ),
+            1,
         )
 
-        self.assertInHTML(expected, content)
+        self.assertGreaterEqual(
+            len(get_parser(response.content).select('a[name="directive_file"]')), 1,
+        )
+
+        self.assertGreaterEqual(
+            len(
+                get_parser(response.content).select(
+                    'span[name="additional_information"]'
+                )
+            ),
+            1,
+        )
 
 
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
