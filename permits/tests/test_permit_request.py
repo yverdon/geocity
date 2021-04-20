@@ -636,29 +636,15 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"permit_request_id": permit_request.pk},
             )
         )
-        # permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        # works_object_type = factories.WorksObjectTypeFactory(
-        #     directive=SimpleUploadedFile("file.pdf", "contents".encode()),
-        #     directive_description="Directive description for a test",
-        #     additional_information="Additional information for a test",
-        # )
-        # intersected_geometries = factories.PermitRequestGeoTimeFactory()
+        content = response.content.decode()
 
-        # permit_request.works_object_types.set([works_object_type])
-        # permit_request.intersected_geometries.set([intersected_geometries])
+        expected = '<div>{directive_description} - <a href="/media/{directive}" target="_blank">Télécharger le fichier</a><br/>{additional_information}</div>'.format(
+            directive_description=works_object_type.directive_description,
+            directive=works_object_type.directive,
+            additional_information=works_object_type.additional_information,
+        )
 
-        # response = self.client.get(
-        #     reverse(
-        #         "permits:permit_request_submit",
-        #         kwargs={"permit_request_id": permit_request.pk},
-        #     )
-        # )
-        print(get_parser(response.content))
-        self.assertEqual(response.status_code, 200)
-        # self.assertGreaterEqual(
-        #     len(get_parser(response.content).select('input[name="form-0-starts_at"]')),
-        #     1,
-        # )
+        self.assertInHTML(expected, content)
 
 
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
