@@ -639,26 +639,18 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             )
         )
 
-        self.assertGreaterEqual(
-            len(
-                get_parser(response.content).select(
-                    'span[name="directive_description"]'
-                )
-            ),
-            1,
+        parser = get_parser(response.content)
+
+        self.assertEqual(
+            len(parser.select("#legal-infos span.directive_description")), 1,
         )
 
-        self.assertGreaterEqual(
-            len(get_parser(response.content).select('a[name="directive_file"]')), 1,
+        self.assertEqual(
+            len(parser.select("#legal-infos a.directive_file")), 1,
         )
 
-        self.assertGreaterEqual(
-            len(
-                get_parser(response.content).select(
-                    'span[name="additional_information"]'
-                )
-            ),
-            1,
+        self.assertEqual(
+            len(parser.select("#legal-infos span.additional_information")), 1,
         )
 
 
