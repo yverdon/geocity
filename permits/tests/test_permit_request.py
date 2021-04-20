@@ -612,6 +612,54 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             1,
         )
 
+    def test_summary_and_send_step_has_directive_and_directive_description_and_additional_information(self):
+        group = factories.SecretariatGroupFactory()
+        works_object_type = factories.WorksObjectTypeFactory(
+            directive=SimpleUploadedFile("file.pdf", "contents".encode()),
+            directive_description="Directive description for a test",
+            additional_information="Additional information for a test",
+        )
+
+        permit_request = factories.PermitRequestGeoTimeFactory(
+            permit_request=factories.PermitRequestFactory(
+                administrative_entity=group.permitdepartment.administrative_entity,
+                author=self.user.permitauthor,
+                status=models.PermitRequest.STATUS_DRAFT,
+            )
+        ).permit_request
+
+        permit_request.works_object_types.set([works_object_type])
+        
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_submit",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        # permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        # works_object_type = factories.WorksObjectTypeFactory(
+        #     directive=SimpleUploadedFile("file.pdf", "contents".encode()),
+        #     directive_description="Directive description for a test",
+        #     additional_information="Additional information for a test",
+        # )
+        # intersected_geometries = factories.PermitRequestGeoTimeFactory()
+
+        # permit_request.works_object_types.set([works_object_type])
+        # permit_request.intersected_geometries.set([intersected_geometries])
+
+        # response = self.client.get(
+        #     reverse(
+        #         "permits:permit_request_submit",
+        #         kwargs={"permit_request_id": permit_request.pk},
+        #     )
+        # )
+        print(get_parser(response.content))
+        self.assertEqual(response.status_code, 200)
+        # self.assertGreaterEqual(
+        #     len(get_parser(response.content).select('input[name="form-0-starts_at"]')),
+        #     1,
+        # )
+
 
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
