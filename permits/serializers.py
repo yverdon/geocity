@@ -145,6 +145,26 @@ class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
         )
 
 
+class PermitRequestGeoTimeEnvelopeSerializer(gis_serializers.GeoFeatureModelSerializer):
+    permit_request = PermitRequestSerializer(many=False, read_only=True)
+
+    envelope = gis_serializers.GeometrySerializerMethodField()
+
+    def get_envelope(self, obj):
+        return obj.geom.envelope
+
+    class Meta:
+        model = models.PermitRequestGeoTime
+        geo_field = "envelope"
+        fields = (
+            "permit_request",
+            "starts_at",
+            "ends_at",
+            "comment",
+            "external_link",
+        )
+
+
 class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
     def to_representation(self, value):
 
@@ -155,7 +175,9 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
         result = [
             serialized_geotime.data
             for serialized_geotime in [
-                PermitRequestGeoTimeSerializer(geotime, many=False, read_only=True)
+                PermitRequestGeoTimeEnvelopeSerializer(
+                    geotime, many=False, read_only=True
+                )
                 for geotime in geotime_qs
             ]
         ]
@@ -172,7 +194,9 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
     PermitRequestActor = PermitRequestActorSerializer(
         source="*", many=False, read_only=True
     )
-    Geo = PermitRequestGeoTimeGeoJSONSerializer(source="*", many=False, read_only=True)
+    GeoEnvelop = PermitRequestGeoTimeGeoJSONSerializer(
+        source="*", many=False, read_only=True
+    )
 
     class Meta:
         model = models.PermitRequest
@@ -181,7 +205,7 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
             "PermitRequestAmendPropertyValue",
             "WorksObjectPropertyValue",
             "PermitRequestActor",
-            "Geo",
+            "GeoEnvelop",
         )
 
     def to_representation(self, value):
@@ -195,7 +219,7 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
         related_fields_to_process = [
             field_name
             for field_name in self.fields.keys()
-            if field_name not in {"Geo", "geo_time"}
+            if field_name not in {"GeoEnvelop", "geo_time"}
         ]
 
         rep = super().to_representation(value)
@@ -215,22 +239,24 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
                 rep["properties"][f"PermitRequestGeoTime-{field}"] = None
 
         else:
-            for geo_entry, value in enumerate(rep["properties"]["Geo"]):
-                for k, v in rep["properties"]["Geo"][geo_entry]["properties"][
+            for geo_entry, value in enumerate(rep["properties"]["GeoEnvelop"]):
+                for k, v in rep["properties"]["GeoEnvelop"][geo_entry]["properties"][
                     "permit_request"
                 ].items():
                     rep["properties"][f"PermitRequest-{k}"] = v
 
-                if not rep["properties"]["Geo"][geo_entry]["geometry"]:
+                if not rep["properties"]["GeoEnvelop"][geo_entry]["geometry"]:
                     rep["geometry"] = {"type": "Point", "coordinates": []}
                 else:
-                    rep["geometry"] = rep["properties"]["Geo"][geo_entry]["geometry"]
+                    rep["geometry"] = rep["properties"]["GeoEnvelop"][geo_entry][
+                        "geometry"
+                    ]
 
                 try:
                     for field in geotime_fields_to_process:
                         rep["properties"][f"PermitRequestGeoTime-{field}"] = rep[
                             "properties"
-                        ]["Geo"][geo_entry]["properties"][field]
+                        ]["GeoEnvelop"][geo_entry]["properties"][field]
                 except KeyError:
                     for field in geotime_fields_to_process:
                         rep["properties"][f"PermitRequestGeoTime-{field}"] = None
@@ -248,6 +274,6 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
             else models.ACTOR_TYPE_CHOICES[0][1]
         )
 
-        del rep["properties"]["Geo"]
+        del rep["properties"]["GeoEnvelop"]
 
         return rep
