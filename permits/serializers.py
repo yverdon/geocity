@@ -168,9 +168,7 @@ class PermitRequestGeoTimeEnvelopeSerializer(gis_serializers.GeoFeatureModelSeri
 class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
     def to_representation(self, value):
 
-        geotime_qs = models.PermitRequestGeoTime.objects.filter(
-            permit_request_id=value.id
-        )
+        geotime_qs = value.geo_time.all()
 
         result = [
             serialized_geotime.data
