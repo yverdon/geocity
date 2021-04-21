@@ -687,12 +687,7 @@ def get_geotime_required_info(permit_request):
     if any(works_object_type.needs_date for works_object_type in works_object_types):
         required_info.add(GeoTimeInfo.DATE)
 
-    if any(
-        works_object_type.has_geometry_point
-        or works_object_type.has_geometry_line
-        or works_object_type.has_geometry_polygon
-        for works_object_type in works_object_types
-    ):
+    if any(works_object_type.has_geometry for works_object_type in works_object_types):
         required_info.add(GeoTimeInfo.GEOMETRY)
 
     return required_info

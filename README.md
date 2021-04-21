@@ -151,7 +151,7 @@ http://localhost:9096?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities
 
 ### QGISSERVER LOGS
 
-Use ```docker-compose logs -f --tail=20 qgisserver to see qgisserver``` logs
+Use ```docker-compose logs -f --tail=20 qgisserver``` to see qgisserver logs
 
 ## Two factor authentification
 

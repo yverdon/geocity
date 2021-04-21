@@ -8,7 +8,7 @@
     {% for field in properties %}
       <dt>{{ field.label }}</dt>
       <dd>
-        {% if field.value == True %}
+        {% if field.value is True %}
           <em>{% trans "Oui" %}</em>
         {% elif not field.value %}
           {% trans "-" %}

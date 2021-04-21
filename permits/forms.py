@@ -861,6 +861,22 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         ]
 
         works_object_geometry_types = permit_request.works_object_types.all()
+        has_geom = any(
+            choice.works_object_type.has_geometry
+            for choice in works_object_type_choices
+        )
+        has_geom_point = any(
+            choice.works_object_type.has_geometry_point
+            for choice in works_object_type_choices
+        )
+        has_geom_line = any(
+            choice.works_object_type.has_geometry_line
+            for choice in works_object_type_choices
+        )
+        has_geom_polygon = any(
+            choice.works_object_type.has_geometry_polygon
+            for choice in works_object_type_choices
+        )
 
         options = {
             "administrative_entity_url": reverse(
@@ -880,20 +896,10 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             "default_center": [2539057, 1181111],
             "default_zoom": 10,
             "display_raw": False,
-            "edit_point": True
-            if True
-            in works_object_geometry_types.values_list("has_geometry_point", flat=True)
-            else False,
-            "edit_line": True
-            if True
-            in works_object_geometry_types.values_list("has_geometry_line", flat=True)
-            else False,
-            "edit_polygon": True
-            if True
-            in works_object_geometry_types.values_list(
-                "has_geometry_polygon", flat=True
-            )
-            else False,
+            "edit_geom": has_geom,
+            "edit_point": has_geom_point,
+            "edit_line": has_geom_line,
+            "edit_polygon": has_geom_polygon,
             "min_zoom": 5,
             "wmts_capabilities_url": settings.WMTS_GETCAP,
             "wmts_layer": settings.WMTS_LAYER,

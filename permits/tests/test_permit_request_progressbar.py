@@ -193,10 +193,7 @@ class PermitRequestProgressBarTestCase(LoggedInUserMixin, TestCase):
         self,
     ):
         permit_request = self.create_permit_request()
-        works_object_type = factories.WorksObjectTypeFactory(
-            has_geometry_point=False,
-            has_geometry_line=False,
-            has_geometry_polygon=False,
+        works_object_type = factories.WorksObjectTypeWithoutGeometryFactory(
             needs_date=False,
         )
         permit_request.works_object_types.set([works_object_type])
@@ -237,10 +234,7 @@ class PermitRequestProgressBarTestCase(LoggedInUserMixin, TestCase):
 
     def test_geotime_step_appears_when_only_date_is_required(self):
         permit_request = self.create_permit_request()
-        works_object_type = factories.WorksObjectTypeFactory(
-            has_geometry_point=False,
-            has_geometry_line=False,
-            has_geometry_polygon=False,
+        works_object_type = factories.WorksObjectTypeWithoutGeometryFactory(
             needs_date=True,
         )
         permit_request.works_object_types.set([works_object_type])

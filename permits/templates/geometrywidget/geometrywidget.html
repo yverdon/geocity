@@ -5,7 +5,7 @@
 {% load permits_extras %}
 
 <div id="geometry-widget-{{ id }}" data-initialize="{% if "__prefix__" in id %}0{% else %}1{% endif %}" data-map-target="{{ id }}_map" data-options="{{ options|json }}" data-geometry-widget >
-  {% if options.edit_point or options.edit_line or options.edit_polygon %}
+  {% if options.edit_geom %}
     <div>
       <button type="button" class="btn btn-outline-warning" title="Cliquer dans la carte pour ajouter des dessins"
          role="button" data-action="enableDrawing">

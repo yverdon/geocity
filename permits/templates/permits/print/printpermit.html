@@ -35,7 +35,7 @@
   <h4>{{ object }}</h4>
     {% for field in properties %}
       {{ field.label }}: 
-        {% if field.value == True %}
+        {% if field.value is True %}
           <em>{% trans "Oui" %}</em>
         {% elif not field.value %}
           {% trans "-" %}

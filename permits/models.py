@@ -519,6 +519,14 @@ class WorksObjectType(models.Model):
     def __str__(self):
         return "{} ({})".format(self.works_object.name, self.works_type.name)
 
+    @property
+    def has_geometry(self):
+        return (
+            self.has_geometry_point
+            or self.has_geometry_line
+            or self.has_geometry_polygon
+        )
+
 
 class WorksObject(models.Model):
     name = models.CharField(_("nom"), max_length=255)
