@@ -29,6 +29,7 @@ def permit_request_summary(context, permit_request):
 
     objects_infos = services.get_permit_objects(permit_request)
     contacts = services.get_contacts_summary(permit_request)
+    is_paid = services.permit_requests_has_paid_wot(permit_request)
 
     PermitRequestGeoTimeFormSet = modelformset_factory(
         models.PermitRequestGeoTime, form=forms.PermitRequestGeoTimeForm, extra=0,
@@ -40,17 +41,17 @@ def permit_request_summary(context, permit_request):
         queryset=permit_request.geo_time.all(),
     )
 
-    if permit_request.creditor_type is not None:
-        creditor = permit_request.get_creditor_type_display()
-    elif permit_request.author.user and permit_request.creditor_type is None:
-        creditor = (
-            _("Auteur de la demande, ")
-            + permit_request.author.user.first_name
-            + " "
-            + permit_request.author.user.last_name
-        )
-    else:
-        creditor = ""
+    creditor = ""
+    if is_paid:
+        if permit_request.creditor_type is not None:
+            creditor = permit_request.get_creditor_type_display()
+        elif permit_request.author.user and permit_request.creditor_type is None:
+            creditor = (
+                _("Auteur de la demande, ")
+                + permit_request.author.user.first_name
+                + " "
+                + permit_request.author.user.last_name
+            )
 
     return {
         "creditor": creditor,
@@ -60,6 +61,7 @@ def permit_request_summary(context, permit_request):
         "intersected_geometries": permit_request.intersected_geometries
         if permit_request.intersected_geometries != ""
         else None,
+        "is_paid": is_paid,
     }
 
 

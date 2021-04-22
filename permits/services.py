@@ -1071,6 +1071,12 @@ def can_edit_permit_request(user, permit_request):
     )
 
 
+def permit_requests_has_paid_wot(permit_request):
+    return True in [
+        permit.is_paid for permit in permit_request.works_object_types.all()
+    ]
+
+
 def get_contacts_summary(permit_request):
 
     actor_types = dict(models.ACTOR_TYPE_CHOICES)
