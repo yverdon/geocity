@@ -28,7 +28,7 @@
     {% if options.edit_point %}
       <div data-action="editPoints" class="form-check form-check-inline">
         <label class="form-check-label no-wildcard" title="Cliquer pour ajouter un point">
-          <input id="geom_point" class="form-check-input" title="Cliquer pour ajouter un point" type="radio" name="inlineRadioOptions" data-action="setDrawInteraction" data-interaction-type="MultiPoint">
+          <input class="form-check-input" title="Cliquer pour ajouter un point" type="radio" name="inlineRadioOptions" data-action="setDrawInteraction" data-interaction-type="MultiPoint">
           Points<img src="{% static 'images/geometrywidget/points.svg'%}" height=30>
         </label>
       </div>
@@ -36,7 +36,7 @@
     {% if options.edit_line %}
       <div data-action="editLines" class="form-check form-check-inline">
         <label class="form-check-label no-wildcard" title="Double clique pour terminer la construction">
-          <input id="geom_line" class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions" data-action="setDrawInteraction" data-interaction-type="MultiLineString">
+          <input class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions" data-action="setDrawInteraction" data-interaction-type="MultiLineString">
           Lignes<img src="{% static 'images/geometrywidget/polyline.svg'%}" height=30>
         </label>
       </div>
@@ -44,7 +44,7 @@
     {% if options.edit_polygon %}
       <div data-action="editPolygons" class="form-check form-check-inline">
         <label class="form-check-label no-wildcard" title="Double clique pour terminer la construction">
-          <input id="geom_polygon" class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions" data-action="setDrawInteraction" data-interaction-type="MultiPolygon">
+          <input class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions" data-action="setDrawInteraction" data-interaction-type="MultiPolygon">
           Surfaces<img src="{% static 'images/geometrywidget/polygon.svg'%}" height=30>
         </label>
       </div>

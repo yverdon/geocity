@@ -523,22 +523,32 @@
     this.map.addInteraction(this.interactions.modify);
     this.map.addInteraction(this.interactions.select);
     
+    // Get the first element of each form-check-input which are geometry types and check the radio button setDrawInteraction
     if (this.options.geometry_db_type == "GeometryCollection") {
-      // Get the first element of form-check-input which are geometry types and check the radio button setDrawInteraction
-      switch($(".form-check-input").first().attr("id")) {
-        case "geom_point":
-          $("#geom_point").prop("checked", true);
-          this.setDrawInteraction("MultiPoint");
-          break;
-        case "geom_line":
-          $("#geom_line").prop("checked", true);
-          this.setDrawInteraction("MultiLineString");
-          break;
-        case "geom_polygon":
-          $("#geom_polygon").prop("checked", true);
-          this.setDrawInteraction("MultiPolygon");
-          break;
-      }
+      let first_geom_type = $(".form-check-input").first().attr("data-interaction-type"); // First geometry type
+      let geometry_widget = this; // geometry_widget ref, we can't access with "this" inside the switch
+
+      // Check if each geometry type is of the same type than the first, if yes, check and setDrawInteraction
+      $(".form-check-input").each(function(index, value) {
+        let current_element = $(this);
+        if (current_element.attr("data-interaction-type") == first_geom_type)
+        {
+          switch(first_geom_type) {
+            case "MultiPoint":
+              current_element.prop("checked", true);
+              geometry_widget.setDrawInteraction("MultiPoint");
+              break;
+            case "MultiLineString":
+              current_element.prop("checked", true);
+              geometry_widget.setDrawInteraction("MultiLineString");
+              break;
+            case "MultiPolygon":
+              current_element.prop("checked", true);
+              geometry_widget.setDrawInteraction("MultiPolygon");
+              break;
+          }
+        }
+      });
     } else {
       this.setDrawInteraction(this.options.geometry_db_type);
     }
