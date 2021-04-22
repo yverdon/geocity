@@ -783,3 +783,10 @@ class PermitRequestAmendPropertyValue(models.Model):
 
     class Meta:
         unique_together = [("property", "works_object_type_choice")]
+
+
+class QgisTemplate(models.Model):
+    qgis_file = models.FileField(upload_to="qgis_templates")
+    qgis_name = models.CharField(max_length=150)
+    description = models.CharField(max_length=150)
+    works_object_type = models.ForeignKey(WorksObjectType, on_delete=models.CASCADE)
