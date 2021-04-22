@@ -57,6 +57,30 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
 class WorksObjectTypeAdmin(admin.ModelAdmin):
     list_display = ["__str__", works_object_type_administrative_entities, "is_public"]
     list_filter = ["administrative_entities"]
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "works_type",
+                    "works_object",
+                    "administrative_entities",
+                    "is_public",
+                )
+            },
+        ),
+        (
+            "Planning et localisation",
+            {
+                "fields": (
+                    "has_geometry_point",
+                    "has_geometry_line",
+                    "has_geometry_polygon",
+                    "needs_date",
+                )
+            },
+        ),
+    )
     form = WorksObjectTypeAdminForm
 
     def get_queryset(self, request):

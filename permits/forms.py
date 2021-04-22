@@ -433,7 +433,7 @@ class DjangoAuthUserForm(forms.ModelForm):
         max_length=254,
         label=_("Email"),
         widget=forms.TextInput(
-            attrs={"placeholder": "ex: example@example.com", "required": "required"}
+            attrs={"placeholder": "ex: exemple@exemple.com", "required": "required"}
         ),
     )
     required_css_class = "required"
@@ -554,7 +554,7 @@ class PermitRequestActorForm(forms.ModelForm):
     email = forms.EmailField(
         max_length=100,
         label=_("Email"),
-        widget=forms.TextInput(attrs={"placeholder": "ex: example@example.com",}),
+        widget=forms.TextInput(attrs={"placeholder": "ex: exemple@exemple.com",}),
     )
     address = forms.CharField(
         max_length=100,
@@ -860,6 +860,25 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             if works_object_type_choice.works_object_type.works_object.wms_layers != ""
         ]
 
+        works_object_types = {
+            choice.works_object_type for choice in works_object_type_choices
+        }
+        has_geom = any(
+            works_object_type.has_geometry for works_object_type in works_object_types
+        )
+        has_geom_point = any(
+            works_object_type.has_geometry_point
+            for works_object_type in works_object_types
+        )
+        has_geom_line = any(
+            works_object_type.has_geometry_line
+            for works_object_type in works_object_types
+        )
+        has_geom_polygon = any(
+            works_object_type.has_geometry_polygon
+            for works_object_type in works_object_types
+        )
+
         options = {
             "administrative_entity_url": reverse(
                 "permits:administrative_entities_geojson",
@@ -878,7 +897,10 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             "default_center": [2539057, 1181111],
             "default_zoom": 10,
             "display_raw": False,
-            "edit_geom": True,
+            "edit_geom": has_geom,
+            "edit_point": has_geom_point,
+            "edit_line": has_geom_line,
+            "edit_polygon": has_geom_polygon,
             "min_zoom": 5,
             "wmts_capabilities_url": settings.WMTS_GETCAP,
             "wmts_layer": settings.WMTS_LAYER,

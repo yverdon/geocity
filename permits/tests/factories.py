@@ -241,6 +241,18 @@ class WorksObjectTypeFactory(factory.django.DjangoModelFactory):
     is_public = True
 
 
+class WorksObjectTypeWithoutGeometryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.WorksObjectType
+
+    works_object = factory.SubFactory(WorksObjectFactory)
+    works_type = factory.SubFactory(WorksTypeFactory)
+    is_public = True
+    has_geometry_point = False
+    has_geometry_line = False
+    has_geometry_polygon = False
+
+
 class WorksObjectTypeChoiceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.WorksObjectTypeChoice

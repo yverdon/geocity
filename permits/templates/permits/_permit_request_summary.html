@@ -8,8 +8,10 @@
     {% for field in properties %}
       <dt>{{ field.label }}</dt>
       <dd>
-        {% if not field.value %}
-          <em>{% trans "Information non fournie" %}</em>
+        {% if field.value is True %}
+          <em>{% trans "Oui" %}</em>
+        {% elif not field.value %}
+          {% trans "-" %}
         {% else %}
           {{ field.value }}
         {% endif %}

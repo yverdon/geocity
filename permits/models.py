@@ -505,7 +505,9 @@ class WorksObjectType(models.Model):
         verbose_name=_("communes"),
         related_name="works_object_types",
     )
-    needs_geometry = models.BooleanField(_("avec géométrie"), default=True)
+    has_geometry_point = models.BooleanField(_("Point"), default=True)
+    has_geometry_line = models.BooleanField(_("Ligne"), default=True)
+    has_geometry_polygon = models.BooleanField(_("Surface"), default=True)
     needs_date = models.BooleanField(_("avec période de temps"), default=True)
     is_public = models.BooleanField(_("Public"), default=False)
 
@@ -516,6 +518,14 @@ class WorksObjectType(models.Model):
 
     def __str__(self):
         return "{} ({})".format(self.works_object.name, self.works_type.name)
+
+    @property
+    def has_geometry(self):
+        return (
+            self.has_geometry_point
+            or self.has_geometry_line
+            or self.has_geometry_polygon
+        )
 
 
 class WorksObject(models.Model):
