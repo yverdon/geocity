@@ -523,9 +523,23 @@
     this.map.addInteraction(this.interactions.modify);
     this.map.addInteraction(this.interactions.select);
     
-    // We don't need default DrawInteraction anymore, users are always using the default one instead of picking the best for their case
-    // If you want to put back the default DrawInteraction, add an else and add this line -> this.setDrawInteraction("MultiPoint");
-    if (!this.options.geometry_db_type == "GeometryCollection") {
+    if (this.options.geometry_db_type == "GeometryCollection") {
+      // Get the first element of form-check-input which are geometry types and check the radio button setDrawInteraction
+      switch($(".form-check-input").first().attr("id")) {
+        case "geom_point":
+          $("#geom_point").prop("checked", true);
+          this.setDrawInteraction("MultiPoint");
+          break;
+        case "geom_line":
+          $("#geom_line").prop("checked", true);
+          this.setDrawInteraction("MultiLineString");
+          break;
+        case "geom_polygon":
+          $("#geom_polygon").prop("checked", true);
+          this.setDrawInteraction("MultiPolygon");
+          break;
+      }
+    } else {
       this.setDrawInteraction(this.options.geometry_db_type);
     }
     this.map.on("pointermove", function (evt) {
