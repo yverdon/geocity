@@ -50,7 +50,7 @@
 {% if contacts %}
   <br>
   <h4>{% trans "Contacts" %}</h4>
-    {% if is_paid %}
+    {% if requires_payment %}
       <b>Destinataire de la facture</b>: {{ creditor }}
     {% endif %}
     {% for contact_type, contact_infos in contacts %}

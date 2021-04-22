@@ -18,7 +18,7 @@
     {% csrf_token %}
     {{ formset.management_form }}
     <br>
-    {% if is_paid %}
+    {% if requires_payment %}
       <h4>Adresse de facturation si différente de celle de l'auteur</h4>
       {% bootstrap_form creditorform layout='horizontal' %}
     {% endif %}

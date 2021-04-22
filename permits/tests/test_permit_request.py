@@ -753,7 +753,7 @@ class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_permitrequestactor_creditor_field_is_hidden_if_wot_is_not_paid(self):
-        works_object_type = factories.WorksObjectTypeFactory(is_paid=False)
+        works_object_type = factories.WorksObjectTypeFactory(requires_payment=False)
         works_type = works_object_type.works_type
 
         factories.PermitActorTypeFactory(is_mandatory=True, works_type=works_type)
@@ -789,14 +789,14 @@ class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
             0,
         )
 
-    def test_permitrequestactor_creditor_field_is_shown_if_at_least_one_wot_is_paid(
+    def test_permitrequestactor_creditor_field_is_shown_if_at_least_one_wot_requires_payment(
         self,
     ):
 
         free_works_object_types = factories.WorksObjectTypeFactory.create_batch(
-            2, is_paid=False
+            2, requires_payment=False
         )
-        paid_works_object_type = factories.WorksObjectTypeFactory(is_paid=True)
+        paid_works_object_type = factories.WorksObjectTypeFactory(requires_payment=True)
         works_types = [wt.works_type for wt in free_works_object_types] + [
             paid_works_object_type.works_type
         ]

@@ -103,7 +103,7 @@ class WorksObjectTypeAdmin(admin.ModelAdmin):
                     "works_object",
                     "administrative_entities",
                     "is_public",
-                    "is_paid",
+                    "requires_payment",
                 )
             },
         ),
