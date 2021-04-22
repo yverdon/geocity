@@ -107,6 +107,10 @@ class WorksObjectTypeAdmin(admin.ModelAdmin):
             },
         ),
         ("Planning et localisation", {"fields": ("geometry_types", "needs_date",)},),
+        (
+            "Directive",
+            {"fields": ("directive", "directive_description", "additional_information",)},
+        ),
     )
     form = WorksObjectTypeAdminForm
 
