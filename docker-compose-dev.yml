@@ -2,6 +2,7 @@ version: "3"
 
 volumes:
     gmsdata:
+    pgdata:
 
 services:
     web:
@@ -47,3 +48,5 @@ services:
             - POSTGRES_DB=${PGDATABASE}
         ports:
             - "${POSTGRES_DOCKER_PORT}:5432"
+        volumes:
+            - pgdata:/var/lib/postgresql/data
