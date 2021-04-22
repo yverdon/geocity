@@ -528,7 +528,7 @@
       let first_geom_type = $(".form-check-input").first().attr("data-interaction-type"); // First geometry type
       let geometry_widget = this; // geometry_widget ref, we can't access with "this" inside the switch
 
-      // Check if each geometry type is of the same type than the first, if yes, check and setDrawInteraction
+      // Check if each geometry type is of the same type than the first, if true, put checked and setDrawInteraction
       $(".form-check-input").each(function(index, value) {
         let current_element = $(this);
         if (current_element.attr("data-interaction-type") == first_geom_type)
