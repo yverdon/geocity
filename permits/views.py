@@ -3,6 +3,7 @@ import mimetypes
 import os
 import urllib.parse
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import (
     login_required,
@@ -24,6 +25,8 @@ from django.views import View
 from django_filters.views import FilterView
 from django_tables2.export.views import ExportMixin
 from django_tables2.views import SingleTableMixin, SingleTableView
+
+import requests
 
 from . import fields, filters, forms, models, printpermit, services, tables
 from .exceptions import BadPermitRequestStatus
@@ -188,6 +191,9 @@ class PermitRequestDetailView(View):
                 ),
                 "can_classify": services.can_classify_permit_request(
                     self.request.user, self.permit_request
+                ),
+                "print_templates": services.get_permit_request_print_templates(
+                    self.permit_request
                 ),
             },
         }
@@ -409,6 +415,45 @@ class PermitRequestDetailView(View):
         messages.success(self.request, message)
 
         return redirect("permits:permit_requests_list")
+
+
+def permit_request_print(request, permit_request_id, template_id):
+    permit_request = services.get_permit_request_for_user_or_404(
+        request.user, permit_request_id
+    )
+    template = get_object_or_404(models.QgisTemplate.objects, pk=template_id)
+
+    values = {
+        "SERVICE": "WMS",
+        "VERSION": "1.3.0",
+        "REQUEST": "GetPrint",
+        "FORMAT": "pdf",
+        "TRANSPARENT": "true",
+        "SRS": "EPSG:2056",
+        "DPI": "150",
+        "SERVICE": "WMS",
+        # FIXME doesn’t work at the moment: the QGIS_PROJECT_FILE environment variable
+        # takes precedence on this!
+        "MAP": os.path.join(
+            settings.QGIS_TEMPLATES_PATH_PREFIX,
+            # +1 is to strip the leading slash
+            template.qgis_file.path[len(settings.MEDIA_ROOT) + 1 :],
+        ),
+        "TEMPLATE": template.qgis_name,
+        "FILTER": f'demo_geojso_poc:"id" > {permit_request.pk - 1} AND "id" < {permit_request.pk + 1}',
+    }
+
+    qgisserver_url = "http://qgisserver/?" + urllib.parse.urlencode(values)
+    qgisserver_response = requests.get(
+        qgisserver_url, headers={"Accept": "application/pdf"}, stream=True
+    )
+
+    if not qgisserver_response:
+        assert False, qgisserver_response.content
+        # FIXME return a proper error here
+        return HttpResponse()
+
+    return StreamingHttpResponse(qgisserver_response.iter_content(chunk_size=128))
 
 
 @redirect_bad_status_to_detail

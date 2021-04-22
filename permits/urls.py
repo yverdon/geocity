@@ -41,6 +41,11 @@ existing_permit_request_urlpatterns = [
     path("printpdf/", views.printpdf, name="printpdf"),
     path("approve/", views.permit_request_approve, name="permit_request_approve"),
     path("reject/", views.permit_request_reject, name="permit_request_reject"),
+    path(
+        "print/<int:template_id>/",
+        views.permit_request_print,
+        name="permit_request_print",
+    ),
 ]
 
 urlpatterns = [

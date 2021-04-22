@@ -292,6 +292,8 @@ STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
+MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
+MEDIA_ROOT = os.environ.get("MEDIA_ROOT", os.path.join(BASE_DIR, "media"))
 
 PRIVATE_MEDIA_ROOT = os.environ["PRIVATE_MEDIA_ROOT"]
 
@@ -302,5 +304,6 @@ WMTS_LAYER = os.getenv("WMTS_LAYER")
 WMTS_GETCAP_ALTERNATIVE = os.getenv("WMTS_GETCAP_ALTERNATIVE")
 WMTS_LAYER_ALTERNATIVE = os.getenv("WMTS_LAYER_ALTERNATIVE")
 OL_MAP_HEIGHT = os.getenv("OL_MAP_HEIGHT")
+QGIS_TEMPLATES_PATH_PREFIX = "/data/media/"
 
 GRAPPELLI_ADMIN_TITLE = "Interface d'administration Geocity"

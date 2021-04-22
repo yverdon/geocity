@@ -1266,3 +1266,9 @@ def get_amend_custom_properties_values(permit_request):
         "works_object_type_choice__works_object_type",
         "property",
     )
+
+
+def get_permit_request_print_templates(permit_request):
+    return models.QgisTemplate.objects.filter(
+        works_object_type__in=permit_request.works_object_types.all()
+    )

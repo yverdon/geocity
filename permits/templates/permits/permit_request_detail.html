@@ -47,6 +47,12 @@
         </a>
       </li>
     {% endif %}
+
+    <li class="nav-item">
+      <a class="nav-link" id="print-tab" data-toggle="tab" href="#print" role="tab" aria-controls="print">
+        {% trans "Imprimer" %}
+      </a>
+    </li>
   </ul>
   <div class="pt-3 tab-content box box--default box--tabbed">
     {% if forms.amend %}
@@ -156,6 +162,17 @@
         </form>
       </div>
     {% endif %}
+
+    <div class="tab-pane" id="print" role="tabpanel" aria-labelledby="print-tab">
+      <form method="post">
+        {% csrf_token %}
+        {% for print_template in print_templates %}
+          <button formaction="{% url 'permits:permit_request_print' permit_request_id=permit_request.pk template_id=print_template.pk %}">
+            {{ print_template.description  }}
+          </button>
+        {% endfor %}
+      </form>
+    </div>
   </div>
 {% endif %}
 
