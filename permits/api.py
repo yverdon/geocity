@@ -1,13 +1,13 @@
-from rest_framework import viewsets
-from django.db.models import Prefetch, Q, F, CharField
-from django.contrib.gis.db.models.functions import GeomOutputGeoFunc
-from . import models, serializers, services
-from rest_framework.exceptions import APIException
 from django.contrib.auth.decorators import (
     login_required,
     permission_required,
     user_passes_test,
 )
+from django.db.models import CharField, F, Prefetch, Q
+from rest_framework import viewsets
+from rest_framework.permissions import BasePermission, IsAuthenticated
+
+from . import geoservices, models, serializers, services
 
 # ///////////////////////////////////
 # DJANGO REST API
@@ -94,21 +94,26 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
 # //////////////////////////////////
 
 
-class GeomToText(GeomOutputGeoFunc):
-    function = "ST_asText"
-    geom_param_pos = (0,)
-    output_field = CharField()
+class BlockRequesterUserPermission(BasePermission):
+    """
+    Block access to Permit Requesters (General Public)
+    """
+
+    def has_permission(self, request, view):
+        return request.user.get_all_permissions()
 
 
 class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Permit request endpoint Usage:
-        1.- /rest/permits/?permit-request-id=1
-        2.- /rest/permits/?works-object-type=1&status=0
-        3.- /rest/permits/?geom-type=lines | points | polygons
+        1.- /rest/permits/?permit_request_id=1
+        2.- /rest/permits/?works_object_type=1
+        3.- /rest/permits/?status=0
+        4.- /rest/permits/?geom_type=lines | points | polygons
     """
 
     serializer_class = serializers.PermitRequestPrintSerializer
+    permission_classes = [IsAuthenticated, BlockRequesterUserPermission]
 
     def get_queryset(self):
         """
@@ -117,70 +122,63 @@ class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
         """
         user = self.request.user
 
-        if not user.is_authenticated:
-            raise APIException(services.EndpointErrors.NO_AUTH.value)
-
-        work_objects_type = self.request.query_params.get("works-object-type", None)
+        works_object_type = self.request.query_params.get("works_object_type", None)
         status = self.request.query_params.get("status", None)
-        geom_type = self.request.query_params.get("geom-type", None)
-        permitrequest_id = self.request.query_params.get("permit-request-id", None)
+        geom_type = self.request.query_params.get("geom_type", None)
+        permit_request_id = self.request.query_params.get("permit_request_id", None)
 
         base_filter = Q()
 
-        if work_objects_type:
-            if work_objects_type.isdigit():
-                base_filter &= Q(works_object_types=work_objects_type)
+        if works_object_type:
+            if works_object_type.isdigit():
+                base_filter &= Q(works_object_types=works_object_type)
             else:
-                raise APIException(services.EndpointErrors.WOT_NOT_INT.value)
+                raise geoservices.ParameterWorksObjectTypeNotInt
 
         if status:
             if status.isdigit():
                 base_filter &= Q(status=status)
             else:
-                raise APIException(services.EndpointErrors.STATUS_NOT_INT.value)
+                raise geoservices.ParameterStatusNotInt
 
-        if permitrequest_id:
-            if permitrequest_id.isdigit():
-                base_filter &= Q(pk=permitrequest_id)
+        if permit_request_id:
+            if permit_request_id.isdigit():
+                base_filter &= Q(pk=permit_request_id)
             else:
-                raise APIException(services.EndpointErrors.PR_NOT_INT.value)
+                raise geoservices.ParameterPermitRequestNotInt
+
+        geom_qs = models.PermitRequestGeoTime.objects.all()
+
+        if geom_type:
+            if geom_type not in ("lines", "points", "polygons"):
+                raise geoservices.ParameterGeomTypeNotValid
+            geom_qs = geom_qs.annotate(geom_type=geoservices.GeomStAsText(F("geom"),))
+            if geom_type == "lines":
+                geom_qs = geom_qs.filter(geom_type__contains="LINE")
+            if geom_type == "points":
+                geom_qs = geom_qs.filter(geom_type__contains="POINT")
+            if geom_type == "polygons":
+                geom_qs = geom_qs.filter(geom_type__contains="POLY")
+            base_filter &= Q(
+                id__in=set(geom_qs.values_list("permit_request_id", flat=True))
+            )
+
+        geotime_prefetch = Prefetch("geo_time", queryset=geom_qs)
 
         works_object_types_prefetch = Prefetch(
             "works_object_types",
             queryset=models.WorksObjectType.objects.select_related("works_type"),
         )
 
-        geom_qs = models.PermitRequestGeoTime.objects.only("geom")
-
-        if geom_type:
-            if geom_type not in ("lines", "points", "polygons"):
-                raise APIException(services.EndpointErrors.GEO_NOT_VALID.value)
-            geom_qs = geom_qs.annotate(geom_type=GeomToText(F("geom"),))
-            if geom_type == "lines":
-                geom_qs = geom_qs.filter(geom_type__icontains="line")
-            if geom_type == "points":
-                geom_qs = geom_qs.filter(geom_type__icontains="point")
-            if geom_type == "polygons":
-                geom_qs = geom_qs.filter(geom_type__icontains="poly")
-            base_filter &= Q(id__in=geom_qs)
-
-        geotime_prefetch = Prefetch("geo_time", queryset=geom_qs)
-
-        try:
-            qs = (
-                models.PermitRequest.objects.filter(base_filter)
-                .filter(
-                    Q(id__in=services.get_permit_requests_list_for_user(user))
-                    | Q(is_public=True)
-                )
-                .prefetch_related(works_object_types_prefetch)
-                .prefetch_related(geotime_prefetch)
-                .select_related("administrative_entity")
+        qs = (
+            models.PermitRequest.objects.filter(base_filter)
+            .filter(
+                Q(id__in=services.get_permit_requests_list_for_user(user))
+                | Q(is_public=True)
             )
-        except ValueError as e:
-            raise APIException(e)
-
-        if not qs:
-            raise APIException(services.EndpointErrors.PR_NOT_EXISTS.value)
+            .prefetch_related(works_object_types_prefetch)
+            .prefetch_related(geotime_prefetch)
+            .select_related("administrative_entity")
+        )
 
         return qs

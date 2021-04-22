@@ -7,11 +7,12 @@ from django.contrib.gis.geos import (
     Point,
 )
 from django.test import TestCase
+from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 
 from permits import models
 
-from ..services import EndpointErrors
+from ..geoservices import EndpointErrors
 from . import factories
 
 
@@ -118,23 +119,17 @@ class PermitRequestAPITestCase(TestCase):
 
     def test_api_normal_user(self):
         self.client.login(username=self.normal_user.username, password="password")
-        response = self.client.get("/rest/permits/", {})
+        response = self.client.get(reverse("permits-list"), {})
         response_json = response.json()
-        permit_requests = models.PermitRequest.objects.filter(
-            author__user_id=self.normal_user.id
-        ).only("id")
-        permit_requests_ids = [perm.id for perm in permit_requests]
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response_json["features"]), permit_requests.count())
-        for i, perm in enumerate(permit_requests):
-            self.assertIn(
-                response_json["features"][i]["properties"]["PermitRequest-id"],
-                permit_requests_ids,
-            )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.json()["detail"],
+            "Vous n'avez pas la permission d'effectuer cette action.",
+        )
 
     def test_api_admin_user(self):
         self.client.login(username=self.admin_user.username, password="password")
-        response = self.client.get("/rest/permits/", {})
+        response = self.client.get(reverse("permits-list"), {})
         response_json = response.json()
         permit_requests = models.PermitRequest.objects.all().only("id")
         permit_requests_ids = [perm.id for perm in permit_requests]
@@ -142,7 +137,7 @@ class PermitRequestAPITestCase(TestCase):
         self.assertEqual(len(response_json["features"]), permit_requests.count())
         for i, perm in enumerate(permit_requests):
             self.assertIn(
-                response_json["features"][i]["properties"]["PermitRequest-id"],
+                response_json["features"][i]["properties"]["permit_request_id"],
                 permit_requests_ids,
             )
 
@@ -156,7 +151,7 @@ class PermitRequestAPITestCase(TestCase):
             groups=[validation.department.group, factories.ValidatorGroupFactory()]
         )
         self.client.login(username=validator_user.username, password="password")
-        response = self.client.get("/rest/permits/", {})
+        response = self.client.get(reverse("permits-list"), {})
         response_json = response.json()
         permit_requests_all = models.PermitRequest.objects.all().only("id")
         permit_requests = permit_requests_all.filter(
@@ -168,13 +163,13 @@ class PermitRequestAPITestCase(TestCase):
         self.assertEqual(len(response_json["features"]), permit_requests.count())
         for i, perm in enumerate(permit_requests):
             self.assertIn(
-                response_json["features"][i]["properties"]["PermitRequest-id"],
+                response_json["features"][i]["properties"]["permit_request_id"],
                 permit_requests_ids,
             )
 
     def test_api_secretaire_user(self):
         self.client.login(username=self.secretariat_user.username, password="password")
-        response = self.client.get("/rest/permits/", {})
+        response = self.client.get(reverse("permits-list"), {})
         response_json = response.json()
         permit_requests = models.PermitRequest.objects.all().only("id")
         permit_requests_ids = [perm.id for perm in permit_requests]
@@ -182,14 +177,14 @@ class PermitRequestAPITestCase(TestCase):
         self.assertEqual(len(response_json["features"]), permit_requests.count())
         for i, perm in enumerate(permit_requests):
             self.assertIn(
-                response_json["features"][i]["properties"]["PermitRequest-id"],
+                response_json["features"][i]["properties"]["permit_request_id"],
                 permit_requests_ids,
             )
 
     def test_api_filtering_by_status(self):
         self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(
-            "/rest/permits/", {"status": models.PermitRequest.STATUS_APPROVED},
+            reverse("permits-list"), {"status": models.PermitRequest.STATUS_APPROVED},
         )
         response_json = response.json()
         permit_requests_all = models.PermitRequest.objects.all().only("id")
@@ -203,11 +198,11 @@ class PermitRequestAPITestCase(TestCase):
         self.assertLess(len(response_json["features"]), permit_requests_all.count())
         for i, perm in enumerate(permit_requests):
             self.assertIn(
-                response_json["features"][i]["properties"]["PermitRequest-id"],
+                response_json["features"][i]["properties"]["permit_request_id"],
                 permit_requests_ids,
             )
             self.assertEqual(
-                response_json["features"][i]["properties"]["PermitRequest-status"],
+                response_json["features"][i]["properties"]["permit_request_status"],
                 models.PermitRequest.STATUS_APPROVED,
             )
 
@@ -217,7 +212,7 @@ class PermitRequestAPITestCase(TestCase):
         permit_requests_all_ids = [perm.id for perm in permit_requests_all]
         permit_requests = permit_requests_all.filter(id=permit_requests_all_ids[0])
         response = self.client.get(
-            "/rest/permits/", {"permit-request-id": permit_requests_all_ids[0]},
+            reverse("permits-list"), {"permit_request_id": permit_requests_all_ids[0]},
         )
         response_json = response.json()
         self.assertEqual(response.status_code, 200)
@@ -226,7 +221,7 @@ class PermitRequestAPITestCase(TestCase):
         self.assertNotEqual(permit_requests.count(), permit_requests_all.count())
         self.assertEqual(permit_requests.count(), 1)
         self.assertEqual(
-            response_json["features"][0]["properties"]["PermitRequest-id"],
+            response_json["features"][0]["properties"]["permit_request_id"],
             permit_requests_all_ids[0],
         )
 
@@ -238,7 +233,8 @@ class PermitRequestAPITestCase(TestCase):
         )
         permit_requests_ids = [perm.id for perm in permit_requests]
         response = self.client.get(
-            "/rest/permits/", {"works-object-type": self.works_object_types[1].id},
+            reverse("permits-list"),
+            {"works_object_type": self.works_object_types[1].id},
         )
         response_json = response.json()
         self.assertEqual(response.status_code, 200)
@@ -247,54 +243,59 @@ class PermitRequestAPITestCase(TestCase):
         for i, perm in enumerate(permit_requests):
             self.assertEqual(
                 response_json["features"][i]["properties"][
-                    "PermitRequest-works_object_types"
+                    "permit_request_works_object_types"
                 ],
                 [self.works_object_types[1].id],
             )
             self.assertIn(
-                response_json["features"][i]["properties"]["PermitRequest-id"],
+                response_json["features"][i]["properties"]["permit_request_id"],
                 permit_requests_ids,
             )
 
     def test_api_bad_permit_id_type_parameter_raises_exception(self):
         self.client.login(username=self.secretariat_user.username, password="password")
         response = self.client.get(
-            "/rest/permits/", {"permit-request-id": "bad_permit_id_type"}
+            reverse("permits-list"), {"permit_request_id": "bad_permit_id_type"}
         )
-        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["detail"], EndpointErrors.PR_NOT_INT.value)
 
     def test_api_bad_works_object_type_id_type_parameter_raises_exception(self):
         self.client.login(username=self.secretariat_user.username, password="password")
         response = self.client.get(
-            "/rest/permits/", {"works-object-type": "bad_works_object_type_id_type"}
+            reverse("permits-list"),
+            {"works_object_type": "bad_works_object_type_id_type"},
         )
-        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["detail"], EndpointErrors.WOT_NOT_INT.value)
 
     def test_api_bad_status_type_parameter_raises_exception(self):
         self.client.login(username=self.secretariat_user.username, password="password")
-        response = self.client.get("/rest/permits/", {"status": "bad_status_type"})
-        self.assertEqual(response.status_code, 500)
+        response = self.client.get(
+            reverse("permits-list"), {"status": "bad_status_type"}
+        )
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["detail"], EndpointErrors.STATUS_NOT_INT.value)
 
     def test_api_bad_geom_type_parameter_raises_exception(self):
         self.client.login(username=self.secretariat_user.username, password="password")
-        response = self.client.get("/rest/permits/", {"geom-type": "whatever"})
-        self.assertEqual(response.status_code, 500)
+        response = self.client.get(reverse("permits-list"), {"geom_type": "whatever"})
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["detail"], EndpointErrors.GEO_NOT_VALID.value)
 
-    def test_not_authenticated_user_raises_exception(self):
-        response = self.client.get("/rest/permits/", {})
-        self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.json()["detail"], EndpointErrors.NO_AUTH.value)
+    def test_non_authenticated_user_raises_exception(self):
+        response = self.client.get(reverse("permits-list"), {})
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.json()["detail"], "Informations d'authentification non fournies."
+        )
 
     def test_non_existent_permit_request_raises_exception(self):
         permit_requests = models.PermitRequest.objects.all().only("id")
         permit_requests_ids = [perm.id for perm in permit_requests]
         self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(
-            "/rest/permits/", {"permit-request-id": max(permit_requests_ids) + 1}
+            reverse("permits-list"), {"permit_request_id": max(permit_requests_ids) + 1}
         )
-        self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.json()["detail"], EndpointErrors.PR_NOT_EXISTS.value)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"type": "FeatureCollection", "features": []})
