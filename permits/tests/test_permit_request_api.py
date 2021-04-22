@@ -1,20 +1,18 @@
-from django.test import TestCase
 from django.contrib.gis.geos import (
     GeometryCollection,
-    MultiPolygon,
+    LineString,
     MultiLineString,
     MultiPoint,
+    MultiPolygon,
     Point,
-    LineString,
 )
-from ..services import EndpointErrors
+from django.test import TestCase
+from rest_framework.test import APIClient
 
 from permits import models
 
+from ..services import EndpointErrors
 from . import factories
-
-
-from rest_framework.test import APIClient
 
 
 class PermitRequestAPITestCase(TestCase):
