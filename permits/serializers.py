@@ -151,7 +151,7 @@ class PermitRequestGeoTimeEnvelopeSerializer(gis_serializers.GeoFeatureModelSeri
     envelope = gis_serializers.GeometrySerializerMethodField()
 
     def get_envelope(self, obj):
-        return obj.geom.envelope
+        return obj.geom.envelope if obj.geom else None
 
     class Meta:
         model = models.PermitRequestGeoTime
