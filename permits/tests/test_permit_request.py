@@ -612,6 +612,54 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             1,
         )
 
+    def test_summary_and_send_step_has_multiple_directive_fields_when_request_have_multiple_works_object_type(
+        self,
+    ):
+        group = factories.SecretariatGroupFactory()
+        first_works_object_type = factories.WorksObjectTypeFactory(
+            directive=SimpleUploadedFile("file.pdf", "contents".encode()),
+            directive_description="First directive description for a test",
+            additional_information="First additional information for a test",
+        )
+        second_works_object_type = factories.WorksObjectTypeFactory(
+            directive=SimpleUploadedFile("file.pdf", "contents".encode()),
+            directive_description="Second directive description for a test",
+            additional_information="Second additional information for a test",
+        )
+
+        permit_request = factories.PermitRequestGeoTimeFactory(
+            permit_request=factories.PermitRequestFactory(
+                administrative_entity=group.permitdepartment.administrative_entity,
+                author=self.user.permitauthor,
+                status=models.PermitRequest.STATUS_DRAFT,
+            )
+        ).permit_request
+
+        permit_request.works_object_types.set(
+            [first_works_object_type, second_works_object_type]
+        )
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_submit",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        parser = get_parser(response.content)
+
+        self.assertEqual(
+            len(parser.select("#legal-infos span.directive_description")), 2,
+        )
+
+        self.assertEqual(
+            len(parser.select("#legal-infos a.directive_file")), 2,
+        )
+
+        self.assertEqual(
+            len(parser.select("#legal-infos span.additional_information")), 2,
+        )
+
 
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):

@@ -22,3 +22,4 @@ private_documents/
 *.bak
 .coverage
 env.backup
+/media/

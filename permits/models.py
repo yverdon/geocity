@@ -4,6 +4,7 @@ import enum
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import JSONField
+from django.core.exceptions import ValidationError
 from django.core.validators import (
     FileExtensionValidator,
     MaxValueValidator,
@@ -114,12 +115,6 @@ class PermitAdministrativeEntity(models.Model):
     ofs_id = models.PositiveIntegerField(_("ofs_id"))
     link = models.URLField(_("Lien"), max_length=200, blank=True)
     archive_link = models.URLField(_("Archives externes"), max_length=1024, blank=True)
-    legal_document = fields.AministrativeEntityFileField(
-        _("Directive"), blank=True, upload_to="administrative_entity_files/"
-    )
-    general_informations = models.CharField(
-        _("Informations"), blank=True, max_length=1024,
-    )
     link = models.URLField(_("Lien"), max_length=200, blank=True)
     logo_main = fields.AministrativeEntityFileField(
         _("Logo principal"), blank=True, upload_to="administrative_entity_files/"
@@ -508,6 +503,16 @@ class WorksObjectType(models.Model):
     has_geometry_point = models.BooleanField(_("Point"), default=True)
     has_geometry_line = models.BooleanField(_("Ligne"), default=True)
     has_geometry_polygon = models.BooleanField(_("Surface"), default=True)
+    directive = models.FileField(
+        _("directive"),
+        validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
+        blank=True,
+    )
+    directive_description = models.CharField(
+        _("description de la directive"), max_length=200, blank=True
+    )
+    additional_information = models.TextField(_("autre information"), blank=True)
+    needs_geometry = models.BooleanField(_("avec géométrie"), default=True)
     needs_date = models.BooleanField(_("avec période de temps"), default=True)
     is_public = models.BooleanField(_("Public"), default=False)
 
@@ -526,6 +531,18 @@ class WorksObjectType(models.Model):
             or self.has_geometry_line
             or self.has_geometry_polygon
         )
+
+    def clean(self):
+        if bool(self.directive_description) ^ bool(self.directive):
+            raise ValidationError(
+                {
+                    "directive_description": _(
+                        "La description de directive ne devrait pas être définie car cet objet n’a pas de directive associée."
+                    )
+                    if not self.directive
+                    else _("Ce champ est obligatoire lorsqu’une directive est définie.")
+                }
+            )
 
 
 class WorksObject(models.Model):
