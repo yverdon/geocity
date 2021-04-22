@@ -860,22 +860,23 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             if works_object_type_choice.works_object_type.works_object.wms_layers != ""
         ]
 
-        works_object_geometry_types = permit_request.works_object_types.all()
+        works_object_types = {
+            choice.works_object_type for choice in works_object_type_choices
+        }
         has_geom = any(
-            choice.works_object_type.has_geometry
-            for choice in works_object_type_choices
+            works_object_type.has_geometry for works_object_type in works_object_types
         )
         has_geom_point = any(
-            choice.works_object_type.has_geometry_point
-            for choice in works_object_type_choices
+            works_object_type.has_geometry_point
+            for works_object_type in works_object_types
         )
         has_geom_line = any(
-            choice.works_object_type.has_geometry_line
-            for choice in works_object_type_choices
+            works_object_type.has_geometry_line
+            for works_object_type in works_object_types
         )
         has_geom_polygon = any(
-            choice.works_object_type.has_geometry_polygon
-            for choice in works_object_type_choices
+            works_object_type.has_geometry_polygon
+            for works_object_type in works_object_types
         )
 
         options = {
