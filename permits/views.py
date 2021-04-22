@@ -432,18 +432,11 @@ def permit_request_print(request, permit_request_id, template_id):
         "SRS": "EPSG:2056",
         "DPI": "150",
         "SERVICE": "WMS",
-        # FIXME doesn’t work at the moment: the QGIS_PROJECT_FILE environment variable
-        # takes precedence on this!
-        "MAP": os.path.join(
-            settings.QGIS_TEMPLATES_PATH_PREFIX,
-            # +1 is to strip the leading slash
-            template.qgis_file.path[len(settings.MEDIA_ROOT) + 1 :],
-        ),
+        "MAP": "/qgis_templates/" + str(template.qgis_file),
         "TEMPLATE": template.qgis_name,
         "FILTER": f'demo_geojso_poc:"id" > {permit_request.pk - 1} AND "id" < {permit_request.pk + 1}',
     }
-
-    qgisserver_url = "http://qgisserver/?" + urllib.parse.urlencode(values)
+    qgisserver_url = "http://qgisserver/ogc/?" + urllib.parse.urlencode(values)
     qgisserver_response = requests.get(
         qgisserver_url, headers={"Accept": "application/pdf"}, stream=True
     )
