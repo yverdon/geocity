@@ -17,8 +17,8 @@ def qgisserver_proxy(request):
     # Event getcapabilities requests are disabled
     if request.GET["REQUEST"] == "GetMap":
         data = urllib.parse.urlencode(request.GET)
-        format = request.GET["FORMAT"]
-        url = "http://qgisserver" + "/?" + data
+        # geocity.qgs is the default WMS user in geocity maps for mask layers for instance
+        url = "http://qgisserver/ogc/?" + data + "&MAP=/io/data/geocity.qgs"
         response = requests.get(url)
         return FileResponse(response, content_type=format)
 

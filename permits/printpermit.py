@@ -46,7 +46,7 @@ def get_map_url(geo_times, permit_id):
     }
 
     data = urllib.parse.urlencode(values)
-    printurl = "http://qgisserver" + "/?" + data
+    printurl = "http://qgisserver/ogc/" + "/?" + data
     return printurl
 
 
