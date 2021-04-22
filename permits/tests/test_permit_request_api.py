@@ -7,6 +7,7 @@ from django.contrib.gis.geos import (
     Point,
     LineString,
 )
+from ..services import EndpointErrors
 
 from permits import models
 
@@ -263,21 +264,7 @@ class PermitRequestAPITestCase(TestCase):
             "/rest/permits/", {"permit-request-id": "bad_permit_id_type"}
         )
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(
-            response.json()["detail"],
-            "Field 'id' expected a number but got 'bad_permit_id_type'.",
-        )
-
-    def test_api_bad_permit_id_type_parameter_raises_exception(self):
-        self.client.login(username=self.secretariat_user.username, password="password")
-        response = self.client.get(
-            "/rest/permits/", {"permit-request-id": "bad_permit_id_type"}
-        )
-        self.assertEqual(response.status_code, 500)
-        self.assertEqual(
-            response.json()["detail"],
-            "Le paramètre permit-request-id doit être un nombre",
-        )
+        self.assertEqual(response.json()["detail"], EndpointErrors.PR_NOT_INT.value)
 
     def test_api_bad_works_object_type_id_type_parameter_raises_exception(self):
         self.client.login(username=self.secretariat_user.username, password="password")
@@ -285,35 +272,24 @@ class PermitRequestAPITestCase(TestCase):
             "/rest/permits/", {"works-object-type": "bad_works_object_type_id_type"}
         )
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(
-            response.json()["detail"],
-            "Le paramètre works-object-type doit être un nombre",
-        )
+        self.assertEqual(response.json()["detail"], EndpointErrors.WOT_NOT_INT.value)
 
     def test_api_bad_status_type_parameter_raises_exception(self):
         self.client.login(username=self.secretariat_user.username, password="password")
         response = self.client.get("/rest/permits/", {"status": "bad_status_type"})
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(
-            response.json()["detail"], "Le paramètre status doit être un nombre",
-        )
+        self.assertEqual(response.json()["detail"], EndpointErrors.STATUS_NOT_INT.value)
 
     def test_api_bad_geom_type_parameter_raises_exception(self):
         self.client.login(username=self.secretariat_user.username, password="password")
         response = self.client.get("/rest/permits/", {"geom-type": "whatever"})
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(
-            response.json()["detail"],
-            "Les valeurs possibles du paramètre geom-type sont: lines, points ou polygons",
-        )
+        self.assertEqual(response.json()["detail"], EndpointErrors.GEO_NOT_VALID.value)
 
     def test_not_authenticated_user_raises_exception(self):
         response = self.client.get("/rest/permits/", {})
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(
-            response.json()["detail"],
-            "Vous devez vous authentifier avec le bon compte utilisateur",
-        )
+        self.assertEqual(response.json()["detail"], EndpointErrors.NO_AUTH.value)
 
     def test_non_existent_permit_request_raises_exception(self):
         permit_requests = models.PermitRequest.objects.all().only("id")
@@ -323,6 +299,4 @@ class PermitRequestAPITestCase(TestCase):
             "/rest/permits/", {"permit-request-id": max(permit_requests_ids) + 1}
         )
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(
-            response.json()["detail"], "La demande de permis n'existe pas.",
-        )
+        self.assertEqual(response.json()["detail"], EndpointErrors.PR_NOT_EXISTS.value)

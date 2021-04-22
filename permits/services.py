@@ -28,6 +28,17 @@ class GeoTimeInfo(enum.Enum):
     GEOMETRY = enum.auto()
 
 
+class EndpointErrors(enum.Enum):
+    NO_AUTH = _("Vous devez vous authentifier avec le bon compte utilisateur")
+    WOT_NOT_INT = _("Le paramètre works-object-type doit être un nombre")
+    STATUS_NOT_INT = _("Le paramètre status doit être un nombre")
+    PR_NOT_INT = _("Le paramètre permit-request-id doit être un nombre")
+    GEO_NOT_VALID = _(
+        "Les valeurs possibles du paramètre geom-type sont: lines, points ou polygons"
+    )
+    PR_NOT_EXISTS = _("Aucun résultat ne correspond à votre recherche")
+
+
 def get_works_object_type_choices(permit_request):
     return (
         models.WorksObjectTypeChoice.objects.filter(permit_request=permit_request)
