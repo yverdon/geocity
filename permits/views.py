@@ -446,13 +446,11 @@ def permit_request_print(request, permit_request_id, template_id):
     if not qgisserver_response:
         assert False, qgisserver_response.content
         # FIXME return a proper error here
-        return HttpResponse(
-            _("Une erreur est survenue lors de l'impression")
-        )
+        return HttpResponse(_("Une erreur est survenue lors de l'impression"))
 
-    return StreamingHttpResponse(qgisserver_response.iter_content(chunk_size=128),
-        content_type="application/pdf"
-     )
+    return StreamingHttpResponse(
+        qgisserver_response.iter_content(chunk_size=128), content_type="application/pdf"
+    )
 
 
 @redirect_bad_status_to_detail
@@ -1128,6 +1126,7 @@ def administrative_infos(request):
 # /////////////////////
 
 from django.http import FileResponse, HttpResponseNotFound, JsonResponse
+
 
 def demo_geojson(request):
 
