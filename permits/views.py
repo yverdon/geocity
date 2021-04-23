@@ -1130,3 +1130,62 @@ def genericauthorview(request, pk):
         form.fields[field].disabled = True
 
     return render(request, "permits/permit_request_author.html", {"form": form})
+
+
+@login_required
+def administrative_infos(request):
+
+    administrative_entities = models.PermitAdministrativeEntity.objects.all()
+
+    return render(
+        request,
+        "permits/administrative_infos.html",
+        {"administrative_entities": administrative_entities},
+    )
+
+
+# /////////////////////
+# FOR DEV ONLY UNITL YC-230 IS MERGED
+# /////////////////////
+
+from django.http import FileResponse, HttpResponseNotFound, JsonResponse
+
+def demo_geojson(request):
+
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    print("*******************QGIS QUERYING JSON******************")
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
+    demo_data = {
+        "type": "FeatureCollection",
+        "name": "poc",
+        "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:EPSG::2056"}},
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {"id": 1, "rueid": 75, "adrnumero": 6},
+                "geometry": {
+                    "type": "MultiPoint",
+                    "coordinates": [[2539015.02199999988, 1181127.158599998801947]],
+                },
+            },
+            {
+                "type": "Feature",
+                "properties": {"id": 2, "rueid": 109, "adrnumero": 4},
+                "geometry": {
+                    "type": "MultiPoint",
+                    "coordinates": [[2539057.793000001460314, 1181175.138599999249]],
+                },
+            },
+            {
+                "type": "Feature",
+                "properties": {"id": 3, "rueid": 75, "adrnumero": 8},
+                "geometry": {
+                    "type": "MultiPoint",
+                    "coordinates": [[2539001.561999998986721, 1181128.48959999904]],
+                },
+            },
+        ],
+    }
+
+    return JsonResponse(demo_data, safe=False)

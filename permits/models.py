@@ -786,8 +786,15 @@ class PermitRequestAmendPropertyValue(models.Model):
 
 
 class QgisTemplate(models.Model):
-    qgis_project_file = models.FileField(_("Fichier QGIS '*.qgs'"), upload_to="qgis_templates",)
-    qgis_print_template_name = models.CharField(_("Nom du template d'impression QGIS"), max_length=150,)
-    qgis_layers = models.CharField(_("Liste des couches QGIS à afficher séparées par les virgules ','"), max_length=250,)
+    qgis_project_file = models.FileField(
+        _("Fichier QGIS '*.qgs'"), upload_to="qgis_templates",
+    )
+    qgis_print_template_name = models.CharField(
+        _("Nom du template d'impression QGIS"), max_length=150,
+    )
+    qgis_layers = models.CharField(
+        _("Liste des couches QGIS à afficher séparées par les virgules ','"),
+        max_length=250,
+    )
     description = models.CharField(max_length=150)
     works_object_type = models.ForeignKey(WorksObjectType, on_delete=models.CASCADE)
