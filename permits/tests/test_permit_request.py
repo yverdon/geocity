@@ -201,7 +201,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"permit_request_id": permit_request.pk},
             )
         )
-        emails = get_emails("Nouvelle demande de permis")
+        emails = get_emails("Nouvelle demande")
 
         self.assertEqual(len(emails), 1)
         self.assertEqual(emails[0].to, ["secretariat@yverdon.ch"])
