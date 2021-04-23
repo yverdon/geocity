@@ -525,30 +525,9 @@
     
     // Get the first element of each form-check-input which are geometry types and check the radio button setDrawInteraction
     if (this.options.geometry_db_type == "GeometryCollection") {
-      let first_geom_type = $(".form-check-input").first().attr("data-interaction-type"); // First geometry type
-      let geometry_widget = this; // geometry_widget ref, we can't access with "this" inside the switch
-
-      // Check if each geometry type is of the same type than the first, if yes, check and setDrawInteraction
-      $(".form-check-input").each(function(index, value) {
-        let current_element = $(this);
-        if (current_element.attr("data-interaction-type") == first_geom_type)
-        {
-          switch(first_geom_type) {
-            case "MultiPoint":
-              current_element.prop("checked", true);
-              geometry_widget.setDrawInteraction("MultiPoint");
-              break;
-            case "MultiLineString":
-              current_element.prop("checked", true);
-              geometry_widget.setDrawInteraction("MultiLineString");
-              break;
-            case "MultiPolygon":
-              current_element.prop("checked", true);
-              geometry_widget.setDrawInteraction("MultiPolygon");
-              break;
-          }
-        }
-      });
+      const firstInteractionElem = $(".form-check-input[data-interaction-type]", this.el).first();
+      firstInteractionElem.prop("checked", true);
+      this.setDrawInteraction(firstInteractionElem.attr("data-interaction-type"));
     } else {
       this.setDrawInteraction(this.options.geometry_db_type);
     }
