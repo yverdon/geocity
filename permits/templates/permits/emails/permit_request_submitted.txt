@@ -1,8 +1,8 @@
 {% load i18n %}{% autoescape off %}{% trans "Bonjour," %}
 
-{% trans "Une nouvelle demande vient d'être soumise. Vous pouvez la consulter en cliquant sur le lien suivant:" %}
+{% trans "Une nouvelle demande vient d'être soumise." %}
 
-{{ permit_request_url }}
+{% trans "Vous pouvez la consulter sur le lien suivant" %}: {{ permit_request_url }}
 
 {% trans "Avec nos meilleures salutations," %}
 {{ administrative_entity.name }}
