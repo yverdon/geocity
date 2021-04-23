@@ -28,7 +28,7 @@ from django_tables2.views import SingleTableMixin, SingleTableView
 
 import requests
 
-from . import fields, filters, forms, models, printpermit, services, tables
+from . import fields, filters, forms, models, services, tables
 from .exceptions import BadPermitRequestStatus
 
 logger = logging.getLogger(__name__)
@@ -432,10 +432,12 @@ def permit_request_print(request, permit_request_id, template_id):
         "SRS": "EPSG:2056",
         "DPI": "150",
         "SERVICE": "WMS",
-        "MAP": "/qgis_templates/" + str(template.qgis_file),
-        "TEMPLATE": template.qgis_name,
-        "FILTER": f'demo_geojso_poc:"id" > {permit_request.pk - 1} AND "id" < {permit_request.pk + 1}',
+        "MAP": "/qgis_templates/" + str(template.qgis_project_file),
+        "TEMPLATE": template.qgis_print_template_name,
+        "ATLAS_PK": permit_request_id,
+        "LAYERS": template.qgis_layers,
     }
+
     qgisserver_url = "http://qgisserver/ogc/?" + urllib.parse.urlencode(values)
     qgisserver_response = requests.get(
         qgisserver_url, headers={"Accept": "application/pdf"}, stream=True
@@ -444,9 +446,13 @@ def permit_request_print(request, permit_request_id, template_id):
     if not qgisserver_response:
         assert False, qgisserver_response.content
         # FIXME return a proper error here
-        return HttpResponse()
+        return HttpResponse(
+            _("Une erreur est survenue lors de l'impression")
+        )
 
-    return StreamingHttpResponse(qgisserver_response.iter_content(chunk_size=128))
+    return StreamingHttpResponse(qgisserver_response.iter_content(chunk_size=128),
+        content_type="application/pdf"
+     )
 
 
 @redirect_bad_status_to_detail
@@ -1093,27 +1099,6 @@ def administrative_entity_file_download(request, path):
 
 
 @login_required
-def printpdf(request, permit_request_id):
-
-    permit_request = models.PermitRequest.objects.get(pk=permit_request_id)
-    if (
-        request.user.has_perm("permits.amend_permit_request")
-        and (
-            permit_request.has_validations()
-            and permit_request.get_pending_validations().count() == 0
-        )
-        or permit_request.status == 2
-    ):
-
-        pdf_file = printpermit.printreport(request, permit_request)
-        response = HttpResponse(pdf_file, content_type="application/pdf")
-        response["Content-Disposition"] = 'filename="permis.pdf"'
-        return response
-    else:
-        raise PermissionDenied
-
-
-@login_required
 def genericauthorview(request, pk):
 
     instance = get_object_or_404(models.PermitAuthor, pk=pk)
@@ -1136,3 +1121,50 @@ def administrative_infos(request):
         "permits/administrative_infos.html",
         {"administrative_entities": administrative_entities},
     )
+
+
+# /////////////////////
+# FOR DEV ONLY UNITL YC-230 IS MERGED
+# /////////////////////
+
+from django.http import FileResponse, HttpResponseNotFound, JsonResponse
+
+def demo_geojson(request):
+
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    print("*******************QGIS QUERYING JSON******************")
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
+    demo_data = {
+        "type": "FeatureCollection",
+        "name": "poc",
+        "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:EPSG::2056"}},
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {"id": 1, "rueid": 75, "adrnumero": 6},
+                "geometry": {
+                    "type": "MultiPoint",
+                    "coordinates": [[2539015.02199999988, 1181127.158599998801947]],
+                },
+            },
+            {
+                "type": "Feature",
+                "properties": {"id": 2, "rueid": 109, "adrnumero": 4},
+                "geometry": {
+                    "type": "MultiPoint",
+                    "coordinates": [[2539057.793000001460314, 1181175.138599999249]],
+                },
+            },
+            {
+                "type": "Feature",
+                "properties": {"id": 3, "rueid": 75, "adrnumero": 8},
+                "geometry": {
+                    "type": "MultiPoint",
+                    "coordinates": [[2539001.561999998986721, 1181128.48959999904]],
+                },
+            },
+        ],
+    }
+
+    return JsonResponse(demo_data, safe=False)
