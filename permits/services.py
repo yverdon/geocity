@@ -873,7 +873,7 @@ def submit_permit_request(permit_request, absolute_uri_func):
     )
     emails = [
         (
-            "Nouvelle demande de permis",
+            "Nouvelle demande",
             email_contents,
             settings.DEFAULT_FROM_EMAIL,
             [email_address],
@@ -891,7 +891,7 @@ def submit_permit_request(permit_request, absolute_uri_func):
     )
     emails.append(
         (
-            "Votre demande de permis",
+            "Votre demande",
             acknowledgment_email_contents,
             settings.DEFAULT_FROM_EMAIL,
             [permit_request.author.user.email],
@@ -934,7 +934,7 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
     )
     emails = [
         (
-            "Nouvelle demande de permis",
+            "Nouvelle demande",
             email_contents,
             settings.DEFAULT_FROM_EMAIL,
             [email_address],
