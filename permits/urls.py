@@ -37,7 +37,6 @@ existing_permit_request_urlpatterns = [
     ),
     path("geotime/", views.permit_request_geo_time, name="permit_request_geo_time"),
     path("delete/", views.permit_request_delete, name="permit_request_delete"),
-    path("printpdf/", views.printpdf, name="printpdf"),
     path("approve/", views.permit_request_approve, name="permit_request_approve"),
     path("reject/", views.permit_request_reject, name="permit_request_reject"),
     path(
@@ -76,4 +75,6 @@ urlpatterns = [
         name="administrative_entities_geojson",
     ),
     path("qgisserverproxy/", geoviews.qgisserver_proxy, name="qgisserver_proxy"),
+    # FOR YC-251 DEV PHASE
+    path("demo_geojson", views.demo_geojson, name="demo_geojson",),
 ]
