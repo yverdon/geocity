@@ -886,7 +886,7 @@ def submit_permit_request(permit_request, absolute_uri_func):
         {
             "permit_request_url": permit_request_url,
             "name": permit_request.author.user.get_full_name(),
-            "administrative_entity_name": permit_request.administrative_entity.name,
+            "administrative_entity": permit_request.administrative_entity,
         },
     )
     emails.append(
