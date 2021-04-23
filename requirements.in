@@ -17,10 +17,8 @@ PyYAML
 requests
 # Required by django-tables2, which doesn't list it in their requirements
 tablib
-WeasyPrint
 whitenoise
 tablib
-pycairo
 python-dotenv
 django-admin-sortable2
 django-grappelli
