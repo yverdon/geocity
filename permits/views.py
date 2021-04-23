@@ -28,7 +28,7 @@ from django_tables2.views import SingleTableMixin, SingleTableView
 
 import requests
 
-from . import fields, filters, forms, models, printpermit, services, tables
+from . import fields, filters, forms, models, services, tables
 from .exceptions import BadPermitRequestStatus
 
 logger = logging.getLogger(__name__)
@@ -432,10 +432,12 @@ def permit_request_print(request, permit_request_id, template_id):
         "SRS": "EPSG:2056",
         "DPI": "150",
         "SERVICE": "WMS",
-        "MAP": "/qgis_templates/" + str(template.qgis_file),
-        "TEMPLATE": template.qgis_name,
-        "FILTER": f'demo_geojso_poc:"id" > {permit_request.pk - 1} AND "id" < {permit_request.pk + 1}',
+        "MAP": "/qgis_templates/" + str(template.qgis_project_file),
+        "TEMPLATE": template.qgis_print_template_name,
+        "ATLAS_PK": permit_request_id,
+        "LAYERS": template.qgis_layers,
     }
+
     qgisserver_url = "http://qgisserver/ogc/?" + urllib.parse.urlencode(values)
     qgisserver_response = requests.get(
         qgisserver_url, headers={"Accept": "application/pdf"}, stream=True
@@ -444,9 +446,13 @@ def permit_request_print(request, permit_request_id, template_id):
     if not qgisserver_response:
         assert False, qgisserver_response.content
         # FIXME return a proper error here
-        return HttpResponse()
+        return HttpResponse(
+            _("Une erreur est survenue lors de l'impression")
+        )
 
-    return StreamingHttpResponse(qgisserver_response.iter_content(chunk_size=128))
+    return StreamingHttpResponse(qgisserver_response.iter_content(chunk_size=128),
+        content_type="application/pdf"
+     )
 
 
 @redirect_bad_status_to_detail
