@@ -87,7 +87,7 @@ class PermitDepartment(models.Model):
     group = models.OneToOneField(Group, on_delete=models.CASCADE)
     description = models.CharField(_("description"), max_length=100, default="Service")
     is_validator = models.BooleanField(_("is_validator"))
-    is_admin = models.BooleanField(_("is_admin"))
+    is_integrator_admin = models.BooleanField(_("Intégrateur (accès à l'admin Django)"), default=False)
     is_archeologist = models.BooleanField(_("is_archeologist"))
     administrative_entity = models.ForeignKey(
         "PermitAdministrativeEntity",
@@ -144,6 +144,11 @@ class PermitAdministrativeEntity(models.Model):
                 message="Seuls les chiffres et les espaces sont autorisés.",
             )
         ],
+    )
+    integrator = models.ForeignKey(Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs")
     )
     geom = geomodels.MultiPolygonField(_("geom"), null=True, srid=2056)
 
@@ -273,6 +278,11 @@ class PermitActorType(models.Model):
         related_name="works_contact_types",
     )
     is_mandatory = models.BooleanField(_("obligatoire"), default=True)
+    integrator = models.ForeignKey(Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs")
+    )
 
     class Meta:
         verbose_name = _("1.6 Configuration du contact")
@@ -465,7 +475,11 @@ class WorksType(models.Model):
         (META_TYPE_EVENT_COMMERCIAL, _("Événement commercial")),
         (META_TYPE_EVENT_POLICE, _("Dispositif de police")),
     )
-
+    integrator = models.ForeignKey(Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs")
+    )
     meta_type = models.IntegerField(
         _("Type générique"), choices=META_TYPE_CHOICES, default=META_TYPE_OTHER
     )
@@ -482,6 +496,12 @@ class WorksObjectType(models.Model):
     """
     Represents a works object for a specific works type.
     """
+
+    integrator = models.ForeignKey(Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs")
+    )
 
     works_type = models.ForeignKey(
         "WorksType",
@@ -547,6 +567,11 @@ class WorksObjectType(models.Model):
 
 class WorksObject(models.Model):
     name = models.CharField(_("nom"), max_length=255)
+    integrator = models.ForeignKey(Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs")
+    )
     works_types = models.ManyToManyField(
         WorksType,
         through=WorksObjectType,
@@ -581,7 +606,11 @@ class WorksObjectProperty(models.Model):
         (INPUT_TYPE_ADDRESS, _("Adresse")),
         (INPUT_TYPE_DATE, _("Date")),
     )
-
+    integrator = models.ForeignKey(Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs")
+    )
     name = models.CharField(_("nom"), max_length=255)
     placeholder = models.CharField(
         _("exemple de donnée à saisir"), max_length=255, blank=True
@@ -748,7 +777,11 @@ class PermitRequestAmendProperty(models.Model):
         verbose_name=_("objets des travaux"),
         related_name="amend_properties",
     )
-
+    integrator = models.ForeignKey(Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs")
+    )
     class Meta:
         verbose_name = _("2.2 Configuration de champ de traitement de demande")
         verbose_name_plural = _(

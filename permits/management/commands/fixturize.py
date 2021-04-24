@@ -161,6 +161,21 @@ class Command(BaseCommand):
         )
         self.stdout.write("eaux-yverdon / admin")
 
+        user = self.create_user(
+            "integrator-yverdon",
+            "integrator Yverdon",
+            administrative_entity_yverdon,
+            is_default_validator=True,
+            is_integrator_admin=True,
+            is_staff=True,
+        )
+
+        Group.objects.get(name="integrator Yverdon").permissions.set(
+            #FIXME be more specific
+            Permission.objects.all()
+        )
+        self.stdout.write("integrator-yverdon / admin")
+    
         # Insert status choices from PermitRequest and insert status for adminsitrative_entity
         for status_value in models.PermitRequest.STATUS_CHOICES:
             for entity in [
@@ -172,7 +187,7 @@ class Command(BaseCommand):
                 )
 
     def create_user(
-        self, username, group_name, administrative_entity, is_default_validator=False
+        self, username, group_name, administrative_entity, is_default_validator=False, is_integrator_admin=False, is_staff=False
     ):
 
         group, created = Group.objects.get_or_create(name=group_name)
@@ -182,6 +197,7 @@ class Command(BaseCommand):
             last_name="Mon Nom",
             username=username,
             password="admin",
+            is_staff=is_staff,
         )
         user.groups.set([group])
         models.PermitAuthor.objects.create(
@@ -190,7 +206,7 @@ class Command(BaseCommand):
         models.PermitDepartment.objects.create(
             group=group,
             is_validator=False,
-            is_admin=False,
+            is_integrator_admin=is_integrator_admin,
             is_archeologist=False,
             administrative_entity=administrative_entity,
             is_default_validator=is_default_validator,
