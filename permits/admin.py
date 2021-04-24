@@ -5,6 +5,7 @@ from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from geomapshark import settings
 from simple_history.admin import SimpleHistoryAdmin
+from django.contrib.auth.models import Group
 
 from . import forms as permit_forms
 from . import models
@@ -162,7 +163,7 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
     class Meta:
         model = models.PermitAdministrativeEntity
         fields = "__all__"
-        exclude = ["enabled_status"]
+        exclude = ["enabled_status", "integrator"]
         widgets = {
             "geom": permit_forms.GeometryWidget(
                 attrs={
@@ -226,11 +227,28 @@ class WorksObjectAdmin(admin.ModelAdmin):
     form = WorksObjectAdminForm
 
 
+
 class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
     form = PermitAdministrativeEntityAdminForm
     inlines = [
         PermitWorkflowStatusInline,
     ]
+    def get_queryset(self, request):
+
+        if request.user.is_superuser:
+            qs = models.PermitAdministrativeEntity.objects.all()
+        else:
+            #FIXME: avoid duplicating query => direct access to django user groups ?
+            user_groups = Group.objects.filter(user=request.user)
+            qs = models.PermitAdministrativeEntity.objects.filter(integrator__in=user_groups)
+        return qs
+    def save_model(self, request, obj, form, change):
+        # super(PermitRequestAmendPropertyAdmin, self).save_model(request, obj, form, change)
+        #FIXME: avoid duplicating query => direct access to django user groups ?
+        #FIXME: handle the multi group integrator user ?
+        user_group = Group.objects.get(user=request.user)
+        obj.integrator = user_group
+        obj.save()
 
 
 class PermitRequestAmendPropertyForm(forms.ModelForm):
@@ -238,6 +256,7 @@ class PermitRequestAmendPropertyForm(forms.ModelForm):
 
     class Meta:
         model = models.PermitRequestAmendProperty
+        #FIXME: show the integrator field for superuser ?
         fields = ["name", "is_mandatory", "works_object_types"]
 
 
@@ -253,6 +272,24 @@ class PermitRequestAmendPropertyAdmin(admin.ModelAdmin):
         "2.2 Configuration des champs de traitement des demandes"
     )
     sortable_str.admin_order_field = "name"
+
+    def get_queryset(self, request):
+
+        if request.user.is_superuser:
+            qs = models.PermitRequestAmendProperty.objects.all()
+        else:
+            #FIXME: avoid duplicating query => direct access to django user groups ?
+            user_groups = Group.objects.filter(user=request.user)
+            qs = models.PermitRequestAmendProperty.objects.filter(integrator__in=user_groups)
+        return qs
+    
+    def save_model(self, request, obj, form, change):
+            # super(PermitRequestAmendPropertyAdmin, self).save_model(request, obj, form, change)
+            #FIXME: avoid duplicating query => direct access to django user groups ?
+            #FIXME: handle the multi group integrator user ?
+            user_group = Group.objects.get(user=request.user)
+            obj.integrator = user_group
+            obj.save()
 
 
 admin.site.register(models.PermitRequest, PermitRequestHistoryAdmin)
