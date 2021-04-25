@@ -40,6 +40,7 @@ class PermitDepartmentInline(admin.StackedInline):
     can_delete = False
     verbose_name_plural = "Service"
     inline_classes = ("collapse open",)
+    readonly_fields = ["integrator"]
 
 
 # Define a new Group admin
@@ -49,7 +50,25 @@ class GroupAdmin(admin.ModelAdmin):
     class Meta:
         model = Group
 
-    # FIXME: define queryset and save_model for the 1to1 relation
+    def get_queryset(self, request):
+
+        if request.user.is_superuser:
+            qs = Group.objects.all()
+        else:
+            user_groups = Group.objects.filter(user=request.user)
+            user_departments = models.PermitDepartment.objects.filter(
+                integrator__in=user_groups
+            ).values_list("id", flat=True)
+            qs = Group.objects.filter(pk__in=user_departments)
+        return qs
+
+    def save_model(self, request, obj, form, change):
+        # FIXME: avoid duplicating query => direct access to django user groups ?
+        # FIXME: handle the multi group integrator user ?
+        # FIXME: warn the super user that he can't create this setting as only integrators can
+        user_group = Group.objects.get(user=request.user)
+        obj.permitdepartment.integrator = user_group.pk
+        obj.save()
 
 
 # Re-register GroupAdmin

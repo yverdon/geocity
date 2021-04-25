@@ -87,9 +87,6 @@ class PermitDepartment(models.Model):
     group = models.OneToOneField(Group, on_delete=models.CASCADE)
     description = models.CharField(_("description"), max_length=100, default="Service")
     is_validator = models.BooleanField(_("is_validator"))
-    is_integrator_admin = models.BooleanField(
-        _("Intégrateur (accès à l'admin Django)"), default=False
-    )
     is_archeologist = models.BooleanField(_("is_archeologist"))
     administrative_entity = models.ForeignKey(
         "PermitAdministrativeEntity",
@@ -100,6 +97,12 @@ class PermitDepartment(models.Model):
     )
     is_default_validator = models.BooleanField(
         _("sélectionné par défaut pour les validations"), default=False
+    )
+
+    integrator = models.IntegerField(default=0)
+
+    is_integrator_admin = models.BooleanField(
+        "Intégrateur (accès à l'admin de django)", default=False
     )
 
     class Meta:
