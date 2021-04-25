@@ -6,23 +6,55 @@ from django.utils.translation import gettext_lazy as _
 from geomapshark import settings
 from simple_history.admin import SimpleHistoryAdmin
 from django.contrib.auth.models import Group
+from django.http import HttpResponse
 
 from . import forms as permit_forms
 from . import models
 
 admin.site.register(models.PermitActorType)
 admin.site.register(models.WorksType)
-admin.site.register(models.PermitDepartment)
-admin.site.register(models.PermitRequestValidation)
-admin.site.register(models.GeomLayer)
-admin.site.register(models.PermitRequestGeoTime, SimpleHistoryAdmin)
-admin.site.register(models.PermitAuthor, SimpleHistoryAdmin)
 
 
-class PermitRequestHistoryAdmin(SimpleHistoryAdmin):
-    list_display = ["id", "administrative_entity", "status"]
-    history_list_display = ["status"]
-    search_fields = ["administrative_entity", "user__username"]
+def get_custom_queryset(self, request, appmodel):
+    if request.user.is_superuser:
+        qs = appmodel.objects.all()
+    else:
+        # FIXME: avoid duplicating query => direct access to django user groups ?
+        user_groups = Group.objects.filter(user=request.user)
+        qs = appmodel.objects.filter(integrator__in=user_groups)
+    return qs
+
+
+def save_object_whith_creator_group(self, request, obj, form, change):
+    # FIXME: avoid duplicating query => direct access to django user groups ?
+    # FIXME: handle the multi group integrator user ?
+    # FIXME: warn the super user that he can't create this setting as only integrators can
+    user_group = Group.objects.get(user=request.user)
+    obj.integrator = user_group
+    obj.save()
+
+
+# Inline for group & department (1to1)
+class PermitDepartmentInline(admin.StackedInline):
+    model = models.PermitDepartment
+    can_delete = False
+    verbose_name_plural = "Service"
+    inline_classes = ("collapse open",)
+
+
+# Define a new Group admin
+class GroupAdmin(admin.ModelAdmin):
+    inlines = (PermitDepartmentInline,)
+
+    class Meta:
+        model = Group
+
+    # FIXME: define queryset and save_model for the 1to1 relation
+
+
+# Re-register GroupAdmin
+admin.site.unregister(Group)
+admin.site.register(Group, GroupAdmin)
 
 
 def works_object_type_administrative_entities(obj):
@@ -120,7 +152,7 @@ class WorksObjectTypeAdmin(admin.ModelAdmin):
         ),
     )
     form = WorksObjectTypeAdminForm
-
+    # FIXME: special case fr yc-250
     def get_queryset(self, request):
         return (
             super()
@@ -128,6 +160,9 @@ class WorksObjectTypeAdmin(admin.ModelAdmin):
             .select_related("works_object", "works_type")
             .prefetch_related("administrative_entities")
         )
+
+    def save_model(self, request, obj, form, change):
+        save_object_whith_creator_group(self, request)
 
 
 class WorksObjectTypeWithAdministrativeEntitiesField(forms.ModelMultipleChoiceField):
@@ -157,6 +192,12 @@ class WorksObjectPropertyForm(forms.ModelForm):
 class WorksObjectPropertyAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display = ["__str__", "is_mandatory"]
     form = WorksObjectPropertyForm
+
+    def get_queryset(self, request):
+        return get_custom_queryset(self, request, models.WorksObjectProperty)
+
+    def save_model(self, request, obj, form, change):
+        save_object_whith_creator_group(self, request, obj, form, change)
 
 
 class PermitAdministrativeEntityAdminForm(forms.ModelForm):
@@ -226,6 +267,11 @@ class WorksObjectAdminForm(forms.ModelForm):
 class WorksObjectAdmin(admin.ModelAdmin):
     form = WorksObjectAdminForm
 
+    def get_queryset(self, request):
+        return get_custom_queryset(self, request, models.WorksObject)
+
+    def save_model(self, request, obj, form, change):
+        save_object_whith_creator_group(self, request, obj, form, change)
 
 
 class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
@@ -233,22 +279,24 @@ class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
     inlines = [
         PermitWorkflowStatusInline,
     ]
+
     def get_queryset(self, request):
 
         if request.user.is_superuser:
             qs = models.PermitAdministrativeEntity.objects.all()
         else:
-            #FIXME: avoid duplicating query => direct access to django user groups ?
+            # FIXME: avoid duplicating query => direct access to django user groups ?
             user_groups = Group.objects.filter(user=request.user)
-            qs = models.PermitAdministrativeEntity.objects.filter(integrator__in=user_groups)
+            qs = models.PermitAdministrativeEntity.objects.filter(
+                integrator__in=user_groups
+            )
         return qs
+
+    def get_queryset(self, request):
+        return get_custom_queryset(self, request, models.PermitAdministrativeEntity)
+
     def save_model(self, request, obj, form, change):
-        # super(PermitRequestAmendPropertyAdmin, self).save_model(request, obj, form, change)
-        #FIXME: avoid duplicating query => direct access to django user groups ?
-        #FIXME: handle the multi group integrator user ?
-        user_group = Group.objects.get(user=request.user)
-        obj.integrator = user_group
-        obj.save()
+        save_object_whith_creator_group(self, request, obj, form, change)
 
 
 class PermitRequestAmendPropertyForm(forms.ModelForm):
@@ -256,8 +304,8 @@ class PermitRequestAmendPropertyForm(forms.ModelForm):
 
     class Meta:
         model = models.PermitRequestAmendProperty
-        #FIXME: show the integrator field for superuser ?
-        fields = ["name", "is_mandatory", "works_object_types"]
+        # FIXME: show the integrator field for superuser ?
+        fields = ["name", "is_mandatory", "works_object_types", "integrator"]
 
 
 class PermitRequestAmendPropertyAdmin(admin.ModelAdmin):
@@ -272,27 +320,15 @@ class PermitRequestAmendPropertyAdmin(admin.ModelAdmin):
         "2.2 Configuration des champs de traitement des demandes"
     )
     sortable_str.admin_order_field = "name"
+    readonly_fields = ["integrator"]
 
     def get_queryset(self, request):
+        return get_custom_queryset(self, request, models.PermitRequestAmendProperty)
 
-        if request.user.is_superuser:
-            qs = models.PermitRequestAmendProperty.objects.all()
-        else:
-            #FIXME: avoid duplicating query => direct access to django user groups ?
-            user_groups = Group.objects.filter(user=request.user)
-            qs = models.PermitRequestAmendProperty.objects.filter(integrator__in=user_groups)
-        return qs
-    
     def save_model(self, request, obj, form, change):
-            # super(PermitRequestAmendPropertyAdmin, self).save_model(request, obj, form, change)
-            #FIXME: avoid duplicating query => direct access to django user groups ?
-            #FIXME: handle the multi group integrator user ?
-            user_group = Group.objects.get(user=request.user)
-            obj.integrator = user_group
-            obj.save()
+        save_object_whith_creator_group(self, request, obj, form, change)
 
 
-admin.site.register(models.PermitRequest, PermitRequestHistoryAdmin)
 admin.site.register(models.WorksObjectType, WorksObjectTypeAdmin)
 admin.site.register(models.WorksObjectProperty, WorksObjectPropertyAdmin)
 admin.site.register(models.PermitAdministrativeEntity, PermitAdministrativeEntityAdmin)
