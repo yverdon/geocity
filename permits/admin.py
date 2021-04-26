@@ -5,8 +5,9 @@ from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from geomapshark import settings
 from simple_history.admin import SimpleHistoryAdmin
-from django.contrib.auth.models import Group
-from django.http import HttpResponse
+from django.contrib.auth.models import Group, User
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.core.exceptions import PermissionDenied
 
 from . import forms as permit_forms
 from . import models
@@ -14,7 +15,15 @@ from . import models
 admin.site.register(models.PermitActorType)
 admin.site.register(models.WorksType)
 
+# change the user admin depending on role
+# class UserAdmin(BaseUserAdmin):
+#     inlines = (EmployeeInline,)
 
+# # Re-register UserAdmin
+# admin.site.unregister(User)
+# admin.site.register(User, UserAdmin)
+
+# Allow a user belonging to integrator group to see only objects created by this group
 def get_custom_queryset(self, request, appmodel):
     if request.user.is_superuser:
         qs = appmodel.objects.all()
@@ -24,7 +33,7 @@ def get_custom_queryset(self, request, appmodel):
         qs = appmodel.objects.filter(integrator__in=user_groups)
     return qs
 
-
+# Save the group that created the object
 def save_object_whith_creator_group(self, request, obj, form, change):
     # FIXME: avoid duplicating query => direct access to django user groups ?
     # FIXME: handle the multi group integrator user ?
@@ -67,8 +76,20 @@ class GroupAdmin(admin.ModelAdmin):
         # FIXME: handle the multi group integrator user ?
         # FIXME: warn the super user that he can't create this setting as only integrators can
         user_group = Group.objects.get(user=request.user)
-        obj.permitdepartment.integrator = user_group.pk
-        obj.save()
+        if obj.permitdepartment.is_integrator:
+            obj.permitdepartment.integrator = user_group.pk
+            obj.save()
+        else:
+            raise PermissionDenied
+
+        # Integrator role can only be created by superadmin.
+        if request.user.is_superuser and obj.permitdepartment.is_integrator:
+            obj.permissions.set(
+            # FIXME be more specific
+            Permission.objects.all()
+        )
+        else:
+            raise PermissionDenied
 
 
 # Re-register GroupAdmin
