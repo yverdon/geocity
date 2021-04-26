@@ -53,8 +53,8 @@ class PermitRequestSerializer(serializers.ModelSerializer):
             "administrative_entity",
             "works_object_types",
             "creditor_type",
-            "intersected_geometries",
             "meta_types",
+            "intersected_geometries",
             "works_object_types_names",
         )
 
