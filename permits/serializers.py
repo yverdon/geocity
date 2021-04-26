@@ -59,50 +59,46 @@ class PermitRequestSerializer(serializers.ModelSerializer):
         )
 
 
-class PermitRequestAmendPropertyValueSerializer(serializers.RelatedField):
+class PropertiesValuesSerializer(serializers.RelatedField):
     def to_representation(self, value):
-
-        props = models.PermitRequestAmendPropertyValue.objects.filter(
-            works_object_type_choice__permit_request=value,
-        ).values(
-            "property__name", "value", "works_object_type_choice__works_object_type_id"
+        obj = value.all()
+        wot_props = obj.values(
+            "properties__property__name",
+            "properties__value__val",
+            "works_object_type_id",
         )
+        amend_props = obj.values(
+            "amend_properties__property__name",
+            "amend_properties__value",
+            "works_object_type_id",
+        )
+        wot_and_amend_properties = {}
+        if wot_props:
+            for prop in wot_props:
+                wot = f'permit_request_works_object_property_value_{prop["works_object_type_id"]}'
+                wot_and_amend_properties[wot] = {
+                    prop_i["properties__property__name"]: prop_i[
+                        "properties__value__val"
+                    ]
+                    for prop_i in wot_props
+                    if prop_i["works_object_type_id"] == prop["works_object_type_id"]
+                    and prop_i["properties__property__name"]
+                }
 
-        properties = {}
-        for prop in props:
-            wot = f'permit_request_amend_property_value_{prop["works_object_type_choice__works_object_type_id"]}'
-            properties[wot] = {
-                prop_i["property__name"]: prop_i["value"]
-                for prop_i in props
-                if prop_i["works_object_type_choice__works_object_type_id"]
-                == prop["works_object_type_choice__works_object_type_id"]
+        for prop in amend_props:
+            amends = (
+                f'permit_request_amend_property_value_{prop["works_object_type_id"]}'
+            )
+            wot_and_amend_properties[amends] = {
+                prop_i["amend_properties__property__name"]: prop_i[
+                    "amend_properties__value"
+                ]
+                for prop_i in amend_props
+                if prop_i["works_object_type_id"] == prop["works_object_type_id"]
+                and prop_i["amend_properties__property__name"]
             }
 
-        return properties
-
-
-class WorksObjectPropertyValueSerializer(serializers.RelatedField):
-    def to_representation(self, value):
-
-        props = models.WorksObjectPropertyValue.objects.filter(
-            works_object_type_choice__permit_request=value,
-        ).values(
-            "property__name",
-            "value__val",
-            "works_object_type_choice__works_object_type_id",
-        )
-
-        properties = {}
-        for prop in props:
-            wot = f'works_object_property_value_{prop["works_object_type_choice__works_object_type_id"]}'
-            properties[wot] = {
-                prop_i["property__name"]: prop_i["value__val"]
-                for prop_i in props
-                if prop_i["works_object_type_choice__works_object_type_id"]
-                == prop["works_object_type_choice__works_object_type_id"]
-            }
-
-        return properties
+        return wot_and_amend_properties
 
 
 class PermitRequestActorSerializer(serializers.Serializer):
@@ -228,7 +224,7 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
 
             # Collect the comments and external links from all possible rows
             result["properties"]["permit_request_geo_time_comments"] = [
-                obj.comment for obj in geo_time_qs
+                obj.comment for obj in geo_time_qs if obj.comment
             ]
             result["properties"]["permit_request_geo_time_external_links"] = [
                 obj.external_link for obj in geo_time_qs if obj.external_link
@@ -239,11 +235,8 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
 
 class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
     permit_request = PermitRequestSerializer(source="*", read_only=True)
-    works_object_property_value = WorksObjectPropertyValueSerializer(
-        source="*", read_only=True
-    )
-    permit_request_amend_property_value = PermitRequestAmendPropertyValueSerializer(
-        source="*", read_only=True
+    wot_and_amend_properties = PropertiesValuesSerializer(
+        source="worksobjecttypechoice_set", read_only=True
     )
     permit_request_actor = PermitRequestActorSerializer(source="*", read_only=True)
     geo_envelop = PermitRequestGeoTimeGeoJSONSerializer(
@@ -255,8 +248,7 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
         geo_field = "geo_time"
         fields = (
             "permit_request",
-            "permit_request_amend_property_value",
-            "works_object_property_value",
+            "wot_and_amend_properties",
             "permit_request_actor",
             "geo_envelop",
         )
@@ -276,11 +268,7 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
         del rep["properties"]["permit_request"]
 
         # Flattening the rest of related fields
-        related_fields_to_flatten = [
-            "permit_request_actor",
-            "works_object_property_value",
-            "permit_request_amend_property_value",
-        ]
+        related_fields_to_flatten = ["permit_request_actor", "wot_and_amend_properties"]
 
         for field_to_flatten in related_fields_to_flatten:
             for field, value in rep["properties"][field_to_flatten].items():

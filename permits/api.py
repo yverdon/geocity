@@ -178,6 +178,8 @@ class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
             )
             .prefetch_related(works_object_types_prefetch)
             .prefetch_related(geotime_prefetch)
+            .prefetch_related("worksobjecttypechoice_set__properties__property")
+            .prefetch_related("worksobjecttypechoice_set__amend_properties__property")
             .select_related("administrative_entity")
         )
 
