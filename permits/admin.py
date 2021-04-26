@@ -16,12 +16,36 @@ admin.site.register(models.PermitActorType)
 admin.site.register(models.WorksType)
 
 # change the user admin depending on role
-# class UserAdmin(BaseUserAdmin):
-#     inlines = (EmployeeInline,)
+class UserAdmin(BaseUserAdmin):
+    # exclude = ('lastname',)
+    # readonly_fields = ["email", "password", "user_permissions"]
 
-# # Re-register UserAdmin
-# admin.site.unregister(User)
-# admin.site.register(User, UserAdmin)
+    def get_readonly_fields(self, request, obj=None):
+        # FIXME Integrator should be in one and only one group!
+        user_group = Group.objects.get(user=request.user)
+        # limit editable fields to protect user data, superuser creation must be down using django shell
+        if request.user.is_superuser:
+            return [
+                "email",
+                "is_superuser",
+                "is_staff",
+            ]
+        if user_group.permitdepartment.is_integrator_admin:
+            return [
+                "email",
+                "username",
+                "password",
+                "user_permissions",
+                "is_superuser",
+                "is_staff",
+                "last_login",
+                "date_joined",
+            ]
+
+
+# Re-register UserAdmin
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)
 
 # Allow a user belonging to integrator group to see only objects created by this group
 def get_custom_queryset(self, request, appmodel):
@@ -32,6 +56,7 @@ def get_custom_queryset(self, request, appmodel):
         user_groups = Group.objects.filter(user=request.user)
         qs = appmodel.objects.filter(integrator__in=user_groups)
     return qs
+
 
 # Save the group that created the object
 def save_object_whith_creator_group(self, request, obj, form, change):
@@ -85,9 +110,9 @@ class GroupAdmin(admin.ModelAdmin):
         # Integrator role can only be created by superadmin.
         if request.user.is_superuser and obj.permitdepartment.is_integrator:
             obj.permissions.set(
-            # FIXME be more specific
-            Permission.objects.all()
-        )
+                # FIXME be more specific
+                Permission.objects.all()
+            )
         else:
             raise PermissionDenied
 
