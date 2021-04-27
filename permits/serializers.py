@@ -171,15 +171,15 @@ class PermitRequestGeoTimeSingleGeometrySerializer(
 
 class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
     """
-        In order to serialize the object as a GeoJSON a queryset has to be passed,
-        however, the queryset could have many geometry types in a single row as well as
-        many rows with different geometries, in order to generate a single layer from
-        all the possible results, the geometries have to be aggregated.
-        The max and min dates are determined as well from a Raw SQL.
+    In order to serialize the object as a GeoJSON a queryset has to be passed,
+    however, the queryset could have many geometry types in a single row as well as
+    many rows with different geometries, in order to generate a single layer from
+    all the possible results, the geometries have to be aggregated.
+    The max and min dates are determined as well from a Raw SQL.
 
-        Note: Here we need the geo_time queryset as the source (value), since the
-        geometry and the dates will be aggregated, but the comments and external links
-        will be retrieved and grouped from it.
+    Note: Here we need the geo_time queryset as the source (value), since the
+    geometry and the dates will be aggregated by the raw query, but the comments
+    and external links will be retrieved and grouped from it.
     """
 
     def to_representation(self, value):
