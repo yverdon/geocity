@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from geomapshark import settings
 from simple_history.admin import SimpleHistoryAdmin
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group, User, Permission
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.core.exceptions import PermissionDenied
 
@@ -22,7 +22,7 @@ class UserAdmin(BaseUserAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         # FIXME Integrator should be in one and only one group!
-        user_group = Group.objects.get(user=request.user)
+        user_groups = Group.objects.filter(user=request.user)
         # limit editable fields to protect user data, superuser creation must be down using django shell
         if request.user.is_superuser:
             return [
@@ -30,7 +30,7 @@ class UserAdmin(BaseUserAdmin):
                 "is_superuser",
                 "is_staff",
             ]
-        if user_group.permitdepartment.is_integrator_admin:
+        if user_groups[0].permitdepartment.is_integrator_admin:
             return [
                 "email",
                 "username",
@@ -42,6 +42,16 @@ class UserAdmin(BaseUserAdmin):
                 "date_joined",
             ]
 
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if db_field.name == "groups":
+            user_groups = Group.objects.filter(user=request.user)
+            kwargs["queryset"] = Group.objects.filter(
+                permitdepartment__integrator=user_groups[0].pk
+            )
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
+
+    # FIXME: filte permissions
+
 
 # Re-register UserAdmin
 admin.site.unregister(User)
@@ -52,7 +62,6 @@ def get_custom_queryset(self, request, appmodel):
     if request.user.is_superuser:
         qs = appmodel.objects.all()
     else:
-        # FIXME: avoid duplicating query => direct access to django user groups ?
         user_groups = Group.objects.filter(user=request.user)
         qs = appmodel.objects.filter(integrator__in=user_groups)
     return qs
@@ -60,8 +69,6 @@ def get_custom_queryset(self, request, appmodel):
 
 # Save the group that created the object
 def save_object_whith_creator_group(self, request, obj, form, change):
-    # FIXME: avoid duplicating query => direct access to django user groups ?
-    # FIXME: handle the multi group integrator user ?
     # FIXME: warn the super user that he can't create this setting as only integrators can
     user_group = Group.objects.get(user=request.user)
     obj.integrator = user_group
@@ -74,7 +81,18 @@ class PermitDepartmentInline(admin.StackedInline):
     can_delete = False
     verbose_name_plural = "Service"
     inline_classes = ("collapse open",)
-    readonly_fields = ["integrator"]
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "administrative_entity":
+            user_groups = Group.objects.filter(user=request.user)
+            kwargs["queryset"] = models.PermitAdministrativeEntity.objects.filter(
+                integrator=user_groups[0].pk
+            )
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_readonly_fields(self, request, obj=None):
+        if not request.user.is_superuser:
+            return ["is_integrator_admin", "integrator"]
 
 
 # Define a new Group admin
@@ -84,6 +102,8 @@ class GroupAdmin(admin.ModelAdmin):
     class Meta:
         model = Group
 
+    # FIXME: filter admintrative entity
+    # FIXME:
     def get_queryset(self, request):
 
         if request.user.is_superuser:
@@ -97,24 +117,39 @@ class GroupAdmin(admin.ModelAdmin):
         return qs
 
     def save_model(self, request, obj, form, change):
-        # FIXME: avoid duplicating query => direct access to django user groups ?
         # FIXME: handle the multi group integrator user ?
         # FIXME: warn the super user that he can't create this setting as only integrators can
-        user_group = Group.objects.get(user=request.user)
-        if obj.permitdepartment.is_integrator:
-            obj.permitdepartment.integrator = user_group.pk
+        user_groups = Group.objects.filter(user=request.user)
+
+        if (
+            user_groups[0].permitdepartment.is_integrator_admin
+            and len(user_groups) == 1
+        ):
+            obj.permitdepartment.integrator = user_groups[0].pk
             obj.save()
         else:
             raise PermissionDenied
 
         # Integrator role can only be created by superadmin.
-        if request.user.is_superuser and obj.permitdepartment.is_integrator:
+        if request.user.is_superuser and obj.permitdepartment.is_integrator_admin:
+            # FIXME: check that user is in oe and only one group
             obj.permissions.set(
                 # FIXME be more specific
                 Permission.objects.all()
             )
-        else:
-            raise PermissionDenied
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        # permissions that integrator role can assign to group
+        if db_field.name == "permissions":
+            kwargs["queryset"] = Permission.objects.filter(
+                codename__in=[
+                    "amend_permit_request",
+                    "validate_permit_request",
+                    "classify_permit_request",
+                    "edit_permit_request",
+                ]
+            )
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
 
 
 # Re-register GroupAdmin
@@ -350,7 +385,6 @@ class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             qs = models.PermitAdministrativeEntity.objects.all()
         else:
-            # FIXME: avoid duplicating query => direct access to django user groups ?
             user_groups = Group.objects.filter(user=request.user)
             qs = models.PermitAdministrativeEntity.objects.filter(
                 integrator__in=user_groups
