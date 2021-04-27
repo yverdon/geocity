@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('qgis_project_file', models.FileField(upload_to='qgis_templates', verbose_name="Fichier QGIS '*.qgs'")),
                 ('qgis_print_template_name', models.CharField(max_length=150, verbose_name="Nom du template d'impression QGIS")),
-                ('qgis_layers', models.CharField(max_length=250, verbose_name="Liste des couches QGIS à afficher séparées par les virgules ','")),
+                ('qgis_layers', models.CharField(max_length=500, verbose_name="Liste des couches QGIS à afficher séparées par les virgules ','")),
                 ('description', models.CharField(max_length=150)),
                 ('works_object_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='permits.worksobjecttype')),
             ],
