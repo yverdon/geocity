@@ -96,7 +96,7 @@ class GroupFactory(factory.django.DjangoModelFactory):
 class PermitDepartmentFactory(factory.django.DjangoModelFactory):
     is_default_validator = False
     is_validator = False
-    is_admin = False
+    is_integrator_admin = False
     is_archeologist = False
     administrative_entity = factory.SubFactory(PermitAdministrativeEntityFactory)
     group = factory.SubFactory(GroupFactory)
