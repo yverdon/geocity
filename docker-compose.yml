@@ -2,7 +2,7 @@ version: "3"
 
 volumes:
     gmsdata:
-    qgis_templates:
+    qgis_projects:
 
 services:
     web:
@@ -18,7 +18,7 @@ services:
         command: "gunicorn geomapshark.wsgi -b :9000 --error-logfile gunicorn_log.log"
         volumes:
             - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
-            - qgis_templates:/qgis_templates
+            - qgis_projects:/qgis_projects
         ports:
             - "${DJANGO_DOCKER_PORT}:9000"
     qgisserver:
@@ -27,7 +27,7 @@ services:
         depends_on:
             - "postgres"
         volumes:
-            - qgis_templates:/qgis_templates
+            - qgis_projects:/qgis_projects
             - ./qgisserver/pg_service.conf:/etc/postgresql-common/pg_service.conf:ro
             - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
         ports:

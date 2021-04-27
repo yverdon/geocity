@@ -3,7 +3,7 @@ version: "3"
 volumes:
     gmsdata:
     pgdata:
-    qgis_templates:
+    qgis_projects:
 
 services:
     web:
@@ -31,7 +31,7 @@ services:
         depends_on:
             - "postgres"
         volumes:
-            - ./media:/qgis_templates
+            - ./media:/qgis_projects
             - ./qgisserver/geocity.qgs:/io/data/geocity.qgs:ro #default qgis project for mask layer
             - ./qgisserver/pg_service.conf:/etc/postgresql-common/pg_service.conf:ro # qgis - postgis connection for mask layer
         ports:
