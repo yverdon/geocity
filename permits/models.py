@@ -765,7 +765,7 @@ class QgisTemplate(models.Model):
     )
     qgis_layers = models.CharField(
         _("Liste des couches QGIS à afficher séparées par les virgules ','"),
-        max_length=250,
+        max_length=500,
     )
     description = models.CharField(max_length=150)
     works_object_type = models.ForeignKey(WorksObjectType, on_delete=models.CASCADE)
