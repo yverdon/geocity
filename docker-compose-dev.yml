@@ -42,13 +42,13 @@ services:
             - QGIS_SERVER_IGNORE_BAD_LAYERS=true
 
     postgres:
-            image: camptocamp/postgres:11
-            restart: unless-stopped
-            environment:
-                - POSTGRES_USER=${PGUSER}
-                - POSTGRES_PASSWORD=${PGPASSWORD}
-                - POSTGRES_DB=${PGDATABASE}
-            ports:
-                - "${POSTGRES_DOCKER_PORT}:5432"
-            volumes:
-                - pgdata:/var/lib/postgresql/data
+        image: camptocamp/postgres:11
+        restart: unless-stopped
+        environment:
+            - POSTGRES_USER=${PGUSER}
+            - POSTGRES_PASSWORD=${PGPASSWORD}
+            - POSTGRES_DB=${PGDATABASE}
+        ports:
+            - "${POSTGRES_DOCKER_PORT}:5432"
+        volumes:
+            - pgdata:/var/lib/postgresql/data
