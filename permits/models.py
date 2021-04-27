@@ -757,7 +757,7 @@ class PermitRequestAmendPropertyValue(models.Model):
 
 
 class QgisTemplate(models.Model):
-    qgis_project_file = models.FileField(
+    qgis_project_file = fields.AdministrativeEntityFileField(
         _("Fichier QGIS '*.qgs'"), upload_to="qgis_templates",
     )
     qgis_print_template_name = models.CharField(
