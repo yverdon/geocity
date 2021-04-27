@@ -115,23 +115,29 @@ class PermitAdministrativeEntity(models.Model):
     ofs_id = models.PositiveIntegerField(_("ofs_id"))
     link = models.URLField(_("Lien"), max_length=200, blank=True)
     archive_link = models.URLField(_("Archives externes"), max_length=1024, blank=True)
+    legal_document = fields.AdministrativeEntityFileField(
+        _("Directive"), blank=True, upload_to="administrative_entity_files/"
+    )
+    general_informations = models.CharField(
+        _("Informations"), blank=True, max_length=1024,
+    )
     link = models.URLField(_("Lien"), max_length=200, blank=True)
-    logo_main = fields.AministrativeEntityFileField(
+    logo_main = fields.AdministrativeEntityFileField(
         _("Logo principal"), blank=True, upload_to="administrative_entity_files/"
     )
-    logo_secondary = fields.AministrativeEntityFileField(
+    logo_secondary = fields.AdministrativeEntityFileField(
         _("Logo secondaire"), blank=True, upload_to="administrative_entity_files/"
     )
     title_signature_1 = models.CharField(
         _("Signature Gauche"), max_length=128, blank=True
     )
-    image_signature_1 = fields.AministrativeEntityFileField(
+    image_signature_1 = fields.AdministrativeEntityFileField(
         _("Signature gauche"), blank=True, upload_to="administrative_entity_files/"
     )
     title_signature_2 = models.CharField(
         _("Signature Droite"), max_length=128, blank=True
     )
-    image_signature_2 = fields.AministrativeEntityFileField(
+    image_signature_2 = fields.AdministrativeEntityFileField(
         _("Signature droite"), blank=True, upload_to="administrative_entity_files/"
     )
     phone = models.CharField(
@@ -356,7 +362,7 @@ class PermitRequest(models.Model):
     validated_at = models.DateTimeField(_("date de validation"), null=True)
     printed_at = models.DateTimeField(_("date d'impression"), null=True)
     printed_by = models.CharField(_("imprimé par"), max_length=255, blank=True)
-    printed_file = fields.AministrativeEntityFileField(
+    printed_file = fields.AdministrativeEntityFileField(
         _("Permis imprimé"), null=True, blank=True, upload_to="printed_permits/"
     )
     works_object_types = models.ManyToManyField(
@@ -500,22 +506,8 @@ class WorksObjectType(models.Model):
         verbose_name=_("communes"),
         related_name="works_object_types",
     )
-    has_geometry_point = models.BooleanField(_("Point"), default=True)
-    has_geometry_line = models.BooleanField(_("Ligne"), default=True)
-    has_geometry_polygon = models.BooleanField(_("Surface"), default=True)
-    directive = models.FileField(
-        _("directive"),
-        validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
-        blank=True,
-    )
-    directive_description = models.CharField(
-        _("description de la directive"), max_length=200, blank=True
-    )
-    additional_information = models.TextField(_("autre information"), blank=True)
+    needs_geometry = models.BooleanField(_("avec géométrie"), default=True)
     needs_date = models.BooleanField(_("avec période de temps"), default=True)
-    requires_payment = models.BooleanField(
-        _("Demande soumise à des frais"), default=True
-    )
     is_public = models.BooleanField(_("Public"), default=False)
 
     class Meta:
@@ -525,26 +517,6 @@ class WorksObjectType(models.Model):
 
     def __str__(self):
         return "{} ({})".format(self.works_object.name, self.works_type.name)
-
-    @property
-    def has_geometry(self):
-        return (
-            self.has_geometry_point
-            or self.has_geometry_line
-            or self.has_geometry_polygon
-        )
-
-    def clean(self):
-        if bool(self.directive_description) ^ bool(self.directive):
-            raise ValidationError(
-                {
-                    "directive_description": _(
-                        "La description de directive ne devrait pas être définie car cet objet n’a pas de directive associée."
-                    )
-                    if not self.directive
-                    else _("Ce champ est obligatoire lorsqu’une directive est définie.")
-                }
-            )
 
 
 class WorksObject(models.Model):

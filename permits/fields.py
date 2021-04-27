@@ -66,7 +66,7 @@ class AministrativeEntityFieldFile(FieldFile):
         )
 
 
-class AministrativeEntityFileField(models.FileField):
+class AdministrativeEntityFileField(models.FileField):
     """
     FileField storing information in a private media root.
     """
