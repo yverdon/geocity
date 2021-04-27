@@ -3,7 +3,7 @@ import mimetypes
 import os
 import urllib.parse
 
-from django.conf import settings
+import requests
 from django.contrib import messages
 from django.contrib.auth.decorators import (
     login_required,
@@ -14,7 +14,12 @@ from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.db import transaction
 from django.db.models import Prefetch
 from django.forms import modelformset_factory
-from django.http import Http404, HttpResponse, StreamingHttpResponse
+from django.http import (
+    Http404,
+    HttpResponse,
+    JsonResponse,
+    StreamingHttpResponse,
+)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -25,8 +30,6 @@ from django.views import View
 from django_filters.views import FilterView
 from django_tables2.export.views import ExportMixin
 from django_tables2.views import SingleTableMixin, SingleTableView
-
-import requests
 
 from . import fields, filters, forms, models, services, tables
 from .exceptions import BadPermitRequestStatus
@@ -418,9 +421,7 @@ class PermitRequestDetailView(View):
 
 
 def permit_request_print(request, permit_request_id, template_id):
-    permit_request = services.get_permit_request_for_user_or_404(
-        request.user, permit_request_id
-    )
+    services.get_permit_request_for_user_or_404(request.user, permit_request_id)
     template = get_object_or_404(models.QgisTemplate.objects, pk=template_id)
 
     values = {
@@ -432,7 +433,7 @@ def permit_request_print(request, permit_request_id, template_id):
         "SRS": "EPSG:2056",
         "DPI": "150",
         "SERVICE": "WMS",
-        "MAP": "/qgis_templates/" + str(template.qgis_project_file),
+        "MAP": "/private_documents/" + template.qgis_project_file.name,
         "TEMPLATE": template.qgis_print_template_name,
         "ATLAS_PK": permit_request_id,
         "LAYERS": template.qgis_layers,
@@ -444,7 +445,6 @@ def permit_request_print(request, permit_request_id, template_id):
     )
 
     if not qgisserver_response:
-        assert False, qgisserver_response.content
         # FIXME return a proper error here
         return HttpResponse(
             _("Une erreur est survenue lors de l'impression")
