@@ -17,6 +17,7 @@ from django.utils import timezone
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
+from taggit.managers import TaggableManager
 
 from . import fields
 
@@ -146,6 +147,8 @@ class PermitAdministrativeEntity(models.Model):
         ],
     )
     geom = geomodels.MultiPolygonField(_("geom"), null=True, srid=2056)
+    tags = TaggableManager()
+    
 
     class Meta:
         verbose_name = _(
@@ -469,6 +472,7 @@ class WorksType(models.Model):
     meta_type = models.IntegerField(
         _("Type générique"), choices=META_TYPE_CHOICES, default=META_TYPE_OTHER
     )
+    tags = TaggableManager()
 
     class Meta:
         verbose_name = _("1.2 Configuration du type")
