@@ -86,21 +86,19 @@ class PermitDepartment(models.Model):
 
     group = models.OneToOneField(Group, on_delete=models.CASCADE)
     description = models.CharField(_("description"), max_length=100, default="Service")
-    is_validator = models.BooleanField(_("is_validator"))
-    is_archeologist = models.BooleanField(_("is_archeologist"))
+    is_validator = models.BooleanField(_("validateur"))
+    is_archeologist = models.BooleanField(_("archéologue"))
     administrative_entity = models.ForeignKey(
         "PermitAdministrativeEntity",
         null=True,
         on_delete=models.SET_NULL,
         related_name="departments",
-        verbose_name=_("permit_administrative_entity"),
+        verbose_name=_("entité administrative"),
     )
     is_default_validator = models.BooleanField(
         _("sélectionné par défaut pour les validations"), default=False
     )
-
-    integrator = models.IntegerField(default=0)
-
+    integrator = models.IntegerField(_("Intégrateur responsable"), default=0,)
     is_integrator_admin = models.BooleanField(
         "Intégrateur (accès à l'admin de django)", default=False
     )
@@ -117,7 +115,7 @@ class PermitDepartment(models.Model):
 
 class PermitAdministrativeEntity(models.Model):
     name = models.CharField(_("name"), max_length=128)
-    ofs_id = models.PositiveIntegerField(_("ofs_id"))
+    ofs_id = models.PositiveIntegerField(_("Numéro OFS"))
     link = models.URLField(_("Lien"), max_length=200, blank=True)
     archive_link = models.URLField(_("Archives externes"), max_length=1024, blank=True)
     link = models.URLField(_("Lien"), max_length=200, blank=True)

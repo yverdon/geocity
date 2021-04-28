@@ -8,21 +8,14 @@ from simple_history.admin import SimpleHistoryAdmin
 from django.contrib.auth.models import Group, User, Permission
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.core.exceptions import PermissionDenied
+from django.forms import ValidationError
 
 from . import forms as permit_forms
 from . import models
 
-admin.site.register(models.PermitActorType)
-admin.site.register(models.WorksType)
 
-# change the user admin depending on role
 class UserAdmin(BaseUserAdmin):
-    # exclude = ('lastname',)
-    # readonly_fields = ["email", "password", "user_permissions"]
-
     def get_readonly_fields(self, request, obj=None):
-        # FIXME Integrator should be in one and only one group!
-        user_groups = Group.objects.filter(user=request.user)
         # limit editable fields to protect user data, superuser creation must be down using django shell
         if request.user.is_superuser:
             return [
@@ -30,7 +23,7 @@ class UserAdmin(BaseUserAdmin):
                 "is_superuser",
                 "is_staff",
             ]
-        if user_groups[0].permitdepartment.is_integrator_admin:
+        else:
             return [
                 "email",
                 "username",
@@ -44,13 +37,46 @@ class UserAdmin(BaseUserAdmin):
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "groups":
-            user_groups = Group.objects.filter(user=request.user)
-            kwargs["queryset"] = Group.objects.filter(
-                permitdepartment__integrator=user_groups[0].pk
-            )
+            if not request.user.is_superuser:
+                kwargs["queryset"] = Group.objects.filter(
+                    permitdepartment__integrator=request.user.groups.all()[0].pk,
+                    permitdepartment__is_integrator_admin=False,
+                )
+            else:
+                kwargs["queryset"] = Group.objects.all()
+
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
-    # FIXME: filte permissions
+    # Only superuser can edit superuser users
+    def get_queryset(self, request):
+
+        if not request.user.is_superuser:
+            qs = User.objects.filter(is_superuser=False)
+        else:
+            qs = User.objects.all()
+        return qs
+
+    def save_model(self, request, obj, form, change):
+
+        edited_user_groups = Group.objects.filter(
+            pk__in=obj.groups.values_list("id", flat=True)
+        )
+        is_integrator_admin = False
+
+        for group in edited_user_groups:
+            if group.permitdepartment.is_integrator_admin:
+                is_integrator_admin = True
+
+        # FIXME be less violent with the user...
+        if obj.groups.count() > 1 and is_integrator_admin:
+            raise ValidationError(
+                _(
+                    "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe"
+                ),
+                code="invalid",
+            )
+        else:
+            obj.save()
 
 
 # Re-register UserAdmin
@@ -58,20 +84,18 @@ admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 
 # Allow a user belonging to integrator group to see only objects created by this group
+# FIXME: what sould the superuser see / edit ?
 def get_custom_queryset(self, request, appmodel):
     if request.user.is_superuser:
         qs = appmodel.objects.all()
     else:
-        user_groups = Group.objects.filter(user=request.user)
-        qs = appmodel.objects.filter(integrator__in=user_groups)
+        qs = appmodel.objects.filter(integrator__in=request.user.groups.all())
     return qs
 
 
 # Save the group that created the object
 def save_object_whith_creator_group(self, request, obj, form, change):
-    # FIXME: warn the super user that he can't create this setting as only integrators can
-    user_group = Group.objects.get(user=request.user)
-    obj.integrator = user_group
+    obj.integrator = request.user.groups.all()[0]
     obj.save()
 
 
@@ -84,15 +108,19 @@ class PermitDepartmentInline(admin.StackedInline):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "administrative_entity":
-            user_groups = Group.objects.filter(user=request.user)
-            kwargs["queryset"] = models.PermitAdministrativeEntity.objects.filter(
-                integrator=user_groups[0].pk
-            )
+            if not request.user.is_superuser:
+                kwargs["queryset"] = models.PermitAdministrativeEntity.objects.filter(
+                    integrator=request.user.groups.all()[0].pk
+                )
+            else:
+                kwargs["queryset"] = models.PermitAdministrativeEntity.objects.all()
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def get_readonly_fields(self, request, obj=None):
         if not request.user.is_superuser:
             return ["is_integrator_admin", "integrator"]
+        else:
+            return []
 
 
 # Define a new Group admin
@@ -102,37 +130,33 @@ class GroupAdmin(admin.ModelAdmin):
     class Meta:
         model = Group
 
-    # FIXME: filter admintrative entity
-    # FIXME:
     def get_queryset(self, request):
 
         if request.user.is_superuser:
             qs = Group.objects.all()
         else:
-            user_groups = Group.objects.filter(user=request.user)
             user_departments = models.PermitDepartment.objects.filter(
-                integrator__in=user_groups
+                integrator__in=request.user.groups.all()
             ).values_list("id", flat=True)
             qs = Group.objects.filter(pk__in=user_departments)
         return qs
 
     def save_model(self, request, obj, form, change):
-        # FIXME: handle the multi group integrator user ?
-        # FIXME: warn the super user that he can't create this setting as only integrators can
-        user_groups = Group.objects.filter(user=request.user)
 
-        if (
-            user_groups[0].permitdepartment.is_integrator_admin
-            and len(user_groups) == 1
-        ):
-            obj.permitdepartment.integrator = user_groups[0].pk
-            obj.save()
-        else:
-            raise PermissionDenied
+        if not request.user.is_superuser:
+            user_groups = request.user.groups.all()
+
+            if (
+                user_groups[0].permitdepartment.is_integrator_admin
+                and len(user_groups) == 1
+            ):
+                obj.permitdepartment.integrator = user_groups[0].pk
+                obj.save()
+            else:
+                raise PermissionDenied
 
         # Integrator role can only be created by superadmin.
         if request.user.is_superuser and obj.permitdepartment.is_integrator_admin:
-            # FIXME: check that user is in oe and only one group
             obj.permissions.set(
                 # FIXME be more specific
                 Permission.objects.all()
@@ -252,17 +276,55 @@ class WorksObjectTypeAdmin(admin.ModelAdmin):
         ),
     )
     form = WorksObjectTypeAdminForm
-    # FIXME: special case fr yc-250
+
     def get_queryset(self, request):
-        return (
+        qs = (
             super()
             .get_queryset(request)
             .select_related("works_object", "works_type")
             .prefetch_related("administrative_entities")
         )
+        if not request.user.is_superuser:
+            qs = qs.filter(integrator__in=request.user.groups.all())
+        return qs
 
     def save_model(self, request, obj, form, change):
-        save_object_whith_creator_group(self, request)
+        save_object_whith_creator_group(self, request, obj, form, change)
+
+    def get_readonly_fields(self, request, obj=None):
+        if not request.user.is_superuser:
+            return ["integrator"]
+        else:
+            return []
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if db_field.name == "administrative_entities":
+            if not request.user.is_superuser:
+                kwargs["queryset"] = models.PermitAdministrativeEntity.objects.filter(
+                    integrator=request.user.groups.all()[0].pk
+                )
+            else:
+                kwargs["queryset"] = models.PermitAdministrativeEntity.objects.all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "works_type":
+            if not request.user.is_superuser:
+                kwargs["queryset"] = models.WorksType.objects.filter(
+                    integrator=request.user.groups.all()[0].pk
+                )
+            else:
+                kwargs["queryset"] = models.WorksType.objects.all()
+
+        if db_field.name == "works_object":
+            if not request.user.is_superuser:
+                kwargs["queryset"] = models.WorksObject.objects.filter(
+                    integrator=request.user.groups.all()[0].pk
+                )
+            else:
+                kwargs["queryset"] = models.WorksObject.objects.all()
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class WorksObjectTypeWithAdministrativeEntitiesField(forms.ModelMultipleChoiceField):
@@ -298,6 +360,23 @@ class WorksObjectPropertyAdmin(SortableAdminMixin, admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         save_object_whith_creator_group(self, request, obj, form, change)
+
+    def get_readonly_fields(self, request, obj=None):
+        if not request.user.is_superuser:
+            return ["integrator"]
+        else:
+            return []
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if db_field.name == "works_object_types":
+            # FIXME: filtering is not ok!
+            if not request.user.is_superuser:
+                kwargs["queryset"] = models.WorksObjectType.objects.filter(
+                    integrator=request.user.groups.all()[0].pk
+                )
+            else:
+                kwargs["queryset"] = models.WorksObjectType.objects.all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class PermitAdministrativeEntityAdminForm(forms.ModelForm):
@@ -373,6 +452,12 @@ class WorksObjectAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         save_object_whith_creator_group(self, request, obj, form, change)
 
+    def get_readonly_fields(self, request, obj=None):
+        if not request.user.is_superuser:
+            return ["integrator"]
+        else:
+            return []
+
 
 class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
     form = PermitAdministrativeEntityAdminForm
@@ -385,9 +470,8 @@ class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             qs = models.PermitAdministrativeEntity.objects.all()
         else:
-            user_groups = Group.objects.filter(user=request.user)
             qs = models.PermitAdministrativeEntity.objects.filter(
-                integrator__in=user_groups
+                integrator__in=request.user.groups.all()
             )
         return qs
 
@@ -397,13 +481,18 @@ class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         save_object_whith_creator_group(self, request, obj, form, change)
 
+    def get_readonly_fields(self, request, obj=None):
+        if not request.user.is_superuser:
+            return ["integrator"]
+        else:
+            return []
+
 
 class PermitRequestAmendPropertyForm(forms.ModelForm):
     works_object_types = get_works_object_types_field()
 
     class Meta:
         model = models.PermitRequestAmendProperty
-        # FIXME: show the integrator field for superuser ?
         fields = ["name", "is_mandatory", "works_object_types", "integrator"]
 
 
@@ -427,7 +516,60 @@ class PermitRequestAmendPropertyAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         save_object_whith_creator_group(self, request, obj, form, change)
 
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if db_field.name == "works_object_types":
+            # FIXME: filtering is not ok!
+            if not request.user.is_superuser:
+                print("icicci")
+                kwargs["queryset"] = models.WorksObjectType.objects.filter(
+                    integrator=request.user.groups.all()[0].pk
+                )
+            else:
+                kwargs["queryset"] = models.WorksObjectType.objects.all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+
+class PermitActorTypeAdmin(admin.ModelAdmin):
+    def get_queryset(self, request):
+        # FIXME: filter not ok on list
+        return get_custom_queryset(self, request, models.PermitActorType)
+
+    def save_model(self, request, obj, form, change):
+        save_object_whith_creator_group(self, request, obj, form, change)
+
+    def get_readonly_fields(self, request, obj=None):
+        if not request.user.is_superuser:
+            return ["integrator"]
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "works_type":
+            if not request.user.is_superuser:
+                kwargs["queryset"] = models.WorksType.objects.filter(
+                    integrator=request.user.groups.all()[0].pk
+                )
+            else:
+                kwargs["queryset"] = models.WorksType.objects.all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+class WorksTypeAdmin(admin.ModelAdmin):
+    def get_queryset(self, request):
+        return get_custom_queryset(self, request, models.WorksType)
+
+    def save_model(self, request, obj, form, change):
+        save_object_whith_creator_group(self, request, obj, form, change)
+
+    def get_readonly_fields(self, request, obj=None):
+        if not request.user.is_superuser:
+            return ["integrator"]
+        else:
+            return []
+
+
+# FIXME only super user should be allowed to change constance fields
+
+admin.site.register(models.PermitActorType, PermitActorTypeAdmin)
+admin.site.register(models.WorksType, WorksTypeAdmin)
 admin.site.register(models.WorksObjectType, WorksObjectTypeAdmin)
 admin.site.register(models.WorksObjectProperty, WorksObjectPropertyAdmin)
 admin.site.register(models.PermitAdministrativeEntity, PermitAdministrativeEntityAdmin)
