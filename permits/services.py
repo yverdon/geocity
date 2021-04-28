@@ -181,16 +181,28 @@ def get_works_types(administrative_entity, user):
     return queryset
 
 
-def get_administrative_entities(user):
-    queryset = (
-        models.PermitAdministrativeEntity.objects.filter(
-            pk__in=models.WorksObjectType.objects.values_list(
-                "administrative_entities", flat=True
-            ),
+def get_administrative_entities(user, entities=[]):
+    if entities:
+        queryset = (
+            models.PermitAdministrativeEntity.objects.filter(
+                pk__in=models.WorksObjectType.objects.values_list(
+                    "administrative_entities", flat=True
+                ),
+                tags__name__in=entities,
+            )
+            .order_by("ofs_id", "-name")
+            .distinct()
         )
-        .order_by("ofs_id", "-name")
-        .distinct()
-    )
+    else:
+        queryset = (
+            models.PermitAdministrativeEntity.objects.filter(
+                pk__in=models.WorksObjectType.objects.values_list(
+                    "administrative_entities", flat=True
+                ),
+            )
+            .order_by("ofs_id", "-name")
+            .distinct()
+        )
 
     if not user.has_perm("permits.see_private_requests"):
         return queryset.filter(works_object_types__is_public=True)

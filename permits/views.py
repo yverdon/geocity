@@ -454,9 +454,14 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
                 services.get_next_step(steps, models.StepType.ADMINISTRATIVE_ENTITY).url
             )
     else:
-        administrative_entity_form = forms.AdministrativeEntityForm(
-            instance=permit_request, user=request.user
-        )
+        if request.method == "GET":
+            administrative_entity_form = forms.AdministrativeEntityForm(
+                instance=permit_request, data=request.GET, user=request.user
+            )
+        else:
+            administrative_entity_form = forms.AdministrativeEntityForm(
+                instance=permit_request, user=request.user
+            )
 
     return render(
         request,
