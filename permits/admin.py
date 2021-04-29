@@ -16,6 +16,8 @@ admin.site.register(models.PermitRequestValidation)
 admin.site.register(models.GeomLayer)
 admin.site.register(models.PermitRequestGeoTime, SimpleHistoryAdmin)
 admin.site.register(models.PermitAuthor, SimpleHistoryAdmin)
+# admin.site.register(models.LowerCaseCustomTag)
+# admin.site.register(models.TaggedObject)
 
 
 class PermitRequestHistoryAdmin(SimpleHistoryAdmin):

@@ -18,6 +18,7 @@ from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
+from taggit.models import TagBase, GenericTaggedItemBase
 
 from . import fields
 
@@ -84,7 +85,6 @@ StepType.do_not_call_in_templates = True
 
 
 class PermitDepartment(models.Model):
-
     group = models.OneToOneField(Group, on_delete=models.CASCADE)
     description = models.CharField(_("description"), max_length=100, default="Service")
     is_validator = models.BooleanField(_("is_validator"))
@@ -109,6 +109,34 @@ class PermitDepartment(models.Model):
 
     def __str__(self):
         return str(self.group)
+
+
+# Custom model of django-taggit, stores the custom tags in lower case
+class LowerCaseCustomTag(TagBase):
+    class Meta:
+        verbose_name = _("Tag")
+        verbose_name_plural = _("Tags")
+        app_label = "Taggit"
+    
+    # Override default save to put in lower case the tags
+    def save(self, *args, **kwargs):
+        self.name = self.name.lower()
+        super(LowerCaseCustomTag, self).save(*args, **kwargs)
+
+
+# Intermediary table between (PermitAdministrativeEntity, WorksType) and LowerCaseCustomTag
+class TaggedObject(GenericTaggedItemBase):
+    # tag = models.CharField(_("description"), max_length=100, default="Service")
+    tag = models.ForeignKey(
+        LowerCaseCustomTag,
+        on_delete=models.CASCADE,
+        related_name="%(app_label)s_%(class)s_items",
+    )
+
+    class Meta:
+        verbose_name = _("Tagged object")
+        verbose_name_plural = _("Tagged objects")
+        app_label = "Taggit"
 
 
 class PermitAdministrativeEntity(models.Model):
@@ -147,7 +175,7 @@ class PermitAdministrativeEntity(models.Model):
         ],
     )
     geom = geomodels.MultiPolygonField(_("geom"), null=True, srid=2056)
-    tags = TaggableManager()
+    # tags = TaggableManager(through=TaggedObject)
     
 
     class Meta:
@@ -472,7 +500,7 @@ class WorksType(models.Model):
     meta_type = models.IntegerField(
         _("Type générique"), choices=META_TYPE_CHOICES, default=META_TYPE_OTHER
     )
-    tags = TaggableManager()
+    # tags = TaggableManager(through=TaggedObject)
 
     class Meta:
         verbose_name = _("1.2 Configuration du type")
