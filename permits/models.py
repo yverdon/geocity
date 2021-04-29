@@ -111,34 +111,6 @@ class PermitDepartment(models.Model):
         return str(self.group)
 
 
-# Custom model of django-taggit, stores the custom tags in lower case
-class LowerCaseCustomTag(TagBase):
-    class Meta:
-        verbose_name = _("Tag")
-        verbose_name_plural = _("Tags")
-        app_label = "Taggit"
-    
-    # Override default save to put in lower case the tags
-    def save(self, *args, **kwargs):
-        self.name = self.name.lower()
-        super(LowerCaseCustomTag, self).save(*args, **kwargs)
-
-
-# Intermediary table between (PermitAdministrativeEntity, WorksType) and LowerCaseCustomTag
-class TaggedObject(GenericTaggedItemBase):
-    # tag = models.CharField(_("description"), max_length=100, default="Service")
-    tag = models.ForeignKey(
-        LowerCaseCustomTag,
-        on_delete=models.CASCADE,
-        related_name="%(app_label)s_%(class)s_items",
-    )
-
-    class Meta:
-        verbose_name = _("Tagged object")
-        verbose_name_plural = _("Tagged objects")
-        app_label = "Taggit"
-
-
 class PermitAdministrativeEntity(models.Model):
     name = models.CharField(_("name"), max_length=128)
     ofs_id = models.PositiveIntegerField(_("ofs_id"))
@@ -175,7 +147,7 @@ class PermitAdministrativeEntity(models.Model):
         ],
     )
     geom = geomodels.MultiPolygonField(_("geom"), null=True, srid=2056)
-    # tags = TaggableManager(through=TaggedObject)
+    tags = TaggableManager()
     
 
     class Meta:
@@ -500,7 +472,7 @@ class WorksType(models.Model):
     meta_type = models.IntegerField(
         _("Type générique"), choices=META_TYPE_CHOICES, default=META_TYPE_OTHER
     )
-    # tags = TaggableManager(through=TaggedObject)
+    tags = TaggableManager()
 
     class Meta:
         verbose_name = _("1.2 Configuration du type")
