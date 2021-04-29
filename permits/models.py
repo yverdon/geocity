@@ -802,8 +802,5 @@ class QgisProject(models.Model):
         _("Liste des couches QGIS à afficher séparées par les virgules ','"),
         max_length=500,
     )
-    qgis_print_composer_template = models.CharField(
-        _("Nom du modèle d'impression dans le projet qgis"), max_length=500,
-    )
     description = models.CharField(max_length=150)
     works_object_type = models.ForeignKey(WorksObjectType, on_delete=models.CASCADE)

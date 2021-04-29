@@ -159,14 +159,34 @@
     {% endif %}
 
     <div class="tab-pane" id="print" role="tabpanel" aria-labelledby="print-tab">
-      <form method="post">
-        {% csrf_token %}
-        {% for print_template in print_templates %}
-          <button formaction="{% url 'permits:permit_request_print' permit_request_id=permit_request.pk template_id=print_template.pk %}">
-            {{ print_template.description  }}
-          </button>
-        {% endfor %}
-      </form>
+      <div class="mb-4">
+        <h5>{% trans "Modèles d'impression Qgis" %}</h5>
+        {% if print_templates %}
+          <form method="post">
+            {% csrf_token %}
+            {% for print_template in print_templates %}
+              <button class="btn btn-primary mr-3" formaction="{% url 'permits:permit_request_print' permit_request_id=permit_request.pk template_id=print_template.pk %}">
+                {{ print_template.description  }}
+              </button>
+            {% endfor %}
+          </form>
+        {% else %}
+          {% trans "Aucun modèle d'impression Qgis n'a été configuré"%}
+        {% endif %}
+      </div>
+      <h5>{% trans "Directives liées à la demande" %}</h5>
+      {% if directives %}
+          {% for directive_file, directive_description, additional_information in directives %}
+            <div{% if not forloop.last %} class="mb-3"{% endif %}>
+              {% if directive_file and directive_description %}
+                {{forloop.counter}}.
+                <span class="directive_description">{{ directive_description }}</span> - {% if directive_file %}<a class="directive_file" href="{{ directive_file.url }}" target="_blank">{% trans "Télécharger le fichier" %}</a>{% endif %} - <span class="additional_information">{{ additional_information }}</span>
+              {% endif %}
+            </div>
+          {% endfor %}
+      {% else %}
+        {% trans "Aucune directive n'a été ajoutée"%}
+      {% endif %}
     </div>
   </div>
 {% endif %}

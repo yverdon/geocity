@@ -198,6 +198,9 @@ class PermitRequestDetailView(View):
                 "print_templates": services.get_permit_request_print_templates(
                     self.permit_request
                 ),
+                "directives": services.get_permit_request_directives(
+                    self.permit_request
+                ),
             },
         }
 
@@ -446,13 +449,11 @@ def permit_request_print(request, permit_request_id, template_id):
 
     if not qgisserver_response:
         # FIXME return a proper error here
-        return HttpResponse(
-            _("Une erreur est survenue lors de l'impression")
-        )
+        return HttpResponse(_("Une erreur est survenue lors de l'impression"))
 
-    return StreamingHttpResponse(qgisserver_response.iter_content(chunk_size=128),
-        content_type="application/pdf"
-     )
+    return StreamingHttpResponse(
+        qgisserver_response.iter_content(chunk_size=128), content_type="application/pdf"
+    )
 
 
 @redirect_bad_status_to_detail
@@ -1099,27 +1100,6 @@ def administrative_entity_file_download(request, path):
 
 
 @login_required
-def printpdf(request, permit_request_id):
-
-    permit_request = models.PermitRequest.objects.get(pk=permit_request_id)
-    if (
-        request.user.has_perm("permits.amend_permit_request")
-        and (
-            permit_request.has_validations()
-            and permit_request.get_pending_validations().count() == 0
-        )
-        or permit_request.status == 2
-    ):
-
-        pdf_file = printpermit.printreport(request, permit_request)
-        response = HttpResponse(pdf_file, content_type="application/pdf")
-        response["Content-Disposition"] = 'filename="permis.pdf"'
-        return response
-    else:
-        raise PermissionDenied
-
-
-@login_required
 def genericauthorview(request, pk):
 
     instance = get_object_or_404(models.PermitAuthor, pk=pk)
@@ -1150,6 +1130,7 @@ def administrative_infos(request):
 
 from django.http import FileResponse, HttpResponseNotFound, JsonResponse
 
+
 def demo_geojson(request):
 
     print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -1158,9 +1139,11 @@ def demo_geojson(request):
 
     demo_data = {
         "type": "FeatureCollection",
+        "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:EPSG::2056"}},
         "features": [
             {
                 "type": "Feature",
+                "id": 1,
                 "geometry": {
                     "type": "Polygon",
                     "coordinates": [
@@ -1184,7 +1167,7 @@ def demo_geojson(request):
                     "permit_request_works_object_types": [1],
                     "permit_request_creditor_type": "Auteur de la demande, Antoine Ducommun",
                     "permit_request_meta_types": [0],
-                    "permit_request_intersected_geometries": null,
+                    "permit_request_intersected_geometries": [],
                     "permit_request_works_object_types_names": {
                         "1": "Enseigne lumnieuse (Procédés de réclame)"
                     },
@@ -1194,10 +1177,11 @@ def demo_geojson(request):
             },
             {
                 "type": "Feature",
+                "id": 2,
                 "geometry": {"type": "Point", "coordinates": [2538910.94, 1180356.37]},
                 "properties": {
-                    "permit_request_geo_time_start_date": null,
-                    "permit_request_geo_time_end_date": null,
+                    "permit_request_geo_time_start_date": [],
+                    "permit_request_geo_time_end_date": [],
                     "permit_request_geo_time_comments": [],
                     "permit_request_geo_time_external_links": [],
                     "permit_request_id": 2,
@@ -1227,6 +1211,7 @@ def demo_geojson(request):
             },
             {
                 "type": "Feature",
+                "id": 3,
                 "geometry": {
                     "type": "Polygon",
                     "coordinates": [
@@ -1308,10 +1293,11 @@ def demo_geojson(request):
             },
             {
                 "type": "Feature",
+                "id": 4,
                 "geometry": {"type": "Point", "coordinates": []},
                 "properties": {
-                    "permit_request_geo_time_start_date": null,
-                    "permit_request_geo_time_end_date": null,
+                    "permit_request_geo_time_start_date": [],
+                    "permit_request_geo_time_end_date": [],
                     "permit_request_geo_time_comments": [],
                     "permit_request_geo_time_external_links": [],
                     "permit_request_id": 4,
@@ -1320,7 +1306,7 @@ def demo_geojson(request):
                     "permit_request_works_object_types": [11],
                     "permit_request_creditor_type": "Auteur de la demande, Super Admin",
                     "permit_request_meta_types": [0],
-                    "permit_request_intersected_geometries": null,
+                    "permit_request_intersected_geometries": [],
                     "permit_request_works_object_types_names": {
                         "11": "Sans date ni geometrie (Procédés de réclame)"
                     },
@@ -1343,6 +1329,7 @@ def demo_geojson(request):
             },
             {
                 "type": "Feature",
+                "id": 5,
                 "geometry": {"type": "Point", "coordinates": []},
                 "properties": {
                     "permit_request_geo_time_start_date": "2021-04-24T16:47:00+02:00",
@@ -1355,7 +1342,7 @@ def demo_geojson(request):
                     "permit_request_works_object_types": [10],
                     "permit_request_creditor_type": "Auteur de la demande, Super Admin",
                     "permit_request_meta_types": [0],
-                    "permit_request_intersected_geometries": null,
+                    "permit_request_intersected_geometries": [],
                     "permit_request_works_object_types_names": {
                         "10": "Sans Geometrie (Procédés de réclame)"
                     },
@@ -1378,6 +1365,7 @@ def demo_geojson(request):
             },
             {
                 "type": "Feature",
+                "id": 6,
                 "geometry": {
                     "type": "Polygon",
                     "coordinates": [
@@ -1427,6 +1415,7 @@ def demo_geojson(request):
             },
             {
                 "type": "Feature",
+                "id": 7,
                 "geometry": {
                     "type": "Polygon",
                     "coordinates": [
@@ -1497,10 +1486,11 @@ def demo_geojson(request):
             },
             {
                 "type": "Feature",
+                "id": 8,
                 "geometry": {"type": "Point", "coordinates": []},
                 "properties": {
-                    "permit_request_geo_time_start_date": null,
-                    "permit_request_geo_time_end_date": null,
+                    "permit_request_geo_time_start_date": [],
+                    "permit_request_geo_time_end_date": [],
                     "permit_request_geo_time_comments": [],
                     "permit_request_geo_time_external_links": [],
                     "permit_request_id": 8,
@@ -1509,7 +1499,7 @@ def demo_geojson(request):
                     "permit_request_works_object_types": [2],
                     "permit_request_creditor_type": "Auteur de la demande, Mon Prénom Mon Nom",
                     "permit_request_meta_types": [0],
-                    "permit_request_intersected_geometries": null,
+                    "permit_request_intersected_geometries": [],
                     "permit_request_works_object_types_names": {
                         "2": "Panneau (Procédés de réclame)"
                     },
@@ -1519,6 +1509,7 @@ def demo_geojson(request):
             },
             {
                 "type": "Feature",
+                "id": 9,
                 "geometry": {"type": "Point", "coordinates": []},
                 "properties": {
                     "permit_request_geo_time_start_date": "2021-05-01T17:34:00+02:00",
@@ -1531,7 +1522,7 @@ def demo_geojson(request):
                     "permit_request_works_object_types": [10],
                     "permit_request_creditor_type": "Auteur de la demande, Super Admin",
                     "permit_request_meta_types": [0],
-                    "permit_request_intersected_geometries": null,
+                    "permit_request_intersected_geometries": [],
                     "permit_request_works_object_types_names": {
                         "10": "Sans Geometrie (Procédés de réclame)"
                     },
@@ -1552,6 +1543,7 @@ def demo_geojson(request):
             },
             {
                 "type": "Feature",
+                "id": 10,
                 "geometry": {
                     "type": "Polygon",
                     "coordinates": [
@@ -1565,8 +1557,8 @@ def demo_geojson(request):
                     ],
                 },
                 "properties": {
-                    "permit_request_geo_time_start_date": null,
-                    "permit_request_geo_time_end_date": null,
+                    "permit_request_geo_time_start_date": [],
+                    "permit_request_geo_time_end_date": [],
                     "permit_request_geo_time_comments": [
                         "sans date geo 1",
                         "sans date geo 2",
@@ -1599,6 +1591,7 @@ def demo_geojson(request):
             },
             {
                 "type": "Feature",
+                "id": 11,
                 "geometry": {"type": "Point", "coordinates": []},
                 "properties": {
                     "permit_request_geo_time_start_date": "2021-04-27T23:04:00+02:00",
@@ -1611,7 +1604,7 @@ def demo_geojson(request):
                     "permit_request_works_object_types": [10],
                     "permit_request_creditor_type": "Auteur de la demande, Antoine Ducommun",
                     "permit_request_meta_types": [0],
-                    "permit_request_intersected_geometries": null,
+                    "permit_request_intersected_geometries": [],
                     "permit_request_works_object_types_names": {
                         "10": "Sans Geometrie (Procédés de réclame)"
                     },
@@ -1632,6 +1625,7 @@ def demo_geojson(request):
             },
             {
                 "type": "Feature",
+                "id": 13,
                 "geometry": {
                     "type": "Polygon",
                     "coordinates": [
@@ -1681,6 +1675,7 @@ def demo_geojson(request):
             },
             {
                 "type": "Feature",
+                "id": 14,
                 "geometry": {"type": "Point", "coordinates": [2538561.16, 1181243.62]},
                 "properties": {
                     "permit_request_geo_time_start_date": "2021-04-30T10:53:00+02:00",
@@ -1693,7 +1688,7 @@ def demo_geojson(request):
                     "permit_request_works_object_types": [8],
                     "permit_request_creditor_type": "Auteur de la demande, Antoine Ducommun",
                     "permit_request_meta_types": [0],
-                    "permit_request_intersected_geometries": null,
+                    "permit_request_intersected_geometries": [],
                     "permit_request_works_object_types_names": {
                         "8": "Avant-toits (Construction)"
                     },
@@ -1709,5 +1704,4 @@ def demo_geojson(request):
             },
         ],
     }
-
     return JsonResponse(demo_data, safe=False)
