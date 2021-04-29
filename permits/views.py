@@ -742,8 +742,8 @@ def permit_request_actors(request, permit_request_id):
             "formset": formset,
             "creditorform": creditorform,
             "permit_request": permit_request,
-            **steps_context,
             "requires_payment": requires_payment,
+            **steps_context,
         },
     )
 
