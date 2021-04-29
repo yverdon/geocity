@@ -422,7 +422,7 @@ class PermitRequestDetailView(View):
 
 def permit_request_print(request, permit_request_id, template_id):
     services.get_permit_request_for_user_or_404(request.user, permit_request_id)
-    template = get_object_or_404(models.QgisTemplate.objects, pk=template_id)
+    template = get_object_or_404(models.QgisProject.objects, pk=template_id)
 
     values = {
         "SERVICE": "WMS",
