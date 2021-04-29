@@ -506,8 +506,22 @@ class WorksObjectType(models.Model):
         verbose_name=_("communes"),
         related_name="works_object_types",
     )
-    needs_geometry = models.BooleanField(_("avec géométrie"), default=True)
+    has_geometry_point = models.BooleanField(_("Point"), default=True)
+    has_geometry_line = models.BooleanField(_("Ligne"), default=True)
+    has_geometry_polygon = models.BooleanField(_("Surface"), default=True)
+    directive = models.FileField(
+        _("directive"),
+        validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
+        blank=True,
+    )
+    directive_description = models.CharField(
+        _("description de la directive"), max_length=200, blank=True
+    )
+    additional_information = models.TextField(_("autre information"), blank=True)
     needs_date = models.BooleanField(_("avec période de temps"), default=True)
+    requires_payment = models.BooleanField(
+        _("Demande soumise à des frais"), default=True
+    )
     is_public = models.BooleanField(_("Public"), default=False)
 
     class Meta:
@@ -517,6 +531,26 @@ class WorksObjectType(models.Model):
 
     def __str__(self):
         return "{} ({})".format(self.works_object.name, self.works_type.name)
+
+    @property
+    def has_geometry(self):
+        return (
+            self.has_geometry_point
+            or self.has_geometry_line
+            or self.has_geometry_polygon
+        )
+
+    def clean(self):
+        if bool(self.directive_description) ^ bool(self.directive):
+            raise ValidationError(
+                {
+                    "directive_description": _(
+                        "La description de directive ne devrait pas être définie car cet objet n’a pas de directive associée."
+                    )
+                    if not self.directive
+                    else _("Ce champ est obligatoire lorsqu’une directive est définie.")
+                }
+            )
 
 
 class WorksObject(models.Model):
@@ -757,7 +791,7 @@ class PermitRequestAmendPropertyValue(models.Model):
         unique_together = [("property", "works_object_type_choice")]
 
 
-class QgisTemplate(models.Model):
+class QgisProject(models.Model):
     qgis_project_file = fields.AdministrativeEntityFileField(
         _("Fichier QGIS '*.qgs'"), upload_to="qgis_templates",
     )
@@ -767,6 +801,9 @@ class QgisTemplate(models.Model):
     qgis_layers = models.CharField(
         _("Liste des couches QGIS à afficher séparées par les virgules ','"),
         max_length=500,
+    )
+    qgis_print_composer_template = models.CharField(
+        _("Nom du modèle d'impression dans le projet qgis"), max_length=500,
     )
     description = models.CharField(max_length=150)
     works_object_type = models.ForeignKey(WorksObjectType, on_delete=models.CASCADE)

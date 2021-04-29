@@ -1282,6 +1282,6 @@ def get_permit_request_directives(permit_request):
 
 
 def get_permit_request_print_templates(permit_request):
-    return models.QgisTemplate.objects.filter(
+    return models.QgisProject.objects.filter(
         works_object_type__in=permit_request.works_object_types.all()
     )

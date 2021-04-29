@@ -46,8 +46,8 @@ def get_works_object_types_field():
 works_object_type_administrative_entities.short_description = _("Communes")
 
 
-class QgisTemplateInline(admin.TabularInline):
-    model = models.QgisTemplate
+class QgisProjectInline(admin.TabularInline):
+    model = models.QgisProject
 
 
 class WorksObjectTypeAdminForm(forms.ModelForm):
@@ -124,7 +124,7 @@ class WorksObjectTypeAdmin(admin.ModelAdmin):
         ),
     )
     form = WorksObjectTypeAdminForm
-    inlines = [QgisTemplateInline]
+    inlines = [QgisProjectInline]
 
     def get_queryset(self, request):
         return (
