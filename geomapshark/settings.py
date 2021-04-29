@@ -49,6 +49,9 @@ EMAIL_BACKEND = (
 
 DEFAULT_CHARSET = "utf-8"
 
+# Django-Taggit, make tag unique 
+TAGGIT_CASE_INSENSITIVE = True
+
 # 2FA activation
 ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 

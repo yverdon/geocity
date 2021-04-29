@@ -182,27 +182,25 @@ def get_works_types(administrative_entity, user):
 
 
 def get_administrative_entities(user, entities=[]):
-    if entities:
-        queryset = (
-            models.PermitAdministrativeEntity.objects.filter(
-                pk__in=models.WorksObjectType.objects.values_list(
-                    "administrative_entities", flat=True
-                ),
-                tags__name__in=entities,
-            )
-            .order_by("ofs_id", "-name")
-            .distinct()
+    # Default queryset, with all administrative entities
+    queryset = (
+        models.PermitAdministrativeEntity.objects.filter(
+            pk__in=models.WorksObjectType.objects.values_list(
+                "administrative_entities", flat=True
+            ),
         )
-    else:
-        queryset = (
-            models.PermitAdministrativeEntity.objects.filter(
-                pk__in=models.WorksObjectType.objects.values_list(
-                    "administrative_entities", flat=True
-                ),
-            )
-            .order_by("ofs_id", "-name")
-            .distinct()
-        )
+        .order_by("ofs_id", "-name")
+        .distinct()
+    )   
+
+    # Make user tags lower case 
+    entities = [each_string.lower() for each_string in entities]
+
+    # Queryset filtered by tag
+    queryset_tag_filter = queryset.filter(tags__name__in=entities,)
+
+    # Prevent of taking an empty queryset if tag is wrong
+    queryset = queryset_tag_filter if queryset_tag_filter else queryset
 
     if not user.has_perm("permits.see_private_requests"):
         return queryset.filter(works_object_types__is_public=True)
