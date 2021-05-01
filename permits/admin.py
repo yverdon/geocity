@@ -14,6 +14,23 @@ from . import forms as permit_forms
 from . import models
 
 
+INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [
+    'permitadministrativeentity'
+    'workstype',
+    'worksobject',
+    'worksobjecttype',
+    'worksobjectproperty',
+    'permitactortype',
+    'permitrequestamendproperty'
+    'permitdepartment',
+    'permitworkflowstatus'
+]
+
+INTEGRATOR_AUTH_MODELS_PERMISSIONS = [
+    'user',
+    'group'
+]
+
 # Allow a user belonging to integrator group to see only objects created by this group
 def get_custom_queryset(self, request, appmodel):
     if request.user.is_superuser:
@@ -91,6 +108,8 @@ class UserAdmin(BaseUserAdmin):
                 code="invalid",
             )
         else:
+            #FIXME: needs to have a value for field "id" before this many-to-many relationship can be used
+            print("problem")
             obj.save()
 
 
@@ -130,7 +149,7 @@ class GroupAdmin(admin.ModelAdmin):
         model = Group
 
     def get_queryset(self, request):
-
+            
         if request.user.is_superuser:
             qs = Group.objects.all()
         else:
@@ -156,9 +175,17 @@ class GroupAdmin(admin.ModelAdmin):
 
         # Integrator role can only be created by superadmin.
         if request.user.is_superuser and obj.permitdepartment.is_integrator_admin:
+            obj.save()
+            # get permissions
+            permits_permissions = Permission.objects.filter(
+                content_type__app_label='permits',
+                content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS)
+            auth_permissions = Permission.objects.filter(
+                content_type__app_label='permits',
+                content_type__model__in=INTEGRATOR_AUTH_MODELS_PERMISSIONS)
+            
             obj.permissions.set(
-                # FIXME be more specific
-                Permission.objects.all()
+                permits_permissions.union(auth_permissions)
             )
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
