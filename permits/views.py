@@ -708,6 +708,7 @@ def permit_request_actors(request, permit_request_id):
         permit_request=permit_request,
         current_step_type=models.StepType.ACTORS,
     )
+    requires_payment = services.permit_requests_has_paid_wot(permit_request)
 
     creditorform = forms.PermitRequestCreditorForm(
         request.POST or None, instance=permit_request
@@ -741,6 +742,7 @@ def permit_request_actors(request, permit_request_id):
             "formset": formset,
             "creditorform": creditorform,
             "permit_request": permit_request,
+            "requires_payment": requires_payment,
             **steps_context,
         },
     )

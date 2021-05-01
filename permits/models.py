@@ -539,8 +539,10 @@ class WorksObjectType(models.Model):
         _("description de la directive"), max_length=200, blank=True
     )
     additional_information = models.TextField(_("autre information"), blank=True)
-    needs_geometry = models.BooleanField(_("avec géométrie"), default=True)
     needs_date = models.BooleanField(_("avec période de temps"), default=True)
+    requires_payment = models.BooleanField(
+        _("Demande soumise à des frais"), default=True
+    )
     is_public = models.BooleanField(_("Public"), default=False)
 
     class Meta:

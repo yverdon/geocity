@@ -18,8 +18,10 @@
     {% csrf_token %}
     {{ formset.management_form }}
     <br>
-    <h4>Adresse de facturation si différente de celle de l'auteur</h4>
-    {% bootstrap_form creditorform layout='horizontal' %}
+    {% if requires_payment %}
+      <h4>Adresse de facturation si différente de celle de l'auteur</h4>
+      {% bootstrap_form creditorform layout='horizontal' %}
+    {% endif %}
     <hr>
     <h3>{{ config.ACTORS_STEP }}</h3>
     <div id="forms-container">

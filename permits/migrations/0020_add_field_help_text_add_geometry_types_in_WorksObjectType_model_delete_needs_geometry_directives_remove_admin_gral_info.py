@@ -12,6 +12,10 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RemoveField(
+            model_name='worksobjecttype',
+            name='needs_geometry',
+        ),
+        migrations.RemoveField(
             model_name='permitadministrativeentity',
             name='general_informations',
         ),
