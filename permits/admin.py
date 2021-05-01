@@ -14,6 +14,21 @@ from . import forms as permit_forms
 from . import models
 
 
+# Allow a user belonging to integrator group to see only objects created by this group
+def get_custom_queryset(self, request, appmodel):
+    if request.user.is_superuser:
+        qs = appmodel.objects.all()
+    else:
+        qs = appmodel.objects.filter(integrator__in=request.user.groups.all())
+    return qs
+
+
+# Save the group that created the object
+def save_object_whith_creator_group(self, request, obj, form, change):
+    obj.integrator = request.user.groups.all()[0]
+    obj.save()
+
+
 class UserAdmin(BaseUserAdmin):
     def get_readonly_fields(self, request, obj=None):
         # limit editable fields to protect user data, superuser creation must be down using django shell
@@ -82,22 +97,6 @@ class UserAdmin(BaseUserAdmin):
 # Re-register UserAdmin
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
-
-# Allow a user belonging to integrator group to see only objects created by this group
-# FIXME: what sould the superuser see / edit ?
-def get_custom_queryset(self, request, appmodel):
-    if request.user.is_superuser:
-        qs = appmodel.objects.all()
-    else:
-        qs = appmodel.objects.filter(integrator__in=request.user.groups.all())
-    return qs
-
-
-# Save the group that created the object
-def save_object_whith_creator_group(self, request, obj, form, change):
-    obj.integrator = request.user.groups.all()[0]
-    obj.save()
-
 
 # Inline for group & department (1to1)
 class PermitDepartmentInline(admin.StackedInline):
@@ -188,13 +187,19 @@ def works_object_type_administrative_entities(obj):
     )
 
 
-def get_works_object_types_field():
+def get_works_object_types_field(request):
+
+    qs = (
+        models.WorksObjectType.objects.select_related("works_object", "works_type")
+        .order_by("works_object__name", "works_type__name")
+        .prefetch_related("administrative_entities")
+    )
+
+    if not request.user.is_superuser:
+        qs = qs.filter(integrator__in=request.user.groups.all())
+
     return WorksObjectTypeWithAdministrativeEntitiesField(
-        queryset=(
-            models.WorksObjectType.objects.select_related("works_object", "works_type")
-            .order_by("works_object__name", "works_type__name")
-            .prefetch_related("administrative_entities")
-        ),
+        queryset=qs,
         widget=forms.CheckboxSelectMultiple,
         label=_("objets des travaux").capitalize(),
     )
@@ -337,7 +342,10 @@ class WorksObjectTypeWithAdministrativeEntitiesField(forms.ModelMultipleChoiceFi
 
 
 class WorksObjectPropertyForm(forms.ModelForm):
-    works_object_types = get_works_object_types_field()
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request", None)
+        super(WorksObjectPropertyForm, self).__init__(*args, **kwargs)
+        self.fields["works_object_types"] = get_works_object_types_field(self.request)
 
     class Meta:
         model = models.WorksObjectProperty
@@ -368,16 +376,17 @@ class WorksObjectPropertyAdmin(SortableAdminMixin, admin.ModelAdmin):
         else:
             return []
 
-    def formfield_for_manytomany(self, db_field, request, **kwargs):
-        if db_field.name == "works_object_types":
-            # FIXME: filtering is not ok!
-            if not request.user.is_superuser:
-                kwargs["queryset"] = models.WorksObjectType.objects.filter(
-                    integrator=request.user.groups.all()[0].pk
-                )
-            else:
-                kwargs["queryset"] = models.WorksObjectType.objects.all()
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    # Passe the request from ModelAdmin to ModelForm
+    def get_form(self, request, obj=None, **kwargs):
+
+        Form = super(WorksObjectPropertyAdmin, self).get_form(request, obj, **kwargs)
+
+        class RequestForm(Form):
+            def __new__(cls, *args, **kwargs):
+                kwargs["request"] = request
+                return Form(*args, **kwargs)
+
+        return RequestForm
 
 
 class PermitAdministrativeEntityAdminForm(forms.ModelForm):
@@ -490,7 +499,10 @@ class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
 
 
 class PermitRequestAmendPropertyForm(forms.ModelForm):
-    works_object_types = get_works_object_types_field()
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop("request", None)
+        super(PermitRequestAmendPropertyForm, self).__init__(*args, **kwargs)
+        self.fields["works_object_types"] = get_works_object_types_field(self.request)
 
     class Meta:
         model = models.PermitRequestAmendProperty
@@ -517,22 +529,23 @@ class PermitRequestAmendPropertyAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         save_object_whith_creator_group(self, request, obj, form, change)
 
-    def formfield_for_manytomany(self, db_field, request, **kwargs):
-        if db_field.name == "works_object_types":
-            # FIXME: filtering is not ok!
-            if not request.user.is_superuser:
-                print("icicci")
-                kwargs["queryset"] = models.WorksObjectType.objects.filter(
-                    integrator=request.user.groups.all()[0].pk
-                )
-            else:
-                kwargs["queryset"] = models.WorksObjectType.objects.all()
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    # Passe the request from ModelAdmin to ModelForm
+    def get_form(self, request, obj=None, **kwargs):
+
+        Form = super(PermitRequestAmendPropertyAdmin, self).get_form(
+            request, obj, **kwargs
+        )
+
+        class RequestForm(Form):
+            def __new__(cls, *args, **kwargs):
+                kwargs["request"] = request
+                return Form(*args, **kwargs)
+
+        return RequestForm
 
 
 class PermitActorTypeAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
-        # FIXME: filter not ok on list
         return get_custom_queryset(self, request, models.PermitActorType)
 
     def save_model(self, request, obj, form, change):
