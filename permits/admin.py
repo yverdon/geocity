@@ -13,23 +13,19 @@ from django.forms import ValidationError
 from . import forms as permit_forms
 from . import models
 
-
+# FIXME: missing items ?
 INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [
-    'permitadministrativeentity'
-    'workstype',
-    'worksobject',
-    'worksobjecttype',
-    'worksobjectproperty',
-    'permitactortype',
-    'permitrequestamendproperty'
-    'permitdepartment',
-    'permitworkflowstatus'
+    "permitadministrativeentity" "workstype",
+    "worksobject",
+    "worksobjecttype",
+    "worksobjectproperty",
+    "permitactortype",
+    "permitrequestamendproperty" "permitdepartment",
+    "permitworkflowstatus",
+    "permitauthor",
 ]
 
-INTEGRATOR_AUTH_MODELS_PERMISSIONS = [
-    'user',
-    'group'
-]
+INTEGRATOR_AUTH_MODELS_PERMISSIONS = ["user", "group"]
 
 # Allow a user belonging to integrator group to see only objects created by this group
 def get_custom_queryset(self, request, appmodel):
@@ -38,6 +34,13 @@ def get_custom_queryset(self, request, appmodel):
     else:
         qs = appmodel.objects.filter(integrator__in=request.user.groups.all())
     return qs
+
+
+def get_custom_readonly_field(request):
+    if not request.user.is_superuser:
+        return ["integrator"]
+    else:
+        return []
 
 
 # Save the group that created the object
@@ -53,7 +56,6 @@ class UserAdmin(BaseUserAdmin):
             return [
                 "email",
                 "is_superuser",
-                "is_staff",
             ]
         else:
             return [
@@ -108,7 +110,7 @@ class UserAdmin(BaseUserAdmin):
                 code="invalid",
             )
         else:
-            #FIXME: needs to have a value for field "id" before this many-to-many relationship can be used
+            # FIXME: needs to have a value for field "id" before this many-to-many relationship can be used
             print("problem")
             obj.save()
 
@@ -135,10 +137,7 @@ class PermitDepartmentInline(admin.StackedInline):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def get_readonly_fields(self, request, obj=None):
-        if not request.user.is_superuser:
-            return ["is_integrator_admin", "integrator"]
-        else:
-            return []
+        return get_custom_readonly_field(request)
 
 
 # Define a new Group admin
@@ -149,7 +148,7 @@ class GroupAdmin(admin.ModelAdmin):
         model = Group
 
     def get_queryset(self, request):
-            
+
         if request.user.is_superuser:
             qs = Group.objects.all()
         else:
@@ -176,17 +175,23 @@ class GroupAdmin(admin.ModelAdmin):
         # Integrator role can only be created by superadmin.
         if request.user.is_superuser and obj.permitdepartment.is_integrator_admin:
             obj.save()
-            # get permissions
+            group = Group.objects.get(name=obj.name)
+            group.refresh_from_db()
+            # get permissions for permits app and django auth contrib models
             permits_permissions = Permission.objects.filter(
-                content_type__app_label='permits',
-                content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS)
+                content_type__app_label="permits",
+                content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
+            )
             auth_permissions = Permission.objects.filter(
-                content_type__app_label='permits',
-                content_type__model__in=INTEGRATOR_AUTH_MODELS_PERMISSIONS)
-            
-            obj.permissions.set(
+                content_type__app_label="auth",
+                content_type__model__in=INTEGRATOR_AUTH_MODELS_PERMISSIONS,
+            )
+            # set the required permissions for the integrator group
+            group.permissions.set(permits_permissions.union(auth_permissions))
+            Group.objects.get(name=obj.name).permissions.set(
                 permits_permissions.union(auth_permissions)
             )
+            # FIXME: user sees empty admin but permissions qs looks fine!
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         # permissions that integrator role can assign to group
@@ -325,10 +330,7 @@ class WorksObjectTypeAdmin(admin.ModelAdmin):
         save_object_whith_creator_group(self, request, obj, form, change)
 
     def get_readonly_fields(self, request, obj=None):
-        if not request.user.is_superuser:
-            return ["integrator"]
-        else:
-            return []
+        return get_custom_readonly_field(request)
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "administrative_entities":
@@ -398,10 +400,7 @@ class WorksObjectPropertyAdmin(SortableAdminMixin, admin.ModelAdmin):
         save_object_whith_creator_group(self, request, obj, form, change)
 
     def get_readonly_fields(self, request, obj=None):
-        if not request.user.is_superuser:
-            return ["integrator"]
-        else:
-            return []
+        return get_custom_readonly_field(request)
 
     # Passe the request from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs):
@@ -490,10 +489,7 @@ class WorksObjectAdmin(admin.ModelAdmin):
         save_object_whith_creator_group(self, request, obj, form, change)
 
     def get_readonly_fields(self, request, obj=None):
-        if not request.user.is_superuser:
-            return ["integrator"]
-        else:
-            return []
+        return get_custom_readonly_field(request)
 
 
 class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
@@ -519,10 +515,7 @@ class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
         save_object_whith_creator_group(self, request, obj, form, change)
 
     def get_readonly_fields(self, request, obj=None):
-        if not request.user.is_superuser:
-            return ["integrator"]
-        else:
-            return []
+        return get_custom_readonly_field(request)
 
 
 class PermitRequestAmendPropertyForm(forms.ModelForm):
@@ -579,8 +572,7 @@ class PermitActorTypeAdmin(admin.ModelAdmin):
         save_object_whith_creator_group(self, request, obj, form, change)
 
     def get_readonly_fields(self, request, obj=None):
-        if not request.user.is_superuser:
-            return ["integrator"]
+        return get_custom_readonly_field(request)
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "works_type":
@@ -601,10 +593,7 @@ class WorksTypeAdmin(admin.ModelAdmin):
         save_object_whith_creator_group(self, request, obj, form, change)
 
     def get_readonly_fields(self, request, obj=None):
-        if not request.user.is_superuser:
-            return ["integrator"]
-        else:
-            return []
+        return get_custom_readonly_field(request)
 
 
 # FIXME only super user should be allowed to change constance fields

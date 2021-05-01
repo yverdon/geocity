@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from django.utils import timezone
 from geomapshark import settings
-from permits import models
+from permits import models, admin
 
 User = get_user_model()
 
@@ -170,9 +170,19 @@ class Command(BaseCommand):
             is_staff=True,
         )
 
+        permits_permissions = Permission.objects.filter(
+            content_type__app_label="permits",
+            content_type__model__in=admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
+        )
+        for perm in Permission.objects.all():
+            print(perm.codename)
+        auth_permissions = Permission.objects.filter(
+            content_type__app_label="auth",
+            content_type__model__in=admin.INTEGRATOR_AUTH_MODELS_PERMISSIONS,
+        )
+        # set the required permissions for the integrator group
         Group.objects.get(name="integrator Yverdon").permissions.set(
-            # FIXME be more specific
-            Permission.objects.all()
+            permits_permissions.union(auth_permissions)
         )
         self.stdout.write("integrator-yverdon / admin")
 
