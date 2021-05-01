@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('auth', '0012_alter_user_first_name_max_length'),
-        ('permits', '0020_add_field_help_text_add_geometry_types_in_WorksObjectType_model_delete_needs_geometry_directives_remove_admin_gral_info'),
+        ('permits', '0021_add_requires_payment_field_to_works_object_type_model'),
     ]
 
     operations = [
