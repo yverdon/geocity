@@ -15,6 +15,7 @@ from django.contrib import messages
 from . import forms as permit_forms
 from . import models
 
+#define permissions required by integrator role
 INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [
     "permitadministrativeentity",
     "workstype",
