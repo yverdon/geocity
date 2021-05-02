@@ -4,6 +4,7 @@ from django import forms
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from geomapshark import settings
+from django.db.models import Q
 from simple_history.admin import SimpleHistoryAdmin
 from django.contrib.auth.models import Group, User, Permission
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -14,28 +15,25 @@ from django.contrib import messages
 from . import forms as permit_forms
 from . import models
 
-# FIXME: missing items ?
 INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [
-    "permitadministrativeentity" "workstype",
+    "permitadministrativeentity",
+    "workstype",
     "worksobject",
     "worksobjecttype",
     "worksobjectproperty",
     "permitactortype",
-    "permitrequestamendproperty" "permitdepartment",
+    "permitrequestamendproperty",
+    "permitdepartment",
     "permitworkflowstatus",
     "permitauthor",
 ]
-# FIXME: missing items
 OTHER_PERMISSIONS_CODENAMES = [
     "view_user",
     "change_user",
     "view_group",
-    "create_group",
+    "add_group",
     "change_group",
     "delete_group",
-    "view_permission" "add_logentry",
-    "change_logentry",
-    "view_logentry",
     "see_private_requests",
 ]
 
@@ -95,9 +93,17 @@ class UserAdmin(BaseUserAdmin):
 
     # Only superuser can edit superuser users
     def get_queryset(self, request):
-
+        # Only allow integrator to change users that have no group, are not superuser or are in group administrated by integrator
         if not request.user.is_superuser:
-            qs = User.objects.filter(is_superuser=False)
+            qs = User.objects.filter(
+                Q(
+                    is_superuser=False,
+                    groups__permitdepartment__integrator=request.user.groups.all()[
+                        0
+                    ].pk,
+                )
+                | Q(is_superuser=False, groups__isnull=True)
+            )
         else:
             qs = User.objects.all()
         return qs
@@ -132,12 +138,33 @@ class UserAdmin(BaseUserAdmin):
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 
+# Define a Form for Department
+class DepartmentAdminForm(forms.ModelForm):
+    class Meta:
+        model = models.PermitDepartment
+        fields = [
+            "description",
+            "is_validator",
+            "is_default_validator",
+            "is_archeologist",
+            "administrative_entity",
+            "integrator",
+            "is_integrator_admin",
+        ]
+        help_texts = {
+            "administrative_entity": _(
+                "En tant qu'intégrateur, vous devez tout d'abord créer une entité administrative, pressez simplement sur + "
+            ),
+        }
+
+
 # Inline for group & department (1to1)
 class PermitDepartmentInline(admin.StackedInline):
     model = models.PermitDepartment
     can_delete = False
     verbose_name_plural = "Service"
     inline_classes = ("collapse open",)
+    form = DepartmentAdminForm
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "administrative_entity":
@@ -150,12 +177,28 @@ class PermitDepartmentInline(admin.StackedInline):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def get_readonly_fields(self, request, obj=None):
-        return get_custom_readonly_field(request)
+        if not request.user.is_superuser:
+            return ["integrator", "is_integrator_admin", "is_archeologist"]
+        else:
+            return []
+
+
+# Define a new Group admin form
+class GroupAdminForm(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields = "__all__"
+        help_texts = {
+            "permissions": _(
+                "Pour un rôle intégrateur, ajoutez toutes les permissions disponibles"
+            ),
+        }
 
 
 # Define a new Group admin
 class GroupAdmin(admin.ModelAdmin):
     inlines = (PermitDepartmentInline,)
+    form = GroupAdminForm
 
     class Meta:
         model = Group
@@ -184,26 +227,11 @@ class GroupAdmin(admin.ModelAdmin):
                 obj.save()
             else:
                 raise PermissionDenied
-
-        # Integrator role can only be created by superadmin.
-        if request.user.is_superuser and obj.permitdepartment.is_integrator_admin:
+        else:
             obj.save()
-            group = Group.objects.get(name=obj.name)
-            # get permissions for permits app and django auth contrib models
-            permits_permissions = Permission.objects.filter(
-                content_type__app_label="permits",
-                content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
-            )
-            other_permissions = Permission.objects.filter(
-                codename__in=OTHER_PERMISSIONS_CODENAMES
-            )
-
-            group.permissions.set(permits_permissions.union(other_permissions))
-            group.save()
-            # FIXME: this does not save to auth_group_permissions table!
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
-        # permissions that integrator role can assign to group
+        # permissions that integrator role can grant to group
         if db_field.name == "permissions":
             if not request.user.is_superuser:
                 kwargs["queryset"] = Permission.objects.filter(
@@ -215,7 +243,19 @@ class GroupAdmin(admin.ModelAdmin):
                     ]
                 )
             else:
-                kwargs["queryset"] = Permission.objects.all()
+                # restrict the permissions that superuser can grant to integrator
+                permits_permissions = (
+                    Permission.objects.filter(
+                        content_type__app_label="permits",
+                        content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
+                    )
+                    .values_list("codename", flat=True)
+                    .all()
+                )
+
+                kwargs["queryset"] = Permission.objects.filter(
+                    codename__in=list(permits_permissions) + OTHER_PERMISSIONS_CODENAMES
+                )
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
