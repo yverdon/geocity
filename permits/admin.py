@@ -9,6 +9,7 @@ from django.contrib.auth.models import Group, User, Permission
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.core.exceptions import PermissionDenied
 from django.forms import ValidationError
+from django.contrib import messages
 
 from . import forms as permit_forms
 from . import models
@@ -24,8 +25,19 @@ INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [
     "permitworkflowstatus",
     "permitauthor",
 ]
-
-INTEGRATOR_AUTH_MODELS_PERMISSIONS = ["user", "group"]
+# FIXME: missing items
+OTHER_PERMISSIONS_CODENAMES = [
+    "view_user",
+    "change_user",
+    "view_group",
+    "create_group",
+    "change_group",
+    "delete_group",
+    "view_permission" "add_logentry",
+    "change_logentry",
+    "view_logentry",
+    "see_private_requests",
+]
 
 # Allow a user belonging to integrator group to see only objects created by this group
 def get_custom_queryset(self, request, appmodel):
@@ -101,7 +113,6 @@ class UserAdmin(BaseUserAdmin):
             if group.permitdepartment.is_integrator_admin:
                 is_integrator_admin = True
 
-        # FIXME be less violent with the user...
         if obj.groups.count() > 1 and is_integrator_admin:
             raise ValidationError(
                 _(
@@ -109,9 +120,11 @@ class UserAdmin(BaseUserAdmin):
                 ),
                 code="invalid",
             )
+            messages.error(
+                request,
+                "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe",
+            )
         else:
-            # FIXME: needs to have a value for field "id" before this many-to-many relationship can be used
-            print("problem")
             obj.save()
 
 
@@ -176,34 +189,34 @@ class GroupAdmin(admin.ModelAdmin):
         if request.user.is_superuser and obj.permitdepartment.is_integrator_admin:
             obj.save()
             group = Group.objects.get(name=obj.name)
-            group.refresh_from_db()
             # get permissions for permits app and django auth contrib models
             permits_permissions = Permission.objects.filter(
                 content_type__app_label="permits",
                 content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
             )
-            auth_permissions = Permission.objects.filter(
-                content_type__app_label="auth",
-                content_type__model__in=INTEGRATOR_AUTH_MODELS_PERMISSIONS,
+            other_permissions = Permission.objects.filter(
+                codename__in=OTHER_PERMISSIONS_CODENAMES
             )
-            # set the required permissions for the integrator group
-            group.permissions.set(permits_permissions.union(auth_permissions))
-            Group.objects.get(name=obj.name).permissions.set(
-                permits_permissions.union(auth_permissions)
-            )
-            # FIXME: user sees empty admin but permissions qs looks fine!
+
+            group.permissions.set(permits_permissions.union(other_permissions))
+            group.save()
+            # FIXME: this does not save to auth_group_permissions table!
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         # permissions that integrator role can assign to group
         if db_field.name == "permissions":
-            kwargs["queryset"] = Permission.objects.filter(
-                codename__in=[
-                    "amend_permit_request",
-                    "validate_permit_request",
-                    "classify_permit_request",
-                    "edit_permit_request",
-                ]
-            )
+            if not request.user.is_superuser:
+                kwargs["queryset"] = Permission.objects.filter(
+                    codename__in=[
+                        "amend_permit_request",
+                        "validate_permit_request",
+                        "classify_permit_request",
+                        "edit_permit_request",
+                    ]
+                )
+            else:
+                kwargs["queryset"] = Permission.objects.all()
+
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
 
@@ -298,6 +311,7 @@ class WorksObjectTypeAdmin(admin.ModelAdmin):
                     "administrative_entities",
                     "is_public",
                     "requires_payment",
+                    "integrator",
                 )
             },
         ),
@@ -382,6 +396,7 @@ class WorksObjectPropertyForm(forms.ModelForm):
             "name",
             "placeholder",
             "help_text",
+            "integrator",
             "order",
             "input_type",
             "is_mandatory",
@@ -419,7 +434,7 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
     class Meta:
         model = models.PermitAdministrativeEntity
         fields = "__all__"
-        exclude = ["enabled_status", "integrator"]
+        exclude = ["enabled_status"]
         widgets = {
             "geom": permit_forms.GeometryWidget(
                 attrs={
@@ -541,7 +556,9 @@ class PermitRequestAmendPropertyAdmin(admin.ModelAdmin):
         "2.2 Configuration des champs de traitement des demandes"
     )
     sortable_str.admin_order_field = "name"
-    readonly_fields = ["integrator"]
+
+    def get_readonly_fields(self, request, obj=None):
+        return get_custom_readonly_field(request)
 
     def get_queryset(self, request):
         return get_custom_queryset(self, request, models.PermitRequestAmendProperty)
@@ -595,8 +612,6 @@ class WorksTypeAdmin(admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         return get_custom_readonly_field(request)
 
-
-# FIXME only super user should be allowed to change constance fields
 
 admin.site.register(models.PermitActorType, PermitActorTypeAdmin)
 admin.site.register(models.WorksType, WorksTypeAdmin)
