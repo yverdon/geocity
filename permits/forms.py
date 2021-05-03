@@ -92,9 +92,9 @@ class AdministrativeEntityForm(forms.Form):
         self.instance = kwargs.pop("instance", None)
         self.user = kwargs.pop("user", None)
         # Used for the GET http_response
-        self.data = kwargs.get("data", None)
+        data = kwargs.get("data", None)
         # Make a list with the entites, so we can use multiples. Ex : ?entity=yverdon&entity=grandson
-        entities = self.data.getlist("entity")
+        self.entities = data.getlist("entity")
 
         if self.instance:
             initial = {
@@ -111,7 +111,7 @@ class AdministrativeEntityForm(forms.Form):
         self.fields["administrative_entity"].choices = [
             (ofs_id, [(entity.pk, entity.name) for entity in entities])
             for ofs_id, entities in regroup_by_ofs_id(
-                services.get_administrative_entities(self.user, entities)
+                services.get_administrative_entities(self.user, self.entities)
             )
         ]
 
