@@ -160,7 +160,7 @@
 
     <div class="tab-pane" id="print" role="tabpanel" aria-labelledby="print-tab">
       <div class="mb-4">
-        <h5>{% trans "Modèles d'impression Qgis" %}</h5>
+        <h5>{% trans "Modèles d'impression" %}</h5>
         {% if print_templates %}
           <form method="post">
             {% csrf_token %}
@@ -171,7 +171,7 @@
             {% endfor %}
           </form>
         {% else %}
-          {% trans "Aucun modèle d'impression Qgis n'a été configuré"%}
+          {% trans "Aucun modèle d'impression n'a été configuré"%}
         {% endif %}
       </div>
       <h5>{% trans "Directives liées à la demande" %}</h5>
