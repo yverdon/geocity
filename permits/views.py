@@ -11,15 +11,11 @@ from django.contrib.auth.decorators import (
     user_passes_test,
 )
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
+from django.core.files.base import ContentFile
 from django.db import transaction
 from django.db.models import Prefetch
 from django.forms import modelformset_factory
-from django.http import (
-    Http404,
-    HttpResponse,
-    JsonResponse,
-    StreamingHttpResponse,
-)
+from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -424,7 +420,9 @@ class PermitRequestDetailView(View):
 
 
 def permit_request_print(request, permit_request_id, template_id):
-    services.get_permit_request_for_user_or_404(request.user, permit_request_id)
+    permit_request = services.get_permit_request_for_user_or_404(
+        request.user, permit_request_id
+    )
     template = get_object_or_404(models.QgisProject.objects, pk=template_id)
 
     values = {
@@ -448,8 +446,15 @@ def permit_request_print(request, permit_request_id, template_id):
     )
 
     if not qgisserver_response:
-        # FIXME return a proper error here
         return HttpResponse(_("Une erreur est survenue lors de l'impression"))
+
+    file_name = f"demande_{permit_request_id}_template_{template_id}.pdf"
+    permit_request.printed_file.save(
+        file_name, ContentFile(qgisserver_response.content), True
+    )
+    permit_request.printed_at = timezone.now()
+    permit_request.printed_by = request.user.get_full_name()
+    permit_request.save()
 
     return StreamingHttpResponse(
         qgisserver_response.iter_content(chunk_size=128), content_type="application/pdf"

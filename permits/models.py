@@ -58,6 +58,10 @@ ACTION_POKE = "poke"
 ACTIONS = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE, ACTION_POKE]
 
 
+def printed_permit_request_storage(instance, filename):
+    return f"permit_requests_uploads/{instance.pk}/{filename}"
+
+
 @dataclasses.dataclass
 class Step:
     name: str
@@ -363,7 +367,10 @@ class PermitRequest(models.Model):
     printed_at = models.DateTimeField(_("date d'impression"), null=True)
     printed_by = models.CharField(_("imprimé par"), max_length=255, blank=True)
     printed_file = fields.AdministrativeEntityFileField(
-        _("Permis imprimé"), null=True, blank=True, upload_to="printed_permits/"
+        _("Permis imprimé"),
+        null=True,
+        blank=True,
+        upload_to=printed_permit_request_storage,
     )
     works_object_types = models.ManyToManyField(
         "WorksObjectType", through=WorksObjectTypeChoice, related_name="permit_requests"
