@@ -92,7 +92,7 @@ class AdministrativeEntityForm(forms.Form):
         self.instance = kwargs.pop("instance", None)
         self.user = kwargs.pop("user", None)
         # Used for the GET http_response
-        self.data = kwargs.pop("data", None)
+        self.data = kwargs.get("data", None)
         # Make a list with the entites, so we can use multiples. Ex : ?entity=yverdon&entity=grandson
         entities = self.data.getlist("entity")
 
