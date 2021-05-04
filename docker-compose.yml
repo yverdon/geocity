@@ -24,8 +24,6 @@ services:
     qgisserver:
         image: openquake/qgis-server:3.16
         restart: unless-stopped
-        depends_on:
-            - "postgres"
         volumes:
             - qgis_projects:/qgis_projects
             - ./qgisserver/pg_service.conf:/etc/postgresql-common/pg_service.conf:ro
