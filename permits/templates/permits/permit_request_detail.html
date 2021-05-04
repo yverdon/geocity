@@ -171,7 +171,7 @@
             {% endfor %}
           </form>
         {% else %}
-          {% trans "Aucun modèle d'impression n'a été configuré"%}
+          <span class="no_print_template">{% trans "Aucun modèle d'impression n'a été configuré"%}</span>
         {% endif %}
       </div>
       <h5>{% trans "Directives liées à la demande" %}</h5>
@@ -185,7 +185,7 @@
             </div>
           {% endfor %}
       {% else %}
-        {% trans "Aucune directive n'a été ajoutée"%}
+        <span class="no_directive">{% trans "Aucune directive n'a été ajoutée"%}</span>
       {% endif %}
     </div>
   </div>
