@@ -424,6 +424,9 @@ def permit_request_print(request, permit_request_id, template_id):
         request.user, permit_request_id
     )
     template = get_object_or_404(models.QgisProject.objects, pk=template_id)
+    generated_document, created_at = models.QgisGeneratedDocument.objects.get_or_create(
+        permit_request=permit_request, qgis_project=template
+    )
 
     values = {
         "SERVICE": "WMS",
@@ -449,12 +452,12 @@ def permit_request_print(request, permit_request_id, template_id):
         return HttpResponse(_("Une erreur est survenue lors de l'impression"))
 
     file_name = f"demande_{permit_request_id}_template_{template_id}.pdf"
-    permit_request.printed_file.save(
+    generated_document.printed_file.save(
         file_name, ContentFile(qgisserver_response.content), True
     )
-    permit_request.printed_at = timezone.now()
-    permit_request.printed_by = request.user.get_full_name()
-    permit_request.save()
+    generated_document.printed_at = timezone.now()
+    generated_document.printed_by = request.user.get_full_name()
+    generated_document.save()
 
     return StreamingHttpResponse(
         qgisserver_response.iter_content(chunk_size=128), content_type="application/pdf"

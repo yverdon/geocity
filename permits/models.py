@@ -59,7 +59,7 @@ ACTIONS = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE, ACTION_POKE
 
 
 def printed_permit_request_storage(instance, filename):
-    return f"permit_requests_uploads/{instance.pk}/{filename}"
+    return f"permit_requests_uploads/{instance.permit_request.pk}/{filename}"
 
 
 @dataclasses.dataclass
@@ -364,14 +364,6 @@ class PermitRequest(models.Model):
     )
     created_at = models.DateTimeField(_("date de création"), default=timezone.now)
     validated_at = models.DateTimeField(_("date de validation"), null=True)
-    printed_at = models.DateTimeField(_("date d'impression"), null=True)
-    printed_by = models.CharField(_("imprimé par"), max_length=255, blank=True)
-    printed_file = fields.AdministrativeEntityFileField(
-        _("Permis imprimé"),
-        null=True,
-        blank=True,
-        upload_to=printed_permit_request_storage,
-    )
     works_object_types = models.ManyToManyField(
         "WorksObjectType", through=WorksObjectTypeChoice, related_name="permit_requests"
     )
@@ -811,3 +803,20 @@ class QgisProject(models.Model):
     )
     description = models.CharField(max_length=150)
     works_object_type = models.ForeignKey(WorksObjectType, on_delete=models.CASCADE)
+
+
+class QgisGeneratedDocument(models.Model):
+    permit_request = models.ForeignKey(
+        "PermitRequest", on_delete=models.CASCADE, related_name="qgis_permit"
+    )
+    qgis_project = models.ForeignKey(
+        "QgisProject", on_delete=models.CASCADE, related_name="qgis_project"
+    )
+    printed_at = models.DateTimeField(_("date d'impression"), null=True)
+    printed_by = models.CharField(_("imprimé par"), max_length=255, blank=True)
+    printed_file = fields.AdministrativeEntityFileField(
+        _("Permis imprimé"),
+        null=True,
+        blank=True,
+        upload_to=printed_permit_request_storage,
+    )
