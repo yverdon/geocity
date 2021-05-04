@@ -1,4 +1,7 @@
+import json
+
 from django.contrib.gis.geos import GEOSGeometry
+from django.db.models import Max, Min
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
 from rest_framework import serializers
@@ -21,7 +24,10 @@ class MetaTypesField(serializers.RelatedField):
 
 class WorksObjectTypesNames(serializers.RelatedField):
     def to_representation(self, value):
-        wot_names = {wot.id: str(wot) for wot in value.all()}
+        wot_names = {
+            wot.id: f"{wot.works_object.name} ({wot.works_type.name})"
+            for wot in value.all()
+        }
         return wot_names
 
 
@@ -32,6 +38,7 @@ class PermitRequestSerializer(serializers.ModelSerializer):
         source="works_object_types", read_only=True
     )
     creditor_type = serializers.SerializerMethodField()
+    intersected_geometries = serializers.SerializerMethodField()
 
     def get_creditor_type(self, obj):
         if obj.creditor_type is not None:
@@ -44,6 +51,9 @@ class PermitRequestSerializer(serializers.ModelSerializer):
         else:
             creditor = ""
         return creditor
+
+    def get_intersected_geometries(self, obj):
+        return obj.intersected_geometries if obj.intersected_geometries else ""
 
     class Meta:
         model = models.PermitRequest
@@ -136,49 +146,15 @@ class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
         )
 
 
-class PermitRequestGeoTimeSingleGeometrySerializer(
-    gis_serializers.GeoFeatureModelSerializer
-):
-    permit_request_geo_time_start_date = serializers.DateTimeField()
-    permit_request_geo_time_end_date = serializers.DateTimeField()
-    singlegeom = gis_serializers.GeometrySerializerMethodField()
-
-    def get_start_date(self, obj):
-        return (
-            obj.permit_request_geo_time_start_date
-            if obj.permit_request_geo_time_start_date
-            else None
-        )
-
-    def get_end_date(self, obj):
-        return (
-            obj.permit_request_geo_time_end_date
-            if obj.permit_request_geo_time_end_date
-            else None
-        )
-
-    def get_singlegeom(self, obj):
-        return GEOSGeometry(obj.singlegeom) if obj.singlegeom else None
-
-    class Meta:
-        model = models.PermitRequestGeoTime
-        geo_field = "singlegeom"
-        fields = (
-            "permit_request_geo_time_start_date",
-            "permit_request_geo_time_end_date",
-        )
-
-
 class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
     """
     In order to serialize the object as a GeoJSON a queryset has to be passed,
     however, the queryset could have many geometry types in a single row as well as
     many rows with different geometries, in order to generate a single layer from
     all the possible results, the geometries have to be aggregated.
-    The max and min dates are determined as well from a Raw SQL.
 
     Note: Here we need the geo_time queryset as the source (value), since the
-    geometry and the dates will be aggregated by the raw query, but the comments
+    geometry and the dates will be aggregated, but the comments
     and external links will be retrieved and grouped from it.
     """
 
@@ -190,37 +166,39 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
             return {
                 "geometry": {"type": "Point", "coordinates": []},
                 "properties": {
-                    "permit_request_geo_time_start_date": None,
-                    "permit_request_geo_time_end_date": None,
+                    "permit_request_geo_time_start_date": "",
+                    "permit_request_geo_time_end_date": "",
                     "permit_request_geo_time_comments": [],
                     "permit_request_geo_time_external_links": [],
                 },
             }
 
         else:
-            raw_qs = models.PermitRequestGeoTime.objects.raw(
-                "SELECT pr.permit_request_id as id, "
-                "MIN(pr.starts_at) as permit_request_geo_time_start_date, "
-                "MAX(pr.ends_at) as permit_request_geo_time_end_date, "
-                "ST_SetSRID(ST_extent(pr.geom), 2056) as singlegeom "
-                "FROM permits_permitrequestgeotime as pr "
-                "WHERE pr.permit_request_id = %s "
-                "GROUP BY pr.permit_request_id",
-                [geo_time_qs.first().permit_request_id],
+            aggregated_geotime_qs = geo_time_qs.values("permit_request_id").aggregate(
+                permit_request_geo_time_end_date=Max("ends_at"),
+                permit_request_geo_time_start_date=Min("starts_at"),
+                singlegeom=geoservices.JoinGeometries("geom"),
             )
-            result = [
-                PermitRequestGeoTimeSingleGeometrySerializer(
-                    annotated_qs, read_only=True
-                ).data
-                for annotated_qs in raw_qs
-            ]
 
-            # The aggregation will return just one row, therefore
-            result = result[0]
-
-            # Insert empty geometry if there is none
-            if not result["geometry"]:
+            result = {"properties": {}}
+            if not aggregated_geotime_qs["singlegeom"]:
+                # Insert empty geometry if there is none
                 result["geometry"] = {"type": "Point", "coordinates": []}
+            else:
+                result["geometry"] = json.loads(
+                    GEOSGeometry(aggregated_geotime_qs["singlegeom"]).json
+                )
+
+            result["properties"]["permit_request_geo_time_start_date"] = (
+                aggregated_geotime_qs["permit_request_geo_time_end_date"]
+                if aggregated_geotime_qs["permit_request_geo_time_start_date"]
+                else ""
+            )
+            result["properties"]["permit_request_geo_time_end_date"] = (
+                aggregated_geotime_qs["permit_request_geo_time_end_date"]
+                if aggregated_geotime_qs["permit_request_geo_time_end_date"]
+                else ""
+            )
 
             # Collect the comments and external links from all possible rows
             result["properties"]["permit_request_geo_time_comments"] = [
@@ -229,7 +207,6 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
             result["properties"]["permit_request_geo_time_external_links"] = [
                 obj.external_link for obj in geo_time_qs if obj.external_link
             ]
-
             return result
 
 

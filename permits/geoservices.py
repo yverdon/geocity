@@ -51,6 +51,3 @@ class JoinGeometries(Aggregate):
     name = "joined_geometries"
     template = "ST_SetSRID(ST_Extent(%(expressions)s), 2056)"
     allow_distinct = False
-
-    def __init__(self, expression, **extra):
-        super().__init__(expression, **extra)
