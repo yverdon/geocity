@@ -456,7 +456,7 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
     else:
         if request.method == "GET":
             administrative_entity_form = forms.AdministrativeEntityForm(
-                instance=permit_request, data=request.GET, user=request.user
+                instance=permit_request, user=request.user, data_entities=request.GET
             )
         else:
             administrative_entity_form = forms.AdministrativeEntityForm(
