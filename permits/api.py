@@ -122,42 +122,38 @@ class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
         """
         user = self.request.user
 
-        works_object_type = self.request.query_params.get("works_object_type", None)
-        status = self.request.query_params.get("status", None)
-        geom_type = self.request.query_params.get("geom_type", None)
-        permit_request_id = self.request.query_params.get("permit_request_id", None)
+        filters_serializer = serializers.PermitRequestFiltersSerializer(
+            data={
+                "works_object_type": self.request.query_params.get("works_object_type"),
+                "status": self.request.query_params.get("status"),
+                "geom_type": self.request.query_params.get("geom_type"),
+                "permit_request_id": self.request.query_params.get("permit_request_id"),
+            }
+        )
+
+        filters_serializer.is_valid(raise_exception=True)
+        filters = filters_serializer.validated_data
 
         base_filter = Q()
 
-        if works_object_type:
-            if works_object_type.isdigit():
-                base_filter &= Q(works_object_types=works_object_type)
-            else:
-                raise geoservices.ParameterWorksObjectTypeNotInt
+        if filters["works_object_type"]:
+            base_filter &= Q(works_object_types=filters["works_object_type"])
 
-        if status:
-            if status.isdigit():
-                base_filter &= Q(status=status)
-            else:
-                raise geoservices.ParameterStatusNotInt
+        if filters["status"]:
+            base_filter &= Q(status=filters["status"])
 
-        if permit_request_id:
-            if permit_request_id.isdigit():
-                base_filter &= Q(pk=permit_request_id)
-            else:
-                raise geoservices.ParameterPermitRequestNotInt
+        if filters["permit_request_id"]:
+            base_filter &= Q(pk=filters["permit_request_id"])
 
         geom_qs = models.PermitRequestGeoTime.objects.all()
 
-        if geom_type:
-            if geom_type not in ("lines", "points", "polygons"):
-                raise geoservices.ParameterGeomTypeNotValid
+        if filters["geom_type"]:
             geom_qs = geom_qs.annotate(geom_type=geoservices.GeomStAsText(F("geom"),))
-            if geom_type == "lines":
+            if filters["geom_type"] == "lines":
                 geom_qs = geom_qs.filter(geom_type__contains="LINE")
-            if geom_type == "points":
+            if filters["geom_type"] == "points":
                 geom_qs = geom_qs.filter(geom_type__contains="POINT")
-            if geom_type == "polygons":
+            if filters["geom_type"] == "polygons":
                 geom_qs = geom_qs.filter(geom_type__contains="POLY")
             base_filter &= Q(
                 id__in=set(geom_qs.values_list("permit_request_id", flat=True))

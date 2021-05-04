@@ -4,7 +4,7 @@ from django.utils.translation import gettext as _
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
-from . import models
+from . import geoservices, models
 
 
 class PermitAdministrativeEntitySerializer(serializers.ModelSerializer):
@@ -276,3 +276,14 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
             del rep["properties"][field_to_flatten]
 
         return rep
+
+
+class PermitRequestFiltersSerializer(serializers.Serializer):
+    works_object_type = serializers.IntegerField(default=None, allow_null=True)
+    status = serializers.ChoiceField(
+        models.PermitRequest.STATUS_CHOICES, default=None, allow_null=True
+    )
+    geom_type = serializers.ChoiceField(
+        ("lines", "points", "polygons"), default=None, allow_null=True
+    )
+    permit_request_id = serializers.IntegerField(default=None, allow_null=True)

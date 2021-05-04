@@ -12,7 +12,6 @@ from rest_framework.test import APIClient
 
 from permits import models
 
-from ..geoservices import EndpointErrors
 from . import factories
 
 
@@ -258,7 +257,10 @@ class PermitRequestAPITestCase(TestCase):
             reverse("permits-list"), {"permit_request_id": "bad_permit_id_type"}
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json()["detail"], EndpointErrors.PR_NOT_INT.value)
+        self.assertEqual(
+            response.json()["permit_request_id"],
+            ["Un nombre entier valide est requis."],
+        )
 
     def test_api_bad_works_object_type_id_type_parameter_raises_exception(self):
         self.client.login(username=self.secretariat_user.username, password="password")
@@ -267,7 +269,10 @@ class PermitRequestAPITestCase(TestCase):
             {"works_object_type": "bad_works_object_type_id_type"},
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json()["detail"], EndpointErrors.WOT_NOT_INT.value)
+        self.assertEqual(
+            response.json()["works_object_type"],
+            ["Un nombre entier valide est requis."],
+        )
 
     def test_api_bad_status_type_parameter_raises_exception(self):
         self.client.login(username=self.secretariat_user.username, password="password")
@@ -275,13 +280,27 @@ class PermitRequestAPITestCase(TestCase):
             reverse("permits-list"), {"status": "bad_status_type"}
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json()["detail"], EndpointErrors.STATUS_NOT_INT.value)
+        self.assertEqual(
+            response.json()["status"],
+            ["«\xa0bad_status_type\xa0» n'est pas un choix valide."],
+        )
 
     def test_api_bad_geom_type_parameter_raises_exception(self):
         self.client.login(username=self.secretariat_user.username, password="password")
         response = self.client.get(reverse("permits-list"), {"geom_type": "whatever"})
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json()["detail"], EndpointErrors.GEO_NOT_VALID.value)
+        self.assertEqual(
+            response.json()["geom_type"],
+            ["«\xa0whatever\xa0» n'est pas un choix valide."],
+        )
+
+    def test_api_bad_status_choice_raises_exception(self):
+        self.client.login(username=self.secretariat_user.username, password="password")
+        response = self.client.get(reverse("permits-list"), {"status": 25})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["status"], ["«\xa025\xa0» n'est pas un choix valide."],
+        )
 
     def test_non_authenticated_user_raises_exception(self):
         response = self.client.get(reverse("permits-list"), {})
