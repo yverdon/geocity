@@ -15,7 +15,14 @@ from django.core.files.base import ContentFile
 from django.db import transaction
 from django.db.models import Prefetch
 from django.forms import modelformset_factory
-from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
+from django.http import (
+    FileResponse,
+    Http404,
+    HttpResponse,
+    HttpResponseNotFound,
+    JsonResponse,
+    StreamingHttpResponse,
+)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -1132,18 +1139,10 @@ def administrative_infos(request):
     )
 
 
-# /////////////////////
-# FOR DEV ONLY UNITL YC-230 IS MERGED
-# /////////////////////
-
-from django.http import FileResponse, HttpResponseNotFound, JsonResponse
-
-
 def demo_geojson(request):
-
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    print("*******************QGIS QUERYING JSON******************")
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    """
+    API Response Data Mock
+    """
 
     demo_data = {
         "type": "FeatureCollection",
