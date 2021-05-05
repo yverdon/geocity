@@ -24,7 +24,7 @@ services:
             - DJANGO_SETTINGS_MODULE=geomapshark.settings_dev
 
     qgisserver:
-        image: camptocamp/qgis-server:3.10
+        image: camptocamp/qgis-server:3.16
         restart: unless-stopped
         depends_on:
             - "postgres"
