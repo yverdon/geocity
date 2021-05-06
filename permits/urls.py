@@ -75,6 +75,4 @@ urlpatterns = [
         name="administrative_entities_geojson",
     ),
     path("qgisserverproxy/", geoviews.qgisserver_proxy, name="qgisserver_proxy"),
-    # Print API Data Mock
-    path("demo_geojson", views.demo_geojson, name="demo_geojson",),
 ]
