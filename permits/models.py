@@ -799,8 +799,7 @@ class QgisProject(models.Model):
         max_length=500,
     )
     qgis_atlas_coverage_layer = models.CharField(
-        _("Nom de la couche de couverture de l'atlas ','"),
-        max_length=256,
+        _("Nom de la couche de couverture de l'atlas ','"), max_length=256,
     )
     description = models.CharField(max_length=150)
     works_object_type = models.ForeignKey(WorksObjectType, on_delete=models.CASCADE)

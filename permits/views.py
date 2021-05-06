@@ -449,10 +449,8 @@ def permit_request_print(request, permit_request_id, template_id):
         "LAYERS": template.qgis_layers,
         "ATLAS_PK": "*",
         "FILTER": template.qgis_atlas_coverage_layer
-        + ':"permit_request_id" > '
-        + str(permit_request.pk - 1)
-        + ' AND "permit_request_id" < '
-        + str(permit_request.pk + 1),
+        + ':"permit_request_id" = '
+        + str(permit_request.pk),
     }
 
     qgisserver_url = "http://qgisserver/ogc/?" + urllib.parse.urlencode(values)
