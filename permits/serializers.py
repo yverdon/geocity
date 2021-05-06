@@ -226,7 +226,13 @@ class PermitRequestPrintListSerialier(gis_serializers.ListSerializer):
         return OrderedDict(
             (
                 ("type", "FeatureCollection"),
-                ("crs", {"type": "name", "properties": {"name": "urn:ogc:def:crs:EPSG::2056"}}),
+                (
+                    "crs",
+                    {
+                        "type": "name",
+                        "properties": {"name": "urn:ogc:def:crs:EPSG::2056"},
+                    },
+                ),
                 ("features", super().to_representation(data)),
             )
         )
@@ -259,7 +265,7 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
         super().many_init(cls, *args, **kwargs)
 
         child_serializer = cls(*args, **kwargs)
-        list_kwargs = {'child': child_serializer}
+        list_kwargs = {"child": child_serializer}
         list_kwargs.update(
             {
                 key: value
@@ -267,9 +273,9 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
                 if key in gis_serializers.LIST_SERIALIZER_KWARGS
             }
         )
-        meta = getattr(cls, 'Meta', None)
+        meta = getattr(cls, "Meta", None)
         list_serializer_class = getattr(
-            meta, 'list_serializer_class', PermitRequestPrintListSerialier
+            meta, "list_serializer_class", PermitRequestPrintListSerialier
         )
         return list_serializer_class(*args, **list_kwargs)
 
