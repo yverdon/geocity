@@ -798,6 +798,9 @@ class QgisProject(models.Model):
         _("Liste des couches QGIS à afficher séparées par les virgules ','"),
         max_length=500,
     )
+    qgis_atlas_coverage_layer = models.CharField(
+        _("Nom de la couche de couverture de l'atlas ','"), max_length=256,
+    )
     description = models.CharField(max_length=150)
     works_object_type = models.ForeignKey(WorksObjectType, on_delete=models.CASCADE)
 
