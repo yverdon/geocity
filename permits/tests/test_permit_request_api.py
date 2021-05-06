@@ -317,4 +317,14 @@ class PermitRequestAPITestCase(TestCase):
             reverse("permits-list"), {"permit_request_id": max(permit_requests_ids) + 1}
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"type": "FeatureCollection", "features": []})
+        self.assertEqual(
+            response.json(),
+            {
+                "type": "FeatureCollection",
+                "crs": {
+                    "type": "name",
+                    "properties": {"name": "urn:ogc:def:crs:EPSG::2056"},
+                },
+                "features": [],
+            },
+        )
