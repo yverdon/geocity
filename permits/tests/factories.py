@@ -306,3 +306,12 @@ class PermitRequestAmendPropertyValueFactory(factory.django.DjangoModelFactory):
     property = factory.SubFactory(PermitRequestAmendPropertyFactory)
     works_object_type_choice = factory.SubFactory(WorksObjectTypeChoiceFactory)
     value = factory.Faker("word")
+
+
+class QgisProjectFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.QgisProject
+
+    works_object_type = factory.SubFactory(WorksObjectTypeFactory)
+    qgis_print_template_name = "atlas"
+    qgis_layers = "base,vpoly"

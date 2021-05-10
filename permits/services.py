@@ -2,8 +2,8 @@ import enum
 import itertools
 import os
 import urllib
-from collections import defaultdict
 
+from collections import defaultdict
 from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -1279,3 +1279,9 @@ def get_permit_request_directives(permit_request):
             directive="", directive_description="", additional_information=""
         )
     ]
+
+
+def get_permit_request_print_templates(permit_request):
+    return models.QgisProject.objects.filter(
+        works_object_type__in=permit_request.works_object_types.all()
+    )

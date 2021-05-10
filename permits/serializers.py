@@ -1,5 +1,6 @@
 import json
 
+from collections import OrderedDict
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Max, Min
 from django.utils.text import slugify
@@ -210,6 +211,33 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
             return result
 
 
+# Override of real ListSerialier from django-rest-framework-gis
+# If you want to add a new structure with dynamic values, just add it to OrderedDict and give him a new function like "super().prefix_to_representation(data)"
+# Then in PermitRequestPrintSerializer write this class like the existant "to_representation"
+class PermitRequestPrintListSerialier(gis_serializers.ListSerializer):
+    @property
+    def data(self):
+        return super(gis_serializers.ListSerializer, self).data
+
+    def to_representation(self, data):
+        """
+        Add GeoJSON compatible formatting to a serialized queryset list
+        """
+        return OrderedDict(
+            (
+                ("type", "FeatureCollection"),
+                (
+                    "crs",
+                    {
+                        "type": "name",
+                        "properties": {"name": "urn:ogc:def:crs:EPSG::2056"},
+                    },
+                ),
+                ("features", super().to_representation(data)),
+            )
+        )
+
+
 class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
     permit_request = PermitRequestSerializer(source="*", read_only=True)
     wot_and_amend_properties = PropertiesValuesSerializer(
@@ -223,12 +251,33 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
     class Meta:
         model = models.PermitRequest
         geo_field = "geo_time"
+        id_field = "id"
         fields = (
+            "id",
             "permit_request",
             "wot_and_amend_properties",
             "permit_request_actor",
             "geo_envelop",
         )
+
+    @classmethod
+    def many_init(cls, *args, **kwargs):
+        super().many_init(cls, *args, **kwargs)
+
+        child_serializer = cls(*args, **kwargs)
+        list_kwargs = {"child": child_serializer}
+        list_kwargs.update(
+            {
+                key: value
+                for key, value in kwargs.items()
+                if key in gis_serializers.LIST_SERIALIZER_KWARGS
+            }
+        )
+        meta = getattr(cls, "Meta", None)
+        list_serializer_class = getattr(
+            meta, "list_serializer_class", PermitRequestPrintListSerialier
+        )
+        return list_serializer_class(*args, **list_kwargs)
 
     def to_representation(self, value):
         rep = super().to_representation(value)
