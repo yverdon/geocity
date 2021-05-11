@@ -117,6 +117,7 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
             base_filter &= Q(
                 permit_request__administrative_entity=administrative_entity
             )
+        base_filter &= ~Q(permit_request__status=models.PermitRequest.STATUS_DRAFT)
 
         works_object_types_prefetch = Prefetch(
             "permit_request__works_object_types",
