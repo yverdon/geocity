@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0019_add_field_placeholder'),
+        ('permits', '0020_add_field_help_text'),
     ]
 
     operations = [
@@ -22,11 +22,6 @@ class Migration(migrations.Migration):
         migrations.RemoveField(
             model_name='permitadministrativeentity',
             name='legal_document',
-        ),
-        migrations.AddField(
-            model_name='worksobjectproperty',
-            name='help_text',
-            field=models.CharField(blank=True, max_length=255, verbose_name='information complémentaire'),
         ),
         migrations.AddField(
             model_name='worksobjecttype',
