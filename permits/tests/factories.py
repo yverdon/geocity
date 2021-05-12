@@ -7,8 +7,7 @@ from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import GeometryCollection, Point
 from django.utils.text import Truncator
-from permits import models
-
+from permits import models, admin
 
 class PermitAuthorFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -145,6 +144,26 @@ class ValidatorGroupFactory(GroupFactory):
             self.permissions.add(permission)
 
 
+class IntegratorGroupFactory(GroupFactory):
+    @factory.post_generation
+    def permissions(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if not extracted:
+            integrator_permissions = admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS + admin.OTHER_PERMISSIONS_CODENAMES
+            permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
+            extracted = list(
+                Permission.objects.filter(
+                    codename__in=integrator_permissions,
+                    content_type=permit_request_ct,
+                )
+            )
+
+        for permission in extracted:
+            self.permissions.add(permission)
+
+
 class SecretariatUserFactory(UserFactory):
     @factory.post_generation
     def groups(self, create, extracted, **kwargs):
@@ -166,6 +185,19 @@ class ValidatorUserFactory(UserFactory):
 
         if not extracted:
             extracted = [ValidatorGroupFactory()]
+
+        for group in extracted:
+            self.groups.add(group)
+
+
+class IntegratorUserFactory(UserFactory):
+    @factory.post_generation
+    def groups(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if not extracted:
+            extracted = [IntegratorGroupFactory()]
 
         for group in extracted:
             self.groups.add(group)
