@@ -75,7 +75,12 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
         works_object_types_prefetch = Prefetch(
             "permit_request__works_object_types",
             queryset=models.WorksObjectType.objects.filter(
-                needs_geometry=True, needs_date=True
+                Q(
+                    has_geometry_point=True,
+                    has_geometry_line=True,
+                    has_geometry_polygon=True,
+                )
+                | Q(needs_date=True)
             ).select_related("works_type"),
         )
 
