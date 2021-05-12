@@ -44,11 +44,12 @@ class PermitRequestSerializer(serializers.ModelSerializer):
     def get_creditor_type(self, obj):
         if obj.creditor_type is not None:
             creditor = obj.get_creditor_type_display()
-        elif obj.author.user and obj.creditor_type is None:
-            creditor = (
-                _("Auteur de la demande, ")
-                + f"{obj.author.user.first_name} {obj.author.user.last_name}"
-            )
+        elif obj.author:
+            if obj.author.user and obj.creditor_type is None:
+                creditor = (
+                    _("Auteur de la demande, ")
+                    + f"{obj.author.user.first_name} {obj.author.user.last_name}"
+                )
         else:
             creditor = ""
         return creditor
