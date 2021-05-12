@@ -16,10 +16,6 @@ from . import factories
 from .utils import LoggedInIntegrator
 
 class AdminSiteTestCase(LoggedInIntegrator, TestCase):
-    def setUp(self):
-        super().setUp()
-        self.works_types = factories.WorksTypeFactory.create_batch(2)
-        self.works_objects = factories.WorksObjectFactory.create_batch(2)
 
     def test_integrator_can_only_see_own_requests(self):
         print(LoggedInIntegrator)
@@ -29,4 +25,4 @@ class AdminSiteTestCase(LoggedInIntegrator, TestCase):
         print("testing")
         print("new")
         print("things")
-        self.assertEqual(False)
+        self.assertEqual(True, False)
