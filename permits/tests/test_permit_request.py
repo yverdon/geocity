@@ -685,6 +685,54 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         self.assertEqual(1, len(element_parsed))
 
+    def test_wrong_administrative_entity_tag_return_all_administratives_entities(self):
+        first_administrative_entity = factories.PermitAdministrativeEntityFactory(tags = ["first"])
+        second_administrative_entity = factories.PermitAdministrativeEntityFactory(tags = ["second"])
+        third_administrative_entity = factories.PermitAdministrativeEntityFactory(tags = ["third"])
+
+        first_administrative_entity.works_object_types.set(
+            models.WorksObjectType.objects.all()
+        )
+        second_administrative_entity.works_object_types.set(
+            models.WorksObjectType.objects.all()
+        )
+        third_administrative_entity.works_object_types.set(
+            models.WorksObjectType.objects.all()
+        )
+
+        response = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity"), {"entity": "wrongtag"}
+        )
+
+        parser = get_parser(response.content)
+        element_parsed = parser.select(".form-check-label")
+
+        self.assertEqual(3, len(element_parsed))
+
+    def test_multiple_administrative_entity_tags_return_multiple_administratives_entities(self):
+        first_administrative_entity = factories.PermitAdministrativeEntityFactory(tags = ["first"])
+        second_administrative_entity = factories.PermitAdministrativeEntityFactory(tags = ["second"])
+        third_administrative_entity = factories.PermitAdministrativeEntityFactory(tags = ["third"])
+
+        first_administrative_entity.works_object_types.set(
+            models.WorksObjectType.objects.all()
+        )
+        second_administrative_entity.works_object_types.set(
+            models.WorksObjectType.objects.all()
+        )
+        third_administrative_entity.works_object_types.set(
+            models.WorksObjectType.objects.all()
+        )
+
+        response = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity"), {"entity": ["first", "second"]}
+        )
+
+        parser = get_parser(response.content)
+        element_parsed = parser.select(".form-check-label")
+
+        self.assertEqual(2, len(element_parsed))
+
 
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
