@@ -67,6 +67,8 @@ class Command(BaseCommand):
             geom="SRID=2056;MultiPolygon (((2538391 1176432, 2538027 1178201, 2538485 1178804, 2537777 1179199, 2536748 1178450, 2536123 1179647, 2537382 1180593, 2537143 1181623, 2538651 1183257, 2540368 1183236, 2541252 1181093, 2541460 1180458, 2540160 1179543, 2540097 1178877, 2538391 1176432)))",
         )
 
+        administrative_entity_yverdon.tags.set("yverdon")
+
         administrative_entity_grandson = models.PermitAdministrativeEntity.objects.create(
             name="Démo Grandson",
             ofs_id=0,
@@ -76,6 +78,32 @@ class Command(BaseCommand):
             title_signature_2="Responsable Grandson 2",
             geom="SRID=2056;MultiPolygon (((2543281 1184952, 2542053 1186731, 2541148 1186887, 2538214 1186367, 2537195 1184609, 2537153 1183330, 2537757 1182653, 2539317 1182404, 2543281 1184952)))",
         )
+
+        administrative_entity_grandson.tags.set("grandson")
+
+        administrative_entity_lausanne = models.PermitAdministrativeEntity.objects.create(
+            name="Démo Lausanne",
+            ofs_id=0,
+            link="https://mapnv.ch",
+            archive_link="https://mapnv.ch",
+            title_signature_1="Responsable Lausanne 1",
+            title_signature_2="Responsable Lausanne 2",
+            geom="SRID=2056;MultiPolygon (((2543281 1184952, 2542053 1186731, 2541148 1186887, 2538214 1186367, 2537195 1184609, 2537153 1183330, 2537757 1182653, 2539317 1182404, 2543281 1184952)))",
+        )
+
+        administrative_entity_lausanne.tags.set("lausanne")
+
+        administrative_entity_vevey = models.PermitAdministrativeEntity.objects.create(
+            name="Démo Vevey",
+            ofs_id=0,
+            link="https://mapnv.ch",
+            archive_link="https://mapnv.ch",
+            title_signature_1="Responsable Vevey 1",
+            title_signature_2="Responsable Vevey 2",
+            geom="SRID=2056;MultiPolygon (((2543281 1184952, 2542053 1186731, 2541148 1186887, 2538214 1186367, 2537195 1184609, 2537153 1183330, 2537757 1182653, 2539317 1182404, 2543281 1184952)))",
+        )
+
+        administrative_entity_vevey.tags.set("vevey")
 
         user = User.objects.create_user(
             email=f"yverdon-squad+admin@liip.ch",
@@ -166,6 +194,8 @@ class Command(BaseCommand):
             for entity in [
                 administrative_entity_yverdon,
                 administrative_entity_grandson,
+                administrative_entity_lausanne,
+                administrative_entity_vevey,
             ]:
                 models.PermitWorkflowStatus.objects.get_or_create(
                     status=status_value[0], administrative_entity=entity
@@ -257,6 +287,12 @@ class Command(BaseCommand):
         administrative_entity_grandson = models.PermitAdministrativeEntity.objects.get(
             name="Démo Grandson"
         )
+        administrative_entity_lausanne = models.PermitAdministrativeEntity.objects.get(
+            name="Démo Lausanne"
+        )
+        administrative_entity_vevey = models.PermitAdministrativeEntity.objects.get(
+            name="Démo Vevey"
+        )
 
         for works_type, objs in works_types:
             works_type_obj = models.WorksType.objects.create(name=works_type)
@@ -278,6 +314,12 @@ class Command(BaseCommand):
                 )
                 works_object_type.administrative_entities.add(
                     administrative_entity_grandson
+                )
+                works_object_type.administrative_entities.add(
+                    administrative_entity_lausanne
+                )
+                works_object_type.administrative_entities.add(
+                    administrative_entity_vevey
                 )
                 for prop in props:
                     prop.works_object_types.add(works_object_type)
