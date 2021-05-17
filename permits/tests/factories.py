@@ -78,6 +78,7 @@ class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
 
         self.tags.set(*extracted)
 
+
 class GroupFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: "Company{}".format(n))
 

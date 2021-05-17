@@ -148,7 +148,6 @@ class PermitAdministrativeEntity(models.Model):
     )
     geom = geomodels.MultiPolygonField(_("geom"), null=True, srid=2056)
     tags = TaggableManager()
-    
 
     class Meta:
         verbose_name = _(

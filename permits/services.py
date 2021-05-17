@@ -191,9 +191,9 @@ def get_administrative_entities(user, entities=[]):
         )
         .order_by("ofs_id", "-name")
         .distinct()
-    )   
+    )
 
-    # Make user tags lower case 
+    # Make user tags lower case
     entities = [each_string.lower() for each_string in entities]
 
     # Queryset filtered by tag

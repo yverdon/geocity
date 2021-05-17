@@ -662,9 +662,15 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
 
     def test_administrative_entity_is_filtered_by_tag(self):
-        first_administrative_entity = factories.PermitAdministrativeEntityFactory(tags = ["first"])
-        second_administrative_entity = factories.PermitAdministrativeEntityFactory(tags = ["second"])
-        third_administrative_entity = factories.PermitAdministrativeEntityFactory(tags = ["third"])
+        first_administrative_entity = factories.PermitAdministrativeEntityFactory(
+            tags=["first"]
+        )
+        second_administrative_entity = factories.PermitAdministrativeEntityFactory(
+            tags=["second"]
+        )
+        third_administrative_entity = factories.PermitAdministrativeEntityFactory(
+            tags=["third"]
+        )
 
         first_administrative_entity.works_object_types.set(
             models.WorksObjectType.objects.all()
@@ -677,7 +683,8 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
 
         response = self.client.get(
-            reverse("permits:permit_request_select_administrative_entity"), {"entity": "first"}
+            reverse("permits:permit_request_select_administrative_entity"),
+            {"entity": "first"},
         )
 
         parser = get_parser(response.content)
@@ -686,9 +693,15 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(1, len(element_parsed))
 
     def test_wrong_administrative_entity_tag_return_all_administratives_entities(self):
-        first_administrative_entity = factories.PermitAdministrativeEntityFactory(tags = ["first"])
-        second_administrative_entity = factories.PermitAdministrativeEntityFactory(tags = ["second"])
-        third_administrative_entity = factories.PermitAdministrativeEntityFactory(tags = ["third"])
+        first_administrative_entity = factories.PermitAdministrativeEntityFactory(
+            tags=["first"]
+        )
+        second_administrative_entity = factories.PermitAdministrativeEntityFactory(
+            tags=["second"]
+        )
+        third_administrative_entity = factories.PermitAdministrativeEntityFactory(
+            tags=["third"]
+        )
 
         first_administrative_entity.works_object_types.set(
             models.WorksObjectType.objects.all()
@@ -701,7 +714,8 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
 
         response = self.client.get(
-            reverse("permits:permit_request_select_administrative_entity"), {"entity": "wrongtag"}
+            reverse("permits:permit_request_select_administrative_entity"),
+            {"entity": "wrongtag"},
         )
 
         parser = get_parser(response.content)
@@ -709,10 +723,18 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         self.assertEqual(3, len(element_parsed))
 
-    def test_multiple_administrative_entity_tags_return_multiple_administratives_entities(self):
-        first_administrative_entity = factories.PermitAdministrativeEntityFactory(tags = ["first"])
-        second_administrative_entity = factories.PermitAdministrativeEntityFactory(tags = ["second"])
-        third_administrative_entity = factories.PermitAdministrativeEntityFactory(tags = ["third"])
+    def test_multiple_administrative_entity_tags_return_multiple_administratives_entities(
+        self,
+    ):
+        first_administrative_entity = factories.PermitAdministrativeEntityFactory(
+            tags=["first"]
+        )
+        second_administrative_entity = factories.PermitAdministrativeEntityFactory(
+            tags=["second"]
+        )
+        third_administrative_entity = factories.PermitAdministrativeEntityFactory(
+            tags=["third"]
+        )
 
         first_administrative_entity.works_object_types.set(
             models.WorksObjectType.objects.all()
@@ -725,7 +747,8 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
 
         response = self.client.get(
-            reverse("permits:permit_request_select_administrative_entity"), {"entity": ["first", "second"]}
+            reverse("permits:permit_request_select_administrative_entity"),
+            {"entity": ["first", "second"]},
         )
 
         parser = get_parser(response.content)
