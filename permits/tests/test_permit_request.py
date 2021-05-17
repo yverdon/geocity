@@ -661,6 +661,30 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             len(parser.select("#legal-infos span.additional_information")), 2,
         )
 
+    def test_administrative_entity_is_filtered_by_tag(self):
+        first_administrative_entity = factories.PermitAdministrativeEntityFactory(tags = ["first"])
+        second_administrative_entity = factories.PermitAdministrativeEntityFactory(tags = ["second"])
+        third_administrative_entity = factories.PermitAdministrativeEntityFactory(tags = ["third"])
+
+        first_administrative_entity.works_object_types.set(
+            models.WorksObjectType.objects.all()
+        )
+        second_administrative_entity.works_object_types.set(
+            models.WorksObjectType.objects.all()
+        )
+        third_administrative_entity.works_object_types.set(
+            models.WorksObjectType.objects.all()
+        )
+
+        response = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity"), {"entity": "first"}
+        )
+
+        parser = get_parser(response.content)
+        element_parsed = parser.select(".form-check-label")
+
+        self.assertEqual(1, len(element_parsed))
+
 
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
@@ -979,7 +1003,6 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
             data=data,
         )
         parser = get_parser(response.content)
-        parser.select(".invalid-feedback")
         self.assertEqual(1, len(parser.select(".invalid-feedback")))
 
     def test_properties_step_submit_updates_permit_request_with_address(self):
