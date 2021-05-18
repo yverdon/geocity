@@ -91,11 +91,7 @@ class AdministrativeEntityForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop("instance", None)
         self.user = kwargs.pop("user", None)
-        data_entities = kwargs.pop("data_entities", None)
-        if data_entities:
-            entities_list = data_entities.getlist("entity")
-        else:
-            entities_list = []
+        tags = kwargs.pop("tags", [])
 
         if self.instance:
             initial = {
@@ -112,7 +108,9 @@ class AdministrativeEntityForm(forms.Form):
         self.fields["administrative_entity"].choices = [
             (ofs_id, [(entity.pk, entity.name) for entity in entities])
             for ofs_id, entities in regroup_by_ofs_id(
-                services.get_administrative_entities(self.user, entities_list)
+                services.get_administrative_entities(self.user).filter_by_tags(tags)
+                if services.get_administrative_entities(self.user).filter_by_tags(tags)
+                else services.get_administrative_entities(self.user)
             )
         ]
 

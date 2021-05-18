@@ -181,7 +181,7 @@ def get_works_types(administrative_entity, user):
     return queryset
 
 
-def get_administrative_entities(user, entities=[]):
+def get_administrative_entities(user):
     # Default queryset, with all administrative entities
     queryset = (
         models.PermitAdministrativeEntity.objects.filter(
@@ -192,15 +192,6 @@ def get_administrative_entities(user, entities=[]):
         .order_by("ofs_id", "-name")
         .distinct()
     )
-
-    # Make user tags lower case
-    entities = [each_string.lower() for each_string in entities]
-
-    # Queryset filtered by tag
-    queryset_tag_filter = queryset.filter(tags__name__in=entities,)
-
-    # Prevent of taking an empty queryset if tag is wrong
-    queryset = queryset_tag_filter if queryset_tag_filter else queryset
 
     if not user.has_perm("permits.see_private_requests"):
         queryset = queryset.filter(works_object_types__is_public=True)

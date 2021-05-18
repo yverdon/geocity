@@ -111,6 +111,11 @@ class PermitDepartment(models.Model):
         return str(self.group)
 
 
+class PermitAdministrativeEntityQuerySet(models.QuerySet):
+    def filter_by_tags(self, tags):
+        return self.filter(tags__name__in=tags)
+
+
 class PermitAdministrativeEntity(models.Model):
     name = models.CharField(_("name"), max_length=128)
     ofs_id = models.PositiveIntegerField(_("ofs_id"))
@@ -148,6 +153,7 @@ class PermitAdministrativeEntity(models.Model):
     )
     geom = geomodels.MultiPolygonField(_("geom"), null=True, srid=2056)
     tags = TaggableManager(blank=True, verbose_name="Mots-clés")
+    objects = PermitAdministrativeEntityQuerySet.as_manager()
 
     class Meta:
         verbose_name = _(
