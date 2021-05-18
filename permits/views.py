@@ -455,7 +455,9 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
             )
     else:
         administrative_entity_form = forms.AdministrativeEntityForm(
-            instance=permit_request, user=request.user, tags=request.GET.getlist("filter")
+            instance=permit_request,
+            user=request.user,
+            tags=request.GET.getlist("filter"),
         )
 
     return render(

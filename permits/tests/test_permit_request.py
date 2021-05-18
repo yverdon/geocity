@@ -673,7 +673,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         response = self.client.get(
             reverse("permits:permit_request_select_administrative_entity"),
-            {"entity": "first"},
+            {"filter": "first"},
         )
 
         parser = get_parser(response.content)
@@ -696,7 +696,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         response = self.client.get(
             reverse("permits:permit_request_select_administrative_entity"),
-            {"entity": "wrongtag"},
+            {"filter": "wrongtag"},
         )
 
         parser = get_parser(response.content)
@@ -723,7 +723,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         response = self.client.get(
             reverse("permits:permit_request_select_administrative_entity"),
-            {"entity": ["first", "second"]},
+            {"filter": ["first", "second"]},
         )
 
         parser = get_parser(response.content)
