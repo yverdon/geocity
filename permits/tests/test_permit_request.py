@@ -662,25 +662,14 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
 
     def test_administrative_entity_is_filtered_by_tag(self):
-        first_administrative_entity = factories.PermitAdministrativeEntityFactory(
-            tags=["first"]
-        )
-        second_administrative_entity = factories.PermitAdministrativeEntityFactory(
-            tags=["second"]
-        )
-        third_administrative_entity = factories.PermitAdministrativeEntityFactory(
-            tags=["third"]
-        )
+        administrative_entities = [
+            factories.PermitAdministrativeEntityFactory(tags=[tag])
+            for tag in ["first", "second", "third"]
+        ]
+        works_object_types = models.WorksObjectType.objects.all()
 
-        first_administrative_entity.works_object_types.set(
-            models.WorksObjectType.objects.all()
-        )
-        second_administrative_entity.works_object_types.set(
-            models.WorksObjectType.objects.all()
-        )
-        third_administrative_entity.works_object_types.set(
-            models.WorksObjectType.objects.all()
-        )
+        for administrative_entity in administrative_entities:
+            administrative_entity.works_object_types.set(works_object_types)
 
         response = self.client.get(
             reverse("permits:permit_request_select_administrative_entity"),
@@ -690,28 +679,20 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         parser = get_parser(response.content)
         element_parsed = parser.select(".form-check-label")
 
+        content = response.content.decode()
+
         self.assertEqual(1, len(element_parsed))
+        self.assertInHTML(administrative_entities[0].name, content)
 
     def test_wrong_administrative_entity_tag_return_all_administratives_entities(self):
-        first_administrative_entity = factories.PermitAdministrativeEntityFactory(
-            tags=["first"]
-        )
-        second_administrative_entity = factories.PermitAdministrativeEntityFactory(
-            tags=["second"]
-        )
-        third_administrative_entity = factories.PermitAdministrativeEntityFactory(
-            tags=["third"]
-        )
+        administrative_entities = [
+            factories.PermitAdministrativeEntityFactory(tags=[tag])
+            for tag in ["first", "second", "third"]
+        ]
+        works_object_types = models.WorksObjectType.objects.all()
 
-        first_administrative_entity.works_object_types.set(
-            models.WorksObjectType.objects.all()
-        )
-        second_administrative_entity.works_object_types.set(
-            models.WorksObjectType.objects.all()
-        )
-        third_administrative_entity.works_object_types.set(
-            models.WorksObjectType.objects.all()
-        )
+        for administrative_entity in administrative_entities:
+            administrative_entity.works_object_types.set(works_object_types)
 
         response = self.client.get(
             reverse("permits:permit_request_select_administrative_entity"),
@@ -721,30 +702,24 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         parser = get_parser(response.content)
         element_parsed = parser.select(".form-check-label")
 
+        content = response.content.decode()
+
         self.assertEqual(3, len(element_parsed))
+        self.assertInHTML(administrative_entities[0].name, content)
+        self.assertInHTML(administrative_entities[1].name, content)
+        self.assertInHTML(administrative_entities[2].name, content)
 
     def test_multiple_administrative_entity_tags_return_multiple_administratives_entities(
         self,
     ):
-        first_administrative_entity = factories.PermitAdministrativeEntityFactory(
-            tags=["first"]
-        )
-        second_administrative_entity = factories.PermitAdministrativeEntityFactory(
-            tags=["second"]
-        )
-        third_administrative_entity = factories.PermitAdministrativeEntityFactory(
-            tags=["third"]
-        )
+        administrative_entities = [
+            factories.PermitAdministrativeEntityFactory(tags=[tag])
+            for tag in ["first", "second", "third"]
+        ]
+        works_object_types = models.WorksObjectType.objects.all()
 
-        first_administrative_entity.works_object_types.set(
-            models.WorksObjectType.objects.all()
-        )
-        second_administrative_entity.works_object_types.set(
-            models.WorksObjectType.objects.all()
-        )
-        third_administrative_entity.works_object_types.set(
-            models.WorksObjectType.objects.all()
-        )
+        for administrative_entity in administrative_entities:
+            administrative_entity.works_object_types.set(works_object_types)
 
         response = self.client.get(
             reverse("permits:permit_request_select_administrative_entity"),
@@ -754,7 +729,11 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         parser = get_parser(response.content)
         element_parsed = parser.select(".form-check-label")
 
+        content = response.content.decode()
+
         self.assertEqual(2, len(element_parsed))
+        self.assertInHTML(administrative_entities[0].name, content)
+        self.assertInHTML(administrative_entities[1].name, content)
 
 
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):

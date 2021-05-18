@@ -147,7 +147,7 @@ class PermitAdministrativeEntity(models.Model):
         ],
     )
     geom = geomodels.MultiPolygonField(_("geom"), null=True, srid=2056)
-    tags = TaggableManager()
+    tags = TaggableManager(blank=True, verbose_name="Mots-clés")
 
     class Meta:
         verbose_name = _(
@@ -471,7 +471,6 @@ class WorksType(models.Model):
     meta_type = models.IntegerField(
         _("Type générique"), choices=META_TYPE_CHOICES, default=META_TYPE_OTHER
     )
-    tags = TaggableManager()
 
     class Meta:
         verbose_name = _("1.2 Configuration du type")
