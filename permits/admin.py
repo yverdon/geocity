@@ -95,7 +95,7 @@ class UserAdmin(BaseUserAdmin):
                 kwargs["queryset"] = Group.objects.all()
             else:
                 kwargs["queryset"] = Group.objects.filter(
-                    permitdepartment__integrator=request.user.groups.filter(permitdepartment__is_integrator_admin=True).pk,
+                    permitdepartment__integrator=request.user.groups.get(permitdepartment__is_integrator_admin=True).pk,
                 )
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
@@ -108,18 +108,13 @@ class UserAdmin(BaseUserAdmin):
         else:
             qs = User.objects.filter(
                 Q(is_superuser=False),
-                Q(groups__permitdepartment__integrator=request.user.groups.all()[0]) | Q(group__isnull=True)
+                Q(groups__permitdepartment__integrator=request.user.groups.get(permitdepartment__is_integrator_admin=True).pk) | Q(groups__isnull=True)
             )
         return qs
 
     def save_model(self, request, obj, form, change): # TODO: @sephii : Ici il s’agit de validation, qu’il faudrait donc faire dans l’étape de validation, avant la sauvegarde. Cf. la doc Django qui explique comment faire de la validation custom dans l’admin.
-
         edited_user_groups = obj.groups.select_related("permitdepartment")
         is_integrator_admin = any(group.permitdepartment.is_integrator_admin for group in edited_user_groups)
-
-        for group in edited_user_groups:
-            if group.permitdepartment.is_integrator_admin:
-                is_integrator_admin = True
 
         if len(edited_user_groups) > 1 and is_integrator_admin:
             raise ValidationError(
@@ -177,7 +172,7 @@ class PermitDepartmentInline(admin.StackedInline):
         if request.user.is_superuser:
             return []
         else:
-            return ["integrator", "is_integrator_admin", "is_archeologist"]
+            return ["integrator", "is_integrator_admin"]
 
 
 class GroupAdminForm(forms.ModelForm):
@@ -203,18 +198,39 @@ class GroupAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             qs = Group.objects.all()
         else:
-            qs = request.user.groups.all()
+            qs = Group.objects.filter(
+                Q(permitdepartment__integrator=request.user.groups.get(permitdepartment__is_integrator_admin=True).pk)
+            )
+            print(qs)
+            print(request.user.groups.get(permitdepartment__is_integrator_admin=True).pk)
         return qs
 
+    def save_model(self, request, obj, form, change):
+    
+        if not request.user.is_superuser:
+            user_groups = request.user.groups.all()
+
+            if (
+                user_groups[0].permitdepartment.is_integrator_admin
+                and len(user_groups) == 1
+            ):
+                obj.permitdepartment.integrator = user_groups[0].pk
+                obj.save()
+            else:
+                raise PermissionDenied
+        else:
+            obj.save()
+        
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         # permissions that integrator role can grant to group
         if db_field.name == "permissions":
             if request.user.is_superuser:
+                # restrict the permissions that superuser can grant to integrator
                 permits_permissions = (
                     Permission.objects.filter(
                         (
                             Q(
-                                codename__app_label="permits"
+                                content_type__app_label="permits"
                             ) & Q(
                                 content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS
                             )
@@ -223,15 +239,6 @@ class GroupAdmin(admin.ModelAdmin):
                         )
                     )
                 )
-                # restrict the permissions that superuser can grant to integrator
-                # permits_permissions = (
-                #     Permission.objects.filter(
-                #         content_type__app_label="permits",
-                #         content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
-                #     )
-                #     .values_list("codename", flat=True)
-                #     .all()
-                # )
 
                 kwargs["queryset"] = Permission.objects.filter(
                     codename__in=list(permits_permissions) + OTHER_PERMISSIONS_CODENAMES
@@ -364,6 +371,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             .select_related("works_object", "works_type")
             .prefetch_related("administrative_entities")
         )
+        qs = super().get_queryset(request)
         return qs
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
@@ -418,22 +426,14 @@ class WorksObjectPropertyForm(forms.ModelForm):
         ]
 
 
-class WorksObjectPropertyAdmin(SortableAdminMixin, admin.ModelAdmin):
+class WorksObjectPropertyAdmin(IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdmin):
     list_display = ["__str__", "is_mandatory"]
     form = WorksObjectPropertyForm
 
     def get_queryset(self, request):
-        user = request.user
         qs = models.WorksObjectProperty.objects.all()
-        return filter_for_user(user, qs)
-
-    def save_model(self, request, obj, form, change):
-        user = request.user
-        save_object_with_creator_group(user, obj)
-
-    def get_readonly_fields(self, request, obj=None):
-        user = request.user
-        return get_integrator_readonly_fields(user)
+        qs = super().get_queryset(request)
+        return qs
 
     # Pass the request from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs): # TODO: Check if get_form can be simplified without making a recursive function
@@ -511,41 +511,25 @@ class WorksObjectAdminForm(forms.ModelForm):
         }
 
 
-class WorksObjectAdmin(admin.ModelAdmin):
+class WorksObjectAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = WorksObjectAdminForm
 
     def get_queryset(self, request):
-        user = request.user
         qs = models.WorksObject.objects.all()
-        return filter_for_user(user, qs)
-
-    def save_model(self, request, obj, form, change):
-        user = request.user
-        save_object_with_creator_group(user, obj)
-
-    def get_readonly_fields(self, request, obj=None):
-        user = request.user
-        return get_integrator_readonly_fields(user)
+        qs = super().get_queryset(request)
+        return qs
 
 
-class PermitAdministrativeEntityAdmin(admin.ModelAdmin):
+class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = PermitAdministrativeEntityAdminForm
     inlines = [
         PermitWorkflowStatusInline,
     ]
 
     def get_queryset(self, request):
-        user = request.user
         qs = models.PermitAdministrativeEntity.objects.all()
-        return filter_for_user(user, qs)
-
-    def save_model(self, request, obj, form, change):
-        user = request.user
-        save_object_with_creator_group(user, obj)
-
-    def get_readonly_fields(self, request, obj=None):
-        user = request.user
-        return get_integrator_readonly_fields(user)
+        qs = super().get_queryset(request)
+        return qs
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "integrator":
@@ -566,7 +550,7 @@ class PermitRequestAmendPropertyForm(forms.ModelForm):
         fields = ["name", "is_mandatory", "works_object_types", "integrator"]
 
 
-class PermitRequestAmendPropertyAdmin(admin.ModelAdmin):
+class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
     list_display = ["sortable_str", "is_mandatory"]
     form = PermitRequestAmendPropertyForm
@@ -579,18 +563,10 @@ class PermitRequestAmendPropertyAdmin(admin.ModelAdmin):
     )
     sortable_str.admin_order_field = "name"
 
-    def get_readonly_fields(self, request, obj=None):
-        user = request.user
-        return get_integrator_readonly_fields(user)
-
     def get_queryset(self, request):
-        user = request.user
         qs = models.PermitRequestAmendProperty.objects.all()
-        return filter_for_user(user, qs)
-
-    def save_model(self, request, obj, form, change):
-        user = request.user
-        save_object_with_creator_group(user, obj)
+        qs = super().get_queryset(request)
+        return qs
 
     # Passe the request from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs): # TODO: Check if get_form can be simplified without making a recursive function
@@ -606,19 +582,11 @@ class PermitRequestAmendPropertyAdmin(admin.ModelAdmin):
         return RequestForm
 
 
-class PermitActorTypeAdmin(admin.ModelAdmin):
+class PermitActorTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     def get_queryset(self, request):
-        user = request.user
         qs = models.PermitActorType.objects.all()
-        return filter_for_user(user, qs)
-
-    def save_model(self, request, obj, form, change):
-        user = request.user
-        save_object_with_creator_group(user, obj)
-
-    def get_readonly_fields(self, request, obj=None):
-        user = request.user
-        return get_integrator_readonly_fields(user)
+        qs = super().get_queryset(request)
+        return qs
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "works_type":
@@ -631,19 +599,11 @@ class PermitActorTypeAdmin(admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-class WorksTypeAdmin(admin.ModelAdmin):
+class WorksTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     def get_queryset(self, request):
-        user = request.user
         qs = models.WorksType.objects.all()
-        return filter_for_user(user, qs)
-
-    def save_model(self, request, obj, form, change):
-        user = request.user
-        save_object_with_creator_group(user, obj)
-
-    def get_readonly_fields(self, request, obj=None):
-        user = request.user
-        return get_integrator_readonly_fields(user)
+        qs = super().get_queryset(request)
+        return qs
 
 
 admin.site.register(models.PermitActorType, PermitActorTypeAdmin)
