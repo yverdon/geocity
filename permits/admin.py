@@ -157,6 +157,7 @@ class PermitDepartmentInline(admin.StackedInline):
     verbose_name_plural = "Service"
     inline_classes = ("collapse open",)
     form = DepartmentAdminForm
+    min_num = 1
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "administrative_entity":
