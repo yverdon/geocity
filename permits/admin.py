@@ -202,8 +202,6 @@ class GroupAdmin(admin.ModelAdmin):
             qs = Group.objects.filter(
                 Q(permitdepartment__integrator=request.user.groups.get(permitdepartment__is_integrator_admin=True).pk)
             )
-            print(qs)
-            print(request.user.groups.get(permitdepartment__is_integrator_admin=True).pk)
         return qs
 
     def save_model(self, request, obj, form, change):
