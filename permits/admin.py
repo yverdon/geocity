@@ -206,15 +206,12 @@ class GroupAdmin(admin.ModelAdmin):
         return qs
 
     def save_model(self, request, obj, form, change):
-    
+        
         if not request.user.is_superuser:
             user_groups = request.user.groups.all()
-
-            if (
-                user_groups[0].permitdepartment.is_integrator_admin
-                and len(user_groups) == 1
-            ):
-                obj.permitdepartment.integrator = user_groups[0].pk
+            
+            if (len(user_groups) == 1 and not obj.id):
+                obj.permitdepartment.integrator = request.user.groups.get(permitdepartment__is_integrator_admin=True).pk
                 obj.save()
             else:
                 raise PermissionDenied
@@ -224,8 +221,8 @@ class GroupAdmin(admin.ModelAdmin):
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         # permissions that integrator role can grant to group
         if db_field.name == "permissions":
+    
             if request.user.is_superuser:
-                # restrict the permissions that superuser can grant to integrator
                 permits_permissions = (
                     Permission.objects.filter(
                         (
@@ -238,8 +235,8 @@ class GroupAdmin(admin.ModelAdmin):
                             codename__in=OTHER_PERMISSIONS_CODENAMES
                         )
                     )
+                    .select_related("content_type")
                 )
-
                 kwargs["queryset"] = Permission.objects.filter(
                     codename__in=list(permits_permissions) + OTHER_PERMISSIONS_CODENAMES
                 ).select_related("content_type")
