@@ -1,4 +1,5 @@
 import django_tables2 as tables
+from django_tables2.utils import A
 from django.utils.translation import gettext_lazy as _
 from django_tables2_column_shifter.tables import ColumnShiftTable
 

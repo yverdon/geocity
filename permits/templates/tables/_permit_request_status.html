@@ -1,2 +1,10 @@
 {% load i18n %}
-<i class="fa fa-circle status{{record.status}}"></i> {{ record.get_status_display }}
+{% if record.required_validations > 0 %}
+    {% if record.remaining_validations > 0 %}
+        <i class="fa fa-clock-o missing-validations"></i> {{record.required_validations}} {% trans "Validation(s) en attente" %}
+    {% else %}
+        <i class="fa fa-circle status{{record.status}}"></i> {% trans "Validée par les services" %}
+    {% endif %}
+{% else %}
+    <i class="fa fa-circle status{{record.status}}"></i> {{ record.get_status_display }}
+{% endif %}

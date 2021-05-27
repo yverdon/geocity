@@ -361,6 +361,10 @@ h3 {
   color: #A0B46F;
 }
 
+.missing-validations {
+  color: #f10000;
+}
+
 h1 {
   font-size: 1.7em;
 }
