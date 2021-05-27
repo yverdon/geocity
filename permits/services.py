@@ -359,69 +359,43 @@ def get_permit_requests_list_for_user(user):
     """
     Return the list of permit requests this user has access to.
     """
-    if not user.is_authenticated:
-        return models.PermitRequest.objects.none().annotate(
-            starts_at_min=Min("geo_time__starts_at"),
-            ends_at_max=Max("geo_time__ends_at"),
-            remaining_validations=Count("validations")
-            - Count(
-                "validations",
-                filter=~Q(
-                    validations__validation_status=models.PermitRequestValidation.STATUS_REQUESTED
-                ),
-            ),
-            required_validations=Count("validations"),
-            author_fullname=Concat(
-                F("author__user__first_name"), Value(" "), F("author__user__last_name")
-            ),
-        )
 
-    if user.is_superuser:
-        return models.PermitRequest.objects.all().annotate(
-            starts_at_min=Min("geo_time__starts_at"),
-            ends_at_max=Max("geo_time__ends_at"),
-            remaining_validations=Count("validations")
-            - Count(
-                "validations",
-                filter=~Q(
-                    validations__validation_status=models.PermitRequestValidation.STATUS_REQUESTED
-                ),
+    qs = models.PermitRequest.objects.annotate(
+        starts_at_min=Min("geo_time__starts_at"),
+        ends_at_max=Max("geo_time__ends_at"),
+        remaining_validations=Count("validations")
+        - Count(
+            "validations",
+            filter=~Q(
+                validations__validation_status=models.PermitRequestValidation.STATUS_REQUESTED
             ),
-            required_validations=Count("validations"),
-            author_fullname=Concat(
-                F("author__user__first_name"), Value(" "), F("author__user__last_name")
-            ),
-        )
-    else:
-        qs = Q(author=user.permitauthor)
+        ),
+        required_validations=Count("validations"),
+        author_fullname=Concat(
+            F("author__user__first_name"), Value(" "), F("author__user__last_name")
+        ),
+    )
+
+    if not user.is_authenticated:
+        return qs.none()
+
+    if not user.is_superuser:
+        qs_filter = Q(author=user.permitauthor)
 
         if user.has_perm("permits.amend_permit_request"):
-            qs |= Q(
+            qs_filter |= Q(
                 administrative_entity__in=get_user_administrative_entities(user),
             ) & ~Q(status=models.PermitRequest.STATUS_DRAFT)
 
         if user.has_perm("permits.validate_permit_request"):
-            qs |= Q(
+            qs_filter |= Q(
                 validations__department__in=models.PermitDepartment.objects.filter(
                     group__in=user.groups.all()
                 )
             )
+        return qs.filter(qs_filter)
 
-        return models.PermitRequest.objects.filter(qs).annotate(
-            starts_at_min=Min("geo_time__starts_at"),
-            ends_at_max=Max("geo_time__ends_at"),
-            remaining_validations=Count("validations")
-            - Count(
-                "validations",
-                filter=~Q(
-                    validations__validation_status=models.PermitRequestValidation.STATUS_REQUESTED
-                ),
-            ),
-            required_validations=Count("validations"),
-            author_fullname=Concat(
-                F("author__user__first_name"), Value(" "), F("author__user__last_name")
-            ),
-        )
+    return qs
 
 
 def get_actors_types(permit_request):
