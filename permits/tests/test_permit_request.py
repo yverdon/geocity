@@ -1,16 +1,17 @@
 # TODO split this file into multiple files
+import re
 import urllib.parse
+import uuid
 from datetime import date
 
 from django.conf import settings
+from django.contrib.auth.models import Permission
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from permits import models, services
-import uuid
-from django.contrib.auth.models import Permission
 
 from . import factories
 from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_parser
@@ -47,6 +48,11 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             works_object=self.works_objects[1],
             is_public=True,
         )
+        self.geotime_step_formset_data = {
+            "form-TOTAL_FORMS": ["1"],
+            "form-INITIAL_FORMS": ["0"],
+            "form-MIN_NUM_FORMS": ["0"],
+        }
 
     def test_types_step_submit_redirects_to_objects_with_types_qs(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
@@ -286,8 +292,8 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
     def test_geotime_step_only_date_fields_appear_when_only_date_is_required(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        works_object_type = factories.WorksObjectTypeFactory(
-            needs_geometry=False, needs_date=True
+        works_object_type = factories.WorksObjectTypeWithoutGeometryFactory(
+            needs_date=True,
         )
         permit_request.works_object_types.set([works_object_type])
 
@@ -297,23 +303,80 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"permit_request_id": permit_request.pk},
             )
         )
+        parser = get_parser(response.content)
+
         self.assertEqual(response.status_code, 200)
-        self.assertGreaterEqual(
-            len(get_parser(response.content).select('input[name="form-0-starts_at"]')),
-            1,
+        self.assertEqual(
+            len(parser.select('input[name="form-0-starts_at"]')), 1,
         )
-        self.assertGreaterEqual(
-            len(get_parser(response.content).select('input[name="form-0-ends_at"]')), 1
-        )
+        self.assertEqual(len(parser.select('input[name="form-0-ends_at"]')), 1)
 
         self.assertEqual(
-            len(get_parser(response.content).select('textarea[name="form-0-geom"]')), 0,
+            len(parser.select('textarea[name="form-0-geom"]')), 0,
+        )
+
+    def test_geotime_step_date_fields_cannot_be_empty_when_date_is_required(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object_type = factories.WorksObjectTypeWithoutGeometryFactory(
+            needs_date=True,
+        )
+        permit_request.works_object_types.set([works_object_type])
+        self.geotime_step_formset_data.update(
+            {"form-0-starts_at": [""], "form-0-ends_at": [""]}
+        )
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=self.geotime_step_formset_data,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFormsetError(
+            response, "formset", 0, "starts_at", "Ce champ est obligatoire.",
+        )
+        self.assertFormsetError(
+            response, "formset", 0, "ends_at", "Ce champ est obligatoire.",
+        )
+
+    def test_geotime_step_date_fields_ends_at_must_not_be_before_starts_at(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object_type = factories.WorksObjectTypeWithoutGeometryFactory(
+            needs_date=True,
+        )
+        permit_request.works_object_types.set([works_object_type])
+        self.geotime_step_formset_data.update(
+            {
+                "form-0-starts_at": ["2021-04-17 14:05:00+02:00"],
+                "form-0-ends_at": ["2021-04-16 14:05:00+02:00"],
+            }
+        )
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=self.geotime_step_formset_data,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFormsetError(
+            response,
+            "formset",
+            0,
+            None,
+            "La date de fin doit être postérieure à la date de début.",
         )
 
     def test_geotime_step_only_geom_fields_appear_when_only_geom_is_required(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         works_object_type = factories.WorksObjectTypeFactory(
-            needs_geometry=True, needs_date=False
+            has_geometry_point=True,
+            has_geometry_line=True,
+            has_geometry_polygon=True,
+            needs_date=False,
         )
         permit_request.works_object_types.set([works_object_type])
 
@@ -323,23 +386,25 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"permit_request_id": permit_request.pk},
             )
         )
+        parser = get_parser(response.content)
+
         self.assertEqual(response.status_code, 200)
-        self.assertGreaterEqual(
-            len(get_parser(response.content).select('textarea[name="form-0-geom"]')), 1,
+        self.assertEqual(
+            len(parser.select('textarea[name="form-0-geom"]')), 1,
         )
 
         self.assertEqual(
-            len(get_parser(response.content).select('input[name="form-0-starts_at"]')),
-            0,
+            len(parser.select('input[name="form-0-starts_at"]')), 0,
         )
-        self.assertEqual(
-            len(get_parser(response.content).select('input[name="form-0-ends_at"]')), 0
-        )
+        self.assertEqual(len(parser.select('input[name="form-0-ends_at"]')), 0)
 
     def test_geotime_step_date_and_geom_fields_appear_when_both_required(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         works_object_type = factories.WorksObjectTypeFactory(
-            needs_geometry=True, needs_date=True
+            has_geometry_point=True,
+            has_geometry_line=True,
+            has_geometry_polygon=True,
+            needs_date=True,
         )
         permit_request.works_object_types.set([works_object_type])
 
@@ -349,16 +414,251 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"permit_request_id": permit_request.pk},
             )
         )
+        parser = get_parser(response.content)
+
         self.assertEqual(response.status_code, 200)
-        self.assertGreaterEqual(
-            len(get_parser(response.content).select('input[name="form-0-starts_at"]')),
+        self.assertEqual(
+            len(parser.select('input[name="form-0-starts_at"]')), 1,
+        )
+        self.assertEqual(len(parser.select('input[name="form-0-ends_at"]')), 1)
+        self.assertEqual(
+            len(parser.select('textarea[name="form-0-geom"]')), 1,
+        )
+
+    def test_geotime_step_only_point_geom_field_appear_when_only_point_geom_type_is_required(
+        self,
+    ):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object_type = factories.WorksObjectTypeFactory(
+            has_geometry_point=True,
+            has_geometry_line=False,
+            has_geometry_polygon=False,
+            needs_date=False,
+        )
+        permit_request.works_object_types.set([works_object_type])
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        parser = get_parser(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(
+                parser.select(
+                    '#geometry-widget-id_form-0-geom input[data-interaction-type="MultiPoint"]'
+                )
+            ),
             1,
         )
-        self.assertGreaterEqual(
-            len(get_parser(response.content).select('input[name="form-0-ends_at"]')), 1
+
+        self.assertEqual(
+            len(
+                parser.select(
+                    '#geometry-widget-id_form-0-geom input[data-interaction-type="MultiLineString"]'
+                )
+            ),
+            0,
         )
-        self.assertGreaterEqual(
-            len(get_parser(response.content).select('textarea[name="form-0-geom"]')), 1,
+        self.assertEqual(
+            len(
+                parser.select(
+                    '#geometry-widget-id_form-0-geom input[data-interaction-type="MultiPolygon"]'
+                )
+            ),
+            0,
+        )
+
+    def test_geotime_step_only_line_geom_field_appear_when_only_line_geom_type_is_required(
+        self,
+    ):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object_type = factories.WorksObjectTypeFactory(
+            has_geometry_point=False,
+            has_geometry_line=True,
+            has_geometry_polygon=False,
+            needs_date=False,
+        )
+        permit_request.works_object_types.set([works_object_type])
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        parser = get_parser(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(
+                parser.select(
+                    '#geometry-widget-id_form-0-geom input[data-interaction-type="MultiPoint"]'
+                )
+            ),
+            0,
+        )
+
+        self.assertEqual(
+            len(
+                parser.select(
+                    '#geometry-widget-id_form-0-geom input[data-interaction-type="MultiLineString"]'
+                )
+            ),
+            1,
+        )
+        self.assertEqual(
+            len(
+                parser.select(
+                    '#geometry-widget-id_form-0-geom input[data-interaction-type="MultiPolygon"]'
+                )
+            ),
+            0,
+        )
+
+    def test_geotime_step_only_polygon_geom_field_appear_when_only_polygon_geom_type_is_required(
+        self,
+    ):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object_type = factories.WorksObjectTypeFactory(
+            has_geometry_point=False,
+            has_geometry_line=False,
+            has_geometry_polygon=True,
+            needs_date=False,
+        )
+        permit_request.works_object_types.set([works_object_type])
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        parser = get_parser(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(
+                parser.select(
+                    '#geometry-widget-id_form-0-geom input[data-interaction-type="MultiPoint"]'
+                )
+            ),
+            0,
+        )
+
+        self.assertEqual(
+            len(
+                parser.select(
+                    '#geometry-widget-id_form-0-geom input[data-interaction-type="MultiLineString"]'
+                )
+            ),
+            0,
+        )
+        self.assertEqual(
+            len(
+                parser.select(
+                    '#geometry-widget-id_form-0-geom input[data-interaction-type="MultiPolygon"]'
+                )
+            ),
+            1,
+        )
+
+    def test_geotime_step_only_two_geom_field_appear_when_only_two_geom_type_are_required(
+        self,
+    ):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object_type = factories.WorksObjectTypeFactory(
+            has_geometry_point=True,
+            has_geometry_line=False,
+            has_geometry_polygon=True,
+            needs_date=False,
+        )
+        permit_request.works_object_types.set([works_object_type])
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        parser = get_parser(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(
+                parser.select(
+                    '#geometry-widget-id_form-0-geom input[data-interaction-type="MultiPoint"]'
+                )
+            ),
+            1,
+        )
+
+        self.assertEqual(
+            len(
+                parser.select(
+                    '#geometry-widget-id_form-0-geom input[data-interaction-type="MultiLineString"]'
+                )
+            ),
+            0,
+        )
+        self.assertEqual(
+            len(
+                parser.select(
+                    '#geometry-widget-id_form-0-geom input[data-interaction-type="MultiPolygon"]'
+                )
+            ),
+            1,
+        )
+
+    def test_summary_and_send_step_has_multiple_directive_fields_when_request_have_multiple_works_object_type(
+        self,
+    ):
+        group = factories.SecretariatGroupFactory()
+        first_works_object_type = factories.WorksObjectTypeFactory(
+            directive=SimpleUploadedFile("file.pdf", "contents".encode()),
+            directive_description="First directive description for a test",
+            additional_information="First additional information for a test",
+        )
+        second_works_object_type = factories.WorksObjectTypeFactory(
+            directive=SimpleUploadedFile("file.pdf", "contents".encode()),
+            directive_description="Second directive description for a test",
+            additional_information="Second additional information for a test",
+        )
+
+        permit_request = factories.PermitRequestGeoTimeFactory(
+            permit_request=factories.PermitRequestFactory(
+                administrative_entity=group.permitdepartment.administrative_entity,
+                author=self.user.permitauthor,
+                status=models.PermitRequest.STATUS_DRAFT,
+            )
+        ).permit_request
+
+        permit_request.works_object_types.set(
+            [first_works_object_type, second_works_object_type]
+        )
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_submit",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        parser = get_parser(response.content)
+
+        self.assertEqual(
+            len(parser.select("#legal-infos span.directive_description")), 2,
+        )
+
+        self.assertEqual(
+            len(parser.select("#legal-infos a.directive_file")), 2,
+        )
+
+        self.assertEqual(
+            len(parser.select("#legal-infos span.additional_information")), 2,
         )
 
 
@@ -451,6 +751,91 @@ class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(permit_request.actors.count(), 0)
         # Check that if form not valid, it does not redirect
         self.assertEqual(response.status_code, 200)
+
+    def test_permitrequestactor_creditor_field_is_hidden_if_wot_is_not_paid(self):
+        works_object_type = factories.WorksObjectTypeFactory(requires_payment=False)
+        works_type = works_object_type.works_type
+
+        factories.PermitActorTypeFactory(is_mandatory=True, works_type=works_type)
+
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor, status=models.PermitRequest.STATUS_DRAFT
+        )
+
+        permit_request.works_object_types.set([works_object_type])
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_actors",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            follow=True,
+        )
+
+        parser = get_parser(response.content)
+
+        self.assertEqual(
+            len(parser.findAll(text=re.compile("Renseignez les contacts"))), 1
+        )
+        self.assertIsNone(parser.find(id="id_creditor_type"))
+        self.assertEqual(
+            len(
+                parser.findAll(
+                    text=re.compile(
+                        "Adresse de facturation si différente de celle de l'auteur"
+                    )
+                )
+            ),
+            0,
+        )
+
+    def test_permitrequestactor_creditor_field_is_shown_if_at_least_one_wot_requires_payment(
+        self,
+    ):
+
+        free_works_object_types = factories.WorksObjectTypeFactory.create_batch(
+            2, requires_payment=False
+        )
+        paid_works_object_type = factories.WorksObjectTypeFactory(requires_payment=True)
+        works_types = [wt.works_type for wt in free_works_object_types] + [
+            paid_works_object_type.works_type
+        ]
+
+        for wt in works_types:
+            factories.PermitActorTypeFactory(is_mandatory=True, works_type=wt)
+
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor, status=models.PermitRequest.STATUS_DRAFT
+        )
+
+        permit_request.works_object_types.set(
+            free_works_object_types + [paid_works_object_type]
+        )
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_actors",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            follow=True,
+        )
+
+        parser = get_parser(response.content)
+
+        self.assertEqual(
+            len(parser.findAll(text=re.compile("Renseignez les contacts"))), 1
+        )
+        self.assertGreaterEqual(len(parser.find(id="id_creditor_type")), 1)
+        self.assertEqual(
+            len(
+                parser.findAll(
+                    text=re.compile(
+                        "Adresse de facturation si différente de celle de l'auteur"
+                    )
+                )
+            ),
+            1,
+        )
 
 
 class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
@@ -878,6 +1263,88 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
+
+    def test_secretariat_can_see_print_buttons_and_directives(self):
+        first_works_object_type = factories.WorksObjectTypeFactory(
+            directive=SimpleUploadedFile("file.pdf", "contents".encode()),
+            directive_description="First directive description for a test",
+            additional_information="First additional information for a test",
+        )
+        second_works_object_type = factories.WorksObjectTypeFactory(
+            directive=SimpleUploadedFile("file.pdf", "contents".encode()),
+            directive_description="Second directive description for a test",
+            additional_information="Second additional information for a test",
+        )
+        factories.QgisProjectFactory(
+            qgis_project_file=SimpleUploadedFile("template.qgs", "contents".encode()),
+            description="Print Template 1",
+            works_object_type=first_works_object_type,
+        )
+        factories.QgisProjectFactory(
+            qgis_project_file=SimpleUploadedFile("template.qgs", "contents".encode()),
+            description="Print Template 2",
+            works_object_type=second_works_object_type,
+        )
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            administrative_entity=self.administrative_entity,
+        )
+
+        permit_request.works_object_types.set(
+            [first_works_object_type, second_works_object_type]
+        )
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        parser = get_parser(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(parser.select(".tab-pane#print button")), 2,
+        )
+        self.assertEqual(
+            len(parser.select(".tab-pane#print span.directive_description")), 2,
+        )
+
+    def test_secretariat_cannot_see_print_buttons_and_directives_if_not_configured(
+        self,
+    ):
+        works_object_types = factories.WorksObjectTypeFactory.create_batch(2)
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            administrative_entity=self.administrative_entity,
+        )
+
+        permit_request.works_object_types.set(works_object_types)
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        parser = get_parser(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(parser.select(".tab-pane#print button")), 0,
+        )
+        self.assertEqual(
+            len(parser.select(".tab-pane#print span.directive_description")), 0,
+        )
+        self.assertEqual(
+            len(parser.select(".tab-pane#print span.no_directive")), 1,
+        )
+        self.assertEqual(
+            len(parser.select(".tab-pane#print span.no_print_template")), 1,
+        )
 
 
 class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase):

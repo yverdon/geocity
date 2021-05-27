@@ -1,3 +1,4 @@
+import django.db.models
 from adminsortable2.admin import SortableAdminMixin
 from django import forms
 from django.contrib import admin
@@ -45,7 +46,23 @@ def get_works_object_types_field():
 works_object_type_administrative_entities.short_description = _("Communes")
 
 
+class QgisProjectInline(admin.TabularInline):
+    model = models.QgisProject
+
+
 class WorksObjectTypeAdminForm(forms.ModelForm):
+    class GeometryTypes(django.db.models.TextChoices):
+        POINT = "has_geometry_point", _("Point")
+        LINE = "has_geometry_line", _("Ligne")
+        POLYGON = "has_geometry_polygon", _("Polygone")
+
+    geometry_types = forms.MultipleChoiceField(
+        choices=GeometryTypes.choices,
+        widget=forms.CheckboxSelectMultiple,
+        label=_("Types de géométrie autorisés"),
+        required=False,
+    )
+
     class Meta:
         model = models.WorksObjectType
         fields = "__all__"
@@ -53,11 +70,61 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
             "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
         }
 
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.get("instance")
+        if instance:
+            kwargs["initial"] = dict(
+                geometry_types=[
+                    geometry_type
+                    for geometry_type in self.GeometryTypes.values
+                    if getattr(instance, geometry_type)
+                ],
+                **kwargs.get("initial", {}),
+            )
+
+        super().__init__(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        for geometry_type in self.GeometryTypes.values:
+            setattr(
+                self.instance,
+                geometry_type,
+                geometry_type in self.cleaned_data["geometry_types"],
+            )
+
+        return super().save(*args, **kwargs)
+
 
 class WorksObjectTypeAdmin(admin.ModelAdmin):
     list_display = ["__str__", works_object_type_administrative_entities, "is_public"]
     list_filter = ["administrative_entities"]
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "works_type",
+                    "works_object",
+                    "administrative_entities",
+                    "is_public",
+                    "requires_payment",
+                )
+            },
+        ),
+        ("Planning et localisation", {"fields": ("geometry_types", "needs_date",)},),
+        (
+            "Directive",
+            {
+                "fields": (
+                    "directive",
+                    "directive_description",
+                    "additional_information",
+                )
+            },
+        ),
+    )
     form = WorksObjectTypeAdminForm
+    inlines = [QgisProjectInline]
 
     def get_queryset(self, request):
         return (
@@ -103,7 +170,6 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
         fields = "__all__"
         exclude = ["enabled_status"]
         widgets = {
-            "general_informations": forms.Textarea(attrs={"rows": 5,}),
             "geom": permit_forms.GeometryWidget(
                 attrs={
                     "options": {

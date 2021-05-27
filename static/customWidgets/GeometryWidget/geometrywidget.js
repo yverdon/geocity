@@ -522,8 +522,12 @@
 
     this.map.addInteraction(this.interactions.modify);
     this.map.addInteraction(this.interactions.select);
+    
+    // Get the first element of each form-check-input which are geometry types and check the radio button setDrawInteraction
     if (this.options.geometry_db_type == "GeometryCollection") {
-      this.setDrawInteraction("MultiPoint");
+      const firstInteractionElem = $(".form-check-input[data-interaction-type]", this.el).first();
+      firstInteractionElem.prop("checked", true);
+      this.setDrawInteraction(firstInteractionElem.attr("data-interaction-type"));
     } else {
       this.setDrawInteraction(this.options.geometry_db_type);
     }

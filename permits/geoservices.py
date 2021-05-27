@@ -1,3 +1,10 @@
+import enum
+
+from django.contrib.gis.db.models.functions import GeomOutputGeoFunc
+from django.db.models import Aggregate, CharField
+from django.utils.translation import gettext_lazy as _
+from rest_framework.exceptions import APIException
+
 from . import models
 
 
@@ -32,3 +39,15 @@ def get_intersected_geometries(permit_request):
                 )
 
     return intersected_geometries
+
+
+class GeomStAsText(GeomOutputGeoFunc):
+    function = "ST_asText"
+    geom_param_pos = (0,)
+    output_field = CharField()
+
+
+class JoinGeometries(Aggregate):
+    name = "joined_geometries"
+    template = "ST_SetSRID(ST_Extent(%(expressions)s), 2056)"
+    allow_distinct = False

@@ -294,6 +294,8 @@ STATICFILES_DIRS = [
 ]
 
 PRIVATE_MEDIA_ROOT = os.environ["PRIVATE_MEDIA_ROOT"]
+MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
+MEDIA_ROOT = os.environ.get("MEDIA_ROOT", os.path.join(BASE_DIR, "media"))
 
 PRINTED_REPORT_LAYERS = os.getenv("PRINTED_REPORT_LAYERS")
 MIN_START_DELAY = os.getenv("MIN_START_DELAY")

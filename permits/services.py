@@ -687,9 +687,7 @@ def get_geotime_required_info(permit_request):
     if any(works_object_type.needs_date for works_object_type in works_object_types):
         required_info.add(GeoTimeInfo.DATE)
 
-    if any(
-        works_object_type.needs_geometry for works_object_type in works_object_types
-    ):
+    if any(works_object_type.has_geometry for works_object_type in works_object_types):
         required_info.add(GeoTimeInfo.GEOMETRY)
 
     return required_info
@@ -1073,6 +1071,12 @@ def can_edit_permit_request(user, permit_request):
     )
 
 
+def permit_requests_has_paid_wot(permit_request):
+    return True in [
+        permit.requires_payment for permit in permit_request.works_object_types.all()
+    ]
+
+
 def get_contacts_summary(permit_request):
 
     actor_types = dict(models.ACTOR_TYPE_CHOICES)
@@ -1265,4 +1269,19 @@ def get_amend_custom_properties_values(permit_request):
         "works_object_type_choice",
         "works_object_type_choice__works_object_type",
         "property",
+    )
+
+
+def get_permit_request_directives(permit_request):
+    return [
+        (obj.directive, obj.directive_description, obj.additional_information)
+        for obj in permit_request.works_object_types.exclude(
+            directive="", directive_description="", additional_information=""
+        )
+    ]
+
+
+def get_permit_request_print_templates(permit_request):
+    return models.QgisProject.objects.filter(
+        works_object_type__in=permit_request.works_object_types.all()
     )
