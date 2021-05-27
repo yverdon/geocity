@@ -10,7 +10,8 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import SuspiciousOperation
 from django.core.mail import send_mass_mail
 from django.db import transaction
-from django.db.models import Max, Min, Q
+from django.db.models import Max, Min, Q, F, Value
+from django.db.models.functions import Concat
 from django.forms import modelformset_factory
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
@@ -362,12 +363,18 @@ def get_permit_requests_list_for_user(user):
         return models.PermitRequest.objects.none().annotate(
             starts_at_min=Min("geo_time__starts_at"),
             ends_at_max=Max("geo_time__ends_at"),
+            author_fullname=Concat(
+                F("author__user__first_name"), Value(" "), F("author__user__last_name")
+            ),
         )
 
     if user.is_superuser:
         return models.PermitRequest.objects.all().annotate(
             starts_at_min=Min("geo_time__starts_at"),
             ends_at_max=Max("geo_time__ends_at"),
+            author_fullname=Concat(
+                F("author__user__first_name"), Value(" "), F("author__user__last_name")
+            ),
         )
     else:
         qs = Q(author=user.permitauthor)
@@ -387,6 +394,9 @@ def get_permit_requests_list_for_user(user):
         return models.PermitRequest.objects.filter(qs).annotate(
             starts_at_min=Min("geo_time__starts_at"),
             ends_at_max=Max("geo_time__ends_at"),
+            author_fullname=Concat(
+                F("author__user__first_name"), Value(" "), F("author__user__last_name")
+            ),
         )
 
 

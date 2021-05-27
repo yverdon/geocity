@@ -50,13 +50,13 @@ class DepartmentPermitRequestsTable(ColumnShiftTable):
     administrative_entity = tables.Column(
         verbose_name=_("Entité administrative"), orderable=False
     )
-    author__user__last_name = tables.Column(verbose_name=_("Auteur de la demande"))
+    author_fullname = tables.Column(verbose_name=_("Auteur de la demande"))
 
     class Meta:
         model = models.PermitRequest
         fields = (
             "id",
-            "author__user__last_name",
+            "author_fullname",
             "created_at",
             "status",
             "starts_at_min",
