@@ -53,7 +53,7 @@ def get_integrator_readonly_fields(user):
 # Save the group that created the object
 def save_object_with_creator_group(user, obj):
     obj.integrator = user.groups.filter(permitdepartment__is_integrator_admin=True).first()
-    obj.save() # TODO: Check if save can really be removed as said by @sephii. When I tried the first time, I wasn't able to watch the objects created by integrator_admin
+    obj.save()
 
 
 class IntegratorFilterMixin:
