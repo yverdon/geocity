@@ -209,6 +209,15 @@
       {{ permit_request.author.user.first_name }} {{ permit_request.author.user.last_name }} &lt;{{ permit_request.author.user.email }}&gt;
     </a>
   </dd>
+  <dd>
+      {{ permit_request.author.address }} {{ permit_request.zipcode }} {{ permit_request.author.city }}
+  </dd>
+  <dd>
+    {{ permit_request.author.phone_first }}  {{ permit_request.author.phone_second }}
+  </dd>
+  <dd>
+    {{ permit_request.author.company_name }} {{ permit_request.author.vat_number }}
+  </dd>
   {% if permit_request.validation_pdf %}
     <dt>{% trans "Document délivré" %}</dt>
     <dd>
