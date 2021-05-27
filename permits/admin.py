@@ -52,7 +52,7 @@ def get_integrator_readonly_fields(user):
 
 # Save the group that created the object
 def save_object_with_creator_group(user, obj):
-    obj.integrator = user.groups.filter(permitdepartment__is_integrator_admin=True)[0]
+    obj.integrator = user.groups.filter(permitdepartment__is_integrator_admin=True).first()
     obj.save() # TODO: Check if save can really be removed as said by @sephii. When I tried the first time, I wasn't able to watch the objects created by integrator_admin
 
 
@@ -71,6 +71,47 @@ class IntegratorFilterMixin:
 
 
 class UserAdmin(BaseUserAdmin):
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "username",
+                )
+            },
+        ),
+        (
+            "Informations personnelles", 
+            {
+                "fields": (
+                    "first_name",
+                    "last_name",
+                    "email"
+                )
+            },
+        ),
+        (
+            "Permissions",
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                )
+            },
+        ),
+        (
+            "Dates importantes",
+            {
+                "fields": (
+                    "last_login",
+                    "date_joined",
+                )
+            },
+        ),
+    )
     def get_readonly_fields(self, request, obj=None):
         # limit editable fields to protect user data, superuser creation must be done using django shell
         if request.user.is_superuser:
@@ -165,7 +206,7 @@ class PermitDepartmentInline(admin.StackedInline):
                 kwargs["queryset"] = models.PermitAdministrativeEntity.objects.all()
             else:
                 kwargs["queryset"] = models.PermitAdministrativeEntity.objects.filter(
-                    integrator=request.user.groups.all()[0].pk
+                    integrator=request.user.groups.filter(permitdepartment__is_integrator_admin=True).first()
                 )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -204,19 +245,25 @@ class GroupAdmin(admin.ModelAdmin):
             )
         return qs
 
+    # If the group is updated to be integrator, the users in this group should not be in another integrator group
     def save_model(self, request, obj, form, change):
-        
-        if not request.user.is_superuser:
-            user_groups = request.user.groups.all()
-            
-            if (len(user_groups) == 1 and not obj.id):
-                obj.permitdepartment.integrator = request.user.groups.get(permitdepartment__is_integrator_admin=True).pk
-                obj.save()
-            else:
-                raise PermissionDenied
-        else:
-            obj.save()
-        
+        integrator = obj.permitdepartment.is_integrator_admin
+
+        users_in_group = User.objects.filter(groups__name=obj.name)
+        user_has_integrator_group = any(user.groups.filter(permitdepartment__is_integrator_admin=True).exclude(name=obj.name) for user in users_in_group)
+
+        # Raise error if this group is integrator and user(s) is/are already in integrator group and this group
+        if(integrator and user_has_integrator_group):  
+            raise ValidationError(
+                _(
+                    "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un groupe 'Intégrateur'"
+                ),
+                code="invalid",
+            )
+
+        obj.permitdepartment.integrator = request.user.groups.get(permitdepartment__is_integrator_admin=True).pk # TODO: .get with .pk works for integrator_admin and .filter.last() works for admin... There is an issue somewhere
+        obj.save()
+      
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         # permissions that integrator role can grant to group
         if db_field.name == "permissions":
@@ -246,6 +293,7 @@ class GroupAdmin(admin.ModelAdmin):
                         "validate_permit_request",
                         "classify_permit_request",
                         "edit_permit_request",
+                        "see_private_requests",
                     ]
                 )
 
@@ -376,7 +424,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 kwargs["queryset"] = models.PermitAdministrativeEntity.objects.all()
             else:
                 kwargs["queryset"] = models.PermitAdministrativeEntity.objects.filter(
-                    integrator=request.user.groups.all()[0].pk
+                    integrator=request.user.groups.filter(permitdepartment__is_integrator_admin=True).first()
                 )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -588,7 +636,7 @@ class PermitActorTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         if db_field.name == "works_type":
             if not request.user.is_superuser:
                 kwargs["queryset"] = models.WorksType.objects.filter(
-                    integrator=request.user.groups.all()[0].pk
+                    integrator=request.user.groups.filter(permitdepartment__is_integrator_admin=True).first()
                 )
             else:
                 kwargs["queryset"] = models.WorksType.objects.all()
