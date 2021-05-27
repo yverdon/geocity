@@ -52,12 +52,14 @@ class DepartmentPermitRequestsTable(ColumnShiftTable):
         verbose_name=_("Entité administrative"), orderable=False
     )
     author_fullname = tables.Column(verbose_name=_("Auteur de la demande"))
+    author_details = tables.Column(verbose_name=_("Coordonnées de l'auteur"))
 
     class Meta:
         model = models.PermitRequest
         fields = (
             "id",
             "author_fullname",
+            "author_details",
             "created_at",
             "status",
             "starts_at_min",

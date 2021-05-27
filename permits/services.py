@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import SuspiciousOperation
 from django.core.mail import send_mass_mail
 from django.db import transaction
-from django.db.models import Max, Min, Q, F, Value, Count
+from django.db.models import Max, Min, Q, F, Value, Count, CharField
 from django.db.models.functions import Concat
 from django.forms import modelformset_factory
 from django.shortcuts import get_object_or_404
@@ -372,7 +372,13 @@ def get_permit_requests_list_for_user(user):
         ),
         required_validations=Count("validations"),
         author_fullname=Concat(
-            F("author__user__first_name"), Value(" "), F("author__user__last_name")
+            F("author__user__first_name"), Value(" "), F("author__user__last_name"),
+        ),
+        author_details=Concat(
+            F("author__user__email"),
+            Value(" / "),
+            F("author__phone_first"),
+            output_field=CharField(),
         ),
     )
 
