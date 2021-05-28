@@ -9,6 +9,7 @@ from django.contrib.gis.geos import GeometryCollection, Point
 from django.utils.text import Truncator
 from permits import models, admin
 
+
 class PermitAuthorFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PermitAuthor
@@ -151,12 +152,14 @@ class IntegratorGroupFactory(GroupFactory):
             return
 
         if not extracted:
-            integrator_permissions = admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS + admin.OTHER_PERMISSIONS_CODENAMES
+            integrator_permissions = (
+                admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS
+                + admin.OTHER_PERMISSIONS_CODENAMES
+            )
             permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
             extracted = list(
                 Permission.objects.filter(
-                    codename__in=integrator_permissions,
-                    content_type=permit_request_ct,
+                    codename__in=integrator_permissions, content_type=permit_request_ct,
                 )
             )
 

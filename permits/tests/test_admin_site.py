@@ -15,8 +15,8 @@ from permits import models, services
 from . import factories
 from .utils import LoggedInIntegrator
 
-class AdminSiteTestCase(LoggedInIntegrator, TestCase):
 
+class AdminSiteTestCase(LoggedInIntegrator, TestCase):
     def test_integrator_can_only_see_own_requests(self):
         print(LoggedInIntegrator)
         print("hello")
