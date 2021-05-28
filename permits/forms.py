@@ -473,9 +473,11 @@ class GenericAuthorForm(forms.ModelForm):
             "phone_second",
             "company_name",
             "vat_number",
+            "do_not_notify",
         ]
         help_texts = {
             "vat_number": 'Trouvez votre numéro <a href="https://www.uid.admin.ch/Search.aspx?lang=fr" target="_blank">TVA</a>',
+            "do_not_notify": '<span style="color:red">Vous ne recevrez plus de confirmations par emails.</span>'
         }
         widgets = {
             "phone_first": forms.TextInput(attrs={"placeholder": "ex: 024 111 22 22"}),
