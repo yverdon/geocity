@@ -150,6 +150,23 @@ class IntegratorGroupFactory(GroupFactory):
     def permissions(self, create, extracted, **kwargs):
         if not create:
             return
+        
+        print("==================")
+        print("extracted before :")
+        print(extracted)
+
+        # permits_permissions = Permission.objects.filter(
+        #             (
+        #                 Q(content_type__app_label="permits")
+        #                 & Q(
+        #                     content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS
+        #                 )
+        #             )
+        #             | Q(codename__in=OTHER_PERMISSIONS_CODENAMES)
+        #         ).select_related("content_type")
+        #         kwargs["queryset"] = Permission.objects.filter(
+        #             codename__in=list(permits_permissions) + OTHER_PERMISSIONS_CODENAMES
+        #         ).select_related("content_type")
 
         if not extracted:
             integrator_permissions = (
@@ -162,6 +179,12 @@ class IntegratorGroupFactory(GroupFactory):
                     codename__in=integrator_permissions, content_type=permit_request_ct,
                 )
             )
+
+            print(integrator_permissions)
+
+        print("------------------")
+        print("extracted after :")
+        print(extracted)
 
         for permission in extracted:
             self.permissions.add(permission)
@@ -194,6 +217,8 @@ class ValidatorUserFactory(UserFactory):
 
 
 class IntegratorUserFactory(UserFactory):
+    is_staff = True
+
     @factory.post_generation
     def groups(self, create, extracted, **kwargs):
         if not create:

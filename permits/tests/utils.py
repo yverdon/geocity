@@ -27,7 +27,7 @@ class LoggedInSecretariatMixin:
         self.client.login(username=self.user.username, password="password")
 
 
-class LoggedInIntegrator:
+class LoggedInIntegratorMixin:
     def setUp(self):
         self.group = factories.IntegratorGroupFactory()
         self.user = factories.IntegratorUserFactory(groups=[self.group])

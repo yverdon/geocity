@@ -1452,6 +1452,10 @@ class PermitRequestValidationTestcase(TestCase):
         administrative_entity = group.permitdepartment.administrative_entity
         secretariat = factories.SecretariatUserFactory(groups=[group])
 
+        print(secretariat.get_user_permissions())
+        print(secretariat.groups)
+        print(group)
+
         validation = factories.PermitRequestValidationFactory(
             permit_request__administrative_entity=administrative_entity
         )
