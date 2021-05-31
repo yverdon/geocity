@@ -633,7 +633,7 @@ class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         qs = super().get_queryset(request)
         return qs
 
-    # Passe the request from ModelAdmin to ModelForm
+    # Pass the request from ModelAdmin to ModelForm
     def get_form(
         self, request, obj=None, **kwargs
     ):  # TODO: Check if get_form can be simplified without making a recursive function (https://github.com/yverdon/geocity/pull/229#discussion_r634437716)
