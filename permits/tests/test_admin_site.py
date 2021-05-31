@@ -21,23 +21,32 @@ from .utils import LoggedInIntegratorMixin, get_parser
 class AdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
     def setUp(self):
         super().setUp()
+        self.administrative_entity = factories.PermitAdministrativeEntityFactory.create_batch(3)
 
     def test_integrator_can_only_see_own_permitadministrativeentity(self):
-        self.assertEqual(True, False)
-
-    def test_admin_can_see_all_permitadministrativeentity(self):
         group = factories.IntegratorGroupFactory()
         integrator = factories.IntegratorUserFactory(groups=[group])
 
         self.client.login(username=integrator.username, password="password")
         
         response = self.client.get(reverse("admin:permits_permitadministrativeentity_changelist"))
-        # response = self.client.get(reverse("admin:permits_permitadministrativeentity_changelist"), follow=True)
+        parser = get_parser(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(parser.select("th")), 1)
+
+    def test_admin_can_see_all_permitadministrativeentity(self):
+        user = factories.SuperUserFactory()
+
+        self.client.login(username=user.username, password="password")
+        
+        response = self.client.get(reverse("admin:permits_permitadministrativeentity_changelist"))
         parser = get_parser(response.content)
 
         print(parser)
+
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select('<th class="field-__str__">')), 1)
+        self.assertEqual(len(parser.select("th .field-__str__")), 3)
 
 
 

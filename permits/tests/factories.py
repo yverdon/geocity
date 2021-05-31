@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import GeometryCollection, Point
 from django.utils.text import Truncator
 from permits import models, admin
+from django.db.models import Q
 
 
 class PermitAuthorFactory(factory.django.DjangoModelFactory):
@@ -43,8 +44,12 @@ class SuperUserFactory(factory.django.DjangoModelFactory):
         model = get_user_model()
 
     username = factory.Faker("user_name")
+    first_name = factory.Faker("first_name")
+    last_name = factory.Faker("last_name")
     email = factory.Faker("email")
     password = "password"
+    is_superuser = True
+    
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
@@ -150,41 +155,19 @@ class IntegratorGroupFactory(GroupFactory):
     def permissions(self, create, extracted, **kwargs):
         if not create:
             return
-        
-        print("==================")
-        print("extracted before :")
-        print(extracted)
-
-        # permits_permissions = Permission.objects.filter(
-        #             (
-        #                 Q(content_type__app_label="permits")
-        #                 & Q(
-        #                     content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS
-        #                 )
-        #             )
-        #             | Q(codename__in=OTHER_PERMISSIONS_CODENAMES)
-        #         ).select_related("content_type")
-        #         kwargs["queryset"] = Permission.objects.filter(
-        #             codename__in=list(permits_permissions) + OTHER_PERMISSIONS_CODENAMES
-        #         ).select_related("content_type")
 
         if not extracted:
-            integrator_permissions = (
-                admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS
-                + admin.OTHER_PERMISSIONS_CODENAMES
-            )
-            permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
             extracted = list(
                 Permission.objects.filter(
-                    codename__in=integrator_permissions, content_type=permit_request_ct,
-                )
+                    (
+                        Q(content_type__app_label="permits")
+                        & Q(
+                            content_type__model__in=admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS
+                        )
+                    )
+                    | Q(codename__in=admin.OTHER_PERMISSIONS_CODENAMES)
+                ).select_related("content_type")
             )
-
-            print(integrator_permissions)
-
-        print("------------------")
-        print("extracted after :")
-        print(extracted)
 
         for permission in extracted:
             self.permissions.add(permission)

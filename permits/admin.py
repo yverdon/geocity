@@ -50,10 +50,10 @@ def filter_for_user(user, qs):
 
 
 def get_integrator_readonly_fields(user):
-    if not user.is_superuser:
-        return ["integrator"]
-    else:
+    if user.is_superuser:
         return []
+    else:
+        return ["integrator"]
 
 
 # Save the group that created the object
@@ -657,14 +657,14 @@ class PermitActorTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "works_type":
-            if not request.user.is_superuser:
+            if request.user.is_superuser:
+                kwargs["queryset"] = models.WorksType.objects.all()
+            else:
                 kwargs["queryset"] = models.WorksType.objects.filter(
                     integrator=request.user.groups.get(
                         permitdepartment__is_integrator_admin=True
                     )
                 )
-            else:
-                kwargs["queryset"] = models.WorksType.objects.all()
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
