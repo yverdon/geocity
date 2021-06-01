@@ -166,7 +166,7 @@ class IntegratorGroupFactory(GroupFactory):
                         )
                     )
                     | Q(codename__in=admin.OTHER_PERMISSIONS_CODENAMES)
-                ).select_related("content_type")
+                )
             )
 
         for permission in extracted:

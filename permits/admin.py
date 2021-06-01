@@ -11,6 +11,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.core.exceptions import PermissionDenied
 from django.forms import ValidationError
 from django.contrib import messages
+from django.contrib.auth.forms import UserChangeForm
 
 from . import forms as permit_forms
 from . import models
@@ -56,17 +57,12 @@ def get_integrator_readonly_fields(user):
         return ["integrator"]
 
 
-# Save the group that created the object
-def save_object_with_creator_group(user, obj):
-    if not user.is_superuser:
-        obj.integrator = user.groups.get(permitdepartment__is_integrator_admin=True)
-    obj.save()
-
-
 class IntegratorFilterMixin:
     def save_model(self, request, obj, form, change):
         user = request.user
-        save_object_with_creator_group(user, obj)
+        if not user.is_superuser:
+            obj.integrator = user.groups.get(permitdepartment__is_integrator_admin=True)
+        super().save_model(request, obj, form, change)
 
     def get_readonly_fields(self, request, obj=None):
         user = request.user
@@ -77,11 +73,7 @@ class IntegratorFilterMixin:
         return filter_for_user(user, super().get_queryset(request))
 
 
-class UserAdminForm(forms.ModelForm):
-    class Meta:
-        model = models.User
-        fields = "__all__"
-
+class UserAdminForm(UserChangeForm):
     def clean_groups(self):
         groups = self.cleaned_data["groups"]
 
@@ -91,7 +83,7 @@ class UserAdminForm(forms.ModelForm):
 
         if len(edited_user_integrator_groups) > 1:
             raise forms.ValidationError(
-                "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur"
+                "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur'"
             )
         return groups
 
@@ -184,7 +176,6 @@ class DepartmentAdminForm(forms.ModelForm):
             "integrator",
             "is_integrator_admin",
         ]
-        index_together = ["name", "group"]
         help_texts = {
             "administrative_entity": _(
                 "En tant qu'intégrateur, vous devez tout d'abord créer une entité administrative, pressez simplement sur + "
@@ -192,24 +183,27 @@ class DepartmentAdminForm(forms.ModelForm):
         }
 
     # If the group is updated to be integrator, the users in this group should not be in another integrator group
+    # Function could be rename "clean" with "group_name = self.cleaned_data["group"]" and use directly this instead of "group_object" but the validation error is not well placed
     def clean_is_integrator_admin(self):
         is_integrator_admin = self.cleaned_data["is_integrator_admin"]
-        group_name = self.data["name"]
 
-        users_in_group = User.objects.filter(groups__name=group_name)
-        user_has_integrator_group = any(
-            user.groups.filter(permitdepartment__is_integrator_admin=True)
-            for user in users_in_group
-        )
+        # Check only if the group passed from not integrator to integrator
+        if self.instance and not self.instance.is_integrator_admin and self.cleaned_data["is_integrator_admin"]:
+            group_name = self.data["name"]
+            group_object = Group.objects.get(name=group_name)            
 
-        print(user_has_integrator_group)
-        print(users_in_group)
-        # Raise error if this group is integrator and user(s) is/are already in integrator group and this group
-        if is_integrator_admin and user_has_integrator_group:
-            raise forms.ValidationError(
-                "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur"
-            )
+            user_with_integrator_group = Group.objects.exclude(pk=group_object.pk).filter(
+                user__in=group_object.user_set.all(),
+                permitdepartment__is_validator=True,
+            ).exists()
+
+            # Raise error if this group is integrator and user(s) is/are already in integrator group and this group
+            if user_with_integrator_group:
+                raise forms.ValidationError(
+                    "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur'"
+                )
         return is_integrator_admin
+
 
 
 # Inline for group & department (1to1)
@@ -244,7 +238,6 @@ class GroupAdminForm(forms.ModelForm):
     class Meta:
         model = Group
         fields = "__all__"
-        index_together = ["description", "permitdepartment"]
         help_texts = {
             "permissions": _(
                 "Pour un rôle intégrateur, ajoutez toutes les permissions disponibles"
@@ -255,10 +248,7 @@ class GroupAdminForm(forms.ModelForm):
 class GroupAdmin(admin.ModelAdmin):
     inlines = (PermitDepartmentInline,)
     form = GroupAdminForm
-
-    class Meta:
-        model = Group
-
+ 
     def get_queryset(self, request):
 
         if request.user.is_superuser:
@@ -278,35 +268,27 @@ class GroupAdmin(admin.ModelAdmin):
             obj.permitdepartment.integrator = request.user.groups.get(
                 permitdepartment__is_integrator_admin=True
             ).pk
-        obj.save()
+        super().save_model(request, obj, form, change)
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         # permissions that integrator role can grant to group
         if db_field.name == "permissions":
+        
+            for group in self.model.objects.all():
+                existing_permissions = group.permissions.all()
+            
+            integrator_permissions = Permission.objects.filter(
+                codename__in=[
+                    "amend_permit_request",
+                    "validate_permit_request",
+                    "classify_permit_request",
+                    "edit_permit_request",
+                    "see_private_requests",
+                ] 
+            )
 
-            if request.user.is_superuser:
-                permits_permissions = Permission.objects.filter(
-                    (
-                        Q(content_type__app_label="permits")
-                        & Q(
-                            content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS
-                        )
-                    )
-                    | Q(codename__in=OTHER_PERMISSIONS_CODENAMES)
-                ).select_related("content_type")
-                kwargs["queryset"] = Permission.objects.filter(
-                    codename__in=list(permits_permissions) + OTHER_PERMISSIONS_CODENAMES
-                ).select_related("content_type")
-            else:
-                kwargs["queryset"] = Permission.objects.filter(
-                    codename__in=[
-                        "amend_permit_request",
-                        "validate_permit_request",
-                        "classify_permit_request",
-                        "edit_permit_request",
-                        "see_private_requests",
-                    ]
-                )
+            if not request.user.is_superuser:
+                kwargs["queryset"] = integrator_permissions.union(existing_permissions)
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
@@ -430,7 +412,6 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             .select_related("works_object", "works_type")
             .prefetch_related("administrative_entities")
         )
-        qs = super().get_queryset(request)
         return qs
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
@@ -493,15 +474,10 @@ class WorksObjectPropertyAdmin(
     list_display = ["__str__", "is_mandatory"]
     form = WorksObjectPropertyForm
 
-    def get_queryset(self, request):
-        qs = models.WorksObjectProperty.objects.all()
-        qs = super().get_queryset(request)
-        return qs
-
     # Pass the request from ModelAdmin to ModelForm
     def get_form(
         self, request, obj=None, **kwargs
-    ):  # TODO: Check if get_form can be simplified without making a recursive function (https://github.com/yverdon/geocity/pull/229#discussion_r634437716)
+    ):
         Form = super(WorksObjectPropertyAdmin, self).get_form(request, obj, **kwargs)
 
         class RequestForm(Form):
@@ -579,22 +555,12 @@ class WorksObjectAdminForm(forms.ModelForm):
 class WorksObjectAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = WorksObjectAdminForm
 
-    def get_queryset(self, request):
-        qs = models.WorksObject.objects.all()
-        qs = super().get_queryset(request)
-        return qs
-
 
 class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = PermitAdministrativeEntityAdminForm
     inlines = [
         PermitWorkflowStatusInline,
     ]
-
-    def get_queryset(self, request):
-        qs = models.PermitAdministrativeEntity.objects.all()
-        qs = super().get_queryset(request)
-        return qs
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "integrator":
@@ -628,15 +594,10 @@ class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     )
     sortable_str.admin_order_field = "name"
 
-    def get_queryset(self, request):
-        qs = models.PermitRequestAmendProperty.objects.all()
-        qs = super().get_queryset(request)
-        return qs
-
     # Pass the request from ModelAdmin to ModelForm
     def get_form(
         self, request, obj=None, **kwargs
-    ):  # TODO: Check if get_form can be simplified without making a recursive function (https://github.com/yverdon/geocity/pull/229#discussion_r634437716)
+    ):
         Form = super(PermitRequestAmendPropertyAdmin, self).get_form(
             request, obj, **kwargs
         )
@@ -650,29 +611,14 @@ class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
 
 class PermitActorTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
-    def get_queryset(self, request):
-        qs = models.PermitActorType.objects.all()
-        qs = super().get_queryset(request)
-        return qs
-
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "works_type":
-            if request.user.is_superuser:
-                kwargs["queryset"] = models.WorksType.objects.all()
-            else:
-                kwargs["queryset"] = models.WorksType.objects.filter(
-                    integrator=request.user.groups.get(
-                        permitdepartment__is_integrator_admin=True
-                    )
-                )
+            kwargs["queryset"] = filter_for_user(request.user, models.WorksType.objects.all())
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class WorksTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
-    def get_queryset(self, request):
-        qs = models.WorksType.objects.all()
-        qs = super().get_queryset(request)
-        return qs
+    pass
 
 
 admin.site.register(models.PermitActorType, PermitActorTypeAdmin)

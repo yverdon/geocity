@@ -33,7 +33,7 @@ class AdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select("th")), 1)
+        self.assertEqual(len(parser.select('.field-__str__')), 1)
 
     def test_admin_can_see_all_permitadministrativeentity(self):
         user = factories.SuperUserFactory()
@@ -43,10 +43,8 @@ class AdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         response = self.client.get(reverse("admin:permits_permitadministrativeentity_changelist"))
         parser = get_parser(response.content)
 
-        print(parser)
-
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select("th .field-__str__")), 3)
+        self.assertEqual(len(parser.select('.field-__str__')), 3)
 
 
 
