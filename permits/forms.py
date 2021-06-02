@@ -693,6 +693,9 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
             ]
             self.fields["status"].choices = tuple(filter2)
 
+            if not config.ENABLE_GEOCALENDAR:
+                self.fields["is_public"].widget = forms.HiddenInput()
+
             for works_object_type, prop in self.get_properties():
                 field_name = self.get_field_name(works_object_type.id, prop.id)
                 self.fields[field_name] = forms.CharField(
