@@ -128,7 +128,6 @@ class PermitAdministrativeEntity(models.Model):
     general_informations = models.CharField(
         _("Informations"), blank=True, max_length=1024,
     )
-    link = models.URLField(_("Lien"), max_length=200, blank=True)
     logo_main = fields.AdministrativeEntityFileField(
         _("Logo principal"), blank=True, upload_to="administrative_entity_files/"
     )
@@ -159,7 +158,11 @@ class PermitAdministrativeEntity(models.Model):
         ],
     )
     geom = geomodels.MultiPolygonField(_("geom"), null=True, srid=2056)
-    tags = TaggableManager(blank=True, verbose_name="Mots-clés")
+    tags = TaggableManager(
+        blank=True,
+        verbose_name="Mots-clés",
+        help_text="Mots clefs sans espaces, séparés par des virgules permettant ensuite de filtrer les entités par l'url: https://geocity.ch&filter=yverdon&filter=permis-de-fouille",
+    )
     objects = PermitAdministrativeEntityQuerySet.as_manager()
 
     class Meta:

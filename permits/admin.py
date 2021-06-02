@@ -167,7 +167,22 @@ class WorksObjectPropertyAdmin(SortableAdminMixin, admin.ModelAdmin):
 class PermitAdministrativeEntityAdminForm(forms.ModelForm):
     class Meta:
         model = models.PermitAdministrativeEntity
-        fields = "__all__"
+        fields = [
+            "name",
+            "tags",
+            "ofs_id",
+            "link",
+            "archive_link",
+            "general_informations",
+            "logo_main",
+            "logo_secondary",
+            "title_signature_1",
+            "image_signature_1",
+            "title_signature_2",
+            "image_signature_2",
+            "phone",
+            "geom",
+        ]
         exclude = ["enabled_status"]
         widgets = {
             "geom": permit_forms.GeometryWidget(
