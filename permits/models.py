@@ -117,7 +117,7 @@ class PermitDepartment(models.Model):
 
 class PermitAdministrativeEntityQuerySet(models.QuerySet):
     def filter_by_tags(self, tags):
-        return self.filter(tags__name__in=tags)
+        return self.filter(tags__name__in=[tag.lower() for tag in tags])
 
 
 class PermitAdministrativeEntity(models.Model):

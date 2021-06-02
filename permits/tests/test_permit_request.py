@@ -680,8 +680,11 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         element_parsed = parser.select(".form-check-label")
 
         content = response.content.decode()
-
+        # Check that selected item is there
         self.assertEqual(1, len(element_parsed))
+        # Check that filtered items are NOT there
+        self.assertNotContains(response, administrative_entities[1].name)
+        self.assertNotContains(response, administrative_entities[2].name)
         self.assertInHTML(administrative_entities[0].name, content)
 
     def test_wrong_administrative_entity_tag_return_all_administratives_entities(self):
