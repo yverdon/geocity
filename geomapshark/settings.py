@@ -169,7 +169,7 @@ CONSTANCE_CONFIG = {
     ),
     "ENABLE_GEOCALENDAR": (
         True,
-        "Définir si l'application du calendrier cartographique est utilisé ou pas (doit dans tous les cas être installée à part)",
+        "Définit si l'application du calendrier cartographique est utilisé ou pas (doit dans tous les cas être installée à part)",
         bool,
     ),
     "LOCATION_STEP": ("Sélectionnez la commune / l'entité", "", str),
