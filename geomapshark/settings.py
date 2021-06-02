@@ -116,6 +116,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "APPLICATION_DESCRIPTION",
         "MAX_FILE_UPLOAD_SIZE",
         "GEOCALENDAR_URL",
+        "ENABLE_GEOCALENDAR",
     ),
     "Theme Options": (
         "BACKGROUND_COLOR",
@@ -165,6 +166,11 @@ CONSTANCE_CONFIG = {
         "https://geocity.mapnv.ch/geocalendar",
         "URL de l'application calendrier cartographique",
         str,
+    ),
+    "ENABLE_GEOCALENDAR": (
+        True,
+        "Définir si l'application du calendrier cartographique est utilisée ou pas (doit dans tous les cas être installé à part)",
+        bool,
     ),
     "LOCATION_STEP": ("Sélectionnez la commune / l'entité", "", str),
     "WORKS_TYPES_STEP": (

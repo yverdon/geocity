@@ -1,4 +1,5 @@
 import json
+from constance import config
 from datetime import date, datetime, timedelta
 
 from bootstrap_datepicker_plus import DatePickerInput, DateTimePickerInput
@@ -16,6 +17,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from itertools import groupby
+
 
 from . import models, services
 
@@ -833,6 +835,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
 
         if services.GeoTimeInfo.GEOMETRY not in required_info:
             del self.fields["geom"]
+
         else:
             self.fields["geom"].widget.attrs["options"] = self.get_widget_options(
                 self.permit_request
@@ -840,7 +843,9 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             self.fields["geom"].widget.attrs["options"][
                 "edit_geom"
             ] = not disable_fields
-
+        if not config.ENABLE_GEOCALENDAR:
+            del self.fields["comment"]
+            del self.fields["external_link"]
         if disable_fields:
             for field in self.fields.values():
                 field.disabled = True

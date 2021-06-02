@@ -31,7 +31,9 @@
       {% endif %}
     {% endwith %}
     <a class="btn btn-outline-primary" href="{% url 'permits:listexport'%}?_export=csv" role="button">Exporter en CSV</a>
-    <a class="btn btn-outline-primary" href="{{ config.GEOCALENDAR_URL }}" target="_blank" role="button"></i><i class="fa fa-calendar"></i> Calendrier cartographique <i class="fa fa-map"></i></a>
+    {% if config.ENABLE_GEOCALENDAR %}
+      <a class="btn btn-outline-primary" href="{{ config.GEOCALENDAR_URL }}" target="_blank" role="button"></i><i class="fa fa-calendar"></i> Calendrier cartographique <i class="fa fa-map"></i></a>
+    {% endif %}
   </div>
 
   <br><br>
