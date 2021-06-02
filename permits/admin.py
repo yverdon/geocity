@@ -39,6 +39,8 @@ OTHER_PERMISSIONS_CODENAMES = [
     "see_private_requests",
 ]
 
+MULTIPLE_INTEGRATOR_ERROR_MESSAGE = "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur'"
+
 # Allow a user belonging to integrator group to see only objects created by this group
 def filter_for_user(user, qs):
     if not user.is_superuser:
@@ -83,7 +85,7 @@ class UserAdminForm(UserChangeForm):
 
         if len(edited_user_integrator_groups) > 1:
             raise forms.ValidationError(
-                "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur'"
+                MULTIPLE_INTEGRATOR_ERROR_MESSAGE
             )
         return groups
 
@@ -197,7 +199,7 @@ class DepartmentAdminForm(forms.ModelForm):
             # Raise error if this group is integrator and user(s) is/are already in integrator group and this group
             if user_with_integrator_group:
                 raise forms.ValidationError({
-                    "is_integrator_admin": "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur'"
+                    "is_integrator_admin": MULTIPLE_INTEGRATOR_ERROR_MESSAGE
                 })
         return self.cleaned_data
 

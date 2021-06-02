@@ -2,6 +2,7 @@ import re
 import urllib.parse
 import uuid
 from datetime import date
+from permits import admin
 
 from django.conf import settings
 from django.contrib.auth.models import Permission
@@ -11,7 +12,7 @@ from django.urls import reverse
 from . import factories
 from .utils import LoggedInIntegratorMixin, get_parser
 
-# TODO: Write update/delete/create tests for admin page
+# TODO: Write update/delete/create tests for [PermitAdministrativeEntity, WorksType, WorksObject, WorksObjectType, WorksObjectProperty, PermitActorType, PermitActorType, PermitRequestAmendProperty]
 
 # "$ ./manage.py show_urls" to show admin routes
 class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
@@ -163,8 +164,36 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
 
     # An user can only have 1 integrator group, updating a group shouldn't bypass this rule
     def test_cannot_change_a_group_as_integrator_if_an_user_of_this_group_has_already_an_integrator_group(self):
-        self.assertEqual(True, False)
+        user = factories.SuperUserFactory()
+        self.client.login(username=user.username, password="password")
 
+        integrator_group = factories.IntegratorGroupFactory()
+        user = factories.IntegratorUserFactory(groups=[self.group, integrator_group])
+        integrator_group.permitdepartment.administrative_entity.id = self.integrator_administrative_entity.id
+
+        response = self.client.post(
+            reverse(
+                "admin:auth_group_change",
+                kwargs={"object_id": integrator_group.id},
+            )
+        )
+        self.assertContains(response, admin.MULTIPLE_INTEGRATOR_ERROR_MESSAGE)
+
+    # TODO: Celui-ci semble plus simple pour commencer, il suffit d'adapter pour le test du dessus ensuite
     # An user can only have 1 integrator group, updating a group shouldn't bypass this rule
     def test_cannot_add_a_new_integrator_group_to_an_user_who_has_already_an_integrator_group(self):
-        self.assertEqual(True, False)
+        user = factories.SuperUserFactory()
+        self.client.login(username=user.username, password="password")
+
+        integrator_group = factories.IntegratorGroupFactory()
+        self.user = factories.IntegratorUserFactory(groups=[self.group, integrator_group])
+
+        response = self.client.post(
+            reverse(
+                "admin:auth_user_change",
+                kwargs={"object_id": self.user.id},
+            )
+        )
+        parser = get_parser(response.content)
+
+        self.assertContains(parser, admin.MULTIPLE_INTEGRATOR_ERROR_MESSAGE)
