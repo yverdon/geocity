@@ -72,8 +72,15 @@ class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
         extracted = extracted or [v[0] for v in models.PermitRequest.STATUS_CHOICES]
         for status in extracted:
             models.PermitWorkflowStatus.objects.create(
-                status=status, administrative_entity=self
+                status=status, administrative_entity=self,
             )
+    
+    @factory.post_generation
+    def integrator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        self.integrator = extracted
 
 
 class GroupFactory(factory.django.DjangoModelFactory):
@@ -109,6 +116,17 @@ class PermitDepartmentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PermitDepartment
 
+
+class IntegratorPermitDepartmentFactory(factory.django.DjangoModelFactory):
+    is_default_validator = False
+    is_validator = False
+    is_integrator_admin = True
+    is_archeologist = False
+    administrative_entity = factory.SubFactory(PermitAdministrativeEntityFactory)
+    group = factory.SubFactory(GroupFactory)
+
+    class Meta:
+        model = models.PermitDepartment
 
 class SecretariatGroupFactory(GroupFactory):
     department = factory.RelatedFactory(PermitDepartmentFactory, "group")
@@ -151,6 +169,8 @@ class ValidatorGroupFactory(GroupFactory):
 
 
 class IntegratorGroupFactory(GroupFactory):
+    department = factory.RelatedFactory(IntegratorPermitDepartmentFactory, "group")
+    
     @factory.post_generation
     def permissions(self, create, extracted, **kwargs):
         if not create:
@@ -233,6 +253,13 @@ class WorksObjectFactory(factory.django.DjangoModelFactory):
 
     name = factory.Faker("word")
 
+    @factory.post_generation
+    def integrator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        self.integrator = extracted
+
 
 class WorksTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -240,12 +267,26 @@ class WorksTypeFactory(factory.django.DjangoModelFactory):
 
     name = factory.Faker("word")
 
+    @factory.post_generation
+    def integrator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        self.integrator = extracted
+
 
 class PermitActorTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PermitActorType
 
     works_type = factory.SubFactory(WorksTypeFactory)
+
+    @factory.post_generation
+    def integrator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        self.integrator = extracted
 
 
 class PermitRequestFactory(factory.django.DjangoModelFactory):
@@ -266,6 +307,12 @@ class WorksObjectPropertyFactory(factory.django.DjangoModelFactory):
     input_type = models.WorksObjectProperty.INPUT_TYPE_TEXT
     order = factory.Sequence(int)
 
+    @factory.post_generation
+    def integrator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        self.integrator = extracted
 
 class WorksObjectPropertyFactoryTypeAddress(factory.django.DjangoModelFactory):
     class Meta:
@@ -282,6 +329,13 @@ class WorksObjectTypeFactory(factory.django.DjangoModelFactory):
     works_object = factory.SubFactory(WorksObjectFactory)
     works_type = factory.SubFactory(WorksTypeFactory)
     is_public = True
+
+    @factory.post_generation
+    def integrator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        self.integrator = extracted
 
 
 class WorksObjectTypeWithoutGeometryFactory(factory.django.DjangoModelFactory):
@@ -340,6 +394,13 @@ class PermitRequestAmendPropertyFactory(factory.django.DjangoModelFactory):
         model = models.PermitRequestAmendProperty
 
     name = factory.Faker("word")
+    
+    @factory.post_generation
+    def integrator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        self.integrator = extracted
 
 
 class PermitRequestAmendPropertyValueFactory(factory.django.DjangoModelFactory):

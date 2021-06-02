@@ -183,27 +183,23 @@ class DepartmentAdminForm(forms.ModelForm):
         }
 
     # If the group is updated to be integrator, the users in this group should not be in another integrator group
-    # Function could be rename "clean" with "group_name = self.cleaned_data["group"]" and use directly this instead of "group_object" but the validation error is not well placed
-    def clean_is_integrator_admin(self):
+    def clean(self):
         is_integrator_admin = self.cleaned_data["is_integrator_admin"]
+        group = self.cleaned_data["group"]
 
         # Check only if the group passed from not integrator to integrator
-        if self.instance and not self.instance.is_integrator_admin and self.cleaned_data["is_integrator_admin"]:
-            group_name = self.data["name"]
-            group_object = Group.objects.get(name=group_name)            
-
-            user_with_integrator_group = Group.objects.exclude(pk=group_object.pk).filter(
-                user__in=group_object.user_set.all(),
-                permitdepartment__is_validator=True,
+        if self.instance and not self.instance.is_integrator_admin and is_integrator_admin:
+            user_with_integrator_group = Group.objects.exclude(pk=group.pk).filter(
+                user__in=group.user_set.all(),
+                permitdepartment__is_integrator_admin=True,
             ).exists()
 
             # Raise error if this group is integrator and user(s) is/are already in integrator group and this group
             if user_with_integrator_group:
-                raise forms.ValidationError(
-                    "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur'"
-                )
-        return is_integrator_admin
-
+                raise forms.ValidationError({
+                    "is_integrator_admin": "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur'"
+                })
+        return self.cleaned_data
 
 
 # Inline for group & department (1to1)

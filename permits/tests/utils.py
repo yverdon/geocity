@@ -32,3 +32,9 @@ class LoggedInIntegratorMixin:
         self.group = factories.IntegratorGroupFactory()
         self.user = factories.IntegratorUserFactory(groups=[self.group])
         self.client.login(username=self.user.username, password="password")
+
+
+class LoggedInSuperUserMixin:
+    def setUp(self):
+        self.user = factories.SuperUserFactory()
+        self.client.login(username=self.user.username, password="password")
