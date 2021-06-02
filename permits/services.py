@@ -2,15 +2,16 @@ import enum
 import itertools
 import os
 import urllib
-from collections import defaultdict
 
+from collections import defaultdict
 from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import SuspiciousOperation
 from django.core.mail import send_mass_mail
 from django.db import transaction
-from django.db.models import Max, Min, Q
+from django.db.models import Max, Min, Q, F, Value, Count, CharField
+from django.db.models.functions import Concat
 from django.forms import modelformset_factory
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
@@ -359,36 +360,49 @@ def get_permit_requests_list_for_user(user):
     """
     Return the list of permit requests this user has access to.
     """
-    if not user.is_authenticated:
-        return models.PermitRequest.objects.none().annotate(
-            starts_at_min=Min("geo_time__starts_at"),
-            ends_at_max=Max("geo_time__ends_at"),
-        )
 
-    if user.is_superuser:
-        return models.PermitRequest.objects.all().annotate(
-            starts_at_min=Min("geo_time__starts_at"),
-            ends_at_max=Max("geo_time__ends_at"),
-        )
-    else:
-        qs = Q(author=user.permitauthor)
+    qs = models.PermitRequest.objects.annotate(
+        starts_at_min=Min("geo_time__starts_at"),
+        ends_at_max=Max("geo_time__ends_at"),
+        remaining_validations=Count("validations")
+        - Count(
+            "validations",
+            filter=~Q(
+                validations__validation_status=models.PermitRequestValidation.STATUS_REQUESTED
+            ),
+        ),
+        required_validations=Count("validations"),
+        author_fullname=Concat(
+            F("author__user__first_name"), Value(" "), F("author__user__last_name"),
+        ),
+        author_details=Concat(
+            F("author__user__email"),
+            Value(" / "),
+            F("author__phone_first"),
+            output_field=CharField(),
+        ),
+    )
+
+    if not user.is_authenticated:
+        return qs.none()
+
+    if not user.is_superuser:
+        qs_filter = Q(author=user.permitauthor)
 
         if user.has_perm("permits.amend_permit_request"):
-            qs |= Q(
+            qs_filter |= Q(
                 administrative_entity__in=get_user_administrative_entities(user),
             ) & ~Q(status=models.PermitRequest.STATUS_DRAFT)
 
         if user.has_perm("permits.validate_permit_request"):
-            qs |= Q(
+            qs_filter |= Q(
                 validations__department__in=models.PermitDepartment.objects.filter(
                     group__in=user.groups.all()
                 )
             )
+        return qs.filter(qs_filter)
 
-        return models.PermitRequest.objects.filter(qs).annotate(
-            starts_at_min=Min("geo_time__starts_at"),
-            ends_at_max=Max("geo_time__ends_at"),
-        )
+    return qs
 
 
 def get_actors_types(permit_request):
@@ -872,7 +886,7 @@ def submit_permit_request(permit_request, absolute_uri_func):
     )
     emails = [
         (
-            "Nouvelle demande de permis",
+            "Nouvelle demande",
             email_contents,
             settings.DEFAULT_FROM_EMAIL,
             [email_address],
@@ -885,12 +899,12 @@ def submit_permit_request(permit_request, absolute_uri_func):
         {
             "permit_request_url": permit_request_url,
             "name": permit_request.author.user.get_full_name(),
-            "administrative_entity_name": permit_request.administrative_entity.name,
+            "administrative_entity": permit_request.administrative_entity,
         },
     )
     emails.append(
         (
-            "Votre demande de permis",
+            "Votre demande",
             acknowledgment_email_contents,
             settings.DEFAULT_FROM_EMAIL,
             [permit_request.author.user.email],
@@ -933,7 +947,7 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
     )
     emails = [
         (
-            "Nouvelle demande de permis",
+            "Nouvelle demande",
             email_contents,
             settings.DEFAULT_FROM_EMAIL,
             [email_address],
@@ -1280,3 +1294,9 @@ def get_permit_request_directives(permit_request):
             directive="", directive_description="", additional_information=""
         )
     ]
+
+
+def get_permit_request_print_templates(permit_request):
+    return models.QgisProject.objects.filter(
+        works_object_type__in=permit_request.works_object_types.all()
+    )

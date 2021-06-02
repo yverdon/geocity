@@ -1,11 +1,11 @@
 {% load i18n %}{% autoescape off %}{% trans "Bonjour," %}
 
-{% trans "Une nouvelle demande attend votre validation. Vous pouvez la consulter et la valider sur le lien suivant:" %}
+{% trans "Une nouvelle demande est en attente de validation de votre part." %}
 
-{{ permit_request_url }}
+{% trans "Vous pouvez la consulter et la valider sur le lien suivant" %}: {{ permit_request_url }}
 
 {% trans "Avec nos meilleures salutations," %}
 {{ administrative_entity.name }}
 
-{% trans "Ceci est un e-mail automatiquement. Veuillez ne pas répondre à cet e-mail." %}
+{% trans "Ceci est un e-mail automatique, veuillez ne pas y répondre." %}
 {% endautoescape %}

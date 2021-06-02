@@ -3,6 +3,7 @@ import mimetypes
 import os
 import urllib.parse
 
+import requests
 from django.contrib import messages
 from django.contrib.auth.decorators import (
     login_required,
@@ -10,10 +11,18 @@ from django.contrib.auth.decorators import (
     user_passes_test,
 )
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
+from django.core.files.base import ContentFile
 from django.db import transaction
 from django.db.models import Prefetch
 from django.forms import modelformset_factory
-from django.http import Http404, HttpResponse, StreamingHttpResponse
+from django.http import (
+    FileResponse,
+    Http404,
+    HttpResponse,
+    HttpResponseNotFound,
+    JsonResponse,
+    StreamingHttpResponse,
+)
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -25,7 +34,7 @@ from django_filters.views import FilterView
 from django_tables2.export.views import ExportMixin
 from django_tables2.views import SingleTableMixin, SingleTableView
 
-from . import fields, filters, forms, models, printpermit, services, tables
+from . import fields, filters, forms, models, services, tables
 from .exceptions import BadPermitRequestStatus
 
 logger = logging.getLogger(__name__)
@@ -188,6 +197,12 @@ class PermitRequestDetailView(View):
                 ),
                 "can_classify": services.can_classify_permit_request(
                     self.request.user, self.permit_request
+                ),
+                "print_templates": services.get_permit_request_print_templates(
+                    self.permit_request
+                ),
+                "directives": services.get_permit_request_directives(
+                    self.permit_request
                 ),
             },
         }
@@ -409,6 +424,54 @@ class PermitRequestDetailView(View):
         messages.success(self.request, message)
 
         return redirect("permits:permit_requests_list")
+
+
+def permit_request_print(request, permit_request_id, template_id):
+    permit_request = services.get_permit_request_for_user_or_404(
+        request.user, permit_request_id
+    )
+    template = get_object_or_404(models.QgisProject.objects, pk=template_id)
+    generated_document, created_at = models.QgisGeneratedDocument.objects.get_or_create(
+        permit_request=permit_request, qgis_project=template
+    )
+
+    values = {
+        "SERVICE": "WMS",
+        "VERSION": "1.3.0",
+        "REQUEST": "GetPrint",
+        "FORMAT": "pdf",
+        "TRANSPARENT": "true",
+        "SRS": "EPSG:2056",
+        "DPI": "150",
+        "SERVICE": "WMS",
+        "MAP": "/private_documents/" + template.qgis_project_file.name,
+        "TEMPLATE": template.qgis_print_template_name,
+        "LAYERS": template.qgis_layers,
+        "ATLAS_PK": "*",
+        "FILTER": template.qgis_atlas_coverage_layer
+        + ':"permit_request_id" = '
+        + str(permit_request.pk),
+    }
+
+    qgisserver_url = "http://qgisserver/ogc/?" + urllib.parse.urlencode(values)
+    qgisserver_response = requests.get(
+        qgisserver_url, headers={"Accept": "application/pdf"}, stream=True
+    )
+
+    if not qgisserver_response:
+        return HttpResponse(_("Une erreur est survenue lors de l'impression"))
+
+    file_name = f"demande_{permit_request_id}_template_{template_id}.pdf"
+    generated_document.printed_file.save(
+        file_name, ContentFile(qgisserver_response.content), True
+    )
+    generated_document.printed_at = timezone.now()
+    generated_document.printed_by = request.user.get_full_name()
+    generated_document.save()
+
+    return StreamingHttpResponse(
+        qgisserver_response.iter_content(chunk_size=128), content_type="application/pdf"
+    )
 
 
 @redirect_bad_status_to_detail
@@ -744,8 +807,8 @@ def permit_request_actors(request, permit_request_id):
             "formset": formset,
             "creditorform": creditorform,
             "permit_request": permit_request,
-            **steps_context,
             "requires_payment": requires_payment,
+            **steps_context,
         },
     )
 
@@ -1057,27 +1120,6 @@ def administrative_entity_file_download(request, path):
 
 
 @login_required
-def printpdf(request, permit_request_id):
-
-    permit_request = models.PermitRequest.objects.get(pk=permit_request_id)
-    if (
-        request.user.has_perm("permits.amend_permit_request")
-        and (
-            permit_request.has_validations()
-            and permit_request.get_pending_validations().count() == 0
-        )
-        or permit_request.status == 2
-    ):
-
-        pdf_file = printpermit.printreport(request, permit_request)
-        response = HttpResponse(pdf_file, content_type="application/pdf")
-        response["Content-Disposition"] = 'filename="permis.pdf"'
-        return response
-    else:
-        raise PermissionDenied
-
-
-@login_required
 def genericauthorview(request, pk):
 
     instance = get_object_or_404(models.PermitAuthor, pk=pk)
@@ -1088,3 +1130,15 @@ def genericauthorview(request, pk):
         form.fields[field].disabled = True
 
     return render(request, "permits/permit_request_author.html", {"form": form})
+
+
+@login_required
+def administrative_infos(request):
+
+    administrative_entities = models.PermitAdministrativeEntity.objects.all()
+
+    return render(
+        request,
+        "permits/administrative_infos.html",
+        {"administrative_entities": administrative_entities},
+    )

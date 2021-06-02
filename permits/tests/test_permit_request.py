@@ -207,7 +207,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"permit_request_id": permit_request.pk},
             )
         )
-        emails = get_emails("Nouvelle demande de permis")
+        emails = get_emails("Nouvelle demande")
 
         self.assertEqual(len(emails), 1)
         self.assertEqual(emails[0].to, ["secretariat@yverdon.ch"])
@@ -1336,6 +1336,88 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
+
+    def test_secretariat_can_see_print_buttons_and_directives(self):
+        first_works_object_type = factories.WorksObjectTypeFactory(
+            directive=SimpleUploadedFile("file.pdf", "contents".encode()),
+            directive_description="First directive description for a test",
+            additional_information="First additional information for a test",
+        )
+        second_works_object_type = factories.WorksObjectTypeFactory(
+            directive=SimpleUploadedFile("file.pdf", "contents".encode()),
+            directive_description="Second directive description for a test",
+            additional_information="Second additional information for a test",
+        )
+        factories.QgisProjectFactory(
+            qgis_project_file=SimpleUploadedFile("template.qgs", "contents".encode()),
+            description="Print Template 1",
+            works_object_type=first_works_object_type,
+        )
+        factories.QgisProjectFactory(
+            qgis_project_file=SimpleUploadedFile("template.qgs", "contents".encode()),
+            description="Print Template 2",
+            works_object_type=second_works_object_type,
+        )
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            administrative_entity=self.administrative_entity,
+        )
+
+        permit_request.works_object_types.set(
+            [first_works_object_type, second_works_object_type]
+        )
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        parser = get_parser(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(parser.select(".tab-pane#print button")), 2,
+        )
+        self.assertEqual(
+            len(parser.select(".tab-pane#print span.directive_description")), 2,
+        )
+
+    def test_secretariat_cannot_see_print_buttons_and_directives_if_not_configured(
+        self,
+    ):
+        works_object_types = factories.WorksObjectTypeFactory.create_batch(2)
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            administrative_entity=self.administrative_entity,
+        )
+
+        permit_request.works_object_types.set(works_object_types)
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        parser = get_parser(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(parser.select(".tab-pane#print button")), 0,
+        )
+        self.assertEqual(
+            len(parser.select(".tab-pane#print span.directive_description")), 0,
+        )
+        self.assertEqual(
+            len(parser.select(".tab-pane#print span.no_directive")), 1,
+        )
+        self.assertEqual(
+            len(parser.select(".tab-pane#print span.no_print_template")), 1,
+        )
 
 
 class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase):

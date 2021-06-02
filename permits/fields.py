@@ -58,7 +58,7 @@ class PermitRequestFileField(models.FileField):
         return self.storage.generate_filename(filename)
 
 
-class AministrativeEntityFieldFile(FieldFile):
+class AdministrativeEntityFieldFile(FieldFile):
     @property
     def url(self):
         return reverse(
@@ -66,12 +66,12 @@ class AministrativeEntityFieldFile(FieldFile):
         )
 
 
-class AministrativeEntityFileField(models.FileField):
+class AdministrativeEntityFileField(models.FileField):
     """
     FileField storing information in a private media root.
     """
 
-    attr_class = AministrativeEntityFieldFile
+    attr_class = AdministrativeEntityFieldFile
 
     def __init__(self, verbose_name=None, name=None, **kwargs):
         kwargs["storage"] = PrivateFileSystemStorage()

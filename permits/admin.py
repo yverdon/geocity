@@ -46,6 +46,10 @@ def get_works_object_types_field():
 works_object_type_administrative_entities.short_description = _("Communes")
 
 
+class QgisProjectInline(admin.TabularInline):
+    model = models.QgisProject
+
+
 class WorksObjectTypeAdminForm(forms.ModelForm):
     class GeometryTypes(django.db.models.TextChoices):
         POINT = "has_geometry_point", _("Point")
@@ -120,6 +124,7 @@ class WorksObjectTypeAdmin(admin.ModelAdmin):
         ),
     )
     form = WorksObjectTypeAdminForm
+    inlines = [QgisProjectInline]
 
     def get_queryset(self, request):
         return (

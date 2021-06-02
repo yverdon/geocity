@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0020_add_field_help_text_add_geometry_types_in_WorksObjectType_model_delete_needs_geometry_directives_remove_admin_gral_info'),
+        ('permits', '0021_add_field_help_text_add_geometry_types_in_WorksObjectType_model_delete_needs_geometry_directives_remove_admin_gral_info'),
     ]
 
     operations = [
