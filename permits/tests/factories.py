@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import GeometryCollection, Point
 from django.utils.text import Truncator
 from permits import models
+from taggit.managers import TaggableManager
 
 
 class PermitAuthorFactory(factory.django.DjangoModelFactory):
@@ -69,6 +70,13 @@ class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
             models.PermitWorkflowStatus.objects.create(
                 status=status, administrative_entity=self
             )
+
+    @factory.post_generation
+    def tags(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        self.tags.set(*extracted)
 
 
 class GroupFactory(factory.django.DjangoModelFactory):

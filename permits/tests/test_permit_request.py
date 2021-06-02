@@ -661,6 +661,83 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             len(parser.select("#legal-infos span.additional_information")), 2,
         )
 
+    def test_administrative_entity_is_filtered_by_tag(self):
+        administrative_entities = [
+            factories.PermitAdministrativeEntityFactory(tags=[tag])
+            for tag in ["first", "second", "third"]
+        ]
+        works_object_types = models.WorksObjectType.objects.all()
+
+        for administrative_entity in administrative_entities:
+            administrative_entity.works_object_types.set(works_object_types)
+
+        response = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity"),
+            {"filter": "first"},
+        )
+
+        parser = get_parser(response.content)
+        element_parsed = parser.select(".form-check-label")
+
+        content = response.content.decode()
+        # Check that selected item is there
+        self.assertEqual(1, len(element_parsed))
+        # Check that filtered items are NOT there
+        self.assertNotContains(response, administrative_entities[1].name)
+        self.assertNotContains(response, administrative_entities[2].name)
+        self.assertInHTML(administrative_entities[0].name, content)
+
+    def test_wrong_administrative_entity_tag_return_all_administratives_entities(self):
+        administrative_entities = [
+            factories.PermitAdministrativeEntityFactory(tags=[tag])
+            for tag in ["first", "second", "third"]
+        ]
+        works_object_types = models.WorksObjectType.objects.all()
+
+        for administrative_entity in administrative_entities:
+            administrative_entity.works_object_types.set(works_object_types)
+
+        response = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity"),
+            {"filter": "wrongtag"},
+        )
+
+        parser = get_parser(response.content)
+        element_parsed = parser.select(".form-check-label")
+
+        content = response.content.decode()
+
+        self.assertEqual(3, len(element_parsed))
+        self.assertInHTML(administrative_entities[0].name, content)
+        self.assertInHTML(administrative_entities[1].name, content)
+        self.assertInHTML(administrative_entities[2].name, content)
+
+    def test_multiple_administrative_entity_tags_return_multiple_administratives_entities(
+        self,
+    ):
+        administrative_entities = [
+            factories.PermitAdministrativeEntityFactory(tags=[tag])
+            for tag in ["first", "second", "third"]
+        ]
+        works_object_types = models.WorksObjectType.objects.all()
+
+        for administrative_entity in administrative_entities:
+            administrative_entity.works_object_types.set(works_object_types)
+
+        response = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity"),
+            {"filter": ["first", "second"]},
+        )
+
+        parser = get_parser(response.content)
+        element_parsed = parser.select(".form-check-label")
+
+        content = response.content.decode()
+
+        self.assertEqual(2, len(element_parsed))
+        self.assertInHTML(administrative_entities[0].name, content)
+        self.assertInHTML(administrative_entities[1].name, content)
+
 
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
@@ -979,7 +1056,6 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
             data=data,
         )
         parser = get_parser(response.content)
-        parser.select(".invalid-feedback")
         self.assertEqual(1, len(parser.select(".invalid-feedback")))
 
     def test_properties_step_submit_updates_permit_request_with_address(self):

@@ -183,6 +183,7 @@ def get_works_types(administrative_entity, user):
 
 
 def get_administrative_entities(user):
+    # Default queryset, with all administrative entities
     queryset = (
         models.PermitAdministrativeEntity.objects.filter(
             pk__in=models.WorksObjectType.objects.values_list(
@@ -194,7 +195,7 @@ def get_administrative_entities(user):
     )
 
     if not user.has_perm("permits.see_private_requests"):
-        return queryset.filter(works_object_types__is_public=True)
+        queryset = queryset.filter(works_object_types__is_public=True)
 
     return queryset
 

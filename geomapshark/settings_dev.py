@@ -2,7 +2,9 @@ from .settings import *
 
 
 def show_toolbar(request):
-    return DEBUG
+    from django.conf import settings
+
+    return settings.DEBUG
 
 
 INSTALLED_APPS += [

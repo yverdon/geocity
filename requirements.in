@@ -28,3 +28,4 @@ djangorestframework-gis
 django-cors-headers
 django-constance[database]
 django-two-factor-auth[phonenumbers]
+django-taggit

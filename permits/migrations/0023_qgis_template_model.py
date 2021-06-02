@@ -9,7 +9,7 @@ import permits.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0022_add_requires_payment_field_to_works_object_type_model'),
+        ('permits', '0022_add_field_tags_to_permitadministrativeentity_add_requires_payment_field_to_works_object_type_model'),
     ]
 
     operations = [

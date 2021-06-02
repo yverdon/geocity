@@ -49,6 +49,10 @@ EMAIL_BACKEND = (
 
 DEFAULT_CHARSET = "utf-8"
 
+# Django-Taggit
+TAGGIT_CASE_INSENSITIVE = True  # make tag unique
+TAGGIT_TAGS_FROM_STRING = "permits.utils.comma_splitter"
+
 # 2FA activation
 ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 
@@ -74,6 +78,7 @@ INSTALLED_APPS = [
     "bootstrap_datepicker_plus",
     "django_tables2",
     "django_tables2_column_shifter",
+    "taggit",
 ]
 
 if ENABLE_2FA:

@@ -17,6 +17,8 @@ from django.utils import timezone
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
+from taggit.managers import TaggableManager
+from taggit.models import TagBase, GenericTaggedItemBase
 
 from . import fields
 
@@ -87,7 +89,6 @@ StepType.do_not_call_in_templates = True
 
 
 class PermitDepartment(models.Model):
-
     group = models.OneToOneField(Group, on_delete=models.CASCADE)
     description = models.CharField(_("description"), max_length=100, default="Service")
     is_validator = models.BooleanField(_("is_validator"))
@@ -114,6 +115,11 @@ class PermitDepartment(models.Model):
         return str(self.group)
 
 
+class PermitAdministrativeEntityQuerySet(models.QuerySet):
+    def filter_by_tags(self, tags):
+        return self.filter(tags__name__in=[tag.lower() for tag in tags])
+
+
 class PermitAdministrativeEntity(models.Model):
     name = models.CharField(_("name"), max_length=128)
     ofs_id = models.PositiveIntegerField(_("ofs_id"))
@@ -122,7 +128,6 @@ class PermitAdministrativeEntity(models.Model):
     general_informations = models.CharField(
         _("Informations"), blank=True, max_length=1024,
     )
-    link = models.URLField(_("Lien"), max_length=200, blank=True)
     logo_main = fields.AdministrativeEntityFileField(
         _("Logo principal"), blank=True, upload_to="administrative_entity_files/"
     )
@@ -153,6 +158,12 @@ class PermitAdministrativeEntity(models.Model):
         ],
     )
     geom = geomodels.MultiPolygonField(_("geom"), null=True, srid=2056)
+    tags = TaggableManager(
+        blank=True,
+        verbose_name="Mots-clés",
+        help_text="Mots clefs sans espaces, séparés par des virgules permettant ensuite de filtrer les entités par l'url: https://geocity.ch&filter=yverdon&filter=permis-de-fouille",
+    )
+    objects = PermitAdministrativeEntityQuerySet.as_manager()
 
     class Meta:
         verbose_name = _(
