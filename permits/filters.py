@@ -7,7 +7,7 @@ from . import models, services
 
 
 class BasePermitRequestFilterSet(django_filters.FilterSet):
-
+    id = django_filters.filters.NumberFilter(field_name="id")
     works_object_types__works_type = django_filters.filters.ModelChoiceFilter(
         queryset=models.WorksType.objects.order_by("name"), label=_("Type de travaux")
     )
