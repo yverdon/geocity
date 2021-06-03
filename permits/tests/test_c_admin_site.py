@@ -210,13 +210,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             "permitdepartment-INITIAL_FORMS": 1,
             "permitdepartment-MIN_NUM_FORMS": 1,
             "permitdepartment-MAX_NUM_FORMS": 1,
-            "permitdepartment-0-description": "Service",
-            "permitdepartment-0-is_default_validator": True,
-            "permitdepartment-0-administrative_entity": 1,
-            "permitdepartment-0-integrator": 0,
             "permitdepartment-0-is_integrator_admin": True,
             "permitdepartment-0-group": group.id,
-            "permitdepartment-0-id": group.id,
         }
 
         response = self.client.post(
