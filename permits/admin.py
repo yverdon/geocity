@@ -84,9 +84,7 @@ class UserAdminForm(UserChangeForm):
         )
 
         if len(edited_user_integrator_groups) > 1:
-            raise forms.ValidationError(
-                MULTIPLE_INTEGRATOR_ERROR_MESSAGE
-            )
+            raise forms.ValidationError(MULTIPLE_INTEGRATOR_ERROR_MESSAGE)
         return groups
 
 
@@ -190,17 +188,25 @@ class DepartmentAdminForm(forms.ModelForm):
         group = self.cleaned_data["group"]
 
         # Check only if the group passed from not integrator to integrator
-        if self.instance and not self.instance.is_integrator_admin and is_integrator_admin:
-            user_with_integrator_group = Group.objects.exclude(pk=group.pk).filter(
-                user__in=group.user_set.all(),
-                permitdepartment__is_integrator_admin=True,
-            ).exists()
+        if (
+            self.instance
+            and not self.instance.is_integrator_admin
+            and is_integrator_admin
+        ):
+            user_with_integrator_group = (
+                Group.objects.exclude(pk=group.pk)
+                .filter(
+                    user__in=group.user_set.all(),
+                    permitdepartment__is_integrator_admin=True,
+                )
+                .exists()
+            )
 
             # Raise error if this group is integrator and user(s) is/are already in integrator group and this group
             if user_with_integrator_group:
-                raise forms.ValidationError({
-                    "is_integrator_admin": MULTIPLE_INTEGRATOR_ERROR_MESSAGE
-                })
+                raise forms.ValidationError(
+                    {"is_integrator_admin": MULTIPLE_INTEGRATOR_ERROR_MESSAGE}
+                )
         return self.cleaned_data
 
 
@@ -246,7 +252,7 @@ class GroupAdminForm(forms.ModelForm):
 class GroupAdmin(admin.ModelAdmin):
     inlines = (PermitDepartmentInline,)
     form = GroupAdminForm
- 
+
     def get_queryset(self, request):
 
         if request.user.is_superuser:
@@ -271,10 +277,10 @@ class GroupAdmin(admin.ModelAdmin):
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         # permissions that integrator role can grant to group
         if db_field.name == "permissions":
-        
+
             for group in self.model.objects.all():
                 existing_permissions = group.permissions.all()
-            
+
             integrator_permissions = Permission.objects.filter(
                 codename__in=[
                     "amend_permit_request",
@@ -282,7 +288,7 @@ class GroupAdmin(admin.ModelAdmin):
                     "classify_permit_request",
                     "edit_permit_request",
                     "see_private_requests",
-                ] 
+                ]
             )
 
             if not request.user.is_superuser:
@@ -473,9 +479,7 @@ class WorksObjectPropertyAdmin(
     form = WorksObjectPropertyForm
 
     # Pass the request from ModelAdmin to ModelForm
-    def get_form(
-        self, request, obj=None, **kwargs
-    ):
+    def get_form(self, request, obj=None, **kwargs):
         Form = super(WorksObjectPropertyAdmin, self).get_form(request, obj, **kwargs)
 
         class RequestForm(Form):
@@ -593,9 +597,7 @@ class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     sortable_str.admin_order_field = "name"
 
     # Pass the request from ModelAdmin to ModelForm
-    def get_form(
-        self, request, obj=None, **kwargs
-    ):
+    def get_form(self, request, obj=None, **kwargs):
         Form = super(PermitRequestAmendPropertyAdmin, self).get_form(
             request, obj, **kwargs
         )
@@ -611,7 +613,9 @@ class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 class PermitActorTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "works_type":
-            kwargs["queryset"] = filter_for_user(request.user, models.WorksType.objects.all())
+            kwargs["queryset"] = filter_for_user(
+                request.user, models.WorksType.objects.all()
+            )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 

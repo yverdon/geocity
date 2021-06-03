@@ -49,7 +49,6 @@ class SuperUserFactory(factory.django.DjangoModelFactory):
     email = factory.Faker("email")
     password = "password"
     is_superuser = True
-    
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
@@ -74,7 +73,7 @@ class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
             models.PermitWorkflowStatus.objects.create(
                 status=status, administrative_entity=self,
             )
-    
+
     @factory.post_generation
     def integrator(self, create, extracted, **kwargs):
         if not create:
@@ -128,6 +127,7 @@ class IntegratorPermitDepartmentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.PermitDepartment
 
+
 class SecretariatGroupFactory(GroupFactory):
     department = factory.RelatedFactory(PermitDepartmentFactory, "group")
 
@@ -170,7 +170,7 @@ class ValidatorGroupFactory(GroupFactory):
 
 class IntegratorGroupFactory(GroupFactory):
     department = factory.RelatedFactory(IntegratorPermitDepartmentFactory, "group")
-    
+
     @factory.post_generation
     def permissions(self, create, extracted, **kwargs):
         if not create:
@@ -314,6 +314,7 @@ class WorksObjectPropertyFactory(factory.django.DjangoModelFactory):
 
         self.integrator = extracted
 
+
 class WorksObjectPropertyFactoryTypeAddress(factory.django.DjangoModelFactory):
     class Meta:
         model = models.WorksObjectProperty
@@ -394,7 +395,7 @@ class PermitRequestAmendPropertyFactory(factory.django.DjangoModelFactory):
         model = models.PermitRequestAmendProperty
 
     name = factory.Faker("word")
-    
+
     @factory.post_generation
     def integrator(self, create, extracted, **kwargs):
         if not create:
