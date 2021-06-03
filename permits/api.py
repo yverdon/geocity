@@ -8,6 +8,8 @@ from rest_framework import viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
 
 from . import geoservices, models, serializers, services
+from constance import config
+
 
 # ///////////////////////////////////
 # DJANGO REST API
@@ -108,7 +110,13 @@ class BlockRequesterUserPermission(BasePermission):
     """
 
     def has_permission(self, request, view):
-        return request.user.get_all_permissions()
+        remote_addr = request.META["REMOTE_ADDR"]
+
+        for whitelisted in config.ENDPOINT_WHITELIST.split(","):
+            if remote_addr == whitelisted or remote_addr.startswith(valid_ip):
+                return request.user.get_all_permissions()
+        else:
+            return []
 
 
 class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
