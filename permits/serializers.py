@@ -32,8 +32,19 @@ class WorksObjectTypesNames(serializers.RelatedField):
         return wot_names
 
 
+class PermitUrlSerializer(serializers.HyperlinkedModelSerializer):
+    url = serializers.HyperlinkedIdentityField(
+        view_name='permit_request_detail',
+    )
+
+    class Meta:
+        model = models.PermitRequest
+        fields = ['url']
+
+
 class PermitRequestSerializer(serializers.ModelSerializer):
     administrative_entity = PermitAdministrativeEntitySerializer(read_only=True)
+    permit_url = PermitUrlSerializer(read_only=True)
     meta_types = MetaTypesField(source="works_object_types", read_only=True)
     works_object_types_names = WorksObjectTypesNames(
         source="works_object_types", read_only=True
@@ -61,6 +72,7 @@ class PermitRequestSerializer(serializers.ModelSerializer):
         model = models.PermitRequest
         fields = (
             "id",
+            "permit_url",
             "status",
             "administrative_entity",
             "works_object_types",
