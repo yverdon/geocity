@@ -262,14 +262,8 @@ class GroupAdmin(admin.ModelAdmin):
         return qs
 
     def save_model(self, request, obj, form, change):
-        if not request.user.is_superuser:
-            obj.permitdepartment.integrator = request.user.groups.get(
-                permitdepartment__is_integrator_admin=True
-            ).pk
-        #TODO: Fix beetween the 2 comments. Part 1
-        elif obj.permitdepartment.is_integrator_admin:
-            print("Before :")
-            print(obj.permissions.all())
+        if request.user.is_superuser and obj.permitdepartment.is_integrator_admin:
+
             integrator_permissions = list(
                 Permission.objects.filter(
                     (
@@ -281,31 +275,21 @@ class GroupAdmin(admin.ModelAdmin):
                     | Q(codename__in=OTHER_PERMISSIONS_CODENAMES)
                 )
             )
-            # obj.permissions.set(integrator_permissions)
-            perm_id = []
-            for permission in integrator_permissions:
-                obj.permissions.add(permission.id)
-                # perm_id.append(permission.id)
+            permits_permissions = Permission.objects.filter(
+                content_type__app_label="permits",
+                content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
+            )
 
-            # obj.permissions.set(perm_id)
+            other_permissions = Permission.objects.filter(
+                codename__in=OTHER_PERMISSIONS_CODENAMES
+            )
+            super().save_model(request, obj, form, change)
+            group = Group.objects.get(name=obj.name)
+            group.permissions.add(*permits_permissions.union(other_permissions))
 
-            print("After :")
-            print(obj.permissions.all())
-            #TODO: Fix beetween the 2 comments. Part 1
-        super().save_model(request, obj, form, change)
+        else:
+            super().save_model(request, obj, form, change)
 
-        #TODO: Fix beetween the 2 comments. Part 2
-        if obj.permitdepartment.is_integrator_admin:
-            group_instance = Group.objects.get(name = obj.name)
-            print("After save:")
-            print(group_instance.permissions.all())
-
-
-        # if obj.permitdepartment.is_integrator_admin:
-        #     group_instance = Group.objects.get(name = obj.name)
-        #     for permission in integrator_permissions:
-        #         group_instance.permissions.add(permission)
-        #TODO: Fix beetween the 2 comments. Part 2
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         # permissions that integrator role can grant to group
