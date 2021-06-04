@@ -172,15 +172,9 @@ class DepartmentAdminForm(forms.ModelForm):
             "is_validator",
             "is_default_validator",
             "is_archeologist",
-            "administrative_entity",
             "integrator",
             "is_integrator_admin",
         ]
-        help_texts = {
-            "administrative_entity": _(
-                "En tant qu'intégrateur, vous devez tout d'abord créer une entité administrative, pressez simplement sur + "
-            ),
-        }
 
     # If the group is updated to be integrator, the users in this group should not be in another integrator group
     def clean(self):
@@ -189,7 +183,7 @@ class DepartmentAdminForm(forms.ModelForm):
 
         # Check only if the group passed from not integrator to integrator
         if (
-            self.instance
+            self.instance is None
             and not self.instance.is_integrator_admin
             and is_integrator_admin
         ):
@@ -272,7 +266,46 @@ class GroupAdmin(admin.ModelAdmin):
             obj.permitdepartment.integrator = request.user.groups.get(
                 permitdepartment__is_integrator_admin=True
             ).pk
+        #TODO: Fix beetween the 2 comments. Part 1
+        elif obj.permitdepartment.is_integrator_admin:
+            print("Before :")
+            print(obj.permissions.all())
+            integrator_permissions = list(
+                Permission.objects.filter(
+                    (
+                        Q(content_type__app_label="permits")
+                        & Q(
+                            content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS
+                        )
+                    )
+                    | Q(codename__in=OTHER_PERMISSIONS_CODENAMES)
+                )
+            )
+            # obj.permissions.set(integrator_permissions)
+            perm_id = []
+            for permission in integrator_permissions:
+                obj.permissions.add(permission.id)
+                # perm_id.append(permission.id)
+
+            # obj.permissions.set(perm_id)
+
+            print("After :")
+            print(obj.permissions.all())
+            #TODO: Fix beetween the 2 comments. Part 1
         super().save_model(request, obj, form, change)
+
+        #TODO: Fix beetween the 2 comments. Part 2
+        if obj.permitdepartment.is_integrator_admin:
+            group_instance = Group.objects.get(name = obj.name)
+            print("After save:")
+            print(group_instance.permissions.all())
+
+
+        # if obj.permitdepartment.is_integrator_admin:
+        #     group_instance = Group.objects.get(name = obj.name)
+        #     for permission in integrator_permissions:
+        #         group_instance.permissions.add(permission)
+        #TODO: Fix beetween the 2 comments. Part 2
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         # permissions that integrator role can grant to group
@@ -295,7 +328,7 @@ class GroupAdmin(admin.ModelAdmin):
                 kwargs["queryset"] = integrator_permissions.union(existing_permissions)
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
-
+       
 
 admin.site.unregister(Group)
 admin.site.register(Group, GroupAdmin)
