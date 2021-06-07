@@ -263,7 +263,6 @@ class GroupAdminForm(forms.ModelForm):
 
         return cleaned_data["permissions"]
 
-gaa
 
 class GroupAdmin(admin.ModelAdmin):
     inlines = (PermitDepartmentInline,)
