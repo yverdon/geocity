@@ -16,6 +16,7 @@ from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ValidationError
 from itertools import groupby
 
 
@@ -353,6 +354,14 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                     },
                 ),
                 help_text=prop.help_text if prop.help_text != "" else "",
+            )
+        elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_FILE:
+            file_size_mb = int(config.MAX_FILE_UPLOAD_SIZE / 1048576)
+            default_help_text = "Le fichier doit faire moins de " + str(file_size_mb) + " Megatoctet. Les extensions autorisées : " + config.ALLOWED_FILE_EXTENSIONS 
+            field_instance = field_class(
+                **self.get_field_kwargs(prop),
+                help_text=prop.help_text if prop.help_text != "" else default_help_text,
+                validators=[services.validate_file],
             )
         else:
             field_instance = field_class(

@@ -29,6 +29,7 @@ django-two-factor-auth[phonenumbers]==1.13  # via -r requirements.in
 django==3.1.4             # via -r requirements.in, django-admin-sortable2, django-bootstrap-datepicker-plus, django-bootstrap4, django-cors-headers, django-filter, django-formtools, django-otp, django-phonenumber-field, django-picklefield, django-tables2, django-tables2-column-shifter, django-taggit, django-two-factor-auth, djangorestframework
 djangorestframework-gis==0.16  # via -r requirements.in
 djangorestframework==3.12.2  # via -r requirements.in, djangorestframework-gis
+filetype==1.0.7           # via -r requirements.in
 gdal==3.2.0               # via -r requirements.in
 gunicorn==20.0.4          # via -r requirements.in
 html5lib==1.1             # via -r requirements.in

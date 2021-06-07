@@ -38,6 +38,7 @@ djangorestframework-gis==0.16  # via -r requirements.txt
 djangorestframework==3.12.2  # via -r requirements.txt, djangorestframework-gis
 factory-boy==3.1.0        # via -r requirements_dev.in
 faker==5.0.1              # via -r requirements_dev.in, factory-boy
+filetype==1.0.7           # via -r requirements.txt
 gdal==3.2.0               # via -r requirements.txt
 gunicorn==20.0.4          # via -r requirements.txt
 html5lib==1.1             # via -r requirements.txt
