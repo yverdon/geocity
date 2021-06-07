@@ -103,8 +103,6 @@ class PermitDepartment(models.Model):
         "Intégrateur (accès à l'admin de django)", default=False
     )
 
-    
-
     class Meta:
         verbose_name = _("2.1 Configuration du service (pilote, validateur...)")
         verbose_name_plural = _(

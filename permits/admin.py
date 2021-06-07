@@ -242,6 +242,28 @@ class GroupAdminForm(forms.ModelForm):
             ),
         }
 
+    def clean_permissions(self):
+        cleaned_data = super().clean()
+        integrator_permissions = Permission.objects.filter(
+            (
+                Q(content_type__app_label="permits")
+                & Q(content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS)
+            )
+            | Q(codename__in=OTHER_PERMISSIONS_CODENAMES)
+        )
+
+        if "permitdepartment-0-is_integrator_admin" in self.data.keys():
+            cleaned_data["permissions"] = cleaned_data["permissions"].union(
+                integrator_permissions
+            )
+        else:
+            cleaned_data["permissions"] = cleaned_data["permissions"].difference(
+                integrator_permissions
+            )
+
+        return cleaned_data["permissions"]
+
+gaa
 
 class GroupAdmin(admin.ModelAdmin):
     inlines = (PermitDepartmentInline,)
@@ -260,36 +282,6 @@ class GroupAdmin(admin.ModelAdmin):
                 )
             )
         return qs
-
-    def save_model(self, request, obj, form, change):
-        if request.user.is_superuser and obj.permitdepartment.is_integrator_admin:
-
-            integrator_permissions = list(
-                Permission.objects.filter(
-                    (
-                        Q(content_type__app_label="permits")
-                        & Q(
-                            content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS
-                        )
-                    )
-                    | Q(codename__in=OTHER_PERMISSIONS_CODENAMES)
-                )
-            )
-            permits_permissions = Permission.objects.filter(
-                content_type__app_label="permits",
-                content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
-            )
-
-            other_permissions = Permission.objects.filter(
-                codename__in=OTHER_PERMISSIONS_CODENAMES
-            )
-            super().save_model(request, obj, form, change)
-            group = Group.objects.get(name=obj.name)
-            group.permissions.add(*permits_permissions.union(other_permissions))
-
-        else:
-            super().save_model(request, obj, form, change)
-
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         # permissions that integrator role can grant to group
@@ -312,7 +304,7 @@ class GroupAdmin(admin.ModelAdmin):
                 kwargs["queryset"] = integrator_permissions.union(existing_permissions)
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
-       
+
 
 admin.site.unregister(Group)
 admin.site.register(Group, GroupAdmin)
