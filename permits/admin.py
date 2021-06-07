@@ -183,7 +183,7 @@ class DepartmentAdminForm(forms.ModelForm):
 
         # Check only if the group passed from not integrator to integrator
         if (
-            self.instance is None
+            self.instance
             and not self.instance.is_integrator_admin
             and is_integrator_admin
         ):
@@ -281,6 +281,13 @@ class GroupAdmin(admin.ModelAdmin):
                 )
             )
         return qs
+
+    def save_model(self, request, obj, form, change):
+        if not request.user.is_superuser:
+            obj.permitdepartment.integrator = request.user.groups.get(
+                permitdepartment__is_integrator_admin=True
+            ).pk
+        super().save_model(request, obj, form, change)
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         # permissions that integrator role can grant to group
