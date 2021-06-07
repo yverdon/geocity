@@ -181,26 +181,30 @@ class DepartmentAdminForm(forms.ModelForm):
         is_integrator_admin = self.cleaned_data["is_integrator_admin"]
         group = self.cleaned_data["group"]
 
-        # Check only if the group passed from not integrator to integrator
-        if (
-            self.instance
-            and not self.instance.is_integrator_admin
-            and is_integrator_admin
-        ):
-            user_with_integrator_group = (
-                Group.objects.exclude(pk=group.pk)
-                .filter(
-                    user__in=group.user_set.all(),
-                    permitdepartment__is_integrator_admin=True,
+        # Check only if the group passed from not integrator to integrator and has a user_set
+        try:
+            if (
+                self.instance
+                and not self.instance.is_integrator_admin
+                and is_integrator_admin
+                and group.user_set
+            ):
+                user_with_integrator_group = (
+                    Group.objects.exclude(pk=group.pk)
+                    .filter(
+                        user__in=group.user_set.all(),
+                        permitdepartment__is_integrator_admin=True,
+                    )
+                    .exists()
                 )
-                .exists()
-            )
-
-            # Raise error if this group is integrator and user(s) is/are already in integrator group and this group
-            if user_with_integrator_group:
-                raise forms.ValidationError(
-                    {"is_integrator_admin": MULTIPLE_INTEGRATOR_ERROR_MESSAGE}
-                )
+                # Raise error if this group is integrator and user(s) is/are already in integrator group and this group
+                if user_with_integrator_group:
+                    raise forms.ValidationError(
+                        {"is_integrator_admin": MULTIPLE_INTEGRATOR_ERROR_MESSAGE}
+                    )
+        except ValueError:
+            # Upon creation of the group, there is no id, therefore no user_set
+            pass
         return self.cleaned_data
 
 
@@ -260,7 +264,6 @@ class GroupAdminForm(forms.ModelForm):
             cleaned_data["permissions"] = cleaned_data["permissions"].difference(
                 integrator_permissions
             )
-
         return cleaned_data["permissions"]
 
 
