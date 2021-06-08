@@ -163,16 +163,12 @@ CONSTANCE_CONFIG = {
         "Description de la page de login",
         str,
     ),
-    "ALLOWED_FILE_EXTENSIONS": ( # Supported file extensions https://pypi.org/project/filetype/
+    "ALLOWED_FILE_EXTENSIONS": (  # Supported file extensions https://pypi.org/project/filetype/
         "pdf, png, jpg",
         "Extensions autorisées lors de l'upload de document",
         str,
     ),
-    "MAX_FILE_UPLOAD_SIZE": (
-        10485760,
-        "Taille maximum des fichiers uploadé",
-        int,
-    ),
+    "MAX_FILE_UPLOAD_SIZE": (10485760, "Taille maximum des fichiers uploadé", int,),
     "GEOCALENDAR_URL": (
         "https://geocity.mapnv.ch/geocalendar",
         "URL de l'application calendrier cartographique",

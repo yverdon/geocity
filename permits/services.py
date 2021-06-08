@@ -1314,16 +1314,16 @@ def validate_file(file):
 
         if kind.extension not in extensions:
             raise forms.ValidationError(
-                _("%(file)s n'est pas du bon type"),
-                params={'file': file},
+                _("%(file)s n'est pas du bon type"), params={"file": file},
             )
         elif file.size > config.MAX_FILE_UPLOAD_SIZE:
             raise forms.ValidationError(
-                _("%(file)s est trop volumineux"),
-                params={'file': file},
-            ) 
+                _("%(file)s est trop volumineux"), params={"file": file},
+            )
     else:
         raise forms.ValidationError(
-            _("Le type de %(file)s n'a pas pu être détecté, assurez-vous que votre fichier soit du bon type"),
-            params={'file': file},
+            _(
+                "Le type de %(file)s n'a pas pu être détecté, assurez-vous que votre fichier soit du bon type"
+            ),
+            params={"file": file},
         )
