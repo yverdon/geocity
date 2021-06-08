@@ -1307,11 +1307,6 @@ def validate_file(file):
     kind = filetype.guess(file)
     if kind is not None:
         extensions = config.ALLOWED_FILE_EXTENSIONS.replace(" ", "").split(",")
-        print("------------------")
-        print(file.size)
-        print(config.MAX_FILE_UPLOAD_SIZE)
-        print("###################")
-
         if kind.extension not in extensions:
             raise forms.ValidationError(
                 _("%(file)s n'est pas du bon type"), params={"file": file},
