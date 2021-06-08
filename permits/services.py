@@ -2,6 +2,7 @@ import enum
 import itertools
 import os
 import urllib
+import filetype
 
 from collections import defaultdict
 from constance import config
@@ -57,10 +58,6 @@ def set_object_property_value(permit_request, object_type, prop, value):
         existing_value_obj.delete()
     else:
         if is_file:
-
-            # Prevent large file upload
-            if value.size > config.MAX_FILE_UPLOAD_SIZE:
-                return
             # Use private storage to prevent uploaded files exposition to the outside world
             private_storage = fields.PrivateFileSystemStorage()
             # If the given File has a `url` attribute, it means the value comes from the `initial` form data, so the
@@ -1300,3 +1297,28 @@ def get_permit_request_print_templates(permit_request):
     return models.QgisProject.objects.filter(
         works_object_type__in=permit_request.works_object_types.all()
     )
+
+
+# Validate a file, from checking the first bytes and detecting the kind of the file
+# Exemple : User puts "my_malware.exe" and rename as "file.txt"
+# kind.extension => will return "exe"
+# kind.mime => will return "application/x-msdownload"
+def validate_file(file):
+    kind = filetype.guess(file)
+    if kind is not None:
+        extensions = config.ALLOWED_FILE_EXTENSIONS.replace(" ", "").split(",")
+        if kind.extension not in extensions:
+            raise forms.ValidationError(
+                _("%(file)s n'est pas du bon type"), params={"file": file},
+            )
+        elif file.size > config.MAX_FILE_UPLOAD_SIZE:
+            raise forms.ValidationError(
+                _("%(file)s est trop volumineux"), params={"file": file},
+            )
+    else:
+        raise forms.ValidationError(
+            _(
+                "Le type de %(file)s n'est pas supporté, assurez-vous que votre fichier soit du bon type"
+            ),
+            params={"file": file},
+        )

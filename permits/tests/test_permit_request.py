@@ -152,6 +152,195 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             ),
         )
 
+    def test_documents_step_filetype_allows_jpg(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory.create_batch(
+            3, permit_request=permit_request
+        )
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactoryTypeFile()
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        with open("permits/tests/files/real_jpg.jpg", "rb") as file:
+            response = self.client.post(
+                reverse(
+                    "permits:permit_request_appendices",
+                    kwargs={"permit_request_id": permit_request.pk},
+                ),
+                data={
+                    "appendices-{}_{}".format(
+                        prop.works_object_types.last().pk, prop.pk
+                    ): file
+                },
+            )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "permits:permit_request_submit",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+
+    def test_documents_step_filetype_allows_png(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory.create_batch(
+            3, permit_request=permit_request
+        )
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactoryTypeFile()
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        with open("permits/tests/files/real_png.png", "rb") as file:
+            response = self.client.post(
+                reverse(
+                    "permits:permit_request_appendices",
+                    kwargs={"permit_request_id": permit_request.pk},
+                ),
+                data={
+                    "appendices-{}_{}".format(
+                        prop.works_object_types.last().pk, prop.pk
+                    ): file
+                },
+            )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "permits:permit_request_submit",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+
+    def test_documents_step_filetype_allows_pdf(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory.create_batch(
+            3, permit_request=permit_request
+        )
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactoryTypeFile()
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        with open("permits/tests/files/real_pdf.pdf", "rb") as file:
+            response = self.client.post(
+                reverse(
+                    "permits:permit_request_appendices",
+                    kwargs={"permit_request_id": permit_request.pk},
+                ),
+                data={
+                    "appendices-{}_{}".format(
+                        prop.works_object_types.last().pk, prop.pk
+                    ): file
+                },
+            )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "permits:permit_request_submit",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+
+    def test_documents_step_filetype_reject_unknow_type_for_filetype(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory.create_batch(
+            3, permit_request=permit_request
+        )
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactoryTypeFile()
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        with open("permits/tests/files/unknow_type_for_filetype.txt", "rb") as file:
+            response = self.client.post(
+                reverse(
+                    "permits:permit_request_appendices",
+                    kwargs={"permit_request_id": permit_request.pk},
+                ),
+                data={
+                    "appendices-{}_{}".format(
+                        prop.works_object_types.last().pk, prop.pk
+                    ): file
+                },
+            )
+
+        content = response.content.decode()
+
+        expected = "<div class='invalid-feedback'>{error_msg}</div>".format(
+            error_msg="Le type de unknow_type_for_filetype.txt n'est pas supporté, assurez-vous que votre fichier soit du bon type",
+        )
+        self.assertInHTML(expected, content)
+
+    def test_documents_step_filetype_reject_not_allowed_extension(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory.create_batch(
+            3, permit_request=permit_request
+        )
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactoryTypeFile()
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        with open("permits/tests/files/not_allowed_docx.docx", "rb") as file:
+            response = self.client.post(
+                reverse(
+                    "permits:permit_request_appendices",
+                    kwargs={"permit_request_id": permit_request.pk},
+                ),
+                data={
+                    "appendices-{}_{}".format(
+                        prop.works_object_types.last().pk, prop.pk
+                    ): file
+                },
+            )
+
+        content = response.content.decode()
+
+        expected = "<div class='invalid-feedback'>{error_msg}</div>".format(
+            error_msg="not_allowed_docx.docx n'est pas du bon type",
+        )
+        self.assertInHTML(expected, content)
+
+    def test_documents_step_filetype_reject_fake_jpg_with_not_allowed_extension(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory.create_batch(
+            3, permit_request=permit_request
+        )
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactoryTypeFile()
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        with open("permits/tests/files/not_allowed_bmp_as_jpg.jpg", "rb") as file:
+            response = self.client.post(
+                reverse(
+                    "permits:permit_request_appendices",
+                    kwargs={"permit_request_id": permit_request.pk},
+                ),
+                data={
+                    "appendices-{}_{}".format(
+                        prop.works_object_types.last().pk, prop.pk
+                    ): file
+                },
+            )
+
+        content = response.content.decode()
+
+        expected = "<div class='invalid-feedback'>{error_msg}</div>".format(
+            error_msg="not_allowed_bmp_as_jpg.jpg n'est pas du bon type",
+        )
+        self.assertInHTML(expected, content)
+
     def test_user_can_only_see_own_requests(self):
         permit_request = factories.PermitRequestFactory(
             author=factories.UserFactory().permitauthor

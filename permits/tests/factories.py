@@ -238,6 +238,16 @@ class WorksObjectPropertyFactoryTypeAddress(factory.django.DjangoModelFactory):
 
     name = factory.Faker("word")
     input_type = models.WorksObjectProperty.INPUT_TYPE_ADDRESS
+    order = factory.Sequence(int)
+
+
+class WorksObjectPropertyFactoryTypeFile(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.WorksObjectProperty
+
+    name = factory.Faker("word")
+    input_type = models.WorksObjectProperty.INPUT_TYPE_FILE
+    order = factory.Sequence(int)
 
 
 class WorksObjectTypeFactory(factory.django.DjangoModelFactory):
