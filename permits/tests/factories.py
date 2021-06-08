@@ -81,7 +81,7 @@ class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
             return
 
         self.integrator = extracted
-    
+
     @factory.post_generation
     def tags(self, create, extracted, **kwargs):
         if not create or not extracted:
