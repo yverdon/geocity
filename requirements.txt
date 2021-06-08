@@ -7,14 +7,9 @@
 asgiref==3.3.1            # via django
 babel==2.9.0              # via django-phonenumber-field
 beautifulsoup4==4.9.3     # via -r requirements.in, django-bootstrap4
-cairocffi==1.2.0          # via cairosvg, weasyprint
-cairosvg==2.5.0           # via weasyprint
 certifi==2020.12.5        # via requests
-cffi==1.14.4              # via cairocffi, weasyprint
 chardet==3.0.4            # via requests
 click==7.1.2              # via pip-tools
-cssselect2==0.4.1         # via cairosvg, weasyprint
-defusedxml==0.6.0         # via cairosvg
 django-admin-sortable2==0.7.7  # via -r requirements.in
 django-bootstrap-datepicker-plus==3.0.5  # via -r requirements.in
 django-bootstrap4==2.3.1  # via -r requirements.in
@@ -27,24 +22,23 @@ django-otp==1.0.2         # via django-two-factor-auth
 django-phonenumber-field==3.0.1  # via django-two-factor-auth
 django-picklefield==3.0.1  # via django-constance
 django-simple-history==2.12.0  # via -r requirements.in
-django-tables2==2.3.3     # via -r requirements.in
-django-tables2-column-shifter==0.5.2 # via -r requirements.in
+django-tables2-column-shifter==0.5.2  # via -r requirements.in
+django-tables2==2.3.3     # via -r requirements.in, django-tables2-column-shifter
+django-taggit==1.4.0      # via -r requirements.in
 django-two-factor-auth[phonenumbers]==1.13  # via -r requirements.in
-django==3.1.4             # via -r requirements.in, django-bootstrap-datepicker-plus, django-bootstrap4, django-cors-headers, django-filter, django-formtools, django-otp, django-phonenumber-field, django-picklefield, django-tables2, django-two-factor-auth, djangorestframework
+django==3.1.4             # via -r requirements.in, django-admin-sortable2, django-bootstrap-datepicker-plus, django-bootstrap4, django-cors-headers, django-filter, django-formtools, django-otp, django-phonenumber-field, django-picklefield, django-tables2, django-tables2-column-shifter, django-taggit, django-two-factor-auth, djangorestframework
 djangorestframework-gis==0.16  # via -r requirements.in
 djangorestframework==3.12.2  # via -r requirements.in, djangorestframework-gis
+filetype==1.0.7           # via -r requirements.in
 gdal==3.2.0               # via -r requirements.in
 gunicorn==20.0.4          # via -r requirements.in
-html5lib==1.1             # via -r requirements.in, weasyprint
+html5lib==1.1             # via -r requirements.in
 idna==2.10                # via requests
 jdcal==1.4.1              # via -r requirements.in
 phonenumbers==8.12.14     # via django-two-factor-auth
-pillow==8.0.1             # via -r requirements.in, cairosvg, weasyprint
+pillow==8.0.1             # via -r requirements.in
 pip-tools==5.4.0          # via -r requirements.in
 psycopg2-binary==2.8.6    # via -r requirements.in
-pycairo==1.20.0           # via -r requirements.in
-pycparser==2.20           # via cffi
-pyphen==0.10.0            # via weasyprint
 python-dotenv==0.15.0     # via -r requirements.in
 pytz==2020.4              # via -r requirements.in, babel, django
 pyyaml==5.3.1             # via -r requirements.in
@@ -54,10 +48,8 @@ six==1.15.0               # via django-simple-history, html5lib, pip-tools, qrco
 soupsieve==2.1            # via beautifulsoup4
 sqlparse==0.4.1           # via django
 tablib==3.0.0             # via -r requirements.in
-tinycss2==1.1.0           # via cairosvg, cssselect2, weasyprint
 urllib3==1.26.2           # via requests
-weasyprint==52.2          # via -r requirements.in
-webencodings==0.5.1       # via cssselect2, html5lib, tinycss2
+webencodings==0.5.1       # via html5lib
 whitenoise==5.2.0         # via -r requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:

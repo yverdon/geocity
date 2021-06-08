@@ -152,6 +152,195 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             ),
         )
 
+    def test_documents_step_filetype_allows_jpg(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory.create_batch(
+            3, permit_request=permit_request
+        )
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactoryTypeFile()
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        with open("permits/tests/files/real_jpg.jpg", "rb") as file:
+            response = self.client.post(
+                reverse(
+                    "permits:permit_request_appendices",
+                    kwargs={"permit_request_id": permit_request.pk},
+                ),
+                data={
+                    "appendices-{}_{}".format(
+                        prop.works_object_types.last().pk, prop.pk
+                    ): file
+                },
+            )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "permits:permit_request_submit",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+
+    def test_documents_step_filetype_allows_png(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory.create_batch(
+            3, permit_request=permit_request
+        )
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactoryTypeFile()
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        with open("permits/tests/files/real_png.png", "rb") as file:
+            response = self.client.post(
+                reverse(
+                    "permits:permit_request_appendices",
+                    kwargs={"permit_request_id": permit_request.pk},
+                ),
+                data={
+                    "appendices-{}_{}".format(
+                        prop.works_object_types.last().pk, prop.pk
+                    ): file
+                },
+            )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "permits:permit_request_submit",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+
+    def test_documents_step_filetype_allows_pdf(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory.create_batch(
+            3, permit_request=permit_request
+        )
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactoryTypeFile()
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        with open("permits/tests/files/real_pdf.pdf", "rb") as file:
+            response = self.client.post(
+                reverse(
+                    "permits:permit_request_appendices",
+                    kwargs={"permit_request_id": permit_request.pk},
+                ),
+                data={
+                    "appendices-{}_{}".format(
+                        prop.works_object_types.last().pk, prop.pk
+                    ): file
+                },
+            )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "permits:permit_request_submit",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+
+    def test_documents_step_filetype_reject_unknow_type_for_filetype(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory.create_batch(
+            3, permit_request=permit_request
+        )
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactoryTypeFile()
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        with open("permits/tests/files/unknow_type_for_filetype.txt", "rb") as file:
+            response = self.client.post(
+                reverse(
+                    "permits:permit_request_appendices",
+                    kwargs={"permit_request_id": permit_request.pk},
+                ),
+                data={
+                    "appendices-{}_{}".format(
+                        prop.works_object_types.last().pk, prop.pk
+                    ): file
+                },
+            )
+
+        content = response.content.decode()
+
+        expected = "<div class='invalid-feedback'>{error_msg}</div>".format(
+            error_msg="Le type de unknow_type_for_filetype.txt n'est pas supporté, assurez-vous que votre fichier soit du bon type",
+        )
+        self.assertInHTML(expected, content)
+
+    def test_documents_step_filetype_reject_not_allowed_extension(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory.create_batch(
+            3, permit_request=permit_request
+        )
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactoryTypeFile()
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        with open("permits/tests/files/not_allowed_docx.docx", "rb") as file:
+            response = self.client.post(
+                reverse(
+                    "permits:permit_request_appendices",
+                    kwargs={"permit_request_id": permit_request.pk},
+                ),
+                data={
+                    "appendices-{}_{}".format(
+                        prop.works_object_types.last().pk, prop.pk
+                    ): file
+                },
+            )
+
+        content = response.content.decode()
+
+        expected = "<div class='invalid-feedback'>{error_msg}</div>".format(
+            error_msg="not_allowed_docx.docx n'est pas du bon type",
+        )
+        self.assertInHTML(expected, content)
+
+    def test_documents_step_filetype_reject_fake_jpg_with_not_allowed_extension(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory.create_batch(
+            3, permit_request=permit_request
+        )
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        prop = factories.WorksObjectPropertyFactoryTypeFile()
+        prop.works_object_types.set(permit_request.works_object_types.all())
+
+        with open("permits/tests/files/not_allowed_bmp_as_jpg.jpg", "rb") as file:
+            response = self.client.post(
+                reverse(
+                    "permits:permit_request_appendices",
+                    kwargs={"permit_request_id": permit_request.pk},
+                ),
+                data={
+                    "appendices-{}_{}".format(
+                        prop.works_object_types.last().pk, prop.pk
+                    ): file
+                },
+            )
+
+        content = response.content.decode()
+
+        expected = "<div class='invalid-feedback'>{error_msg}</div>".format(
+            error_msg="not_allowed_bmp_as_jpg.jpg n'est pas du bon type",
+        )
+        self.assertInHTML(expected, content)
+
     def test_user_can_only_see_own_requests(self):
         permit_request = factories.PermitRequestFactory(
             author=factories.UserFactory().permitauthor
@@ -207,7 +396,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"permit_request_id": permit_request.pk},
             )
         )
-        emails = get_emails("Nouvelle demande de permis")
+        emails = get_emails("Nouvelle demande")
 
         self.assertEqual(len(emails), 1)
         self.assertEqual(emails[0].to, ["secretariat@yverdon.ch"])
@@ -661,6 +850,83 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             len(parser.select("#legal-infos span.additional_information")), 2,
         )
 
+    def test_administrative_entity_is_filtered_by_tag(self):
+        administrative_entities = [
+            factories.PermitAdministrativeEntityFactory(tags=[tag])
+            for tag in ["first", "second", "third"]
+        ]
+        works_object_types = models.WorksObjectType.objects.all()
+
+        for administrative_entity in administrative_entities:
+            administrative_entity.works_object_types.set(works_object_types)
+
+        response = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity"),
+            {"filter": "first"},
+        )
+
+        parser = get_parser(response.content)
+        element_parsed = parser.select(".form-check-label")
+
+        content = response.content.decode()
+        # Check that selected item is there
+        self.assertEqual(1, len(element_parsed))
+        # Check that filtered items are NOT there
+        self.assertNotContains(response, administrative_entities[1].name)
+        self.assertNotContains(response, administrative_entities[2].name)
+        self.assertInHTML(administrative_entities[0].name, content)
+
+    def test_wrong_administrative_entity_tag_return_all_administratives_entities(self):
+        administrative_entities = [
+            factories.PermitAdministrativeEntityFactory(tags=[tag])
+            for tag in ["first", "second", "third"]
+        ]
+        works_object_types = models.WorksObjectType.objects.all()
+
+        for administrative_entity in administrative_entities:
+            administrative_entity.works_object_types.set(works_object_types)
+
+        response = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity"),
+            {"filter": "wrongtag"},
+        )
+
+        parser = get_parser(response.content)
+        element_parsed = parser.select(".form-check-label")
+
+        content = response.content.decode()
+
+        self.assertEqual(3, len(element_parsed))
+        self.assertInHTML(administrative_entities[0].name, content)
+        self.assertInHTML(administrative_entities[1].name, content)
+        self.assertInHTML(administrative_entities[2].name, content)
+
+    def test_multiple_administrative_entity_tags_return_multiple_administratives_entities(
+        self,
+    ):
+        administrative_entities = [
+            factories.PermitAdministrativeEntityFactory(tags=[tag])
+            for tag in ["first", "second", "third"]
+        ]
+        works_object_types = models.WorksObjectType.objects.all()
+
+        for administrative_entity in administrative_entities:
+            administrative_entity.works_object_types.set(works_object_types)
+
+        response = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity"),
+            {"filter": ["first", "second"]},
+        )
+
+        parser = get_parser(response.content)
+        element_parsed = parser.select(".form-check-label")
+
+        content = response.content.decode()
+
+        self.assertEqual(2, len(element_parsed))
+        self.assertInHTML(administrative_entities[0].name, content)
+        self.assertInHTML(administrative_entities[1].name, content)
+
 
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
@@ -979,7 +1245,6 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
             data=data,
         )
         parser = get_parser(response.content)
-        parser.select(".invalid-feedback")
         self.assertEqual(1, len(parser.select(".invalid-feedback")))
 
     def test_properties_step_submit_updates_permit_request_with_address(self):
@@ -1263,6 +1528,88 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
+
+    def test_secretariat_can_see_print_buttons_and_directives(self):
+        first_works_object_type = factories.WorksObjectTypeFactory(
+            directive=SimpleUploadedFile("file.pdf", "contents".encode()),
+            directive_description="First directive description for a test",
+            additional_information="First additional information for a test",
+        )
+        second_works_object_type = factories.WorksObjectTypeFactory(
+            directive=SimpleUploadedFile("file.pdf", "contents".encode()),
+            directive_description="Second directive description for a test",
+            additional_information="Second additional information for a test",
+        )
+        factories.QgisProjectFactory(
+            qgis_project_file=SimpleUploadedFile("template.qgs", "contents".encode()),
+            description="Print Template 1",
+            works_object_type=first_works_object_type,
+        )
+        factories.QgisProjectFactory(
+            qgis_project_file=SimpleUploadedFile("template.qgs", "contents".encode()),
+            description="Print Template 2",
+            works_object_type=second_works_object_type,
+        )
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            administrative_entity=self.administrative_entity,
+        )
+
+        permit_request.works_object_types.set(
+            [first_works_object_type, second_works_object_type]
+        )
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        parser = get_parser(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(parser.select(".tab-pane#print button")), 2,
+        )
+        self.assertEqual(
+            len(parser.select(".tab-pane#print span.directive_description")), 2,
+        )
+
+    def test_secretariat_cannot_see_print_buttons_and_directives_if_not_configured(
+        self,
+    ):
+        works_object_types = factories.WorksObjectTypeFactory.create_batch(2)
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            administrative_entity=self.administrative_entity,
+        )
+
+        permit_request.works_object_types.set(works_object_types)
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        parser = get_parser(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(parser.select(".tab-pane#print button")), 0,
+        )
+        self.assertEqual(
+            len(parser.select(".tab-pane#print span.directive_description")), 0,
+        )
+        self.assertEqual(
+            len(parser.select(".tab-pane#print span.no_directive")), 1,
+        )
+        self.assertEqual(
+            len(parser.select(".tab-pane#print span.no_print_template")), 1,
+        )
 
 
 class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase):

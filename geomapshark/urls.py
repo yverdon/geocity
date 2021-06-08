@@ -5,9 +5,10 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
-from permits import geoviews
-from permits import views as permits_views
 from rest_framework import routers
+
+from permits import api
+from permits import views as permits_views
 
 from . import views
 
@@ -24,8 +25,9 @@ if settings.ENABLE_2FA:
 # Django-rest Configuration
 
 router = routers.DefaultRouter()
-router.register(r"events", geoviews.PermitRequestGeoTimeViewSet, "events")
-router.register(r"front-config", geoviews.GeocityViewConfigViewSet, "front-config")
+router.register(r"events", api.PermitRequestGeoTimeViewSet, "events")
+router.register(r"front-config", api.GeocityViewConfigViewSet, "front-config")
+router.register(r"permits", api.PermitRequestViewSet, "permits")
 
 
 # Django-configuration

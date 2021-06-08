@@ -9,6 +9,7 @@ from django.contrib.gis.geos import GeometryCollection, Point
 from django.utils.text import Truncator
 from permits import models, admin
 from django.db.models import Q
+from taggit.managers import TaggableManager
 
 
 class PermitAuthorFactory(factory.django.DjangoModelFactory):
@@ -80,6 +81,13 @@ class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
             return
 
         self.integrator = extracted
+    
+    @factory.post_generation
+    def tags(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        self.tags.set(*extracted)
 
 
 class GroupFactory(factory.django.DjangoModelFactory):
@@ -321,6 +329,16 @@ class WorksObjectPropertyFactoryTypeAddress(factory.django.DjangoModelFactory):
 
     name = factory.Faker("word")
     input_type = models.WorksObjectProperty.INPUT_TYPE_ADDRESS
+    order = factory.Sequence(int)
+
+
+class WorksObjectPropertyFactoryTypeFile(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.WorksObjectProperty
+
+    name = factory.Faker("word")
+    input_type = models.WorksObjectProperty.INPUT_TYPE_FILE
+    order = factory.Sequence(int)
 
 
 class WorksObjectTypeFactory(factory.django.DjangoModelFactory):
@@ -411,3 +429,12 @@ class PermitRequestAmendPropertyValueFactory(factory.django.DjangoModelFactory):
     property = factory.SubFactory(PermitRequestAmendPropertyFactory)
     works_object_type_choice = factory.SubFactory(WorksObjectTypeChoiceFactory)
     value = factory.Faker("word")
+
+
+class QgisProjectFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.QgisProject
+
+    works_object_type = factory.SubFactory(WorksObjectTypeFactory)
+    qgis_print_template_name = "atlas"
+    qgis_layers = "base,vpoly"

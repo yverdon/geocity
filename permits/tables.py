@@ -1,4 +1,5 @@
 import django_tables2 as tables
+from django_tables2.utils import A
 from django.utils.translation import gettext_lazy as _
 from django_tables2_column_shifter.tables import ColumnShiftTable
 
@@ -50,13 +51,15 @@ class DepartmentPermitRequestsTable(ColumnShiftTable):
     administrative_entity = tables.Column(
         verbose_name=_("Entité administrative"), orderable=False
     )
-    author__user__last_name = tables.Column(verbose_name=_("Auteur de la demande"))
+    author_fullname = tables.Column(verbose_name=_("Auteur de la demande"))
+    author_details = tables.Column(verbose_name=_("Coordonnées de l'auteur"))
 
     class Meta:
         model = models.PermitRequest
         fields = (
             "id",
-            "author__user__last_name",
+            "author_fullname",
+            "author_details",
             "created_at",
             "status",
             "starts_at_min",

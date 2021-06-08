@@ -1,4 +1,5 @@
 import json
+from constance import config
 from datetime import date, datetime, timedelta
 
 from bootstrap_datepicker_plus import DatePickerInput, DateTimePickerInput
@@ -15,7 +16,9 @@ from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ValidationError
 from itertools import groupby
+
 
 from . import models, services
 
@@ -91,6 +94,7 @@ class AdministrativeEntityForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop("instance", None)
         self.user = kwargs.pop("user", None)
+        tags = kwargs.pop("tags", [])
 
         if self.instance:
             initial = {
@@ -103,11 +107,15 @@ class AdministrativeEntityForm(forms.Form):
         kwargs["initial"] = initial
 
         super().__init__(*args, **kwargs)
-
+        entities_by_tag = services.get_administrative_entities(
+            self.user
+        ).filter_by_tags(tags)
         self.fields["administrative_entity"].choices = [
             (ofs_id, [(entity.pk, entity.name) for entity in entities])
             for ofs_id, entities in regroup_by_ofs_id(
-                services.get_administrative_entities(self.user)
+                entities_by_tag
+                if entities_by_tag
+                else services.get_administrative_entities(self.user)
             )
         ]
 
@@ -346,6 +354,19 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                     },
                 ),
                 help_text=prop.help_text if prop.help_text != "" else "",
+            )
+        elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_FILE:
+            file_size_mb = int(config.MAX_FILE_UPLOAD_SIZE / 1048576)
+            default_help_text = (
+                "Le fichier doit faire moins de "
+                + str(file_size_mb)
+                + " Megatoctet. Les extensions autorisées : "
+                + config.ALLOWED_FILE_EXTENSIONS
+            )
+            field_instance = field_class(
+                **self.get_field_kwargs(prop),
+                help_text=prop.help_text if prop.help_text != "" else default_help_text,
+                validators=[services.validate_file],
             )
         else:
             field_instance = field_class(
@@ -691,6 +712,9 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
             ]
             self.fields["status"].choices = tuple(filter2)
 
+            if not config.ENABLE_GEOCALENDAR:
+                self.fields["is_public"].widget = forms.HiddenInput()
+
             for works_object_type, prop in self.get_properties():
                 field_name = self.get_field_name(works_object_type.id, prop.id)
                 self.fields[field_name] = forms.CharField(
@@ -833,6 +857,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
 
         if services.GeoTimeInfo.GEOMETRY not in required_info:
             del self.fields["geom"]
+
         else:
             self.fields["geom"].widget.attrs["options"] = self.get_widget_options(
                 self.permit_request
@@ -840,7 +865,9 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             self.fields["geom"].widget.attrs["options"][
                 "edit_geom"
             ] = not disable_fields
-
+        if not config.ENABLE_GEOCALENDAR:
+            del self.fields["comment"]
+            del self.fields["external_link"]
         if disable_fields:
             for field in self.fields.values():
                 field.disabled = True
@@ -917,10 +944,11 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         cleaned_data = super().clean()
         starts_at = cleaned_data.get("starts_at")
         ends_at = cleaned_data.get("ends_at")
-        if starts_at and ends_at and ends_at <= starts_at:
-            raise forms.ValidationError(
-                _("La date de fin doit être postérieure à la date de début.")
-            )
+        if starts_at and ends_at:
+            if ends_at <= starts_at:
+                raise forms.ValidationError(
+                    _("La date de fin doit être postérieure à la date de début.")
+                )
 
     def save(self, commit=True):
         instance = super().save(commit=False)

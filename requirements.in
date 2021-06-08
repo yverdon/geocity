@@ -17,10 +17,8 @@ PyYAML
 requests
 # Required by django-tables2, which doesn't list it in their requirements
 tablib
-WeasyPrint
 whitenoise
 tablib
-pycairo
 python-dotenv
 django-admin-sortable2
 django-grappelli
@@ -30,3 +28,5 @@ djangorestframework-gis
 django-cors-headers
 django-constance[database]
 django-two-factor-auth[phonenumbers]
+django-taggit
+filetype

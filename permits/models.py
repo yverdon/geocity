@@ -17,6 +17,8 @@ from django.utils import timezone
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
+from taggit.managers import TaggableManager
+from taggit.models import TagBase, GenericTaggedItemBase
 
 from . import fields
 
@@ -58,6 +60,10 @@ ACTION_POKE = "poke"
 ACTIONS = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE, ACTION_POKE]
 
 
+def printed_permit_request_storage(instance, filename):
+    return f"permit_requests_uploads/{instance.permit_request.pk}/{filename}"
+
+
 @dataclasses.dataclass
 class Step:
     name: str
@@ -83,7 +89,6 @@ StepType.do_not_call_in_templates = True
 
 
 class PermitDepartment(models.Model):
-
     group = models.OneToOneField(Group, on_delete=models.CASCADE)
     description = models.CharField(_("description"), max_length=100, default="Service")
     is_validator = models.BooleanField(_("validateur"))
@@ -113,28 +118,35 @@ class PermitDepartment(models.Model):
         return str(self.group)
 
 
+class PermitAdministrativeEntityQuerySet(models.QuerySet):
+    def filter_by_tags(self, tags):
+        return self.filter(tags__name__in=[tag.lower() for tag in tags])
+
+
 class PermitAdministrativeEntity(models.Model):
     name = models.CharField(_("name"), max_length=128)
     ofs_id = models.PositiveIntegerField(_("Numéro OFS"))
     link = models.URLField(_("Lien"), max_length=200, blank=True)
     archive_link = models.URLField(_("Archives externes"), max_length=1024, blank=True)
-    link = models.URLField(_("Lien"), max_length=200, blank=True)
-    logo_main = fields.AministrativeEntityFileField(
+    general_informations = models.CharField(
+        _("Informations"), blank=True, max_length=1024,
+    )
+    logo_main = fields.AdministrativeEntityFileField(
         _("Logo principal"), blank=True, upload_to="administrative_entity_files/"
     )
-    logo_secondary = fields.AministrativeEntityFileField(
+    logo_secondary = fields.AdministrativeEntityFileField(
         _("Logo secondaire"), blank=True, upload_to="administrative_entity_files/"
     )
     title_signature_1 = models.CharField(
         _("Signature Gauche"), max_length=128, blank=True
     )
-    image_signature_1 = fields.AministrativeEntityFileField(
+    image_signature_1 = fields.AdministrativeEntityFileField(
         _("Signature gauche"), blank=True, upload_to="administrative_entity_files/"
     )
     title_signature_2 = models.CharField(
         _("Signature Droite"), max_length=128, blank=True
     )
-    image_signature_2 = fields.AministrativeEntityFileField(
+    image_signature_2 = fields.AdministrativeEntityFileField(
         _("Signature droite"), blank=True, upload_to="administrative_entity_files/"
     )
     phone = models.CharField(
@@ -155,6 +167,12 @@ class PermitAdministrativeEntity(models.Model):
         verbose_name=_("Groupe des administrateurs"),
     )
     geom = geomodels.MultiPolygonField(_("geom"), null=True, srid=2056)
+    tags = TaggableManager(
+        blank=True,
+        verbose_name="Mots-clés",
+        help_text="Mots clefs sans espaces, séparés par des virgules permettant ensuite de filtrer les entités par l'url: https://geocity.ch&filter=yverdon&filter=permis-de-fouille",
+    )
+    objects = PermitAdministrativeEntityQuerySet.as_manager()
 
     class Meta:
         verbose_name = _(
@@ -369,11 +387,6 @@ class PermitRequest(models.Model):
     )
     created_at = models.DateTimeField(_("date de création"), default=timezone.now)
     validated_at = models.DateTimeField(_("date de validation"), null=True)
-    printed_at = models.DateTimeField(_("date d'impression"), null=True)
-    printed_by = models.CharField(_("imprimé par"), max_length=255, blank=True)
-    printed_file = fields.AministrativeEntityFileField(
-        _("Permis imprimé"), null=True, blank=True, upload_to="printed_permits/"
-    )
     works_object_types = models.ManyToManyField(
         "WorksObjectType", through=WorksObjectTypeChoice, related_name="permit_requests"
     )
@@ -827,3 +840,38 @@ class PermitRequestAmendPropertyValue(models.Model):
 
     class Meta:
         unique_together = [("property", "works_object_type_choice")]
+
+
+class QgisProject(models.Model):
+    qgis_project_file = fields.AdministrativeEntityFileField(
+        _("Fichier QGIS '*.qgs'"), upload_to="qgis_templates",
+    )
+    qgis_print_template_name = models.CharField(
+        _("Nom du template d'impression QGIS"), max_length=150,
+    )
+    qgis_layers = models.CharField(
+        _("Liste des couches QGIS à afficher séparées par les virgules ','"),
+        max_length=500,
+    )
+    qgis_atlas_coverage_layer = models.CharField(
+        _("Nom de la couche de couverture de l'atlas ','"), max_length=256,
+    )
+    description = models.CharField(max_length=150)
+    works_object_type = models.ForeignKey(WorksObjectType, on_delete=models.CASCADE)
+
+
+class QgisGeneratedDocument(models.Model):
+    permit_request = models.ForeignKey(
+        "PermitRequest", on_delete=models.CASCADE, related_name="qgis_permit"
+    )
+    qgis_project = models.ForeignKey(
+        "QgisProject", on_delete=models.CASCADE, related_name="qgis_project"
+    )
+    printed_at = models.DateTimeField(_("date d'impression"), null=True)
+    printed_by = models.CharField(_("imprimé par"), max_length=255, blank=True)
+    printed_file = fields.AdministrativeEntityFileField(
+        _("Permis imprimé"),
+        null=True,
+        blank=True,
+        upload_to=printed_permit_request_storage,
+    )

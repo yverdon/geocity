@@ -49,6 +49,10 @@ EMAIL_BACKEND = (
 
 DEFAULT_CHARSET = "utf-8"
 
+# Django-Taggit
+TAGGIT_CASE_INSENSITIVE = True  # make tag unique
+TAGGIT_TAGS_FROM_STRING = "permits.utils.comma_splitter"
+
 # 2FA activation
 ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 
@@ -74,6 +78,7 @@ INSTALLED_APPS = [
     "bootstrap_datepicker_plus",
     "django_tables2",
     "django_tables2_column_shifter",
+    "taggit",
 ]
 
 if ENABLE_2FA:
@@ -114,8 +119,10 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "APPLICATION_TITLE",
         "APPLICATION_SUBTITLE",
         "APPLICATION_DESCRIPTION",
+        "ALLOWED_FILE_EXTENSIONS",
         "MAX_FILE_UPLOAD_SIZE",
         "GEOCALENDAR_URL",
+        "ENABLE_GEOCALENDAR",
     ),
     "Theme Options": (
         "BACKGROUND_COLOR",
@@ -156,15 +163,21 @@ CONSTANCE_CONFIG = {
         "Description de la page de login",
         str,
     ),
-    "MAX_FILE_UPLOAD_SIZE": (
-        10485760,
-        "Taille maximum des fichiers uploadé, penser à modifier également APPENDICES_STEP pour informer l'utilisateur de la taille maximale autorisée",
-        int,
+    "ALLOWED_FILE_EXTENSIONS": (  # Supported file extensions https://pypi.org/project/filetype/
+        "pdf, png, jpg",
+        "Extensions autorisées lors de l'upload de document",
+        str,
     ),
+    "MAX_FILE_UPLOAD_SIZE": (10485760, "Taille maximum des fichiers uploadé", int,),
     "GEOCALENDAR_URL": (
         "https://geocity.mapnv.ch/geocalendar",
         "URL de l'application calendrier cartographique",
         str,
+    ),
+    "ENABLE_GEOCALENDAR": (
+        True,
+        "Définit si l'application du calendrier cartographique est utilisé ou pas (doit dans tous les cas être installée à part)",
+        bool,
     ),
     "LOCATION_STEP": ("Sélectionnez la commune / l'entité", "", str),
     "WORKS_TYPES_STEP": (
