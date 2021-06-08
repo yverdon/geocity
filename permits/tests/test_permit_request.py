@@ -271,7 +271,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
                     ): file
                 },
             )
-            
+
         content = response.content.decode()
 
         expected = "<div class='invalid-feedback'>{error_msg}</div>".format(
