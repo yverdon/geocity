@@ -58,10 +58,6 @@ def set_object_property_value(permit_request, object_type, prop, value):
         existing_value_obj.delete()
     else:
         if is_file:
-
-            # Prevent large file upload, a second time
-            if value.size > config.MAX_FILE_UPLOAD_SIZE:
-                return
             # Use private storage to prevent uploaded files exposition to the outside world
             private_storage = fields.PrivateFileSystemStorage()
             # If the given File has a `url` attribute, it means the value comes from the `initial` form data, so the
@@ -1311,6 +1307,10 @@ def validate_file(file):
     kind = filetype.guess(file)
     if kind is not None:
         extensions = config.ALLOWED_FILE_EXTENSIONS.replace(" ", "").split(",")
+        print("------------------")
+        print(file.size)
+        print(config.MAX_FILE_UPLOAD_SIZE)
+        print("###################")
 
         if kind.extension not in extensions:
             raise forms.ValidationError(
@@ -1323,7 +1323,7 @@ def validate_file(file):
     else:
         raise forms.ValidationError(
             _(
-                "Le type de %(file)s n'a pas pu être détecté, assurez-vous que votre fichier soit du bon type"
+                "Le type de %(file)s n'est pas supporté, assurez-vous que votre fichier soit du bon type"
             ),
             params={"file": file},
         )

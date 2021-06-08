@@ -275,7 +275,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         content = response.content.decode()
 
         expected = "<div class='invalid-feedback'>{error_msg}</div>".format(
-            error_msg="Le type de unknow_type_for_filetype.txt n'a pas pu être détecté, assurez-vous que votre fichier soit du bon type",
+            error_msg="Le type de unknow_type_for_filetype.txt n'est pas supporté, assurez-vous que votre fichier soit du bon type",
         )
         self.assertInHTML(expected, content)
 
