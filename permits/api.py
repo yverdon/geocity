@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import (
 from django.db.models import CharField, F, Prefetch, Q
 from rest_framework import viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.response import Response
 
 from . import geoservices, models, serializers, services
 
@@ -188,3 +190,106 @@ class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
         return qs
+
+# //////////////////////////////////
+# OGC Feature API Base URLs
+# //////////////////////////////////
+
+
+class OGCOpenAPILandingView(viewsets.ViewSet):
+    """
+    OGCOpenAPILandingView usage:
+
+    """
+    permission_classes = [IsAuthenticated, BlockRequesterUserPermission]
+
+    def list(self, request):
+        base = {
+            "links": [
+                {
+                    "rel": "service-desc",
+                    "type": "application/vnd.oai.openapi+json;version=3.0",
+                    "title": "The OpenAPI definition as JSON",
+                    "href": "http://" + request.META['HTTP_HOST'] + "/ogc/capabilities/?format=json" #TODO: handel shema https/http!
+                },
+                {
+                    "rel": "data",
+                    "type": "application/json",
+                    "title": "Collections",
+                    "href": "http://" + request.META['HTTP_HOST'] + "/ogc/collections/?format=json" #TODO: handel shema https/http!
+                }
+            ],
+            "title": "Geocity API",
+            "description": "Geocity spatial data API"
+        }
+        return Response(base)
+
+
+class OGCOpenAPICollectionsView(viewsets.ViewSet):
+    """
+    OGCOpenAPICollectionsView usage:
+
+    """
+    permission_classes = [IsAuthenticated, BlockRequesterUserPermission]
+
+    def list(self, request):
+
+        collections = {
+            "collections": [
+                {
+                    "id": "permits",
+                    "title": "API of permits",
+                    "description": "Flattened permits as geojson",
+                    "links": [
+                        {
+                            "type": "application/json",
+                            "rel": "self",
+                            "title": "This document as JSON",
+                            "href": "http://" + request.META['HTTP_HOST'] +"/ogc/collections/permits?format=json" #TODO: handel shema https/http!
+                        },
+                        {
+                            "type": "application/geo+json",
+                            "rel": "items",
+                            "title": "items as GeoJSON",
+                            "href": "http://" + request.META['HTTP_HOST'] + "/ogc/collections/permits?format=json" #TODO: handel shema https/http!
+                        },
+                    ],
+                    "itemType": "feature"
+                }
+            ],
+            "links": [
+                {
+                    "type": "application/json",
+                    "rel": "self",
+                    "title": "This document as JSON",
+                    "href": "http://" + request.META['HTTP_HOST'] + "/ogc/collections?format=json" #TODO: handel shema https/http!
+                },
+            ]
+        }
+        return Response(collections)
+    
+    
+
+class OGCOpenAPICapabilitiesView(viewsets.ViewSet):
+    """
+    OGCOpenAPICapabilitiesView usage:
+
+    """
+    permission_classes = [IsAuthenticated, BlockRequesterUserPermission]
+
+    def list(self, request):
+
+        base = {
+            "paths": {
+                "/collections/permits": {
+                    "get": {
+                        "description": "permits",
+                        "operationId": "permits",
+                        "summary": "Permits from Geocity",
+                    }
+                }
+            }
+        }
+
+        return Response(base)
+

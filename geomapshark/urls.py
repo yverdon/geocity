@@ -28,6 +28,12 @@ router = routers.DefaultRouter()
 router.register(r"events", api.PermitRequestGeoTimeViewSet, "events")
 router.register(r"front-config", api.GeocityViewConfigViewSet, "front-config")
 router.register(r"permits", api.PermitRequestViewSet, "permits")
+ocg_base_router = routers.DefaultRouter()
+ocg_base_router.register(r"landing", api.OGCOpenAPILandingView, "landing")
+ocg_base_router.register(r"collections", api.OGCOpenAPICollectionsView, "collections")
+ocg_base_router.register(r"capabilities", api.OGCOpenAPICapabilitiesView, "capabilities")
+ocg_base_router.register(r"collections/permits", api.PermitRequestViewSet, "permits")
+
 
 
 # Django-configuration
@@ -108,6 +114,7 @@ urlpatterns += [
     path("permitauthoredit/", views.permit_author_edit, name="permit_author_edit"),
     path("account/", include("django.contrib.auth.urls")),
     path("rest/", include(router.urls)),  # Django-rest urls
+    path("ogc/", include(ocg_base_router.urls)),  # OGC Landing page
     path("admin/", admin.site.urls),
 ]
 
