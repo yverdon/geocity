@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     "django_tables2",
     "django_tables2_column_shifter",
     "taggit",
+    'oauth2_provider',
 ]
 
 if ENABLE_2FA:

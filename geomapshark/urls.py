@@ -109,6 +109,7 @@ urlpatterns += [
     path("account/", include("django.contrib.auth.urls")),
     path("rest/", include(router.urls)),  # Django-rest urls
     path("admin/", admin.site.urls),
+    path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ]
 
 if settings.PREFIX_URL:
