@@ -13,7 +13,7 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "permits:permit_requests_list"
 LOGOUT_REDIRECT_URL = LOGIN_URL
 
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE = os.getenv("CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE")
 
