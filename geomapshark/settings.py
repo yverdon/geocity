@@ -322,3 +322,9 @@ WMTS_LAYER_ALTERNATIVE = os.getenv("WMTS_LAYER_ALTERNATIVE")
 OL_MAP_HEIGHT = os.getenv("OL_MAP_HEIGHT")
 
 GRAPPELLI_ADMIN_TITLE = "Interface d'administration Geocity"
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    )
+}
