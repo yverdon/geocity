@@ -25,3 +25,16 @@ class LoggedInSecretariatMixin:
         self.administrative_entity = self.group.permitdepartment.administrative_entity
         self.user = factories.SecretariatUserFactory(groups=[self.group])
         self.client.login(username=self.user.username, password="password")
+
+
+class LoggedInIntegratorMixin:
+    def setUp(self):
+        self.group = factories.IntegratorGroupFactory()
+        self.user = factories.IntegratorUserFactory(groups=[self.group])
+        self.client.login(username=self.user.username, password="password")
+
+
+class LoggedInSuperUserMixin:
+    def setUp(self):
+        self.user = factories.SuperUserFactory()
+        self.client.login(username=self.user.username, password="password")
