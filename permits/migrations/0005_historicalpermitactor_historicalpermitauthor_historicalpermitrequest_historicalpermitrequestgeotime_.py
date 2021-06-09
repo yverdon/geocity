@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
             name='HistoricalWorksObjectPropertyValue',
             fields=[
                 ('id', models.IntegerField(auto_created=True, blank=True, db_index=True, verbose_name='ID')),
-                ('value', django.contrib.postgres.fields.jsonb.JSONField()),
+                ('value', django.db.models.JSONField()),
                 ('history_id', models.AutoField(primary_key=True, serialize=False)),
                 ('history_date', models.DateTimeField()),
                 ('history_change_reason', models.CharField(max_length=100, null=True)),
