@@ -3,7 +3,7 @@ import enum
 
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
-from django.contrib.postgres.fields import JSONField
+from django.db.models import JSONField
 from django.core.exceptions import ValidationError
 from django.core.validators import (
     FileExtensionValidator,

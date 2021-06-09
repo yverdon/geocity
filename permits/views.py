@@ -634,9 +634,9 @@ def permit_request_select_objects(request, permit_request_id):
 
         works_types = models.WorksType.objects.none()
 
-    # Add the permit request works types to the ones in the querystring
-    works_types = works_types.union(
-        services.get_permit_request_works_types(permit_request)
+    # Add the permit request works types to the ones in the querystring and remove duplicates
+    works_types = (
+        works_types | services.get_permit_request_works_types(permit_request)
     ).distinct()
 
     if request.method == "POST":

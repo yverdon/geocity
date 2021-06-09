@@ -65,4 +65,14 @@ class Migration(migrations.Migration):
                 ('qgis_project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='qgis_project', to='permits.qgisproject')),
             ],
         ),
+        migrations.AlterField(
+            model_name='historicalworksobjectpropertyvalue',
+            name='value',
+            field=models.JSONField(),
+        ),
+        migrations.AlterField(
+            model_name='worksobjectpropertyvalue',
+            name='value',
+            field=models.JSONField(),
+        ),
     ]

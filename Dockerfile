@@ -1,4 +1,4 @@
-FROM sitdocker/geocity-base:latest
+FROM sitdocker/geocity-base:3.3.0
 
 ARG dev_dependencies
 
