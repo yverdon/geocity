@@ -2,6 +2,7 @@
 black==19.10b0
 coverage
 django-debug-toolbar
+django-extensions
 factory_boy
 Faker
 ipdb

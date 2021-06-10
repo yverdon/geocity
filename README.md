@@ -66,6 +66,14 @@ We use [Black](https://github.com/psf/black) as code formatter. Just use the fol
 $ docker-compose exec web black .
 ```
 
+## Show urls
+
+We use [django-extensions](https://django-extensions.readthedocs.io/en/latest/command_extensions.html?highlight=show_urls#command-extensions) to show urls. Can be used to export models to a file (as text or picture), to display them in terminal and much more things
+
+```
+$ ./manage.py show_urls
+```
+
 ## Setup for full Docker persistent instance served by gunicorn webserver
 
 #### Create new PostGIS DB
