@@ -229,3 +229,9 @@ For more information about django's migrations, help is available at:
 docker-compose exec web python3 manage.py makemigrations --help
 docker-compose exec web python3 manage.py migrate --help
 ```
+
+## OAuth2
+
+[Access to a ressources with QGIS](docs/OAuth2_Qgis.md)
+
+[Access to a ressources with a bearer token](docs/OAuth2_access_api.md)

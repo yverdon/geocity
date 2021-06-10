@@ -18,7 +18,6 @@ requests
 # Required by django-tables2, which doesn't list it in their requirements
 tablib
 whitenoise
-tablib
 python-dotenv
 django-admin-sortable2
 django-grappelli
@@ -30,3 +29,4 @@ django-constance[database]
 django-two-factor-auth[phonenumbers]
 django-taggit
 filetype
+django-oauth-toolkit

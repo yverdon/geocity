@@ -116,6 +116,7 @@ urlpatterns += [
     path("rest/", include(router.urls)),  # Django-rest urls
     path("ogc/", include(ocg_base_router.urls)),  # OGC Landing page
     path("admin/", admin.site.urls),
+    path("oauth/", include("oauth2_provider.urls", namespace="oauth2_provider")),
 ]
 
 if settings.PREFIX_URL:
