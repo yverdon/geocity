@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     "django_tables2",
     "django_tables2_column_shifter",
     "taggit",
+    "oauth2_provider",
 ]
 
 if ENABLE_2FA:
@@ -125,6 +126,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "MAX_FILE_UPLOAD_SIZE",
         "GEOCALENDAR_URL",
         "ENABLE_GEOCALENDAR",
+        "ENDPOINT_WHITELIST",
     ),
     "Theme Options": (
         "BACKGROUND_COLOR",
@@ -217,6 +219,11 @@ CONSTANCE_CONFIG = {
     "TEXT_COLOR": ("#000000", "Couleur du texte", str,),
     "TITLE_COLOR": ("#000000", "Couleur du titre", str,),
     "TABLE_COLOR": ("#212529", "Couleur du texte dans les tableaux", str,),
+    "ENDPOINT_WHITELIST": (
+        "127.0.0.1,192.168.,172.",
+        "Liste d'adresses ip autorisées à requêter les endpoints DRF non publics, séparées par des virgules sans espace",
+        str,
+    ),
 }
 
 TEMPLATES = [
@@ -321,3 +328,10 @@ WMTS_LAYER_ALTERNATIVE = os.getenv("WMTS_LAYER_ALTERNATIVE")
 OL_MAP_HEIGHT = os.getenv("OL_MAP_HEIGHT")
 
 GRAPPELLI_ADMIN_TITLE = "Interface d'administration Geocity"
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
+        "rest_framework.authentication.SessionAuthentication",
+    )
+}
