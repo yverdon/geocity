@@ -304,7 +304,7 @@ class PermitRequestAPITestCase(TestCase):
 
     def test_non_authenticated_user_raises_exception(self):
         response = self.client.get(reverse("permits-list"), {})
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
         self.assertEqual(
             response.json()["detail"], "Informations d'authentification non fournies."
         )

@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     "django_tables2",
     "django_tables2_column_shifter",
     "taggit",
+    "oauth2_provider",
 ]
 
 if ENABLE_2FA:
@@ -327,3 +328,10 @@ WMTS_LAYER_ALTERNATIVE = os.getenv("WMTS_LAYER_ALTERNATIVE")
 OL_MAP_HEIGHT = os.getenv("OL_MAP_HEIGHT")
 
 GRAPPELLI_ADMIN_TITLE = "Interface d'administration Geocity"
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
+        "rest_framework.authentication.SessionAuthentication",
+    )
+}
