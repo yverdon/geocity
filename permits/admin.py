@@ -178,8 +178,13 @@ class DepartmentAdminForm(forms.ModelForm):
 
     # If the group is updated to be integrator, the users in this group should not be in another integrator group
     def clean(self):
-        is_integrator_admin = self.cleaned_data["is_integrator_admin"]
         group = self.cleaned_data["group"]
+
+        # Integrator users don't have the field "is_integrator_admin" while creating a group
+        if "is_integrator_admin" in self.cleaned_data:
+            is_integrator_admin = self.cleaned_data["is_integrator_admin"]
+        else:
+            is_integrator_admin = False
 
         # Check only if the group passed from not integrator to integrator and has a user_set
         try:
