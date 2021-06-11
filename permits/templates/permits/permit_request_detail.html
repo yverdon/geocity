@@ -224,10 +224,12 @@
       </a>
     </dd>
   {% endif %}
+  {% if config.ENABLE_GEOCALENDAR %}
   <dt>{% trans "Publié" %}</dt>
   <dd>
     {{permit_request.is_public|yesno:"Oui,Non" }}
   </dd>
+  {% endif %}
 </dl>
 
 
