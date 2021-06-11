@@ -191,7 +191,7 @@ class Command(BaseCommand):
 
         user = self.create_user(
             "integrator-yverdon",
-            "integrator Yverdon",
+            "Integrator Yverdon",
             administrative_entity_yverdon,
             is_default_validator=True,
             is_integrator_admin=True,
