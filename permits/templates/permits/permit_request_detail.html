@@ -199,9 +199,7 @@
   </dd>
   <dt>{% trans "Statut" %}</dt>
   <dd>
-    {% if permit_request.validation_pdf %}<a href="{{ permit_request.validation_pdf.url }}">{% endif %}
     {{ permit_request.get_status_display }}{% if permit_request.validated_at %} {% blocktrans with validated_at=permit_request.validated_at %}le {{ validated_at }}{% endblocktrans %}{% endif %}
-    {% if permit_request.validation_pdf %}</a>{% endif %}
   </dd>
   <dt>{% trans "Auteur-e" %}</dt>
   <dd>
@@ -221,7 +219,7 @@
   {% if permit_request.validation_pdf %}
     <dt>{% trans "Document délivré" %}</dt>
     <dd>
-      <a href="{{permit_request.validation_pdf.url}}" target="_blank">
+      <a href="{{ permit_request.validation_pdf.url }}" target="_blank">
         Télécharger le document PDF
       </a>
     </dd>
