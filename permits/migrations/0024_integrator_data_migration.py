@@ -47,6 +47,7 @@ def set_default_integrator_on_existing_objects(apps, schema_editor):
     WorksObjectType.objects.update(integrator=integrator_group)
     WorksObject.objects.update(integrator=integrator_group)
     WorksObjectProperty.objects.update(integrator=integrator_group)
+    Group.objects.update(integrator=integrator_group)
     PermitRequestAmendProperty.objects.update(integrator=integrator_group)
 
     permits_permissions = Permission.objects.filter(
