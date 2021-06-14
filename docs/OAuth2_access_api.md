@@ -60,7 +60,7 @@ If you want to use the following curl in a API Client, simply use `Form URL Enco
 
 ## Access to the ressource with the token
 
-- User curl with access token to get access to the resource (remplace "^" with "\" on linux)
+- User curl with access token to get access to the resource
 
 ```bash
     curl ^
