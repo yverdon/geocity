@@ -2,6 +2,8 @@
 
 ## Register an extern app
 
+If you aren't logged, the link will ask you to login, if you're already logged, be sure to be logged with the account who has the permission to see the `/rest/permits`.
+
 - Go to : <http://localhost:9095/oauth/applications/register/>
   - Name : `${YOUR_APP_NAME}`
   - Cliend id -> **Keep it**, you will need it later
@@ -19,6 +21,8 @@
   - Click on "Authorize"
   - An HTTP 404 is expected here, cause redirect URL doesn't exist
   - **Keep the code** in 404 url, `code=......`
+
+**This step can be repeated every time you need a new token for a new user**
 
 ---
 
@@ -56,6 +60,15 @@ If you want to use the following curl in a API Client, simply use `Form URL Enco
 }
 ```
 
+- if you've an `invalid_grant` error, you took too much time, just repeat the step [Connect to the new extern app](#Connect-to-the-new-extern app)`
+
+```json
+{
+  "error": "invalid_grant"
+}
+```
+
+
 ---
 
 ## Access to the ressource with the token
@@ -74,3 +87,8 @@ Or (not the best practice, but usefull to get a ressource in QGIS with a `vector
     curl -X GET http://localhost:9095/rest/permits/?access_token=${ACCESS_TOKEN}
 ```
 
+---
+
+## Refresh the token
+
+WIP
