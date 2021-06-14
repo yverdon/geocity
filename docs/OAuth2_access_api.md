@@ -60,7 +60,7 @@ If you want to use the following curl in a API Client, simply use `Form URL Enco
 }
 ```
 
-- if you've an `invalid_grant` error, you took too much time, just repeat the step [Connect to the new extern app](#Connect-to-the-new-extern app)`
+- If you've an `invalid_grant` error, you took too much time, just repeat the step [Connect to the new extern app](#Connect-to-the-new-extern-app)
 
 ```json
 {
