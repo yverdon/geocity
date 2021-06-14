@@ -1003,6 +1003,7 @@ class OGCOpenAPICapabilitiesView(viewsets.ViewSet):
                 }
             ]
         }
-
-        return Response(capabilities)
+        response = Response(capabilities)
+        print(dict(response))
+        return response
 
