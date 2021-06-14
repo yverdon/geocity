@@ -252,7 +252,7 @@ class GroupAdminForm(forms.ModelForm):
         }
 
     def clean_permissions(self):
-        cleaned_data = super().clean()
+        permissions = self.cleaned_data["permissions"]
         integrator_permissions = Permission.objects.filter(
             (
                 Q(content_type__app_label="permits")
@@ -262,14 +262,10 @@ class GroupAdminForm(forms.ModelForm):
         )
 
         if "permitdepartment-0-is_integrator_admin" in self.data.keys():
-            cleaned_data["permissions"] = cleaned_data["permissions"].union(
-                integrator_permissions
-            )
+            permissions = permissions.union(integrator_permissions)
         else:
-            cleaned_data["permissions"] = cleaned_data["permissions"].difference(
-                integrator_permissions
-            )
-        return cleaned_data["permissions"]
+            permissions = permissions.difference(integrator_permissions)
+        return permissions
 
 
 class GroupAdmin(admin.ModelAdmin):
@@ -296,6 +292,7 @@ class GroupAdmin(admin.ModelAdmin):
                 permitdepartment__is_integrator_admin=True
             ).pk
         super().save_model(request, obj, form, change)
+        obj.permitdepartment.save()
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         # permissions that integrator role can grant to group
@@ -315,7 +312,7 @@ class GroupAdmin(admin.ModelAdmin):
             )
 
             if not request.user.is_superuser:
-                kwargs["queryset"] = integrator_permissions.union(existing_permissions)
+                kwargs["queryset"] = integrator_permissions | existing_permissions
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
