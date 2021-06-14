@@ -879,7 +879,10 @@ def submit_permit_request(permit_request, absolute_uri_func):
 
     email_contents = render_to_string(
         "permits/emails/permit_request_submitted.txt",
-        {"permit_request_url": permit_request_url},
+        {
+            "permit_request_url": permit_request_url,
+            "administrative_entity": permit_request.administrative_entity,
+        },
     )
     emails = [
         (

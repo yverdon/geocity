@@ -191,7 +191,7 @@ class Command(BaseCommand):
 
         user = self.create_user(
             "integrator-yverdon",
-            "integrator Yverdon",
+            "Integrator Yverdon",
             administrative_entity_yverdon,
             is_default_validator=True,
             is_integrator_admin=True,
@@ -207,7 +207,7 @@ class Command(BaseCommand):
             codename__in=admin.OTHER_PERMISSIONS_CODENAMES
         )
         # set the required permissions for the integrator group
-        Group.objects.get(name="integrator Yverdon").permissions.set(
+        Group.objects.get(name="Integrator Yverdon").permissions.set(
             permits_permissions.union(other_permissions)
         )
         self.stdout.write("integrator-yverdon / admin")
