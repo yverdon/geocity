@@ -31,7 +31,7 @@ router.register(r"permits", api.PermitRequestViewSet, "permits")
 ocg_base_router = routers.DefaultRouter()
 ocg_base_router.register(r"landing", api.OGCOpenAPILandingView, "landing")
 ocg_base_router.register(r"collections", api.OGCOpenAPICollectionsView, "collections")
-ocg_base_router.register(r"capabilities", api.OGCOpenAPICapabilitiesView, "capabilities")
+ocg_base_router.register(r"openapi", api.OGCOpenAPICapabilitiesView, "openapi")
 ocg_base_router.register(r"collections/permits", api.PermitRequestViewSet, "permits")
 
 
