@@ -67,3 +67,10 @@ If you want to use the following curl in a API Client, simply use `Form URL Enco
     -H "Authorization: Bearer ${ACCESS_TOKEN}" ^
     -X GET http://localhost:9095/rest/permits/
 ```
+
+Or (not the best practice, but usefull to get a ressource in QGIS with a `vector layer`)
+
+```bash
+    curl -X GET http://localhost:9095/rest/permits/?access_token=${ACCESS_TOKEN}
+```
+
