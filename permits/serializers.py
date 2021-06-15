@@ -5,6 +5,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Max, Min
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
+from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
@@ -38,21 +39,7 @@ class PermitRequestSerializer(serializers.ModelSerializer):
     works_object_types_names = WorksObjectTypesNames(
         source="works_object_types", read_only=True
     )
-    creditor_type = serializers.SerializerMethodField()
     intersected_geometries = serializers.SerializerMethodField()
-
-    def get_creditor_type(self, obj):
-        if obj.creditor_type is not None:
-            creditor = obj.get_creditor_type_display()
-        elif obj.author:
-            if obj.author.user and obj.creditor_type is None:
-                creditor = (
-                    _("Auteur de la demande, ")
-                    + f"{obj.author.user.first_name} {obj.author.user.last_name}"
-                )
-        else:
-            creditor = ""
-        return creditor
 
     def get_intersected_geometries(self, obj):
         return obj.intersected_geometries if obj.intersected_geometries else ""
@@ -64,7 +51,6 @@ class PermitRequestSerializer(serializers.ModelSerializer):
             "status",
             "administrative_entity",
             "works_object_types",
-            "creditor_type",
             "meta_types",
             "intersected_geometries",
             "works_object_types_names",
@@ -131,6 +117,34 @@ class PermitRequestActorSerializer(serializers.Serializer):
                 ] = actor.get_actor_type_display()
 
         return rep
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "first_name",
+            "last_name",
+            "email",
+        )
+
+
+class PermitAuthorSerializer(serializers.ModelSerializer):
+
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = models.PermitAuthor
+        fields = (
+            "user",
+            "company_name",
+            "vat_number",
+            "address",
+            "zipcode",
+            "city",
+            "phone_first",
+            "phone_second",
+        )
 
 
 class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
@@ -249,6 +263,22 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
         source="geo_time", read_only=True
     )
 
+    creditor_type = serializers.SerializerMethodField()
+    author = PermitAuthorSerializer(read_only=True)
+
+    def get_creditor_type(self, obj):
+        if obj.creditor_type is not None:
+            creditor = obj.get_creditor_type_display()
+        elif obj.author:
+            if obj.author.user and obj.creditor_type is None:
+                creditor = (
+                    _("Auteur de la demande, ")
+                    + f"{obj.author.user.first_name} {obj.author.user.last_name}"
+                )
+        else:
+            creditor = ""
+        return creditor
+
     class Meta:
         model = models.PermitRequest
         geo_field = "geo_time"
@@ -258,6 +288,8 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
             "permit_request",
             "wot_and_amend_properties",
             "permit_request_actor",
+            "creditor_type",
+            "author",
             "geo_envelop",
         )
 
@@ -301,6 +333,11 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
             for field, value in rep["properties"][field_to_flatten].items():
                 rep["properties"][field] = value
             del rep["properties"][field_to_flatten]
+
+        # Flattening the user fields from author
+        for field, value in rep["properties"]["author"]["user"].items():
+            rep["properties"]["author"][field] = value
+        del rep["properties"]["author"]["user"]
 
         return rep
 
