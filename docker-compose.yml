@@ -15,7 +15,8 @@ services:
             args:
                 dev_dependencies: ${DEV_DEPENDENCIES}
         entrypoint: /code/entrypoint.sh
-        command: "gunicorn geomapshark.wsgi -b :9000 --error-logfile gunicorn_log.log"
+        # command: "gunicorn geomapshark.wsgi -b :9000 --error-logfile gunicorn_log.log"
+        command: python3 manage.py runserver 0.0.0.0:9000
         volumes:
             - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
             - qgis_projects:/qgis_projects
@@ -25,8 +26,12 @@ services:
         image: openquake/qgis-server:3.16
         restart: unless-stopped
         volumes:
-            - qgis_projects:/qgis_projects
+            - ./qgisserver/geocity.qgs:/io/data/geocity.qgs:ro
             - ./qgisserver/pg_service.conf:/etc/postgresql-common/pg_service.conf:ro
             - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
         ports:
             - "${QGISSERVER_DOCKER_PORT}:80"
+        environment:
+            - QGIS_SERVER_PARALLEL_RENDERING=true
+            - QGIS_SERVER_IGNORE_BAD_LAYERS=true
+            - QGIS_SERVER_LOG_LEVEL=0
