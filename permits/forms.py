@@ -318,7 +318,8 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                     attrs={
                         "placeholder": ("ex: " + prop.placeholder)
                         if prop.placeholder != ""
-                        else ""
+                        else "",
+                        "autocomplete": "off",
                     },
                 ),
                 help_text=prop.help_text if prop.help_text != "" else "",
@@ -440,21 +441,33 @@ class DjangoAuthUserForm(forms.ModelForm):
         max_length=30,
         label=_("Prénom"),
         widget=forms.TextInput(
-            attrs={"placeholder": "ex: Marcel", "required": "required"}
+            attrs={
+                "placeholder": "ex: Marcel",
+                "required": "required",
+                "type": "given-name",
+            }
         ),
     )
     last_name = forms.CharField(
         max_length=150,
         label=_("Nom"),
         widget=forms.TextInput(
-            attrs={"placeholder": "ex: Dupond", "required": "required"}
+            attrs={
+                "placeholder": "ex: Dupond",
+                "required": "required",
+                "type": "family-name",
+            }
         ),
     )
     email = forms.EmailField(
         max_length=254,
         label=_("Email"),
         widget=forms.TextInput(
-            attrs={"placeholder": "ex: exemple@exemple.com", "required": "required"}
+            attrs={
+                "placeholder": "ex: exemple@exemple.com",
+                "required": "required",
+                "type": "email",
+            }
         ),
     )
     required_css_class = "required"
@@ -468,19 +481,27 @@ class GenericAuthorForm(forms.ModelForm):
 
     required_css_class = "required"
     address = forms.CharField(
-        max_length=100, label=_("Adresse"), widget=AddressWidget()
+        max_length=100,
+        label=_("Adresse"),
+        widget=AddressWidget(attrs={"autocomplete": "off",},),
     )
 
     zipcode = forms.IntegerField(
         label=_("NPA"),
         validators=[MinValueValidator(1000), MaxValueValidator(9999)],
-        widget=forms.NumberInput(attrs={"required": "required"}),
+        widget=forms.NumberInput(
+            attrs={"required": "required", "type": "postal-code",}
+        ),
     )
     city = forms.CharField(
         max_length=100,
         label=_("Ville"),
         widget=forms.TextInput(
-            attrs={"placeholder": "ex: Yverdon", "required": "required"}
+            attrs={
+                "placeholder": "ex: Yverdon",
+                "required": "required",
+                "type": "address-level2",
+            }
         ),
     )
 
@@ -499,11 +520,17 @@ class GenericAuthorForm(forms.ModelForm):
             "vat_number": 'Trouvez votre numéro <a href="https://www.uid.admin.ch/Search.aspx?lang=fr" target="_blank">TVA</a>',
         }
         widgets = {
-            "phone_first": forms.TextInput(attrs={"placeholder": "ex: 024 111 22 22"}),
-            "phone_second": forms.TextInput(attrs={"placeholder": "ex: 079 111 22 22"}),
-            "vat_number": forms.TextInput(attrs={"placeholder": "ex: CHE-123.456.789"}),
+            "phone_first": forms.TextInput(
+                attrs={"placeholder": "ex: 024 111 22 22", "type": "tel",}
+            ),
+            "phone_second": forms.TextInput(
+                attrs={"placeholder": "ex: 079 111 22 22", "type": "tel",}
+            ),
+            "vat_number": forms.TextInput(
+                attrs={"placeholder": "ex: CHE-123.456.789",}
+            ),
             "company_name": forms.TextInput(
-                attrs={"placeholder": "ex: Construction SA"}
+                attrs={"placeholder": "ex: Construction SA", "type": "organization",}
             ),
         }
 
@@ -551,18 +578,24 @@ class PermitRequestActorForm(forms.ModelForm):
     first_name = forms.CharField(
         max_length=150,
         label=_("Prénom"),
-        widget=forms.TextInput(attrs={"placeholder": "ex: Marcel",}),
+        widget=forms.TextInput(
+            attrs={"placeholder": "ex: Marcel", "type": "given-name",}
+        ),
     )
     last_name = forms.CharField(
         max_length=100,
         label=_("Nom"),
-        widget=forms.TextInput(attrs={"placeholder": "ex: Dupond",}),
+        widget=forms.TextInput(
+            attrs={"placeholder": "ex: Dupond", "type": "family-name",}
+        ),
     )
     phone = forms.CharField(
         min_length=10,
         max_length=16,
         label=_("Téléphone"),
-        widget=forms.TextInput(attrs={"placeholder": "ex: 024 111 22 22",}),
+        widget=forms.TextInput(
+            attrs={"placeholder": "ex: 024 111 22 22", "type": "tel",}
+        ),
         validators=[
             RegexValidator(
                 regex=r"^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
@@ -575,7 +608,9 @@ class PermitRequestActorForm(forms.ModelForm):
     email = forms.EmailField(
         max_length=100,
         label=_("Email"),
-        widget=forms.TextInput(attrs={"placeholder": "ex: exemple@exemple.com",}),
+        widget=forms.TextInput(
+            attrs={"placeholder": "ex: exemple@exemple.com", "type": "email",}
+        ),
     )
     address = forms.CharField(
         max_length=100,
@@ -585,24 +620,29 @@ class PermitRequestActorForm(forms.ModelForm):
                 "single_address_field": False,
                 "single_contact": False,
             },
+            attrs={"autocomplete": "off",},
         ),
     )
 
     zipcode = forms.IntegerField(
         label=_("NPA"),
         validators=[MinValueValidator(1000), MaxValueValidator(9999)],
-        widget=forms.NumberInput(),
+        widget=forms.NumberInput(attrs={"type": "postal-code",}),
     )
     city = forms.CharField(
         max_length=100,
         label=_("Ville"),
-        widget=forms.TextInput(attrs={"placeholder": "ex: Yverdon",}),
+        widget=forms.TextInput(
+            attrs={"placeholder": "ex: Yverdon", "type": "address-level2",}
+        ),
     )
     company_name = forms.CharField(
         required=False,
         label=_("Raison sociale"),
         max_length=100,
-        widget=forms.TextInput(attrs={"placeholder": "ex: Construction SA"}),
+        widget=forms.TextInput(
+            attrs={"placeholder": "ex: Construction SA", "type": "organization"}
+        ),
     )
     vat_number = forms.CharField(
         required=False,
