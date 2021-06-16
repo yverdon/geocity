@@ -35,19 +35,34 @@ class OAuth2TokenView(TemplateView):
         client_secret = self.request.POST.get("client_secret")
         code = self.request.POST.get("code")
         absolute_uri = self.request.build_absolute_uri('/')
-        suffix_url = "oauth/token/"
-        
 
+        # Uri used to get token
+        suffix_oauth_uri = "oauth/token/"
+        suffix_token_uri = "token/"
+
+        # Fix for localhost, docker users 9095->9000/tcp
+        if(absolute_uri == "http://localhost:9095/"):
+            absolute_uri_localhost = "http://localhost:9000/"
+        else:
+            absolute_uri_localhost = absolute_uri
+
+        # Fix for prefix_url
+        if settings.PREFIX_URL:
+            endpoint_uri = absolute_uri_localhost + settings.PREFIX_URL + suffix_oauth_uri
+            redirect_uri = absolute_uri + settings.PREFIX_URL + suffix_token_uri
+        else:
+            endpoint_uri = absolute_uri_localhost + suffix_oauth_uri
+            redirect_uri = absolute_uri + suffix_token_uri
+
+        print(redirect_uri)
+        
         if client_secret and code:
-            if settings.PREFIX_URL:
-                endpoint = absolute_uri + settings.PREFIX_URL + "oauth/token/"
-            else:
-                endpoint = absolute_uri + "oauth/token/"
+            endpoint = endpoint_uri
             data = {
                 "client_id": client_id,
                 "client_secret": client_secret,
                 "code": code,
-                "redirect_uri": absolute_uri + "token/",
+                "redirect_uri": redirect_uri,
                 "grant_type": "authorization_code",
             }
             headers = {
