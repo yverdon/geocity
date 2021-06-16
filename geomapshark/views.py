@@ -2,11 +2,14 @@ from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import PasswordResetView
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, request
+from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.views.generic.base import TemplateView
 
 from permits import forms, models
+import requests
 
 
 class CustomPasswordResetView(PasswordResetView):
@@ -22,6 +25,52 @@ class CustomPasswordResetView(PasswordResetView):
         self.extra_email_context["site_name"] = self.request.build_absolute_uri().split(
             "/"
         )[2]
+        return context
+
+class OAuth2TokenView(TemplateView):
+    template_name = "oauth2/oauth2_token.html"
+    
+    def post(self, *args, **kwargs):
+        client_id = self.request.POST.get("client_id")
+        client_secret = self.request.POST.get("client_secret")
+        code = self.request.POST.get("code")
+
+        if client_secret and code:
+            endpoint = "http://localhost:9000/oauth/token/"
+            data = {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "code": code,
+                "redirect_uri": "http://localhost:9095/token/",
+                "grant_type": "authorization_code",
+            }
+            headers = {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Cache-Control": "no-cache",
+            }
+
+            request = requests.post(endpoint, data=data, headers=headers)
+            return HttpResponse(request)
+
+            # url = reverse("oauth2_provider:token", data=data, headers=headers)
+            # return HttpResponseRedirect(url)
+            # c = {'access_token': 'bar'}
+            # return HttpResponse(render(c, "oauth2/oauth2_token.html"), content_type='application/x-www-form-urlencoded')
+            # return HttpResponseRedirect(reverse("oauth2_token", args={"access_token": "abcd"}))
+            # return render (request, "oauth2/oauth2_token.html")
+        else:
+            return HttpResponseRedirect("../oauth/authorize/?response_type=code&client_id=" + client_id)
+
+    def get_context_data(self, **kwargs):
+        context = super(OAuth2TokenView, self).get_context_data(**kwargs)
+        context.update({
+            "code": self.request.GET.get("code"),
+            "access_token": self.request.GET.get("access_token"),
+            "expires_in": self.request.GET.get("expires_in"),
+            "token_type": self.request.GET.get("token_type"),
+            "scope": self.request.GET.get("scope"),
+            "refresh_token": self.request.GET.get("refresh_token"),
+        })
         return context
 
 
