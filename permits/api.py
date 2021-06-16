@@ -110,13 +110,7 @@ class BlockRequesterUserPermission(BasePermission):
     """
 
     def has_permission(self, request, view):
-        remote_addr = request.META["REMOTE_ADDR"]
-
-        for whitelisted in config.ENDPOINT_WHITELIST.split(","):
-            if remote_addr == whitelisted or remote_addr.startswith(whitelisted):
-                return request.user.get_all_permissions()
-        else:
-            return []
+        return request.user.get_all_permissions()
 
 
 class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
