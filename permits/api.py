@@ -110,7 +110,6 @@ class BlockRequesterUserPermission(BasePermission):
     """
 
     def has_permission(self, request, view):
-
         return request.user.get_all_permissions()
 
 
