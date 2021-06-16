@@ -1,3 +1,5 @@
+{% load static %}
+{% load i18n %}
 {% load bootstrap4 %}
 
 {% block content-fluid %}
@@ -40,4 +42,8 @@
     </div>
 </form>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/oauth2_token.js' %}"></script>
 {% endblock %}
