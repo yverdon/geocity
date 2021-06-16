@@ -34,14 +34,20 @@ class OAuth2TokenView(TemplateView):
         client_id = self.request.POST.get("client_id")
         client_secret = self.request.POST.get("client_secret")
         code = self.request.POST.get("code")
+        absolute_uri = self.request.build_absolute_uri('/')
+        suffix_url = "oauth/token/"
+        
 
         if client_secret and code:
-            endpoint = "http://localhost:9000/oauth/token/"
+            if settings.PREFIX_URL:
+                endpoint = absolute_uri + settings.PREFIX_URL + "oauth/token/"
+            else:
+                endpoint = absolute_uri + "oauth/token/"
             data = {
                 "client_id": client_id,
                 "client_secret": client_secret,
                 "code": code,
-                "redirect_uri": "http://localhost:9095/token/",
+                "redirect_uri": absolute_uri + "token/",
                 "grant_type": "authorization_code",
             }
             headers = {
