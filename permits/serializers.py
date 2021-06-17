@@ -333,11 +333,6 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
                 rep["properties"][field] = value
             del rep["properties"][field_to_flatten]
 
-        # Flattening the user fields from author
-        for field, value in rep["properties"]["author"]["user"].items():
-            rep["properties"]["author"][field] = value
-        del rep["properties"]["author"]["user"]
-
         return rep
 
 
