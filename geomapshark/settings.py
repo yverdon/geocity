@@ -57,6 +57,7 @@ TAGGIT_TAGS_FROM_STRING = "permits.utils.comma_splitter"
 
 # 2FA activation
 ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
+LOCAL_IP_WHITELIST = os.getenv("LOCAL_IP_WHITELIST")
 
 # Application definition
 INSTALLED_APPS = [

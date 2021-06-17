@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import (
     permission_required,
     user_passes_test,
 )
+from django.conf import settings
+from django.contrib.auth.models import User
 from django.db.models import CharField, F, Prefetch, Q
 from rest_framework import viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
@@ -104,13 +106,35 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
 # //////////////////////////////////
 
 
+def get_local_user_from_qgisserver_request(request):
+    """
+    Get Django user from username passed by qgisserver in rest/permits/?username=johndoe
+    This is only allowed within local network defined in env variable LOCAL_IP_WHITELIST
+    """
+    for whitelisted_ip in settings.LOCAL_IP_WHITELIST:
+        if request.META["REMOTE_ADDR"].startswith(whitelisted_ip):
+            username = request.query_params.get("username")
+            if username:
+                user = User.objects.filter(username=username).first()
+                # Do not accept superuser account in production
+                if settings.ENV == "DEV" and user.is_superuser:
+                    return user
+                elif settings.ENV == "PROD" and not user.is_superuser:
+                    return user
+
+
 class BlockRequesterUserPermission(BasePermission):
     """
     Block access to Permit Requesters (General Public)
     """
 
     def has_permission(self, request, view):
-        return request.user.get_all_permissions()
+
+        if request.user.is_authenticated:
+            return request.user.get_all_permissions()
+        elif request.query_params.get("username"):
+            user = get_local_user_from_qgisserver_request(request)
+            return user.get_all_permissions()
 
 
 class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
@@ -123,7 +147,7 @@ class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
     """
 
     serializer_class = serializers.PermitRequestPrintSerializer
-    permission_classes = [IsAuthenticated, BlockRequesterUserPermission]
+    permission_classes = [BlockRequesterUserPermission]
 
     def get_queryset(self):
         """
@@ -131,6 +155,10 @@ class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
         view permissions
         """
         user = self.request.user
+
+        # If user is NOT authentified but comes from internal network, get it from the db
+        if user.is_anonymous:
+            user = get_local_user_from_qgisserver_request(self.request)
 
         filters_serializer = serializers.PermitRequestFiltersSerializer(
             data={
@@ -140,7 +168,6 @@ class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
                 "permit_request_id": self.request.query_params.get("permit_request_id"),
             }
         )
-
         filters_serializer.is_valid(raise_exception=True)
         filters = filters_serializer.validated_data
 

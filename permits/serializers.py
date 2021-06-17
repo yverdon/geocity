@@ -314,7 +314,6 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
 
     def to_representation(self, value):
         rep = super().to_representation(value)
-
         # Flattening the Geometry
         rep["geometry"] = rep["properties"]["geo_envelop"]["geometry"]
         for field, value in rep["properties"]["geo_envelop"]["properties"].items():
