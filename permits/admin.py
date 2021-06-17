@@ -12,6 +12,9 @@ from django.core.exceptions import PermissionDenied
 from django.forms import ValidationError
 from django.contrib import messages
 from django.contrib.auth.forms import UserChangeForm
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from io import BytesIO
+
 
 from . import forms as permit_forms
 from . import models
@@ -353,8 +356,37 @@ def get_works_object_types_field(user):
 works_object_type_administrative_entities.short_description = _("Communes")
 
 
+class QgisProjectAdminForm(forms.ModelForm):
+    def clean(self):
+        qgis_project_file = self.cleaned_data['qgis_project_file']
+        data = qgis_project_file.read()
+        protocols = ["http", "https"]
+        hosts = ["localhost", "127.0.0.1"]
+        sites = ["geocity-preprod.mapnv.ch", "geocity.ch"]
+        final_uri = bytes("http://web:9000", "utf-8")
+
+        for protocol in protocols:
+            for host in hosts:
+                uri = bytes(protocol + "://" + host + ":" + settings.DJANGO_DOCKER_PORT, "utf-8")
+                data = data.replace(uri, final_uri)
+            for site in sites:
+                uri = bytes(protocol + "://" + site, "utf-8")
+                data = data.replace(uri, final_uri)
+
+        data = bytes(data)
+        file = BytesIO()
+        file.write(data)
+
+        updated_file = InMemoryUploadedFile(file, qgis_project_file.field_name, qgis_project_file._name, qgis_project_file.content_type, len(data), qgis_project_file.charset, qgis_project_file.content_type_extra)
+
+        self.cleaned_data['qgis_project_file'] = updated_file
+
+        return self.cleaned_data
+
+
 class QgisProjectInline(admin.TabularInline):
     model = models.QgisProject
+    form = QgisProjectAdminForm
 
 
 class WorksObjectTypeAdminForm(forms.ModelForm):
