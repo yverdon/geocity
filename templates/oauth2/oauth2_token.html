@@ -18,7 +18,7 @@
         <br>
     </div>
 </form>
-{% elif access_token %}
+<!-- {% elif access_token %}
     <h4>Création du token, étape 3</h4>
     <label for="access_token">access_token :</label><br>
     <input type="text" id="access_token" name="access_token" value="{{access_token}}" size="150" readonly><br>
@@ -29,7 +29,7 @@
     <label for="scope">scope :</label><br>
     <input type="text" id="scope" name="scope" value="{{scope}}" size="150" readonly><br>
     <label for="refresh_token">refresh_token :</label><br>
-    <input type="text" id="refresh_token" name="refresh_token" value="{{refresh_token}}" size="150" readonly><br>
+    <input type="text" id="refresh_token" name="refresh_token" value="{{refresh_token}}" size="150" readonly><br> -->
 {% else %}
 <form method="post" action="">
     {% csrf_token %}
@@ -42,6 +42,20 @@
     </div>
 </form>
 {% endif %}
+<form method="post" action="">
+    {% csrf_token %}
+    <div>
+        <h4>Raffraichir le token</h4>
+        <label for="client_id">Client ID :</label><br>
+        <input type="text" id="client_id" name="client_id" size="150"><br>
+        <label for="client_secret">Client secret :</label><br>
+        <input type="text" id="client_secret" name="client_secret" size="150"><br>
+        <label for="refresh_token">Refresh token :</label><br>
+        <input type="text" id="refresh_token" name="refresh_token" size="150" ><br>
+        <button class="btn btn-primary font-weight-bold left-button" type="submit">Envoyer</button>
+        <br>
+    </div>
+</form>
 {% endblock %}
 
 {% block scripts %}

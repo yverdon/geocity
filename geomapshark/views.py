@@ -31,22 +31,24 @@ class OAuth2TokenView(TemplateView):
     template_name = "oauth2/oauth2_token.html"
     
     def post(self, *args, **kwargs):
+        # Values from form
         client_id = self.request.POST.get("client_id")
         client_secret = self.request.POST.get("client_secret")
         code = self.request.POST.get("code")
-        absolute_uri = self.request.build_absolute_uri('/')
+        refresh_token = self.request.POST.get("refresh_token")
 
         # Uri used to get token
+        absolute_uri = self.request.build_absolute_uri('/')
         suffix_oauth_uri = "oauth/token/"
         suffix_token_uri = "token/"
 
-        # Fix for localhost, docker users 9095->9000/tcp
+        # Fix absolute_uri in case we are working on localhost. Docker uses 9095->9000/tcp
         if(absolute_uri == "http://localhost:9095/"):
             absolute_uri_localhost = "http://localhost:9000/"
         else:
             absolute_uri_localhost = absolute_uri
 
-        # Fix for prefix_url
+        # Fix endpoint_uri and redirect_uri in case we need a prefix_url
         if settings.PREFIX_URL:
             endpoint_uri = absolute_uri_localhost + settings.PREFIX_URL + suffix_oauth_uri
             redirect_uri = absolute_uri + settings.PREFIX_URL + suffix_token_uri
@@ -54,43 +56,49 @@ class OAuth2TokenView(TemplateView):
             endpoint_uri = absolute_uri_localhost + suffix_oauth_uri
             redirect_uri = absolute_uri + suffix_token_uri
 
-        print(redirect_uri)
+        # Header and data for requests
+        header = {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Cache-Control": "no-cache",
+        }
+
+        data_create_token = {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "code": code,
+            "redirect_uri": redirect_uri,
+            "grant_type": "authorization_code",
+        }
+
+        data_refresh_token = {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "refresh_token": refresh_token,
+            "grant_type": "refresh_token",
+        }
         
-        if client_secret and code:
-            endpoint = endpoint_uri
-            data = {
-                "client_id": client_id,
-                "client_secret": client_secret,
-                "code": code,
-                "redirect_uri": redirect_uri,
-                "grant_type": "authorization_code",
-            }
-            headers = {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "Cache-Control": "no-cache",
-            }
-
-            request = requests.post(endpoint, data=data, headers=headers)
+        # "code" is used on token creation and "refresh_token" is user on the rfresh token
+        if code:
+            request = requests.post(endpoint_uri, data=data_create_token, headers=header)
             return HttpResponse(request)
-
-            # url = reverse("oauth2_provider:token", data=data, headers=headers)
-            # return HttpResponseRedirect(url)
-            # c = {'access_token': 'bar'}
-            # return HttpResponse(render(c, "oauth2/oauth2_token.html"), content_type='application/x-www-form-urlencoded')
-            # return HttpResponseRedirect(reverse("oauth2_token", args={"access_token": "abcd"}))
-            # return render (request, "oauth2/oauth2_token.html")
+        elif refresh_token:
+            request = requests.post(endpoint_uri, data=data_refresh_token, headers=header)
+            return HttpResponse(request)
         else:
             return HttpResponseRedirect("../oauth/authorize/?response_type=code&client_id=" + client_id)
 
+    # TODO: "access_token" to "refresh_token" are commented, cause we use "return HttpResponse(request)" on the post. Improve this and return to oauth2_token.html and show the values from the json
+    # TODO: Uncomment "<h4>Création du token, étape 3</h4>" in "oauth2_token.html" to show the values when the json will be returned to our route
+    # Get the values on the request
     def get_context_data(self, **kwargs):
         context = super(OAuth2TokenView, self).get_context_data(**kwargs)
         context.update({
             "code": self.request.GET.get("code"),
-            "access_token": self.request.GET.get("access_token"),
-            "expires_in": self.request.GET.get("expires_in"),
-            "token_type": self.request.GET.get("token_type"),
-            "scope": self.request.GET.get("scope"),
-            "refresh_token": self.request.GET.get("refresh_token"),
+            # "access_token": self.request.GET.get("access_token"),
+            # "expires_in": self.request.GET.get("expires_in"),
+            # "token_type": self.request.GET.get("token_type"),
+            # "scope": self.request.GET.get("scope"),
+            # "refresh_token": self.request.GET.get("refresh_token"),
         })
         return context
 
