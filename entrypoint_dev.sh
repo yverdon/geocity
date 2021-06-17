@@ -25,7 +25,7 @@ mkdir -p /code/geomapshark/static/
 echo yes | python3 manage.py compilemessages -l fr
 
 
-# python3 manage.py fixturize
+python3 manage.py fixturize
 
 
 exec $@
