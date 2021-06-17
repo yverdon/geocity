@@ -15,8 +15,7 @@ services:
             args:
                 dev_dependencies: ${DEV_DEPENDENCIES}
         entrypoint: /code/entrypoint.sh
-        # command: "gunicorn geomapshark.wsgi -b :9000 --error-logfile gunicorn_log.log"
-        command: python3 manage.py runserver 0.0.0.0:9000
+        command: "gunicorn geomapshark.wsgi -b :9000 --error-logfile gunicorn_log.log --workers=2 --threads=4 --worker-class=gthread"
         volumes:
             - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
             - qgis_projects:/qgis_projects
@@ -34,4 +33,3 @@ services:
         environment:
             - QGIS_SERVER_PARALLEL_RENDERING=true
             - QGIS_SERVER_IGNORE_BAD_LAYERS=true
-            - QGIS_SERVER_LOG_LEVEL=0
