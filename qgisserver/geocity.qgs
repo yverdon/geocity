@@ -22,7 +22,7 @@
     <customproperties/>
     <layer-tree-group checked="Qt::Checked" name="geocity" expanded="1">
       <customproperties/>
-      <layer-tree-layer checked="Qt::Checked" name="permits_permitadministrativeentity" patch_size="-1,-1" legend_split_behavior="0" source="service='pg_geocity' key='_uid_' checkPrimaryKeyUnicity='1' table=&quot;(SELECT row_number() over () AS _uid_,* FROM (select * from permits_permitadministrativeentity&#xa;) AS _subq_1_&#xa;)&quot; (geom)" expanded="1" legend_exp="" providerKey="postgres" id="permits_permitadministrativeentity_e14a195c_0869_414b_8b25_b15fefff8143">
+      <layer-tree-layer checked="Qt::Checked" name="permits_permitadministrativeentity" patch_size="-1,-1" legend_split_behavior="0" source="service='pg_geocity' key='_uid_' checkPrimaryKeyUnicity='1' table=&quot;(SELECT row_number() over () AS _uid_,* FROM (select * from geocity.permits_permitadministrativeentity&#xa;) AS _subq_1_&#xa;)&quot; (geom)" expanded="1" legend_exp="" providerKey="postgres" id="permits_permitadministrativeentity_e14a195c_0869_414b_8b25_b15fefff8143">
         <customproperties/>
       </layer-tree-layer>
     </layer-tree-group>
@@ -324,7 +324,7 @@
         <ymax>1186887</ymax>
       </extent>
       <id>permits_permitadministrativeentity_e14a195c_0869_414b_8b25_b15fefff8143</id>
-      <datasource>service='pg_geocity' key='_uid_' checkPrimaryKeyUnicity='1' table="(SELECT row_number() over () AS _uid_,* FROM (select * from permits_permitadministrativeentity
+      <datasource>service='pg_geocity' key='_uid_' checkPrimaryKeyUnicity='1' table="(SELECT row_number() over () AS _uid_,* FROM (select * from geocity.permits_permitadministrativeentity
 ) AS _subq_1_
 )" (geom)</datasource>
       <keywordList>

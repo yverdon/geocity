@@ -3,7 +3,6 @@ version: "3"
 volumes:
     gmsdata:
     pgdata:
-    # qgis_projects:
 
 services:
     web:
@@ -32,7 +31,6 @@ services:
         depends_on:
             - "postgres"
         volumes:
-            # - ./media:/qgis_projects
             - ./qgisserver/geocity.qgs:/io/data/geocity.qgs:ro #default qgis project for mask layer
             - ./qgisserver/pg_service.conf:/etc/postgresql-common/pg_service.conf:ro
             - ./private_documents:/private_documents #used to access to the private documents via a volume (check env.demo) search(ctrl+f) -> #access_to_private_document_local
