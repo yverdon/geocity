@@ -361,7 +361,7 @@ works_object_type_administrative_entities.short_description = _("Communes")
 class QgisProjectAdminForm(forms.ModelForm):
 
     # Replaces the url to the ressource, cause server will pass by docker web:9000, remove access_token in url and delete the unwanted content
-    def clean(self):
+    def clean_qgis_project_file(self):
         # Retrieve the cleaned_data for the uploaded file
         qgis_project_file = self.cleaned_data["qgis_project_file"]
 
@@ -413,7 +413,7 @@ class QgisProjectAdminForm(forms.ModelForm):
         file.write(data)
 
         # Use the constructor of InMemoryUploadedFile to be able to set the value of self.cleaned_data['qgis_project_file']
-        updated_file = InMemoryUploadedFile(
+        qgis_project_file = InMemoryUploadedFile(
             file,
             qgis_project_file.field_name,
             qgis_project_file._name,
@@ -423,8 +423,7 @@ class QgisProjectAdminForm(forms.ModelForm):
             qgis_project_file.content_type_extra,
         )
 
-        self.cleaned_data["qgis_project_file"] = updated_file
-        return self.cleaned_data
+        return qgis_project_file
 
 
 class QgisProjectInline(admin.TabularInline):
