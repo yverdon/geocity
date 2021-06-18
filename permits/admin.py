@@ -404,8 +404,8 @@ class QgisProjectAdminForm(forms.ModelForm):
         regex_element = bytes("\|[\S+]+<", encoder)
 
         # Get characters between /?access_token and & or " without spaces
-        regex_access_token_with_params = bytes("\/?access_token[\S+]+&", encoder)
-        regex_access_token_end_string = bytes('\/?access_token[\S+]+"', encoder)
+        regex_access_token_with_params = bytes("\/\?access_token[\S+]+&", encoder)
+        regex_access_token_end_string = bytes('\/\?access_token[\S+]+"', encoder)
 
         # The regex will take the first to the last character, so we need to add it back
         empty_bytes_string = bytes('"', encoder)
