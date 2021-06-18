@@ -360,10 +360,10 @@ works_object_type_administrative_entities.short_description = _("Communes")
 
 class QgisProjectAdminForm(forms.ModelForm):
 
-    # Replaces the url to the ressource, cause server will pass by docker web:9000 and delete the unwanted content 
+    # Replaces the url to the ressource, cause server will pass by docker web:9000, remove access_token in url and delete the unwanted content
     def clean(self):
         # Retrieve the cleaned_data for the uploaded file
-        qgis_project_file = self.cleaned_data['qgis_project_file']
+        qgis_project_file = self.cleaned_data["qgis_project_file"]
 
         # Content of uploaded file in bytes
         data = qgis_project_file.read()
@@ -379,27 +379,51 @@ class QgisProjectAdminForm(forms.ModelForm):
         # Replace the url strings from the user
         for protocol in protocols:
             for host in hosts:
-                url = bytes(protocol + "://" + host + ":" + settings.DJANGO_DOCKER_PORT, "utf-8")
+                url = bytes(
+                    protocol + "://" + host + ":" + settings.DJANGO_DOCKER_PORT, "utf-8"
+                )
                 data = data.replace(url, web_url)
             for site in sites:
                 url = bytes(protocol + "://" + site, "utf-8")
                 data = data.replace(url, web_url)
 
-        # Delete the strings not needed
-        
-        # Start with = |
-        # End with = " or <
-        # if it's in same line
-            # data replace(or delete) between start with and end with, ""
+        # Get characters between | and " or < without spaces, to prevent to take multiple lines
+        regex_url = bytes('\|[\S+]+"', "utf-8")
+        regex_element = bytes("\|[\S+]+<", "utf-8")
+
+        # Get characters between /?access_token and & or " without spaces
+        regex_access_token_with_params = bytes("\/?access_token[\S+]+&", "utf-8")
+        regex_access_token_end_string = bytes('\/?access_token[\S+]+"', "utf-8")
+
+        # The regex will take the first to the last character, so we need to add it back
+        empty_bytes_string = bytes('"', "utf-8")
+        empty_bytes_balise = bytes("<", "utf-8")
+        empty_bytes_params = bytes("", "utf-8")
+
+        # Replace characters using regex
+        data = re.sub(regex_url, empty_bytes_string, data)
+        data = re.sub(regex_element, empty_bytes_balise, data)
+
+        # Remove access_token without removing other params
+        data = re.sub(regex_access_token_with_params, empty_bytes_params, data)
+        data = re.sub(regex_access_token_end_string, empty_bytes_string, data)
 
         # Write the data in bytes in a new file
         file = BytesIO()
         file.write(data)
 
         # Use the constructor of InMemoryUploadedFile to be able to set the value of self.cleaned_data['qgis_project_file']
-        updated_file = InMemoryUploadedFile(file, qgis_project_file.field_name, qgis_project_file._name, qgis_project_file.content_type, len(data), qgis_project_file.charset, qgis_project_file.content_type_extra)
+        updated_file = InMemoryUploadedFile(
+            file,
+            qgis_project_file.field_name,
+            qgis_project_file._name,
+            qgis_project_file.content_type,
+            len(data),
+            qgis_project_file.charset,
+            qgis_project_file.content_type_extra,
+        )
 
-        self.cleaned_data['qgis_project_file'] = updated_file
+        self.cleaned_data["qgis_project_file"] = updated_file
         return self.cleaned_data
 
 
