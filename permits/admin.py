@@ -1,4 +1,6 @@
 import django.db.models
+import re
+
 from adminsortable2.admin import SortableAdminMixin
 from django import forms
 from django.contrib import admin
@@ -357,30 +359,47 @@ works_object_type_administrative_entities.short_description = _("Communes")
 
 
 class QgisProjectAdminForm(forms.ModelForm):
+
+    # Replaces the url to the ressource, cause server will pass by docker web:9000 and delete the unwanted content 
     def clean(self):
+        # Retrieve the cleaned_data for the uploaded file
         qgis_project_file = self.cleaned_data['qgis_project_file']
+
+        # Content of uploaded file in bytes
         data = qgis_project_file.read()
+
+        # List of strings to replace
         protocols = ["http", "https"]
         hosts = ["localhost", "127.0.0.1"]
         sites = ["geocity-preprod.mapnv.ch", "geocity.ch"]
-        final_uri = bytes("http://web:9000", "utf-8")
 
+        # The final url. Docker communicate between layers
+        web_url = bytes("http://web:9000", "utf-8")
+
+        # Replace the url strings from the user
         for protocol in protocols:
             for host in hosts:
-                uri = bytes(protocol + "://" + host + ":" + settings.DJANGO_DOCKER_PORT, "utf-8")
-                data = data.replace(uri, final_uri)
+                url = bytes(protocol + "://" + host + ":" + settings.DJANGO_DOCKER_PORT, "utf-8")
+                data = data.replace(url, web_url)
             for site in sites:
-                uri = bytes(protocol + "://" + site, "utf-8")
-                data = data.replace(uri, final_uri)
+                url = bytes(protocol + "://" + site, "utf-8")
+                data = data.replace(url, web_url)
 
-        data = bytes(data)
+        # Delete the strings not needed
+        
+        # Start with = |
+        # End with = " or <
+        # if it's in same line
+            # data replace(or delete) between start with and end with, ""
+
+        # Write the data in bytes in a new file
         file = BytesIO()
         file.write(data)
 
+        # Use the constructor of InMemoryUploadedFile to be able to set the value of self.cleaned_data['qgis_project_file']
         updated_file = InMemoryUploadedFile(file, qgis_project_file.field_name, qgis_project_file._name, qgis_project_file.content_type, len(data), qgis_project_file.charset, qgis_project_file.content_type_extra)
 
         self.cleaned_data['qgis_project_file'] = updated_file
-
         return self.cleaned_data
 
 
