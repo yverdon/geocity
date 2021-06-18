@@ -172,11 +172,13 @@ class DepartmentAdminForm(forms.ModelForm):
             "is_validator",
             "is_default_validator",
             "is_archeologist",
+            "administrative_entity",
             "integrator",
             "is_integrator_admin",
         ]
 
     # If the group is updated to be integrator, the users in this group should not be in another integrator group
+    # If the group is updated to be integrator, the administrative_entity will be None. The integrator will create entities, so they don't exist yet
     def clean(self):
         group = self.cleaned_data["group"]
 
@@ -210,6 +212,19 @@ class DepartmentAdminForm(forms.ModelForm):
         except ValueError:
             # Upon creation of the group, there is no id, therefore no user_set
             pass
+
+        # Raise error if group is not integrator and has no administrative_entity
+        if (
+            not is_integrator_admin
+            and self.instance.is_integrator_admin
+            and not self.cleaned_data["administrative_entity"]
+        ):
+            raise forms.ValidationError(
+                {
+                    "administrative_entity": "Un groupe non integrator doit avoir une entité entité administrative"
+                }
+            )
+
         return self.cleaned_data
 
 
