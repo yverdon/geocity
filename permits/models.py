@@ -537,7 +537,7 @@ class WorksObjectType(models.Model):
     )
     administrative_entities = models.ManyToManyField(
         PermitAdministrativeEntity,
-        verbose_name=_("communes"),
+        verbose_name=_("entités administratives"),
         related_name="works_object_types",
     )
     has_geometry_point = models.BooleanField(_("Point"), default=True)
