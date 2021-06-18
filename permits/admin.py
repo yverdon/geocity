@@ -365,6 +365,9 @@ class QgisProjectAdminForm(forms.ModelForm):
         # Retrieve the cleaned_data for the uploaded file
         qgis_project_file = self.cleaned_data["qgis_project_file"]
 
+        # Used to encode the bytes
+        encoder = "utf-8"
+
         # Content of uploaded file in bytes
         data = qgis_project_file.read()
 
@@ -374,31 +377,40 @@ class QgisProjectAdminForm(forms.ModelForm):
         sites = ["geocity-preprod.mapnv.ch", "geocity.ch"]
 
         # The final url. Docker communicate between layers
-        web_url = bytes("http://web:9000", "utf-8")
+        web_url = bytes("http://web:9000", encoder)
+
+        # Strings to complete the url
+        protocol_suffix = "://"
+        port_prefix = ":"
 
         # Replace the url strings from the user
         for protocol in protocols:
             for host in hosts:
                 url = bytes(
-                    protocol + "://" + host + ":" + settings.DJANGO_DOCKER_PORT, "utf-8"
+                    protocol
+                    + protocol_suffix
+                    + host
+                    + port_prefix
+                    + settings.DJANGO_DOCKER_PORT,
+                    encoder,
                 )
                 data = data.replace(url, web_url)
             for site in sites:
-                url = bytes(protocol + "://" + site, "utf-8")
+                url = bytes(protocol + protocol_suffix + site, encoder)
                 data = data.replace(url, web_url)
 
         # Get characters between | and " or < without spaces, to prevent to take multiple lines
-        regex_url = bytes('\|[\S+]+"', "utf-8")
-        regex_element = bytes("\|[\S+]+<", "utf-8")
+        regex_url = bytes('\|[\S+]+"', encoder)
+        regex_element = bytes("\|[\S+]+<", encoder)
 
         # Get characters between /?access_token and & or " without spaces
-        regex_access_token_with_params = bytes("\/?access_token[\S+]+&", "utf-8")
-        regex_access_token_end_string = bytes('\/?access_token[\S+]+"', "utf-8")
+        regex_access_token_with_params = bytes("\/?access_token[\S+]+&", encoder)
+        regex_access_token_end_string = bytes('\/?access_token[\S+]+"', encoder)
 
         # The regex will take the first to the last character, so we need to add it back
-        empty_bytes_string = bytes('"', "utf-8")
-        empty_bytes_balise = bytes("<", "utf-8")
-        empty_bytes_params = bytes("", "utf-8")
+        empty_bytes_string = bytes('"', encoder)
+        empty_bytes_balise = bytes("<", encoder)
+        empty_bytes_params = bytes("", encoder)
 
         # Replace characters using regex
         data = re.sub(regex_url, empty_bytes_string, data)
