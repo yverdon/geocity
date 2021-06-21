@@ -96,6 +96,7 @@ class PermitDepartment(models.Model):
     administrative_entity = models.ForeignKey(
         "PermitAdministrativeEntity",
         null=True,
+        blank=True,
         on_delete=models.SET_NULL,
         related_name="departments",
         verbose_name=_("entité administrative"),
