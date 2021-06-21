@@ -144,6 +144,15 @@ class PermitAuthorSerializer(serializers.ModelSerializer):
             "phone_second",
         )
 
+    def to_representation(self, obj):
+
+        representation = super().to_representation(obj)
+        user_representation = representation.pop("user")
+        for key in user_representation:
+            representation[key] = user_representation[key]
+
+        return representation
+
 
 class PermitRequestValidationSerializer(serializers.Serializer):
     def to_representation(self, value):
