@@ -1,4 +1,6 @@
 import django.db.models
+import re
+
 from adminsortable2.admin import SortableAdminMixin
 from django import forms
 from django.contrib import admin
@@ -12,6 +14,9 @@ from django.core.exceptions import PermissionDenied
 from django.forms import ValidationError
 from django.contrib import messages
 from django.contrib.auth.forms import UserChangeForm
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from io import BytesIO
+
 
 from . import forms as permit_forms
 from . import models
@@ -353,8 +358,89 @@ def get_works_object_types_field(user):
 works_object_type_administrative_entities.short_description = _("Communes")
 
 
+class QgisProjectAdminForm(forms.ModelForm):
+
+    # Replaces the url to the ressource, cause server will pass by docker web:9000, remove access_token in url and delete the unwanted content
+    def clean_qgis_project_file(self):
+        # Retrieve the cleaned_data for the uploaded file
+        qgis_project_file = self.cleaned_data["qgis_project_file"]
+
+        # Used to encode the bytes
+        encoder = "utf-8"
+
+        # Content of uploaded file in bytes
+        data = qgis_project_file.read()
+
+        # List of strings to replace
+        protocols = ["http", "https"]
+        hosts = ["localhost", "127.0.0.1"]
+        sites = ["geocity-preprod.mapnv.ch", "geocity.ch"]
+
+        # The final url. Docker communicate between layers
+        web_url = bytes("http://web:9000", encoder)
+
+        # Strings to complete the url
+        protocol_suffix = "://"
+        port_prefix = ":"
+
+        # Replace the url strings from the user
+        for protocol in protocols:
+            for host in hosts:
+                url = bytes(
+                    protocol
+                    + protocol_suffix
+                    + host
+                    + port_prefix
+                    + settings.DJANGO_DOCKER_PORT,
+                    encoder,
+                )
+                data = data.replace(url, web_url)
+            for site in sites:
+                url = bytes(protocol + protocol_suffix + site, encoder)
+                data = data.replace(url, web_url)
+
+        # Get characters between | and " or < without spaces, to prevent to take multiple lines
+        regex_url = bytes('\|[\S+]+"', encoder)
+        regex_element = bytes("\|[\S+]+<", encoder)
+
+        # Get characters between /?access_token and & or " without spaces
+        regex_access_token_with_params = bytes("\/\?access_token[\S+]+&", encoder)
+        regex_access_token_end_string = bytes('\/\?access_token[\S+]+"', encoder)
+
+        # The regex will take the first to the last character, so we need to add it back
+        empty_bytes_string = bytes('"', encoder)
+        empty_bytes_balise = bytes("<", encoder)
+        empty_bytes_params = bytes("", encoder)
+
+        # Replace characters using regex
+        data = re.sub(regex_url, empty_bytes_string, data)
+        data = re.sub(regex_element, empty_bytes_balise, data)
+
+        # Remove access_token without removing other params
+        data = re.sub(regex_access_token_with_params, empty_bytes_params, data)
+        data = re.sub(regex_access_token_end_string, empty_bytes_string, data)
+
+        # Write the data in bytes in a new file
+        file = BytesIO()
+        file.write(data)
+
+        # Use the constructor of InMemoryUploadedFile to be able to set the value of self.cleaned_data['qgis_project_file']
+        qgis_project_file = InMemoryUploadedFile(
+            file,
+            qgis_project_file.field_name,
+            qgis_project_file._name,
+            qgis_project_file.content_type,
+            len(data),
+            qgis_project_file.charset,
+            qgis_project_file.content_type_extra,
+        )
+
+        return qgis_project_file
+
+
 class QgisProjectInline(admin.TabularInline):
     model = models.QgisProject
+    form = QgisProjectAdminForm
 
 
 class WorksObjectTypeAdminForm(forms.ModelForm):
