@@ -159,10 +159,11 @@ class PermitRequestValidationSerializer(serializers.Serializer):
                         rep[field.name] = getattr(validation, field.name)
                 rep["validation_status"] = validation.get_validation_status_display()
                 rep["department"] = validation.department.description
-                rep["validated_by"] = (
-                    validation.validated_by.first_name
-                    + validation.validated_by.last_name
-                )
+                if validation.validated_by:
+                    rep["validated_by"] = (
+                        validation.validated_by.first_name
+                        + validation.validated_by.last_name
+                    )
                 validation_list.append(rep)
         return validation_list
 
