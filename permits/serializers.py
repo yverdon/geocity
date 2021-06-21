@@ -104,19 +104,17 @@ class PermitRequestActorSerializer(serializers.Serializer):
         actors = models.PermitRequestActor.objects.filter(
             permit_request=value
         ).select_related("actor")
-
-        rep = {}
+        actor_list = []
         if actors:
             for i, actor in enumerate(actors, 1):
+                rep = {}
                 for field in actor.actor._meta.fields:
-                    rep[slugify(f"permit_request_actor_{i}_{field.name}")] = getattr(
-                        actor.actor, field.name
-                    )
+                    rep[field.name] = getattr(actor.actor, field.name)
                 rep[
                     f"permit_request_actor_{i}_actor_type"
                 ] = actor.get_actor_type_display()
-
-        return rep
+                actor_list.append(rep)
+        return actor_list
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -145,6 +143,38 @@ class PermitAuthorSerializer(serializers.ModelSerializer):
             "phone_first",
             "phone_second",
         )
+
+    def to_representation(self, obj):
+
+        representation = super().to_representation(obj)
+        user_representation = representation.pop("user")
+        for key in user_representation:
+            representation[key] = user_representation[key]
+
+        return representation
+
+
+class PermitRequestValidationSerializer(serializers.Serializer):
+    def to_representation(self, value):
+        validations = models.PermitRequestValidation.objects.filter(
+            permit_request=value
+        )
+        validation_list = []
+        if validations:
+            for i, validation in enumerate(validations, 0):
+                rep = {}
+                for field in validation._meta.fields:
+                    if field.name != "permit_request":
+                        rep[field.name] = getattr(validation, field.name)
+                rep["validation_status"] = validation.get_validation_status_display()
+                rep["department"] = validation.department.description
+                if validation.validated_by:
+                    rep["validated_by"] = (
+                        validation.validated_by.first_name
+                        + validation.validated_by.last_name
+                    )
+                validation_list.append(rep)
+        return validation_list
 
 
 class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
@@ -265,6 +295,7 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
 
     creditor_type = serializers.SerializerMethodField()
     author = PermitAuthorSerializer(read_only=True)
+    validations = PermitRequestValidationSerializer(source="*", read_only=True)
 
     def get_creditor_type(self, obj):
         if obj.creditor_type is not None:
@@ -291,6 +322,7 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
             "creditor_type",
             "author",
             "geo_envelop",
+            "validations",
         )
 
     @classmethod
@@ -326,7 +358,7 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
         del rep["properties"]["permit_request"]
 
         # Flattening the rest of related fields
-        related_fields_to_flatten = ["permit_request_actor", "wot_and_amend_properties"]
+        related_fields_to_flatten = ["wot_and_amend_properties"]
 
         for field_to_flatten in related_fields_to_flatten:
             for field, value in rep["properties"][field_to_flatten].items():
