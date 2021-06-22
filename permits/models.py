@@ -352,7 +352,7 @@ class PermitRequest(models.Model):
         (STATUS_AWAITING_VALIDATION, _("En validation")),
         (STATUS_APPROVED, _("Approuvée")),
         (STATUS_REJECTED, _("Refusée")),
-        (STATUS_RECEIVED, _("Annonce réceptionnée")),
+        (STATUS_RECEIVED, _("Réceptionnée")),
     )
     AMENDABLE_STATUSES = {
         STATUS_SUBMITTED_FOR_VALIDATION,
