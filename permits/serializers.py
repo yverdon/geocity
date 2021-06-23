@@ -15,7 +15,14 @@ from . import geoservices, models
 class PermitAdministrativeEntitySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.PermitAdministrativeEntity
-        fields = ("name",)
+        fields = (
+            "name",
+            "ofs_id",
+            "link",
+            "title_signature_1",
+            "title_signature_2",
+            "phone",
+        )
 
 
 class MetaTypesField(serializers.RelatedField):
@@ -117,41 +124,26 @@ class PermitRequestActorSerializer(serializers.Serializer):
         return actor_list
 
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = (
-            "first_name",
-            "last_name",
-            "email",
-        )
-
-
 class PermitAuthorSerializer(serializers.ModelSerializer):
 
-    user = UserSerializer(read_only=True)
+    first_name = serializers.ReadOnlyField(source="user.first_name")
+    last_name = serializers.ReadOnlyField(source="user.last_name")
+    email = serializers.ReadOnlyField(source="user.email")
 
     class Meta:
         model = models.PermitAuthor
         fields = (
-            "user",
-            "company_name",
-            "vat_number",
+            "first_name",
+            "last_name",
             "address",
             "zipcode",
             "city",
+            "company_name",
+            "vat_number",
             "phone_first",
             "phone_second",
+            "email",
         )
-
-    def to_representation(self, obj):
-
-        representation = super().to_representation(obj)
-        user_representation = representation.pop("user")
-        for key in user_representation:
-            representation[key] = user_representation[key]
-
-        return representation
 
 
 class PermitRequestValidationSerializer(serializers.Serializer):
@@ -294,6 +286,7 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
     )
 
     creditor_type = serializers.SerializerMethodField()
+    status_display = serializers.SerializerMethodField()
     author = PermitAuthorSerializer(read_only=True)
     validations = PermitRequestValidationSerializer(source="*", read_only=True)
 
@@ -310,6 +303,13 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
             creditor = ""
         return creditor
 
+    def get_status_display(self, obj):
+        if obj.status is not None:
+            status = obj.get_status_display()
+        else:
+            status = ""
+        return status
+
     class Meta:
         model = models.PermitRequest
         geo_field = "geo_time"
@@ -320,6 +320,7 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
             "wot_and_amend_properties",
             "permit_request_actor",
             "creditor_type",
+            "status_display",
             "author",
             "geo_envelop",
             "validations",

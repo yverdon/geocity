@@ -141,14 +141,8 @@ class PermitAdministrativeEntity(models.Model):
     title_signature_1 = models.CharField(
         _("Signature Gauche"), max_length=128, blank=True
     )
-    image_signature_1 = fields.AdministrativeEntityFileField(
-        _("Signature gauche"), blank=True, upload_to="administrative_entity_files/"
-    )
     title_signature_2 = models.CharField(
         _("Signature Droite"), max_length=128, blank=True
-    )
-    image_signature_2 = fields.AdministrativeEntityFileField(
-        _("Signature droite"), blank=True, upload_to="administrative_entity_files/"
     )
     phone = models.CharField(
         _("Téléphone"),
