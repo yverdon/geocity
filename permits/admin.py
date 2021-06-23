@@ -629,9 +629,7 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
             "logo_main",
             "logo_secondary",
             "title_signature_1",
-            "image_signature_1",
             "title_signature_2",
-            "image_signature_2",
             "phone",
             "geom",
         ]

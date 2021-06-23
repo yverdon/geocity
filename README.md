@@ -132,30 +132,6 @@ The user belonging to backoffice group can be granted specific permissions:
 - ```classify_permit_request```,"Classer les demandes de permis" allow the user to accept/reject the requests if validations services have all accepted it. 
 - ```edit_permit_request```, "Éditer les demandes de permis": allow the user to edit de requests filled by another person
 
-### Generic Docker hints
-
-In case you get and error similar to this: `E: You don't have enough free space in /var/cache/...`,
-run the following commands to clear them all:
-
-```
-docker system prune -a
-```
-
-## QGIS-server for map generation
-
-_Prerequisite_
-
-A dummy feature must drawn otherwise qgis will raise an error.
-
-_Modify print template_
-
-Simply open the print/print.qgs project
-
-_Capabilities of the print server_
-
-```
-http://localhost:9096?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities
-```
 
 ### QGISSERVER LOGS
 
@@ -189,10 +165,13 @@ specific version unless needed. Then run:
 
 ```
 docker-compose exec web pip-compile requirements.in
+docker-compose exec web pip-compile requirements_dev.in
 docker-compose exec web pip install -r requirements.txt
+docker-compose exec web pip install -r requirements_dev.txt
 ```
 
 Make sure you commit both the `requirements.in` and the `requirements.txt` files.
+And the `requirements_dev.in` and the `requirements_dev.txt` files.
 
 ### Upgrading packages
 
