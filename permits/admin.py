@@ -380,16 +380,19 @@ class QgisProjectAdminForm(forms.ModelForm):
         # Retrieve the cleaned_data for the uploaded file
         qgis_project_file = self.cleaned_data["qgis_project_file"]
 
-        # Used to encode the bytes
+        # If no new file was uploaded, the object in an instance of custom FileField,
+        # thus, we do nothing
+        if qgis_project_file.__class__.__name__ == "AdministrativeEntityFieldFile":
+            return
+
         encoder = "utf-8"
 
         # Content of uploaded file in bytes
         data = qgis_project_file.read()
-
         # List of strings to replace
         protocols = ["http", "https"]
         hosts = ["localhost", "127.0.0.1"]
-        sites = ["geocity-preprod.mapnv.ch", "geocity.ch"]
+        sites = settings.ALLOWED_HOSTS
 
         # The final url. Docker communicate between layers
         web_url = bytes("http://web:9000", encoder)
@@ -440,6 +443,7 @@ class QgisProjectAdminForm(forms.ModelForm):
         file.write(data)
 
         # Use the constructor of InMemoryUploadedFile to be able to set the value of self.cleaned_data['qgis_project_file']
+
         qgis_project_file = InMemoryUploadedFile(
             file,
             qgis_project_file.field_name,
