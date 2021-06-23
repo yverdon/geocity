@@ -442,7 +442,6 @@ class QgisProjectAdminForm(forms.ModelForm):
         # Use the constructor of InMemoryUploadedFile to be able to set the value of self.cleaned_data['qgis_project_file']
         qgis_project_file = InMemoryUploadedFile(
             file,
-            qgis_project_file.field_name,
             qgis_project_file._name,
             qgis_project_file.content_type,
             len(data),
