@@ -115,6 +115,7 @@ class PermitRequestActorSerializer(serializers.Serializer):
         if actors:
             for i, actor in enumerate(actors, 1):
                 rep = {}
+                rep["contact_index"] = i
                 for field in actor.actor._meta.fields:
                     rep[field.name] = getattr(actor.actor, field.name)
                 rep[
