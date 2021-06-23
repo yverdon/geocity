@@ -118,9 +118,7 @@ class PermitRequestActorSerializer(serializers.Serializer):
                 rep["contact_index"] = i
                 for field in actor.actor._meta.fields:
                     rep[field.name] = getattr(actor.actor, field.name)
-                rep[
-                    f"permit_request_actor_{i}_actor_type"
-                ] = actor.get_actor_type_display()
+                rep["permit_request_actor_type"] = actor.get_actor_type_display()
                 actor_list.append(rep)
         return actor_list
 
