@@ -111,16 +111,19 @@ class PermitRequestActorSerializer(serializers.Serializer):
         actors = models.PermitRequestActor.objects.filter(
             permit_request=value
         ).select_related("actor")
-        actor_list = []
+
+        rep = {}
         if actors:
             for i, actor in enumerate(actors, 1):
-                rep = {}
-                rep["contact_index"] = i
                 for field in actor.actor._meta.fields:
-                    rep[field.name] = getattr(actor.actor, field.name)
-                rep["permit_request_actor_type"] = actor.get_actor_type_display()
-                actor_list.append(rep)
-        return actor_list
+                    rep[slugify(f"permit_request_actor_{i}_{field.name}")] = getattr(
+                        actor.actor, field.name
+                    )
+                rep[
+                    f"permit_request_actor_{i}_actor_type"
+                ] = actor.get_actor_type_display()
+
+        return rep
 
 
 class PermitAuthorSerializer(serializers.ModelSerializer):
@@ -150,22 +153,28 @@ class PermitRequestValidationSerializer(serializers.Serializer):
         validations = models.PermitRequestValidation.objects.filter(
             permit_request=value
         )
-        validation_list = []
+
+        rep = {}
         if validations:
-            for i, validation in enumerate(validations, 0):
-                rep = {}
+            for i, validation in enumerate(validations, 1):
                 for field in validation._meta.fields:
-                    if field.name != "permit_request":
-                        rep[field.name] = getattr(validation, field.name)
-                rep["validation_status"] = validation.get_validation_status_display()
-                rep["department"] = validation.department.description
-                if validation.validated_by:
-                    rep["validated_by"] = (
-                        validation.validated_by.first_name
-                        + validation.validated_by.last_name
-                    )
-                validation_list.append(rep)
-        return validation_list
+                    if field.name in [
+                        "comment_before",
+                        "comment_during",
+                        "comment_after",
+                    ]:
+                        rep[slugify(f"validation_{i}_{field.name}")] = getattr(
+                            validation, field.name
+                        )
+
+                    rep[
+                        slugify(f"validation_{i}_validation_status")
+                    ] = validation.get_validation_status_display()
+                    rep[
+                        slugify(f"validation_{i}_department")
+                    ] = validation.department.description
+
+            return rep
 
 
 class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
