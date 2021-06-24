@@ -538,7 +538,7 @@ class WorksObjectType(models.Model):
     has_geometry_point = models.BooleanField(_("Point"), default=True)
     has_geometry_line = models.BooleanField(_("Ligne"), default=True)
     has_geometry_polygon = models.BooleanField(_("Surface"), default=True)
-    directive = models.FileField(
+    directive = fields.AdministrativeEntityFileField(
         _("directive"),
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
         blank=True,
