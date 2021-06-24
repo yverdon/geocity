@@ -115,12 +115,7 @@ def get_local_user_from_qgisserver_request(request):
         if request.META["REMOTE_ADDR"].startswith(whitelisted_ip):
             username = request.query_params.get("username")
             if username:
-                user = User.objects.filter(username=username).first()
-                # Do not accept superuser account in production
-                if settings.ENV == "DEV" and user.is_superuser:
-                    return user
-                elif settings.ENV == "PROD" and not user.is_superuser:
-                    return user
+                return User.objects.filter(username=username).first()
 
 
 class BlockRequesterUserPermission(BasePermission):
