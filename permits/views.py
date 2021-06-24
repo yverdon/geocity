@@ -447,10 +447,7 @@ def permit_request_print(request, permit_request_id, template_id):
         "MAP": "/private_documents/" + template.qgis_project_file.name,
         "TEMPLATE": template.qgis_print_template_name,
         "LAYERS": template.qgis_layers,
-        "ATLAS_PK": "*",
-        "FILTER": template.qgis_atlas_coverage_layer
-        + ':"permit_request_id" = '
-        + str(permit_request.pk),
+        "ATLAS_PK": permit_request_id,
     }
 
     qgisserver_url = "http://qgisserver/ogc/?" + urllib.parse.urlencode(values)
