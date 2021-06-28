@@ -421,12 +421,6 @@ class PermitRequestAmendPropertyFactory(factory.django.DjangoModelFactory):
 
         self.integrator = extracted
 
-    def is_visible_by_author(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        self.is_visible_by_author = extracted
-
 
 class PermitRequestAmendPropertyValueFactory(factory.django.DjangoModelFactory):
     class Meta:

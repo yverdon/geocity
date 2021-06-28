@@ -1445,9 +1445,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             permit_request=permit_request
         )
 
-        props = factories.PermitRequestAmendPropertyFactory.create_batch(
-            props_quantity, is_visible_by_author=True
-        )
+        props = factories.PermitRequestAmendPropertyFactory.create_batch(props_quantity)
 
         data = {
             "action": models.ACTION_AMEND,
