@@ -213,7 +213,7 @@ docker-compose exec web python3 manage.py migrate --help
 
 Sidebar of wiki to show the new pages is managed by : [github-wiki-sidebar](https://www.npmjs.com/package/github-wiki-sidebar).
 
-Used `_` instead of `:` for `Define the category separator` bause the character was not allowed, the other params juste press enter and keep it has default.
+Used `_` instead of `:` for `Define the category separator` because the character was not allowed, the other params juste press enter and keep it has default.
 
 ```bash
 ? Define the category separator for multi-level menu: _
