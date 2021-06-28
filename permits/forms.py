@@ -811,6 +811,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 ).strftime("%Y/%m/%d"),
             }
         ).start_of("event days"),
+        help_text="Cliquer sur le champ et selectionner la date planifiée de début à l'aide de l'outil mis à disposition",
     )
     ends_at = forms.DateTimeField(
         label=_("Date planifiée de fin"),
@@ -822,6 +823,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 "useCurrent": False,
             }
         ).end_of("event days"),
+        help_text="Cliquer sur le champ et selectionner la date planifiée de fin à l'aide de l'outil mis à disposition",
     )
 
     class Meta:
