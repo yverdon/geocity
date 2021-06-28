@@ -32,10 +32,12 @@
     {% if amend_custom_properties %}
       <h5>{% trans "Information du service responsable" %}</h5>
       {% for object_property in amend_custom_properties %}
-        <dl>
-          <dt>{{ object_property.property }}</dt>
-          <dd>{{ object_property.value }}</dd>
-        </dl>
+        {% if object_property.property.is_visible_by_author %}
+          <dl>
+            <dt>{{ object_property.property }}</dt>
+            <dd>{{ object_property.value }}</dd>
+          </dl>
+        {% endif %}
       {% endfor %}
     {% endif %}
 
