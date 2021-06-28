@@ -209,6 +209,20 @@ docker-compose exec web python3 manage.py makemigrations --help
 docker-compose exec web python3 manage.py migrate --help
 ```
 
+## Wiki
+
+Sidebar of wiki to show the new pages is managed by : [github-wiki-sidebar](https://www.npmjs.com/package/github-wiki-sidebar).
+
+Used `_` instead of `:` for `Define the category separator` bause the character was not allowed, the other params juste press enter and keep it has default.
+
+```bash
+? Define the category separator for multi-level menu: _
+? Define the format of the page links: ./%s
+? Define the _Sidebar.md content template: %s
+? Select the items to be excluded from menu: (Press <space> to select, <a> to toggle all, <i> to invert selection)
+? Change the priority/order of the items in menu <space separated list of ids - ex: 0 2 3>
+```
+
 ## OAuth2
 
 [Access to a ressources with QGIS](docs/OAuth2_Qgis.md)
