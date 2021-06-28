@@ -56,10 +56,10 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         )
 
         self.permit_request_amend_property = factories.PermitRequestAmendPropertyFactory.create_batch(
-            3
+            3, is_visible_by_author=True,
         )
         self.integrator_permit_request_amend_property = factories.PermitRequestAmendPropertyFactory(
-            integrator=self.group
+            integrator=self.group, is_visible_by_author=True,
         )
 
     def test_integrator_can_only_see_own_permitadministrativeentity(self):
