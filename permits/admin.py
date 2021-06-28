@@ -723,12 +723,18 @@ class PermitRequestAmendPropertyForm(forms.ModelForm):
 
     class Meta:
         model = models.PermitRequestAmendProperty
-        fields = ["name", "is_mandatory", "works_object_types", "integrator"]
+        fields = [
+            "name",
+            "is_mandatory",
+            "is_visible_by_author",
+            "works_object_types",
+            "integrator",
+        ]
 
 
 class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
-    list_display = ["sortable_str", "is_mandatory"]
+    list_display = ["sortable_str", "is_mandatory", "is_visible_by_author"]
     form = PermitRequestAmendPropertyForm
 
     def sortable_str(self, obj):

@@ -791,6 +791,9 @@ class PermitWorkflowStatus(models.Model):
 class PermitRequestAmendProperty(models.Model):
     name = models.CharField(_("nom"), max_length=255)
     is_mandatory = models.BooleanField(_("obligatoire"), default=False)
+    is_visible_by_author = models.BooleanField(
+        _("Visible par l'auteur de la demande"), default=True
+    )
     works_object_types = models.ManyToManyField(
         WorksObjectType,
         verbose_name=_("objets des travaux"),

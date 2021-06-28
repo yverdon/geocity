@@ -1446,6 +1446,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         )
 
         props = factories.PermitRequestAmendPropertyFactory.create_batch(props_quantity)
+
         data = {
             "action": models.ACTION_AMEND,
             "status": models.PermitRequest.STATUS_PROCESSING,
@@ -1479,6 +1480,54 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertIn(
             "I am a new property value, I am alive!", new_properties_values_qs,
         )
+
+    def test_author_cannot_see_private_secretariat_amend_property(self,):
+
+        props_quantity = 3
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_PROCESSING,
+            administrative_entity=self.administrative_entity,
+        )
+        works_object_type_choice = factories.WorksObjectTypeChoiceFactory(
+            permit_request=permit_request
+        )
+
+        props_public = factories.PermitRequestAmendPropertyFactory.create_batch(
+            props_quantity, is_visible_by_author=True
+        )
+        props_private = factories.PermitRequestAmendPropertyFactory.create_batch(
+            props_quantity, is_visible_by_author=False
+        )
+
+        props = props_public + props_private
+
+        self.client.login(
+            username=permit_request.author.user.username, password="password"
+        )
+        data = {
+            "action": models.ACTION_AMEND,
+            "status": models.PermitRequest.STATUS_PROCESSING,
+        }
+        works_object_types_pk = permit_request.works_object_types.first().pk
+        for prop in props:
+            prop.works_object_types.set(permit_request.works_object_types.all())
+            factories.PermitRequestAmendPropertyValueFactory(
+                property=prop, works_object_type_choice=works_object_type_choice,
+            )
+            data[
+                f"{works_object_types_pk}_{prop.pk}"
+            ] = "I am a new property value, I am alive!"
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+
+        parser = get_parser(response.content)
+        # check that 3 fields are visible by author and 3 are hidden
+        self.assertEqual(len(parser.select(".amend-property")), 3)
 
     def test_secretariat_can_see_submitted_requests(self):
         permit_request = factories.PermitRequestFactory(
