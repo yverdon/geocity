@@ -923,10 +923,12 @@ class PermitRequestList(SingleTableMixin, FilterView):
 
 
 @method_decorator(login_required, name="dispatch")
-class PermitExportView(ExportMixin, SingleTableView):
+class PermitExportView(ExportMixin, SingleTableView,):
     table_class = tables.OwnPermitRequestsTable
     template_name = "django_tables2/bootstrap.html"
-
+    dataset_kwargs = {"title": "export-geocity"}
+    export_name = "geocity-export"
+    exclude_columns = ("actions", "works_objects_html", "starts_at_min", "starts_at_max" )
     def get_queryset(self):
         return (
             services.get_permit_requests_list_for_user(self.request.user)
@@ -940,8 +942,6 @@ class PermitExportView(ExportMixin, SingleTableView):
             )
             .order_by("-created_at")
         )
-
-    exclude_columns = ("actions",)
 
 
 @redirect_bad_status_to_detail
