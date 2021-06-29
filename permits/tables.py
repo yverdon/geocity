@@ -24,6 +24,7 @@ class OwnPermitRequestsTable(ColumnShiftTable):
 
     class Meta:
         model = models.PermitRequest
+
         fields = (
             "id",
             "created_at",

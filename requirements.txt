@@ -82,6 +82,8 @@ djangorestframework==3.12.4
     # via
     #   -r requirements.in
     #   djangorestframework-gis
+et-xmlfile==1.1.0
+    # via openpyxl
 filetype==1.0.7
     # via -r requirements.in
 gdal==3.3.0
@@ -98,6 +100,8 @@ jwcrypto==0.9
     # via django-oauth-toolkit
 oauthlib==3.1.1
     # via django-oauth-toolkit
+openpyxl==3.0.7
+    # via tablib
 pep517==0.10.0
     # via pip-tools
 phonenumbers==8.12.24
@@ -134,7 +138,7 @@ soupsieve==2.2.1
     # via beautifulsoup4
 sqlparse==0.4.1
     # via django
-tablib==3.0.0
+tablib[xlsx]==3.0.0
     # via -r requirements.in
 toml==0.10.2
     # via pep517
