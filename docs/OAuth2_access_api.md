@@ -91,4 +91,13 @@ Or (not the best practice, but usefull to get a ressource in QGIS with a `vector
 
 ## Refresh the token
 
-WIP
+```bash
+    curl -X POST ^
+    -H "Cache-Control: no-cache" ^
+    -H "Content-Type: application/x-www-form-urlencoded" ^
+    "http://localhost:9095/oauth/token/" ^
+    -d "client_id=${ID}" ^
+    -d "client_secret=${SECRET}" ^
+    -d "refresh_token=${REFRESH_TOKEN}" ^
+    -d "grant_type=refresh_token"
+```
