@@ -61,8 +61,7 @@ urlpatterns = [
         views.administrative_entity_file_download,
         name="administrative_entity_file_download",
     ),
-    path("", views.check_2fa_auth, name="check_2fa_auth"),
-    path("list", views.PermitRequestList.as_view(), name="permit_requests_list"),
+    path("", views.PermitRequestList.as_view(), name="permit_requests_list"),
     path("", include(permit_request_urlpatterns)),
     path(
         "media/<int:property_value_id>/",

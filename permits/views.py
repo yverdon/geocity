@@ -4,8 +4,8 @@ import os
 import urllib.parse
 
 import requests
-from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import (
     login_required,
     permission_required,
@@ -891,6 +891,14 @@ class PermitRequestList(SingleTableMixin, FilterView):
     paginate_by = int(os.environ["PAGINATE_BY"])
     template_name = "permits/permit_requests_list.html"
 
+    def render_to_response(self, context):
+        if (
+            services.is_2FA_mandatory(self.request.user)
+            and not self.request.user.is_verified()
+        ):
+            return redirect("two_factor:setup")
+        return super(PermitRequestList, self).render_to_response(context)
+
     def get_queryset(self):
         return (
             services.get_permit_requests_list_for_user(self.request.user)
@@ -1139,20 +1147,3 @@ def administrative_infos(request):
         "permits/administrative_infos.html",
         {"administrative_entities": administrative_entities},
     )
-
-
-@login_required
-def check_2fa_auth(request):
-    if settings.ENABLE_2FA:
-        is_2fa_mandatory = request.user.groups.filter(
-            permitdepartment__mandatory_2fa=True
-        ).exists()
-
-        if is_2fa_mandatory:
-            if request.user.is_verified():
-                return redirect("permits:permit_requests_list")
-            else:
-                return redirect("two_factor:setup")
-        return redirect("permits:permit_requests_list")
-    else:
-        return redirect("permits:permit_requests_list")
