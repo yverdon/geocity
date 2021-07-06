@@ -10,7 +10,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT_URLCONF = "geomapshark.urls"
 PREFIX_URL = os.environ.get("PREFIX_URL", "")
 LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "permits:check_2fa_auth"
+LOGIN_REDIRECT_URL = "permits:permit_requests_list"
 LOGOUT_REDIRECT_URL = LOGIN_URL
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
