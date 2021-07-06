@@ -180,6 +180,7 @@ class DepartmentAdminForm(forms.ModelForm):
             "administrative_entity",
             "integrator",
             "is_integrator_admin",
+            "mandatory_2fa",
         ]
 
     # If the group is updated to be integrator, the users in this group should not be in another integrator group
@@ -226,7 +227,9 @@ class DepartmentAdminForm(forms.ModelForm):
         ):
             raise forms.ValidationError(
                 {
-                    "administrative_entity": "Un groupe non integrator doit avoir une entité entité administrative"
+                    "administrative_entity": _(
+                        "Un groupe non integrator doit avoir une entité entité administrative"
+                    )
                 }
             )
 
