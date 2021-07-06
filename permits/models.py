@@ -108,6 +108,7 @@ class PermitDepartment(models.Model):
     is_integrator_admin = models.BooleanField(
         "Intégrateur (accès à l'admin de django)", default=False
     )
+    mandatory_2fa = models.BooleanField(_("2FA obligatoire"), default=False)
 
     class Meta:
         verbose_name = _("2.1 Configuration du service (pilote, validateur...)")
