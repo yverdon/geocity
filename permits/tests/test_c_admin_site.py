@@ -2,12 +2,15 @@ import re
 import urllib.parse
 import uuid
 from datetime import date
-from permits import admin
 
 from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.test import TestCase
 from django.urls import reverse
+from django_otp import DEVICE_ID_SESSION_KEY
+from two_factor.utils import default_device
+
+from permits import admin
 
 from . import factories
 from .utils import LoggedInIntegratorMixin, get_parser
@@ -16,6 +19,14 @@ from .utils import LoggedInIntegratorMixin, get_parser
 
 # "$ ./manage.py show_urls" to show admin routes
 class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
+    def enable_otp(self, user=None):
+        user.totpdevice_set.create(name="default")
+        assert self.client.login(username=user.username, password="password")
+        if default_device(user):
+            session = self.client.session
+            session[DEVICE_ID_SESSION_KEY] = default_device(user).persistent_id
+            session.save()
+
     def setUp(self):
         super().setUp()
         self.administrative_entity = factories.PermitAdministrativeEntityFactory.create_batch(
@@ -62,6 +73,9 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             integrator=self.group
         )
 
+        if settings.ENABLE_2FA:
+            self.enable_otp(user=self.user)
+
     def test_integrator_can_only_see_own_permitadministrativeentity(self):
         response = self.client.get(
             reverse("admin:permits_permitadministrativeentity_changelist")
@@ -74,6 +88,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
     def test_admin_can_see_all_permitadministrativeentity(self):
         user = factories.SuperUserFactory()
         self.client.login(username=user.username, password="password")
+        if settings.ENABLE_2FA:
+            self.enable_otp(user=user)
 
         response = self.client.get(
             reverse("admin:permits_permitadministrativeentity_changelist")
@@ -93,6 +109,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
     def test_admin_can_see_all_workstype(self):
         user = factories.SuperUserFactory()
         self.client.login(username=user.username, password="password")
+        if settings.ENABLE_2FA:
+            self.enable_otp(user=user)
 
         response = self.client.get(reverse("admin:permits_workstype_changelist"))
         parser = get_parser(response.content)
@@ -110,6 +128,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
     def test_admin_can_see_all_worksobject(self):
         user = factories.SuperUserFactory()
         self.client.login(username=user.username, password="password")
+        if settings.ENABLE_2FA:
+            self.enable_otp(user=user)
 
         response = self.client.get(reverse("admin:permits_worksobject_changelist"))
         parser = get_parser(response.content)
@@ -127,6 +147,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
     def test_admin_can_see_all_worksobjecttype(self):
         user = factories.SuperUserFactory()
         self.client.login(username=user.username, password="password")
+        if settings.ENABLE_2FA:
+            self.enable_otp(user=user)
 
         response = self.client.get(reverse("admin:permits_worksobjecttype_changelist"))
         parser = get_parser(response.content)
@@ -146,6 +168,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
     def test_admin_can_see_all_worksobjectproperty(self):
         user = factories.SuperUserFactory()
         self.client.login(username=user.username, password="password")
+        if settings.ENABLE_2FA:
+            self.enable_otp(user=user)
 
         response = self.client.get(
             reverse("admin:permits_worksobjectproperty_changelist")
@@ -165,6 +189,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
     def test_admin_can_see_all_permitactortype(self):
         user = factories.SuperUserFactory()
         self.client.login(username=user.username, password="password")
+        if settings.ENABLE_2FA:
+            self.enable_otp(user=user)
 
         response = self.client.get(reverse("admin:permits_permitactortype_changelist"))
         parser = get_parser(response.content)
@@ -184,6 +210,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
     def test_admin_can_see_all_permitrequestamendproperty(self):
         user = factories.SuperUserFactory()
         self.client.login(username=user.username, password="password")
+        if settings.ENABLE_2FA:
+            self.enable_otp(user=user)
 
         response = self.client.get(
             reverse("admin:permits_permitrequestamendproperty_changelist")
@@ -199,6 +227,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
     ):
         user = factories.SuperUserFactory()
         self.client.login(username=user.username, password="password")
+        if settings.ENABLE_2FA:
+            self.enable_otp(user=user)
 
         group = factories.SecretariatGroupFactory()
         factories.IntegratorUserFactory(groups=[self.group, group])
@@ -231,6 +261,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
     ):
         user = factories.SuperUserFactory()
         self.client.login(username=user.username, password="password")
+        if settings.ENABLE_2FA:
+            self.enable_otp(user=user)
 
         integrator_group = factories.IntegratorGroupFactory()
 
