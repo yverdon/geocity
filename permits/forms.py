@@ -1038,7 +1038,7 @@ class PermitRequestValidationPokeForm(forms.Form):
 
 
 class PermitRequestClassifyForm(forms.ModelForm):
-    # Status field is set as initial value when instanciating the form in the view
+    # Status field is set as initial value when instantiating the form in the view
     status = forms.ChoiceField(
         choices=(
             (status, label)
@@ -1056,6 +1056,11 @@ class PermitRequestClassifyForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequest
         fields = ["is_public", "status", "validation_pdf"]
+
+    def __init__(self, *args, **kwargs):
+        super(PermitRequestClassifyForm, self).__init__(*args, **kwargs)
+        if not services.is_validation_document_required(self.instance):
+            del self.fields["validation_pdf"]
 
     def save(self, commit=True):
         permit_request = super().save(commit=False)
