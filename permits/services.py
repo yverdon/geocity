@@ -14,7 +14,7 @@ from django.db import transaction
 from django.db.models import Max, Min, Q, F, Value, Count, CharField
 from django.db.models.functions import Concat
 from django.forms import modelformset_factory
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.dateparse import parse_date
