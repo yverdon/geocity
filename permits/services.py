@@ -1325,3 +1325,9 @@ def validate_file(file):
             ),
             params={"file": file},
         )
+
+
+def is_validation_document_required(permit_request):
+    return any(
+        permit_request.works_object_types.filter(requires_validation_document=True)
+    )
