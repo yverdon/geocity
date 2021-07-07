@@ -25,7 +25,7 @@ if not settings.ENABLE_2FA:
             )
             self.assertEqual(response.status_code, 200)
             self.assertTrue(response.context["user"].is_authenticated)
-            self.assertRedirects(response, resolve_url("permits:permit_requests_list"))
+            self.assertRedirects(response, resolve_url(settings.LOGIN_REDIRECT_URL))
 
         def test_post_login_view_fail(self):
             response = self.client.post(reverse("login"), {}, follow=True)
@@ -53,7 +53,7 @@ if settings.ENABLE_2FA:
 
             self.assertEqual(response.status_code, 200)
             self.assertTrue(response.context["user"].is_authenticated)
-            self.assertRedirects(response, resolve_url("permits:permit_requests_list"))
+            self.assertRedirects(response, resolve_url(settings.LOGIN_REDIRECT_URL))
 
         def test_post_login_view_fail(self):
             response = self.client.post(reverse("login"), {}, follow=True)
