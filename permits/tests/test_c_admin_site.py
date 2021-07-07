@@ -11,6 +11,9 @@ from django_otp import DEVICE_ID_SESSION_KEY
 from two_factor.utils import default_device
 
 from permits import admin
+from permits.tests.factories import SecretariatUserFactory, UserFactory
+
+from django.shortcuts import resolve_url
 
 from . import factories
 from .utils import LoggedInIntegratorMixin, get_parser
@@ -75,6 +78,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
 
         if settings.ENABLE_2FA:
             self.enable_otp_session(user=self.user)
+            self.group2fa = factories.GroupFactory()
+            factories.PermitDepartmentFactory(group=self.group2fa, mandatory_2fa=True)
 
     def test_integrator_can_only_see_own_permitadministrativeentity(self):
         response = self.client.get(
@@ -97,7 +102,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-__str__")), 5)
+        self.assertGreaterEqual(len(parser.select(".field-__str__")), 2)
 
     def test_integrator_can_only_see_own_workstype(self):
         response = self.client.get(reverse("admin:permits_workstype_changelist"))
@@ -281,3 +286,62 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             error_msg=admin.MULTIPLE_INTEGRATOR_ERROR_MESSAGE,
         )
         self.assertInHTML(expected, content)
+
+    if settings.ENABLE_2FA:
+
+        def test_user_of_group_with_mandatory_2FA_is_asked_to_set_it_up(self):
+            user = SecretariatUserFactory()
+            user.groups.set([self.group2fa])
+            self.client.login(username=user.username, password="password")
+
+            response = self.client.get(
+                reverse(settings.LOGIN_REDIRECT_URL), follow=True,
+            )
+
+            self.assertEqual(response.status_code, 200)
+            self.assertRedirects(response, resolve_url("two_factor:setup"))
+            self.assertContains(response, "Activer l'authentification à deux facteurs")
+
+        def test_user_of_group_with_mandatory_2FA_setup_can_see_permits_list(self):
+            user = UserFactory()
+            user.groups.set([self.group2fa])
+            self.enable_otp_session(user)
+            response = self.client.get(
+                reverse(settings.LOGIN_REDIRECT_URL), follow=True,
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, "Vue d'ensemble de vos demandes")
+
+        def test_user_of_group_with_mandatory_2FA_not_setup_can_access_change_password(
+            self,
+        ):
+            user = UserFactory()
+            user.groups.set([self.group2fa])
+            self.client.login(username=user.username, password="password")
+            response = self.client.get(reverse("password_change"), follow=True,)
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, "Confirmation du nouveau mot de passe")
+
+        def test_user_of_group_with_mandatory_2FA_not_setup_can_access_modify_account(
+            self,
+        ):
+            user = UserFactory()
+            group = factories.GroupFactory()
+            factories.PermitDepartmentFactory(group=group, mandatory_2fa=True)
+            user.groups.set([self.group2fa])
+            self.client.login(username=user.username, password="password")
+            response = self.client.get(reverse("permit_author_edit"), follow=True,)
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, "Mon compte")
+
+        def test_user_of_group_with_mandatory_2FA_not_setup_can_access_account_security(
+            self,
+        ):
+            user = UserFactory()
+            group = factories.GroupFactory()
+            factories.PermitDepartmentFactory(group=group, mandatory_2fa=True)
+            user.groups.set([self.group2fa])
+            self.client.login(username=user.username, password="password")
+            response = self.client.get(reverse("profile"), follow=True,)
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, "Securité du compte")
