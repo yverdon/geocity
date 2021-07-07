@@ -2014,6 +2014,85 @@ class PermitRequestClassifyTestCase(TestCase):
         validation.permit_request.refresh_from_db()
         self.assertIsNotNone(validation.permit_request.validated_at)
 
+    def test_classify_permit_request_with_required_validation_doc_shows_file_field(
+        self,
+    ):
+        validation = factories.PermitRequestValidationFactory(
+            permit_request__administrative_entity=self.administrative_entity,
+            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+        )
+
+        wot = factories.WorksObjectTypeFactory(requires_validation_document=True)
+        validation.permit_request.works_object_types.set([wot])
+
+        self.client.login(username=self.secretariat_user.username, password="password")
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_approve",
+                kwargs={"permit_request_id": validation.permit_request.pk},
+            ),
+        )
+
+        self.assertContains(response, "Approbation de la demande")
+        self.assertEqual(
+            validation.permit_request.status,
+            models.PermitRequest.STATUS_AWAITING_VALIDATION,
+        )
+        self.assertContains(response, "validation_pdf")
+
+    def test_classify_permit_request_without_required_validation_doc_does_not_show_file_field(
+        self,
+    ):
+        validation = factories.PermitRequestValidationFactory(
+            permit_request__administrative_entity=self.administrative_entity,
+            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+        )
+
+        wot = factories.WorksObjectTypeFactory(requires_validation_document=False)
+        validation.permit_request.works_object_types.set([wot])
+
+        self.client.login(username=self.secretariat_user.username, password="password")
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_approve",
+                kwargs={"permit_request_id": validation.permit_request.pk},
+            ),
+        )
+
+        self.assertContains(response, "Approbation de la demande")
+        self.assertEqual(
+            validation.permit_request.status,
+            models.PermitRequest.STATUS_AWAITING_VALIDATION,
+        )
+        self.assertNotContains(response, "validation_pdf")
+
+    def test_classify_permit_request_with_any_object_requiring_validation_doc_shows_file_field(
+        self,
+    ):
+        validation = factories.PermitRequestValidationFactory(
+            permit_request__administrative_entity=self.administrative_entity,
+            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+        )
+
+        wot1 = factories.WorksObjectTypeFactory(requires_validation_document=True)
+        wot2 = factories.WorksObjectTypeFactory(requires_validation_document=False)
+        validation.permit_request.works_object_types.set([wot1, wot2])
+
+        self.client.login(username=self.secretariat_user.username, password="password")
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_approve",
+                kwargs={"permit_request_id": validation.permit_request.pk},
+            ),
+        )
+
+        self.assertContains(response, "Approbation de la demande")
+        self.assertEqual(
+            validation.permit_request.status,
+            models.PermitRequest.STATUS_AWAITING_VALIDATION,
+        )
+        self.assertContains(response, "validation_pdf")
+
 
 class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
     def test_administrative_entity_step_without_public_requests_is_empty_to_standard_user(
