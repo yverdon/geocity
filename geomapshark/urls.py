@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
+from django.views.generic.base import TemplateView
 from rest_framework import routers
 
 from permits import api
@@ -110,6 +111,7 @@ urlpatterns += [
     path("rest/", include(router.urls)),  # Django-rest urls
     path("admin/", admin.site.urls),
     path("oauth/", include("oauth2_provider.urls", namespace="oauth2_provider")),
+    path("token/", views.OAuth2TokenView.as_view(), name="oauth2_token"),
 ]
 
 if settings.PREFIX_URL:
