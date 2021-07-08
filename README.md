@@ -16,6 +16,11 @@ docker-compose -f docker-compose-dev.yml build
 docker-compose -f docker-compose-dev.yml down --remove-orphans && docker-compose -f docker-compose-dev.yml up
 ```
 
+Copy `docker-compose-dev.yml` to a `docker-compose-override.yml`, adapt it to your needs, then run :
+```
+docker-compose up
+```
+
 This process will create the .env file only if it does not already exist
 
 The demo application is now running on _localhost:9095_
@@ -129,7 +134,7 @@ The user belonging to backoffice group can be granted specific permissions:
 - ```see_private_requests```, "Voir les demandes restreintes": allows the user to make requests that are not visible by standard user. Typically during the setup stage of a new form configuration
 - ```amend_permit_request```,"Traiter les demandes de permis": allow the user the process (amend) the requests (fill the backoffice fields), require validation for other departments and print the documents
 - ```validate_permit_request```,"Valider les demandes de permis": allow the user to fill the validation form
-- ```classify_permit_request```,"Classer les demandes de permis" allow the user to accept/reject the requests if validations services have all accepted it. 
+- ```classify_permit_request```,"Classer les demandes de permis" allow the user to accept/reject the requests if validations services have all accepted it.
 - ```edit_permit_request```, "Éditer les demandes de permis": allow the user to edit de requests filled by another person
 
 
