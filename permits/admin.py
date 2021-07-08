@@ -520,6 +520,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     "administrative_entities",
                     "is_public",
                     "requires_payment",
+                    "requires_validation_document",
                     "integrator",
                 )
             },

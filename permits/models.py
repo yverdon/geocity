@@ -551,6 +551,9 @@ class WorksObjectType(models.Model):
     requires_payment = models.BooleanField(
         _("Demande soumise à des frais"), default=True
     )
+    requires_validation_document = models.BooleanField(
+        _("Document de validation obligatoire"), default=True
+    )
     is_public = models.BooleanField(_("Public"), default=False)
 
     class Meta:
