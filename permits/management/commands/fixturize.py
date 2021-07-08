@@ -7,8 +7,9 @@ from django.core import management
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from django.utils import timezone
+
 from geomapshark import settings
-from permits import models, admin
+from permits import admin, models
 
 User = get_user_model()
 
@@ -17,43 +18,50 @@ def reset_db():
     """
     Reset database to a blank state by removing all the tables and recreating them.
     """
-    with connection.cursor() as cursor:
+    with transaction.atomic():
+        with connection.cursor() as cursor:
 
-        if settings.CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE.lower() == "true":
-            cursor.execute(
-                "select tablename from pg_tables where schemaname = 'geocity' or schemaname = 'public'"
-            )
-            tables = [
-                row[0] for row in cursor.fetchall() if row[0] not in {"spatial_ref_sys"}
-            ]
-        else:  # some user might don't want to clear public schema
-            cursor.execute(
-                "select tablename from pg_tables where schemaname = 'geocity'"
-            )
-            tables = [row[0] for row in cursor.fetchall()]
-        # Can't use query parameters here as they'll add single quotes which are not
-        # supported by postgres
-        for table in tables:
-            cursor.execute('drop table "' + table + '" cascade')
+            if settings.CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE.lower() == "true":
+                cursor.execute(
+                    "select tablename from pg_tables where schemaname = 'geocity' or schemaname = 'public'"
+                )
+                tables = [
+                    row[0]
+                    for row in cursor.fetchall()
+                    if row[0] not in {"spatial_ref_sys"}
+                ]
+            else:  # some user might don't want to clear public schema
+                cursor.execute(
+                    "select tablename from pg_tables where schemaname = 'geocity'"
+                )
+                tables = [row[0] for row in cursor.fetchall()]
+            # Can't use query parameters here as they'll add single quotes which are not
+            # supported by postgres
+            for table in tables:
+                cursor.execute('drop table "' + table + '" cascade')
 
     # Call migrate so that post-migrate hooks such as generating a default Site object
-    # are run
+    # are run.
+
+    # sprint-7/yc-357: This was removed from the atomic transaction because
+    # Addfield and AlterField operations are performed, thus generating a:
+    # django.db.utils.OperationalError: cannot ALTER TABLE "permits_permitdepartment" because it has pending trigger events.
     management.call_command("migrate", "--noinput", stdout=StringIO())
 
 
 class Command(BaseCommand):
-    @transaction.atomic
     def handle(self, *args, **options):
         self.stdout.write("Resetting database...")
         reset_db()
-        self.stdout.write("Creating users...")
-        self.create_users()
-        self.stdout.write("Creating works types and objs...")
-        self.create_works_types()
-        self.stdout.write("Creating demo permit...")
-        self.create_permit()
-        self.stdout.write("Creating dummy geometric entities...")
-        self.create_geom_layer_entity()
+        with transaction.atomic():
+            self.stdout.write("Creating users...")
+            self.create_users()
+            self.stdout.write("Creating works types and objs...")
+            self.create_works_types()
+            self.stdout.write("Creating demo permit...")
+            self.create_permit()
+            self.stdout.write("Creating dummy geometric entities...")
+            self.create_geom_layer_entity()
 
     def create_users(self):
 

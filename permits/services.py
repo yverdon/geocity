@@ -1327,6 +1327,13 @@ def validate_file(file):
         )
 
 
+def is_2FA_mandatory(user=None):
+    return (
+        settings.ENABLE_2FA
+        and user.groups.filter(permitdepartment__mandatory_2fa=True).exists()
+    )
+
+
 def is_validation_document_required(permit_request):
     return any(
         permit_request.works_object_types.filter(requires_validation_document=True)
