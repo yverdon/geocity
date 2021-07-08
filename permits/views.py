@@ -5,7 +5,6 @@ import urllib.parse
 
 import requests
 from django.contrib import messages
-from django.contrib.auth import logout
 from django.contrib.auth.decorators import (
     login_required,
     permission_required,
@@ -32,6 +31,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views import View
 from django_filters.views import FilterView
+from django_otp import user_has_device
 from django_tables2.export.views import ExportMixin
 from django_tables2.views import SingleTableMixin, SingleTableView
 
@@ -118,7 +118,26 @@ def progress_bar_context(request, permit_request, current_step_type):
     return {"steps": steps, "previous_step": previous_step}
 
 
+def check_mandatory_2FA(
+    view=None, redirect_field_name="next", login_url="profile", if_configured=False
+):
+    def test(user):
+        if services.is_2FA_mandatory(user):
+            return user.is_verified() or (
+                if_configured and user.is_authenticated and not user_has_device(user)
+            )
+        else:
+            return True
+
+    decorator = user_passes_test(
+        test, login_url=login_url, redirect_field_name=redirect_field_name
+    )
+
+    return decorator if (view is None) else decorator(view)
+
+
 @method_decorator(login_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
 class PermitRequestDetailView(View):
 
     actions = models.ACTIONS
@@ -474,6 +493,7 @@ def permit_request_print(request, permit_request_id, template_id):
 @redirect_bad_status_to_detail
 @login_required
 @user_passes_test(user_has_permitauthor)
+@check_mandatory_2FA
 def permit_request_select_administrative_entity(request, permit_request_id=None):
     if permit_request_id:
         permit_request = get_permit_request_for_edition(request.user, permit_request_id)
@@ -533,6 +553,7 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
 
 @redirect_bad_status_to_detail
 @login_required
+@check_mandatory_2FA
 def permit_request_select_types(request, permit_request_id):
     """
     Step to select works types (eg. demolition). No permit request is created at this step since we only store (works
@@ -599,6 +620,7 @@ def permit_request_select_types(request, permit_request_id):
 
 @redirect_bad_status_to_detail
 @login_required
+@check_mandatory_2FA
 def permit_request_select_objects(request, permit_request_id):
     """
     Step to select works objects. This view supports either editing an existing permit request (if `permit_request_id`
@@ -671,6 +693,7 @@ def permit_request_select_objects(request, permit_request_id):
 
 @redirect_bad_status_to_detail
 @login_required
+@check_mandatory_2FA
 def permit_request_properties(request, permit_request_id):
     """
     Step to input properties values for the given permit request.
@@ -717,6 +740,7 @@ def permit_request_properties(request, permit_request_id):
 
 @redirect_bad_status_to_detail
 @login_required
+@check_mandatory_2FA
 def permit_request_appendices(request, permit_request_id):
     """
     Step to upload appendices for the given permit request.
@@ -763,6 +787,7 @@ def permit_request_appendices(request, permit_request_id):
 
 @redirect_bad_status_to_detail
 @login_required
+@check_mandatory_2FA
 def permit_request_actors(request, permit_request_id):
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
     steps_context = progress_bar_context(
@@ -811,6 +836,7 @@ def permit_request_actors(request, permit_request_id):
 
 
 @login_required
+@check_mandatory_2FA
 def permit_request_geo_time(request, permit_request_id):
     permit_request = services.get_permit_request_for_user_or_404(
         request.user, permit_request_id
@@ -867,6 +893,7 @@ def permit_request_geo_time(request, permit_request_id):
 
 
 @login_required
+@check_mandatory_2FA
 def permit_request_media_download(request, property_value_id):
     """
     Send the file referenced by the given property value.
@@ -887,17 +914,10 @@ def permit_request_media_download(request, property_value_id):
 
 
 @method_decorator(login_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
 class PermitRequestList(SingleTableMixin, FilterView):
     paginate_by = int(os.environ["PAGINATE_BY"])
     template_name = "permits/permit_requests_list.html"
-
-    def render_to_response(self, context):
-        if (
-            services.is_2FA_mandatory(self.request.user)
-            and not self.request.user.is_verified()
-        ):
-            return redirect("two_factor:setup")
-        return super(PermitRequestList, self).render_to_response(context)
 
     def get_queryset(self):
         return (
@@ -932,6 +952,7 @@ class PermitRequestList(SingleTableMixin, FilterView):
 
 
 @method_decorator(login_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
 class PermitExportView(ExportMixin, SingleTableView):
     table_class = tables.OwnPermitRequestsTable
     template_name = "django_tables2/bootstrap.html"
@@ -955,6 +976,7 @@ class PermitExportView(ExportMixin, SingleTableView):
 
 @redirect_bad_status_to_detail
 @login_required
+@check_mandatory_2FA
 def permit_request_submit(request, permit_request_id):
 
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
@@ -990,6 +1012,7 @@ def permit_request_submit(request, permit_request_id):
 
 @redirect_bad_status_to_detail
 @login_required
+@check_mandatory_2FA
 def permit_request_submit_confirmed(request, permit_request_id):
 
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
@@ -1009,6 +1032,7 @@ def permit_request_submit_confirmed(request, permit_request_id):
 
 @redirect_bad_status_to_detail
 @login_required
+@check_mandatory_2FA
 def permit_request_delete(request, permit_request_id):
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
 
@@ -1034,6 +1058,7 @@ def permit_request_reject(request, permit_request_id):
 
 @login_required
 @permission_required("permits.classify_permit_request")
+@check_mandatory_2FA
 def permit_request_classify(request, permit_request_id, approve):
 
     permit_request = services.get_permit_request_for_user_or_404(
@@ -1107,6 +1132,7 @@ def permit_request_file_download(request, path):
 
 
 @login_required
+@check_mandatory_2FA
 def administrative_entity_file_download(request, path):
     """
     Securely download the administrative entity customization files for member of the administrative_entity concerned
@@ -1125,6 +1151,7 @@ def administrative_entity_file_download(request, path):
 
 
 @login_required
+@check_mandatory_2FA
 def genericauthorview(request, pk):
 
     instance = get_object_or_404(models.PermitAuthor, pk=pk)
@@ -1138,6 +1165,7 @@ def genericauthorview(request, pk):
 
 
 @login_required
+@check_mandatory_2FA
 def administrative_infos(request):
 
     administrative_entities = models.PermitAdministrativeEntity.objects.all()
