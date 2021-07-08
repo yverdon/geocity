@@ -125,6 +125,7 @@ def check_mandatory_2FA(
     Do same as :func:`django_otp.decorators.otp_required`, but verify first if the user
     is in a group where 2FA is required.
     """
+
     def test(user):
         if services.is_2FA_mandatory(user):
             return user.is_verified() or (
