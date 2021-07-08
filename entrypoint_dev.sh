@@ -19,16 +19,12 @@ cp -n env.demo .env
 cp -n qgisserver/pg_service.conf_demo qgisserver/pg_service.conf
 # setup app using the django tools
 
-if [ "$INITIAL" = "1" ]; then
+python3 manage.py migrate
+# django-constance models
+python3 manage.py migrate database
+mkdir -p /code/geomapshark/static/
+echo yes | python3 manage.py compilemessages -l fr
 
-    # Fixturize does that...
-    # python3 manage.py migrate
-    ## django-constance models
-    # python3 manage.py migrate database
-
-    mkdir -p /code/geomapshark/static/
-    echo yes | python3 manage.py compilemessages -l fr
-    python3 manage.py fixturize
-fi
+python3 manage.py fixturize
 
 exec $@
