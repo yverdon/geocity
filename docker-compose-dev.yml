@@ -9,12 +9,12 @@ services:
         image: gms_web
         restart: unless-stopped
         depends_on:
-            - "qgisserver"
-            - "postgres"
+            - qgisserver
+            - postgres
         build:
             context: ./
             args:
-                dev_dependencies: ${DEV_DEPENDENCIES}
+                dev_dependencies: "${DEV_DEPENDENCIES}"
         entrypoint: /code/entrypoint_dev.sh
         command: "python3 manage.py runserver 0.0.0.0:9000"
         volumes:
@@ -29,7 +29,7 @@ services:
         image: openquake/qgis-server:3.16
         restart: unless-stopped
         depends_on:
-            - "postgres"
+            - postgres
         volumes:
             - ./qgisserver/geocity.qgs:/io/data/geocity.qgs:ro #default qgis project for mask layer
             - ./qgisserver/pg_service.conf:/etc/postgresql-common/pg_service.conf:ro
