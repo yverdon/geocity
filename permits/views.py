@@ -393,6 +393,11 @@ class PermitRequestDetailView(View):
 
         messages.success(self.request, success_message)
 
+        if form.instance.status == models.PermitRequest.STATUS_RECEIVED:
+            services.send_notification_on_reception(
+                form.instance, self.request.build_absolute_uri
+            )
+
         if "save_continue" in self.request.POST:
 
             return redirect(
@@ -433,6 +438,12 @@ class PermitRequestDetailView(View):
             validation_message = _("La demande a bien été refusée.")
         else:
             validation_message = _("Les commentaires ont été enregistrés.")
+
+        # check there are no pending validations to send the email to the secretary
+        if not self.permit_request.get_pending_validations():
+            services.send_notification_on_validated_statuses(
+                self.permit_request, absolute_uri_func=self.request.build_absolute_uri
+            )
 
         messages.success(self.request, validation_message)
 
@@ -1098,6 +1109,9 @@ def permit_request_classify(request, permit_request_id, approve):
 
         if classify_form.is_valid():
             classify_form.save()
+            services.send_notification_on_classify(
+                permit_request, request.build_absolute_uri
+            )
             return redirect("permits:permit_requests_list")
     else:
         classify_form = forms.PermitRequestClassifyForm(
