@@ -1798,6 +1798,33 @@ class PermitRequestValidationTestcase(TestCase):
 
     def test_validator_can_validate_assigned_permit_requests(self):
         validation = factories.PermitRequestValidationFactory()
+        validator = factories.ValidatorUserFactory(
+            groups=[validation.department.group, factories.ValidatorGroupFactory()]
+        )
+
+        self.client.login(username=validator.username, password="password")
+
+        self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": validation.permit_request.pk},
+            ),
+            data={
+                "action": models.ACTION_VALIDATE,
+                "validation_status": models.PermitRequestValidation.STATUS_APPROVED,
+            },
+        )
+
+        validation.refresh_from_db()
+
+        self.assertEqual(
+            validation.validation_status, models.PermitRequestValidation.STATUS_APPROVED
+        )
+
+    def test_validator_can_validate_assigned_permit_requests_and_secretary_mail_is_sent(
+        self,
+    ):
+        validation = factories.PermitRequestValidationFactory()
         secretary_group = factories.GroupFactory(name="Secrétariat")
         department = factories.PermitDepartmentFactory(group=secretary_group)
         factories.SecretariatUserFactory(groups=[secretary_group])
