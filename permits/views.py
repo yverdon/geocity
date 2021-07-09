@@ -439,11 +439,17 @@ class PermitRequestDetailView(View):
         else:
             validation_message = _("Les commentaires ont été enregistrés.")
 
-        # check there are no pending validations to send the email to the secretary
-        if not self.permit_request.get_pending_validations():
-            services.send_notification_on_validated_statuses(
-                self.permit_request, absolute_uri_func=self.request.build_absolute_uri
-            )
+        try:
+            if not self.permit_request.get_pending_validations():
+                services.send_notification_on_validated_statuses(
+                    self.permit_request,
+                    absolute_uri_func=self.request.build_absolute_uri,
+                )
+        except AttributeError:
+            # This is the case when the administrative entity does not have a
+            # secretary department associated to a group to which
+            # the secretary user belongs.
+            pass
 
         messages.success(self.request, validation_message)
 
