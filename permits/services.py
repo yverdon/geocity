@@ -9,7 +9,7 @@ from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import SuspiciousOperation
-from django.core.mail import send_mass_mail
+from django.core.mail import send_mail, send_mass_mail
 from django.db import transaction
 from django.db.models import Max, Min, Q, F, Value, Count, CharField
 from django.db.models.functions import Concat
@@ -854,18 +854,15 @@ def submit_permit_request(permit_request, absolute_uri_func):
     if not permit_request.can_be_submitted_by_author():
         raise SuspiciousOperation
 
+    if permit_request.status == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT:
+        send_notification_on_treated_complements(permit_request, absolute_uri_func)
+
     permit_request.status = models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
     if GeoTimeInfo.GEOMETRY in get_geotime_required_info(permit_request):
         permit_request.intersected_geometries = geoservices.get_intersected_geometries(
             permit_request
         )
     permit_request.save()
-    permit_request_url = absolute_uri_func(
-        reverse(
-            "permits:permit_request_detail",
-            kwargs={"permit_request_id": permit_request.pk},
-        )
-    )
 
     users_to_notify = set(
         get_user_model()
@@ -877,13 +874,10 @@ def submit_permit_request(permit_request, absolute_uri_func):
         .values_list("permitauthor__user__email", flat=True)
     )
 
-    email_contents = render_to_string(
-        "permits/emails/permit_request_submitted.txt",
-        {
-            "permit_request_url": permit_request_url,
-            "administrative_entity": permit_request.administrative_entity,
-        },
+    email_contents = _parse_email_content(
+        "permit_request_submitted.txt", permit_request, absolute_uri_func
     )
+
     emails = [
         (
             "Nouvelle demande",
@@ -894,14 +888,10 @@ def submit_permit_request(permit_request, absolute_uri_func):
         for email_address in users_to_notify
     ]
 
-    acknowledgment_email_contents = render_to_string(
-        "permits/emails/permit_request_acknowledgment.txt",
-        {
-            "permit_request_url": permit_request_url,
-            "name": permit_request.author.user.get_full_name(),
-            "administrative_entity": permit_request.administrative_entity,
-        },
+    acknowledgment_email_contents = _parse_email_content(
+        "permit_request_acknowledgment.txt", permit_request, absolute_uri_func
     )
+
     emails.append(
         (
             "Votre demande",
@@ -933,18 +923,10 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
         )
     }
 
-    email_contents = render_to_string(
-        "permits/emails/permit_request_validation_request.txt",
-        {
-            "permit_request_url": absolute_uri_func(
-                reverse(
-                    "permits:permit_request_detail",
-                    kwargs={"permit_request_id": permit_request.pk},
-                )
-            ),
-            "administrative_entity": permit_request.administrative_entity,
-        },
+    email_contents = _parse_email_content(
+        "permit_request_validation_request.txt", permit_request, absolute_uri_func
     )
+
     emails = [
         (
             "Nouvelle demande",
@@ -976,18 +958,10 @@ def send_validation_reminder(permit_request, absolute_uri_func):
         .distinct()
     )
 
-    email_contents = render_to_string(
-        "permits/emails/permit_request_validation_reminder.txt",
-        {
-            "permit_request_url": absolute_uri_func(
-                reverse(
-                    "permits:permit_request_detail",
-                    kwargs={"permit_request_id": permit_request.pk},
-                )
-            ),
-            "administrative_entity": permit_request.administrative_entity,
-        },
+    email_contents = _parse_email_content(
+        "permit_request_validation_reminder.txt", permit_request, absolute_uri_func
     )
+
     emails = [
         (
             "Rappel: une demande est en attente de validation",
@@ -1002,6 +976,104 @@ def send_validation_reminder(permit_request, absolute_uri_func):
         send_mass_mail(emails)
 
     return pending_validations
+
+
+def send_notification_on_validated_statuses(permit_request, absolute_uri_func):
+    """
+    Send a notification to the Secretary of the permit request's administrative entity.
+    """
+
+    email_contents = _parse_email_content(
+        "permit_request_validated.txt", permit_request, absolute_uri_func
+    )
+
+    send_mail(
+        "Les services chargés de la validation d'une demande ont donné leur préavis",
+        email_contents,
+        settings.DEFAULT_FROM_EMAIL,
+        [_get_secretary_email(permit_request)],
+    )
+
+
+def send_notification_on_treated_complements(permit_request, absolute_uri_func):
+    """
+    Send a notification to the Secretary when the permit request information
+    has been complemented.
+    """
+
+    email_contents = _parse_email_content(
+        "permit_request_complemented.txt", permit_request, absolute_uri_func
+    )
+
+    send_mail(
+        "La demande de compléments a été traitée",
+        email_contents,
+        settings.DEFAULT_FROM_EMAIL,
+        [_get_secretary_email(permit_request)],
+    )
+
+
+def send_notification_on_classify(permit_request, absolute_uri_func):
+    """
+    Send a notification to the permit author when the secretary classifies
+    the permit request.
+    """
+    email_contents = _parse_email_content(
+        "permit_request_classified.txt", permit_request, absolute_uri_func
+    )
+
+    send_mail(
+        "Votre demande a été traitée et classée",
+        email_contents,
+        settings.DEFAULT_FROM_EMAIL,
+        [permit_request.author.user.email],
+    )
+
+
+def send_notification_on_reception(permit_request, absolute_uri_func):
+    """
+    Send a notification to the permit author when the secretary receives
+    the permit request.
+    """
+    email_contents = _parse_email_content(
+        "permit_request_received.txt", permit_request, absolute_uri_func
+    )
+
+    send_mail(
+        "Votre annonce a été prise en compte et classée",
+        email_contents,
+        settings.DEFAULT_FROM_EMAIL,
+        [permit_request.author.user.email],
+    )
+
+
+def _parse_email_content(template, permit_request, absolute_uri_func):
+    return render_to_string(
+        f"permits/emails/{template}",
+        {
+            "permit_request_url": absolute_uri_func(
+                reverse(
+                    "permits:permit_request_detail",
+                    kwargs={"permit_request_id": permit_request.pk},
+                )
+            ),
+            "administrative_entity": permit_request.administrative_entity,
+            "name": permit_request.author.user.get_full_name(),
+        },
+    )
+
+
+def _get_secretary_email(permit_request):
+    department = permit_request.administrative_entity.departments.filter(
+        group__name__icontains="secr"
+    )
+
+    return (
+        get_user_model()
+        .objects.filter(groups__permitdepartment__in=department)
+        .first()
+        .email
+    )
 
 
 def has_permission_to_amend_permit_request(user, permit_request):

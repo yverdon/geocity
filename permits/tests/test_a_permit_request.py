@@ -1798,6 +1798,11 @@ class PermitRequestValidationTestcase(TestCase):
 
     def test_validator_can_validate_assigned_permit_requests(self):
         validation = factories.PermitRequestValidationFactory()
+        secretary_group = factories.GroupFactory(name="Secrétariat")
+        department = factories.PermitDepartmentFactory(group=secretary_group)
+        factories.SecretariatUserFactory(groups=[secretary_group])
+        validation.permit_request.administrative_entity.departments.set([department])
+
         validator = factories.ValidatorUserFactory(
             groups=[validation.department.group, factories.ValidatorGroupFactory()]
         )
