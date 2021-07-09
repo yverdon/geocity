@@ -880,7 +880,7 @@ def submit_permit_request(permit_request, absolute_uri_func):
 
     emails = [
         (
-            "Nouvelle demande",
+            _("Nouvelle demande"),
             email_contents,
             settings.DEFAULT_FROM_EMAIL,
             [email_address],
@@ -929,7 +929,7 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
 
     emails = [
         (
-            "Nouvelle demande",
+            _("Nouvelle demande"),
             email_contents,
             settings.DEFAULT_FROM_EMAIL,
             [email_address],
@@ -964,7 +964,7 @@ def send_validation_reminder(permit_request, absolute_uri_func):
 
     emails = [
         (
-            "Rappel: une demande est en attente de validation",
+            _("Rappel: une demande est en attente de validation"),
             email_contents,
             settings.DEFAULT_FROM_EMAIL,
             [email_address],
@@ -988,7 +988,7 @@ def send_notification_on_validated_statuses(permit_request, absolute_uri_func):
     )
 
     send_mail(
-        "Les services chargés de la validation d'une demande ont donné leur préavis",
+        _("Les services chargés de la validation d'une demande ont donné leur préavis"),
         email_contents,
         settings.DEFAULT_FROM_EMAIL,
         [_get_secretary_email(permit_request)],
@@ -1006,7 +1006,7 @@ def send_notification_on_treated_complements(permit_request, absolute_uri_func):
     )
 
     send_mail(
-        "La demande de compléments a été traitée",
+        _("La demande de compléments a été traitée"),
         email_contents,
         settings.DEFAULT_FROM_EMAIL,
         [_get_secretary_email(permit_request)],
@@ -1023,7 +1023,7 @@ def send_notification_on_classify(permit_request, absolute_uri_func):
     )
 
     send_mail(
-        "Votre demande a été traitée et classée",
+        _("Votre demande a été traitée et classée"),
         email_contents,
         settings.DEFAULT_FROM_EMAIL,
         [permit_request.author.user.email],
@@ -1040,7 +1040,7 @@ def send_notification_on_reception(permit_request, absolute_uri_func):
     )
 
     send_mail(
-        "Votre annonce a été prise en compte et classée",
+        _("Votre annonce a été prise en compte et classée"),
         email_contents,
         settings.DEFAULT_FROM_EMAIL,
         [permit_request.author.user.email],
