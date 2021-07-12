@@ -987,12 +987,20 @@ def send_notification_on_validated_statuses(permit_request, absolute_uri_func):
         "permit_request_validated.txt", permit_request, absolute_uri_func
     )
 
-    send_mail(
-        _("Les services chargés de la validation d'une demande ont donné leur préavis"),
-        email_contents,
-        settings.DEFAULT_FROM_EMAIL,
-        [_get_secretary_email(permit_request)],
-    )
+    emails = [
+        (
+            _(
+                "Les services chargés de la validation d'une demande ont donné leur préavis"
+            ),
+            email_contents,
+            settings.DEFAULT_FROM_EMAIL,
+            [email_address],
+        )
+        for email_address in _get_secretary_email(permit_request)
+    ]
+
+    if emails:
+        send_mass_mail(emails)
 
 
 def send_notification_on_treated_complements(permit_request, absolute_uri_func):
@@ -1005,12 +1013,18 @@ def send_notification_on_treated_complements(permit_request, absolute_uri_func):
         "permit_request_complemented.txt", permit_request, absolute_uri_func
     )
 
-    send_mail(
-        _("La demande de compléments a été traitée"),
-        email_contents,
-        settings.DEFAULT_FROM_EMAIL,
-        [_get_secretary_email(permit_request)],
-    )
+    emails = [
+        (
+            _("La demande de compléments a été traitée"),
+            email_contents,
+            settings.DEFAULT_FROM_EMAIL,
+            [email_address],
+        )
+        for email_address in _get_secretary_email(permit_request)
+    ]
+
+    if emails:
+        send_mass_mail(emails)
 
 
 def send_notification_on_classify(permit_request, absolute_uri_func):
@@ -1067,13 +1081,11 @@ def _get_secretary_email(permit_request):
     department = permit_request.administrative_entity.departments.filter(
         group__name__icontains="secr"
     )
-
-    return (
-        get_user_model()
-        .objects.filter(groups__permitdepartment__in=department)
-        .first()
-        .email
+    secretary_group_users = get_user_model().objects.filter(
+        groups__permitdepartment__in=department
     )
+
+    return [user.email for user in secretary_group_users]
 
 
 def has_permission_to_amend_permit_request(user, permit_request):
