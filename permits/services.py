@@ -854,8 +854,16 @@ def submit_permit_request(permit_request, absolute_uri_func):
     if not permit_request.can_be_submitted_by_author():
         raise SuspiciousOperation
 
-    if permit_request.status == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT:
+    is_awaiting_supplement = (
+        permit_request.status == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
+    )
+    if is_awaiting_supplement:
         send_notification_on_treated_complements(permit_request, absolute_uri_func)
+    else:
+        send_notification_for_new_permit_request(permit_request, absolute_uri_func)
+        send_notification_to_requester_on_new_permit_request(
+            permit_request, absolute_uri_func
+        )
 
     permit_request.status = models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
     if GeoTimeInfo.GEOMETRY in get_geotime_required_info(permit_request):
@@ -863,46 +871,6 @@ def submit_permit_request(permit_request, absolute_uri_func):
             permit_request
         )
     permit_request.save()
-
-    users_to_notify = set(
-        get_user_model()
-        .objects.filter(
-            groups__permitdepartment__administrative_entity=permit_request.administrative_entity,
-            permitauthor__user__email__isnull=False,
-            groups__permitdepartment__is_validator=False,
-        )
-        .values_list("permitauthor__user__email", flat=True)
-    )
-
-    email_contents = _parse_email_content(
-        "permit_request_submitted.txt", permit_request, absolute_uri_func
-    )
-
-    emails = [
-        (
-            _("Nouvelle demande"),
-            email_contents,
-            settings.DEFAULT_FROM_EMAIL,
-            [email_address],
-        )
-        for email_address in users_to_notify
-    ]
-
-    acknowledgment_email_contents = _parse_email_content(
-        "permit_request_acknowledgment.txt", permit_request, absolute_uri_func
-    )
-
-    emails.append(
-        (
-            "Votre demande",
-            acknowledgment_email_contents,
-            settings.DEFAULT_FROM_EMAIL,
-            [permit_request.author.user.email],
-        )
-    )
-
-    if emails:
-        send_mass_mail(emails)
 
 
 @transaction.atomic
@@ -1059,6 +1027,55 @@ def send_notification_on_reception(permit_request, absolute_uri_func):
         settings.DEFAULT_FROM_EMAIL,
         [permit_request.author.user.email],
     )
+
+
+def send_notification_for_new_permit_request(permit_request, absolute_uri_func):
+    users_to_notify = set(
+        get_user_model()
+        .objects.filter(
+            groups__permitdepartment__administrative_entity=permit_request.administrative_entity,
+            permitauthor__user__email__isnull=False,
+            groups__permitdepartment__is_validator=False,
+        )
+        .values_list("permitauthor__user__email", flat=True)
+    )
+
+    email_contents = _parse_email_content(
+        "permit_request_submitted.txt", permit_request, absolute_uri_func
+    )
+
+    emails = [
+        (
+            _("Nouvelle demande"),
+            email_contents,
+            settings.DEFAULT_FROM_EMAIL,
+            [email_address],
+        )
+        for email_address in users_to_notify
+    ]
+
+    if emails:
+        send_mass_mail(emails)
+
+
+def send_notification_to_requester_on_new_permit_request(
+    permit_request, absolute_uri_func
+):
+    acknowledgment_email_contents = _parse_email_content(
+        "permit_request_acknowledgment.txt", permit_request, absolute_uri_func
+    )
+
+    emails = [
+        (
+            "Votre demande",
+            acknowledgment_email_contents,
+            settings.DEFAULT_FROM_EMAIL,
+            [permit_request.author.user.email],
+        )
+    ]
+
+    if emails:
+        send_mass_mail(emails)
 
 
 def _parse_email_content(template, permit_request, absolute_uri_func):
