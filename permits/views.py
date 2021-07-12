@@ -394,9 +394,14 @@ class PermitRequestDetailView(View):
         messages.success(self.request, success_message)
 
         if form.instance.status == models.PermitRequest.STATUS_RECEIVED:
-            services.send_notification_on_reception(
-                form.instance, self.request.build_absolute_uri
-            )
+            data = {
+                "subject": _("Votre annonce a été prise en compte et classée"),
+                "users_to_notify": [form.instance.author.user.email],
+                "template": "permit_request_received.txt",
+                "permit_request": form.instance,
+                "absolute_uri_func": self.request.build_absolute_uri,
+            }
+            services._send_email_notification(data)
 
         if "save_continue" in self.request.POST:
 
@@ -441,10 +446,19 @@ class PermitRequestDetailView(View):
 
         try:
             if not self.permit_request.get_pending_validations():
-                services.send_notification_on_validated_statuses(
-                    self.permit_request,
-                    absolute_uri_func=self.request.build_absolute_uri,
-                )
+                data = {
+                    "subject": _(
+                        "Les services chargés de la validation d'une demande ont donné leur préavis"
+                    ),
+                    "users_to_notify": services._get_secretary_email(
+                        self.permit_request
+                    ),
+                    "template": "permit_request_validated.txt",
+                    "permit_request": self.permit_request,
+                    "absolute_uri_func": self.request.build_absolute_uri,
+                }
+                services._send_email_notification(data)
+
         except AttributeError:
             # This is the case when the administrative entity does not have a
             # secretary department associated to a group to which
@@ -1115,9 +1129,15 @@ def permit_request_classify(request, permit_request_id, approve):
 
         if classify_form.is_valid():
             classify_form.save()
-            services.send_notification_on_classify(
-                permit_request, request.build_absolute_uri
-            )
+            data = {
+                "subject": _("Votre demande a été traitée et classée"),
+                "users_to_notify": [permit_request.author.user.email],
+                "template": "permit_request_classified.txt",
+                "permit_request": permit_request,
+                "absolute_uri_func": request.absolute_uri_func,
+            }
+            services._send_email_notification(data)
+
             return redirect("permits:permit_requests_list")
     else:
         classify_form = forms.PermitRequestClassifyForm(
