@@ -401,7 +401,7 @@ class PermitRequestDetailView(View):
                 "permit_request": form.instance,
                 "absolute_uri_func": self.request.build_absolute_uri,
             }
-            services._send_email_notification(data)
+            services.send_email_notification(data)
 
         if "save_continue" in self.request.POST:
 
@@ -457,7 +457,7 @@ class PermitRequestDetailView(View):
                     "permit_request": self.permit_request,
                     "absolute_uri_func": self.request.build_absolute_uri,
                 }
-                services._send_email_notification(data)
+                services.send_email_notification(data)
 
         except AttributeError:
             # This is the case when the administrative entity does not have a
@@ -1136,7 +1136,7 @@ def permit_request_classify(request, permit_request_id, approve):
                 "permit_request": permit_request,
                 "absolute_uri_func": request.build_absolute_uri,
             }
-            services._send_email_notification(data)
+            services.send_email_notification(data)
 
             return redirect("permits:permit_requests_list")
     else:
