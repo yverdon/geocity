@@ -1134,7 +1134,7 @@ def permit_request_classify(request, permit_request_id, approve):
                 "users_to_notify": [permit_request.author.user.email],
                 "template": "permit_request_classified.txt",
                 "permit_request": permit_request,
-                "absolute_uri_func": request.absolute_uri_func,
+                "absolute_uri_func": request.build_absolute_uri,
             }
             services._send_email_notification(data)
 
