@@ -865,7 +865,7 @@ def submit_permit_request(permit_request, absolute_uri_func):
             "permit_request": permit_request,
             "absolute_uri_func": absolute_uri_func,
         }
-        _send_email_notification(data)
+        send_email_notification(data)
 
     else:
         users_to_notify = set(
@@ -884,7 +884,7 @@ def submit_permit_request(permit_request, absolute_uri_func):
             "permit_request": permit_request,
             "absolute_uri_func": absolute_uri_func,
         }
-        _send_email_notification(data)
+        send_email_notification(data)
 
         data2 = {
             "subject": _("Votre demande"),
@@ -893,7 +893,7 @@ def submit_permit_request(permit_request, absolute_uri_func):
             "permit_request": permit_request,
             "absolute_uri_func": absolute_uri_func,
         }
-        _send_email_notification(data2)
+        send_email_notification(data2)
 
     permit_request.status = models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
     if GeoTimeInfo.GEOMETRY in get_geotime_required_info(permit_request):
@@ -928,7 +928,7 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
         "permit_request": permit_request,
         "absolute_uri_func": absolute_uri_func,
     }
-    _send_email_notification(data)
+    send_email_notification(data)
 
 
 def send_validation_reminder(permit_request, absolute_uri_func):
@@ -954,7 +954,7 @@ def send_validation_reminder(permit_request, absolute_uri_func):
         "permit_request": permit_request,
         "absolute_uri_func": absolute_uri_func,
     }
-    _send_email_notification(data)
+    send_email_notification(data)
     return pending_validations
 
 
@@ -974,7 +974,7 @@ def _parse_email_content(template, permit_request, absolute_uri_func):
     )
 
 
-def _send_email_notification(data):
+def send_email_notification(data):
     email_contents = _parse_email_content(
         data["template"], data["permit_request"], data["absolute_uri_func"]
     )
