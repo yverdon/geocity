@@ -1691,7 +1691,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             len(parser.select(".tab-pane#print span.no_print_template")), 1,
         )
 
-    def test_author_receives_email_when_secretariat_acknowledges_reception(self):
+    def test_email_to_author_is_sent_when_secretariat_acknowledges_reception(self):
         user = factories.UserFactory(email="user@geocity.com")
         permit_request = factories.PermitRequestFactory(
             status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
