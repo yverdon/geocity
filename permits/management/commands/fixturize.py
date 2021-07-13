@@ -155,7 +155,10 @@ class Command(BaseCommand):
             content_type=permit_request_ct,
         )
         user = self.create_user(
-            "secretariat-yverdon", "Secrétariat Yverdon", administrative_entity_yverdon
+            "secretariat-yverdon",
+            "Secrétariat Yverdon",
+            administrative_entity_yverdon,
+            email="yverdon-squad+secretariat-yverdon@liip.ch",
         )
         user.user_permissions.set(secretariat_permissions)
         self.stdout.write("secretariat-yverdon / admin")
@@ -164,6 +167,7 @@ class Command(BaseCommand):
             "secretariat-grandson",
             "Secrétariat Grandson",
             administrative_entity_grandson,
+            email="yverdon-squad+secretariat-grandson@liip.ch",
         )
         user.user_permissions.set(secretariat_permissions)
         self.stdout.write("secretariat-grandson / admin")
@@ -173,6 +177,7 @@ class Command(BaseCommand):
             "Validateur Yverdon",
             administrative_entity_yverdon,
             is_default_validator=True,
+            email="yverdon-squad+validator-yverdon@liip.ch",
         )
         Group.objects.get(name="Validateur Yverdon").permissions.add(
             Permission.objects.get(
@@ -188,7 +193,10 @@ class Command(BaseCommand):
         self.stdout.write("validator-yverdon / admin")
 
         user = self.create_user(
-            "eaux-yverdon", "Service des eaux Yverdon", administrative_entity_yverdon
+            "eaux-yverdon",
+            "Service des eaux Yverdon",
+            administrative_entity_yverdon,
+            email="yverdon-squad+eaux-yverdon@liip.ch",
         )
         Group.objects.get(name="Service des eaux Yverdon").permissions.add(
             Permission.objects.get(
@@ -204,6 +212,7 @@ class Command(BaseCommand):
             is_default_validator=True,
             is_integrator_admin=True,
             is_staff=True,
+            email="yverdon-squad+integrator-yverdon@liip.ch",
         )
 
         permits_permissions = Permission.objects.filter(
@@ -240,11 +249,12 @@ class Command(BaseCommand):
         is_default_validator=False,
         is_integrator_admin=False,
         is_staff=False,
+        email="yverdon-squad+user@liip.ch",
     ):
 
         group, created = Group.objects.get_or_create(name=group_name)
         user = User.objects.create_user(
-            email=f"yverdon-squad+user@liip.ch",
+            email=email,
             first_name="Mon Prénom",
             last_name="Mon Nom",
             username=username,
