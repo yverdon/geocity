@@ -376,6 +376,37 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             ),
         )
 
+    def test_secretary_email_is_sent_when_user_treated_requested_complements(self):
+        secretary_group = factories.GroupFactory(name="Secrétariat")
+        department = factories.PermitDepartmentFactory(group=secretary_group)
+        factories.SecretariatUserFactory(
+            groups=[secretary_group], email="secretary@geocity.ch"
+        )
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+            author=self.user.permitauthor,
+            administrative_entity=department.administrative_entity,
+        )
+        self.client.post(
+            reverse(
+                "permits:permit_request_submit",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        permit_request.refresh_from_db()
+        self.assertEqual(
+            permit_request.status, models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["secretary@geocity.ch"])
+        self.assertEqual(
+            mail.outbox[0].subject, "La demande de compléments a été traitée"
+        )
+        self.assertIn(
+            "La demande de compléments a été traitée",
+            mail.outbox[0].message().as_string(),
+        )
+
     def test_submit_permit_request_sends_email_to_secretariat(self):
         # Create a secretariat user Yverdon (the one that will get the notification)
         group = factories.SecretariatGroupFactory()
@@ -1660,6 +1691,38 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             len(parser.select(".tab-pane#print span.no_print_template")), 1,
         )
 
+    def test_author_receives_email_when_secretariat_acknowledges_reception(self):
+        user = factories.UserFactory(email="user@geocity.com")
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+            administrative_entity=self.administrative_entity,
+            author=user.permitauthor,
+        )
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data={
+                "status": models.PermitRequest.STATUS_RECEIVED,
+                "action": models.ACTION_AMEND,
+            },
+            follow=True,
+        )
+
+        permit_request.refresh_from_db()
+        self.assertEqual(permit_request.status, models.PermitRequest.STATUS_RECEIVED)
+        self.assertContains(response, "compléments")
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
+        self.assertEqual(
+            mail.outbox[0].subject, "Votre annonce a été prise en compte et classée"
+        )
+        self.assertIn(
+            "Nous vous informons que votre annonce a été prise en compte et classée.",
+            mail.outbox[0].message().as_string(),
+        )
+
 
 class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase):
     def test_secretariat_can_request_validation(self):
@@ -1821,38 +1884,6 @@ class PermitRequestValidationTestcase(TestCase):
             validation.validation_status, models.PermitRequestValidation.STATUS_APPROVED
         )
 
-    def test_validator_can_validate_assigned_permit_requests_and_secretary_mail_is_sent(
-        self,
-    ):
-        validation = factories.PermitRequestValidationFactory()
-        secretary_group = factories.GroupFactory(name="Secrétariat")
-        department = factories.PermitDepartmentFactory(group=secretary_group)
-        factories.SecretariatUserFactory(groups=[secretary_group])
-        validation.permit_request.administrative_entity.departments.set([department])
-
-        validator = factories.ValidatorUserFactory(
-            groups=[validation.department.group, factories.ValidatorGroupFactory()]
-        )
-
-        self.client.login(username=validator.username, password="password")
-
-        self.client.post(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": validation.permit_request.pk},
-            ),
-            data={
-                "action": models.ACTION_VALIDATE,
-                "validation_status": models.PermitRequestValidation.STATUS_APPROVED,
-            },
-        )
-
-        validation.refresh_from_db()
-
-        self.assertEqual(
-            validation.validation_status, models.PermitRequestValidation.STATUS_APPROVED
-        )
-
     def test_validator_cannot_validate_non_assigned_permit_requests(self):
         validation = factories.PermitRequestValidationFactory()
         factories.ValidatorUserFactory(
@@ -1900,6 +1931,48 @@ class PermitRequestValidationTestcase(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, [validator.permitauthor.user.email])
 
+    def test_secretary_email_is_sent_when_permit_request_is_validated(self):
+        validation = factories.PermitRequestValidationFactory()
+        secretary_group = factories.GroupFactory(name="Secrétariat")
+        department = factories.PermitDepartmentFactory(group=secretary_group)
+        factories.SecretariatUserFactory(
+            groups=[secretary_group], email="secretary@geocity.ch"
+        )
+        validation.permit_request.administrative_entity.departments.set([department])
+
+        validator = factories.ValidatorUserFactory(
+            groups=[validation.department.group, factories.ValidatorGroupFactory()],
+        )
+
+        self.client.login(username=validator.username, password="password")
+
+        self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": validation.permit_request.pk},
+            ),
+            data={
+                "action": models.ACTION_VALIDATE,
+                "validation_status": models.PermitRequestValidation.STATUS_APPROVED,
+            },
+        )
+
+        validation.refresh_from_db()
+
+        self.assertEqual(
+            validation.validation_status, models.PermitRequestValidation.STATUS_APPROVED
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["secretary@geocity.ch"])
+        self.assertEqual(
+            mail.outbox[0].subject,
+            "Les services chargés de la validation d'une demande ont donné leur préavis",
+        )
+        self.assertIn(
+            "Les services chargés de la validation d'une demande ont donné leur préavis",
+            mail.outbox[0].message().as_string(),
+        )
+
 
 class PermitRequestClassifyTestCase(TestCase):
     def setUp(self):
@@ -1918,10 +1991,11 @@ class PermitRequestClassifyTestCase(TestCase):
             groups=[validation.department.group, factories.ValidatorGroupFactory()]
         )
 
-    def test_secretariat_can_classify_permit_request(self):
+    def test_secretariat_can_approve_permit_request_and_email_to_author_is_sent(self):
         validation = factories.PermitRequestValidationFactory(
             permit_request__administrative_entity=self.administrative_entity,
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+            permit_request__author__user__email="user@geocity.com",
         )
 
         self.client.login(username=self.secretariat_user.username, password="password")
@@ -1939,6 +2013,48 @@ class PermitRequestClassifyTestCase(TestCase):
         validation.permit_request.refresh_from_db()
         self.assertEqual(
             validation.permit_request.status, models.PermitRequest.STATUS_APPROVED
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
+        self.assertEqual(
+            mail.outbox[0].subject, "Votre demande a été traitée et classée"
+        )
+        self.assertIn(
+            "Nous vous informons que votre demande a été traitée et classée.",
+            mail.outbox[0].message().as_string(),
+        )
+
+    def test_secretariat_can_reject_permit_request_and_email_to_author_is_sent(self):
+        validation = factories.PermitRequestValidationFactory(
+            permit_request__administrative_entity=self.administrative_entity,
+            validation_status=models.PermitRequestValidation.STATUS_REJECTED,
+            permit_request__author__user__email="user@geocity.com",
+        )
+
+        self.client.login(username=self.secretariat_user.username, password="password")
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_reject",
+                kwargs={"permit_request_id": validation.permit_request.pk},
+            ),
+            data={
+                "validation_pdf": SimpleUploadedFile("file.pdf", "contents".encode()),
+            },
+        )
+
+        self.assertRedirects(response, reverse("permits:permit_requests_list"))
+        validation.permit_request.refresh_from_db()
+        self.assertEqual(
+            validation.permit_request.status, models.PermitRequest.STATUS_REJECTED
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
+        self.assertEqual(
+            mail.outbox[0].subject, "Votre demande a été traitée et classée"
+        )
+        self.assertIn(
+            "Nous vous informons que votre demande a été traitée et classée.",
+            mail.outbox[0].message().as_string(),
         )
 
     def test_secretariat_cannot_classify_permit_request_with_pending_validations(self):
