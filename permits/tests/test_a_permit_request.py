@@ -1822,7 +1822,9 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
         validator_groups = factories.ValidatorGroupFactory.create_batch(
             2, department__administrative_entity=self.administrative_entity
         )
-        validator_user = factories.ValidatorUserFactory(groups=[validator_groups[0]])
+        validator_user = factories.ValidatorUserFactory(
+            groups=[validator_groups[0]], email="validator@geocity.ch"
+        )
         factories.ValidatorUserFactory(groups=[validator_groups[1]])
 
         permit_request = factories.PermitRequestFactory(
@@ -1839,7 +1841,6 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
                 "action": models.ACTION_REQUEST_VALIDATION,
             },
         )
-
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, [validator_user.permitauthor.user.email])
 
@@ -1915,7 +1916,8 @@ class PermitRequestValidationTestcase(TestCase):
             permit_request__administrative_entity=administrative_entity
         )
         validator = factories.ValidatorUserFactory(
-            groups=[validation.department.group, factories.ValidatorGroupFactory()]
+            groups=[validation.department.group, factories.ValidatorGroupFactory()],
+            email="validator@geocity.ch",
         )
 
         self.client.login(username=secretariat.username, password="password")
@@ -1927,7 +1929,6 @@ class PermitRequestValidationTestcase(TestCase):
             ),
             data={"action": models.ACTION_POKE,},
         )
-
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, [validator.permitauthor.user.email])
 

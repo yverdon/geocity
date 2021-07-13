@@ -979,6 +979,7 @@ def send_email_notification(data):
     emails = [
         (data["subject"], email_contents, settings.DEFAULT_FROM_EMAIL, [email_address],)
         for email_address in data["users_to_notify"]
+        if validate_email(email_address)
     ]
 
     if emails:
