@@ -2,16 +2,17 @@ import enum
 import itertools
 import os
 import urllib
-import filetype
-
 from collections import defaultdict
+
+import filetype
 from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.exceptions import SuspiciousOperation
+from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.core.mail import send_mass_mail
+from django.core.validators import EmailValidator
 from django.db import transaction
-from django.db.models import Max, Min, Q, F, Value, Count, CharField
+from django.db.models import CharField, Count, F, Max, Min, Q, Value
 from django.db.models.functions import Concat
 from django.forms import modelformset_factory
 from django.shortcuts import get_object_or_404
@@ -1329,3 +1330,11 @@ def is_validation_document_required(permit_request):
     return any(
         permit_request.works_object_types.filter(requires_validation_document=True)
     )
+
+
+def validate_email(value):
+    try:
+        EmailValidator()(value)
+        return True
+    except ValidationError:
+        return False
