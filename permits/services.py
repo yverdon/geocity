@@ -9,7 +9,7 @@ from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import SuspiciousOperation
-from django.core.mail import send_mail, send_mass_mail
+from django.core.mail import send_mass_mail
 from django.db import transaction
 from django.db.models import Max, Min, Q, F, Value, Count, CharField
 from django.db.models.functions import Concat
