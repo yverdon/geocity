@@ -48,15 +48,14 @@ class CustomLoginView(LoginView):
             "application_description": config.APPLICATION_DESCRIPTION,
         }
 
-        query_string = unquote(self.request.META["QUERY_STRING"])
+        query_string = parse.urlsplit(unquote(self.request.META["QUERY_STRING"]))
         template = (
-            parse.parse_qs(parse.urlsplit(query_string).query)["template"][0]
-            if parse.parse_qs(parse.urlsplit(query_string).query)["template"]
+            parse.parse_qs(query_string.query)["template"][0]
+            if "template" in query_string.query
             else None
         )
 
         if template:
-            # template_name is unique
             template = models.TemplateCustomization.objects.filter(
                 templatename=template
             ).first()
