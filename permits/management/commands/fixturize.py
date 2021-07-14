@@ -45,7 +45,8 @@ def reset_db():
 
     # sprint-7/yc-357: This was removed from the atomic transaction because
     # Addfield and AlterField operations are performed, thus generating a:
-    # django.db.utils.OperationalError: cannot ALTER TABLE "permits_permitdepartment" because it has pending trigger events.
+    # django.db.utils.OperationalError: cannot ALTER TABLE "permits_permitdepartment"
+    # because it has pending trigger events.
     management.call_command("migrate", "--noinput", stdout=StringIO())
 
 

@@ -1,5 +1,7 @@
 import logging
 
+from allauth.socialaccount.providers.github.provider import GitHubProvider
+from allauth.socialaccount.providers.oauth2.urls import default_urlpatterns
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -7,6 +9,8 @@ from django.contrib.auth import views as auth_views
 from django.urls import include, path
 from rest_framework import routers
 
+from dootix.provider import DootixProvider
+from mapnv.provider import MapnvProvider
 from permits import api
 from permits import views as permits_views
 
@@ -48,6 +52,7 @@ if settings.ENABLE_2FA:
             LoginView.as_view(template_name="two_factor/login.html"),
             name="login",
         ),
+        # path('accounts/', include('allauth.urls')),
         path(
             "account/two_factor/",
             ProfileView.as_view(template_name="two_factor/profile.html"),
@@ -59,7 +64,7 @@ if settings.ENABLE_2FA:
             name="setup_complete",
         ),
         path("", include(tf_urls)),
-    ]
+    ] + default_urlpatterns(DootixProvider) + default_urlpatterns(MapnvProvider) + default_urlpatterns(GitHubProvider)
 else:
     logger.info("2 factors authentification is disabled")
     urlpatterns += [
