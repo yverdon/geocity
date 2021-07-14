@@ -1822,7 +1822,9 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
         validator_groups = factories.ValidatorGroupFactory.create_batch(
             2, department__administrative_entity=self.administrative_entity
         )
-        validator_user = factories.ValidatorUserFactory(groups=[validator_groups[0]])
+        validator_user = factories.ValidatorUserFactory(
+            groups=[validator_groups[0]], email="validator@geocity.ch"
+        )
         factories.ValidatorUserFactory(groups=[validator_groups[1]])
 
         permit_request = factories.PermitRequestFactory(
@@ -1839,7 +1841,6 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
                 "action": models.ACTION_REQUEST_VALIDATION,
             },
         )
-
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, [validator_user.permitauthor.user.email])
 
@@ -1915,7 +1916,8 @@ class PermitRequestValidationTestcase(TestCase):
             permit_request__administrative_entity=administrative_entity
         )
         validator = factories.ValidatorUserFactory(
-            groups=[validation.department.group, factories.ValidatorGroupFactory()]
+            groups=[validation.department.group, factories.ValidatorGroupFactory()],
+            email="validator@geocity.ch",
         )
 
         self.client.login(username=secretariat.username, password="password")
@@ -1927,7 +1929,6 @@ class PermitRequestValidationTestcase(TestCase):
             ),
             data={"action": models.ACTION_POKE,},
         )
-
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, [validator.permitauthor.user.email])
 
@@ -2161,6 +2162,63 @@ class PermitRequestClassifyTestCase(TestCase):
 
         validation.permit_request.refresh_from_db()
         self.assertIsNotNone(validation.permit_request.validated_at)
+
+    def test_email_to_services_is_sent_when_secretariat_classifies_permit_request(self):
+        wot = factories.WorksObjectTypeFactory(
+            requires_validation_document=False,
+            notify_services=True,
+            services_to_notify="test-send-1@geocity.ch, test-send-2@geocity.ch, test-i-am-not-an-email,  ,\n\n\n",
+        )
+        wot2 = factories.WorksObjectTypeFactory(
+            requires_validation_document=False,
+            notify_services=True,
+            services_to_notify="not-repeated-email@liip.ch, test-send-1@geocity.ch, \n, test-send-2@geocity.ch, test-i-am-not-an-email,  ,",
+        )
+        validation = factories.PermitRequestValidationFactory(
+            permit_request__administrative_entity=self.administrative_entity,
+            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+            permit_request__author__user__email="user@geocity.com",
+        )
+        validation.permit_request.works_object_types.set([wot, wot2])
+
+        self.client.login(username=self.secretariat_user.username, password="password")
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_approve",
+                kwargs={"permit_request_id": validation.permit_request.pk},
+            ),
+        )
+
+        self.assertRedirects(response, reverse("permits:permit_requests_list"))
+        validation.permit_request.refresh_from_db()
+        self.assertEqual(
+            validation.permit_request.status, models.PermitRequest.STATUS_APPROVED
+        )
+        # Only valid emails are sent, not repeated emails.
+        self.assertEqual(len(mail.outbox), 4)
+        self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
+
+        self.assertEqual(
+            mail.outbox[0].subject, "Votre demande a été traitée et classée"
+        )
+        self.assertIn(
+            "Nous vous informons que votre demande a été traitée et classée.",
+            mail.outbox[0].message().as_string(),
+        )
+
+        services_message_content = "Nous vous informons qu'une demande a été traitée et classée par le secrétariat."
+        valid_services_emails = [
+            "not-repeated-email@liip.ch",
+            "test-send-2@geocity.ch",
+            "test-send-1@geocity.ch",
+        ]
+
+        self.assertTrue(mail.outbox[1].to[0] in valid_services_emails)
+        self.assertIn(services_message_content, mail.outbox[1].message().as_string())
+        self.assertTrue(mail.outbox[2].to[0] in valid_services_emails)
+        self.assertIn(services_message_content, mail.outbox[2].message().as_string())
+        self.assertTrue(mail.outbox[3].to[0] in valid_services_emails)
+        self.assertIn(services_message_content, mail.outbox[3].message().as_string())
 
 
 class ApprovedPermitRequestClassifyTestCase(TestCase):

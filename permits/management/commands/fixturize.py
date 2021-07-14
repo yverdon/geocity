@@ -447,7 +447,7 @@ class Command(BaseCommand):
             geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
         )
 
-        # Permit Request to Classify with validation document required
+        # Permits Request to Classify with validation document required
         permit_request4 = models.PermitRequest.objects.create(
             status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
             administrative_entity=demo_administrative_entity,
@@ -460,6 +460,24 @@ class Command(BaseCommand):
 
         models.PermitRequestGeoTime.objects.create(
             permit_request=permit_request4,
+            starts_at=timezone.now(),
+            ends_at=timezone.now(),
+            geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
+        )
+
+        permit_request5 = models.PermitRequest.objects.create(
+            status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            administrative_entity=demo_administrative_entity,
+            author=demo_author,
+        )
+
+        models.WorksObjectTypeChoice.objects.create(
+            permit_request=permit_request5,
+            works_object_type=models.WorksObjectType.objects.last(),
+        )
+
+        models.PermitRequestGeoTime.objects.create(
+            permit_request=permit_request5,
             starts_at=timezone.now(),
             ends_at=timezone.now(),
             geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
