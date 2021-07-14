@@ -397,7 +397,7 @@ class PermitRequestDetailView(View):
 
         if (
             form.instance.status == models.PermitRequest.STATUS_RECEIVED
-            and initial_status is not models.PermitRequest.STATUS_RECEIVED
+            and form.instance.status is not initial_status
         ):
             data = {
                 "subject": _("Votre annonce a été prise en compte et classée"),
