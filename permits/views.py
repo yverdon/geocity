@@ -374,7 +374,9 @@ class PermitRequestDetailView(View):
             return self.handle_poke(form)
 
     def handle_amend_form_submission(self, form):
-
+        initial_status = (
+            models.PermitRequest.objects.filter(id=form.instance.id).first().status
+        )
         form.save()
         success_message = (
             _("La demande #%s a bien été complétée par le service pilote.")
@@ -392,6 +394,19 @@ class PermitRequestDetailView(View):
             )
 
         messages.success(self.request, success_message)
+
+        if (
+            form.instance.status == models.PermitRequest.STATUS_RECEIVED
+            and form.instance.status is not initial_status
+        ):
+            data = {
+                "subject": _("Votre annonce a été prise en compte et classée"),
+                "users_to_notify": [form.instance.author.user.email],
+                "template": "permit_request_received.txt",
+                "permit_request": form.instance,
+                "absolute_uri_func": self.request.build_absolute_uri,
+            }
+            services.send_email_notification(data)
 
         if "save_continue" in self.request.POST:
 
@@ -416,7 +431,15 @@ class PermitRequestDetailView(View):
         return redirect("permits:permit_requests_list")
 
     def handle_validation_form_submission(self, form):
-
+        validation_object = models.PermitRequestValidation.objects.filter(
+            permit_request_id=self.permit_request.id,
+            validated_by_id=self.request.user.id,
+        )
+        initial_validation_status = (
+            (validation_object.first().validation_status)
+            if validation_object.exists()
+            else models.PermitRequestValidation.STATUS_REQUESTED
+        )
         form.instance.validated_at = timezone.now()
         form.instance.validated_by = self.request.user
         validation = form.save()
@@ -433,6 +456,47 @@ class PermitRequestDetailView(View):
             validation_message = _("La demande a bien été refusée.")
         else:
             validation_message = _("Les commentaires ont été enregistrés.")
+
+        try:
+
+            if not self.permit_request.get_pending_validations():
+
+                initial_permit_status = self.permit_request.status
+                self.permit_request.status = models.PermitRequest.STATUS_PROCESSING
+                self.permit_request.save()
+
+                if (
+                    initial_permit_status
+                    is models.PermitRequest.STATUS_AWAITING_VALIDATION
+                    or (
+                        initial_permit_status is models.PermitRequest.STATUS_PROCESSING
+                        and initial_validation_status
+                        is not form.instance.validation_status
+                    )
+                ):
+                    data = {
+                        "subject": _(
+                            "Les services chargés de la validation d'une demande ont donné leur préavis"
+                        ),
+                        "users_to_notify": services._get_secretary_email(
+                            self.permit_request
+                        ),
+                        "template": "permit_request_validated.txt",
+                        "permit_request": self.permit_request,
+                        "absolute_uri_func": self.request.build_absolute_uri,
+                    }
+                    services.send_email_notification(data)
+            else:
+                self.permit_request.status = (
+                    models.PermitRequest.STATUS_AWAITING_VALIDATION
+                )
+                self.permit_request.save()
+
+        except AttributeError:
+            # This is the case when the administrative entity does not have a
+            # secretary department associated to a group to which
+            # the secretary user belongs.
+            pass
 
         messages.success(self.request, validation_message)
 
@@ -1098,6 +1162,15 @@ def permit_request_classify(request, permit_request_id, approve):
 
         if classify_form.is_valid():
             classify_form.save()
+            data = {
+                "subject": _("Votre demande a été traitée et classée"),
+                "users_to_notify": [permit_request.author.user.email],
+                "template": "permit_request_classified.txt",
+                "permit_request": permit_request,
+                "absolute_uri_func": request.build_absolute_uri,
+            }
+            services.send_email_notification(data)
+
             return redirect("permits:permit_requests_list")
     else:
         classify_form = forms.PermitRequestClassifyForm(

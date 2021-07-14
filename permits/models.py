@@ -448,7 +448,7 @@ class PermitRequest(models.Model):
         return self.status in self.EDITABLE_STATUSES
 
     def can_be_validated(self):
-        return self.status == self.STATUS_AWAITING_VALIDATION
+        return self.status == self.STATUS_AWAITING_VALIDATION or self.STATUS_PROCESSING
 
     def works_objects_html(self):
         """
