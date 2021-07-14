@@ -431,6 +431,15 @@ class PermitRequestDetailView(View):
         return redirect("permits:permit_requests_list")
 
     def handle_validation_form_submission(self, form):
+        validation_object = models.PermitRequestValidation.objects.filter(
+            permit_request_id=self.permit_request.id,
+            validated_by_id=self.request.user.id,
+        )
+        initial_validation_status = (
+            (validation_object.first().validation_status)
+            if validation_object.exists()
+            else models.PermitRequestValidation.STATUS_REQUESTED
+        )
         form.instance.validated_at = timezone.now()
         form.instance.validated_by = self.request.user
         validation = form.save()
@@ -449,16 +458,39 @@ class PermitRequestDetailView(View):
             validation_message = _("Les commentaires ont été enregistrés.")
 
         try:
-            data = {
-                "subject": _(
-                    "Les services chargés de la validation d'une demande ont donné leur préavis"
-                ),
-                "users_to_notify": services._get_secretary_email(self.permit_request),
-                "template": "permit_request_validated.txt",
-                "permit_request": self.permit_request,
-                "absolute_uri_func": self.request.build_absolute_uri,
-            }
-            services.send_email_notification(data)
+
+            if not self.permit_request.get_pending_validations():
+
+                initial_permit_status = self.permit_request.status
+                self.permit_request.status = models.PermitRequest.STATUS_PROCESSING
+                self.permit_request.save()
+
+                if (
+                    initial_permit_status
+                    is models.PermitRequest.STATUS_AWAITING_VALIDATION
+                    or (
+                        initial_permit_status is models.PermitRequest.STATUS_PROCESSING
+                        and initial_validation_status
+                        is not form.instance.validation_status
+                    )
+                ):
+                    data = {
+                        "subject": _(
+                            "Les services chargés de la validation d'une demande ont donné leur préavis"
+                        ),
+                        "users_to_notify": services._get_secretary_email(
+                            self.permit_request
+                        ),
+                        "template": "permit_request_validated.txt",
+                        "permit_request": self.permit_request,
+                        "absolute_uri_func": self.request.build_absolute_uri,
+                    }
+                    services.send_email_notification(data)
+            else:
+                self.permit_request.status = (
+                    models.PermitRequest.STATUS_AWAITING_VALIDATION
+                )
+                self.permit_request.save()
 
         except AttributeError:
             # This is the case when the administrative entity does not have a
