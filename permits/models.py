@@ -3,7 +3,7 @@ import enum
 
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
-from django.db.models import JSONField
+from django.db.models import JSONField, UniqueConstraint
 from django.core.exceptions import ValidationError
 from django.core.validators import (
     FileExtensionValidator,
@@ -886,3 +886,41 @@ class QgisGeneratedDocument(models.Model):
         blank=True,
         upload_to=printed_permit_request_storage,
     )
+
+
+class TemplateCustomization(models.Model):
+
+    templatename = models.CharField(
+        _("Identifiant"),
+        max_length=64,
+        blank=True,
+        validators=[
+            RegexValidator(
+                regex=r"^[a-zA-Z0-9_]*$",
+                message="Seuls les caractères sans accents et les chiffres sont autorisés. Les espaces et autres caractères spéciaux ne sont pas autorisés",
+            )
+        ],
+    )
+    application_title = models.CharField(_("Titre"), max_length=255, blank=True)
+    application_subtitle = models.CharField(_("Sous-titre"), max_length=255, blank=True)
+    application_description = models.TextField(
+        _("Description"), max_length=2048, blank=True
+    )
+    background_image = models.ImageField(
+        _("Image de fond"),
+        blank=True,
+        upload_to="background_images/",
+        validators=[
+            FileExtensionValidator(allowed_extensions=["svg", "png", "jpg", "jpeg"])
+        ],
+    )
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=["templatename"], name="unique_templatename")
+        ]
+        verbose_name = _("4.1 Configuration de la page de login")
+        verbose_name_plural = _("4.1 Configuration des pages de login")
+
+    def __str__(self):
+        return self.templatename
