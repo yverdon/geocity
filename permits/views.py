@@ -374,7 +374,9 @@ class PermitRequestDetailView(View):
             return self.handle_poke(form)
 
     def handle_amend_form_submission(self, form):
-
+        initial_status = (
+            models.PermitRequest.objects.filter(id=form.instance.id).first().status
+        )
         form.save()
         success_message = (
             _("La demande #%s a bien été complétée par le service pilote.")
@@ -393,7 +395,10 @@ class PermitRequestDetailView(View):
 
         messages.success(self.request, success_message)
 
-        if form.instance.status == models.PermitRequest.STATUS_RECEIVED:
+        if (
+            form.instance.status == models.PermitRequest.STATUS_RECEIVED
+            and initial_status is not models.PermitRequest.STATUS_RECEIVED
+        ):
             data = {
                 "subject": _("Votre annonce a été prise en compte et classée"),
                 "users_to_notify": [form.instance.author.user.email],
@@ -426,7 +431,6 @@ class PermitRequestDetailView(View):
         return redirect("permits:permit_requests_list")
 
     def handle_validation_form_submission(self, form):
-
         form.instance.validated_at = timezone.now()
         form.instance.validated_by = self.request.user
         validation = form.save()
@@ -445,19 +449,16 @@ class PermitRequestDetailView(View):
             validation_message = _("Les commentaires ont été enregistrés.")
 
         try:
-            if not self.permit_request.get_pending_validations():
-                data = {
-                    "subject": _(
-                        "Les services chargés de la validation d'une demande ont donné leur préavis"
-                    ),
-                    "users_to_notify": services._get_secretary_email(
-                        self.permit_request
-                    ),
-                    "template": "permit_request_validated.txt",
-                    "permit_request": self.permit_request,
-                    "absolute_uri_func": self.request.build_absolute_uri,
-                }
-                services.send_email_notification(data)
+            data = {
+                "subject": _(
+                    "Les services chargés de la validation d'une demande ont donné leur préavis"
+                ),
+                "users_to_notify": services._get_secretary_email(self.permit_request),
+                "template": "permit_request_validated.txt",
+                "permit_request": self.permit_request,
+                "absolute_uri_func": self.request.build_absolute_uri,
+            }
+            services.send_email_notification(data)
 
         except AttributeError:
             # This is the case when the administrative entity does not have a
