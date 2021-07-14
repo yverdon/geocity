@@ -38,7 +38,7 @@
     {% if form.errors %}
       <div class="mt-3">
         <p class="text-danger font-weight-bold">{% trans "Votre mot de passe et votre nom d'utilisateur ne correspondent pas" %}</p>
-      </div>   
+      </div>
     {% endif %}
       <form method="post" action="">
         {% csrf_token %}
@@ -61,6 +61,8 @@
           {% trans "Créer un compte" %}</a>
         <a class="form-text" href="{% url 'password_reset' %}">{% trans "Perdu votre mot de passe ?" %}</a>
       </div>
+
+      {% include "registration/_social_login.html" %}
     </div>
 </div>
 {% endblock %}

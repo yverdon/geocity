@@ -61,6 +61,11 @@ TAGGIT_TAGS_FROM_STRING = "permits.utils.comma_splitter"
 ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 LOCAL_IP_WHITELIST = os.getenv("LOCAL_IP_WHITELIST")
 
+# Allauth requirement
+SITE_ID = 1
+SITE_DOMAIN = os.getenv('SITE_DOMAIN', 'localhost')
+# SITE_HTTPS = bool(int(os.getenv('SITE_HTTPS', True)))
+
 # Application definition
 INSTALLED_APPS = [
     "adminsortable2",
@@ -72,6 +77,13 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.gis",
+    "django.contrib.sites",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.github",
+    "dootix",
+    "mapnv",
     "constance",
     "constance.backends.database",
     "simple_history",
@@ -112,6 +124,7 @@ if ENABLE_2FA:
     MIDDLEWARE += ["django_otp.middleware.OTPMiddleware"]
 
 MIDDLEWARE += [
+    "django.contrib.sites.middleware.CurrentSiteMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -237,6 +250,40 @@ TEMPLATES = [
         },
     },
 ]
+
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# AUTH_PROVIDER_DOOTIX_ID = ""
+# AUTH_PROVIDER_DOOTIX_URL = "http://dev.yverdon-sports.dootix.com"
+
+# AUTH_PROVIDER_MAPNV_ID = ""
+AUTH_PROVIDER_MAPNV_URL = "https://mapnv.ch/preprod_26_2fa"
+
+SOCIALACCOUNT_PROVIDERS = {
+    "github": {
+        # For each provider, you can choose whether or not the
+        # email address(es) retrieved from the provider are to be
+        # interpreted as verified.
+        "VERIFIED_EMAIL": True
+    },
+    'mapnv': {
+        "APP": {
+            "client_id": "dev-liip",
+            "secret": os.getenv("MAPNV_SECRET")
+        },
+        'SCOPE': [
+            'email'
+        ]
+    }
+}
+
+# Override SocialAccountAdapter to customize User creation
+SOCIALACCOUNT_ADAPTER = "mapnv.adapter.MapnvSocialAccountAdapter"
 
 BOOTSTRAP4 = {
     "include_jquery": True,
