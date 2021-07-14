@@ -1,5 +1,7 @@
 from django.conf import settings
 from constance import config
+from urllib.parse import unquote
+from urllib import parse
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import PasswordResetView
@@ -46,7 +48,13 @@ class CustomLoginView(LoginView):
             "application_description": config.APPLICATION_DESCRIPTION,
         }
 
-        template = self.request.GET.get("template", None)
+        query_string = unquote(self.request.META["QUERY_STRING"])
+        template = (
+            parse.parse_qs(parse.urlsplit(query_string).query)["template"][0]
+            if parse.parse_qs(parse.urlsplit(query_string).query)["template"]
+            else None
+        )
+
         if template:
             # template_name is unique
             template = models.TemplateCustomization.objects.filter(
