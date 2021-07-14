@@ -886,14 +886,10 @@ def submit_permit_request(permit_request, absolute_uri_func):
         }
         send_email_notification(data)
 
-        data2 = {
-            "subject": _("Votre demande"),
-            "users_to_notify": [permit_request.author.user.email],
-            "template": "permit_request_acknowledgment.txt",
-            "permit_request": permit_request,
-            "absolute_uri_func": absolute_uri_func,
-        }
-        send_email_notification(data2)
+        data["subject"] = _("Votre demande")
+        data["users_to_notify"] = [permit_request.author.user.email]
+        data["template"] = "permit_request_acknowledgment.txt"
+        send_email_notification(data)
 
     permit_request.status = models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
     if GeoTimeInfo.GEOMETRY in get_geotime_required_info(permit_request):
