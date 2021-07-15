@@ -421,6 +421,13 @@ class NewDjangoAuthUserForm(UserCreationForm):
     email = forms.EmailField(label=_("Email"), max_length=254,)
     required_css_class = "required"
 
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError(_("Cet email est déjà utilisé."))
+        return email
+
     def save(self, commit=True):
         user = super(NewDjangoAuthUserForm, self).save(commit=False)
         user.email = self.cleaned_data["email"]
@@ -458,6 +465,13 @@ class DjangoAuthUserForm(forms.ModelForm):
         ),
     )
     required_css_class = "required"
+
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError(_("Cet email est déjà utilisé."))
+        return email
 
     class Meta:
         model = User
