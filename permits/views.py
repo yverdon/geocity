@@ -1182,9 +1182,11 @@ def permit_request_classify(request, permit_request_id, approve):
                 for emails in works_object_types_to_notify.values_list(
                     "services_to_notify", flat=True
                 ):
-                    emails_addresses = emails.replace(" ", "").split(",")
+                    emails_addresses = emails.replace("\n", ",").split(",")
                     mailing_list += [
-                        ea for ea in emails_addresses if services.validate_email(ea)
+                        ea.strip()
+                        for ea in emails_addresses
+                        if services.validate_email(ea.strip())
                     ]
 
                 if mailing_list:
