@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import PasswordResetView
 
 if settings.ENABLE_2FA:
+    print("**********2FA Login view*************")
     from two_factor.views import LoginView
 else:
     from django.contrib.auth.views import LoginView
@@ -35,9 +36,6 @@ class CustomPasswordResetView(PasswordResetView):
 
 
 class CustomLoginView(LoginView):
-
-    template_name = "admin.html"
-
     def get_context_data(self, **kwargs):
 
         context = super().get_context_data(**kwargs)

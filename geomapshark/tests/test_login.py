@@ -6,6 +6,11 @@ from django.urls import reverse
 from permits.tests import factories
 from permits.models import TemplateCustomization
 from constance import config
+from bs4 import BeautifulSoup
+
+
+def get_parser(content):
+    return BeautifulSoup(content, features="html5lib")
 
 
 class TestLoginMixin:
@@ -78,27 +83,43 @@ class TestLoginPage(TestCase):
             templatename="mycustompage",
             application_title="mycustomtitle",
             application_subtitle="mycustomsubtitle",
+            application_description="mycustomdescription",
         )
         response = self.client.get(
             reverse("login"), data={"template": customization.templatename}
         )
-        content = response.content.decode()
-        expected_title = customization.application_title
-        expected_subtitle = customization.application_subtitle
-        expected_description = customization.application_description
+
+        expected_title = "<h3>" + customization.application_title + "</h3>"
+        expected_subtitle = "<h5>" + customization.application_subtitle + "</h5>"
+        expected_description = (
+            "<div>" + customization.application_description + "</div>"
+        )
+
+        parser = get_parser(response.content)
+        title = str(parser.select("#login-welcome-text h3")[0])
+        subtitle = str(parser.select("#login-welcome-text h5")[0])
+        description = str(parser.select("#login-welcome-text div")[0])
+
         self.assertEqual(response.status_code, 200)
-        self.assertInHTML(expected_title, content)
-        self.assertInHTML(expected_subtitle, content)
-        self.assertInHTML(expected_description, content)
+        self.assertHTMLEqual(title, expected_title)
+        self.assertHTMLEqual(subtitle, expected_subtitle)
+        self.assertHTMLEqual(description, expected_description)
 
     def test_get_standard_login_view(self):
 
         response = self.client.get(reverse("login"),)
         content = response.content.decode()
-        expected_title = config.APPLICATION_TITLE
-        expected_subtitle = config.APPLICATION_SUBTITLE
-        expected_description = config.APPLICATION_DESCRIPTION
+
+        expected_title = "<h3>" + config.APPLICATION_TITLE + "</h3>"
+        expected_subtitle = "<h5>" + config.APPLICATION_SUBTITLE + "</h5>"
+        expected_description = "<div>" + config.APPLICATION_DESCRIPTION + "</div>"
+
+        parser = get_parser(response.content)
+        title = str(parser.select("#login-welcome-text h3")[0])
+        subtitle = str(parser.select("#login-welcome-text h5")[0])
+        description = str(parser.select("#login-welcome-text div")[0])
+
         self.assertEqual(response.status_code, 200)
-        self.assertInHTML(expected_title, content)
-        self.assertInHTML(expected_subtitle, content)
-        self.assertInHTML(expected_description, content)
+        self.assertHTMLEqual(title, expected_title)
+        self.assertHTMLEqual(subtitle, expected_subtitle)
+        self.assertHTMLEqual(description, expected_description)
