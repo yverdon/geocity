@@ -146,6 +146,7 @@ class WorksTypesForm(forms.Form):
     def __init__(self, instance, *args, **kwargs):
         self.instance = instance
         self.user = kwargs.pop("user", None)
+        tags = kwargs.pop("tags", [])
         kwargs["initial"] = (
             {"types": services.get_permit_request_works_types(self.instance)}
             if self.instance
@@ -154,8 +155,16 @@ class WorksTypesForm(forms.Form):
 
         super().__init__(*args, **kwargs)
 
-        self.fields["types"].queryset = services.get_works_types(
+        works_type_by_tags = services.get_works_types(
             self.instance.administrative_entity, self.user
+        ).filter_by_tags(tags)
+
+        self.fields["types"].queryset = (
+            works_type_by_tags
+            if works_type_by_tags
+            else services.get_works_types(
+                self.instance.administrative_entity, self.user
+            )
         )
 
     def save(self):

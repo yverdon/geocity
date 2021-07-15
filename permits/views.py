@@ -575,7 +575,13 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
         current_step_type=models.StepType.ADMINISTRATIVE_ENTITY,
     )
 
+    if "filters" not in request.session:
+        request.session["filters"] = []
+    if len(request.GET.getlist("filter")) > 0:
+        request.session["filters"] = request.GET.getlist("filter")
+
     if request.method == "POST":
+
         administrative_entity_form = forms.AdministrativeEntityForm(
             instance=permit_request, data=request.POST, user=request.user
         )
@@ -602,11 +608,10 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
             return redirect(
                 services.get_next_step(steps, models.StepType.ADMINISTRATIVE_ENTITY).url
             )
+
     else:
         administrative_entity_form = forms.AdministrativeEntityForm(
-            instance=permit_request,
-            user=request.user,
-            tags=request.GET.getlist("filter"),
+            instance=permit_request, user=request.user, tags=request.session["filters"],
         )
 
     return render(
@@ -634,7 +639,8 @@ def permit_request_select_types(request, permit_request_id):
         permit_request=permit_request,
         current_step_type=models.StepType.WORKS_TYPES,
     )
-
+    if "filters" not in request.session:
+        request.session["filters"] = []
     if request.method == "POST":
         works_types_form = forms.WorksTypesForm(
             data=request.POST, instance=permit_request, user=request.user
@@ -673,7 +679,7 @@ def permit_request_select_types(request, permit_request_id):
             )
     else:
         works_types_form = forms.WorksTypesForm(
-            instance=permit_request, user=request.user
+            instance=permit_request, user=request.user, tags=request.session["filters"]
         )
 
     return render(
