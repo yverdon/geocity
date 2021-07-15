@@ -558,7 +558,9 @@ class WorksObjectType(models.Model):
     is_public = models.BooleanField(_("Public"), default=False)
     notify_services = models.BooleanField(_("Notifier les services"), default=False)
     services_to_notify = models.TextField(
-        _("Emails des services à notifier"), blank=True
+        _("Emails des services à notifier"),
+        blank=True,
+        help_text='Veuillez séparer les emails par une virgule ","',
     )
 
     class Meta:
