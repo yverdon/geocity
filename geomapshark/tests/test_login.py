@@ -4,6 +4,8 @@ from django.test import TestCase
 from django.urls import reverse
 
 from permits.tests import factories
+from permits.models import TemplateCustomization
+from constance import config
 
 
 class TestLoginMixin:
@@ -68,3 +70,35 @@ if settings.ENABLE_2FA:
                 response,
                 "Votre mot de passe et votre nom d'utilisateur ne correspondent pas",
             )
+
+
+class TestLoginPage(TestCase):
+    def test_get_customized_login_view(self):
+        customization = TemplateCustomization.objects.create(
+            templatename="mycustompage",
+            application_title="mycustomtitle",
+            application_subtitle="mycustomsubtitle",
+        )
+        response = self.client.get(
+            reverse("login"), data={"template": customization.templatename}
+        )
+        content = response.content.decode()
+        expected_title = customization.application_title
+        expected_subtitle = customization.application_subtitle
+        expected_description = customization.application_description
+        self.assertEqual(response.status_code, 200)
+        self.assertInHTML(expected_title, content)
+        self.assertInHTML(expected_subtitle, content)
+        self.assertInHTML(expected_description, content)
+
+    def test_get_standard_login_view(self):
+
+        response = self.client.get(reverse("login"),)
+        content = response.content.decode()
+        expected_title = config.APPLICATION_TITLE
+        expected_subtitle = config.APPLICATION_SUBTITLE
+        expected_description = config.APPLICATION_DESCRIPTION
+        self.assertEqual(response.status_code, 200)
+        self.assertInHTML(expected_title, content)
+        self.assertInHTML(expected_subtitle, content)
+        self.assertInHTML(expected_description, content)

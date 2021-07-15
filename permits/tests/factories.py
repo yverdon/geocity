@@ -438,13 +438,3 @@ class QgisProjectFactory(factory.django.DjangoModelFactory):
     works_object_type = factory.SubFactory(WorksObjectTypeFactory)
     qgis_print_template_name = "atlas"
     qgis_layers = "base,vpoly"
-
-
-class TemplateCustomizationFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.TemplateCustomization
-
-    templatename = factory.Faker("word"),
-    application_title = factory.Faker("word"),
-    application_subtitle = factory.Faker("word"),
-    application_description = factory.Faker("word"),
