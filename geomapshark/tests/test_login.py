@@ -53,7 +53,7 @@ if settings.ENABLE_2FA:
                 {
                     "auth-username": user.username,
                     "auth-password": "password",
-                    "login_view-current_step": "auth",
+                    "custom_login_view-current_step": "auth",
                 },
                 follow=True,
             )
@@ -68,7 +68,9 @@ if settings.ENABLE_2FA:
 
         def test_post_login_view_with_step_fail(self):
             response = self.client.post(
-                reverse("login"), {"login_view-current_step": "auth"}, follow=True
+                reverse("login"),
+                {"custom_login_view-current_step": "auth"},
+                follow=True,
             )
             self.assertEqual(response.status_code, 200)
             self.assertContains(
