@@ -2473,23 +2473,3 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(
             len(get_parser(response.content).select(".form-check-label")), 3
         )
-
-    def test_login_show_customizations(
-        self,
-    ):
-
-        template_customization = factories.TemplateCustomizationFactory.create()
-        print(template_customization.templatename)
-        response = self.client.get(
-            reverse(
-                "login",
-            )
-            # + "?template=" + template_customization.templatename
-
-        )
-
-        content = response.content.decode()
-
-        expected = template_customization.application_title
-        
-        self.assertInHTML(expected, content)
