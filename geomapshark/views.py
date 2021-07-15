@@ -7,7 +7,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import PasswordResetView
 
 if settings.ENABLE_2FA:
-    print("**********2FA Login view*************")
     from two_factor.views import LoginView
 else:
     from django.contrib.auth.views import LoginView
