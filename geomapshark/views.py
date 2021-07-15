@@ -1,7 +1,7 @@
 from django.conf import settings
 from constance import config
-from urllib.parse import unquote
 from urllib import parse
+from django.utils.encoding import escape_uri_path
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import PasswordResetView
@@ -47,17 +47,17 @@ class CustomLoginView(LoginView):
             "application_subtitle": config.APPLICATION_SUBTITLE,
             "application_description": config.APPLICATION_DESCRIPTION,
         }
-
-        query_string = parse.urlsplit(unquote(self.request.META["QUERY_STRING"]))
-        template = (
-            parse.parse_qs(query_string.query)["template"][0]
-            if "template" in query_string.query
+        uri = parse.unquote(self.request.build_absolute_uri()).replace("next=/", "")
+        params_str = parse.urlsplit(uri).query.replace("?", "")
+        templatename = (
+            parse.parse_qs(params_str)["template"][0]
+            if "template" in params_str
             else None
         )
 
-        if template:
+        if templatename:
             template = models.TemplateCustomization.objects.filter(
-                templatename=template
+                templatename=templatename
             ).first()
             customization = {
                 "application_title": template.application_title
