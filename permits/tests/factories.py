@@ -439,6 +439,7 @@ class QgisProjectFactory(factory.django.DjangoModelFactory):
     qgis_print_template_name = "atlas"
     qgis_layers = "base,vpoly"
 
+
 class TemplateCustomizationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.TemplateCustomization

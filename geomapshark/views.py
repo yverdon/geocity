@@ -1,7 +1,6 @@
 from django.conf import settings
 from constance import config
 from urllib import parse
-from django.utils.encoding import escape_uri_path
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import PasswordResetView
@@ -43,33 +42,29 @@ class CustomLoginView(LoginView):
             "application_title": config.APPLICATION_TITLE,
             "application_subtitle": config.APPLICATION_SUBTITLE,
             "application_description": config.APPLICATION_DESCRIPTION,
+            "background_image": None,
         }
         uri = parse.unquote(self.request.build_absolute_uri()).replace("next=/", "")
         params_str = parse.urlsplit(uri).query.replace("?", "")
-        templatename = (
-            parse.parse_qs(params_str)["template"][0]
-            if "template" in params_str
-            else None
-        )
-
-        if templatename:
+        if "template" in parse.parse_qs(params_str).keys():
             template = models.TemplateCustomization.objects.filter(
-                templatename=templatename
+                templatename=parse.parse_qs(params_str)["template"][0]
             ).first()
-            customization = {
-                "application_title": template.application_title
-                if template.application_title
-                else config.APPLICATION_TITLE,
-                "application_subtitle": template.application_subtitle
-                if template.application_subtitle
-                else config.APPLICATION_SUBTITLE,
-                "application_description": template.application_description
-                if template.application_description
-                else config.APPLICATION_DESCRIPTION,
-                "background_image": template.background_image
-                if template.background_image
-                else None,
-            }
+            if template:
+                customization = {
+                    "application_title": template.application_title
+                    if template.application_title
+                    else config.APPLICATION_TITLE,
+                    "application_subtitle": template.application_subtitle
+                    if template.application_subtitle
+                    else config.APPLICATION_SUBTITLE,
+                    "application_description": template.application_description
+                    if template.application_description
+                    else config.APPLICATION_DESCRIPTION,
+                    "background_image": template.background_image
+                    if template.background_image
+                    else None,
+                }
 
         context.update({"customization": customization})
         return context
