@@ -414,6 +414,12 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
         }
 
 
+def check_existing_email(email):
+    if User.objects.filter(email=email).exists():
+        raise forms.ValidationError(_("Cet email est déjà utilisé."))
+    return email
+
+
 class NewDjangoAuthUserForm(UserCreationForm):
 
     first_name = forms.CharField(label=_("Prénom"), max_length=30,)
@@ -422,11 +428,7 @@ class NewDjangoAuthUserForm(UserCreationForm):
     required_css_class = "required"
 
     def clean_email(self):
-        email = self.cleaned_data["email"]
-
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError(_("Cet email est déjà utilisé."))
-        return email
+        return check_existing_email(self.cleaned_data["email"])
 
     def save(self, commit=True):
         user = super(NewDjangoAuthUserForm, self).save(commit=False)
@@ -467,11 +469,7 @@ class DjangoAuthUserForm(forms.ModelForm):
     required_css_class = "required"
 
     def clean_email(self):
-        email = self.cleaned_data["email"]
-
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError(_("Cet email est déjà utilisé."))
-        return email
+        return check_existing_email(self.cleaned_data["email"])
 
     class Meta:
         model = User
