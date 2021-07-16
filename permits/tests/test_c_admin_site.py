@@ -287,6 +287,22 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         )
         self.assertInHTML(expected, content)
 
+    def test_admin_can_see_all_permit_requests(self):
+        user = factories.SuperUserFactory()
+        self.client.login(username=user.username, password="password")
+        if settings.ENABLE_2FA:
+            self.enable_otp_session(user=user)
+
+        response = self.client.get(reverse("admin:permits_permitrequest_changelist"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "3.1 Consultation des demandes")
+
+    def test_integrator_cannot_see_permit_requests(self):
+        if settings.ENABLE_2FA:
+            self.enable_otp_session(user=self.user)
+        response = self.client.get(reverse("admin:permits_permitrequest_changelist"))
+        self.assertEqual(response.status_code, 403)
+
     if settings.ENABLE_2FA:
 
         def test_user_of_group_with_mandatory_2FA_is_asked_to_set_it_up(self):
