@@ -384,7 +384,10 @@ class PermitRequest(models.Model):
     created_at = models.DateTimeField(_("date de création"), default=timezone.now)
     validated_at = models.DateTimeField(_("date de validation"), null=True)
     works_object_types = models.ManyToManyField(
-        "WorksObjectType", through=WorksObjectTypeChoice, related_name="permit_requests"
+        "WorksObjectType",
+        through=WorksObjectTypeChoice,
+        related_name="permit_requests",
+        verbose_name=_("Objets et types de travaux"),
     )
     administrative_entity = models.ForeignKey(
         PermitAdministrativeEntity,
