@@ -914,6 +914,13 @@ class TemplateCustomization(models.Model):
             FileExtensionValidator(allowed_extensions=["svg", "png", "jpg", "jpeg"])
         ],
     )
+    active_template = models.BooleanField(
+        _("Template actif"),
+        default=False,
+        help_text=_(
+            "Si cette casse est cochée, tous les autres templates vont être desactives"
+        ),
+    )
 
     class Meta:
         constraints = [
@@ -924,3 +931,13 @@ class TemplateCustomization(models.Model):
 
     def __str__(self):
         return self.templatename
+
+    def save(self, *args, **kwargs):
+        if self.active_template:
+            try:
+                TemplateCustomization.objects.filter(active_template=True).exclude(
+                    id=self.id
+                ).update(active_template=False)
+            except TemplateCustomization.DoesNotExist:
+                pass
+        super(TemplateCustomization, self).save(*args, **kwargs)

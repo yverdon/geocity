@@ -149,6 +149,8 @@ ipython-genutils==0.2.0
     # via traitlets
 ipython==7.24.1
     # via ipdb
+isort==5.9.2
+    # via -r requirements_dev.in
 jdcal==1.4.1
     # via -r requirements.txt
 jedi==0.18.0

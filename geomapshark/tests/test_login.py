@@ -4,7 +4,6 @@ from django.test import TestCase
 from django.urls import reverse
 
 from permits.tests import factories
-from permits.models import TemplateCustomization
 from constance import config
 from bs4 import BeautifulSoup
 
@@ -81,15 +80,8 @@ if settings.ENABLE_2FA:
 
 class TestLoginPage(TestCase):
     def test_get_customized_login_view(self):
-        customization = TemplateCustomization.objects.create(
-            templatename="mycustompage",
-            application_title="mycustomtitle",
-            application_subtitle="mycustomsubtitle",
-            application_description="mycustomdescription",
-        )
-        response = self.client.get(
-            reverse("login"), data={"template": customization.templatename}
-        )
+        customization = factories.TemplateCustomizationFactory()
+        response = self.client.get(reverse("login"))
 
         expected_title = "<h3>" + customization.application_title + "</h3>"
         expected_subtitle = "<h5>" + customization.application_subtitle + "</h5>"
@@ -110,7 +102,6 @@ class TestLoginPage(TestCase):
     def test_get_standard_login_view(self):
 
         response = self.client.get(reverse("login"),)
-        content = response.content.decode()
 
         expected_title = "<h3>" + config.APPLICATION_TITLE + "</h3>"
         expected_subtitle = "<h5>" + config.APPLICATION_SUBTITLE + "</h5>"

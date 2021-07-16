@@ -6,3 +6,4 @@ django-extensions
 factory_boy
 Faker
 ipdb
+isort
