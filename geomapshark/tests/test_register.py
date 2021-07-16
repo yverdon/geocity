@@ -2,6 +2,7 @@ from django.conf import settings
 from django.shortcuts import resolve_url
 from django.test import TestCase
 from django.urls import reverse
+from django.contrib.auth import logout
 
 
 def get_user_data():
@@ -35,8 +36,10 @@ class TestRegisterView(TestCase, TestRegisterMixin):
     def test_user_cannot_register_if_email_is_used(self):
         data = get_user_data()
         self.client.post(reverse("permit_author_create"), data, follow=True)
+        self.client.post(reverse("logout"))
         response = self.client.post(reverse("permit_author_create"), data, follow=True)
         self.assertContains(response, "Cet email est déjà utilisé.")
+        self.assertFalse(response.context["user"].is_authenticated)
 
     if settings.ENABLE_2FA:
 
