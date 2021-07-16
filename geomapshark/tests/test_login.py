@@ -81,12 +81,7 @@ if settings.ENABLE_2FA:
 
 class TestLoginPage(TestCase):
     def test_get_customized_login_view(self):
-        customization = TemplateCustomization.objects.create(
-            templatename="mycustompage",
-            application_title="mycustomtitle",
-            application_subtitle="mycustomsubtitle",
-            application_description="mycustomdescription",
-        )
+        customization = factories.TemplateCustomizationFactory()
         response = self.client.get(
             reverse("login"), data={"template": customization.templatename}
         )
