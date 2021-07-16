@@ -780,6 +780,29 @@ class WorksTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     pass
 
 
+class PermitRequestAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "created_at",
+        "status",
+        "author",
+        "get_works_object_types",
+        "administrative_entity",
+    ]
+    list_filter = ("status", "author", "works_object_types", "administrative_entity")
+
+    def has_add_permission(self, request):
+        return False
+
+    def get_works_object_types(self, obj):
+        return ", ".join(
+            sorted([wot.__str__() for wot in obj.works_object_types.all()])
+        )
+
+    get_works_object_types.admin_order_field = "works_object_types"
+    get_works_object_types.short_description = "Objets et types de travaux"
+
+
 admin.site.register(models.PermitActorType, PermitActorTypeAdmin)
 admin.site.register(models.WorksType, WorksTypeAdmin)
 admin.site.register(models.WorksObjectType, WorksObjectTypeAdmin)
@@ -787,3 +810,4 @@ admin.site.register(models.WorksObjectProperty, WorksObjectPropertyAdmin)
 admin.site.register(models.PermitAdministrativeEntity, PermitAdministrativeEntityAdmin)
 admin.site.register(models.WorksObject, WorksObjectAdmin)
 admin.site.register(models.PermitRequestAmendProperty, PermitRequestAmendPropertyAdmin)
+admin.site.register(models.PermitRequest, PermitRequestAdmin)
