@@ -802,6 +802,7 @@ class PermitRequestAdmin(admin.ModelAdmin):
     get_works_object_types.admin_order_field = "works_object_types"
     get_works_object_types.short_description = "Objets et types de travaux"
 
+
 class TemplateCustomizationAdmin(admin.ModelAdmin):
     list_display = [
         "templatename",
