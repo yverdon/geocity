@@ -520,7 +520,7 @@ class WorksType(models.Model):
         verbose_name="Mots-clés",
         help_text="Mots clefs sans espaces, séparés par des virgules permettant ensuite de filtrer les entités par l'url: https://geocity.ch&filter=yverdon&filter=permis-de-fouille",
     )
-    objects = PermitAdministrativeEntityQuerySet.as_manager()
+    objects = WorksTypeQuerySet.as_manager()
 
     class Meta:
         verbose_name = _("1.2 Configuration du type")

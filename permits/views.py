@@ -575,10 +575,17 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
         current_step_type=models.StepType.ADMINISTRATIVE_ENTITY,
     )
 
-    if "filters" not in request.session:
+    if "filters" not in request.session or request.GET.get("clearfilter", None):
         request.session["filters"] = []
+
     if len(request.GET.getlist("filter")) > 0:
         request.session["filters"] = request.GET.getlist("filter")
+
+    if "typefilters" not in request.session:
+        request.session["typefilters"] = []
+
+    if len(request.GET.getlist("typefilter")) > 0:
+        request.session["typefilters"] = request.GET.getlist("typefilter")
 
     if request.method == "POST":
 
@@ -620,6 +627,7 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
         {
             "form": administrative_entity_form,
             "permit_request": permit_request,
+            "filters": request.session["filters"],
             **steps_context,
         },
     )
@@ -639,11 +647,18 @@ def permit_request_select_types(request, permit_request_id):
         permit_request=permit_request,
         current_step_type=models.StepType.WORKS_TYPES,
     )
-    if "filters" not in request.session:
+    if "filters" not in request.session or request.GET.get("cleartypefilter", None):
         request.session["filters"] = []
+
+    if "typefilters" not in request.session:
+        request.session["typefilters"] = []
+
     if request.method == "POST":
         works_types_form = forms.WorksTypesForm(
-            data=request.POST, instance=permit_request, user=request.user
+            data=request.POST,
+            instance=permit_request,
+            user=request.user,
+            typefilters=request.session["typefilters"],
         )
         if works_types_form.is_valid():
             redirect_kwargs = {"permit_request_id": permit_request_id}
@@ -679,7 +694,9 @@ def permit_request_select_types(request, permit_request_id):
             )
     else:
         works_types_form = forms.WorksTypesForm(
-            instance=permit_request, user=request.user, tags=request.session["filters"]
+            instance=permit_request,
+            user=request.user,
+            typefilters=request.session["typefilters"],
         )
 
     return render(
@@ -688,6 +705,7 @@ def permit_request_select_types(request, permit_request_id):
         {
             "works_types_form": works_types_form,
             "permit_request": permit_request,
+            "typefilters": request.session["typefilters"],
             **steps_context,
         },
     )
@@ -710,7 +728,10 @@ def permit_request_select_objects(request, permit_request_id):
 
     if request.GET:
         works_types_form = forms.WorksTypesForm(
-            data=request.GET, instance=permit_request, user=request.user
+            data=request.GET,
+            instance=permit_request,
+            user=request.user,
+            typefilters=request.session["typefilters"],
         )
         if works_types_form.is_valid():
             works_types = works_types_form.cleaned_data["types"]

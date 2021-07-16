@@ -535,6 +535,7 @@ def get_administrative_entity_step(permit_request):
 def get_works_types_step(permit_request, completed):
     # When there’s only 1 works type it will be automatically selected, so there’s no
     # reason to show the step
+    # TODO: filter for tag
     if (
         permit_request
         and len(
