@@ -31,23 +31,15 @@ class TestRegisterMixin:
         self.assertFalse(response.context["user"].is_authenticated)
 
 
-if not settings.ENABLE_2FA:
+class TestRegisterView(TestCase, TestRegisterMixin):
+    def test_user_cannot_register_if_email_is_used(self):
+        data = get_user_data()
+        self.client.post(reverse("permit_author_create"), data, follow=True)
+        response = self.client.post(reverse("permit_author_create"), data, follow=True)
+        self.assertContains(response, "Cet email est déjà utilisé.")
 
-    class TestRegisterView(TestCase, TestRegisterMixin):
-        def test_post_register_view(self):
-            data = get_user_data()
-            response = self.client.post(
-                reverse("permit_author_create"), data, follow=True
-            )
+    if settings.ENABLE_2FA:
 
-            self.assertEqual(response.status_code, 200)
-            self.assertTrue(response.context["user"].is_authenticated)
-            self.assertRedirects(response, resolve_url("permits:permit_requests_list"))
-
-
-if settings.ENABLE_2FA:
-
-    class TestRegisterView2FA(TestCase, TestRegisterMixin):
         def test_post_register_view(self):
             data = get_user_data()
             response = self.client.post(
@@ -57,3 +49,15 @@ if settings.ENABLE_2FA:
             self.assertEqual(response.status_code, 200)
             self.assertTrue(response.context["user"].is_authenticated)
             self.assertRedirects(response, resolve_url("two_factor:profile"))
+
+    else:
+
+        def test_post_register_view(self):
+            data = get_user_data()
+            response = self.client.post(
+                reverse("permit_author_create"), data, follow=True
+            )
+
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue(response.context["user"].is_authenticated)
+            self.assertRedirects(response, resolve_url("permits:permit_requests_list"))
