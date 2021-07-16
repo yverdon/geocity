@@ -564,6 +564,9 @@ def permit_request_print(request, permit_request_id, template_id):
 @user_passes_test(user_has_permitauthor)
 @check_mandatory_2FA
 def permit_request_select_administrative_entity(request, permit_request_id=None):
+
+    services.store_tags_in_session(request)
+
     if permit_request_id:
         permit_request = get_permit_request_for_edition(request.user, permit_request_id)
     else:
@@ -574,18 +577,6 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
         permit_request=permit_request,
         current_step_type=models.StepType.ADMINISTRATIVE_ENTITY,
     )
-
-    if "filters" not in request.session or request.GET.get("clearfilter", None):
-        request.session["filters"] = []
-
-    if len(request.GET.getlist("filter")) > 0:
-        request.session["filters"] = request.GET.getlist("filter")
-
-    if "typefilters" not in request.session:
-        request.session["typefilters"] = []
-
-    if len(request.GET.getlist("typefilter")) > 0:
-        request.session["typefilters"] = request.GET.getlist("typefilter")
 
     if request.method == "POST":
 
@@ -641,6 +632,7 @@ def permit_request_select_types(request, permit_request_id):
     Step to select works types (eg. demolition). No permit request is created at this step since we only store (works
     object, works type) couples in the database.
     """
+    services.store_tags_in_session(request)
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
     steps_context = progress_bar_context(
         request=request,

@@ -532,10 +532,11 @@ def get_administrative_entity_step(permit_request):
     )
 
 
-def get_works_types_step(permit_request, completed):
+def get_works_types_step(permit_request, completed, typefilters):
     # When there’s only 1 works type it will be automatically selected, so there’s no
     # reason to show the step
     # TODO: filter for tag
+
     if (
         permit_request
         and len(
@@ -795,6 +796,7 @@ def get_progress_bar_steps(request, permit_request):
         models.StepType.WORKS_TYPES: get_works_types_step(
             permit_request=permit_request,
             completed=has_works_objects_types or selected_works_types,
+            typefilters=request.session["typefilters"],
         ),
         models.StepType.WORKS_OBJECTS: get_works_objects_step(
             permit_request=permit_request,
@@ -1346,3 +1348,18 @@ def validate_email(value):
         return True
     except ValidationError:
         return False
+
+
+def store_tags_in_session(request):
+
+    if "filters" not in request.session or request.GET.get("clearfilter", None):
+        request.session["filters"] = []
+
+    if len(request.GET.getlist("filter")) > 0:
+        request.session["filters"] = request.GET.getlist("filter")
+
+    if "typefilters" not in request.session:
+        request.session["typefilters"] = []
+
+    if len(request.GET.getlist("typefilter")) > 0:
+        request.session["typefilters"] = request.GET.getlist("typefilter")
