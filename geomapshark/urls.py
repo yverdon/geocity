@@ -72,11 +72,7 @@ else:
 
 
 urlpatterns += [
-    path(
-        "account/logout/",
-        auth_views.LogoutView.as_view(next_page="login"),
-        name="logout",
-    ),
+    path("account/logout/", views.logout_view, name="logout",),
     path(
         "account/password_reset/",
         views.CustomPasswordResetView.as_view(
