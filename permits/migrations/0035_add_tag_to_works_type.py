@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('taggit', '0003_taggeditem_add_unique_index'),
-        ('permits', '0032_add_notification_for_services_in_wot'),
+        ('permits', '0034_add_template_customization'),
     ]
 
     operations = [
