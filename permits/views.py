@@ -579,7 +579,6 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
     )
 
     if request.method == "POST":
-
         administrative_entity_form = forms.AdministrativeEntityForm(
             instance=permit_request, data=request.POST, user=request.user
         )
@@ -588,6 +587,7 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
             permit_request = administrative_entity_form.save(
                 author=request.user.permitauthor
             )
+
             works_object_types = services.get_default_works_object_types(
                 administrative_entity=permit_request.administrative_entity,
                 user=request.user,
@@ -605,10 +605,11 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
             return redirect(
                 services.get_next_step(steps, models.StepType.ADMINISTRATIVE_ENTITY).url
             )
-
     else:
         administrative_entity_form = forms.AdministrativeEntityForm(
-            instance=permit_request, user=request.user, tags=request.session["filters"],
+            instance=permit_request,
+            user=request.user,
+            tags=request.GET.getlist("filter"),
         )
 
     return render(
@@ -617,7 +618,6 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
         {
             "form": administrative_entity_form,
             "permit_request": permit_request,
-            "filters": request.session["filters"],
             **steps_context,
         },
     )
@@ -631,25 +631,19 @@ def permit_request_select_types(request, permit_request_id):
     Step to select works types (eg. demolition). No permit request is created at this step since we only store (works
     object, works type) couples in the database.
     """
+
     services.store_tags_in_session(request)
+
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
     steps_context = progress_bar_context(
         request=request,
         permit_request=permit_request,
         current_step_type=models.StepType.WORKS_TYPES,
     )
-    if "filters" not in request.session or request.GET.get("cleartypefilter", None):
-        request.session["filters"] = []
-
-    if "typefilters" not in request.session:
-        request.session["typefilters"] = []
 
     if request.method == "POST":
         works_types_form = forms.WorksTypesForm(
-            data=request.POST,
-            instance=permit_request,
-            user=request.user,
-            typefilters=request.session["typefilters"],
+            data=request.POST, instance=permit_request, user=request.user
         )
         if works_types_form.is_valid():
             redirect_kwargs = {"permit_request_id": permit_request_id}
@@ -687,7 +681,9 @@ def permit_request_select_types(request, permit_request_id):
         works_types_form = forms.WorksTypesForm(
             instance=permit_request,
             user=request.user,
-            typefilters=request.session["typefilters"],
+            typefilters=request.session["typefilters"]
+            if "typefilters" in request.session
+            else None,
         )
 
     return render(
@@ -696,7 +692,6 @@ def permit_request_select_types(request, permit_request_id):
         {
             "works_types_form": works_types_form,
             "permit_request": permit_request,
-            "typefilters": request.session["typefilters"],
             **steps_context,
         },
     )
@@ -716,14 +711,10 @@ def permit_request_select_objects(request, permit_request_id):
         permit_request=permit_request,
         current_step_type=models.StepType.WORKS_OBJECTS,
     )
+
     if request.GET:
         works_types_form = forms.WorksTypesForm(
-            data=request.GET,
-            instance=permit_request,
-            user=request.user,
-            typefilters=request.session["typefilters"]
-            if "typefilters" in request.session
-            else None,
+            data=request.GET, instance=permit_request, user=request.user
         )
         if works_types_form.is_valid():
             works_types = works_types_form.cleaned_data["types"]
@@ -740,6 +731,7 @@ def permit_request_select_objects(request, permit_request_id):
                 raise Http404
 
         works_types = models.WorksType.objects.none()
+
     # Add the permit request works types to the ones in the querystring and remove duplicates
     works_types = (
         works_types | services.get_permit_request_works_types(permit_request)

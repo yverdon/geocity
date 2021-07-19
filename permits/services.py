@@ -568,7 +568,6 @@ def get_works_types_step(permit_request, completed, typefilters):
 def get_works_objects_step(permit_request, enabled, works_types, user):
     # If there are default works objects types it means the object types can be
     # automatically selected and so the step shouldn’t be visible
-
     if permit_request:
         selected_works_types = (
             works_types
@@ -620,7 +619,7 @@ def get_works_objects_step(permit_request, enabled, works_types, user):
         if works_types
         else ""
     )
-
+    # TODO: FIX CAS WHEN ONLY ONE WORK_TYPE ALREADY SELECTED BY TAG FILTER
     return models.Step(
         name=_("Objets"),
         url=(
