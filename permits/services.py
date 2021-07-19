@@ -565,7 +565,7 @@ def get_works_types_step(permit_request, completed, typefilters):
     )
 
 
-def get_works_objects_step(permit_request, enabled, works_types, user):
+def get_works_objects_step(permit_request, enabled, works_types, user, typefilters):
     # If there are default works objects types it means the object types can be
     # automatically selected and so the step shouldn’t be visible
     if permit_request:
@@ -614,12 +614,22 @@ def get_works_objects_step(permit_request, enabled, works_types, user):
         if len(administrative_entity_works_types) == 1:
             works_types = administrative_entity_works_types
 
+        if typefilters:
+            filtered_works_type = (
+                models.WorksType.objects.filter_by_tags(typefilters)
+                .values_list("id", flat=True)
+                .distinct()
+            )
+
+            if filtered_works_type.count() == 1:
+                works_types = filtered_works_type
+
     works_types_qs = (
         urllib.parse.urlencode({"types": works_types}, doseq=True,)
         if works_types
         else ""
     )
-    # TODO: FIX CAS WHEN ONLY ONE WORK_TYPE ALREADY SELECTED BY TAG FILTER
+
     return models.Step(
         name=_("Objets"),
         url=(
@@ -810,6 +820,9 @@ def get_progress_bar_steps(request, permit_request):
             enabled=has_works_objects_types,
             works_types=selected_works_types,
             user=request.user,
+            typefilters=request.session["typefilters"]
+            if "typefilters" in request.session
+            else None,
         ),
         models.StepType.PROPERTIES: get_properties_step(
             permit_request=permit_request, enabled=has_works_objects_types
