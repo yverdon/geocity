@@ -796,7 +796,9 @@ def get_progress_bar_steps(request, permit_request):
         models.StepType.WORKS_TYPES: get_works_types_step(
             permit_request=permit_request,
             completed=has_works_objects_types or selected_works_types,
-            typefilters=request.session["typefilters"],
+            typefilters=request.session["typefilters"]
+            if "typefilters" in request.session
+            else None,
         ),
         models.StepType.WORKS_OBJECTS: get_works_objects_step(
             permit_request=permit_request,

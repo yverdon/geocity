@@ -723,7 +723,9 @@ def permit_request_select_objects(request, permit_request_id):
             data=request.GET,
             instance=permit_request,
             user=request.user,
-            typefilters=request.session["typefilters"],
+            typefilters=request.session["typefilters"]
+            if "typefilters" in request.session
+            else None,
         )
         if works_types_form.is_valid():
             works_types = works_types_form.cleaned_data["types"]
