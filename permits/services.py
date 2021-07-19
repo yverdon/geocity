@@ -162,7 +162,7 @@ def get_permit_request_appendices(permit_request):
             yield (works_object_type, prop)
 
 
-def get_works_types(administrative_entity, user):
+def get_works_types(administrative_entity, user, typefilters):
 
     queryset = (
         models.WorksType.objects.filter(
@@ -176,6 +176,10 @@ def get_works_types(administrative_entity, user):
 
     if not user.has_perm("permits.see_private_requests"):
         queryset = queryset.filter(works_object_types__is_public=True)
+
+    if typefilters:
+        if queryset.filter_by_tags(typefilters):
+            queryset = queryset.filter_by_tags(typefilters)
 
     return queryset
 
@@ -535,13 +539,14 @@ def get_administrative_entity_step(permit_request):
 def get_works_types_step(permit_request, completed, typefilters):
     # When there’s only 1 works type it will be automatically selected, so there’s no
     # reason to show the step
-    # TODO: filter for tag
 
     if (
         permit_request
         and len(
             get_works_types(
-                permit_request.administrative_entity, permit_request.author.user
+                permit_request.administrative_entity,
+                permit_request.author.user,
+                typefilters,
             )
         )
         <= 1
@@ -563,6 +568,7 @@ def get_works_types_step(permit_request, completed, typefilters):
 def get_works_objects_step(permit_request, enabled, works_types, user):
     # If there are default works objects types it means the object types can be
     # automatically selected and so the step shouldn’t be visible
+
     if permit_request:
         selected_works_types = (
             works_types

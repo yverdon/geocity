@@ -588,7 +588,6 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
             permit_request = administrative_entity_form.save(
                 author=request.user.permitauthor
             )
-
             works_object_types = services.get_default_works_object_types(
                 administrative_entity=permit_request.administrative_entity,
                 user=request.user,
@@ -717,7 +716,6 @@ def permit_request_select_objects(request, permit_request_id):
         permit_request=permit_request,
         current_step_type=models.StepType.WORKS_OBJECTS,
     )
-
     if request.GET:
         works_types_form = forms.WorksTypesForm(
             data=request.GET,
@@ -742,7 +740,6 @@ def permit_request_select_objects(request, permit_request_id):
                 raise Http404
 
         works_types = models.WorksType.objects.none()
-
     # Add the permit request works types to the ones in the querystring and remove duplicates
     works_types = (
         works_types | services.get_permit_request_works_types(permit_request)

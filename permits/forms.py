@@ -155,20 +155,9 @@ class WorksTypesForm(forms.Form):
 
         super().__init__(*args, **kwargs)
 
-        works_type_by_tags = (
-            services.get_works_types(
-                self.instance.administrative_entity, self.user
-            ).filter_by_tags(typefilters)
-            if typefilters
-            else None
-        )
-
         works_types = services.get_works_types(
-            self.instance.administrative_entity, self.user
+            self.instance.administrative_entity, self.user, typefilters
         )
-
-        if works_type_by_tags:
-            works_types = works_types.filter_by_tags(typefilters)
 
         self.fields["types"].queryset = works_types
 
