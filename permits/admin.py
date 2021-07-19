@@ -803,6 +803,24 @@ class PermitRequestAdmin(admin.ModelAdmin):
     get_works_object_types.short_description = "Objets et types de travaux"
 
 
+class TemplateCustomizationAdmin(admin.ModelAdmin):
+    list_display = [
+        "templatename",
+        "application_title",
+        "has_background_image",
+    ]
+
+    @admin.display(boolean=True)
+    def has_background_image(self, obj):
+        try:
+            return obj.background_image.url is not None
+        except ValueError:
+            return False
+
+    has_background_image.admin_order_field = "background_image"
+    has_background_image.short_description = "Image de fond"
+
+
 admin.site.register(models.PermitActorType, PermitActorTypeAdmin)
 admin.site.register(models.WorksType, WorksTypeAdmin)
 admin.site.register(models.WorksObjectType, WorksObjectTypeAdmin)
@@ -810,4 +828,5 @@ admin.site.register(models.WorksObjectProperty, WorksObjectPropertyAdmin)
 admin.site.register(models.PermitAdministrativeEntity, PermitAdministrativeEntityAdmin)
 admin.site.register(models.WorksObject, WorksObjectAdmin)
 admin.site.register(models.PermitRequestAmendProperty, PermitRequestAmendPropertyAdmin)
+admin.site.register(models.TemplateCustomization, TemplateCustomizationAdmin)
 admin.site.register(models.PermitRequest, PermitRequestAdmin)

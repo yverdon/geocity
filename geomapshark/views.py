@@ -1,7 +1,15 @@
 from django.conf import settings
+from constance import config
+from urllib import parse
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import PasswordResetView
+
+if settings.ENABLE_2FA:
+    from two_factor.views import LoginView
+else:
+    from django.contrib.auth.views import LoginView
+
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -22,6 +30,43 @@ class CustomPasswordResetView(PasswordResetView):
         self.extra_email_context["site_name"] = self.request.build_absolute_uri().split(
             "/"
         )[2]
+        return context
+
+
+class CustomLoginView(LoginView):
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+
+        customization = {
+            "application_title": config.APPLICATION_TITLE,
+            "application_subtitle": config.APPLICATION_SUBTITLE,
+            "application_description": config.APPLICATION_DESCRIPTION,
+            "background_image": None,
+        }
+        uri = parse.unquote(self.request.build_absolute_uri()).replace("next=/", "")
+        params_str = parse.urlsplit(uri).query.replace("?", "")
+        if "template" in parse.parse_qs(params_str).keys():
+            template = models.TemplateCustomization.objects.filter(
+                templatename=parse.parse_qs(params_str)["template"][0]
+            ).first()
+            if template:
+                customization = {
+                    "application_title": template.application_title
+                    if template.application_title
+                    else config.APPLICATION_TITLE,
+                    "application_subtitle": template.application_subtitle
+                    if template.application_subtitle
+                    else config.APPLICATION_SUBTITLE,
+                    "application_description": template.application_description
+                    if template.application_description
+                    else config.APPLICATION_DESCRIPTION,
+                    "background_image": template.background_image
+                    if template.background_image
+                    else None,
+                }
+
+        context.update({"customization": customization})
         return context
 
 
@@ -53,7 +98,7 @@ def permit_author_edit(request):
     djangouserform = forms.DjangoAuthUserForm(
         request.POST or None, instance=request.user
     )
-    # prvent a crash when admin accesses this page
+    # prevent a crash when admin accesses this page
     permitauthorform = None
     if hasattr(request.user, "permitauthor"):
         permit_author_instance = get_object_or_404(
