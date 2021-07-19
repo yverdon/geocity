@@ -18,14 +18,13 @@ from permits import forms, models
 
 
 def logout_view(request):
-
-    templatename = (
-        request.session["templatename"] if "templatename" in request.session else None
-    )
+    templatename = None
+    if "templatename" in request.session:
+        templatename = request.session["templatename"]
+        del request.session["templatename"]
     logout(request)
-
     return redirect(
-        reverse("login") + "?template=" + templatename
+        f'{reverse("login")}?template={templatename}'
         if templatename
         else reverse("login")
     )
@@ -60,6 +59,7 @@ class CustomLoginView(LoginView):
         }
         uri = parse.unquote(self.request.build_absolute_uri()).replace("next=/", "")
         params_str = parse.urlsplit(uri).query.replace("?", "")
+        self.request.session["templatename"] = None
         if "template" in parse.parse_qs(params_str).keys():
             template = models.TemplateCustomization.objects.filter(
                 templatename=parse.parse_qs(params_str)["template"][0]
@@ -79,7 +79,6 @@ class CustomLoginView(LoginView):
                     if template.background_image
                     else None,
                 }
-            if "templatename" not in self.request.session:
                 self.request.session["templatename"] = template.templatename
 
         context.update({"customization": customization})
