@@ -18,10 +18,11 @@ from permits import forms, models
 
 
 def logout_view(request):
-    templatename = None
-    if "templatename" in request.session:
-        templatename = request.session["templatename"]
-        del request.session["templatename"]
+    templatename = (
+        request.session.pop("templatename")
+        if "templatename" in request.session
+        else None
+    )
     logout(request)
     return redirect(
         f'{reverse("login")}?template={templatename}'
