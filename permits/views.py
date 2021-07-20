@@ -57,7 +57,6 @@ def get_permit_request_for_edition(user, permit_request_id):
         models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
         models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
     }
-
     permit_request = services.get_permit_request_for_user_or_404(
         user, permit_request_id, statuses=allowed_statuses,
     )
@@ -77,7 +76,6 @@ def get_permit_request_for_edition(user, permit_request_id):
                 models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
             ],
         )
-
     return permit_request
 
 
@@ -106,7 +104,6 @@ def progress_bar_context(request, permit_request, current_step_type):
     steps = services.get_progress_bar_steps(
         request=request, permit_request=permit_request
     )
-
     if current_step_type not in steps:
         raise Http404()
 
@@ -632,14 +629,13 @@ def permit_request_select_types(request, permit_request_id):
     object, works type) couples in the database.
     """
     services.store_tags_in_session(request)
-
+    # returns error or redirects to details depending on user permissions and permit_request status
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
     steps_context = progress_bar_context(
         request=request,
         permit_request=permit_request,
         current_step_type=models.StepType.WORKS_TYPES,
     )
-
     if request.method == "POST":
         works_types_form = forms.WorksTypesForm(
             data=request.POST, instance=permit_request, user=request.user

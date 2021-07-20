@@ -958,49 +958,69 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.assertInHTML(administrative_entities[0].name, content)
         self.assertInHTML(administrative_entities[1].name, content)
 
-    # # TODO: fix test
-    # def test_work_type_is_filtered_by_tag(self):
+    def test_work_type_is_filtered_by_tag(self):
+        additional_works_type = factories.WorksTypeFactory()
+        additional_works_objects = factories.WorksObjectFactory()
 
-    #     user = factories.UserFactory()
-    #     self.client.login(username=user.username, password="password")
-    #     permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-    #     self.client.session["typefilter"] = "work_type_a"
-    #     self.client.session.save()
+        models.WorksObjectType.objects.create(
+            works_type=additional_works_type,
+            works_object=additional_works_objects,
+            is_public=True,
+        )
 
-    #     works_type_tag_a = factories.WorksTypeFactory(
-    #         name="work_type_a",
-    #         tags=["work_type_a"]
-    #     )
-    #     works_type_tag_b = factories.WorksTypeFactory(
-    #         name="work_type_b",
-    #         tags=["work_type_b"]
-    #     )
+        self.works_types[0].tags.set("work_type_a")
+        self.works_types[1].tags.set("work_type_a")
+        additional_works_type.tags.set("work_type_b")
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        permit_request.administrative_entity.works_object_types.set(
+            models.WorksObjectType.objects.all()
+        )
 
-    #     works_objects = factories.WorksObjectFactory.create_batch(2)
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_select_types",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+            + "?typefilter=work_type_a"
+        )
 
-    #     works_object_type_a = factories.WorksObjectTypeFactory(
-    #         works_type=works_type_tag_a, works_object=works_objects[0]
-    #     )
-    #     works_object_type_b = factories.WorksObjectTypeFactory(
-    #         works_type=works_type_tag_b, works_object=works_objects[1]
-    #     )
+        parser = get_parser(response.content)
+        element_parsed = parser.select(".form-check-label")
 
-    #     permit_request.administrative_entity.works_object_types.set(
-    #         [works_object_type_a, works_object_type_b]
-    #     )
+        # Check that 2 types are visibles
+        self.assertEqual(2, len(element_parsed))
 
-    #     response = self.client.get(
-    #         reverse(
-    #             "permits:permit_request_select_types",
-    #             kwargs={"permit_request_id": permit_request.pk},
-    #         ) + "?typefilter=work_type_a"
-    #     )
+    def test_work_type_is_not_filtered_by_bad_tag(self):
+        additional_works_type = factories.WorksTypeFactory()
+        additional_works_objects = factories.WorksObjectFactory()
 
-    #     parser = get_parser(response.content)
-    #     element_parsed = parser.select(".form-check-label")
+        models.WorksObjectType.objects.create(
+            works_type=additional_works_type,
+            works_object=additional_works_objects,
+            is_public=True,
+        )
 
-    #     # Check that selected item is there
-    #     self.assertEqual(1, len(element_parsed))
+        self.works_types[0].tags.set("work_type_a")
+        self.works_types[1].tags.set("work_type_a")
+        additional_works_type.tags.set("work_type_b")
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        permit_request.administrative_entity.works_object_types.set(
+            models.WorksObjectType.objects.all()
+        )
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_select_types",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+            + "?typefilter=badtag"
+        )
+
+        parser = get_parser(response.content)
+        element_parsed = parser.select(".form-check-label")
+
+        # Check that 3 types are visibles
+        self.assertEqual(3, len(element_parsed))
 
 
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):

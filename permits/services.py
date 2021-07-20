@@ -163,7 +163,6 @@ def get_permit_request_appendices(permit_request):
 
 
 def get_works_types(administrative_entity, user, typefilter):
-
     queryset = (
         models.WorksType.objects.filter(
             pk__in=models.WorksObjectType.objects.filter(
@@ -177,8 +176,6 @@ def get_works_types(administrative_entity, user, typefilter):
     if not user.has_perm("permits.see_private_requests"):
         queryset = queryset.filter(works_object_types__is_public=True)
     if typefilter:
-        print("////////////")
-        print(typefilter)
         if queryset.filter_by_tags(typefilter):
             queryset = queryset.filter_by_tags(typefilter)
 
@@ -540,7 +537,6 @@ def get_administrative_entity_step(permit_request):
 def get_works_types_step(permit_request, completed, typefilter):
     # When there’s only 1 works type it will be automatically selected, so there’s no
     # reason to show the step
-
     if (
         permit_request
         and len(
@@ -804,7 +800,6 @@ def get_progress_bar_steps(request, permit_request):
         permit_request.works_object_types.exists() if permit_request else False
     )
     selected_works_types = request.GET.getlist("types")
-
     all_steps = {
         models.StepType.ADMINISTRATIVE_ENTITY: get_administrative_entity_step(
             permit_request
