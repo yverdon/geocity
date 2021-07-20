@@ -681,8 +681,8 @@ def permit_request_select_types(request, permit_request_id):
         works_types_form = forms.WorksTypesForm(
             instance=permit_request,
             user=request.user,
-            typefilters=request.session["typefilters"]
-            if "typefilters" in request.session
+            typefilter=request.session["typefilter"]
+            if "typefilter" in request.session
             else None,
         )
 
@@ -692,6 +692,7 @@ def permit_request_select_types(request, permit_request_id):
         {
             "works_types_form": works_types_form,
             "permit_request": permit_request,
+            "typefilter": request.session["typefilter"],
             **steps_context,
         },
     )

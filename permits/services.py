@@ -162,7 +162,7 @@ def get_permit_request_appendices(permit_request):
             yield (works_object_type, prop)
 
 
-def get_works_types(administrative_entity, user, typefilters):
+def get_works_types(administrative_entity, user, typefilter):
 
     queryset = (
         models.WorksType.objects.filter(
@@ -176,10 +176,9 @@ def get_works_types(administrative_entity, user, typefilters):
 
     if not user.has_perm("permits.see_private_requests"):
         queryset = queryset.filter(works_object_types__is_public=True)
-
-    if typefilters:
-        if queryset.filter_by_tags(typefilters):
-            queryset = queryset.filter_by_tags(typefilters)
+    if typefilter:
+        if queryset.filter_by_tags(typefilter):
+            queryset = queryset.filter_by_tags(typefilter)
 
     return queryset
 
@@ -536,7 +535,7 @@ def get_administrative_entity_step(permit_request):
     )
 
 
-def get_works_types_step(permit_request, completed, typefilters):
+def get_works_types_step(permit_request, completed, typefilter):
     # When there’s only 1 works type it will be automatically selected, so there’s no
     # reason to show the step
 
@@ -546,7 +545,7 @@ def get_works_types_step(permit_request, completed, typefilters):
             get_works_types(
                 permit_request.administrative_entity,
                 permit_request.author.user,
-                typefilters,
+                typefilter,
             )
         )
         <= 1
@@ -565,7 +564,7 @@ def get_works_types_step(permit_request, completed, typefilters):
     )
 
 
-def get_works_objects_step(permit_request, enabled, works_types, user, typefilters):
+def get_works_objects_step(permit_request, enabled, works_types, user, typefilter):
     # If there are default works objects types it means the object types can be
     # automatically selected and so the step shouldn’t be visible
     if permit_request:
@@ -614,9 +613,9 @@ def get_works_objects_step(permit_request, enabled, works_types, user, typefilte
         if len(administrative_entity_works_types) == 1:
             works_types = administrative_entity_works_types
 
-        if typefilters:
+        if typefilter:
             filtered_works_type = (
-                models.WorksType.objects.filter_by_tags(typefilters)
+                models.WorksType.objects.filter_by_tags(typefilter)
                 .values_list("id", flat=True)
                 .distinct()
             )
@@ -811,8 +810,8 @@ def get_progress_bar_steps(request, permit_request):
         models.StepType.WORKS_TYPES: get_works_types_step(
             permit_request=permit_request,
             completed=has_works_objects_types or selected_works_types,
-            typefilters=request.session["typefilters"]
-            if "typefilters" in request.session
+            typefilter=request.session["typefilter"]
+            if "typefilter" in request.session
             else None,
         ),
         models.StepType.WORKS_OBJECTS: get_works_objects_step(
@@ -820,8 +819,8 @@ def get_progress_bar_steps(request, permit_request):
             enabled=has_works_objects_types,
             works_types=selected_works_types,
             user=request.user,
-            typefilters=request.session["typefilters"]
-            if "typefilters" in request.session
+            typefilter=request.session["typefilter"]
+            if "typefilter" in request.session
             else None,
         ),
         models.StepType.PROPERTIES: get_properties_step(
@@ -1378,8 +1377,8 @@ def store_tags_in_session(request):
     if len(request.GET.getlist("filter")) > 0:
         request.session["filters"] = request.GET.getlist("filter")
 
-    if "typefilters" not in request.session:
-        request.session["typefilters"] = []
+    if "typefilter" not in request.session or request.GET.get("cleartypefilter", None):
+        request.session["typefilter"] = []
 
     if len(request.GET.getlist("typefilter")) > 0:
-        request.session["typefilters"] = request.GET.getlist("typefilter")
+        request.session["typefilter"] = request.GET.getlist("typefilter")

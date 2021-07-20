@@ -6,6 +6,9 @@
 {% block content %}
   {% permit_progressbar steps StepType.WORKS_TYPES %}
   <h3>{{ config.WORKS_TYPES_STEP }}</h3>
+  {% if typefilter %}
+    {% trans "La liste ci-dessous est filtrée," %}<a class="ml-2" href="{% url 'permits:permit_request_select_types' permit_request_id=permit_request.pk %}?cleartypefilter=true">{% trans "tout voir" %}</a>
+  {% endif %}
   <hr>
   <form method="post">
     {% bootstrap_form_errors works_types_form %}

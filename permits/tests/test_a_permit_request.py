@@ -958,6 +958,50 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.assertInHTML(administrative_entities[0].name, content)
         self.assertInHTML(administrative_entities[1].name, content)
 
+    # TODO: fix test
+    # def test_work_type_is_filtered_by_tag(self):
+
+    #     user = factories.UserFactory()
+    #     self.client.login(username=user.username, password="password")
+    #     permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+
+    #     works_type_tag_a = factories.WorksTypeFactory(
+    #         name="work_type_a",
+    #         tags=["work_type_a"]
+    #     )
+    #     works_type_tag_b = factories.WorksTypeFactory(
+    #         name="work_type_b",
+    #         tags=["work_type_b"]
+    #     )
+
+    #     works_objects = factories.WorksObjectFactory.create_batch(2)
+
+    #     works_object_type_a = factories.WorksObjectTypeFactory(
+    #         works_type=works_type_tag_a, works_object=works_objects[0]
+    #     )
+    #     works_object_type_b = factories.WorksObjectTypeFactory(
+    #         works_type=works_type_tag_b, works_object=works_objects[1]
+    #     )
+
+    #     permit_request.administrative_entity.works_object_types.set(
+    #         [works_object_type_a, works_object_type_b]
+    #     )
+
+    #     response = self.client.get(
+    #         reverse(
+    #             "permits:permit_request_select_types",
+    #             kwargs={"permit_request_id": permit_request.pk},
+    #         ),
+    #         data={
+    #          "typefilter": "work_type_a"},
+    #     )
+
+    #     parser = get_parser(response.content)
+    #     element_parsed = parser.select(".form-check-label")
+
+    #     # Check that selected item is there
+    #     self.assertEqual(1, len(element_parsed))
+
 
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
