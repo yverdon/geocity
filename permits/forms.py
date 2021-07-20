@@ -154,7 +154,6 @@ class WorksTypesForm(forms.Form):
         )
 
         super().__init__(*args, **kwargs)
-        typefilter = ["work_type_a"]
         works_types = services.get_works_types(
             self.instance.administrative_entity, self.user, typefilter
         )

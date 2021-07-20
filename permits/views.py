@@ -631,7 +631,6 @@ def permit_request_select_types(request, permit_request_id):
     Step to select works types (eg. demolition). No permit request is created at this step since we only store (works
     object, works type) couples in the database.
     """
-
     services.store_tags_in_session(request)
 
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
@@ -685,7 +684,6 @@ def permit_request_select_types(request, permit_request_id):
             if "typefilter" in request.session
             else None,
         )
-
     return render(
         request,
         "permits/permit_request_select_types.html",

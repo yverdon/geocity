@@ -177,6 +177,8 @@ def get_works_types(administrative_entity, user, typefilter):
     if not user.has_perm("permits.see_private_requests"):
         queryset = queryset.filter(works_object_types__is_public=True)
     if typefilter:
+        print("////////////")
+        print(typefilter)
         if queryset.filter_by_tags(typefilter):
             queryset = queryset.filter_by_tags(typefilter)
 
@@ -1370,7 +1372,6 @@ def validate_email(value):
 
 
 def store_tags_in_session(request):
-
     if "filters" not in request.session or request.GET.get("clearfilter", None):
         request.session["filters"] = []
 

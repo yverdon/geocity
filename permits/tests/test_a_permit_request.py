@@ -958,12 +958,14 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.assertInHTML(administrative_entities[0].name, content)
         self.assertInHTML(administrative_entities[1].name, content)
 
-    # TODO: fix test
+    # # TODO: fix test
     # def test_work_type_is_filtered_by_tag(self):
 
     #     user = factories.UserFactory()
     #     self.client.login(username=user.username, password="password")
     #     permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+    #     self.client.session["typefilter"] = "work_type_a"
+    #     self.client.session.save()
 
     #     works_type_tag_a = factories.WorksTypeFactory(
     #         name="work_type_a",
@@ -991,9 +993,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
     #         reverse(
     #             "permits:permit_request_select_types",
     #             kwargs={"permit_request_id": permit_request.pk},
-    #         ),
-    #         data={
-    #          "typefilter": "work_type_a"},
+    #         ) + "?typefilter=work_type_a"
     #     )
 
     #     parser = get_parser(response.content)
