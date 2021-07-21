@@ -10,8 +10,8 @@
     {% permit_progressbar steps StepType.ADMINISTRATIVE_ENTITY %}
   {% endif %}
   <h3>{{ config.LOCATION_STEP }}</h3>
-  {% if filters %}
-    {% trans "La liste ci-dessous est filtrée," %}<a class="ml-2" href="{% url 'permits:permit_request_select_administrative_entity' %}?clearfilter=true">{% trans "tout voir" %}</a>
+  {% if filter %}
+    {% trans "La liste ci-dessous est filtrée," %}<a class="ml-2" href="{% url 'permits:permit_request_select_administrative_entity' %}?clearfilter=true"><b>{% trans "tout voir" %}</b></a>
   {% endif %}
   <br>
   <hr>

@@ -63,4 +63,7 @@ class TestRegisterView(TestCase, TestRegisterMixin):
 
             self.assertEqual(response.status_code, 200)
             self.assertTrue(response.context["user"].is_authenticated)
-            self.assertRedirects(response, resolve_url("permits:permit_requests_list"))
+            self.assertRedirects(
+                response,
+                resolve_url("permits:permit_request_select_administrative_entity"),
+            )

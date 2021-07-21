@@ -606,15 +606,17 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
         administrative_entity_form = forms.AdministrativeEntityForm(
             instance=permit_request,
             user=request.user,
-            tags=request.GET.getlist("filter"),
+            tags=request.session["filter"] if "filter" in request.session else None,
         )
-
     return render(
         request,
         "permits/permit_request_select_administrative_entity.html",
         {
             "form": administrative_entity_form,
             "permit_request": permit_request,
+            "filter": request.session["filter"]
+            if "filter" in request.session
+            else None,
             **steps_context,
         },
     )

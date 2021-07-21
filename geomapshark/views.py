@@ -15,6 +15,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from permits import forms, models
+from permits import services as permits_services
+from . import services
 
 
 def logout_view(request):
@@ -49,41 +51,9 @@ class CustomPasswordResetView(PasswordResetView):
 
 class CustomLoginView(LoginView):
     def get_context_data(self, **kwargs):
-
         context = super().get_context_data(**kwargs)
 
-        customization = {
-            "application_title": config.APPLICATION_TITLE,
-            "application_subtitle": config.APPLICATION_SUBTITLE,
-            "application_description": config.APPLICATION_DESCRIPTION,
-            "background_image": None,
-        }
-        uri = parse.unquote(self.request.build_absolute_uri()).replace("next=/", "")
-        params_str = parse.urlsplit(uri).query.replace("?", "")
-        self.request.session["templatename"] = None
-        if "template" in parse.parse_qs(params_str).keys():
-            template = models.TemplateCustomization.objects.filter(
-                templatename=parse.parse_qs(params_str)["template"][0]
-            ).first()
-            if template:
-                customization = {
-                    "application_title": template.application_title
-                    if template.application_title
-                    else config.APPLICATION_TITLE,
-                    "application_subtitle": template.application_subtitle
-                    if template.application_subtitle
-                    else config.APPLICATION_SUBTITLE,
-                    "application_description": template.application_description
-                    if template.application_description
-                    else config.APPLICATION_DESCRIPTION,
-                    "background_image": template.background_image
-                    if template.background_image
-                    else None,
-                }
-                self.request.session["templatename"] = template.templatename
-
-        context.update({"customization": customization})
-        return context
+        return services.get_context_data(context, self.request)
 
 
 def permit_author_create(request):
@@ -97,9 +67,24 @@ def permit_author_create(request):
         permitauthorform.save()
 
         login(request, new_user)
+        permits_services.store_tags_in_session(request)
         if settings.ENABLE_2FA:
-            return HttpResponseRedirect(reverse("two_factor:profile"))
-        return HttpResponseRedirect(reverse("permits:permit_requests_list"))
+            return HttpResponseRedirect(
+                reverse("two_factor:profile")
+                + (
+                    "?" + request.META["QUERY_STRING"]
+                    if request.META["QUERY_STRING"]
+                    else ""
+                )
+            )
+        return HttpResponseRedirect(
+            reverse("permits:permit_request_select_administrative_entity")
+            + (
+                "?" + request.META["QUERY_STRING"]
+                if request.META["QUERY_STRING"]
+                else ""
+            )
+        )
 
     return render(
         request,
