@@ -33,6 +33,7 @@ INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [
     "permitdepartment",
     "permitworkflowstatus",
     "permitauthor",
+    "qgisproject",
 ]
 OTHER_PERMISSIONS_CODENAMES = [
     "view_user",
