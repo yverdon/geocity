@@ -1995,6 +1995,7 @@ class PermitRequestClassifyTestCase(TestCase):
     def test_secretariat_can_approve_permit_request_and_email_to_author_is_sent(self):
         validation = factories.PermitRequestValidationFactory(
             permit_request__administrative_entity=self.administrative_entity,
+            permit_request__status=models.PermitRequest.STATUS_PROCESSING,
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
             permit_request__author__user__email="user@geocity.com",
         )
@@ -2028,6 +2029,7 @@ class PermitRequestClassifyTestCase(TestCase):
     def test_secretariat_can_reject_permit_request_and_email_to_author_is_sent(self):
         validation = factories.PermitRequestValidationFactory(
             permit_request__administrative_entity=self.administrative_entity,
+            permit_request__status=models.PermitRequest.STATUS_PROCESSING,
             validation_status=models.PermitRequestValidation.STATUS_REJECTED,
             permit_request__author__user__email="user@geocity.com",
         )
@@ -2148,6 +2150,7 @@ class PermitRequestClassifyTestCase(TestCase):
     def test_classify_sets_validation_date(self):
         validation = factories.PermitRequestValidationFactory(
             permit_request__administrative_entity=self.administrative_entity,
+            permit_request__status=models.PermitRequest.STATUS_PROCESSING,
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
         )
 
@@ -2176,6 +2179,7 @@ class PermitRequestClassifyTestCase(TestCase):
         )
         validation = factories.PermitRequestValidationFactory(
             permit_request__administrative_entity=self.administrative_entity,
+            permit_request__status=models.PermitRequest.STATUS_PROCESSING,
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
             permit_request__author__user__email="user@geocity.com",
         )
@@ -2233,6 +2237,7 @@ class ApprovedPermitRequestClassifyTestCase(TestCase):
 
         self.validation = factories.PermitRequestValidationFactory(
             permit_request__administrative_entity=self.administrative_entity,
+            permit_request__status=models.PermitRequest.STATUS_PROCESSING,
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
         )
         self.client.login(username=self.secretariat_user.username, password="password")
@@ -2247,7 +2252,7 @@ class ApprovedPermitRequestClassifyTestCase(TestCase):
         self.assertContains(response, "Approbation de la demande")
         self.assertEqual(
             self.validation.permit_request.status,
-            models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            models.PermitRequest.STATUS_PROCESSING,
         )
         return response
 

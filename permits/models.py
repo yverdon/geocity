@@ -447,11 +447,20 @@ class PermitRequest(models.Model):
     def can_be_amended(self):
         return self.status in self.AMENDABLE_STATUSES
 
+    def can_be_sent_for_validation(self):
+        """
+        This check Enables/disables the send for validation form after the permit status
+        changes to STATUS_PROCESSING, which means all the validators made a decision.
+        """
+        statuses = self.AMENDABLE_STATUSES.copy()
+        statuses.remove(self.STATUS_PROCESSING)
+        return self.status in statuses
+
     def can_be_edited_by_pilot(self):
         return self.status in self.EDITABLE_STATUSES
 
     def can_be_validated(self):
-        return self.status == self.STATUS_AWAITING_VALIDATION or self.STATUS_PROCESSING
+        return self.status in {self.STATUS_AWAITING_VALIDATION, self.STATUS_PROCESSING}
 
     def works_objects_html(self):
         """

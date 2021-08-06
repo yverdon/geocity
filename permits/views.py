@@ -305,7 +305,7 @@ class PermitRequestDetailView(View):
                 instance=self.permit_request, data=data
             )
 
-            if not services.can_amend_permit_request(
+            if not services.can_request_permit_validation(
                 self.request.user, self.permit_request
             ):
                 disable_form(form)

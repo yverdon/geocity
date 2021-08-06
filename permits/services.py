@@ -1009,6 +1009,12 @@ def can_amend_permit_request(user, permit_request):
     )
 
 
+def can_request_permit_validation(user, permit_request):
+    return permit_request.can_be_sent_for_validation() and has_permission_to_amend_permit_request(
+        user, permit_request
+    )
+
+
 def has_permission_to_validate_permit_request(user, permit_request):
     return (
         user.has_perm("permits.validate_permit_request")
@@ -1058,7 +1064,7 @@ def can_classify_permit_request(user, permit_request):
         and permit_request.status == models.PermitRequest.STATUS_PROCESSING
     )
     return (
-        permit_request.status == models.PermitRequest.STATUS_AWAITING_VALIDATION
+        permit_request.status == models.PermitRequest.STATUS_PROCESSING
         and permit_request.get_pending_validations().count() == 0
         and has_permission_to_classify_permit_request(user, permit_request)
     ) or no_validation_process
