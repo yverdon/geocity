@@ -162,7 +162,7 @@ def get_permit_request_appendices(permit_request):
             yield (works_object_type, prop)
 
 
-def get_works_types(administrative_entity, user, typefilter):
+def get_works_types(administrative_entity, user):
     queryset = (
         models.WorksType.objects.filter(
             pk__in=models.WorksObjectType.objects.filter(
@@ -175,9 +175,6 @@ def get_works_types(administrative_entity, user, typefilter):
 
     if not user.has_perm("permits.see_private_requests"):
         queryset = queryset.filter(works_object_types__is_public=True)
-    if typefilter:
-        if queryset.filter_by_tags(typefilter):
-            queryset = queryset.filter_by_tags(typefilter)
 
     return queryset
 
@@ -537,18 +534,14 @@ def get_administrative_entity_step(permit_request):
 def get_works_types_step(permit_request, completed, typefilter):
     # When there’s only 1 works type it will be automatically selected, so there’s no
     # reason to show the step
-    if (
-        permit_request
-        and len(
-            get_works_types(
-                permit_request.administrative_entity,
-                permit_request.author.user,
-                typefilter,
-            )
+    if permit_request:
+        works_types = get_works_types(
+            permit_request.administrative_entity, permit_request.author.user
         )
-        <= 1
-    ):
-        return None
+        if works_types.filter_by_tags(typefilter).exists():
+            works_types = works_types.filter_by_tags(typefilter)
+        if len(works_types) <= 1:
+            return None
 
     return models.Step(
         name=_("Type"),
@@ -809,7 +802,7 @@ def get_progress_bar_steps(request, permit_request):
             completed=has_works_objects_types or selected_works_types,
             typefilter=request.session["typefilter"]
             if "typefilter" in request.session
-            else None,
+            else [],
         ),
         models.StepType.WORKS_OBJECTS: get_works_objects_step(
             permit_request=permit_request,
@@ -818,7 +811,7 @@ def get_progress_bar_steps(request, permit_request):
             user=request.user,
             typefilter=request.session["typefilter"]
             if "typefilter" in request.session
-            else None,
+            else [],
         ),
         models.StepType.PROPERTIES: get_properties_step(
             permit_request=permit_request, enabled=has_works_objects_types

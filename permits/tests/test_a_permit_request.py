@@ -2447,7 +2447,6 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         )
 
     def test_work_type_step_show_public_requests_to_standard_user(self,):
-
         public_works_object_types = factories.WorksObjectTypeFactory.create_batch(
             2, is_public=True
         )
