@@ -762,6 +762,9 @@ def permit_request_select_objects(request, permit_request_id):
         {
             "works_objects_form": works_objects_form,
             "permit_request": permit_request,
+            "typefilter": request.session["typefilter"]
+            if "typefilter" in request.session
+            else None,
             **steps_context,
         },
     )
@@ -1067,7 +1070,7 @@ def permit_request_submit(request, permit_request_id):
         if incomplete_steps:
             raise SuspiciousOperation
 
-        services.submit_permit_request(permit_request, request.build_absolute_uri)
+        services.submit_permit_request(permit_request, request)
         return redirect("permits:permit_requests_list")
 
     return render(
@@ -1102,7 +1105,7 @@ def permit_request_submit_confirmed(request, permit_request_id):
     if incomplete_steps:
         raise SuspiciousOperation
 
-    services.submit_permit_request(permit_request, request.build_absolute_uri)
+    services.submit_permit_request(permit_request, request)
     return redirect("permits:permit_requests_list")
 
 

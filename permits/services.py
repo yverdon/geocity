@@ -866,7 +866,7 @@ def get_next_step(steps, current_step):
     )[1][1]
 
 
-def submit_permit_request(permit_request, absolute_uri_func):
+def submit_permit_request(permit_request, request):
     """
     Change the permit request status to submitted and send notification e-mails. `absolute_uri_func` should be a
     callable that takes a path and returns an absolute URI, usually `request.build_absolute_uri`.
@@ -883,7 +883,7 @@ def submit_permit_request(permit_request, absolute_uri_func):
             "users_to_notify": _get_secretary_email(permit_request),
             "template": "permit_request_complemented.txt",
             "permit_request": permit_request,
-            "absolute_uri_func": absolute_uri_func,
+            "absolute_uri_func": request.build_absolute_uri,
         }
         send_email_notification(data)
 
@@ -902,7 +902,7 @@ def submit_permit_request(permit_request, absolute_uri_func):
             "users_to_notify": users_to_notify,
             "template": "permit_request_submitted.txt",
             "permit_request": permit_request,
-            "absolute_uri_func": absolute_uri_func,
+            "absolute_uri_func": request.build_absolute_uri,
         }
         send_email_notification(data)
 
@@ -917,6 +917,7 @@ def submit_permit_request(permit_request, absolute_uri_func):
             permit_request
         )
     permit_request.save()
+    clear_session_filters(request)
 
 
 @transaction.atomic
@@ -1379,3 +1380,8 @@ def store_tags_in_session(request):
 
     if len(request.GET.getlist("typefilter")) > 0:
         request.session["typefilter"] = request.GET.getlist("typefilter")
+
+
+def clear_session_filters(request):
+    request.session["filter"] = []
+    request.session["typefilter"] = []
