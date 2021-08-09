@@ -1369,11 +1369,13 @@ def validate_email(value):
 
 def store_tags_in_session(request):
 
-    if "filter" not in request.session or request.GET.get("clearfilter", None):
-        request.session["filter"] = []
+    if "entityfilter" not in request.session or request.GET.get(
+        "clearentityfilter", None
+    ):
+        request.session["entityfilter"] = []
 
-    if len(request.GET.getlist("filter")) > 0:
-        request.session["filter"] = request.GET.getlist("filter")
+    if len(request.GET.getlist("entityfilter")) > 0:
+        request.session["entityfilter"] = request.GET.getlist("entityfilter")
 
     if "typefilter" not in request.session or request.GET.get("cleartypefilter", None):
         request.session["typefilter"] = []
@@ -1383,5 +1385,5 @@ def store_tags_in_session(request):
 
 
 def clear_session_filters(request):
-    request.session["filter"] = []
+    request.session["entityfilter"] = []
     request.session["typefilter"] = []
