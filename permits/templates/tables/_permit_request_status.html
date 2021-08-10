@@ -8,7 +8,13 @@
       {{ nb_remaining_validations }}/{{ nb_validations }} validations en attente
     {% endblocktrans %}
   {% else %}
-    <i class="fa fa-circle status{{record.status}}"></i> {% trans "Validée par les services" %}
+    {% if record.status == 2 %}
+      <i class="fa fa-circle status{{record.status}}"></i> {% trans "Approuvée" %}
+    {% elif record.status == 6 %}
+      <i class="fa fa-circle status{{record.status}}"></i> {% trans "Refusée" %}
+    {% else %}
+      <i class="fa fa-circle status{{record.status}}"></i> {% trans "Validée par les services" %}
+    {% endif %}
   {% endif %}
 {% else %}
   <i class="fa fa-circle status{{record.status}}"></i> {{ record.get_status_display }}
