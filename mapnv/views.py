@@ -20,7 +20,8 @@ class MapnvAdapter(OAuth2Adapter):
         headers = {'Authorization': 'Bearer {0}'.format(token.token)}
         resp = requests.get(self.profile_url, headers=headers)
         extra_data = resp.json()
-        return self.get_provider().sociallogin_from_response(request, extra_data)
+        new_user = self.get_provider().sociallogin_from_response(request, extra_data)
+        return new_user
 
 
 oauth2_login = OAuth2LoginView.adapter_view(MapnvAdapter)

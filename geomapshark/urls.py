@@ -9,7 +9,6 @@ from django.contrib.auth import views as auth_views
 from django.urls import include, path
 from rest_framework import routers
 
-from dootix.provider import DootixProvider
 from mapnv.provider import MapnvProvider
 from permits import api
 from permits import views as permits_views
@@ -79,9 +78,7 @@ else:
 #  Refactor with allauth only? Or use only specific urls.
 urlpatterns += [
     path('accounts/', include('allauth.urls')),
-] + default_urlpatterns(DootixProvider) \
-               + default_urlpatterns(MapnvProvider) \
-               + default_urlpatterns(GitHubProvider)
+] + default_urlpatterns(MapnvProvider)
 
 urlpatterns += [
     path("account/logout/", views.logout_view, name="logout",),

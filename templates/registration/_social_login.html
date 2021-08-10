@@ -1,11 +1,5 @@
-{% load socialaccount %}
+{% load socialaccount i18n %}
 
 <div>
-  <a href="{% provider_login_url "dootix" %}">Connexion via Dootix</a>
-</div>
-<div>
-  <a href="{% provider_login_url "mapnv" %}">Connexion via Mapnv</a>
-</div>
-<div>
-  <a href="{% provider_login_url "github" %}">Connexion via github</a>
+  <a href="{% provider_login_url "mapnv" %}">{% trans "Connexion via Mapnv" %}</a>
 </div>
