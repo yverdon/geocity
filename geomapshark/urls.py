@@ -73,11 +73,8 @@ else:
         ),
     ]
 
-# FIXME:
-#  Django auth VS Allauth packages.
-#  Refactor with allauth only? Or use only specific urls.
 urlpatterns += [
-    path('accounts/', include('allauth.urls')),
+    path('accounts/social/', include('allauth.socialaccount.urls')),
 ] + default_urlpatterns(MapnvProvider)
 
 urlpatterns += [
