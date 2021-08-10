@@ -63,8 +63,8 @@ LOCAL_IP_WHITELIST = os.getenv("LOCAL_IP_WHITELIST")
 
 # Allauth requirement
 SITE_ID = 1
-SITE_DOMAIN = os.getenv('SITE_DOMAIN', 'localhost')
-SITE_HTTPS = bool(int(os.getenv('SITE_HTTPS', True)))
+SITE_DOMAIN = os.getenv("SITE_DOMAIN", "localhost")
+SITE_HTTPS = bool(int(os.getenv("SITE_HTTPS", True)))
 
 # Application definition
 INSTALLED_APPS = [
@@ -256,29 +256,24 @@ TEMPLATES = [
 
 AUTHENTICATION_BACKENDS = [
     # Classic django authentication backend
-    'django.contrib.auth.backends.ModelBackend',
+    "django.contrib.auth.backends.ModelBackend",
     # SocialAccount authentication backend with allauth
-    'allauth.account.auth_backends.AuthenticationBackend',
+    "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
 AUTH_PROVIDER_MAPNV_URL = "https://mapnv.ch/preprod_26_2fa"
 
 SOCIALACCOUNT_PROVIDERS = {
-    'mapnv': {
-        "APP": {
-            "client_id": "dev-liip",
-            "secret": os.getenv("MAPNV_SECRET")
-        },
-        'SCOPE': [
-            'email'
-        ],
+    "mapnv": {
+        "APP": {"client_id": "dev-liip", "secret": os.getenv("MAPNV_SECRET")},
+        "SCOPE": ["email"],
         "VERIFIED_EMAIL": True,
     }
 }
 
 # Override SocialAccountAdapter to customize User creation
 SOCIALACCOUNT_ADAPTER = "mapnv.adapter.MapnvSocialAccountAdapter"
-SOCIALACCOUNT_FORMS = {'signup': 'mapnv.forms.MapnvSocialSignupForm'}
+SOCIALACCOUNT_FORMS = {"signup": "mapnv.forms.MapnvSocialSignupForm"}
 SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 
