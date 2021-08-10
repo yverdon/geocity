@@ -23,8 +23,8 @@ class MapnvSocialAccountAdapter(DefaultSocialAccountAdapter):
     def save_user(self, request, sociallogin: SocialLogin, form=None):
         if not form:
             # A subscription form is enforced by settings.SOCIALACCOUNT_AUTO_SIGNUP
-            # But this subscription can't continue if subscription form is bypassed.
-            raise MapnvAdapterError("Subscription form is missing")
+            # If subscription form is bypassed, the subscription can't proceed.
+            raise MapnvAdapterError("Subscription form is missing.")
 
         user = sociallogin.user
         user.set_unusable_password()

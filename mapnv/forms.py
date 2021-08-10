@@ -1,6 +1,7 @@
 from allauth.socialaccount.adapter import get_adapter
 from allauth.socialaccount.forms import SignupForm
 from django import forms
+from django.core.validators import RegexValidator
 
 from permits.forms import AddressWidget
 from django.utils.translation import gettext_lazy as _
@@ -41,10 +42,17 @@ class MapnvSocialSignupForm(SignupForm):
             attrs={"placeholder": "ex: Yverdon", "required": "required"}
         ),
     )
-    # Fixme validation
     phone_first = forms.CharField(
-        label=_("Téléphone principal"), max_length=20, required=True,
-        widget=forms.TextInput(attrs={"placeholder": "ex: 024 111 22 22"})
+        label=_("Téléphone principal"),
+        max_length=20,
+        required=True,
+        widget=forms.TextInput(attrs={"placeholder": "ex: 024 111 22 22"}),
+        validators=[
+            RegexValidator(
+                regex=r"^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
+                message="Seuls les chiffres et les espaces sont autorisés.",
+            )
+        ],
     )
 
     phone_second = forms.CharField(
@@ -56,15 +64,20 @@ class MapnvSocialSignupForm(SignupForm):
 
     company_name = forms.CharField(
         required=False,
-        label=_("Raison Sociale"), max_length=100,
-        widget=forms.TextInput(attrs={"placeholder": "ex: Construction SA"})
+        label=_("Raison Sociale"),
+        max_length=100,
+        widget=forms.TextInput(attrs={"placeholder": "ex: Construction SA"}),
     )
 
     vat_number = forms.CharField(
         required=False,
-        label=_("Numéro TVA"), max_length=19,
+        label=_("Numéro TVA"),
+        max_length=19,
         widget=forms.TextInput(attrs={"placeholder": "ex: CHE-123.456.789"}),
-        help_text=_('Trouvez votre numéro <a href="https://www.uid.admin.ch/Search.aspx?lang=fr" target="_blank">TVA</a>')
+        help_text=_(
+            'Trouvez votre numéro <a href="https://www.uid.admin.ch/Search.aspx'
+            '?lang=fr" target="_blank">TVA</a>'
+        ),
     )
 
     def __init__(self, *args, **kwargs):
@@ -75,9 +88,4 @@ class MapnvSocialSignupForm(SignupForm):
 
     def save(self, request):
         adapter = get_adapter(request)
-        user = adapter.save_user(request, self.sociallogin, form=self)
-
-        # Social Signup complete
-        # FIXME Send signal ?
-
-        return user
+        return adapter.save_user(request, self.sociallogin, form=self)
