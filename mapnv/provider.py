@@ -11,14 +11,14 @@ class MapnvAccount(ProviderAccount):
 class MapnvProvider(OAuth2Provider):
 
     id = "mapnv"
-    name = 'Mapnv'
+    name = "Mapnv"
     account_class = MapnvAccount
 
     def extract_uid(self, data):
         """
         Unique ID in mapnv is the username.
         """
-        return str(data['username'])
+        return str(data["username"])
 
     def extract_common_fields(self, data):
         """
@@ -26,13 +26,11 @@ class MapnvProvider(OAuth2Provider):
         """
         # permitauthor
         return dict(
-            username=data['username'],
-            email=data['email'],
-            roles=data['roles'],
+            username=data["username"], email=data["email"], roles=data["roles"],
         )
 
     def get_default_scope(self):
-        scope = ['read']
+        scope = ["read"]
         return scope
 
 

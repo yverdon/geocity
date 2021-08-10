@@ -53,17 +53,14 @@ class MapnvOAuth2Tests(OAuth2TestsMixin, TestCase):
     provider_id = MapnvProvider.id
 
     def get_mocked_response(self, email="foo@bar.ch", username="test"):
-        profile_response_mock.update({
-            "email": email,
-            "username": username,
-        })
+        profile_response_mock.update(
+            {"email": email, "username": username,}
+        )
         return MockedResponse(200, json.dumps(profile_response_mock))
 
     def test_login_redirects_to_social_signup(self):
         email = "foo@bar.ch"
-        response = self.login(
-            self.get_mocked_response(email)
-        )
+        response = self.login(self.get_mocked_response(email))
         self.assertRedirects(response, expected_url=reverse("socialaccount_signup"))
 
     def test_social_signup_form_display_socialaccount_data(self):

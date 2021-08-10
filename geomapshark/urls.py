@@ -74,7 +74,7 @@ else:
     ]
 
 urlpatterns += [
-    path('accounts/social/', include('allauth.socialaccount.urls')),
+    path("accounts/social/", include("allauth.socialaccount.urls")),
 ] + default_urlpatterns(MapnvProvider)
 
 urlpatterns += [
