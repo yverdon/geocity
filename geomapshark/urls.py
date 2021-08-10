@@ -66,7 +66,7 @@ if settings.ENABLE_2FA:
 else:
     logger.info("2 factors authentification is disabled")
     urlpatterns += [
-        path("accounts/login/", auth_views.LoginView.as_view(), name="login")
+        path("account/login/", auth_views.LoginView.as_view(), name="login")
     ]
 
 urlpatterns += [
