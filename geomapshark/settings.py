@@ -82,7 +82,6 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.github",
-    "dootix",
     "mapnv",
     "constance",
     "constance.backends.database",
@@ -262,19 +261,10 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-# AUTH_PROVIDER_DOOTIX_ID = ""
-# AUTH_PROVIDER_DOOTIX_URL = "http://dev.yverdon-sports.dootix.com"
-
 # AUTH_PROVIDER_MAPNV_ID = ""
 AUTH_PROVIDER_MAPNV_URL = "https://mapnv.ch/preprod_26_2fa"
 
 SOCIALACCOUNT_PROVIDERS = {
-    "github": {
-        # For each provider, you can choose whether or not the
-        # email address(es) retrieved from the provider are to be
-        # interpreted as verified.
-        "VERIFIED_EMAIL": True
-    },
     'mapnv': {
         "APP": {
             "client_id": "dev-liip",
@@ -282,12 +272,16 @@ SOCIALACCOUNT_PROVIDERS = {
         },
         'SCOPE': [
             'email'
-        ]
+        ],
+        "VERIFIED_EMAIL": True,
     }
 }
 
 # Override SocialAccountAdapter to customize User creation
 SOCIALACCOUNT_ADAPTER = "mapnv.adapter.MapnvSocialAccountAdapter"
+SOCIALACCOUNT_FORMS = {'signup': 'mapnv.forms.MapnvSocialSignupForm'}
+SOCIALACCOUNT_AUTO_SIGNUP = False
+SOCIALACCOUNT_EMAIL_REQUIRED = True
 
 BOOTSTRAP4 = {
     "include_jquery": True,
