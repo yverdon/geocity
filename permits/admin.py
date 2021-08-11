@@ -288,15 +288,13 @@ class GroupAdminForm(forms.ModelForm):
             | Q(codename__in=OTHER_PERMISSIONS_CODENAMES)
         )
 
-        for_integrator_permissions = Permission.objects.filter(
-            codename__in=AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
-        )
-
         if "permitdepartment-0-is_integrator_admin" in self.data.keys():
             permissions = permissions.union(integrator_permissions)
         else:
             permissions = permissions.difference(
-                integrator_permissions.difference(for_integrator_permissions)
+                integrator_permissions.exclude(
+                    codename__in=AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
+                )
             )
         return permissions
 
@@ -331,16 +329,15 @@ class GroupAdmin(admin.ModelAdmin):
         # permissions that integrator role can grant to group
         if db_field.name == "permissions":
 
-            integrator_permissions = Permission.objects.filter(
-                codename__in=AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
-            )
-
             if (
                 not request.user.is_superuser
                 and request.user.groups.get(
                     permitdepartment__is_integrator_admin=True
                 ).pk
             ):
+                integrator_permissions = Permission.objects.filter(
+                    codename__in=AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
+                )
                 kwargs["queryset"] = integrator_permissions
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
