@@ -46,6 +46,12 @@ if settings.ENABLE_2FA:
 
     logger.info("2 factors authentification is enabled")
     urlpatterns += [
+        # Callback from allauth
+        path(
+            "account/login/",
+            LoginView.as_view(template_name="two_factor/login.html"),
+            name="account_login",
+        ),
         path(
             "account/login/",
             LoginView.as_view(template_name="two_factor/login.html"),
@@ -66,7 +72,8 @@ if settings.ENABLE_2FA:
 else:
     logger.info("2 factors authentification is disabled")
     urlpatterns += [
-        path("account/login/", auth_views.LoginView.as_view(), name="login")
+        path("account/login/", auth_views.LoginView.as_view(), name="account_login"),
+        path("account/login/", auth_views.LoginView.as_view(), name="login"),
     ]
 
 urlpatterns += [
