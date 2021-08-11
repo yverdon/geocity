@@ -1,6 +1,8 @@
 from allauth.account import utils
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.socialaccount.models import SocialLogin
+from allauth.utils import build_absolute_uri
+from django.conf import settings
 
 from permits.models import PermitAuthor
 
@@ -45,3 +47,6 @@ class MapnvSocialAccountAdapter(DefaultSocialAccountAdapter):
         )
 
         return user
+
+    def get_connect_redirect_url(self, request, socialaccount):
+        return build_absolute_uri(request, settings.LOGIN_REDIRECT_URL)
