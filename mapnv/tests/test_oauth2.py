@@ -13,6 +13,7 @@ User = get_user_model()
 # Mapnv profile_url success response mock.
 # Happen if login succeeded.
 # That's all the data we can get from MAPNV.
+# For now, we use only username & email.
 profile_response_mock = {
     "username": "test",
     "email": "olm@ylb.ch",

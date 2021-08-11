@@ -1,6 +1,5 @@
 import logging
 
-from allauth.socialaccount.providers.github.provider import GitHubProvider
 from allauth.socialaccount.providers.oauth2.urls import default_urlpatterns
 from django.conf import settings
 from django.conf.urls.static import static
