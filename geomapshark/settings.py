@@ -81,7 +81,6 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "allauth.socialaccount.providers.github",
     "mapnv",
     "constance",
     "constance.backends.database",
@@ -265,7 +264,15 @@ AUTH_PROVIDER_MAPNV_URL = "https://mapnv.ch/preprod_26_2fa"
 
 SOCIALACCOUNT_PROVIDERS = {
     "mapnv": {
-        "APP": {"client_id": "dev-liip", "secret": os.getenv("MAPNV_SECRET")},
+        # Override SocialApp fields with an "APP" settings.
+        # SocialApp object => /admin/socialaccount/socialapp.
+        # Example:
+        # "APP": {
+        #     "client_id": "dev-liip",
+        #     "secret": os.getenv("MAPNV_SECRET"),
+        #     "key": "",
+        #     "certificate_key": ""
+        # },
         "SCOPE": ["email"],
         "VERIFIED_EMAIL": True,
     }
