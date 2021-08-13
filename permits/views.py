@@ -569,6 +569,28 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
     else:
         permit_request = None
 
+    entityfilter = (
+        request.session["entityfilter"] if "entityfilter" in request.session else []
+    )
+    entities_by_tag = services.get_administrative_entities(request.user).filter_by_tags(
+        entityfilter
+    )
+
+    if len(entities_by_tag) == 1 and not permit_request:
+        administrative_entity_instance = models.PermitAdministrativeEntity.objects.get(
+            pk=entities_by_tag.first().pk
+        )
+        permit_request = models.PermitRequest.objects.create(
+            administrative_entity=administrative_entity_instance,
+            author=request.user.permitauthor,
+        )
+        steps = services.get_progress_bar_steps(
+            request=request, permit_request=permit_request
+        )
+        return redirect(
+            services.get_next_step(steps, models.StepType.ADMINISTRATIVE_ENTITY).url
+        )
+
     steps_context = progress_bar_context(
         request=request,
         permit_request=permit_request,

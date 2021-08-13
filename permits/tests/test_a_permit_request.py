@@ -894,18 +894,40 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         response = self.client.get(
             reverse("permits:permit_request_select_administrative_entity"),
             {"entityfilter": "first"},
+            follow=True,
         )
 
-        parser = get_parser(response.content)
-        element_parsed = parser.select(".form-check-label")
+        new_permit_request = models.PermitRequest.objects.last()
 
+        parser = get_parser(response.content)
         content = response.content.decode()
+        self.assertInHTML(
+            "Sélectionnez le ou les type(s) de travaux / événement(s) prévu(s)", content
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "permits:permit_request_select_types",
+                kwargs={"permit_request_id": new_permit_request.id},
+            ),
+        )
+
+        response2 = self.client.get(
+            reverse(
+                "permits:permit_request_select_administrative_entity",
+                kwargs={"permit_request_id": new_permit_request.id},
+            )
+        )
+        parser2 = get_parser(response2.content)
+        content2 = response2.content.decode()
+        element_parsed = parser2.select(".form-check-label")
+
         # Check that selected item is there
         self.assertEqual(1, len(element_parsed))
         # Check that filtered items are NOT there
         self.assertNotContains(response, administrative_entities[1].name)
         self.assertNotContains(response, administrative_entities[2].name)
-        self.assertInHTML(administrative_entities[0].name, content)
+        self.assertInHTML(administrative_entities[0].name, content2)
 
     def test_wrong_administrative_entity_tag_return_all_administratives_entities(self):
         administrative_entities = [
@@ -919,7 +941,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         response = self.client.get(
             reverse("permits:permit_request_select_administrative_entity"),
-            {"filter": "wrongtag"},
+            {"entityfilter": "wrongtag"},
         )
 
         parser = get_parser(response.content)
