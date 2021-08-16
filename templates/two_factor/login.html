@@ -63,7 +63,7 @@
     </form>
     <br>
     <div>
-      <a class="form-text" href="{% url 'permit_author_create' %}">{% trans "Créer un compte" %}</a>
+      <a class="form-text" href="{% url 'permit_author_create' %}{% if query_string %}?{{query_string}}{% endif %}">{% trans "Créer un compte" %}</a>
       <a class="form-text" href="{% url 'password_reset' %}">{% trans "Perdu votre mot de passe ?" %}</a>
     </div>
   {% elif wizard.steps.current == 'token' %}

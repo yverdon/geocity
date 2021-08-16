@@ -482,6 +482,11 @@ class PermitRequest(models.Model):
         return True if self.validations.all().count() > 0 else False
 
 
+class WorksTypeQuerySet(models.QuerySet):
+    def filter_by_tags(self, tags):
+        return self.filter(tags__name__in=[tag.lower() for tag in tags])
+
+
 class WorksType(models.Model):
     name = models.CharField(_("nom"), max_length=255)
 
@@ -510,6 +515,12 @@ class WorksType(models.Model):
     meta_type = models.IntegerField(
         _("Type générique"), choices=META_TYPE_CHOICES, default=META_TYPE_OTHER
     )
+    tags = TaggableManager(
+        blank=True,
+        verbose_name="Mots-clés",
+        help_text="Mots clefs sans espaces, séparés par des virgules permettant ensuite de filtrer les entités par l'url: https://geocity.ch&typefilter=permisdefouille&typefilter=stationnement",
+    )
+    objects = WorksTypeQuerySet.as_manager()
 
     class Meta:
         verbose_name = _("1.2 Configuration du type")

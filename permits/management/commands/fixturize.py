@@ -10,6 +10,45 @@ from django.utils import timezone
 
 from geomapshark import settings
 from permits import admin, models
+import re
+import unicodedata
+
+
+def strip_accents(text):
+    """
+    Strip accents from input String.
+
+    :param text: The input string.
+    :type text: String.
+
+    :returns: The processed String.
+    :rtype: String.
+    """
+    try:
+        text = unicode(text, "utf-8")
+    except (TypeError, NameError):  # unicode is a default on python 3
+        pass
+    text = unicodedata.normalize("NFD", text)
+    text = text.encode("ascii", "ignore")
+    text = text.decode("utf-8")
+    return str(text)
+
+
+def unaccent(text):
+    """
+    Convert input text to id.
+
+    :param text: The input string.
+    :type text: String.
+
+    :returns: The processed String.
+    :rtype: String.
+    """
+    text = strip_accents(text.lower())
+    text = re.sub("[ ]+", "_", text)
+    text = re.sub("[^0-9a-zA-Z_-]", "", text)
+    return text
+
 
 User = get_user_model()
 
@@ -324,7 +363,7 @@ class Command(BaseCommand):
             (
                 "Procédés de réclame",
                 [
-                    ("Enseigne lumnieuse", properties["comment"]),
+                    ("Enseigne lumnineuse", properties["comment"]),
                     ("Panneau", properties["comment"]),
                 ],
             ),
@@ -346,6 +385,7 @@ class Command(BaseCommand):
 
         for works_type, objs in works_types:
             works_type_obj = models.WorksType.objects.create(name=works_type)
+            works_type_obj.tags.set(unaccent(works_type))
             models.PermitActorType.objects.create(
                 type=models.ACTOR_TYPE_OTHER, works_type=works_type_obj,
             )

@@ -59,8 +59,7 @@ root@de8f58bf2e2c:/code# ./run_tests.sh
 Example to run a single test in container
 
 ```bash
-coverage run --source='.' ./manage.py test --settings=geomapshark.settings_test permits.tests.test_permit_request.PrivateDemandsTest
-stCase
+coverage run --source='.' ./manage.py test --settings=geomapshark.settings_test permits.tests.test_a_permit_request.PermitRequestTestCase.test_administrative_entity_is_filtered_by_tag
 ```
 
 ## Linting

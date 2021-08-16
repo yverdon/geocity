@@ -94,7 +94,8 @@ class AdministrativeEntityForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop("instance", None)
         self.user = kwargs.pop("user", None)
-        tags = kwargs.pop("tags", [])
+        session = kwargs.pop("session", None)
+        tags = session["entityfilter"] if "entityfilter" in session else []
 
         if self.instance:
             initial = {
@@ -110,6 +111,8 @@ class AdministrativeEntityForm(forms.Form):
         entities_by_tag = services.get_administrative_entities(
             self.user
         ).filter_by_tags(tags)
+        if not entities_by_tag.exists():
+            session["entityfilter"] = []
         self.fields["administrative_entity"].choices = [
             (ofs_id, [(entity.pk, entity.name) for entity in entities])
             for ofs_id, entities in regroup_by_ofs_id(
@@ -146,6 +149,8 @@ class WorksTypesForm(forms.Form):
     def __init__(self, instance, *args, **kwargs):
         self.instance = instance
         self.user = kwargs.pop("user", None)
+        session = kwargs.pop("session", None)
+        typefilter = session["typefilter"] if "typefilter" in session else []
         kwargs["initial"] = (
             {"types": services.get_permit_request_works_types(self.instance)}
             if self.instance
@@ -153,10 +158,15 @@ class WorksTypesForm(forms.Form):
         )
 
         super().__init__(*args, **kwargs)
-
-        self.fields["types"].queryset = services.get_works_types(
+        works_types = services.get_works_types(
             self.instance.administrative_entity, self.user
         )
+        if typefilter:
+            if works_types.filter_by_tags(typefilter).exists():
+                works_types = works_types.filter_by_tags(typefilter)
+            else:
+                session["typefilter"] = []
+        self.fields["types"].queryset = works_types
 
     def save(self):
         services.set_works_types(self.instance, self.cleaned_data["types"])

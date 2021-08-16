@@ -163,7 +163,6 @@ def get_permit_request_appendices(permit_request):
 
 
 def get_works_types(administrative_entity, user):
-
     queryset = (
         models.WorksType.objects.filter(
             pk__in=models.WorksObjectType.objects.filter(
@@ -532,19 +531,17 @@ def get_administrative_entity_step(permit_request):
     )
 
 
-def get_works_types_step(permit_request, completed):
+def get_works_types_step(permit_request, completed, typefilter):
     # When there’s only 1 works type it will be automatically selected, so there’s no
     # reason to show the step
-    if (
-        permit_request
-        and len(
-            get_works_types(
-                permit_request.administrative_entity, permit_request.author.user
-            )
+    if permit_request:
+        works_types = get_works_types(
+            permit_request.administrative_entity, permit_request.author.user
         )
-        <= 1
-    ):
-        return None
+        if works_types.filter_by_tags(typefilter).exists():
+            works_types = works_types.filter_by_tags(typefilter)
+        if len(works_types) <= 1:
+            return None
 
     return models.Step(
         name=_("Type"),
@@ -558,7 +555,7 @@ def get_works_types_step(permit_request, completed):
     )
 
 
-def get_works_objects_step(permit_request, enabled, works_types, user):
+def get_works_objects_step(permit_request, enabled, works_types, user, typefilter):
     # If there are default works objects types it means the object types can be
     # automatically selected and so the step shouldn’t be visible
     if permit_request:
@@ -606,6 +603,16 @@ def get_works_objects_step(permit_request, enabled, works_types, user):
 
         if len(administrative_entity_works_types) == 1:
             works_types = administrative_entity_works_types
+
+        if typefilter:
+            filtered_works_type = (
+                models.WorksType.objects.filter_by_tags(typefilter)
+                .values_list("id", flat=True)
+                .distinct()
+            )
+
+            if filtered_works_type.count() == 1:
+                works_types = filtered_works_type
 
     works_types_qs = (
         urllib.parse.urlencode({"types": works_types}, doseq=True,)
@@ -786,7 +793,6 @@ def get_progress_bar_steps(request, permit_request):
         permit_request.works_object_types.exists() if permit_request else False
     )
     selected_works_types = request.GET.getlist("types")
-
     all_steps = {
         models.StepType.ADMINISTRATIVE_ENTITY: get_administrative_entity_step(
             permit_request
@@ -794,12 +800,18 @@ def get_progress_bar_steps(request, permit_request):
         models.StepType.WORKS_TYPES: get_works_types_step(
             permit_request=permit_request,
             completed=has_works_objects_types or selected_works_types,
+            typefilter=request.session["typefilter"]
+            if "typefilter" in request.session
+            else [],
         ),
         models.StepType.WORKS_OBJECTS: get_works_objects_step(
             permit_request=permit_request,
             enabled=has_works_objects_types,
             works_types=selected_works_types,
             user=request.user,
+            typefilter=request.session["typefilter"]
+            if "typefilter" in request.session
+            else [],
         ),
         models.StepType.PROPERTIES: get_properties_step(
             permit_request=permit_request, enabled=has_works_objects_types
@@ -847,7 +859,7 @@ def get_next_step(steps, current_step):
     )[1][1]
 
 
-def submit_permit_request(permit_request, absolute_uri_func):
+def submit_permit_request(permit_request, request):
     """
     Change the permit request status to submitted and send notification e-mails. `absolute_uri_func` should be a
     callable that takes a path and returns an absolute URI, usually `request.build_absolute_uri`.
@@ -864,7 +876,7 @@ def submit_permit_request(permit_request, absolute_uri_func):
             "users_to_notify": _get_secretary_email(permit_request),
             "template": "permit_request_complemented.txt",
             "permit_request": permit_request,
-            "absolute_uri_func": absolute_uri_func,
+            "absolute_uri_func": request.build_absolute_uri,
         }
         send_email_notification(data)
 
@@ -883,7 +895,7 @@ def submit_permit_request(permit_request, absolute_uri_func):
             "users_to_notify": users_to_notify,
             "template": "permit_request_submitted.txt",
             "permit_request": permit_request,
-            "absolute_uri_func": absolute_uri_func,
+            "absolute_uri_func": request.build_absolute_uri,
         }
         send_email_notification(data)
 
@@ -898,6 +910,7 @@ def submit_permit_request(permit_request, absolute_uri_func):
             permit_request
         )
     permit_request.save()
+    clear_session_filters(request)
 
 
 @transaction.atomic
@@ -1345,3 +1358,25 @@ def validate_email(value):
         return True
     except ValidationError:
         return False
+
+
+def store_tags_in_session(request):
+
+    if "entityfilter" not in request.session or request.GET.get(
+        "clearentityfilter", None
+    ):
+        request.session["entityfilter"] = []
+
+    if len(request.GET.getlist("entityfilter")) > 0:
+        request.session["entityfilter"] = request.GET.getlist("entityfilter")
+
+    if "typefilter" not in request.session or request.GET.get("cleartypefilter", None):
+        request.session["typefilter"] = []
+
+    if len(request.GET.getlist("typefilter")) > 0:
+        request.session["typefilter"] = request.GET.getlist("typefilter")
+
+
+def clear_session_filters(request):
+    request.session["entityfilter"] = []
+    request.session["typefilter"] = []

@@ -57,7 +57,6 @@ def get_permit_request_for_edition(user, permit_request_id):
         models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
         models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
     }
-
     permit_request = services.get_permit_request_for_user_or_404(
         user, permit_request_id, statuses=allowed_statuses,
     )
@@ -77,7 +76,6 @@ def get_permit_request_for_edition(user, permit_request_id):
                 models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
             ],
         )
-
     return permit_request
 
 
@@ -106,7 +104,6 @@ def progress_bar_context(request, permit_request, current_step_type):
     steps = services.get_progress_bar_steps(
         request=request, permit_request=permit_request
     )
-
     if current_step_type not in steps:
         raise Http404()
 
@@ -564,10 +561,35 @@ def permit_request_print(request, permit_request_id, template_id):
 @user_passes_test(user_has_permitauthor)
 @check_mandatory_2FA
 def permit_request_select_administrative_entity(request, permit_request_id=None):
+
+    services.store_tags_in_session(request)
+
     if permit_request_id:
         permit_request = get_permit_request_for_edition(request.user, permit_request_id)
     else:
         permit_request = None
+
+    entityfilter = (
+        request.session["entityfilter"] if "entityfilter" in request.session else []
+    )
+    entities_by_tag = services.get_administrative_entities(request.user).filter_by_tags(
+        entityfilter
+    )
+
+    if len(entities_by_tag) == 1 and not permit_request:
+        administrative_entity_instance = models.PermitAdministrativeEntity.objects.get(
+            pk=entities_by_tag.first().pk
+        )
+        permit_request = models.PermitRequest.objects.create(
+            administrative_entity=administrative_entity_instance,
+            author=request.user.permitauthor,
+        )
+        steps = services.get_progress_bar_steps(
+            request=request, permit_request=permit_request
+        )
+        return redirect(
+            services.get_next_step(steps, models.StepType.ADMINISTRATIVE_ENTITY).url
+        )
 
     steps_context = progress_bar_context(
         request=request,
@@ -577,7 +599,10 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
 
     if request.method == "POST":
         administrative_entity_form = forms.AdministrativeEntityForm(
-            instance=permit_request, data=request.POST, user=request.user
+            instance=permit_request,
+            data=request.POST,
+            user=request.user,
+            session=request.session,
         )
 
         if administrative_entity_form.is_valid():
@@ -604,17 +629,17 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
             )
     else:
         administrative_entity_form = forms.AdministrativeEntityForm(
-            instance=permit_request,
-            user=request.user,
-            tags=request.GET.getlist("filter"),
+            instance=permit_request, user=request.user, session=request.session,
         )
-
     return render(
         request,
         "permits/permit_request_select_administrative_entity.html",
         {
             "form": administrative_entity_form,
             "permit_request": permit_request,
+            "entityfilter": request.session["entityfilter"]
+            if "entityfilter" in request.session
+            else None,
             **steps_context,
         },
     )
@@ -628,16 +653,20 @@ def permit_request_select_types(request, permit_request_id):
     Step to select works types (eg. demolition). No permit request is created at this step since we only store (works
     object, works type) couples in the database.
     """
+    services.store_tags_in_session(request)
+    # returns error or redirects to details depending on user permissions and permit_request status
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
     steps_context = progress_bar_context(
         request=request,
         permit_request=permit_request,
         current_step_type=models.StepType.WORKS_TYPES,
     )
-
     if request.method == "POST":
         works_types_form = forms.WorksTypesForm(
-            data=request.POST, instance=permit_request, user=request.user
+            data=request.POST,
+            instance=permit_request,
+            user=request.user,
+            session=request.session,
         )
         if works_types_form.is_valid():
             redirect_kwargs = {"permit_request_id": permit_request_id}
@@ -673,15 +702,17 @@ def permit_request_select_types(request, permit_request_id):
             )
     else:
         works_types_form = forms.WorksTypesForm(
-            instance=permit_request, user=request.user
+            instance=permit_request, user=request.user, session=request.session
         )
-
     return render(
         request,
         "permits/permit_request_select_types.html",
         {
             "works_types_form": works_types_form,
             "permit_request": permit_request,
+            "typefilter": request.session["typefilter"]
+            if "typefilter" in request.session
+            else [],
             **steps_context,
         },
     )
@@ -704,7 +735,10 @@ def permit_request_select_objects(request, permit_request_id):
 
     if request.GET:
         works_types_form = forms.WorksTypesForm(
-            data=request.GET, instance=permit_request, user=request.user
+            data=request.GET,
+            instance=permit_request,
+            user=request.user,
+            session=request.session,
         )
         if works_types_form.is_valid():
             works_types = works_types_form.cleaned_data["types"]
@@ -755,6 +789,9 @@ def permit_request_select_objects(request, permit_request_id):
         {
             "works_objects_form": works_objects_form,
             "permit_request": permit_request,
+            "typefilter": request.session["typefilter"]
+            if "typefilter" in request.session
+            else [],
             **steps_context,
         },
     )
@@ -1060,7 +1097,7 @@ def permit_request_submit(request, permit_request_id):
         if incomplete_steps:
             raise SuspiciousOperation
 
-        services.submit_permit_request(permit_request, request.build_absolute_uri)
+        services.submit_permit_request(permit_request, request)
         return redirect("permits:permit_requests_list")
 
     return render(
@@ -1095,7 +1132,7 @@ def permit_request_submit_confirmed(request, permit_request_id):
     if incomplete_steps:
         raise SuspiciousOperation
 
-    services.submit_permit_request(permit_request, request.build_absolute_uri)
+    services.submit_permit_request(permit_request, request)
     return redirect("permits:permit_requests_list")
 
 

@@ -274,6 +274,7 @@ class WorksTypeFactory(factory.django.DjangoModelFactory):
         model = models.WorksType
 
     name = factory.Faker("word")
+    tags = "work_type_a"
 
     @factory.post_generation
     def integrator(self, create, extracted, **kwargs):
@@ -281,6 +282,13 @@ class WorksTypeFactory(factory.django.DjangoModelFactory):
             return
 
         self.integrator = extracted
+
+    @factory.post_generation
+    def tags(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        self.tags.set(*extracted)
 
 
 class PermitActorTypeFactory(factory.django.DjangoModelFactory):

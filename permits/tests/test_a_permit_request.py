@@ -893,19 +893,41 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         response = self.client.get(
             reverse("permits:permit_request_select_administrative_entity"),
-            {"filter": "first"},
+            {"entityfilter": "first"},
+            follow=True,
         )
 
-        parser = get_parser(response.content)
-        element_parsed = parser.select(".form-check-label")
+        new_permit_request = models.PermitRequest.objects.last()
 
+        parser = get_parser(response.content)
         content = response.content.decode()
+        self.assertInHTML(
+            "Sélectionnez le ou les type(s) de travaux / événement(s) prévu(s)", content
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "permits:permit_request_select_types",
+                kwargs={"permit_request_id": new_permit_request.id},
+            ),
+        )
+
+        response2 = self.client.get(
+            reverse(
+                "permits:permit_request_select_administrative_entity",
+                kwargs={"permit_request_id": new_permit_request.id},
+            )
+        )
+        parser2 = get_parser(response2.content)
+        content2 = response2.content.decode()
+        element_parsed = parser2.select(".form-check-label")
+
         # Check that selected item is there
         self.assertEqual(1, len(element_parsed))
         # Check that filtered items are NOT there
         self.assertNotContains(response, administrative_entities[1].name)
         self.assertNotContains(response, administrative_entities[2].name)
-        self.assertInHTML(administrative_entities[0].name, content)
+        self.assertInHTML(administrative_entities[0].name, content2)
 
     def test_wrong_administrative_entity_tag_return_all_administratives_entities(self):
         administrative_entities = [
@@ -919,7 +941,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         response = self.client.get(
             reverse("permits:permit_request_select_administrative_entity"),
-            {"filter": "wrongtag"},
+            {"entityfilter": "wrongtag"},
         )
 
         parser = get_parser(response.content)
@@ -946,7 +968,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         response = self.client.get(
             reverse("permits:permit_request_select_administrative_entity"),
-            {"filter": ["first", "second"]},
+            {"entityfilter": ["first", "second"]},
         )
 
         parser = get_parser(response.content)
@@ -957,6 +979,70 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(2, len(element_parsed))
         self.assertInHTML(administrative_entities[0].name, content)
         self.assertInHTML(administrative_entities[1].name, content)
+
+    def test_work_type_is_filtered_by_tag(self):
+        additional_works_type = factories.WorksTypeFactory()
+        additional_works_objects = factories.WorksObjectFactory()
+
+        models.WorksObjectType.objects.create(
+            works_type=additional_works_type,
+            works_object=additional_works_objects,
+            is_public=True,
+        )
+
+        self.works_types[0].tags.set("work_type_a")
+        self.works_types[1].tags.set("work_type_a")
+        additional_works_type.tags.set("work_type_b")
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        permit_request.administrative_entity.works_object_types.set(
+            models.WorksObjectType.objects.all()
+        )
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_select_types",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+            + "?typefilter=work_type_a"
+        )
+
+        parser = get_parser(response.content)
+        element_parsed = parser.select(".form-check-label")
+
+        # Check that 2 types are visibles
+        self.assertEqual(2, len(element_parsed))
+
+    def test_work_type_is_not_filtered_by_bad_tag(self):
+        additional_works_type = factories.WorksTypeFactory()
+        additional_works_objects = factories.WorksObjectFactory()
+
+        models.WorksObjectType.objects.create(
+            works_type=additional_works_type,
+            works_object=additional_works_objects,
+            is_public=True,
+        )
+
+        self.works_types[0].tags.set("work_type_a")
+        self.works_types[1].tags.set("work_type_a")
+        additional_works_type.tags.set("work_type_b")
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        permit_request.administrative_entity.works_object_types.set(
+            models.WorksObjectType.objects.all()
+        )
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_select_types",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+            + "?typefilter=badtag"
+        )
+
+        parser = get_parser(response.content)
+        element_parsed = parser.select(".form-check-label")
+
+        # Check that 3 types are visibles
+        self.assertEqual(3, len(element_parsed))
 
 
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
@@ -2383,7 +2469,6 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         )
 
     def test_work_type_step_show_public_requests_to_standard_user(self,):
-
         public_works_object_types = factories.WorksObjectTypeFactory.create_batch(
             2, is_public=True
         )
