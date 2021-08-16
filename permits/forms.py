@@ -1074,6 +1074,9 @@ class PermitRequestClassifyForm(forms.ModelForm):
         if not services.is_validation_document_required(self.instance):
             del self.fields["validation_pdf"]
 
+        if not config.ENABLE_GEOCALENDAR:
+            del self.fields["is_public"]
+
     def save(self, commit=True):
         permit_request = super().save(commit=False)
 
