@@ -919,7 +919,7 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
     }
 
     data = {
-        "subject": _("Nouvelle demande"),
+        "subject": _("Nouvelle demande en attente de validation"),
         "users_to_notify": users_to_notify,
         "template": "permit_request_validation_request.txt",
         "permit_request": permit_request,
@@ -945,7 +945,7 @@ def send_validation_reminder(permit_request, absolute_uri_func):
         .distinct()
     )
     data = {
-        "subject": _("Rappel: une demande est en attente de validation"),
+        "subject": _("Demande toujours en attente de validation"),
         "users_to_notify": users_to_notify,
         "template": "permit_request_validation_reminder.txt",
         "permit_request": permit_request,
