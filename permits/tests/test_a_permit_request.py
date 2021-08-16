@@ -901,9 +901,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         parser = get_parser(response.content)
         content = response.content.decode()
-        self.assertInHTML(
-            "Sélectionnez le ou les type(s)", content
-        )
+        self.assertInHTML("Sélectionnez le ou les type(s)", content)
         self.assertRedirects(
             response,
             reverse(
