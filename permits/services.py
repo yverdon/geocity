@@ -2,16 +2,17 @@ import enum
 import itertools
 import os
 import urllib
-import filetype
-
 from collections import defaultdict
+
+import filetype
 from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.core.exceptions import SuspiciousOperation
+from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.core.mail import send_mass_mail
+from django.core.validators import EmailValidator
 from django.db import transaction
-from django.db.models import Max, Min, Q, F, Value, Count, CharField
+from django.db.models import CharField, Count, F, Max, Min, Q, Value
 from django.db.models.functions import Concat
 from django.forms import modelformset_factory
 from django.shortcuts import get_object_or_404
@@ -162,7 +163,6 @@ def get_permit_request_appendices(permit_request):
 
 
 def get_works_types(administrative_entity, user):
-
     queryset = (
         models.WorksType.objects.filter(
             pk__in=models.WorksObjectType.objects.filter(
@@ -531,19 +531,17 @@ def get_administrative_entity_step(permit_request):
     )
 
 
-def get_works_types_step(permit_request, completed):
+def get_works_types_step(permit_request, completed, typefilter):
     # When there’s only 1 works type it will be automatically selected, so there’s no
     # reason to show the step
-    if (
-        permit_request
-        and len(
-            get_works_types(
-                permit_request.administrative_entity, permit_request.author.user
-            )
+    if permit_request:
+        works_types = get_works_types(
+            permit_request.administrative_entity, permit_request.author.user
         )
-        <= 1
-    ):
-        return None
+        if works_types.filter_by_tags(typefilter).exists():
+            works_types = works_types.filter_by_tags(typefilter)
+        if len(works_types) <= 1:
+            return None
 
     return models.Step(
         name=_("Type"),
@@ -557,7 +555,7 @@ def get_works_types_step(permit_request, completed):
     )
 
 
-def get_works_objects_step(permit_request, enabled, works_types, user):
+def get_works_objects_step(permit_request, enabled, works_types, user, typefilter):
     # If there are default works objects types it means the object types can be
     # automatically selected and so the step shouldn’t be visible
     if permit_request:
@@ -605,6 +603,16 @@ def get_works_objects_step(permit_request, enabled, works_types, user):
 
         if len(administrative_entity_works_types) == 1:
             works_types = administrative_entity_works_types
+
+        if typefilter:
+            filtered_works_type = (
+                models.WorksType.objects.filter_by_tags(typefilter)
+                .values_list("id", flat=True)
+                .distinct()
+            )
+
+            if filtered_works_type.count() == 1:
+                works_types = filtered_works_type
 
     works_types_qs = (
         urllib.parse.urlencode({"types": works_types}, doseq=True,)
@@ -785,7 +793,6 @@ def get_progress_bar_steps(request, permit_request):
         permit_request.works_object_types.exists() if permit_request else False
     )
     selected_works_types = request.GET.getlist("types")
-
     all_steps = {
         models.StepType.ADMINISTRATIVE_ENTITY: get_administrative_entity_step(
             permit_request
@@ -793,12 +800,18 @@ def get_progress_bar_steps(request, permit_request):
         models.StepType.WORKS_TYPES: get_works_types_step(
             permit_request=permit_request,
             completed=has_works_objects_types or selected_works_types,
+            typefilter=request.session["typefilter"]
+            if "typefilter" in request.session
+            else [],
         ),
         models.StepType.WORKS_OBJECTS: get_works_objects_step(
             permit_request=permit_request,
             enabled=has_works_objects_types,
             works_types=selected_works_types,
             user=request.user,
+            typefilter=request.session["typefilter"]
+            if "typefilter" in request.session
+            else [],
         ),
         models.StepType.PROPERTIES: get_properties_step(
             permit_request=permit_request, enabled=has_works_objects_types
@@ -846,7 +859,7 @@ def get_next_step(steps, current_step):
     )[1][1]
 
 
-def submit_permit_request(permit_request, absolute_uri_func):
+def submit_permit_request(permit_request, request):
     """
     Change the permit request status to submitted and send notification e-mails. `absolute_uri_func` should be a
     callable that takes a path and returns an absolute URI, usually `request.build_absolute_uri`.
@@ -854,65 +867,50 @@ def submit_permit_request(permit_request, absolute_uri_func):
     if not permit_request.can_be_submitted_by_author():
         raise SuspiciousOperation
 
+    is_awaiting_supplement = (
+        permit_request.status == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
+    )
+    if is_awaiting_supplement:
+        data = {
+            "subject": _("La demande de compléments a été traitée"),
+            "users_to_notify": _get_secretary_email(permit_request),
+            "template": "permit_request_complemented.txt",
+            "permit_request": permit_request,
+            "absolute_uri_func": request.build_absolute_uri,
+        }
+        send_email_notification(data)
+
+    else:
+        users_to_notify = set(
+            get_user_model()
+            .objects.filter(
+                groups__permitdepartment__administrative_entity=permit_request.administrative_entity,
+                permitauthor__user__email__isnull=False,
+                groups__permitdepartment__is_validator=False,
+            )
+            .values_list("permitauthor__user__email", flat=True)
+        )
+        data = {
+            "subject": _("Nouvelle demande"),
+            "users_to_notify": users_to_notify,
+            "template": "permit_request_submitted.txt",
+            "permit_request": permit_request,
+            "absolute_uri_func": request.build_absolute_uri,
+        }
+        send_email_notification(data)
+
+        data["subject"] = _("Votre demande")
+        data["users_to_notify"] = [permit_request.author.user.email]
+        data["template"] = "permit_request_acknowledgment.txt"
+        send_email_notification(data)
+
     permit_request.status = models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
     if GeoTimeInfo.GEOMETRY in get_geotime_required_info(permit_request):
         permit_request.intersected_geometries = geoservices.get_intersected_geometries(
             permit_request
         )
     permit_request.save()
-    permit_request_url = absolute_uri_func(
-        reverse(
-            "permits:permit_request_detail",
-            kwargs={"permit_request_id": permit_request.pk},
-        )
-    )
-
-    users_to_notify = set(
-        get_user_model()
-        .objects.filter(
-            groups__permitdepartment__administrative_entity=permit_request.administrative_entity,
-            permitauthor__user__email__isnull=False,
-            groups__permitdepartment__is_validator=False,
-        )
-        .values_list("permitauthor__user__email", flat=True)
-    )
-
-    email_contents = render_to_string(
-        "permits/emails/permit_request_submitted.txt",
-        {
-            "permit_request_url": permit_request_url,
-            "administrative_entity": permit_request.administrative_entity,
-        },
-    )
-    emails = [
-        (
-            "Nouvelle demande",
-            email_contents,
-            settings.DEFAULT_FROM_EMAIL,
-            [email_address],
-        )
-        for email_address in users_to_notify
-    ]
-
-    acknowledgment_email_contents = render_to_string(
-        "permits/emails/permit_request_acknowledgment.txt",
-        {
-            "permit_request_url": permit_request_url,
-            "name": permit_request.author.user.get_full_name(),
-            "administrative_entity": permit_request.administrative_entity,
-        },
-    )
-    emails.append(
-        (
-            "Votre demande",
-            acknowledgment_email_contents,
-            settings.DEFAULT_FROM_EMAIL,
-            [permit_request.author.user.email],
-        )
-    )
-
-    if emails:
-        send_mass_mail(emails)
+    clear_session_filters(request)
 
 
 @transaction.atomic
@@ -933,30 +931,14 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
         )
     }
 
-    email_contents = render_to_string(
-        "permits/emails/permit_request_validation_request.txt",
-        {
-            "permit_request_url": absolute_uri_func(
-                reverse(
-                    "permits:permit_request_detail",
-                    kwargs={"permit_request_id": permit_request.pk},
-                )
-            ),
-            "administrative_entity": permit_request.administrative_entity,
-        },
-    )
-    emails = [
-        (
-            "Nouvelle demande",
-            email_contents,
-            settings.DEFAULT_FROM_EMAIL,
-            [email_address],
-        )
-        for email_address in users_to_notify
-    ]
-
-    if emails:
-        send_mass_mail(emails)
+    data = {
+        "subject": _("Nouvelle demande en attente de validation"),
+        "users_to_notify": users_to_notify,
+        "template": "permit_request_validation_request.txt",
+        "permit_request": permit_request,
+        "absolute_uri_func": absolute_uri_func,
+    }
+    send_email_notification(data)
 
 
 def send_validation_reminder(permit_request, absolute_uri_func):
@@ -975,9 +957,20 @@ def send_validation_reminder(permit_request, absolute_uri_func):
         .values_list("permitauthor__user__email", flat=True)
         .distinct()
     )
+    data = {
+        "subject": _("Demande toujours en attente de validation"),
+        "users_to_notify": users_to_notify,
+        "template": "permit_request_validation_reminder.txt",
+        "permit_request": permit_request,
+        "absolute_uri_func": absolute_uri_func,
+    }
+    send_email_notification(data)
+    return pending_validations
 
-    email_contents = render_to_string(
-        "permits/emails/permit_request_validation_reminder.txt",
+
+def _parse_email_content(template, permit_request, absolute_uri_func):
+    return render_to_string(
+        f"permits/emails/{template}",
         {
             "permit_request_url": absolute_uri_func(
                 reverse(
@@ -986,22 +979,35 @@ def send_validation_reminder(permit_request, absolute_uri_func):
                 )
             ),
             "administrative_entity": permit_request.administrative_entity,
+            "name": permit_request.author.user.get_full_name(),
         },
     )
+
+
+def send_email_notification(data):
+    email_contents = _parse_email_content(
+        data["template"], data["permit_request"], data["absolute_uri_func"]
+    )
+
     emails = [
-        (
-            "Rappel: une demande est en attente de validation",
-            email_contents,
-            settings.DEFAULT_FROM_EMAIL,
-            [email_address],
-        )
-        for email_address in users_to_notify
+        (data["subject"], email_contents, settings.DEFAULT_FROM_EMAIL, [email_address],)
+        for email_address in data["users_to_notify"]
+        if validate_email(email_address)
     ]
 
     if emails:
         send_mass_mail(emails)
 
-    return pending_validations
+
+def _get_secretary_email(permit_request):
+    department = permit_request.administrative_entity.departments.filter(
+        group__name__icontains="secr"
+    )
+    secretary_group_users = get_user_model().objects.filter(
+        groups__permitdepartment__in=department
+    )
+
+    return [user.email for user in secretary_group_users]
 
 
 def has_permission_to_amend_permit_request(user, permit_request):
@@ -1012,6 +1018,12 @@ def has_permission_to_amend_permit_request(user, permit_request):
 
 def can_amend_permit_request(user, permit_request):
     return permit_request.can_be_amended() and has_permission_to_amend_permit_request(
+        user, permit_request
+    )
+
+
+def can_request_permit_validation(user, permit_request):
+    return permit_request.can_be_sent_for_validation() and has_permission_to_amend_permit_request(
         user, permit_request
     )
 
@@ -1065,7 +1077,7 @@ def can_classify_permit_request(user, permit_request):
         and permit_request.status == models.PermitRequest.STATUS_PROCESSING
     )
     return (
-        permit_request.status == models.PermitRequest.STATUS_AWAITING_VALIDATION
+        permit_request.status == models.PermitRequest.STATUS_PROCESSING
         and permit_request.get_pending_validations().count() == 0
         and has_permission_to_classify_permit_request(user, permit_request)
     ) or no_validation_process
@@ -1325,3 +1337,46 @@ def validate_file(file):
             ),
             params={"file": file},
         )
+
+
+def is_2FA_mandatory(user=None):
+    return (
+        settings.ENABLE_2FA
+        and user.groups.filter(permitdepartment__mandatory_2fa=True).exists()
+    )
+
+
+def is_validation_document_required(permit_request):
+    return any(
+        permit_request.works_object_types.filter(requires_validation_document=True)
+    )
+
+
+def validate_email(value):
+    try:
+        EmailValidator()(value)
+        return True
+    except ValidationError:
+        return False
+
+
+def store_tags_in_session(request):
+
+    if "entityfilter" not in request.session or request.GET.get(
+        "clearentityfilter", None
+    ):
+        request.session["entityfilter"] = []
+
+    if len(request.GET.getlist("entityfilter")) > 0:
+        request.session["entityfilter"] = request.GET.getlist("entityfilter")
+
+    if "typefilter" not in request.session or request.GET.get("cleartypefilter", None):
+        request.session["typefilter"] = []
+
+    if len(request.GET.getlist("typefilter")) > 0:
+        request.session["typefilter"] = request.GET.getlist("typefilter")
+
+
+def clear_session_filters(request):
+    request.session["entityfilter"] = []
+    request.session["typefilter"] = []

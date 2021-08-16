@@ -2,13 +2,17 @@
 {% if record.required_validations > 0 %}
   {% if record.remaining_validations > 0 %}
     <i class="fa fa-clock-o text-danger"></i>
-    {% blocktrans trimmed count nb_validations=record.required_validations %}
+    {% blocktrans trimmed with nb_remaining_validations=record.remaining_validations count nb_validations=record.required_validations %}
       {{ nb_validations }} validation en attente
     {% plural %}
-      {{ nb_validations }} validations en attente
+      {{ nb_remaining_validations }}/{{ nb_validations }} validations en attente
     {% endblocktrans %}
   {% else %}
-    <i class="fa fa-circle status{{record.status}}"></i> {% trans "Validée par les services" %}
+    {% if record.status == 2 or record.status == 6 %}
+      <i class="fa fa-circle status{{record.status}}"></i> {{ record.get_status_display }}
+    {% else %}
+      <i class="fa fa-circle status{{record.status}}"></i> {% trans "Validée par les services" %}
+    {% endif %}
   {% endif %}
 {% else %}
   <i class="fa fa-circle status{{record.status}}"></i> {{ record.get_status_display }}

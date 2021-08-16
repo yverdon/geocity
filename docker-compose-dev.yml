@@ -14,7 +14,7 @@ services:
         build:
             context: ./
             args:
-                dev_dependencies: ${DEV_DEPENDENCIES}
+                dev_dependencies: "${DEV_DEPENDENCIES}"
         entrypoint: /code/entrypoint_dev.sh
         command: "python3 manage.py runserver 0.0.0.0:9000"
         volumes:

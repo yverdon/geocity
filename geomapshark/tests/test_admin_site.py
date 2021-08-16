@@ -59,4 +59,4 @@ if settings.ENABLE_2FA:
             response = self.client.get(reverse("admin:login"), follow=True)
             self.assertEqual(response.status_code, 200)
             self.assertRedirects(response, resolve_url("admin:index"))
-            self.assertContains(response, "Administration du site")
+            self.assertContains(response, "administration Geocity")

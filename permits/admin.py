@@ -33,6 +33,7 @@ INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [
     "permitdepartment",
     "permitworkflowstatus",
     "permitauthor",
+    "qgisproject",
 ]
 OTHER_PERMISSIONS_CODENAMES = [
     "view_user",
@@ -187,6 +188,7 @@ class DepartmentAdminForm(forms.ModelForm):
             "administrative_entity",
             "integrator",
             "is_integrator_admin",
+            "mandatory_2fa",
         ]
 
     # If the group is updated to be integrator, the users in this group should not be in another integrator group
@@ -233,7 +235,9 @@ class DepartmentAdminForm(forms.ModelForm):
         ):
             raise forms.ValidationError(
                 {
-                    "administrative_entity": "Un groupe non integrator doit avoir une entité entité administrative"
+                    "administrative_entity": _(
+                        "Un groupe non integrator doit avoir une entité entité administrative"
+                    )
                 }
             )
 
@@ -526,9 +530,14 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     "administrative_entities",
                     "is_public",
                     "requires_payment",
+                    "requires_validation_document",
                     "integrator",
                 )
             },
+        ),
+        (
+            "Notifications aux services",
+            {"fields": ("notify_services", "services_to_notify")},
         ),
         ("Planning et localisation", {"fields": ("geometry_types", "needs_date",)},),
         (
@@ -778,6 +787,47 @@ class WorksTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     pass
 
 
+class PermitRequestAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "created_at",
+        "status",
+        "author",
+        "get_works_object_types",
+        "administrative_entity",
+    ]
+    list_filter = ("status", "author", "works_object_types", "administrative_entity")
+
+    def has_add_permission(self, request):
+        return False
+
+    def get_works_object_types(self, obj):
+        return ", ".join(
+            sorted([wot.__str__() for wot in obj.works_object_types.all()])
+        )
+
+    get_works_object_types.admin_order_field = "works_object_types"
+    get_works_object_types.short_description = "Objets et types de travaux"
+
+
+class TemplateCustomizationAdmin(admin.ModelAdmin):
+    list_display = [
+        "templatename",
+        "application_title",
+        "has_background_image",
+    ]
+
+    @admin.display(boolean=True)
+    def has_background_image(self, obj):
+        try:
+            return obj.background_image.url is not None
+        except ValueError:
+            return False
+
+    has_background_image.admin_order_field = "background_image"
+    has_background_image.short_description = "Image de fond"
+
+
 admin.site.register(models.PermitActorType, PermitActorTypeAdmin)
 admin.site.register(models.WorksType, WorksTypeAdmin)
 admin.site.register(models.WorksObjectType, WorksObjectTypeAdmin)
@@ -785,3 +835,5 @@ admin.site.register(models.WorksObjectProperty, WorksObjectPropertyAdmin)
 admin.site.register(models.PermitAdministrativeEntity, PermitAdministrativeEntityAdmin)
 admin.site.register(models.WorksObject, WorksObjectAdmin)
 admin.site.register(models.PermitRequestAmendProperty, PermitRequestAmendPropertyAdmin)
+admin.site.register(models.TemplateCustomization, TemplateCustomizationAdmin)
+admin.site.register(models.PermitRequest, PermitRequestAdmin)

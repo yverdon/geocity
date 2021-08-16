@@ -376,6 +376,37 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             ),
         )
 
+    def test_secretary_email_is_sent_when_user_treated_requested_complements(self):
+        secretary_group = factories.GroupFactory(name="Secrétariat")
+        department = factories.PermitDepartmentFactory(group=secretary_group)
+        factories.SecretariatUserFactory(
+            groups=[secretary_group], email="secretary@geocity.ch"
+        )
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+            author=self.user.permitauthor,
+            administrative_entity=department.administrative_entity,
+        )
+        self.client.post(
+            reverse(
+                "permits:permit_request_submit",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        permit_request.refresh_from_db()
+        self.assertEqual(
+            permit_request.status, models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["secretary@geocity.ch"])
+        self.assertEqual(
+            mail.outbox[0].subject, "La demande de compléments a été traitée"
+        )
+        self.assertIn(
+            "La demande de compléments a été traitée",
+            mail.outbox[0].message().as_string(),
+        )
+
     def test_submit_permit_request_sends_email_to_secretariat(self):
         # Create a secretariat user Yverdon (the one that will get the notification)
         group = factories.SecretariatGroupFactory()
@@ -862,19 +893,39 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         response = self.client.get(
             reverse("permits:permit_request_select_administrative_entity"),
-            {"filter": "first"},
+            {"entityfilter": "first"},
+            follow=True,
         )
 
-        parser = get_parser(response.content)
-        element_parsed = parser.select(".form-check-label")
+        new_permit_request = models.PermitRequest.objects.last()
 
+        parser = get_parser(response.content)
         content = response.content.decode()
+        self.assertInHTML("Sélectionnez le ou les type(s)", content)
+        self.assertRedirects(
+            response,
+            reverse(
+                "permits:permit_request_select_types",
+                kwargs={"permit_request_id": new_permit_request.id},
+            ),
+        )
+
+        response2 = self.client.get(
+            reverse(
+                "permits:permit_request_select_administrative_entity",
+                kwargs={"permit_request_id": new_permit_request.id},
+            )
+        )
+        parser2 = get_parser(response2.content)
+        content2 = response2.content.decode()
+        element_parsed = parser2.select(".form-check-label")
+
         # Check that selected item is there
         self.assertEqual(1, len(element_parsed))
         # Check that filtered items are NOT there
         self.assertNotContains(response, administrative_entities[1].name)
         self.assertNotContains(response, administrative_entities[2].name)
-        self.assertInHTML(administrative_entities[0].name, content)
+        self.assertInHTML(administrative_entities[0].name, content2)
 
     def test_wrong_administrative_entity_tag_return_all_administratives_entities(self):
         administrative_entities = [
@@ -888,7 +939,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         response = self.client.get(
             reverse("permits:permit_request_select_administrative_entity"),
-            {"filter": "wrongtag"},
+            {"entityfilter": "wrongtag"},
         )
 
         parser = get_parser(response.content)
@@ -915,7 +966,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         response = self.client.get(
             reverse("permits:permit_request_select_administrative_entity"),
-            {"filter": ["first", "second"]},
+            {"entityfilter": ["first", "second"]},
         )
 
         parser = get_parser(response.content)
@@ -926,6 +977,70 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(2, len(element_parsed))
         self.assertInHTML(administrative_entities[0].name, content)
         self.assertInHTML(administrative_entities[1].name, content)
+
+    def test_work_type_is_filtered_by_tag(self):
+        additional_works_type = factories.WorksTypeFactory()
+        additional_works_objects = factories.WorksObjectFactory()
+
+        models.WorksObjectType.objects.create(
+            works_type=additional_works_type,
+            works_object=additional_works_objects,
+            is_public=True,
+        )
+
+        self.works_types[0].tags.set("work_type_a")
+        self.works_types[1].tags.set("work_type_a")
+        additional_works_type.tags.set("work_type_b")
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        permit_request.administrative_entity.works_object_types.set(
+            models.WorksObjectType.objects.all()
+        )
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_select_types",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+            + "?typefilter=work_type_a"
+        )
+
+        parser = get_parser(response.content)
+        element_parsed = parser.select(".form-check-label")
+
+        # Check that 2 types are visibles
+        self.assertEqual(2, len(element_parsed))
+
+    def test_work_type_is_not_filtered_by_bad_tag(self):
+        additional_works_type = factories.WorksTypeFactory()
+        additional_works_objects = factories.WorksObjectFactory()
+
+        models.WorksObjectType.objects.create(
+            works_type=additional_works_type,
+            works_object=additional_works_objects,
+            is_public=True,
+        )
+
+        self.works_types[0].tags.set("work_type_a")
+        self.works_types[1].tags.set("work_type_a")
+        additional_works_type.tags.set("work_type_b")
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        permit_request.administrative_entity.works_object_types.set(
+            models.WorksObjectType.objects.all()
+        )
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_select_types",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+            + "?typefilter=badtag"
+        )
+
+        parser = get_parser(response.content)
+        element_parsed = parser.select(".form-check-label")
+
+        # Check that 3 types are visibles
+        self.assertEqual(3, len(element_parsed))
 
 
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
@@ -1660,6 +1775,38 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             len(parser.select(".tab-pane#print span.no_print_template")), 1,
         )
 
+    def test_email_to_author_is_sent_when_secretariat_acknowledges_reception(self):
+        user = factories.UserFactory(email="user@geocity.com")
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+            administrative_entity=self.administrative_entity,
+            author=user.permitauthor,
+        )
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data={
+                "status": models.PermitRequest.STATUS_RECEIVED,
+                "action": models.ACTION_AMEND,
+            },
+            follow=True,
+        )
+
+        permit_request.refresh_from_db()
+        self.assertEqual(permit_request.status, models.PermitRequest.STATUS_RECEIVED)
+        self.assertContains(response, "compléments")
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
+        self.assertEqual(
+            mail.outbox[0].subject, "Votre annonce a été prise en compte et classée"
+        )
+        self.assertIn(
+            "Nous vous informons que votre annonce a été prise en compte et classée.",
+            mail.outbox[0].message().as_string(),
+        )
+
 
 class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase):
     def test_secretariat_can_request_validation(self):
@@ -1759,7 +1906,9 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
         validator_groups = factories.ValidatorGroupFactory.create_batch(
             2, department__administrative_entity=self.administrative_entity
         )
-        validator_user = factories.ValidatorUserFactory(groups=[validator_groups[0]])
+        validator_user = factories.ValidatorUserFactory(
+            groups=[validator_groups[0]], email="validator@geocity.ch"
+        )
         factories.ValidatorUserFactory(groups=[validator_groups[1]])
 
         permit_request = factories.PermitRequestFactory(
@@ -1776,7 +1925,6 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
                 "action": models.ACTION_REQUEST_VALIDATION,
             },
         )
-
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, [validator_user.permitauthor.user.email])
 
@@ -1852,7 +2000,8 @@ class PermitRequestValidationTestcase(TestCase):
             permit_request__administrative_entity=administrative_entity
         )
         validator = factories.ValidatorUserFactory(
-            groups=[validation.department.group, factories.ValidatorGroupFactory()]
+            groups=[validation.department.group, factories.ValidatorGroupFactory()],
+            email="validator@geocity.ch",
         )
 
         self.client.login(username=secretariat.username, password="password")
@@ -1864,9 +2013,50 @@ class PermitRequestValidationTestcase(TestCase):
             ),
             data={"action": models.ACTION_POKE,},
         )
-
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, [validator.permitauthor.user.email])
+
+    def test_secretary_email_is_sent_when_permit_request_is_validated(self):
+        validation = factories.PermitRequestValidationFactory()
+        secretary_group = factories.GroupFactory(name="Secrétariat")
+        department = factories.PermitDepartmentFactory(group=secretary_group)
+        factories.SecretariatUserFactory(
+            groups=[secretary_group], email="secretary@geocity.ch"
+        )
+        validation.permit_request.administrative_entity.departments.set([department])
+
+        validator = factories.ValidatorUserFactory(
+            groups=[validation.department.group, factories.ValidatorGroupFactory()],
+        )
+
+        self.client.login(username=validator.username, password="password")
+
+        self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": validation.permit_request.pk},
+            ),
+            data={
+                "action": models.ACTION_VALIDATE,
+                "validation_status": models.PermitRequestValidation.STATUS_APPROVED,
+            },
+        )
+
+        validation.refresh_from_db()
+
+        self.assertEqual(
+            validation.validation_status, models.PermitRequestValidation.STATUS_APPROVED
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["secretary@geocity.ch"])
+        self.assertEqual(
+            mail.outbox[0].subject,
+            "Les services chargés de la validation d'une demande ont donné leur préavis",
+        )
+        self.assertIn(
+            "Les services chargés de la validation d'une demande ont donné leur préavis",
+            mail.outbox[0].message().as_string(),
+        )
 
 
 class PermitRequestClassifyTestCase(TestCase):
@@ -1886,10 +2076,12 @@ class PermitRequestClassifyTestCase(TestCase):
             groups=[validation.department.group, factories.ValidatorGroupFactory()]
         )
 
-    def test_secretariat_can_classify_permit_request(self):
+    def test_secretariat_can_approve_permit_request_and_email_to_author_is_sent(self):
         validation = factories.PermitRequestValidationFactory(
             permit_request__administrative_entity=self.administrative_entity,
+            permit_request__status=models.PermitRequest.STATUS_PROCESSING,
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+            permit_request__author__user__email="user@geocity.com",
         )
 
         self.client.login(username=self.secretariat_user.username, password="password")
@@ -1907,6 +2099,49 @@ class PermitRequestClassifyTestCase(TestCase):
         validation.permit_request.refresh_from_db()
         self.assertEqual(
             validation.permit_request.status, models.PermitRequest.STATUS_APPROVED
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
+        self.assertEqual(
+            mail.outbox[0].subject, "Votre demande a été traitée et classée"
+        )
+        self.assertIn(
+            "Nous vous informons que votre demande a été traitée et classée.",
+            mail.outbox[0].message().as_string(),
+        )
+
+    def test_secretariat_can_reject_permit_request_and_email_to_author_is_sent(self):
+        validation = factories.PermitRequestValidationFactory(
+            permit_request__administrative_entity=self.administrative_entity,
+            permit_request__status=models.PermitRequest.STATUS_PROCESSING,
+            validation_status=models.PermitRequestValidation.STATUS_REJECTED,
+            permit_request__author__user__email="user@geocity.com",
+        )
+
+        self.client.login(username=self.secretariat_user.username, password="password")
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_reject",
+                kwargs={"permit_request_id": validation.permit_request.pk},
+            ),
+            data={
+                "validation_pdf": SimpleUploadedFile("file.pdf", "contents".encode()),
+            },
+        )
+
+        self.assertRedirects(response, reverse("permits:permit_requests_list"))
+        validation.permit_request.refresh_from_db()
+        self.assertEqual(
+            validation.permit_request.status, models.PermitRequest.STATUS_REJECTED
+        )
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
+        self.assertEqual(
+            mail.outbox[0].subject, "Votre demande a été traitée et classée"
+        )
+        self.assertIn(
+            "Nous vous informons que votre demande a été traitée et classée.",
+            mail.outbox[0].message().as_string(),
         )
 
     def test_secretariat_cannot_classify_permit_request_with_pending_validations(self):
@@ -1999,6 +2234,7 @@ class PermitRequestClassifyTestCase(TestCase):
     def test_classify_sets_validation_date(self):
         validation = factories.PermitRequestValidationFactory(
             permit_request__administrative_entity=self.administrative_entity,
+            permit_request__status=models.PermitRequest.STATUS_PROCESSING,
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
         )
 
@@ -2013,6 +2249,121 @@ class PermitRequestClassifyTestCase(TestCase):
 
         validation.permit_request.refresh_from_db()
         self.assertIsNotNone(validation.permit_request.validated_at)
+
+    def test_email_to_services_is_sent_when_secretariat_classifies_permit_request(self):
+        wot = factories.WorksObjectTypeFactory(
+            requires_validation_document=False,
+            notify_services=True,
+            services_to_notify="test-send-1@geocity.ch, test-send-2@geocity.ch, test-i-am-not-an-email,  ,\n\n\n",
+        )
+        wot2 = factories.WorksObjectTypeFactory(
+            requires_validation_document=False,
+            notify_services=True,
+            services_to_notify="not-repeated-email@liip.ch, test-send-1@geocity.ch, \n, test-send-2@geocity.ch, test-i-am-not-an-email,  ,",
+        )
+        validation = factories.PermitRequestValidationFactory(
+            permit_request__administrative_entity=self.administrative_entity,
+            permit_request__status=models.PermitRequest.STATUS_PROCESSING,
+            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+            permit_request__author__user__email="user@geocity.com",
+        )
+        validation.permit_request.works_object_types.set([wot, wot2])
+
+        self.client.login(username=self.secretariat_user.username, password="password")
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_approve",
+                kwargs={"permit_request_id": validation.permit_request.pk},
+            ),
+        )
+
+        self.assertRedirects(response, reverse("permits:permit_requests_list"))
+        validation.permit_request.refresh_from_db()
+        self.assertEqual(
+            validation.permit_request.status, models.PermitRequest.STATUS_APPROVED
+        )
+        # Only valid emails are sent, not repeated emails.
+        self.assertEqual(len(mail.outbox), 4)
+        self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
+
+        self.assertEqual(
+            mail.outbox[0].subject, "Votre demande a été traitée et classée"
+        )
+        self.assertIn(
+            "Nous vous informons que votre demande a été traitée et classée.",
+            mail.outbox[0].message().as_string(),
+        )
+
+        services_message_content = "Nous vous informons qu'une demande a été traitée et classée par le secrétariat."
+        valid_services_emails = [
+            "not-repeated-email@liip.ch",
+            "test-send-2@geocity.ch",
+            "test-send-1@geocity.ch",
+        ]
+
+        self.assertTrue(mail.outbox[1].to[0] in valid_services_emails)
+        self.assertIn(services_message_content, mail.outbox[1].message().as_string())
+        self.assertTrue(mail.outbox[2].to[0] in valid_services_emails)
+        self.assertIn(services_message_content, mail.outbox[2].message().as_string())
+        self.assertTrue(mail.outbox[3].to[0] in valid_services_emails)
+        self.assertIn(services_message_content, mail.outbox[3].message().as_string())
+
+
+class ApprovedPermitRequestClassifyTestCase(TestCase):
+    def setUp(self):
+        self.secretariat_group = factories.SecretariatGroupFactory()
+        self.administrative_entity = (
+            self.secretariat_group.permitdepartment.administrative_entity
+        )
+        self.secretariat_user = factories.SecretariatUserFactory(
+            groups=[self.secretariat_group]
+        )
+
+        self.validation = factories.PermitRequestValidationFactory(
+            permit_request__administrative_entity=self.administrative_entity,
+            permit_request__status=models.PermitRequest.STATUS_PROCESSING,
+            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+        )
+        self.client.login(username=self.secretariat_user.username, password="password")
+
+    def _get_approval(self):
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_approve",
+                kwargs={"permit_request_id": self.validation.permit_request.pk},
+            ),
+        )
+        self.assertContains(response, "Approbation de la demande")
+        self.assertEqual(
+            self.validation.permit_request.status,
+            models.PermitRequest.STATUS_PROCESSING,
+        )
+        return response
+
+    def test_classify_permit_request_with_required_validation_doc_shows_file_field(
+        self,
+    ):
+        wot = factories.WorksObjectTypeFactory(requires_validation_document=True)
+        self.validation.permit_request.works_object_types.set([wot])
+        response = self._get_approval()
+        self.assertContains(response, "validation_pdf")
+
+    def test_classify_permit_request_without_required_validation_doc_does_not_show_file_field(
+        self,
+    ):
+        wot = factories.WorksObjectTypeFactory(requires_validation_document=False)
+        self.validation.permit_request.works_object_types.set([wot])
+        response = self._get_approval()
+        self.assertNotContains(response, "validation_pdf")
+
+    def test_classify_permit_request_with_any_object_requiring_validation_doc_shows_file_field(
+        self,
+    ):
+        wot1 = factories.WorksObjectTypeFactory(requires_validation_document=True)
+        wot2 = factories.WorksObjectTypeFactory(requires_validation_document=False)
+        self.validation.permit_request.works_object_types.set([wot1, wot2])
+        response = self._get_approval()
+        self.assertContains(response, "validation_pdf")
 
 
 class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
@@ -2116,7 +2467,6 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         )
 
     def test_work_type_step_show_public_requests_to_standard_user(self,):
-
         public_works_object_types = factories.WorksObjectTypeFactory.create_batch(
             2, is_public=True
         )
