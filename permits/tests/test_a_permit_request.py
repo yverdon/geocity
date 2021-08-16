@@ -902,7 +902,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         parser = get_parser(response.content)
         content = response.content.decode()
         self.assertInHTML(
-            "Sélectionnez le ou les type(s) de travaux / événement(s) prévu(s)", content
+            "Sélectionnez le ou les type(s)", content
         )
         self.assertRedirects(
             response,
