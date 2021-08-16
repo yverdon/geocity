@@ -43,6 +43,13 @@ OTHER_PERMISSIONS_CODENAMES = [
     "delete_group",
     "see_private_requests",
 ]
+AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
+    "amend_permit_request",
+    "validate_permit_request",
+    "classify_permit_request",
+    "edit_permit_request",
+    "see_private_requests",
+]
 
 MULTIPLE_INTEGRATOR_ERROR_MESSAGE = "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur'"
 
@@ -284,7 +291,11 @@ class GroupAdminForm(forms.ModelForm):
         if "permitdepartment-0-is_integrator_admin" in self.data.keys():
             permissions = permissions.union(integrator_permissions)
         else:
-            permissions = permissions.difference(integrator_permissions)
+            permissions = permissions.difference(
+                integrator_permissions.exclude(
+                    codename__in=AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
+                )
+            )
         return permissions
 
 
@@ -318,21 +329,16 @@ class GroupAdmin(admin.ModelAdmin):
         # permissions that integrator role can grant to group
         if db_field.name == "permissions":
 
-            for group in self.model.objects.all():
-                existing_permissions = group.permissions.all()
-
-            integrator_permissions = Permission.objects.filter(
-                codename__in=[
-                    "amend_permit_request",
-                    "validate_permit_request",
-                    "classify_permit_request",
-                    "edit_permit_request",
-                    "see_private_requests",
-                ]
-            )
-
-            if not request.user.is_superuser:
-                kwargs["queryset"] = integrator_permissions | existing_permissions
+            if (
+                not request.user.is_superuser
+                and request.user.groups.get(
+                    permitdepartment__is_integrator_admin=True
+                ).pk
+            ):
+                integrator_permissions = Permission.objects.filter(
+                    codename__in=AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
+                )
+                kwargs["queryset"] = integrator_permissions
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
