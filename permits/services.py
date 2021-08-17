@@ -887,6 +887,7 @@ def submit_permit_request(permit_request, request):
                 groups__permitdepartment__administrative_entity=permit_request.administrative_entity,
                 permitauthor__user__email__isnull=False,
                 groups__permitdepartment__is_validator=False,
+                permitauthor__do_not_notify=False,
             )
             .values_list("permitauthor__user__email", flat=True)
         )
