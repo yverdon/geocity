@@ -910,60 +910,7 @@ def submit_permit_request(permit_request, request):
             permit_request
         )
     permit_request.save()
-    permit_request_url = absolute_uri_func(
-        reverse(
-            "permits:permit_request_detail",
-            kwargs={"permit_request_id": permit_request.pk},
-        )
-    )
-
-    users_to_notify = set(
-        get_user_model()
-        .objects.filter(
-            groups__permitdepartment__administrative_entity=permit_request.administrative_entity,
-            permitauthor__user__email__isnull=False,
-            groups__permitdepartment__is_validator=False,
-            permitauthor__do_not_notify=False,
-        )
-        .values_list("permitauthor__user__email", flat=True)
-    )
-
-    email_contents = render_to_string(
-        "permits/emails/permit_request_submitted.txt",
-        {
-            "permit_request_url": permit_request_url,
-            "administrative_entity": permit_request.administrative_entity,
-        },
-    )
-    emails = [
-        (
-            "Nouvelle demande",
-            email_contents,
-            settings.DEFAULT_FROM_EMAIL,
-            [email_address],
-        )
-        for email_address in users_to_notify
-    ]
-
-    acknowledgment_email_contents = render_to_string(
-        "permits/emails/permit_request_acknowledgment.txt",
-        {
-            "permit_request_url": permit_request_url,
-            "name": permit_request.author.user.get_full_name(),
-            "administrative_entity": permit_request.administrative_entity,
-        },
-    )
-    emails.append(
-        (
-            "Votre demande",
-            acknowledgment_email_contents,
-            settings.DEFAULT_FROM_EMAIL,
-            [permit_request.author.user.email],
-        )
-    )
-
-    if emails:
-        send_mass_mail(emails)
+    clear_session_filters(request)
 
 
 @transaction.atomic
