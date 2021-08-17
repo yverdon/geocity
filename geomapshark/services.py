@@ -37,19 +37,18 @@ def get_context_data(context, request):
                 else None,
             }
             request.session["templatename"] = template.templatename
-        url_qs = "&template_value"
+            url_qs = "&template=" + template.templatename
         # use anonymous session
         request.session["template"] = template_value
     context.update({"customization": customization})
-    if "filter" in parse.parse_qs(params_str).keys():
-        for value in parse.parse_qs(params_str)["filter"]:
-            url_qs += "&filter=" + value
+    if "entityfilter" in parse.parse_qs(params_str).keys():
+        for value in parse.parse_qs(params_str)["entityfilter"]:
+            url_qs += "&entityfilter=" + value
 
     if "typefilter" in parse.parse_qs(params_str).keys():
         typesfilter_qs = ""
         for value in parse.parse_qs(params_str)["typefilter"]:
             url_qs += "&typefilter=" + value
-
     if url_qs:
         context.update({"query_string": url_qs[1:]})
     return context
