@@ -68,8 +68,6 @@ def permit_author_create(request):
 
         login(request, new_user)
         permits_services.store_tags_in_session(request)
-        print("*********")
-        print(request.META["QUERY_STRING"])
         if settings.ENABLE_2FA:
             return HttpResponseRedirect(
                 reverse("two_factor:profile")
