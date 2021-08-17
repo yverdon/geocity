@@ -378,7 +378,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
     def test_secretary_email_is_sent_when_user_treated_requested_complements(self):
         secretary_group = factories.GroupFactory(name="Secrétariat")
-        department = factories.PermitDepartmentFactory(group=secretary_group)
+        department = factories.PermitDepartmentFactory(
+            group=secretary_group, is_backoffice=True
+        )
         factories.SecretariatUserFactory(
             groups=[secretary_group], email="secretary@geocity.ch"
         )
@@ -2019,7 +2021,9 @@ class PermitRequestValidationTestcase(TestCase):
     def test_secretary_email_is_sent_when_permit_request_is_validated(self):
         validation = factories.PermitRequestValidationFactory()
         secretary_group = factories.GroupFactory(name="Secrétariat")
-        department = factories.PermitDepartmentFactory(group=secretary_group)
+        department = factories.PermitDepartmentFactory(
+            group=secretary_group, is_backoffice=True
+        )
         factories.SecretariatUserFactory(
             groups=[secretary_group], email="secretary@geocity.ch"
         )

@@ -184,7 +184,7 @@ class DepartmentAdminForm(forms.ModelForm):
             "description",
             "is_validator",
             "is_default_validator",
-            "is_archeologist",
+            "is_backoffice",
             "administrative_entity",
             "integrator",
             "is_integrator_admin",

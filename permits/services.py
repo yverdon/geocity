@@ -1001,7 +1001,7 @@ def send_email_notification(data):
 
 def _get_secretary_email(permit_request):
     department = permit_request.administrative_entity.departments.filter(
-        group__name__icontains="secr"
+        is_backoffice=True
     )
     secretary_group_users = get_user_model().objects.filter(
         groups__permitdepartment__in=department
