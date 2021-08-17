@@ -45,7 +45,7 @@ if settings.ENABLE_2FA:
     urlpatterns += [
         path(
             "account/login/",
-            LoginView.as_view(template_name="two_factor/login.html"),
+            views.CustomLoginView.as_view(template_name="two_factor/login.html"),
             name="login",
         ),
         path(
@@ -63,16 +63,16 @@ if settings.ENABLE_2FA:
 else:
     logger.info("2 factors authentification is disabled")
     urlpatterns += [
-        path("accounts/login/", auth_views.LoginView.as_view(), name="login")
+        path(
+            "account/login/",
+            views.CustomLoginView.as_view(template_name="registration/login.html"),
+            name="login",
+        ),
     ]
 
 
 urlpatterns += [
-    path(
-        "account/logout/",
-        auth_views.LogoutView.as_view(next_page="login"),
-        name="logout",
-    ),
+    path("account/logout/", views.logout_view, name="logout",),
     path(
         "account/password_reset/",
         views.CustomPasswordResetView.as_view(

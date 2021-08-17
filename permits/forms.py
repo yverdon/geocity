@@ -94,7 +94,8 @@ class AdministrativeEntityForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop("instance", None)
         self.user = kwargs.pop("user", None)
-        tags = kwargs.pop("tags", [])
+        session = kwargs.pop("session", None)
+        tags = session["entityfilter"] if "entityfilter" in session else []
 
         if self.instance:
             initial = {
@@ -110,6 +111,8 @@ class AdministrativeEntityForm(forms.Form):
         entities_by_tag = services.get_administrative_entities(
             self.user
         ).filter_by_tags(tags)
+        if not entities_by_tag.exists():
+            session["entityfilter"] = []
         self.fields["administrative_entity"].choices = [
             (ofs_id, [(entity.pk, entity.name) for entity in entities])
             for ofs_id, entities in regroup_by_ofs_id(
@@ -146,6 +149,8 @@ class WorksTypesForm(forms.Form):
     def __init__(self, instance, *args, **kwargs):
         self.instance = instance
         self.user = kwargs.pop("user", None)
+        session = kwargs.pop("session", None)
+        typefilter = session["typefilter"] if "typefilter" in session else []
         kwargs["initial"] = (
             {"types": services.get_permit_request_works_types(self.instance)}
             if self.instance
@@ -153,10 +158,15 @@ class WorksTypesForm(forms.Form):
         )
 
         super().__init__(*args, **kwargs)
-
-        self.fields["types"].queryset = services.get_works_types(
+        works_types = services.get_works_types(
             self.instance.administrative_entity, self.user
         )
+        if typefilter:
+            if works_types.filter_by_tags(typefilter).exists():
+                works_types = works_types.filter_by_tags(typefilter)
+            else:
+                session["typefilter"] = []
+        self.fields["types"].queryset = works_types
 
     def save(self):
         services.set_works_types(self.instance, self.cleaned_data["types"])
@@ -414,12 +424,21 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
         }
 
 
+def check_existing_email(email):
+    if User.objects.filter(email=email).exists():
+        raise forms.ValidationError(_("Cet email est déjà utilisé."))
+    return email
+
+
 class NewDjangoAuthUserForm(UserCreationForm):
 
     first_name = forms.CharField(label=_("Prénom"), max_length=30,)
     last_name = forms.CharField(label=_("Nom"), max_length=150,)
     email = forms.EmailField(label=_("Email"), max_length=254,)
     required_css_class = "required"
+
+    def clean_email(self):
+        return check_existing_email(self.cleaned_data["email"])
 
     def save(self, commit=True):
         user = super(NewDjangoAuthUserForm, self).save(commit=False)
@@ -458,6 +477,9 @@ class DjangoAuthUserForm(forms.ModelForm):
         ),
     )
     required_css_class = "required"
+
+    def clean_email(self):
+        return check_existing_email(self.cleaned_data["email"])
 
     class Meta:
         model = User
@@ -1040,7 +1062,7 @@ class PermitRequestValidationPokeForm(forms.Form):
 
 
 class PermitRequestClassifyForm(forms.ModelForm):
-    # Status field is set as initial value when instanciating the form in the view
+    # Status field is set as initial value when instantiating the form in the view
     status = forms.ChoiceField(
         choices=(
             (status, label)
@@ -1058,6 +1080,14 @@ class PermitRequestClassifyForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequest
         fields = ["is_public", "status", "validation_pdf"]
+
+    def __init__(self, *args, **kwargs):
+        super(PermitRequestClassifyForm, self).__init__(*args, **kwargs)
+        if not services.is_validation_document_required(self.instance):
+            del self.fields["validation_pdf"]
+
+        if not config.ENABLE_GEOCALENDAR:
+            del self.fields["is_public"]
 
     def save(self, commit=True):
         permit_request = super().save(commit=False)

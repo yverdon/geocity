@@ -274,6 +274,7 @@ class WorksTypeFactory(factory.django.DjangoModelFactory):
         model = models.WorksType
 
     name = factory.Faker("word")
+    tags = "work_type_a"
 
     @factory.post_generation
     def integrator(self, create, extracted, **kwargs):
@@ -281,6 +282,13 @@ class WorksTypeFactory(factory.django.DjangoModelFactory):
             return
 
         self.integrator = extracted
+
+    @factory.post_generation
+    def tags(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        self.tags.set(*extracted)
 
 
 class PermitActorTypeFactory(factory.django.DjangoModelFactory):
@@ -438,3 +446,13 @@ class QgisProjectFactory(factory.django.DjangoModelFactory):
     works_object_type = factory.SubFactory(WorksObjectTypeFactory)
     qgis_print_template_name = "atlas"
     qgis_layers = "base,vpoly"
+
+
+class TemplateCustomizationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.TemplateCustomization
+
+    templatename = "mycustompage"
+    application_title = "mycustomtitle"
+    application_subtitle = "mycustomsubtitle"
+    application_description = "mycustomdescription"

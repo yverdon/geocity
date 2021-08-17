@@ -3,7 +3,7 @@ import enum
 
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
-from django.db.models import JSONField
+from django.db.models import JSONField, UniqueConstraint
 from django.core.exceptions import ValidationError
 from django.core.validators import (
     FileExtensionValidator,
@@ -108,6 +108,7 @@ class PermitDepartment(models.Model):
     is_integrator_admin = models.BooleanField(
         "Intégrateur (accès à l'admin de django)", default=False
     )
+    mandatory_2fa = models.BooleanField(_("2FA obligatoire"), default=False)
 
     class Meta:
         verbose_name = _("2.1 Configuration du service (pilote, validateur...)")
@@ -384,7 +385,10 @@ class PermitRequest(models.Model):
     created_at = models.DateTimeField(_("date de création"), default=timezone.now)
     validated_at = models.DateTimeField(_("date de validation"), null=True)
     works_object_types = models.ManyToManyField(
-        "WorksObjectType", through=WorksObjectTypeChoice, related_name="permit_requests"
+        "WorksObjectType",
+        through=WorksObjectTypeChoice,
+        related_name="permit_requests",
+        verbose_name=_("Objets et types de travaux"),
     )
     administrative_entity = models.ForeignKey(
         PermitAdministrativeEntity,
@@ -444,11 +448,20 @@ class PermitRequest(models.Model):
     def can_be_amended(self):
         return self.status in self.AMENDABLE_STATUSES
 
+    def can_be_sent_for_validation(self):
+        """
+        This check Enables/disables the send for validation form after the permit status
+        changes to STATUS_PROCESSING, which means all the validators made a decision.
+        """
+        statuses = self.AMENDABLE_STATUSES.copy()
+        statuses.remove(self.STATUS_PROCESSING)
+        return self.status in statuses
+
     def can_be_edited_by_pilot(self):
         return self.status in self.EDITABLE_STATUSES
 
     def can_be_validated(self):
-        return self.status == self.STATUS_AWAITING_VALIDATION
+        return self.status in {self.STATUS_AWAITING_VALIDATION, self.STATUS_PROCESSING}
 
     def works_objects_html(self):
         """
@@ -468,6 +481,11 @@ class PermitRequest(models.Model):
 
     def has_validations(self):
         return True if self.validations.all().count() > 0 else False
+
+
+class WorksTypeQuerySet(models.QuerySet):
+    def filter_by_tags(self, tags):
+        return self.filter(tags__name__in=[tag.lower() for tag in tags])
 
 
 class WorksType(models.Model):
@@ -498,6 +516,12 @@ class WorksType(models.Model):
     meta_type = models.IntegerField(
         _("Type générique"), choices=META_TYPE_CHOICES, default=META_TYPE_OTHER
     )
+    tags = TaggableManager(
+        blank=True,
+        verbose_name="Mots-clés",
+        help_text="Mots clefs sans espaces, séparés par des virgules permettant ensuite de filtrer les entités par l'url: https://geocity.ch&typefilter=permisdefouille&typefilter=stationnement",
+    )
+    objects = WorksTypeQuerySet.as_manager()
 
     class Meta:
         verbose_name = _("1.2 Configuration du type")
@@ -552,7 +576,16 @@ class WorksObjectType(models.Model):
     requires_payment = models.BooleanField(
         _("Demande soumise à des frais"), default=True
     )
+    requires_validation_document = models.BooleanField(
+        _("Document de validation obligatoire"), default=True
+    )
     is_public = models.BooleanField(_("Public"), default=False)
+    notify_services = models.BooleanField(_("Notifier les services"), default=False)
+    services_to_notify = models.TextField(
+        _("Emails des services à notifier"),
+        blank=True,
+        help_text='Veuillez séparer les emails par une virgule ","',
+    )
 
     class Meta:
         verbose_name = _("1.4 Configuration type-objet-entité administrative")
@@ -874,3 +907,41 @@ class QgisGeneratedDocument(models.Model):
         blank=True,
         upload_to=printed_permit_request_storage,
     )
+
+
+class TemplateCustomization(models.Model):
+
+    templatename = models.CharField(
+        _("Identifiant"),
+        max_length=64,
+        blank=True,
+        validators=[
+            RegexValidator(
+                regex=r"^[a-zA-Z0-9_]*$",
+                message="Seuls les caractères sans accents et les chiffres sont autorisés. Les espaces et autres caractères spéciaux ne sont pas autorisés",
+            )
+        ],
+    )
+    application_title = models.CharField(_("Titre"), max_length=255, blank=True)
+    application_subtitle = models.CharField(_("Sous-titre"), max_length=255, blank=True)
+    application_description = models.TextField(
+        _("Description"), max_length=2048, blank=True
+    )
+    background_image = models.ImageField(
+        _("Image de fond"),
+        blank=True,
+        upload_to="background_images/",
+        validators=[
+            FileExtensionValidator(allowed_extensions=["svg", "png", "jpg", "jpeg"])
+        ],
+    )
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=["templatename"], name="unique_templatename")
+        ]
+        verbose_name = _("4.1 Configuration de la page de login")
+        verbose_name_plural = _("4.1 Configuration des pages de login")
+
+    def __str__(self):
+        return self.templatename

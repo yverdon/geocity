@@ -7,8 +7,48 @@ from django.core import management
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from django.utils import timezone
+
 from geomapshark import settings
-from permits import models, admin
+from permits import admin, models
+import re
+import unicodedata
+
+
+def strip_accents(text):
+    """
+    Strip accents from input String.
+
+    :param text: The input string.
+    :type text: String.
+
+    :returns: The processed String.
+    :rtype: String.
+    """
+    try:
+        text = unicode(text, "utf-8")
+    except (TypeError, NameError):  # unicode is a default on python 3
+        pass
+    text = unicodedata.normalize("NFD", text)
+    text = text.encode("ascii", "ignore")
+    text = text.decode("utf-8")
+    return str(text)
+
+
+def unaccent(text):
+    """
+    Convert input text to id.
+
+    :param text: The input string.
+    :type text: String.
+
+    :returns: The processed String.
+    :rtype: String.
+    """
+    text = strip_accents(text.lower())
+    text = re.sub("[ ]+", "_", text)
+    text = re.sub("[^0-9a-zA-Z_-]", "", text)
+    return text
+
 
 User = get_user_model()
 
@@ -17,43 +57,52 @@ def reset_db():
     """
     Reset database to a blank state by removing all the tables and recreating them.
     """
-    with connection.cursor() as cursor:
+    with transaction.atomic():
+        with connection.cursor() as cursor:
 
-        if settings.CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE.lower() == "true":
-            cursor.execute(
-                "select tablename from pg_tables where schemaname = 'geocity' or schemaname = 'public'"
-            )
-            tables = [
-                row[0] for row in cursor.fetchall() if row[0] not in {"spatial_ref_sys"}
-            ]
-        else:  # some user might don't want to clear public schema
-            cursor.execute(
-                "select tablename from pg_tables where schemaname = 'geocity'"
-            )
-            tables = [row[0] for row in cursor.fetchall()]
-        # Can't use query parameters here as they'll add single quotes which are not
-        # supported by postgres
-        for table in tables:
-            cursor.execute('drop table "' + table + '" cascade')
+            if settings.CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE.lower() == "true":
+                cursor.execute(
+                    "select tablename from pg_tables where schemaname = 'geocity' or schemaname = 'public'"
+                )
+                tables = [
+                    row[0]
+                    for row in cursor.fetchall()
+                    if row[0] not in {"spatial_ref_sys"}
+                ]
+            else:  # some user might don't want to clear public schema
+                cursor.execute(
+                    "select tablename from pg_tables where schemaname = 'geocity'"
+                )
+                tables = [row[0] for row in cursor.fetchall()]
+            # Can't use query parameters here as they'll add single quotes which are not
+            # supported by postgres
+            for table in tables:
+                cursor.execute('drop table "' + table + '" cascade')
 
     # Call migrate so that post-migrate hooks such as generating a default Site object
-    # are run
+    # are run.
+
+    # sprint-7/yc-357: This was removed from the atomic transaction because
+    # Addfield and AlterField operations are performed, thus generating a:
+    # django.db.utils.OperationalError: cannot ALTER TABLE "permits_permitdepartment" because it has pending trigger events.
     management.call_command("migrate", "--noinput", stdout=StringIO())
 
 
 class Command(BaseCommand):
-    @transaction.atomic
     def handle(self, *args, **options):
         self.stdout.write("Resetting database...")
         reset_db()
-        self.stdout.write("Creating users...")
-        self.create_users()
-        self.stdout.write("Creating works types and objs...")
-        self.create_works_types()
-        self.stdout.write("Creating demo permit...")
-        self.create_permit()
-        self.stdout.write("Creating dummy geometric entities...")
-        self.create_geom_layer_entity()
+        with transaction.atomic():
+            self.stdout.write("Creating users...")
+            self.create_users()
+            self.stdout.write("Creating works types and objs...")
+            self.create_works_types()
+            self.stdout.write("Creating demo permit...")
+            self.create_permit()
+            self.stdout.write("Creating dummy geometric entities...")
+            self.create_geom_layer_entity()
+            self.stdout.write("Creating template customizations...")
+            self.create_template_customization()
 
     def create_users(self):
 
@@ -147,7 +196,10 @@ class Command(BaseCommand):
             content_type=permit_request_ct,
         )
         user = self.create_user(
-            "secretariat-yverdon", "Secrétariat Yverdon", administrative_entity_yverdon
+            "secretariat-yverdon",
+            "Secrétariat Yverdon",
+            administrative_entity_yverdon,
+            email="yverdon-squad+secretariat-yverdon@liip.ch",
         )
         user.user_permissions.set(secretariat_permissions)
         self.stdout.write("secretariat-yverdon / admin")
@@ -156,6 +208,7 @@ class Command(BaseCommand):
             "secretariat-grandson",
             "Secrétariat Grandson",
             administrative_entity_grandson,
+            email="yverdon-squad+secretariat-grandson@liip.ch",
         )
         user.user_permissions.set(secretariat_permissions)
         self.stdout.write("secretariat-grandson / admin")
@@ -165,6 +218,7 @@ class Command(BaseCommand):
             "Validateur Yverdon",
             administrative_entity_yverdon,
             is_default_validator=True,
+            email="yverdon-squad+validator-yverdon@liip.ch",
         )
         Group.objects.get(name="Validateur Yverdon").permissions.add(
             Permission.objects.get(
@@ -180,7 +234,10 @@ class Command(BaseCommand):
         self.stdout.write("validator-yverdon / admin")
 
         user = self.create_user(
-            "eaux-yverdon", "Service des eaux Yverdon", administrative_entity_yverdon
+            "eaux-yverdon",
+            "Service des eaux Yverdon",
+            administrative_entity_yverdon,
+            email="yverdon-squad+eaux-yverdon@liip.ch",
         )
         Group.objects.get(name="Service des eaux Yverdon").permissions.add(
             Permission.objects.get(
@@ -196,6 +253,7 @@ class Command(BaseCommand):
             is_default_validator=True,
             is_integrator_admin=True,
             is_staff=True,
+            email="yverdon-squad+integrator-yverdon@liip.ch",
         )
 
         permits_permissions = Permission.objects.filter(
@@ -232,11 +290,12 @@ class Command(BaseCommand):
         is_default_validator=False,
         is_integrator_admin=False,
         is_staff=False,
+        email="yverdon-squad+user@liip.ch",
     ):
 
         group, created = Group.objects.get_or_create(name=group_name)
         user = User.objects.create_user(
-            email=f"yverdon-squad+user@liip.ch",
+            email=email,
             first_name="Mon Prénom",
             last_name="Mon Nom",
             username=username,
@@ -304,7 +363,7 @@ class Command(BaseCommand):
             (
                 "Procédés de réclame",
                 [
-                    ("Enseigne lumnieuse", properties["comment"]),
+                    ("Enseigne lumnineuse", properties["comment"]),
                     ("Panneau", properties["comment"]),
                 ],
             ),
@@ -326,6 +385,7 @@ class Command(BaseCommand):
 
         for works_type, objs in works_types:
             works_type_obj = models.WorksType.objects.create(name=works_type)
+            works_type_obj.tags.set(unaccent(works_type))
             models.PermitActorType.objects.create(
                 type=models.ACTOR_TYPE_OTHER, works_type=works_type_obj,
             )
@@ -362,7 +422,17 @@ class Command(BaseCommand):
             name="Démo Yverdon"
         )
         demo_works_object_type = models.WorksObjectType.objects.first()
+        models.WorksObjectType.objects.filter(id=5).update(
+            requires_validation_document=False
+        )
+        demo_works_object_type_no_validation_document = models.WorksObjectType.objects.filter(
+            requires_validation_document=False
+        ).first()
+        department = models.PermitDepartment.objects.filter(
+            administrative_entity=demo_administrative_entity, is_validator=True,
+        ).first()
 
+        # Basic permit request
         permit_request = models.PermitRequest.objects.create(
             status=models.PermitRequest.STATUS_DRAFT,
             administrative_entity=demo_administrative_entity,
@@ -375,6 +445,111 @@ class Command(BaseCommand):
 
         models.PermitRequestGeoTime.objects.create(
             permit_request=permit_request,
+            starts_at=timezone.now(),
+            ends_at=timezone.now(),
+            geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
+        )
+
+        # Permit Request to Classify with no validation document required
+        permit_request2 = models.PermitRequest.objects.create(
+            status=models.PermitRequest.STATUS_PROCESSING,
+            administrative_entity=demo_administrative_entity,
+            author=demo_author,
+            is_public=True,
+        )
+
+        models.PermitRequestValidation.objects.get_or_create(
+            permit_request=permit_request2,
+            department=department,
+            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+        )
+
+        models.WorksObjectTypeChoice.objects.create(
+            permit_request=permit_request2,
+            works_object_type=demo_works_object_type_no_validation_document,
+        )
+
+        models.PermitRequestGeoTime.objects.create(
+            permit_request=permit_request2,
+            starts_at=timezone.now(),
+            ends_at=timezone.now(),
+            geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
+        )
+
+        # Permit Request to Classify with mixed objects requiring and not requiring validation document
+        permit_request3 = models.PermitRequest.objects.create(
+            status=models.PermitRequest.STATUS_PROCESSING,
+            administrative_entity=demo_administrative_entity,
+            author=demo_author,
+            is_public=True,
+        )
+
+        models.PermitRequestValidation.objects.get_or_create(
+            permit_request=permit_request3,
+            department=department,
+            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+        )
+
+        models.WorksObjectTypeChoice.objects.create(
+            permit_request=permit_request3, works_object_type=demo_works_object_type
+        )
+
+        models.WorksObjectTypeChoice.objects.create(
+            permit_request=permit_request3,
+            works_object_type=demo_works_object_type_no_validation_document,
+        )
+
+        models.PermitRequestGeoTime.objects.create(
+            permit_request=permit_request3,
+            starts_at=timezone.now(),
+            ends_at=timezone.now(),
+            geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
+        )
+
+        # Permit Requests to Classify with validation document required
+        permit_request4 = models.PermitRequest.objects.create(
+            status=models.PermitRequest.STATUS_PROCESSING,
+            administrative_entity=demo_administrative_entity,
+            author=demo_author,
+            is_public=True,
+        )
+
+        models.PermitRequestValidation.objects.get_or_create(
+            permit_request=permit_request4,
+            department=department,
+            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+        )
+        models.WorksObjectTypeChoice.objects.create(
+            permit_request=permit_request4, works_object_type=demo_works_object_type
+        )
+
+        models.PermitRequestGeoTime.objects.create(
+            permit_request=permit_request4,
+            starts_at=timezone.now(),
+            ends_at=timezone.now(),
+            geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
+        )
+
+        permit_request5 = models.PermitRequest.objects.create(
+            status=models.PermitRequest.STATUS_PROCESSING,
+            administrative_entity=demo_administrative_entity,
+            author=demo_author,
+            is_public=True,
+        )
+
+        models.PermitRequestValidation.objects.get_or_create(
+            permit_request=permit_request5,
+            department=department,
+            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+        )
+
+        models.WorksObjectTypeChoice.objects.create(
+            permit_request=permit_request5,
+            works_object_type=models.WorksObjectType.objects.last(),
+        )
+
+        models.PermitRequestGeoTime.objects.create(
+            permit_request=permit_request5,
             starts_at=timezone.now(),
             ends_at=timezone.now(),
             geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
@@ -398,4 +573,19 @@ class Command(BaseCommand):
             source_subid="9876",
             external_link="https://www.osm.org",
             geom="SRID=2056;MultiPolygon(((2526831.16912443 1159820.00193672, 2516148.68477727 1198947.70623155, 2551053.08130695 1201183.5750484, 2560741.84617995 1166651.82332153, 2526831.16912443 1159820.00193672)))",
+        )
+
+    def create_template_customization(self):
+        models.TemplateCustomization.objects.create(
+            templatename="geocity",
+            application_title="Geocity",
+            application_subtitle="Demandes en lignes concenrnant le territoire communal",
+            application_description="Demandes en ligne concernant le <b>domaine public</b>",
+        )
+
+        models.TemplateCustomization.objects.create(
+            templatename="city",
+            application_title="City Admin",
+            application_subtitle="Demandes en lignes",
+            application_description="Demandes concernant l' <i>administration</i>",
         )

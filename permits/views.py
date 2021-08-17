@@ -31,6 +31,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views import View
 from django_filters.views import FilterView
+from django_otp import user_has_device
 from django_tables2.export.views import ExportMixin
 from django_tables2.views import SingleTableMixin, SingleTableView
 
@@ -56,7 +57,6 @@ def get_permit_request_for_edition(user, permit_request_id):
         models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
         models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
     }
-
     permit_request = services.get_permit_request_for_user_or_404(
         user, permit_request_id, statuses=allowed_statuses,
     )
@@ -76,7 +76,6 @@ def get_permit_request_for_edition(user, permit_request_id):
                 models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
             ],
         )
-
     return permit_request
 
 
@@ -105,7 +104,6 @@ def progress_bar_context(request, permit_request, current_step_type):
     steps = services.get_progress_bar_steps(
         request=request, permit_request=permit_request
     )
-
     if current_step_type not in steps:
         raise Http404()
 
@@ -117,7 +115,31 @@ def progress_bar_context(request, permit_request, current_step_type):
     return {"steps": steps, "previous_step": previous_step}
 
 
+def check_mandatory_2FA(
+    view=None, redirect_field_name="next", login_url="profile", if_configured=False
+):
+    """
+    Do same as :func:`django_otp.decorators.otp_required`, but verify first if the user
+    is in a group where 2FA is required.
+    """
+
+    def test(user):
+        if services.is_2FA_mandatory(user):
+            return user.is_verified() or (
+                if_configured and user.is_authenticated and not user_has_device(user)
+            )
+        else:
+            return True
+
+    decorator = user_passes_test(
+        test, login_url=login_url, redirect_field_name=redirect_field_name
+    )
+
+    return decorator if (view is None) else decorator(view)
+
+
 @method_decorator(login_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
 class PermitRequestDetailView(View):
 
     actions = models.ACTIONS
@@ -280,7 +302,7 @@ class PermitRequestDetailView(View):
                 instance=self.permit_request, data=data
             )
 
-            if not services.can_amend_permit_request(
+            if not services.can_request_permit_validation(
                 self.request.user, self.permit_request
             ):
                 disable_form(form)
@@ -349,7 +371,9 @@ class PermitRequestDetailView(View):
             return self.handle_poke(form)
 
     def handle_amend_form_submission(self, form):
-
+        initial_status = (
+            models.PermitRequest.objects.filter(id=form.instance.id).first().status
+        )
         form.save()
         success_message = (
             _("La demande #%s a bien été complétée par le service pilote.")
@@ -367,6 +391,19 @@ class PermitRequestDetailView(View):
             )
 
         messages.success(self.request, success_message)
+
+        if (
+            form.instance.status == models.PermitRequest.STATUS_RECEIVED
+            and form.instance.status is not initial_status
+        ):
+            data = {
+                "subject": _("Votre annonce a été prise en compte et classée"),
+                "users_to_notify": [form.instance.author.user.email],
+                "template": "permit_request_received.txt",
+                "permit_request": form.instance,
+                "absolute_uri_func": self.request.build_absolute_uri,
+            }
+            services.send_email_notification(data)
 
         if "save_continue" in self.request.POST:
 
@@ -391,7 +428,15 @@ class PermitRequestDetailView(View):
         return redirect("permits:permit_requests_list")
 
     def handle_validation_form_submission(self, form):
-
+        validation_object = models.PermitRequestValidation.objects.filter(
+            permit_request_id=self.permit_request.id,
+            validated_by_id=self.request.user.id,
+        )
+        initial_validation_status = (
+            (validation_object.first().validation_status)
+            if validation_object.exists()
+            else models.PermitRequestValidation.STATUS_REQUESTED
+        )
         form.instance.validated_at = timezone.now()
         form.instance.validated_by = self.request.user
         validation = form.save()
@@ -408,6 +453,47 @@ class PermitRequestDetailView(View):
             validation_message = _("La demande a bien été refusée.")
         else:
             validation_message = _("Les commentaires ont été enregistrés.")
+
+        try:
+
+            if not self.permit_request.get_pending_validations():
+
+                initial_permit_status = self.permit_request.status
+                self.permit_request.status = models.PermitRequest.STATUS_PROCESSING
+                self.permit_request.save()
+
+                if (
+                    initial_permit_status
+                    is models.PermitRequest.STATUS_AWAITING_VALIDATION
+                    or (
+                        initial_permit_status is models.PermitRequest.STATUS_PROCESSING
+                        and initial_validation_status
+                        is not form.instance.validation_status
+                    )
+                ):
+                    data = {
+                        "subject": _(
+                            "Les services chargés de la validation d'une demande ont donné leur préavis"
+                        ),
+                        "users_to_notify": services._get_secretary_email(
+                            self.permit_request
+                        ),
+                        "template": "permit_request_validated.txt",
+                        "permit_request": self.permit_request,
+                        "absolute_uri_func": self.request.build_absolute_uri,
+                    }
+                    services.send_email_notification(data)
+            else:
+                self.permit_request.status = (
+                    models.PermitRequest.STATUS_AWAITING_VALIDATION
+                )
+                self.permit_request.save()
+
+        except AttributeError:
+            # This is the case when the administrative entity does not have a
+            # secretary department associated to a group to which
+            # the secretary user belongs.
+            pass
 
         messages.success(self.request, validation_message)
 
@@ -473,11 +559,37 @@ def permit_request_print(request, permit_request_id, template_id):
 @redirect_bad_status_to_detail
 @login_required
 @user_passes_test(user_has_permitauthor)
+@check_mandatory_2FA
 def permit_request_select_administrative_entity(request, permit_request_id=None):
+
+    services.store_tags_in_session(request)
+
     if permit_request_id:
         permit_request = get_permit_request_for_edition(request.user, permit_request_id)
     else:
         permit_request = None
+
+    entityfilter = (
+        request.session["entityfilter"] if "entityfilter" in request.session else []
+    )
+    entities_by_tag = services.get_administrative_entities(request.user).filter_by_tags(
+        entityfilter
+    )
+
+    if len(entities_by_tag) == 1 and not permit_request:
+        administrative_entity_instance = models.PermitAdministrativeEntity.objects.get(
+            pk=entities_by_tag.first().pk
+        )
+        permit_request = models.PermitRequest.objects.create(
+            administrative_entity=administrative_entity_instance,
+            author=request.user.permitauthor,
+        )
+        steps = services.get_progress_bar_steps(
+            request=request, permit_request=permit_request
+        )
+        return redirect(
+            services.get_next_step(steps, models.StepType.ADMINISTRATIVE_ENTITY).url
+        )
 
     steps_context = progress_bar_context(
         request=request,
@@ -487,7 +599,10 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
 
     if request.method == "POST":
         administrative_entity_form = forms.AdministrativeEntityForm(
-            instance=permit_request, data=request.POST, user=request.user
+            instance=permit_request,
+            data=request.POST,
+            user=request.user,
+            session=request.session,
         )
 
         if administrative_entity_form.is_valid():
@@ -514,17 +629,17 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
             )
     else:
         administrative_entity_form = forms.AdministrativeEntityForm(
-            instance=permit_request,
-            user=request.user,
-            tags=request.GET.getlist("filter"),
+            instance=permit_request, user=request.user, session=request.session,
         )
-
     return render(
         request,
         "permits/permit_request_select_administrative_entity.html",
         {
             "form": administrative_entity_form,
             "permit_request": permit_request,
+            "entityfilter": request.session["entityfilter"]
+            if "entityfilter" in request.session
+            else None,
             **steps_context,
         },
     )
@@ -532,21 +647,26 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
 
 @redirect_bad_status_to_detail
 @login_required
+@check_mandatory_2FA
 def permit_request_select_types(request, permit_request_id):
     """
     Step to select works types (eg. demolition). No permit request is created at this step since we only store (works
     object, works type) couples in the database.
     """
+    services.store_tags_in_session(request)
+    # returns error or redirects to details depending on user permissions and permit_request status
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
     steps_context = progress_bar_context(
         request=request,
         permit_request=permit_request,
         current_step_type=models.StepType.WORKS_TYPES,
     )
-
     if request.method == "POST":
         works_types_form = forms.WorksTypesForm(
-            data=request.POST, instance=permit_request, user=request.user
+            data=request.POST,
+            instance=permit_request,
+            user=request.user,
+            session=request.session,
         )
         if works_types_form.is_valid():
             redirect_kwargs = {"permit_request_id": permit_request_id}
@@ -582,15 +702,17 @@ def permit_request_select_types(request, permit_request_id):
             )
     else:
         works_types_form = forms.WorksTypesForm(
-            instance=permit_request, user=request.user
+            instance=permit_request, user=request.user, session=request.session
         )
-
     return render(
         request,
         "permits/permit_request_select_types.html",
         {
             "works_types_form": works_types_form,
             "permit_request": permit_request,
+            "typefilter": request.session["typefilter"]
+            if "typefilter" in request.session
+            else [],
             **steps_context,
         },
     )
@@ -598,6 +720,7 @@ def permit_request_select_types(request, permit_request_id):
 
 @redirect_bad_status_to_detail
 @login_required
+@check_mandatory_2FA
 def permit_request_select_objects(request, permit_request_id):
     """
     Step to select works objects. This view supports either editing an existing permit request (if `permit_request_id`
@@ -612,7 +735,10 @@ def permit_request_select_objects(request, permit_request_id):
 
     if request.GET:
         works_types_form = forms.WorksTypesForm(
-            data=request.GET, instance=permit_request, user=request.user
+            data=request.GET,
+            instance=permit_request,
+            user=request.user,
+            session=request.session,
         )
         if works_types_form.is_valid():
             works_types = works_types_form.cleaned_data["types"]
@@ -663,6 +789,9 @@ def permit_request_select_objects(request, permit_request_id):
         {
             "works_objects_form": works_objects_form,
             "permit_request": permit_request,
+            "typefilter": request.session["typefilter"]
+            if "typefilter" in request.session
+            else [],
             **steps_context,
         },
     )
@@ -670,6 +799,7 @@ def permit_request_select_objects(request, permit_request_id):
 
 @redirect_bad_status_to_detail
 @login_required
+@check_mandatory_2FA
 def permit_request_properties(request, permit_request_id):
     """
     Step to input properties values for the given permit request.
@@ -716,6 +846,7 @@ def permit_request_properties(request, permit_request_id):
 
 @redirect_bad_status_to_detail
 @login_required
+@check_mandatory_2FA
 def permit_request_appendices(request, permit_request_id):
     """
     Step to upload appendices for the given permit request.
@@ -762,6 +893,7 @@ def permit_request_appendices(request, permit_request_id):
 
 @redirect_bad_status_to_detail
 @login_required
+@check_mandatory_2FA
 def permit_request_actors(request, permit_request_id):
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
     steps_context = progress_bar_context(
@@ -810,6 +942,7 @@ def permit_request_actors(request, permit_request_id):
 
 
 @login_required
+@check_mandatory_2FA
 def permit_request_geo_time(request, permit_request_id):
     permit_request = services.get_permit_request_for_user_or_404(
         request.user, permit_request_id
@@ -866,6 +999,7 @@ def permit_request_geo_time(request, permit_request_id):
 
 
 @login_required
+@check_mandatory_2FA
 def permit_request_media_download(request, property_value_id):
     """
     Send the file referenced by the given property value.
@@ -886,6 +1020,7 @@ def permit_request_media_download(request, property_value_id):
 
 
 @method_decorator(login_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
 class PermitRequestList(SingleTableMixin, FilterView):
     paginate_by = int(os.environ["PAGINATE_BY"])
     template_name = "permits/permit_requests_list.html"
@@ -923,6 +1058,7 @@ class PermitRequestList(SingleTableMixin, FilterView):
 
 
 @method_decorator(login_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
 class PermitExportView(ExportMixin, SingleTableView):
     table_class = tables.OwnPermitRequestsTable
     template_name = "django_tables2/bootstrap.html"
@@ -946,6 +1082,7 @@ class PermitExportView(ExportMixin, SingleTableView):
 
 @redirect_bad_status_to_detail
 @login_required
+@check_mandatory_2FA
 def permit_request_submit(request, permit_request_id):
 
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
@@ -960,7 +1097,7 @@ def permit_request_submit(request, permit_request_id):
         if incomplete_steps:
             raise SuspiciousOperation
 
-        services.submit_permit_request(permit_request, request.build_absolute_uri)
+        services.submit_permit_request(permit_request, request)
         return redirect("permits:permit_requests_list")
 
     return render(
@@ -981,6 +1118,7 @@ def permit_request_submit(request, permit_request_id):
 
 @redirect_bad_status_to_detail
 @login_required
+@check_mandatory_2FA
 def permit_request_submit_confirmed(request, permit_request_id):
 
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
@@ -994,12 +1132,13 @@ def permit_request_submit_confirmed(request, permit_request_id):
     if incomplete_steps:
         raise SuspiciousOperation
 
-    services.submit_permit_request(permit_request, request.build_absolute_uri)
+    services.submit_permit_request(permit_request, request)
     return redirect("permits:permit_requests_list")
 
 
 @redirect_bad_status_to_detail
 @login_required
+@check_mandatory_2FA
 def permit_request_delete(request, permit_request_id):
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
 
@@ -1025,6 +1164,7 @@ def permit_request_reject(request, permit_request_id):
 
 @login_required
 @permission_required("permits.classify_permit_request")
+@check_mandatory_2FA
 def permit_request_classify(request, permit_request_id, approve):
 
     permit_request = services.get_permit_request_for_user_or_404(
@@ -1059,6 +1199,45 @@ def permit_request_classify(request, permit_request_id, approve):
 
         if classify_form.is_valid():
             classify_form.save()
+            # Notify the permit author
+            data = {
+                "subject": _("Votre demande a été traitée et classée"),
+                "users_to_notify": [permit_request.author.user.email],
+                "template": "permit_request_classified.txt",
+                "permit_request": permit_request,
+                "absolute_uri_func": request.build_absolute_uri,
+            }
+            services.send_email_notification(data)
+
+            # Notify the services
+            works_object_types_to_notify = permit_request.works_object_types.filter(
+                notify_services=True
+            )
+
+            if works_object_types_to_notify.exists():
+                mailing_list = []
+                for emails in works_object_types_to_notify.values_list(
+                    "services_to_notify", flat=True
+                ):
+                    emails_addresses = emails.replace("\n", ",").split(",")
+                    mailing_list += [
+                        ea.strip()
+                        for ea in emails_addresses
+                        if services.validate_email(ea.strip())
+                    ]
+
+                if mailing_list:
+                    data = {
+                        "subject": _(
+                            "Une demande a été traitée et classée par le secrétariat"
+                        ),
+                        "users_to_notify": set(mailing_list),
+                        "template": "permit_request_classified_for_services.txt",
+                        "permit_request": permit_request,
+                        "absolute_uri_func": request.build_absolute_uri,
+                    }
+                    services.send_email_notification(data)
+
             return redirect("permits:permit_requests_list")
     else:
         classify_form = forms.PermitRequestClassifyForm(
@@ -1098,6 +1277,7 @@ def permit_request_file_download(request, path):
 
 
 @login_required
+@check_mandatory_2FA
 def administrative_entity_file_download(request, path):
     """
     Securely download the administrative entity customization files for member of the administrative_entity concerned
@@ -1116,6 +1296,7 @@ def administrative_entity_file_download(request, path):
 
 
 @login_required
+@check_mandatory_2FA
 def genericauthorview(request, pk):
 
     instance = get_object_or_404(models.PermitAuthor, pk=pk)
@@ -1129,6 +1310,7 @@ def genericauthorview(request, pk):
 
 
 @login_required
+@check_mandatory_2FA
 def administrative_infos(request):
 
     administrative_entities = models.PermitAdministrativeEntity.objects.all()

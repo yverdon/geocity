@@ -1,8 +1,8 @@
 {% load i18n %}{% autoescape off %}{% trans "Bonjour," %}
 
-{% trans "Une demande est toujours en attente de validation de votre part." %}
+{% trans "La demande de compléments a été traitée." %}
 
-{% trans "Vous pouvez la consulter et la valider sur le lien suivant" %}: {{ permit_request_url }}
+{% trans "Vous pouvez consulter la demande sur le lien suivant" %}: {{ permit_request_url }}
 
 {% trans "Avec nos meilleures salutations," %}
 {{ administrative_entity.name }}
