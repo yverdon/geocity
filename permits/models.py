@@ -166,7 +166,7 @@ class PermitAdministrativeEntity(models.Model):
     tags = TaggableManager(
         blank=True,
         verbose_name="Mots-clés",
-        help_text="Mots clefs sans espaces, séparés par des virgules permettant ensuite de filtrer les entités par l'url: https://geocity.ch&filter=yverdon&filter=permis-de-fouille",
+        help_text="Mots clefs sans espaces, séparés par des virgules permettant de filtrer les entités par l'url: https://geocity.ch/?entityfilter=yverdon",
     )
     objects = PermitAdministrativeEntityQuerySet.as_manager()
 
@@ -518,7 +518,7 @@ class WorksType(models.Model):
     tags = TaggableManager(
         blank=True,
         verbose_name="Mots-clés",
-        help_text="Mots clefs sans espaces, séparés par des virgules permettant ensuite de filtrer les entités par l'url: https://geocity.ch&typefilter=permisdefouille&typefilter=stationnement",
+        help_text="Mots clefs sans espaces, séparés par des virgules permettant de filtrer les types par l'url: https://geocity.ch/?typefilter=stationnement",
     )
     objects = WorksTypeQuerySet.as_manager()
 
