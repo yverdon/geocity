@@ -91,8 +91,15 @@ StepType.do_not_call_in_templates = True
 class PermitDepartment(models.Model):
     group = models.OneToOneField(Group, on_delete=models.CASCADE)
     description = models.CharField(_("description"), max_length=100, default="Service")
-    is_validator = models.BooleanField(_("validateur"))
-    is_archeologist = models.BooleanField(_("archéologue"))
+    is_validator = models.BooleanField(
+        _("validateur"),
+        help_text="Cocher si les membres doivent apparaître dans la liste des services consultables pour la validation",
+    )
+    is_backoffice = models.BooleanField(
+        _("secrétariat"),
+        default=False,
+        help_text="Cocher si les membres font partie du secrétariat. Ils seront notifiés des évolutions de la demande",
+    )
     administrative_entity = models.ForeignKey(
         "PermitAdministrativeEntity",
         null=True,

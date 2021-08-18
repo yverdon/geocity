@@ -310,7 +310,7 @@ class Command(BaseCommand):
             group=group,
             is_validator=False,
             is_integrator_admin=is_integrator_admin,
-            is_archeologist=False,
+            is_backoffice=False,
             administrative_entity=administrative_entity,
             is_default_validator=is_default_validator,
         )
