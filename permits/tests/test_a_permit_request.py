@@ -916,7 +916,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             reverse(
                 "permits:permit_request_select_administrative_entity",
                 kwargs={"permit_request_id": new_permit_request.id},
-            )
+            ),
+            {"entityfilter": "first"},
+            follow=True,
         )
         parser2 = get_parser(response2.content)
         content2 = response2.content.decode()

@@ -169,7 +169,7 @@ class UserAdmin(BaseUserAdmin):
                     ).pk
                 )
                 | Q(groups__isnull=True),
-            )
+            ).distinct()
         return qs
 
 
