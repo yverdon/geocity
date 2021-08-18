@@ -569,27 +569,43 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
     else:
         permit_request = None
 
-    entityfilter = (
-        request.session["entityfilter"] if "entityfilter" in request.session else []
-    )
-    entities_by_tag = services.get_administrative_entities(request.user).filter_by_tags(
-        entityfilter
-    )
+    # Prevent unecessary queries to DB if no tag filter is applied anyway
+    if request.session["entityfilter"]:
 
-    if len(entities_by_tag) == 1 and not permit_request:
-        administrative_entity_instance = models.PermitAdministrativeEntity.objects.get(
-            pk=entities_by_tag.first().pk
+        # Handle single tag filters combinations
+        entityfilter = (
+            request.session["entityfilter"] if "entityfilter" in request.session else []
         )
-        permit_request = models.PermitRequest.objects.create(
-            administrative_entity=administrative_entity_instance,
-            author=request.user.permitauthor,
-        )
-        steps = services.get_progress_bar_steps(
-            request=request, permit_request=permit_request
-        )
-        return redirect(
-            services.get_next_step(steps, models.StepType.ADMINISTRATIVE_ENTITY).url
-        )
+        entities_by_tag = services.get_administrative_entities(
+            request.user
+        ).filter_by_tags(entityfilter)
+        # If entityfilter returns only one entity, permit_request oject can alread be created
+        if len(entities_by_tag) == 1 and not permit_request:
+            administrative_entity_instance = models.PermitAdministrativeEntity.objects.get(
+                pk=entities_by_tag.first().pk
+            )
+            permit_request = models.PermitRequest.objects.create(
+                administrative_entity=administrative_entity_instance,
+                author=request.user.permitauthor,
+            )
+
+            # If typefilter returns only one works_object_types object, this combination must be set on permitrequest object
+            if "typefilter" in request.session:
+                works_types_by_tag = models.WorksType.objects.filter_by_tags(
+                    request.session["typefilter"]
+                ).values_list("pk", flat=True)
+                candidate_works_object_types = models.WorksObjectType.objects.filter(
+                    works_type__in=works_types_by_tag
+                )
+                if len(candidate_works_object_types) == 1:
+                    permit_request.works_object_types.set(candidate_works_object_types)
+
+            steps = services.get_progress_bar_steps(
+                request=request, permit_request=permit_request
+            )
+            return redirect(
+                services.get_next_step(steps, models.StepType.ADMINISTRATIVE_ENTITY).url
+            )
 
     steps_context = progress_bar_context(
         request=request,
@@ -690,11 +706,9 @@ def permit_request_select_types(request, permit_request_id):
                     steps = services.get_progress_bar_steps(
                         request=request, permit_request=permit_request
                     )
-
                     return redirect(
                         services.get_next_step(steps, models.StepType.WORKS_TYPES).url
                     )
-
             return redirect(
                 reverse("permits:permit_request_select_objects", kwargs=redirect_kwargs)
                 + "?"

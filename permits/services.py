@@ -558,6 +558,7 @@ def get_works_types_step(permit_request, completed, typefilter):
 def get_works_objects_step(permit_request, enabled, works_types, user, typefilter):
     # If there are default works objects types it means the object types can be
     # automatically selected and so the step shouldn’t be visible
+
     if permit_request:
         selected_works_types = (
             works_types
@@ -587,6 +588,7 @@ def get_works_objects_step(permit_request, enabled, works_types, user, typefilte
     # If the user is editing a permit request and the administrative entity only has 1
     # works type, there won’t be a works type step, so the works object step should have
     # it in the URL
+    # return None
     if permit_request and not works_types:
         if user.has_perm("permits.see_private_requests"):
             administrative_entity_works_types = permit_request.administrative_entity.works_object_types.values_list(
@@ -793,6 +795,27 @@ def get_progress_bar_steps(request, permit_request):
         permit_request.works_object_types.exists() if permit_request else False
     )
     selected_works_types = request.GET.getlist("types")
+    entityfilter = (
+        request.session["entityfilter"] if "entityfilter" in request.session else []
+    )
+    entities_by_tag = None
+    if entityfilter:
+        entities_by_tag = get_administrative_entities(request.user).filter_by_tags(
+            entityfilter
+        )
+
+    if entities_by_tag:
+        if (
+            not selected_works_types
+            and "typefilter" in request.session
+            and len(entities_by_tag) == 1
+        ):
+            works_types_by_tag = models.WorksType.objects.filter_by_tags(
+                request.session["typefilter"]
+            ).values_list("pk", flat=True)
+            if len(works_types_by_tag) == 1:
+                selected_works_types = [str(works_types_by_tag[0])]
+
     all_steps = {
         models.StepType.ADMINISTRATIVE_ENTITY: get_administrative_entity_step(
             permit_request
