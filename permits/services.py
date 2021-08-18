@@ -810,9 +810,11 @@ def get_progress_bar_steps(request, permit_request):
             and "typefilter" in request.session
             and len(entities_by_tag) == 1
         ):
-            works_types_by_tag = models.WorksType.objects.filter_by_tags(
-                request.session["typefilter"]
-            ).values_list("pk", flat=True)
+            works_types_by_tag = (
+                models.WorksType.objects.filter_by_tags(request.session["typefilter"])
+                .filter(works_object_types__administrative_entities__in=entities_by_tag)
+                .values_list("pk", flat=True)
+            )
             if len(works_types_by_tag) == 1:
                 selected_works_types = [str(works_types_by_tag[0])]
 
@@ -1392,12 +1394,16 @@ def store_tags_in_session(request):
 
     if len(request.GET.getlist("entityfilter")) > 0:
         request.session["entityfilter"] = request.GET.getlist("entityfilter")
+    else:
+        request.session["entityfilter"] = []
 
     if "typefilter" not in request.session or request.GET.get("cleartypefilter", None):
         request.session["typefilter"] = []
 
     if len(request.GET.getlist("typefilter")) > 0:
         request.session["typefilter"] = request.GET.getlist("typefilter")
+    else:
+        request.session["typefilter"] = []
 
 
 def clear_session_filters(request):

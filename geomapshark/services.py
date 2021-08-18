@@ -1,6 +1,7 @@
 from constance import config
 from urllib import parse
 from permits import models
+from django.conf import settings
 
 
 def get_context_data(context, request):
@@ -12,7 +13,11 @@ def get_context_data(context, request):
         "background_image": None,
     }
     uri = parse.unquote(request.build_absolute_uri()).replace("next=/", "")
-    params_str = parse.urlsplit(uri).query.replace("?", "")
+
+    params_str = (
+        parse.urlsplit(uri).query.replace("?", "").replace(settings.PREFIX_URL, "")
+    )
+
     request.session["templatename"] = None
     url_qs = ""
 

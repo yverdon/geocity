@@ -595,8 +595,10 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
                     request.session["typefilter"]
                 ).values_list("pk", flat=True)
                 candidate_works_object_types = models.WorksObjectType.objects.filter(
-                    works_type__in=works_types_by_tag
+                    works_type__in=works_types_by_tag,
+                    administrative_entities__in=entities_by_tag,
                 )
+
                 if len(candidate_works_object_types) == 1:
                     permit_request.works_object_types.set(candidate_works_object_types)
 
