@@ -571,7 +571,6 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
 
     # Prevent unecessary queries to DB if no tag filter is applied anyway
     if request.session["entityfilter"]:
-
         # Handle single tag filters combinations
         entityfilter = (
             request.session["entityfilter"] if "entityfilter" in request.session else []
@@ -588,19 +587,23 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
                 administrative_entity=administrative_entity_instance,
                 author=request.user.permitauthor,
             )
-
-            # If typefilter returns only one works_object_types object, this combination must be set on permitrequest object
-            if "typefilter" in request.session:
+            candidate_works_object_types = None
+            if request.session["typefilter"] == []:
+                candidate_works_object_types = models.WorksObjectType.objects.filter(
+                    administrative_entities__in=entities_by_tag,
+                )
+            else:
                 works_types_by_tag = models.WorksType.objects.filter_by_tags(
                     request.session["typefilter"]
                 ).values_list("pk", flat=True)
-                candidate_works_object_types = models.WorksObjectType.objects.filter(
-                    works_type__in=works_types_by_tag,
-                    administrative_entities__in=entities_by_tag,
-                )
 
-                if len(candidate_works_object_types) == 1:
-                    permit_request.works_object_types.set(candidate_works_object_types)
+                candidate_works_object_types = models.WorksObjectType.objects.filter(
+                    administrative_entities__in=entities_by_tag,
+                    works_type__in=works_types_by_tag,
+                )
+            # If filter combinations return only one works_object_types object, this combination must be set on permitrequest object
+            if len(candidate_works_object_types) == 1:
+                permit_request.works_object_types.set(candidate_works_object_types)
 
             steps = services.get_progress_bar_steps(
                 request=request, permit_request=permit_request
