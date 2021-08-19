@@ -1296,14 +1296,8 @@ def permit_request_file_download(request, path):
 @check_mandatory_2FA
 def administrative_entity_file_download(request, path):
     """
-    Securely download the administrative entity customization files for member of the administrative_entity concerned
+    Only allows logged user to download administrative entity files
     """
-
-    if (
-        services.get_user_administrative_entities(request.user).count() == 0
-        and not request.user.is_superuser
-    ):
-        raise Http404
 
     mime_type, encoding = mimetypes.guess_type(path)
     storage = fields.PrivateFileSystemStorage()
