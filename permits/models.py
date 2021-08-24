@@ -239,6 +239,7 @@ class PermitAuthor(models.Model):
     )
     user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
     history = HistoricalRecords()
+    do_not_notify = models.BooleanField(_("ne pas me notifier"), default=False)
 
     class Meta:
         verbose_name = _("3.2 Consultation de l'auteur")

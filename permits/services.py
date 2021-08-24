@@ -912,6 +912,7 @@ def submit_permit_request(permit_request, request):
                 groups__permitdepartment__administrative_entity=permit_request.administrative_entity,
                 permitauthor__user__email__isnull=False,
                 groups__permitdepartment__is_validator=False,
+                permitauthor__do_not_notify=False,
             )
             .values_list("permitauthor__user__email", flat=True)
         )
@@ -951,9 +952,9 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
     users_to_notify = {
         email
         for department in departments
-        for email in department.group.user_set.values_list(
-            "permitauthor__user__email", flat=True
-        )
+        for email in department.group.user_set.objects.filter(
+            permitauthor__do_not_notify=False,
+        ).values_list("permitauthor__user__email", flat=True)
     }
 
     data = {
@@ -977,7 +978,8 @@ def send_validation_reminder(permit_request, absolute_uri_func):
         .objects.filter(
             groups__permitdepartment__in=pending_validations.values_list(
                 "department", flat=True
-            )
+            ),
+            permitauthor__do_not_notify=False,
         )
         .values_list("permitauthor__user__email", flat=True)
         .distinct()
