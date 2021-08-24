@@ -952,9 +952,9 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
     users_to_notify = {
         email
         for department in departments
-        for email in department.group.user_set.objects.filter(
-            permitauthor__do_not_notify=False,
-        ).values_list("permitauthor__user__email", flat=True)
+        for email in department.group.user_set.values_list(
+            "permitauthor__user__email", flat=True
+        )
     }
 
     data = {
