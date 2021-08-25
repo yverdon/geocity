@@ -1,5 +1,4 @@
 {% load socialaccount i18n %}
-
-<div>
+{% if social_login_mapnv %}
   <a href="{% provider_login_url "mapnv" %}">{% trans "Connexion via Mapnv" %}</a>
-</div>
+{% endif %}

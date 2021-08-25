@@ -243,6 +243,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "geomapshark.context_processors.two_factor_setting",
+                "geomapshark.context_processors.social_login_mapnv_setting",
                 "permits.context_processors.step_type",
             ],
         },
