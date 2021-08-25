@@ -272,6 +272,8 @@ traitlets==5.0.5
     #   matplotlib-inline
 typed-ast==1.4.3
     # via black
+uritemplate==3.0.1
+    # via -r requirements.txt
 urllib3==1.26.7
     # via
     #   -r requirements.txt

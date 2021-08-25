@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from django.db.models import CharField, F, Prefetch, Q
 from rest_framework import viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
+from django_wfs3.mixins import WFS3DescribeModelMixin
 
 from . import geoservices, models, serializers, services
 from constance import config
@@ -133,7 +134,7 @@ class BlockRequesterUserPermission(BasePermission):
             return user.get_all_permissions()
 
 
-class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
+class PermitRequestViewSet(WFS3DescribeModelMixin, viewsets.ReadOnlyModelViewSet):
     """
     Permit request endpoint Usage:
         1.- /rest/permits/?permit_request_id=1
@@ -144,6 +145,7 @@ class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = serializers.PermitRequestPrintSerializer
     permission_classes = [BlockRequesterUserPermission]
+
 
     def get_queryset(self):
         """
