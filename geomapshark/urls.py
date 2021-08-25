@@ -48,7 +48,7 @@ if settings.ENABLE_2FA:
         # Callback from allauth
         path(
             "account/login/",
-            LoginView.as_view(template_name="two_factor/login.html"),
+            views.CustomLoginView.as_view(template_name="two_factor/login.html"),
             name="account_login",
         ),
         path(
@@ -76,7 +76,12 @@ else:
             views.CustomLoginView.as_view(template_name="registration/login.html"),
             name="login",
         ),
-        path("account/login/", auth_views.LoginView.as_view(), name="account_login"),
+        # Callback from allauth
+        path(
+            "account/login/",
+            views.CustomLoginView.as_view(template_name="registration/login.html"),
+            name="account_login",
+        ),
     ]
 
 urlpatterns += [

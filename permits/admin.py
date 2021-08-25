@@ -236,7 +236,7 @@ class DepartmentAdminForm(forms.ModelForm):
             raise forms.ValidationError(
                 {
                     "administrative_entity": _(
-                        "Un groupe non integrator doit avoir une entité entité administrative"
+                        "Un groupe non integrator doit avoir une entité administrative"
                     )
                 }
             )
