@@ -8,6 +8,7 @@ def two_factor_setting(request):
 
 def social_login_mapnv_setting(request):
     return {
-        "social_login_mapnv": "APP" in settings.SOCIALACCOUNT_PROVIDERS["mapnv"].keys()
+        "has_social_login_mapnv": "APP"
+        in settings.SOCIALACCOUNT_PROVIDERS["mapnv"].keys()
         or SocialApp.objects.filter(provider="mapnv").exists()
     }
