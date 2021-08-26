@@ -67,9 +67,14 @@ def get_field_cls_for_property(prop):
         models.WorksObjectProperty.INPUT_TYPE_FILE: forms.FileField,
         models.WorksObjectProperty.INPUT_TYPE_ADDRESS: forms.CharField,
         models.WorksObjectProperty.INPUT_TYPE_DATE: forms.DateField,
+        models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE: forms.ChoiceField,
+        models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE: forms.MultipleChoiceField,
     }
 
-    return input_type_mapping[prop.input_type]
+    try:
+        return input_type_mapping[prop.input_type]
+    except KeyError as e:
+        raise KeyError(f"Field of type {e} is not supported.")
 
 
 def regroup_by_ofs_id(entities):
@@ -307,82 +312,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         `get_field_cls_for_property`.
         """
         field_class = get_field_cls_for_property(prop)
-        if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_TEXT:
-            field_instance = field_class(
-                **self.get_field_kwargs(prop),
-                widget=forms.Textarea(
-                    attrs={
-                        "rows": 1,
-                        "placeholder": ("ex: " + prop.placeholder)
-                        if prop.placeholder != ""
-                        else "",
-                    },
-                ),
-                help_text=prop.help_text if prop.help_text != "" else "",
-            )
-        elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_ADDRESS:
-            field_instance = field_class(
-                **self.get_field_kwargs(prop),
-                widget=AddressWidget(
-                    autocomplete_options={"single_address_field": True},
-                    attrs={
-                        "placeholder": ("ex: " + prop.placeholder)
-                        if prop.placeholder != ""
-                        else ""
-                    },
-                ),
-                help_text=prop.help_text if prop.help_text != "" else "",
-            )
-        elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_DATE:
-            field_instance = field_class(
-                **self.get_field_kwargs(prop),
-                input_formats=[settings.DATE_INPUT_FORMAT],
-                widget=DatePickerInput(
-                    options={
-                        "format": "DD.MM.YYYY",
-                        "locale": "fr-CH",
-                        "useCurrent": False,
-                        "minDate": "1900/01/01",
-                        "maxDate": "2100/12/31",
-                    },
-                    attrs={
-                        "placeholder": ("ex: " + prop.placeholder)
-                        if prop.placeholder != ""
-                        else ""
-                    },
-                ),
-                help_text=prop.help_text if prop.help_text != "" else "",
-            )
-        elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_NUMBER:
-            field_instance = field_class(
-                **self.get_field_kwargs(prop),
-                widget=forms.NumberInput(
-                    attrs={
-                        "placeholder": ("ex: " + prop.placeholder)
-                        if prop.placeholder != ""
-                        else ""
-                    },
-                ),
-                help_text=prop.help_text if prop.help_text != "" else "",
-            )
-        elif prop.input_type == models.WorksObjectProperty.INPUT_TYPE_FILE:
-            file_size_mb = int(config.MAX_FILE_UPLOAD_SIZE / 1048576)
-            default_help_text = (
-                "Le fichier doit faire moins de "
-                + str(file_size_mb)
-                + " Megatoctet. Les extensions autorisées : "
-                + config.ALLOWED_FILE_EXTENSIONS
-            )
-            field_instance = field_class(
-                **self.get_field_kwargs(prop),
-                help_text=prop.help_text if prop.help_text != "" else default_help_text,
-                validators=[services.validate_file],
-            )
-        else:
-            field_instance = field_class(
-                **self.get_field_kwargs(prop),
-                help_text=prop.help_text if prop.help_text != "" else "",
-            )
+        field_instance = field_class(**self.get_field_kwargs(prop))
 
         return field_instance
 
@@ -390,9 +320,113 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         """
         Return the options used when instanciating the field for the given `prop`.
         """
-        return {
+        default_kwargs = {
             "required": self.enable_required and prop.is_mandatory,
             "label": prop.name,
+            "help_text": prop.help_text if prop.help_text != "" else "",
+        }
+
+        extra_kwargs = {
+            models.WorksObjectProperty.INPUT_TYPE_TEXT: self.get_text_field_kwargs,
+            models.WorksObjectProperty.INPUT_TYPE_ADDRESS: self.get_address_field_kwargs,
+            models.WorksObjectProperty.INPUT_TYPE_DATE: self.get_date_field_kwargs,
+            models.WorksObjectProperty.INPUT_TYPE_NUMBER: self.get_number_field_kwargs,
+            models.WorksObjectProperty.INPUT_TYPE_FILE: self.get_file_field_kwargs,
+            models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE: self.get_list_single_field_kwargs,
+            models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE: self.get_list_multiple_field_kwargs,
+        }
+
+        try:
+            return extra_kwargs[prop.input_type](prop, default_kwargs)
+        except KeyError:
+            return default_kwargs
+
+    def get_text_field_kwargs(self, prop, default_kwargs):
+        return {
+            **default_kwargs,
+            "widget": forms.Textarea(
+                attrs={
+                    "rows": 1,
+                    "placeholder": ("ex: " + prop.placeholder)
+                    if prop.placeholder != ""
+                    else "",
+                },
+            ),
+        }
+
+    def get_address_field_kwargs(self, prop, default_kwargs):
+        return {
+            **default_kwargs,
+            "widget": AddressWidget(
+                autocomplete_options={"single_address_field": True},
+                attrs={
+                    "placeholder": ("ex: " + prop.placeholder)
+                    if prop.placeholder != ""
+                    else ""
+                },
+            ),
+        }
+
+    def get_date_field_kwargs(self, prop, default_kwargs):
+        return {
+            **default_kwargs,
+            "input_formats": [settings.DATE_INPUT_FORMAT],
+            "widget": DatePickerInput(
+                options={
+                    "format": "DD.MM.YYYY",
+                    "locale": "fr-CH",
+                    "useCurrent": False,
+                    "minDate": "1900/01/01",
+                    "maxDate": "2100/12/31",
+                },
+                attrs={
+                    "placeholder": ("ex: " + prop.placeholder)
+                    if prop.placeholder != ""
+                    else ""
+                },
+            ),
+        }
+
+    def get_number_field_kwargs(self, prop, default_kwargs):
+        return {
+            **default_kwargs,
+            "widget": forms.NumberInput(
+                attrs={
+                    "placeholder": ("ex: " + prop.placeholder)
+                    if prop.placeholder != ""
+                    else ""
+                },
+            ),
+        }
+
+    def get_file_field_kwargs(self, prop, default_kwargs):
+        file_size_mb = int(config.MAX_FILE_UPLOAD_SIZE / 1048576)
+        default_help_text = (
+            "Le fichier doit faire moins de "
+            + str(file_size_mb)
+            + " Megatoctet. Les extensions autorisées : "
+            + config.ALLOWED_FILE_EXTENSIONS
+        )
+
+        return {
+            **default_kwargs,
+            "validators": [services.validate_file],
+            "help_text": prop.help_text if prop.help_text != "" else default_help_text,
+        }
+
+    def get_list_single_field_kwargs(self, prop, default_kwargs):
+        choices = [("", "")] + [(value, value) for value in prop.choices.splitlines()]
+
+        return {
+            **default_kwargs,
+            "choices": choices,
+        }
+
+    def get_list_multiple_field_kwargs(self, prop, default_kwargs):
+        return {
+            **default_kwargs,
+            "choices": [(value, value) for value in prop.choices.splitlines()],
+            "widget": forms.CheckboxSelectMultiple(),
         }
 
     def save(self):

@@ -1,3 +1,4 @@
+import collections
 import dataclasses
 import enum
 
@@ -12,13 +13,13 @@ from django.core.validators import (
     RegexValidator,
 )
 from django.db import models
+from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
-from taggit.models import TagBase, GenericTaggedItemBase
 
 from . import fields
 
@@ -49,6 +50,10 @@ ACTOR_TYPE_CHOICES = (
     (ACTOR_TYPE_ENGINEER, _("Architecte/Ingénieur")),
     (ACTOR_TYPE_WORKDIRECTOR, _("Direction des travaux")),
 )
+
+# Input types
+INPUT_TYPE_LIST_SINGLE = "list_single"
+INPUT_TYPE_LIST_MULTIPLE = "list_multiple"
 
 # Actions
 ACTION_AMEND = "amend"
@@ -656,6 +661,8 @@ class WorksObjectProperty(models.Model):
     INPUT_TYPE_FILE = "file"
     INPUT_TYPE_ADDRESS = "address"
     INPUT_TYPE_DATE = "date"
+    INPUT_TYPE_LIST_SINGLE = INPUT_TYPE_LIST_SINGLE
+    INPUT_TYPE_LIST_MULTIPLE = INPUT_TYPE_LIST_MULTIPLE
     INPUT_TYPE_CHOICES = (
         (INPUT_TYPE_TEXT, _("Texte")),
         (INPUT_TYPE_CHECKBOX, _("Case à cocher")),
@@ -663,6 +670,8 @@ class WorksObjectProperty(models.Model):
         (INPUT_TYPE_FILE, _("Fichier")),
         (INPUT_TYPE_ADDRESS, _("Adresse")),
         (INPUT_TYPE_DATE, _("Date")),
+        (INPUT_TYPE_LIST_SINGLE, _("Choix simple")),
+        (INPUT_TYPE_LIST_MULTIPLE, _("Choix multiple")),
     )
     integrator = models.ForeignKey(
         Group,
@@ -687,14 +696,52 @@ class WorksObjectProperty(models.Model):
     works_object_types = models.ManyToManyField(
         WorksObjectType, verbose_name=_("objets des travaux"), related_name="properties"
     )
+    choices = models.TextField(
+        verbose_name=_("valeurs à choix"),
+        blank=True,
+        help_text=_("Entrez un choix par ligne"),
+    )
 
     class Meta(object):
         ordering = ["order"]
         verbose_name = _("1.5 Configuration du champ")
         verbose_name_plural = _("1.5 Configuration des champs")
+        constraints = [
+            models.CheckConstraint(
+                check=~(
+                    Q(input_type__in=[INPUT_TYPE_LIST_SINGLE, INPUT_TYPE_LIST_MULTIPLE])
+                    & Q(choices="")
+                ),
+                name="choices_not_empty_for_lists",
+            )
+        ]
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        if self.input_type in [INPUT_TYPE_LIST_SINGLE, INPUT_TYPE_LIST_MULTIPLE]:
+            if not self.choices:
+                raise ValidationError({"choices": _("This field is required.")})
+            else:
+                split_choices = [
+                    choice.strip() for choice in self.choices.strip().splitlines()
+                ]
+                counter = collections.Counter(split_choices)
+                duplicates = [choice for choice, count in counter.items() if count > 1]
+
+                if duplicates:
+                    raise ValidationError(
+                        {
+                            "choices": _(
+                                "Les valeurs suivantes apparaissent plusieurs fois dans la liste : {} "
+                            ).format(", ".join(duplicates))
+                        }
+                    )
+
+                self.choices = "\n".join(split_choices)
+        else:
+            self.choices = ""
 
 
 class WorksObjectPropertyValue(models.Model):

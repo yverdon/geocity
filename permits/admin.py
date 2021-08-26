@@ -612,9 +612,13 @@ class WorksObjectPropertyForm(forms.ModelForm):
             "integrator",
             "order",
             "input_type",
+            "choices",
             "is_mandatory",
             "works_object_types",
         ]
+
+    class Media:
+        js = ("js/admin/works_object_property.js",)
 
 
 class WorksObjectPropertyAdmin(

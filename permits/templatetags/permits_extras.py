@@ -3,6 +3,7 @@ import os.path
 
 from django import template
 from django.forms import modelformset_factory
+from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 from permits import forms, models, services
 
@@ -68,3 +69,15 @@ def permit_request_summary(context, permit_request):
 @register.filter(name="json")
 def json_(value):
     return json.dumps(value)
+
+
+@register.filter
+def human_field_value(value):
+    if isinstance(value, bool):
+        return _("Oui") if value else _("Non")
+    elif isinstance(value, list):
+        return render_to_string("permits/_field_value_list.html", {"values": value})
+    elif not value:
+        return "-"
+
+    return value

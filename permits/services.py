@@ -404,7 +404,7 @@ def get_permit_requests_list_for_user(user):
 
 def get_actors_types(permit_request):
     """
-        Get actors type defined for each work type defined for the permit_request
+    Get actors type defined for each work type defined for the permit_request
     """
 
     return models.PermitActorType.objects.filter(
@@ -414,7 +414,7 @@ def get_actors_types(permit_request):
 
 def filter_only_missing_actor_types(actor_types, permit_request):
     """
-        Filter the given `actor_types` to return only the ones that have not been set in the given `permit_request`.
+    Filter the given `actor_types` to return only the ones that have not been set in the given `permit_request`.
     """
 
     existing_actor_types = permit_request.permit_request_actors.values_list(
@@ -430,7 +430,7 @@ def filter_only_missing_actor_types(actor_types, permit_request):
 
 def get_missing_required_actor_types(permit_request):
     """
-        Get actors type required but not filled
+    Get actors type required but not filled
     """
 
     return filter_only_missing_actor_types(
