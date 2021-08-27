@@ -8,7 +8,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import include, path
 from rest_framework import routers
 
-from mapnv.provider import MapnvProvider
+from accounts.geomapfish.provider import GeomapfishProvider
 from permits import api
 from permits import views as permits_views
 
@@ -74,7 +74,7 @@ else:
 
 urlpatterns += [
     path("accounts/social/", include("allauth.socialaccount.urls")),
-] + default_urlpatterns(MapnvProvider)
+] + default_urlpatterns(GeomapfishProvider)
 
 urlpatterns += [
     path("account/logout/", views.logout_view, name="logout",),

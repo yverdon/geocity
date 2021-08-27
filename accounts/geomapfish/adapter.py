@@ -7,11 +7,11 @@ from django.conf import settings
 from permits.models import PermitAuthor
 
 
-class MapnvAdapterError(Exception):
+class GeomapfishAdapterError(Exception):
     pass
 
 
-class MapnvSocialAccountAdapter(DefaultSocialAccountAdapter):
+class GeomapfishSocialAccountAdapter(DefaultSocialAccountAdapter):
     def get_signup_form_initial_data(self, sociallogin):
         user = sociallogin.user
         initial = {
@@ -26,7 +26,7 @@ class MapnvSocialAccountAdapter(DefaultSocialAccountAdapter):
         if not form:
             # A subscription form is enforced by settings.SOCIALACCOUNT_AUTO_SIGNUP
             # If subscription form is bypassed, the subscription can't proceed.
-            raise MapnvAdapterError("Subscription form is missing.")
+            raise GeomapfishAdapterError("Subscription form is missing.")
 
         user = sociallogin.user
         user.set_unusable_password()

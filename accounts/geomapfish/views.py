@@ -5,19 +5,19 @@ from allauth.socialaccount.providers.oauth2.views import (
     OAuth2LoginView,
     OAuth2CallbackView,
 )
-from .provider import MapnvProvider
+from .provider import GeomapfishProvider
 from django.conf import settings
 
 
-class MapnvAdapter(OAuth2Adapter):
-    provider_id = MapnvProvider.id
+class GeomapfishAdapter(OAuth2Adapter):
+    provider_id = GeomapfishProvider.id
 
     # Fetched programmatically, must be reachable from container
-    access_token_url = "{}/oauth/token".format(settings.AUTH_PROVIDER_MAPNV_URL)
+    access_token_url = "{}/oauth/token".format(settings.AUTH_PROVIDER_GEOMAPFISH_URL)
 
-    # URL to reach Mapnv login form
-    authorize_url = "{}/oauth/login".format(settings.AUTH_PROVIDER_MAPNV_URL)
-    profile_url = "{}/loginuser".format(settings.AUTH_PROVIDER_MAPNV_URL)
+    # URL to reach Geomapfish login form
+    authorize_url = "{}/oauth/login".format(settings.AUTH_PROVIDER_GEOMAPFISH_URL)
+    profile_url = "{}/loginuser".format(settings.AUTH_PROVIDER_GEOMAPFISH_URL)
 
     def complete_login(self, request, app, token, **kwargs) -> SocialLogin:
         headers = {"Authorization": "Bearer {0}".format(token.token)}
@@ -26,5 +26,5 @@ class MapnvAdapter(OAuth2Adapter):
         return self.get_provider().sociallogin_from_response(request, extra_data)
 
 
-oauth2_login = OAuth2LoginView.adapter_view(MapnvAdapter)
-oauth2_callback = OAuth2CallbackView.adapter_view(MapnvAdapter)
+oauth2_login = OAuth2LoginView.adapter_view(GeomapfishAdapter)
+oauth2_callback = OAuth2CallbackView.adapter_view(GeomapfishAdapter)

@@ -4,19 +4,19 @@ from allauth.socialaccount.providers.oauth2.provider import OAuth2Provider
 from django.conf import settings
 
 
-class MapnvAccount(ProviderAccount):
+class GeomapfishAccount(ProviderAccount):
     pass
 
 
-class MapnvProvider(OAuth2Provider):
+class GeomapfishProvider(OAuth2Provider):
 
-    id = "mapnv"
-    name = "Mapnv"
-    account_class = MapnvAccount
+    id = "geomapfish"
+    name = "Geomapfish"
+    account_class = GeomapfishAccount
 
     def extract_uid(self, data):
         """
-        Unique ID in mapnv is the username.
+        Unique ID in geomapfish is the username.
         """
         return str(data["username"])
 
@@ -34,4 +34,4 @@ class MapnvProvider(OAuth2Provider):
         return scope
 
 
-provider_classes = [MapnvProvider]
+provider_classes = [GeomapfishProvider]

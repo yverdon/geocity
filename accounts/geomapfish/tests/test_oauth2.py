@@ -3,20 +3,20 @@ import json
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
-from ..provider import MapnvProvider
+from ..provider import GeomapfishProvider
 from allauth.socialaccount.tests import OAuth2TestsMixin
 from allauth.tests import MockedResponse, TestCase
 
 
 User = get_user_model()
 
-# Mapnv profile_url success response mock.
+# Geomapfish profile_url success response mock.
 # Happen if login succeeded.
-# That's all the data we can get from MAPNV.
+# That's all the data we can get from GEOMAPFISH.
 # For now, we use only username & email.
 profile_response_mock = {
     "username": "test",
-    "email": "olm@ylb.ch",
+    "email": "noone@nowhere.noexist",
     "functionalities": {
         "default_basemap": [],
         "default_theme": [],
@@ -50,8 +50,8 @@ profile_response_mock = {
 }
 
 
-class MapnvOAuth2Tests(OAuth2TestsMixin, TestCase):
-    provider_id = MapnvProvider.id
+class GeomapfishOAuth2Tests(OAuth2TestsMixin, TestCase):
+    provider_id = GeomapfishProvider.id
 
     def get_mocked_response(self, email="foo@bar.ch", username="test"):
         profile_response_mock.update(
