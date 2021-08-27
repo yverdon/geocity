@@ -81,7 +81,7 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "mapnv",
+    "accounts.geomapfish",
     "constance",
     "constance.backends.database",
     "simple_history",
@@ -187,7 +187,7 @@ CONSTANCE_CONFIG = {
     ),
     "MAX_FILE_UPLOAD_SIZE": (10485760, "Taille maximum des fichiers uploadé", int,),
     "GEOCALENDAR_URL": (
-        "https://geocity.mapnv.ch/geocalendar",
+        "https://geocity.ch/app",
         "URL de l'application calendrier cartographique",
         str,
     ),
@@ -243,7 +243,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "geomapshark.context_processors.two_factor_setting",
-                "geomapshark.context_processors.social_login_mapnv_setting",
+                "geomapshark.context_processors.social_login_geomapfish_setting",
                 "permits.context_processors.step_type",
             ],
         },
@@ -257,16 +257,16 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-AUTH_PROVIDER_MAPNV_URL = "https://mapnv.ch/preprod_26_2fa"
+AUTH_PROVIDER_GEOMAPFISH_URL = os.getenv("AUTH_PROVIDER_GEOMAPFISH_URL", "")
 
 SOCIALACCOUNT_PROVIDERS = {
-    "mapnv": {
+    "accounts.geomapfish": {
         # Override SocialApp fields with an "APP" settings.
         # SocialApp object => /admin/socialaccount/socialapp.
         # Example:
         # "APP": {
         #     "client_id": "dev-liip",
-        #     "secret": os.getenv("MAPNV_SECRET"),
+        #     "secret": os.getenv("GEOMAPFISH_SECRET"),
         #     "key": "",
         #     "certificate_key": ""
         # },
@@ -276,8 +276,8 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 # Override SocialAccountAdapter to customize User creation
-SOCIALACCOUNT_ADAPTER = "mapnv.adapter.MapnvSocialAccountAdapter"
-SOCIALACCOUNT_FORMS = {"signup": "mapnv.forms.MapnvSocialSignupForm"}
+SOCIALACCOUNT_ADAPTER = "accounts.geomapfish.adapter.GeomapfishSocialAccountAdapter"
+SOCIALACCOUNT_FORMS = {"signup": "accounts.geomapfish.forms.GeomapfishSocialSignupForm"}
 SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 

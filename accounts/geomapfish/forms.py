@@ -7,7 +7,7 @@ from permits.forms import AddressWidget
 from django.utils.translation import gettext_lazy as _
 
 
-class MapnvSocialSignupForm(SignupForm):
+class GeomapfishSocialSignupForm(SignupForm):
     first_name = forms.CharField(
         max_length=30,
         label=_("Prénom"),
@@ -81,7 +81,7 @@ class MapnvSocialSignupForm(SignupForm):
     )
 
     def __init__(self, *args, **kwargs):
-        super(MapnvSocialSignupForm, self).__init__(*args, **kwargs)
+        super(GeomapfishSocialSignupForm, self).__init__(*args, **kwargs)
         self.fields["username"].label = _("Nom d’utilisateur")
         self.fields["username"].disabled = True
         self.fields["email"].disabled = True
