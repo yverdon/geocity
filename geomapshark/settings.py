@@ -280,6 +280,7 @@ SOCIALACCOUNT_ADAPTER = "accounts.geomapfish.adapter.GeomapfishSocialAccountAdap
 SOCIALACCOUNT_FORMS = {"signup": "accounts.geomapfish.forms.GeomapfishSocialSignupForm"}
 SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = None
 
 BOOTSTRAP4 = {
     "include_jquery": True,
