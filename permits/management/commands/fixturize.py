@@ -84,7 +84,8 @@ def reset_db():
 
     # sprint-7/yc-357: This was removed from the atomic transaction because
     # Addfield and AlterField operations are performed, thus generating a:
-    # django.db.utils.OperationalError: cannot ALTER TABLE "permits_permitdepartment" because it has pending trigger events.
+    # django.db.utils.OperationalError: cannot ALTER TABLE "permits_permitdepartment"
+    # because it has pending trigger events.
     management.call_command("migrate", "--noinput", stdout=StringIO())
 
 
@@ -93,6 +94,8 @@ class Command(BaseCommand):
         self.stdout.write("Resetting database...")
         reset_db()
         with transaction.atomic():
+            self.stdout.write("Setup base Site object...")
+            self.setup_site()
             self.stdout.write("Creating users...")
             self.create_users()
             self.stdout.write("Creating works types and objs...")
@@ -103,6 +106,10 @@ class Command(BaseCommand):
             self.create_geom_layer_entity()
             self.stdout.write("Creating template customizations...")
             self.create_template_customization()
+
+    def setup_site(self):
+        # FIXME Get or create Site, set domain name
+        pass
 
     def create_users(self):
 

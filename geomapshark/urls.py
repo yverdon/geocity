@@ -1,5 +1,6 @@
 import logging
 
+from allauth.socialaccount.providers.oauth2.urls import default_urlpatterns
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -7,6 +8,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import include, path
 from rest_framework import routers
 
+from accounts.geomapfish.provider import GeomapfishProvider
 from permits import api
 from permits import views as permits_views
 
@@ -46,7 +48,7 @@ if settings.ENABLE_2FA:
         path(
             "account/login/",
             views.CustomLoginView.as_view(template_name="two_factor/login.html"),
-            name="login",
+            name="account_login",
         ),
         path(
             "account/two_factor/",
@@ -66,10 +68,13 @@ else:
         path(
             "account/login/",
             views.CustomLoginView.as_view(template_name="registration/login.html"),
-            name="login",
+            name="account_login",
         ),
     ]
 
+urlpatterns += [
+    path("accounts/social/", include("allauth.socialaccount.urls")),
+] + default_urlpatterns(GeomapfishProvider)
 
 urlpatterns += [
     path("account/logout/", views.logout_view, name="logout",),

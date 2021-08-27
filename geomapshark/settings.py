@@ -61,6 +61,11 @@ TAGGIT_TAGS_FROM_STRING = "permits.utils.comma_splitter"
 ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 LOCAL_IP_WHITELIST = os.getenv("LOCAL_IP_WHITELIST")
 
+# Allauth requirement
+SITE_ID = 1
+SITE_DOMAIN = os.getenv("SITE_DOMAIN", "localhost")
+SITE_HTTPS = bool(int(os.getenv("SITE_HTTPS", True)))
+
 # Application definition
 INSTALLED_APPS = [
     "adminsortable2",
@@ -72,6 +77,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.gis",
+    "django.contrib.sites",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "accounts.geomapfish",
     "constance",
     "constance.backends.database",
     "simple_history",
@@ -112,6 +122,7 @@ if ENABLE_2FA:
     MIDDLEWARE += ["django_otp.middleware.OTPMiddleware"]
 
 MIDDLEWARE += [
+    "django.contrib.sites.middleware.CurrentSiteMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -176,7 +187,7 @@ CONSTANCE_CONFIG = {
     ),
     "MAX_FILE_UPLOAD_SIZE": (10485760, "Taille maximum des fichiers uploadé", int,),
     "GEOCALENDAR_URL": (
-        "https://geocity.mapnv.ch/geocalendar",
+        "https://geocity.ch/app",
         "URL de l'application calendrier cartographique",
         str,
     ),
@@ -232,11 +243,44 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "geomapshark.context_processors.two_factor_setting",
+                "geomapshark.context_processors.social_login_geomapfish_setting",
                 "permits.context_processors.step_type",
             ],
         },
     },
 ]
+
+AUTHENTICATION_BACKENDS = [
+    # Classic django authentication backend
+    "django.contrib.auth.backends.ModelBackend",
+    # SocialAccount authentication backend with allauth
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+AUTH_PROVIDER_GEOMAPFISH_URL = os.getenv("AUTH_PROVIDER_GEOMAPFISH_URL", "")
+
+SOCIALACCOUNT_PROVIDERS = {
+    "accounts.geomapfish": {
+        # Override SocialApp fields with an "APP" settings.
+        # SocialApp object => /admin/socialaccount/socialapp.
+        # Example:
+        # "APP": {
+        #     "client_id": "dev-liip",
+        #     "secret": os.getenv("GEOMAPFISH_SECRET"),
+        #     "key": "",
+        #     "certificate_key": ""
+        # },
+        "SCOPE": ["email"],
+        "VERIFIED_EMAIL": True,
+    }
+}
+
+# Override SocialAccountAdapter to customize User creation
+SOCIALACCOUNT_ADAPTER = "accounts.geomapfish.adapter.GeomapfishSocialAccountAdapter"
+SOCIALACCOUNT_FORMS = {"signup": "accounts.geomapfish.forms.GeomapfishSocialSignupForm"}
+SOCIALACCOUNT_AUTO_SIGNUP = False
+SOCIALACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = None
 
 BOOTSTRAP4 = {
     "include_jquery": True,

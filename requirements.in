@@ -29,4 +29,7 @@ django-constance[database]
 django-two-factor-auth[phonenumbers]
 django-taggit
 filetype
+# Open authentication provider
 django-oauth-toolkit
+# Open authentication consumer
+django-allauth

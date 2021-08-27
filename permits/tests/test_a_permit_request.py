@@ -2710,6 +2710,8 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             permit_request=permit_request, works_object_type=private_works_object_type
         )
 
+        # Fixme without any WorksObject created, returns 404
+
         response = self.client.get(
             reverse(
                 "permits:permit_request_select_objects",

@@ -229,6 +229,35 @@ Used `_` instead of `:` for `Define the category separator` because the characte
 
 ## OAuth2
 
-[Access to a ressources with QGIS](docs/OAuth2_Qgis.md)
+### Geocity as a OAuth2 server
+* [Access to a ressources with QGIS](docs/OAuth2_Qgis.md)
+* [Access to a ressources with a bearer token](docs/OAuth2_access_api.md)
 
-[Access to a ressources with a bearer token](docs/OAuth2_access_api.md)
+### Consuming OAuth2 providers
+You can login with a GEOMAPFISH account if you have one.
+* Create a SocialApp using the geomapfish provider.
+* Add the fields required for oauth2 process:
+```
+client_id
+secret
+key
+certificate_key
+```
+* Save the SocialApp, the GEOMAPFISH login is ready to use.
+* Don't create 2 SocialApp with the same provider.
+
+* Redirect URI configuration in oAuth provider for dev
+```
+http://localhost:9095/geomapfish/login/callback/
+```
+
+**Optional:**
+
+Create a setting `SOCIALACCOUNT_PROVIDERS["geomapfish"]["APP"]` containing a dict with the same keys,
+(`client_id`, `secret`, `key`, `certificate_key`).
+This will override the data of any SocialApp with provider geomapfish.
+
+**Warning:**
+
+Geomapfish login process will raise an error if no APP settings and no SocialApp
+object are present.

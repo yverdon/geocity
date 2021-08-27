@@ -27,9 +27,9 @@ def logout_view(request):
     )
     logout(request)
     return redirect(
-        f'{reverse("login")}?template={templatename}'
+        f'{reverse("account_login")}?template={templatename}'
         if templatename
-        else reverse("login")
+        else reverse("account_login")
     )
 
 

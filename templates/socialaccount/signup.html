@@ -1,0 +1,18 @@
+{% extends "permits/permit_request_author.html" %}
+{% load i18n %}
+{% load bootstrap4 %}
+
+{% block content-fluid %}
+  <div class = "container">
+    <br>
+    <h3>{% trans "Mon compte (Géoportail)" %}</h3>
+    <hr>
+    <form method='POST' action='' enctype="multipart/form-data" novalidate id="actor-form">
+      {% csrf_token %}
+      {% bootstrap_form form layout='horizontal'%}
+      {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary mr-3" value="Enregistrer" %}
+      <a href="{% url 'permits:permit_requests_list' %}">{% trans "Annuler" %}</a>
+    </form>
+    <br>
+  </div>
+{% endblock %}

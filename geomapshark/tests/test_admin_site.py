@@ -42,7 +42,7 @@ if settings.ENABLE_2FA:
             self.assertRedirects(
                 response,
                 "%s?next=%s"
-                % (resolve_url("login"), reverse(settings.LOGIN_REDIRECT_URL)),
+                % (resolve_url("account_login"), reverse(settings.LOGIN_REDIRECT_URL)),
             )
 
         def test_superuser_get_admin_after_login_but_not_otp_verified(self):
