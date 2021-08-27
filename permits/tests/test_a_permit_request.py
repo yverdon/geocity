@@ -1046,6 +1046,163 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         # Check that 3 types are visibles
         self.assertEqual(3, len(element_parsed))
 
+    def test_missing_mandatory_list_values_show_error(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory(permit_request=permit_request)
+        works_object_type = permit_request.works_object_types.first()
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        list_single_prop = factories.WorksObjectPropertyFactory(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE,
+            choices="foo\nbar",
+            is_mandatory=True,
+        )
+        list_multiple_prop = factories.WorksObjectPropertyFactory(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE,
+            choices="foo\nbar",
+            is_mandatory=True,
+        )
+        for prop in [list_single_prop, list_multiple_prop]:
+            prop.works_object_types.set(permit_request.works_object_types.all())
+
+        data = {
+            f"properties-{works_object_type.pk}_{list_single_prop.pk}": "",
+        }
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=data,
+        )
+        self.assertFormError(
+            response,
+            "permit_request_form",
+            f"{works_object_type.pk}_{list_single_prop.pk}",
+            ["Ce champ est obligatoire."],
+        )
+        self.assertFormError(
+            response,
+            "permit_request_form",
+            f"{works_object_type.pk}_{list_multiple_prop.pk}",
+            ["Ce champ est obligatoire."],
+        )
+
+    def test_list_multiple_value_is_stored_as_list(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory(permit_request=permit_request)
+        works_object_type = permit_request.works_object_types.first()
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        list_multiple_prop = factories.WorksObjectPropertyFactory(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE,
+            choices="foo\nbar",
+        )
+        list_multiple_prop.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+
+        data = {
+            f"properties-{works_object_type.pk}_{list_multiple_prop.pk}": [
+                "foo",
+                "bar",
+            ],
+        }
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=data,
+        )
+        self.assertEqual(
+            services.get_property_value(
+                models.WorksObjectPropertyValue.objects.first()
+            ),
+            ["foo", "bar"],
+        )
+
+    def test_list_single_value_is_stored_as_list(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory(permit_request=permit_request)
+        works_object_type = permit_request.works_object_types.first()
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        list_multiple_prop = factories.WorksObjectPropertyFactory(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE,
+            choices="foo\nbar",
+        )
+        list_multiple_prop.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+
+        data = {f"properties-{works_object_type.pk}_{list_multiple_prop.pk}": "foo"}
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=data,
+        )
+        self.assertEqual(
+            services.get_property_value(
+                models.WorksObjectPropertyValue.objects.first()
+            ),
+            ["foo"],
+        )
+
+    def test_input_is_restricted_to_list_values(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        factories.WorksObjectTypeChoiceFactory(permit_request=permit_request)
+        works_object_type = permit_request.works_object_types.first()
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        list_single_prop = factories.WorksObjectPropertyFactory(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE,
+            choices="foo\nbar",
+            is_mandatory=True,
+        )
+        list_multiple_prop = factories.WorksObjectPropertyFactory(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE,
+            choices="foo\nbar",
+            is_mandatory=True,
+        )
+        for prop in [list_single_prop, list_multiple_prop]:
+            prop.works_object_types.set(permit_request.works_object_types.all())
+
+        data = {
+            f"properties-{works_object_type.pk}_{list_single_prop.pk}": "baz",
+            f"properties-{works_object_type.pk}_{list_multiple_prop.pk}": ["baz"],
+        }
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=data,
+        )
+
+        self.assertFormError(
+            response,
+            "permit_request_form",
+            f"{works_object_type.pk}_{list_single_prop.pk}",
+            ["Sélectionnez un choix valide. baz n’en fait pas partie."],
+        )
+        self.assertFormError(
+            response,
+            "permit_request_form",
+            f"{works_object_type.pk}_{list_multiple_prop.pk}",
+            ["Sélectionnez un choix valide. baz n’en fait pas partie."],
+        )
+
 
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):

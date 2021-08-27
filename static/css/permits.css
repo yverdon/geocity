@@ -106,11 +106,11 @@ input:focus {
 }
 
 /* App specific */
-.required label {
+.required > label {
   font-weight: bold;
 }
 
-.required label:after {
+.required > label:after {
   content: " *";
 }
 
