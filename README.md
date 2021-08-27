@@ -246,6 +246,11 @@ certificate_key
 * Save the SocialApp, the GEOMAPFISH login is ready to use.
 * Don't create 2 SocialApp with the same provider.
 
+* Redirect URI configuration in oAuth provider for dev
+```
+http://localhost:9095/geomapfish/login/callback/
+```
+
 **Optional:**
 
 Create a setting `SOCIALACCOUNT_PROVIDERS["geomapfish"]["APP"]` containing a dict with the same keys,
