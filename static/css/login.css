@@ -50,6 +50,17 @@ body {
   float: left;
 }
 
+#landing-page-link {
+  display:block;
+  position:absolute;
+  float:center;
+  bottom:50px;
+  left:40%;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+
 @media (max-width: 768px) {
 
   #login-content {
@@ -103,4 +114,14 @@ body {
   .application-title {
     visibility: visible !important;
   }
+
+  #landing-page-link {
+    display:block;
+    position:absolute;
+    float:center;
+    bottom:10px;
+    left:40%;
+    font-size: 12px;
+  }
+  
 }
