@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "accounts.geomapfish",
+    "accounts.dootix",
     "constance",
     "constance.backends.database",
     "simple_history",

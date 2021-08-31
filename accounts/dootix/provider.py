@@ -16,7 +16,7 @@ class DootixProvider(OAuth2Provider):
 
     def extract_uid(self, data):
         """
-        Unique ID in geomapfish is the username.
+        Unique ID in dootix is the username.
         """
         return str(data["username"])
 
