@@ -12,3 +12,11 @@ def social_login_geomapfish_setting(request):
         in settings.SOCIALACCOUNT_PROVIDERS["accounts.geomapfish"].keys()
         or SocialApp.objects.filter(provider="geomapfish").exists()
     }
+
+
+def social_login_dootix_setting(request):
+    return {
+        "has_social_login_dootix": "APP"
+        in settings.SOCIALACCOUNT_PROVIDERS["accounts.dootix"].keys()
+        or SocialApp.objects.filter(provider="dootix").exists()
+    }

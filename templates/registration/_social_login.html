@@ -2,3 +2,7 @@
 {% if has_social_login_geomapfish %}
   <a href="{% provider_login_url "geomapfish" %}">{% trans "Connexion via le Géoportail" %}</a>
 {% endif %}
+{% if has_social_login_dootix %}
+  <a href="{% provider_login_url "dootix" %}">{% trans "Connexion via Dootix" %}</a>
+{% endif %}
+
