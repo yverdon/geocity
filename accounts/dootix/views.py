@@ -16,8 +16,8 @@ class DootixAdapter(OAuth2Adapter):
     access_token_url = "{}/oauth/token".format(settings.AUTH_PROVIDER_DOOTIX_URL)
 
     # URL to reach Dootix login form
-    authorize_url = "{}/oauth/login".format(settings.AUTH_PROVIDER_DOOTIX_URL)
-    profile_url = "{}/loginuser".format(settings.AUTH_PROVIDER_DOOTIX_URL)
+    authorize_url = "{}/login".format(settings.AUTH_PROVIDER_DOOTIX_URL)
+    profile_url = "{}/api/user".format(settings.AUTH_PROVIDER_DOOTIX_URL)
 
     def complete_login(self, request, app, token, **kwargs) -> SocialLogin:
         headers = {"Authorization": "Bearer {0}".format(token.token)}
