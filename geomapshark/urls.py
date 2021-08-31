@@ -9,6 +9,7 @@ from django.urls import include, path
 from rest_framework import routers
 
 from accounts.geomapfish.provider import GeomapfishProvider
+from accounts.dootix.provider import DootixProvider
 from permits import api
 from permits import views as permits_views
 from django_wfs3.urls import wfs3_router
@@ -72,9 +73,11 @@ else:
         ),
     ]
 
-urlpatterns += [
-    path("accounts/social/", include("allauth.socialaccount.urls")),
-] + default_urlpatterns(GeomapfishProvider)
+urlpatterns += (
+    [path("accounts/social/", include("allauth.socialaccount.urls")),]
+    + default_urlpatterns(GeomapfishProvider)
+    + default_urlpatterns(DootixProvider)
+)
 
 urlpatterns += [
     path("account/logout/", views.logout_view, name="logout",),
