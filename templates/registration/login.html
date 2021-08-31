@@ -4,6 +4,7 @@
 {% load static %}
 
 {% block stylesheets%}
+  <script src="https://use.fontawesome.com/006d51a83c.js"></script>
   <link rel="stylesheet" type="text/css" href="{% static 'css/permits.css' %}">
   <link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}">
 
@@ -63,5 +64,8 @@
         {% include "registration/_social_login.html" %}
       </div>
     </div>
+</div>
+<div>
+  <a id="landing-page-link" href="https://geocity.ch/about" target="_blank">Découvrir Geocity</a>
 </div>
 {% endblock %}
