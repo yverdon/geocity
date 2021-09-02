@@ -49,4 +49,5 @@ class DootixSocialAccountAdapter(DefaultSocialAccountAdapter):
         return user
 
     def get_connect_redirect_url(self, request, socialaccount):
+
         return build_absolute_uri(request, settings.LOGIN_REDIRECT_URL)

@@ -29,9 +29,5 @@ class DootixProvider(OAuth2Provider):
             username=data["username"], email=data["email"], roles=data["roles"],
         )
 
-    def get_default_scope(self):
-        scope = ["read"]
-        return scope
-
 
 provider_classes = [DootixProvider]
