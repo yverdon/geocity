@@ -7,6 +7,8 @@ volumes:
 services:
     web:
         image: gms_web
+        tty: true
+        stdin_open: true
         restart: unless-stopped
         depends_on:
             - "qgisserver"
