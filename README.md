@@ -261,3 +261,6 @@ This will override the data of any SocialApp with provider geomapfish.
 
 Geomapfish login process will raise an error if no APP settings and no SocialApp
 object are present.
+
+
+### Security
