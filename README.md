@@ -86,7 +86,7 @@ $ ./manage.py show_urls
 2. Create a geocity schema owned by geocity user
 3. Edit DB connexion in .env file
 4. Create and edit pg_service.conf file in qgisserver directory
-5. Install pg_trgm & unaccent extension (`create extension pg_trgm;` & `create extension unaccent`;
+5. Install pg_trgm & unaccent extension (`create extension pg_trgm;` & `create extension unaccent;`)
 
 ### Setup your Environment file
 
