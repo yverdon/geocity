@@ -443,6 +443,7 @@ class PermitRequest(models.Model):
             ("classify_permit_request", _("Classer les demandes de permis")),
             ("edit_permit_request", _("Éditer les demandes de permis")),
         ]
+        indexes = [models.Index(fields=["created_at"])]
 
     def is_draft(self):
         return self.status == self.STATUS_DRAFT
@@ -715,6 +716,7 @@ class WorksObjectProperty(models.Model):
                 name="choices_not_empty_for_lists",
             )
         ]
+        indexes = [models.Index(fields=["input_type"])]
 
     def __str__(self):
         return self.name
@@ -827,6 +829,10 @@ class PermitRequestGeoTime(models.Model):
     class Meta:
         verbose_name = _("3.3 Consultation de l'agenda et de la géométrie")
         verbose_name_plural = _("3.3 Consultation des agenda et géométries")
+        indexes = [
+            models.Index(fields=["starts_at"]),
+            models.Index(fields=["ends_at"]),
+        ]
 
 
 class GeomLayer(models.Model):
