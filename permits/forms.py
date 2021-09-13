@@ -18,6 +18,7 @@ from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 from itertools import groupby
+from django.db.models import Q
 
 
 from . import models, services
@@ -459,12 +460,14 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
 
 
 def check_existing_email(email, user):
-    if user:
-        if User.objects.filter(email=email).exists() and (email != user.email):
-            raise forms.ValidationError(_("Cet email est déjà utilisé."))
-    else:
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError(_("Cet email est déjà utilisé."))
+
+    if (
+        User.objects.filter(email=email)
+        .exclude(Q(id=user.id) if user else Q())
+        .exists()
+    ):
+        raise forms.ValidationError(_("Cet email est déjà utilisé."))
+
     return email
 
 
