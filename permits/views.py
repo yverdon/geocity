@@ -211,6 +211,7 @@ class PermitRequestDetailView(View):
             **kwargs,
             **{
                 "permit_request": self.permit_request,
+                "history": self.permit_request.history.all(),
                 "forms": forms,
                 "active_form": active_form,
                 "has_permission_to_classify": services.has_permission_to_classify_permit_request(
