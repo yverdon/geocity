@@ -105,6 +105,27 @@ input:focus {
 	color: var(--table-color);
 }
 
+.table tr:nth-child(odd) td{
+  background-color: white;
+}
+
+.table tr:nth-child(even) td{
+  background-color: rgb(245, 245, 245);
+}
+
+.page-item.active .page-link {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.page-link:hover {
+  color: var(--secondary-color);
+}
+
+.page-link {
+  color: var(--primary-color);
+}
+
 /* App specific */
 .required > label {
   font-weight: bold;
@@ -192,8 +213,18 @@ h3 {
   background-color: #f1f4f8;
 }
 
+.navbar {
+  padding-left: 5%;
+  padding-right: 5%;
+  background-color: rgb(245, 245, 245) !important;
+}
+
 .navbar-light .navbar-brand {
-	color: var(--title-color);
+	color: var(--primary-color)
+}
+
+.navbar-light .navbar-brand:hover{
+	color: var(--secondary-color);
 }
 
 .circle {
@@ -262,10 +293,8 @@ h3 {
   border-style: solid;
 }
 
-.navbar {
-  padding: 20px 16px;
-  background-image: url("../images/blanc_light_navbar.jpg");
-  background-size: cover;
+.container {
+  padding: 0;
 }
 
 #legal-infos {
@@ -305,8 +334,24 @@ h3 {
   vertical-align: top;
 }
 
-.permits-list {
-  max-width: 1600px;
+.page-item:first-child .page-link {
+  border-radius: 0;
+}
+
+.page-item:last-child .page-link {
+  border-radius: 0;
+}
+
+th.actions {
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 0;
+}
+
+.center-table {
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .permits-action-btns {
@@ -372,11 +417,6 @@ h3 {
   font-size: 1.3em;
 }
 
-
-/* django table 2 column shifter */
-.column-shifter-container .btn-group .btn {
-  font-size: 0 !important;
-}
 
 /* /////////////////////////////////// */
 /* Responsive for smaller devices */

@@ -16,7 +16,7 @@ class OwnPermitRequestsTable(ColumnShiftTable):
     starts_at_min = tables.Column(verbose_name=_("Début"))
     ends_at_max = tables.Column(verbose_name=_("Fin"))
     works_objects_html = tables.Column(
-        verbose_name=_("Objets et types de travaux"), orderable=False
+        verbose_name=_("Objets et types de demandes"), orderable=False
     )
     administrative_entity = tables.Column(
         verbose_name=_("Entité administrative"), orderable=False
@@ -46,7 +46,7 @@ class DepartmentPermitRequestsTable(ColumnShiftTable):
     starts_at_min = tables.Column(verbose_name=_("Début"))
     ends_at_max = tables.Column(verbose_name=_("Fin"))
     works_objects_html = tables.Column(
-        verbose_name=_("Objets et types de travaux"), orderable=False
+        verbose_name=_("Objets et types de demandes"), orderable=False
     )
     administrative_entity = tables.Column(
         verbose_name=_("Entité administrative"), orderable=False
