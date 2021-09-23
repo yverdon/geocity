@@ -1365,3 +1365,8 @@ msgid ""
 "However, it might happen that you don't have access to your primary token "
 "device. To enable account recovery, add a phone number."
 msgstr ""
+
+msgid "Visible columns"
+msgstr "Colonnes visibles"
+
+

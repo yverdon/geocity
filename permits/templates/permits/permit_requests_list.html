@@ -6,7 +6,8 @@
 {% load render_table from django_tables2 %}
 
 {% block content-fluid %}
-  <div class="d-flex flex-column flex-md-row">
+  <div class="d-flex flex-column flex-md-row center-table">
+    <br>
     <div id="list-info-title">
       {% trans "Vue d'ensemble de vos demandes" %}
     </div>
@@ -14,11 +15,9 @@
       <i class="fa fa-plus"></i> {% trans "Créer une nouvelle demande" %}
     </a>
   </div>
-
-  <hr>
-
+  <br><br>
   <!-- Action btns -->
-  <div class="permits-action-btns">
+  <div class="permits-action-btns center-table">
     <a class="btn btn-outline-primary" data-toggle="collapse" href="#collapseFilter" role="button" aria-expanded="false" aria-controls="collapseFilter">
       <i class="fa fa-filter"></i> {% trans "Filtrer" %}
     </a>
@@ -37,17 +36,15 @@
   </div>
 
   <br><br>
-  {% trans "Les demandes envoyées ne peuvent plus être modifiées" %}
   {{ filter.form.media }}
-  <form class="permits-list" method="get">
+  <form class="permits-list center-table" method="get">
     <div class="collapse" id="collapseFilter">
       <hr>
       {% bootstrap_form filter.form layout='horizontal' %}
       {% bootstrap_button "Appliquer le filtre" button_type="submit" button_class="btn-primary"%}
     </div>
   </form>
-  <br>
-  <div class="permits-list">
+  <div class="permits-list center-table">
     {% render_table table %}
   </div>
 {% endblock %}
