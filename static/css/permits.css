@@ -46,6 +46,10 @@ body {
   border-radius: 0 !important;
 }
 
+.btn a {
+  color: var(--primary-color);
+}
+
 .btn-primary {
   background-color: var(--primary-color);
   border-color: var(--primary-color);
@@ -76,6 +80,14 @@ body {
 
 .btn-outline-primary:hover {
   background-color: var(--secondary-color);
+}
+
+.btn-link {
+  color: var(--primary-color);
+}
+
+.btn-link:hover {
+  color: var(--secondary-color);
 }
 
 a {
@@ -309,6 +321,8 @@ h3 {
   width: 50%;
 }
 
+/* List view of demands */
+
 #list-info-title {
   font-size: 20px;
   font-weight: bold;
@@ -346,6 +360,7 @@ th.actions {
   background-color: var(--primary-color);
   color: white;
   border-radius: 0;
+  min-width: 150px;
 }
 
 .center-table {
@@ -417,6 +432,45 @@ h3 {
   font-size: 1.3em;
 }
 
+/* history timeline */
+
+#history_timeline {
+  margin-top: 20px;
+}
+
+#history_timeline li {
+  list-style-type: none;
+}
+
+#history_timeline ul {
+  float: left;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  margin-bottom: 20px;
+}
+
+#history_timeline ul li {
+  padding-bottom: 10px;
+  float: left;
+  width: 100%;
+  position: relative;
+}
+
+#history_timeline ul li:before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  width: 1px;
+  height: 100%;
+  left: 6px;
+  background: rgb(200, 200, 200);
+  z-index: -1;
+}
+
+#history_timeline ul li:last-child:before {
+  display: none;
+}
 
 /* /////////////////////////////////// */
 /* Responsive for smaller devices */

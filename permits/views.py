@@ -207,10 +207,22 @@ class PermitRequestDetailView(View):
             else:
                 kwargs["validations"] = []
 
+        history = (
+            self.permit_request.history.all()
+            if services.has_permission_to_amend_permit_request(
+                self.request.user, self.permit_request
+            )
+            or services.can_validate_permit_request(
+                self.request.user, self.permit_request
+            )
+            else None
+        )
+
         return {
             **kwargs,
             **{
                 "permit_request": self.permit_request,
+                "history": history,
                 "forms": forms,
                 "active_form": active_form,
                 "has_permission_to_classify": services.has_permission_to_classify_permit_request(
