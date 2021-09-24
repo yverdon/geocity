@@ -192,31 +192,8 @@
 {% endif %}
 <br>
 <h2>{% trans "Données de base" %}</h2>
-<dt>{% trans "Statut actuel" %}</dt>
-<dd>
-  {{ permit_request.get_status_display }}{% if permit_request.validated_at %} {% blocktrans with validated_at=permit_request.validated_at %}le {{ validated_at }}{% endblocktrans %}{% endif %}
-</dd>
 <dl>
-  <a class="btn btn-link" data-toggle="collapse" href="#collapse_history" role="button" aria-expanded="false" aria-controls="collapse_history">
-    {% trans "Historique de la demande" %} <i class="fa fa-chevron-down"></i> 
-  </a>
-  <br>
-  <form method="get">
-    <div class="collapse" id="collapse_history">
-      <ul>
-        {% for archive in history %}
-          {% if archive.status == permit_request.STATUS_PROCESSING and forloop.last %}
-            <li>{{ archive.history_date }} - {% trans "Demande soumise" %}</li>
-          {% else %}
-            <li>{{ archive.history_date }} - {{ archive.get_status_display }}</li>
-          {% endif %}
-        {% endfor %}
-        <li>{{ permit_request.created_at }} - {% trans "Demande créee" %}</li>
-      </ul>
-    </div>
-  </form>
-  <br><br>
-  <dt>{% trans "Auteur-e" %}</dt>
+  <dt><h4>{% trans "Auteur-e" %}</h4></dt>
   <dd>
     <a href="mailto:{{ permit_request.author }} <{{ permit_request.author.user.email }}>" target="_blank">
       {{ permit_request.author.user.first_name }} {{ permit_request.author.user.last_name }} &lt;{{ permit_request.author.user.email }}&gt;
@@ -239,11 +216,25 @@
       </a>
     </dd>
   {% endif %}
-  {% if config.ENABLE_GEOCALENDAR %}
-  <dt>{% trans "Publié" %}</dt>
-  <dd>
-    {{permit_request.is_public|yesno:"Oui,Non" }}
-  </dd>
+  {% if history %}
+    <h4>Suivi</h4>
+    <div id="history_timeline">
+      <ul>
+        {% for archive in history %}
+          {% if archive.status == permit_request.STATUS_PROCESSING and forloop.last %}
+            <li><i class="fa fa-circle status{{archive.status}}"></i> {{ archive.history_date }} - {% trans "Demande soumise par " %}{{ archive.history_user }}</li>
+          {% else %}
+            <li><i class="fa fa-circle status{{archive.status}}"></i> {{ archive.history_date }} - {{ archive.get_status_display }} - {{ archive.history_user }}</li>
+          {% endif %}
+        {% endfor %}
+        <li><i class="fa fa-circle status{{archive.status}}"></i> {{ permit_request.created_at }} - {% trans "Demande créee" %}</li>
+      </ul>
+    </div>
+    {% if config.ENABLE_GEOCALENDAR %}
+    <h4>{% trans "Calendrier cartographique" %}</h4>
+    <dt>{% trans "Visibilité publique" %}: </dt>
+    <dd>{{permit_request.is_public|yesno:"Oui,Non" }}</dd>
+    {% endif %}
   {% endif %}
 </dl>
 
@@ -271,9 +262,8 @@
       <h5>{% trans "Statut archéologique" %}:</h5> {{ permit_request.get_archeology_status_display }}
     {% endif %}
   </dl>
-  </dl>
 
-
+  
   <h2>{% trans "Statut des validations" %}</h2>
   <dl>
     {% for validation in validations %}
@@ -300,7 +290,6 @@
   </dl>
   <br>
 {% endif %}
-
 <h2>{% trans "Résumé" %}</h2>
   {% permit_request_summary permit_request %}
 
