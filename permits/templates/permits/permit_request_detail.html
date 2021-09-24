@@ -218,14 +218,14 @@
   {% endif %}
   {% if history %}
     <div id="history_timeline">
-      <h4><b>{% trans "Suivi" %}</b></h4>
+      <h4>{% trans "Historique" %}</h4>
       <br>
       <ul>
         {% for archive in history %}
           {% if archive.status == permit_request.STATUS_PROCESSING and forloop.last %}
-            <li><i class="fa fa-circle status{{archive.status}}"></i> {{ archive.history_date }} - <b>{% trans "Demande soumise par " %}</b>{{ archive.history_user }}</li>
+            <li><i class="fa fa-circle status{{archive.status}}"></i> {{ archive.history_date }} - <b>{% trans "Demande soumise par " %}</b>({{ archive.history_user }})</li>
           {% else %}
-            <li><i class="fa fa-circle status{{archive.status}}"></i> {{ archive.history_date }} - <b>{{ archive.get_status_display }}</b> - {{ archive.history_user }}</li>
+            <li><i class="fa fa-circle status{{archive.status}}"></i> {{ archive.history_date }} - <b>{{ archive.get_status_display }}</b> - ({{ archive.history_user }})</li>
           {% endif %}
         {% endfor %}
       </ul>
