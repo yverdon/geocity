@@ -433,6 +433,10 @@ h3 {
 
 /* history timeline */
 
+#history_timeline {
+  margin-top: 20px;
+}
+
 #history_timeline li {
   list-style-type: none;
 }

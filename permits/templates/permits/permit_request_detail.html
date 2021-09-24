@@ -217,17 +217,17 @@
     </dd>
   {% endif %}
   {% if history %}
-    <h4>Suivi</h4>
     <div id="history_timeline">
+      <h4><b>{% trans "Suivi" %}</b></h4>
+      <br>
       <ul>
         {% for archive in history %}
           {% if archive.status == permit_request.STATUS_PROCESSING and forloop.last %}
-            <li><i class="fa fa-circle status{{archive.status}}"></i> {{ archive.history_date }} - {% trans "Demande soumise par " %}{{ archive.history_user }}</li>
+            <li><i class="fa fa-circle status{{archive.status}}"></i> {{ archive.history_date }} - <b>{% trans "Demande soumise par " %}</b>{{ archive.history_user }}</li>
           {% else %}
-            <li><i class="fa fa-circle status{{archive.status}}"></i> {{ archive.history_date }} - {{ archive.get_status_display }} - {{ archive.history_user }}</li>
+            <li><i class="fa fa-circle status{{archive.status}}"></i> {{ archive.history_date }} - <b>{{ archive.get_status_display }}</b> - {{ archive.history_user }}</li>
           {% endif %}
         {% endfor %}
-        <li><i class="fa fa-circle status{{archive.status}}"></i> {{ permit_request.created_at }} - {% trans "Demande créee" %}</li>
       </ul>
     </div>
     {% if config.ENABLE_GEOCALENDAR %}
@@ -263,7 +263,7 @@
     {% endif %}
   </dl>
 
-  
+
   <h2>{% trans "Statut des validations" %}</h2>
   <dl>
     {% for validation in validations %}
