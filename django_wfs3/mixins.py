@@ -7,6 +7,7 @@ class WFS3DescribeModelMixin:
     Describe endpoint for WFS3
     """
 
+    # TODO : see if we need this anyway, as all info is already in wfs3/collections
     def describe(self, request, *args, **kwargs):
         return Response(
             {
@@ -14,8 +15,7 @@ class WFS3DescribeModelMixin:
                 "title": "permit",  # TODO - how can we retrieve prefix from here ?
                 "description": "?",
                 "extent": {
-                    "spatial": {"bbox": [[7.01, 50.63, 7.22, 50.78]]},
-                    "temporal": {"interval": [["2010-02-15T12:34:56Z", None]]},
+                    "spatial": {"bbox": [[7.01, 50.63, 7.22, 50.78]]},  # TODO - retrieve from the viewset
                 },
                 "links": [
                     {

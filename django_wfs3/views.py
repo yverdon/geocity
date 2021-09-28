@@ -101,7 +101,7 @@ class CollectionsView(routers.APIRootView):
                 "description": "?",
                 "extent": {
                     "spatial": {"bbox": extents},
-                    "crs": crs,
+                    # "crs": crs,  # TODO : doesn't work yet
                 },
                 "links": [
                     {
