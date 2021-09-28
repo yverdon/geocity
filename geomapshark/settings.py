@@ -374,5 +374,4 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.BasicAuthentication",
     ),
     'DEFAULT_PAGINATION_CLASS': 'django_wfs3.pagination.CustomPagination',
-    'PAGE_SIZE': 3,
 }

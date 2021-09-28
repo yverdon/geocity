@@ -14,7 +14,7 @@ from rest_framework.settings import api_settings
 from rest_framework.urlpatterns import format_suffix_patterns
 
 
-class WFS3RootView(views.APIView):
+class RootView(views.APIView):
     """WFS3 index view.
 
     This is currently more or less static
@@ -103,25 +103,6 @@ class CollectionsView(routers.APIRootView):
                         "type": "application/json",
                         "title": "this document",
                     },
-                    # {
-                    #     "href": "http://data.example.org/collections.html",
-                    #     "rel": "alternate",
-                    #     "type": "text/html",
-                    #     "title": "this document as HTML",
-                    # },
-                    # {
-                    #     "href": "http://schemas.example.org/1.0/buildings.xsd",
-                    #     "rel": "describedBy",
-                    #     "type": "application/xml",
-                    #     "title": "GML application schema for Acme Corporation building data",
-                    # },
-                    # {
-                    #     "href": "http://download.example.org/buildings.gpkg",
-                    #     "rel": "enclosure",
-                    #     "type": "application/geopackage+sqlite3",
-                    #     "title": "Bulk download (GeoPackage)",
-                    #     "length": 472546,
-                    # },
                 ],
                 "collections": [
                     {
@@ -139,24 +120,6 @@ class CollectionsView(routers.APIRootView):
                                 "type": "application/geo+json",
                                 "title": key,
                             },
-                            # {
-                            #     "href": "http://data.example.org/collections/buildings/items.html",
-                            #     "rel": "items",
-                            #     "type": "text/html",
-                            #     "title": "Buildings",
-                            # },
-                            # {
-                            #     "href": "https://creativecommons.org/publicdomain/zero/1.0/",
-                            #     "rel": "license",
-                            #     "type": "text/html",
-                            #     "title": "CC0-1.0",
-                            # },
-                            # {
-                            #     "href": "https://creativecommons.org/publicdomain/zero/1.0/rdf",
-                            #     "rel": "license",
-                            #     "type": "application/rdf+xml",
-                            #     "title": "CC0-1.0",
-                            # },
                         ],
                     }
                     for key, url in collections.items()

@@ -1,19 +1,12 @@
 from rest_framework import routers
-import itertools
-from collections import OrderedDict, namedtuple
 
-from django.core.exceptions import ImproperlyConfigured
-from django.urls import NoReverseMatch, re_path, path
+from django.urls import path
 
-from rest_framework import views
-from rest_framework.response import Response
-from rest_framework.reverse import reverse
 from rest_framework.schemas import SchemaGenerator
 from rest_framework.schemas.views import SchemaView
-from rest_framework.settings import api_settings
 from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework.schemas import get_schema_view
-from .views import WFS3RootView, CollectionsView
+from .views import RootView, CollectionsView
 
 
 class WFS3Router(routers.SimpleRouter):
@@ -76,7 +69,7 @@ class WFS3Router(routers.SimpleRouter):
         urls = super().get_urls()
 
         # Root URL
-        root_view = WFS3RootView.as_view()
+        root_view = RootView.as_view()
         root_url = path("", root_view, name="capabilities")
         urls.append(root_url)
 
