@@ -27,7 +27,7 @@ class WFS3RootView(views.APIView):
                 "description": "Access to data about buildings in the city of Bonn via a Web API that conforms to the OGC API Features specification.",
                 "links": [
                     {
-                        "href": request.build_absolute_uri(""),
+                        "href": request.build_absolute_uri("/"),
                         "rel": "self",
                         "type": "application/json",
                         "title": "this document",

@@ -19,7 +19,7 @@ class WFS3DescribeModelMixin:
                 },
                 "links": [
                     {
-                        "href": request.build_absolute_uri("items"),
+                        "href": request.build_absolute_uri("items/"),
                         "rel": "items",
                         "type": "application/geo+json",
                         "title": "permit",  # TODO - how can we retrieve prefix from here ?

@@ -68,6 +68,9 @@ class WFS3Router(routers.SimpleRouter):
         ),
     ]
 
+    def __init__(self):
+        super().__init__(trailing_slash=False)
+
     def get_urls(self):
         """Return all WFS3 routes"""
         urls = super().get_urls()
@@ -79,7 +82,10 @@ class WFS3Router(routers.SimpleRouter):
 
         # Schema
         schema_view = get_schema_view(
-            title="Your Project", description="API for all things …", version="1.0.0", url='http://127.0.0.1:9095'
+            title="Your Project",
+            description="API for all things …",
+            version="1.0.0",
+            urlconf='django_wfs3.urls',
         )
         schema_url = path("api", schema_view, name="service-desc")
         urls.append(schema_url)
