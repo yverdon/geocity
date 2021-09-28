@@ -64,6 +64,11 @@ class WFS3Router(routers.SimpleRouter):
     def __init__(self):
         super().__init__(trailing_slash=False)
 
+    @property
+    def urlpatterns(self):
+        """Alias for self.urls, so that we can provide this instance directly to get_schema_view()"""
+        return self.urls
+
     def get_urls(self):
         """Return all WFS3 routes"""
         urls = super().get_urls()
@@ -78,6 +83,7 @@ class WFS3Router(routers.SimpleRouter):
             title="Geocity OGC Features API Endpoint",  # TODO : make customizable
             description="Access to data from Geocity.",  # TODO : make customizable
             version="1.0.0",  # TODO : make customizable
+            urlconf=self,
         )
         schema_url = path("api", schema_view, name="service-desc")
         urls.append(schema_url)
