@@ -75,9 +75,9 @@ class WFS3Router(routers.SimpleRouter):
 
         # Schema
         schema_view = get_schema_view(
-            title="Your Project",
-            description="API for all things …",
-            version="1.0.0",
+            title="Geocity OGC Features API Endpoint",  # TODO : make customizable
+            description="Access to data from Geocity.",  # TODO : make customizable
+            version="1.0.0",  # TODO : make customizable
         )
         schema_url = path("api", schema_view, name="service-desc")
         urls.append(schema_url)

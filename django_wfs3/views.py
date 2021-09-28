@@ -3,6 +3,7 @@ import itertools
 from collections import OrderedDict, namedtuple
 
 from django.core.exceptions import ImproperlyConfigured
+from django.contrib.gis.db.models import Extent
 from django.urls import NoReverseMatch, re_path
 
 from rest_framework import views
@@ -23,8 +24,8 @@ class RootView(views.APIView):
     def get(self, request, *args, **kwargs):
         return Response(
             {
-                "title": "Buildings in Bonn",
-                "description": "Access to data about buildings in the city of Bonn via a Web API that conforms to the OGC API Features specification.",
+                "title": "Geocity OGC Features API Endpoint",  # TODO : make customizable
+                "description": "Access to data from Geocity.",  # TODO : make customizable
                 "links": [
                     {
                         "href": request.build_absolute_uri("/"),
@@ -38,12 +39,6 @@ class RootView(views.APIView):
                         "type": "application/vnd.oai.openapi+json;version=3.0",
                         "title": "the API definition",
                     },
-                    # {
-                    #     "href": request.build_absolute_uri("api.html"),
-                    #     "rel": "service-doc",
-                    #     "type": "text/html",
-                    #     "title": "the API documentation",
-                    # },
                     {
                         "href": request.build_absolute_uri("conformance"),
                         "rel": "conformance",
@@ -73,17 +68,15 @@ class CollectionsView(routers.APIRootView):
 
     def get(self, request, *args, **kwargs):
 
-        collections_dict = {}
-        for prefix, viewset, basename in self.registry:
-            collections_dict[prefix] = f"{basename}-list"
-
-        collections = OrderedDict()
+        collections = []
         namespace = request.resolver_match.namespace
-        for key, url_name in collections_dict.items():
+        for prefix, Viewset, basename in self.registry:
+            key = prefix
+            url_name = f"{basename}-list"
             if namespace:
                 url_name = namespace + ":" + url_name
             try:
-                collections[key] = reverse(
+                url = reverse(
                     url_name,
                     args=args,
                     kwargs=kwargs,
@@ -93,6 +86,32 @@ class CollectionsView(routers.APIRootView):
             except NoReverseMatch:
                 # Don't bail out if eg. no list routes exist, only detail routes.
                 continue
+
+            # Instantiating the viewset to get access to the ORM
+            viewset = Viewset(request=request)
+            queryset = viewset.get_queryset()
+            geo_field = "geo_time__geom"  # TODO : make this customizable (viewset.get_serializer_class().Meta.geo_field doesn't work, it's a field on the serializer, not on the queryset)
+            extents = queryset.aggregate(e=Extent(geo_field))["e"]
+
+            crs = "http://www.opengis.net/def/crs/EPSG/0/2056"  # TODO : retrieve from geo_field
+
+            collections.append({
+                "id": key,
+                "title": key,
+                "description": "?",
+                "extent": {
+                    "spatial": {"bbox": extents},
+                    "crs": crs,
+                },
+                "links": [
+                    {
+                        "href": url,
+                        "rel": "items",
+                        "type": "application/geo+json",
+                        "title": key,
+                    },
+                ],
+            })
 
         return Response(
             {
@@ -104,25 +123,6 @@ class CollectionsView(routers.APIRootView):
                         "title": "this document",
                     },
                 ],
-                "collections": [
-                    {
-                        "id": key,
-                        "title": key,
-                        "description": "?",
-                        "extent": {
-                            "spatial": {"bbox": [[7.01, 50.63, 7.22, 50.78]]},
-                            "temporal": {"interval": [["2010-02-15T12:34:56Z", None]]},
-                        },
-                        "links": [
-                            {
-                                "href": url,
-                                "rel": "items",
-                                "type": "application/geo+json",
-                                "title": key,
-                            },
-                        ],
-                    }
-                    for key, url in collections.items()
-                ],
+                "collections": collections,
             }
         )
