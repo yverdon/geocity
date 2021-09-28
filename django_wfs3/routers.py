@@ -85,7 +85,6 @@ class WFS3Router(routers.SimpleRouter):
             title="Your Project",
             description="API for all things …",
             version="1.0.0",
-            urlconf='django_wfs3.urls',
         )
         schema_url = path("api", schema_view, name="service-desc")
         urls.append(schema_url)

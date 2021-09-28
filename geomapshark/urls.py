@@ -11,7 +11,7 @@ from rest_framework import routers
 from accounts.geomapfish.provider import GeomapfishProvider
 from permits import api
 from permits import views as permits_views
-import django_wfs3.urls
+from django_wfs3.urls import wfs3_router
 
 from . import views
 
@@ -113,7 +113,7 @@ urlpatterns += [
     path("permitauthoredit/", views.permit_author_edit, name="permit_author_edit"),
     path("account/", include("django.contrib.auth.urls")),
     path("rest/", include(router.urls)),  # Django-rest urls
-    path("wfs3/", include(django_wfs3.urls)),  # Django-rest urls
+    path("wfs3/", include(wfs3_router.urls)),  # Django-rest urls
     path("admin/", admin.site.urls),
     path("oauth/", include("oauth2_provider.urls", namespace="oauth2_provider")),
 ]
