@@ -5,9 +5,11 @@ from django.contrib.auth.decorators import (
 )
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.gis.geos.collections import GeometryCollection, MultiLineString, MultiPoint, MultiPolygon
 from django.db.models import CharField, F, Prefetch, Q
 from rest_framework import viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework_gis.fields import GeometrySerializerMethodField
 from django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 
 from . import geoservices, models, serializers, services
@@ -51,9 +53,14 @@ class GeocityViewConfigViewSet(viewsets.ViewSet):
         return JsonResponse(config, safe=False)
 
 
-class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
+class PermitRequestGeoTimeViewSet(WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelViewSet):
 
     serializer_class = serializers.PermitRequestGeoTimeSerializer
+
+    wfs3_title = "Permis geomtime"
+    wfs3_description = "Toutes les zones conernées par des demandes"
+    wfs3_geom_lookup = 'geom'  # lookup for the geometry (on the queryset), used to determine bbox
+    wfs3_srid = 2056  # TODO : dynamically retrieve this from the above attribute on the queryset
 
     def get_queryset(self):
         """
@@ -102,6 +109,40 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
 
         return qs.order_by("starts_at")
 
+
+def permitRequestGeoTimeViewSetFactory(geom_type):
+    """Returns a subclass of PermitRequestGeoTimeViewSet with only a specific geometry type"""
+
+    class Serializer(serializers.PermitRequestGeoTimeSerializer):
+        class Meta(serializers.PermitRequestGeoTimeSerializer.Meta):
+            geo_field = "geom_cast"
+
+        # TODO : dynamically exactracting the compatible geometries like this is quite bad in terms
+        # of performance. instead we could store these in the database directly
+        geom_cast = GeometrySerializerMethodField()
+        def get_geom_cast(self, state):
+            # extract the compatible geometries
+            geoms = []
+            for sub_geom in state.geom:
+                if not isinstance(sub_geom, GeometryCollection):
+                     sub_geom = [sub_geom]
+                for sub_sub_geom in sub_geom:
+                    if isinstance(sub_sub_geom, geom_type._allowed):
+                        geoms.append(sub_sub_geom)
+            return geom_type(geoms)
+
+    Serializer.__name__ = f"PermitRequestGeoTimeSerializer{geom_type.__name__}"
+
+    class ViewSet(PermitRequestGeoTimeViewSet):
+        wfs3_title = f"{PermitRequestGeoTimeViewSet.wfs3_title} ({geom_type.__name__})"
+        wfs3_description = f"{PermitRequestGeoTimeViewSet.wfs3_description} (géomtries filtrées par type {geom_type.__name__})"
+        serializer_class = Serializer
+
+    return ViewSet
+
+PermitRequestGeoTimePointViewSet = permitRequestGeoTimeViewSetFactory(MultiPoint)
+PermitRequestGeoTimeLineViewSet = permitRequestGeoTimeViewSetFactory(MultiLineString)
+PermitRequestGeoTimePolyViewSet = permitRequestGeoTimeViewSetFactory(MultiPolygon)
 
 # //////////////////////////////////
 # PERMIT REQUEST ENDPOINT
