@@ -21,11 +21,14 @@ class RootView(views.APIView):
     This is currently more or less static
     """
 
+    title = None
+    description = None
+
     def get(self, request, *args, **kwargs):
         return Response(
             {
-                "title": "Geocity OGC Features API Endpoint",  # TODO : make customizable
-                "description": "Access to data from Geocity.",  # TODO : make customizable
+                "title": self.title,
+                "description": self.description,
                 "links": [
                     {
                         "href": request.build_absolute_uri("/"),
@@ -87,31 +90,10 @@ class CollectionsView(routers.APIRootView):
                 # Don't bail out if eg. no list routes exist, only detail routes.
                 continue
 
-            # Instantiating the viewset to get access to the ORM
+            # Instantiating the viewset
             viewset = Viewset(request=request)
-            queryset = viewset.get_queryset()
-            geo_field = "geo_time__geom"  # TODO : make this customizable (viewset.get_serializer_class().Meta.geo_field doesn't work, it's a field on the serializer, not on the queryset)
-            extents = queryset.aggregate(e=Extent(geo_field))["e"]
 
-            crs = "http://www.opengis.net/def/crs/EPSG/0/2056"  # TODO : retrieve from geo_field
-
-            collections.append({
-                "id": key,
-                "title": key,
-                "description": "?",
-                "extent": {
-                    "spatial": {"bbox": extents},
-                    # "crs": crs,  # TODO : doesn't work yet
-                },
-                "links": [
-                    {
-                        "href": url,
-                        "rel": "items",
-                        "type": "application/geo+json",
-                        "title": key,
-                    },
-                ],
-            })
+            collections.append(viewset._describe(request, base_url=f"collections/"))
 
         return Response(
             {

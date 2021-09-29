@@ -8,22 +8,46 @@ serialization, authentication, etc.).
 
 ## Usage
 
+> NOTE : these snippets are not tested and may require fixing/adaptations.
+
 Add this to your `urls.py` :
 
 Register your viewset in the wfs3 router
 ```python
-
+from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from django_wfs3.urls import wfs3_router
-from .viewsets import MyModelViewSet
+
+class MyModelSerializer(gis_serializers.GeoFeatureModelSerializer):
+    class Meta:
+        model = MyModel
+        fields = "__all__"
+        geo_field = "geom"
+
+class MyModelViewset(WFS3DescribeModelViewSetMixin, viewsets.ModelViewSet):
+    queryset = MyModel.objects.all()
+    serializer_class = MyModelSerializer
+
+    wfs3_title = "layer title"
+    wfs3_description = "layer_description"
+    wfs3_geom_lookup = 'geom'  # (one day this will be retrieved automatically from the serializer)
+    wfs3_srid = 2056  # (one day this will be retrieved automatically from the DB field)
 
 wfs3_router.register(r"permits", MyModelViewSet, "permits")
 ```
 
-Add the router to your `urls.py`
+Add the router to your `urls.py`:
+
 ```python
 urlpatterns += [
     path("wfs3/", include(django_wfs3.urls))
 ]
+```
+
+Optionally specify your endpoint's metadata in `settings.py`:
+
+```python
+WFS3_TITLE = "My Endpoint"
+WFS3_DESCRIPTION = "Description"
 ```
 
 ## Roadmap / status

@@ -1,6 +1,7 @@
 from rest_framework import routers
 
 from django.urls import path
+from django.conf import settings
 
 from rest_framework.schemas import SchemaGenerator
 from rest_framework.schemas.views import SchemaView
@@ -31,7 +32,10 @@ class WFS3Router(routers.SimpleRouter):
         # List route.
         routers.Route(
             url=r"^collections/{prefix}/items{trailing_slash}$",
-            mapping={"get": "list", "post": "create"},
+            mapping={
+                "get": "list",
+                # "post": "create",
+            },
             name="{basename}-list",
             detail=False,
             initkwargs={"suffix": "List"},
@@ -41,9 +45,9 @@ class WFS3Router(routers.SimpleRouter):
             url=r"^collections/{prefix}/items/{lookup}{trailing_slash}$",
             mapping={
                 "get": "retrieve",
-                "put": "update",
-                "patch": "partial_update",
-                "delete": "destroy",
+                # "put": "update",
+                # "patch": "partial_update",
+                # "delete": "destroy",
             },
             name="{basename}-detail",
             detail=True,
@@ -73,16 +77,22 @@ class WFS3Router(routers.SimpleRouter):
         """Return all WFS3 routes"""
         urls = super().get_urls()
 
+        title = getattr(settings, "WFS3_TITLE", "Django OGC Api Services Endpoint")
+        description = getattr(settings, "WFS3_DESCRIPTION", "No description")
+
         # Root URL
-        root_view = RootView.as_view()
+        root_view = RootView.as_view(
+            title=title,
+            description=description,
+        )
         root_url = path("", root_view, name="capabilities")
         urls.append(root_url)
 
         # Schema
         schema_view = get_schema_view(
-            title="Geocity OGC Features API Endpoint",  # TODO : make customizable
-            description="Access to data from Geocity.",  # TODO : make customizable
-            version="1.0.0",  # TODO : make customizable
+            title=title,
+            description=description,
+            version="1.0.0",
             urlconf=self,
         )
         schema_url = path("api", schema_view, name="service-desc")

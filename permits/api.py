@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.db.models import CharField, F, Prefetch, Q
 from rest_framework import viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
-from django_wfs3.mixins import WFS3DescribeModelMixin
+from django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 
 from . import geoservices, models, serializers, services
 from constance import config
@@ -134,7 +134,7 @@ class BlockRequesterUserPermission(BasePermission):
             return user.get_all_permissions()
 
 
-class PermitRequestViewSet(WFS3DescribeModelMixin, viewsets.ReadOnlyModelViewSet):
+class PermitRequestViewSet(WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """
     Permit request endpoint Usage:
         1.- /rest/permits/?permit_request_id=1
@@ -145,6 +145,11 @@ class PermitRequestViewSet(WFS3DescribeModelMixin, viewsets.ReadOnlyModelViewSet
 
     serializer_class = serializers.PermitRequestPrintSerializer
     permission_classes = [BlockRequesterUserPermission]
+
+    wfs3_title = "Permis"
+    wfs3_description = "Tous les permis accordés"
+    wfs3_geom_lookup = 'geo_time__geom'  # lookup for the geometry (on the queryset), used to determine bbox
+    wfs3_srid = 2056  # TODO : dynamically retrieve this from the above attribute on the queryset
 
 
     def get_queryset(self):
