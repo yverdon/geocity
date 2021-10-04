@@ -29,7 +29,10 @@
     - Set the client ID
     - Set the client secret
 
+**Please note the trailing slash "/" after the token URL**
+
 Now you can try to connect.
+
 
 ---
 
