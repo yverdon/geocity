@@ -51,3 +51,18 @@ class JoinGeometries(Aggregate):
     name = "joined_geometries"
     template = "ST_SetSRID(ST_Extent(%(expressions)s), 2056)"
     allow_distinct = False
+
+
+class ExtractPoints(Aggregate):
+    name = "extracted_points"
+    template = "ST_CollectionExtract(ST_Collect(%(expressions)s), 1)"
+
+
+class ExtractLines(Aggregate):
+    name = "extracted_lines"
+    template = "ST_CollectionExtract(ST_Collect(%(expressions)s), 2)"
+
+
+class ExtractPolys(Aggregate):
+    name = "extracted_polys"
+    template = "ST_CollectionExtract(ST_Collect(%(expressions)s), 3)"

@@ -202,7 +202,19 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
     Note: Here we need the geo_time queryset as the source (value), since the
     geometry and the dates will be aggregated, but the comments
     and external links will be retrieved and grouped from it.
+
+    Note: The extract_geom paramter specifies the aggregation function used to represent
+    the geometries. If not specified, it will return a boudning box. If specified, it
+    will return a multigeometry of the given type (1 for point, 2 for lines, 3 for polys).
     """
+
+    EXTRACT_POINTS = 1
+    EXTRACT_LINES = 2
+    EXTRACT_POLYS = 3
+
+    def __init__(self, *args, extract_geom=None, **kwargs):
+        super().__init__(self, *args, **kwargs)
+        self.extract_geom = extract_geom
 
     def to_representation(self, value):
 
@@ -220,10 +232,20 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
             }
 
         else:
+
+            if self.extract_geom == self.EXTRACT_POINTS:
+                geom_function = geoservices.ExtractPoints("geom")
+            elif self.extract_geom == self.EXTRACT_LINES:
+                geom_function = geoservices.ExtractLines("geom")
+            elif self.extract_geom == self.EXTRACT_POLYS:
+                geom_function = geoservices.ExtractPolys("geom")
+            else:
+                geom_function = geoservices.JoinGeometries("geom")
+
             aggregated_geotime_qs = geo_time_qs.values("permit_request_id").aggregate(
                 permit_request_geo_time_end_date=Max("ends_at"),
                 permit_request_geo_time_start_date=Min("starts_at"),
-                singlegeom=geoservices.JoinGeometries("geom"),
+                singlegeom=geom_function,
             )
 
             result = {"properties": {}}

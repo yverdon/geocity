@@ -53,14 +53,9 @@ class GeocityViewConfigViewSet(viewsets.ViewSet):
         return JsonResponse(config, safe=False)
 
 
-class PermitRequestGeoTimeViewSet(WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelViewSet):
+class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = serializers.PermitRequestGeoTimeSerializer
-
-    wfs3_title = "Permis geomtime"
-    wfs3_description = "Toutes les zones conernées par des demandes"
-    wfs3_geom_lookup = 'geom'  # lookup for the geometry (on the queryset), used to determine bbox
-    wfs3_srid = 2056  # TODO : dynamically retrieve this from the above attribute on the queryset
 
     def get_queryset(self):
         """
@@ -109,40 +104,6 @@ class PermitRequestGeoTimeViewSet(WFS3DescribeModelViewSetMixin, viewsets.ReadOn
 
         return qs.order_by("starts_at")
 
-
-def permitRequestGeoTimeViewSetFactory(geom_type):
-    """Returns a subclass of PermitRequestGeoTimeViewSet with only a specific geometry type"""
-
-    class Serializer(serializers.PermitRequestGeoTimeSerializer):
-        class Meta(serializers.PermitRequestGeoTimeSerializer.Meta):
-            geo_field = "geom_cast"
-
-        # TODO : dynamically exactracting the compatible geometries like this is quite bad in terms
-        # of performance. instead we could store these in the database directly
-        geom_cast = GeometrySerializerMethodField()
-        def get_geom_cast(self, state):
-            # extract the compatible geometries
-            geoms = []
-            for sub_geom in state.geom:
-                if not isinstance(sub_geom, GeometryCollection):
-                     sub_geom = [sub_geom]
-                for sub_sub_geom in sub_geom:
-                    if isinstance(sub_sub_geom, geom_type._allowed):
-                        geoms.append(sub_sub_geom)
-            return geom_type(geoms)
-
-    Serializer.__name__ = f"PermitRequestGeoTimeSerializer{geom_type.__name__}"
-
-    class ViewSet(PermitRequestGeoTimeViewSet):
-        wfs3_title = f"{PermitRequestGeoTimeViewSet.wfs3_title} ({geom_type.__name__})"
-        wfs3_description = f"{PermitRequestGeoTimeViewSet.wfs3_description} (géomtries filtrées par type {geom_type.__name__})"
-        serializer_class = Serializer
-
-    return ViewSet
-
-PermitRequestGeoTimePointViewSet = permitRequestGeoTimeViewSetFactory(MultiPoint)
-PermitRequestGeoTimeLineViewSet = permitRequestGeoTimeViewSetFactory(MultiLineString)
-PermitRequestGeoTimePolyViewSet = permitRequestGeoTimeViewSetFactory(MultiPolygon)
 
 # //////////////////////////////////
 # PERMIT REQUEST ENDPOINT
@@ -261,3 +222,48 @@ class PermitRequestViewSet(WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModel
         )
 
         return qs
+
+
+class PermitRequestPointViewSet(PermitRequestViewSet):
+    """Same as PermitRequestViewSet, but returns MultiPoints instead of the bounding box"""
+
+    class PermitRequestViewSetSerializerPoint(serializers.PermitRequestPrintSerializer):
+        geo_envelop = serializers.PermitRequestGeoTimeGeoJSONSerializer(
+            source="geo_time",
+            read_only=True,
+            extract_geom=serializers.PermitRequestGeoTimeGeoJSONSerializer.EXTRACT_POINTS
+        )
+
+    wfs3_title = f"{PermitRequestViewSet.wfs3_title} (points)"
+    wfs3_description = f"{PermitRequestViewSet.wfs3_description} (géomtries filtrées par type points)"
+    serializer_class = PermitRequestViewSetSerializerPoint
+
+
+class PermitRequestLineViewSet(PermitRequestViewSet):
+    """Same as PermitRequestViewSet, but returns MultiLines instead of the bounding box"""
+
+    class PermitRequestViewSetSerializerLine(serializers.PermitRequestPrintSerializer):
+        geo_envelop = serializers.PermitRequestGeoTimeGeoJSONSerializer(
+            source="geo_time",
+            read_only=True,
+            extract_geom=serializers.PermitRequestGeoTimeGeoJSONSerializer.EXTRACT_LINES
+        )
+
+    wfs3_title = f"{PermitRequestViewSet.wfs3_title} (lines)"
+    wfs3_description = f"{PermitRequestViewSet.wfs3_description} (géomtries filtrées par type lines)"
+    serializer_class = PermitRequestViewSetSerializerLine
+
+
+class PermitRequestPolyViewSet(PermitRequestViewSet):
+    """Same as PermitRequestViewSet, but returns MultiPolygons instead of the bounding box"""
+
+    class PermitRequestViewSetSerializerPoly(serializers.PermitRequestPrintSerializer):
+        geo_envelop = serializers.PermitRequestGeoTimeGeoJSONSerializer(
+            source="geo_time",
+            read_only=True,
+            extract_geom=serializers.PermitRequestGeoTimeGeoJSONSerializer.EXTRACT_POLYS
+        )
+
+    wfs3_title = f"{PermitRequestViewSet.wfs3_title} (polys)"
+    wfs3_description = f"{PermitRequestViewSet.wfs3_description} (géomtries filtrées par type polys)"
+    serializer_class = PermitRequestViewSetSerializerPoly
