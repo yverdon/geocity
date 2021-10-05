@@ -31,7 +31,7 @@ class RootView(views.APIView):
                 "description": self.description,
                 "links": [
                     {
-                        "href": request.build_absolute_uri("/"),
+                        "href": request.build_absolute_uri(""),
                         "rel": "self",
                         "type": "application/json",
                         "title": "this document",
