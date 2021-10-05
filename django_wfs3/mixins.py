@@ -5,6 +5,7 @@ from django.contrib.gis.db.models import Extent
 
 from django_wfs3.urls import wfs3_router
 
+
 class WFS3DescribeModelViewSetMixin:
     """
     Adds describe endpoint used by WFS3 routers

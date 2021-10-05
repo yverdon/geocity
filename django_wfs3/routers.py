@@ -56,9 +56,7 @@ class WFS3Router(routers.SimpleRouter):
         # Describe route.
         routers.Route(
             url=r"^collections/{prefix}{trailing_slash}$",
-            mapping={
-                "get": "describe",
-            },
+            mapping={"get": "describe",},
             name="{basename}-describe",
             detail=False,
             initkwargs={"suffix": "List"},
@@ -81,19 +79,13 @@ class WFS3Router(routers.SimpleRouter):
         description = getattr(settings, "WFS3_DESCRIPTION", "No description")
 
         # Root URL
-        root_view = RootView.as_view(
-            title=title,
-            description=description,
-        )
+        root_view = RootView.as_view(title=title, description=description,)
         root_url = path("", root_view, name="capabilities")
         urls.append(root_url)
 
         # Schema
         schema_view = get_schema_view(
-            title=title,
-            description=description,
-            version="1.0.0",
-            urlconf=self,
+            title=title, description=description, version="1.0.0", urlconf=self,
         )
         schema_url = path("api", schema_view, name="service-desc")
         urls.append(schema_url)

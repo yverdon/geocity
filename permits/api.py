@@ -5,7 +5,12 @@ from django.contrib.auth.decorators import (
 )
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.gis.geos.collections import GeometryCollection, MultiLineString, MultiPoint, MultiPolygon
+from django.contrib.gis.geos.collections import (
+    GeometryCollection,
+    MultiLineString,
+    MultiPoint,
+    MultiPolygon,
+)
 from django.db.models import CharField, F, Prefetch, Q
 from rest_framework import viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
@@ -136,7 +141,9 @@ class BlockRequesterUserPermission(BasePermission):
             return user.get_all_permissions()
 
 
-class PermitRequestViewSet(WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelViewSet):
+class PermitRequestViewSet(
+    WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelViewSet
+):
     """
     Permit request endpoint Usage:
         1.- /rest/permits/?permit_request_id=1
@@ -150,9 +157,8 @@ class PermitRequestViewSet(WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModel
 
     wfs3_title = "Permis"
     wfs3_description = "Tous les permis accordés"
-    wfs3_geom_lookup = 'geo_time__geom'  # lookup for the geometry (on the queryset), used to determine bbox
+    wfs3_geom_lookup = "geo_time__geom"  # lookup for the geometry (on the queryset), used to determine bbox
     wfs3_srid = 2056  # TODO : dynamically retrieve this from the above attribute on the queryset
-
 
     def get_queryset(self):
         """
@@ -231,11 +237,13 @@ class PermitRequestPointViewSet(PermitRequestViewSet):
         geo_envelop = serializers.PermitRequestGeoTimeGeoJSONSerializer(
             source="geo_time",
             read_only=True,
-            extract_geom=serializers.PermitRequestGeoTimeGeoJSONSerializer.EXTRACT_POINTS
+            extract_geom=serializers.PermitRequestGeoTimeGeoJSONSerializer.EXTRACT_POINTS,
         )
 
     wfs3_title = f"{PermitRequestViewSet.wfs3_title} (points)"
-    wfs3_description = f"{PermitRequestViewSet.wfs3_description} (géomtries filtrées par type points)"
+    wfs3_description = (
+        f"{PermitRequestViewSet.wfs3_description} (géomtries filtrées par type points)"
+    )
     serializer_class = PermitRequestViewSetSerializerPoint
 
 
@@ -246,11 +254,13 @@ class PermitRequestLineViewSet(PermitRequestViewSet):
         geo_envelop = serializers.PermitRequestGeoTimeGeoJSONSerializer(
             source="geo_time",
             read_only=True,
-            extract_geom=serializers.PermitRequestGeoTimeGeoJSONSerializer.EXTRACT_LINES
+            extract_geom=serializers.PermitRequestGeoTimeGeoJSONSerializer.EXTRACT_LINES,
         )
 
     wfs3_title = f"{PermitRequestViewSet.wfs3_title} (lines)"
-    wfs3_description = f"{PermitRequestViewSet.wfs3_description} (géomtries filtrées par type lines)"
+    wfs3_description = (
+        f"{PermitRequestViewSet.wfs3_description} (géomtries filtrées par type lines)"
+    )
     serializer_class = PermitRequestViewSetSerializerLine
 
 
@@ -261,9 +271,11 @@ class PermitRequestPolyViewSet(PermitRequestViewSet):
         geo_envelop = serializers.PermitRequestGeoTimeGeoJSONSerializer(
             source="geo_time",
             read_only=True,
-            extract_geom=serializers.PermitRequestGeoTimeGeoJSONSerializer.EXTRACT_POLYS
+            extract_geom=serializers.PermitRequestGeoTimeGeoJSONSerializer.EXTRACT_POLYS,
         )
 
     wfs3_title = f"{PermitRequestViewSet.wfs3_title} (polys)"
-    wfs3_description = f"{PermitRequestViewSet.wfs3_description} (géomtries filtrées par type polys)"
+    wfs3_description = (
+        f"{PermitRequestViewSet.wfs3_description} (géomtries filtrées par type polys)"
+    )
     serializer_class = PermitRequestViewSetSerializerPoly

@@ -373,7 +373,7 @@ REST_FRAMEWORK = {
         # TODO : remove this once OAuth2 settings from qgis are clear
         "rest_framework.authentication.BasicAuthentication",
     ),
-    'DEFAULT_PAGINATION_CLASS': 'django_wfs3.pagination.CustomPagination',
+    "DEFAULT_PAGINATION_CLASS": "django_wfs3.pagination.CustomPagination",
 }
 
 WFS3_TITLE = "OGC API Features - Geocity"
