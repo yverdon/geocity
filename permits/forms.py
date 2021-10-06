@@ -18,6 +18,7 @@ from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 from itertools import groupby
+from django.db.models import Q
 
 
 from . import models, services
@@ -458,9 +459,15 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
         }
 
 
-def check_existing_email(email):
-    if User.objects.filter(email=email).exists():
+def check_existing_email(email, user):
+
+    if (
+        User.objects.filter(email=email)
+        .exclude(Q(id=user.id) if user else Q())
+        .exists()
+    ):
         raise forms.ValidationError(_("Cet email est déjà utilisé."))
+
     return email
 
 
@@ -472,7 +479,7 @@ class NewDjangoAuthUserForm(UserCreationForm):
     required_css_class = "required"
 
     def clean_email(self):
-        return check_existing_email(self.cleaned_data["email"])
+        return check_existing_email(self.cleaned_data["email"], user=None)
 
     def save(self, commit=True):
         user = super(NewDjangoAuthUserForm, self).save(commit=False)
@@ -514,7 +521,7 @@ class DjangoAuthUserForm(forms.ModelForm):
     required_css_class = "required"
 
     def clean_email(self):
-        return check_existing_email(self.cleaned_data["email"])
+        return check_existing_email(self.cleaned_data["email"], self.instance)
 
     class Meta:
         model = User

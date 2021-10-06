@@ -16,10 +16,8 @@ from django.db import transaction
 from django.db.models import Prefetch
 from django.forms import modelformset_factory
 from django.http import (
-    FileResponse,
     Http404,
     HttpResponse,
-    HttpResponseNotFound,
     JsonResponse,
     StreamingHttpResponse,
 )
@@ -37,6 +35,7 @@ from django_tables2.views import SingleTableMixin, SingleTableView
 
 from . import fields, filters, forms, models, services, tables
 from .exceptions import BadPermitRequestStatus
+from .search import match_type_label, search_permit_requests
 
 logger = logging.getLogger(__name__)
 
@@ -208,10 +207,22 @@ class PermitRequestDetailView(View):
             else:
                 kwargs["validations"] = []
 
+        history = (
+            self.permit_request.history.all()
+            if services.has_permission_to_amend_permit_request(
+                self.request.user, self.permit_request
+            )
+            or services.can_validate_permit_request(
+                self.request.user, self.permit_request
+            )
+            else None
+        )
+
         return {
             **kwargs,
             **{
                 "permit_request": self.permit_request,
+                "history": history,
                 "forms": forms,
                 "active_form": active_form,
                 "has_permission_to_classify": services.has_permission_to_classify_permit_request(
@@ -1333,3 +1344,39 @@ def administrative_infos(request):
         "permits/administrative_infos.html",
         {"administrative_entities": administrative_entities},
     )
+
+
+@login_required
+def permit_requests_search(request):
+    def to_json_result(result):
+        return {
+            "permitRequest": {
+                "id": result.permit_request_id,
+                "url": reverse(
+                    "permits:permit_request_detail",
+                    kwargs={"permit_request_id": result.permit_request_id,},
+                ),
+                "author": result.author_name,
+                "status": result.permit_request_status,
+                "createdAt": result.permit_request_created_at.strftime("%d.%m.%Y"),
+            },
+            "match": {
+                "fieldLabel": result.field_label,
+                "fieldValue": result.field_value,
+                "score": result.score,
+                "type": result.match_type.value,
+                "typeLabel": match_type_label(result.match_type),
+            },
+        }
+
+    terms = request.GET.get("search")
+
+    if len(terms) >= 2:
+        permit_requests = services.get_permit_requests_list_for_user(request.user)
+        results = search_permit_requests(
+            search_str=terms, permit_requests_qs=permit_requests, limit=5
+        )
+    else:
+        results = []
+
+    return JsonResponse({"results": [to_json_result(result) for result in results]})

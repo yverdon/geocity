@@ -46,6 +46,10 @@ body {
   border-radius: 0 !important;
 }
 
+.btn a {
+  color: var(--primary-color);
+}
+
 .btn-primary {
   background-color: var(--primary-color);
   border-color: var(--primary-color);
@@ -78,6 +82,14 @@ body {
   background-color: var(--secondary-color);
 }
 
+.btn-link {
+  color: var(--primary-color);
+}
+
+.btn-link:hover {
+  color: var(--secondary-color);
+}
+
 a {
   color: var(--primary-color);
 }
@@ -103,6 +115,27 @@ input:focus {
 
 .table {
 	color: var(--table-color);
+}
+
+.table tr:nth-child(odd) td{
+  background-color: white;
+}
+
+.table tr:nth-child(even) td{
+  background-color: rgb(245, 245, 245);
+}
+
+.page-item.active .page-link {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.page-link:hover {
+  color: var(--secondary-color);
+}
+
+.page-link {
+  color: var(--primary-color);
 }
 
 /* App specific */
@@ -192,8 +225,18 @@ h3 {
   background-color: #f1f4f8;
 }
 
+.navbar {
+  padding-left: 5%;
+  padding-right: 5%;
+  background-color: rgb(245, 245, 245) !important;
+}
+
 .navbar-light .navbar-brand {
-	color: var(--title-color);
+	color: var(--primary-color)
+}
+
+.navbar-light .navbar-brand:hover{
+	color: var(--secondary-color);
 }
 
 .circle {
@@ -262,11 +305,8 @@ h3 {
   border-style: solid;
 }
 
-.navbar {
-  padding: 20px 16px;
-  font-weight: bold;
-  background-image: url("../images/blanc_light_navbar.jpg");
-  background-size: cover;
+.container {
+  padding: 0;
 }
 
 #legal-infos {
@@ -280,6 +320,8 @@ h3 {
   margin-left: 25%;
   width: 50%;
 }
+
+/* List view of demands */
 
 #list-info-title {
   font-size: 20px;
@@ -306,8 +348,25 @@ h3 {
   vertical-align: top;
 }
 
-.permits-list {
-  max-width: 1600px;
+.page-item:first-child .page-link {
+  border-radius: 0;
+}
+
+.page-item:last-child .page-link {
+  border-radius: 0;
+}
+
+th.actions {
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 0;
+  min-width: 150px;
+}
+
+.center-table {
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .permits-action-btns {
@@ -373,10 +432,44 @@ h3 {
   font-size: 1.3em;
 }
 
+/* history timeline */
 
-/* django table 2 column shifter */
-.column-shifter-container .btn-group .btn {
-  font-size: 0 !important;
+#history_timeline {
+  margin-top: 20px;
+}
+
+#history_timeline li {
+  list-style-type: none;
+}
+
+#history_timeline ul {
+  float: left;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  margin-bottom: 20px;
+}
+
+#history_timeline ul li {
+  padding-bottom: 10px;
+  float: left;
+  width: 100%;
+  position: relative;
+}
+
+#history_timeline ul li:before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  width: 1px;
+  height: 100%;
+  left: 6px;
+  background: rgb(200, 200, 200);
+  z-index: -1;
+}
+
+#history_timeline ul li:last-child:before {
+  display: none;
 }
 
 /* /////////////////////////////////// */
@@ -453,4 +546,35 @@ h3 {
     line-height: 15px;
   }
 
+}
+
+.search-results {
+  width: 100%;
+  max-height: 400px;
+
+  position: absolute;
+  top: -1px;
+
+  overflow-y: auto;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-top: none;
+  box-shadow: 0 2px 6px #ccc;
+}
+
+.global-search-form-container {
+  width: 320px;
+}
+
+.list {
+  padding-left: 0;
+  list-style-type: none;
+}
+
+.highlight {
+  background-color: #f9fcd1;
+}
+
+.search-results-container {
+  position: relative;
 }
