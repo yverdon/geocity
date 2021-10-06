@@ -2,6 +2,7 @@ import json
 
 from collections import OrderedDict
 from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.db.models.functions import AsGeoJSON
 from django.db.models import Max, Min
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
@@ -251,7 +252,7 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
             result = {"properties": {}}
             if not aggregated_geotime_qs["singlegeom"]:
                 # Insert empty geometry if there is none
-                result["geometry"] = {"type": "Point", "coordinates": []}
+                result["geometry"] = None
             else:
                 result["geometry"] = json.loads(
                     GEOSGeometry(aggregated_geotime_qs["singlegeom"]).json
