@@ -229,6 +229,7 @@ class PermitRequestViewSet(
 
         return qs
 
+
 # TODO : factorize these three classes together using a factory
 class PermitRequestPointViewSet(PermitRequestViewSet):
     """Same as PermitRequestViewSet, but returns MultiPoints instead of the bounding box"""
@@ -252,6 +253,7 @@ class PermitRequestPointViewSet(PermitRequestViewSet):
         self.request.GET["geom_type"] = "points"
         return super().get_queryset()
 
+
 # TODO : factorize these three classes together using a factory
 class PermitRequestLineViewSet(PermitRequestViewSet):
     """Same as PermitRequestViewSet, but returns MultiLines instead of the bounding box"""
@@ -274,6 +276,7 @@ class PermitRequestLineViewSet(PermitRequestViewSet):
         self.request.GET = self.request.GET.copy()
         self.request.GET["geom_type"] = "lines"
         return super().get_queryset()
+
 
 # TODO : factorize these three classes together using a factory
 class PermitRequestPolyViewSet(PermitRequestViewSet):
