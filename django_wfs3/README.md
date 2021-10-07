@@ -54,5 +54,4 @@ WFS3_DESCRIPTION = "Description"
 
 This is probably still relatively far from a full OGC Services API implementation and currently only aims to support read-only view from QGIS.
 
-This app will as some point be factored out
-into a reusable Django library.
+This app will at some point be factored out into a reusable Django library.
