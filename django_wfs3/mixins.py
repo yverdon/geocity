@@ -52,7 +52,7 @@ class WFS3DescribeModelViewSetMixin:
                     "href": request.build_absolute_uri(f"{base_url}{key}/items"),
                     "rel": "items",
                     "type": "application/geo+json",
-                    "title": key,  # TODO - how can we retrieve prefix from here ?
+                    "title": key,
                 },
             ],
         }
