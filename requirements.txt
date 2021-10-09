@@ -154,6 +154,8 @@ tablib==3.0.0
     # via -r requirements.in
 tomli==1.2.1
     # via pep517
+uritemplate==3.0.1
+    # via -r requirements.in
 urllib3==1.26.7
     # via requests
 webencodings==0.5.1

@@ -5,8 +5,9 @@ ARG dev_dependencies
 # Copy files in another location to solved windows rights issues
 # These files are only used during build process and by entrypoint.sh for dev
 
-COPY . /code/
 WORKDIR /code
+COPY requirements_dev.txt requirements_dev.txt
+COPY requirements.txt requirements.txt
 
 RUN if [ "$dev_dependencies" = "true" ] ; \
     then \
@@ -23,3 +24,5 @@ RUN if [ "$dev_dependencies" = "true" ] ; \
     && echo "# Installed production dependencies    #" \
     && echo "########################################"; \
     fi
+
+COPY . /code/
