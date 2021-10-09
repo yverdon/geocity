@@ -466,7 +466,6 @@ class PermitRequest(models.Model):
         changes to STATUS_PROCESSING, which means all the validators made a decision.
         """
         statuses = self.AMENDABLE_STATUSES.copy()
-        statuses.remove(self.STATUS_PROCESSING)
         return self.status in statuses
 
     def can_be_edited_by_pilot(self):

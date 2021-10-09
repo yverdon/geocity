@@ -386,5 +386,9 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
         "rest_framework.authentication.SessionAuthentication",
-    )
+    ),
+    "DEFAULT_PAGINATION_CLASS": "django_wfs3.pagination.CustomPagination",
 }
+
+WFS3_TITLE = "OGC API Features - Geocity"
+WFS3_DESCRIPTION = "Point d'accès OGC API Features aux données Geocity."

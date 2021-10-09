@@ -1,4 +1,4 @@
-# OAuth2, use bearer token to access to the api
+# OAuth2, use bearer token to access to the WFS3 Open Feature api
 
 ## Register an extern app
 
@@ -20,7 +20,7 @@
 - Add a WFS layer
 - Create a new connection to a server
   - Set a name
-  - Put the url to the ressource. Example <http://localhost:9095/rest/permits>
+  - Put the url to the ressource. Example <http://localhost:9095/wfs3>
   - Create an OAuth2 authentication
     - Set a name
     - Set the request URL. Example <http://localhost:9095/oauth/authorize>

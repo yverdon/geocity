@@ -1,6 +1,14 @@
 from django.urls import include, path
 
+from django_wfs3.urls import wfs3_router
+
 from . import api, geoviews, views
+
+
+wfs3_router.register(r"permits", api.PermitRequestViewSet, "permits")
+wfs3_router.register(r"permits_point", api.PermitRequestPointViewSet, "permit_point")
+wfs3_router.register(r"permits_line", api.PermitRequestLineViewSet, "permit_line")
+wfs3_router.register(r"permits_poly", api.PermitRequestPolyViewSet, "permit_poly")
 
 app_name = "permits"
 

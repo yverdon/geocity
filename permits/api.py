@@ -5,9 +5,17 @@ from django.contrib.auth.decorators import (
 )
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.gis.geos.collections import (
+    GeometryCollection,
+    MultiLineString,
+    MultiPoint,
+    MultiPolygon,
+)
 from django.db.models import CharField, F, Prefetch, Q
 from rest_framework import viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework_gis.fields import GeometrySerializerMethodField
+from django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 
 from . import geoservices, models, serializers, services
 from constance import config
@@ -133,7 +141,9 @@ class BlockRequesterUserPermission(BasePermission):
             return user.get_all_permissions()
 
 
-class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
+class PermitRequestViewSet(
+    WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelViewSet
+):
     """
     Permit request endpoint Usage:
         1.- /rest/permits/?permit_request_id=1
@@ -144,6 +154,11 @@ class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = serializers.PermitRequestPrintSerializer
     permission_classes = [BlockRequesterUserPermission]
+
+    wfs3_title = "Permis"
+    wfs3_description = "Tous les permis accordés"
+    wfs3_geom_lookup = "geo_time__geom"  # lookup for the geometry (on the queryset), used to determine bbox
+    wfs3_srid = 2056  # TODO : dynamically retrieve this from the above attribute on the queryset
 
     def get_queryset(self):
         """
@@ -213,3 +228,49 @@ class PermitRequestViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
         return qs
+
+
+def permitRequestViewSetSubsetFactory(geom_type_name):
+    """Returns a subclass of PermitRequestViewSet with a specific multi-geometry instead
+    of the bounding box"""
+
+    if geom_type_name == "lines":
+        geom_serializer = (
+            serializers.PermitRequestGeoTimeGeoJSONSerializer.EXTRACT_LINES
+        )
+    elif geom_type_name == "points":
+        geom_serializer = (
+            serializers.PermitRequestGeoTimeGeoJSONSerializer.EXTRACT_POINTS
+        )
+    elif geom_type_name == "polygons":
+        geom_serializer = (
+            serializers.PermitRequestGeoTimeGeoJSONSerializer.EXTRACT_POLYS
+        )
+    else:
+        raise Exception(f"Unsupported geom type name {geom_type_name}")
+
+    class Serializer(serializers.PermitRequestPrintSerializer):
+        geo_envelop = serializers.PermitRequestGeoTimeGeoJSONSerializer(
+            source="geo_time", read_only=True, extract_geom=geom_serializer,
+        )
+
+    # DRF want's the serializer to have a specific class name
+    Serializer.__name__ = f"PermitRequestViewSetSerializer{geom_type_name}"
+
+    class ViewSet(PermitRequestViewSet):
+        wfs3_title = f"{PermitRequestViewSet.wfs3_title} ({geom_type_name})"
+        wfs3_description = f"{PermitRequestViewSet.wfs3_description} (géomtries filtrées par type {geom_type_name})"
+        serializer_class = Serializer
+
+        def get_queryset(self):
+            # Inject the geometry filter
+            self.request.GET = self.request.GET.copy()
+            self.request.GET["geom_type"] = geom_type_name
+            return super().get_queryset()
+
+    return ViewSet
+
+
+PermitRequestPointViewSet = permitRequestViewSetSubsetFactory("points")
+PermitRequestLineViewSet = permitRequestViewSetSubsetFactory("lines")
+PermitRequestPolyViewSet = permitRequestViewSetSubsetFactory("polygons")
