@@ -191,7 +191,6 @@ class Command(BaseCommand):
             phone_first="000 00 00 00",
             phone_second="000 00 00 00",
         )
-        
 
         user = User.objects.create_user(
             username="user",

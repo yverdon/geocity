@@ -123,7 +123,7 @@ def get_local_user_from_qgisserver_request(request):
     for whitelisted_ip in settings.LOCAL_IP_WHITELIST:
         if request.META["REMOTE_ADDR"].startswith(whitelisted_ip):
             # TODO: use a dedicated qgissserver (data migration) user that can't log in from outside of the docker network but can read all permits
-            return User.objects.filter(username='qgisserver').first()
+            return User.objects.filter(username="qgisserver").first()
 
 
 class BlockRequesterUserPermission(BasePermission):
@@ -169,7 +169,6 @@ class PermitRequestViewSet(
         # If user is NOT authentified but comes from internal network, get it from the db
         if user.is_anonymous:
             user = get_local_user_from_qgisserver_request(self.request)
-
 
         filters_serializer = serializers.PermitRequestFiltersSerializer(
             data={

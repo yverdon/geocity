@@ -421,11 +421,11 @@ class QgisProjectAdminForm(forms.ModelForm):
                     + settings.DJANGO_DOCKER_PORT,
                     encoder,
                 )
-                if not 'web' in host:
+                if not "web" in host:
                     data = data.replace(url, web_url)
             for site in sites:
                 url = bytes(protocol + protocol_suffix + site, encoder)
-                if not 'web' in site:
+                if not "web" in site:
                     data = data.replace(url, web_url)
 
         # Get characters between | and " or < without spaces, to prevent to take multiple lines
@@ -433,9 +433,9 @@ class QgisProjectAdminForm(forms.ModelForm):
         regex_element = bytes("\|[\S+]+<", encoder)
 
         # Get characters between /?access_token and & or " without spaces
-        regex_authcfg_string = bytes('authcfg=\S+', encoder)
-        regex_user_string = bytes('user=\S+', encoder)
-        regex_password_string = bytes('password=\S+', encoder)
+        regex_authcfg_string = bytes("authcfg=\S+", encoder)
+        regex_user_string = bytes("user=\S+", encoder)
+        regex_password_string = bytes("password=\S+", encoder)
         source_string = bytes('source=""', encoder)
         coverage_source_string = bytes('coverageLayerSource=""', encoder)
 
