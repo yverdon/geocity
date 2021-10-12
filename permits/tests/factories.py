@@ -349,6 +349,16 @@ class WorksObjectPropertyFactoryTypeFile(factory.django.DjangoModelFactory):
     order = factory.Sequence(int)
 
 
+class WorksObjectPropertyFactoryTypeTitle(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.WorksObjectProperty
+
+    name = factory.Faker("word")
+    help_text = factory.Faker("word")
+    input_type = models.WorksObjectProperty.INPUT_TYPE_TITLE
+    order = factory.Sequence(int)
+
+
 class WorksObjectTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.WorksObjectType

@@ -36,3 +36,4 @@ django-allauth
 # django_wfs3 -> djangorestframework (optional for openapi schema generation, see https://www.django-rest-framework.org/api-guide/schemas/#install-dependencies)
 pyyaml
 uritemplate
+django-crispy-forms

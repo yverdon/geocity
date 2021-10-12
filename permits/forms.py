@@ -1,8 +1,12 @@
 import json
+from collections import defaultdict
+
 from constance import config
 from datetime import date, datetime, timedelta
 
 from bootstrap_datepicker_plus import DatePickerInput, DateTimePickerInput
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Fieldset, HTML, Field
 from django import forms
 from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
@@ -20,8 +24,30 @@ from django.core.exceptions import ValidationError
 from itertools import groupby
 from django.db.models import Q
 
-
 from . import models, services
+
+input_type_mapping = {
+    models.WorksObjectProperty.INPUT_TYPE_TEXT: forms.CharField,
+    models.WorksObjectProperty.INPUT_TYPE_CHECKBOX: forms.BooleanField,
+    models.WorksObjectProperty.INPUT_TYPE_NUMBER: forms.FloatField,
+    models.WorksObjectProperty.INPUT_TYPE_FILE: forms.FileField,
+    models.WorksObjectProperty.INPUT_TYPE_ADDRESS: forms.CharField,
+    models.WorksObjectProperty.INPUT_TYPE_DATE: forms.DateField,
+    models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE: forms.ChoiceField,
+    models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE: forms.MultipleChoiceField,
+}
+
+
+def _title_html_representation(prop):
+    base = f"<h5>{prop.name}</h5>"
+    if prop.help_text:
+        base = f"{base}<small class='text-muted'>{prop.help_text}</small>"
+    return base
+
+
+non_value_input_type_mapping = {
+    models.WorksObjectProperty.INPUT_TYPE_TITLE: _title_html_representation,
+}
 
 
 class AddressWidget(forms.widgets.TextInput):
@@ -61,17 +87,6 @@ class AddressWidget(forms.widgets.TextInput):
 
 
 def get_field_cls_for_property(prop):
-    input_type_mapping = {
-        models.WorksObjectProperty.INPUT_TYPE_TEXT: forms.CharField,
-        models.WorksObjectProperty.INPUT_TYPE_CHECKBOX: forms.BooleanField,
-        models.WorksObjectProperty.INPUT_TYPE_NUMBER: forms.FloatField,
-        models.WorksObjectProperty.INPUT_TYPE_FILE: forms.FileField,
-        models.WorksObjectProperty.INPUT_TYPE_ADDRESS: forms.CharField,
-        models.WorksObjectProperty.INPUT_TYPE_DATE: forms.DateField,
-        models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE: forms.ChoiceField,
-        models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE: forms.MultipleChoiceField,
-    }
-
     try:
         return input_type_mapping[prop.input_type]
     except KeyError as e:
@@ -90,7 +105,6 @@ class GroupedRadioWidget(forms.RadioSelect):
 
 
 class AdministrativeEntityForm(forms.Form):
-
     administrative_entity = forms.ModelChoiceField(
         label=_("Entité administrative"),
         widget=GroupedRadioWidget(),
@@ -260,25 +274,50 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
 
         super().__init__(*args, **kwargs)
 
+        fields_per_work_object = defaultdict(list)
         # Create a field for each property
         for works_object_type, prop in self.get_properties():
             field_name = self.get_field_name(works_object_type, prop)
-            self.fields[field_name] = self.field_for_property(prop)
-            if prop.is_mandatory:
-                self.fields[field_name].required = True
+            if prop.is_value_property():
+                fields_per_work_object[str(works_object_type)].append(
+                    Field(field_name, title=prop.help_text)
+                )
+                self.fields[field_name] = self.field_for_property(prop)
+                if prop.is_mandatory:
+                    self.fields[field_name].required = True
+            else:
+                fields_per_work_object[str(works_object_type)].append(
+                    self.non_field_value_for_property(prop)
+                )
 
         if disable_fields:
             for field in self.fields.values():
                 field.disabled = True
 
+        fieldsets = []
+        for work_object_type_str, fieldset_fields in fields_per_work_object.items():
+            fieldset_fields = [work_object_type_str] + fieldset_fields
+            fieldsets.append(Fieldset(*fieldset_fields))
+
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.layout = Layout(*fieldsets)
+
+    def get_field_representation(self, object_type, prop):
+        if prop.is_value_property():
+            return self[self.get_field_name(object_type, prop)]
+        else:
+            return {"repr": non_value_input_type_mapping.get(prop.input_type, {})(prop)}
+
     def get_fields_by_object_type(self):
         """
         Return a list of tuples `(WorksObjectType, List[Field])` for each object type and their properties.
         """
+
         return [
             (
                 object_type,
-                [self[self.get_field_name(object_type, prop)] for prop in props],
+                [self.get_field_representation(object_type, prop) for prop in props],
             )
             for object_type, props in self.get_properties_by_object_type()
         ]
@@ -316,6 +355,13 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         field_instance = field_class(**self.get_field_kwargs(prop))
 
         return field_instance
+
+    def non_field_value_for_property(self, prop):
+        try:
+            input_func = non_value_input_type_mapping[prop.input_type]
+            return HTML(f"<div class='form-group'>{input_func(prop)}</div>")
+        except KeyError as e:
+            raise KeyError(f"Field of type {e} is not supported.")
 
     def get_field_kwargs(self, prop):
         """
@@ -432,12 +478,15 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
 
     def save(self):
         for works_object_type, prop in self.get_properties():
-            services.set_object_property_value(
-                permit_request=self.instance,
-                object_type=works_object_type,
-                prop=prop,
-                value=self.cleaned_data[self.get_field_name(works_object_type, prop)],
-            )
+            if prop.is_value_property():
+                services.set_object_property_value(
+                    permit_request=self.instance,
+                    object_type=works_object_type,
+                    prop=prop,
+                    value=self.cleaned_data[
+                        self.get_field_name(works_object_type, prop)
+                    ],
+                )
 
 
 class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
