@@ -694,6 +694,7 @@ class WorksObjectProperty(models.Model):
     INPUT_TYPE_REGEX = INPUT_TYPE_REGEX
     INPUT_TYPE_LIST_SINGLE = INPUT_TYPE_LIST_SINGLE
     INPUT_TYPE_LIST_MULTIPLE = INPUT_TYPE_LIST_MULTIPLE
+    INPUT_TYPE_TITLE = "title"
     INPUT_TYPE_CHOICES = (
         (INPUT_TYPE_TEXT, _("Texte")),
         (INPUT_TYPE_CHECKBOX, _("Case à cocher")),
@@ -704,6 +705,7 @@ class WorksObjectProperty(models.Model):
         (INPUT_TYPE_REGEX, _("Texte (regex)")),
         (INPUT_TYPE_LIST_SINGLE, _("Choix simple")),
         (INPUT_TYPE_LIST_MULTIPLE, _("Choix multiple")),
+        (INPUT_TYPE_TITLE, _("Titre")),
     )
     integrator = models.ForeignKey(
         Group,
@@ -761,6 +763,18 @@ class WorksObjectProperty(models.Model):
 
     def __str__(self):
         return self.name
+
+    def is_value_property(self):
+        return self.input_type in [
+            WorksObjectProperty.INPUT_TYPE_TEXT,
+            WorksObjectProperty.INPUT_TYPE_CHECKBOX,
+            WorksObjectProperty.INPUT_TYPE_NUMBER,
+            WorksObjectProperty.INPUT_TYPE_FILE,
+            WorksObjectProperty.INPUT_TYPE_ADDRESS,
+            WorksObjectProperty.INPUT_TYPE_DATE,
+            WorksObjectProperty.INPUT_TYPE_LIST_SINGLE,
+            WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE,
+        ]
 
     def clean(self):
         if self.input_type in [INPUT_TYPE_LIST_SINGLE, INPUT_TYPE_LIST_MULTIPLE]:

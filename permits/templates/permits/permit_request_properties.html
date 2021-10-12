@@ -2,6 +2,8 @@
 {% load bootstrap4 %}
 {% load i18n %}
 {% load permits_extras %}
+{% load crispy_forms_tags %}
+
 
 {% block content %}
   {% permit_progressbar steps StepType.PROPERTIES %}
@@ -10,12 +12,7 @@
   <form method="post">
     {% csrf_token %}
     {{ permit_request_form.media }}
-    {% for object_type, fields in object_types %}
-      <h4>{{ object_type }}</h4>
-      {% for field in fields %}
-        {% bootstrap_field field %}
-      {% endfor %}
-    {% endfor %}
+    {% crispy permit_request_form %}
 
     {% buttons %}
       {% if previous_step.url %}

@@ -96,6 +96,7 @@ INSTALLED_APPS = [
     "django_tables2_column_shifter",
     "taggit",
     "oauth2_provider",
+    "crispy_forms",
 ]
 
 if ENABLE_2FA:
@@ -376,3 +377,5 @@ REST_FRAMEWORK = {
 
 WFS3_TITLE = "OGC API Features - Geocity"
 WFS3_DESCRIPTION = "Point d'accès OGC API Features aux données Geocity."
+
+CRISPY_TEMPLATE_PACK = "bootstrap4"

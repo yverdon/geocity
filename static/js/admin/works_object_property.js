@@ -1,4 +1,19 @@
 document.addEventListener('DOMContentLoaded', function() {
+
+  function toggleMandatoryValue() {
+    const mandatoryElement = document.getElementById('id_is_mandatory');
+    const inputTypeElement = document.getElementById('id_input_type');
+    const value = inputTypeElement.value;
+    const disableMandatory = value === 'title';
+
+    if (disableMandatory) {
+      mandatoryElement.checked = false;
+      mandatoryElement.disabled = true;
+    } else {
+      mandatoryElement.disabled = false;
+    }
+  }
+
   function toggleConditionalFields() {
     const hiddenClass = 'grp-row-hidden';
     const requiredClass =  'required';
@@ -38,7 +53,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.getElementById('id_input_type').addEventListener('change', function(e) {
     toggleConditionalFields();
+    toggleMandatoryValue();
   });
 
-  toggleConditionalFields();
-});
+    toggleConditionalFields();
+    toggleMandatoryValue();
+  });
