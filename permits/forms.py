@@ -938,13 +938,13 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         min_start_date = self.permit_request.get_min_starts_at()
         if self.fields.get("starts_at"):
             # starts_at >= min_start_date
-            self.fields["starts_at"].widget.config["options"].update({
-                "minDate": min_start_date.strftime("%Y/%m/%d")
-            })
+            self.fields["starts_at"].widget.config["options"].update(
+                {"minDate": min_start_date.strftime("%Y/%m/%d")}
+            )
             # ends_at >= starts_at
-            self.fields["ends_at"].widget.config["options"].update({
-                "minDate": min_start_date.strftime("%Y/%m/%d")
-            })
+            self.fields["ends_at"].widget.config["options"].update(
+                {"minDate": min_start_date.strftime("%Y/%m/%d")}
+            )
 
     def get_widget_options(self, permit_request):
         works_object_type_choices = (

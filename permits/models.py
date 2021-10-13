@@ -606,7 +606,12 @@ class WorksObjectType(models.Model):
     )
     additional_information = models.TextField(_("autre information"), blank=True)
     needs_date = models.BooleanField(_("avec période de temps"), default=True)
-    start_delay = models.IntegerField(_("délai de commencement"), blank=True, null=True, help_text=_("saisissez un nombre entier, positif ou négatif."))
+    start_delay = models.IntegerField(
+        _("délai de commencement"),
+        blank=True,
+        null=True,
+        help_text=_("saisissez un nombre entier, positif ou négatif."),
+    )
     requires_payment = models.BooleanField(
         _("Demande soumise à des frais"), default=True
     )

@@ -842,12 +842,8 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
     def test_start_date_is_limited_by_work_object_types_with_biggest_start_delay(self):
         group = factories.SecretariatGroupFactory()
-        work_object_type_1 = factories.WorksObjectTypeFactory(
-            start_delay=3,
-        )
-        work_object_type_2 = factories.WorksObjectTypeFactory(
-            start_delay=1,
-        )
+        work_object_type_1 = factories.WorksObjectTypeFactory(start_delay=3,)
+        work_object_type_2 = factories.WorksObjectTypeFactory(start_delay=1,)
 
         permit_request = factories.PermitRequestGeoTimeFactory(
             permit_request=factories.PermitRequestFactory(
@@ -857,9 +853,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             )
         ).permit_request
 
-        permit_request.works_object_types.set(
-            [work_object_type_1, work_object_type_2]
-        )
+        permit_request.works_object_types.set([work_object_type_1, work_object_type_2])
 
         resulted_start_at = permit_request.get_min_starts_at().date()
         expected_start_at = date.today() + datetime.timedelta(days=3)
@@ -883,14 +877,13 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         self.assertEqual(
             permit_request.get_min_starts_at().date(),
-            today + datetime.timedelta(days=int(settings.MIN_START_DELAY))
+            today + datetime.timedelta(days=int(settings.MIN_START_DELAY)),
         )
 
     def test_start_date_cant_be_of_limit(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         works_object_type = factories.WorksObjectTypeWithoutGeometryFactory(
-            needs_date=True,
-            start_delay=3,
+            needs_date=True, start_delay=3,
         )
         permit_request.works_object_types.set([works_object_type])
         today = date.today()
@@ -908,7 +901,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             ),
             data=self.geotime_step_formset_data,
         )
-        self.assertIn('starts_at', response.context['formset'].errors[0])
+        self.assertIn("starts_at", response.context["formset"].errors[0])
 
     def test_summary_and_send_step_has_multiple_directive_fields_when_request_have_multiple_works_object_type(
         self,
