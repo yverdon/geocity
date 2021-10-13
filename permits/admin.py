@@ -443,7 +443,6 @@ class QgisProjectAdminForm(forms.ModelForm):
         empty_bytes_string = bytes('"', encoder)
         empty_bytes_balise = bytes("<", encoder)
         empty_bytes_params = bytes("", encoder)
-        # TODO: fix this workaround
         empty_source_params = bytes('source="', encoder)
         empty_coverage_source_params = bytes('coverageLayerSource="', encoder)
 
