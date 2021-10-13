@@ -909,9 +909,18 @@ def submit_permit_request(permit_request, request):
         users_to_notify = set(
             get_user_model()
             .objects.filter(
-                groups__permitdepartment__administrative_entity=permit_request.administrative_entity,
-                permitauthor__user__email__isnull=False,
-                groups__permitdepartment__is_validator=False,
+                Q(
+                    groups__permitdepartment__administrative_entity=permit_request.administrative_entity,
+                    permitauthor__user__email__isnull=False,
+                    groups__permitdepartment__is_integrator_admin=False,
+                ),
+                Q(
+                    Q(groups__permitdepartment__is_validator=False,)
+                    | Q(
+                        groups__permitdepartment__is_validator=True,
+                        groups__permitdepartment__is_backoffice=True,
+                    )
+                ),
             )
             .values_list("permitauthor__user__email", flat=True)
         )
