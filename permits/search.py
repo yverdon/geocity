@@ -45,7 +45,6 @@ class TrigramStrictWordSimilar(PostgresOperatorLookup):
     else:
         lookup_name = "trigram_word_similar"
         postgres_operator = "<%%"
-    postgres_operator = "<<%%"
 
 
 CharField.register_lookup(TrigramStrictWordSimilar)
