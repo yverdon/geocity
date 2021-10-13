@@ -172,17 +172,6 @@ class Command(BaseCommand):
         )
         self.stdout.write("admin / admin")
 
-        user = User.objects.create_user(
-            email=f"yverdon-squad+qgisserver@liip.ch",
-            first_name="QGIS",
-            last_name="Server",
-            username="qgisserver",
-            password="admin",
-            is_staff=False,
-            is_superuser=True,
-        )
-        self.stdout.write("qgisserver / admin")
-
         models.PermitAuthor.objects.create(
             user=user,
             address="Rue du test",

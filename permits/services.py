@@ -3,6 +3,7 @@ import itertools
 import os
 import urllib
 from collections import defaultdict
+import socket
 
 import filetype
 from constance import config
@@ -353,7 +354,9 @@ def get_permit_request_for_user_or_404(user, permit_request_id, statuses=None):
     return permit_request
 
 
-def get_permit_requests_list_for_user(user):
+def get_permit_requests_list_for_user(
+    user, request_comes_from_internal_qgisserver=False
+):
     """
     Return the list of permit requests this user has access to.
     """
@@ -380,10 +383,10 @@ def get_permit_requests_list_for_user(user):
         ),
     )
 
-    if not user.is_authenticated:
+    if not user.is_authenticated and not request_comes_from_internal_qgisserver:
         return qs.none()
 
-    if not user.is_superuser:
+    if not user.is_superuser and not request_comes_from_internal_qgisserver:
         qs_filter = Q(author=user.permitauthor)
 
         if user.has_perm("permits.amend_permit_request"):
@@ -1409,3 +1412,17 @@ def store_tags_in_session(request):
 def clear_session_filters(request):
     request.session["entityfilter"] = []
     request.session["typefilter"] = []
+
+
+def check_request_comes_from_internal_qgisserver(request):
+    """
+    Check that the request is coming from inside the docker composition AND that it is a private IP
+    """
+
+    for whitelisted_ip in settings.LOCAL_IP_WHITELIST:
+        if (
+            request.META["REMOTE_ADDR"].startswith(whitelisted_ip)
+            and socket.gethostbyname("qgisserver") == request.META["REMOTE_ADDR"]
+        ):
+            return True
+    return False
