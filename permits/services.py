@@ -1202,6 +1202,7 @@ def get_actions_for_administrative_entity(permit_request):
             models.PermitRequest.STATUS_AWAITING_VALIDATION,
             models.PermitRequest.STATUS_PROCESSING,
         ],
+        "prolongate": list(models.PermitRequest.AMENDABLE_STATUSES),
     }
 
     available_statuses_for_administrative_entity = get_status_choices_for_administrative_entity(
@@ -1217,7 +1218,6 @@ def get_actions_for_administrative_entity(permit_request):
             available_actions.append(action)
 
     distinct_available_actions = list(dict.fromkeys(available_actions))
-
     return distinct_available_actions
 
 

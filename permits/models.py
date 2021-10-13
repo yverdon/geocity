@@ -63,9 +63,16 @@ ACTION_AMEND = "amend"
 ACTION_REQUEST_VALIDATION = "request_validation"
 ACTION_VALIDATE = "validate"
 ACTION_POKE = "poke"
+ACTION_PROLONGATE = "prolongate"
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
-ACTIONS = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE, ACTION_POKE]
+ACTIONS = [
+    ACTION_AMEND,
+    ACTION_REQUEST_VALIDATION,
+    ACTION_VALIDATE,
+    ACTION_POKE,
+    ACTION_PROLONGATE,
+]
 
 
 def printed_permit_request_storage(instance, filename):
@@ -435,6 +442,11 @@ class PermitRequest(models.Model):
         blank=True,
     )
     is_public = models.BooleanField(_("Publier"), default=False)
+    prolongation_date = models.DateTimeField(
+        _("Nouvelle date de fin"), null=True, blank=True
+    )
+    prolongation_comment = models.TextField(_("Commentaire"), blank=True)
+    is_prolonged = models.BooleanField("Prolongation acceptée", default=False)
     history = HistoricalRecords()
 
     class Meta:
@@ -625,6 +637,15 @@ class WorksObjectType(models.Model):
         _("Emails des services à notifier"),
         blank=True,
         help_text='Veuillez séparer les emails par une virgule ","',
+    )
+    permit_duration = models.IntegerField(
+        _("Durée de validité de la demande (jours)"), blank=True, default=365
+    )
+    expiration_reminder = models.BooleanField(
+        _("Activer la fonctionde rappel"), default=True
+    )
+    days_before_reminder = models.IntegerField(
+        _("Delai de rappel (jours)"), blank=True, default=10
     )
 
     class Meta:

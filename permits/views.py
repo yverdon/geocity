@@ -182,6 +182,10 @@ class PermitRequestDetailView(View):
                 active_form = active_forms[active_forms.index("validate")]
             else:
                 active_form = active_forms[0]
+            # This is to maintain the prolongation tab active in case of POST error
+            if "action=prolongate" in str(self.request.body):
+                active_form = active_forms[active_forms.index("prolongate")]
+
 
         except IndexError:
             active_form = available_actions[-1] if len(available_actions) > 0 else None
@@ -274,6 +278,7 @@ class PermitRequestDetailView(View):
             models.ACTION_REQUEST_VALIDATION: self.get_request_validation_form,
             models.ACTION_VALIDATE: self.get_validation_form,
             models.ACTION_POKE: self.get_poke_form,
+            models.ACTION_PROLONGATE: self.get_prolongation_form,
         }
 
         return actions_forms[action](data=data)
@@ -371,6 +376,18 @@ class PermitRequestDetailView(View):
 
         return None
 
+    def get_prolongation_form(self, data=None):
+        if services.has_permission_to_poke_permit_request(
+            self.request.user, self.permit_request
+        ):
+            form = forms.PermitRequestProlongationForm(
+                instance=self.permit_request, data=data
+            )
+
+            return form
+
+        return None
+
     def handle_form_submission(self, form, action):
         if action == models.ACTION_AMEND:
             return self.handle_amend_form_submission(form)
@@ -380,6 +397,8 @@ class PermitRequestDetailView(View):
             return self.handle_validation_form_submission(form)
         elif action == models.ACTION_POKE:
             return self.handle_poke(form)
+        elif action == models.ACTION_PROLONGATE:
+            return self.handle_prolongate_form_submission(form)
 
     def handle_amend_form_submission(self, form):
         initial_status = (
@@ -521,6 +540,40 @@ class PermitRequestDetailView(View):
         messages.success(self.request, message)
 
         return redirect("permits:permit_requests_list")
+
+    def handle_prolongate_form_submission(self, form):
+        form.save()
+        success_message = (
+            _(
+                "La prolongation de la demande #%s a été traitée et le demandeur informé."
+            )
+            % self.permit_request.pk
+        )
+
+        messages.success(self.request, success_message)
+
+        subject = (
+            _("Votre demande #%s a bien été prolongée.") % self.permit_request.pk
+            if form.instance.is_prolonged
+            else _("La prolongation de votre demande #%s a été refusée.")
+            % self.permit_request.pk
+        )
+        data = {
+            "subject": subject,
+            "users_to_notify": [form.instance.author.user.email],
+            "template": "permit_request_prolongation.txt",
+            "permit_request": form.instance,
+            "absolute_uri_func": self.request.build_absolute_uri,
+        }
+        services.send_email_notification(data)
+
+        if "save_continue" in self.request.POST:
+            return redirect(
+                "permits:permit_request_detail",
+                permit_request_id=self.permit_request.pk,
+            )
+        else:
+            return redirect("permits:permit_requests_list")
 
 
 def permit_request_print(request, permit_request_id, template_id):

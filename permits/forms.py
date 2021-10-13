@@ -983,6 +983,12 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         self.permit_request = kwargs.pop("permit_request", None)
         disable_fields = kwargs.pop("disable_fields", False)
 
+        initial = {}
+        if self.permit_request.prolongation_date:
+            initial["ends_at"] = self.permit_request.prolongation_date
+
+        kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
+
         super().__init__(*args, **kwargs)
 
         required_info = services.get_geotime_required_info(self.permit_request)
@@ -1192,6 +1198,58 @@ class PermitRequestValidationPokeForm(forms.Form):
         return services.send_validation_reminder(
             self.permit_request, absolute_uri_func=self.request.build_absolute_uri
         )
+
+
+class PermitRequestProlongationForm(forms.ModelForm):
+    prolongation_date = forms.DateTimeField(
+        label=_("Nouvelle date de fin demandée"),
+        input_formats=[settings.DATETIME_INPUT_FORMAT],
+        widget=DateTimePickerInput(
+            options={
+                "format": "DD.MM.YYYY HH:mm",
+                "locale": "fr-CH",
+                "useCurrent": False,
+            }
+        ).start_of("event days"),
+        help_text="Cliquer sur le champ et selectionner la nouvelle date de fin planifiée",
+    )
+
+    class Meta:
+        model = models.PermitRequest
+        fields = [
+            "prolongation_date",
+            "prolongation_comment",
+            "is_prolonged",
+        ]
+        widgets = {
+            "prolongation_comment": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.get("instance", None)
+        initial = {
+            "prolongation_date": self.instance.prolongation_date
+            if self.instance.prolongation_date
+            else self.instance.geo_time.first().ends_at,
+        }
+        kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        prolongation_date = cleaned_data.get("prolongation_date")
+        original_end_date = self.instance.geo_time.first().ends_at
+        if prolongation_date:
+            if prolongation_date <= original_end_date:
+                raise forms.ValidationError(
+                    _("La date de prolongation doit être postérieure à la date originale de fin (%s).")
+                )
+
+    def save(self, commit=True):
+        permit_request = super().save(commit=False)
+        if commit:
+            permit_request.save()
+        return permit_request
 
 
 class PermitRequestClassifyForm(forms.ModelForm):

@@ -43,6 +43,14 @@
       </li>
     {% endif %}
 
+    {% if forms.prolongate%}
+    <li class="nav-item">
+      <a class="nav-link{% if active_form == 'prolongate' %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#prolongate" role="tab" aria-controls="prolongate" aria-selected="{% if active_form == 'prolongate' %}true{% else %}false{% endif %}">
+      {% trans "Prolongation" %}
+      </a>
+    </li>
+    {% endif %}
+
     <li class="nav-item">
       <a class="nav-link" id="print-tab" data-toggle="tab" href="#print" role="tab" aria-controls="print">
         {% trans "Imprimer" %}
@@ -156,6 +164,22 @@
           {% endif %}
         </form>
       </div>
+    {% endif %}
+
+    {% if forms.prolongate %}
+    <div class="tab-pane{% if active_form == 'prolongate' %} show active{% endif  %}" id="prolongate" role="tabpanel" aria-labelledby="prolongate-tab">
+    <form method="post">
+      {% csrf_token %}
+
+      {% bootstrap_form forms.prolongate layout='horizontal' %}
+
+      <div class="text-right">
+        <input name="action" type="hidden" value="prolongate">
+        <button class="btn btn-primary" {% if forms.prolongate.disabled %}disabled{% endif %}>{% trans "Enregistrer" %}</button>
+        <button class="btn btn-primary" name="save_continue" {% if forms.prolongate.disabled %}disabled{% endif %}>{% trans "Enregistrer et continuer les modifications" %}</button>
+      </div>
+    </form>
+    </div>
     {% endif %}
 
     <div class="tab-pane" id="print" role="tabpanel" aria-labelledby="print-tab">
