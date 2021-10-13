@@ -1,7 +1,9 @@
 import collections
 import dataclasses
 import enum
+from datetime import datetime, timedelta
 
+from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
 from django.db.models import JSONField, UniqueConstraint
@@ -493,6 +495,26 @@ class PermitRequest(models.Model):
     def has_validations(self):
         return True if self.validations.all().count() > 0 else False
 
+    def get_min_starts_at(self):
+        """
+        Calculate the minimum `start_at` datetime of an event, using the current date
+        + the biggest `start_delay` (in days) from the existing works_object_types.
+        If no works_object_types exists or none of them has a `start_delay`,
+        use the current date + the default setting.
+        """
+        today = timezone.make_aware(datetime.today())
+        if self.works_object_types.exists():
+            max_delay = None
+            for value in self.works_object_types.values_list("start_delay"):
+                delay = value[0] if value[0] else int(settings.MIN_START_DELAY)
+                if max_delay is None or delay > max_delay:
+                    max_delay = delay
+
+            if max_delay:
+                return today + timedelta(days=max_delay)
+
+        return today + timedelta(days=int(settings.MIN_START_DELAY))
+
 
 class WorksTypeQuerySet(models.QuerySet):
     def filter_by_tags(self, tags):
@@ -584,6 +606,7 @@ class WorksObjectType(models.Model):
     )
     additional_information = models.TextField(_("autre information"), blank=True)
     needs_date = models.BooleanField(_("avec période de temps"), default=True)
+    start_delay = models.IntegerField(_("délai de commencement"), blank=True, null=True, help_text=_("saisissez un nombre entier, positif ou négatif."))
     requires_payment = models.BooleanField(
         _("Demande soumise à des frais"), default=True
     )

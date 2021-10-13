@@ -1,4 +1,5 @@
 # TODO split this file into multiple files
+import datetime
 import re
 import urllib.parse
 import uuid
@@ -568,10 +569,14 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             needs_date=True,
         )
         permit_request.works_object_types.set([works_object_type])
+
+        today = date.today()
+        starts_at = today + datetime.timedelta(days=(int(settings.MIN_START_DELAY) + 2))
+        ends_at = today + datetime.timedelta(days=(int(settings.MIN_START_DELAY) + 1))
         self.geotime_step_formset_data.update(
             {
-                "form-0-starts_at": ["2021-04-17 14:05:00+02:00"],
-                "form-0-ends_at": ["2021-04-16 14:05:00+02:00"],
+                "form-0-starts_at": [starts_at.strftime("%Y-%m-%d 14:00:00+02:00")],
+                "form-0-ends_at": [ends_at.strftime("%Y-%m-%d 14:00:00+02:00")],
             }
         )
 
@@ -834,6 +839,76 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             ),
             1,
         )
+
+    def test_start_date_is_limited_by_work_object_types_with_biggest_start_delay(self):
+        group = factories.SecretariatGroupFactory()
+        work_object_type_1 = factories.WorksObjectTypeFactory(
+            start_delay=3,
+        )
+        work_object_type_2 = factories.WorksObjectTypeFactory(
+            start_delay=1,
+        )
+
+        permit_request = factories.PermitRequestGeoTimeFactory(
+            permit_request=factories.PermitRequestFactory(
+                administrative_entity=group.permitdepartment.administrative_entity,
+                author=self.user.permitauthor,
+                status=models.PermitRequest.STATUS_DRAFT,
+            )
+        ).permit_request
+
+        permit_request.works_object_types.set(
+            [work_object_type_1, work_object_type_2]
+        )
+
+        resulted_start_at = permit_request.get_min_starts_at().date()
+        expected_start_at = date.today() + datetime.timedelta(days=3)
+
+        self.assertEqual(resulted_start_at, expected_start_at)
+
+    def test_start_date_limit_falls_back_to_setting(self):
+        today = date.today()
+        group = factories.SecretariatGroupFactory()
+        work_object_type = factories.WorksObjectTypeFactory()
+
+        permit_request = factories.PermitRequestGeoTimeFactory(
+            permit_request=factories.PermitRequestFactory(
+                administrative_entity=group.permitdepartment.administrative_entity,
+                author=self.user.permitauthor,
+                status=models.PermitRequest.STATUS_DRAFT,
+            )
+        ).permit_request
+
+        permit_request.works_object_types.set([work_object_type])
+
+        self.assertEqual(
+            permit_request.get_min_starts_at().date(),
+            today + datetime.timedelta(days=int(settings.MIN_START_DELAY))
+        )
+
+    def test_start_date_cant_be_of_limit(self):
+        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
+        works_object_type = factories.WorksObjectTypeWithoutGeometryFactory(
+            needs_date=True,
+            start_delay=3,
+        )
+        permit_request.works_object_types.set([works_object_type])
+        today = date.today()
+        start_at = today + datetime.timedelta(days=2)  # Must be >= 3 to be valid
+        self.geotime_step_formset_data.update(
+            {
+                "form-0-starts_at": [start_at.strftime("%Y-%m-%d 14:00:00+02:00")],
+                "form-0-ends_at": [start_at.strftime("%Y-%m-%d 16:00:00+02:00")],
+            }
+        )
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_geo_time",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=self.geotime_step_formset_data,
+        )
+        self.assertIn('starts_at', response.context['formset'].errors[0])
 
     def test_summary_and_send_step_has_multiple_directive_fields_when_request_have_multiple_works_object_type(
         self,
