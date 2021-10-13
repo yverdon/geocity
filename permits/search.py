@@ -24,16 +24,25 @@ from django.db.models import (
 from django.db.models.functions import Cast, Concat, Greatest
 from django.db.models.lookups import PostgresOperatorLookup
 from django.utils.translation import ugettext_lazy as _
-
+from django.db import connection
+from django.conf import settings
 from . import models
+
+# Get the postgres version globally
+settings.PGVERSION = connection.cursor().connection.server_version
 
 
 class TrigramStrictWordSimilarity(TrigramSimilarity):
-    function = "STRICT_WORD_SIMILARITY"
+    function = (
+        "STRICT_WORD_SIMILARITY" if settings.PGVERSION >= 110000 else "WORD_SIMILARITY"
+    )
 
 
 class TrigramStrictWordSimilar(PostgresOperatorLookup):
-    lookup_name = "trigram_strict_word_similar"
+    if settings.PGVERSION >= 110000:
+        lookup_name = "trigram_strict_word_similar"
+    else:
+        lookup_name = "trigram_word_similar"
     postgres_operator = "<<%%"
 
 
@@ -127,14 +136,14 @@ def add_score(qs, fields, search_str):
         for field_name, score_field_name in field_names
     ]
 
+    trigram_expression = (
+        "__unaccent__trigram_strict_word_similar"
+        if settings.PGVERSION >= 110000
+        else "__unaccent__trigram_word_similar"
+    )
+
     trigram_filters = [
-        Q(
-            **{
-                f"{field_name}__unaccent__trigram_strict_word_similar": Unaccent(
-                    Value(search_str)
-                )
-            }
-        )
+        Q(**{f"{field_name}{trigram_expression}": Unaccent(Value(search_str))})
         for field_name in fields
     ]
 
@@ -402,7 +411,12 @@ def search_permit_requests(search_str, limit, permit_requests_qs):
     # The `pg_trgm.strict_word_similarity_threshold` setting is used by the
     # TrigramStrictWordSimilar operator
     with connection.cursor() as cursor:
-        cursor.execute("SET pg_trgm.strict_word_similarity_threshold = 0.1", [])
+
+        cursor.execute(
+            "SET pg_trgm.strict_word_similarity_threshold = 0.1", []
+        ) if settings.PGVERSION >= 110000 else cursor.execute(
+            "SET pg_trgm.word_similarity_threshold = 0.1", []
+        )
 
     return list(
         sorted(
