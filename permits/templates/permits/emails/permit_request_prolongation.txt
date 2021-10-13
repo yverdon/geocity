@@ -1,6 +1,6 @@
 {% load i18n %}{% autoescape off %}{% blocktrans %}Bonjour {{ name }}{% endblocktrans %},
 
-{% trans "Nous vous informons que la prolongation de votre demande a été traitée." %}
+{% trans "Nous vous informons que votre demande de prolongation a été traitée." %}
 
 {% trans "Vous pouvez la consulter sur le lien suivant" %}: {{ permit_request_url }}
 
