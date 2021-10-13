@@ -41,6 +41,7 @@ class TrigramStrictWordSimilarity(TrigramSimilarity):
 class TrigramStrictWordSimilar(PostgresOperatorLookup):
     if settings.PGVERSION >= 110000:
         lookup_name = "trigram_strict_word_similar"
+        postgres_operator = "<<%%"
     else:
         lookup_name = "trigram_word_similar"
     postgres_operator = "<<%%"
