@@ -555,16 +555,20 @@ def permit_request_print(request, permit_request_id, template_id):
     if not qgisserver_response:
         return HttpResponse(_("Une erreur est survenue lors de l'impression"))
 
-    file_name = f"demande_{permit_request_id}_template_{template_id}.pdf"
+    file_name = f"demande_{permit_request_id}_geocity_{template_id}.pdf"
     generated_document.printed_file.save(
         file_name, ContentFile(qgisserver_response.content), True
     )
     generated_document.printed_at = timezone.now()
     generated_document.printed_by = request.user.get_full_name()
     generated_document.save()
-    return StreamingHttpResponse(
+
+    response = StreamingHttpResponse(
         qgisserver_response.iter_content(chunk_size=128), content_type="application/pdf"
     )
+    response["Content-Disposition"] = 'attachment; filename="' + file_name + '"'
+
+    return response
 
 
 @redirect_bad_status_to_detail
