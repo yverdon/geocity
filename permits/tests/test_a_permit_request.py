@@ -1725,7 +1725,8 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
             )
         )
         content = response.content.decode()
-        expected = '<textarea name="properties-{obj_type_id}_{prop_id}" cols="40" rows="1" placeholder="ex: {placeholder}" class="form-control" title="{help_text}" id="id_properties-{obj_type_id}_{prop_id}">{value}'.format(
+
+        expected = '<textarea name="properties-{obj_type_id}_{prop_id}" cols="40" rows="1" placeholder="ex: {placeholder}" class="textarea form-control" title="{help_text}" id="id_properties-{obj_type_id}_{prop_id}">{value}'.format(
             obj_type_id=works_object_type_choice.works_object_type.pk,
             prop_id=prop.pk,
             prop_name=prop.name,
@@ -1734,8 +1735,34 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
             help_text=prop.help_text,
         )
 
-        expected_help_text = '<small class="form-text text-muted">{help_text}</small>'.format(
+        expected_help_text = '<small id="hint_id_properties-{obj_type_id}_{prop_id}" class="form-text text-muted">{help_text}</small>'.format(
             help_text=prop.help_text,
+            obj_type_id=works_object_type_choice.works_object_type.pk,
+            prop_id=prop.pk,
+        )
+
+        self.assertInHTML(expected, content)
+        self.assertInHTML(expected_help_text, content)
+
+    def test_properties_step_shows_title_and_additional_text(self):
+        works_object_type_choice = services.get_works_object_type_choices(
+            self.permit_request
+        ).first()
+
+        prop_title = factories.WorksObjectPropertyFactoryTypeTitle()
+        prop_title.works_object_types.add(works_object_type_choice.works_object_type)
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            )
+        )
+        content = response.content.decode()
+        expected = "<h5>{prop_name}</h5>".format(prop_name=prop_title.name,)
+
+        expected_help_text = "<small>{help_text}</small>".format(
+            help_text=prop_title.help_text
         )
 
         self.assertInHTML(expected, content)

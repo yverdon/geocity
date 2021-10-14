@@ -6,10 +6,14 @@
   <h4>{{ object }}</h4>
   <dl>
     {% for field in properties %}
+      {% if field.label %}
       <dt>{{ field.label }}</dt>
       <dd>
         {{ field.value|human_field_value }}
       </dd>
+      {% else %}
+        {{ field.repr|safe }}
+      {% endif %}
     {% endfor %}
 
     {% for field in appendices %}

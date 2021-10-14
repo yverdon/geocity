@@ -860,14 +860,11 @@ def permit_request_properties(request, permit_request_id):
             instance=permit_request, enable_required=False
         )
 
-    fields_by_object_type = form.get_fields_by_object_type()
-
     return render(
         request,
         "permits/permit_request_properties.html",
         {
             "permit_request": permit_request,
-            "object_types": fields_by_object_type,
             "permit_request_form": form,
             **steps_context,
         },

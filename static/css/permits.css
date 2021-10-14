@@ -578,3 +578,7 @@ h3 {
 .search-results-container {
   position: relative;
 }
+
+.asteriskField {
+    display: none;
+}
