@@ -371,7 +371,10 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
             "validators": [
                 RegexValidator(
                     regex=prop.regex_pattern,
-                    message=_("La saisie n'est pas conforme à la regex"),
+                    message=_(
+                        "La saisie n'est pas conforme au format demandé (%(placeholder)s)."
+                        % {"placeholder": prop.placeholder}
+                    ),
                 )
             ],
         }
