@@ -506,7 +506,9 @@ class PermitRequest(models.Model):
         if self.works_object_types.exists():
             max_delay = None
             for value in self.works_object_types.values_list("start_delay"):
-                delay = value[0] if value[0] is not None else int(settings.MIN_START_DELAY)
+                delay = (
+                    value[0] if value[0] is not None else int(settings.MIN_START_DELAY)
+                )
                 if max_delay is None or delay > max_delay:
                     max_delay = delay
 
