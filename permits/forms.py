@@ -2,7 +2,7 @@ import json
 from collections import defaultdict
 
 from constance import config
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 from bootstrap_datepicker_plus import DatePickerInput, DateTimePickerInput
 from crispy_forms.helper import FormHelper
@@ -20,7 +20,6 @@ from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
-from django.core.exceptions import ValidationError
 from itertools import groupby
 from django.db.models import Q
 
