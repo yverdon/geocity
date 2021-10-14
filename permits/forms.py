@@ -1242,7 +1242,10 @@ class PermitRequestProlongationForm(forms.ModelForm):
         if prolongation_date:
             if prolongation_date <= original_end_date:
                 raise forms.ValidationError(
-                    _("La date de prolongation doit être postérieure à la date originale de fin (%s).")
+                    _(
+                        "La date de prolongation doit être postérieure à la date originale de fin (%s)."
+                    )
+                    % original_end_date.strftime(settings.DATETIME_INPUT_FORMAT)
                 )
 
     def save(self, commit=True):

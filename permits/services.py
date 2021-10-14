@@ -20,6 +20,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext_lazy as _
+from datetime import timedelta
 
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
@@ -361,6 +362,7 @@ def get_permit_requests_list_for_user(user):
     qs = models.PermitRequest.objects.annotate(
         starts_at_min=Min("geo_time__starts_at"),
         ends_at_max=Max("geo_time__ends_at"),
+        permit_duration_max=Max("works_object_types__permit_duration"),
         remaining_validations=Count("validations")
         - Count(
             "validations",

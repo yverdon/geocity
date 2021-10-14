@@ -186,7 +186,6 @@ class PermitRequestDetailView(View):
             if "action=prolongate" in str(self.request.body):
                 active_form = active_forms[active_forms.index("prolongate")]
 
-
         except IndexError:
             active_form = available_actions[-1] if len(available_actions) > 0 else None
 

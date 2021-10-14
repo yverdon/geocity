@@ -36,4 +36,29 @@
       </li>
     {% endif %}
   {% endif %}
+
+  {% if record.author == request.user.permitauthor %}
+    {% if record.prolongation_date %}
+      {% if record.is_prolonged %}
+      <!-- TODO: Allow renouveler plusieurs fois -->
+<!--        <li>-->
+<!--          <i class="fa fa-clock-o fa-lg" title="{% trans 'Renouvelée' %}"></i>-->
+<!--        </li>-->
+      {% else %}
+        <li>
+          <i class="fa fa-clock-o fa-lg" title="{% trans 'Prolongation en attente' %}"></i>
+        </li>
+      {% endif %}
+    {% else %}
+      {% if record.status == 2 or record.status == 3 or record.status == 4 %}
+        <li>
+          <a title="{% trans 'Demander une prolongation' %}" href="{% url 'permits:permit_request_properties' record.id %}">
+            <i class="fa fa-clock-o fa-lg"></i>
+          </a>
+        </li>
+      {% endif %}
+    {% endif %}
+  {% endif %}
+
+
 </ul>

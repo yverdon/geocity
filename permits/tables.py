@@ -14,8 +14,9 @@ class OwnPermitRequestsTable(ColumnShiftTable):
     )
     status = tables.TemplateColumn(template_name="tables/_permit_request_status.html",)
     starts_at_min = tables.Column(verbose_name=_("Début"))
-    ends_at_max = tables.Column(verbose_name=_("Fin"))
-    prolongation_date = tables.TemplateColumn(verbose_name=_("Prolongation"), template_name="tables/_permit_request_prolongation.html",)
+    ends_at_max = tables.TemplateColumn(
+        verbose_name=_("Fin"), template_name="tables/_permit_request_ends_at.html",
+    )
     works_objects_html = tables.Column(
         verbose_name=_("Objets et types de demandes"), orderable=False
     )
@@ -31,7 +32,6 @@ class OwnPermitRequestsTable(ColumnShiftTable):
             "status",
             "starts_at_min",
             "ends_at_max",
-            "prolongation_date",
             "works_objects_html",
             "administrative_entity",
         )
@@ -46,8 +46,10 @@ class DepartmentPermitRequestsTable(ColumnShiftTable):
     )
     status = tables.TemplateColumn(template_name="tables/_permit_request_status.html",)
     starts_at_min = tables.Column(verbose_name=_("Début"))
-    ends_at_max = tables.Column(verbose_name=_("Fin"))
-    prolongation_date = tables.TemplateColumn(template_name="tables/_permit_request_prolongation.html",)
+    ends_at_max = tables.TemplateColumn(
+        verbose_name=_("Fin"), template_name="tables/_permit_request_ends_at.html",
+    )
+
     works_objects_html = tables.Column(
         verbose_name=_("Objets et types de demandes"), orderable=False
     )
@@ -67,7 +69,6 @@ class DepartmentPermitRequestsTable(ColumnShiftTable):
             "status",
             "starts_at_min",
             "ends_at_max",
-            "prolongation_date",
             "works_objects_html",
             "administrative_entity",
         )
