@@ -68,6 +68,7 @@ def get_field_cls_for_property(prop):
         models.WorksObjectProperty.INPUT_TYPE_FILE: forms.FileField,
         models.WorksObjectProperty.INPUT_TYPE_ADDRESS: forms.CharField,
         models.WorksObjectProperty.INPUT_TYPE_DATE: forms.DateField,
+        models.WorksObjectProperty.INPUT_TYPE_REGEX: forms.CharField,
         models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE: forms.ChoiceField,
         models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE: forms.MultipleChoiceField,
     }
@@ -333,6 +334,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
             models.WorksObjectProperty.INPUT_TYPE_DATE: self.get_date_field_kwargs,
             models.WorksObjectProperty.INPUT_TYPE_NUMBER: self.get_number_field_kwargs,
             models.WorksObjectProperty.INPUT_TYPE_FILE: self.get_file_field_kwargs,
+            models.WorksObjectProperty.INPUT_TYPE_REGEX: self.get_regex_field_kwargs,
             models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE: self.get_list_single_field_kwargs,
             models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE: self.get_list_multiple_field_kwargs,
         }
@@ -353,6 +355,28 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                     else "",
                 },
             ),
+        }
+
+    def get_regex_field_kwargs(self, prop, default_kwargs):
+        return {
+            **default_kwargs,
+            "widget": forms.Textarea(
+                attrs={
+                    "rows": 1,
+                    "placeholder": ("ex: " + prop.placeholder)
+                    if prop.placeholder != ""
+                    else "",
+                },
+            ),
+            "validators": [
+                RegexValidator(
+                    regex=prop.regex_pattern,
+                    message=_(
+                        "La saisie n'est pas conforme au format demandé (%(placeholder)s)."
+                        % {"placeholder": prop.placeholder}
+                    ),
+                )
+            ],
         }
 
     def get_address_field_kwargs(self, prop, default_kwargs):
