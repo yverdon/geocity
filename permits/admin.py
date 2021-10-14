@@ -539,7 +539,10 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             "Notifications aux services",
             {"fields": ("notify_services", "services_to_notify")},
         ),
-        ("Planning et localisation", {"fields": ("geometry_types", "needs_date",)},),
+        (
+            "Planning et localisation",
+            {"fields": ("geometry_types", "needs_date", "start_delay")},
+        ),
         (
             "Directive",
             {
