@@ -903,6 +903,20 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
         self.assertIn("starts_at", response.context["formset"].errors[0])
 
+    def test_start_date_limit_is_set_to_0(self):
+        group = factories.SecretariatGroupFactory()
+        work_object_type = factories.WorksObjectTypeFactory(start_delay=0)
+        permit_request = factories.PermitRequestGeoTimeFactory(
+            permit_request=factories.PermitRequestFactory(
+                administrative_entity=group.permitdepartment.administrative_entity,
+                author=self.user.permitauthor,
+                status=models.PermitRequest.STATUS_DRAFT,
+            )
+        ).permit_request
+        permit_request.works_object_types.set([work_object_type])
+
+        self.assertEqual(permit_request.get_min_starts_at().date(), date.today())
+
     def test_summary_and_send_step_has_multiple_directive_fields_when_request_have_multiple_works_object_type(
         self,
     ):

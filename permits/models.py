@@ -498,20 +498,19 @@ class PermitRequest(models.Model):
     def get_min_starts_at(self):
         """
         Calculate the minimum `start_at` datetime of an event, using the current date
-        + the biggest `start_delay` (in days) from the existing works_object_types.
-        If no works_object_types exists or none of them has a `start_delay`,
-        use the current date + the default setting.
+        + the biggest `start_delay` (in days, integer pos/neg/zero) from the existing
+        works_object_types. If no works_object_types exists or none of them has a
+        `start_delay`, use the current date + the default setting.
         """
         today = timezone.make_aware(datetime.today())
         if self.works_object_types.exists():
             max_delay = None
             for value in self.works_object_types.values_list("start_delay"):
-                delay = value[0] if value[0] else int(settings.MIN_START_DELAY)
+                delay = value[0] if value[0] is not None else int(settings.MIN_START_DELAY)
                 if max_delay is None or delay > max_delay:
                     max_delay = delay
 
-            if max_delay:
-                return today + timedelta(days=max_delay)
+            return today + timedelta(days=max_delay)
 
         return today + timedelta(days=int(settings.MIN_START_DELAY))
 
