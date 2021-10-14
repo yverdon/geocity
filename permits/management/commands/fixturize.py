@@ -106,6 +106,7 @@ class Command(BaseCommand):
             self.create_geom_layer_entity()
             self.stdout.write("Creating template customizations...")
             self.create_template_customization()
+            self.stdout.write("Fixturize succeed.")
 
     def setup_site(self):
         # FIXME Get or create Site, set domain name

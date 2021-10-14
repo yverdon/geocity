@@ -32,6 +32,7 @@ class DootixSocialAccountAdapter(DefaultSocialAccountAdapter):
         user.set_unusable_password()
         user.first_name = form.cleaned_data.get("first_name")
         user.last_name = form.cleaned_data.get("last_name")
+        user.username = form.cleaned_data.get("username")
 
         sociallogin.save(request)
 
