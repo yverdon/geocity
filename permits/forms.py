@@ -41,7 +41,7 @@ input_type_mapping = {
 def _title_html_representation(prop):
     base = f"<h5>{prop.name}</h5>"
     if prop.help_text:
-        base = f"{base}<small class='text-muted'>{prop.help_text}</small>"
+        base = f"{base}<small>{prop.help_text}</small>"
     return base
 
 

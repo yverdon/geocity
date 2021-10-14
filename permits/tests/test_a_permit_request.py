@@ -1761,7 +1761,7 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
         content = response.content.decode()
         expected = "<h5>{prop_name}</h5>".format(prop_name=prop_title.name,)
 
-        expected_help_text = '<small class="text-muted">{help_text}</small>'.format(
+        expected_help_text = "<small>{help_text}</small>".format(
             help_text=prop_title.help_text
         )
 
