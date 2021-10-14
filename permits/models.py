@@ -54,6 +54,7 @@ ACTOR_TYPE_CHOICES = (
 # Input types
 INPUT_TYPE_LIST_SINGLE = "list_single"
 INPUT_TYPE_LIST_MULTIPLE = "list_multiple"
+INPUT_TYPE_REGEX = "regex"
 
 # Actions
 ACTION_AMEND = "amend"
@@ -661,6 +662,7 @@ class WorksObjectProperty(models.Model):
     INPUT_TYPE_FILE = "file"
     INPUT_TYPE_ADDRESS = "address"
     INPUT_TYPE_DATE = "date"
+    INPUT_TYPE_REGEX = INPUT_TYPE_REGEX
     INPUT_TYPE_LIST_SINGLE = INPUT_TYPE_LIST_SINGLE
     INPUT_TYPE_LIST_MULTIPLE = INPUT_TYPE_LIST_MULTIPLE
     INPUT_TYPE_CHOICES = (
@@ -670,6 +672,7 @@ class WorksObjectProperty(models.Model):
         (INPUT_TYPE_FILE, _("Fichier")),
         (INPUT_TYPE_ADDRESS, _("Adresse")),
         (INPUT_TYPE_DATE, _("Date")),
+        (INPUT_TYPE_REGEX, _("Texte (regex)")),
         (INPUT_TYPE_LIST_SINGLE, _("Choix simple")),
         (INPUT_TYPE_LIST_MULTIPLE, _("Choix multiple")),
     )
@@ -701,6 +704,12 @@ class WorksObjectProperty(models.Model):
         blank=True,
         help_text=_("Entrez un choix par ligne"),
     )
+    regex_pattern = models.CharField(
+        _("regex pattern"),
+        max_length=255,
+        blank=True,
+        help_text=_("Exemple: ^[0-9]{4}$"),
+    )
 
     class Meta(object):
         ordering = ["order"]
@@ -713,7 +722,11 @@ class WorksObjectProperty(models.Model):
                     & Q(choices="")
                 ),
                 name="choices_not_empty_for_lists",
-            )
+            ),
+            models.CheckConstraint(
+                check=~(Q(input_type=INPUT_TYPE_REGEX) & Q(regex_pattern="")),
+                name="pattern_not_empty_for_regex",
+            ),
         ]
         indexes = [models.Index(fields=["input_type"])]
 
@@ -743,6 +756,10 @@ class WorksObjectProperty(models.Model):
                 self.choices = "\n".join(split_choices)
         else:
             self.choices = ""
+
+        if self.input_type == INPUT_TYPE_REGEX:
+            if not self.regex_pattern:
+                raise ValidationError({"regex_pattern": _("This field is required.")})
 
 
 class WorksObjectPropertyValue(models.Model):

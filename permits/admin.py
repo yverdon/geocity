@@ -613,6 +613,7 @@ class WorksObjectPropertyForm(forms.ModelForm):
             "order",
             "input_type",
             "choices",
+            "regex_pattern",
             "is_mandatory",
             "works_object_types",
         ]
