@@ -1,25 +1,28 @@
 import json
-from constance import config
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
+from itertools import groupby
 
+from allauth.socialaccount.forms import SignupForm
 from bootstrap_datepicker_plus import DatePickerInput, DateTimePickerInput
+from constance import config
 from django import forms
 from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis import forms as geoforms
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import transaction
+from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
-from django.core.exceptions import ValidationError
-from itertools import groupby
-from django.db.models import Q
 
+from accounts.dootix.adapter import DootixSocialAccountAdapter
+from accounts.geomapfish.adapter import GeomapfishSocialAccountAdapter
 
 from . import models, services
 
@@ -466,7 +469,7 @@ def check_existing_email(email, user):
         .exclude(Q(id=user.id) if user else Q())
         .exists()
     ):
-        raise forms.ValidationError(_("Cet email est déjà utilisé."))
+        raise ValidationError(_("Cet email est déjà utilisé."))
 
     return email
 
@@ -1012,7 +1015,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         ends_at = cleaned_data.get("ends_at")
         if starts_at and ends_at:
             if ends_at <= starts_at:
-                raise forms.ValidationError(
+                raise ValidationError(
                     _("La date de fin doit être postérieure à la date de début.")
                 )
 
@@ -1142,3 +1145,93 @@ class PermitRequestClassifyForm(forms.ModelForm):
             permit_request.save()
 
         return permit_request
+
+
+class SocialSignupForm(SignupForm):
+    first_name = forms.CharField(
+        max_length=30,
+        label=_("Prénom"),
+        widget=forms.TextInput(
+            attrs={"placeholder": "ex: Marcel", "required": "required"}
+        ),
+    )
+    last_name = forms.CharField(
+        max_length=150,
+        label=_("Nom"),
+        widget=forms.TextInput(
+            attrs={"placeholder": "ex: Dupond", "required": "required"}
+        ),
+    )
+
+    required_css_class = "required"
+
+    address = forms.CharField(
+        max_length=100, label=_("Adresse"), widget=AddressWidget()
+    )
+
+    zipcode = forms.IntegerField(
+        label=_("NPA"),
+        min_value=1000,
+        max_value=9999,
+        widget=forms.NumberInput(attrs={"required": "required"}),
+    )
+    city = forms.CharField(
+        max_length=100,
+        label=_("Ville"),
+        widget=forms.TextInput(
+            attrs={"placeholder": "ex: Yverdon", "required": "required"}
+        ),
+    )
+    phone_first = forms.CharField(
+        label=_("Téléphone principal"),
+        max_length=20,
+        required=True,
+        widget=forms.TextInput(attrs={"placeholder": "ex: 024 111 22 22"}),
+        validators=[
+            RegexValidator(
+                regex=r"^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
+                message="Seuls les chiffres et les espaces sont autorisés.",
+            )
+        ],
+    )
+
+    phone_second = forms.CharField(
+        required=False,
+        label=_("Téléphone secondaire"),
+        max_length=20,
+        widget=forms.TextInput(attrs={"placeholder": "ex: 079 111 22 22"}),
+    )
+
+    company_name = forms.CharField(
+        required=False,
+        label=_("Raison Sociale"),
+        max_length=100,
+        widget=forms.TextInput(attrs={"placeholder": "ex: Construction SA"}),
+    )
+
+    vat_number = forms.CharField(
+        required=False,
+        label=_("Numéro TVA"),
+        max_length=19,
+        widget=forms.TextInput(attrs={"placeholder": "ex: CHE-123.456.789"}),
+        help_text=_(
+            'Trouvez votre numéro <a href="https://www.uid.admin.ch/Search.aspx'
+            '?lang=fr" target="_blank">TVA</a>'
+        ),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].label = _("Nom d’utilisateur")
+        self.fields["username"].required = True
+        self.fields["email"].disabled = True
+        if kwargs["sociallogin"].user.username != "":
+            self.fields["username"].disabled = True
+
+    def save(self, request):
+        # Couldn't find a better way with this one common SOCIALACCOUNT_FORMS.signup
+        if self.sociallogin.account.provider == "dootix":
+            adapter = DootixSocialAccountAdapter(request)
+        elif self.sociallogin.account.provider == "geomapfish":
+            adapter = GeomapfishSocialAccountAdapter(request)
+        return adapter.save_user(request, self.sociallogin, form=self)

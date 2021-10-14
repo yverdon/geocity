@@ -245,8 +245,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "geomapshark.context_processors.two_factor_setting",
-                "geomapshark.context_processors.social_login_geomapfish_setting",
-                "geomapshark.context_processors.social_login_dootix_setting",
+                "geomapshark.context_processors.social_apps",
                 "permits.context_processors.step_type",
             ],
         },
@@ -294,7 +293,7 @@ SOCIALACCOUNT_PROVIDERS = {
 
 # Override SocialAccountAdapter to customize User creation
 SOCIALACCOUNT_ADAPTER = "accounts.geomapfish.adapter.GeomapfishSocialAccountAdapter"
-SOCIALACCOUNT_FORMS = {"signup": "accounts.geomapfish.forms.GeomapfishSocialSignupForm"}
+SOCIALACCOUNT_FORMS = {"signup": "permits.forms.SocialSignupForm"}
 SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = None

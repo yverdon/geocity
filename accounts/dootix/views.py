@@ -6,29 +6,17 @@ from allauth.socialaccount.providers.oauth2.views import (
     OAuth2LoginView,
     OAuth2CallbackView,
 )
+from allauth.utils import build_absolute_uri
+from django.urls import reverse
+
 from .provider import DootixProvider
 from django.conf import settings
-from django.utils.http import urlencode
-
-
-# Dootix oAuth backend does not accept redirect_uri param in request, thus, remove it
-class OAuth2ClientCustom(OAuth2Client):
-    def get_redirect_url(self, authorization_url, extra_params):
-        params = {
-            "client_id": self.consumer_key,
-            "scope": self.scope,
-            "response_type": "code",
-        }
-        if self.state:
-            params["state"] = self.state
-        params.update(extra_params)
-        return "%s?%s" % (authorization_url, urlencode(params))
 
 
 class DootixAdapter(OAuth2Adapter):
     provider_id = DootixProvider.id
 
-    client_class = OAuth2ClientCustom
+    client_class = OAuth2Client
 
     # Fetched programmatically, must be reachable from container
     access_token_url = "{}/oauth/token".format(settings.AUTH_PROVIDER_DOOTIX_URL)
@@ -42,6 +30,20 @@ class DootixAdapter(OAuth2Adapter):
         resp = requests.get(self.profile_url, headers=headers)
         extra_data = resp.json()
         return self.get_provider().sociallogin_from_response(request, extra_data)
+
+    def get_callback_url(self, request, app):
+        callback_url = reverse(self.provider_id + "_callback")
+        protocol = self.redirect_uri_protocol
+        callback_url = build_absolute_uri(request, callback_url, protocol)
+
+        # FIXME
+        #  Correct the callback_url saved at client's creation in Dootix,
+        #  The saved one is incorrect (missing a trailing slash)
+        #  The following removes the trailing slash to match the wrong url.
+        #  This line can be removed as soon as the callback_url in Dootix is fixed.
+        callback_url = callback_url[0:-1]
+
+        return build_absolute_uri(request, callback_url, protocol)
 
 
 oauth2_login = OAuth2LoginView.adapter_view(DootixAdapter)

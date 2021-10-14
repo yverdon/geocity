@@ -6,17 +6,5 @@ def two_factor_setting(request):
     return {"ENABLE_2FA": settings.ENABLE_2FA}
 
 
-def social_login_geomapfish_setting(request):
-    return {
-        "has_social_login_geomapfish": "APP"
-        in settings.SOCIALACCOUNT_PROVIDERS["accounts.geomapfish"].keys()
-        or SocialApp.objects.filter(provider="geomapfish").exists()
-    }
-
-
-def social_login_dootix_setting(request):
-    return {
-        "has_social_login_dootix": "APP"
-        in settings.SOCIALACCOUNT_PROVIDERS["accounts.dootix"].keys()
-        or SocialApp.objects.filter(provider="dootix").exists()
-    }
+def social_apps(request):
+    return {"social_apps": SocialApp.objects.all()}
