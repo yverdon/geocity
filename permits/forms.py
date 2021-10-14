@@ -13,6 +13,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis import forms as geoforms
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import transaction
 from django.urls import reverse
