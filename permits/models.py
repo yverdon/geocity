@@ -774,6 +774,7 @@ class WorksObjectProperty(models.Model):
             WorksObjectProperty.INPUT_TYPE_DATE,
             WorksObjectProperty.INPUT_TYPE_LIST_SINGLE,
             WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE,
+            WorksObjectProperty.INPUT_TYPE_REGEX,
         ]
 
     def clean(self):
