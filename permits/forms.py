@@ -35,6 +35,7 @@ input_type_mapping = {
     models.WorksObjectProperty.INPUT_TYPE_DATE: forms.DateField,
     models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE: forms.ChoiceField,
     models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE: forms.MultipleChoiceField,
+    models.WorksObjectProperty.INPUT_TYPE_REGEX: forms.CharField,
 }
 
 
