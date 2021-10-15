@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0041_permit_request_indexes'),
+        ('permits', '0042_add_regex_to_worksobjectproperty'),
     ]
 
     operations = [
