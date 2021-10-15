@@ -1919,6 +1919,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
             administrative_entity=self.administrative_entity,
         )
+        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
         response = self.client.get(reverse("permits:permit_requests_list"))
 
         self.assertEqual(list(response.context["permitrequest_list"]), [permit_request])
@@ -1928,6 +1929,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
             administrative_entity=self.administrative_entity,
         )
+        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
         response = self.client.post(
             reverse(
                 "permits:permit_request_detail",
@@ -2052,6 +2054,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             administrative_entity=self.administrative_entity,
             author=user.permitauthor,
         )
+        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
         response = self.client.post(
             reverse(
                 "permits:permit_request_detail",
@@ -2205,6 +2208,7 @@ class PermitRequestValidationTestcase(TestCase):
         validator = factories.ValidatorUserFactory(
             groups=[validation.department.group, factories.ValidatorGroupFactory()]
         )
+        factories.PermitRequestGeoTimeFactory(permit_request=validation.permit_request)
 
         self.client.login(username=validator.username, password="password")
 
@@ -2357,6 +2361,7 @@ class PermitRequestClassifyTestCase(TestCase):
         )
 
         self.client.login(username=self.secretariat_user.username, password="password")
+        factories.PermitRequestGeoTimeFactory(permit_request=validation.permit_request)
         response = self.client.post(
             reverse(
                 "permits:permit_request_approve",
@@ -2367,7 +2372,11 @@ class PermitRequestClassifyTestCase(TestCase):
             },
         )
 
-        self.assertRedirects(response, reverse("permits:permit_requests_list"))
+        self.assertRedirects(
+            response,
+            reverse("permits:permit_requests_list"),
+            fetch_redirect_response=False,
+        )
         validation.permit_request.refresh_from_db()
         self.assertEqual(
             validation.permit_request.status, models.PermitRequest.STATUS_APPROVED
@@ -2391,6 +2400,7 @@ class PermitRequestClassifyTestCase(TestCase):
         )
 
         self.client.login(username=self.secretariat_user.username, password="password")
+        factories.PermitRequestGeoTimeFactory(permit_request=validation.permit_request)
         response = self.client.post(
             reverse(
                 "permits:permit_request_reject",
@@ -2401,7 +2411,11 @@ class PermitRequestClassifyTestCase(TestCase):
             },
         )
 
-        self.assertRedirects(response, reverse("permits:permit_requests_list"))
+        self.assertRedirects(
+            response,
+            reverse("permits:permit_requests_list"),
+            fetch_redirect_response=False,
+        )
         validation.permit_request.refresh_from_db()
         self.assertEqual(
             validation.permit_request.status, models.PermitRequest.STATUS_REJECTED
@@ -2540,6 +2554,7 @@ class PermitRequestClassifyTestCase(TestCase):
             permit_request__author__user__email="user@geocity.com",
         )
         validation.permit_request.works_object_types.set([wot, wot2])
+        factories.PermitRequestGeoTimeFactory(permit_request=validation.permit_request)
 
         self.client.login(username=self.secretariat_user.username, password="password")
         response = self.client.post(
@@ -2549,7 +2564,11 @@ class PermitRequestClassifyTestCase(TestCase):
             ),
         )
 
-        self.assertRedirects(response, reverse("permits:permit_requests_list"))
+        self.assertRedirects(
+            response,
+            reverse("permits:permit_requests_list"),
+            fetch_redirect_response=False,
+        )
         validation.permit_request.refresh_from_db()
         self.assertEqual(
             validation.permit_request.status, models.PermitRequest.STATUS_APPROVED

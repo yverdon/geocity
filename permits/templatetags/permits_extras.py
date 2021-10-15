@@ -87,25 +87,26 @@ def human_field_value(value):
 
 @register.simple_tag(takes_context=True)
 def is_expired(context):
-    ends_at_max =context['record'].ends_at_max
-    permit_duration_max = context['record'].permit_duration_max
-    prolongation_date = context['record'].prolongation_date
-    is_prolonged = context['record'].is_prolonged
-    permit_valid_until = prolongation_date if prolongation_date and is_prolonged else ends_at_max
+    ends_at_max = context["record"].ends_at_max
+    prolongation_date = context["record"].prolongation_date
+    prolongation_status = context["record"].prolongation_status
+    permit_valid_until = (
+        prolongation_date
+        if prolongation_date
+        and prolongation_status == context["record"].PROLONGATION_STATUS_APPROVED
+        else ends_at_max
+    )
 
-    if prolongation_date and is_prolonged:
-        return mark_safe('<i class="fa fa-refresh" fa-lg title="Demande renouvelée"></i>')
+    if (
+        prolongation_date
+        and prolongation_status == context["record"].PROLONGATION_STATUS_APPROVED
+    ):
+        return mark_safe(
+            '<i class="fa fa-refresh status2" fa-lg title="Demande renouvelée"></i>'
+        )
     elif datetime.now(timezone.utc) > permit_valid_until:
         return mark_safe(
-            '<i class="fa fa-exclamation-triangle" fa-lg title="Demande échue"></i>'
+            '<i class="fa fa-exclamation-triangle status0" fa-lg title="Demande échue"></i>'
         )
     else:
-        return ''
-
-    # return (
-    #     mark_safe(
-    #         '<i class="fa fa-exclamation-triangle" fa-lg title="Demande échue"></i>'
-    #     )
-    #     if ends_at_max + timedelta(permit_duration_max) < datetime.now(timezone.utc)
-    #     else mark_safe('<i class="fa fa-refresh" fa-lg title="Demande renouvelée"></i>')
-    # )
+        return ""

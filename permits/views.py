@@ -78,6 +78,17 @@ def get_permit_request_for_edition(user, permit_request_id):
     return permit_request
 
 
+def get_permit_request_for_prolongation(user, permit_request_id):
+
+    allowed_statuses = models.PermitRequest.PROLONGABLE_STATUSES
+
+    permit_request = services.get_permit_request_for_user_or_404(
+        user, permit_request_id, statuses=allowed_statuses,
+    )
+
+    return permit_request
+
+
 def redirect_bad_status_to_detail(func):
     def inner(*args, **kwargs):
         try:
@@ -544,7 +555,7 @@ class PermitRequestDetailView(View):
         form.save()
         success_message = (
             _(
-                "La prolongation de la demande #%s a été traitée et le demandeur informé."
+                "La prolongation de la demande #%s a été traitée et un émail envoyé à l'auteur-e."
             )
             % self.permit_request.pk
         )
@@ -553,7 +564,8 @@ class PermitRequestDetailView(View):
 
         subject = (
             _("Votre demande #%s a bien été prolongée.") % self.permit_request.pk
-            if form.instance.is_prolonged
+            if form.instance.prolongation_status
+            == self.permit_request.PROLONGATION_STATUS_APPROVED
             else _("La prolongation de votre demande #%s a été refusée.")
             % self.permit_request.pk
         )
@@ -920,6 +932,62 @@ def permit_request_properties(request, permit_request_id):
             "permit_request_form": form,
             **steps_context,
         },
+    )
+
+
+@redirect_bad_status_to_detail
+@login_required
+@check_mandatory_2FA
+def permit_request_prolongation(request, permit_request_id):
+    """
+    Request prolongation interface for the Permit author.
+    """
+
+    if not permit_request_id:
+        messages.success(request, _("Un id de permis valable est requis"))
+        return redirect("permits:permit_requests_list")
+
+    permit_request = get_permit_request_for_prolongation(
+        request.user, permit_request_id
+    )
+
+    if request.method == "POST":
+
+        form = forms.PermitRequestProlongationForm(
+            instance=permit_request, data=request.POST
+        )
+
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.prolongation_status = permit_request.PROLONGATION_STATUS_PENDING
+            obj.save()
+
+        # Send the email to the services
+        messages.success(request, _("Votre demande de prolongation a été envoyée"))
+
+        subject = (
+            _("Une demande de prolongation vient d'être soumise pour le permis #%s.")
+            % permit_request_id
+        )
+        data = {
+            "subject": subject,
+            "users_to_notify": services._get_secretary_email(permit_request),
+            "template": "permit_request_prolongation_for_services.txt",
+            "permit_request": form.instance,
+            "absolute_uri_func": request.build_absolute_uri,
+        }
+        services.send_email_notification(data)
+
+        return redirect("permits:permit_requests_list")
+    else:
+        form = forms.PermitRequestProlongationForm(instance=permit_request)
+        del form.fields["prolongation_status"]
+        del form.fields["prolongation_comment"]
+
+    return render(
+        request,
+        "permits/permit_request_prolongation.html",
+        {"permit_request": permit_request, "permit_request_prolongation_form": form,},
     )
 
 

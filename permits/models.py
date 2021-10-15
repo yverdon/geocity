@@ -400,6 +400,21 @@ class PermitRequest(models.Model):
         (ARCHEOLOGY_STATUS_DONE, _("Déjà fouillé")),
     )
 
+    PROLONGABLE_STATUSES = {
+        STATUS_APPROVED,
+        STATUS_PROCESSING,
+        STATUS_AWAITING_SUPPLEMENT,
+    }
+
+    PROLONGATION_STATUS_PENDING = 0
+    PROLONGATION_STATUS_APPROVED = 1
+    PROLONGATION_STATUS_REJECTED = 2
+    PROLONGATION_STATUS_CHOICES = (
+        (PROLONGATION_STATUS_PENDING, _("En attente")),
+        (PROLONGATION_STATUS_APPROVED, _("Approuvée")),
+        (PROLONGATION_STATUS_REJECTED, _("Refusée")),
+    )
+
     status = models.PositiveSmallIntegerField(
         _("état"), choices=STATUS_CHOICES, default=STATUS_DRAFT
     )
@@ -446,7 +461,9 @@ class PermitRequest(models.Model):
         _("Nouvelle date de fin"), null=True, blank=True
     )
     prolongation_comment = models.TextField(_("Commentaire"), blank=True)
-    is_prolonged = models.BooleanField("Prolongation acceptée", default=False)
+    prolongation_status = models.PositiveSmallIntegerField(
+        _("Décision"), choices=PROLONGATION_STATUS_CHOICES, null=True, blank=True,
+    )
     history = HistoricalRecords()
 
     class Meta:
@@ -485,6 +502,9 @@ class PermitRequest(models.Model):
 
     def can_be_edited_by_pilot(self):
         return self.status in self.EDITABLE_STATUSES
+
+    def can_be_prolonged(self):
+        return self.status in self.PROLONGABLE_STATUSES
 
     def can_be_validated(self):
         return self.status in {self.STATUS_AWAITING_VALIDATION, self.STATUS_PROCESSING}

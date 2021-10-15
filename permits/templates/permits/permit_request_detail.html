@@ -168,9 +168,12 @@
 
     {% if forms.prolongate %}
     <div class="tab-pane{% if active_form == 'prolongate' %} show active{% endif  %}" id="prolongate" role="tabpanel" aria-labelledby="prolongate-tab">
+
     <form method="post">
       {% csrf_token %}
-
+      {% if not forms.prolongate.prolongation_date.value %}
+        <small class="form-text text-muted mb-3">{% trans "Aucune prolongation n'a été demandée par l'auteur-e" %}</small>
+      {% endif %}
       {% bootstrap_form forms.prolongate layout='horizontal' %}
 
       <div class="text-right">

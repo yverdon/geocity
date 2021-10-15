@@ -984,7 +984,11 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         disable_fields = kwargs.pop("disable_fields", False)
 
         initial = {}
-        if self.permit_request.prolongation_date:
+        if (
+            self.permit_request.prolongation_date
+            and self.permit_request.prolongation_status
+            == self.permit_request.PROLONGATION_STATUS_APPROVED
+        ):
             initial["ends_at"] = self.permit_request.prolongation_date
 
         kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
@@ -1209,6 +1213,7 @@ class PermitRequestProlongationForm(forms.ModelForm):
                 "format": "DD.MM.YYYY HH:mm",
                 "locale": "fr-CH",
                 "useCurrent": False,
+                "minDate": (datetime.today()).strftime("%Y/%m/%d"),
             }
         ).start_of("event days"),
         help_text="Cliquer sur le champ et selectionner la nouvelle date de fin planifiée",
@@ -1219,21 +1224,11 @@ class PermitRequestProlongationForm(forms.ModelForm):
         fields = [
             "prolongation_date",
             "prolongation_comment",
-            "is_prolonged",
+            "prolongation_status",
         ]
         widgets = {
             "prolongation_comment": forms.Textarea(attrs={"rows": 3}),
         }
-
-    def __init__(self, *args, **kwargs):
-        self.instance = kwargs.get("instance", None)
-        initial = {
-            "prolongation_date": self.instance.prolongation_date
-            if self.instance.prolongation_date
-            else self.instance.geo_time.first().ends_at,
-        }
-        kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
-        super().__init__(*args, **kwargs)
 
     def clean(self):
         cleaned_data = super().clean()

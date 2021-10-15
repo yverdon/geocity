@@ -2,10 +2,9 @@
 {% load permits_extras %}
 
 {% is_expired %}
-{% if record.prolongation_date and record.is_prolonged%}
+{% if record.prolongation_date and record.prolongation_status == 1 %}
     {{ record.prolongation_date }}
 {% else %}
-<!-- TODO: check what we show if it is waiting for prolongation approval -->
     {{ record.ends_at_max }}
 {% endif %}
 
