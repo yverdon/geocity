@@ -77,6 +77,17 @@ We use [django-extensions](https://django-extensions.readthedocs.io/en/latest/co
 ```
 $ ./manage.py show_urls
 ```
+## Testing emails
+A Mailhog container is working on the dev environment, you can access it by going to localhost:8025.
+Just ensure to setup the following entries in your .env file:
+```
+EMAIL_HOST=mailhog
+EMAIL_PORT=1025
+EMAIL_HOST_USER=null
+EMAIL_HOST_PASSWORD=null
+EMAIL_USE_TLS=true
+EMAIL_TO_CONSOLE=false
+```
 
 ## Setup for full Docker persistent instance served by gunicorn webserver
 

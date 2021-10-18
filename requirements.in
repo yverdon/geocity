@@ -37,3 +37,4 @@ django-allauth
 pyyaml
 uritemplate
 django-crispy-forms
+django-cron
