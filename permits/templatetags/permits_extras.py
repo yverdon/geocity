@@ -89,17 +89,13 @@ def human_field_value(value):
 def is_expired(context):
     ends_at_max = context["record"].ends_at_max
     prolongation_date = context["record"].prolongation_date
-    prolongation_status = context["record"].prolongation_status
     permit_valid_until = (
-        prolongation_date
-        if prolongation_date
-        and prolongation_status == context["record"].PROLONGATION_STATUS_APPROVED
-        else ends_at_max
+        prolongation_date if context["record"].is_prolonged() else ends_at_max
     )
 
     if (
-        prolongation_date
-        and prolongation_status == context["record"].PROLONGATION_STATUS_APPROVED
+        context["record"].is_prolonged()
+        and datetime.now(timezone.utc) < permit_valid_until
     ):
         return mark_safe(
             '<i class="fa fa-refresh status2" fa-lg title="Demande renouvelée"></i>'

@@ -1436,11 +1436,3 @@ def store_tags_in_session(request):
 def clear_session_filters(request):
     request.session["entityfilter"] = []
     request.session["typefilter"] = []
-
-
-def is_prolonged(permit_request):
-    return (
-        permit_request.prolongation_status
-        == permit_request.PROLONGATION_STATUS_APPROVED
-        and permit_request.prolongation_date
-    )

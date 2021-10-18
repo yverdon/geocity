@@ -548,6 +548,12 @@ class PermitRequest(models.Model):
             else today + timedelta(days=int(settings.MIN_START_DELAY))
         )
 
+    def is_prolonged(self):
+        return (
+            self.prolongation_status == self.PROLONGATION_STATUS_APPROVED
+            and self.prolongation_date
+        )
+
 
 class WorksTypeQuerySet(models.QuerySet):
     def filter_by_tags(self, tags):

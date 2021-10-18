@@ -4,7 +4,7 @@ from .models import WorksObjectType, PermitRequest
 from django.db.models import Max, Min
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
-from .services import send_email_notification, is_prolonged
+from .services import send_email_notification
 
 
 class PermitRequestExpirationReminder(CronJobBase):
@@ -15,12 +15,6 @@ class PermitRequestExpirationReminder(CronJobBase):
 
     schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
     code = "permits.permit_request_expiration_reminder"
-
-    def get_absolute_url(self, permit_request):
-        return reverse(
-            "permits:permit_request_detail",
-            kwargs={"permit_request_id": permit_request.pk},
-        )
 
     def do(self):
         permit_requests_to_remind = (
@@ -38,7 +32,7 @@ class PermitRequestExpirationReminder(CronJobBase):
             )
             prolongation_date = (
                 permit_request.prolongation_date.date()
-                if is_prolonged(permit_request)
+                if permit_request.is_prolonged()
                 else None
             )
 

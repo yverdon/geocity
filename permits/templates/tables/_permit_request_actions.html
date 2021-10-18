@@ -43,6 +43,10 @@
         <li>
           <i class="fa fa-clock-o fa-lg status0" title="{% trans 'Prolongation en attente' %}"></i>
         </li>
+      {% elif record.prolongation_status == record.PROLONGATION_STATUS_REJECTED %}
+        <li>
+          <i class="fa fa-clock-o fa-lg status0" title="{% trans 'Prolongation refusée' %}"></i>
+        </li>
       {% endif %}
     {% else %}
       {% if record.can_be_prolonged %}

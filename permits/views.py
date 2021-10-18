@@ -980,6 +980,23 @@ def permit_request_prolongation(request, permit_request_id):
 
         return redirect("permits:permit_requests_list")
     else:
+
+        if permit_request.prolongation_date and (
+            permit_request.prolongation_status
+            in [
+                permit_request.PROLONGATION_STATUS_PENDING,
+                permit_request.PROLONGATION_STATUS_REJECTED,
+            ]
+        ):
+            messages.success(
+                request,
+                _(
+                    "Une demande de prolongation pour le permis #%s est en attente ou a été refusée."
+                )
+                % permit_request.pk,
+            )
+            return redirect("permits:permit_requests_list")
+
         form = forms.PermitRequestProlongationForm(instance=permit_request)
         del form.fields["prolongation_status"]
         del form.fields["prolongation_comment"]
