@@ -997,7 +997,7 @@ def send_validation_reminder(permit_request, absolute_uri_func):
 
 def _parse_email_content(template, permit_request, absolute_uri_func):
     if absolute_uri_func:
-        content = render_to_string(
+        return render_to_string(
             f"permits/emails/{template}",
             {
                 "permit_request_url": absolute_uri_func(
@@ -1024,7 +1024,7 @@ def _parse_email_content(template, permit_request, absolute_uri_func):
         )
         full_url = f"{protocol}://{settings.SITE_DOMAIN}{port}{relative_url}"
 
-        content = render_to_string(
+        return render_to_string(
             f"permits/emails/{template}",
             {
                 "permit_request_url": full_url,
@@ -1032,8 +1032,6 @@ def _parse_email_content(template, permit_request, absolute_uri_func):
                 "name": permit_request.author.user.get_full_name(),
             },
         )
-
-    return content
 
 
 def send_email_notification(data):

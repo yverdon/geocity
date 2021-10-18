@@ -962,21 +962,23 @@ def permit_request_prolongation(request, permit_request_id):
             obj.prolongation_status = permit_request.PROLONGATION_STATUS_PENDING
             obj.save()
 
-        # Send the email to the services
-        messages.success(request, _("Votre demande de prolongation a été envoyée"))
+            # Send the email to the services
+            messages.success(request, _("Votre demande de prolongation a été envoyée"))
 
-        subject = (
-            _("Une demande de prolongation vient d'être soumise pour le permis #%s.")
-            % permit_request_id
-        )
-        data = {
-            "subject": subject,
-            "users_to_notify": services._get_secretary_email(permit_request),
-            "template": "permit_request_prolongation_for_services.txt",
-            "permit_request": form.instance,
-            "absolute_uri_func": request.build_absolute_uri,
-        }
-        services.send_email_notification(data)
+            subject = (
+                _(
+                    "Une demande de prolongation vient d'être soumise pour le permis #%s."
+                )
+                % permit_request_id
+            )
+            data = {
+                "subject": subject,
+                "users_to_notify": services._get_secretary_email(permit_request),
+                "template": "permit_request_prolongation_for_services.txt",
+                "permit_request": form.instance,
+                "absolute_uri_func": request.build_absolute_uri,
+            }
+            services.send_email_notification(data)
 
         return redirect("permits:permit_requests_list")
     else:

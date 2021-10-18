@@ -41,7 +41,7 @@
     {% if record.prolongation_date %}
       {% if record.prolongation_status == record.PROLONGATION_STATUS_PENDING %}
         <li>
-          <i class="fa fa-clock-o fa-lg status0" title="{% trans 'Prolongation en attente' %}"></i>
+          <i class="fa fa-clock-o fa-lg status0" title="{% trans 'Prolongation en attente' %} ({{ record.prolongation_date }})"></i>
         </li>
       {% elif record.prolongation_status == record.PROLONGATION_STATUS_REJECTED %}
         <li>
