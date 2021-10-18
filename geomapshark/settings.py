@@ -293,7 +293,6 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 # Override SocialAccountAdapter to customize User creation
-SOCIALACCOUNT_ADAPTER = "accounts.geomapfish.adapter.GeomapfishSocialAccountAdapter"
 SOCIALACCOUNT_FORMS = {"signup": "permits.forms.SocialSignupForm"}
 SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_EMAIL_REQUIRED = True
