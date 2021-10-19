@@ -37,19 +37,16 @@
     {% endif %}
   {% endif %}
 
-  {% if record.author == request.user.permitauthor %}
-    {% if record.prolongation_date %}
-      {% if record.prolongation_status == record.PROLONGATION_STATUS_PENDING %}
-        <li>
-          <i class="fa fa-clock-o fa-lg status0" title="{% trans 'Prolongation en attente' %} ({{ record.prolongation_date }})"></i>
-        </li>
-      {% elif record.prolongation_status == record.PROLONGATION_STATUS_REJECTED %}
-        <li>
-          <i class="fa fa-clock-o fa-lg status0" title="{% trans 'Prolongation refusée' %}"></i>
-        </li>
-      {% endif %}
-    {% else %}
-      {% if record.can_be_prolonged %}
+    {% if record.prolongation_status == record.PROLONGATION_STATUS_PENDING %}
+      <li>
+        <i class="fa fa-clock-o fa-lg status0" title="{% trans 'Prolongation en attente' %} ({{ record.prolongation_date }})"></i>
+      </li>
+    {% elif record.prolongation_status == record.PROLONGATION_STATUS_REJECTED %}
+      <li>
+        <i class="fa fa-clock-o fa-lg status6" title="{% trans 'Prolongation refusée' %}"></i>
+      </li>
+    {% elif record.can_be_prolonged %}
+      {% if record.author == request.user.permitauthor %}
         <li>
           <a title="{% trans 'Demander une prolongation' %}" href="{% url 'permits:permit_request_prolongation' record.id %}">
             <i class="fa fa-clock-o fa-lg"></i>
@@ -57,6 +54,5 @@
         </li>
       {% endif %}
     {% endif %}
-  {% endif %}
 
 </ul>

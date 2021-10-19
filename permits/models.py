@@ -1,7 +1,7 @@
 import collections
 import dataclasses
 import enum
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import Group, User
@@ -503,9 +503,6 @@ class PermitRequest(models.Model):
     def can_be_edited_by_pilot(self):
         return self.status in self.EDITABLE_STATUSES
 
-    def can_be_prolonged(self):
-        return self.status in self.PROLONGABLE_STATUSES
-
     def can_be_validated(self):
         return self.status in {self.STATUS_AWAITING_VALIDATION, self.STATUS_PROCESSING}
 
@@ -547,6 +544,22 @@ class PermitRequest(models.Model):
             if max_delay is not None
             else today + timedelta(days=int(settings.MIN_START_DELAY))
         )
+
+    def can_be_prolonged(self):
+        reminder_delta = self.works_object_types.aggregate(Max("days_before_reminder"))[
+            "days_before_reminder__max"
+        ]
+        if not self.is_prolonged():
+            original_end_date = PermitRequestGeoTime.objects.filter(
+                permit_request=self.id
+            ).aggregate(Max("ends_at"))["ends_at__max"]
+            return self.status in self.PROLONGABLE_STATUSES and date.today() > (
+                original_end_date.date() - timedelta(days=reminder_delta)
+            )
+        else:
+            return self.status in self.PROLONGABLE_STATUSES and date.today() > (
+                self.prolongation_date.date() - timedelta(days=reminder_delta)
+            )
 
     def is_prolonged(self):
         return (

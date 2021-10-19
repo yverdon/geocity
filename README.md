@@ -273,3 +273,13 @@ This will override the data of any SocialApp with provider geomapfish.
 
 Geomapfish login process will raise an error if no APP settings and no SocialApp
 object are present.
+
+## Cronjobs
+
+To manage the planned tasks we use the django-cron extension (https://github.com/Tivix/django-cron). The script to be executed is defined on the **permits/cron.py** file.
+
+In order to run it on a server instance, modify the following line accordingly and add it to the crontab:
+
+```
+15 23 * * * <path_to_manage.py>/manage.py runcrons >/dev/null 2>&1
+```

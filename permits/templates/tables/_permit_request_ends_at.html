@@ -2,7 +2,7 @@
 {% load permits_extras %}
 
 {% is_expired %}
-{% if record.prolongation_date and record.prolongation_status == 1 %}
+{% if record.prolongation_date and record.prolongation_status == record.PROLONGATION_STATUS_APPROVED %}
     {{ record.prolongation_date }}
 {% else %}
     {{ record.ends_at_max }}

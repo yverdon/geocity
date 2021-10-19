@@ -22,7 +22,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from itertools import groupby
-from django.db.models import Q
+from django.db.models import Q, Max
 
 from . import models, services
 
@@ -1233,7 +1233,10 @@ class PermitRequestProlongationForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         prolongation_date = cleaned_data.get("prolongation_date")
-        original_end_date = self.instance.geo_time.first().ends_at
+        original_end_date = services.get_geotime_objects(self.instance.id).aggregate(
+            Max("ends_at")
+        )["ends_at__max"]
+
         if prolongation_date:
             if prolongation_date <= original_end_date:
                 raise forms.ValidationError(

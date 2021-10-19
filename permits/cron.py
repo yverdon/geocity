@@ -47,4 +47,4 @@ class PermitRequestExpirationReminder(CronJobBase):
                 }
                 send_email_notification(data)
 
-        print("Cron Ran")
+        print("The permit expiration reminder Cronjob finished successfully")

@@ -990,7 +990,7 @@ def permit_request_prolongation(request, permit_request_id):
                 permit_request.PROLONGATION_STATUS_REJECTED,
             ]
         ):
-            messages.success(
+            messages.error(
                 request,
                 _(
                     "Une demande de prolongation pour le permis #%s est en attente ou a été refusée."
