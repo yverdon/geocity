@@ -3,7 +3,7 @@
 {% load permits_extras %}
 
 {% for object, properties, appendices, amend_custom_properties in objects_infos %}
-  <h4>{{ object }}</h4>
+  <h4 class="workObjectHeader">{{ object }}</h4>
   <dl>
     {% for field in properties %}
       {% if field.label %}
