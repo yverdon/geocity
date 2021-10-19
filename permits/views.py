@@ -982,6 +982,15 @@ def permit_request_prolongation(request, permit_request_id):
 
         return redirect("permits:permit_requests_list")
     else:
+        if permit_request.author != request.user.permitauthor:
+            messages.error(
+                request,
+                _(
+                    "Vous ne pouvez pas demander une prolongation pour le permis #%s."
+                )
+                % permit_request.pk,
+                )
+            return redirect("permits:permit_requests_list")
 
         if permit_request.prolongation_date and (
             permit_request.prolongation_status

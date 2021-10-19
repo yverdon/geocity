@@ -98,11 +98,11 @@ def is_expired(context):
         and datetime.now(timezone.utc) < permit_valid_until
     ):
         return mark_safe(
-            '<i class="fa fa-refresh status2" fa-lg title="Demande renouvelée"></i>'
+            '<i class="fa fa-refresh fa-lg status2" title="Demande renouvelée"></i>'
         )
     elif datetime.now(timezone.utc) > permit_valid_until:
         return mark_safe(
-            '<i class="fa fa-exclamation-triangle status0" fa-lg title="Demande échue"></i>'
+            '<i class="fa fa-exclamation-triangle fa-lg status0" title="Demande échue"></i>'
         )
     else:
         return ""

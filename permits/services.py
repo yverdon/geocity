@@ -21,7 +21,6 @@ from django.urls import reverse
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext_lazy as _
 
-
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
 from .utils import reverse_permit_request_url
