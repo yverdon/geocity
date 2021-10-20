@@ -887,7 +887,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
         permit_request.works_object_types.set([works_object_type])
         today = date.today()
-        start_at = today + datetime.timedelta(days=2)  # Must be >= 3 to be valid
+        start_at = today + datetime.timedelta(days=1)  # Must be >= 3 to be valid
         self.geotime_step_formset_data.update(
             {
                 "form-0-starts_at": [start_at.strftime("%Y-%m-%d 14:00:00+02:00")],

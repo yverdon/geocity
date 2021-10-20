@@ -1100,7 +1100,9 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
     def clean_starts_at(self):
         starts_at = self.cleaned_data["starts_at"]
         min_starts_at = self.permit_request.get_min_starts_at()
-        if starts_at < min_starts_at:
+        # Without the timedelta the widget allows to select the first available date
+        # but does not comply with the validation.
+        if starts_at <= min_starts_at - timedelta(days=1):
             raise ValidationError(
                 _("La date planifiée de début doit être postérieure à %(date)s")
                 % {"date": min_starts_at.strftime("%Y/%m/%d")}

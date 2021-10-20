@@ -15,7 +15,7 @@ from django.core.validators import (
     RegexValidator,
 )
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import escape, format_html
@@ -504,18 +504,17 @@ class PermitRequest(models.Model):
         `start_delay`, use the current date + the default setting.
         """
         today = timezone.make_aware(datetime.today())
+        max_delay = None
         if self.works_object_types.exists():
-            max_delay = None
-            for value in self.works_object_types.values_list("start_delay"):
-                delay = (
-                    value[0] if value[0] is not None else int(settings.MIN_START_DELAY)
-                )
-                if max_delay is None or delay > max_delay:
-                    max_delay = delay
+            max_delay = self.works_object_types.aggregate(Max("start_delay"))[
+                "start_delay__max"
+            ]
 
-            return today + timedelta(days=max_delay)
-
-        return today + timedelta(days=int(settings.MIN_START_DELAY))
+        return (
+            today + timedelta(days=max_delay)
+            if max_delay is not None
+            else today + timedelta(days=int(settings.MIN_START_DELAY))
+        )
 
 
 class WorksTypeQuerySet(models.QuerySet):
