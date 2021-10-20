@@ -5,5 +5,9 @@
 {% if record.prolongation_date and record.prolongation_status == record.PROLONGATION_STATUS_APPROVED %}
     {{ record.prolongation_date }}
 {% else %}
-    {{ record.ends_at_max }}
+  {% if record.ends_at_max %}
+      {{ record.ends_at_max }}
+  {% else %}
+    —
+  {% endif %}
 {% endif %}

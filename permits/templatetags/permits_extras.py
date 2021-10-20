@@ -92,17 +92,17 @@ def is_expired(context):
     permit_valid_until = (
         prolongation_date if context["record"].is_prolonged() else ends_at_max
     )
-
-    if (
-        context["record"].is_prolonged()
-        and datetime.now(timezone.utc) < permit_valid_until
-    ):
-        return mark_safe(
-            '<i class="fa fa-refresh fa-lg status2" title="Demande renouvelée"></i>'
-        )
-    elif datetime.now(timezone.utc) > permit_valid_until:
-        return mark_safe(
-            '<i class="fa fa-exclamation-triangle fa-lg status0" title="Demande échue"></i>'
-        )
+    if permit_valid_until:
+        if (
+            context["record"].is_prolonged()
+            and datetime.now(timezone.utc) < permit_valid_until
+        ):
+            return mark_safe(
+                '<i class="fa fa-refresh fa-lg status2" title="Demande renouvelée"></i>'
+            )
+        elif datetime.now(timezone.utc) > permit_valid_until:
+            return mark_safe(
+                '<i class="fa fa-exclamation-triangle fa-lg status0" title="Demande échue"></i>'
+            )
     else:
         return ""
