@@ -15,7 +15,7 @@ from django.core.validators import (
     RegexValidator,
 )
 from django.db import models
-from django.db.models import Q, Max
+from django.db.models import Q, Max, Min
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import escape, format_html
@@ -544,6 +544,17 @@ class PermitRequest(models.Model):
             if max_delay is not None
             else today + timedelta(days=int(settings.MIN_START_DELAY))
         )
+
+    @property
+    def get_max_end_interval(self):
+        """
+        Calculates the maximum end date interval based on the SMALLEST permit_duration
+        Intended to pass as a custom option to the widget, so the value can be used
+        by Javascript.
+        """
+        return self.works_object_types.aggregate(Min("permit_duration"))[
+            "permit_duration__min"
+        ]
 
     def can_be_prolonged(self):
         reminder_delta = self.works_object_types.aggregate(Max("days_before_reminder"))[

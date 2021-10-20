@@ -541,17 +541,16 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         ),
         (
             "Planning et localisation",
-            {"fields": ("geometry_types", "needs_date", "start_delay", "permit_duration")},
-        ),
-        (
-            "Prolongation",
             {
                 "fields": (
-                    "expiration_reminder",
-                    "days_before_reminder",
+                    "geometry_types",
+                    "needs_date",
+                    "start_delay",
+                    "permit_duration",
                 )
             },
         ),
+        ("Prolongation", {"fields": ("expiration_reminder", "days_before_reminder",)},),
         (
             "Directive",
             {
