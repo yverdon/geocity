@@ -625,7 +625,10 @@ class WorksObjectType(models.Model):
         _("délai de commencement"),
         blank=True,
         null=True,
-        help_text=_("saisissez un nombre entier, positif ou négatif."),
+        help_text=_(
+            "délai minimum en jours avant la date de début "
+            "(nombre entier positif ou négatif)."
+        ),
     )
     requires_payment = models.BooleanField(
         _("Demande soumise à des frais"), default=True
