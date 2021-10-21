@@ -2115,7 +2115,7 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(
-            mail.outbox[0].from_email, "<Geocity Rocks> geocity_rocks@geocity.ch"
+            mail.outbox[0].from_email, "Geocity Rocks <geocity_rocks@geocity.ch>"
         )
         self.assertEqual(
             mail.outbox[0].subject, "Votre annonce a été prise en compte et classée"
@@ -2150,7 +2150,7 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].from_email, "geocity_rocks@geocity.ch")
+        self.assertEqual(mail.outbox[0].from_email, "<geocity_rocks@geocity.ch>")
         self.assertEqual(
             mail.outbox[0].subject, "Votre annonce a été prise en compte et classée"
         )

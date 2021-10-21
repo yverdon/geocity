@@ -1015,12 +1015,12 @@ def send_email_notification(data):
     )
 
     from_email_name = (
-        f'<{data["permit_request"].administrative_entity.expeditor_name}> '
+        f'{data["permit_request"].administrative_entity.expeditor_name} '
         if data["permit_request"].administrative_entity.expeditor_name
         else ""
     )
     from_email = (
-        f'{from_email_name}{data["permit_request"].administrative_entity.expeditor_email}'
+        f'{from_email_name}<{data["permit_request"].administrative_entity.expeditor_email}>'
         if data["permit_request"].administrative_entity.expeditor_email
         else settings.DEFAULT_FROM_EMAIL
     )
