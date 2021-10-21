@@ -626,7 +626,7 @@ class WorksObjectType(models.Model):
         blank=True,
         null=True,
         help_text=_(
-            "délai minimum en jours avant la date de début "
+            "Délai minimum en jours avant la date de début "
             "(nombre entier positif ou négatif)."
         ),
     )
