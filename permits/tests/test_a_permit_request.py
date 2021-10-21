@@ -2077,27 +2077,31 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             mail.outbox[0].message().as_string(),
         )
 
-    def test_secretary_email_and_name_are_set_for_the_administrative_entity(self):
-        user = factories.UserFactory(email="user@geocity.com")
-        administrative_entity_expeditor = factories.PermitAdministrativeEntityFactory(
+
+class AdministrativeEntitySecretaryEmailTestcase(TestCase):
+    def setUp(self):
+        self.user = factories.UserFactory(email="user@geocity.com")
+        self.administrative_entity_expeditor = factories.PermitAdministrativeEntityFactory(
             expeditor_email="geocity_rocks@geocity.ch", expeditor_name="Geocity Rocks"
         )
-        group = factories.SecretariatGroupFactory(
-            department__administrative_entity=administrative_entity_expeditor
+        self.group = factories.SecretariatGroupFactory(
+            department__administrative_entity=self.administrative_entity_expeditor
         )
-        secretary = factories.SecretariatUserFactory(groups=[group])
-        self.client.login(username=secretary.username, password="password")
+        self.secretary = factories.SecretariatUserFactory(groups=[self.group])
+        self.client.login(username=self.secretary.username, password="password")
 
-        permit_request = factories.PermitRequestFactory(
+        self.permit_request = factories.PermitRequestFactory(
             status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-            administrative_entity=administrative_entity_expeditor,
-            author=user.permitauthor,
+            administrative_entity=self.administrative_entity_expeditor,
+            author=self.user.permitauthor,
         )
+
+    def test_secretary_email_and_name_are_set_for_the_administrative_entity(self):
 
         response = self.client.post(
             reverse(
                 "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
+                kwargs={"permit_request_id": self.permit_request.pk},
             ),
             data={
                 "status": models.PermitRequest.STATUS_RECEIVED,
@@ -2120,26 +2124,20 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         )
 
     def test_just_secretary_email_is_set_for_the_administrative_entity(self):
-        user = factories.UserFactory(email="user@geocity.com")
-        administrative_entity_expeditor = factories.PermitAdministrativeEntityFactory(
-            expeditor_email="geocity_rocks@geocity.ch"
+        self.administrative_entity_expeditor = (
+            models.PermitAdministrativeEntity.objects.first()
         )
-        group = factories.SecretariatGroupFactory(
-            department__administrative_entity=administrative_entity_expeditor
+        self.administrative_entity_expeditor.expeditor_email = (
+            "geocity_rocks@geocity.ch"
         )
-        secretary = factories.SecretariatUserFactory(groups=[group])
-        self.client.login(username=secretary.username, password="password")
-
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-            administrative_entity=administrative_entity_expeditor,
-            author=user.permitauthor,
-        )
+        self.administrative_entity_expeditor.expeditor_name = ""
+        self.administrative_entity_expeditor.save()
+        self.administrative_entity_expeditor.refresh_from_db()
 
         response = self.client.post(
             reverse(
                 "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
+                kwargs={"permit_request_id": self.permit_request.pk},
             ),
             data={
                 "status": models.PermitRequest.STATUS_RECEIVED,
@@ -2160,26 +2158,18 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         )
 
     def test_no_secretary_email_is_set_for_the_administrative_entity(self):
-        user = factories.UserFactory(email="user@geocity.com")
-        administrative_entity_expeditor = factories.PermitAdministrativeEntityFactory(
-            expeditor_name="Geocity Rocks"
+        self.administrative_entity_expeditor = (
+            models.PermitAdministrativeEntity.objects.first()
         )
-        group = factories.SecretariatGroupFactory(
-            department__administrative_entity=administrative_entity_expeditor
-        )
-        secretary = factories.SecretariatUserFactory(groups=[group])
-        self.client.login(username=secretary.username, password="password")
-
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-            administrative_entity=administrative_entity_expeditor,
-            author=user.permitauthor,
-        )
+        self.administrative_entity_expeditor.expeditor_email = ""
+        self.administrative_entity_expeditor.expeditor_name = "Geocity Rocks"
+        self.administrative_entity_expeditor.save()
+        self.administrative_entity_expeditor.refresh_from_db()
 
         response = self.client.post(
             reverse(
                 "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
+                kwargs={"permit_request_id": self.permit_request.pk},
             ),
             data={
                 "status": models.PermitRequest.STATUS_RECEIVED,
