@@ -712,15 +712,15 @@ class WorksObjectProperty(models.Model):
     INPUT_TYPE_LIST_MULTIPLE = INPUT_TYPE_LIST_MULTIPLE
     INPUT_TYPE_TITLE = "title"
     INPUT_TYPE_CHOICES = (
-        (INPUT_TYPE_TEXT, _("Texte")),
-        (INPUT_TYPE_CHECKBOX, _("Case à cocher")),
-        (INPUT_TYPE_NUMBER, _("Nombre")),
-        (INPUT_TYPE_FILE, _("Fichier")),
         (INPUT_TYPE_ADDRESS, _("Adresse")),
-        (INPUT_TYPE_DATE, _("Date")),
-        (INPUT_TYPE_REGEX, _("Texte (regex)")),
-        (INPUT_TYPE_LIST_SINGLE, _("Choix simple")),
+        (INPUT_TYPE_CHECKBOX, _("Case à cocher")),
         (INPUT_TYPE_LIST_MULTIPLE, _("Choix multiple")),
+        (INPUT_TYPE_LIST_SINGLE, _("Choix simple")),
+        (INPUT_TYPE_DATE, _("Date")),
+        (INPUT_TYPE_FILE, _("Fichier")),
+        (INPUT_TYPE_NUMBER, _("Nombre")),
+        (INPUT_TYPE_TEXT, _("Texte")),
+        (INPUT_TYPE_REGEX, _("Texte (regex)")),
         (INPUT_TYPE_TITLE, _("Titre")),
     )
     integrator = models.ForeignKey(

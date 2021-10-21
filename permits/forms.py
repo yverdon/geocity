@@ -404,6 +404,15 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         }
 
     def get_regex_field_kwargs(self, prop, default_kwargs):
+        error_message = (
+            (
+                _("La saisie n'est pas conforme au format demandé%(placeholder)s.")
+                % {"placeholder": prop.placeholder}
+            )
+            if prop.placeholder
+            else _("La saisie n'est pas conforme au format demandé.")
+        )
+
         return {
             **default_kwargs,
             "widget": forms.Textarea(
@@ -415,13 +424,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                 },
             ),
             "validators": [
-                RegexValidator(
-                    regex=prop.regex_pattern,
-                    message=_(
-                        "La saisie n'est pas conforme au format demandé (%(placeholder)s)."
-                        % {"placeholder": prop.placeholder}
-                    ),
-                )
+                RegexValidator(regex=prop.regex_pattern, message=error_message,)
             ],
         }
 
