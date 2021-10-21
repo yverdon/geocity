@@ -410,7 +410,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
     def get_regex_field_kwargs(self, prop, default_kwargs):
         error_message = (
             (
-                _("La saisie n'est pas conforme au format demandé%(placeholder)s.")
+                _("La saisie n'est pas conforme au format demandé (%(placeholder)s).")
                 % {"placeholder": prop.placeholder}
             )
             if prop.placeholder
