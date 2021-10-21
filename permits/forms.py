@@ -39,9 +39,9 @@ input_type_mapping = {
 }
 
 
-def _title_html_representation(prop):
+def _title_html_representation(prop, for_summary=False):
     base = f"<h5 class='propertyTitle'>{prop.name}</h5>"
-    if prop.help_text:
+    if not for_summary and prop.help_text:
         base = f"{base}<small>{prop.help_text}</small>"
     return base
 
@@ -308,7 +308,11 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         if prop.is_value_property():
             return self[self.get_field_name(object_type, prop)]
         else:
-            return {"repr": non_value_input_type_mapping.get(prop.input_type, {})(prop)}
+            return {
+                "repr": non_value_input_type_mapping.get(prop.input_type, {})(
+                    prop, True
+                )
+            }
 
     def get_fields_by_object_type(self):
         """
