@@ -1345,7 +1345,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         active_prolongation_buttons = parser.findAll(
             "a", title="Demander une prolongation"
         )
-        self.assertEqual(2, len(active_prolongation_buttons))
+        self.assertEqual(0, len(active_prolongation_buttons))
 
     def test_user_can_see_the_link_to_request_permit_prolongation_accordingly_for_previously_prolonged_permits(
         self,
@@ -1419,14 +1419,14 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         active_prolongation_buttons = parser.findAll(
             "a", title="Demander une prolongation"
         )
-        self.assertEqual(2, len(active_prolongation_buttons))
+        self.assertEqual(0, len(active_prolongation_buttons))
         # Action icons
         rejected_prolongation_icons = parser.findAll("i", title="Prolongation refusée")
-        self.assertEqual(1, len(rejected_prolongation_icons))
+        self.assertEqual(0, len(rejected_prolongation_icons))
         pending_prolongation_icons = parser.findAll(
             "i", title=re.compile(r"^Prolongation en attente")
         )
-        self.assertEqual(1, len(pending_prolongation_icons))
+        self.assertEqual(0, len(pending_prolongation_icons))
 
     def test_user_can_use_or_not_the_request_permit_prolongation_view(self):
         prolonged_for_5_days = timezone.now() + datetime.timedelta(days=5)

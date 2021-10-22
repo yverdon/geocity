@@ -85,7 +85,8 @@ def get_permit_request_for_prolongation(user, permit_request_id):
     permit_request = services.get_permit_request_for_user_or_404(
         user, permit_request_id, statuses=allowed_statuses,
     )
-
+    if not services.can_prolonge_permit_request(user, permit_request):
+        raise BadPermitRequestStatus(permit_request, allowed_statuses)
     return permit_request
 
 
@@ -393,6 +394,8 @@ class PermitRequestDetailView(View):
             form = forms.PermitRequestProlongationForm(
                 instance=self.permit_request, data=data
             )
+            if not self.permit_request.can_prolongation_be_requested():
+                disable_form(form)
 
             return form
 

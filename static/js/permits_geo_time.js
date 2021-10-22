@@ -6,6 +6,8 @@
       this.emptyFormNode = node.querySelector("[data-geo-time-role='emptyForm']");
       this.addButtonNode = node.querySelector("[data-geo-time-role='addForm']");
       this.totalFormsInputNode = node.querySelector("[data-geo-time-role='managementForm'] input[name$='-TOTAL_FORMS']");
+      this.permitDurationMax = this.formsContainerNode.dataset.permitDurationMax
+      this.fixEndsAt()
 
       if (!this.emptyFormNode) {
         throw "No empty form node. Make sure there’s a node with `data-geo-time-role=\"emptyForm\"`.";
@@ -71,6 +73,40 @@
       }
 
       this.totalFormsInputNode.value++;
+    }
+
+    fixEndsAt() {
+      let allStarts = document.querySelectorAll("[id*='starts_at']")
+      let allEnds = document.querySelectorAll("[id*='ends_at']")
+      if (this.permitDurationMax){
+        allStarts.forEach((node) => {
+          let $picker = jQuery(node).datetimepicker(JSON.parse(node.attributes.dp_config.value).options)
+          $picker.on("dp.change", (e) => {
+            let chosen_start_date = e.date
+            let max_end_date = moment(chosen_start_date, "DD.MM.YYYY hh:mm").add(this.permitDurationMax, 'days')
+
+            allEnds.forEach((node2)=> {
+              let pickerAttributes = JSON.parse(node2.attributes.dp_config.value)
+
+              pickerAttributes.options.minDate = chosen_start_date.format("YYYY/MM/DD")
+              pickerAttributes.options.maxDate = max_end_date.format("YYYY/MM/DD")
+              jQuery(node2).datetimepicker("destroy")
+
+               let $picker2 = jQuery(node2).datetimepicker(pickerAttributes.options)
+              $picker2.data("DateTimePicker").minDate(chosen_start_date);
+              $picker2.data("DateTimePicker").maxDate(max_end_date);
+              // TODO: So far it gets constrained if you click the field,
+              //  but if you click the icon, you're free to choose.
+              // $picker2.next('.input-group-addon').on('click', function(){
+              //   $picker2.data("DateTimePicker").show();
+              //   console.log($picker2.data("DateTimePicker"));
+              // });
+            })
+          })
+        });
+
+      }
+
     }
 
     _addEventListeners() {

@@ -546,7 +546,7 @@ class PermitRequest(models.Model):
         )
 
     @property
-    def get_max_end_interval(self):
+    def get_max_validity(self):
         """
         Calculates the maximum end date interval based on the SMALLEST permit_duration
         Intended to pass as a custom option to the widget, so the value can be used
@@ -557,26 +557,86 @@ class PermitRequest(models.Model):
         ]
 
     def can_be_prolonged(self):
-        reminder_delta = self.works_object_types.aggregate(Max("days_before_reminder"))[
-            "days_before_reminder__max"
+        max_validity = self.works_object_types.aggregate(Min("permit_duration"))[
+            "permit_duration__min"
         ]
-        if not self.is_prolonged():
-            original_end_date = PermitRequestGeoTime.objects.filter(
-                permit_request=self.id
-            ).aggregate(Max("ends_at"))["ends_at__max"]
-            return self.status in self.PROLONGABLE_STATUSES and date.today() > (
-                original_end_date.date() - timedelta(days=reminder_delta)
-            )
-        else:
-            return self.status in self.PROLONGABLE_STATUSES and date.today() > (
-                self.prolongation_date.date() - timedelta(days=reminder_delta)
-            )
+        return self.status in self.PROLONGABLE_STATUSES and max_validity is not None
 
     def is_prolonged(self):
         return (
             self.prolongation_status == self.PROLONGATION_STATUS_APPROVED
             and self.prolongation_date
         )
+
+    def can_prolongation_be_requested(self):
+        if self.can_be_prolonged():
+            if not self.prolongation_status:
+                # Has not been prolonged
+                # No prolongation has been requested
+                # Prolongation has not been rejected
+                return True
+            elif self.is_prolonged:
+                # Check the reminder options
+                reminder = self.works_object_types.filter(
+                    expiration_reminder=True
+                ).exists()
+
+                if reminder:
+                    try:
+                        # Here, if the reminder is active, we must have
+                        # the days_before_reminder value (validation on the admin) TBI
+                        days_before_reminder = self.works_object_types.aggregate(
+                            Max("days_before_reminder")
+                        )["days_before_reminder__max"]
+
+                        if days_before_reminder:
+                            return date.today() > (
+                                self.prolongation_date.date()
+                                - timedelta(days=days_before_reminder)
+                            )
+                    except TypeError:
+                        # In case the days_before_reminder is None
+                        pass
+
+                else:
+                    # No reminder means it can be requested only after
+                    # the prolongation_date, because it can be prolonged but not reminded
+                    return date.today() > (self.prolongation_date.date())
+            else:
+                # It means self.prolongation_status in
+                # [self.PROLONGATION_STATUS_REJECTED, self.PROLONGATION_STATUS_PENDING]
+                return False
+        # It definitively can not be prolonged
+        return False
+
+    def set_dates_for_renewables_wots(self):
+        """
+        Will calculate and set starts_at and ends_at for those WOTs that have no date
+        required, but can be prolonged, which means they will have a value for its
+        permit_duration field
+        """
+
+        works_object_types = self.works_object_types.filter(needs_date=False).filter(
+            permit_duration__gte=1
+        )
+        if works_object_types.exists():
+            # Determine starts_at_min and ends_at_max to check if the WOTs are combined
+            # between one(s) that needs_date and already set the time interval and those
+            # that do not needs_date.
+            # If that's the case, the end_date must have already been limited upon
+            # permit's creation to be AT MOST the minimum of the permit_duration(s).
+            # Therefore we do nothing, otherwise we set both dates.
+            # What a good sweat!!!
+
+            starts_at_min = self.geo_time.aggregate(Min("starts_at"))["starts_at__min"]
+            ends_at_max = self.geo_time.aggregate(Max("ends_at"))["ends_at__max"]
+            permit_duration_max = self.get_max_validity
+            if not starts_at_min and not ends_at_max:
+                today = timezone.make_aware(datetime.today())
+                self.geo_time.update(starts_at=today)
+                self.geo_time.update(
+                    ends_at=today + timedelta(days=permit_duration_max)
+                )
 
 
 class WorksTypeQuerySet(models.QuerySet):
@@ -689,13 +749,18 @@ class WorksObjectType(models.Model):
         help_text='Veuillez séparer les emails par une virgule ","',
     )
     permit_duration = models.IntegerField(
-        _("Durée de validité de la demande (jours)"), blank=True, default=365
+        _("Durée de validité de la demande (jours)"),
+        blank=True,
+        null=True,
+        help_text=_(
+            "Le permis pour l'objet sera prolongeable uniquement si cette valeur est fournie."
+        ),
     )
     expiration_reminder = models.BooleanField(
-        _("Activer la fonctionde rappel"), default=True
+        _("Activer la fonctionde rappel"), default=False,
     )
     days_before_reminder = models.IntegerField(
-        _("Delai de rappel (jours)"), blank=True, default=10
+        _("Delai de rappel (jours)"), blank=True, null=True
     )
 
     class Meta:

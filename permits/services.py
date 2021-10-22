@@ -907,6 +907,11 @@ def submit_permit_request(permit_request, request):
         send_email_notification(data)
 
     else:
+        # Here we create a new Permit Request, therefore if it contains one or more
+        # WOTs that can be prolonged with no Date required but can be renewed, we need
+        # to calculate the dates automatically
+        permit_request.set_dates_for_renewables_wots()
+
         users_to_notify = set(
             get_user_model()
             .objects.filter(
@@ -1144,6 +1149,14 @@ def has_permission_to_edit_permit_request(user, permit_request):
 def can_edit_permit_request(user, permit_request):
     return permit_request.can_be_edited_by_pilot() and has_permission_to_edit_permit_request(
         user, permit_request
+    )
+
+
+def can_prolonge_permit_request(user, permit_request):
+    return True
+    return (
+        permit_request.status == models.PermitRequest.PROLONGABLE_STATUSES
+        and has_permission_to_amend_permit_request(user, permit_request)
     )
 
 

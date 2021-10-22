@@ -492,6 +492,9 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
             "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
         }
 
+    class Media:
+        js = ("js/admin/works_object_type.js",)
+
     def __init__(self, *args, **kwargs):
         instance = kwargs.get("instance")
         if instance:
@@ -541,16 +544,18 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         ),
         (
             "Planning et localisation",
+            {"fields": ("geometry_types", "needs_date", "start_delay",)},
+        ),
+        (
+            "Prolongation",
             {
                 "fields": (
-                    "geometry_types",
-                    "needs_date",
-                    "start_delay",
                     "permit_duration",
+                    "expiration_reminder",
+                    "days_before_reminder",
                 )
             },
         ),
-        ("Prolongation", {"fields": ("expiration_reminder", "days_before_reminder",)},),
         (
             "Directive",
             {
