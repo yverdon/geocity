@@ -17,7 +17,25 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE = os.getenv("CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE")
 
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+SECURE_PROXY_SSL_HEADER = (
+    tuple(os.getenv("SECURE_PROXY_SSL_HEADER").split(","))
+    if os.getenv("SECURE_PROXY_SSL_HEADER")
+    else None
+)
+SESSION_COOKIE_HTTPONLY = (
+    True  # This is django's default but make sure no one turns it to False
+)
+SESSION_COOKIE_SAMESITE = os.getenv(
+    "SESSION_COOKIE_SAMESITE", "Strict"
+)  # Highest level of security if not specified otherwiser in .env
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# SESSION TIMEOUT
+# default session time is one hour
+SESSION_COOKIE_AGE = int(os.getenv("SESSION_COOKIE_AGE", 60 * 60))
+SESSION_SAVE_EVERY_REQUEST = os.getenv("SESSION_SAVE_EVERY_REQUEST", True)
 
 DJANGO_DOCKER_PORT = os.getenv("DJANGO_DOCKER_PORT")
 
