@@ -25,6 +25,7 @@ from django.utils.translation import gettext_lazy as _
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
 from .utils import reverse_permit_request_url
+from PIL import Image
 
 
 class GeoTimeInfo(enum.Enum):
@@ -83,10 +84,27 @@ def set_object_property_value(permit_request, object_type, prop, value):
             # Add the file to the storage
             directory = "permit_requests_uploads/{}".format(permit_request.pk)
             ext = os.path.splitext(value.name)[1]
+            upper_ext = ext[1:].upper()
             path = os.path.join(
                 directory, "{}_{}{}".format(object_type.pk, prop.pk, ext)
             )
+
             private_storage.save(path, value)
+            # Postprocess: remove all exif metadata for better security and user privacy
+            if upper_ext != "PDF":
+
+                upper_ext = ext[1:].upper()
+                formats_map = {"JPG": "JPEG"}
+                with Image.open(value) as image_full:
+                    data = list(image_full.getdata())
+                    new_image = Image.new(image_full.mode, image_full.size)
+                    new_image.putdata(data)
+                    new_image.save(
+                        private_storage.location + "/" + path,
+                        formats_map[upper_ext]
+                        if upper_ext in formats_map.keys()
+                        else upper_ext,
+                    )
             value = path
 
         elif is_date:
@@ -314,6 +332,7 @@ def get_property_value(object_property_value):
         == models.WorksObjectProperty.INPUT_TYPE_FILE
     ):
         private_storage = fields.PrivateFileSystemStorage()
+        # TODO: handle missing files!
         f = private_storage.open(value)
         # The `url` attribute of the file is used to detect if there was already a file set (it is used by
         # `ClearableFileInput` and by the `set_object_property_value` function)
@@ -1367,6 +1386,18 @@ def validate_file(file):
             raise forms.ValidationError(
                 _("%(file)s est trop volumineux"), params={"file": file},
             )
+        # Check that image file is not corrupted
+        if kind.extension != "pdf":
+            # Check that image is not corrupted and that PIL can read it - Try to resize it
+            try:
+                with Image.open(file) as image:
+                    image.thumbnail((128, 128))
+            except:
+                raise forms.ValidationError(
+                    _("%(file)s n'est pas valide ou contient des erreurs"),
+                    params={"file": file},
+                )
+
     else:
         raise forms.ValidationError(
             _(

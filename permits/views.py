@@ -1050,7 +1050,9 @@ def permit_request_media_download(request, property_value_id):
     file = services.get_property_value(property_value)
     mime_type, encoding = mimetypes.guess_type(file.name)
 
-    return StreamingHttpResponse(file, content_type=mime_type)
+    response = StreamingHttpResponse(file, content_type=mime_type)
+    response["Content-Disposition"] = 'attachment; filename="' + file.name + '"'
+    return response
 
 
 @method_decorator(login_required, name="dispatch")
@@ -1306,8 +1308,10 @@ def permit_request_file_download(request, path):
 
     mime_type, encoding = mimetypes.guess_type(path)
     storage = fields.PrivateFileSystemStorage()
-
-    return StreamingHttpResponse(storage.open(path), content_type=mime_type)
+    file = storage.open(path)
+    response = StreamingHttpResponse(file, content_type=mime_type)
+    response["Content-Disposition"] = 'attachment; filename="' + file.name + '"'
+    return response
 
 
 @login_required
