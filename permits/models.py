@@ -557,10 +557,10 @@ class PermitRequest(models.Model):
         ]
 
     def can_be_prolonged(self):
-        max_validity = self.works_object_types.aggregate(Min("permit_duration"))[
-            "permit_duration__min"
-        ]
-        return self.status in self.PROLONGABLE_STATUSES and max_validity is not None
+        return (
+            self.status in self.PROLONGABLE_STATUSES
+            and self.get_max_validity is not None
+        )
 
     def is_prolonged(self):
         return (
@@ -568,23 +568,24 @@ class PermitRequest(models.Model):
             and self.prolongation_date
         )
 
+    def has_expiration_reminder(self):
+        return self.works_object_types.filter(expiration_reminder=True).exists()
+
     def can_prolongation_be_requested(self):
         if self.can_be_prolonged():
-            if not self.prolongation_status:
+            if self.prolongation_status is None:
                 # Has not been prolonged
                 # No prolongation has been requested
                 # Prolongation has not been rejected
                 return True
             elif self.is_prolonged:
                 # Check the reminder options
-                reminder = self.works_object_types.filter(
-                    expiration_reminder=True
-                ).exists()
+                reminder = self.has_expiration_reminder()
 
                 if reminder:
                     try:
                         # Here, if the reminder is active, we must have
-                        # the days_before_reminder value (validation on the admin) TBI
+                        # the days_before_reminder value (validation on the admin)
                         days_before_reminder = self.works_object_types.aggregate(
                             Max("days_before_reminder")
                         )["days_before_reminder__max"]
@@ -595,7 +596,7 @@ class PermitRequest(models.Model):
                                 - timedelta(days=days_before_reminder)
                             )
                     except TypeError:
-                        # In case the days_before_reminder is None
+                        # In case the days_before_reminder is None.
                         pass
 
                 else:

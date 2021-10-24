@@ -1296,7 +1296,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         parser = get_parser(response.content)
         element_parsed = parser.findAll("i", title="Demande échue")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(1, len(element_parsed))
+        self.assertEqual(0, len(element_parsed))
         self.assertNotContains(response, "Demander une prolongation")
 
     def test_user_can_see_the_link_to_request_permit_prolongation_accordingly_for_not_previously_prolonged_permits(
@@ -1341,7 +1341,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         parser = get_parser(response.content)
         expired_permits = parser.findAll("i", title="Demande échue")
-        self.assertEqual(2, len(expired_permits))
+        self.assertEqual(0, len(expired_permits))
         active_prolongation_buttons = parser.findAll(
             "a", title="Demander une prolongation"
         )
@@ -1411,9 +1411,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         # Expiration icons
         expired_permits = parser.findAll("i", title="Demande échue")
-        self.assertEqual(3, len(expired_permits))
+        self.assertEqual(0, len(expired_permits))
         prolonged_permits = parser.findAll("i", title="Demande renouvelée")
-        self.assertEqual(2, len(prolonged_permits))
+        self.assertEqual(0, len(prolonged_permits))
 
         # Action buttons
         active_prolongation_buttons = parser.findAll(

@@ -85,8 +85,6 @@ def get_permit_request_for_prolongation(user, permit_request_id):
     permit_request = services.get_permit_request_for_user_or_404(
         user, permit_request_id, statuses=allowed_statuses,
     )
-    if not services.can_prolonge_permit_request(user, permit_request):
-        raise BadPermitRequestStatus(permit_request, allowed_statuses)
     return permit_request
 
 
@@ -394,7 +392,10 @@ class PermitRequestDetailView(View):
             form = forms.PermitRequestProlongationForm(
                 instance=self.permit_request, data=data
             )
-            if not self.permit_request.can_prolongation_be_requested():
+
+            if not services.can_prolonge_permit_request(
+                self.request.user, self.permit_request
+            ):
                 disable_form(form)
 
             return form
@@ -556,30 +557,31 @@ class PermitRequestDetailView(View):
 
     def handle_prolongate_form_submission(self, form):
         form.save()
-        success_message = (
-            _(
-                "La prolongation de la demande #%s a été traitée et un émail envoyé à l'auteur-e."
+        if form.instance.prolongation_status:
+            success_message = (
+                _(
+                    "La prolongation de la demande #%s a été traitée et un émail envoyé à l'auteur-e."
+                )
+                % self.permit_request.pk
             )
-            % self.permit_request.pk
-        )
 
-        messages.success(self.request, success_message)
+            messages.success(self.request, success_message)
 
-        subject = (
-            _("Votre demande #%s a bien été prolongée.") % self.permit_request.pk
-            if form.instance.prolongation_status
-            == self.permit_request.PROLONGATION_STATUS_APPROVED
-            else _("La prolongation de votre demande #%s a été refusée.")
-            % self.permit_request.pk
-        )
-        data = {
-            "subject": subject,
-            "users_to_notify": [form.instance.author.user.email],
-            "template": "permit_request_prolongation.txt",
-            "permit_request": form.instance,
-            "absolute_uri_func": self.request.build_absolute_uri,
-        }
-        services.send_email_notification(data)
+            subject = (
+                _("Votre demande #%s a bien été prolongée.") % self.permit_request.pk
+                if form.instance.prolongation_status
+                == self.permit_request.PROLONGATION_STATUS_APPROVED
+                else _("La prolongation de votre demande #%s a été refusée.")
+                % self.permit_request.pk
+            )
+            data = {
+                "subject": subject,
+                "users_to_notify": [form.instance.author.user.email],
+                "template": "permit_request_prolongation.txt",
+                "permit_request": form.instance,
+                "absolute_uri_func": self.request.build_absolute_uri,
+            }
+            services.send_email_notification(data)
 
         if "save_continue" in self.request.POST:
             return redirect(

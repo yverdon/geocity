@@ -87,22 +87,25 @@ def human_field_value(value):
 
 @register.simple_tag(takes_context=True)
 def is_expired(context):
-    ends_at_max = context["record"].ends_at_max
-    prolongation_date = context["record"].prolongation_date
-    permit_valid_until = (
-        prolongation_date if context["record"].is_prolonged() else ends_at_max
-    )
-    if permit_valid_until:
-        if (
-            context["record"].is_prolonged()
-            and datetime.now(timezone.utc) < permit_valid_until
-        ):
-            return mark_safe(
-                '<i class="fa fa-refresh fa-lg status2" title="Demande renouvelée"></i>'
-            )
-        elif datetime.now(timezone.utc) > permit_valid_until:
-            return mark_safe(
-                '<i class="fa fa-exclamation-triangle fa-lg status0" title="Demande échue"></i>'
-            )
+    if context["record"].get_max_validity is not None:
+        ends_at_max = context["record"].ends_at_max
+        prolongation_date = context["record"].prolongation_date
+        permit_valid_until = (
+            prolongation_date if context["record"].is_prolonged() else ends_at_max
+        )
+        if permit_valid_until:
+            if (
+                context["record"].is_prolonged()
+                and datetime.now(timezone.utc) < permit_valid_until
+            ):
+                return mark_safe(
+                    '<i class="fa fa-refresh fa-lg status2" title="Demande renouvelée"></i>'
+                )
+            elif datetime.now(timezone.utc) > permit_valid_until:
+                return mark_safe(
+                    '<i class="fa fa-exclamation-triangle fa-lg status0" title="Demande échue"></i>'
+                )
+            else:
+                return ""
     else:
         return ""

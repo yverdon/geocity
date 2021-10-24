@@ -27,24 +27,29 @@ class PermitRequestExpirationReminder(CronJobBase):
         )
 
         for permit_request in permit_requests_to_remind:
-            expiration_day = date.today() + timedelta(
-                days=permit_request.reminder_delta
-            )
-            prolongation_date = (
-                permit_request.prolongation_date.date()
-                if permit_request.is_prolonged()
-                else None
-            )
+            if permit_request.can_be_prolonged():
+                expiration_day = date.today() + timedelta(
+                    days=permit_request.reminder_delta
+                )
+                expiration_day = date.today()
+                prolongation_date = (
+                    permit_request.prolongation_date.date()
+                    if permit_request.is_prolonged()
+                    else None
+                )
 
-            if expiration_day in [permit_request.ends_at_max.date(), prolongation_date]:
-                data = {
-                    "subject": _("Votre autorisation #%s arrive bientôt à échéance")
-                    % permit_request.id,
-                    "users_to_notify": [permit_request.author.user.email],
-                    "template": "permit_request_prolongation_reminder.txt",
-                    "permit_request": permit_request,
-                    "absolute_uri_func": None,
-                }
-                send_email_notification(data)
+                if expiration_day in [
+                    permit_request.ends_at_max.date(),
+                    prolongation_date,
+                ]:
+                    data = {
+                        "subject": _("Votre autorisation #%s arrive bientôt à échéance")
+                        % permit_request.id,
+                        "users_to_notify": [permit_request.author.user.email],
+                        "template": "permit_request_prolongation_reminder.txt",
+                        "permit_request": permit_request,
+                        "absolute_uri_func": None,
+                    }
+                    send_email_notification(data)
 
         print("The permit expiration reminder Cronjob finished successfully")

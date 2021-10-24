@@ -43,7 +43,7 @@
       </li>
     {% endif %}
 
-    {% if forms.prolongate%}
+    {% if forms.prolongate %}
     <li class="nav-item">
       <a class="nav-link{% if active_form == 'prolongate' %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#prolongate" role="tab" aria-controls="prolongate" aria-selected="{% if active_form == 'prolongate' %}true{% else %}false{% endif %}">
       {% trans "Prolongation" %}
@@ -317,6 +317,19 @@
   </dl>
   <br>
 {% endif %}
+
+  {% if permit_request.can_be_prolonged and permit_request.prolongation_date %}
+  <h2>{% trans "Statut de Prolongation" %}</h2>
+  <dl>
+    <dt>{{ permit_request.get_prolongation_status_display }}</dt>
+    {% if permit_request.prolongation_comment %}
+    <h6>{% trans "Commentaire" %}:</h6> {{ permit_request.prolongation_comment }}
+    {% endif %}
+  </dl>
+<br>
+{% endif %}
+
+
 <h2>{% trans "Résumé" %}</h2>
   {% permit_request_summary permit_request %}
 
