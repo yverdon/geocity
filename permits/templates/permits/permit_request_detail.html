@@ -180,7 +180,7 @@
             <div{% if not forloop.last %} class="mb-3"{% endif %}>
               {% if directive_file and directive_description %}
                 {{forloop.counter}}.
-                <span class="directive_description">{{ directive_description }}</span> - {% if directive_file %}<a class="directive_file" href="{{ directive_file.url }}" target="_blank">{% trans "Télécharger le fichier" %}</a>{% endif %} - <span class="additional_information">{{ additional_information }}</span>
+                <span class="directive_description">{{ directive_description }}</span> - {% if directive_file %}<a class="directive_file" href="{{ directive_file.url }}" target="_blank" rel="noreferrer">{% trans "Télécharger le fichier" %}</a>{% endif %} - <span class="additional_information">{{ additional_information }}</span>
               {% endif %}
             </div>
           {% endfor %}
@@ -195,7 +195,7 @@
 <dl>
   <dt><h4>{% trans "Auteur-e" %}</h4></dt>
   <dd>
-    <a href="mailto:{{ permit_request.author }} <{{ permit_request.author.user.email }}>" target="_blank">
+    <a href="mailto:{{ permit_request.author }} <{{ permit_request.author.user.email }}>" target="_blank" rel="noreferrer">
       {{ permit_request.author.user.first_name }} {{ permit_request.author.user.last_name }} &lt;{{ permit_request.author.user.email }}&gt;
     </a>
   </dd>
@@ -211,7 +211,7 @@
   {% if permit_request.validation_pdf %}
     <dt>{% trans "Document délivré" %}</dt>
     <dd>
-      <a href="{{ permit_request.validation_pdf.url }}" target="_blank">
+      <a href="{{ permit_request.validation_pdf.url }}" target="_blank" rel="noreferrer">
         Télécharger le document PDF
       </a>
     </dd>
