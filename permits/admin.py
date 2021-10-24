@@ -410,7 +410,6 @@ class QgisProjectAdminForm(forms.ModelForm):
         # Strings to complete the url
         protocol_suffix = "://"
         port_prefix = ":"
-
         # Replace the url strings from the user
         for protocol in protocols:
             for host in hosts:
@@ -422,31 +421,41 @@ class QgisProjectAdminForm(forms.ModelForm):
                     + settings.DJANGO_DOCKER_PORT,
                     encoder,
                 )
-                data = data.replace(url, web_url)
+                if not "web" in host:
+                    data = data.replace(url, web_url)
             for site in sites:
                 url = bytes(protocol + protocol_suffix + site, encoder)
-                data = data.replace(url, web_url)
+                if not "web" in site:
+                    data = data.replace(url, web_url)
 
         # Get characters between | and " or < without spaces, to prevent to take multiple lines
         regex_url = bytes('\|[\S+]+"', encoder)
         regex_element = bytes("\|[\S+]+<", encoder)
 
         # Get characters between /?access_token and & or " without spaces
-        regex_access_token_with_params = bytes("\/\?access_token[\S+]+&", encoder)
-        regex_access_token_end_string = bytes('\/\?access_token[\S+]+"', encoder)
+        regex_authcfg_string = bytes("authcfg=\S+", encoder)
+        regex_user_string = bytes("user=\S+", encoder)
+        regex_password_string = bytes("password=\S+", encoder)
+        source_string = bytes('source=""', encoder)
+        coverage_source_string = bytes('coverageLayerSource=""', encoder)
 
         # The regex will take the first to the last character, so we need to add it back
         empty_bytes_string = bytes('"', encoder)
         empty_bytes_balise = bytes("<", encoder)
         empty_bytes_params = bytes("", encoder)
+        empty_source_params = bytes('source="', encoder)
+        empty_coverage_source_params = bytes('coverageLayerSource="', encoder)
 
         # Replace characters using regex
         data = re.sub(regex_url, empty_bytes_string, data)
         data = re.sub(regex_element, empty_bytes_balise, data)
 
         # Remove access_token without removing other params
-        data = re.sub(regex_access_token_with_params, empty_bytes_params, data)
-        data = re.sub(regex_access_token_end_string, empty_bytes_string, data)
+        data = re.sub(regex_authcfg_string, empty_bytes_string, data)
+        data = re.sub(regex_user_string, empty_bytes_string, data)
+        data = re.sub(regex_password_string, empty_bytes_string, data)
+        data = re.sub(source_string, empty_source_params, data)
+        data = re.sub(coverage_source_string, empty_coverage_source_params, data)
 
         # Write the data in bytes in a new file
         file = BytesIO()

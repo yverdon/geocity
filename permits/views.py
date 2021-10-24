@@ -555,16 +555,20 @@ def permit_request_print(request, permit_request_id, template_id):
     if not qgisserver_response:
         return HttpResponse(_("Une erreur est survenue lors de l'impression"))
 
-    file_name = f"demande_{permit_request_id}_template_{template_id}.pdf"
+    file_name = f"demande_{permit_request_id}_geocity_{template_id}.pdf"
     generated_document.printed_file.save(
         file_name, ContentFile(qgisserver_response.content), True
     )
     generated_document.printed_at = timezone.now()
     generated_document.printed_by = request.user.get_full_name()
     generated_document.save()
-    return StreamingHttpResponse(
+
+    response = StreamingHttpResponse(
         qgisserver_response.iter_content(chunk_size=128), content_type="application/pdf"
     )
+    response["Content-Disposition"] = 'attachment; filename="' + file_name + '"'
+
+    return response
 
 
 @redirect_bad_status_to_detail
@@ -1046,7 +1050,9 @@ def permit_request_media_download(request, property_value_id):
     file = services.get_property_value(property_value)
     mime_type, encoding = mimetypes.guess_type(file.name)
 
-    return StreamingHttpResponse(file, content_type=mime_type)
+    response = StreamingHttpResponse(file, content_type=mime_type)
+    response["Content-Disposition"] = 'attachment; filename="' + file.name + '"'
+    return response
 
 
 @method_decorator(login_required, name="dispatch")
@@ -1302,8 +1308,10 @@ def permit_request_file_download(request, path):
 
     mime_type, encoding = mimetypes.guess_type(path)
     storage = fields.PrivateFileSystemStorage()
-
-    return StreamingHttpResponse(storage.open(path), content_type=mime_type)
+    file = storage.open(path)
+    response = StreamingHttpResponse(file, content_type=mime_type)
+    response["Content-Disposition"] = 'attachment; filename="' + file.name + '"'
+    return response
 
 
 @login_required

@@ -67,7 +67,7 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
         This view should return a list of events for which the logged user has
         view permissions
         """
-        user = self.request.user
+
         starts_at = self.request.query_params.get("starts_at", None)
         ends_at = self.request.query_params.get("ends_at", None)
         administrative_entity = self.request.query_params.get("adminentity", None)
@@ -100,7 +100,12 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
         qs = (
             models.PermitRequestGeoTime.objects.filter(base_filter)
             .filter(
-                Q(permit_request__in=services.get_permit_requests_list_for_user(user))
+                Q(
+                    permit_request__in=services.get_permit_requests_list_for_user(
+                        request.user,
+                        request_come_from_internal_qgisserver=services.check_request_comes_from_internal_qgisserver,
+                    )
+                )
                 | Q(permit_request__is_public=True)
             )
             .prefetch_related(works_object_types_prefetch)
@@ -115,18 +120,6 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
 # //////////////////////////////////
 
 
-def get_local_user_from_qgisserver_request(request):
-    """
-    Get Django user from username passed by qgisserver in rest/permits/?username=johndoe
-    This is only allowed within local network defined in env variable LOCAL_IP_WHITELIST
-    """
-    for whitelisted_ip in settings.LOCAL_IP_WHITELIST:
-        if request.META["REMOTE_ADDR"].startswith(whitelisted_ip):
-            username = request.query_params.get("username")
-            if username:
-                return User.objects.filter(username=username).first()
-
-
 class BlockRequesterUserPermission(BasePermission):
     """
     Block access to Permit Requesters (General Public)
@@ -136,9 +129,8 @@ class BlockRequesterUserPermission(BasePermission):
 
         if request.user.is_authenticated:
             return request.user.get_all_permissions()
-        elif request.query_params.get("username"):
-            user = get_local_user_from_qgisserver_request(request)
-            return user.get_all_permissions()
+        else:
+            return services.check_request_comes_from_internal_qgisserver(request)
 
 
 class PermitRequestViewSet(
@@ -158,7 +150,7 @@ class PermitRequestViewSet(
     wfs3_title = "Permis"
     wfs3_description = "Tous les permis accordés"
     wfs3_geom_lookup = "geo_time__geom"  # lookup for the geometry (on the queryset), used to determine bbox
-    wfs3_srid = 2056  # TODO : dynamically retrieve this from the above attribute on the queryset
+    wfs3_srid = 2056
 
     def get_queryset(self):
         """
@@ -166,10 +158,6 @@ class PermitRequestViewSet(
         view permissions
         """
         user = self.request.user
-
-        # If user is NOT authentified but comes from internal network, get it from the db
-        if user.is_anonymous:
-            user = get_local_user_from_qgisserver_request(self.request)
 
         filters_serializer = serializers.PermitRequestFiltersSerializer(
             data={
@@ -217,7 +205,14 @@ class PermitRequestViewSet(
         qs = (
             models.PermitRequest.objects.filter(base_filter)
             .filter(
-                Q(id__in=services.get_permit_requests_list_for_user(user))
+                Q(
+                    id__in=services.get_permit_requests_list_for_user(
+                        user,
+                        request_comes_from_internal_qgisserver=services.check_request_comes_from_internal_qgisserver(
+                            self.request
+                        ),
+                    )
+                )
                 | Q(is_public=True)
             )
             .prefetch_related(works_object_types_prefetch)

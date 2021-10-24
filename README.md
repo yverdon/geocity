@@ -159,6 +159,11 @@ Follow the following steps:
 Next time you sign in, you will be asked for a token.
 Once you provided your token go to `/admin/` to access the admin app.
 
+## Locked failed logins
+
+Django-axes is used to limite login attemps from users.
+Please read https://django-axes.readthedocs.io/en/latest/index.html to learn how to use it.
+
 ## Dependency management
 
 Dependencies are managed with [`pip-tools`](https://github.com/jazzband/pip-tools).

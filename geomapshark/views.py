@@ -33,6 +33,11 @@ def logout_view(request):
     )
 
 
+# User has tried to many login attemps
+def lockout_view(request):
+    return render(request, "account/lockout.html",)
+
+
 class CustomPasswordResetView(PasswordResetView):
 
     extra_email_context = {"custom_host": ""}

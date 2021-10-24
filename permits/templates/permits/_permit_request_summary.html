@@ -18,7 +18,7 @@
         {% if not field.value %}
           <em>{% trans "Information non fournie" %}</em>
         {% else %}
-          <a href="{{ field.value.url }}" target="_blank">{{ field.value.name|basename }}</a>
+          <a href="{{ field.value.url }}" rel="noreferrer" target="_blank">{{ field.value.name|basename }}</a>
         {% endif %}
       </dd>
     {% endfor %}
@@ -68,5 +68,5 @@
 
 {% if intersected_geometries %}
   <h4>{% trans "Éléments géographiques touchés par la demande (automatique)" %}</h4>
-  {{ intersected_geometries|safe }}
+  {{ intersected_geometries}}
 {% endif %}

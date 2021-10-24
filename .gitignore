@@ -18,6 +18,7 @@ private_documents/
 /printed_permits
 /qgisserver/*.qgs~
 /qgisserver/*.conf
+/qgisserver/print-template/*.qgs~
 *.env
 *.bak
 .coverage
