@@ -28,7 +28,7 @@ SESSION_COOKIE_HTTPONLY = (
 )
 SESSION_COOKIE_SAMESITE = os.getenv(
     "SESSION_COOKIE_SAMESITE", "Strict"
-)  # Highest level of security if not specified otherwiser in .env
+)  # Highest level of security would be 'Strict'
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
@@ -36,6 +36,16 @@ CSRF_COOKIE_SECURE = True
 # default session time is one hour
 SESSION_COOKIE_AGE = int(os.getenv("SESSION_COOKIE_AGE", 60 * 60))
 SESSION_SAVE_EVERY_REQUEST = os.getenv("SESSION_SAVE_EVERY_REQUEST", True)
+
+# LIMIT MAX CONNEXIONS ATTEMPTS
+AXES_FAILURE_LIMIT = int(os.getenv("AXES_FAILURE_LIMIT", 3))
+# Lock out by combination of ip AND User
+AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = os.getenv(
+    "AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP", False
+)
+AXES_LOCKOUT_URL = (
+    "/" + PREFIX_URL + "/account/lockout" if PREFIX_URL else "/account/lockout"
+)
 
 DJANGO_DOCKER_PORT = os.getenv("DJANGO_DOCKER_PORT")
 
@@ -114,6 +124,7 @@ INSTALLED_APPS = [
     "django_tables2_column_shifter",
     "taggit",
     "oauth2_provider",
+    "axes",
 ]
 
 if ENABLE_2FA:
@@ -135,6 +146,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "axes.middleware.AxesMiddleware",
 ]
 
 if ENABLE_2FA:
@@ -270,6 +282,8 @@ TEMPLATES = [
 ]
 
 AUTHENTICATION_BACKENDS = [
+    # AxesBackend
+    "axes.backends.AxesBackend",
     # Classic django authentication backend
     "django.contrib.auth.backends.ModelBackend",
     # SocialAccount authentication backend with allauth

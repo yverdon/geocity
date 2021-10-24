@@ -10,11 +10,13 @@
 {% endblock %}
 </head>
 <body>
-  <p>
-    <h2>{% trans "Quelque chose n'a pas fonctionné!" %}</h2>
-    <h3>{% trans "Cette page n'existe pas" %}</h3>
-  </p>
-  <img src="{% static 'images/errors/404.gif'%}" type="image/gif">
-
+  <div class="error-page">
+    <p>
+        <h1>Geocity</h1>
+        <h2>{% trans "Trop de tentatives de connexion!" %}</h2>
+        <h3>{% trans "Votre compte a été vérouillé par mesure de sécurité. Merci de contacter l'administrateur pour résoudre le problème" %}</h3>
+    </p>
+    <img src="{% static 'images/errors/lockout.svg'%}" type="image/gif">
+    </div>
 </body>
 </html>

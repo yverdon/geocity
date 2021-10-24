@@ -78,6 +78,7 @@ urlpatterns += [
 
 urlpatterns += [
     path("account/logout/", views.logout_view, name="logout",),
+    path("account/lockout/", views.lockout_view, name="lockout",),
     path(
         "account/password_reset/",
         views.CustomPasswordResetView.as_view(
