@@ -25,14 +25,10 @@ SECURE_PROXY_SSL_HEADER = (
 )
 
 # This is django's default but make sure no one turns it to False
-SESSION_COOKIE_HTTPONLY = (
-    True
-)
+SESSION_COOKIE_HTTPONLY = True
 
 # Highest level of security is 'Strict'
-SESSION_COOKIE_SAMESITE = os.getenv(
-    "SESSION_COOKIE_SAMESITE", "Strict"
-)  
+SESSION_COOKIE_SAMESITE = os.getenv("SESSION_COOKIE_SAMESITE", "Strict")
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
