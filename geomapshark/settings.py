@@ -212,7 +212,7 @@ CONSTANCE_CONFIG = {
         str,
     ),
     "ALLOWED_FILE_EXTENSIONS": (  # Supported file extensions https://pypi.org/project/filetype/
-        "pdf, png, jpg",
+        "pdf, jpg",
         "Extensions autorisées lors de l'upload de document",
         str,
     ),
