@@ -26,6 +26,7 @@ from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
 from .utils import reverse_permit_request_url
 from PIL import Image
+from pdf2image import convert_from_path
 
 
 class GeoTimeInfo(enum.Enum):
@@ -90,7 +91,7 @@ def set_object_property_value(permit_request, object_type, prop, value):
             )
 
             private_storage.save(path, value)
-            # Postprocess: remove all exif metadata for better security and user privacy
+            # Postprocess images: remove all exif metadata from for better security and user privacy
             if upper_ext != "PDF":
 
                 upper_ext = ext[1:].upper()
@@ -105,6 +106,22 @@ def set_object_property_value(permit_request, object_type, prop, value):
                         if upper_ext in formats_map.keys()
                         else upper_ext,
                     )
+            # Postprocess PDF: convert everything to image, do not keep other content
+            elif upper_ext == "PDF":
+                all_images = convert_from_path(private_storage.location + "/" + path)
+                first_image = all_images[0]
+                following_images = all_images[1:]
+                if len(following_images) > 0:
+                    first_image.save(
+                        private_storage.location + "/" + path,
+                        save_all=True,
+                        append_images=following_images,
+                    )
+                else:
+                    first_image.save(
+                        private_storage.location + "/" + path, save_all=True
+                    )
+
             value = path
 
         elif is_date:
@@ -1397,7 +1414,6 @@ def validate_file(file):
                     _("%(file)s n'est pas valide ou contient des erreurs"),
                     params={"file": file},
                 )
-
     else:
         raise forms.ValidationError(
             _(

@@ -10,7 +10,6 @@ gunicorn
 html5lib
 jdcal
 Pillow
-pip-tools
 psycopg2-binary
 pytz
 PyYAML
@@ -37,3 +36,4 @@ django-allauth
 pyyaml
 uritemplate
 django-axes
+pdf2image

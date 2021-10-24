@@ -16,8 +16,6 @@ cffi==1.14.6
     # via cryptography
 charset-normalizer==2.0.6
     # via requests
-click==8.0.1
-    # via pip-tools
 cryptography==3.4.8
     # via
     #   jwcrypto
@@ -112,14 +110,16 @@ oauthlib==3.1.1
     # via
     #   django-oauth-toolkit
     #   requests-oauthlib
-pep517==0.11.0
-    # via pip-tools
+pdf2image==1.16.0
+    # via -r requirements.in
+pdfid==1.0.5
+    # via -r requirements.in
 phonenumbers==8.12.24
     # via django-two-factor-auth
 pillow==8.3.2
-    # via -r requirements.in
-pip-tools==6.3.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   pdf2image
 psycopg2-binary==2.9.1
     # via -r requirements.in
 pycparser==2.20
@@ -157,21 +157,16 @@ sqlparse==0.4.2
     # via django
 tablib==3.0.0
     # via -r requirements.in
-tomli==1.2.1
-    # via pep517
 uritemplate==3.0.1
     # via -r requirements.in
 urllib3==1.26.7
     # via requests
 webencodings==0.5.1
     # via html5lib
-wheel==0.37.0
-    # via pip-tools
 whitenoise==5.3.0
     # via -r requirements.in
 wrapt==1.12.1
     # via deprecated
 
 # The following packages are considered to be unsafe in a requirements file:
-# pip
 # setuptools

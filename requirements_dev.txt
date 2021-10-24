@@ -34,7 +34,6 @@ charset-normalizer==2.0.6
     #   requests
 click==8.0.1
     # via
-    #   -r requirements.txt
     #   black
     #   pip-tools
 coverage==5.5
@@ -183,10 +182,12 @@ parso==0.8.2
     # via jedi
 pathspec==0.8.1
     # via black
+pdf2image==1.16.0
+    # via -r requirements.txt
+pdfid==1.0.5
+    # via -r requirements.txt
 pep517==0.11.0
-    # via
-    #   -r requirements.txt
-    #   pip-tools
+    # via pip-tools
 pexpect==4.8.0
     # via ipython
 phonenumbers==8.12.24
@@ -196,9 +197,11 @@ phonenumbers==8.12.24
 pickleshare==0.7.5
     # via ipython
 pillow==8.3.2
-    # via -r requirements.txt
+    # via
+    #   -r requirements.txt
+    #   pdf2image
 pip-tools==6.3.0
-    # via -r requirements.txt
+    # via -r requirements_dev.in
 prompt-toolkit==3.0.18
     # via ipython
 psycopg2-binary==2.9.1
@@ -270,9 +273,7 @@ toml==0.10.2
     #   black
     #   ipdb
 tomli==1.2.1
-    # via
-    #   -r requirements.txt
-    #   pep517
+    # via pep517
 traitlets==5.0.5
     # via
     #   ipython
@@ -292,9 +293,7 @@ webencodings==0.5.1
     #   -r requirements.txt
     #   html5lib
 wheel==0.37.0
-    # via
-    #   -r requirements.txt
-    #   pip-tools
+    # via pip-tools
 whitenoise==5.3.0
     # via -r requirements.txt
 wrapt==1.12.1

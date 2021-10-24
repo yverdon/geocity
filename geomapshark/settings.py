@@ -23,12 +23,17 @@ SECURE_PROXY_SSL_HEADER = (
     if os.getenv("SECURE_PROXY_SSL_HEADER")
     else None
 )
+
+# This is django's default but make sure no one turns it to False
 SESSION_COOKIE_HTTPONLY = (
-    True  # This is django's default but make sure no one turns it to False
+    True
 )
+
+# Highest level of security is 'Strict'
 SESSION_COOKIE_SAMESITE = os.getenv(
     "SESSION_COOKIE_SAMESITE", "Strict"
-)  # Highest level of security would be 'Strict'
+)  
+
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
@@ -213,7 +218,7 @@ CONSTANCE_CONFIG = {
     ),
     "ALLOWED_FILE_EXTENSIONS": (  # Supported file extensions https://pypi.org/project/filetype/
         "pdf, jpg, png",
-        "Extensions autorisées lors de l'upload de document",
+        "Extensions autorisées lors de l'upload de document, seuls des types images PIL et pdf sont supportés",
         str,
     ),
     "MAX_FILE_UPLOAD_SIZE": (10485760, "Taille maximum des fichiers uploadé", int,),
