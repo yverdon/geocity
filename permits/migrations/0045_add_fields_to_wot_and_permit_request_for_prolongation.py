@@ -43,12 +43,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='worksobjecttype',
             name='days_before_reminder',
-            field=models.IntegerField(blank=True, null=True, verbose_name='Delai de rappel (jours)'),
+            field=models.IntegerField(blank=True, null=True, verbose_name='Délai de rappel (jours)'),
         ),
         migrations.AddField(
             model_name='worksobjecttype',
             name='expiration_reminder',
-            field=models.BooleanField(default=False, verbose_name='Activer la fonctionde rappel'),
+            field=models.BooleanField(default=False, verbose_name='Activer la fonction de rappel'),
         ),
         migrations.AddField(
             model_name='worksobjecttype',

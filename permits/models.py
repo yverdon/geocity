@@ -757,10 +757,10 @@ class WorksObjectType(models.Model):
         ),
     )
     expiration_reminder = models.BooleanField(
-        _("Activer la fonctionde rappel"), default=False,
+        _("Activer la fonction de rappel"), default=False,
     )
     days_before_reminder = models.IntegerField(
-        _("Delai de rappel (jours)"), blank=True, null=True
+        _("Délai de rappel (jours)"), blank=True, null=True
     )
 
     class Meta:
