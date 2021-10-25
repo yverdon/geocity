@@ -31,6 +31,9 @@ profile_response_mock = {
 
 
 class DootixOAuth2Tests(OAuth2TestsMixin, TestCase):
+    """
+    Default OAuth2 automated tests + dootix specific tests.
+    """
     provider_id = DootixProvider.id
 
     def get_mocked_response(self, email="foo@bar.ch"):
@@ -39,29 +42,14 @@ class DootixOAuth2Tests(OAuth2TestsMixin, TestCase):
         )
         return MockedResponse(200, json.dumps(profile_response_mock))
 
-    # FIXME: Following tests fail due to redirect_uri workaround...
     def test_login_redirects_to_social_signup(self):
-        pass
-        # email = "foo@bar.ch"
-        # response = self.login(self.get_mocked_response(email))
-        # self.assertRedirects(response, expected_url=reverse("socialaccount_signup"))
+        email = "foo@bar.ch"
+        response = self.login(self.get_mocked_response(email))
+        self.assertRedirects(response, expected_url=reverse("socialaccount_signup"))
 
     def test_social_signup_form_display_socialaccount_data(self):
-        pass
-        # sociallogin_redirect = self.login(
-        #     self.get_mocked_response("example@test.org"),
-        # )
-        # signup_response = self.client.get(sociallogin_redirect.url)
-        #
-        # self.assertContains(signup_response, "example@test.org")
-
-    # FIXME: Following inherited (important) tests fail due to redirect_uri workaround.
-    def test_account_refresh_token_saved_next_login(self):
-        pass
-
-    def test_account_tokens(self, multiple_login=False):
-        pass
-
-    def test_login(self):
-        pass
-
+        sociallogin_redirect = self.login(
+            self.get_mocked_response("example@test.org"),
+        )
+        signup_response = self.client.get(sociallogin_redirect.url)
+        self.assertContains(signup_response, "example@test.org")

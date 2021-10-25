@@ -36,13 +36,6 @@ class DootixAdapter(OAuth2Adapter):
         protocol = self.redirect_uri_protocol
         callback_url = build_absolute_uri(request, callback_url, protocol)
 
-        # FIXME
-        #  Correct the callback_url saved at client's creation in Dootix,
-        #  The saved one is incorrect (missing a trailing slash)
-        #  The following removes the trailing slash to match the wrong url.
-        #  This line can be removed as soon as the callback_url in Dootix is fixed.
-        callback_url = callback_url[0:-1]
-
         return build_absolute_uri(request, callback_url, protocol)
 
 
