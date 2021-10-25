@@ -556,6 +556,9 @@ class PermitRequest(models.Model):
             "permit_duration__min"
         ]
 
+    def get_max_ends_at(self):
+        return self.geo_time.aggregate(Max("ends_at"))["ends_at__max"]
+
     def can_be_prolonged(self):
         return (
             self.status in self.PROLONGABLE_STATUSES
@@ -573,42 +576,47 @@ class PermitRequest(models.Model):
 
     def can_prolongation_be_requested(self):
         if self.can_be_prolonged():
-            if self.prolongation_status is None:
-                # Has not been prolonged
-                # No prolongation has been requested
-                # Prolongation has not been rejected
-                return True
-            elif self.is_prolonged:
-                # Check the reminder options
-                reminder = self.has_expiration_reminder()
-
-                if reminder:
-                    try:
-                        # Here, if the reminder is active, we must have
-                        # the days_before_reminder value (validation on the admin)
-                        days_before_reminder = self.works_object_types.aggregate(
-                            Max("days_before_reminder")
-                        )["days_before_reminder__max"]
-
-                        if days_before_reminder:
-                            return date.today() > (
-                                self.prolongation_date.date()
-                                - timedelta(days=days_before_reminder)
-                            )
-                    except TypeError:
-                        # In case the days_before_reminder is None.
-                        pass
-
-                else:
-                    # No reminder means it can be requested only after
-                    # the prolongation_date, because it can be prolonged but not reminded
-                    return date.today() > (self.prolongation_date.date())
-            else:
-                # It means self.prolongation_status in
-                # [self.PROLONGATION_STATUS_REJECTED, self.PROLONGATION_STATUS_PENDING]
+            today = date.today()
+            # Early opt-outs:
+            # None of the WOTs of the permit have a required date nor are renewables
+            if self.get_max_ends_at() is None:
                 return False
-        # It definitively can not be prolonged
-        return False
+
+            if self.prolongation_status in [
+                self.PROLONGATION_STATUS_REJECTED,
+                self.PROLONGATION_STATUS_PENDING,
+            ]:
+                return False
+
+            # Check the reminder options
+            reminder = self.has_expiration_reminder()
+
+            if reminder:
+                # Here, if the reminder is active, we must have
+                # the days_before_reminder value (validation on the admin)
+                days_before_reminder = self.works_object_types.aggregate(
+                    Max("days_before_reminder")
+                )["days_before_reminder__max"]
+
+                if self.is_prolonged():
+                    return today > (
+                        self.prolongation_date.date()
+                        - timedelta(days=days_before_reminder)
+                    )
+                else:
+                    return today > (
+                        self.get_max_ends_at().date()
+                        - timedelta(days=days_before_reminder)
+                    )
+            else:
+                if self.is_prolonged():
+                    return today > (self.prolongation_date.date())
+                else:
+                    return today > (self.get_max_ends_at().date())
+
+        else:
+            # It definitively can not be prolonged
+            return False
 
     def set_dates_for_renewables_wots(self):
         """
@@ -629,10 +637,16 @@ class PermitRequest(models.Model):
             # Therefore we do nothing, otherwise we set both dates.
             # What a good sweat!!!
 
+            if not self.geo_time.exists():
+                # At this point following the permit request steps, the Geotime object
+                # must have been created only if Geometry or Dates are required,
+                # if the WOT does not need require either, we need to create the object.
+                PermitRequestGeoTime.objects.create(permit_request_id=self.pk)
+
             starts_at_min = self.geo_time.aggregate(Min("starts_at"))["starts_at__min"]
             ends_at_max = self.geo_time.aggregate(Max("ends_at"))["ends_at__max"]
             permit_duration_max = self.get_max_validity
-            if not starts_at_min and not ends_at_max:
+            if starts_at_min is None and ends_at_max is None:
                 today = timezone.make_aware(datetime.today())
                 self.geo_time.update(starts_at=today)
                 self.geo_time.update(

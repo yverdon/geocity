@@ -961,6 +961,8 @@ def permit_request_prolongation(request, permit_request_id):
         form = forms.PermitRequestProlongationForm(
             instance=permit_request, data=request.POST
         )
+        del form.fields["prolongation_status"]
+        del form.fields["prolongation_comment"]
 
         if form.is_valid():
             obj = form.save(commit=False)
@@ -985,7 +987,7 @@ def permit_request_prolongation(request, permit_request_id):
             }
             services.send_email_notification(data)
 
-        return redirect("permits:permit_requests_list")
+            return redirect("permits:permit_requests_list")
     else:
         if permit_request.author != request.user.permitauthor:
             messages.error(
