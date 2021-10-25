@@ -31,7 +31,6 @@ class PermitRequestExpirationReminder(CronJobBase):
                 expiration_day = date.today() + timedelta(
                     days=permit_request.reminder_delta
                 )
-                expiration_day = date.today()
                 prolongation_date = (
                     permit_request.prolongation_date.date()
                     if permit_request.is_prolonged()
