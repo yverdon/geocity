@@ -171,6 +171,7 @@
 
     <form method="post">
       {% csrf_token %}
+      {{ forms.prolongate.media }}
       {% if not forms.prolongate.prolongation_date.value %}
         <small class="form-text text-muted mb-3">{% trans "Aucune prolongation n'a été demandée par l'auteur-e" %}</small>
       {% endif %}
