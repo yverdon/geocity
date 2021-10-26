@@ -1,4 +1,5 @@
-{% load socialaccount i18n %}
-{% if has_social_login_geomapfish %}
-  <a href="{% provider_login_url "geomapfish" %}">{% trans "Connexion via le Géoportail" %}</a>
-{% endif %}
+{% load socialaccount %}
+
+{% for app in social_apps %}
+  <a href="{% provider_login_url app.provider %}" class="form-text">{{ app.name }}</a>
+{% endfor %}
