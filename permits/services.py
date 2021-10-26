@@ -1088,7 +1088,7 @@ def can_amend_permit_request(user, permit_request):
 
 
 def can_prolonge_permit_request(user, permit_request):
-    return permit_request.can_be_prolonged() or has_permission_to_amend_permit_request(
+    return permit_request.can_be_prolonged() and has_permission_to_amend_permit_request(
         user, permit_request
     )
 
