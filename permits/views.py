@@ -34,7 +34,7 @@ from django_tables2.export.views import ExportMixin
 from django_tables2.views import SingleTableMixin, SingleTableView
 
 from . import fields, filters, forms, models, services, tables
-from .exceptions import BadPermitRequestStatus
+from .exceptions import BadPermitRequestStatus, NonProlongeablePermitRequest
 from .search import match_type_label, search_permit_requests
 
 logger = logging.getLogger(__name__)
@@ -85,6 +85,9 @@ def get_permit_request_for_prolongation(user, permit_request_id):
     permit_request = services.get_permit_request_for_user_or_404(
         user, permit_request_id, statuses=allowed_statuses,
     )
+
+    if not permit_request.works_object_types.filter(permit_duration__gte=0).exists():
+        raise NonProlongeablePermitRequest(permit_request)
     return permit_request
 
 
@@ -952,9 +955,13 @@ def permit_request_prolongation(request, permit_request_id):
         messages.success(request, _("Un id de permis valable est requis"))
         return redirect("permits:permit_requests_list")
 
-    permit_request = get_permit_request_for_prolongation(
-        request.user, permit_request_id
-    )
+    try:
+        permit_request = get_permit_request_for_prolongation(
+            request.user, permit_request_id
+        )
+    except NonProlongeablePermitRequest:
+        messages.error(request, _("La demande de permis ne peut pas être prolongée."))
+        return redirect("permits:permit_requests_list")
 
     if request.method == "POST":
 

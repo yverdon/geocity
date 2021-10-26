@@ -1285,250 +1285,606 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             ["Sélectionnez un choix valide. baz n’en fait pas partie."],
         )
 
-    def test_user_cannot_request_permit_prolongation_if_expired_permit_is_draft(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        works_object_type = factories.WorksObjectTypeFactory(needs_date=True,)
-        permit_request.works_object_types.set([works_object_type])
+
+class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
+    def setUp(self):
+        super().setUp()
+        self.wot_normal = factories.WorksObjectTypeFactory()
+        self.wot_normal_no_date = factories.WorksObjectTypeFactory(needs_date=False)
+        self.wot_prolongeable_no_date = factories.WorksObjectTypeFactory(
+            needs_date=False, permit_duration=30,
+        )
+        self.wot_prolongeable_with_date = factories.WorksObjectTypeFactory(
+            needs_date=True, permit_duration=60,
+        )
+        self.wot_prolongeable_no_date_with_reminder = factories.WorksObjectTypeFactory(
+            needs_date=False,
+            permit_duration=90,
+            expiration_reminder=True,
+            days_before_reminder=5,
+        )
+        self.wot_prolongeable_with_date_and_reminder = factories.WorksObjectTypeFactory(
+            needs_date=True,
+            permit_duration=120,
+            expiration_reminder=True,
+            days_before_reminder=10,
+        )
+
+        secretary_group = factories.GroupFactory(name="Secrétariat")
+        self.department = factories.PermitDepartmentFactory(
+            group=secretary_group, is_backoffice=True
+        )
+        self.secretariat = factories.SecretariatUserFactory(
+            groups=[secretary_group], email="secretary@geocity.ch"
+        )
+
+    def test_user_cannot_request_permit_prolongation_if_permit_is_not_prolongeable(
+        self,
+    ):
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED,
+        )
+        permit_request.works_object_types.set([self.wot_normal])
         factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
 
+        # Permit list
         response = self.client.get(reverse("permits:permit_requests_list",))
-
         parser = get_parser(response.content)
-        element_parsed = parser.findAll("i", title="Demande échue")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(0, len(element_parsed))
         self.assertNotContains(response, "Demander une prolongation")
 
-    def test_user_can_see_the_link_to_request_permit_prolongation_accordingly_for_not_previously_prolonged_permits(
+        # Prolongation form
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_prolongation",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            follow=True,
+        )
+        parser = get_parser(response.content)
+        alert = parser.find(
+            "div", string="La demande de permis ne peut pas être prolongée."
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(1, len(alert))
+        self.assertNotContains(response, "Demander une prolongation")
+
+    def test_user_cannot_request_permit_prolongation_if_it_prolongation_is_processing(
         self,
     ):
-        factories.PermitRequestFactory(
-            validated_at=timezone.now(),
-            status=models.PermitRequest.STATUS_APPROVED,
+        permit_request = factories.PermitRequestFactory(
             author=self.user.permitauthor,
+            status=models.PermitRequest.STATUS_PROCESSING,
+            prolongation_status=models.PermitRequest.PROLONGATION_STATUS_PENDING,
+            prolongation_date=timezone.now() + datetime.timedelta(days=90),
         )
-        factories.PermitRequestFactory.create_batch(
-            2,
-            validated_at=timezone.now(),
-            status=models.PermitRequest.STATUS_APPROVED,
-            author=self.user.permitauthor,
+        permit_request.works_object_types.set([self.wot_prolongeable_with_date])
+        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
+
+        # Prolongation form
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_prolongation",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            follow=True,
         )
-        works_object_type = factories.WorksObjectTypeFactory(
-            needs_date=True, days_before_reminder=10
-        )
-
-        ended_a_year_ago = timezone.now() - datetime.timedelta(days=365)
-        ends_in_a_year = timezone.now() + datetime.timedelta(days=365)
-
-        permit_requests = models.PermitRequest.objects.all()
-        for permit_request in permit_requests:
-            permit_request.works_object_types.set([works_object_type])
-
-        # Within the expiration period, will show action
-        factories.PermitRequestGeoTimeFactory(permit_request=permit_requests[0])
-
-        # Expired a lot time ago, will show action
-        factories.PermitRequestGeoTimeFactory(
-            permit_request=permit_requests[1], ends_at=ended_a_year_ago
-        )
-
-        # Not within the delay or reminder, will not show action.
-        factories.PermitRequestGeoTimeFactory(
-            permit_request=permit_requests[2], ends_at=ends_in_a_year
-        )
-
-        response = self.client.get(reverse("permits:permit_requests_list",))
-        self.assertEqual(response.status_code, 200)
         parser = get_parser(response.content)
-        expired_permits = parser.findAll("i", title="Demande échue")
-        self.assertEqual(0, len(expired_permits))
-        active_prolongation_buttons = parser.findAll(
+        regex = re.compile(
+            r"^Une demande de prolongation pour le permis #[0-9]* est en attente ou a été refusée."
+        )
+        alert = parser.find("div", string=regex)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(1, len(alert))
+        self.assertNotContains(response, "Demander une prolongation")
+
+    def test_user_cannot_request_permit_prolongation_if_it_has_been_rejected(self,):
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor,
+            status=models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+            prolongation_status=models.PermitRequest.PROLONGATION_STATUS_REJECTED,
+            prolongation_date=timezone.now() + datetime.timedelta(days=90),
+        )
+        permit_request.works_object_types.set([self.wot_prolongeable_with_date])
+        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
+
+        # Prolongation form
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_prolongation",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            follow=True,
+        )
+        parser = get_parser(response.content)
+        regex = re.compile(
+            r"^Une demande de prolongation pour le permis #[0-9]* est en attente ou a été refusée."
+        )
+        alert = parser.find("div", string=regex)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(1, len(alert))
+        self.assertNotContains(response, "Demander une prolongation")
+
+    def test_secretariat_cannot_request_permit_prolongation_via_form_if_it_is_not_the_permit_author(
+        self,
+    ):
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor,
+            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+        )
+        permit_request.works_object_types.set(
+            [self.wot_prolongeable_no_date_with_reminder]
+        )
+        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
+
+        permit_request.administrative_entity.departments.set([self.department])
+
+        self.client.login(username=self.secretariat, password="password")
+
+        # Prolongation form
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_prolongation",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            follow=True,
+        )
+
+        parser = get_parser(response.content)
+        regex = re.compile(
+            r"^Vous ne pouvez pas demander une prolongation pour le permis"
+        )
+        alert = parser.find("div", string=regex)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(1, len(alert))
+        self.assertNotContains(response, "Demander une prolongation")
+
+    def test_user_can_request_permit_prolongation(self,):
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED
+        )
+        permit_request.works_object_types.set(
+            [self.wot_prolongeable_with_date_and_reminder]
+        )
+        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
+        permit_request.administrative_entity.departments.set([self.department])
+
+        # Prolongation form
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_prolongation",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+        parser = get_parser(response.content)
+
+        title = parser.find("h3", string="Demande de prolongation de permis")
+        widget = parser.find(
+            "input",
+            title="Cliquer sur le champ et selectionner la nouvelle date de fin planifiée",
+        )
+        self.assertEqual(1, len(title))
+        self.assertEqual("id_prolongation_date", widget.get("id"))
+
+        # Post
+        prolongation_date = timezone.now() + datetime.timedelta(days=90)
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_prolongation",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            follow=True,
+            data={"prolongation_date": prolongation_date},
+        )
+        parser = get_parser(response.content)
+        regex = re.compile(r"^Prolongation en attente")
+        icon_prolongation_processing = parser.findAll("i", title=regex)
+        icon_permit_expired = parser.findAll("i", title="Demande échue")
+        expected_subject_regex = re.compile(
+            r"Une demande de prolongation vient d'être soumise"
+        )
+
+        permit_request.refresh_from_db()
+
+        self.assertRedirects(response, reverse("permits:permit_requests_list"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(1, len(icon_prolongation_processing))
+        self.assertEqual(1, len(icon_permit_expired))
+        self.assertEqual(
+            models.PermitRequest.PROLONGATION_STATUS_PENDING,
+            permit_request.prolongation_status,
+        )
+        self.assertEqual(prolongation_date, permit_request.prolongation_date)
+        # Emails
+        self.assertIn("secretary@geocity.ch", mail.outbox[0].to)
+        self.assertRegex(mail.outbox[0].subject, expected_subject_regex)
+        self.assertRegex(mail.outbox[0].message().as_string(), expected_subject_regex)
+
+    def test_permit_prolongation_request_must_be_after_original_end_date(self,):
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED
+        )
+        permit_request.works_object_types.set(
+            [self.wot_prolongeable_with_date_and_reminder]
+        )
+        factories.PermitRequestGeoTimeFactory(
+            permit_request=permit_request,
+            starts_at=timezone.now() - datetime.timedelta(days=30),
+            ends_at=timezone.now(),
+        )
+
+        # Post
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_prolongation",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            follow=True,
+            data={"prolongation_date": timezone.now() - datetime.timedelta(days=1)},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            "La date de prolongation doit être postérieure à la date originale de fin",
+        )
+
+    # TESTS FOR THE SECRETARIAT
+    def test_secretariat_can_prolonge_or_permit_request_without_user_asking(self,):
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED,
+        )
+        permit_request.works_object_types.set([self.wot_prolongeable_with_date])
+        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
+        permit_request.administrative_entity.departments.set([self.department])
+        self.client.login(username=self.secretariat, password="password")
+
+        # Prolongation form on permit details
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            follow=True,
+        )
+
+        parser = get_parser(response.content)
+
+        prolongate_form_div = parser.find("div", id="prolongate")
+        prolongate_form = prolongate_form_div.find("form")
+        no_requested_prolongation_msg = prolongate_form.find("small")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(1, len(no_requested_prolongation_msg))
+
+        # Post the form
+        prolongation_date = timezone.now() + datetime.timedelta(days=90)
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            follow=True,
+            data={
+                "prolongation_date": prolongation_date,
+                "prolongation_status": models.PermitRequest.PROLONGATION_STATUS_APPROVED,
+                "prolongation_comment": "Prolonged! I got the power!",
+                "action": models.ACTION_PROLONGATE,
+            },
+        )
+        permit_request.refresh_from_db()
+
+        parser = get_parser(response.content)
+
+        regex = re.compile(r"^Prolongation en attente")
+        icon_prolongation_processing = parser.findAll("i", title=regex)
+        icon_prolongation_approved = parser.findAll("i", title="Demande renouvelée")
+        expected_subject_regex = re.compile(
+            r"^Votre demande #[0-9]* a bien été prolongée."
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, reverse("permits:permit_requests_list"))
+        self.assertEqual(0, len(icon_prolongation_processing))
+        self.assertEqual(1, len(icon_prolongation_approved))
+        self.assertEqual(
+            models.PermitRequest.PROLONGATION_STATUS_APPROVED,
+            permit_request.prolongation_status,
+        )
+        self.assertEqual(prolongation_date, permit_request.prolongation_date)
+        self.assertEqual(
+            "Prolonged! I got the power!", permit_request.prolongation_comment
+        )
+
+        self.assertIn("user@test.com", mail.outbox[0].to)
+        self.assertRegex(mail.outbox[0].subject, expected_subject_regex)
+        self.assertIn(
+            "Nous vous informons que votre demande de prolongation a été traitée.",
+            mail.outbox[0].message().as_string(),
+        )
+
+    def test_secretariat_can_reject_permit_request(self,):
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED,
+        )
+        permit_request.works_object_types.set([self.wot_prolongeable_with_date])
+        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
+        permit_request.administrative_entity.departments.set([self.department])
+        self.client.login(username=self.secretariat, password="password")
+
+        # Post the form
+        prolongation_date = timezone.now() + datetime.timedelta(days=90)
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            follow=True,
+            data={
+                "prolongation_date": prolongation_date,
+                "prolongation_status": models.PermitRequest.PROLONGATION_STATUS_REJECTED,
+                "prolongation_comment": "Rejected! Because I say so!",
+                "action": models.ACTION_PROLONGATE,
+            },
+        )
+        permit_request.refresh_from_db()
+
+        parser = get_parser(response.content)
+
+        regex = re.compile(r"^Prolongation en attente")
+        icon_prolongation_processing = parser.findAll("i", title=regex)
+        icon_prolongation_rejected = parser.findAll("i", title="Prolongation refusée")
+        expected_subject_regex = re.compile(
+            r"^La prolongation de votre demande #[0-9]* a été refusée."
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertRedirects(response, reverse("permits:permit_requests_list"))
+        self.assertEqual(0, len(icon_prolongation_processing))
+        self.assertEqual(1, len(icon_prolongation_rejected))
+        self.assertEqual(
+            models.PermitRequest.PROLONGATION_STATUS_REJECTED,
+            permit_request.prolongation_status,
+        )
+        self.assertEqual(prolongation_date, permit_request.prolongation_date)
+        self.assertEqual(
+            "Rejected! Because I say so!", permit_request.prolongation_comment
+        )
+
+        self.assertRegex(mail.outbox[0].subject, expected_subject_regex)
+        self.assertIn(
+            "Nous vous informons que votre demande de prolongation a été traitée.",
+            mail.outbox[0].message().as_string(),
+        )
+
+    def test_secretariat_prolonge_form_is_disabled_on_bad_permit_request_status(self,):
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor, status=models.PermitRequest.STATUS_RECEIVED,
+        )
+        permit_request.works_object_types.set([self.wot_prolongeable_with_date])
+        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
+        permit_request.administrative_entity.departments.set([self.department])
+        self.client.login(username=self.secretariat, password="password")
+
+        # Prolongation form on permit details
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+
+        parser = get_parser(response.content)
+        prolongate_form_div = parser.find("div", id="prolongate")
+        prolongate_form = prolongate_form_div.find("form")
+        self.assertTrue("disabled" in str(prolongate_form))
+        self.assertEqual(response.status_code, 200)
+
+    def test_user_cannot_see_prolongation_icons_nor_info_if_expired_permit_is_draft(
+        self,
+    ):
+        # Draft - No action icons - No expired/renew icons
+
+        permit_request_draft = factories.PermitRequestFactory(
+            validated_at=timezone.now(),
+            status=models.PermitRequest.STATUS_DRAFT,
+            author=self.user.permitauthor,
+        )
+        permit_request_draft.works_object_types.set([self.wot_normal])
+        ends_at_draft = timezone.now()
+        factories.PermitRequestGeoTimeFactory(
+            permit_request=permit_request_draft,
+            starts_at=timezone.now() - datetime.timedelta(days=30),
+            ends_at=ends_at_draft,
+        )
+        response = self.client.get(reverse("permits:permit_requests_list",))
+        parser = get_parser(response.content)
+
+        info_expired_permits = parser.findAll("i", title="Demande échue")
+        info_prolonged_permits = parser.findAll("i", title="Demande renouvelée")
+        action_request_prolongation = parser.findAll(
             "a", title="Demander une prolongation"
         )
-        self.assertEqual(0, len(active_prolongation_buttons))
+        action_prolongation_requested = parser.findAll(
+            "i", title=re.compile(r"Prolongation en attente")
+        )
+        action_prolongation_rejected = parser.findAll("i", title="Prolongation refusée")
 
-    def test_user_can_see_the_link_to_request_permit_prolongation_accordingly_for_previously_prolonged_permits(
-        self,
-    ):
-        prolonged_for_5_days = timezone.now() + datetime.timedelta(days=5)
-        prolonged_for_365_days = timezone.now() + datetime.timedelta(days=365)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(0, len(info_expired_permits))
+        self.assertEqual(0, len(info_prolonged_permits))
+        self.assertEqual(0, len(action_request_prolongation))
+        self.assertEqual(0, len(action_prolongation_requested))
+        self.assertEqual(0, len(action_prolongation_rejected))
 
-        # Not prolonged, expired, must show action
+    def test_user_can_see_prolongation_icons_if_permit_is_about_to_expire(self,):
+        # Expired within delay of reminder  - Action icon - No expired/renew icons
         permit_request_expired = factories.PermitRequestFactory(
             validated_at=timezone.now(),
             status=models.PermitRequest.STATUS_APPROVED,
             author=self.user.permitauthor,
         )
-
-        # Prolonged, expires within reminder period, must show action
-        permit_request_5 = factories.PermitRequestFactory(
-            validated_at=timezone.now(),
-            status=models.PermitRequest.STATUS_APPROVED,
-            author=self.user.permitauthor,
-            prolongation_date=prolonged_for_5_days,
-            prolongation_status=models.PermitRequest.PROLONGATION_STATUS_APPROVED,
+        permit_request_expired.works_object_types.set(
+            [self.wot_prolongeable_with_date_and_reminder]
         )
-
-        # Prolonged, does not expires within reminder period, must not show action
-        permit_request_365 = factories.PermitRequestFactory(
-            validated_at=timezone.now(),
-            status=models.PermitRequest.STATUS_APPROVED,
-            author=self.user.permitauthor,
-            prolongation_date=prolonged_for_365_days,
-            prolongation_status=models.PermitRequest.PROLONGATION_STATUS_APPROVED,
+        ends_at_expired = timezone.now() + datetime.timedelta(days=5)
+        factories.PermitRequestGeoTimeFactory(
+            permit_request=permit_request_expired,
+            starts_at=timezone.now() - datetime.timedelta(days=120),
+            ends_at=ends_at_expired,
         )
-
-        # Prolongation requested, expired, must show pending action, no link
-        permit_request_pending_prolongation = factories.PermitRequestFactory(
-            validated_at=timezone.now(),
-            status=models.PermitRequest.STATUS_APPROVED,
-            author=self.user.permitauthor,
-            prolongation_date=prolonged_for_365_days,
-            prolongation_status=models.PermitRequest.PROLONGATION_STATUS_PENDING,
-        )
-
-        # Prolongation rejected, expired, must show action rejected action, link
-        permit_request_pending_rejected = factories.PermitRequestFactory(
-            validated_at=timezone.now(),
-            status=models.PermitRequest.STATUS_APPROVED,
-            author=self.user.permitauthor,
-            prolongation_date=prolonged_for_365_days,
-            prolongation_status=models.PermitRequest.PROLONGATION_STATUS_REJECTED,
-        )
-
-        works_object_type = factories.WorksObjectTypeFactory(
-            needs_date=True, days_before_reminder=10
-        )
-
-        permit_requests = models.PermitRequest.objects.all()
-        for permit_request in permit_requests:
-            permit_request.works_object_types.set([works_object_type])
-            factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
 
         response = self.client.get(reverse("permits:permit_requests_list",))
-        self.assertEqual(response.status_code, 200)
         parser = get_parser(response.content)
 
-        # Expiration icons
-        expired_permits = parser.findAll("i", title="Demande échue")
-        self.assertEqual(0, len(expired_permits))
-        prolonged_permits = parser.findAll("i", title="Demande renouvelée")
-        self.assertEqual(0, len(prolonged_permits))
-
-        # Action buttons
-        active_prolongation_buttons = parser.findAll(
+        info_expired_permits = parser.findAll("i", title="Demande échue")
+        info_prolonged_permits = parser.findAll("i", title="Demande renouvelée")
+        action_request_prolongation = parser.findAll(
             "a", title="Demander une prolongation"
         )
-        self.assertEqual(0, len(active_prolongation_buttons))
-        # Action icons
-        rejected_prolongation_icons = parser.findAll("i", title="Prolongation refusée")
-        self.assertEqual(0, len(rejected_prolongation_icons))
-        pending_prolongation_icons = parser.findAll(
-            "i", title=re.compile(r"^Prolongation en attente")
+        action_prolongation_requested = parser.findAll(
+            "i", title=re.compile(r"Prolongation en attente")
         )
-        self.assertEqual(0, len(pending_prolongation_icons))
+        action_prolongation_rejected = parser.findAll("i", title="Prolongation refusée")
 
-    def test_user_can_use_or_not_the_request_permit_prolongation_view(self):
-        prolonged_for_5_days = timezone.now() + datetime.timedelta(days=5)
-        prolonged_for_365_days = timezone.now() + datetime.timedelta(days=365)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(0, len(info_expired_permits))
+        self.assertEqual(0, len(info_prolonged_permits))
+        self.assertEqual(1, len(action_request_prolongation))
+        self.assertEqual(0, len(action_prolongation_requested))
+        self.assertEqual(0, len(action_prolongation_rejected))
 
-        # Not prolonged, expired, able to use view
-        permit_request_expired = factories.PermitRequestFactory(
+    def test_user_can_see_prolongation_info_icons_if_permit_is_prolonged(self,):
+        # Prolonged  - No action icons - Renew icons - Date fin = prolongation_date
+        prolongation_date_prolonged = timezone.now() + datetime.timedelta(days=365)
+        permit_request_prolonged = factories.PermitRequestFactory(
             validated_at=timezone.now(),
             status=models.PermitRequest.STATUS_APPROVED,
             author=self.user.permitauthor,
-        )
-
-        # Prolonged, expires within reminder period, able to use view
-        permit_request_5 = factories.PermitRequestFactory(
-            validated_at=timezone.now(),
-            status=models.PermitRequest.STATUS_APPROVED,
-            author=self.user.permitauthor,
-            prolongation_date=prolonged_for_5_days,
+            prolongation_date=prolongation_date_prolonged,
             prolongation_status=models.PermitRequest.PROLONGATION_STATUS_APPROVED,
         )
-
-        # Prolonged, does not expires within reminder period, able to use view
-        permit_request_365 = factories.PermitRequestFactory(
-            validated_at=timezone.now(),
-            status=models.PermitRequest.STATUS_APPROVED,
-            author=self.user.permitauthor,
-            prolongation_date=prolonged_for_365_days,
-            prolongation_status=models.PermitRequest.PROLONGATION_STATUS_APPROVED,
+        permit_request_prolonged.works_object_types.set(
+            [self.wot_prolongeable_with_date_and_reminder]
+        )
+        ends_at_prolonged = timezone.now() + datetime.timedelta(days=5)
+        factories.PermitRequestGeoTimeFactory(
+            permit_request=permit_request_prolonged,
+            starts_at=timezone.now() - datetime.timedelta(days=120),
+            ends_at=ends_at_prolonged,
         )
 
-        # Prolongation requested, expired, not able to use view
-        permit_request_pending_prolongation = factories.PermitRequestFactory(
+        response = self.client.get(reverse("permits:permit_requests_list",))
+        parser = get_parser(response.content)
+
+        info_expired_permits = parser.findAll("i", title="Demande échue")
+        info_prolonged_permits = parser.findAll("i", title="Demande renouvelée")
+        action_request_prolongation = parser.findAll(
+            "a", title="Demander une prolongation"
+        )
+        action_prolongation_requested = parser.findAll(
+            "i", title=re.compile(r"Prolongation en attente")
+        )
+        action_prolongation_rejected = parser.findAll("i", title="Prolongation refusée")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(0, len(info_expired_permits))
+        self.assertEqual(1, len(info_prolonged_permits))
+        self.assertEqual(0, len(action_request_prolongation))
+        self.assertEqual(0, len(action_prolongation_requested))
+        self.assertEqual(0, len(action_prolongation_rejected))
+
+    def test_user_can_see_prolongation_info_icons_if_permit_prolongation_is_requested(
+        self,
+    ):
+
+        # Prolongation Requested
+        prolongation_date_requested = timezone.now() + datetime.timedelta(days=365)
+        permit_request_prolongation_requested = factories.PermitRequestFactory(
             validated_at=timezone.now(),
             status=models.PermitRequest.STATUS_APPROVED,
             author=self.user.permitauthor,
-            prolongation_date=prolonged_for_365_days,
+            prolongation_date=prolongation_date_requested,
             prolongation_status=models.PermitRequest.PROLONGATION_STATUS_PENDING,
         )
+        permit_request_prolongation_requested.works_object_types.set(
+            [self.wot_prolongeable_no_date_with_reminder]
+        )
+        ends_at_requested = timezone.now() + datetime.timedelta(days=4)
+        factories.PermitRequestGeoTimeFactory(
+            permit_request=permit_request_prolongation_requested,
+            starts_at=timezone.now() - datetime.timedelta(days=120),
+            ends_at=ends_at_requested,
+        )
 
-        # Prolongation rejected, expired, able to use view
-        permit_request_pending_rejected = factories.PermitRequestFactory(
+        response = self.client.get(reverse("permits:permit_requests_list",))
+        parser = get_parser(response.content)
+
+        info_expired_permits = parser.findAll("i", title="Demande échue")
+        info_prolonged_permits = parser.findAll("i", title="Demande renouvelée")
+        action_request_prolongation = parser.findAll(
+            "a", title="Demander une prolongation"
+        )
+        action_prolongation_requested = parser.findAll(
+            "i", title=re.compile(r"Prolongation en attente")
+        )
+        action_prolongation_rejected = parser.findAll("i", title="Prolongation refusée")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(0, len(info_expired_permits))
+        self.assertEqual(0, len(info_prolonged_permits))
+        self.assertEqual(0, len(action_request_prolongation))
+        self.assertEqual(1, len(action_prolongation_requested))
+        self.assertEqual(0, len(action_prolongation_rejected))
+
+    def test_user_can_see_prolongation_info_icons_if_permit_prolongation_is_rejected(
+        self,
+    ):
+
+        # Prolongation Rejected
+        prolongation_date_rejected = timezone.now() + datetime.timedelta(days=300)
+        permit_request_prolongation_rejected = factories.PermitRequestFactory(
             validated_at=timezone.now(),
             status=models.PermitRequest.STATUS_APPROVED,
             author=self.user.permitauthor,
-            prolongation_date=prolonged_for_365_days,
+            prolongation_date=prolongation_date_rejected,
             prolongation_status=models.PermitRequest.PROLONGATION_STATUS_REJECTED,
         )
-
-        works_object_type = factories.WorksObjectTypeFactory(
-            needs_date=True, days_before_reminder=10
+        permit_request_prolongation_rejected.works_object_types.set(
+            [self.wot_prolongeable_no_date_with_reminder]
+        )
+        ends_at_rejected = timezone.now() - datetime.timedelta(days=3)
+        factories.PermitRequestGeoTimeFactory(
+            permit_request=permit_request_prolongation_rejected,
+            starts_at=timezone.now() - datetime.timedelta(days=120),
+            ends_at=ends_at_rejected,
         )
 
-        permit_requests = models.PermitRequest.objects.all()
-        for permit_request in permit_requests:
-            permit_request.works_object_types.set([works_object_type])
-            factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
+        response = self.client.get(reverse("permits:permit_requests_list",))
+        parser = get_parser(response.content)
 
-        for allowed_permit in [
-            permit_request_expired,
-            permit_request_5,
-            permit_request_365,
-        ]:
-            response = self.client.get(
-                reverse(
-                    "permits:permit_request_prolongation",
-                    kwargs={"permit_request_id": allowed_permit.pk},
-                ),
-                follow=True,
-            )
+        info_expired_permits = parser.findAll("i", title="Demande échue")
+        info_prolonged_permits = parser.findAll("i", title="Demande renouvelée")
+        action_request_prolongation = parser.findAll(
+            "a", title="Demander une prolongation"
+        )
+        action_prolongation_requested = parser.findAll(
+            "i", title=re.compile(r"Prolongation en attente")
+        )
+        action_prolongation_rejected = parser.findAll("i", title="Prolongation refusée")
 
-            self.assertEqual(response.status_code, 200)
-            parser = get_parser(response.content)
-            prolongation_date_input = parser.findAll(
-                "input",
-                title="Cliquer sur le champ et selectionner la nouvelle date de fin planifiée",
-            )
-            self.assertEqual(1, len(prolongation_date_input))
-
-        for not_allowed_permit in [
-            permit_request_pending_prolongation,
-            permit_request_pending_rejected,
-        ]:
-            response = self.client.get(
-                reverse(
-                    "permits:permit_request_prolongation",
-                    kwargs={"permit_request_id": not_allowed_permit.pk},
-                ),
-                follow=True,
-            )
-
-            self.assertEqual(response.status_code, 200)
-            parser = get_parser(response.content)
-            prolongation_date_input = parser.findAll(
-                "input",
-                title="Cliquer sur le champ et selectionner la nouvelle date de fin planifiée",
-            )
-            self.assertEqual(0, len(prolongation_date_input))
-
-            self.assertRedirects(response, reverse("permits:permit_requests_list"))
-            regex = re.compile(r"^Une demande de prolongation pour le permis")
-            alert = parser.find("div", string=regex)
-            self.assertEqual(0, len(prolongation_date_input))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(1, len(info_expired_permits))
+        self.assertEqual(0, len(info_prolonged_permits))
+        self.assertEqual(0, len(action_request_prolongation))
+        self.assertEqual(0, len(action_prolongation_requested))
+        self.assertEqual(1, len(action_prolongation_rejected))
 
 
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):

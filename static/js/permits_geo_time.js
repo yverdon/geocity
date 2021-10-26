@@ -78,7 +78,7 @@
     fixEndsAt() {
       let allStarts = document.querySelectorAll("[id*='starts_at']")
       let allEnds = document.querySelectorAll("[id*='ends_at']")
-      if (this.permitDurationMax){
+      if (this.permitDurationMax !== "None"){
         allStarts.forEach((node) => {
           let $picker = jQuery(node).datetimepicker(JSON.parse(node.attributes.dp_config.value).options)
           $picker.on("dp.change", (e) => {
