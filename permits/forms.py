@@ -4,6 +4,7 @@ from datetime import timedelta
 from itertools import groupby
 
 from allauth.socialaccount.forms import SignupForm
+from allauth.socialaccount.providers.base import ProviderException
 from bootstrap_datepicker_plus import DatePickerInput, DateTimePickerInput
 from constance import config
 from crispy_forms.helper import FormHelper
@@ -25,7 +26,9 @@ from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 
 from accounts.dootix.adapter import DootixSocialAccountAdapter
+from accounts.dootix.provider import DootixProvider
 from accounts.geomapfish.adapter import GeomapfishSocialAccountAdapter
+from accounts.geomapfish.provider import GeomapfishProvider
 
 from . import models, services
 
@@ -1329,9 +1332,13 @@ class SocialSignupForm(SignupForm):
             self.fields["username"].disabled = True
 
     def save(self, request):
-        # Couldn't find a better way with this one common SOCIALACCOUNT_FORMS.signup
-        if self.sociallogin.account.provider == "dootix":
+        # SOCIALACCOUNT_FORMS.signup is unique, but providers are multiple.
+        # Find the correct adapter to save the new User.
+        if self.sociallogin.account.provider == DootixProvider.id:
             adapter = DootixSocialAccountAdapter(request)
-        elif self.sociallogin.account.provider == "geomapfish":
+        elif self.sociallogin.account.provider == GeomapfishProvider.id:
             adapter = GeomapfishSocialAccountAdapter(request)
+        else:
+            raise ProviderException(_("Unknown social account provider"))
+
         return adapter.save_user(request, self.sociallogin, form=self)
