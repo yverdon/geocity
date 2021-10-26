@@ -95,12 +95,6 @@
                let $picker2 = jQuery(node2).datetimepicker(pickerAttributes.options)
               $picker2.data("DateTimePicker").minDate(chosen_start_date);
               $picker2.data("DateTimePicker").maxDate(max_end_date);
-              // TODO: So far it gets constrained if you click the field,
-              //  but if you click the icon, you're free to choose.
-              // $picker2.next('.input-group-addon').on('click', function(){
-              //   $picker2.data("DateTimePicker").show();
-              //   console.log($picker2.data("DateTimePicker"));
-              // });
             })
           })
         });

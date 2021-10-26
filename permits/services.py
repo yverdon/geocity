@@ -1158,12 +1158,6 @@ def can_edit_permit_request(user, permit_request):
     )
 
 
-def can_prolonge_permit_request(user, permit_request):
-    return permit_request.can_be_prolonged() and has_permission_to_amend_permit_request(
-        user, permit_request
-    )
-
-
 def permit_requests_has_paid_wot(permit_request):
     return True in [
         permit.requires_payment for permit in permit_request.works_object_types.all()
