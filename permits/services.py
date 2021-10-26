@@ -1043,8 +1043,19 @@ def send_email_notification(data):
         data["template"], data["permit_request"], data["absolute_uri_func"]
     )
 
+    from_email_name = (
+        f'{data["permit_request"].administrative_entity.expeditor_name} '
+        if data["permit_request"].administrative_entity.expeditor_name
+        else ""
+    )
+    from_email = (
+        f'{from_email_name}<{data["permit_request"].administrative_entity.expeditor_email}>'
+        if data["permit_request"].administrative_entity.expeditor_email
+        else settings.DEFAULT_FROM_EMAIL
+    )
+
     emails = [
-        (data["subject"], email_contents, settings.DEFAULT_FROM_EMAIL, [email_address],)
+        (data["subject"], email_contents, from_email, [email_address],)
         for email_address in data["users_to_notify"]
         if validate_email(email_address)
     ]

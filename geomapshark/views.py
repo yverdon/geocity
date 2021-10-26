@@ -1,6 +1,5 @@
+from allauth.socialaccount.models import SocialApp
 from django.conf import settings
-from constance import config
-from urllib import parse
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import PasswordResetView
@@ -52,6 +51,7 @@ class CustomPasswordResetView(PasswordResetView):
 class CustomLoginView(LoginView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context.update({"social_apps": SocialApp.objects.all()})
 
         return services.get_context_data(context, self.request)
 

@@ -582,3 +582,16 @@ h3 {
 .asteriskField {
     display: none;
 }
+
+fieldset>legend {
+  font-weight: bold;
+}
+
+h4.workObjectHeader {
+  font-weight: bold;
+}
+
+.propertyTitle {
+  font-weight: bold;
+  margin-bottom: 0px;
+}

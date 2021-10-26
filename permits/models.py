@@ -191,6 +191,20 @@ class PermitAdministrativeEntity(models.Model):
         help_text="Mots clefs sans espaces, séparés par des virgules permettant de filtrer les entités par l'url: https://geocity.ch/?entityfilter=yverdon",
     )
     objects = PermitAdministrativeEntityQuerySet.as_manager()
+    expeditor_name = models.CharField(
+        _("Nom de l'expéditeur des notifications"), max_length=255, blank=True
+    )
+    expeditor_email = models.CharField(
+        _("Adresse email de l'expéditeur des notifications"),
+        max_length=255,
+        blank=True,
+        validators=[
+            RegexValidator(
+                regex="^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$",
+                message="Le format de l'adresse email n'est pas valable.",
+            )
+        ],
+    )
 
     class Meta:
         verbose_name = _(
@@ -750,7 +764,10 @@ class WorksObjectType(models.Model):
         _("délai de commencement"),
         blank=True,
         null=True,
-        help_text=_("saisissez un nombre entier, positif ou négatif."),
+        help_text=_(
+            "Délai minimum en jours avant la date de début "
+            "(nombre entier positif ou négatif)."
+        ),
     )
     requires_payment = models.BooleanField(
         _("Demande soumise à des frais"), default=True
@@ -848,15 +865,15 @@ class WorksObjectProperty(models.Model):
     INPUT_TYPE_LIST_MULTIPLE = INPUT_TYPE_LIST_MULTIPLE
     INPUT_TYPE_TITLE = "title"
     INPUT_TYPE_CHOICES = (
-        (INPUT_TYPE_TEXT, _("Texte")),
-        (INPUT_TYPE_CHECKBOX, _("Case à cocher")),
-        (INPUT_TYPE_NUMBER, _("Nombre")),
-        (INPUT_TYPE_FILE, _("Fichier")),
         (INPUT_TYPE_ADDRESS, _("Adresse")),
-        (INPUT_TYPE_DATE, _("Date")),
-        (INPUT_TYPE_REGEX, _("Texte (regex)")),
-        (INPUT_TYPE_LIST_SINGLE, _("Choix simple")),
+        (INPUT_TYPE_CHECKBOX, _("Case à cocher")),
         (INPUT_TYPE_LIST_MULTIPLE, _("Choix multiple")),
+        (INPUT_TYPE_LIST_SINGLE, _("Choix simple")),
+        (INPUT_TYPE_DATE, _("Date")),
+        (INPUT_TYPE_FILE, _("Fichier")),
+        (INPUT_TYPE_NUMBER, _("Nombre")),
+        (INPUT_TYPE_TEXT, _("Texte")),
+        (INPUT_TYPE_REGEX, _("Texte (regex)")),
         (INPUT_TYPE_TITLE, _("Titre")),
     )
     integrator = models.ForeignKey(

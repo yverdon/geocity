@@ -129,6 +129,21 @@ class UserAdmin(BaseUserAdmin):
         ("Dates importantes", {"fields": ("last_login", "date_joined",)},),
     )
 
+    list_display = (
+        "username",
+        "email",
+        "first_name",
+        "last_name",
+        "is_staff",
+        "is_sociallogin",
+    )
+
+    @admin.display(boolean=True)
+    def is_sociallogin(self, obj):
+        return obj.socialaccount_set.exists()
+
+    is_sociallogin.short_description = "Social"
+
     def get_readonly_fields(self, request, obj=None):
         # limit editable fields to protect user data, superuser creation must be done using django shell
         if request.user.is_superuser:
@@ -690,6 +705,8 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
             "title_signature_2",
             "phone",
             "geom",
+            "expeditor_email",
+            "expeditor_name",
         ]
         exclude = ["enabled_status"]
         widgets = {
