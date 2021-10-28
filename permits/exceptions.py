@@ -10,8 +10,5 @@ class BadPermitRequestStatus(Exception):
 
 
 class NonProlongeablePermitRequest(Exception):
-    def __init__(self, permit_request):
-        self.permit_request = permit_request
-
     def __str__(self):
         return "The permit cannot be prolonged"

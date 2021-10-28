@@ -415,7 +415,7 @@ class PermitRequestDetailView(View):
         elif action == models.ACTION_POKE:
             return self.handle_poke(form)
         elif action == models.ACTION_PROLONGATE:
-            return self.handle_prolongate_form_submission(form)
+            return self.handle_prolongation_form_submission(form)
 
     def handle_amend_form_submission(self, form):
         initial_status = (
@@ -558,7 +558,7 @@ class PermitRequestDetailView(View):
 
         return redirect("permits:permit_requests_list")
 
-    def handle_prolongate_form_submission(self, form):
+    def handle_prolongation_form_submission(self, form):
         form.save()
         if form.instance.prolongation_status:
             success_message = (

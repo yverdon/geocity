@@ -12,7 +12,7 @@
   <h3>{{ geo_title }}</h3>
   <hr>
   <form method="post">
-    <div data-geo-time-role="forms" data-nb-forms="{{ formset.forms|length }}" data-permit-duration-max="{{ permit_request.get_max_validity }}">
+    <div data-geo-time-role="forms" data-nb-forms="{{ formset.forms|length }}" data-permit-duration-max="{{ permit_request.max_validity }}">
       {% for form in formset.forms %}
         {{ form.media }}
         {% include "permits/_geo_time_form.html" with form=form form_id=forloop.counter0 form_number=forloop.counter open=forloop.last %}

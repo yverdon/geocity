@@ -1,19 +1,17 @@
+import logging
 from django_cron import CronJobBase, Schedule
 from datetime import date, datetime, timedelta
-from .models import WorksObjectType, PermitRequest
+from .models import PermitRequest
 from django.db.models import Max, Min
 from django.utils.translation import gettext_lazy as _
-from django.urls import reverse
 from .services import send_email_notification
+
+logger = logging.getLogger(__name__)
 
 
 class PermitRequestExpirationReminder(CronJobBase):
-    # If it runs once a day by a crontab, any value of less than 1440 is ok for the
-    # RUN_EVERY_MINS variable, it just limits the execution of the script in case it
-    # is called repeatedly.
-    RUN_EVERY_MINS = 1
-
-    schedule = Schedule(run_every_mins=RUN_EVERY_MINS)
+    RUN_AT_TIMES = ["23:30"]
+    schedule = Schedule(run_at_times=RUN_AT_TIMES)
     code = "permits.permit_request_expiration_reminder"
 
     def do(self):
@@ -47,8 +45,8 @@ class PermitRequestExpirationReminder(CronJobBase):
                         "users_to_notify": [permit_request.author.user.email],
                         "template": "permit_request_prolongation_reminder.txt",
                         "permit_request": permit_request,
-                        "absolute_uri_func": None,
+                        "absolute_uri_func": permit_request.get_absolute_url,
                     }
                     send_email_notification(data)
 
-        print("The permit expiration reminder Cronjob finished successfully")
+        logger.info("The permit expiration reminder Cronjob finished successfully")

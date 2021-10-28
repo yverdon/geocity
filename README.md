@@ -281,5 +281,5 @@ To manage the planned tasks we use the django-cron extension (https://github.com
 In order to run it on a server instance, modify the following line accordingly and add it to the crontab:
 
 ```
-15 23 * * * <path_to_manage.py>/manage.py runcrons >/dev/null 2>&1
+*/10 * * * * <path_to_manage.py>/manage.py runcrons >/dev/null 2>&1
 ```

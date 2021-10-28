@@ -1412,7 +1412,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
     ):
         permit_request = factories.PermitRequestFactory(
             author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+            status=models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
         )
         permit_request.works_object_types.set(
             [self.wot_prolongeable_no_date_with_reminder]

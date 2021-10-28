@@ -87,7 +87,7 @@ def human_field_value(value):
 
 @register.simple_tag(takes_context=True)
 def is_expired(context):
-    if context["record"].get_max_validity is not None:
+    if context["record"].max_validity is not None:
         ends_at_max = context["record"].ends_at_max
         prolongation_date = context["record"].prolongation_date
         permit_valid_until = (

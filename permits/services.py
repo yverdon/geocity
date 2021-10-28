@@ -1000,42 +1000,19 @@ def send_validation_reminder(permit_request, absolute_uri_func):
 
 
 def _parse_email_content(template, permit_request, absolute_uri_func):
-    if absolute_uri_func:
-        return render_to_string(
-            f"permits/emails/{template}",
-            {
-                "permit_request_url": absolute_uri_func(
-                    reverse(
-                        "permits:permit_request_detail",
-                        kwargs={"permit_request_id": permit_request.pk},
-                    )
-                ),
-                "administrative_entity": permit_request.administrative_entity,
-                "name": permit_request.author.user.get_full_name(),
-            },
-        )
-    else:
-        # In case we do not have a request object, the url has to be built.
-        protocol = "https" if settings.SITE_HTTPS else "http"
-        port = (
-            f":{settings.DJANGO_DOCKER_PORT}"
-            if settings.SITE_DOMAIN == "localhost"
-            else ""
-        )
-        relative_url = reverse(
-            "permits:permit_request_detail",
-            kwargs={"permit_request_id": permit_request.pk},
-        )
-        full_url = f"{protocol}://{settings.SITE_DOMAIN}{port}{relative_url}"
-
-        return render_to_string(
-            f"permits/emails/{template}",
-            {
-                "permit_request_url": full_url,
-                "administrative_entity": permit_request.administrative_entity,
-                "name": permit_request.author.user.get_full_name(),
-            },
-        )
+    return render_to_string(
+        f"permits/emails/{template}",
+        {
+            "permit_request_url": absolute_uri_func(
+                reverse(
+                    "permits:permit_request_detail",
+                    kwargs={"permit_request_id": permit_request.pk},
+                )
+            ),
+            "administrative_entity": permit_request.administrative_entity,
+            "name": permit_request.author.user.get_full_name(),
+        },
+    )
 
 
 def send_email_notification(data):

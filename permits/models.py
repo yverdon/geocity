@@ -18,6 +18,7 @@ from django.db import models
 from django.db.models import Q, Max, Min
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
@@ -415,11 +416,9 @@ class PermitRequest(models.Model):
     )
 
     PROLONGABLE_STATUSES = {
-        STATUS_SUBMITTED_FOR_VALIDATION,
         STATUS_APPROVED,
         STATUS_PROCESSING,
         STATUS_AWAITING_SUPPLEMENT,
-        STATUS_AWAITING_VALIDATION,
     }
 
     PROLONGATION_STATUS_PENDING = 0
@@ -561,12 +560,12 @@ class PermitRequest(models.Model):
             else today + timedelta(days=int(settings.MIN_START_DELAY))
         )
 
-    @property
-    def get_max_validity(self):
+    @cached_property
+    def max_validity(self):
         """
-        Calculates the maximum end date interval based on the SMALLEST permit_duration
-        Intended to pass as a custom option to the widget, so the value can be used
-        by Javascript.
+        Calculate the maximum end date interval based on the SMALLEST permit_duration.
+        Return this interval (number of days), intended to pass as a custom option
+        to the widget, so the value can be used by Javascript.
         """
         return self.works_object_types.aggregate(Min("permit_duration"))[
             "permit_duration__min"
@@ -577,8 +576,7 @@ class PermitRequest(models.Model):
 
     def can_be_prolonged(self):
         return (
-            self.status in self.PROLONGABLE_STATUSES
-            and self.get_max_validity is not None
+            self.status in self.PROLONGABLE_STATUSES and self.max_validity is not None
         )
 
     def is_prolonged(self):
@@ -636,8 +634,8 @@ class PermitRequest(models.Model):
 
     def set_dates_for_renewables_wots(self):
         """
-        Will calculate and set starts_at and ends_at for those WOTs that have no date
-        required, but can be prolonged, which means they will have a value for its
+        Calculate and set starts_at and ends_at for the WOTs that have no date
+        required, but can be prolonged, so they have a value in their
         permit_duration field
         """
 
@@ -661,13 +659,22 @@ class PermitRequest(models.Model):
 
             starts_at_min = self.geo_time.aggregate(Min("starts_at"))["starts_at__min"]
             ends_at_max = self.geo_time.aggregate(Max("ends_at"))["ends_at__max"]
-            permit_duration_max = self.get_max_validity
+            permit_duration_max = self.max_validity
             if starts_at_min is None and ends_at_max is None:
                 today = timezone.make_aware(datetime.today())
                 self.geo_time.update(starts_at=today)
                 self.geo_time.update(
                     ends_at=today + timedelta(days=permit_duration_max)
                 )
+
+    def get_absolute_url(self, relative_url):
+        protocol = "https" if settings.SITE_HTTPS else "http"
+        port = (
+            f":{settings.DJANGO_DOCKER_PORT}"
+            if settings.SITE_DOMAIN == "localhost"
+            else ""
+        )
+        return f"{protocol}://{settings.SITE_DOMAIN}{port}{relative_url}"
 
 
 class WorksTypeQuerySet(models.QuerySet):

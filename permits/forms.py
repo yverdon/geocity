@@ -1120,17 +1120,30 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                     _("La date de fin doit être postérieure à la date de début.")
                 )
 
-    def clean_starts_at(self):
-        starts_at = self.cleaned_data["starts_at"]
-        min_starts_at = self.permit_request.get_min_starts_at()
-        # Without the timedelta the widget allows to select the first available date
-        # but does not comply with the validation.
-        if starts_at <= min_starts_at - timedelta(days=1):
-            raise ValidationError(
-                _("La date planifiée de début doit être postérieure à %(date)s")
-                % {"date": min_starts_at.strftime("%Y/%m/%d")}
-            )
-        return starts_at
+            min_starts_at = self.permit_request.get_min_starts_at()
+            if starts_at < min_starts_at:
+                raise ValidationError(
+                    {
+                        "starts_at": _(
+                            "La date planifiée de début doit être postérieure à %(date)s"
+                        )
+                        % {"date": min_starts_at.strftime("%d.%m.%Y %H:%M")}
+                    }
+                )
+
+            if self.permit_request.max_validity is not None:
+                max_ends_at = starts_at + timedelta(
+                    days=self.permit_request.max_validity
+                )
+                if ends_at > max_ends_at:
+                    raise ValidationError(
+                        {
+                            "ends_at": _(
+                                "La date planifiée de fin doit être au maximum: %(date)s"
+                            )
+                            % {"date": max_ends_at.strftime("%d.%m.%Y %H:%M")}
+                        }
+                    )
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -1258,12 +1271,6 @@ class PermitRequestProlongationForm(forms.ModelForm):
                     )
                     % original_end_date.strftime(settings.DATETIME_INPUT_FORMAT)
                 )
-
-    def save(self, commit=True):
-        permit_request = super().save(commit=False)
-        if commit:
-            permit_request.save()
-        return permit_request
 
 
 class PermitRequestClassifyForm(forms.ModelForm):
