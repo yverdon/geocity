@@ -43,9 +43,9 @@
       </li>
     {% endif %}
 
-    {% if forms.prolongate %}
+    {% if forms.prolong %}
     <li class="nav-item">
-      <a class="nav-link{% if active_form == 'prolongate' %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#prolongate" role="tab" aria-controls="prolongate" aria-selected="{% if active_form == 'prolongate' %}true{% else %}false{% endif %}">
+      <a class="nav-link{% if active_form == 'prolong' %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#prolong" role="tab" aria-controls="prolong" aria-selected="{% if active_form == 'prolong' %}true{% else %}false{% endif %}">
       {% trans "Prolongation" %}
       </a>
     </li>
@@ -166,21 +166,21 @@
       </div>
     {% endif %}
 
-    {% if forms.prolongate %}
-    <div class="tab-pane{% if active_form == 'prolongate' %} show active{% endif  %}" id="prolongate" role="tabpanel" aria-labelledby="prolongate-tab">
+    {% if forms.prolong %}
+    <div class="tab-pane{% if active_form == 'prolong' %} show active{% endif  %}" id="prolong" role="tabpanel" aria-labelledby="prolong-tab">
 
     <form method="post">
       {% csrf_token %}
-      {{ forms.prolongate.media }}
-      {% if not forms.prolongate.prolongation_date.value %}
+      {{ forms.prolong.media }}
+      {% if not forms.prolong.prolongation_date.value %}
         <small class="form-text text-muted mb-3">{% trans "Aucune prolongation n'a été demandée par l'auteur-e" %}</small>
       {% endif %}
-      {% bootstrap_form forms.prolongate layout='horizontal' %}
+      {% bootstrap_form forms.prolong layout='horizontal' %}
 
       <div class="text-right">
-        <input name="action" type="hidden" value="prolongate">
-        <button class="btn btn-primary" {% if forms.prolongate.disabled %}disabled{% endif %}>{% trans "Enregistrer" %}</button>
-        <button class="btn btn-primary" name="save_continue" {% if forms.prolongate.disabled %}disabled{% endif %}>{% trans "Enregistrer et continuer les modifications" %}</button>
+        <input name="action" type="hidden" value="prolong">
+        <button class="btn btn-primary" {% if forms.prolong.disabled %}disabled{% endif %}>{% trans "Enregistrer" %}</button>
+        <button class="btn btn-primary" name="save_continue" {% if forms.prolong.disabled %}disabled{% endif %}>{% trans "Enregistrer et continuer les modifications" %}</button>
       </div>
     </form>
     </div>

@@ -9,6 +9,6 @@ class BadPermitRequestStatus(Exception):
         )
 
 
-class NonProlongeablePermitRequest(Exception):
+class NonProlongablePermitRequest(Exception):
     def __str__(self):
         return "The permit cannot be prolonged"

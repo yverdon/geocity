@@ -64,7 +64,7 @@ ACTION_AMEND = "amend"
 ACTION_REQUEST_VALIDATION = "request_validation"
 ACTION_VALIDATE = "validate"
 ACTION_POKE = "poke"
-ACTION_PROLONGATE = "prolongate"
+ACTION_PROLONG = "prolong"
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
 ACTIONS = [
@@ -72,7 +72,7 @@ ACTIONS = [
     ACTION_REQUEST_VALIDATION,
     ACTION_VALIDATE,
     ACTION_POKE,
-    ACTION_PROLONGATE,
+    ACTION_PROLONG,
 ]
 
 
@@ -794,7 +794,7 @@ class WorksObjectType(models.Model):
         blank=True,
         null=True,
         help_text=_(
-            "Le permis pour l'objet sera prolongeable uniquement si cette valeur est fournie."
+            "Le permis pour l'objet sera renouvelable uniquement si cette valeur est fournie."
         ),
     )
     expiration_reminder = models.BooleanField(

@@ -34,7 +34,7 @@ from django_tables2.export.views import ExportMixin
 from django_tables2.views import SingleTableMixin, SingleTableView
 
 from . import fields, filters, forms, models, services, tables
-from .exceptions import BadPermitRequestStatus, NonProlongeablePermitRequest
+from .exceptions import BadPermitRequestStatus, NonProlongablePermitRequest
 from .search import match_type_label, search_permit_requests
 
 logger = logging.getLogger(__name__)
@@ -87,7 +87,7 @@ def get_permit_request_for_prolongation(user, permit_request_id):
     )
 
     if not permit_request.works_object_types.filter(permit_duration__gte=0).exists():
-        raise NonProlongeablePermitRequest(permit_request)
+        raise NonProlongablePermitRequest(permit_request)
     return permit_request
 
 
@@ -196,8 +196,8 @@ class PermitRequestDetailView(View):
             else:
                 active_form = active_forms[0]
             # This is to maintain the prolongation tab active in case of POST error
-            if "action=prolongate" in str(self.request.body):
-                active_form = active_forms[active_forms.index("prolongate")]
+            if "action=prolong" in str(self.request.body):
+                active_form = active_forms[active_forms.index("prolong")]
 
         except IndexError:
             active_form = available_actions[-1] if len(available_actions) > 0 else None
@@ -290,7 +290,7 @@ class PermitRequestDetailView(View):
             models.ACTION_REQUEST_VALIDATION: self.get_request_validation_form,
             models.ACTION_VALIDATE: self.get_validation_form,
             models.ACTION_POKE: self.get_poke_form,
-            models.ACTION_PROLONGATE: self.get_prolongation_form,
+            models.ACTION_PROLONG: self.get_prolongation_form,
         }
 
         return actions_forms[action](data=data)
@@ -414,7 +414,7 @@ class PermitRequestDetailView(View):
             return self.handle_validation_form_submission(form)
         elif action == models.ACTION_POKE:
             return self.handle_poke(form)
-        elif action == models.ACTION_PROLONGATE:
+        elif action == models.ACTION_PROLONG:
             return self.handle_prolongation_form_submission(form)
 
     def handle_amend_form_submission(self, form):
@@ -959,7 +959,7 @@ def permit_request_prolongation(request, permit_request_id):
         permit_request = get_permit_request_for_prolongation(
             request.user, permit_request_id
         )
-    except NonProlongeablePermitRequest:
+    except NonProlongablePermitRequest:
         messages.error(request, _("La demande de permis ne peut pas être prolongée."))
         return redirect("permits:permit_requests_list")
 

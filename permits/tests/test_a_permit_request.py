@@ -1291,19 +1291,19 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         super().setUp()
         self.wot_normal = factories.WorksObjectTypeFactory()
         self.wot_normal_no_date = factories.WorksObjectTypeFactory(needs_date=False)
-        self.wot_prolongeable_no_date = factories.WorksObjectTypeFactory(
+        self.wot_prolongable_no_date = factories.WorksObjectTypeFactory(
             needs_date=False, permit_duration=30,
         )
-        self.wot_prolongeable_with_date = factories.WorksObjectTypeFactory(
+        self.wot_prolongable_with_date = factories.WorksObjectTypeFactory(
             needs_date=True, permit_duration=60,
         )
-        self.wot_prolongeable_no_date_with_reminder = factories.WorksObjectTypeFactory(
+        self.wot_prolongable_no_date_with_reminder = factories.WorksObjectTypeFactory(
             needs_date=False,
             permit_duration=90,
             expiration_reminder=True,
             days_before_reminder=5,
         )
-        self.wot_prolongeable_with_date_and_reminder = factories.WorksObjectTypeFactory(
+        self.wot_prolongable_with_date_and_reminder = factories.WorksObjectTypeFactory(
             needs_date=True,
             permit_duration=120,
             expiration_reminder=True,
@@ -1318,7 +1318,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             groups=[secretary_group], email="secretary@geocity.ch"
         )
 
-    def test_user_cannot_request_permit_prolongation_if_permit_is_not_prolongeable(
+    def test_user_cannot_request_permit_prolongation_if_permit_is_not_prolongable(
         self,
     ):
         permit_request = factories.PermitRequestFactory(
@@ -1358,7 +1358,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             prolongation_status=models.PermitRequest.PROLONGATION_STATUS_PENDING,
             prolongation_date=timezone.now() + datetime.timedelta(days=90),
         )
-        permit_request.works_object_types.set([self.wot_prolongeable_with_date])
+        permit_request.works_object_types.set([self.wot_prolongable_with_date])
         factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
 
         # Prolongation form
@@ -1386,7 +1386,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             prolongation_status=models.PermitRequest.PROLONGATION_STATUS_REJECTED,
             prolongation_date=timezone.now() + datetime.timedelta(days=90),
         )
-        permit_request.works_object_types.set([self.wot_prolongeable_with_date])
+        permit_request.works_object_types.set([self.wot_prolongable_with_date])
         factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
 
         # Prolongation form
@@ -1415,7 +1415,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             status=models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
         )
         permit_request.works_object_types.set(
-            [self.wot_prolongeable_no_date_with_reminder]
+            [self.wot_prolongable_no_date_with_reminder]
         )
         factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
 
@@ -1447,7 +1447,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED
         )
         permit_request.works_object_types.set(
-            [self.wot_prolongeable_with_date_and_reminder]
+            [self.wot_prolongable_with_date_and_reminder]
         )
         factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
         permit_request.administrative_entity.departments.set([self.department])
@@ -1508,7 +1508,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED
         )
         permit_request.works_object_types.set(
-            [self.wot_prolongeable_with_date_and_reminder]
+            [self.wot_prolongable_with_date_and_reminder]
         )
         factories.PermitRequestGeoTimeFactory(
             permit_request=permit_request,
@@ -1538,7 +1538,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         permit_request = factories.PermitRequestFactory(
             author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED,
         )
-        permit_request.works_object_types.set([self.wot_prolongeable_with_date])
+        permit_request.works_object_types.set([self.wot_prolongable_with_date])
         factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
         permit_request.administrative_entity.departments.set([self.department])
         self.client.login(username=self.secretariat, password="password")
@@ -1554,9 +1554,9 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
 
         parser = get_parser(response.content)
 
-        prolongate_form_div = parser.find("div", id="prolongate")
-        prolongate_form = prolongate_form_div.find("form")
-        no_requested_prolongation_msg = prolongate_form.find("small")
+        prolong_form_div = parser.find("div", id="prolong")
+        prolong_form = prolong_form_div.find("form")
+        no_requested_prolongation_msg = prolong_form.find("small")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(1, len(no_requested_prolongation_msg))
@@ -1574,7 +1574,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
                 "prolongation_date": prolongation_date,
                 "prolongation_status": models.PermitRequest.PROLONGATION_STATUS_APPROVED,
                 "prolongation_comment": "Prolonged! I got the power!",
-                "action": models.ACTION_PROLONGATE,
+                "action": models.ACTION_PROLONG,
             },
         )
         permit_request.refresh_from_db()
@@ -1612,7 +1612,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         permit_request = factories.PermitRequestFactory(
             author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED,
         )
-        permit_request.works_object_types.set([self.wot_prolongeable_with_date])
+        permit_request.works_object_types.set([self.wot_prolongable_with_date])
         factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
         permit_request.administrative_entity.departments.set([self.department])
         self.client.login(username=self.secretariat, password="password")
@@ -1630,7 +1630,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
                 "prolongation_date": prolongation_date,
                 "prolongation_status": models.PermitRequest.PROLONGATION_STATUS_REJECTED,
                 "prolongation_comment": "Rejected! Because I say so!",
-                "action": models.ACTION_PROLONGATE,
+                "action": models.ACTION_PROLONG,
             },
         )
         permit_request.refresh_from_db()
@@ -1667,7 +1667,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         permit_request = factories.PermitRequestFactory(
             author=self.user.permitauthor, status=models.PermitRequest.STATUS_RECEIVED,
         )
-        permit_request.works_object_types.set([self.wot_prolongeable_with_date])
+        permit_request.works_object_types.set([self.wot_prolongable_with_date])
         factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
         permit_request.administrative_entity.departments.set([self.department])
         self.client.login(username=self.secretariat, password="password")
@@ -1681,9 +1681,9 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         )
 
         parser = get_parser(response.content)
-        prolongate_form_div = parser.find("div", id="prolongate")
-        prolongate_form = prolongate_form_div.find("form")
-        self.assertTrue("disabled" in str(prolongate_form))
+        prolong_form_div = parser.find("div", id="prolong")
+        prolong_form = prolong_form_div.find("form")
+        self.assertTrue("disabled" in str(prolong_form))
         self.assertEqual(response.status_code, 200)
 
     def test_user_cannot_see_prolongation_icons_nor_info_if_expired_permit_is_draft(
@@ -1731,7 +1731,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             author=self.user.permitauthor,
         )
         permit_request_expired.works_object_types.set(
-            [self.wot_prolongeable_with_date_and_reminder]
+            [self.wot_prolongable_with_date_and_reminder]
         )
         ends_at_expired = timezone.now() + datetime.timedelta(days=5)
         factories.PermitRequestGeoTimeFactory(
@@ -1771,7 +1771,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             prolongation_status=models.PermitRequest.PROLONGATION_STATUS_APPROVED,
         )
         permit_request_prolonged.works_object_types.set(
-            [self.wot_prolongeable_with_date_and_reminder]
+            [self.wot_prolongable_with_date_and_reminder]
         )
         ends_at_prolonged = timezone.now() + datetime.timedelta(days=5)
         factories.PermitRequestGeoTimeFactory(
@@ -1814,7 +1814,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             prolongation_status=models.PermitRequest.PROLONGATION_STATUS_PENDING,
         )
         permit_request_prolongation_requested.works_object_types.set(
-            [self.wot_prolongeable_no_date_with_reminder]
+            [self.wot_prolongable_no_date_with_reminder]
         )
         ends_at_requested = timezone.now() + datetime.timedelta(days=4)
         factories.PermitRequestGeoTimeFactory(
@@ -1857,7 +1857,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             prolongation_status=models.PermitRequest.PROLONGATION_STATUS_REJECTED,
         )
         permit_request_prolongation_rejected.works_object_types.set(
-            [self.wot_prolongeable_no_date_with_reminder]
+            [self.wot_prolongable_no_date_with_reminder]
         )
         ends_at_rejected = timezone.now() - datetime.timedelta(days=3)
         factories.PermitRequestGeoTimeFactory(
