@@ -538,8 +538,9 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
         return self.cleaned_data["days_before_reminder"]
 
     def clean_permit_duration(self):
-        if self.cleaned_data["permit_duration"] <= 0:
-            raise forms.ValidationError(PERMIT_DURATION_ERROR_MESSAGE)
+        if self.cleaned_data["permit_duration"]:
+            if self.cleaned_data["permit_duration"] <= 0:
+                raise forms.ValidationError(PERMIT_DURATION_ERROR_MESSAGE)
         return self.cleaned_data["permit_duration"]
 
     def save(self, *args, **kwargs):
