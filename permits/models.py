@@ -794,7 +794,7 @@ class WorksObjectType(models.Model):
         blank=True,
         null=True,
         help_text=_(
-            "Le permis pour l'objet sera renouvelable uniquement si cette valeur est fournie."
+            "Le permis pour l'objet sera prolongeable uniquement si cette valeur est fournie."
         ),
     )
     expiration_reminder = models.BooleanField(
