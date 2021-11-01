@@ -15,7 +15,7 @@ def get_emails(subject):
 
 class LoggedInUserMixin:
     def setUp(self):
-        self.user = factories.UserFactory()
+        self.user = factories.UserFactory(email="user@test.com")
         self.client.login(username=self.user.username, password="password")
 
 

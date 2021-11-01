@@ -54,6 +54,11 @@ AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
 
 MULTIPLE_INTEGRATOR_ERROR_MESSAGE = "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur'"
 
+PERMIT_DURATION_ERROR_MESSAGE = "Veuillez saisir une valeur > 0"
+DAYS_BEFORE_REMINDER_ERROR_MESSAGE = (
+    "Si la fonction de rappel est active, il faut saisir une valeur de délai valide"
+)
+
 # Allow a user belonging to integrator group to see only objects created by this group
 def filter_for_user(user, qs):
     if not user.is_superuser:
@@ -524,6 +529,19 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
+    def clean_days_before_reminder(self):
+        if (
+            self.cleaned_data["expiration_reminder"]
+            and self.cleaned_data["days_before_reminder"] is None
+        ):
+            raise forms.ValidationError(DAYS_BEFORE_REMINDER_ERROR_MESSAGE)
+        return self.cleaned_data["days_before_reminder"]
+
+    def clean_permit_duration(self):
+        if self.cleaned_data["permit_duration"] <= 0:
+            raise forms.ValidationError(PERMIT_DURATION_ERROR_MESSAGE)
+        return self.cleaned_data["permit_duration"]
+
     def save(self, *args, **kwargs):
         for geometry_type in self.GeometryTypes.values:
             setattr(
@@ -559,7 +577,17 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         ),
         (
             "Planning et localisation",
-            {"fields": ("geometry_types", "needs_date", "start_delay")},
+            {"fields": ("geometry_types", "needs_date", "start_delay",)},
+        ),
+        (
+            "Prolongation",
+            {
+                "fields": (
+                    "permit_duration",
+                    "expiration_reminder",
+                    "days_before_reminder",
+                )
+            },
         ),
         (
             "Directive",

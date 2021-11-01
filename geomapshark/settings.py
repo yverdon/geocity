@@ -98,6 +98,7 @@ INSTALLED_APPS = [
     "taggit",
     "oauth2_provider",
     "crispy_forms",
+    "django_cron",
 ]
 
 if ENABLE_2FA:
@@ -392,3 +393,7 @@ WFS3_TITLE = "OGC API Features - Geocity"
 WFS3_DESCRIPTION = "Point d'accès OGC API Features aux données Geocity."
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
+
+CRON_CLASSES = [
+    "permits.cron.PermitRequestExpirationReminder",
+]

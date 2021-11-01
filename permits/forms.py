@@ -1,6 +1,6 @@
 import json
 from collections import defaultdict
-from datetime import timedelta
+from datetime import datetime, timedelta
 from itertools import groupby
 
 from allauth.socialaccount.forms import SignupForm
@@ -18,7 +18,7 @@ from django.contrib.gis import forms as geoforms
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
@@ -996,6 +996,16 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         self.permit_request = kwargs.pop("permit_request", None)
         disable_fields = kwargs.pop("disable_fields", False)
 
+        initial = {}
+        if (
+            self.permit_request.prolongation_date
+            and self.permit_request.prolongation_status
+            == self.permit_request.PROLONGATION_STATUS_APPROVED
+        ):
+            initial["ends_at"] = self.permit_request.prolongation_date
+
+        kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
+
         super().__init__(*args, **kwargs)
 
         required_info = services.get_geotime_required_info(self.permit_request)
@@ -1110,17 +1120,30 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                     _("La date de fin doit être postérieure à la date de début.")
                 )
 
-    def clean_starts_at(self):
-        starts_at = self.cleaned_data["starts_at"]
-        min_starts_at = self.permit_request.get_min_starts_at()
-        # Without the timedelta the widget allows to select the first available date
-        # but does not comply with the validation.
-        if starts_at <= min_starts_at - timedelta(days=1):
-            raise ValidationError(
-                _("La date planifiée de début doit être postérieure à %(date)s")
-                % {"date": min_starts_at.strftime("%Y/%m/%d")}
-            )
-        return starts_at
+            min_starts_at = self.permit_request.get_min_starts_at()
+            if starts_at < min_starts_at:
+                raise ValidationError(
+                    {
+                        "starts_at": _(
+                            "La date planifiée de début doit être postérieure à %(date)s"
+                        )
+                        % {"date": min_starts_at.strftime("%d.%m.%Y %H:%M")}
+                    }
+                )
+
+            if self.permit_request.max_validity is not None:
+                max_ends_at = starts_at + timedelta(
+                    days=self.permit_request.max_validity
+                )
+                if ends_at > max_ends_at:
+                    raise ValidationError(
+                        {
+                            "ends_at": _(
+                                "La date planifiée de fin doit être au maximum: %(date)s"
+                            )
+                            % {"date": max_ends_at.strftime("%d.%m.%Y %H:%M")}
+                        }
+                    )
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -1205,6 +1228,49 @@ class PermitRequestValidationPokeForm(forms.Form):
         return services.send_validation_reminder(
             self.permit_request, absolute_uri_func=self.request.build_absolute_uri
         )
+
+
+class PermitRequestProlongationForm(forms.ModelForm):
+    prolongation_date = forms.DateTimeField(
+        label=_("Nouvelle date de fin demandée"),
+        input_formats=[settings.DATETIME_INPUT_FORMAT],
+        widget=DateTimePickerInput(
+            options={
+                "format": "DD.MM.YYYY HH:mm",
+                "locale": "fr-CH",
+                "useCurrent": False,
+                "minDate": (datetime.today()).strftime("%Y/%m/%d"),
+            }
+        ).start_of("event days"),
+        help_text="Cliquer sur le champ et selectionner la nouvelle date de fin planifiée",
+    )
+
+    class Meta:
+        model = models.PermitRequest
+        fields = [
+            "prolongation_date",
+            "prolongation_comment",
+            "prolongation_status",
+        ]
+        widgets = {
+            "prolongation_comment": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        prolongation_date = cleaned_data.get("prolongation_date")
+        original_end_date = services.get_geotime_objects(self.instance.id).aggregate(
+            Max("ends_at")
+        )["ends_at__max"]
+
+        if prolongation_date:
+            if prolongation_date <= original_end_date:
+                raise forms.ValidationError(
+                    _(
+                        "La date de prolongation doit être postérieure à la date originale de fin (%s)."
+                    )
+                    % original_end_date.strftime(settings.DATETIME_INPUT_FORMAT)
+                )
 
 
 class PermitRequestClassifyForm(forms.ModelForm):

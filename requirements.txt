@@ -33,7 +33,9 @@ django==3.2.7
     #   django-allauth
     #   django-bootstrap-datepicker-plus
     #   django-bootstrap4
+    #   django-common-helpers
     #   django-cors-headers
+    #   django-cron
     #   django-filter
     #   django-formtools
     #   django-oauth-toolkit
@@ -53,11 +55,15 @@ django-bootstrap-datepicker-plus==3.0.5
     # via -r requirements.in
 django-bootstrap4==3.0.1
     # via -r requirements.in
+django-common-helpers==0.9.2
+    # via django-cron
 django-constance[database]==2.8.0
     # via -r requirements.in
 django-cors-headers==3.8.0
     # via -r requirements.in
 django-crispy-forms==1.13.0
+    # via -r requirements.in
+django-cron==0.5.1
     # via -r requirements.in
 django-filter==2.4.0
     # via -r requirements.in

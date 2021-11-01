@@ -7,3 +7,8 @@ class BadPermitRequestStatus(Exception):
         return "Bad permit request status {}, expected one of {}".format(
             self.permit_request.status, self.expected_status
         )
+
+
+class NonProlongablePermitRequest(Exception):
+    def __str__(self):
+        return "The permit cannot be prolonged"

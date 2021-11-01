@@ -52,6 +52,11 @@ existing_permit_request_urlpatterns = [
         views.permit_request_print,
         name="permit_request_print",
     ),
+    path(
+        "prolongation/",
+        views.permit_request_prolongation,
+        name="permit_request_prolongation",
+    ),
 ]
 
 urlpatterns = [

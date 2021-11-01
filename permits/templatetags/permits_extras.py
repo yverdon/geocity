@@ -6,6 +6,8 @@ from django.forms import modelformset_factory
 from django.template.loader import render_to_string
 from django.utils.translation import gettext as _
 from permits import forms, models, services
+from datetime import datetime, timedelta, timezone
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
@@ -81,3 +83,29 @@ def human_field_value(value):
         return "-"
 
     return value
+
+
+@register.simple_tag(takes_context=True)
+def is_expired(context):
+    if context["record"].max_validity is not None:
+        ends_at_max = context["record"].ends_at_max
+        prolongation_date = context["record"].prolongation_date
+        permit_valid_until = (
+            prolongation_date if context["record"].is_prolonged() else ends_at_max
+        )
+        if permit_valid_until:
+            if (
+                context["record"].is_prolonged()
+                and datetime.now(timezone.utc) < permit_valid_until
+            ):
+                return mark_safe(
+                    '<i class="fa fa-refresh fa-lg status2" title="Demande renouvelée"></i>'
+                )
+            elif datetime.now(timezone.utc) > permit_valid_until:
+                return mark_safe(
+                    '<i class="fa fa-exclamation-triangle fa-lg status0" title="Demande échue"></i>'
+                )
+            else:
+                return ""
+    else:
+        return ""

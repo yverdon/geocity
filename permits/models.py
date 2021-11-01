@@ -1,7 +1,7 @@
 import collections
 import dataclasses
 import enum
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import Group, User
@@ -15,9 +15,10 @@ from django.core.validators import (
     RegexValidator,
 )
 from django.db import models
-from django.db.models import Q, Max
+from django.db.models import Q, Max, Min
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
@@ -63,9 +64,16 @@ ACTION_AMEND = "amend"
 ACTION_REQUEST_VALIDATION = "request_validation"
 ACTION_VALIDATE = "validate"
 ACTION_POKE = "poke"
+ACTION_PROLONG = "prolong"
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
-ACTIONS = [ACTION_AMEND, ACTION_REQUEST_VALIDATION, ACTION_VALIDATE, ACTION_POKE]
+ACTIONS = [
+    ACTION_AMEND,
+    ACTION_REQUEST_VALIDATION,
+    ACTION_VALIDATE,
+    ACTION_POKE,
+    ACTION_PROLONG,
+]
 
 
 def printed_permit_request_storage(instance, filename):
@@ -407,6 +415,21 @@ class PermitRequest(models.Model):
         (ARCHEOLOGY_STATUS_DONE, _("Déjà fouillé")),
     )
 
+    PROLONGABLE_STATUSES = {
+        STATUS_APPROVED,
+        STATUS_PROCESSING,
+        STATUS_AWAITING_SUPPLEMENT,
+    }
+
+    PROLONGATION_STATUS_PENDING = 0
+    PROLONGATION_STATUS_APPROVED = 1
+    PROLONGATION_STATUS_REJECTED = 2
+    PROLONGATION_STATUS_CHOICES = (
+        (PROLONGATION_STATUS_PENDING, _("En attente")),
+        (PROLONGATION_STATUS_APPROVED, _("Approuvée")),
+        (PROLONGATION_STATUS_REJECTED, _("Refusée")),
+    )
+
     status = models.PositiveSmallIntegerField(
         _("état"), choices=STATUS_CHOICES, default=STATUS_DRAFT
     )
@@ -449,6 +472,13 @@ class PermitRequest(models.Model):
         blank=True,
     )
     is_public = models.BooleanField(_("Publier"), default=False)
+    prolongation_date = models.DateTimeField(
+        _("Nouvelle date de fin"), null=True, blank=True
+    )
+    prolongation_comment = models.TextField(_("Commentaire"), blank=True)
+    prolongation_status = models.PositiveSmallIntegerField(
+        _("Décision"), choices=PROLONGATION_STATUS_CHOICES, null=True, blank=True,
+    )
     history = HistoricalRecords()
 
     class Meta:
@@ -529,6 +559,122 @@ class PermitRequest(models.Model):
             if max_delay is not None
             else today + timedelta(days=int(settings.MIN_START_DELAY))
         )
+
+    @cached_property
+    def max_validity(self):
+        """
+        Calculate the maximum end date interval based on the SMALLEST permit_duration.
+        Return this interval (number of days), intended to pass as a custom option
+        to the widget, so the value can be used by Javascript.
+        """
+        return self.works_object_types.aggregate(Min("permit_duration"))[
+            "permit_duration__min"
+        ]
+
+    def get_max_ends_at(self):
+        return self.geo_time.aggregate(Max("ends_at"))["ends_at__max"]
+
+    def can_be_prolonged(self):
+        return (
+            self.status in self.PROLONGABLE_STATUSES and self.max_validity is not None
+        )
+
+    def is_prolonged(self):
+        return (
+            self.prolongation_status == self.PROLONGATION_STATUS_APPROVED
+            and self.prolongation_date
+        )
+
+    def has_expiration_reminder(self):
+        return self.works_object_types.filter(expiration_reminder=True).exists()
+
+    def can_prolongation_be_requested(self):
+        if self.can_be_prolonged():
+            today = date.today()
+            # Early opt-outs:
+            # None of the WOTs of the permit have a required date nor are renewables
+            if self.get_max_ends_at() is None:
+                return False
+
+            if self.prolongation_status in [
+                self.PROLONGATION_STATUS_REJECTED,
+                self.PROLONGATION_STATUS_PENDING,
+            ]:
+                return False
+
+            # Check the reminder options
+            reminder = self.has_expiration_reminder()
+
+            if reminder:
+                # Here, if the reminder is active, we must have
+                # the days_before_reminder value (validation on the admin)
+                days_before_reminder = self.works_object_types.aggregate(
+                    Max("days_before_reminder")
+                )["days_before_reminder__max"]
+
+                if self.is_prolonged():
+                    return today > (
+                        self.prolongation_date.date()
+                        - timedelta(days=days_before_reminder)
+                    )
+                else:
+                    return today > (
+                        self.get_max_ends_at().date()
+                        - timedelta(days=days_before_reminder)
+                    )
+            else:
+                if self.is_prolonged():
+                    return today > (self.prolongation_date.date())
+                else:
+                    return today > (self.get_max_ends_at().date())
+
+        else:
+            # It definitively can not be prolonged
+            return False
+
+    def set_dates_for_renewables_wots(self):
+        """
+        Calculate and set starts_at and ends_at for the WOTs that have no date
+        required, but can be prolonged, so they have a value in their
+        permit_duration field
+        """
+
+        works_object_types = self.works_object_types.filter(needs_date=False).filter(
+            permit_duration__gte=1
+        )
+        if works_object_types.exists():
+            # Determine starts_at_min and ends_at_max to check if the WOTs are combined
+            # between one(s) that needs_date and already set the time interval and those
+            # that do not needs_date.
+            # If that's the case, the end_date must have already been limited upon
+            # permit's creation to be AT MOST the minimum of the permit_duration(s).
+            # Therefore we do nothing, otherwise we set both dates.
+            # What a good sweat!!!
+
+            if not self.geo_time.exists():
+                # At this point following the permit request steps, the Geotime object
+                # must have been created only if Geometry or Dates are required,
+                # if the WOT does not need require either, we need to create the object.
+                PermitRequestGeoTime.objects.create(permit_request_id=self.pk)
+
+            starts_at_min = self.geo_time.aggregate(Min("starts_at"))["starts_at__min"]
+            ends_at_max = self.geo_time.aggregate(Max("ends_at"))["ends_at__max"]
+            permit_duration_max = self.max_validity
+            if starts_at_min is None and ends_at_max is None:
+                today = timezone.make_aware(datetime.today())
+                self.geo_time.update(starts_at=today)
+                self.geo_time.update(
+                    ends_at=today + timedelta(days=permit_duration_max)
+                )
+
+    def get_absolute_url(self, relative_url):
+        protocol = "https" if settings.SITE_HTTPS else "http"
+        port = (
+            f":{settings.DJANGO_DOCKER_PORT}"
+            if settings.SITE_DOMAIN == "localhost"
+            else ""
+        )
+        return f"{protocol}://{settings.SITE_DOMAIN}{port}{relative_url}"
 
 
 class WorksTypeQuerySet(models.QuerySet):
@@ -642,6 +788,20 @@ class WorksObjectType(models.Model):
         _("Emails des services à notifier"),
         blank=True,
         help_text='Veuillez séparer les emails par une virgule ","',
+    )
+    permit_duration = models.IntegerField(
+        _("Durée de validité de la demande (jours)"),
+        blank=True,
+        null=True,
+        help_text=_(
+            "Le permis pour l'objet sera prolongeable uniquement si cette valeur est fournie."
+        ),
+    )
+    expiration_reminder = models.BooleanField(
+        _("Activer la fonction de rappel"), default=False,
+    )
+    days_before_reminder = models.IntegerField(
+        _("Délai de rappel (jours)"), blank=True, null=True
     )
 
     class Meta:

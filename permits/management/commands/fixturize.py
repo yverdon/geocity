@@ -225,6 +225,13 @@ class Command(BaseCommand):
         user.user_permissions.set(secretariat_permissions)
         self.stdout.write("secretariat-grandson / admin")
 
+        secretary_groups = Group.objects.filter(
+            name__in=["Secrétariat Yverdon", "Secrétariat Grandson"]
+        )
+        department = models.PermitDepartment.objects.filter(
+            group__in=secretary_groups
+        ).update(is_backoffice=True)
+
         user = self.create_user(
             "validator-yverdon",
             "Validateur Yverdon",
