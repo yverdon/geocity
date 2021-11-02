@@ -16,8 +16,6 @@ cffi==1.14.6
     # via cryptography
 charset-normalizer==2.0.6
     # via requests
-click==8.0.1
-    # via pip-tools
 cryptography==3.4.8
     # via
     #   jwcrypto
@@ -31,6 +29,7 @@ django==3.2.7
     #   -r requirements.in
     #   django-admin-sortable2
     #   django-allauth
+    #   django-axes
     #   django-bootstrap-datepicker-plus
     #   django-bootstrap4
     #   django-common-helpers
@@ -50,6 +49,8 @@ django==3.2.7
 django-admin-sortable2==1.0
     # via -r requirements.in
 django-allauth==0.45.0
+    # via -r requirements.in
+django-axes==5.26.0
     # via -r requirements.in
 django-bootstrap-datepicker-plus==3.0.5
     # via -r requirements.in
@@ -71,6 +72,8 @@ django-formtools==2.3
     # via django-two-factor-auth
 django-grappelli==2.15.1
     # via -r requirements.in
+django-ipware==4.0.0
+    # via django-axes
 django-oauth-toolkit==1.5.0
     # via -r requirements.in
 django-otp==1.1.1
@@ -115,14 +118,14 @@ oauthlib==3.1.1
     # via
     #   django-oauth-toolkit
     #   requests-oauthlib
-pep517==0.11.0
-    # via pip-tools
+pdf2image==1.16.0
+    # via -r requirements.in
 phonenumbers==8.12.24
     # via django-two-factor-auth
 pillow==8.3.2
-    # via -r requirements.in
-pip-tools==6.3.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   pdf2image
 psycopg2-binary==2.9.1
     # via -r requirements.in
 pycparser==2.20
@@ -160,21 +163,16 @@ sqlparse==0.4.2
     # via django
 tablib==3.0.0
     # via -r requirements.in
-tomli==1.2.1
-    # via pep517
 uritemplate==3.0.1
     # via -r requirements.in
 urllib3==1.26.7
     # via requests
 webencodings==0.5.1
     # via html5lib
-wheel==0.37.0
-    # via pip-tools
 whitenoise==5.3.0
     # via -r requirements.in
 wrapt==1.12.1
     # via deprecated
 
 # The following packages are considered to be unsafe in a requirements file:
-# pip
 # setuptools

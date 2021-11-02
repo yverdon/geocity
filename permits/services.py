@@ -3,6 +3,7 @@ import itertools
 import os
 import urllib
 from collections import defaultdict
+import socket
 
 import filetype
 from constance import config
@@ -24,6 +25,8 @@ from django.utils.translation import gettext_lazy as _
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
 from .utils import reverse_permit_request_url
+from PIL import Image
+from pdf2image import convert_from_path
 
 
 class GeoTimeInfo(enum.Enum):
@@ -82,10 +85,43 @@ def set_object_property_value(permit_request, object_type, prop, value):
             # Add the file to the storage
             directory = "permit_requests_uploads/{}".format(permit_request.pk)
             ext = os.path.splitext(value.name)[1]
+            upper_ext = ext[1:].upper()
             path = os.path.join(
                 directory, "{}_{}{}".format(object_type.pk, prop.pk, ext)
             )
+
             private_storage.save(path, value)
+            # Postprocess images: remove all exif metadata from for better security and user privacy
+            if upper_ext != "PDF":
+
+                upper_ext = ext[1:].upper()
+                formats_map = {"JPG": "JPEG"}
+                with Image.open(value) as image_full:
+                    data = list(image_full.getdata())
+                    new_image = Image.new(image_full.mode, image_full.size)
+                    new_image.putdata(data)
+                    new_image.save(
+                        private_storage.location + "/" + path,
+                        formats_map[upper_ext]
+                        if upper_ext in formats_map.keys()
+                        else upper_ext,
+                    )
+            # Postprocess PDF: convert everything to image, do not keep other content
+            elif upper_ext == "PDF":
+                all_images = convert_from_path(private_storage.location + "/" + path)
+                first_image = all_images[0]
+                following_images = all_images[1:]
+                if len(following_images) > 0:
+                    first_image.save(
+                        private_storage.location + "/" + path,
+                        save_all=True,
+                        append_images=following_images,
+                    )
+                else:
+                    first_image.save(
+                        private_storage.location + "/" + path, save_all=True
+                    )
+
             value = path
 
         elif is_date:
@@ -313,6 +349,7 @@ def get_property_value(object_property_value):
         == models.WorksObjectProperty.INPUT_TYPE_FILE
     ):
         private_storage = fields.PrivateFileSystemStorage()
+        # TODO: handle missing files!
         f = private_storage.open(value)
         # The `url` attribute of the file is used to detect if there was already a file set (it is used by
         # `ClearableFileInput` and by the `set_object_property_value` function)
@@ -353,7 +390,9 @@ def get_permit_request_for_user_or_404(user, permit_request_id, statuses=None):
     return permit_request
 
 
-def get_permit_requests_list_for_user(user):
+def get_permit_requests_list_for_user(
+    user, request_comes_from_internal_qgisserver=False
+):
     """
     Return the list of permit requests this user has access to.
     """
@@ -381,10 +420,10 @@ def get_permit_requests_list_for_user(user):
         ),
     )
 
-    if not user.is_authenticated:
+    if not user.is_authenticated and not request_comes_from_internal_qgisserver:
         return qs.none()
 
-    if not user.is_superuser:
+    if not user.is_superuser and not request_comes_from_internal_qgisserver:
         qs_filter = Q(author=user.permitauthor)
 
         if user.has_perm("permits.amend_permit_request"):
@@ -915,9 +954,18 @@ def submit_permit_request(permit_request, request):
         users_to_notify = set(
             get_user_model()
             .objects.filter(
-                groups__permitdepartment__administrative_entity=permit_request.administrative_entity,
-                permitauthor__user__email__isnull=False,
-                groups__permitdepartment__is_validator=False,
+                Q(
+                    groups__permitdepartment__administrative_entity=permit_request.administrative_entity,
+                    permitauthor__user__email__isnull=False,
+                    groups__permitdepartment__is_integrator_admin=False,
+                ),
+                Q(
+                    Q(groups__permitdepartment__is_validator=False,)
+                    | Q(
+                        groups__permitdepartment__is_validator=True,
+                        groups__permitdepartment__is_backoffice=True,
+                    )
+                ),
             )
             .values_list("permitauthor__user__email", flat=True)
         )
@@ -1378,6 +1426,17 @@ def validate_file(file):
             raise ValidationError(
                 _("%(file)s est trop volumineux"), params={"file": file},
             )
+        # Check that image file is not corrupted
+        if kind.extension != "pdf":
+            # Check that image is not corrupted and that PIL can read it - Try to resize it
+            try:
+                with Image.open(file) as image:
+                    image.thumbnail((128, 128))
+            except:
+                raise forms.ValidationError(
+                    _("%(file)s n'est pas valide ou contient des erreurs"),
+                    params={"file": file},
+                )
     else:
         raise ValidationError(
             _(
@@ -1432,3 +1491,17 @@ def store_tags_in_session(request):
 def clear_session_filters(request):
     request.session["entityfilter"] = []
     request.session["typefilter"] = []
+
+
+def check_request_comes_from_internal_qgisserver(request):
+    """
+    Check that the request is coming from inside the docker composition AND that it is a private IP
+    """
+
+    for whitelisted_ip in settings.LOCAL_IP_WHITELIST:
+        if (
+            request.META["REMOTE_ADDR"].startswith(whitelisted_ip)
+            and socket.gethostbyname("qgisserver") == request.META["REMOTE_ADDR"]
+        ):
+            return True
+    return False

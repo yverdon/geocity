@@ -17,7 +17,36 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE = os.getenv("CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE")
 
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+SECURE_PROXY_SSL_HEADER = (
+    tuple(os.getenv("SECURE_PROXY_SSL_HEADER").split(","))
+    if os.getenv("SECURE_PROXY_SSL_HEADER")
+    else None
+)
+
+# This is django's default but make sure no one turns it to False
+SESSION_COOKIE_HTTPONLY = True
+
+# Highest level of security is 'Strict'
+SESSION_COOKIE_SAMESITE = os.getenv("SESSION_COOKIE_SAMESITE", "Strict")
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# SESSION TIMEOUT
+# default session time is one hour
+SESSION_COOKIE_AGE = int(os.getenv("SESSION_COOKIE_AGE", 60 * 60))
+SESSION_SAVE_EVERY_REQUEST = os.getenv("SESSION_SAVE_EVERY_REQUEST", True)
+
+# LIMIT MAX CONNEXIONS ATTEMPTS
+AXES_FAILURE_LIMIT = int(os.getenv("AXES_FAILURE_LIMIT", 3))
+# Lock out by combination of ip AND User
+AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = os.getenv(
+    "AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP", False
+)
+AXES_LOCKOUT_URL = (
+    "/" + PREFIX_URL + "/account/lockout" if PREFIX_URL else "/account/lockout"
+)
 
 DJANGO_DOCKER_PORT = os.getenv("DJANGO_DOCKER_PORT")
 
@@ -99,6 +128,7 @@ INSTALLED_APPS = [
     "oauth2_provider",
     "crispy_forms",
     "django_cron",
+    "axes",
 ]
 
 if ENABLE_2FA:
@@ -120,6 +150,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "axes.middleware.AxesMiddleware",
 ]
 
 if ENABLE_2FA:
@@ -185,8 +216,8 @@ CONSTANCE_CONFIG = {
         str,
     ),
     "ALLOWED_FILE_EXTENSIONS": (  # Supported file extensions https://pypi.org/project/filetype/
-        "pdf, png, jpg",
-        "Extensions autorisées lors de l'upload de document",
+        "pdf, jpg, png",
+        "Extensions autorisées lors de l'upload de document, seuls des types images PIL et pdf sont supportés",
         str,
     ),
     "MAX_FILE_UPLOAD_SIZE": (10485760, "Taille maximum des fichiers uploadé", int,),
@@ -254,6 +285,8 @@ TEMPLATES = [
 ]
 
 AUTHENTICATION_BACKENDS = [
+    # AxesBackend
+    "axes.backends.AxesBackend",
     # Classic django authentication backend
     "django.contrib.auth.backends.ModelBackend",
     # SocialAccount authentication backend with allauth
