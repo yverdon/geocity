@@ -29,15 +29,12 @@ django==3.2.7
     #   -r requirements.in
     #   django-admin-sortable2
     #   django-allauth
+    #   django-axes
     #   django-bootstrap-datepicker-plus
     #   django-bootstrap4
     #   django-common-helpers
     #   django-cors-headers
     #   django-cron
-    #   django-axes
-    #   django-bootstrap-datepicker-plus
-    #   django-bootstrap4
-    #   django-cors-headers
     #   django-filter
     #   django-formtools
     #   django-oauth-toolkit
@@ -122,8 +119,6 @@ oauthlib==3.1.1
     #   django-oauth-toolkit
     #   requests-oauthlib
 pdf2image==1.16.0
-    # via -r requirements.in
-pdfid==1.0.5
     # via -r requirements.in
 phonenumbers==8.12.24
     # via django-two-factor-auth
