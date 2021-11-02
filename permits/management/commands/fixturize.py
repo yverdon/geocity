@@ -175,6 +175,8 @@ class Command(BaseCommand):
             is_staff=True,
             is_superuser=True,
         )
+        self.stdout.write("admin / admin")
+
         models.PermitAuthor.objects.create(
             user=user,
             address="Rue du test",
@@ -183,7 +185,6 @@ class Command(BaseCommand):
             phone_first="000 00 00 00",
             phone_second="000 00 00 00",
         )
-        self.stdout.write("admin / admin")
 
         user = User.objects.create_user(
             username="user",

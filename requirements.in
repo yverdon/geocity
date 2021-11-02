@@ -10,7 +10,6 @@ gunicorn
 html5lib
 jdcal
 Pillow
-pip-tools
 psycopg2-binary
 pytz
 PyYAML
@@ -38,3 +37,5 @@ pyyaml
 uritemplate
 django-crispy-forms
 django-cron
+django-axes
+pdf2image
