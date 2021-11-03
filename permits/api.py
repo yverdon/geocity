@@ -102,8 +102,10 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
             .filter(
                 Q(
                     permit_request__in=services.get_permit_requests_list_for_user(
-                        request.user,
-                        request_come_from_internal_qgisserver=services.check_request_comes_from_internal_qgisserver,
+                        self.request.user,
+                        request_comes_from_internal_qgisserver=services.check_request_comes_from_internal_qgisserver(
+                            self.request
+                        ),
                     )
                 )
                 | Q(permit_request__is_public=True)
