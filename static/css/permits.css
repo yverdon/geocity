@@ -62,6 +62,20 @@ body {
   box-shadow: 0 0 0 0.2rem var(--primary-color) !important;
 }
 
+.btn-primary:[aria-pressed="false"]{
+  color: #fff;
+  background-color: white;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem var(--primary-color) !important;
+}
+
+.btn-primary:active {
+  color: #fff;
+  background-color: red;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem var(--primary-color) !important;
+}
+
 .btn-outline-primary:not(:disabled):not(.disabled):active {
   color: #fff;
   background-color: var(--primary-color);
@@ -594,4 +608,51 @@ h4.workObjectHeader {
 .propertyTitle {
   font-weight: bold;
   margin-bottom: 0px;
+}
+
+.fa-check-circle {
+  color:rgb(140, 199, 30);
+}
+
+#actions-tabs .btn {
+  border-right: white 2px solid;  
+}
+
+
+/* summary grid */¨
+
+.row-1 {
+  width: 200px;
+}
+
+.row-2 {
+  width: 400px;
+}
+
+.status_display, .history_user {
+  padding-left: 18px;
+}
+
+.row {
+  border-bottom: white 10px solid;
+}
+
+.req-card {
+  background-color: rgb(240, 242, 248);
+  border: rgb(240, 240, 240) 8px solid;
+}
+
+.col-md-8 {
+  background-color: rgb(240, 240, 240);
+}
+
+.floating-elem {
+  position: fixed;
+}
+
+.badge-pill {
+  font-size: 32%;
+  vertical-align: top;
+  position: relative;
+  top: -0.1em;
 }
