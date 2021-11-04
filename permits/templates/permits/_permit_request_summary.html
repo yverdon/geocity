@@ -2,75 +2,97 @@
 {% load bootstrap4 %}
 {% load permits_extras %}
 
-{% for object, properties, appendices, amend_custom_properties in objects_infos %}
-  <h4 class="workObjectHeader">{{ object }}</h4>
-  <dl>
-    {% for field in properties %}
-      {% if field.label %}
-      <dt>{{ field.label }}</dt>
-      <dd>
-        {{ field.value|human_field_value }}
-      </dd>
-      {% else %}
-        {{ field.repr|safe }}
-      {% endif %}
-    {% endfor %}
-
-    {% for field in appendices %}
-      <dt>{{ field.label }}</dt>
-      <dd>
-        {% if not field.value %}
-          <em>{% trans "Information non fournie" %}</em>
-        {% else %}
-          <a href="{{ field.value.url }}" rel="noreferrer" target="_blank">{{ field.value.name|basename }}</a>
-        {% endif %}
-      </dd>
-    {% endfor %}
-
-    {% if amend_custom_properties %}
-      <h5>{% trans "Information du service responsable" %}</h5>
-      {% for object_property in amend_custom_properties %}
-        {% if object_property.property.is_visible_by_author %}
+<div class="container">
+  <div class="row">
+    <div class="col">
+      {% for object, properties, appendices, amend_custom_properties in objects_infos %}
+       
+          <h4 class="workObjectHeader"> {{ object }} </h4>
           <dl>
-            <dt class="amend-property">{{ object_property.property }}</dt>
-            <dd>{{ object_property.value }}</dd>
-          </dl>
-        {% endif %}
+          {% for field in properties %}
+            {% if field.label %}
+              <dt> {{ field.label }} </dt>
+              <dd> {{ field.value|human_field_value }} </dd>
+            {% else %}
+              {{ field.repr|safe }}
+            {% endif %}
+          {% endfor %}
+      
+          {% for field in appendices %}
+            <dt>{{ field.label }}</dt>
+            <dd>
+              {% if not field.value %}
+                <em>{% trans "Information non fournie" %}</em>
+              {% else %}
+                <a href="{{ field.value.url }}" rel="noreferrer" target="_blank">{{ field.value.name|basename }}</a>
+              {% endif %}
+            </dd>
+          {% endfor %}
+      
+          {% if amend_custom_properties %}
+            <h5>{% trans "Information du service responsable" %}</h5>
+            {% for object_property in amend_custom_properties %}
+              {% if object_property.property.is_visible_by_author %}
+                <dl>
+                  <dt class="amend-property">{{ object_property.property }}</dt>
+                  <dd>{{ object_property.value }}</dd>
+                </dl>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+    
+         </dl>
+
       {% endfor %}
-    {% endif %}
+    </div>
+  </div>
 
-  </dl>
-{% endfor %}
+  
+  {% if contacts %}
 
-{% for geo_time_form in geo_time_formset %}
-  {{ geo_time_form.media }}
-  {% include "permits/_geo_time_form.html" with form=geo_time_form form_id=forloop.counter0 form_number=forloop.counter open=True %}
-{% endfor %}
+    <div class="row">
+      <div class="col">
+        <h4>{% trans "Contacts" %}</h4>
+        <dl>
+          {% if requires_payment %}
+            <h5>Destinataire de la facture</h5>
+            <dd> {{ creditor }} </dd>
+          {% endif %}
+        </dl>
+        <dl>
+          {% for contact_type, contact_infos in contacts %}
+            <h5>{{ contact_type }}</h5>
+              {% for field_label, field_value in contact_infos %}
+                {% if field_value %}
+                  <dt> {{ field_label }} </dt>
+                  <dd> {{ field_value }} </dd>
+                {% endif %}
+              {% endfor %}
+          {% endfor %}
+        </dl>
+      </div>
+    </div>
 
-{% if contacts %}
-  <br>
-  <h4>{% trans "Contacts" %}</h4>
-    {% if requires_payment %}
-      <b>Destinataire de la facture</b>: {{ creditor }}
-    {% endif %}
-    {% for contact_type, contact_infos in contacts %}
-    <h5>{{ contact_type }}</h5>
-    <dl>
-      {% for field_label, field_value in contact_infos %}
-        {% if field_value %}
-          <dt>
-            {{ field_label }}
-          </dt>
-          <dd>
-            {{ field_value }}
-          </dd>
-        {% endif %}
+  {% endif %}
+ 
+
+  <div class="row">
+    <div class="col">
+      {% if intersected_geometries %}
+        <h4>{% trans "Éléments géographiques touchés par la demande (automatique)" %}</h4>
+        {{ intersected_geometries }}
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      {% for geo_time_form in geo_time_formset %}
+        {{ geo_time_form.media }}
+        {% include "permits/_geo_time_form.html" with form=geo_time_form form_id=forloop.counter0 form_number=forloop.counter open=True %}
       {% endfor %}
-    </dl>
-  {% endfor %}
-{% endif %}
+    </div>
+  </div>
 
-{% if intersected_geometries %}
-  <h4>{% trans "Éléments géographiques touchés par la demande (automatique)" %}</h4>
-  {{ intersected_geometries}}
-{% endif %}
+
+</div>
