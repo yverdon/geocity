@@ -55,14 +55,14 @@
 
             {% if forms.prolong %}
             <li class="nav-item">
-              <a class="btn btn-primary nav-link{% if active_form == 'prolong' %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#prolong" role="tab" aria-controls="prolong" aria-selected="{% if active_form == 'prolong' %}true{% else %}false{% endif %}">
+              <a class="btn btn-primary rounded-top nav-link{% if active_form == 'prolong' %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#prolong" role="tab" aria-controls="prolong" aria-selected="{% if active_form == 'prolong' %}true{% else %}false{% endif %}">
               {% trans "Prolongation" %}
               </a>
             </li>
             {% endif %}
 
             <li class="nav-item">
-              <a class="btn btn-primary nav-link" id="print-tab" data-toggle="tab" href="#print" role="tab" aria-controls="print">
+              <a class="btn btn-primary rounded-top nav-link" id="print-tab" data-toggle="tab" href="#print" role="tab" aria-controls="print">
                 {% trans "Imprimer" %}
               </a>
             </li>
@@ -238,7 +238,7 @@
 <div class="row">
   <div class="col-md-4">
 
-    <div class="row">
+    <div class="row floating-elem">
       <div class="col">
         <dl>
         <dd>
@@ -267,50 +267,46 @@
         </dd>
         </dl>
       </div>
-    </div>
 
-    {% if history %}
 
-      <div class="row floating-elem">
-        <div class="col">
-          <div id="history_timeline">
-            <h4>{% trans "Historique" %}</h4>
-            <ul>
-              {% for archive in history %}
-                {% if archive.status == permit_request.STATUS_PROCESSING and forloop.last %}
-                  <li>
-                    <div class="row-1">
-                      <i class="fa fa-circle status{{archive.status}}"></i>
-                      {{ archive.history_date }}</div>
-                      <b>{% trans "Demande soumise par" %}</b>
-                    </div>
-                    <div class="row-2 history_user">
-                      <b>{{ archive.history_user }}</b>
-                    </div>
-                  </li>
-                {% else %}
-                  <li>
-                    <div class="row-1">
-                      <i class="fa fa-circle status{{archive.status}}"></i>
-                      {{ archive.history_date }}
-                    </div>
-                    <div class="row-2 status_display">
-                      <b>{{ archive.get_status_display }}</b>
-                    </div>
-                    <div class="row-2 history_user">
-                      ({{ archive.history_user }})
-                    </div>
-                  </li>
-                {% endif %}
-              {% endfor %}
-            </ul>
-          </div>
+      {% if history %}
+
+        <div id="history_timeline">
+          <h4>{% trans "Historique" %}</h4>
+          <ul>
+            {% for archive in history %}
+              {% if archive.status == permit_request.STATUS_PROCESSING and forloop.last %}
+                <li>
+                  <div class="row-1">
+                    <i class="fa fa-circle status{{archive.status}}"></i>
+                    {{ archive.history_date }}</div>
+                    <b>{% trans "Demande soumise par" %}</b>
+                  </div>
+                  <div class="row-2 history_user">
+                    <b>{{ archive.history_user }}</b>
+                  </div>
+                </li>
+              {% else %}
+                <li>
+                  <div class="row-1">
+                    <i class="fa fa-circle status{{archive.status}}"></i>
+                    {{ archive.history_date }}
+                  </div>
+                  <div class="row-2 status_display">
+                    <b>{{ archive.get_status_display }}</b>
+                  </div>
+                  <div class="row-2 history_user">
+                    ({{ archive.history_user }})
+                  </div>
+                </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
         </div>
 
-      </div>
+      {% endif %}
 
-    {% endif %}
-
+    </div>
   </div>
   <div class="col-md-8">
 
