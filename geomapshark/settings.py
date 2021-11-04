@@ -48,6 +48,8 @@ AXES_LOCKOUT_URL = (
     "/" + PREFIX_URL + "/account/lockout" if PREFIX_URL else "/account/lockout"
 )
 
+AXES_COOLOFF_TIME = int(os.getenv("AXES_COOLOFF_TIME", 2))
+
 DJANGO_DOCKER_PORT = os.getenv("DJANGO_DOCKER_PORT")
 
 # Set environment mode
