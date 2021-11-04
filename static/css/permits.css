@@ -42,6 +42,7 @@ body {
 }
 
 /* Global boostrap4 styling  */
+
 .btn {
   border-radius: 0 !important;
 }
@@ -51,58 +52,70 @@ body {
 }
 
 .btn-primary {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-}
-
-.btn-primary:not(:disabled):not(.disabled):active {
   color: #fff;
   background-color: var(--primary-color);
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 0.2rem var(--primary-color) !important;
+  border-color: #005a5a;
 }
-
-.btn-primary:[aria-pressed="false"]{
-  color: #fff;
-  background-color: white;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 0.2rem var(--primary-color) !important;
-}
-
-.btn-primary:active {
-  color: #fff;
-  background-color: red;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 0.2rem var(--primary-color) !important;
-}
-
-.btn-outline-primary:not(:disabled):not(.disabled):active {
-  color: #fff;
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 0.2rem var(--primary-color) !important;
-}
-
 .btn-primary:hover {
-  background-color: var(--secondary-color);
+  color:#fff;
+  background-color: #005846;
+  border-color: var(--secondary-color);
+}
+.btn-primary:focus,.btn-primary.focus {
+  box-shadow: 0 0 0 .2rem rgba(0,90,90,0.5);
+}
+.btn-primary.disabled,
+.btn-primary:disabled {
+  color:#fff;
+  background-color: var(--primary-color);
+  border-color: var(--secondary-color);
+}
+.btn-primary:not(:disabled):not(.disabled):active,
+.btn-primary:not(:disabled):not(.disabled).active,
+.show>.btn-primary.dropdown-toggle {
+  color:#000;
+  background-color: #c6f1e8;
+  border-color: #000;
+}
+.btn-primary:not(:disabled):not(.disabled):active:focus,
+.btn-primary:not(:disabled):not(.disabled).active:focus,
+.show>.btn-primary.dropdown-toggle:focus {
+  box-shadow: 0 0 0 0 rgba(0,90,90,0.5);
 }
 
 .btn-outline-primary {
+  color: var(--primary-color);
+  background-color: transparent;
+  background-image: none;
   border-color: var(--primary-color);
-  color: var(--primary-color);
 }
-
 .btn-outline-primary:hover {
-  background-color: var(--secondary-color);
+  color:#222;
+  background-color:var(--hover-color);
+  border-color: var(--primary-color);
 }
-
-.btn-link {
+.btn-outline-primary:focus,
+.btn-outline-primary.focus {
+  box-shadow:0 0 0 .2rem rgba(0,128,128,0.5)
+}
+.btn-outline-primary.disabled,
+.btn-outline-primary:disabled {
   color: var(--primary-color);
+  background-color: transparent;
+}
+.btn-outline-primary:not(:disabled):not(.disabled):active,
+.btn-outline-primary:not(:disabled):not(.disabled).active,
+.show>.btn-outline-primary.dropdown-toggle {
+  color:#fff;
+  background-color:var(--primary-color);
+  border-color: var(--secondary-color);
+}
+.btn-outline-primary:not(:disabled):not(.disabled):active:focus,
+.btn-outline-primary:not(:disabled):not(.disabled).active:focus,
+.show>.btn-outline-primary.dropdown-toggle:focus {
+  box-shadow:0 0 0 .2rem rgba(0,128,128,0.5);
 }
 
-.btn-link:hover {
-  color: var(--secondary-color);
-}
 
 a {
   color: var(--primary-color);
@@ -110,12 +123,6 @@ a {
 
 a:hover {
   color: var(--secondary-color);
-}
-
-.btn-primary:not(:disabled):not(.disabled):active:focus,
-.btn-primary:focus,
-.btn-primary.focus {
-  box-shadow: none !important;
 }
 
 input:focus {
@@ -602,7 +609,7 @@ fieldset>legend {
 }
 
 h4.workObjectHeader {
-  font-weight: bold;
+  font-weight: normal;
 }
 
 .propertyTitle {
@@ -614,10 +621,19 @@ h4.workObjectHeader {
   color:rgb(140, 199, 30);
 }
 
-#actions-tabs .btn {
-  border-right: white 2px solid;  
+/* list elements */
+dl {
+  display: grid;
+  grid-template-columns: max-content auto;
 }
 
+dt {
+  grid-column-start: 1;
+}
+
+dd {
+  grid-column-start: 2;
+}
 
 /* summary grid */¨
 
@@ -643,7 +659,7 @@ h4.workObjectHeader {
 }
 
 .col-md-8 {
-  background-color: rgb(240, 240, 240);
+  background-color: #f8f9fa;
 }
 
 .floating-elem {
@@ -655,4 +671,8 @@ h4.workObjectHeader {
   vertical-align: top;
   position: relative;
   top: -0.1em;
+}
+
+.outer {
+  border-right: 4px solid white;
 }
