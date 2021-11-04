@@ -54,21 +54,21 @@
       <div class="col">
         <h4>{% trans "Contacts" %}</h4>
         <dl>
-        {% if requires_payment %}
-          <h5>Destinataire de la facture</h5>
-          <dd> {{ creditor }} </dd>
-        {% endif %}
-
-        {% for contact_type, contact_infos in contacts %}
-          <h5>{{ contact_type }}</h5>
-            {% for field_label, field_value in contact_infos %}
-              {% if field_value %}
-                <dt> {{ field_label }} </dt>
-                <dd> {{ field_value }} </dd>
-              {% endif %}
-            {% endfor %}
-          
-        {% endfor %}
+          {% if requires_payment %}
+            <h5>Destinataire de la facture</h5>
+            <dd> {{ creditor }} </dd>
+          {% endif %}
+        </dl>
+        <dl>
+          {% for contact_type, contact_infos in contacts %}
+            <h5>{{ contact_type }}</h5>
+              {% for field_label, field_value in contact_infos %}
+                {% if field_value %}
+                  <dt> {{ field_label }} </dt>
+                  <dd> {{ field_value }} </dd>
+                {% endif %}
+              {% endfor %}
+          {% endfor %}
         </dl>
       </div>
     </div>
