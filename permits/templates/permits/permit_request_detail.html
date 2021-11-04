@@ -23,67 +23,72 @@
 <div class="row">
   <div class="col">
     {% if forms.amend or forms.request_validation or forms.validate or forms.poke %}
-          <h2>{% trans "" %}</h2>
+      <h2>{% trans "" %}</h2>
+      <div class="row">
+        <div class="col">
+
           <ul class="nav nav-tabs" id="actions-tabs" role="tablist">
 
             {% if forms.amend %}
-              <div class="outer">
+
                 <li class="nav-item">
                   <a class="btn btn-primary nav-link{% if active_form == "amend" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">{% trans "Traiter" %}</a>
                 </li>
-              </div>
+
             {% endif %}
 
             {% if forms.request_validation %}
-              <div class="outer">
+
                 <li class="nav-item">
                   <a class="btn btn-primary nav-link{% if active_form == "request_validation" %} active{% endif %}" id="request-validation-tab" data-toggle="tab" href="#request-validation" role="tab" aria-controls="request-validation" aria-selected="{% if active_form == "request_validation" %}true{% else %}false{% endif %}">{% trans "Envoyer pour validation" %}</a>
                 </li>
-              </div>
+
             {% endif %}
 
             {% if forms.validate %}
-            <div class="outer">
-              <li class="nav-item">
-                <a class="btn btn-primary nav-link{% if active_form == "validate" %} active{% endif %}" id="validate-tab" data-toggle="tab" href="#validate" role="tab" aria-controls="validate" aria-selected="{% if active_form == "validate" %}true{% else %}false{% endif %}">
-                  {% trans "Valider" %}
-                </a>
-              </li>
-            </div>
+
+                <li class="nav-item">
+                  <a class="btn btn-primary nav-link{% if active_form == "validate" %} active{% endif %}" id="validate-tab" data-toggle="tab" href="#validate" role="tab" aria-controls="validate" aria-selected="{% if active_form == "validate" %}true{% else %}false{% endif %}">
+                    {% trans "Valider" %}
+                  </a>
+                </li>
+
             {% endif %}
 
             {% if forms.poke or can_classify %}
-              <div class="outer">
+
                 <li class="nav-item">
                   <a class="btn btn-primary nav-link{% if active_form == "poke" %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#classify" role="tab" aria-controls="classify" aria-selected="{% if active_form == "poke" %}true{% else %}false{% endif %}">
                     {% trans "Classer" %}
                   </a>
                 </li>
-              </div>
+
             {% endif %}
 
             {% if forms.prolong %}
-              <div class="outer">
+
                 <li class="nav-item">
-                  <a class="btn btn-primary rounded-top nav-link{% if active_form == 'prolong' %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#prolong" role="tab" aria-controls="prolong" aria-selected="{% if active_form == 'prolong' %}true{% else %}false{% endif %}">
+                  <a class="btn btn-primary nav-link{% if active_form == 'prolong' %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#prolong" role="tab" aria-controls="prolong" aria-selected="{% if active_form == 'prolong' %}true{% else %}false{% endif %}">
                   {% trans "Prolongation" %}
                   </a>
                 </li>
-              </div>
+
             {% endif %}
 
-            <div class="outer">
+
               <li class="nav-item">
-                <a class="btn btn-primary rounded-top nav-link" id="print-tab" data-toggle="tab" href="#print" role="tab" aria-controls="print">
+                <a class="btn btn-primary nav-link" id="print-tab" data-toggle="tab" href="#print" role="tab" aria-controls="print">
                   {% trans "Imprimer" %}
                 </a>
               </li>
-            </div>
 
           </ul>
+        </div>
 
+      </div>
+      <div class="row sub-row">
 
-
+        <div class="col">
           <div class="pt-3 tab-content box box--default box--tabbed">
             {% if forms.amend %}
               <div class="tab-pane{% if active_form == "amend" %} show active{% endif %}" id="amend" role="tabpanel" aria-labelledby="amend-tab">
@@ -244,6 +249,8 @@
               {% endif %}
             </div>
           </div>
+        </div>
+      </div>
     {% endif %}
   </div>
 </div>
@@ -324,7 +331,7 @@
 
     {% if validations %}
 
-      <div class="row">
+      <div class="row sub-row">
         <div class="col">
           <h2>{% trans "Données du service pilote" %}</h2>
           <dl>
@@ -351,7 +358,7 @@
         </div>
       </div>
 
-      <div class="row">
+      <div class="row sub-row">
         <div class="col">
           <h2>{% trans "Statut des validations" %}</h2>
           <dl>
@@ -386,7 +393,7 @@
 
     {% if permit_request.can_be_prolonged and permit_request.prolongation_date %}
 
-      <div class="row">
+      <div class="row sub-row">
         <div class="col">
           <h2>{% trans "Statut de Prolongation" %}</h2>
           <dl>
@@ -401,7 +408,7 @@
 
     {% endif %}
 
-    <div class="row">
+    <div class="row sub-row">
       <div class="col">
         <h2>{% trans "Résumé" %}</h2>
 
@@ -409,7 +416,7 @@
       </div>
     </div>
 
-    <div class="row">
+    <div class="row sub-row">
       <div class="col">
         <p class="mt-4">
           <a href="{% url 'permits:permit_requests_list' %}">{% trans "Retour à la liste des demandes" %}</a>
