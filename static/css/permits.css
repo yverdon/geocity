@@ -635,21 +635,22 @@ dl {
   width: 100%;
   overflow: hidden;
   padding: 0;
-  margin: 0
+  margin: 0;
+  padding-bottom: 10px;
 }
 dt {
   float: left;
   width: 28%;
   /* adjust the width; make sure the total of both is 100% */
   padding: 0;
-  margin: 0
+  margin: 0;
 }
 dd {
   float: left;
   width: 72%;
   /* adjust the width; make sure the total of both is 100% */
   padding: 0;
-  margin: 0
+  margin: 0;
 }
 
 /* summary grid */
@@ -668,7 +669,6 @@ dd {
 .row-header {
   border-bottom: 0px;
 }
-
 
 .sub-row {
   border-bottom: white 10px solid;
