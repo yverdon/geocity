@@ -684,7 +684,8 @@ dd {
 }
 
 .floating-elem {
-  position: fixed;
+  position: sticky;
+  top: 0px;
 }
 
 .badge-pill {
