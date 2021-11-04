@@ -256,6 +256,11 @@ h3 {
   background-color: rgb(245, 245, 245) !important;
 }
 
+.nav-item {
+  margin-left: 0px;
+  margin-right: 4px;
+}
+
 .navbar-light .navbar-brand {
 	color: var(--primary-color)
 }
