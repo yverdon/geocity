@@ -625,14 +625,26 @@ h4.workObjectHeader {
 dl {
   display: grid;
   grid-template-columns: max-content auto;
+  width: 100%;
+  overflow: hidden;
+  padding: 0;
+  margin: 0
 }
-
 dt {
   grid-column-start: 1;
+  float: left;
+  width: 28%;
+  /* adjust the width; make sure the total of both is 100% */
+  padding: 0;
+  margin: 0
 }
-
 dd {
   grid-column-start: 2;
+  float: left;
+  width: 72%;
+  /* adjust the width; make sure the total of both is 100% */
+  padding: 0;
+  margin: 0
 }
 
 /* summary grid */¨
