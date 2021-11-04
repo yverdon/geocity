@@ -77,6 +77,17 @@ We use [django-extensions](https://django-extensions.readthedocs.io/en/latest/co
 ```
 $ ./manage.py show_urls
 ```
+## Testing emails
+A Mailhog container is working on the dev environment, you can access it by going to localhost:8025.
+Just ensure to setup the following entries in your .env file:
+```
+EMAIL_HOST=mailhog
+EMAIL_PORT=1025
+EMAIL_HOST_USER=null
+EMAIL_HOST_PASSWORD=null
+EMAIL_USE_TLS=true
+EMAIL_TO_CONSOLE=false
+```
 
 ## Setup for full Docker persistent instance served by gunicorn webserver
 
@@ -267,3 +278,13 @@ This will override the data of any SocialApp with provider geomapfish.
 
 Geomapfish login process will raise an error if no APP settings and no SocialApp
 object are present.
+
+## Cronjobs
+
+To manage the planned tasks we use the django-cron extension (https://github.com/Tivix/django-cron). The script to be executed is defined on the **permits/cron.py** file.
+
+In order to run it on a server instance, modify the following line accordingly and add it to the crontab:
+
+```
+*/10 * * * * <path_to_manage.py>/manage.py runcrons >/dev/null 2>&1
+```

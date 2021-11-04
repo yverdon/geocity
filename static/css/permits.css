@@ -42,6 +42,7 @@ body {
 }
 
 /* Global boostrap4 styling  */
+
 .btn {
   border-radius: 0 !important;
 }
@@ -50,45 +51,75 @@ body {
   color: var(--primary-color);
 }
 
+.outer-button {
+  border-right: 4px solid white;
+}
+
 .btn-primary {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-}
-
-.btn-primary:not(:disabled):not(.disabled):active {
   color: #fff;
   background-color: var(--primary-color);
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 0.2rem var(--primary-color) !important;
+  border-color: #005a5a;
 }
-
-.btn-outline-primary:not(:disabled):not(.disabled):active {
-  color: #fff;
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 0.2rem var(--primary-color) !important;
-}
-
 .btn-primary:hover {
-  background-color: var(--secondary-color);
+  color:#fff;
+  background-color: #005846;
+  border-color: var(--secondary-color);
+}
+.btn-primary:focus,.btn-primary.focus {
+  box-shadow: 0 0 0 .2rem rgba(0,90,90,0.5);
+}
+.btn-primary.disabled,
+.btn-primary:disabled {
+  color:#fff;
+  background-color: var(--primary-color);
+  border-color: var(--secondary-color);
+}
+.btn-primary:not(:disabled):not(.disabled):active,
+.btn-primary:not(:disabled):not(.disabled).active,
+.show>.btn-primary.dropdown-toggle {
+  color:#000;
+  background-color: #c6f1e8;
+  border-color: #000;
+}
+.btn-primary:not(:disabled):not(.disabled):active:focus,
+.btn-primary:not(:disabled):not(.disabled).active:focus,
+.show>.btn-primary.dropdown-toggle:focus {
+  box-shadow: 0 0 0 0 rgba(0,90,90,0.5);
 }
 
 .btn-outline-primary {
+  color: var(--primary-color);
+  background-color: transparent;
+  background-image: none;
   border-color: var(--primary-color);
-  color: var(--primary-color);
 }
-
 .btn-outline-primary:hover {
-  background-color: var(--secondary-color);
+  color:#222;
+  background-color:var(--hover-color);
+  border-color: var(--primary-color);
 }
-
-.btn-link {
+.btn-outline-primary:focus,
+.btn-outline-primary.focus {
+  box-shadow:0 0 0 .2rem rgba(0,128,128,0.5)
+}
+.btn-outline-primary.disabled,
+.btn-outline-primary:disabled {
   color: var(--primary-color);
+  background-color: transparent;
+}
+.btn-outline-primary:not(:disabled):not(.disabled):active,
+.btn-outline-primary:not(:disabled):not(.disabled).active,
+.show>.btn-outline-primary.dropdown-toggle {
+  color:#fff;
+  background-color:var(--primary-color);
+  border-color: var(--secondary-color);
+}
+.btn-outline-primary:not(:disabled):not(.disabled):active:focus,
+.btn-outline-primary:not(:disabled):not(.disabled).active:focus,
+.show>.btn-outline-primary.dropdown-toggle:focus {
+  box-shadow:0 0 0 .2rem rgba(0,128,128,0.5);
 }
 
-.btn-link:hover {
-  color: var(--secondary-color);
-}
 
 a {
   color: var(--primary-color);
@@ -96,12 +127,6 @@ a {
 
 a:hover {
   color: var(--secondary-color);
-}
-
-.btn-primary:not(:disabled):not(.disabled):active:focus,
-.btn-primary:focus,
-.btn-primary.focus {
-  box-shadow: none !important;
 }
 
 input:focus {
@@ -229,6 +254,11 @@ h3 {
   padding-left: 5%;
   padding-right: 5%;
   background-color: rgb(245, 245, 245) !important;
+}
+
+.nav-item {
+  margin-left: 0px;
+  margin-right: 4px;
 }
 
 .navbar-light .navbar-brand {
@@ -577,4 +607,90 @@ h3 {
 
 .search-results-container {
   position: relative;
+}
+
+.asteriskField {
+    display: none;
+}
+
+fieldset>legend {
+  font-weight: bold;
+}
+
+h4.workObjectHeader {
+  font-weight: normal;
+}
+
+.propertyTitle {
+  font-weight: bold;
+  margin-bottom: 0px;
+}
+
+.fa-check-circle {
+  color:rgb(140, 199, 30);
+}
+
+/* list elements */
+dl {
+  width: 100%;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+  padding-bottom: 10px;
+}
+dt {
+  float: left;
+  width: 28%;
+  /* adjust the width; make sure the total of both is 100% */
+  padding: 0;
+  margin: 0;
+}
+dd {
+  float: left;
+  width: 72%;
+  /* adjust the width; make sure the total of both is 100% */
+  padding: 0;
+  margin: 0;
+}
+
+/* summary grid */
+.status_display, .history_user {
+  padding-left: 18px;
+}
+
+.row-1 {
+  width: 200px;
+}
+
+.row-2 {
+  width: 400px;
+}
+
+.row-header {
+  border-bottom: 0px;
+}
+
+.sub-row {
+  border-bottom: white 10px solid;
+}
+
+.req-card {
+  background-color: rgb(240, 242, 248);
+  border: rgb(240, 240, 240) 8px solid;
+}
+
+.col-md-8 {
+  background-color: var(--light);
+}
+
+.floating-elem {
+  position: sticky;
+  top: 0px;
+}
+
+.badge-pill {
+  font-size: 32%;
+  vertical-align: top;
+  position: relative;
+  top: -0.1em;
 }

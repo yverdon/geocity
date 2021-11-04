@@ -1,27 +1,60 @@
 import json
-from constance import config
-from datetime import date, datetime, timedelta
+from collections import defaultdict
+from datetime import datetime, timedelta
+from itertools import groupby
 
+from allauth.socialaccount.forms import SignupForm
+from allauth.socialaccount.providers.base import ProviderException
 from bootstrap_datepicker_plus import DatePickerInput, DateTimePickerInput
+from constance import config
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import HTML, Field, Fieldset, Layout
 from django import forms
 from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis import forms as geoforms
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import transaction
+from django.db.models import Q, Max
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
-from django.core.exceptions import ValidationError
-from itertools import groupby
-from django.db.models import Q
 
+from accounts.dootix.adapter import DootixSocialAccountAdapter
+from accounts.dootix.provider import DootixProvider
+from accounts.geomapfish.adapter import GeomapfishSocialAccountAdapter
+from accounts.geomapfish.provider import GeomapfishProvider
 
 from . import models, services
+
+input_type_mapping = {
+    models.WorksObjectProperty.INPUT_TYPE_TEXT: forms.CharField,
+    models.WorksObjectProperty.INPUT_TYPE_CHECKBOX: forms.BooleanField,
+    models.WorksObjectProperty.INPUT_TYPE_NUMBER: forms.FloatField,
+    models.WorksObjectProperty.INPUT_TYPE_FILE: forms.FileField,
+    models.WorksObjectProperty.INPUT_TYPE_ADDRESS: forms.CharField,
+    models.WorksObjectProperty.INPUT_TYPE_DATE: forms.DateField,
+    models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE: forms.ChoiceField,
+    models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE: forms.MultipleChoiceField,
+    models.WorksObjectProperty.INPUT_TYPE_REGEX: forms.CharField,
+}
+
+
+def _title_html_representation(prop, for_summary=False):
+    base = f"<h5 class='propertyTitle'>{prop.name}</h5>"
+    if not for_summary and prop.help_text:
+        base = f"{base}<small>{prop.help_text}</small>"
+    return base
+
+
+non_value_input_type_mapping = {
+    models.WorksObjectProperty.INPUT_TYPE_TITLE: _title_html_representation,
+}
 
 
 class AddressWidget(forms.widgets.TextInput):
@@ -61,17 +94,6 @@ class AddressWidget(forms.widgets.TextInput):
 
 
 def get_field_cls_for_property(prop):
-    input_type_mapping = {
-        models.WorksObjectProperty.INPUT_TYPE_TEXT: forms.CharField,
-        models.WorksObjectProperty.INPUT_TYPE_CHECKBOX: forms.BooleanField,
-        models.WorksObjectProperty.INPUT_TYPE_NUMBER: forms.FloatField,
-        models.WorksObjectProperty.INPUT_TYPE_FILE: forms.FileField,
-        models.WorksObjectProperty.INPUT_TYPE_ADDRESS: forms.CharField,
-        models.WorksObjectProperty.INPUT_TYPE_DATE: forms.DateField,
-        models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE: forms.ChoiceField,
-        models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE: forms.MultipleChoiceField,
-    }
-
     try:
         return input_type_mapping[prop.input_type]
     except KeyError as e:
@@ -90,7 +112,6 @@ class GroupedRadioWidget(forms.RadioSelect):
 
 
 class AdministrativeEntityForm(forms.Form):
-
     administrative_entity = forms.ModelChoiceField(
         label=_("Entité administrative"),
         widget=GroupedRadioWidget(),
@@ -260,25 +281,54 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
 
         super().__init__(*args, **kwargs)
 
+        fields_per_work_object = defaultdict(list)
         # Create a field for each property
         for works_object_type, prop in self.get_properties():
             field_name = self.get_field_name(works_object_type, prop)
-            self.fields[field_name] = self.field_for_property(prop)
-            if prop.is_mandatory:
-                self.fields[field_name].required = True
+            if prop.is_value_property():
+                fields_per_work_object[str(works_object_type)].append(
+                    Field(field_name, title=prop.help_text)
+                )
+                self.fields[field_name] = self.field_for_property(prop)
+                if prop.is_mandatory:
+                    self.fields[field_name].required = True
+            else:
+                fields_per_work_object[str(works_object_type)].append(
+                    self.non_field_value_for_property(prop)
+                )
 
         if disable_fields:
             for field in self.fields.values():
                 field.disabled = True
 
+        fieldsets = []
+        for work_object_type_str, fieldset_fields in fields_per_work_object.items():
+            fieldset_fields = [work_object_type_str] + fieldset_fields
+            fieldsets.append(Fieldset(*fieldset_fields))
+
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.layout = Layout(*fieldsets)
+
+    def get_field_representation(self, object_type, prop):
+        if prop.is_value_property():
+            return self[self.get_field_name(object_type, prop)]
+        else:
+            return {
+                "repr": non_value_input_type_mapping.get(prop.input_type, {})(
+                    prop, True
+                )
+            }
+
     def get_fields_by_object_type(self):
         """
         Return a list of tuples `(WorksObjectType, List[Field])` for each object type and their properties.
         """
+
         return [
             (
                 object_type,
-                [self[self.get_field_name(object_type, prop)] for prop in props],
+                [self.get_field_representation(object_type, prop) for prop in props],
             )
             for object_type, props in self.get_properties_by_object_type()
         ]
@@ -317,6 +367,13 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
 
         return field_instance
 
+    def non_field_value_for_property(self, prop):
+        try:
+            input_func = non_value_input_type_mapping[prop.input_type]
+            return HTML(f"<div class='form-group'>{input_func(prop)}</div>")
+        except KeyError as e:
+            raise KeyError(f"Field of type {e} is not supported.")
+
     def get_field_kwargs(self, prop):
         """
         Return the options used when instanciating the field for the given `prop`.
@@ -333,6 +390,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
             models.WorksObjectProperty.INPUT_TYPE_DATE: self.get_date_field_kwargs,
             models.WorksObjectProperty.INPUT_TYPE_NUMBER: self.get_number_field_kwargs,
             models.WorksObjectProperty.INPUT_TYPE_FILE: self.get_file_field_kwargs,
+            models.WorksObjectProperty.INPUT_TYPE_REGEX: self.get_regex_field_kwargs,
             models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE: self.get_list_single_field_kwargs,
             models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE: self.get_list_multiple_field_kwargs,
         }
@@ -353,6 +411,31 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                     else "",
                 },
             ),
+        }
+
+    def get_regex_field_kwargs(self, prop, default_kwargs):
+        error_message = (
+            (
+                _("La saisie n'est pas conforme au format demandé (%(placeholder)s).")
+                % {"placeholder": prop.placeholder}
+            )
+            if prop.placeholder
+            else _("La saisie n'est pas conforme au format demandé.")
+        )
+
+        return {
+            **default_kwargs,
+            "widget": forms.Textarea(
+                attrs={
+                    "rows": 1,
+                    "placeholder": ("ex: " + prop.placeholder)
+                    if prop.placeholder != ""
+                    else "",
+                },
+            ),
+            "validators": [
+                RegexValidator(regex=prop.regex_pattern, message=error_message,)
+            ],
         }
 
     def get_address_field_kwargs(self, prop, default_kwargs):
@@ -432,12 +515,15 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
 
     def save(self):
         for works_object_type, prop in self.get_properties():
-            services.set_object_property_value(
-                permit_request=self.instance,
-                object_type=works_object_type,
-                prop=prop,
-                value=self.cleaned_data[self.get_field_name(works_object_type, prop)],
-            )
+            if prop.is_value_property():
+                services.set_object_property_value(
+                    permit_request=self.instance,
+                    object_type=works_object_type,
+                    prop=prop,
+                    value=self.cleaned_data[
+                        self.get_field_name(works_object_type, prop)
+                    ],
+                )
 
 
 class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
@@ -466,7 +552,7 @@ def check_existing_email(email, user):
         .exclude(Q(id=user.id) if user else Q())
         .exists()
     ):
-        raise forms.ValidationError(_("Cet email est déjà utilisé."))
+        raise ValidationError(_("Cet email est déjà utilisé."))
 
     return email
 
@@ -870,9 +956,6 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 "format": "DD.MM.YYYY HH:mm",
                 "locale": "fr-CH",
                 "useCurrent": False,
-                "minDate": (
-                    datetime.today() + timedelta(days=int(settings.MIN_START_DELAY))
-                ).strftime("%Y/%m/%d"),
             }
         ).start_of("event days"),
         help_text="Cliquer sur le champ et selectionner la date planifiée de début à l'aide de l'outil mis à disposition",
@@ -913,6 +996,16 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         self.permit_request = kwargs.pop("permit_request", None)
         disable_fields = kwargs.pop("disable_fields", False)
 
+        initial = {}
+        if (
+            self.permit_request.prolongation_date
+            and self.permit_request.prolongation_status
+            == self.permit_request.PROLONGATION_STATUS_APPROVED
+        ):
+            initial["ends_at"] = self.permit_request.prolongation_date
+
+        kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
+
         super().__init__(*args, **kwargs)
 
         required_info = services.get_geotime_required_info(self.permit_request)
@@ -937,6 +1030,17 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         if disable_fields:
             for field in self.fields.values():
                 field.disabled = True
+
+        min_start_date = self.permit_request.get_min_starts_at()
+        if self.fields.get("starts_at"):
+            # starts_at >= min_start_date
+            self.fields["starts_at"].widget.config["options"].update(
+                {"minDate": min_start_date.strftime("%Y/%m/%d")}
+            )
+            # ends_at >= starts_at
+            self.fields["ends_at"].widget.config["options"].update(
+                {"minDate": min_start_date.strftime("%Y/%m/%d")}
+            )
 
     def get_widget_options(self, permit_request):
         works_object_type_choices = (
@@ -1012,9 +1116,34 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         ends_at = cleaned_data.get("ends_at")
         if starts_at and ends_at:
             if ends_at <= starts_at:
-                raise forms.ValidationError(
+                raise ValidationError(
                     _("La date de fin doit être postérieure à la date de début.")
                 )
+
+            min_starts_at = self.permit_request.get_min_starts_at()
+            if starts_at < min_starts_at:
+                raise ValidationError(
+                    {
+                        "starts_at": _(
+                            "La date planifiée de début doit être postérieure à %(date)s"
+                        )
+                        % {"date": min_starts_at.strftime("%d.%m.%Y %H:%M")}
+                    }
+                )
+
+            if self.permit_request.max_validity is not None:
+                max_ends_at = starts_at + timedelta(
+                    days=self.permit_request.max_validity
+                )
+                if ends_at > max_ends_at:
+                    raise ValidationError(
+                        {
+                            "ends_at": _(
+                                "La date planifiée de fin doit être au maximum: %(date)s"
+                            )
+                            % {"date": max_ends_at.strftime("%d.%m.%Y %H:%M")}
+                        }
+                    )
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -1101,6 +1230,49 @@ class PermitRequestValidationPokeForm(forms.Form):
         )
 
 
+class PermitRequestProlongationForm(forms.ModelForm):
+    prolongation_date = forms.DateTimeField(
+        label=_("Nouvelle date de fin demandée"),
+        input_formats=[settings.DATETIME_INPUT_FORMAT],
+        widget=DateTimePickerInput(
+            options={
+                "format": "DD.MM.YYYY HH:mm",
+                "locale": "fr-CH",
+                "useCurrent": False,
+                "minDate": (datetime.today()).strftime("%Y/%m/%d"),
+            }
+        ).start_of("event days"),
+        help_text="Cliquer sur le champ et selectionner la nouvelle date de fin planifiée",
+    )
+
+    class Meta:
+        model = models.PermitRequest
+        fields = [
+            "prolongation_date",
+            "prolongation_comment",
+            "prolongation_status",
+        ]
+        widgets = {
+            "prolongation_comment": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        prolongation_date = cleaned_data.get("prolongation_date")
+        original_end_date = services.get_geotime_objects(self.instance.id).aggregate(
+            Max("ends_at")
+        )["ends_at__max"]
+
+        if prolongation_date:
+            if prolongation_date <= original_end_date:
+                raise forms.ValidationError(
+                    _(
+                        "La date de prolongation doit être postérieure à la date originale de fin (%s)."
+                    )
+                    % original_end_date.strftime(settings.DATETIME_INPUT_FORMAT)
+                )
+
+
 class PermitRequestClassifyForm(forms.ModelForm):
     # Status field is set as initial value when instantiating the form in the view
     status = forms.ChoiceField(
@@ -1142,3 +1314,97 @@ class PermitRequestClassifyForm(forms.ModelForm):
             permit_request.save()
 
         return permit_request
+
+
+class SocialSignupForm(SignupForm):
+    first_name = forms.CharField(
+        max_length=30,
+        label=_("Prénom"),
+        widget=forms.TextInput(
+            attrs={"placeholder": "ex: Marcel", "required": "required"}
+        ),
+    )
+    last_name = forms.CharField(
+        max_length=150,
+        label=_("Nom"),
+        widget=forms.TextInput(
+            attrs={"placeholder": "ex: Dupond", "required": "required"}
+        ),
+    )
+
+    required_css_class = "required"
+
+    address = forms.CharField(
+        max_length=100, label=_("Adresse"), widget=AddressWidget()
+    )
+
+    zipcode = forms.IntegerField(
+        label=_("NPA"),
+        min_value=1000,
+        max_value=9999,
+        widget=forms.NumberInput(attrs={"required": "required"}),
+    )
+    city = forms.CharField(
+        max_length=100,
+        label=_("Ville"),
+        widget=forms.TextInput(
+            attrs={"placeholder": "ex: Yverdon", "required": "required"}
+        ),
+    )
+    phone_first = forms.CharField(
+        label=_("Téléphone principal"),
+        max_length=20,
+        required=True,
+        widget=forms.TextInput(attrs={"placeholder": "ex: 024 111 22 22"}),
+        validators=[
+            RegexValidator(
+                regex=r"^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
+                message="Seuls les chiffres et les espaces sont autorisés.",
+            )
+        ],
+    )
+
+    phone_second = forms.CharField(
+        required=False,
+        label=_("Téléphone secondaire"),
+        max_length=20,
+        widget=forms.TextInput(attrs={"placeholder": "ex: 079 111 22 22"}),
+    )
+
+    company_name = forms.CharField(
+        required=False,
+        label=_("Raison Sociale"),
+        max_length=100,
+        widget=forms.TextInput(attrs={"placeholder": "ex: Construction SA"}),
+    )
+
+    vat_number = forms.CharField(
+        required=False,
+        label=_("Numéro TVA"),
+        max_length=19,
+        widget=forms.TextInput(attrs={"placeholder": "ex: CHE-123.456.789"}),
+        help_text=_(
+            'Trouvez votre numéro <a href="https://www.uid.admin.ch/Search.aspx'
+            '?lang=fr" target="_blank">TVA</a>'
+        ),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].label = _("Nom d’utilisateur")
+        self.fields["username"].required = True
+        self.fields["email"].disabled = True
+        if kwargs["sociallogin"].user.username != "":
+            self.fields["username"].disabled = True
+
+    def save(self, request):
+        # SOCIALACCOUNT_FORMS.signup is unique, but providers are multiple.
+        # Find the correct adapter to save the new User.
+        if self.sociallogin.account.provider == DootixProvider.id:
+            adapter = DootixSocialAccountAdapter(request)
+        elif self.sociallogin.account.provider == GeomapfishProvider.id:
+            adapter = GeomapfishSocialAccountAdapter(request)
+        else:
+            raise ProviderException(_("Unknown social account provider"))
+
+        return adapter.save_user(request, self.sociallogin, form=self)

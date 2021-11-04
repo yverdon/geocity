@@ -48,6 +48,8 @@ AXES_LOCKOUT_URL = (
     "/" + PREFIX_URL + "/account/lockout" if PREFIX_URL else "/account/lockout"
 )
 
+AXES_COOLOFF_TIME = int(os.getenv("AXES_COOLOFF_TIME", 2))
+
 DJANGO_DOCKER_PORT = os.getenv("DJANGO_DOCKER_PORT")
 
 # Set environment mode
@@ -112,6 +114,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "accounts.geomapfish",
+    "accounts.dootix",
     "constance",
     "constance.backends.database",
     "simple_history",
@@ -125,6 +128,8 @@ INSTALLED_APPS = [
     "django_tables2_column_shifter",
     "taggit",
     "oauth2_provider",
+    "crispy_forms",
+    "django_cron",
     "axes",
 ]
 
@@ -275,7 +280,6 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "geomapshark.context_processors.two_factor_setting",
-                "geomapshark.context_processors.social_login_geomapfish_setting",
                 "permits.context_processors.step_type",
             ],
         },
@@ -292,6 +296,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 AUTH_PROVIDER_GEOMAPFISH_URL = os.getenv("AUTH_PROVIDER_GEOMAPFISH_URL", "")
+AUTH_PROVIDER_DOOTIX_URL = os.getenv("AUTH_PROVIDER_DOOTIX_URL", "")
 
 SOCIALACCOUNT_PROVIDERS = {
     "accounts.geomapfish": {
@@ -306,12 +311,24 @@ SOCIALACCOUNT_PROVIDERS = {
         # },
         "SCOPE": ["email"],
         "VERIFIED_EMAIL": True,
-    }
+    },
+    "accounts.dootix": {
+        # Override SocialApp fields with an "APP" settings.
+        # SocialApp object => /admin/socialaccount/socialapp.
+        # Example:
+        # "APP": {
+        #     "client_id": "dev-liip",
+        #     "secret": os.getenv("DOOTIX_SECRET"),
+        #     "key": "",
+        #     "certificate_key": ""
+        # },
+        "SCOPE": ["email"],
+        "VERIFIED_EMAIL": True,
+    },
 }
 
 # Override SocialAccountAdapter to customize User creation
-SOCIALACCOUNT_ADAPTER = "accounts.geomapfish.adapter.GeomapfishSocialAccountAdapter"
-SOCIALACCOUNT_FORMS = {"signup": "accounts.geomapfish.forms.GeomapfishSocialSignupForm"}
+SOCIALACCOUNT_FORMS = {"signup": "permits.forms.SocialSignupForm"}
 SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = None
@@ -409,3 +426,9 @@ REST_FRAMEWORK = {
 
 WFS3_TITLE = "OGC API Features - Geocity"
 WFS3_DESCRIPTION = "Point d'accès OGC API Features aux données Geocity."
+
+CRISPY_TEMPLATE_PACK = "bootstrap4"
+
+CRON_CLASSES = [
+    "permits.cron.PermitRequestExpirationReminder",
+]

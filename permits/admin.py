@@ -54,6 +54,11 @@ AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
 
 MULTIPLE_INTEGRATOR_ERROR_MESSAGE = "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur'"
 
+PERMIT_DURATION_ERROR_MESSAGE = "Veuillez saisir une valeur > 0"
+DAYS_BEFORE_REMINDER_ERROR_MESSAGE = (
+    "Si la fonction de rappel est active, il faut saisir une valeur de délai valide"
+)
+
 # Allow a user belonging to integrator group to see only objects created by this group
 def filter_for_user(user, qs):
     if not user.is_superuser:
@@ -123,6 +128,21 @@ class UserAdmin(BaseUserAdmin):
         ),
         ("Dates importantes", {"fields": ("last_login", "date_joined",)},),
     )
+
+    list_display = (
+        "username",
+        "email",
+        "first_name",
+        "last_name",
+        "is_staff",
+        "is_sociallogin",
+    )
+
+    @admin.display(boolean=True)
+    def is_sociallogin(self, obj):
+        return obj.socialaccount_set.exists()
+
+    is_sociallogin.short_description = "Social"
 
     def get_readonly_fields(self, request, obj=None):
         # limit editable fields to protect user data, superuser creation must be done using django shell
@@ -501,6 +521,9 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
             "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
         }
 
+    class Media:
+        js = ("js/admin/works_object_type.js",)
+
     def __init__(self, *args, **kwargs):
         instance = kwargs.get("instance")
         if instance:
@@ -514,6 +537,20 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
             )
 
         super().__init__(*args, **kwargs)
+
+    def clean_days_before_reminder(self):
+        if (
+            self.cleaned_data["expiration_reminder"]
+            and self.cleaned_data["days_before_reminder"] is None
+        ):
+            raise forms.ValidationError(DAYS_BEFORE_REMINDER_ERROR_MESSAGE)
+        return self.cleaned_data["days_before_reminder"]
+
+    def clean_permit_duration(self):
+        if self.cleaned_data["permit_duration"]:
+            if self.cleaned_data["permit_duration"] <= 0:
+                raise forms.ValidationError(PERMIT_DURATION_ERROR_MESSAGE)
+        return self.cleaned_data["permit_duration"]
 
     def save(self, *args, **kwargs):
         for geometry_type in self.GeometryTypes.values:
@@ -548,7 +585,20 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             "Notifications aux services",
             {"fields": ("notify_services", "services_to_notify")},
         ),
-        ("Planning et localisation", {"fields": ("geometry_types", "needs_date",)},),
+        (
+            "Planning et localisation",
+            {"fields": ("geometry_types", "needs_date", "start_delay",)},
+        ),
+        (
+            "Prolongation",
+            {
+                "fields": (
+                    "permit_duration",
+                    "expiration_reminder",
+                    "days_before_reminder",
+                )
+            },
+        ),
         (
             "Directive",
             {
@@ -622,6 +672,7 @@ class WorksObjectPropertyForm(forms.ModelForm):
             "order",
             "input_type",
             "choices",
+            "regex_pattern",
             "is_mandatory",
             "works_object_types",
         ]
@@ -664,6 +715,8 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
             "title_signature_2",
             "phone",
             "geom",
+            "expeditor_email",
+            "expeditor_name",
         ]
         exclude = ["enabled_status"]
         widgets = {

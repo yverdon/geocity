@@ -400,6 +400,7 @@ def get_permit_requests_list_for_user(
     qs = models.PermitRequest.objects.annotate(
         starts_at_min=Min("geo_time__starts_at"),
         ends_at_max=Max("geo_time__ends_at"),
+        permit_duration_max=Max("works_object_types__permit_duration"),
         remaining_validations=Count("validations")
         - Count(
             "validations",
@@ -945,6 +946,11 @@ def submit_permit_request(permit_request, request):
         send_email_notification(data)
 
     else:
+        # Here we create a new Permit Request, therefore if it contains one or more
+        # WOTs that can be prolonged with no Date required but can be renewed, we need
+        # to calculate the dates automatically
+        permit_request.set_dates_for_renewables_wots()
+
         users_to_notify = set(
             get_user_model()
             .objects.filter(
@@ -1062,8 +1068,19 @@ def send_email_notification(data):
         data["template"], data["permit_request"], data["absolute_uri_func"]
     )
 
+    from_email_name = (
+        f'{data["permit_request"].administrative_entity.expeditor_name} '
+        if data["permit_request"].administrative_entity.expeditor_name
+        else ""
+    )
+    from_email = (
+        f'{from_email_name}<{data["permit_request"].administrative_entity.expeditor_email}>'
+        if data["permit_request"].administrative_entity.expeditor_email
+        else settings.DEFAULT_FROM_EMAIL
+    )
+
     emails = [
-        (data["subject"], email_contents, settings.DEFAULT_FROM_EMAIL, [email_address],)
+        (data["subject"], email_contents, from_email, [email_address],)
         for email_address in data["users_to_notify"]
         if validate_email(email_address)
     ]
@@ -1091,6 +1108,12 @@ def has_permission_to_amend_permit_request(user, permit_request):
 
 def can_amend_permit_request(user, permit_request):
     return permit_request.can_be_amended() and has_permission_to_amend_permit_request(
+        user, permit_request
+    )
+
+
+def can_prolonge_permit_request(user, permit_request):
+    return permit_request.can_be_prolonged() and has_permission_to_amend_permit_request(
         user, permit_request
     )
 
@@ -1250,6 +1273,7 @@ def get_actions_for_administrative_entity(permit_request):
             models.PermitRequest.STATUS_AWAITING_VALIDATION,
             models.PermitRequest.STATUS_PROCESSING,
         ],
+        "prolong": list(models.PermitRequest.PROLONGABLE_STATUSES),
     }
 
     available_statuses_for_administrative_entity = get_status_choices_for_administrative_entity(
@@ -1265,7 +1289,6 @@ def get_actions_for_administrative_entity(permit_request):
             available_actions.append(action)
 
     distinct_available_actions = list(dict.fromkeys(available_actions))
-
     return distinct_available_actions
 
 
@@ -1396,11 +1419,11 @@ def validate_file(file):
     if kind is not None:
         extensions = config.ALLOWED_FILE_EXTENSIONS.replace(" ", "").split(",")
         if kind.extension not in extensions:
-            raise forms.ValidationError(
+            raise ValidationError(
                 _("%(file)s n'est pas du bon type"), params={"file": file},
             )
         elif file.size > config.MAX_FILE_UPLOAD_SIZE:
-            raise forms.ValidationError(
+            raise ValidationError(
                 _("%(file)s est trop volumineux"), params={"file": file},
             )
         # Check that image file is not corrupted
@@ -1415,7 +1438,7 @@ def validate_file(file):
                     params={"file": file},
                 )
     else:
-        raise forms.ValidationError(
+        raise ValidationError(
             _(
                 "Le type de %(file)s n'est pas supporté, assurez-vous que votre fichier soit du bon type"
             ),

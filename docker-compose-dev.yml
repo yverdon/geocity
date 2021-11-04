@@ -7,6 +7,8 @@ volumes:
 services:
     web:
         image: gms_web
+        tty: true
+        stdin_open: true
         restart: unless-stopped
         depends_on:
             - "qgisserver"
@@ -53,3 +55,13 @@ services:
             - "${POSTGRES_DOCKER_PORT}:5432"
         volumes:
             - pgdata:/var/lib/postgresql/data
+
+    mailhog:
+        container_name: mailhog
+        tty: true
+        image: mailhog/mailhog
+        logging:
+            driver: 'none'  # disable saving logs
+        ports:
+            - 1025:1025 # smtp server
+            - 8025:8025 # web ui
