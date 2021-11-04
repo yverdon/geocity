@@ -51,6 +51,10 @@ body {
   color: var(--primary-color);
 }
 
+.outer-button {
+  border-right: 4px solid white;
+}
+
 .btn-primary {
   color: #fff;
   background-color: var(--primary-color);
@@ -623,15 +627,12 @@ h4.workObjectHeader {
 
 /* list elements */
 dl {
-  display: grid;
-  grid-template-columns: max-content auto;
   width: 100%;
   overflow: hidden;
   padding: 0;
   margin: 0
 }
 dt {
-  grid-column-start: 1;
   float: left;
   width: 28%;
   /* adjust the width; make sure the total of both is 100% */
@@ -639,7 +640,6 @@ dt {
   margin: 0
 }
 dd {
-  grid-column-start: 2;
   float: left;
   width: 72%;
   /* adjust the width; make sure the total of both is 100% */
@@ -647,7 +647,10 @@ dd {
   margin: 0
 }
 
-/* summary grid */¨
+/* summary grid */
+.status_display, .history_user {
+  padding-left: 18px;
+}
 
 .row-1 {
   width: 200px;
@@ -657,11 +660,12 @@ dd {
   width: 400px;
 }
 
-.status_display, .history_user {
-  padding-left: 18px;
+.row-header {
+  border-bottom: 0px;
 }
 
-.row {
+
+.sub-row {
   border-bottom: white 10px solid;
 }
 
@@ -671,7 +675,7 @@ dd {
 }
 
 .col-md-8 {
-  background-color: #f8f9fa;
+  background-color: var(--light);
 }
 
 .floating-elem {
@@ -683,8 +687,4 @@ dd {
   vertical-align: top;
   position: relative;
   top: -0.1em;
-}
-
-.outer {
-  border-right: 4px solid white;
 }
