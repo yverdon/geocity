@@ -240,7 +240,13 @@
                     <div{% if not forloop.last %} class="mb-3"{% endif %}>
                       {% if directive_file and directive_description %}
                         {{forloop.counter}}.
-                        <span class="directive_description">{{ directive_description }}</span> - {% if directive_file %}<a class="directive_file" href="{{ directive_file.url }}" target="_blank" rel="noreferrer">{% trans "Télécharger le fichier" %}</a>{% endif %} - <span class="additional_information">{{ additional_information }}</span>
+                        <span class="directive_description">{{ directive_description }}</span> - 
+                        {% if directive_file %}
+                          <i class="fa fa-download" aria-hidden="true"></i>
+                          <a class="directive_file" href="{{ directive_file.url }}" target="_blank" rel="noreferrer">
+                            {% trans "Télécharger le fichier" %}
+                          </a>
+                        {% endif %} - <span class="additional_information">{{ additional_information }}</span>
                       {% endif %}
                     </div>
                   {% endfor %}
@@ -280,10 +286,15 @@
         </dd>
         <dd>
           {% if permit_request.validation_pdf %}
-            {% trans "Document délivré" %}
+          <dd>
+            {% trans "Document délivré:" %}
+          </dd>
+          <dd>
+              <i class="fa fa-download" aria-hidden="true"></i>
               <a href="{{ permit_request.validation_pdf.url }}" target="_blank" rel="noreferrer">
                 Télécharger le document PDF
               </a>
+          </dd>
           {% endif %}
         </dd>
         </dl>
