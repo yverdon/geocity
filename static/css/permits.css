@@ -342,6 +342,7 @@ h3 {
 
 .container {
   padding: 0;
+  padding-bottom: 8px;
 }
 
 #legal-infos {
@@ -645,7 +646,6 @@ dl {
   margin: 0;
   border: solid #333;
   border-width: 0px;
-  padding-bottom: 10px;
 }
 dt {
   display: flex;
