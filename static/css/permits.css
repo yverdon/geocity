@@ -653,7 +653,6 @@ dt {
   flex-grow: 1;
   float: left;
   width: 28%;
-  vertical-align: text-bottom;
   text-align: left;
   /* adjust the width; make sure the total of both is 100% */
   padding: 0;
@@ -663,16 +662,26 @@ dd {
   display: flex;
   flex-basis: 72%;
   flex-grow: 1;
-  align-self: flex-end;
+  align-self: flex-start;
   float: left;
   width: 72%;
-  vertical-align: text-bottom;
   text-align: left;
   /* adjust the width; make sure the total of both is 100% */
   padding: 0;
   margin: 0;
 }
 
+.grid-container{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 2px;
+  padding-bottom: 10px;
+}
+
+.grid-element {
+  flex: 3;
+  border: 0px solid green;
+}  
 
 
 /* summary grid */

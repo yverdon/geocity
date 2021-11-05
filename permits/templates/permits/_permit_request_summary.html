@@ -6,9 +6,9 @@
   <div class="row">
     <div class="col">
       {% for object, properties, appendices, amend_custom_properties in objects_infos %}
-       
-          <h4 class="workObjectHeader"> {{ object }} </h4>
-          <dl>
+
+        <h4 class="workObjectHeader"> {{ object }} </h4>
+        <dl>
           {% for field in properties %}
             {% if field.label %}
               <dt> {{ field.label }} </dt>
@@ -40,8 +40,7 @@
               {% endif %}
             {% endfor %}
           {% endif %}
-    
-         </dl>
+        </dl>
 
       {% endfor %}
     </div>
@@ -59,17 +58,27 @@
             <dd> {{ creditor }} </dd>
           {% endif %}
         </dl>
-        <dl>
+
           {% for contact_type, contact_infos in contacts %}
-            <h5>{{ contact_type }}</h5>
-              {% for field_label, field_value in contact_infos %}
-                {% if field_value %}
-                  <dt> {{ field_label }} </dt>
-                  <dd> {{ field_value }} </dd>
-                {% endif %}
-              {% endfor %}
+          <h5>{{ contact_type }}</h5>
+            <div class="row">
+              <div class="col">
+                <div class="grid-container">
+                  {% for field_label, field_value in contact_infos %}
+                    {% if field_value %}
+                    <div class="grid-element">
+                      </dl>
+                         <dt> {{ field_label }} </dt>
+                         <dd> {{ field_value }} </dd>
+                      </dl>
+                    </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
           {% endfor %}
-        </dl>
+
       </div>
     </div>
 
