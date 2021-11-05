@@ -1,0 +1,240 @@
+{% load i18n %}
+{% load bootstrap4 %}
+
+<div class="container">
+  {% if forms.amend or forms.request_validation or forms.validate or forms.poke %}
+  <h2>{% trans "" %}</h2>
+  <div class="row">
+    <div class="col">
+      <ul class="nav nav-tabs" id="actions-tabs" role="tablist">
+
+      {% if forms.amend %}
+
+          <li class="nav-item">
+              <a class="btn btn-primary btn-action nav-link{% if active_form == "amend" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">{% trans "Traiter" %}</a>
+          </li>
+
+      {% endif %}
+
+      {% if forms.request_validation %}
+
+          <li class="nav-item">
+              <a class="btn btn-primary btn-action nav-link{% if active_form == "request_validation" %} active{% endif %}" id="request-validation-tab" data-toggle="tab" href="#request-validation" role="tab" aria-controls="request-validation" aria-selected="{% if active_form == "request_validation" %}true{% else %}false{% endif %}">{% trans "Envoyer pour validation" %}</a>
+          </li>
+
+      {% endif %}
+
+      {% if forms.validate %}
+
+          <li class="nav-item">
+              <a class="btn btn-primary btn-action nav-link{% if active_form == "validate" %} active{% endif %}" id="validate-tab" data-toggle="tab" href="#validate" role="tab" aria-controls="validate" aria-selected="{% if active_form == "validate" %}true{% else %}false{% endif %}">
+              {% trans "Valider" %}
+              </a>
+          </li>
+
+      {% endif %}
+
+      {% if forms.poke or can_classify %}
+
+          <li class="nav-item">
+              <a class="btn btn-primary btn-action nav-link{% if active_form == "poke" %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#classify" role="tab" aria-controls="classify" aria-selected="{% if active_form == "poke" %}true{% else %}false{% endif %}">
+              {% trans "Classer" %}
+              </a>
+          </li>
+
+      {% endif %}
+
+      {% if forms.prolong %}
+
+          <li class="nav-item">
+              <a class="btn btn-primary btn-action nav-link{% if active_form == 'prolong' %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#prolong" role="tab" aria-controls="prolong" aria-selected="{% if active_form == 'prolong' %}true{% else %}false{% endif %}">
+              {% trans "Prolongation" %}
+              </a>
+          </li>
+
+      {% endif %}
+
+
+          <li class="nav-item">
+          <a class="btn btn-primary btn-action nav-link" id="print-tab" data-toggle="tab" href="#print" role="tab" aria-controls="print">
+              {% trans "Imprimer" %}
+          </a>
+          </li>
+
+      </ul>
+
+    </div>
+  </div>
+  <div class="row sub-row">
+
+    <div class="col">
+      <div class="pt-3 tab-content box box--default box--tabbed">
+        {% if forms.amend %}
+            <div class="tab-pane{% if active_form == "amend" %} show active{% endif %}" id="amend" role="tabpanel" aria-labelledby="amend-tab">
+            <form method="post">
+                {% csrf_token %}
+
+                {% for field in forms.amend.get_base_fields %}
+                {% bootstrap_field field layout='horizontal'%}
+                {% endfor %}
+
+                {% for object_type, fields in forms.amend.get_fields_by_object_type %}
+                {% if fields %}
+                    <h4 class="my-5">{{ object_type }}</h4>
+                    {% for field in fields %}
+                    {% bootstrap_field field layout='horizontal'%}
+                    {% endfor %}
+                {% endif %}
+                {% endfor %}
+
+                <div class="text-right">
+                <input name="action" type="hidden" value="amend">
+                <button class="btn btn-primary" {% if forms.amend.disabled %}disabled{% endif %}>{% trans "Enregistrer" %}</button>
+                <button class="btn btn-primary" name="save_continue" {% if forms.amend.disabled %}disabled{% endif %}>{% trans "Enregistrer et continuer les modifications" %}</button>
+                </div>
+            </form>
+            </div>
+        {% endif %}
+
+        {% if forms.request_validation %}
+            <div class="tab-pane{% if active_form == "request_validation" %} show active{% endif %}" id="request-validation" role="tabpanel" aria-labelledby="request-validation-tab">
+            <form method="post">
+                {% csrf_token %}
+
+                {% bootstrap_form forms.request_validation layout='horizontal' %}
+
+                <div class="text-right">
+                <input name="action" type="hidden" value="request_validation">
+                <button class="btn btn-primary" {% if forms.request_validation.disabled %}disabled{% endif %}>{% trans "Envoyer pour validation" %}</button>
+                </div>
+            </form>
+            </div>
+        {% endif %}
+
+        {% if forms.validate %}
+            <div class="tab-pane{% if active_form == "validate" %} show active{% endif  %}" id="validate" role="tabpanel" aria-labelledby="validate-tab">
+            <form method="post">
+                {% csrf_token %}
+
+                {% bootstrap_form forms.validate layout='horizontal' %}
+
+                <div class="text-right">
+                <input name="action" type="hidden" value="validate">
+                <button class="btn btn-primary" {% if forms.validate.disabled %}disabled{% endif %}>{% trans "Valider" %}</button>
+                </div>
+            </form>
+            </div>
+        {% endif %}
+
+        {% if forms.poke or can_classify %}
+            <div class="tab-pane{% if active_form == "poke" or not active_form and can_classify %} show active{% endif  %}" id="classify" role="tabpanel" aria-labelledby="classify-tab">
+            <form method="post">
+                {% csrf_token %}
+
+                <dl>
+                {% for validation in validations %}
+                <dt>{{ validation.department.group.name }}</dt>
+                <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
+                    {{ validation.get_validation_status_display }}
+
+                    {% if validation.comment_before %}
+                    <br>
+                    {% trans "Commentaire (avant)" %}: {{ validation.comment_before }}
+                    {% endif %}
+                    {% if validation.comment_during %}
+                    <br>
+                    {% trans "Commentaire (pendant)" %}: {{ validation.comment_during }}
+                    {% endif %}
+                    {% if validation.comment_after %}
+                    <br>
+                    {% trans "Commentaire (après)" %}: {{ validation.comment_after }}
+                    {% endif %}
+                </dd>
+                {% endfor %}
+                </dl>
+
+                {% if nb_pending_validations and not forms.poke.disabled %}
+                <div class="text-right">
+                    <button name="action" value="poke" class="btn btn-primary">
+                    {% blocktrans trimmed count counter=nb_pending_validations %}
+                        Envoyer un rappel au service
+                    {% plural %}
+                        Envoyer des rappels à {{ counter }} services
+                    {% endblocktrans %}
+                    </button>
+                </div>
+                {% elif has_permission_to_classify %}
+                <div class="text-right">
+                    <a href="{% if not can_classify %}#{% else %}{% url 'permits:permit_request_reject' permit_request_id=permit_request.pk %}{% endif %}" class="btn btn-primary {% if not can_classify %} disabled{% endif %}"{% if not can_classify %} aria-disabled="true"{% endif %}>
+                    {% trans "Refuser" %}
+                    </a>
+                    <a href="{% if not can_classify %}#{% else %}{% url 'permits:permit_request_approve' permit_request_id=permit_request.pk %}{% endif %}" class="btn btn-primary{% if not can_classify %} disabled{% endif %}"{% if not can_classify %} aria-disabled="true"{% endif %}>
+                    {% trans "Approuver" %}
+                    </a>
+                </div>
+                {% endif %}
+            </form>
+            </div>
+        {% endif %}
+
+        {% if forms.prolong %}
+        <div class="tab-pane{% if active_form == 'prolong' %} show active{% endif  %}" id="prolong" role="tabpanel" aria-labelledby="prolong-tab">
+
+        <form method="post">
+            {% csrf_token %}
+            {{ forms.prolong.media }}
+            {% if not forms.prolong.prolongation_date.value %}
+            <small class="form-text text-muted mb-3">{% trans "Aucune prolongation n'a été demandée par l'auteur-e" %}</small>
+            {% endif %}
+            {% bootstrap_form forms.prolong layout='horizontal' %}
+
+            <div class="text-right">
+            <input name="action" type="hidden" value="prolong">
+            <button class="btn btn-primary" {% if forms.prolong.disabled %}disabled{% endif %}>{% trans "Enregistrer" %}</button>
+            <button class="btn btn-primary" name="save_continue" {% if forms.prolong.disabled %}disabled{% endif %}>{% trans "Enregistrer et continuer les modifications" %}</button>
+            </div>
+        </form>
+        </div>
+        {% endif %}
+
+        <div class="tab-pane" id="print" role="tabpanel" aria-labelledby="print-tab">
+            <div class="mb-4">
+            <h5>{% trans "Modèles d'impression" %}</h5>
+            {% if print_templates %}
+                <form method="post">
+                {% csrf_token %}
+                {% for print_template in print_templates %}
+                    <button class="btn btn-primary mr-3" formaction="{% url 'permits:permit_request_print' permit_request_id=permit_request.pk template_id=print_template.pk %}">
+                    {{ print_template.description  }}
+                    </button>
+                {% endfor %}
+                </form>
+            {% else %}
+                <span class="no_print_template">{% trans "Aucun modèle d'impression n'a été configuré"%}</span>
+            {% endif %}
+            </div>
+            <h5>{% trans "Directives liées à la demande" %}</h5>
+            {% if directives %}
+                {% for directive_file, directive_description, additional_information in directives %}
+                <div{% if not forloop.last %} class="mb-3"{% endif %}>
+                    {% if directive_file and directive_description %}
+                    {{forloop.counter}}.
+                    <span class="directive_description">{{ directive_description }}</span> - 
+                    {% if directive_file %}
+                        <i class="fa fa-download" aria-hidden="true"></i>
+                        <a class="directive_file" href="{{ directive_file.url }}" target="_blank" rel="noreferrer">
+                        {% trans "Télécharger le fichier" %}
+                        </a>
+                    {% endif %} - <span class="additional_information">{{ additional_information }}</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+            <span class="no_directive">{% trans "Aucune directive n'a été ajoutée" %}</span>
+            {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
