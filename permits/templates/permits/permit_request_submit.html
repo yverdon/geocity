@@ -46,6 +46,9 @@
     {% endif %}
     {% endbuttons %}
   </form>
-  {% permit_request_summary permit_request %}
-<br><br>
+  <div class="row">
+    <div class="col">
+        {% permit_request_summary permit_request %}
+    </div>
+  </div>
 {% endblock %}
