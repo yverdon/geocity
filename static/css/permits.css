@@ -44,11 +44,16 @@ body {
 /* Global boostrap4 styling  */
 
 .btn {
-  border-radius: 0 !important;
+  border-radius: 0;
 }
 
 .btn a {
   color: var(--primary-color);
+}
+
+.btn-action {
+  border-top-left-radius: 6px !important;
+  border-top-right-radius: 6px !important;
 }
 
 .outer-button {
@@ -78,7 +83,7 @@ body {
 .btn-primary:not(:disabled):not(.disabled).active,
 .show>.btn-primary.dropdown-toggle {
   color:#000;
-  background-color: #c6f1e8;
+  background-color: #c2f8ec;
   border-color: #000;
 }
 .btn-primary:not(:disabled):not(.disabled):active:focus,
