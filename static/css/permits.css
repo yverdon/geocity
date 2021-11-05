@@ -637,26 +637,43 @@ h4.workObjectHeader {
 
 /* list elements */
 dl {
+  display: flex;
+  flex-flow: row wrap;
   width: 100%;
   overflow: hidden;
   padding: 0;
   margin: 0;
+  border: solid #333;
+  border-width: 0px;
   padding-bottom: 10px;
 }
 dt {
+  display: flex;
+  flex-basis: 28%;
+  flex-grow: 1;
   float: left;
   width: 28%;
+  vertical-align: text-bottom;
+  text-align: left;
   /* adjust the width; make sure the total of both is 100% */
   padding: 0;
   margin: 0;
 }
 dd {
+  display: flex;
+  flex-basis: 72%;
+  flex-grow: 1;
+  align-self: flex-end;
   float: left;
   width: 72%;
+  vertical-align: text-bottom;
+  text-align: left;
   /* adjust the width; make sure the total of both is 100% */
   padding: 0;
   margin: 0;
 }
+
+
 
 /* summary grid */
 .status_display, .history_user {
