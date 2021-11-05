@@ -635,6 +635,12 @@ h4.workObjectHeader {
 .fa-check-circle {
   color:rgb(140, 199, 30);
 }
+.fa-clock-o {
+  color:rgb(228, 168, 38);
+}
+.fa-times-circle {
+  color:rgb(199, 30, 30);
+}
 
 /* list elements */
 dl {

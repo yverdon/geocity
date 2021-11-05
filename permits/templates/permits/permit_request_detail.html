@@ -129,7 +129,13 @@
                 <dl>
                   <dt> {{ validation.department.group.name }} </dt>
                   <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
-                    <i class="fa fa-check-circle" aria-hidden="true"></i>
+                    {% if 'Approuvé' in validation.get_validation_status_display %}
+                      <i class="fa fa-check-circle" aria-hidden="true"></i>&#x202F;
+                    {% elif 'attente' in validation.get_validation_status_display %}
+                      <i class="fa fa-clock-o" aria-hidden="true"></i>&#x202F;
+                    {% else %}
+                      <i class="fa fa-times-circle" aria-hidden="true"></i>&#x202F;
+                    {% endif %}
                     {{ validation.get_validation_status_display }} par
                       {% if validation.validated_by %}
                         {{ validation.validated_by.permitauthor.user.first_name }}
