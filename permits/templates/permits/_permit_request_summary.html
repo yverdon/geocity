@@ -6,43 +6,43 @@
   <div class="row">
     <div class="col">
       {% for object, properties, appendices, amend_custom_properties in objects_infos %}
-       
-          <h4 class="workObjectHeader"> {{ object }} </h4>
+
+        <h4 class="workObjectHeader"> {{ object }} </h4>
+        <div class="container">
           <dl>
-          {% for field in properties %}
-            {% if field.label %}
-              <dt> {{ field.label }} </dt>
-              <dd> {{ field.value|human_field_value }} </dd>
-            {% else %}
-              {{ field.repr|safe }}
-            {% endif %}
-          {% endfor %}
-      
-          {% for field in appendices %}
-            <dt>{{ field.label }}</dt>
-            <dd>
-              {% if not field.value %}
-                <em>{% trans "Information non fournie" %}</em>
+            {% for field in properties %}
+              {% if field.label %}
+                <dt> {{ field.label }} </dt>
+                <dd> {{ field.value|human_field_value }} </dd>
               {% else %}
-                <a href="{{ field.value.url }}" rel="noreferrer" target="_blank">{{ field.value.name|basename }}</a>
-              {% endif %}
-            </dd>
-          {% endfor %}
-      
-          {% if amend_custom_properties %}
-            <h5>{% trans "Information du service responsable" %}</h5>
-            {% for object_property in amend_custom_properties %}
-              {% if object_property.property.is_visible_by_author %}
-                <dl>
-                  <dt class="amend-property">{{ object_property.property }}</dt>
-                  <dd>{{ object_property.value }}</dd>
-                </dl>
+                {{ field.repr|safe }}
               {% endif %}
             {% endfor %}
-          {% endif %}
-    
-         </dl>
-
+        
+            {% for field in appendices %}
+              <dt>{{ field.label }}</dt>
+              <dd>
+                {% if not field.value %}
+                  <em>{% trans "Information non fournie" %}</em>
+                {% else %}
+                  <a href="{{ field.value.url }}" rel="noreferrer" target="_blank">{{ field.value.name|basename }}</a>
+                {% endif %}
+              </dd>
+            {% endfor %}
+        
+            {% if amend_custom_properties %}
+              <h5>{% trans "Information du service responsable" %}</h5>
+              {% for object_property in amend_custom_properties %}
+                {% if object_property.property.is_visible_by_author %}
+                  <dl>
+                    <dt class="amend-property">{{ object_property.property }}</dt>
+                    <dd>{{ object_property.value }}</dd>
+                  </dl>
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+          </dl>
+        </div>
       {% endfor %}
     </div>
   </div>
@@ -59,17 +59,27 @@
             <dd> {{ creditor }} </dd>
           {% endif %}
         </dl>
-        <dl>
+
           {% for contact_type, contact_infos in contacts %}
-            <h5>{{ contact_type }}</h5>
-              {% for field_label, field_value in contact_infos %}
-                {% if field_value %}
-                  <dt> {{ field_label }} </dt>
-                  <dd> {{ field_value }} </dd>
-                {% endif %}
-              {% endfor %}
+          <h5>{{ contact_type }}</h5>
+            <div class="row">
+              <div class="col">
+                <div class="grid-container">
+                  {% for field_label, field_value in contact_infos %}
+                    {% if field_value %}
+                    <div class="grid-element">
+                      </dl>
+                         <dt> {{ field_label }} </dt>
+                         <dd> {{ field_value }} </dd>
+                      </dl>
+                    </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
           {% endfor %}
-        </dl>
+
       </div>
     </div>
 
