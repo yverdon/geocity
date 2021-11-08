@@ -335,6 +335,7 @@ class GroupAdminForm(forms.ModelForm):
 class GroupAdmin(admin.ModelAdmin):
     inlines = (PermitDepartmentInline,)
     form = GroupAdminForm
+    filter_horizontal = ("permissions",)
 
     def get_queryset(self, request):
 
@@ -573,7 +574,19 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
 
 
 class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
-    list_display = ["__str__", works_object_type_administrative_entities, "is_public"]
+    list_display = [
+        "__str__",
+        works_object_type_administrative_entities,
+        "is_public",
+        "requires_payment",
+        "needs_date",
+        "permit_duration",
+        "expiration_reminder",
+        "days_before_reminder",
+        "has_geometry_point",
+        "has_geometry_line",
+        "has_geometry_polygon",
+    ]
     list_filter = ["administrative_entities"]
     fieldsets = (
         (
@@ -693,7 +706,11 @@ class WorksObjectPropertyForm(forms.ModelForm):
 class WorksObjectPropertyAdmin(
     IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdmin
 ):
-    list_display = ["__str__", "is_mandatory"]
+    list_display = ["__str__", "is_mandatory", "input_type"]
+    list_filter = [
+        "name",
+        "input_type",
+    ]
     form = WorksObjectPropertyForm
 
     # Pass the request from ModelAdmin to ModelForm
@@ -788,10 +805,17 @@ class WorksObjectAdminForm(forms.ModelForm):
 
 
 class WorksObjectAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    list_filter = [
+        "name",
+    ]
     form = WorksObjectAdminForm
 
 
 class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    list_filter = [
+        "name",
+    ]
+    list_display = ["__str__", "expeditor_name", "expeditor_email", "ofs_id"]
     form = PermitAdministrativeEntityAdminForm
     inlines = [
         PermitWorkflowStatusInline,
@@ -850,6 +874,12 @@ class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
 
 class PermitActorTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    list_display = ["__str__", "type", "works_type", "is_mandatory"]
+    list_filter = [
+        "works_type",
+        "is_mandatory",
+    ]
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "works_type":
             kwargs["queryset"] = filter_for_user(
@@ -887,9 +917,14 @@ class PermitRequestAdmin(admin.ModelAdmin):
 
 class TemplateCustomizationAdmin(admin.ModelAdmin):
     list_display = [
+        "__str__",
         "templatename",
         "application_title",
         "has_background_image",
+    ]
+    list_filter = [
+        "templatename",
+        "application_title",
     ]
 
     @admin.display(boolean=True)
