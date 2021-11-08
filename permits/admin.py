@@ -43,7 +43,7 @@ OTHER_PERMISSIONS_CODENAMES = [
     "change_group",
     "delete_group",
     "see_private_requests",
-    #Django axes
+    # Django axes
     "add_accessattempt",
     "change_accessattempt",
     "delete_accessattempt",
