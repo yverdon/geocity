@@ -336,7 +336,9 @@ class GroupAdmin(admin.ModelAdmin):
     inlines = (PermitDepartmentInline,)
     form = GroupAdminForm
     filter_horizontal = ("permissions",)
-    search_fields = ["name", ]
+    search_fields = [
+        "name",
+    ]
 
     def get_queryset(self, request):
 
@@ -376,7 +378,7 @@ class GroupAdmin(admin.ModelAdmin):
                 kwargs["queryset"] = integrator_permissions
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
-   
+
 
 admin.site.unregister(Group)
 admin.site.register(Group, GroupAdmin)
@@ -589,7 +591,11 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "has_geometry_polygon",
     ]
     list_filter = ["administrative_entities"]
-    search_fields = ["works_type__name","works_object__name", "administrative_entities__name"]
+    search_fields = [
+        "works_type__name",
+        "works_object__name",
+        "administrative_entities__name",
+    ]
     fieldsets = (
         (
             None,
@@ -713,7 +719,9 @@ class WorksObjectPropertyAdmin(
         "name",
         "input_type",
     ]
-    search_fields = ["name",]
+    search_fields = [
+        "name",
+    ]
     form = WorksObjectPropertyForm
 
     # Pass the request from ModelAdmin to ModelForm
@@ -811,7 +819,9 @@ class WorksObjectAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_filter = [
         "name",
     ]
-    search_fields = ["name",]
+    search_fields = [
+        "name",
+    ]
     form = WorksObjectAdminForm
 
 
@@ -819,7 +829,9 @@ class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_filter = [
         "name",
     ]
-    search_fields = ["name",]
+    search_fields = [
+        "name",
+    ]
     list_display = ["__str__", "expeditor_name", "expeditor_email", "ofs_id"]
     form = PermitAdministrativeEntityAdminForm
     inlines = [
@@ -854,7 +866,9 @@ class PermitRequestAmendPropertyForm(forms.ModelForm):
 class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
     list_display = ["sortable_str", "is_mandatory", "is_visible_by_author"]
-    search_fields = ["name", ]
+    search_fields = [
+        "name",
+    ]
     form = PermitRequestAmendPropertyForm
 
     def sortable_str(self, obj):
@@ -885,7 +899,9 @@ class PermitActorTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "works_type",
         "is_mandatory",
     ]
-    search_fields = ["name", ]
+    search_fields = [
+        "name",
+    ]
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "works_type":
@@ -908,7 +924,9 @@ class PermitRequestAdmin(admin.ModelAdmin):
         "get_works_object_types",
         "administrative_entity",
     ]
-    search_fields = ["id", ]
+    search_fields = [
+        "id",
+    ]
     list_filter = ("status", "author", "works_object_types", "administrative_entity")
 
     def has_add_permission(self, request):
@@ -934,7 +952,9 @@ class TemplateCustomizationAdmin(admin.ModelAdmin):
         "templatename",
         "application_title",
     ]
-    search_fields = ["templatename", ]
+    search_fields = [
+        "templatename",
+    ]
 
     @admin.display(boolean=True)
     def has_background_image(self, obj):
