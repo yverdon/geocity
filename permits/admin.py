@@ -311,6 +311,9 @@ class GroupAdminForm(forms.ModelForm):
             ),
         }
 
+    class Media:
+        css = {"all": ("css/admin.css",)}
+
     def clean_permissions(self):
         permissions = self.cleaned_data["permissions"]
         integrator_permissions = Permission.objects.filter(
@@ -335,6 +338,7 @@ class GroupAdminForm(forms.ModelForm):
 class GroupAdmin(admin.ModelAdmin):
     inlines = (PermitDepartmentInline,)
     form = GroupAdminForm
+    filter_horizontal = ("permissions",)
 
     def get_queryset(self, request):
 
@@ -573,7 +577,19 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
 
 
 class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
-    list_display = ["__str__", works_object_type_administrative_entities, "is_public"]
+    list_display = [
+        "__str__",
+        works_object_type_administrative_entities,
+        "is_public",
+        "requires_payment",
+        "needs_date",
+        "permit_duration",
+        "expiration_reminder",
+        "days_before_reminder",
+        "has_geometry_point",
+        "has_geometry_line",
+        "has_geometry_polygon",
+    ]
     list_filter = ["administrative_entities"]
     fieldsets = (
         (
@@ -693,9 +709,13 @@ class WorksObjectPropertyForm(forms.ModelForm):
 class WorksObjectPropertyAdmin(
     IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdmin
 ):
-    list_display = ["__str__", "is_mandatory"]
+    list_display = ["__str__", "is_mandatory", "input_type"]
+    list_filter = [
+        "name",
+        "input_type",
+    ]
     form = WorksObjectPropertyForm
-
+    
     # Pass the request from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs):
         Form = super(WorksObjectPropertyAdmin, self).get_form(request, obj, **kwargs)
@@ -788,10 +808,17 @@ class WorksObjectAdminForm(forms.ModelForm):
 
 
 class WorksObjectAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    list_filter = [
+        "name",
+    ]
     form = WorksObjectAdminForm
 
 
 class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    list_filter = [
+        "name",
+    ]
+    list_display = ["name", "expeditor_name", "expeditor_email", "ofs_id"]
     form = PermitAdministrativeEntityAdminForm
     inlines = [
         PermitWorkflowStatusInline,
@@ -825,6 +852,11 @@ class PermitRequestAmendPropertyForm(forms.ModelForm):
 class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
     list_display = ["sortable_str", "is_mandatory", "is_visible_by_author"]
+    list_filter = [
+        "name",
+        "is_visible_by_author",
+        "is_mandatory",
+    ]
     form = PermitRequestAmendPropertyForm
 
     def sortable_str(self, obj):
@@ -850,6 +882,12 @@ class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
 
 class PermitActorTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    list_display = ["type", "works_type", "is_mandatory"]
+    list_filter = [
+        "works_type",
+        "is_mandatory",
+    ]
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "works_type":
             kwargs["queryset"] = filter_for_user(
@@ -890,6 +928,10 @@ class TemplateCustomizationAdmin(admin.ModelAdmin):
         "templatename",
         "application_title",
         "has_background_image",
+    ]
+    list_filter = [
+        "templatename",
+        "application_title",
     ]
 
     @admin.display(boolean=True)
