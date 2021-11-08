@@ -1,0 +1,77 @@
+{% load static %}
+{% load bootstrap4 %}
+{% load i18n %}
+
+
+<header class="header_navigation">
+  <div class="container">
+
+    <div class="row">
+      <div class="col">
+        <h4>Boîte à outils</h4>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4">
+          <div class="collapse navbar-collapse mb-3" id="main_nav">
+
+            <ul class="navbar-nav ms-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  <a id="new-request-btn" class="btn btn-primary" href="{% url 'permits:permit_request_select_administrative_entity'%}" role="button">
+                    <i class="fa fa-plus"></i>
+                    {% trans "Créer une nouvelle demande" %}
+                  </a>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  <a class="btn btn-outline-primary" data-toggle="collapse" href="#collapseFilter" role="button" aria-expanded="false" aria-controls="collapseFilter">
+                    <i class="fa fa-filter"></i>
+                    {% trans "Filtrer" %}
+                  </a>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  <a class="btn btn-outline-primary" href="{% url 'permits:permit_requests_list' %}" role="button">
+                    <i class="fa fa-eraser"></i>
+                    {% trans "Effacer le filtre" %}
+                  </a>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  {% with request.user.groups.all|first as group %}
+                  {% if group.permitdepartment.administrative_entity.archive_link != '' %}
+                    {% if request.user.groups.all.count > 0 %}
+                      <a class="btn btn-outline-primary" href="{{group.permitdepartment.administrative_entity.archive_link}}" role="button" target="_blank" rel="noreferrer">
+                        <i class="fa fa-archive"></i>
+                        {% trans "Archives" %}</a>
+                    {% endif %}
+                  {% endif %}
+                {% endwith %}
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  {% if config.ENABLE_GEOCALENDAR %}
+                  <a class="btn btn-outline-primary" href="{{ config.GEOCALENDAR_URL }}" target="_blank" rel="noreferrer" role="button">
+                    <i class="fa fa-calendar"></i>
+                    Calendrier cartographique
+                    <i class="fa fa-map"></i>
+                  </a>
+                {% endif %}
+                </a>
+              </li>
+            </ul>
+
+          </div>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+</header>

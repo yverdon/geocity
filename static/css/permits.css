@@ -708,6 +708,7 @@ dd {
 }
 
 .sub-row {
+  background-color: var(--light);
   border-bottom: white 10px solid;
 }
 
@@ -716,9 +717,6 @@ dd {
   border: rgb(240, 240, 240) 8px solid;
 }
 
-.col-md-8 {
-  background-color: var(--light);
-}
 
 .floating-elem {
   position: sticky;
