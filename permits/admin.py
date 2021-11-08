@@ -815,7 +815,7 @@ class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_filter = [
         "name",
     ]
-    list_display = ["name", "expeditor_name", "expeditor_email", "ofs_id"]
+    list_display = ["__str__", "expeditor_name", "expeditor_email", "ofs_id"]
     form = PermitAdministrativeEntityAdminForm
     inlines = [
         PermitWorkflowStatusInline,
@@ -879,7 +879,7 @@ class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
 
 class PermitActorTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
-    list_display = ["type", "works_type", "is_mandatory"]
+    list_display = ["__str__", "type", "works_type", "is_mandatory"]
     list_filter = [
         "works_type",
         "is_mandatory",
@@ -922,6 +922,7 @@ class PermitRequestAdmin(admin.ModelAdmin):
 
 class TemplateCustomizationAdmin(admin.ModelAdmin):
     list_display = [
+        "__str__",
         "templatename",
         "application_title",
         "has_background_image",
