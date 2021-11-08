@@ -52,13 +52,15 @@
 
     <div class="row">
       <div class="col">
-        <h4>{% trans "Contacts" %}</h4>
-        <dl>
-          {% if requires_payment %}
-            <h5>Destinataire de la facture</h5>
-            <dd> {{ creditor }} </dd>
-          {% endif %}
-        </dl>
+        <div class="container">
+          <h4>{% trans "Contacts" %}</h4>
+            <dl>
+              {% if requires_payment %}
+                <dt>Destinataire de la facture</dt>
+                <dd> {{ creditor }} </dd>
+              {% endif %}
+            </dl>
+        </div>
 
           {% for contact_type, contact_infos in contacts %}
           <h5>{{ contact_type }}</h5>
