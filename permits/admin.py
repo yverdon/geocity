@@ -311,9 +311,6 @@ class GroupAdminForm(forms.ModelForm):
             ),
         }
 
-    class Media:
-        css = {"all": ("css/admin.css",)}
-
     def clean_permissions(self):
         permissions = self.cleaned_data["permissions"]
         integrator_permissions = Permission.objects.filter(
@@ -715,7 +712,7 @@ class WorksObjectPropertyAdmin(
         "input_type",
     ]
     form = WorksObjectPropertyForm
-    
+
     # Pass the request from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs):
         Form = super(WorksObjectPropertyAdmin, self).get_form(request, obj, **kwargs)
