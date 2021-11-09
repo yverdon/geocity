@@ -336,6 +336,9 @@ class GroupAdmin(admin.ModelAdmin):
     inlines = (PermitDepartmentInline,)
     form = GroupAdminForm
     filter_horizontal = ("permissions",)
+    search_fields = [
+        "name",
+    ]
 
     def get_queryset(self, request):
 
@@ -588,6 +591,11 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "has_geometry_polygon",
     ]
     list_filter = ["administrative_entities"]
+    search_fields = [
+        "works_type__name",
+        "works_object__name",
+        "administrative_entities__name",
+    ]
     fieldsets = (
         (
             None,
@@ -711,6 +719,9 @@ class WorksObjectPropertyAdmin(
         "name",
         "input_type",
     ]
+    search_fields = [
+        "name",
+    ]
     form = WorksObjectPropertyForm
 
     # Pass the request from ModelAdmin to ModelForm
@@ -808,11 +819,17 @@ class WorksObjectAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_filter = [
         "name",
     ]
+    search_fields = [
+        "name",
+    ]
     form = WorksObjectAdminForm
 
 
 class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_filter = [
+        "name",
+    ]
+    search_fields = [
         "name",
     ]
     list_display = ["__str__", "expeditor_name", "expeditor_email", "ofs_id"]
@@ -849,6 +866,9 @@ class PermitRequestAmendPropertyForm(forms.ModelForm):
 class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
     list_display = ["sortable_str", "is_mandatory", "is_visible_by_author"]
+    search_fields = [
+        "name",
+    ]
     form = PermitRequestAmendPropertyForm
 
     def sortable_str(self, obj):
@@ -879,6 +899,9 @@ class PermitActorTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "works_type",
         "is_mandatory",
     ]
+    search_fields = [
+        "name",
+    ]
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "works_type":
@@ -900,6 +923,9 @@ class PermitRequestAdmin(admin.ModelAdmin):
         "author",
         "get_works_object_types",
         "administrative_entity",
+    ]
+    search_fields = [
+        "id",
     ]
     list_filter = ("status", "author", "works_object_types", "administrative_entity")
 
@@ -925,6 +951,9 @@ class TemplateCustomizationAdmin(admin.ModelAdmin):
     list_filter = [
         "templatename",
         "application_title",
+    ]
+    search_fields = [
+        "templatename",
     ]
 
     @admin.display(boolean=True)
