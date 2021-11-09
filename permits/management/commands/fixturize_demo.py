@@ -686,5 +686,5 @@ class Command(BaseCommand):
         <p>Intégrateur 2: integrator / demo</p>
         <p>Utilisateur: admin / demo</p>
         <p>Consultez les emails générés par l'application:</p>
-        => <a href="https://mailhog.geocity.ch">Boîte mail de demo<a/>
+        => <a href="https://mailhog.geocity.ch" target="_blank">Boîte mail de demo<a/>
         """
