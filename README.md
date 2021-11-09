@@ -4,7 +4,7 @@ Discover geocity features and usage [here](https://project.mapnv.ch/projects/geo
 
 ## Getting started with the full Docker demo version
 
-### Step by step guide to the working full docker non persistent DEMO
+### Step by step guide to the working full docker non persistent DEV instance
 
 This will bring up a demo instance with preset fixtures served by the
 Django developpment server in reload mode.
