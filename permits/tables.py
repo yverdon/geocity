@@ -6,14 +6,15 @@ from django_tables2_column_shifter.tables import ColumnShiftTable
 from . import models
 
 ATTRIBUTES = {
-    "th" : {
+    "th": {
         "_ordering": {
             "orderable": "orderable",
             "ascending": "asc",
-            "descending": "desc"
+            "descending": "desc",
         }
     }
 }
+
 
 class OwnPermitRequestsTable(ColumnShiftTable):
     actions = tables.TemplateColumn(
@@ -24,26 +25,22 @@ class OwnPermitRequestsTable(ColumnShiftTable):
     status = tables.TemplateColumn(
         template_name="tables/_permit_request_status.html",
         attrs=ATTRIBUTES,
-        orderable=True
+        orderable=True,
     )
     starts_at_min = tables.Column(
-        verbose_name=_("Début"),
-        attrs=ATTRIBUTES,
-        orderable=True
+        verbose_name=_("Début"), attrs=ATTRIBUTES, orderable=True
     )
     ends_at_max = tables.TemplateColumn(
         verbose_name=_("Fin"),
         template_name="tables/_permit_request_ends_at.html",
         attrs=ATTRIBUTES,
-        orderable=True
+        orderable=True,
     )
     works_objects_html = tables.Column(
-        verbose_name=_("Objets et types de demandes"),
-        orderable=False
+        verbose_name=_("Objets et types de demandes"), orderable=False
     )
     administrative_entity = tables.Column(
-        verbose_name=_("Entité administrative"),
-        orderable=False
+        verbose_name=_("Entité administrative"), orderable=False
     )
 
     class Meta:
@@ -59,6 +56,7 @@ class OwnPermitRequestsTable(ColumnShiftTable):
         )
         template_name = "django_tables2/bootstrap.html"
 
+
 class DepartmentPermitRequestsTable(ColumnShiftTable):
     actions = tables.TemplateColumn(
         template_name="tables/_permit_request_actions.html",
@@ -68,37 +66,29 @@ class DepartmentPermitRequestsTable(ColumnShiftTable):
     status = tables.TemplateColumn(
         template_name="tables/_permit_request_status.html",
         attrs=ATTRIBUTES,
-        orderable=True
+        orderable=True,
     )
     starts_at_min = tables.Column(
-        verbose_name=_("Début"),
-        attrs=ATTRIBUTES,
-        orderable=True
+        verbose_name=_("Début"), attrs=ATTRIBUTES, orderable=True
     )
     ends_at_max = tables.TemplateColumn(
         verbose_name=_("Fin"),
         template_name="tables/_permit_request_ends_at.html",
         attrs=ATTRIBUTES,
-        orderable=True
+        orderable=True,
     )
 
     works_objects_html = tables.Column(
-        verbose_name=_("Objets et types de demandes"),
-        orderable=False
+        verbose_name=_("Objets et types de demandes"), orderable=False,
     )
     administrative_entity = tables.Column(
-        verbose_name=_("Entité administrative"),
-        orderable=False
+        verbose_name=_("Entité administrative"), orderable=False,
     )
     author_fullname = tables.Column(
-        verbose_name=_("Auteur de la demande"),
-        attrs=ATTRIBUTES,
-        orderable=True
+        verbose_name=_("Auteur de la demande"), attrs=ATTRIBUTES, orderable=True,
     )
     author_details = tables.Column(
-        verbose_name=_("Coordonnées de l'auteur"),
-        attrs=ATTRIBUTES,
-        orderable=True
+        verbose_name=_("Coordonnées de l'auteur"), attrs=ATTRIBUTES, orderable=True,
     )
 
     class Meta:
