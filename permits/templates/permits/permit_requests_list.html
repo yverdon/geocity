@@ -7,20 +7,16 @@
 
 
 {% block content-fluid %}
-
-  <div class="row">
-    <div class="col floating-elem">
-
-      {% block nav-toolbox %}
-        {% include "permits/permit_request_toolbox_header.html" %}
-      {% endblock %}
-
-      <div class="permits-list center-table">
-        {% render_table table %}
-      </div>
-
+  <div class="d-flex flex-column flex-md-row center-table">
+    <div id="list-info-title">
+      {% trans "Vue d'ensemble de vos demandes" %}
     </div>
   </div>
 
-{% endblock %}
+  {% include "permits/permit_request_toolbox_header.html" %}
 
+  <div class="permits-list center-table">
+    {% render_table table %}
+  </div>
+
+{% endblock %}

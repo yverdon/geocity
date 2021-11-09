@@ -615,6 +615,10 @@ h3 {
   position: relative;
 }
 
+#global-search-form {
+  width: 100%;
+}
+
 .asteriskField {
     display: none;
 }
@@ -687,8 +691,17 @@ dd {
 .grid-element {
   flex: 3;
   border: 0px solid green;
-}  
+}
 
+table.table thead th.orderable {
+  background: url('../images/sort/sort_both.png') no-repeat center right;
+}
+table.table thead th.asc {
+  background: url('../images/sort/sort_asc.png') no-repeat right;
+}
+table.table thead th.desc {
+  background: url('../images/sort/sort_desc.png') no-repeat right;
+}
 
 /* summary grid */
 .status_display, .history_user {
@@ -722,6 +735,7 @@ dd {
   position: sticky;
   top: 0px;
 }
+
 
 .badge-pill {
   font-size: 32%;
