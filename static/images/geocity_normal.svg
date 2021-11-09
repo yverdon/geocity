@@ -47,8 +47,8 @@
      inkscape:document-rotation="0"
      inkscape:current-layer="layer1"
      inkscape:document-units="mm"
-     inkscape:cy="37.616735"
-     inkscape:cx="29.924632"
+     inkscape:cy="34.919558"
+     inkscape:cx="82.372497"
      inkscape:zoom="8.0000003"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
@@ -73,19 +73,39 @@
      id="layer1"
      inkscape:groupmode="layer"
      inkscape:label="Calque 1">
-    <text
-       id="text835"
-       y="47.247025"
-       x="15.875"
+    <g
        style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       xml:space="preserve"><tspan
+       id="text835"
+       aria-label="GEOCITY">
+      <path
+         id="path882"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.5833px;font-family:'Titillium Web';-inkscape-font-specification:'Titillium Web, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#008c6f;fill-opacity:1;stroke-width:0.264583"
-         y="47.247025"
-         x="15.875"
-         id="tspan833"
-         sodipodi:role="line">GEO<tspan
-   id="tspan839"
-   style="font-weight:bold">CITY</tspan></tspan></text>
+         d="m 19.674405,44.230784 v -0.730248 h 2.02141 v 3.598322 q -1.333496,0.254 -2.381243,0.254 -1.598078,0 -2.222493,-0.920748 -0.613831,-0.920747 -0.613831,-2.836324 0,-1.92616 0.613831,-2.846907 0.624415,-0.931331 2.201327,-0.931331 0.984247,0 2.042577,0.211666 l 0.359832,0.0635 -0.03175,0.677331 q -1.312329,-0.222249 -2.27541,-0.222249 -1.217079,0 -1.640411,0.709081 -0.423332,0.698498 -0.423332,2.338909 0,1.629828 0.423332,2.338909 0.423332,0.698498 1.629828,0.698498 0.740831,0 1.513412,-0.148166 v -2.254243 z" />
+      <path
+         id="path884"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.5833px;font-family:'Titillium Web';-inkscape-font-specification:'Titillium Web, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#008c6f;fill-opacity:1;stroke-width:0.264583"
+         d="m 23.28579,47.247025 v -7.323644 h 4.45557 v 0.719665 h -3.640655 v 2.529408 h 3.005657 v 0.709081 h -3.005657 v 2.645825 h 3.640655 v 0.719665 z" />
+      <path
+         id="path886"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.5833px;font-family:'Titillium Web';-inkscape-font-specification:'Titillium Web, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#008c6f;fill-opacity:1;stroke-width:0.264583"
+         d="m 29.59261,43.616953 q 0,1.608661 0.423332,2.317742 0.423332,0.698498 1.629828,0.698498 1.21708,0 1.629828,-0.687914 0.423332,-0.687915 0.423332,-2.30716 0,-1.619244 -0.433915,-2.360075 -0.433915,-0.740831 -1.629828,-0.740831 -1.18533,0 -1.619245,0.740831 -0.423332,0.730247 -0.423332,2.338909 z m 4.952984,0.02117 q 0,1.957911 -0.624414,2.836325 -0.624415,0.878414 -2.27541,0.878414 -1.640411,0 -2.264826,-0.899581 -0.624415,-0.89958 -0.624415,-2.825741 0,-1.936744 0.634998,-2.868074 0.634998,-0.941914 2.254243,-0.941914 1.619245,0 2.254243,0.931331 0.645581,0.93133 0.645581,2.88924 z" />
+      <path
+         id="path888"
+         style="font-weight:bold;fill:#008c6f;fill-opacity:1"
+         d="m 40.484478,47.130608 q -1.12183,0.243416 -2.02141,0.243416 -0.899581,0 -1.439329,-0.222249 -0.539748,-0.222249 -0.846664,-0.709081 -0.306916,-0.486832 -0.423332,-1.142997 -0.116416,-0.656164 -0.116416,-1.650994 0,-2.08491 0.582081,-2.899824 0.592665,-0.825498 2.169577,-0.825498 0.910163,0 2.106076,0.285749 l -0.04233,1.164163 q -1.047747,-0.158749 -1.746244,-0.158749 -0.687915,0 -0.984247,0.190499 -0.296333,0.179916 -0.444499,0.698498 -0.137583,0.518582 -0.137583,1.767411 0,1.248829 0.285749,1.735661 0.296333,0.476249 1.164163,0.476249 0.878414,0 1.862661,-0.148167 z" />
+      <path
+         id="path890"
+         style="font-weight:bold;fill:#008c6f;fill-opacity:1"
+         d="m 41.669479,47.247025 v -7.196644 h 1.460495 v 7.196644 z" />
+      <path
+         id="path892"
+         style="font-weight:bold;fill:#008c6f;fill-opacity:1"
+         d="m 44.04179,41.341543 v -1.291162 h 5.29165 v 1.291162 h -1.904994 v 5.905482 h -1.460495 v -5.905482 z" />
+      <path
+         id="path894"
+         style="font-weight:bold;fill:#008c6f;fill-opacity:1"
+         d="m 53.147561,47.247025 h -1.460495 v -2.910408 l -2.222493,-4.286236 h 1.619245 l 1.322912,2.868074 1.322913,-2.868074 h 1.619245 l -2.201327,4.286236 z" />
+    </g>
     <rect
        y="38.704681"
        x="41.266365"
