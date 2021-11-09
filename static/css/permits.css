@@ -697,10 +697,10 @@ table.table thead th.orderable {
   background: url('../images/sort/sort_both.png') no-repeat center right;
 }
 table.table thead th.asc {
-  background: url('../images/sort/sort_asc.png') no-repeat right;
+  background: url('../images/sort/sort_asc.png') no-repeat center right;
 }
 table.table thead th.desc {
-  background: url('../images/sort/sort_desc.png') no-repeat right;
+  background: url('../images/sort/sort_desc.png') no-repeat center right;
 }
 
 /* summary grid */
