@@ -92,7 +92,7 @@
     <div class="col">
       {% if intersected_geometries %}
         <h4>{% trans "Éléments géographiques touchés par la demande (automatique)" %}</h4>
-        {{ intersected_geometries }}
+        {{ intersected_geometries|safe }}
       {% endif %}
     </div>
   </div>
