@@ -55,7 +55,6 @@
           {% if user.is_authenticated %}
             <div class="collapse navbar-collapse navbar-toggle">
               <ul class="navbar-nav mr-auto">
-
                 <li class="nav-item d-flex align-items-center">
                     <a class="btn btn-outline-primary" href="{% url 'permits:permit_requests_list' %}" role="button">
                       <i class="fa fa-table" aria-hidden="true"></i>
@@ -63,15 +62,17 @@
                     </a>
                 </li>
 
-                <li class="nav-item d-flex align-items-center">
-                  {% if config.ENABLE_GEOCALENDAR %}
-                    <a class="btn btn-outline-primary" href="{{ config.GEOCALENDAR_URL }}" target="_blank" rel="noreferrer" role="button">
-                      <i class="fa fa-calendar aria-hidden="true"></i>
-                      {% trans "Calendrier" %}
-                    </a>
-                  {% endif %}
-                </li>
 
+                  {% if config.ENABLE_GEOCALENDAR %}
+                    <li class="nav-item d-flex align-items-center">
+                      <a class="btn btn-outline-primary" href="{{ config.GEOCALENDAR_URL }}" target="_blank" rel="noreferrer" role="button">
+                        <i class="fa fa-calendar aria-hidden="true"></i>
+                        {% trans "Calendrier" %}
+                      </a>
+                    </li>
+                  {% endif %}
+                
+                  {% if group.permitdepartment.administrative_entity.archive_link %}
                 <li class="nav-item d-flex align-items-center">
                   {% with request.user.groups.all|first as group %}
                     {% if group.permitdepartment.administrative_entity.archive_link != '' %}
@@ -82,53 +83,64 @@
                       {% endif %}
                     {% endif %}
                   {% endwith %}
+                
+                {% endif %}
+              </ul>
+              <ul class="navbar-nav ml-auto">
+                <li class="nav-item d-flex align-items-center">
+                  <div class="global-search-form-container">
+                    <form  class="navbar-form navbar-right" method="get" action="{% url 'permits:permit_requests_search' %}" id="global-search-form">
+                      <input data-role="search-input" placeholder="{% trans "Recherche…" %}" type="text" name="search" class="w-100 search-input form-control" autocomplete="off">
+                      <div data-role="search-results" class="search-results-container"></div>
+                    </form>
+                  </div>
                 </li>
+                <li class="nav-item d-flex align-items-center login-navbar-desktop">
+                    <a class="nav-link dropdown-toggle ml-auto" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <i class="fa fa-user"></i>
+                      {% block connected_user %}<b>{{ user.get_username }}</b>{% endblock %}
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
+                      <a class="dropdown-item" href="{% url 'password_change' %}">{% trans "Changer mon mot de passe" %}</a>
+                      <a class="dropdown-item" href="{% url 'permit_author_edit' %}">{% trans "Modifier mon compte" %}</a>
+                      {% if ENABLE_2FA %}
+                      <a class="dropdown-item" href="{% url 'two_factor:profile' %}">{% trans "Account Security" %}</a>
+                      {% endif %}
+                      <a class="dropdown-item" href="{% url 'logout' %}">{% trans "Me déconnecter" %}</a>
+                  </div>
+                </li>
+
+                <li class="nav-item d-flex align-items-center login-navbar-mobile">
+                   <!-- On mobile -->
+                  <div class="collapse navbar-collapse navbar-toggle" id="navbarNavDropdown">
+                    <ul class="navbar-nav d-flex d-md-none">
+                      <li class="nav-item">
+                        <a class="nav-link" href="{% url 'password_change' %}">{% trans "Changer mon mot de passe" %}</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link" href="{% url 'permit_author_edit' %}">{% trans "Modifier mon compte" %}</a>
+                      </li>
+                      {% if ENABLE_2FA %}
+                      <li class="nav-item">
+                        <a class="nav-link" href="{% url 'two_factor:profile' %}">{% trans "Account Security" %}</a>
+                      </li>
+                      {% endif %}
+                      <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">{% trans "Me déconnecter" %}</a>
+                      </li>
+                    </ul>
+                  </div>
+                </li>
+
               </ul>
             </div>
 
+ 
 
-            <div class="global-search-form-container">
-              <form  class="navbar-form navbar-right" method="get" action="{% url 'permits:permit_requests_search' %}" id="global-search-form">
-                <input data-role="search-input" placeholder="{% trans "Recherche…" %}" type="text" name="search" class="w-100 search-input form-control" autocomplete="off">
-                <div data-role="search-results" class="search-results-container"></div>
-              </form>
-            </div>
 
-            <!-- On desktop -->
-            <div class="collapse navbar-collapse">
-              <a class="nav-link dropdown-toggle ml-auto" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <i class="fa fa-user"></i>
-                {% block connected_user %}<b>{{ user.get_username }}</b>{% endblock %}
-              </a>
-              <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
-                <a class="dropdown-item" href="{% url 'password_change' %}">{% trans "Changer mon mot de passe" %}</a>
-                <a class="dropdown-item" href="{% url 'permit_author_edit' %}">{% trans "Modifier mon compte" %}</a>
-                {% if ENABLE_2FA %}
-                <a class="dropdown-item" href="{% url 'two_factor:profile' %}">{% trans "Account Security" %}</a>
-                {% endif %}
-                <a class="dropdown-item" href="{% url 'logout' %}">{% trans "Me déconnecter" %}</a>
-              </div>
-            </div>
 
-            <!-- On mobile -->
-            <div class="collapse navbar-collapse navbar-toggle" id="navbarNavDropdown">
-              <ul class="navbar-nav d-flex d-md-none">
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'password_change' %}">{% trans "Changer mon mot de passe" %}</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'permit_author_edit' %}">{% trans "Modifier mon compte" %}</a>
-                </li>
-                {% if ENABLE_2FA %}
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'two_factor:profile' %}">{% trans "Account Security" %}</a>
-                </li>
-                {% endif %}
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'logout' %}">{% trans "Me déconnecter" %}</a>
-                </li>
-              </ul>
-            </div>
+
+
           {% endif %}
 
         </nav>

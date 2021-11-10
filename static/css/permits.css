@@ -261,6 +261,10 @@ h3 {
   background-color: rgb(245, 245, 245) !important;
 }
 
+.login-navbar-mobile {
+  visibility: hidden;
+}
+
 .nav-item {
   margin-left: 0px;
   margin-right: 4px;
@@ -514,6 +518,16 @@ h3 {
 
 
 @media (min-width: 768px) {
+
+  .login-navbar-mobile {
+    visibility: hidden;
+  }
+
+  .global-search-form-container {
+    width: 600px;
+    min-width: 0;
+  }
+
   #new-request-btn {
     margin-top: 0px;
     margin-left: 20px;
@@ -545,6 +559,23 @@ h3 {
 }
 
 @media (max-width: 768px) {
+
+  .login-navbar-mobile {
+    visibility: visible;
+  }
+
+  .login-navbar-desktop {
+    visibility: hidden;
+  }
+
+  .global-search-form-container {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .nav-item {
+    margin-bottom: 3px;
+  }
 
   .progress-nav a {
     color: transparent;
@@ -613,7 +644,7 @@ h3 {
 }
 
 .global-search-form-container {
-  width: 100%;
+  min-width: 1000px;
 }
 
 #global-search-form {
