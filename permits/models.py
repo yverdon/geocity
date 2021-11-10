@@ -402,19 +402,6 @@ class PermitRequest(models.Model):
         STATUS_RECEIVED,
     }
 
-    ARCHEOLOGY_STATUS_IRRELEVANT = 0
-    ARCHEOLOGY_STATUS_UNKNOWN = 1
-    ARCHEOLOGY_STATUS_NEVER = 2
-    ARCHEOLOGY_STATUS_PARTIAL = 3
-    ARCHEOLOGY_STATUS_DONE = 4
-    ARCHEOLOGY_STATUS_CHOICES = (
-        (ARCHEOLOGY_STATUS_IRRELEVANT, _("Non pertinent")),
-        (ARCHEOLOGY_STATUS_UNKNOWN, _("Inconnu")),
-        (ARCHEOLOGY_STATUS_NEVER, _("Pas fouillé")),
-        (ARCHEOLOGY_STATUS_PARTIAL, _("Partiellement fouillé")),
-        (ARCHEOLOGY_STATUS_DONE, _("Déjà fouillé")),
-    )
-
     PROLONGABLE_STATUSES = {
         STATUS_APPROVED,
         STATUS_PROCESSING,
