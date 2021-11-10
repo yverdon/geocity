@@ -31,7 +31,7 @@ services:
             - "postgres"
         volumes:
             - ./qgisserver/geocity.qgs:/io/data/geocity.qgs:ro
-            # - ./qgisserver/pg_service.conf:/etc/postgresql-common/pg_service.conf:ro
+            - ./qgisserver/pg_service.conf:/etc/postgresql-common/pg_service.conf:ro
             - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
         ports:
             - "${QGISSERVER_DOCKER_PORT}:80"
