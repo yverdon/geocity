@@ -39,19 +39,21 @@
   <body>
 
     <header class="header_navigation" id="banner">
-    <!-- Navbar -->
+      <!-- Navbar -->
       {% block navbar %}
-
         <nav class="navbar navbar-expand-md navbar-light bg-light mb-4 sticky-top">
-
           <div class="navbar-brand d-flex align-items-center">
             <a class="font-weight-bold" href="https://geocity.ch/about/">
               <img src={% static "images/geocity_normal.svg" %} style="vertical-align:baseline" alt="logo" height="16"/>
             </a>
           </div>
 
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-toggle" aria-controls="navbar-toggle" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+
           {% if user.is_authenticated %}
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="collapse navbar-collapse navbar-toggle">
               <ul class="navbar-nav mr-auto">
 
                 <li class="nav-item d-flex align-items-center">
@@ -84,24 +86,17 @@
               </ul>
             </div>
 
-            <div class="collapse navbar-collapse" id="navbarNav">
-              <!-- On desktop -->
-              <div class="global-search-form-container">
-                <form class="navbar-form navbar-left" method="get" action="{% url 'permits:permit_requests_search' %}" id="global-search-form" role="search">
-                  <input data-role="search-input" placeholder="{% trans "Recherche…" %}" type="text" name="search" class="w-100 search-input form-control" autocomplete="off">
-                  <div data-role="search-results" class="search-results-container"></div>
-                </form>
-              </div>
 
-              <!-- On mobile -->
-              <button class="navbar-toggler d-flex d-md-none" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-              </button>
-
+            <div class="global-search-form-container">
+              <form  class="navbar-form navbar-right" method="get" action="{% url 'permits:permit_requests_search' %}" id="global-search-form">
+                <input data-role="search-input" placeholder="{% trans "Recherche…" %}" type="text" name="search" class="w-100 search-input form-control" autocomplete="off">
+                <div data-role="search-results" class="search-results-container"></div>
+              </form>
             </div>
 
-            <div class="position-relative d-none d-md-block">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <!-- On desktop -->
+            <div class="collapse navbar-collapse">
+              <a class="nav-link dropdown-toggle ml-auto" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <i class="fa fa-user"></i>
                 {% block connected_user %}<b>{{ user.get_username }}</b>{% endblock %}
               </a>
@@ -113,6 +108,26 @@
                 {% endif %}
                 <a class="dropdown-item" href="{% url 'logout' %}">{% trans "Me déconnecter" %}</a>
               </div>
+            </div>
+
+            <!-- On mobile -->
+            <div class="collapse navbar-collapse navbar-toggle" id="navbarNavDropdown">
+              <ul class="navbar-nav d-flex d-md-none">
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'password_change' %}">{% trans "Changer mon mot de passe" %}</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'permit_author_edit' %}">{% trans "Modifier mon compte" %}</a>
+                </li>
+                {% if ENABLE_2FA %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'two_factor:profile' %}">{% trans "Account Security" %}</a>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'logout' %}">{% trans "Me déconnecter" %}</a>
+                </li>
+              </ul>
             </div>
           {% endif %}
 
