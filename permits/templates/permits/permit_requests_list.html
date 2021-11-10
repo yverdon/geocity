@@ -5,46 +5,18 @@
 {% load bootstrap4 %}
 {% load render_table from django_tables2 %}
 
+
 {% block content-fluid %}
   <div class="d-flex flex-column flex-md-row center-table">
-    <br>
     <div id="list-info-title">
       {% trans "Vue d'ensemble de vos demandes" %}
     </div>
-    <a id="new-request-btn" class="btn btn-primary" href="{% url 'permits:permit_request_select_administrative_entity'%}" role="button">
-      <i class="fa fa-plus"></i> {% trans "Créer une nouvelle demande" %}
-    </a>
-  </div>
-  <br><br>
-  <!-- Action btns -->
-  <div class="permits-action-btns center-table">
-    <a class="btn btn-outline-primary" data-toggle="collapse" href="#collapseFilter" role="button" aria-expanded="false" aria-controls="collapseFilter">
-      <i class="fa fa-filter"></i> {% trans "Filtrer" %}
-    </a>
-    <a class="btn btn-outline-primary" href="{% url 'permits:permit_requests_list' %}" role="button"><i class="fa fa-eraser"></i> {% trans "Effacer le filtre" %}</a>
-    {% with request.user.groups.all|first as group %}
-      {% if group.permitdepartment.administrative_entity.archive_link != '' %}
-        {% if request.user.groups.all.count > 0 %}
-          <a class="btn btn-outline-primary" href="{{group.permitdepartment.administrative_entity.archive_link}}" role="button" target="_blank" rel="noreferrer"><i class="fa fa-archive"></i> {% trans "Archives" %}</a>
-        {% endif %}
-      {% endif %}
-    {% endwith %}
-    <a class="btn btn-outline-primary" href="{% url 'permits:listexport'%}?_export=csv" role="button">Exporter en CSV</a>
-    {% if config.ENABLE_GEOCALENDAR %}
-      <a class="btn btn-outline-primary" href="{{ config.GEOCALENDAR_URL }}" target="_blank" rel="noreferrer" role="button"></i><i class="fa fa-calendar"></i> Calendrier cartographique <i class="fa fa-map"></i></a>
-    {% endif %}
   </div>
 
-  <br><br>
-  {{ filter.form.media }}
-  <form class="permits-list center-table" method="get">
-    <div class="collapse" id="collapseFilter">
-      <hr>
-      {% bootstrap_form filter.form layout='horizontal' %}
-      {% bootstrap_button "Appliquer le filtre" button_type="submit" button_class="btn-primary"%}
-    </div>
-  </form>
+  {% include "permits/permit_request_toolbox_header.html" %}
+
   <div class="permits-list center-table">
     {% render_table table %}
   </div>
+
 {% endblock %}

@@ -599,10 +599,6 @@ h3 {
   box-shadow: 0 2px 6px #ccc;
 }
 
-.global-search-form-container {
-  width: 320px;
-}
-
 .list {
   padding-left: 0;
   list-style-type: none;
@@ -616,8 +612,16 @@ h3 {
   position: relative;
 }
 
+.global-search-form-container {
+  width: 100%;
+}
+
+#global-search-form {
+  width: 100%;
+}
+
 .asteriskField {
-    display: none;
+  display: none;
 }
 
 fieldset>legend {
@@ -688,8 +692,20 @@ dd {
 .grid-element {
   flex: 3;
   border: 0px solid green;
-}  
+}
 
+table.table thead th.orderable {
+  background: url('../images/sort/sort_both.png') no-repeat;
+  background-position: right 18px;
+}
+table.table thead th.asc {
+  background: url('../images/sort/sort_asc.png') no-repeat;
+  background-position: right 18px;
+}
+table.table thead th.desc {
+  background: url('../images/sort/sort_desc.png') no-repeat;
+  background-position: right 18px;
+}
 
 /* summary grid */
 .status_display, .history_user {
@@ -709,6 +725,7 @@ dd {
 }
 
 .sub-row {
+  background-color: var(--light);
   border-bottom: white 10px solid;
 }
 
@@ -717,14 +734,12 @@ dd {
   border: rgb(240, 240, 240) 8px solid;
 }
 
-.col-md-8 {
-  background-color: var(--light);
-}
 
 .floating-elem {
   position: sticky;
   top: 0px;
 }
+
 
 .badge-pill {
   font-size: 32%;
