@@ -1121,7 +1121,8 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 )
 
             min_starts_at = self.permit_request.get_min_starts_at()
-            if starts_at < min_starts_at:
+            # add two hours of tolerance in the validation
+            if starts_at <= min_starts_at - timedelta(hours=2):
                 raise ValidationError(
                     {
                         "starts_at": _(
@@ -1135,7 +1136,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 max_ends_at = starts_at + timedelta(
                     days=self.permit_request.max_validity
                 )
-                if ends_at > max_ends_at:
+                if ends_at > max_ends_at + timedelta(hours=2):
                     raise ValidationError(
                         {
                             "ends_at": _(
