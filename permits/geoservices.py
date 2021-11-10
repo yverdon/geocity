@@ -26,11 +26,10 @@ def get_intersected_geometries(permit_request):
             )
             for result in results:
                 intersected_geometries_ids.append(result.pk)
-                intersected_geometries += (f"""
+                intersected_geometries += f"""
                     {result.pk}: {result.layer_name} ; {result.description} ;
                     {result.source_id} ; {result.source_subid} <br>
                     """
-                )
 
     return intersected_geometries
 
