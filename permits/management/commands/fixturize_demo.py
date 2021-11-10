@@ -333,8 +333,15 @@ class Command(BaseCommand):
 
     def create_works_types(self):
         properties = {
+            "title": models.WorksObjectProperty.objects.create(
+                name="Texte permettant de séparer visuellement les champs",
+                input_type="title",
+                help_text="Ce texte permet d'expliquer en détail à l'utilisateur les pourquoi et le comment des informations à fournir",
+                is_mandatory=False,
+                order=2,
+            ),
             "comment": models.WorksObjectProperty.objects.create(
-                name="Commentaire", input_type="text", is_mandatory=False, order=5
+                name="Commentaire", input_type="text", is_mandatory=False, order=0
             ),
             "width": models.WorksObjectProperty.objects.create(
                 name="Largeur [m]",
@@ -350,48 +357,55 @@ class Command(BaseCommand):
                 placeholder="2",
                 help_text="Longueur en mètres",
                 is_mandatory=False,
-                order=2,
+                order=3,
             ),
             "plan": models.WorksObjectProperty.objects.create(
                 name="Plan de situation",
                 input_type="file",
                 help_text="Plan complémentaire détaillant votre projet",
                 is_mandatory=False,
-                order=3,
+                order=4,
             ),
             "adresse": models.WorksObjectProperty.objects.create(
                 name="Adresse",
                 input_type="address",
                 placeholder="place pestalozzi 2, 1400 Yverdon-les-Bains",
                 is_mandatory=False,
+                order=5,
             ),
             "date": models.WorksObjectProperty.objects.create(
-                name="Date", input_type="date", is_mandatory=False
+                name="Date", input_type="date", is_mandatory=False, order=6,
             ),
             "checkbox": models.WorksObjectProperty.objects.create(
-                name="Impact sur la chaussée", input_type="checkbox", is_mandatory=False
+                name="Impact sur la chaussée",
+                input_type="checkbox",
+                is_mandatory=False,
+                order=7,
             ),
             "list_single": models.WorksObjectProperty.objects.create(
                 name="À moins de 3m d'un arbre",
                 input_type="list_single",
                 is_mandatory=False,
                 choices="oui\nnon",
+                order=8,
             ),
             "list_multiple": models.WorksObjectProperty.objects.create(
                 name="À moins de 3m d'un arbre",
                 input_type="list_multiple",
                 is_mandatory=False,
                 choices="Déviation trafic\nHoraire prolongé\nSon>90dB",
+                order=9,
             ),
         }
         works_types = [
             (
-                "Stationnement",
+                "Stationnement (ex. de demande devant être prolongée)",
                 [
                     ("Demande de macaron", properties["comment"], properties["date"],),
                     (
                         "Accès au centre-ville historique",
                         properties["comment"],
+                        properties["title"],
                         properties["date"],
                     ),
                 ],
@@ -402,21 +416,25 @@ class Command(BaseCommand):
                     (
                         "Événement sportif",
                         properties["comment"],
+                        properties["title"],
                         properties["list_multiple"],
                     ),
                     (
                         "Événement culturel",
                         properties["comment"],
+                        properties["title"],
                         properties["list_multiple"],
                     ),
                     (
                         "Événement politique",
                         properties["comment"],
+                        properties["title"],
                         properties["list_multiple"],
                     ),
                     (
                         "Événement commercial",
                         properties["comment"],
+                        properties["title"],
                         properties["list_multiple"],
                     ),
                 ],
@@ -428,6 +446,7 @@ class Command(BaseCommand):
                         "Permis de fouille",
                         properties["width"],
                         properties["height"],
+                        properties["title"],
                         properties["comment"],
                         properties["adresse"],
                         properties["checkbox"],
@@ -438,13 +457,14 @@ class Command(BaseCommand):
                         properties["width"],
                         properties["height"],
                         properties["comment"],
+                        properties["title"],
                         properties["adresse"],
                         properties["checkbox"],
                     ),
                 ],
             ),
             (
-                "Suvbentions",
+                "Suvbentions (ex. de demande sans géométrie ni période temporelle)",
                 [
                     ("Prime éco-mobilité", properties["comment"],),
                     ("Abonnement de bus", properties["comment"],),
@@ -452,27 +472,35 @@ class Command(BaseCommand):
             ),
         ]
         administrative_entity_yverdon = models.PermitAdministrativeEntity.objects.get(
-            name="Démo Yverdon"
+            name="Démo Yverdon",
         )
         administrative_entity_yverdon.tags.set("yverdon")
         administrative_entity_grandson = models.PermitAdministrativeEntity.objects.get(
-            name="Démo Grandson"
+            name="Démo Grandson",
         )
         administrative_entity_grandson.tags.set("grandson")
         administrative_entity_lausanne = models.PermitAdministrativeEntity.objects.get(
-            name="Démo Lausanne"
+            name="Démo Lausanne",
         )
         administrative_entity_lausanne.tags.set("lausanne")
         administrative_entity_vevey = models.PermitAdministrativeEntity.objects.get(
-            name="Démo Vevey"
+            name="Démo Vevey",
         )
         administrative_entity_vevey.tags.set("vevey")
+
+        additional_information_text = """
+        Texte expliquant la ou les conditions particulière(s) s'appliquant à cette demande.
+        Un document pdf peut également être proposé à l'utilisateur, par exemple pour les conditions
+        de remise en état après une fouille sur le domaine public
+        """
 
         for works_type, objs in works_types:
             works_type_obj = models.WorksType.objects.create(name=works_type)
             works_type_obj.tags.set(unaccent(works_type))
             models.PermitActorType.objects.create(
-                type=models.ACTOR_TYPE_OTHER, works_type=works_type_obj,
+                type=models.ACTOR_TYPE_OTHER,
+                works_type=works_type_obj,
+                is_mandatory=False,
             )
 
             for works_obj, *props in objs:
@@ -483,6 +511,9 @@ class Command(BaseCommand):
                     works_type=works_type_obj,
                     works_object=works_obj_obj,
                     is_public=True,
+                    notify_services=True,
+                    services_to_notify=f"yverdon-squad+admin@liip.ch",
+                    additional_information=additional_information_text,
                 )
                 works_object_type.administrative_entities.add(
                     administrative_entity_yverdon
@@ -498,6 +529,32 @@ class Command(BaseCommand):
                 )
                 for prop in props:
                     prop.works_object_types.add(works_object_type)
+
+        # Configure specific WOT in order to illustrate full potential of Geocity
+
+        # No geom nor time
+        for wot in models.WorksObjectType.objects.filter(
+            works_type__name="Suvbentions (ex. de demande sans géométrie ni période temporelle)"
+        ):
+            wot.has_geometry_point = False
+            wot.has_geometry_line = False
+            wot.has_geometry_polygon = False
+            wot.needs_date = False
+            wot.save()
+
+        # Renewal reminder
+        for wot in models.WorksObjectType.objects.filter(
+            works_type__name="Stationnement (ex. de demande devant être prolongée)"
+        ):
+            wot.has_geometry_point = True
+            wot.has_geometry_line = False
+            wot.has_geometry_polygon = False
+            wot.needs_date = True
+            wot.start_delay = 1
+            wot.permit_duration = 2
+            wot.expiration_reminder = True
+            wot.days_before_reminder = 5
+            wot.save()
 
     def create_permit(self):
 
@@ -635,6 +692,31 @@ class Command(BaseCommand):
 
         models.PermitRequestGeoTime.objects.create(
             permit_request=permit_request5,
+            starts_at=timezone.now(),
+            ends_at=timezone.now(),
+            geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
+        )
+
+        # permit with pending validations
+
+        permit_request6 = models.PermitRequest.objects.create(
+            status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            administrative_entity=demo_administrative_entity,
+            author=demo_author,
+            is_public=True,
+        )
+
+        models.PermitRequestValidation.objects.get_or_create(
+            permit_request=permit_request6, department=department,
+        )
+
+        models.WorksObjectTypeChoice.objects.create(
+            permit_request=permit_request6,
+            works_object_type=models.WorksObjectType.objects.last(),
+        )
+
+        models.PermitRequestGeoTime.objects.create(
+            permit_request=permit_request6,
             starts_at=timezone.now(),
             ends_at=timezone.now(),
             geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
