@@ -31,6 +31,15 @@ To debug and view the resulting `docker-compose-dev.yml` file use (uses the `.en
 docker-compose -f docker-compose-dev.yml config
 ```
 
+## Alternative demo setup
+
+Following command will setup a demo DB with more exhaustive configuration
+
+
+```bash
+docker-compose -f docker-compose-demo.yml down --remove-orphans && docker-compose -f docker-compose-demo.yml up
+```
+
 ### Run the tests from within the docker container
 
 List running containers:
