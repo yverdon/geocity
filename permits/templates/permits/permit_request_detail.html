@@ -10,10 +10,12 @@
   {% blocktrans with request_id=permit_request.pk %}
     Demande #{{ request_id }}
   {% endblocktrans %}
-  {% if permit_request.is_public %}
-    <span class="badge badge-pill badge-success">Publique</span>
-  {% else %}
-    <span class="badge badge-pill badge-danger">Privée</span>
+  {% if config.ENABLE_GEOCALENDAR %}
+    {% if permit_request.is_public %}
+      <span class="badge badge-pill badge-success">Publique</span>
+    {% else %}
+      <span class="badge badge-pill badge-danger">Privée</span>
+    {% endif %}
   {% endif %}
 </h1>
 

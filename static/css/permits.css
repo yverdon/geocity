@@ -267,7 +267,7 @@ h3 {
 
 .nav-item {
   margin-left: 0px;
-  margin-right: 4px;
+  margin-right: 10px;
 }
 
 .navbar-light .navbar-brand {
@@ -641,10 +641,6 @@ h3 {
 
 .search-results-container {
   position: relative;
-}
-
-.global-search-form-container {
-  min-width: 1000px;
 }
 
 #global-search-form {

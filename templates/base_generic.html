@@ -43,9 +43,7 @@
       {% block navbar %}
         <nav class="navbar navbar-expand-md navbar-light bg-light mb-4 sticky-top">
           <div class="navbar-brand d-flex align-items-center">
-            <a class="font-weight-bold" href="https://geocity.ch/about/">
               <img src={% static "images/geocity_normal.svg" %} style="vertical-align:baseline" alt="logo" height="16"/>
-            </a>
           </div>
 
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-toggle" aria-controls="navbar-toggle" aria-expanded="false" aria-label="Toggle navigation">
@@ -56,8 +54,8 @@
             <div class="collapse navbar-collapse navbar-toggle">
               <ul class="navbar-nav mr-auto">
                 <li class="nav-item d-flex align-items-center">
-                    <a class="btn btn-outline-primary" href="{% url 'permits:permit_requests_list' %}" role="button">
-                      <i class="fa fa-table" aria-hidden="true"></i>
+                    <a href="{% url 'permits:permit_requests_list' %}" role="button">
+                      <i class="fa fa-list-ul" aria-hidden="true"></i>
                       {% trans "Mes demandes" %}
                     </a>
                 </li>
@@ -65,7 +63,7 @@
 
                   {% if config.ENABLE_GEOCALENDAR %}
                     <li class="nav-item d-flex align-items-center">
-                      <a class="btn btn-outline-primary" href="{{ config.GEOCALENDAR_URL }}" target="_blank" rel="noreferrer" role="button">
+                      <a href="{{ config.GEOCALENDAR_URL }}" target="_blank" rel="noreferrer" role="button">
                         <i class="fa fa-calendar aria-hidden="true"></i>
                         {% trans "Calendrier" %}
                       </a>
