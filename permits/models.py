@@ -201,7 +201,7 @@ class PermitAdministrativeEntity(models.Model):
         blank=True,
         validators=[
             RegexValidator(
-                regex="^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$",
+                regex="^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,63}$",
                 message="Le format de l'adresse email n'est pas valable.",
             )
         ],
