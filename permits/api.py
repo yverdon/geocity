@@ -256,7 +256,7 @@ def permitRequestViewSetSubsetFactory(geom_type_name):
 
     class ViewSet(PermitRequestViewSet):
         wfs3_title = f"{PermitRequestViewSet.wfs3_title} ({geom_type_name})"
-        wfs3_description = f"{PermitRequestViewSet.wfs3_description} (géométries filtrées par type {geom_type_name})"
+        wfs3_description = f"{PermitRequestViewSet.wfs3_description} (géométries de type {geom_type_name})"
         serializer_class = Serializer
 
         def get_queryset(self):
