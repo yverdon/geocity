@@ -16,20 +16,20 @@
 - Add a WFS layer
 - Create a new connection to a server
   - Set a name
-  - Put the url to the ressource. Example <http://localhost:9095/wfs3>
+  - Set the ressource URL (example <http://localhost:9095/wfs3/>)
   - Create an OAuth2 authentication
     - Set a description
-    - Set the request URL (example <http://localhost:9095/oauth/authorize>)
-    - Set the token URL (example <http://localhost:9095/oauth/token/>)
+    - Set the request URL (example <http://localhost:9095/oauth/authorize/>)
+    - Set the token URL (example <http://localhost:9095/oauth/token/>) **Note the trailing `/`**
     - Set the refresh token URL (example <http://localhost:9095/oauth/token/>)
     - Set the client ID
     - Set the client secret
 - Connect to this server
   - A new web page will open and will ask
     - To login to Geocity
-    - To Authorize QGIS to access Geocity features
+    - To authorize QGIS to access Geocity features
 - Add the permits layers
-  - Set the layer CRS to `EPSG:2056` (also the project if not the case)
+  - Set the layer CRS to `EPSG:2056` (also the project if not already the case)
 
 ## Other sources
 
