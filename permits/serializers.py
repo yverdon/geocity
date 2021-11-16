@@ -72,17 +72,23 @@ class PropertiesValuesSerializer(serializers.RelatedField):
             "properties__property__name",
             "properties__value__val",
             "works_object_type_id",
+            "works_object_type__works_object__name",
+            "works_object_type__works_type__name",
         )
         amend_props = obj.values(
             "amend_properties__property__name",
             "amend_properties__value",
             "works_object_type_id",
+            "works_object_type__works_object__name",
+            "works_object_type__works_type__name",
         )
-        wot_and_amend_properties = {}
+        wot_properties = {}
+        amend_properties = {}
+
         if wot_props:
             for prop in wot_props:
-                wot = f'permit_request_works_object_property_value_{prop["works_object_type_id"]}'
-                wot_and_amend_properties[wot] = {
+                wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+                wot_properties[wot] = {
                     prop_i["properties__property__name"]: prop_i[
                         "properties__value__val"
                     ]
@@ -92,10 +98,8 @@ class PropertiesValuesSerializer(serializers.RelatedField):
                 }
 
         for prop in amend_props:
-            amends = (
-                f'permit_request_amend_property_value_{prop["works_object_type_id"]}'
-            )
-            wot_and_amend_properties[amends] = {
+            amends = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+            amend_properties[amends] = {
                 prop_i["amend_properties__property__name"]: prop_i[
                     "amend_properties__value"
                 ]
@@ -104,6 +108,10 @@ class PropertiesValuesSerializer(serializers.RelatedField):
                 and prop_i["amend_properties__property__name"]
             }
 
+        wot_and_amend_properties = {
+            "request_properties": wot_properties,
+            "amend_properties": amend_properties,
+        }
         return wot_and_amend_properties
 
 
