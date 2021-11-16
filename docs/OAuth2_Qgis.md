@@ -15,7 +15,7 @@
 
 ## Connect to the new extern app with QGIS
 
-**/!\ Configuration is probably not totally correct, this documentation is still in progress, find how to configure correctly and fix it**
+**⚠ Configuration is probably not totally correct, this documentation is still in progress, find how to configure correctly and fix it**
 
 - Add a WFS layer
 - Create a new connection to a server
