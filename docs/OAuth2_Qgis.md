@@ -1,6 +1,6 @@
 # OAuth2, use bearer token to access to the WFS3 Open Feature api
 
-## Register an extern app
+## Register an external application
 
 - Go to : <http://localhost:9095/oauth/applications/register/>
   - Name : `${YOUR_APP_NAME}`
@@ -13,7 +13,7 @@
 
 ---
 
-## Connect to the new extern app with QGIS
+## Connect to the new external application with QGIS
 
 **⚠ Configuration is probably not totally correct, this documentation is still in progress, find how to configure correctly and fix it**
 
