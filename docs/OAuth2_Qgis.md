@@ -15,8 +15,6 @@
 
 ## Connect to the new external application with QGIS
 
-**⚠ Configuration is probably not totally correct, this documentation is still in progress, find how to configure correctly and fix it**
-
 - Add a WFS layer
 - Create a new connection to a server
   - Set a name
@@ -31,6 +29,8 @@
 
 **Please note the trailing slash "/" after the token URL**
 
+Authorize QGIS to access to scope permissions.
+
 Now you can try to connect.
 
 
@@ -38,4 +38,4 @@ Now you can try to connect.
 
 ## Other sources
 
-Camp to camp have their own documentation for OAuth2 with QGIS, [here](https://camptocamp.github.io/c2cgeoportal/master/integrator/authentication_oauth2.html?highlight=oauth2).
+Camptocamp have their own documentation for OAuth2 with QGIS, [here](https://camptocamp.github.io/c2cgeoportal/master/integrator/authentication_oauth2.html?highlight=oauth2).
