@@ -20,7 +20,7 @@
   - Set a name
   - Put the url to the ressource. Example <http://localhost:9095/wfs3>
   - Create an OAuth2 authentication
-    - Set a name
+    - Set a description
     - Set the request URL. Example <http://localhost:9095/oauth/authorize>
     - Set the token URL. Example <http://localhost:9095/oauth/token/>
     - Set the refresh token URL. Example <http://localhost:9095/oauth/token/>
