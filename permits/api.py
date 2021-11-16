@@ -149,8 +149,8 @@ class PermitRequestViewSet(
     serializer_class = serializers.PermitRequestPrintSerializer
     permission_classes = [BlockRequesterUserPermission]
 
-    wfs3_title = "Permis"
-    wfs3_description = "Tous les permis"
+    wfs3_title = "Demandes"
+    wfs3_description = "Toutes les demandes"
     wfs3_geom_lookup = "geo_time__geom"  # lookup for the geometry (on the queryset), used to determine bbox
     wfs3_srid = 2056
 
