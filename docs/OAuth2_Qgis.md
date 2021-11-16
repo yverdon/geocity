@@ -11,8 +11,6 @@
   - Redirect uris : <http://127.0.0.1:7070/>
   - Algorithm : HMAC with SHA-2 256
 
----
-
 ## Connect to the new external application with QGIS
 
 - Add a WFS layer
@@ -21,20 +19,17 @@
   - Put the url to the ressource. Example <http://localhost:9095/wfs3>
   - Create an OAuth2 authentication
     - Set a description
-    - Set the request URL. Example <http://localhost:9095/oauth/authorize>
-    - Set the token URL. Example <http://localhost:9095/oauth/token/>
-    - Set the refresh token URL. Example <http://localhost:9095/oauth/token/>
+    - Set the request URL (example <http://localhost:9095/oauth/authorize>)
+    - Set the token URL (example <http://localhost:9095/oauth/token/>)
+    - Set the refresh token URL (example <http://localhost:9095/oauth/token/>)
     - Set the client ID
     - Set the client secret
-
-**Please note the trailing slash "/" after the token URL**
-
-Authorize QGIS to access to scope permissions.
-
-Now you can try to connect.
-
-
----
+- Connect to this server
+  - A new web page will open and will ask
+    - To login to Geocity
+    - To Authorize QGIS to access Geocity features
+- Add the permits layers
+  - Set the layer CRS to `EPSG:2056` (also the project if not the case)
 
 ## Other sources
 
