@@ -29,7 +29,7 @@
     - To login to Geocity
     - To authorize QGIS to access Geocity features
 - Add the permits layers
-  - Set the layer CRS to `EPSG:2056` (also the project if not already the case)
+  - Set the layer CRS to `EPSG:2056` before adding it to the map (also the project if not already the case)
 
 ## Other sources
 
