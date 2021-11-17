@@ -1,6 +1,6 @@
 # OAuth2, use bearer token to access to the WFS3 Open Feature api
 
-## Register an extern app
+## Register an external application
 
 - Go to : <http://localhost:9095/oauth/applications/register/>
   - Name : `${YOUR_APP_NAME}`
@@ -11,31 +11,26 @@
   - Redirect uris : <http://127.0.0.1:7070/>
   - Algorithm : HMAC with SHA-2 256
 
----
-
-## Connect to the new extern app with QGIS
-
-**/!\ Configuration is probably not totally correct, this documentation is still in progress, find how to configure correctly and fix it**
+## Connect to the new external application with QGIS
 
 - Add a WFS layer
 - Create a new connection to a server
   - Set a name
-  - Put the url to the ressource. Example <http://localhost:9095/wfs3>
+  - Set the ressource URL (example <http://localhost:9095/wfs3/>)
   - Create an OAuth2 authentication
-    - Set a name
-    - Set the request URL. Example <http://localhost:9095/oauth/authorize>
-    - Set the token URL. Example <http://localhost:9095/oauth/token/>
-    - Set the refresh token URL. Example <http://localhost:9095/oauth/token/>
+    - Set a description
+    - Set the request URL (example <http://localhost:9095/oauth/authorize/>)
+    - Set the token URL (example <http://localhost:9095/oauth/token/>) **Note the trailing `/`**
+    - Set the refresh token URL (example <http://localhost:9095/oauth/token/>)
     - Set the client ID
     - Set the client secret
-
-**Please note the trailing slash "/" after the token URL**
-
-Now you can try to connect.
-
-
----
+- Connect to this server
+  - A new web page will open and will ask
+    - To login to Geocity
+    - To authorize QGIS to access Geocity features
+- Add the permits layers
+  - Set the layer CRS to `EPSG:2056` before adding it to the map (also the project if not already the case)
 
 ## Other sources
 
-Camp to camp have their own documentation for OAuth2 with QGIS, [here](https://camptocamp.github.io/c2cgeoportal/master/integrator/authentication_oauth2.html?highlight=oauth2).
+Camptocamp have their own documentation for OAuth2 with QGIS, [here](https://camptocamp.github.io/c2cgeoportal/master/integrator/authentication_oauth2.html?highlight=oauth2).

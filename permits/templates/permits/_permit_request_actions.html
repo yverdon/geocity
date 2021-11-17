@@ -54,12 +54,13 @@
 
       {% endif %}
 
-
-          <li class="nav-item">
-          <a class="btn btn-primary btn-action nav-link" id="print-tab" data-toggle="tab" href="#print" role="tab" aria-controls="print">
-              {% trans "Imprimer" %}
-          </a>
-          </li>
+      {% if has_permission_to_classify %}
+        <li class="nav-item">
+        <a class="btn btn-primary btn-action nav-link" id="print-tab" data-toggle="tab" href="#print" role="tab" aria-controls="print">
+            {% trans "Imprimer" %}
+        </a>
+        </li>
+      {% endif %}
 
       </ul>
 
