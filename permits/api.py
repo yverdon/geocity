@@ -149,8 +149,8 @@ class PermitRequestViewSet(
     serializer_class = serializers.PermitRequestPrintSerializer
     permission_classes = [BlockRequesterUserPermission]
 
-    wfs3_title = "Permis"
-    wfs3_description = "Tous les permis accordés"
+    wfs3_title = "Demandes"
+    wfs3_description = "Toutes les demandes"
     wfs3_geom_lookup = "geo_time__geom"  # lookup for the geometry (on the queryset), used to determine bbox
     wfs3_srid = 2056
 
@@ -256,7 +256,7 @@ def permitRequestViewSetSubsetFactory(geom_type_name):
 
     class ViewSet(PermitRequestViewSet):
         wfs3_title = f"{PermitRequestViewSet.wfs3_title} ({geom_type_name})"
-        wfs3_description = f"{PermitRequestViewSet.wfs3_description} (géomtries filtrées par type {geom_type_name})"
+        wfs3_description = f"{PermitRequestViewSet.wfs3_description} (géométries de type {geom_type_name})"
         serializer_class = Serializer
 
         def get_queryset(self):
