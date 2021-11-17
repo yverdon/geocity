@@ -166,23 +166,19 @@ class PermitRequestValidationSerializer(serializers.Serializer):
         rep = {}
         if validations:
             for i, validation in enumerate(validations, 1):
+                values = {}
                 for field in validation._meta.fields:
+                    values[
+                        "validation_status"
+                    ] = validation.get_validation_status_display()
                     if field.name in [
                         "comment_before",
                         "comment_during",
                         "comment_after",
                     ]:
-                        rep[slugify(f"validation_{i}_{field.name}")] = getattr(
-                            validation, field.name
-                        )
+                        values[field.name] = getattr(validation, field.name)
 
-                    rep[
-                        slugify(f"validation_{i}_validation_status")
-                    ] = validation.get_validation_status_display()
-                    rep[
-                        slugify(f"validation_{i}_department")
-                    ] = validation.department.description
-
+                rep[validation.department.description] = values
             return rep
 
 
