@@ -1,0 +1,1251 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis saveUser="olivi" version="3.16.6-Hannover" projectname="" saveUserFull="olivi" saveDateTime="2021-11-19T14:50:08">
+  <homePath path=""/>
+  <title></title>
+  <autotransaction active="0"/>
+  <evaluateDefaultValues active="0"/>
+  <trust active="0"/>
+  <projectCrs>
+    <spatialrefsys>
+      <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Liechtenstein and Switzerland"],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
+      <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
+      <srsid>47</srsid>
+      <srid>2056</srid>
+      <authid>EPSG:2056</authid>
+      <description>CH1903+ / LV95</description>
+      <projectionacronym>somerc</projectionacronym>
+      <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
+      <geographicflag>false</geographicflag>
+    </spatialrefsys>
+  </projectCrs>
+  <layer-tree-group>
+    <customproperties/>
+    <layer-tree-layer name="permits_v" providerKey="virtual" expanded="1" id="permits_v_c3adba76_127b_4145_98bc_4751d240a52d" legend_split_behavior="0" checked="Qt::Checked" legend_exp="" patch_size="-1,-1" source="?query=select%20*%20from%20permits&amp;uid=permit_request_id">
+      <customproperties/>
+    </layer-tree-layer>
+    <layer-tree-layer name="permits" providerKey="OAPIF" expanded="1" id="permits_e0f6aebc_b83c_43b7_8ee1_98efe7c6b218" legend_split_behavior="0" checked="Qt::Checked" legend_exp="" patch_size="-1,-1" source="authcfg=w18co6d pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits' url='http://localhost:9095/wfs3/' version='auto'">
+      <customproperties/>
+    </layer-tree-layer>
+    <layer-tree-layer name="OpenStreetMap" providerKey="wms" expanded="1" id="OpenStreetMap_0e49df35_8d88_428c_9a3d_b7af914ff41a" legend_split_behavior="0" checked="Qt::Checked" legend_exp="" patch_size="-1,-1" source="type=xyz&amp;url=https://tile.openstreetmap.org/%7Bz%7D/%7Bx%7D/%7By%7D.png&amp;zmax=19&amp;zmin=0">
+      <customproperties/>
+    </layer-tree-layer>
+    <custom-order enabled="0">
+      <item>permits_e0f6aebc_b83c_43b7_8ee1_98efe7c6b218</item>
+      <item>permits_v_c3adba76_127b_4145_98bc_4751d240a52d</item>
+      <item>OpenStreetMap_0e49df35_8d88_428c_9a3d_b7af914ff41a</item>
+    </custom-order>
+  </layer-tree-group>
+  <snapping-settings mode="2" tolerance="12" maxScale="0" intersection-snapping="0" type="1" enabled="0" self-snapping="0" scaleDependencyMode="0" unit="1" minScale="0">
+    <individual-layer-settings>
+      <layer-setting tolerance="12" maxScale="0" type="1" enabled="0" id="permits_e0f6aebc_b83c_43b7_8ee1_98efe7c6b218" units="1" minScale="0"/>
+      <layer-setting tolerance="12" maxScale="0" type="1" enabled="0" id="permits_v_c3adba76_127b_4145_98bc_4751d240a52d" units="1" minScale="0"/>
+    </individual-layer-settings>
+  </snapping-settings>
+  <relations/>
+  <mapcanvas name="theMapCanvas" annotationsVisible="1">
+    <units>meters</units>
+    <extent>
+      <xmin>2538960.02613328583538532</xmin>
+      <ymin>1181063.6280489785131067</ymin>
+      <xmax>2539253.48391555435955524</xmax>
+      <ymax>1181237.52895691595040262</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <destinationsrs>
+      <spatialrefsys>
+        <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Liechtenstein and Switzerland"],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
+        <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
+        <srsid>47</srsid>
+        <srid>2056</srid>
+        <authid>EPSG:2056</authid>
+        <description>CH1903+ / LV95</description>
+        <projectionacronym>somerc</projectionacronym>
+        <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
+        <geographicflag>false</geographicflag>
+      </spatialrefsys>
+    </destinationsrs>
+    <rendermaptile>0</rendermaptile>
+    <expressionContextScope/>
+  </mapcanvas>
+  <projectModels/>
+  <legend updateDrawingOrder="true">
+    <legendlayer name="permits_v" drawingOrder="-1" showFeatureCount="0" open="true" checked="Qt::Checked">
+      <filegroup open="true" hidden="false">
+        <legendlayerfile layerid="permits_v_c3adba76_127b_4145_98bc_4751d240a52d" isInOverview="0" visible="1"/>
+      </filegroup>
+    </legendlayer>
+    <legendlayer name="permits" drawingOrder="-1" showFeatureCount="0" open="true" checked="Qt::Checked">
+      <filegroup open="true" hidden="false">
+        <legendlayerfile layerid="permits_e0f6aebc_b83c_43b7_8ee1_98efe7c6b218" isInOverview="0" visible="1"/>
+      </filegroup>
+    </legendlayer>
+    <legendlayer name="OpenStreetMap" drawingOrder="-1" showFeatureCount="0" open="true" checked="Qt::Checked">
+      <filegroup open="true" hidden="false">
+        <legendlayerfile layerid="OpenStreetMap_0e49df35_8d88_428c_9a3d_b7af914ff41a" isInOverview="0" visible="1"/>
+      </filegroup>
+    </legendlayer>
+  </legend>
+  <mapViewDocks/>
+  <mapViewDocks3D/>
+  <mapcanvas name="mAreaCanvas" annotationsVisible="1">
+    <units>degrees</units>
+    <extent>
+      <xmin>0</xmin>
+      <ymin>0</ymin>
+      <xmax>0</xmax>
+      <ymax>0</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <destinationsrs>
+      <spatialrefsys>
+        <wkt>GEOGCRS["WGS 84",DATUM["World Geodetic System 1984",ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["unknown"],AREA["World"],BBOX[-90,-180,90,180]],ID["EPSG",4326]]</wkt>
+        <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+        <srsid>3452</srsid>
+        <srid>4326</srid>
+        <authid>EPSG:4326</authid>
+        <description>WGS 84</description>
+        <projectionacronym>longlat</projectionacronym>
+        <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
+        <geographicflag>true</geographicflag>
+      </spatialrefsys>
+    </destinationsrs>
+    <rendermaptile>0</rendermaptile>
+    <expressionContextScope/>
+  </mapcanvas>
+  <mapcanvas name="mAreaCanvas" annotationsVisible="1">
+    <units>degrees</units>
+    <extent>
+      <xmin>0</xmin>
+      <ymin>0</ymin>
+      <xmax>0</xmax>
+      <ymax>0</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <destinationsrs>
+      <spatialrefsys>
+        <wkt>GEOGCRS["WGS 84",DATUM["World Geodetic System 1984",ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["unknown"],AREA["World"],BBOX[-90,-180,90,180]],ID["EPSG",4326]]</wkt>
+        <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+        <srsid>3452</srsid>
+        <srid>4326</srid>
+        <authid>EPSG:4326</authid>
+        <description>WGS 84</description>
+        <projectionacronym>longlat</projectionacronym>
+        <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
+        <geographicflag>true</geographicflag>
+      </spatialrefsys>
+    </destinationsrs>
+    <rendermaptile>0</rendermaptile>
+    <expressionContextScope/>
+  </mapcanvas>
+  <mapcanvas name="mAreaCanvas" annotationsVisible="1">
+    <units>degrees</units>
+    <extent>
+      <xmin>0</xmin>
+      <ymin>0</ymin>
+      <xmax>0</xmax>
+      <ymax>0</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <destinationsrs>
+      <spatialrefsys>
+        <wkt>GEOGCRS["WGS 84",DATUM["World Geodetic System 1984",ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["unknown"],AREA["World"],BBOX[-90,-180,90,180]],ID["EPSG",4326]]</wkt>
+        <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+        <srsid>3452</srsid>
+        <srid>4326</srid>
+        <authid>EPSG:4326</authid>
+        <description>WGS 84</description>
+        <projectionacronym>longlat</projectionacronym>
+        <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
+        <geographicflag>true</geographicflag>
+      </spatialrefsys>
+    </destinationsrs>
+    <rendermaptile>0</rendermaptile>
+    <expressionContextScope/>
+  </mapcanvas>
+  <main-annotation-layer autoRefreshTime="0" refreshOnNotifyMessage="" type="annotation" refreshOnNotifyEnabled="0" autoRefreshEnabled="0">
+    <id>Annotations_4dd122c4_c319_4b50_b4c0_bde374fbfb1f</id>
+    <datasource></datasource>
+    <keywordList>
+      <value></value>
+    </keywordList>
+    <layername>Annotations</layername>
+    <srs>
+      <spatialrefsys>
+        <wkt></wkt>
+        <proj4></proj4>
+        <srsid>0</srsid>
+        <srid>0</srid>
+        <authid></authid>
+        <description></description>
+        <projectionacronym></projectionacronym>
+        <ellipsoidacronym></ellipsoidacronym>
+        <geographicflag>false</geographicflag>
+      </spatialrefsys>
+    </srs>
+    <resourceMetadata>
+      <identifier></identifier>
+      <parentidentifier></parentidentifier>
+      <language></language>
+      <type></type>
+      <title></title>
+      <abstract></abstract>
+      <links/>
+      <fees></fees>
+      <encoding></encoding>
+      <crs>
+        <spatialrefsys>
+          <wkt></wkt>
+          <proj4></proj4>
+          <srsid>0</srsid>
+          <srid>0</srid>
+          <authid></authid>
+          <description></description>
+          <projectionacronym></projectionacronym>
+          <ellipsoidacronym></ellipsoidacronym>
+          <geographicflag>false</geographicflag>
+        </spatialrefsys>
+      </crs>
+      <extent/>
+    </resourceMetadata>
+    <items/>
+    <layerOpacity>1</layerOpacity>
+  </main-annotation-layer>
+  <projectlayers>
+    <maplayer maxScale="0" autoRefreshTime="0" refreshOnNotifyMessage="" type="raster" styleCategories="AllStyleCategories" refreshOnNotifyEnabled="0" hasScaleBasedVisibilityFlag="0" autoRefreshEnabled="0" minScale="1e+08">
+      <extent>
+        <xmin>-20037508.34278924390673637</xmin>
+        <ymin>-20037508.34278925508260727</ymin>
+        <xmax>20037508.34278924390673637</xmax>
+        <ymax>20037508.34278924390673637</ymax>
+      </extent>
+      <id>OpenStreetMap_0e49df35_8d88_428c_9a3d_b7af914ff41a</id>
+      <datasource>type=xyz&amp;url=https://tile.openstreetmap.org/%7Bz%7D/%7Bx%7D/%7By%7D.png&amp;zmax=19&amp;zmin=0</datasource>
+      <keywordList>
+        <value></value>
+      </keywordList>
+      <layername>OpenStreetMap</layername>
+      <srs>
+        <spatialrefsys>
+          <wkt>PROJCRS["WGS 84 / Pseudo-Mercator",BASEGEOGCRS["WGS 84",DATUM["World Geodetic System 1984",ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4326]],CONVERSION["Popular Visualisation Pseudo-Mercator",METHOD["Popular Visualisation Pseudo Mercator",ID["EPSG",1024]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["World - 85°S to 85°N"],BBOX[-85.06,-180,85.06,180]],ID["EPSG",3857]]</wkt>
+          <proj4>+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs</proj4>
+          <srsid>3857</srsid>
+          <srid>3857</srid>
+          <authid>EPSG:3857</authid>
+          <description>WGS 84 / Pseudo-Mercator</description>
+          <projectionacronym>merc</projectionacronym>
+          <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
+          <geographicflag>false</geographicflag>
+        </spatialrefsys>
+      </srs>
+      <resourceMetadata>
+        <identifier>Tuiles OpenStreetMap</identifier>
+        <parentidentifier></parentidentifier>
+        <language></language>
+        <type>dataset</type>
+        <title>Tuiles OpenStreetMap</title>
+        <abstract>OpenStreetMap est construit par une communauté de cartographes qui contribuent et maintiennent des données concern</abstract>
+        <links>
+          <link url="https://www.openstreetmap.org/" name="Source" description="" mimeType="" size="" type="WWW:LINK" format=""/>
+        </links>
+        <fees></fees>
+        <rights>Fond de carte et données d’OpenStreetMap et de la Fondation OpenStreetMap (CC-BY-SA). © les contributeurs de https://www.openstreetmap.org.</rights>
+        <license>Open Data Commons Open Database License (ODbL)</license>
+        <license>Creative Commons Attribution-ShareAlike (CC-BY-SA)</license>
+        <encoding></encoding>
+        <crs>
+          <spatialrefsys>
+            <wkt>PROJCRS["WGS 84 / Pseudo-Mercator",BASEGEOGCRS["WGS 84",DATUM["World Geodetic System 1984",ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4326]],CONVERSION["Popular Visualisation Pseudo-Mercator",METHOD["Popular Visualisation Pseudo Mercator",ID["EPSG",1024]],PARAMETER["Latitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natural origin",0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8802]],PARAMETER["False easting",0,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False northing",0,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["easting (X)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["northing (Y)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["World - 85°S to 85°N"],BBOX[-85.06,-180,85.06,180]],ID["EPSG",3857]]</wkt>
+            <proj4>+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs</proj4>
+            <srsid>3857</srsid>
+            <srid>3857</srid>
+            <authid>EPSG:3857</authid>
+            <description>WGS 84 / Pseudo-Mercator</description>
+            <projectionacronym>merc</projectionacronym>
+            <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
+            <geographicflag>false</geographicflag>
+          </spatialrefsys>
+        </crs>
+        <extent>
+          <spatial crs="EPSG:4326" maxz="0" minz="0" miny="-85.05112877980660357" minx="-180" maxx="180" maxy="85.05112877980660357" dimensions="2"/>
+        </extent>
+      </resourceMetadata>
+      <provider>wms</provider>
+      <noData>
+        <noDataList useSrcNoData="0" bandNo="1"/>
+      </noData>
+      <map-layer-style-manager current="défaut">
+        <map-layer-style name="défaut"/>
+      </map-layer-style-manager>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+      </flags>
+      <temporal mode="0" fetchMode="0" enabled="0">
+        <fixedRange>
+          <start></start>
+          <end></end>
+        </fixedRange>
+      </temporal>
+      <customproperties>
+        <property value="Undefined" key="identify/format"/>
+      </customproperties>
+      <pipe>
+        <provider>
+          <resampling maxOversampling="2" zoomedOutResamplingMethod="nearestNeighbour" zoomedInResamplingMethod="nearestNeighbour" enabled="false"/>
+        </provider>
+        <rasterrenderer opacity="1" nodataColor="" band="1" alphaBand="-1" type="singlebandcolordata">
+          <rasterTransparency/>
+          <minMaxOrigin>
+            <limits>None</limits>
+            <extent>WholeRaster</extent>
+            <statAccuracy>Estimated</statAccuracy>
+            <cumulativeCutLower>0.02</cumulativeCutLower>
+            <cumulativeCutUpper>0.98</cumulativeCutUpper>
+            <stdDevFactor>2</stdDevFactor>
+          </minMaxOrigin>
+        </rasterrenderer>
+        <brightnesscontrast brightness="0" contrast="0" gamma="1"/>
+        <huesaturation grayscaleMode="0" colorizeRed="255" colorizeGreen="128" colorizeStrength="100" colorizeBlue="128" saturation="0" colorizeOn="0"/>
+        <rasterresampler maxOversampling="2"/>
+        <resamplingStage>resamplingFilter</resamplingStage>
+      </pipe>
+      <blendMode>0</blendMode>
+    </maplayer>
+    <maplayer type="vector" simplifyDrawingTol="1" readOnly="0" simplifyAlgorithm="0" simplifyMaxScale="1" simplifyLocal="1" geometry="Polygon" refreshOnNotifyMessage="" autoRefreshEnabled="0" simplifyDrawingHints="1" autoRefreshTime="0" labelsEnabled="0" minScale="100000000" refreshOnNotifyEnabled="0" styleCategories="AllStyleCategories" hasScaleBasedVisibilityFlag="0" wkbType="Polygon" maxScale="0">
+      <extent>
+        <xmin>2539075.69139447994530201</xmin>
+        <ymin>1181118.41274906997568905</ymin>
+        <xmax>2539112.62684474978595972</xmax>
+        <ymax>1181141.1152381100691855</ymax>
+      </extent>
+      <id>permits_e0f6aebc_b83c_43b7_8ee1_98efe7c6b218</id>
+      <datasource>authcfg=w18co6d pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits' url='http://localhost:9095/wfs3/' version='auto'</datasource>
+      <keywordList>
+        <value></value>
+      </keywordList>
+      <layername>permits</layername>
+      <srs>
+        <spatialrefsys>
+          <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Liechtenstein and Switzerland"],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
+          <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
+          <srsid>47</srsid>
+          <srid>2056</srid>
+          <authid>EPSG:2056</authid>
+          <description>CH1903+ / LV95</description>
+          <projectionacronym>somerc</projectionacronym>
+          <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
+          <geographicflag>false</geographicflag>
+        </spatialrefsys>
+      </srs>
+      <resourceMetadata>
+        <identifier>http://localhost:9095/wfs3/collections/permits</identifier>
+        <parentidentifier></parentidentifier>
+        <language></language>
+        <type>dataset</type>
+        <title>Demandes</title>
+        <abstract>Toutes les demandes</abstract>
+        <links>
+          <link url="http://localhost:9095/wfs3/collections/permits" name="self" description="This document as JSON" mimeType="application/geo+json" size="" type="WWW:LINK" format=""/>
+          <link url="http://localhost:9095/wfs3/collections/permits/items" name="items" description="permits" mimeType="application/geo+json" size="" type="WWW:LINK" format=""/>
+        </links>
+        <fees></fees>
+        <encoding></encoding>
+        <crs>
+          <spatialrefsys>
+            <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Liechtenstein and Switzerland"],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
+            <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
+            <srsid>47</srsid>
+            <srid>2056</srid>
+            <authid>EPSG:2056</authid>
+            <description>CH1903+ / LV95</description>
+            <projectionacronym>somerc</projectionacronym>
+            <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
+            <geographicflag>false</geographicflag>
+          </spatialrefsys>
+        </crs>
+        <extent>
+          <spatial crs="EPSG:2056" maxz="0" minz="0" miny="1181119.41274906997568905" minx="2539076.69139447994530201" maxx="2539111.62684474978595972" maxy="1181140.1152381100691855" dimensions="2"/>
+        </extent>
+      </resourceMetadata>
+      <provider encoding="">OAPIF</provider>
+      <vectorjoins/>
+      <layerDependencies/>
+      <dataDependencies/>
+      <expressionfields/>
+      <map-layer-style-manager current="défaut">
+        <map-layer-style name="défaut"/>
+      </map-layer-style-manager>
+      <auxiliaryLayer/>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+      </flags>
+      <temporal mode="2" startField="permit_request_geo_time_start_date" accumulate="0" fixedDuration="0" durationField="" endExpression="" enabled="0" endField="permit_request_geo_time_end_date" startExpression="" durationUnit="min">
+        <fixedRange>
+          <start></start>
+          <end></end>
+        </fixedRange>
+      </temporal>
+      <renderer-v2 symbollevels="0" forceraster="0" type="singleSymbol" enableorderby="0">
+        <symbols>
+          <symbol force_rhr="0" name="0" type="fill" clip_to_extent="1" alpha="1">
+            <layer enabled="1" locked="0" class="SimpleFill" pass="0">
+              <prop k="border_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
+              <prop k="color" v="231,113,72,255"/>
+              <prop k="joinstyle" v="bevel"/>
+              <prop k="offset" v="0,0"/>
+              <prop k="offset_map_unit_scale" v="3x:0,0,0,0,0,0"/>
+              <prop k="offset_unit" v="MM"/>
+              <prop k="outline_color" v="35,35,35,255"/>
+              <prop k="outline_style" v="solid"/>
+              <prop k="outline_width" v="0.26"/>
+              <prop k="outline_width_unit" v="MM"/>
+              <prop k="style" v="solid"/>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option name="name" type="QString" value=""/>
+                  <Option name="properties"/>
+                  <Option name="type" type="QString" value="collection"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+        </symbols>
+        <rotation/>
+        <sizescale/>
+      </renderer-v2>
+      <customproperties>
+        <property key="dualview/previewExpressions">
+          <value>"permit_request_works_object_types_names"</value>
+        </property>
+      </customproperties>
+      <blendMode>0</blendMode>
+      <featureBlendMode>0</featureBlendMode>
+      <layerOpacity>1</layerOpacity>
+      <geometryOptions geometryPrecision="0" removeDuplicateNodes="0">
+        <activeChecks type="StringList">
+          <Option type="QString" value=""/>
+        </activeChecks>
+        <checkConfiguration/>
+      </geometryOptions>
+      <legend type="default-vector"/>
+      <referencedLayers/>
+      <fieldConfiguration>
+        <field name="permit_request_actor" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="creditor_type" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="status_display" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="author" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="validations" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_geo_time_start_date" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_geo_time_end_date" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_geo_time_comments" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_geo_time_external_links" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_id" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_status" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_administrative_entity" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_works_object_types" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_meta_types" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_intersected_geometries" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_works_object_types_names" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="request_properties" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="amend_properties" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+      </fieldConfiguration>
+      <aliases>
+        <alias name="" field="permit_request_actor" index="0"/>
+        <alias name="" field="creditor_type" index="1"/>
+        <alias name="" field="status_display" index="2"/>
+        <alias name="" field="author" index="3"/>
+        <alias name="" field="validations" index="4"/>
+        <alias name="" field="permit_request_geo_time_start_date" index="5"/>
+        <alias name="" field="permit_request_geo_time_end_date" index="6"/>
+        <alias name="" field="permit_request_geo_time_comments" index="7"/>
+        <alias name="" field="permit_request_geo_time_external_links" index="8"/>
+        <alias name="" field="permit_request_id" index="9"/>
+        <alias name="" field="permit_request_status" index="10"/>
+        <alias name="" field="permit_request_administrative_entity" index="11"/>
+        <alias name="" field="permit_request_works_object_types" index="12"/>
+        <alias name="" field="permit_request_meta_types" index="13"/>
+        <alias name="" field="permit_request_intersected_geometries" index="14"/>
+        <alias name="" field="permit_request_works_object_types_names" index="15"/>
+        <alias name="" field="request_properties" index="16"/>
+        <alias name="" field="amend_properties" index="17"/>
+      </aliases>
+      <defaults>
+        <default applyOnUpdate="0" field="permit_request_actor" expression=""/>
+        <default applyOnUpdate="0" field="creditor_type" expression=""/>
+        <default applyOnUpdate="0" field="status_display" expression=""/>
+        <default applyOnUpdate="0" field="author" expression=""/>
+        <default applyOnUpdate="0" field="validations" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_geo_time_start_date" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_geo_time_end_date" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_geo_time_comments" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_geo_time_external_links" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_id" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_status" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_administrative_entity" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_works_object_types" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_meta_types" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_intersected_geometries" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_works_object_types_names" expression=""/>
+        <default applyOnUpdate="0" field="request_properties" expression=""/>
+        <default applyOnUpdate="0" field="amend_properties" expression=""/>
+      </defaults>
+      <constraints>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_actor" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="creditor_type" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="status_display" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="author" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="validations" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_geo_time_start_date" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_geo_time_end_date" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_geo_time_comments" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_geo_time_external_links" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_id" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_status" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_administrative_entity" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_works_object_types" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_meta_types" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_intersected_geometries" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_works_object_types_names" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="request_properties" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="amend_properties" constraints="0" notnull_strength="0"/>
+      </constraints>
+      <constraintExpressions>
+        <constraint field="permit_request_actor" desc="" exp=""/>
+        <constraint field="creditor_type" desc="" exp=""/>
+        <constraint field="status_display" desc="" exp=""/>
+        <constraint field="author" desc="" exp=""/>
+        <constraint field="validations" desc="" exp=""/>
+        <constraint field="permit_request_geo_time_start_date" desc="" exp=""/>
+        <constraint field="permit_request_geo_time_end_date" desc="" exp=""/>
+        <constraint field="permit_request_geo_time_comments" desc="" exp=""/>
+        <constraint field="permit_request_geo_time_external_links" desc="" exp=""/>
+        <constraint field="permit_request_id" desc="" exp=""/>
+        <constraint field="permit_request_status" desc="" exp=""/>
+        <constraint field="permit_request_administrative_entity" desc="" exp=""/>
+        <constraint field="permit_request_works_object_types" desc="" exp=""/>
+        <constraint field="permit_request_meta_types" desc="" exp=""/>
+        <constraint field="permit_request_intersected_geometries" desc="" exp=""/>
+        <constraint field="permit_request_works_object_types_names" desc="" exp=""/>
+        <constraint field="request_properties" desc="" exp=""/>
+        <constraint field="amend_properties" desc="" exp=""/>
+      </constraintExpressions>
+      <expressionfields/>
+      <attributeactions>
+        <defaultAction value="{00000000-0000-0000-0000-000000000000}" key="Canvas"/>
+      </attributeactions>
+      <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="0">
+        <columns>
+          <column name="permit_request_actor" type="field" hidden="0" width="-1"/>
+          <column name="creditor_type" type="field" hidden="0" width="-1"/>
+          <column name="status_display" type="field" hidden="0" width="-1"/>
+          <column name="author" type="field" hidden="0" width="-1"/>
+          <column name="validations" type="field" hidden="0" width="-1"/>
+          <column name="permit_request_geo_time_start_date" type="field" hidden="0" width="-1"/>
+          <column name="permit_request_geo_time_end_date" type="field" hidden="0" width="-1"/>
+          <column name="permit_request_geo_time_comments" type="field" hidden="0" width="-1"/>
+          <column name="permit_request_geo_time_external_links" type="field" hidden="0" width="-1"/>
+          <column name="permit_request_id" type="field" hidden="0" width="-1"/>
+          <column name="permit_request_status" type="field" hidden="0" width="-1"/>
+          <column name="permit_request_administrative_entity" type="field" hidden="0" width="-1"/>
+          <column name="permit_request_works_object_types" type="field" hidden="0" width="-1"/>
+          <column name="permit_request_meta_types" type="field" hidden="0" width="-1"/>
+          <column name="permit_request_intersected_geometries" type="field" hidden="0" width="-1"/>
+          <column name="permit_request_works_object_types_names" type="field" hidden="0" width="-1"/>
+          <column name="request_properties" type="field" hidden="0" width="-1"/>
+          <column name="amend_properties" type="field" hidden="0" width="-1"/>
+          <column type="actions" hidden="1" width="-1"/>
+        </columns>
+      </attributetableconfig>
+      <conditionalstyles>
+        <rowstyles/>
+        <fieldstyles/>
+      </conditionalstyles>
+      <storedexpressions/>
+      <editform tolerant="1"></editform>
+      <editforminit/>
+      <editforminitcodesource>0</editforminitcodesource>
+      <editforminitfilepath></editforminitfilepath>
+      <editforminitcode><![CDATA[]]></editforminitcode>
+      <featformsuppress>0</featformsuppress>
+      <editorlayout>generatedlayout</editorlayout>
+      <editable/>
+      <labelOnTop/>
+      <dataDefinedFieldProperties/>
+      <widgets/>
+      <previewExpression>"permit_request_works_object_types_names"</previewExpression>
+      <mapTip></mapTip>
+    </maplayer>
+    <maplayer type="vector" simplifyDrawingTol="1" readOnly="0" simplifyAlgorithm="0" simplifyMaxScale="1" simplifyLocal="1" geometry="Polygon" refreshOnNotifyMessage="" autoRefreshEnabled="0" simplifyDrawingHints="1" autoRefreshTime="0" labelsEnabled="0" minScale="100000000" refreshOnNotifyEnabled="0" styleCategories="AllStyleCategories" hasScaleBasedVisibilityFlag="0" wkbType="Polygon" maxScale="0">
+      <extent>
+        <xmin>2539075.69139447994530201</xmin>
+        <ymin>1181118.41274906997568905</ymin>
+        <xmax>2539112.62684474978595972</xmax>
+        <ymax>1181141.1152381100691855</ymax>
+      </extent>
+      <id>permits_v_c3adba76_127b_4145_98bc_4751d240a52d</id>
+      <datasource>?query=select%20*%20from%20permits&amp;uid=permit_request_id</datasource>
+      <keywordList>
+        <value></value>
+      </keywordList>
+      <layername>permits_v</layername>
+      <srs>
+        <spatialrefsys>
+          <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Liechtenstein and Switzerland"],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
+          <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
+          <srsid>47</srsid>
+          <srid>2056</srid>
+          <authid>EPSG:2056</authid>
+          <description>CH1903+ / LV95</description>
+          <projectionacronym>somerc</projectionacronym>
+          <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
+          <geographicflag>false</geographicflag>
+        </spatialrefsys>
+      </srs>
+      <resourceMetadata>
+        <identifier></identifier>
+        <parentidentifier></parentidentifier>
+        <language></language>
+        <type></type>
+        <title></title>
+        <abstract></abstract>
+        <links/>
+        <fees></fees>
+        <encoding></encoding>
+        <crs>
+          <spatialrefsys>
+            <wkt></wkt>
+            <proj4></proj4>
+            <srsid>0</srsid>
+            <srid>0</srid>
+            <authid></authid>
+            <description></description>
+            <projectionacronym></projectionacronym>
+            <ellipsoidacronym></ellipsoidacronym>
+            <geographicflag>false</geographicflag>
+          </spatialrefsys>
+        </crs>
+        <extent/>
+      </resourceMetadata>
+      <provider encoding="">virtual</provider>
+      <vectorjoins/>
+      <layerDependencies>
+        <layer id="permits_e0f6aebc_b83c_43b7_8ee1_98efe7c6b218"/>
+      </layerDependencies>
+      <dataDependencies/>
+      <expressionfields/>
+      <map-layer-style-manager current="défaut">
+        <map-layer-style name="défaut"/>
+      </map-layer-style-manager>
+      <auxiliaryLayer/>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+      </flags>
+      <temporal mode="0" startField="" accumulate="0" fixedDuration="0" durationField="" endExpression="" enabled="0" endField="" startExpression="" durationUnit="min">
+        <fixedRange>
+          <start></start>
+          <end></end>
+        </fixedRange>
+      </temporal>
+      <renderer-v2 symbollevels="0" forceraster="0" type="singleSymbol" enableorderby="0">
+        <symbols>
+          <symbol force_rhr="0" name="0" type="fill" clip_to_extent="1" alpha="1">
+            <layer enabled="1" locked="0" class="SimpleFill" pass="0">
+              <prop k="border_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
+              <prop k="color" v="190,207,80,255"/>
+              <prop k="joinstyle" v="bevel"/>
+              <prop k="offset" v="0,0"/>
+              <prop k="offset_map_unit_scale" v="3x:0,0,0,0,0,0"/>
+              <prop k="offset_unit" v="MM"/>
+              <prop k="outline_color" v="35,35,35,255"/>
+              <prop k="outline_style" v="solid"/>
+              <prop k="outline_width" v="0.26"/>
+              <prop k="outline_width_unit" v="MM"/>
+              <prop k="style" v="solid"/>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option name="name" type="QString" value=""/>
+                  <Option name="properties"/>
+                  <Option name="type" type="QString" value="collection"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+        </symbols>
+        <rotation/>
+        <sizescale/>
+      </renderer-v2>
+      <customproperties/>
+      <blendMode>0</blendMode>
+      <featureBlendMode>0</featureBlendMode>
+      <layerOpacity>1</layerOpacity>
+      <geometryOptions geometryPrecision="0" removeDuplicateNodes="0">
+        <activeChecks type="StringList">
+          <Option type="QString" value=""/>
+        </activeChecks>
+        <checkConfiguration/>
+      </geometryOptions>
+      <legend type="default-vector"/>
+      <referencedLayers/>
+      <fieldConfiguration>
+        <field name="permit_request_actor" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="creditor_type" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="status_display" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="author" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="validations" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_geo_time_start_date" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_geo_time_end_date" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_geo_time_comments" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_geo_time_external_links" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_id" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_status" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_administrative_entity" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_works_object_types" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_meta_types" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_intersected_geometries" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="permit_request_works_object_types_names" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="request_properties" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="amend_properties" configurationFlags="None">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+      </fieldConfiguration>
+      <aliases>
+        <alias name="" field="permit_request_actor" index="0"/>
+        <alias name="" field="creditor_type" index="1"/>
+        <alias name="" field="status_display" index="2"/>
+        <alias name="" field="author" index="3"/>
+        <alias name="" field="validations" index="4"/>
+        <alias name="" field="permit_request_geo_time_start_date" index="5"/>
+        <alias name="" field="permit_request_geo_time_end_date" index="6"/>
+        <alias name="" field="permit_request_geo_time_comments" index="7"/>
+        <alias name="" field="permit_request_geo_time_external_links" index="8"/>
+        <alias name="" field="permit_request_id" index="9"/>
+        <alias name="" field="permit_request_status" index="10"/>
+        <alias name="" field="permit_request_administrative_entity" index="11"/>
+        <alias name="" field="permit_request_works_object_types" index="12"/>
+        <alias name="" field="permit_request_meta_types" index="13"/>
+        <alias name="" field="permit_request_intersected_geometries" index="14"/>
+        <alias name="" field="permit_request_works_object_types_names" index="15"/>
+        <alias name="" field="request_properties" index="16"/>
+        <alias name="" field="amend_properties" index="17"/>
+      </aliases>
+      <defaults>
+        <default applyOnUpdate="0" field="permit_request_actor" expression=""/>
+        <default applyOnUpdate="0" field="creditor_type" expression=""/>
+        <default applyOnUpdate="0" field="status_display" expression=""/>
+        <default applyOnUpdate="0" field="author" expression=""/>
+        <default applyOnUpdate="0" field="validations" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_geo_time_start_date" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_geo_time_end_date" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_geo_time_comments" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_geo_time_external_links" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_id" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_status" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_administrative_entity" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_works_object_types" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_meta_types" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_intersected_geometries" expression=""/>
+        <default applyOnUpdate="0" field="permit_request_works_object_types_names" expression=""/>
+        <default applyOnUpdate="0" field="request_properties" expression=""/>
+        <default applyOnUpdate="0" field="amend_properties" expression=""/>
+      </defaults>
+      <constraints>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_actor" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="creditor_type" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="status_display" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="author" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="validations" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_geo_time_start_date" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_geo_time_end_date" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_geo_time_comments" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_geo_time_external_links" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_id" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_status" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_administrative_entity" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_works_object_types" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_meta_types" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_intersected_geometries" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="permit_request_works_object_types_names" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="request_properties" constraints="0" notnull_strength="0"/>
+        <constraint exp_strength="0" unique_strength="0" field="amend_properties" constraints="0" notnull_strength="0"/>
+      </constraints>
+      <constraintExpressions>
+        <constraint field="permit_request_actor" desc="" exp=""/>
+        <constraint field="creditor_type" desc="" exp=""/>
+        <constraint field="status_display" desc="" exp=""/>
+        <constraint field="author" desc="" exp=""/>
+        <constraint field="validations" desc="" exp=""/>
+        <constraint field="permit_request_geo_time_start_date" desc="" exp=""/>
+        <constraint field="permit_request_geo_time_end_date" desc="" exp=""/>
+        <constraint field="permit_request_geo_time_comments" desc="" exp=""/>
+        <constraint field="permit_request_geo_time_external_links" desc="" exp=""/>
+        <constraint field="permit_request_id" desc="" exp=""/>
+        <constraint field="permit_request_status" desc="" exp=""/>
+        <constraint field="permit_request_administrative_entity" desc="" exp=""/>
+        <constraint field="permit_request_works_object_types" desc="" exp=""/>
+        <constraint field="permit_request_meta_types" desc="" exp=""/>
+        <constraint field="permit_request_intersected_geometries" desc="" exp=""/>
+        <constraint field="permit_request_works_object_types_names" desc="" exp=""/>
+        <constraint field="request_properties" desc="" exp=""/>
+        <constraint field="amend_properties" desc="" exp=""/>
+      </constraintExpressions>
+      <expressionfields/>
+      <attributeactions>
+        <defaultAction value="{00000000-0000-0000-0000-000000000000}" key="Canvas"/>
+      </attributeactions>
+      <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="0">
+        <columns/>
+      </attributetableconfig>
+      <conditionalstyles>
+        <rowstyles/>
+        <fieldstyles/>
+      </conditionalstyles>
+      <storedexpressions/>
+      <editform tolerant="1"></editform>
+      <editforminit/>
+      <editforminitcodesource>0</editforminitcodesource>
+      <editforminitfilepath></editforminitfilepath>
+      <editforminitcode><![CDATA[]]></editforminitcode>
+      <featformsuppress>0</featformsuppress>
+      <editorlayout>generatedlayout</editorlayout>
+      <editable/>
+      <labelOnTop/>
+      <dataDefinedFieldProperties/>
+      <widgets/>
+      <previewExpression></previewExpression>
+      <mapTip></mapTip>
+    </maplayer>
+  </projectlayers>
+  <layerorder>
+    <layer id="permits_e0f6aebc_b83c_43b7_8ee1_98efe7c6b218"/>
+    <layer id="permits_v_c3adba76_127b_4145_98bc_4751d240a52d"/>
+    <layer id="OpenStreetMap_0e49df35_8d88_428c_9a3d_b7af914ff41a"/>
+  </layerorder>
+  <properties>
+    <Digitizing>
+      <AvoidIntersectionsMode type="int">0</AvoidIntersectionsMode>
+    </Digitizing>
+    <Gui>
+      <CanvasColorBluePart type="int">255</CanvasColorBluePart>
+      <CanvasColorGreenPart type="int">255</CanvasColorGreenPart>
+      <CanvasColorRedPart type="int">255</CanvasColorRedPart>
+      <SelectionColorAlphaPart type="int">255</SelectionColorAlphaPart>
+      <SelectionColorBluePart type="int">0</SelectionColorBluePart>
+      <SelectionColorGreenPart type="int">255</SelectionColorGreenPart>
+      <SelectionColorRedPart type="int">255</SelectionColorRedPart>
+    </Gui>
+    <Legend>
+      <filterByMap type="bool">false</filterByMap>
+    </Legend>
+    <Measure>
+      <Ellipsoid type="QString">EPSG:7030</Ellipsoid>
+    </Measure>
+    <Measurement>
+      <AreaUnits type="QString"></AreaUnits>
+      <DistanceUnits type="QString"></DistanceUnits>
+    </Measurement>
+    <PAL>
+      <CandidatesLinePerCM type="double">5</CandidatesLinePerCM>
+      <CandidatesPolygonPerCM type="double">2.5</CandidatesPolygonPerCM>
+      <DrawRectOnly type="bool">false</DrawRectOnly>
+      <DrawUnplaced type="bool">false</DrawUnplaced>
+      <PlacementEngineVersion type="int">1</PlacementEngineVersion>
+      <SearchMethod type="int">0</SearchMethod>
+      <ShowingAllLabels type="bool">false</ShowingAllLabels>
+      <ShowingCandidates type="bool">false</ShowingCandidates>
+      <ShowingPartialsLabels type="bool">true</ShowingPartialsLabels>
+      <TextFormat type="int">0</TextFormat>
+      <UnplacedColor type="QString">255,0,0,255</UnplacedColor>
+    </PAL>
+    <Paths>
+      <Absolute type="bool">false</Absolute>
+    </Paths>
+    <PositionPrecision>
+      <Automatic type="bool">true</Automatic>
+      <DecimalPlaces type="int">2</DecimalPlaces>
+    </PositionPrecision>
+    <SpatialRefSys>
+      <ProjectionsEnabled type="int">1</ProjectionsEnabled>
+    </SpatialRefSys>
+  </properties>
+  <dataDefinedServerProperties>
+    <Option type="Map">
+      <Option name="name" type="QString" value=""/>
+      <Option name="properties"/>
+      <Option name="type" type="QString" value="collection"/>
+    </Option>
+  </dataDefinedServerProperties>
+  <visibility-presets/>
+  <transformContext/>
+  <projectMetadata>
+    <identifier></identifier>
+    <parentidentifier></parentidentifier>
+    <language></language>
+    <type></type>
+    <title></title>
+    <abstract></abstract>
+    <links/>
+    <author>olivi</author>
+    <creation>2021-11-19T13:13:55</creation>
+  </projectMetadata>
+  <Annotations/>
+  <Layouts>
+    <Layout name="print" worldFileMap="{f6158bc4-346d-4631-be7e-1e138ad77d8d}" units="mm" printResolution="300">
+      <Snapper tolerance="5" snapToItems="1" snapToGuides="1" snapToGrid="0"/>
+      <Grid offsetUnits="mm" offsetY="0" resolution="10" resUnits="mm" offsetX="0"/>
+      <PageCollection>
+        <symbol force_rhr="0" name="" type="fill" clip_to_extent="1" alpha="1">
+          <layer enabled="1" locked="0" class="SimpleFill" pass="0">
+            <prop k="border_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
+            <prop k="color" v="255,255,255,255"/>
+            <prop k="joinstyle" v="miter"/>
+            <prop k="offset" v="0,0"/>
+            <prop k="offset_map_unit_scale" v="3x:0,0,0,0,0,0"/>
+            <prop k="offset_unit" v="MM"/>
+            <prop k="outline_color" v="35,35,35,255"/>
+            <prop k="outline_style" v="no"/>
+            <prop k="outline_width" v="0.26"/>
+            <prop k="outline_width_unit" v="MM"/>
+            <prop k="style" v="solid"/>
+            <data_defined_properties>
+              <Option type="Map">
+                <Option name="name" type="QString" value=""/>
+                <Option name="properties"/>
+                <Option name="type" type="QString" value="collection"/>
+              </Option>
+            </data_defined_properties>
+          </layer>
+        </symbol>
+        <LayoutItem type="65638" frameJoinStyle="miter" outlineWidthM="0.3,mm" uuid="{a7379827-a9fa-4e58-885c-da24cc7eefb4}" itemRotation="0" background="true" id="" templateUuid="{a7379827-a9fa-4e58-885c-da24cc7eefb4}" opacity="1" position="0,0,mm" blendMode="0" groupUuid="" zValue="0" excludeFromExports="0" visibility="1" size="297,210,mm" positionOnPage="0,0,mm" positionLock="false" referencePoint="0" frame="false">
+          <FrameColor red="0" blue="0" green="0" alpha="255"/>
+          <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
+          <LayoutObject>
+            <dataDefinedProperties>
+              <Option type="Map">
+                <Option name="name" type="QString" value=""/>
+                <Option name="properties"/>
+                <Option name="type" type="QString" value="collection"/>
+              </Option>
+            </dataDefinedProperties>
+            <customproperties/>
+          </LayoutObject>
+          <symbol force_rhr="0" name="" type="fill" clip_to_extent="1" alpha="1">
+            <layer enabled="1" locked="0" class="SimpleFill" pass="0">
+              <prop k="border_width_map_unit_scale" v="3x:0,0,0,0,0,0"/>
+              <prop k="color" v="255,255,255,255"/>
+              <prop k="joinstyle" v="miter"/>
+              <prop k="offset" v="0,0"/>
+              <prop k="offset_map_unit_scale" v="3x:0,0,0,0,0,0"/>
+              <prop k="offset_unit" v="MM"/>
+              <prop k="outline_color" v="35,35,35,255"/>
+              <prop k="outline_style" v="no"/>
+              <prop k="outline_width" v="0.26"/>
+              <prop k="outline_width_unit" v="MM"/>
+              <prop k="style" v="solid"/>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option name="name" type="QString" value=""/>
+                  <Option name="properties"/>
+                  <Option name="type" type="QString" value="collection"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+        </LayoutItem>
+        <GuideCollection visible="1"/>
+      </PageCollection>
+      <LayoutItem type="65641" halign="8" frameJoinStyle="miter" outlineWidthM="0.3,mm" uuid="{4cc88abc-1b80-4c4d-bd90-a79fef592d49}" valign="32" itemRotation="0" background="false" id="" templateUuid="{4cc88abc-1b80-4c4d-bd90-a79fef592d49}" opacity="1" position="41.9814,91.0691,mm" blendMode="0" marginY="0" groupUuid="" zValue="2" htmlState="0" labelText="[% &quot;request_properties&quot; || 'Permis n°' ||  &quot;permit_request_id&quot; || '\n' ||  permit_properties() &#xa; || '\n Data refreshed at:' ||  geocity_api_refresh_data() %]" excludeFromExports="0" visibility="1" size="148.966,51.0309,mm" marginX="0" positionOnPage="41.9814,91.0691,mm" positionLock="false" referencePoint="0" frame="false">
+        <FrameColor red="0" blue="0" green="0" alpha="255"/>
+        <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
+        <LayoutObject>
+          <dataDefinedProperties>
+            <Option type="Map">
+              <Option name="name" type="QString" value=""/>
+              <Option name="properties"/>
+              <Option name="type" type="QString" value="collection"/>
+            </Option>
+          </dataDefinedProperties>
+          <customproperties/>
+        </LayoutObject>
+        <LabelFont style="Normal" description="MS Shell Dlg 2,16,-1,5,50,0,0,0,0,0,Normal"/>
+        <FontColor red="0" blue="0" green="0" alpha="255"/>
+      </LayoutItem>
+      <LayoutItem type="65639" frameJoinStyle="miter" outlineWidthM="0.3,mm" isTemporal="0" uuid="{f6158bc4-346d-4631-be7e-1e138ad77d8d}" itemRotation="0" background="true" id="Carte 1" templateUuid="{f6158bc4-346d-4631-be7e-1e138ad77d8d}" opacity="1" position="41.9814,23.2929,mm" blendMode="0" mapFlags="0" groupUuid="" labelMargin="0,mm" zValue="1" mapRotation="0" excludeFromExports="0" keepLayerSet="false" visibility="1" followPreset="false" size="180.114,42.2522,mm" drawCanvasItems="true" positionOnPage="41.9814,23.2929,mm" positionLock="false" followPresetName="" referencePoint="0" frame="false">
+        <FrameColor red="0" blue="0" green="0" alpha="255"/>
+        <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
+        <LayoutObject>
+          <dataDefinedProperties>
+            <Option type="Map">
+              <Option name="name" type="QString" value=""/>
+              <Option name="properties"/>
+              <Option name="type" type="QString" value="collection"/>
+            </Option>
+          </dataDefinedProperties>
+          <customproperties/>
+        </LayoutObject>
+        <Extent ymin="1181117.27762461802922189" xmin="2539040.93196983030065894" xmax="2539147.38626939943060279" ymax="1181142.2503625622484833"/>
+        <LayerSet/>
+        <AtlasMap margin="0.10000000000000001" scalingMode="2" atlasDriven="1"/>
+        <labelBlockingItems/>
+        <atlasClippingSettings enabled="0" restrictLayers="0" clippingType="1" forceLabelsInside="0">
+          <layersToClip/>
+        </atlasClippingSettings>
+        <itemClippingSettings clipSource="" enabled="0" clippingType="1" forceLabelsInside="0"/>
+      </LayoutItem>
+      <customproperties>
+        <property value="png" key="atlasRasterFormat"/>
+      </customproperties>
+      <Atlas hideCoverage="0" coverageLayerName="permits_v" filenamePattern="'output_'||@atlas_featurenumber" coverageLayerSource="?query=select%20*%20from%20permits&amp;uid=permit_request_id" coverageLayerProvider="virtual" sortFeatures="0" enabled="1" filterFeatures="0" coverageLayer="permits_v_c3adba76_127b_4145_98bc_4751d240a52d" pageNameExpression=""/>
+    </Layout>
+  </Layouts>
+  <Bookmarks/>
+  <ProjectViewSettings UseProjectScales="0">
+    <Scales/>
+    <DefaultViewExtent ymin="1181063.6280489785131067" xmin="2538959.29658330604434013" xmax="2539254.21346553415060043" ymax="1181237.52895691595040262">
+      <spatialrefsys>
+        <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["unknown"],AREA["Europe - Liechtenstein and Switzerland"],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
+        <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
+        <srsid>47</srsid>
+        <srid>2056</srid>
+        <authid>EPSG:2056</authid>
+        <description>CH1903+ / LV95</description>
+        <projectionacronym>somerc</projectionacronym>
+        <ellipsoidacronym>EPSG:7004</ellipsoidacronym>
+        <geographicflag>false</geographicflag>
+      </spatialrefsys>
+    </DefaultViewExtent>
+  </ProjectViewSettings>
+  <ProjectTimeSettings cumulativeTemporalRange="0" timeStepUnit="h" frameRate="1" timeStep="1"/>
+  <ProjectDisplaySettings>
+    <BearingFormat id="bearing">
+      <Option type="Map">
+        <Option name="decimal_separator" type="QChar" value=""/>
+        <Option name="decimals" type="int" value="6"/>
+        <Option name="direction_format" type="int" value="0"/>
+        <Option name="rounding_type" type="int" value="0"/>
+        <Option name="show_plus" type="bool" value="false"/>
+        <Option name="show_thousand_separator" type="bool" value="true"/>
+        <Option name="show_trailing_zeros" type="bool" value="false"/>
+        <Option name="thousand_separator" type="QChar" value=""/>
+      </Option>
+    </BearingFormat>
+  </ProjectDisplaySettings>
+</qgis>
