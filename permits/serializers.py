@@ -124,13 +124,11 @@ class PermitRequestActorSerializer(serializers.Serializer):
         rep = {}
         if actors:
             for i, actor in enumerate(actors, 1):
+                actor_object = {}
+                actor_object["actor_type_display"] = actor.get_actor_type_display()
                 for field in actor.actor._meta.fields:
-                    rep[slugify(f"permit_request_actor_{i}_{field.name}")] = getattr(
-                        actor.actor, field.name
-                    )
-                rep[
-                    f"permit_request_actor_{i}_actor_type"
-                ] = actor.get_actor_type_display()
+                    actor_object[field.name] = getattr(actor.actor, field.name)
+                rep[f"id_{actor.id}"] = actor_object
 
         return rep
 
