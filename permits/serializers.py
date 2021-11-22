@@ -128,7 +128,7 @@ class PermitRequestActorSerializer(serializers.Serializer):
                 actor_object["actor_type_display"] = actor.get_actor_type_display()
                 for field in actor.actor._meta.fields:
                     actor_object[field.name] = getattr(actor.actor, field.name)
-                rep[f"id_{actor.id}"] = actor_object
+                rep[f"{actor.id}"] = actor_object
 
         return rep
 
