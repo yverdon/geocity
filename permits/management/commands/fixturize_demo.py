@@ -556,6 +556,16 @@ class Command(BaseCommand):
             wot.days_before_reminder = 5
             wot.save()
 
+        for wot in models.WorksObjectType.objects.all():
+            wot.qgisproject_set.create(
+                qgis_project_file="report_template.qgs",
+                qgis_print_template_name="print_template",
+                qgis_layers="fond,permits_point_v",
+                qgis_atlas_coverage_layer="permits_v",
+                description="Impression standard",
+            )
+            wot.save()
+
     def create_permit(self):
 
         demo_user = User.objects.get(username="user")

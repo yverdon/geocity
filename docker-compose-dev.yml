@@ -34,6 +34,7 @@ services:
             - "postgres"
         volumes:
             - ./qgisserver/geocity.qgs:/io/data/geocity.qgs:ro #default qgis project for mask layer
+            - ./qgisserver/report_template.qgs:/io/data/report_template.qgs:ro
             - ./qgisserver/plugins:/io/plugins
             - ./qgisserver/fonts:/usr/share/fonts
             - ./qgisserver/pg_service.conf:/etc/postgresql-common/pg_service.conf:ro

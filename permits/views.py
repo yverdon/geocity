@@ -613,7 +613,9 @@ def permit_request_print(request, permit_request_id, template_id):
         "SRS": "EPSG:2056",
         "DPI": "150",
         "SERVICE": "WMS",
-        "MAP": "/private_documents/" + template.qgis_project_file.name,
+        "MAP": "/io/data/report_template.qgs"
+        if template.qgis_project_file.name == "report_template.qgs"
+        else "/private_documents/" + template.qgis_project_file.name,
         "TEMPLATE": template.qgis_print_template_name,
         "LAYERS": template.qgis_layers,
         "ATLAS_PK": permit_request_id,
