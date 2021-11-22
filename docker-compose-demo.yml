@@ -31,6 +31,7 @@ services:
             - "postgres"
         volumes:
             - ./qgisserver/geocity.qgs:/io/data/geocity.qgs:ro
+            - ./qgisserver/default_print.qgs:/io/data/default_print.qgs:ro
             - ./qgisserver/plugins:/io/plugins
             - ./qgisserver/pg_service.conf:/etc/postgresql-common/pg_service.conf:ro
             - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
