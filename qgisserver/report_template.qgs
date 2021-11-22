@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis saveDateTime="2021-11-22T14:28:23" projectname="" saveUserFull="Blanc Nicolas" saveUser="NBL" version="3.22.0-Białowieża">
+<qgis saveDateTime="2021-11-22T14:55:07" projectname="" saveUserFull="Blanc Nicolas" saveUser="NBL" version="3.22.0-Białowieża">
   <homePath path=""/>
   <title></title>
   <autotransaction active="0"/>
@@ -5450,7 +5450,7 @@
         </LayoutItem>
         <GuideCollection visible="1"/>
       </PageCollection>
-      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="27.386,58.831,mm" excludeFromExports="0" positionLock="false" position="111.435,170.034,mm" valign="32" labelText="&lt;h3>Identifiant :&lt;/h3>&#xa;&lt;style>body{font-family: arial}&lt;/style>&#xa;Type : &lt;br>&#xa;Identifiant :&lt;br>&#xa;Prénom :&lt;br>&#xa;Nom :&lt;br>&#xa;Raison sociale :&lt;br>&#xa;Numéro TVA :&lt;br>&#xa;Adresse :&lt;br>&#xa;NPA :&lt;br>&#xa;Localité :&lt;br>&#xa;Téléphone :&lt;br>&#xa;E-mail :&lt;br>&#xa;" id="" groupUuid="" itemRotation="0" uuid="{0b424995-4337-4afc-b08f-56500695e7e4}" templateUuid="{0b424995-4337-4afc-b08f-56500695e7e4}" outlineWidthM="0.3,mm" halign="8" zValue="72" marginY="0" marginX="0" positionOnPage="111.435,170.034,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="27.386,58.831,mm" excludeFromExports="0" positionLock="false" position="111.435,170.034,mm" valign="32" labelText="&lt;style>body{font-family: arial; font-size: 12px;}&lt;/style>&#xa;&lt;h3>Identifiant&amp;#8239;:&lt;/h3>&#xa;Type&amp;#8239;: &lt;br>&#xa;Identifiant&amp;#8239;:&lt;br>&#xa;Prénom&amp;#8239;:&lt;br>&#xa;Nom&amp;#8239;:&lt;br>&#xa;Raison sociale&amp;#8239;:&lt;br>&#xa;Numéro TVA&amp;#8239;:&lt;br>&#xa;Adresse&amp;#8239;:&lt;br>&#xa;NPA&amp;#8239;:&lt;br>&#xa;Localité&amp;#8239;:&lt;br>&#xa;Téléphone&amp;#8239;:&lt;br>&#xa;E-mail&amp;#8239;:&lt;br>&#xa;" id="" groupUuid="" itemRotation="0" uuid="{0b424995-4337-4afc-b08f-56500695e7e4}" templateUuid="{0b424995-4337-4afc-b08f-56500695e7e4}" outlineWidthM="0.3,mm" halign="8" zValue="72" marginY="0" marginX="0" positionOnPage="111.435,170.034,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
         <LayoutObject>
@@ -5468,7 +5468,7 @@
         <LabelFont style="Normal" description="Arial,10,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor green="0" red="0" alpha="255" blue="0"/>
       </LayoutItem>
-      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="61.7402,56.9784,mm" excludeFromExports="0" positionLock="false" position="137.747,170.034,mm" valign="32" labelText="&lt;style>body{font-family: arial}&lt;/style>&#xa;[%get_permit_contacts(3)%]" id="" groupUuid="" itemRotation="0" uuid="{3ab50cc8-eb39-4925-933a-6a89cbafa9a4}" templateUuid="{3ab50cc8-eb39-4925-933a-6a89cbafa9a4}" outlineWidthM="0.3,mm" halign="8" zValue="71" marginY="0" marginX="0" positionOnPage="137.747,170.034,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="61.7402,56.9784,mm" excludeFromExports="0" positionLock="false" position="138.747,170.034,mm" valign="32" labelText="&lt;style>body{font-family: arial; font-size: 12px;}&lt;/style>&#xa;[%get_permit_contacts(3)%]" id="" groupUuid="" itemRotation="0" uuid="{3ab50cc8-eb39-4925-933a-6a89cbafa9a4}" templateUuid="{3ab50cc8-eb39-4925-933a-6a89cbafa9a4}" outlineWidthM="0.3,mm" halign="8" zValue="71" marginY="0" marginX="0" positionOnPage="138.747,170.034,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
         <LayoutObject>
@@ -5486,7 +5486,7 @@
         <LabelFont style="Normal" description="Arial,10,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor green="0" red="0" alpha="255" blue="0"/>
       </LayoutItem>
-      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="27.386,58.831,mm" excludeFromExports="0" positionLock="false" position="21.7975,170.034,mm" valign="32" labelText="&lt;h3>Identifiant :&lt;/h3>&#xa;&lt;style>body{font-family: arial}&lt;/style>&#xa;Type : &lt;br>&#xa;Identifiant :&lt;br>&#xa;Prénom :&lt;br>&#xa;Nom :&lt;br>&#xa;Raison sociale :&lt;br>&#xa;Numéro TVA :&lt;br>&#xa;Adresse :&lt;br>&#xa;NPA :&lt;br>&#xa;Localité :&lt;br>&#xa;Téléphone :&lt;br>&#xa;E-mail :&lt;br>&#xa;" id="" groupUuid="" itemRotation="0" uuid="{7ab6d596-9f1d-4eab-8c27-caab53230cde}" templateUuid="{7ab6d596-9f1d-4eab-8c27-caab53230cde}" outlineWidthM="0.3,mm" halign="8" zValue="51" marginY="0" marginX="0" positionOnPage="21.7975,170.034,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="27.386,58.831,mm" excludeFromExports="0" positionLock="false" position="21.7975,170.034,mm" valign="32" labelText="&lt;style>body{font-family: arial; font-size: 12px;}&lt;/style>&#xa;&lt;h3>Identifiant&amp;#8239;:&lt;/h3>&#xa;Type&amp;#8239;: &lt;br>&#xa;Identifiant&amp;#8239;:&lt;br>&#xa;Prénom&amp;#8239;:&lt;br>&#xa;Nom&amp;#8239;:&lt;br>&#xa;Raison sociale&amp;#8239;:&lt;br>&#xa;Numéro TVA&amp;#8239;:&lt;br>&#xa;Adresse&amp;#8239;:&lt;br>&#xa;NPA&amp;#8239;:&lt;br>&#xa;Localité&amp;#8239;:&lt;br>&#xa;Téléphone&amp;#8239;:&lt;br>&#xa;E-mail&amp;#8239;:&lt;br>&#xa;" id="" groupUuid="" itemRotation="0" uuid="{7ab6d596-9f1d-4eab-8c27-caab53230cde}" templateUuid="{7ab6d596-9f1d-4eab-8c27-caab53230cde}" outlineWidthM="0.3,mm" halign="8" zValue="51" marginY="0" marginX="0" positionOnPage="21.7975,170.034,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
         <LayoutObject>
@@ -5504,7 +5504,7 @@
         <LabelFont style="Normal" description="Arial,10,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor green="0" red="0" alpha="255" blue="0"/>
       </LayoutItem>
-      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="61.7402,56.9783,mm" excludeFromExports="0" positionLock="false" position="48.1103,170.034,mm" valign="32" labelText="&lt;style>body{font-family: arial}&lt;/style>&#xa;[%get_permit_contacts(2)%]" id="" groupUuid="" itemRotation="0" uuid="{00d77d9c-fd22-40bd-b9cb-240d75985c5b}" templateUuid="{00d77d9c-fd22-40bd-b9cb-240d75985c5b}" outlineWidthM="0.3,mm" halign="8" zValue="50" marginY="0" marginX="0" positionOnPage="48.1103,170.034,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="61.7402,56.9783,mm" excludeFromExports="0" positionLock="false" position="49.1103,170.034,mm" valign="32" labelText="&lt;style>body{font-family: arial; font-size: 12px;}&lt;/style>&#xa;[%get_permit_contacts(2)%]" id="" groupUuid="" itemRotation="0" uuid="{00d77d9c-fd22-40bd-b9cb-240d75985c5b}" templateUuid="{00d77d9c-fd22-40bd-b9cb-240d75985c5b}" outlineWidthM="0.3,mm" halign="8" zValue="50" marginY="0" marginX="0" positionOnPage="49.1103,170.034,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
         <LayoutObject>
@@ -5540,7 +5540,7 @@
         <LabelFont style="Normal" description="Arial,16,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor green="0" red="0" alpha="255" blue="0"/>
       </LayoutItem>
-      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="27.386,58.831,mm" excludeFromExports="0" positionLock="false" position="111.435,111.935,mm" valign="32" labelText="&lt;h3>Identifiant :&lt;/h3>&#xa;&lt;style>body{font-family: arial}&lt;/style>&#xa;Type : &lt;br>&#xa;Identifiant :&lt;br>&#xa;Prénom :&lt;br>&#xa;Nom :&lt;br>&#xa;Raison sociale :&lt;br>&#xa;Numéro TVA :&lt;br>&#xa;Adresse :&lt;br>&#xa;NPA :&lt;br>&#xa;Localité :&lt;br>&#xa;Téléphone :&lt;br>&#xa;E-mail :&lt;br>&#xa;" id="" groupUuid="" itemRotation="0" uuid="{b81d0c95-60f6-46b2-8897-db7861dd8e7d}" templateUuid="{b81d0c95-60f6-46b2-8897-db7861dd8e7d}" outlineWidthM="0.3,mm" halign="8" zValue="47" marginY="0" marginX="0" positionOnPage="111.435,111.935,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="27.386,56.9781,mm" excludeFromExports="0" positionLock="false" position="111.435,111.935,mm" valign="32" labelText="&lt;style>body{font-family: arial; font-size: 12px;}&lt;/style>&#xa;&lt;h3>Identifiant&amp;#8239;:&lt;/h3>&#xa;Type&amp;#8239;: &lt;br>&#xa;Identifiant&amp;#8239;:&lt;br>&#xa;Prénom&amp;#8239;:&lt;br>&#xa;Nom&amp;#8239;:&lt;br>&#xa;Raison sociale&amp;#8239;:&lt;br>&#xa;Numéro TVA&amp;#8239;:&lt;br>&#xa;Adresse&amp;#8239;:&lt;br>&#xa;NPA&amp;#8239;:&lt;br>&#xa;Localité&amp;#8239;:&lt;br>&#xa;Téléphone&amp;#8239;:&lt;br>&#xa;E-mail&amp;#8239;:&lt;br>&#xa;" id="" groupUuid="" itemRotation="0" uuid="{b81d0c95-60f6-46b2-8897-db7861dd8e7d}" templateUuid="{b81d0c95-60f6-46b2-8897-db7861dd8e7d}" outlineWidthM="0.3,mm" halign="8" zValue="47" marginY="0" marginX="0" positionOnPage="111.435,111.935,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
         <LayoutObject>
@@ -5558,7 +5558,7 @@
         <LabelFont style="Normal" description="Arial,10,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor green="0" red="0" alpha="255" blue="0"/>
       </LayoutItem>
-      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="61.7402,56.9784,mm" excludeFromExports="0" positionLock="false" position="137.747,111.935,mm" valign="32" labelText="&lt;style>body{font-family: arial}&lt;/style>&#xa;[%get_permit_contacts(1)%]" id="" groupUuid="" itemRotation="0" uuid="{8c9130d3-b1bb-4bb7-9a78-cb8417edfb20}" templateUuid="{8c9130d3-b1bb-4bb7-9a78-cb8417edfb20}" outlineWidthM="0.3,mm" halign="8" zValue="44" marginY="0" marginX="0" positionOnPage="137.747,111.935,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="61.7402,56.9784,mm" excludeFromExports="0" positionLock="false" position="138.747,111.935,mm" valign="32" labelText="&lt;style>body{font-family: arial; font-size: 12px;}&lt;/style>&#xa;[%get_permit_contacts(1)%]" id="" groupUuid="" itemRotation="0" uuid="{8c9130d3-b1bb-4bb7-9a78-cb8417edfb20}" templateUuid="{8c9130d3-b1bb-4bb7-9a78-cb8417edfb20}" outlineWidthM="0.3,mm" halign="8" zValue="44" marginY="0" marginX="0" positionOnPage="138.747,111.935,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
         <LayoutObject>
@@ -5576,7 +5576,7 @@
         <LabelFont style="Normal" description="Arial,10,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor green="0" red="0" alpha="255" blue="0"/>
       </LayoutItem>
-      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="68,8.239,mm" excludeFromExports="0" positionLock="false" position="123.579,34.8101,mm" valign="128" labelText="Données du service pilote" id="" groupUuid="" itemRotation="0" uuid="{3ae75c6f-a367-42b7-b159-b031960c02c9}" templateUuid="{3ae75c6f-a367-42b7-b159-b031960c02c9}" outlineWidthM="0.3,mm" halign="1" zValue="36" marginY="0" marginX="0" positionOnPage="123.579,34.8101,mm" htmlState="0" frameJoinStyle="miter" type="65641" blendMode="0">
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="74.209,8.239,mm" excludeFromExports="0" positionLock="false" position="121.278,34.8101,mm" valign="128" labelText="Données du service pilote" id="" groupUuid="" itemRotation="0" uuid="{3ae75c6f-a367-42b7-b159-b031960c02c9}" templateUuid="{3ae75c6f-a367-42b7-b159-b031960c02c9}" outlineWidthM="0.3,mm" halign="1" zValue="36" marginY="0" marginX="0" positionOnPage="121.278,34.8101,mm" htmlState="0" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
         <LayoutObject>
@@ -5594,7 +5594,7 @@
         <LabelFont style="Normal" description="Arial,16,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor green="0" red="0" alpha="255" blue="0"/>
       </LayoutItem>
-      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="168.744,90.0172,mm" excludeFromExports="0" positionLock="false" position="20.5975,474.939,mm" valign="32" labelText="&lt;style>body{font-family: arial}&lt;/style>&#xa;[%get_permit_amend_properties()%]" id="" groupUuid="" itemRotation="0" uuid="{b10fdc2a-05ca-4c8e-87b2-ced49479ae3d}" templateUuid="{b10fdc2a-05ca-4c8e-87b2-ced49479ae3d}" outlineWidthM="0.3,mm" halign="8" zValue="33" marginY="0" marginX="0" positionOnPage="20.5975,167.939,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="168.744,90.0172,mm" excludeFromExports="0" positionLock="false" position="20.5975,474.939,mm" valign="32" labelText="&lt;style>body{font-family: arial; font-size: 12px;}&lt;/style>&#xa;[%get_permit_amend_properties()%]" id="" groupUuid="" itemRotation="0" uuid="{b10fdc2a-05ca-4c8e-87b2-ced49479ae3d}" templateUuid="{b10fdc2a-05ca-4c8e-87b2-ced49479ae3d}" outlineWidthM="0.3,mm" halign="8" zValue="33" marginY="0" marginX="0" positionOnPage="20.5975,167.939,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
         <LayoutObject>
@@ -5615,7 +5615,7 @@
         <LabelFont style="Normal" description="Arial,10,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor green="0" red="0" alpha="255" blue="0"/>
       </LayoutItem>
-      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="13.1562,6.11216,mm" excludeFromExports="0" positionLock="false" position="123.579,44.6932,mm" valign="32" labelText="&lt;style>body{font-family: arial}&lt;/style>&#xa;État :&lt;br>" id="" groupUuid="" itemRotation="0" uuid="{10be47e0-6636-4e41-8c96-bfd9234e2d8a}" templateUuid="{10be47e0-6636-4e41-8c96-bfd9234e2d8a}" outlineWidthM="0.3,mm" halign="8" zValue="28" marginY="0" marginX="0" positionOnPage="123.579,44.6932,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="13.1562,6.11216,mm" excludeFromExports="0" positionLock="false" position="121.278,44.6932,mm" valign="32" labelText="&lt;style>body{font-family: arial}&lt;/style>&#xa;État :&lt;br>" id="" groupUuid="" itemRotation="0" uuid="{10be47e0-6636-4e41-8c96-bfd9234e2d8a}" templateUuid="{10be47e0-6636-4e41-8c96-bfd9234e2d8a}" outlineWidthM="0.3,mm" halign="8" zValue="28" marginY="0" marginX="0" positionOnPage="121.278,44.6932,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
         <LayoutObject>
@@ -5651,7 +5651,7 @@
         <LabelFont style="Normal" description="Arial,16,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor green="0" red="0" alpha="255" blue="0"/>
       </LayoutItem>
-      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="168.744,184,mm" excludeFromExports="0" positionLock="false" position="21.798,647.5,mm" valign="32" labelText="&lt;style>body{font-family: arial}&lt;/style>&#xa;[%get_permit_validations()%]" id="" groupUuid="" itemRotation="0" uuid="{583711a5-1385-4904-acb3-93b6a7a0f2a8}" templateUuid="{583711a5-1385-4904-acb3-93b6a7a0f2a8}" outlineWidthM="0.3,mm" halign="8" zValue="27" marginY="0" marginX="0" positionOnPage="21.798,33.5,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="168.744,266,mm" excludeFromExports="0" positionLock="false" position="21.798,641.5,mm" valign="32" labelText="&lt;style>body{font-family: arial; font-size: 12px;}&lt;/style>&#xa;[%get_permit_validations()%]" id="" groupUuid="" itemRotation="0" uuid="{583711a5-1385-4904-acb3-93b6a7a0f2a8}" templateUuid="{583711a5-1385-4904-acb3-93b6a7a0f2a8}" outlineWidthM="0.3,mm" halign="8" zValue="27" marginY="0" marginX="0" positionOnPage="21.798,27.5,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
         <LayoutObject>
@@ -5661,7 +5661,7 @@
               <Option type="Map" name="properties">
                 <Option type="Map" name="dataDefinedHeight">
                   <Option type="bool" name="active" value="true"/>
-                  <Option type="QString" name="expression" value="1.6 * array_length(string_to_array(&quot;validations&quot;, ',', '')) * var('sw_layout_height_header')"/>
+                  <Option type="QString" name="expression" value="2.8 * array_length(string_to_array(&quot;validations&quot;, ',', '')) * var('sw_layout_height_header')"/>
                   <Option type="int" name="type" value="3"/>
                 </Option>
               </Option>
@@ -5675,7 +5675,7 @@
         <LabelFont style="Normal" description="Arial,10,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor green="0" red="0" alpha="255" blue="0"/>
       </LayoutItem>
-      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="50.0307,6.11216,mm" excludeFromExports="0" positionLock="false" position="134.643,44.6932,mm" valign="32" labelText="[%&quot;status_display&quot; %]" id="" groupUuid="" itemRotation="0" uuid="{5be8525c-c8fa-4c7e-81aa-56dc6ffabed9}" templateUuid="{5be8525c-c8fa-4c7e-81aa-56dc6ffabed9}" outlineWidthM="0.3,mm" halign="8" zValue="26" marginY="0" marginX="0" positionOnPage="134.643,44.6932,mm" htmlState="0" frameJoinStyle="miter" type="65641" blendMode="0">
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="50.0307,6.11216,mm" excludeFromExports="0" positionLock="false" position="132.342,44.6932,mm" valign="32" labelText="[%&quot;status_display&quot; %]" id="" groupUuid="" itemRotation="0" uuid="{5be8525c-c8fa-4c7e-81aa-56dc6ffabed9}" templateUuid="{5be8525c-c8fa-4c7e-81aa-56dc6ffabed9}" outlineWidthM="0.3,mm" halign="8" zValue="26" marginY="0" marginX="0" positionOnPage="132.342,44.6932,mm" htmlState="0" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
         <LayoutObject>
@@ -5693,7 +5693,7 @@
         <LabelFont style="Normal" description="Arial,10,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor green="0" red="0" alpha="255" blue="0"/>
       </LayoutItem>
-      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="27.3861,58.8313,mm" excludeFromExports="0" positionLock="false" position="21.7979,111.935,mm" valign="32" labelText="&lt;h3>Identifiant :&lt;/h3>&#xa;&lt;style>body{font-family: arial}&lt;/style>&#xa;Type : &lt;br>&#xa;Identifiant :&lt;br>&#xa;Prénom :&lt;br>&#xa;Nom :&lt;br>&#xa;Raison sociale :&lt;br>&#xa;Numéro TVA :&lt;br>&#xa;Adresse :&lt;br>&#xa;NPA :&lt;br>&#xa;Localité :&lt;br>&#xa;Téléphone :&lt;br>&#xa;E-mail :&lt;br>&#xa;" id="" groupUuid="" itemRotation="0" uuid="{62493b7f-ddfb-4439-8078-9f02ef79c049}" templateUuid="{62493b7f-ddfb-4439-8078-9f02ef79c049}" outlineWidthM="0.3,mm" halign="8" zValue="26" marginY="0" marginX="0" positionOnPage="21.7979,111.935,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="27.3861,56.9784,mm" excludeFromExports="0" positionLock="false" position="21.7979,111.935,mm" valign="32" labelText="&lt;style>body{font-family: arial; font-size: 12px;}&lt;/style>&#xa;&lt;h3>Identifiant&amp;#8239;:&lt;/h3>&#xa;Type&amp;#8239;: &lt;br>&#xa;Identifiant&amp;#8239;:&lt;br>&#xa;Prénom&amp;#8239;:&lt;br>&#xa;Nom&amp;#8239;:&lt;br>&#xa;Raison sociale&amp;#8239;:&lt;br>&#xa;Numéro TVA&amp;#8239;:&lt;br>&#xa;Adresse&amp;#8239;:&lt;br>&#xa;NPA&amp;#8239;:&lt;br>&#xa;Localité&amp;#8239;:&lt;br>&#xa;Téléphone&amp;#8239;:&lt;br>&#xa;E-mail&amp;#8239;:&lt;br>&#xa;" id="" groupUuid="" itemRotation="0" uuid="{62493b7f-ddfb-4439-8078-9f02ef79c049}" templateUuid="{62493b7f-ddfb-4439-8078-9f02ef79c049}" outlineWidthM="0.3,mm" halign="8" zValue="26" marginY="0" marginX="0" positionOnPage="21.7979,111.935,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
         <LayoutObject>
@@ -5711,7 +5711,7 @@
         <LabelFont style="Normal" description="Arial,10,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor green="0" red="0" alpha="255" blue="0"/>
       </LayoutItem>
-      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="61.7402,56.9783,mm" excludeFromExports="0" positionLock="false" position="48.1103,111.935,mm" valign="32" labelText="&lt;style>body{font-family: arial}&lt;/style>&#xa;[%get_permit_contacts(0)%]" id="" groupUuid="" itemRotation="0" uuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" templateUuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" outlineWidthM="0.3,mm" halign="8" zValue="23" marginY="0" marginX="0" positionOnPage="48.1103,111.935,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="61.7402,56.9783,mm" excludeFromExports="0" positionLock="false" position="49.1103,111.935,mm" valign="32" labelText="&lt;style>body{font-family: arial; font-size: 12px;}&lt;/style>&#xa;[%get_permit_contacts(0)%]" id="" groupUuid="" itemRotation="0" uuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" templateUuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" outlineWidthM="0.3,mm" halign="8" zValue="23" marginY="0" marginX="0" positionOnPage="49.1103,111.935,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
         <LayoutObject>
@@ -5729,7 +5729,7 @@
         <LabelFont style="Normal" description="Arial,10,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor green="0" red="0" alpha="255" blue="0"/>
       </LayoutItem>
-      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="83.1716,11.9364,mm" excludeFromExports="0" positionLock="false" position="21.7979,638.102,mm" valign="32" labelText="Statut des validations" id="" groupUuid="" itemRotation="0" uuid="{b2c76482-7dee-4fb4-9c72-fedb0523b3a5}" templateUuid="{b2c76482-7dee-4fb4-9c72-fedb0523b3a5}" outlineWidthM="0.3,mm" halign="8" zValue="21" marginY="0" marginX="0" positionOnPage="21.7979,24.102,mm" htmlState="0" frameJoinStyle="miter" type="65641" blendMode="0">
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="83.1716,11.9364,mm" excludeFromExports="0" positionLock="false" position="21.7979,632.102,mm" valign="32" labelText="Statut des validations" id="" groupUuid="" itemRotation="0" uuid="{b2c76482-7dee-4fb4-9c72-fedb0523b3a5}" templateUuid="{b2c76482-7dee-4fb4-9c72-fedb0523b3a5}" outlineWidthM="0.3,mm" halign="8" zValue="21" marginY="0" marginX="0" positionOnPage="21.7979,18.102,mm" htmlState="0" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
         <LayoutObject>
@@ -5876,7 +5876,7 @@
           <node x="168.444" y="0"/>
         </nodes>
       </LayoutItem>
-      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="26.3124,45.6398,mm" excludeFromExports="0" positionLock="false" position="21.7979,44.6932,mm" valign="32" labelText="&lt;style>body{font-family: arial}&lt;/style>&#xa;Prénom :&lt;br>&#xa;Nom :&lt;br>&#xa;Adresse :&lt;br>&#xa;NPA :&lt;br>&#xa;Localité :&lt;br>&#xa;Raison sociale :&lt;br>&#xa;Numéro TVA :&lt;br>&#xa;Téléphone :&lt;br>&#xa;Téléphone (2) :&lt;br>&#xa;E-mail :&lt;br>&#xa;" id="" groupUuid="" itemRotation="0" uuid="{4635350f-f597-4de7-b3a5-9faac13d9aff}" templateUuid="{4635350f-f597-4de7-b3a5-9faac13d9aff}" outlineWidthM="0.3,mm" halign="8" zValue="11" marginY="0" marginX="0" positionOnPage="21.7979,44.6932,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="28.3124,45.6398,mm" excludeFromExports="0" positionLock="false" position="21.7979,44.6932,mm" valign="32" labelText="&lt;style>body{font-family: arial; font-size: 12px;}&lt;/style>&#xa;Prénom :&lt;br>&#xa;Nom :&lt;br>&#xa;Adresse :&lt;br>&#xa;NPA :&lt;br>&#xa;Localité :&lt;br>&#xa;Raison sociale :&lt;br>&#xa;Numéro TVA :&lt;br>&#xa;Téléphone :&lt;br>&#xa;Téléphone (2) :&lt;br>&#xa;E-mail :&lt;br>&#xa;" id="" groupUuid="" itemRotation="0" uuid="{4635350f-f597-4de7-b3a5-9faac13d9aff}" templateUuid="{4635350f-f597-4de7-b3a5-9faac13d9aff}" outlineWidthM="0.3,mm" halign="8" zValue="11" marginY="0" marginX="0" positionOnPage="21.7979,44.6932,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
         <LayoutObject>
@@ -5894,7 +5894,7 @@
         <LabelFont style="Normal" description="Arial,10,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor green="0" red="0" alpha="255" blue="0"/>
       </LayoutItem>
-      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="168.744,90.0172,mm" excludeFromExports="0" positionLock="false" position="21.7978,331.625,mm" valign="32" labelText="&lt;style>body{font-family: arial}&lt;/style>&#xa;[%get_permit_request_properties()%]" id="" groupUuid="" itemRotation="0" uuid="{e1212798-f318-46aa-ac09-9529ff33c929}" templateUuid="{e1212798-f318-46aa-ac09-9529ff33c929}" outlineWidthM="0.3,mm" halign="8" zValue="10" marginY="0" marginX="0" positionOnPage="21.7978,24.625,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="168.744,90.0172,mm" excludeFromExports="0" positionLock="false" position="21.7978,331.625,mm" valign="32" labelText="&lt;style>body{font-family: arial; font-size: 12px;}&lt;/style>&#xa;[%get_permit_request_properties()%]" id="" groupUuid="" itemRotation="0" uuid="{e1212798-f318-46aa-ac09-9529ff33c929}" templateUuid="{e1212798-f318-46aa-ac09-9529ff33c929}" outlineWidthM="0.3,mm" halign="8" zValue="10" marginY="0" marginX="0" positionOnPage="21.7978,24.625,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
         <LayoutObject>
@@ -5933,7 +5933,7 @@
         <LabelFont style="Normal" description="Arial,16,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor green="0" red="0" alpha="255" blue="0"/>
       </LayoutItem>
-      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="61.7402,55.0028,mm" excludeFromExports="0" positionLock="false" position="48.1103,44.6932,mm" valign="32" labelText="&lt;style>body{font-family: arial}&lt;/style>&#xa;[%get_permit_author()%]" id="" groupUuid="" itemRotation="0" uuid="{39621e9a-9e4f-4b05-adfa-d657c7529cde}" templateUuid="{39621e9a-9e4f-4b05-adfa-d657c7529cde}" outlineWidthM="0.3,mm" halign="8" zValue="8" marginY="0" marginX="0" positionOnPage="48.1103,44.6932,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="61.7402,55.0028,mm" excludeFromExports="0" positionLock="false" position="50.1103,44.6932,mm" valign="32" labelText="&lt;style>body{font-family: arial; font-size: 12px;}&lt;/style>&#xa;[%get_permit_author()%]" id="" groupUuid="" itemRotation="0" uuid="{39621e9a-9e4f-4b05-adfa-d657c7529cde}" templateUuid="{39621e9a-9e4f-4b05-adfa-d657c7529cde}" outlineWidthM="0.3,mm" halign="8" zValue="8" marginY="0" marginX="0" positionOnPage="50.1103,44.6932,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
         <LayoutObject>
@@ -6020,7 +6020,7 @@
             <Option/>
           </customproperties>
         </LayoutObject>
-        <Extent xmin="2537694.29213630082085729" ymax="1181741.99292817828245461" ymin="1181096.30707182129845023" xmax="2538210.24786369921639562"/>
+        <Extent xmin="2536755.02213630080223083" ymax="1179841.84292817837558687" ymin="1179196.15707182139158249" xmax="2537270.97786369919776917"/>
         <LayerSet/>
         <AtlasMap atlasDriven="1" scalingMode="0" margin="0.10000000000000001"/>
         <labelBlockingItems/>
