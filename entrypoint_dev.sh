@@ -22,8 +22,8 @@ cp -n qgisserver/pg_service.conf_demo qgisserver/pg_service.conf
 python3 manage.py migrate
 # django-constance models
 python3 manage.py migrate database
-mkdir -p /code/geomapshark/static/
-echo yes | python3 manage.py compilemessages -l fr
+# mkdir -p /code/geomapshark/static/
+# echo yes | python3 manage.py compilemessages -l fr
 
 python3 manage.py fixturize
 
