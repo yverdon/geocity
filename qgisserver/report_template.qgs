@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis saveDateTime="2021-11-22T16:06:59" projectname="" saveUserFull="Blanc Nicolas" saveUser="NBL" version="3.22.0-Białowieża">
+<qgis saveDateTime="2021-11-22T16:31:42" projectname="" saveUserFull="Blanc Nicolas" saveUser="NBL" version="3.22.0-Białowieża">
   <homePath path=""/>
   <title></title>
   <autotransaction active="0"/>
@@ -6823,30 +6823,6 @@ def my_form_open(dialog, layer, feature):
         </LayoutItem>
         <GuideCollection visible="1"/>
       </PageCollection>
-      <LayoutItem visibility="1" frame="false" background="true" referencePoint="0" opacity="1" size="61.7402,47.3143,mm" excludeFromExports="1" positionLock="false" position="143.487,114.011,mm" valign="32" labelText="&lt;style>body{font-family: arial; font-size: 12px;&lt;/style>&#xa;[%get_permit_contacts(2)%]" id="" groupUuid="" itemRotation="0" uuid="{e4bca88a-4465-41a2-b45a-699fafcc859e}" templateUuid="{e4bca88a-4465-41a2-b45a-699fafcc859e}" outlineWidthM="0.3,mm" halign="8" zValue="72" marginY="0" marginX="0" positionOnPage="143.487,114.011,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
-        <FrameColor green="0" red="0" alpha="255" blue="0"/>
-        <BackgroundColor green="255" red="255" alpha="0" blue="255"/>
-        <LayoutObject>
-          <dataDefinedProperties>
-            <Option type="Map">
-              <Option type="QString" name="name" value=""/>
-              <Option type="Map" name="properties">
-                <Option type="Map" name="dataDefinedExcludeExports">
-                  <Option type="bool" name="active" value="true"/>
-                  <Option type="QString" name="expression" value="&quot;permit_request_actor&quot; is NULL"/>
-                  <Option type="int" name="type" value="3"/>
-                </Option>
-              </Option>
-              <Option type="QString" name="type" value="collection"/>
-            </Option>
-          </dataDefinedProperties>
-          <customproperties>
-            <Option/>
-          </customproperties>
-        </LayoutObject>
-        <LabelFont style="Normal" description="Arial,10,-1,5,50,0,0,0,0,0,Normal"/>
-        <FontColor green="0" red="0" alpha="255" blue="0"/>
-      </LayoutItem>
       <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="109.247,11.9364,mm" excludeFromExports="0" positionLock="false" position="20.5975,464.925,mm" valign="32" labelText="Propriétés de l'amendement" id="" groupUuid="" itemRotation="0" uuid="{0ff8826c-3fe7-47f5-816c-96ca0691c8d0}" templateUuid="{0ff8826c-3fe7-47f5-816c-96ca0691c8d0}" outlineWidthM="0.3,mm" halign="8" zValue="50" marginY="0" marginX="0" positionOnPage="20.5975,157.925,mm" htmlState="0" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
@@ -6865,7 +6841,25 @@ def my_form_open(dialog, layer, feature):
         <LabelFont style="Normal" description="Arial,16,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor green="0" red="0" alpha="255" blue="0"/>
       </LayoutItem>
-      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="61.7402,47.3143,mm" excludeFromExports="0" positionLock="false" position="82.6427,114.011,mm" valign="32" labelText="&lt;style>body{font-family: arial; font-size: 12px;&lt;/style>&#xa;[%get_permit_contacts(1)%]" id="" groupUuid="" itemRotation="0" uuid="{16a2f16d-3b4c-47f6-97d9-821159eb13c9}" templateUuid="{16a2f16d-3b4c-47f6-97d9-821159eb13c9}" outlineWidthM="0.3,mm" halign="8" zValue="47" marginY="0" marginX="0" positionOnPage="82.6427,114.011,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="59.4687,47.3145,mm" excludeFromExports="0" positionLock="false" position="143.107,114.402,mm" valign="32" labelText="&lt;style>body{font-family: arial; font-size: 12px;&lt;/style>&#xa;[%get_permit_contacts(0)%]" id="" groupUuid="" itemRotation="0" uuid="{da71847d-75d2-42d8-bd45-1a3294e62b78}" templateUuid="{da71847d-75d2-42d8-bd45-1a3294e62b78}" outlineWidthM="0.3,mm" halign="8" zValue="45" marginY="0" marginX="0" positionOnPage="143.107,114.402,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
+        <FrameColor green="0" red="0" alpha="255" blue="0"/>
+        <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
+        <LayoutObject>
+          <dataDefinedProperties>
+            <Option type="Map">
+              <Option type="QString" name="name" value=""/>
+              <Option name="properties"/>
+              <Option type="QString" name="type" value="collection"/>
+            </Option>
+          </dataDefinedProperties>
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </LayoutObject>
+        <LabelFont style="Normal" description="Arial,10,-1,5,50,0,0,0,0,0,Normal"/>
+        <FontColor green="0" red="0" alpha="255" blue="0"/>
+      </LayoutItem>
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="59.4687,47.3145,mm" excludeFromExports="0" positionLock="false" position="82.4525,114.402,mm" valign="32" labelText="&lt;style>body{font-family: arial; font-size: 12px;&lt;/style>&#xa;[%get_permit_contacts(0)%]" id="" groupUuid="" itemRotation="0" uuid="{89230b06-46bc-469f-9c7f-a41ff20a1255}" templateUuid="{89230b06-46bc-469f-9c7f-a41ff20a1255}" outlineWidthM="0.3,mm" halign="8" zValue="44" marginY="0" marginX="0" positionOnPage="82.4525,114.402,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
         <LayoutObject>
@@ -7000,7 +6994,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont style="Normal" description="Arial,10,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor green="0" red="0" alpha="255" blue="0"/>
       </LayoutItem>
-      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="61.7402,47.3145,mm" excludeFromExports="0" positionLock="false" position="21.798,114.011,mm" valign="32" labelText="&lt;style>body{font-family: arial; font-size: 12px;&lt;/style>&#xa;[%get_permit_contacts(0)%]" id="" groupUuid="" itemRotation="0" uuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" templateUuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" outlineWidthM="0.3,mm" halign="8" zValue="23" marginY="0" marginX="0" positionOnPage="21.798,114.011,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
+      <LayoutItem visibility="1" frame="false" background="false" referencePoint="0" opacity="1" size="59.4687,47.3145,mm" excludeFromExports="0" positionLock="false" position="21.798,114.402,mm" valign="32" labelText="&lt;style>body{font-family: arial; font-size: 12px;&lt;/style>&#xa;[%get_permit_contacts(0)%]" id="" groupUuid="" itemRotation="0" uuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" templateUuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" outlineWidthM="0.3,mm" halign="8" zValue="23" marginY="0" marginX="0" positionOnPage="21.798,114.402,mm" htmlState="1" frameJoinStyle="miter" type="65641" blendMode="0">
         <FrameColor green="0" red="0" alpha="255" blue="0"/>
         <BackgroundColor green="255" red="255" alpha="255" blue="255"/>
         <LayoutObject>
