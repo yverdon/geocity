@@ -150,7 +150,6 @@ def get_permit_request_properties(feature, parent):
                         f"Description{ts}:",
                         f"Documents complémentaires{ts}:"
                     ]
-                strline = f"<tr><th>{v}</th></tr>" if str(k) == 'id' else f"<tr><th>{v}</th></tr>"
                 strline = f"<tr><th>{keys[idx]}</th> <td>property_{v}</td></th>" if str(k) == 'id' else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"
             retval += strline
         retval += "</table>"
