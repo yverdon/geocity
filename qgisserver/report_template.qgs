@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis saveUserFull="Blanc Nicolas" version="3.22.0-Białowieża" saveDateTime="2021-11-24T16:44:32" saveUser="NBL" projectname="">
+<qgis saveUserFull="Blanc Nicolas" version="3.22.0-Białowieża" saveDateTime="2021-11-24T16:59:37" saveUser="NBL" projectname="">
   <homePath path=""/>
   <title></title>
   <autotransaction active="0"/>
@@ -7271,7 +7271,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont style="Normal" description="Arial,16,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor blue="0" red="0" green="0" alpha="255"/>
       </LayoutItem>
-      <LayoutItem outlineWidthM="0.3,mm" groupUuid="" position="112.227,333.402,mm" htmlState="1" positionLock="false" background="false" excludeFromExports="0" marginX="0" zValue="18" templateUuid="{89230b06-46bc-469f-9c7f-a41ff20a1255}" frameJoinStyle="miter" uuid="{89230b06-46bc-469f-9c7f-a41ff20a1255}" id="" frame="false" halign="8" visibility="1" blendMode="0" positionOnPage="112.227,26.402,mm" referencePoint="0" opacity="1" marginY="0" labelText="&lt;style>body{font-family: arial; font-size: 12px;}th, td{padding: 0px;  text-align: left; font-size: 12px;}&lt;/style>&#xa;[%get_permit_contacts(1)%]" valign="32" itemRotation="0" type="65641" size="84,54.822,mm">
+      <LayoutItem outlineWidthM="0.3,mm" groupUuid="" position="112.227,333.402,mm" htmlState="1" positionLock="false" background="false" excludeFromExports="0" marginX="0" zValue="18" templateUuid="{89230b06-46bc-469f-9c7f-a41ff20a1255}" frameJoinStyle="miter" uuid="{89230b06-46bc-469f-9c7f-a41ff20a1255}" id="" frame="false" halign="8" visibility="1" blendMode="0" positionOnPage="112.227,26.402,mm" referencePoint="0" opacity="1" marginY="0" labelText="[%get_permit_contacts(1)%]" valign="32" itemRotation="0" type="65641" size="84,54.822,mm">
         <FrameColor blue="0" red="0" green="0" alpha="255"/>
         <BackgroundColor blue="255" red="255" green="255" alpha="255"/>
         <LayoutObject>
@@ -7328,7 +7328,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont style="Normal" description="Arial,16,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor blue="0" red="0" green="0" alpha="255"/>
       </LayoutItem>
-      <LayoutItem outlineWidthM="0.3,mm" groupUuid="" position="20.5975,504.939,mm" htmlState="1" positionLock="false" background="false" excludeFromExports="0" marginX="0" zValue="16" templateUuid="{b10fdc2a-05ca-4c8e-87b2-ced49479ae3d}" frameJoinStyle="miter" uuid="{b10fdc2a-05ca-4c8e-87b2-ced49479ae3d}" id="" frame="false" halign="8" visibility="1" blendMode="0" positionOnPage="20.5975,197.939,mm" referencePoint="0" opacity="1" marginY="0" labelText="&lt;style>body{font-family: arial; font-size: 12px;}&lt;/style>&#xa;[%get_permit_amend_properties()%]" valign="32" itemRotation="0" type="65641" size="168.744,90.0172,mm">
+      <LayoutItem outlineWidthM="0.3,mm" groupUuid="" position="20.5975,504.939,mm" htmlState="1" positionLock="false" background="false" excludeFromExports="0" marginX="0" zValue="16" templateUuid="{b10fdc2a-05ca-4c8e-87b2-ced49479ae3d}" frameJoinStyle="miter" uuid="{b10fdc2a-05ca-4c8e-87b2-ced49479ae3d}" id="" frame="false" halign="8" visibility="1" blendMode="0" positionOnPage="20.5975,197.939,mm" referencePoint="0" opacity="1" marginY="0" labelText="[%get_permit_amend_properties()%]" valign="32" itemRotation="0" type="65641" size="168.744,90.0172,mm">
         <FrameColor blue="0" red="0" green="0" alpha="255"/>
         <BackgroundColor blue="255" red="255" green="255" alpha="255"/>
         <LayoutObject>
@@ -7367,7 +7367,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont style="Normal" description="Arial,10,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor blue="0" red="0" green="0" alpha="255"/>
       </LayoutItem>
-      <LayoutItem outlineWidthM="0.3,mm" groupUuid="" position="21.798,641.5,mm" htmlState="1" positionLock="false" background="false" excludeFromExports="0" marginX="0" zValue="14" templateUuid="{583711a5-1385-4904-acb3-93b6a7a0f2a8}" frameJoinStyle="miter" uuid="{583711a5-1385-4904-acb3-93b6a7a0f2a8}" id="" frame="false" halign="8" visibility="1" blendMode="0" positionOnPage="21.798,27.5,mm" referencePoint="0" opacity="1" marginY="0" labelText="&lt;style>body{font-family: arial; font-size: 12px;}&lt;/style>&#xa;[%get_permit_validations()%]" valign="32" itemRotation="0" type="65641" size="168.744,434,mm">
+      <LayoutItem outlineWidthM="0.3,mm" groupUuid="" position="21.798,641.5,mm" htmlState="1" positionLock="false" background="false" excludeFromExports="0" marginX="0" zValue="14" templateUuid="{583711a5-1385-4904-acb3-93b6a7a0f2a8}" frameJoinStyle="miter" uuid="{583711a5-1385-4904-acb3-93b6a7a0f2a8}" id="" frame="false" halign="8" visibility="1" blendMode="0" positionOnPage="21.798,27.5,mm" referencePoint="0" opacity="1" marginY="0" labelText="[%get_permit_validations()%]" valign="32" itemRotation="0" type="65641" size="168.744,434,mm">
         <FrameColor blue="0" red="0" green="0" alpha="255"/>
         <BackgroundColor blue="255" red="255" green="255" alpha="255"/>
         <LayoutObject>
@@ -7427,7 +7427,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont style="Normal" description="Arial,10,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor blue="0" red="0" green="0" alpha="255"/>
       </LayoutItem>
-      <LayoutItem outlineWidthM="0.3,mm" groupUuid="" position="21.798,333.402,mm" htmlState="1" positionLock="false" background="false" excludeFromExports="0" marginX="0" zValue="11" templateUuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" frameJoinStyle="miter" uuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" id="" frame="false" halign="8" visibility="1" blendMode="0" positionOnPage="21.798,26.402,mm" referencePoint="0" opacity="1" marginY="0" labelText="&lt;style>body{font-family: arial; font-size: 12px;}th, td{padding: 0px;  text-align: left; font-size: 12px;}&lt;/style>&#xa;[%get_permit_contacts(0)%]" valign="32" itemRotation="0" type="65641" size="84,54.822,mm">
+      <LayoutItem outlineWidthM="0.3,mm" groupUuid="" position="21.798,333.402,mm" htmlState="1" positionLock="false" background="false" excludeFromExports="0" marginX="0" zValue="11" templateUuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" frameJoinStyle="miter" uuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" id="" frame="false" halign="8" visibility="1" blendMode="0" positionOnPage="21.798,26.402,mm" referencePoint="0" opacity="1" marginY="0" labelText="[%get_permit_contacts(0)%]" valign="32" itemRotation="0" type="65641" size="84,54.822,mm">
         <FrameColor blue="0" red="0" green="0" alpha="255"/>
         <BackgroundColor blue="255" red="255" green="255" alpha="255"/>
         <LayoutObject>
@@ -7463,7 +7463,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont style="Normal" description="Arial,16,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor blue="0" red="0" green="0" alpha="255"/>
       </LayoutItem>
-      <LayoutItem outlineWidthM="0.3,mm" groupUuid="" position="21.7978,197.363,mm" htmlState="1" positionLock="false" background="false" excludeFromExports="0" marginX="0" zValue="9" templateUuid="{e1212798-f318-46aa-ac09-9529ff33c929}" frameJoinStyle="miter" uuid="{e1212798-f318-46aa-ac09-9529ff33c929}" id="" frame="false" halign="8" visibility="1" blendMode="0" positionOnPage="21.7978,197.363,mm" referencePoint="0" opacity="1" marginY="0" labelText="&lt;style>body{font-family: arial; font-size: 12px;}&lt;/style>&#xa;[%get_permit_request_properties()%]" valign="32" itemRotation="0" type="65641" size="168.744,90.0172,mm">
+      <LayoutItem outlineWidthM="0.3,mm" groupUuid="" position="21.7978,197.363,mm" htmlState="1" positionLock="false" background="false" excludeFromExports="0" marginX="0" zValue="9" templateUuid="{e1212798-f318-46aa-ac09-9529ff33c929}" frameJoinStyle="miter" uuid="{e1212798-f318-46aa-ac09-9529ff33c929}" id="" frame="false" halign="8" visibility="1" blendMode="0" positionOnPage="21.7978,197.363,mm" referencePoint="0" opacity="1" marginY="0" labelText="[%get_permit_request_properties()%]" valign="32" itemRotation="0" type="65641" size="168.744,90.0172,mm">
         <FrameColor blue="0" red="0" green="0" alpha="255"/>
         <BackgroundColor blue="255" red="255" green="255" alpha="255"/>
         <LayoutObject>
@@ -7513,7 +7513,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont style="Normal" description="Arial,16,-1,5,50,0,0,0,0,0,Normal"/>
         <FontColor blue="0" red="0" green="0" alpha="255"/>
       </LayoutItem>
-      <LayoutItem outlineWidthM="0.3,mm" groupUuid="" position="60,118,pt" htmlState="1" positionLock="false" background="false" excludeFromExports="0" marginX="0" zValue="7" templateUuid="{39621e9a-9e4f-4b05-adfa-d657c7529cde}" frameJoinStyle="miter" uuid="{39621e9a-9e4f-4b05-adfa-d657c7529cde}" id="" frame="false" halign="8" visibility="1" blendMode="0" positionOnPage="60,118,pt" referencePoint="0" opacity="1" marginY="0" labelText="&lt;style>body{font-family: arial; font-size: 12px;}th, td{padding: 0px;  text-align: left; font-size: 12px;}&lt;/style>&#xa;[%get_permit_author()%]" valign="32" itemRotation="0" type="65641" size="194.638,138.723,pt">
+      <LayoutItem outlineWidthM="0.3,mm" groupUuid="" position="60,118,pt" htmlState="1" positionLock="false" background="false" excludeFromExports="0" marginX="0" zValue="7" templateUuid="{39621e9a-9e4f-4b05-adfa-d657c7529cde}" frameJoinStyle="miter" uuid="{39621e9a-9e4f-4b05-adfa-d657c7529cde}" id="" frame="false" halign="8" visibility="1" blendMode="0" positionOnPage="60,118,pt" referencePoint="0" opacity="1" marginY="0" labelText="[%get_permit_author()%]" valign="32" itemRotation="0" type="65641" size="194.638,138.723,pt">
         <FrameColor blue="0" red="0" green="0" alpha="255"/>
         <BackgroundColor blue="255" red="255" green="255" alpha="255"/>
         <LayoutObject>
