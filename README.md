@@ -6,7 +6,9 @@ Discover geocity features and usage [here](https://project.mapnv.ch/projects/geo
 
 ### Setup print plugin
 
- ´git submodule add https://github.com/yverdon/qgis-atlasprint qgisserver/plugins/qgis-atlasprint´
+```
+git submodule add https://github.com/yverdon/qgis-atlasprint qgisserver/plugins/qgis-atlasprint
+```
 
 ### Step by step guide to the working full docker non persistent DEV instance
 
