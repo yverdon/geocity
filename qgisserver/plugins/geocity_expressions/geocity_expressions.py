@@ -34,7 +34,7 @@ def get_permit_amend_properties(feature, parent):
     return retval
 
 
-@qgsfunction(args="auto", group="Geocity")
+@qgsfunction(args='auto', group='Geocity')
 def get_permit_author(feature, parent):
     """
     Function to get a string output from a list of actors
@@ -44,7 +44,7 @@ def get_permit_author(feature, parent):
     d = dict(zip(field_names, feature.attributes()))
     author = json.loads(d['author'])
     retval = ''
-    retval += "<style>body{font-family: arial; font-size: 12px; width: 100%} th, td{color: LimeGreen; padding: 0px;  text-align: left; font-size: 12px;}</style>"
+    retval += "<style>body{font-family: arial; font-size: 12px;}th, td{color: LimeGreen; padding: 0px;  text-align: left; font-size: 12px;}</style>"
     lr = '<br>'
     ts = '&#8239;'
     for idx, (k, v) in enumerate(author.items()):
@@ -62,14 +62,14 @@ def get_permit_author(feature, parent):
                 f"Numéro TVA{ts}:",
                 f"Téléphone{ts}:",
                 f"Téléphone (2){ts}:",
-                f"E-mail{ts}:",
+                f"E-mail{ts}:"
             ]
             #strline = f"{v}{lr}" if str(idx) == 'id' else f"{v}{lr}"
             strline = f'<tr><th>{keys[idx]}</th><td>{v}</td></tr>'
         retval += strline
         retval += "</table>"
 
-    return retval
+    return(retval)
 
 
 @qgsfunction(args="auto", group="Geocity")
