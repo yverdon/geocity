@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis saveUser="NBL" version="3.22.0-Białowieża" saveDateTime="2021-11-29T09:39:19" projectname="" saveUserFull="Blanc Nicolas">
+<qgis saveUser="NBL" version="3.22.0-Białowieża" saveDateTime="2021-11-29T10:09:29" projectname="" saveUserFull="Blanc Nicolas">
   <homePath path=""/>
   <title></title>
   <autotransaction active="0"/>
@@ -6551,7 +6551,7 @@ def my_form_open(dialog, layer, feature):
       </customproperties>
       <Atlas pageNameExpression="" coverageLayerSource="?query=select%20*%20from%20permits&amp;uid=permit_request_id" filterFeatures="0" coverageLayer="permit_v_caea6076_58f1_4b6f_982c_06e324e1a06c" hideCoverage="1" coverageLayerName="permits_v" enabled="1" sortFeatures="0" coverageLayerProvider="virtual" filenamePattern="'output_'"/>
     </Layout>
-    <Layout printResolution="72" units="mm" name="print_template" worldFileMap="{53ebc4fe-410c-4587-8a15-0638204f3fe5}">
+    <Layout printResolution="300" units="mm" name="print_template" worldFileMap="{53ebc4fe-410c-4587-8a15-0638204f3fe5}">
       <Snapper snapToItems="1" snapToGuides="1" snapToGrid="0" tolerance="5"/>
       <Grid offsetY="0" resUnits="mm" resolution="10" offsetX="0" offsetUnits="mm"/>
       <PageCollection>
@@ -7009,7 +7009,7 @@ def my_form_open(dialog, layer, feature):
           <Guide page="0" position="32" orientation="1" units="mm"/>
         </GuideCollection>
       </PageCollection>
-      <LayoutItem multiFrame="{c647ca8d-872c-4f12-a9ec-9f3a18e616ff}" hideBackgroundIfEmpty="1" frame="false" position="32.5312,3501.64,pt" templateUuid="{43855bc7-ba68-4111-9a89-1e2f5d4ed4fa}" opacity="1" outlineWidthM="0.3,mm" zValue="30" positionLock="false" multiFrameTemplateUuid="{c647ca8d-872c-4f12-a9ec-9f3a18e616ff}" sectionY="0" frameJoinStyle="miter" size="528.945,813.716,pt" visibility="1" excludeFromExports="0" sectionHeight="287.061" referencePoint="0" positionOnPage="32.5312,20.6956,pt" type="65647" background="false" id="" itemRotation="0" hidePageIfEmpty="1" blendMode="0" sectionWidth="186.6" sectionX="0" uuid="{43855bc7-ba68-4111-9a89-1e2f5d4ed4fa}" groupUuid="">
+      <LayoutItem multiFrame="{c647ca8d-872c-4f12-a9ec-9f3a18e616ff}" hideBackgroundIfEmpty="1" frame="false" position="32.5312,3501.64,pt" templateUuid="{43855bc7-ba68-4111-9a89-1e2f5d4ed4fa}" opacity="1" outlineWidthM="0.3,mm" zValue="30" positionLock="false" multiFrameTemplateUuid="{c647ca8d-872c-4f12-a9ec-9f3a18e616ff}" sectionY="0" frameJoinStyle="miter" size="528.945,813.716,pt" visibility="1" excludeFromExports="0" sectionHeight="287.061" referencePoint="0" positionOnPage="32.5312,20.6957,pt" type="65647" background="false" id="" itemRotation="0" hidePageIfEmpty="1" blendMode="0" sectionWidth="186.6" sectionX="0" uuid="{43855bc7-ba68-4111-9a89-1e2f5d4ed4fa}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
