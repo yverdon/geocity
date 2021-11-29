@@ -5,7 +5,7 @@ from datetime import datetime
 import json
 
 
-@qgsfunction(args='auto', group='Geocity')
+@qgsfunction(args="auto", group="Geocity")
 def get_permit_amend_properties(feature, parent):
     """
     Function to get a string output from a list of actors
@@ -31,10 +31,10 @@ def get_permit_amend_properties(feature, parent):
             retval += strline
         retval += "</table>"
 
-    return(retval)
+    return retval
 
 
-@qgsfunction(args='auto', group='Geocity')
+@qgsfunction(args="auto", group="Geocity")
 def get_permit_author(feature, parent):
     """
     Function to get a string output from a list of actors
@@ -62,17 +62,17 @@ def get_permit_author(feature, parent):
                 f"Numéro TVA{ts}:",
                 f"Téléphone{ts}:",
                 f"Téléphone (2){ts}:",
-                f"E-mail{ts}:"
+                f"E-mail{ts}:",
             ]
             #strline = f"{v}{lr}" if str(idx) == 'id' else f"{v}{lr}"
             strline = f'<tr><th>{keys[idx]}</th><td>{v}</td></tr>'
         retval += strline
         retval += "</table>"
 
-    return(retval)
+    return retval
 
 
-@qgsfunction(args='auto', group='Geocity')
+@qgsfunction(args="auto", group="Geocity")
 def get_permit_contacts(pos, feature, parent):
     """
     Function to get a string output from a list of actors
@@ -85,14 +85,14 @@ def get_permit_contacts(pos, feature, parent):
     get_keys = False
     field_names = [field.name() for field in feature.fields()]
     d = dict(zip(field_names, feature.attributes()))
-    permit_request_actors = json.loads(d['permit_request_actor'])
-    retval = ''
+    permit_request_actors = json.loads(d["permit_request_actor"])
+    retval = ""
     retval += "<style>body{font-family: arial; font-size: 12px;}th, td{padding: 0px;  text-align: left; font-size: 12px;}</style>"
     #print(f"permit_request_actors: {permit_request_actors}")
     lr = '<br>'
     ts = '&#8239;'
     for i, (j, actor) in enumerate(permit_request_actors.items()):
-        if (pos==i):
+        if pos == i:
             strline = f"<h3>{j}</h3>"
             retval += strline
             retval += "<table>"
@@ -111,16 +111,16 @@ def get_permit_contacts(pos, feature, parent):
                         f"NPA{ts}:",
                         f"Localité{ts}:",
                         f"Téléphone{ts}:",
-                        f"E-mail{ts}:"
+                        f"E-mail{ts}:",
                     ]
                     strline = f"<tr><th>contact_{keys[idx]}</th> <td>{v}</td></tr>" if str(k) == 'id' else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"
                 retval += strline
             retval += "</table>"
 
-    return(retval)
+    return retval
 
 
-@qgsfunction(args='auto', group='Geocity')
+@qgsfunction(args="auto", group="Geocity")
 def get_permit_request_properties(feature, parent):
     """
     Function to get a string output from a list of actors
@@ -128,8 +128,8 @@ def get_permit_request_properties(feature, parent):
     get_keys = True
     field_names = [field.name() for field in feature.fields()]
     d = dict(zip(field_names, feature.attributes()))
-    request_properties = json.loads(d['request_properties'])
-    retval = ''
+    request_properties = json.loads(d["request_properties"])
+    retval = ""
     retval += "<style>body{font-family: arial; font-size: 12px;}th, td{padding: 0px;  text-align: left; font-size: 12px;}</style>"
     #print(f"request_properties: {request_properties}")
     lr = '<br>'
@@ -158,10 +158,10 @@ def get_permit_request_properties(feature, parent):
             retval += strline
         retval += "</table>"
 
-    return(retval)
+    return retval
 
 
-@qgsfunction(args='auto', group='Geocity')
+@qgsfunction(args="auto", group="Geocity")
 def get_permit_validations(feature, parent):
     """
     Function to get a string output from a list of actors
@@ -186,13 +186,13 @@ def get_permit_validations(feature, parent):
                     f"Statut{ts}:",
                     f"Commentaire (avant){ts}:",
                     f"Commentaire (pendant){ts}:",
-                    f"Commentaire (après){ts}:"
+                    f"Commentaire (après){ts}:",
                 ]
                 strline = f"<tr><th>validation_{keys[idx]}</th> <td>{v}</td></tr>" if str(k) == 'id' else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"
             retval += strline
         retval += "</table>"
 
-    return(retval)
+    return retval
 
 
 class GeocityExpressions:

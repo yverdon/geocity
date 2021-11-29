@@ -32,7 +32,8 @@ services:
         volumes:
             - ./qgisserver/geocity.qgs:/io/data/geocity.qgs:ro
             - ./qgisserver/report_template.qgs:/io/data/report_template.qgs:ro
-            - ./qgisserver/plugins:/io/plugins
+            - ./qgisserver/plugins/geocity_expressions:/io/plugins/geocity_expressions
+            - ./qgisserver/plugins/qgis-atlasprint/atlasprint:/io/plugins/atlasprint
             - ./qgisserver/fonts:/usr/share/fonts
             - ./qgisserver/pg_service.conf:/etc/postgresql-common/pg_service.conf:ro
             - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
