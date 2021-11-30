@@ -52,7 +52,7 @@ def get_permit_author(feature, parent):
     d = dict(zip(field_names, feature.attributes()))
     author = json.loads(d["author"])
     retval = ""
-    retval += "<style>body{font-family: arial; font-size: 12px;}th, td{color: LimeGreen; padding: 0px;  text-align: left; font-size: 12px;}</style>"
+    retval += "<style>body{font-family: arial; font-size: 12px;}th, td{padding: 0px;  text-align: left; font-size: 12px;}</style>"
     lr = "<br>"
     ts = "&#8239;"
     for idx, (k, v) in enumerate(author.items()):
