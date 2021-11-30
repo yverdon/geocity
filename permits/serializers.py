@@ -228,8 +228,8 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
                     "geotime_aggregated": {
                         "start_date": "",
                         "end_date": "",
-                        "permit_request_geo_time_comments": [],
-                        "permit_request_geo_time_external_links": [],
+                        "comments": [],
+                        "external_links": [],
                     }
                 },
             }
@@ -254,7 +254,7 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
             result = {"properties": {}}
             if not aggregated_geotime_qs["singlegeom"]:
                 # Insert empty geometry if there is none
-                result["geometry"] = None
+                result["geometry"] = {"type": "Point", "coordinates": []}
             else:
                 result["geometry"] = json.loads(
                     GEOSGeometry(aggregated_geotime_qs["singlegeom"]).json
@@ -383,6 +383,7 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
 
     def to_representation(self, value):
         rep = super().to_representation(value)
+
         # If the WOT has no geometry, we add the centroid of the administrative entity as geom
         if rep["properties"]["geo_envelop"]["geometry"]["coordinates"] == []:
             administrative_entity_name = rep["properties"]["permit_request"][
@@ -391,10 +392,15 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
             administrative_entity = models.PermitAdministrativeEntity.objects.filter(
                 name=administrative_entity_name
             ).first()
-            rep["properties"]["geo_envelop"]["geometry"]["coordinates"] = [
-                administrative_entity.geom.centroid.x,
-                administrative_entity.geom.centroid.y,
-            ]
+
+            rep["properties"]["geo_envelop"]["geometry"] = {
+                "type": "Point",
+                "coordinates": [
+                    administrative_entity.geom.centroid.x,
+                    administrative_entity.geom.centroid.y,
+                ],
+            }
+
         # Flattening the Geometry
         rep["geometry"] = rep["properties"]["geo_envelop"]["geometry"]
         for field, value in rep["properties"]["geo_envelop"]["properties"].items():
