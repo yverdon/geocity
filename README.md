@@ -4,12 +4,6 @@ Discover geocity features and usage [here](https://project.mapnv.ch/projects/geo
 
 ## Getting started with the full Docker demo version
 
-### Setup print plugin
-
-```
-git submodule add https://github.com/yverdon/qgis-atlasprint qgisserver/plugins/qgis-atlasprint
-```
-
 ### Step by step guide to the working full docker non persistent DEV instance
 
 This will bring up a demo instance with preset fixtures served by the
@@ -50,6 +44,17 @@ Following command will setup a demo DB with more exhaustive configuration
 ```bash
 docker-compose -f docker-compose-demo.yml down --remove-orphans && docker-compose -f docker-compose-demo.yml up
 ```
+
+## Alternative demo setup
+
+Setup default print
+
+To setup or update default print template for all Works Objects Types execute
+
+```bash
+ docker-compose exec web python manage.py add_default_print_config
+ ```
+ 
 
 ### Run the tests from within the docker container
 
