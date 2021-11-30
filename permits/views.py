@@ -619,7 +619,6 @@ def permit_request_print(request, permit_request_id, template_id):
         "LAYERS": template.qgis_layers,
         "EXP_FILTER": "permit_request_id in(" + str(permit_request_id) + ")",
         "PERMIT_REQUEST_ID": permit_request_id,
-
     }
 
     qgisserver_url = "http://qgisserver/ogc/?" + urllib.parse.urlencode(values)

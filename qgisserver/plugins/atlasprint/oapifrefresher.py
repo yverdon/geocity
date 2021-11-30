@@ -29,8 +29,8 @@ __copyright__ = "Copyright Yverdon-les-Bains"
 __license__ = "GPL version 3"
 __email__ = "sit@ylb.ch"
 
-class OAPIFRefresher:
 
+class OAPIFRefresher:
     def refresh_geocity_oapif_layers_for_current_atlas_feature(id):
 
         project = QgsProject.instance()
@@ -66,5 +66,10 @@ class OAPIFRefresher:
                         layer.dataProvider().updateExtents()
                         layer.dataProvider().reloadData()
                         layer.triggerRepaint()
-                        Logger().info("qgis-printatlas - refreshed data source: " + uri.param("typename"))
-                        Logger().info("qgis-printatlas - uri: " + uri.uri(expandAuthConfig=False))
+                        Logger().info(
+                            "qgis-printatlas - refreshed data source: "
+                            + uri.param("typename")
+                        )
+                        Logger().info(
+                            "qgis-printatlas - uri: " + uri.uri(expandAuthConfig=False)
+                        )

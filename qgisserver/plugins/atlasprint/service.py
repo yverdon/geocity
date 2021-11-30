@@ -194,7 +194,9 @@ class AtlasPrintService(QgsService):
                     "SERVICE",
                 )
             }
-            Logger().info("Additional params: " + str(additional_params["PERMIT_REQUEST_ID"]))
+            Logger().info(
+                "Additional params: " + str(additional_params["PERMIT_REQUEST_ID"])
+            )
             # When the project has OAPIF datasources, the sources must first be reloaded.
             # In order to prevent massive request to DB, a basic server side filter is added
             # TODO: wait for the layers to be refreshed!
@@ -202,7 +204,6 @@ class AtlasPrintService(QgsService):
                 additional_params["PERMIT_REQUEST_ID"]
             )
             Logger().info("Refreshed ?: " + str(additional_params["PERMIT_REQUEST_ID"]))
-
 
             output_path = print_layout(
                 project=project,
