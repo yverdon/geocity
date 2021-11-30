@@ -45,16 +45,15 @@ Following command will setup a demo DB with more exhaustive configuration
 docker-compose -f docker-compose-demo.yml down --remove-orphans && docker-compose -f docker-compose-demo.yml up
 ```
 
-## Alternative demo setup
+## Standard print setup
 
-Setup default print
 
 To setup or update default print template for all Works Objects Types execute
 
 ```bash
  docker-compose exec web python manage.py add_default_print_config
  ```
- 
+
 
 ### Run the tests from within the docker container
 
