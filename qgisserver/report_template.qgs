@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis saveUser="NBL" version="3.22.0-Białowieża" saveDateTime="2021-11-29T12:36:52" projectname="" saveUserFull="Blanc Nicolas">
+<qgis saveUser="NBL" version="3.22.0-Białowieża" saveDateTime="2021-11-30T11:18:40" projectname="" saveUserFull="Blanc Nicolas">
   <homePath path=""/>
   <title></title>
   <autotransaction active="0"/>
@@ -6745,7 +6745,18 @@ def my_form_open(dialog, layer, feature):
             <dataDefinedProperties>
               <Option type="Map">
                 <Option type="QString" value="" name="name"/>
-                <Option name="properties"/>
+                <Option type="Map" name="properties">
+                  <Option type="Map" name="dataDefinedHeight">
+                    <Option type="bool" value="false" name="active"/>
+                    <Option type="int" value="1" name="type"/>
+                    <Option type="QString" value="" name="val"/>
+                  </Option>
+                  <Option type="Map" name="dataDefinedWidth">
+                    <Option type="bool" value="false" name="active"/>
+                    <Option type="int" value="1" name="type"/>
+                    <Option type="QString" value="" name="val"/>
+                  </Option>
+                </Option>
                 <Option type="QString" value="collection" name="type"/>
               </Option>
             </dataDefinedProperties>
@@ -7029,12 +7040,80 @@ def my_form_open(dialog, layer, feature):
           </symbol>
         </LayoutItem>
         <GuideCollection visible="1">
-          <Guide page="0" position="92" orientation="1" units="mm"/>
+          <Guide page="0" position="89" orientation="1" units="mm"/>
           <Guide page="0" position="180" orientation="1" units="mm"/>
           <Guide page="0" position="32" orientation="1" units="mm"/>
         </GuideCollection>
       </PageCollection>
-      <LayoutItem multiFrame="{c647ca8d-872c-4f12-a9ec-9f3a18e616ff}" hideBackgroundIfEmpty="1" frame="false" position="32.5312,3501.64,pt" templateUuid="{43855bc7-ba68-4111-9a89-1e2f5d4ed4fa}" opacity="1" outlineWidthM="0.3,mm" zValue="30" positionLock="false" multiFrameTemplateUuid="{c647ca8d-872c-4f12-a9ec-9f3a18e616ff}" sectionY="0" frameJoinStyle="miter" size="528.945,813.716,pt" visibility="1" excludeFromExports="0" sectionHeight="287.061" referencePoint="0" positionOnPage="32.5312,20.6957,pt" type="65647" background="false" id="" itemRotation="0" hidePageIfEmpty="1" blendMode="0" sectionWidth="186.6" sectionX="0" uuid="{43855bc7-ba68-4111-9a89-1e2f5d4ed4fa}" groupUuid="">
+      <LayoutItem marginX="0" frame="false" position="305,1141,pt" templateUuid="{b3527640-abd7-4abf-ba6d-9088d96cd660}" labelText="[%get_permit_contacts(3)%]" opacity="1" outlineWidthM="0.3,mm" zValue="71" positionLock="false" frameJoinStyle="miter" size="235,150,pt" htmlState="1" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="305,270.764,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{b3527640-abd7-4abf-ba6d-9088d96cd660}" groupUuid="">
+        <FrameColor blue="0" green="0" alpha="255" red="0"/>
+        <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
+        <LayoutObject>
+          <dataDefinedProperties>
+            <Option type="Map">
+              <Option type="QString" value="" name="name"/>
+              <Option type="Map" name="properties">
+                <Option type="Map" name="dataDefinedPositionX">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@leftbody) + eval(@textwidth)/2 +5" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionY">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@topbody) + @paperheight + 202" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedWidth">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@textwidth)/2 -5" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+              </Option>
+              <Option type="QString" value="collection" name="type"/>
+            </Option>
+          </dataDefinedProperties>
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </LayoutObject>
+        <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
+        <FontColor blue="0" green="0" alpha="255" red="0"/>
+      </LayoutItem>
+      <LayoutItem marginX="0" frame="false" position="60,1141,pt" templateUuid="{46652bc9-a0f1-4e16-a471-ec334543005d}" labelText="[%get_permit_contacts(2)%]" opacity="1" outlineWidthM="0.3,mm" zValue="44" positionLock="false" frameJoinStyle="miter" size="235,150,pt" htmlState="1" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,270.764,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{46652bc9-a0f1-4e16-a471-ec334543005d}" groupUuid="">
+        <FrameColor blue="0" green="0" alpha="255" red="0"/>
+        <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
+        <LayoutObject>
+          <dataDefinedProperties>
+            <Option type="Map">
+              <Option type="QString" value="" name="name"/>
+              <Option type="Map" name="properties">
+                <Option type="Map" name="dataDefinedPositionX">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@leftbody)" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionY">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@topbody) + @paperheight + 202" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedWidth">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@textwidth)/2 -5" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+              </Option>
+              <Option type="QString" value="collection" name="type"/>
+            </Option>
+          </dataDefinedProperties>
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </LayoutObject>
+        <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
+        <FontColor blue="0" green="0" alpha="255" red="0"/>
+      </LayoutItem>
+      <LayoutItem multiFrame="{c647ca8d-872c-4f12-a9ec-9f3a18e616ff}" hideBackgroundIfEmpty="1" frame="false" position="32.5312,3498.53,pt" templateUuid="{43855bc7-ba68-4111-9a89-1e2f5d4ed4fa}" opacity="1" outlineWidthM="0.3,mm" zValue="30" positionLock="false" multiFrameTemplateUuid="{c647ca8d-872c-4f12-a9ec-9f3a18e616ff}" sectionY="0" frameJoinStyle="miter" size="528.945,813.716,pt" visibility="1" excludeFromExports="0" sectionHeight="287.061" referencePoint="0" positionOnPage="32.5312,17.5857,pt" type="65647" background="false" id="" itemRotation="0" hidePageIfEmpty="1" blendMode="0" sectionWidth="186.6" sectionX="0" uuid="{43855bc7-ba68-4111-9a89-1e2f5d4ed4fa}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
@@ -7125,7 +7204,7 @@ def my_form_open(dialog, layer, feature):
               <Option type="Map" name="properties">
                 <Option type="Map" name="dataDefinedPositionX">
                   <Option type="bool" value="true" name="active"/>
-                  <Option type="QString" value="eval(@layout_hoffset) + eval(@hoffset) + eval(@oddsidemargin) + eval(@textwidth)" name="expression"/>
+                  <Option type="QString" value="eval(@leftbody) + eval(@textwidth)" name="expression"/>
                   <Option type="int" value="3" name="type"/>
                 </Option>
                 <Option type="Map" name="dataDefinedPositionY">
@@ -7144,7 +7223,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,20,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor blue="0" green="0" alpha="255" red="0"/>
       </LayoutItem>
-      <LayoutItem frame="false" startMarkerFile="" position="60,80,pt" templateUuid="{26e438f5-ac45-4fc4-a233-33551bc04090}" opacity="1" startMarkerMode="0" outlineWidthM="0.3,mm" zValue="21" positionLock="true" frameJoinStyle="miter" outlineWidth="1" markerMode="0" size="480,0,pt" endMarkerFile="" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,80,pt" type="65645" arrowHeadOutlineColor="0,0,0,255" background="false" id="" itemRotation="0" arrowHeadWidth="4" blendMode="0" arrowHeadFillColor="0,0,0,255" uuid="{26e438f5-ac45-4fc4-a233-33551bc04090}" groupUuid="">
+      <LayoutItem frame="false" startMarkerFile="" position="60,84,pt" templateUuid="{26e438f5-ac45-4fc4-a233-33551bc04090}" opacity="1" startMarkerMode="0" outlineWidthM="0.3,mm" zValue="21" positionLock="true" frameJoinStyle="miter" outlineWidth="1" markerMode="0" size="480,0,pt" endMarkerFile="" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,84,pt" type="65645" arrowHeadOutlineColor="0,0,0,255" background="false" id="" itemRotation="0" arrowHeadWidth="4" blendMode="0" arrowHeadFillColor="0,0,0,255" uuid="{26e438f5-ac45-4fc4-a233-33551bc04090}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
@@ -7159,12 +7238,12 @@ def my_form_open(dialog, layer, feature):
                 </Option>
                 <Option type="Map" name="dataDefinedPositionX">
                   <Option type="bool" value="true" name="active"/>
-                  <Option type="QString" value="eval(@layout_hoffset) + eval(@hoffset) + eval(@oddsidemargin)" name="expression"/>
+                  <Option type="QString" value="eval(@leftbody)" name="expression"/>
                   <Option type="int" value="3" name="type"/>
                 </Option>
                 <Option type="Map" name="dataDefinedPositionY">
                   <Option type="bool" value="true" name="active"/>
-                  <Option type="QString" value="eval(@layout_voffset) + eval(@voffset) + eval(@topmargin) + eval(@headheight) - 4" name="expression"/>
+                  <Option type="QString" value="eval(@topbody) - eval(@headsep)" name="expression"/>
                   <Option type="int" value="3" name="type"/>
                 </Option>
                 <Option type="Map" name="dataDefinedWidth">
@@ -7342,43 +7421,7 @@ def my_form_open(dialog, layer, feature):
           </layer>
         </symbol>
       </LayoutItem>
-      <LayoutItem marginX="0" frame="false" position="20.5975,494.925,mm" templateUuid="{0ff8826c-3fe7-47f5-816c-96ca0691c8d0}" labelText="Propriétés de l'amendement" opacity="1" outlineWidthM="0.3,mm" zValue="19" positionLock="false" frameJoinStyle="miter" size="109.247,11.9364,mm" htmlState="0" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="20.5975,187.925,mm" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{0ff8826c-3fe7-47f5-816c-96ca0691c8d0}" groupUuid="">
-        <FrameColor blue="0" green="0" alpha="255" red="0"/>
-        <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
-        <LayoutObject>
-          <dataDefinedProperties>
-            <Option type="Map">
-              <Option type="QString" value="" name="name"/>
-              <Option name="properties"/>
-              <Option type="QString" value="collection" name="type"/>
-            </Option>
-          </dataDefinedProperties>
-          <customproperties>
-            <Option/>
-          </customproperties>
-        </LayoutObject>
-        <LabelFont description="Arial,16,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
-        <FontColor blue="0" green="0" alpha="255" red="0"/>
-      </LayoutItem>
-      <LayoutItem marginX="0" frame="false" position="112.227,333.402,mm" templateUuid="{89230b06-46bc-469f-9c7f-a41ff20a1255}" labelText="[%get_permit_contacts(1)%]" opacity="1" outlineWidthM="0.3,mm" zValue="18" positionLock="false" frameJoinStyle="miter" size="84,54.822,mm" htmlState="1" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="112.227,26.402,mm" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{89230b06-46bc-469f-9c7f-a41ff20a1255}" groupUuid="">
-        <FrameColor blue="0" green="0" alpha="255" red="0"/>
-        <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
-        <LayoutObject>
-          <dataDefinedProperties>
-            <Option type="Map">
-              <Option type="QString" value="" name="name"/>
-              <Option name="properties"/>
-              <Option type="QString" value="collection" name="type"/>
-            </Option>
-          </dataDefinedProperties>
-          <customproperties>
-            <Option/>
-          </customproperties>
-        </LayoutObject>
-        <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
-        <FontColor blue="0" green="0" alpha="255" red="0"/>
-      </LayoutItem>
-      <LayoutItem marginX="0" frame="false" position="58.388,266.264,pt" templateUuid="{3ae75c6f-a367-42b7-b159-b031960c02c9}" labelText="Données du service pilote" opacity="1" outlineWidthM="0.3,mm" zValue="17" positionLock="false" frameJoinStyle="miter" size="74.209,8.239,mm" htmlState="0" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="58.388,266.264,pt" type="65641" halign="1" background="false" id="" itemRotation="0" blendMode="0" valign="128" marginY="0" uuid="{3ae75c6f-a367-42b7-b159-b031960c02c9}" groupUuid="">
+      <LayoutItem marginX="0" frame="false" position="60,1401,pt" templateUuid="{0ff8826c-3fe7-47f5-816c-96ca0691c8d0}" labelText="Propriétés de l'amendement" opacity="1" outlineWidthM="0.3,mm" zValue="19" positionLock="false" frameJoinStyle="miter" size="480,24,pt" htmlState="0" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,530.764,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{0ff8826c-3fe7-47f5-816c-96ca0691c8d0}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
@@ -7386,24 +7429,24 @@ def my_form_open(dialog, layer, feature):
             <Option type="Map">
               <Option type="QString" value="" name="name"/>
               <Option type="Map" name="properties">
+                <Option type="Map" name="dataDefinedHeight">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@titleheight" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionX">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@leftbody)" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
                 <Option type="Map" name="dataDefinedPositionY">
-                  <Option type="bool" value="false" name="active"/>
-                  <Option type="QString" value="" name="expression"/>
-                  <Option type="Map" name="transformer">
-                    <Option type="Map" name="d">
-                      <Option type="Map" name="curve">
-                        <Option type="QString" value="0,1" name="x"/>
-                        <Option type="QString" value="0,1" name="y"/>
-                      </Option>
-                      <Option type="double" value="1" name="exponent"/>
-                      <Option type="double" value="10" name="maxOutput"/>
-                      <Option type="double" value="0" name="maxValue"/>
-                      <Option type="double" value="1" name="minOutput"/>
-                      <Option type="double" value="0" name="minValue"/>
-                      <Option type="double" value="0" name="nullOutput"/>
-                    </Option>
-                    <Option type="int" value="0" name="t"/>
-                  </Option>
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@topbody) + @paperheight + 462" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedWidth">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@textwidth" name="expression"/>
                   <Option type="int" value="3" name="type"/>
                 </Option>
               </Option>
@@ -7417,14 +7460,119 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,16,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor blue="0" green="0" alpha="255" red="0"/>
       </LayoutItem>
-      <LayoutItem marginX="0" frame="false" position="20.5975,504.939,mm" templateUuid="{b10fdc2a-05ca-4c8e-87b2-ced49479ae3d}" labelText="[%get_permit_amend_properties()%]" opacity="1" outlineWidthM="0.3,mm" zValue="16" positionLock="false" frameJoinStyle="miter" size="168.744,90.0172,mm" htmlState="1" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="20.5975,197.939,mm" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{b10fdc2a-05ca-4c8e-87b2-ced49479ae3d}" groupUuid="">
+      <LayoutItem marginX="0" frame="false" position="305,971,pt" templateUuid="{89230b06-46bc-469f-9c7f-a41ff20a1255}" labelText="[%get_permit_contacts(1)%]" opacity="1" outlineWidthM="0.3,mm" zValue="18" positionLock="false" frameJoinStyle="miter" size="235,150,pt" htmlState="1" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="305,100.764,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{89230b06-46bc-469f-9c7f-a41ff20a1255}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
           <dataDefinedProperties>
             <Option type="Map">
               <Option type="QString" value="" name="name"/>
-              <Option name="properties"/>
+              <Option type="Map" name="properties">
+                <Option type="Map" name="dataDefinedPositionX">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@leftbody) + eval(@textwidth)/2 +5" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionY">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@topbody) + @paperheight +32" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedWidth">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@textwidth)/2 -5" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+              </Option>
+              <Option type="QString" value="collection" name="type"/>
+            </Option>
+          </dataDefinedProperties>
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </LayoutObject>
+        <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
+        <FontColor blue="0" green="0" alpha="255" red="0"/>
+      </LayoutItem>
+      <LayoutItem marginX="0" frame="false" position="60,254,pt" templateUuid="{3ae75c6f-a367-42b7-b159-b031960c02c9}" labelText="Données du service pilote" opacity="1" outlineWidthM="0.3,mm" zValue="17" positionLock="false" frameJoinStyle="miter" size="480,24,pt" htmlState="0" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,254,pt" type="65641" halign="1" background="false" id="" itemRotation="0" blendMode="0" valign="128" marginY="0" uuid="{3ae75c6f-a367-42b7-b159-b031960c02c9}" groupUuid="">
+        <FrameColor blue="0" green="0" alpha="255" red="0"/>
+        <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
+        <LayoutObject>
+          <dataDefinedProperties>
+            <Option type="Map">
+              <Option type="QString" value="" name="name"/>
+              <Option type="Map" name="properties">
+                <Option type="Map" name="dataDefinedHeight">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@titleheight" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionX">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@leftbody)" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionY">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@topbody)+160" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedWidth">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@textwidth" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+              </Option>
+              <Option type="QString" value="collection" name="type"/>
+            </Option>
+          </dataDefinedProperties>
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </LayoutObject>
+        <LabelFont description="Arial,16,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
+        <FontColor blue="0" green="0" alpha="255" red="0"/>
+      </LayoutItem>
+      <LayoutItem marginX="0" frame="false" position="60,1425,pt" templateUuid="{b10fdc2a-05ca-4c8e-87b2-ced49479ae3d}" labelText="[%get_permit_amend_properties()%]" opacity="1" outlineWidthM="0.3,mm" zValue="16" positionLock="false" frameJoinStyle="miter" size="480,250,pt" htmlState="1" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,554.764,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{b10fdc2a-05ca-4c8e-87b2-ced49479ae3d}" groupUuid="">
+        <FrameColor blue="0" green="0" alpha="255" red="0"/>
+        <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
+        <LayoutObject>
+          <dataDefinedProperties>
+            <Option type="Map">
+              <Option type="QString" value="" name="name"/>
+              <Option type="Map" name="properties">
+                <Option type="Map" name="dataDefinedHeight">
+                  <Option type="bool" value="false" name="active"/>
+                  <Option type="QString" value="" name="expression"/>
+                  <Option type="Map" name="transformer">
+                    <Option type="Map" name="d">
+                      <Option type="double" value="1" name="exponent"/>
+                      <Option type="double" value="10" name="maxOutput"/>
+                      <Option type="double" value="0" name="maxValue"/>
+                      <Option type="double" value="1" name="minOutput"/>
+                      <Option type="double" value="0" name="minValue"/>
+                      <Option type="double" value="0" name="nullOutput"/>
+                    </Option>
+                    <Option type="int" value="0" name="t"/>
+                  </Option>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionX">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@leftbody)" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionY">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@topbody) + @paperheight + 486" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedWidth">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@textwidth" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+              </Option>
               <Option type="QString" value="collection" name="type"/>
             </Option>
           </dataDefinedProperties>
@@ -7438,14 +7586,25 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor blue="0" green="0" alpha="255" red="0"/>
       </LayoutItem>
-      <LayoutItem marginX="0" frame="false" position="20.5975,103.977,mm" templateUuid="{10be47e0-6636-4e41-8c96-bfd9234e2d8a}" labelText="&lt;style>body{font-family: arial}&lt;/style>&#xa;État :&lt;br>" opacity="1" outlineWidthM="0.3,mm" zValue="15" positionLock="false" frameJoinStyle="miter" size="13.1562,6.11216,mm" htmlState="1" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="20.5975,103.977,mm" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{10be47e0-6636-4e41-8c96-bfd9234e2d8a}" groupUuid="">
+      <LayoutItem marginX="0" frame="false" position="60,284,pt" templateUuid="{10be47e0-6636-4e41-8c96-bfd9234e2d8a}" labelText="&lt;style>body{font-family: arial}&lt;/style>&#xa;État :&lt;br>" opacity="1" outlineWidthM="0.3,mm" zValue="15" positionLock="false" frameJoinStyle="miter" size="37.293,17.325,pt" htmlState="1" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,284,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{10be47e0-6636-4e41-8c96-bfd9234e2d8a}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
           <dataDefinedProperties>
             <Option type="Map">
               <Option type="QString" value="" name="name"/>
-              <Option name="properties"/>
+              <Option type="Map" name="properties">
+                <Option type="Map" name="dataDefinedPositionX">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@leftbody)" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionY">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@topbody)+190" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+              </Option>
               <Option type="QString" value="collection" name="type"/>
             </Option>
           </dataDefinedProperties>
@@ -7456,7 +7615,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor blue="0" green="0" alpha="255" red="0"/>
       </LayoutItem>
-      <LayoutItem marginX="0" frame="false" position="21.798,641.5,mm" templateUuid="{583711a5-1385-4904-acb3-93b6a7a0f2a8}" labelText="[%get_permit_validations()%]" opacity="1" outlineWidthM="0.3,mm" zValue="14" positionLock="false" frameJoinStyle="miter" size="168.744,258.603,mm" htmlState="1" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="21.798,27.5,mm" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{583711a5-1385-4904-acb3-93b6a7a0f2a8}" groupUuid="">
+      <LayoutItem marginX="0" frame="false" position="60,1808,pt" templateUuid="{583711a5-1385-4904-acb3-93b6a7a0f2a8}" labelText="[%get_permit_validations()%]" opacity="1" outlineWidthM="0.3,mm" zValue="14" positionLock="false" frameJoinStyle="miter" size="480,733.048,pt" htmlState="1" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,67.5276,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{583711a5-1385-4904-acb3-93b6a7a0f2a8}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
@@ -7469,6 +7628,21 @@ def my_form_open(dialog, layer, feature):
                   <Option type="QString" value="2.8 * array_length(string_to_array(&quot;validations&quot;, ',', '')) * var('sw_layout_height_header')" name="expression"/>
                   <Option type="int" value="3" name="type"/>
                 </Option>
+                <Option type="Map" name="dataDefinedPositionX">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@leftbody)" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionY">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@topbody) + 2*@paperheight + @titleheight" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedWidth">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@textwidth" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
               </Option>
               <Option type="QString" value="collection" name="type"/>
             </Option>
@@ -7480,14 +7654,30 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor blue="0" green="0" alpha="255" red="0"/>
       </LayoutItem>
-      <LayoutItem marginX="0" frame="false" position="21.7978,187.349,mm" templateUuid="{fa9dcf11-9596-480d-afe9-540c3ccdfcf5}" labelText="Propriétés de la requête" opacity="1" outlineWidthM="0.3,mm" zValue="13" positionLock="false" frameJoinStyle="miter" size="109.247,11.9364,mm" htmlState="0" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="21.7978,187.349,mm" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{fa9dcf11-9596-480d-afe9-540c3ccdfcf5}" groupUuid="">
+      <LayoutItem marginX="0" frame="false" position="60,531.068,pt" templateUuid="{fa9dcf11-9596-480d-afe9-540c3ccdfcf5}" labelText="Propriétés de la requête" opacity="1" outlineWidthM="0.3,mm" zValue="13" positionLock="false" frameJoinStyle="miter" size="480,24,pt" htmlState="0" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,531.068,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{fa9dcf11-9596-480d-afe9-540c3ccdfcf5}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
           <dataDefinedProperties>
             <Option type="Map">
               <Option type="QString" value="" name="name"/>
-              <Option name="properties"/>
+              <Option type="Map" name="properties">
+                <Option type="Map" name="dataDefinedHeight">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@titleheight" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionX">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@leftbody)" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedWidth">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@textwidth" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+              </Option>
               <Option type="QString" value="collection" name="type"/>
             </Option>
           </dataDefinedProperties>
@@ -7498,14 +7688,20 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,16,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor blue="0" green="0" alpha="255" red="0"/>
       </LayoutItem>
-      <LayoutItem marginX="0" frame="false" position="31.6615,103.977,mm" templateUuid="{5be8525c-c8fa-4c7e-81aa-56dc6ffabed9}" labelText="[%&quot;status_display&quot;%]" opacity="1" outlineWidthM="0.3,mm" zValue="12" positionLock="false" frameJoinStyle="miter" size="50.0307,6.11216,mm" htmlState="0" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="31.6615,103.977,mm" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{5be8525c-c8fa-4c7e-81aa-56dc6ffabed9}" groupUuid="">
+      <LayoutItem marginX="0" frame="false" position="90,284,pt" templateUuid="{5be8525c-c8fa-4c7e-81aa-56dc6ffabed9}" labelText="[%&quot;status_display&quot;%]" opacity="1" outlineWidthM="0.3,mm" zValue="12" positionLock="false" frameJoinStyle="miter" size="64,18,pt" htmlState="0" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="90,284,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{5be8525c-c8fa-4c7e-81aa-56dc6ffabed9}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
           <dataDefinedProperties>
             <Option type="Map">
               <Option type="QString" value="" name="name"/>
-              <Option name="properties"/>
+              <Option type="Map" name="properties">
+                <Option type="Map" name="dataDefinedPositionY">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@topbody)+190" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+              </Option>
               <Option type="QString" value="collection" name="type"/>
             </Option>
           </dataDefinedProperties>
@@ -7516,14 +7712,30 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor blue="0" green="0" alpha="255" red="0"/>
       </LayoutItem>
-      <LayoutItem marginX="0" frame="false" position="21.798,333.402,mm" templateUuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" labelText="[%get_permit_contacts(0)%]" opacity="1" outlineWidthM="0.3,mm" zValue="11" positionLock="false" frameJoinStyle="miter" size="84,54.822,mm" htmlState="1" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="21.798,26.402,mm" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" groupUuid="">
+      <LayoutItem marginX="0" frame="false" position="60,971,pt" templateUuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" labelText="[%get_permit_contacts(0)%]" opacity="1" outlineWidthM="0.3,mm" zValue="11" positionLock="false" frameJoinStyle="miter" size="235,150,pt" htmlState="1" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,100.764,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
           <dataDefinedProperties>
             <Option type="Map">
               <Option type="QString" value="" name="name"/>
-              <Option name="properties"/>
+              <Option type="Map" name="properties">
+                <Option type="Map" name="dataDefinedPositionX">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@leftbody)" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionY">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@topbody) + @paperheight +32" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedWidth">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@textwidth)/2 -5" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+              </Option>
               <Option type="QString" value="collection" name="type"/>
             </Option>
           </dataDefinedProperties>
@@ -7534,14 +7746,35 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor blue="0" green="0" alpha="255" red="0"/>
       </LayoutItem>
-      <LayoutItem marginX="0" frame="false" position="21.7979,632.102,mm" templateUuid="{b2c76482-7dee-4fb4-9c72-fedb0523b3a5}" labelText="Statut des validations" opacity="1" outlineWidthM="0.3,mm" zValue="10" positionLock="false" frameJoinStyle="miter" size="83.1716,11.9364,mm" htmlState="0" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="21.7979,18.102,mm" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{b2c76482-7dee-4fb4-9c72-fedb0523b3a5}" groupUuid="">
+      <LayoutItem marginX="0" frame="false" position="60,1784,pt" templateUuid="{b2c76482-7dee-4fb4-9c72-fedb0523b3a5}" labelText="Statut des validations" opacity="1" outlineWidthM="0.3,mm" zValue="10" positionLock="false" frameJoinStyle="miter" size="480,24,pt" htmlState="0" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,43.5276,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{b2c76482-7dee-4fb4-9c72-fedb0523b3a5}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
           <dataDefinedProperties>
             <Option type="Map">
               <Option type="QString" value="" name="name"/>
-              <Option name="properties"/>
+              <Option type="Map" name="properties">
+                <Option type="Map" name="dataDefinedHeight">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@titleheight" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionX">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@leftbody)" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionY">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@topbody) + 2*@paperheight" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedWidth">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@textwidth" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+              </Option>
               <Option type="QString" value="collection" name="type"/>
             </Option>
           </dataDefinedProperties>
@@ -7552,14 +7785,30 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,16,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor blue="0" green="0" alpha="255" red="0"/>
       </LayoutItem>
-      <LayoutItem marginX="0" frame="false" position="21.7978,197.363,mm" templateUuid="{e1212798-f318-46aa-ac09-9529ff33c929}" labelText="[%get_permit_request_properties()%]" opacity="1" outlineWidthM="0.3,mm" zValue="9" positionLock="false" frameJoinStyle="miter" size="168.744,90.0172,mm" htmlState="1" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="21.7978,197.363,mm" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{e1212798-f318-46aa-ac09-9529ff33c929}" groupUuid="">
+      <LayoutItem marginX="0" frame="false" position="60,564,pt" templateUuid="{e1212798-f318-46aa-ac09-9529ff33c929}" labelText="[%get_permit_request_properties()%]" opacity="1" outlineWidthM="0.3,mm" zValue="9" positionLock="false" frameJoinStyle="miter" size="480,90.017,pt" htmlState="1" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,564,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{e1212798-f318-46aa-ac09-9529ff33c929}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
           <dataDefinedProperties>
             <Option type="Map">
               <Option type="QString" value="" name="name"/>
-              <Option name="properties"/>
+              <Option type="Map" name="properties">
+                <Option type="Map" name="dataDefinedPositionX">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@leftbody)" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionY">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@topbody)+470" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedWidth">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@textwidth" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+              </Option>
               <Option type="QString" value="collection" name="type"/>
             </Option>
           </dataDefinedProperties>
@@ -7573,7 +7822,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor blue="0" green="0" alpha="255" red="0"/>
       </LayoutItem>
-      <LayoutItem marginX="0" frame="false" position="60,94,pt" templateUuid="{9935f9a9-e3a4-4886-a29e-9bedcdcf2410}" labelText="Auteur·e de la demande" opacity="1" outlineWidthM="0.3,mm" zValue="8" positionLock="false" frameJoinStyle="miter" size="307.261,25.03,pt" htmlState="0" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,94,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{9935f9a9-e3a4-4886-a29e-9bedcdcf2410}" groupUuid="">
+      <LayoutItem marginX="0" frame="false" position="60,94,pt" templateUuid="{9935f9a9-e3a4-4886-a29e-9bedcdcf2410}" labelText="Auteur·e de la demande" opacity="1" outlineWidthM="0.3,mm" zValue="8" positionLock="false" frameJoinStyle="miter" size="480,24,pt" htmlState="0" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,94,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{9935f9a9-e3a4-4886-a29e-9bedcdcf2410}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
@@ -7581,14 +7830,24 @@ def my_form_open(dialog, layer, feature):
             <Option type="Map">
               <Option type="QString" value="" name="name"/>
               <Option type="Map" name="properties">
+                <Option type="Map" name="dataDefinedHeight">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@titleheight" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
                 <Option type="Map" name="dataDefinedPositionX">
                   <Option type="bool" value="true" name="active"/>
-                  <Option type="QString" value="eval(@layout_hoffset) + eval(@hoffset) + eval(@oddsidemargin)" name="expression"/>
+                  <Option type="QString" value="eval(@leftbody)" name="expression"/>
                   <Option type="int" value="3" name="type"/>
                 </Option>
                 <Option type="Map" name="dataDefinedPositionY">
                   <Option type="bool" value="true" name="active"/>
                   <Option type="QString" value="eval(@topbody)" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedWidth">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@textwidth" name="expression"/>
                   <Option type="int" value="3" name="type"/>
                 </Option>
               </Option>
@@ -7602,7 +7861,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,16,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor blue="0" green="0" alpha="255" red="0"/>
       </LayoutItem>
-      <LayoutItem marginX="0" frame="false" position="60,118,pt" templateUuid="{39621e9a-9e4f-4b05-adfa-d657c7529cde}" labelText="[%get_permit_author()%]" opacity="1" outlineWidthM="0.3,mm" zValue="7" positionLock="false" frameJoinStyle="miter" size="194.638,138.723,pt" htmlState="1" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,118,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{39621e9a-9e4f-4b05-adfa-d657c7529cde}" groupUuid="">
+      <LayoutItem marginX="0" frame="false" position="60,118,pt" templateUuid="{39621e9a-9e4f-4b05-adfa-d657c7529cde}" labelText="[%get_permit_author()%]" opacity="1" outlineWidthM="0.3,mm" zValue="7" positionLock="false" frameJoinStyle="miter" size="480,132,pt" htmlState="1" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,118,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{39621e9a-9e4f-4b05-adfa-d657c7529cde}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
@@ -7612,12 +7871,17 @@ def my_form_open(dialog, layer, feature):
               <Option type="Map" name="properties">
                 <Option type="Map" name="dataDefinedPositionX">
                   <Option type="bool" value="true" name="active"/>
-                  <Option type="QString" value="eval(@layout_hoffset) + eval(@hoffset) + eval(@oddsidemargin)" name="expression"/>
+                  <Option type="QString" value="eval(@leftbody)" name="expression"/>
                   <Option type="int" value="3" name="type"/>
                 </Option>
                 <Option type="Map" name="dataDefinedPositionY">
                   <Option type="bool" value="true" name="active"/>
-                  <Option type="QString" value="eval(@topbody) + 24" name="expression"/>
+                  <Option type="QString" value="eval(@topbody) + @titleheight" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedWidth">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@textwidth" name="expression"/>
                   <Option type="int" value="3" name="type"/>
                 </Option>
               </Option>
@@ -7631,14 +7895,35 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor blue="0" green="0" alpha="255" red="0"/>
       </LayoutItem>
-      <LayoutItem marginX="0" frame="false" position="21.7979,322.333,mm" templateUuid="{3c8afeaf-08ac-4798-ab6b-b88e2e00f1bd}" labelText="Contacts" opacity="1" outlineWidthM="0.3,mm" zValue="6" positionLock="false" frameJoinStyle="miter" size="51.1848,11.9364,mm" htmlState="0" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="21.7979,15.333,mm" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{3c8afeaf-08ac-4798-ab6b-b88e2e00f1bd}" groupUuid="">
+      <LayoutItem marginX="0" frame="false" position="60,939,pt" templateUuid="{3c8afeaf-08ac-4798-ab6b-b88e2e00f1bd}" labelText="Contacts" opacity="1" outlineWidthM="0.3,mm" zValue="6" positionLock="false" frameJoinStyle="miter" size="480,24,pt" htmlState="0" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,68.7638,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{3c8afeaf-08ac-4798-ab6b-b88e2e00f1bd}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
           <dataDefinedProperties>
             <Option type="Map">
               <Option type="QString" value="" name="name"/>
-              <Option name="properties"/>
+              <Option type="Map" name="properties">
+                <Option type="Map" name="dataDefinedHeight">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@titleheight" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionX">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@leftbody)" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionY">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@topbody) + 1*@paperheight" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedWidth">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@textwidth" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+              </Option>
               <Option type="QString" value="collection" name="type"/>
             </Option>
           </dataDefinedProperties>
@@ -7649,7 +7934,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,16,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor blue="0" green="0" alpha="255" red="0"/>
       </LayoutItem>
-      <LayoutItem marginX="0" frame="false" position="21.7979,947.346,mm" templateUuid="{73eb8091-0d68-40bb-85f9-52e874538a04}" labelText="[%array_to_string(&#xa;  array_foreach(&#xa;&#x9;(&quot;permit_request_actor&quot;),&#xa;&#x9;map_get(from_json(@element),'id') || '\n' || &#xa;&#x9;map_get(from_json(@element),'first_name') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'last_name') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'company_name') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'vat_number') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'address') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'vat_number') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'zipcode') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'city') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'phone') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'email') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'permit_request_actor_1_actor_type')&#xa;  )&#xa;)%]" opacity="1" outlineWidthM="0.3,mm" zValue="5" positionLock="false" frameJoinStyle="miter" size="168.744,110.648,mm" htmlState="0" visibility="0" excludeFromExports="0" referencePoint="0" positionOnPage="21.7979,26.346,mm" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{73eb8091-0d68-40bb-85f9-52e874538a04}" groupUuid="">
+      <LayoutItem marginX="0" frame="false" position="21.7979,946.249,mm" templateUuid="{73eb8091-0d68-40bb-85f9-52e874538a04}" labelText="[%array_to_string(&#xa;  array_foreach(&#xa;&#x9;(&quot;permit_request_actor&quot;),&#xa;&#x9;map_get(from_json(@element),'id') || '\n' || &#xa;&#x9;map_get(from_json(@element),'first_name') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'last_name') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'company_name') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'vat_number') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'address') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'vat_number') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'zipcode') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'city') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'phone') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'email') || '\n' ||&#xa;&#x9;map_get(from_json(@element),'permit_request_actor_1_actor_type')&#xa;  )&#xa;)%]" opacity="1" outlineWidthM="0.3,mm" zValue="5" positionLock="false" frameJoinStyle="miter" size="168.744,110.648,mm" htmlState="0" visibility="0" excludeFromExports="0" referencePoint="0" positionOnPage="21.7979,25.2488,mm" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{73eb8091-0d68-40bb-85f9-52e874538a04}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
@@ -7667,14 +7952,35 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
         <FontColor blue="0" green="0" alpha="255" red="0"/>
       </LayoutItem>
-      <LayoutItem marginX="0" frame="false" position="26.7431,942.45,mm" templateUuid="{9272dfe6-ad07-40e7-8ffc-b396d2bac468}" labelText="Localisation" opacity="1" outlineWidthM="0.3,mm" zValue="4" positionLock="false" frameJoinStyle="miter" size="51.1848,11.9364,mm" htmlState="0" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="26.7431,21.45,mm" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{9272dfe6-ad07-40e7-8ffc-b396d2bac468}" groupUuid="">
+      <LayoutItem marginX="0" frame="false" position="60,2629,pt" templateUuid="{9272dfe6-ad07-40e7-8ffc-b396d2bac468}" labelText="Localisation" opacity="1" outlineWidthM="0.3,mm" zValue="4" positionLock="false" frameJoinStyle="miter" size="480,24,pt" htmlState="0" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,18.2913,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{9272dfe6-ad07-40e7-8ffc-b396d2bac468}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
           <dataDefinedProperties>
             <Option type="Map">
               <Option type="QString" value="" name="name"/>
-              <Option name="properties"/>
+              <Option type="Map" name="properties">
+                <Option type="Map" name="dataDefinedHeight">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@titleheight" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionX">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@leftbody)" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionY">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@topbody) + 3*@paperheight" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedWidth">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@textwidth" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+              </Option>
               <Option type="QString" value="collection" name="type"/>
             </Option>
           </dataDefinedProperties>
@@ -7685,14 +7991,35 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,16,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor blue="0" green="0" alpha="255" red="0"/>
       </LayoutItem>
-      <LayoutItem frame="false" isTemporal="0" position="26.743,954.38,mm" templateUuid="{d8fa0235-109b-4397-92bb-5fea56e95a70}" keepLayerSet="false" opacity="1" outlineWidthM="0.3,mm" labelMargin="0,mm" zValue="3" positionLock="false" followPresetName="" frameJoinStyle="miter" size="156.514,195.867,mm" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="26.743,33.38,mm" mapRotation="0" type="65639" mapFlags="0" background="true" followPreset="false" id="Carte 1" itemRotation="0" blendMode="0" drawCanvasItems="true" uuid="{d8fa0235-109b-4397-92bb-5fea56e95a70}" groupUuid="">
+      <LayoutItem frame="false" isTemporal="0" position="60,2653,pt" templateUuid="{d8fa0235-109b-4397-92bb-5fea56e95a70}" keepLayerSet="false" opacity="1" outlineWidthM="0.3,mm" labelMargin="0,mm" zValue="3" positionLock="false" followPresetName="" frameJoinStyle="miter" size="480,355.2,pt" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,42.2913,pt" mapRotation="0" type="65639" mapFlags="0" background="true" followPreset="false" id="Carte 1" itemRotation="0" blendMode="0" drawCanvasItems="true" uuid="{d8fa0235-109b-4397-92bb-5fea56e95a70}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
           <dataDefinedProperties>
             <Option type="Map">
               <Option type="QString" value="" name="name"/>
-              <Option name="properties"/>
+              <Option type="Map" name="properties">
+                <Option type="Map" name="dataDefinedHeight">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="0.6*@textheight" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionX">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@leftbody)" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionY">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@topbody) + 3*@paperheight +@titleheight" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedWidth">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@textwidth" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+              </Option>
               <Option type="QString" value="collection" name="type"/>
             </Option>
           </dataDefinedProperties>
@@ -7703,7 +8030,7 @@ def my_form_open(dialog, layer, feature):
             </Option>
           </customproperties>
         </LayoutObject>
-        <Extent xmin="2537891.02213630080223083" ymin="1181794.15707182139158249" xmax="2538406.97786369919776917" ymax="1182439.84292817837558687"/>
+        <Extent xmin="2537891.02213630080223083" ymin="1181926.09638086264021695" xmax="2538406.97786369919776917" ymax="1182307.90361913735978305"/>
         <LayerSet/>
         <AtlasMap atlasDriven="1" scalingMode="0" margin="0.10000000000000001"/>
         <labelBlockingItems/>
@@ -7712,14 +8039,35 @@ def my_form_open(dialog, layer, feature):
         </atlasClippingSettings>
         <itemClippingSettings clipSource="" forceLabelsInside="0" clippingType="1" enabled="0"/>
       </LayoutItem>
-      <LayoutItem marginX="0" frame="false" position="26.7431,1152.77,mm" templateUuid="{8515c7ce-bc18-4485-9032-ff37f9d48c0c}" labelText="Agenda" opacity="1" outlineWidthM="0.3,mm" zValue="2" positionLock="false" frameJoinStyle="miter" size="51.1848,11.9364,mm" htmlState="0" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="26.7431,231.77,mm" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{8515c7ce-bc18-4485-9032-ff37f9d48c0c}" groupUuid="">
+      <LayoutItem marginX="0" frame="false" position="60,3031.88,pt" templateUuid="{8515c7ce-bc18-4485-9032-ff37f9d48c0c}" labelText="Agenda" opacity="1" outlineWidthM="0.3,mm" zValue="2" positionLock="false" frameJoinStyle="miter" size="480,24,pt" htmlState="0" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,421.171,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{8515c7ce-bc18-4485-9032-ff37f9d48c0c}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
           <dataDefinedProperties>
             <Option type="Map">
               <Option type="QString" value="" name="name"/>
-              <Option name="properties"/>
+              <Option type="Map" name="properties">
+                <Option type="Map" name="dataDefinedHeight">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@titleheight" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionX">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@leftbody)" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionY">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@topbody) + 3*@paperheight +0.64*@textheight +1*@titleheight" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedWidth">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@textwidth" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+              </Option>
               <Option type="QString" value="collection" name="type"/>
             </Option>
           </dataDefinedProperties>
@@ -7730,14 +8078,30 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,16,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor blue="0" green="0" alpha="255" red="0"/>
       </LayoutItem>
-      <LayoutItem marginX="0" frame="false" position="26.7431,1164.71,mm" templateUuid="{6a789951-92ec-44c5-aff5-def0c50f2b56}" labelText="[%'Date de début: ' ||  format_date( &quot;permit_request_geo_time_start_date&quot;,&#xa;'dd.MM.yyyy')  || '\n' ||&#xa;'Date de fin: ' ||  format_date(&quot;permit_request_geo_time_end_date&quot;,'dd.MM.yyyy')  || '\n' ||&#xa;'Commentaire: ' ||   &quot;permit_request_geo_time_comments&quot;   || '\n' ||&#xa;'Lien externe: ' ||    &quot;permit_request_geo_time_external_links&quot;    || '\n'%]" opacity="1" outlineWidthM="0.3,mm" zValue="1" positionLock="false" frameJoinStyle="miter" size="168.744,34.2866,mm" htmlState="0" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="26.7431,243.71,mm" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{6a789951-92ec-44c5-aff5-def0c50f2b56}" groupUuid="">
+      <LayoutItem marginX="0" frame="false" position="60,3055.88,pt" templateUuid="{6a789951-92ec-44c5-aff5-def0c50f2b56}" labelText="[% get_permit_geotime() %]" opacity="1" outlineWidthM="0.3,mm" zValue="1" positionLock="false" frameJoinStyle="miter" size="480,64,pt" htmlState="1" visibility="1" excludeFromExports="0" referencePoint="0" positionOnPage="60,445.171,pt" type="65641" halign="8" background="false" id="" itemRotation="0" blendMode="0" valign="32" marginY="0" uuid="{6a789951-92ec-44c5-aff5-def0c50f2b56}" groupUuid="">
         <FrameColor blue="0" green="0" alpha="255" red="0"/>
         <BackgroundColor blue="255" green="255" alpha="255" red="255"/>
         <LayoutObject>
           <dataDefinedProperties>
             <Option type="Map">
               <Option type="QString" value="" name="name"/>
-              <Option name="properties"/>
+              <Option type="Map" name="properties">
+                <Option type="Map" name="dataDefinedPositionX">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@leftbody)" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedPositionY">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="eval(@topbody) + 3*@paperheight +0.64*@textheight +2*@titleheight" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+                <Option type="Map" name="dataDefinedWidth">
+                  <Option type="bool" value="true" name="active"/>
+                  <Option type="QString" value="@textwidth" name="expression"/>
+                  <Option type="int" value="3" name="type"/>
+                </Option>
+              </Option>
               <Option type="QString" value="collection" name="type"/>
             </Option>
           </dataDefinedProperties>
@@ -8240,6 +8604,7 @@ def my_form_open(dialog, layer, feature):
             <Option type="QString" value="paperwidth"/>
             <Option type="QString" value="textheight"/>
             <Option type="QString" value="textwidth"/>
+            <Option type="QString" value="titleheight"/>
             <Option type="QString" value="topbody"/>
             <Option type="QString" value="topmargin"/>
             <Option type="QString" value="voffset"/>
@@ -8251,7 +8616,7 @@ def my_form_open(dialog, layer, feature):
             <Option type="QString" value="0"/>
             <Option type="QString" value="60"/>
             <Option type="QString" value="10"/>
-            <Option type="QString" value="eval(@layout_hoffset + @hoffset + @oddsidemargin)"/>
+            <Option type="QString" value="eval(eval(@layout_hoffset) + eval(@hoffset) + eval(@oddsidemargin))"/>
             <Option type="QString" value="7"/>
             <Option type="QString" value="10"/>
             <Option type="QString" value="35"/>
@@ -8260,6 +8625,7 @@ def my_form_open(dialog, layer, feature):
             <Option type="QString" value="597"/>
             <Option type="QString" value="592"/>
             <Option type="QString" value="480"/>
+            <Option type="QString" value="24"/>
             <Option type="QString" value="eval(eval(@layout_voffset) + eval(@voffset) + eval(@topmargin) + eval(@headheight) + eval(@headsep))"/>
             <Option type="QString" value="10"/>
             <Option type="QString" value="0"/>
@@ -10188,7 +10554,7 @@ def my_form_open(dialog, layer, feature):
   <Bookmarks/>
   <ProjectViewSettings UseProjectScales="0">
     <Scales/>
-    <DefaultViewExtent xmin="2538026.54229324357584119" ymin="1182132.2162761960644275" xmax="2538152.53127980185672641" ymax="1182274.19432307104580104">
+    <DefaultViewExtent xmin="2537928.85320863407105207" ymin="1182132.2162761960644275" xmax="2538250.22036441136151552" ymax="1182274.19432307104580104">
       <spatialrefsys>
         <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Cadastre, engineering survey, topographic mapping (large and medium scale)."],AREA["Liechtenstein; Switzerland."],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
         <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
