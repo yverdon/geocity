@@ -225,10 +225,12 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
             return {
                 "geometry": {"type": "Point", "coordinates": []},
                 "properties": {
-                    "permit_request_geo_time_start_date": "",
-                    "permit_request_geo_time_end_date": "",
-                    "permit_request_geo_time_comments": [],
-                    "permit_request_geo_time_external_links": [],
+                    "geotime_aggregated": {
+                        "start_date": "",
+                        "end_date": "",
+                        "permit_request_geo_time_comments": [],
+                        "permit_request_geo_time_external_links": [],
+                    }
                 },
             }
 
@@ -258,24 +260,27 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
                     GEOSGeometry(aggregated_geotime_qs["singlegeom"]).json
                 )
 
-            result["properties"]["permit_request_geo_time_start_date"] = (
+            geotime_aggregated = {}
+            geotime_aggregated["start_date"] = (
                 aggregated_geotime_qs["permit_request_geo_time_end_date"]
                 if aggregated_geotime_qs["permit_request_geo_time_start_date"]
                 else ""
             )
-            result["properties"]["permit_request_geo_time_end_date"] = (
+            geotime_aggregated["end_date"] = (
                 aggregated_geotime_qs["permit_request_geo_time_end_date"]
                 if aggregated_geotime_qs["permit_request_geo_time_end_date"]
                 else ""
             )
 
             # Collect the comments and external links from all possible rows
-            result["properties"]["permit_request_geo_time_comments"] = [
+            geotime_aggregated["comments"] = [
                 obj.comment for obj in geo_time_qs if obj.comment
             ]
-            result["properties"]["permit_request_geo_time_external_links"] = [
+            geotime_aggregated["external_links"] = [
                 obj.external_link for obj in geo_time_qs if obj.external_link
             ]
+
+            result["properties"]["geotime_aggregated"] = geotime_aggregated
             return result
 
 

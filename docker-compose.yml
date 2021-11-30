@@ -22,7 +22,7 @@ services:
         ports:
             - "${DJANGO_DOCKER_PORT}:9000"
     qgisserver:
-        image: openquake/qgis-server:3.20
+        image: openquake/qgis-server:3.22
         restart: unless-stopped
         volumes:
             - ./qgisserver/geocity.qgs:/io/data/geocity.qgs:ro
