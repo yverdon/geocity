@@ -17,5 +17,7 @@ def add_default_print_config():
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        self.stdout.write("Adding default print configuration for work object types that have none")
+        self.stdout.write(
+            "Adding default print configuration for work object types that have none"
+        )
         add_default_print_config()
