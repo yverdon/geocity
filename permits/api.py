@@ -203,6 +203,9 @@ class PermitRequestViewSet(
             "works_object_types",
             queryset=models.WorksObjectType.objects.select_related("works_type"),
         )
+        request_comes_from_internal_qgisserver = services.check_request_comes_from_internal_qgisserver(
+            self.request
+        )
 
         qs = (
             models.PermitRequest.objects.filter(base_filter)
@@ -210,9 +213,7 @@ class PermitRequestViewSet(
                 Q(
                     id__in=services.get_permit_requests_list_for_user(
                         user,
-                        request_comes_from_internal_qgisserver=services.check_request_comes_from_internal_qgisserver(
-                            self.request
-                        ),
+                        request_comes_from_internal_qgisserver=request_comes_from_internal_qgisserver,
                     )
                 )
                 | Q(is_public=True)
@@ -223,6 +224,10 @@ class PermitRequestViewSet(
             .prefetch_related("worksobjecttypechoice_set__amend_properties__property")
             .select_related("administrative_entity")
         )
+
+        # Limit the max number of row that can be retrived by qgisserver for atlas print in order to prevent performance leak
+        if request_comes_from_internal_qgisserver:
+            qs = qs[: config.MAX_FEATURE_NUMBER_FOR_QGISSERVER]
 
         return qs
 

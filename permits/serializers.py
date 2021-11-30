@@ -2,7 +2,7 @@ import json
 
 from collections import OrderedDict
 from django.contrib.gis.geos import GEOSGeometry
-from django.contrib.gis.db.models.functions import AsGeoJSON
+from django.contrib.gis.db.models.functions import AsGeoJSON, Centroid
 from django.db.models import Max, Min
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
@@ -220,9 +220,7 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
         self.extract_geom = extract_geom
 
     def to_representation(self, value):
-
         geo_time_qs = value.all()
-
         if not geo_time_qs:
             return {
                 "geometry": {"type": "Point", "coordinates": []},
@@ -315,7 +313,7 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
     )
     permit_request_actor = PermitRequestActorSerializer(source="*", read_only=True)
     geo_envelop = PermitRequestGeoTimeGeoJSONSerializer(
-        source="geo_time", read_only=True
+        source="geo_time", read_only=True,
     )
 
     creditor_type = serializers.SerializerMethodField()
@@ -380,6 +378,18 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
 
     def to_representation(self, value):
         rep = super().to_representation(value)
+        # If the WOT has no geometry, we add the centroid of the administrative entity as geom
+        if rep["properties"]["geo_envelop"]["geometry"]["coordinates"] == []:
+            administrative_entity_name = rep["properties"]["permit_request"][
+                "administrative_entity"
+            ]["name"]
+            administrative_entity = models.PermitAdministrativeEntity.objects.filter(
+                name=administrative_entity_name
+            ).first()
+            rep["properties"]["geo_envelop"]["geometry"]["coordinates"] = [
+                administrative_entity.geom.centroid.x,
+                administrative_entity.geom.centroid.y,
+            ]
         # Flattening the Geometry
         rep["geometry"] = rep["properties"]["geo_envelop"]["geometry"]
         for field, value in rep["properties"]["geo_envelop"]["properties"].items():

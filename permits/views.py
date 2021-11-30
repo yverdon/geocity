@@ -604,7 +604,8 @@ def permit_request_print(request, permit_request_id, template_id):
         permit_request=permit_request, qgis_project=template
     )
 
-    # Uses 3liz qgis server plugin https://github.com/yverdon/qgis-atlasprint/tree/master/atlasprint
+    # Uses customize qgis-atlasprint plugin adapted from 3liz
+    # https://github.com/3liz/qgis-atlasprint
     values = {
         "SERVICE": "ATLAS",
         "REQUEST": "GETPRINT",
@@ -618,6 +619,7 @@ def permit_request_print(request, permit_request_id, template_id):
         "TEMPLATE": template.qgis_print_template_name,
         "LAYERS": template.qgis_layers,
         "EXP_FILTER": "permit_request_id in(" + str(permit_request_id) + ")",
+        "PERMIT_REQUEST_ID": permit_request_id,
     }
 
     qgisserver_url = "http://qgisserver/ogc/?" + urllib.parse.urlencode(values)

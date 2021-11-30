@@ -13,28 +13,36 @@ def get_permit_amend_properties(feature, parent):
     get_keys = True
     field_names = [field.name() for field in feature.fields()]
     d = dict(zip(field_names, feature.attributes()))
-    amend_properties = json.loads(d['amend_properties'])
-    retval = ''
+    amend_properties = json.loads(d["amend_properties"])
+    retval = ""
     retval += "<style>body{font-family: arial; font-size: 12px;}th, td{padding: 0px;  text-align: left; font-size: 12px;}</style>"
-    #print(f"amend_properties: {amend_properties}")
-    lr = '<br>'
-    ts = '&#8239;'
+    # print(f"amend_properties: {amend_properties}")
+    lr = "<br>"
+    ts = "&#8239;"
     for i, amend_property in amend_properties.items():
         strline = f"<h3>{i}</h3>"
         retval += strline
         retval += "<table>"
         for k, v in amend_property.items():
             if get_keys:
-                strline = f"<tr><th>property_{k}</th> <td>{v}</td></th>" if str(k) == 'id' else f"<tr><th>{k}</th> <td>{v}</td></tr>"
+                strline = (
+                    f"<tr><th>property_{k}</th> <td>{v}</td></th>"
+                    if str(k) == "id"
+                    else f"<tr><th>{k}</th> <td>{v}</td></tr>"
+                )
             else:
-                strline = f"<tr><th>property_{keys[idx]}</th> <td>{v}</td></th>" if str(k) == 'id' else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"
+                strline = (
+                    f"<tr><th>property_{keys[idx]}</th> <td>{v}</td></th>"
+                    if str(k) == "id"
+                    else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"
+                )
             retval += strline
         retval += "</table>"
 
     return(retval)
 
 
-@qgsfunction(args='auto', group='Geocity')
+@qgsfunction(args="auto", group="Geocity")
 def get_permit_author(feature, parent):
     """
     Function to get a string output from a list of actors
@@ -42,15 +50,19 @@ def get_permit_author(feature, parent):
     get_keys = False
     field_names = [field.name() for field in feature.fields()]
     d = dict(zip(field_names, feature.attributes()))
-    author = json.loads(d['author'])
-    retval = ''
+    author = json.loads(d["author"])
+    retval = ""
     retval += "<style>body{font-family: arial; font-size: 12px;}th, td{color: LimeGreen; padding: 0px;  text-align: left; font-size: 12px;}</style>"
-    lr = '<br>'
-    ts = '&#8239;'
+    lr = "<br>"
+    ts = "&#8239;"
     for idx, (k, v) in enumerate(author.items()):
         retval += "<table>"
         if get_keys:
-            strline = f"<tr><th>author_{k}:</th> <td>{v}</td></tr>" if str(k) == 'id' else f"<tr><th>{k}:</th> <td>{v}</td></tr>"
+            strline = (
+                f"<tr><th>author_{k}:</th> <td>{v}</td></tr>"
+                if str(k) == "id"
+                else f"<tr><th>{k}:</th> <td>{v}</td></tr>"
+            )
         else:
             keys = [
                 f"Prénom{ts}:",
@@ -62,14 +74,14 @@ def get_permit_author(feature, parent):
                 f"Numéro TVA{ts}:",
                 f"Téléphone{ts}:",
                 f"Téléphone (2){ts}:",
-                f"E-mail{ts}:"
+                f"E-mail{ts}:",
             ]
-            #strline = f"{v}{lr}" if str(idx) == 'id' else f"{v}{lr}"
-            strline = f'<tr><th>{keys[idx]}</th><td>{v}</td></tr>'
+            # strline = f"{v}{lr}" if str(idx) == 'id' else f"{v}{lr}"
+            strline = f"<tr><th>{keys[idx]}</th><td>{v}</td></tr>"
         retval += strline
         retval += "</table>"
 
-    return(retval)
+    return retval
 
 @qgsfunction(args='auto', group='Geocity')
 def get_permit_contacts(pos, feature, parent):
@@ -87,9 +99,9 @@ def get_permit_contacts(pos, feature, parent):
     permit_request_actors = json.loads(d['permit_request_actor'])
     retval = ''
     retval += "<style>body{font-family: arial; font-size: 12px;}th, td{padding: 0px;  text-align: left; font-size: 12px;}</style>"
-    #print(f"permit_request_actors: {permit_request_actors}")
-    lr = '<br>'
-    ts = '&#8239;'
+    # print(f"permit_request_actors: {permit_request_actors}")
+    lr = "<br>"
+    ts = "&#8239;"
     for i, (j, actor) in enumerate(permit_request_actors.items()):
         if (pos==i):
             strline = f"<h3>{j}</h3>"
@@ -97,7 +109,11 @@ def get_permit_contacts(pos, feature, parent):
             retval += "<table>"
             for idx, (k, v) in enumerate(actor.items()):
                 if get_keys:
-                    strline = f"<tr><th>contact_{k}</th> <td>{v}</td></th>" if str(k) == 'id' else f"<tr><th>{k}</th> <td>{v}</td></tr>"
+                    strline = (
+                        f"<tr><th>contact_{k}</th> <td>{v}</td></th>"
+                        if str(k) == "id"
+                        else f"<tr><th>{k}</th> <td>{v}</td></tr>"
+                    )
                 else:
                     keys = [
                         f"Type{ts}:",
@@ -112,7 +128,11 @@ def get_permit_contacts(pos, feature, parent):
                         f"Téléphone{ts}:",
                         f"E-mail{ts}:"
                     ]
-                    strline = f"<tr><th>contact_{keys[idx]}</th> <td>{v}</td></tr>" if str(k) == 'id' else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"
+                    strline = (
+                        f"<tr><th>contact_{keys[idx]}</th> <td>{v}</td></tr>"
+                        if str(k) == "id"
+                        else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"
+                    )
                 retval += strline
             retval += "</table>"
 
@@ -161,15 +181,16 @@ def get_permit_request_properties(feature, parent):
     request_properties = json.loads(d['request_properties'])
     retval = ''
     retval += "<style>body{font-family: arial; font-size: 12px;}th, td{padding: 0px;  text-align: left; font-size: 12px;}</style>"
-    #print(f"request_properties: {request_properties}")
-    lr = '<br>'
-    ts = '&#8239;'
+    # print(f"request_properties: {request_properties}")
+    lr = "<br>"
+    ts = "&#8239;"
     for i, request_property in request_properties.items():
         strline = f"<h3>{i}</h3>"
         retval += strline
         retval += "<table>"
         for idx, (k, v) in enumerate(request_property.items()):
             if get_keys:
+<<<<<<< HEAD
                 strline = f"<tr><th>property_{k}{ts}:</th> <td>{v}</td></th>" if str(k) == 'id' else f"<tr><th>{k}{ts}:</th> <td>{v}</td></tr>"
             else:
                 keys = [
@@ -185,6 +206,27 @@ def get_permit_request_properties(feature, parent):
                     ]
                 #strline = f"<tr><th>{v}</th></tr>" if str(k) == 'id' else f"<tr><th>{v}</th></tr>"
                 strline = f"""<tr><th>property_{keys[idx]}</th> <td>{v}</td></th>" if str(k) == 'id' else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"""
+=======
+                strline = (
+                    f"<tr><th>property_{k}</th> <td>{v}</td></th>"
+                    if str(k) == "id"
+                    else f"<tr><th>{k}</th> <td>{v}</td></tr>"
+                )
+            else:
+                keys = [
+                    f"Largeur [m]{ts}:",
+                    f"Longueur [m]{ts}:",
+                    f"Marquage routier endommmagé{ts}:",
+                    f"Moins de 3m d'un tronc d'arbre ou haie{ts}:",
+                    f"Sur la chaussée{ts}:",
+                    f"Sur une surface verte{ts}:",
+                    f"Sur un trottoir{ts}:",
+                    f"Description{ts}:",
+                    f"Documents complémentaires{ts}:",
+                ]
+                # strline = f"<tr><th>{v}</th></tr>" if str(k) == 'id' else f"<tr><th>{v}</th></tr>"
+                strline = f"""<tr><th style="color: red;">property_{keys[idx]}</th> <td>{v}</td></th>" if str(k) == 'id' else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"""
+>>>>>>> 2a3525395abad6793ff68ef166f2bd127e46ddb8
             retval += strline
         retval += "</table>"
 
@@ -199,18 +241,22 @@ def get_permit_validations(feature, parent):
     get_keys = False
     field_names = [field.name() for field in feature.fields()]
     d = dict(zip(field_names, feature.attributes()))
-    validations = json.loads(d['validations'])
-    retval = ''
+    validations = json.loads(d["validations"])
+    retval = ""
     retval += "<style>body{font-family: arial; font-size: 12px;}th, td{padding: 0px;  text-align: left; font-size: 12px;}</style>"
-    lr = '<br>'
-    ts = '&#8239;'
+    lr = "<br>"
+    ts = "&#8239;"
     for i, (j, validation) in enumerate(validations.items()):
         strline = f"<h3>{j}</h3>"
         retval += strline
         retval += "<table>"
         for idx, (k, v) in enumerate(validation.items()):
             if get_keys:
-                strline = f"<tr><th>validation_{k}</th> <td>{v}</td></th>" if str(k) == 'id' else f"<tr><th>{k}</th> <td>{v}</td></tr>"
+                strline = (
+                    f"<tr><th>validation_{k}</th> <td>{v}</td></th>"
+                    if str(k) == "id"
+                    else f"<tr><th>{k}</th> <td>{v}</td></tr>"
+                )
             else:
                 keys = [
                     f"Statut{ts}:",
@@ -218,7 +264,11 @@ def get_permit_validations(feature, parent):
                     f"Commentaire (pendant){ts}:",
                     f"Commentaire (après){ts}:"
                 ]
-                strline = f"<tr><th>validation_{keys[idx]}</th> <td>{v}</td></tr>" if str(k) == 'id' else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"
+                strline = (
+                    f"<tr><th>validation_{keys[idx]}</th> <td>{v}</td></tr>"
+                    if str(k) == "id"
+                    else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"
+                )
             retval += strline
         retval += "</table>"
 

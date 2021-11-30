@@ -35,7 +35,8 @@ services:
         volumes:
             - ./qgisserver/geocity.qgs:/io/data/geocity.qgs:ro #default qgis project for mask layer
             - ./qgisserver/report_template.qgs:/io/data/report_template.qgs:ro
-            - ./qgisserver/plugins:/io/plugins
+            - ./qgisserver/plugins/geocity_expressions:/io/plugins/geocity_expressions
+            - ./qgisserver/plugins/atlasprint:/io/plugins/atlasprint
             - ./qgisserver/fonts:/usr/share/fonts
             - ./qgisserver/pg_service.conf:/etc/postgresql-common/pg_service.conf:ro
             - ./private_documents:/private_documents #used to access to the private documents via a volume (check env.demo) search(ctrl+f) -> #access_to_private_document_local
