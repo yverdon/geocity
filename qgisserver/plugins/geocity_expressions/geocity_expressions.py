@@ -190,7 +190,6 @@ def get_permit_request_properties(feature, parent):
         retval += "<table>"
         for idx, (k, v) in enumerate(request_property.items()):
             if get_keys:
-<<<<<<< HEAD
                 strline = f"<tr><th>property_{k}{ts}:</th> <td>{v}</td></th>" if str(k) == 'id' else f"<tr><th>{k}{ts}:</th> <td>{v}</td></tr>"
             else:
                 keys = [
@@ -206,27 +205,6 @@ def get_permit_request_properties(feature, parent):
                     ]
                 #strline = f"<tr><th>{v}</th></tr>" if str(k) == 'id' else f"<tr><th>{v}</th></tr>"
                 strline = f"""<tr><th>property_{keys[idx]}</th> <td>{v}</td></th>" if str(k) == 'id' else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"""
-=======
-                strline = (
-                    f"<tr><th>property_{k}</th> <td>{v}</td></th>"
-                    if str(k) == "id"
-                    else f"<tr><th>{k}</th> <td>{v}</td></tr>"
-                )
-            else:
-                keys = [
-                    f"Largeur [m]{ts}:",
-                    f"Longueur [m]{ts}:",
-                    f"Marquage routier endommmagé{ts}:",
-                    f"Moins de 3m d'un tronc d'arbre ou haie{ts}:",
-                    f"Sur la chaussée{ts}:",
-                    f"Sur une surface verte{ts}:",
-                    f"Sur un trottoir{ts}:",
-                    f"Description{ts}:",
-                    f"Documents complémentaires{ts}:",
-                ]
-                # strline = f"<tr><th>{v}</th></tr>" if str(k) == 'id' else f"<tr><th>{v}</th></tr>"
-                strline = f"""<tr><th style="color: red;">property_{keys[idx]}</th> <td>{v}</td></th>" if str(k) == 'id' else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"""
->>>>>>> 2a3525395abad6793ff68ef166f2bd127e46ddb8
             retval += strline
         retval += "</table>"
 
