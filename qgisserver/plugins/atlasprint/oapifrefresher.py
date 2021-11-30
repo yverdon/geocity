@@ -48,14 +48,11 @@ class OAPIFRefresher:
                     ]:
                         layer = project.mapLayersByName(uri.param("typename"))[0]
                         layer.setCrs(crs)
-                        layer.updateFields()
-                        provider = layer.dataProvider()
-                        uri = provider.uri()
                         uri.setKeyColumn("permit_request_id")
                         uri.removeParam("url")
                         uri.setSrid("EPSG:2056")
                         uri.setParam(
-                            "url", "http://web:9000/wfs3/?permit_request_id=" + str(id)
+                            "url", f"http://web:9000/wfs3/?permit_request_id={id}"
                         )
                         layer.setDataSource(
                             uri.uri(expandAuthConfig=False),
@@ -65,6 +62,7 @@ class OAPIFRefresher:
                         )
                         layer.dataProvider().updateExtents()
                         layer.dataProvider().reloadData()
+                        layer.updateFields()
                         layer.triggerRepaint()
                         Logger().info(
                             "qgis-printatlas - refreshed data source: "

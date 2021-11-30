@@ -1164,11 +1164,10 @@ class QgisProject(models.Model):
         _("Nom du template d'impression QGIS"), max_length=150,
     )
     qgis_layers = models.CharField(
-        _("Liste des couches QGIS à afficher séparées par les virgules ','"),
+        _(
+            "Couches séparées par des ','. 'permits' est OBLIGATOIRE ici et dans le projet QGIS"
+        ),
         max_length=500,
-    )
-    qgis_atlas_coverage_layer = models.CharField(
-        _("Nom de la couche de couverture de l'atlas ','"), max_length=256,
     )
     description = models.CharField(max_length=150)
     works_object_type = models.ForeignKey(WorksObjectType, on_delete=models.CASCADE)
