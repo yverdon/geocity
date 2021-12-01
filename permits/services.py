@@ -1086,7 +1086,7 @@ def send_email_notification(data):
     ]
 
     if emails:
-        send_mass_mail(emails)
+        send_mass_mail(emails, fail_silently=True)
 
 
 def _get_secretary_email(permit_request):
