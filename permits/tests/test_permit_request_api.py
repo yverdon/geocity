@@ -13,6 +13,8 @@ from rest_framework.test import APIClient
 from permits import models
 
 from . import factories
+import urllib.parse
+import requests
 
 
 class PermitRequestAPITestCase(TestCase):
@@ -352,3 +354,41 @@ class PermitRequestAPITestCase(TestCase):
         for feature in response_json["features"]:
             self.assertEqual(feature["geometry"]["type"], "Polygon")
             self.assertNotEqual(feature["geometry"]["coordinates"], [])
+
+    def test_qgisserver_is_up_and_atlas_plugin_is_working(self):
+        values = {
+            "SERVICE": "ATLAS",
+            "REQUEST": "GETCAPABILITIES",
+            "MAP": "/io/data/report_template.qgs",
+        }
+
+        qgisserver_url = "http://qgisserver/ogc/?" + urllib.parse.urlencode(values)
+        qgisserver_response = requests.get(
+            qgisserver_url, headers={"Accept": "application/pdf"}, stream=True
+        )
+        self.assertEqual(qgisserver_response.status_code, 200)
+        self.assertEqual(qgisserver_response.json()["status"], "success")
+
+    def test_print_service_is_working_with_default_template(self):
+
+        values = {
+            "SERVICE": "ATLAS",
+            "REQUEST": "GETPRINT",
+            "FORMAT": "PDF",
+            "TRANSPARENT": "true",
+            "SRS": "EPSG:2056",
+            "DPI": "150",
+            "MAP": "/io/data/report_template.qgs",
+            "TEMPLATE": "print_template",
+            "LAYERS": "background,permits,permits_point,permits_line,permits_poly",
+            "EXP_FILTER": "permit_request_id in(1)",
+            "PERMIT_REQUEST_ID": 1,
+        }
+
+        qgisserver_url = "http://qgisserver/ogc/?" + urllib.parse.urlencode(values)
+        qgisserver_response = requests.get(
+            qgisserver_url, headers={"Accept": "application/pdf"}, stream=True
+        )
+        self.assertEqual(qgisserver_response.status_code, 200)
+
+    # TODO: test also the permits:permit_request_print route
