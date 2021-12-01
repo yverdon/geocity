@@ -254,7 +254,8 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
             result = {"properties": {}}
             if not aggregated_geotime_qs["singlegeom"]:
                 # Insert empty geometry if there is none
-                result["geometry"] = {"type": "Point", "coordinates": []}
+                # result["geometry"] = {"type": "Point", "coordinates": []}
+                result["geometry"] = None
             else:
                 result["geometry"] = json.loads(
                     GEOSGeometry(aggregated_geotime_qs["singlegeom"]).json
@@ -389,17 +390,16 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
             administrative_entity_name = rep["properties"]["permit_request"][
                 "administrative_entity"
             ]["name"]
-            administrative_entity = models.PermitAdministrativeEntity.objects.filter(
-                name=administrative_entity_name
-            ).first()
-
-            rep["properties"]["geo_envelop"]["geometry"] = {
-                "type": "Point",
-                "coordinates": [
-                    administrative_entity.geom.centroid.x,
-                    administrative_entity.geom.centroid.y,
-                ],
-            }
+            administrative_entity = (
+                models.PermitAdministrativeEntity.objects.filter(
+                    name=administrative_entity_name
+                )
+                .annotate(centroid_geom=geoservices.JoinGeometries("geom"))
+                .first()
+            )
+            rep["properties"]["geo_envelop"][
+                "geometry"
+            ] = administrative_entity.centroid_geom.json
 
         # Flattening the Geometry
         rep["geometry"] = rep["properties"]["geo_envelop"]["geometry"]

@@ -285,15 +285,6 @@ class PermitRequestAPITestCase(TestCase):
             ["«\xa0bad_status_type\xa0» n'est pas un choix valide."],
         )
 
-    def test_api_bad_geom_type_parameter_raises_exception(self):
-        self.client.login(username=self.secretariat_user.username, password="password")
-        response = self.client.get(reverse("permits-list"), {"geom_type": "whatever"})
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.json()["geom_type"],
-            ["«\xa0whatever\xa0» n'est pas un choix valide."],
-        )
-
     def test_api_bad_status_choice_raises_exception(self):
         self.client.login(username=self.secretariat_user.username, password="password")
         response = self.client.get(reverse("permits-list"), {"status": 25})
@@ -327,4 +318,25 @@ class PermitRequestAPITestCase(TestCase):
                 },
                 "features": [],
             },
+        )
+
+    # Test endpoints with singls type multigeometry
+
+    def test_api_filtering_by_permit_id_points(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        permit_requests_all = models.PermitRequest.objects.all().only("id")
+        permit_requests_all_ids = [perm.id for perm in permit_requests_all]
+        permit_requests = permit_requests_all.filter(id=permit_requests_all_ids[0])
+        response = self.client.get(
+            reverse("permits-list"), {"permit_request_id": permit_requests_all_ids[0]},
+        )
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertNotEqual(len(response_json["features"]), permit_requests_all.count())
+        self.assertLess(len(response_json["features"]), permit_requests_all.count())
+        self.assertNotEqual(permit_requests.count(), permit_requests_all.count())
+        self.assertEqual(permit_requests.count(), 1)
+        self.assertEqual(
+            response_json["features"][0]["properties"]["permit_request_id"],
+            permit_requests_all_ids[0],
         )
