@@ -320,23 +320,26 @@ class PermitRequestAPITestCase(TestCase):
             },
         )
 
-    # Test endpoints with singls type multigeometry
-
-    def test_api_filtering_by_permit_id_points(self):
+    def test_api_permits_point_returns_only_points(self):
         self.client.login(username=self.admin_user.username, password="password")
-        permit_requests_all = models.PermitRequest.objects.all().only("id")
-        permit_requests_all_ids = [perm.id for perm in permit_requests_all]
-        permit_requests = permit_requests_all.filter(id=permit_requests_all_ids[0])
-        response = self.client.get(
-            reverse("permits-list"), {"permit_request_id": permit_requests_all_ids[0]},
-        )
+        response = self.client.get(reverse("permits_point-list"),)
         response_json = response.json()
         self.assertEqual(response.status_code, 200)
-        self.assertNotEqual(len(response_json["features"]), permit_requests_all.count())
-        self.assertLess(len(response_json["features"]), permit_requests_all.count())
-        self.assertNotEqual(permit_requests.count(), permit_requests_all.count())
-        self.assertEqual(permit_requests.count(), 1)
-        self.assertEqual(
-            response_json["features"][0]["properties"]["permit_request_id"],
-            permit_requests_all_ids[0],
-        )
+        self.assertNotIn("line", str(response_json).lower())
+        self.assertNotIn("polygon", str(response_json).lower())
+
+    def test_api_permits_line_returns_only_lines(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        response = self.client.get(reverse("permits_line-list"),)
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("point", str(response_json).lower())
+        self.assertNotIn("polygon", str(response_json).lower())
+
+    def test_api_permits_poly_returns_only_polygons(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        response = self.client.get(reverse("permits_poly-list"),)
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("point", str(response_json).lower())
+        self.assertNotIn("line", str(response_json).lower())

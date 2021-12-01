@@ -6,9 +6,9 @@ from . import api, geoviews, views
 
 
 wfs3_router.register(r"permits", api.PermitRequestViewSet, "permits")
-wfs3_router.register(r"permits_point", api.PermitRequestPointViewSet, "permit_point")
-wfs3_router.register(r"permits_line", api.PermitRequestLineViewSet, "permit_line")
-wfs3_router.register(r"permits_poly", api.PermitRequestPolyViewSet, "permit_poly")
+wfs3_router.register(r"permits_point", api.PermitRequestPointViewSet, "permits_point")
+wfs3_router.register(r"permits_line", api.PermitRequestLineViewSet, "permits_line")
+wfs3_router.register(r"permits_poly", api.PermitRequestPolyViewSet, "permits_poly")
 
 app_name = "permits"
 
