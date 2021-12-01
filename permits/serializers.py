@@ -223,7 +223,7 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
         geo_time_qs = value.all()
         if not geo_time_qs:
             return {
-                "geometry": {"type": "Point", "coordinates": []},
+                "geometry": {"type": "Polygon", "coordinates": []},
                 "properties": {
                     "geotime_aggregated": {
                         "start_date": "",
@@ -253,8 +253,6 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
 
             result = {"properties": {}}
             if not aggregated_geotime_qs["singlegeom"]:
-                # Insert empty geometry if there is none
-                # result["geometry"] = {"type": "Point", "coordinates": []}
                 result["geometry"] = None
             else:
                 result["geometry"] = json.loads(
@@ -385,7 +383,7 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
     def to_representation(self, value):
         rep = super().to_representation(value)
 
-        # If the WOT has no geometry, we add the centroid of the administrative entity as geom
+        # If the WOT has no geometry, we add the centroid of the administrative entity as a square (polygon)
         if rep["properties"]["geo_envelop"]["geometry"]["coordinates"] == []:
             administrative_entity_name = rep["properties"]["permit_request"][
                 "administrative_entity"
@@ -397,9 +395,9 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
                 .annotate(centroid_geom=geoservices.JoinGeometries("geom"))
                 .first()
             )
-            rep["properties"]["geo_envelop"][
-                "geometry"
-            ] = administrative_entity.centroid_geom.json
+            rep["properties"]["geo_envelop"]["geometry"] = json.loads(
+                administrative_entity.centroid_geom.geojson
+            )
 
         # Flattening the Geometry
         rep["geometry"] = rep["properties"]["geo_envelop"]["geometry"]
@@ -419,7 +417,6 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
             for field, value in rep["properties"][field_to_flatten].items():
                 rep["properties"][field] = value
             del rep["properties"][field_to_flatten]
-
         return rep
 
 

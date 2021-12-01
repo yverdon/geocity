@@ -343,3 +343,12 @@ class PermitRequestAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("point", str(response_json).lower())
         self.assertNotIn("line", str(response_json).lower())
+
+    def test_api_permits_does_not_contain_empty_geometry(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        response = self.client.get(reverse("permits-list"),)
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        for feature in response_json["features"]:
+            self.assertEqual(feature["geometry"]["type"], "Polygon")
+            self.assertNotEqual(feature["geometry"]["coordinates"], [])
