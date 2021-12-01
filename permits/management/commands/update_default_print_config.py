@@ -2,6 +2,7 @@ from permits import models
 from django.core import management
 from django.core.management.base import BaseCommand
 
+
 def update_default_print_config():
 
     for wot in models.WorksObjectType.objects.all():
@@ -13,9 +14,8 @@ def update_default_print_config():
         )
         wot.save()
 
+
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        self.stdout.write(
-            "Updating default print configuration for work object types"
-        )
+        self.stdout.write("Updating default print configuration for work object types")
         update_default_print_config()
