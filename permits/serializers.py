@@ -261,12 +261,12 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
 
             geotime_aggregated = {}
             geotime_aggregated["start_date"] = (
-                aggregated_geotime_qs["permit_request_geo_time_end_date"]
+                aggregated_geotime_qs["permit_request_geo_time_end_date"].strftime("%m.%d.%Y %H:%M")
                 if aggregated_geotime_qs["permit_request_geo_time_start_date"]
                 else ""
             )
             geotime_aggregated["end_date"] = (
-                aggregated_geotime_qs["permit_request_geo_time_end_date"]
+                aggregated_geotime_qs["permit_request_geo_time_end_date"].strftime("%m.%d.%Y %H:%M")
                 if aggregated_geotime_qs["permit_request_geo_time_end_date"]
                 else ""
             )
@@ -275,9 +275,15 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
             geotime_aggregated["comments"] = [
                 obj.comment for obj in geo_time_qs if obj.comment
             ]
+            if geotime_aggregated["comments"] == []:
+                geotime_aggregated["comments"] = ''
+
             geotime_aggregated["external_links"] = [
                 obj.external_link for obj in geo_time_qs if obj.external_link
             ]
+            
+            if geotime_aggregated["external_links"] == []:
+                geotime_aggregated["external_links"] = ''
 
             result["properties"]["geotime_aggregated"] = geotime_aggregated
             return result
