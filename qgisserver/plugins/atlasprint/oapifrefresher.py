@@ -34,45 +34,51 @@ class OAPIFRefresher:
     def refresh_geocity_oapif_layers_for_current_atlas_feature(id):
 
         project = QgsProject.instance()
-        crs = QgsCoordinateReferenceSystem("EPSG:2056")
-        project.setCrs(crs)
         for layer in QgsProject.instance().mapLayers().values():
             uri = layer.dataProvider().uri()
-            # refresh OAPIF virtual layer
-            if layer.dataProvider().name() == "OAPIF--":
+            # refresh and filter OAPIF virtual layer
+            if layer.dataProvider().name() == "OAPIF" and layer.isValid():
+                # only for geocity endpoints
+                if uri.param("typename") in [
+                    "permits",
+                    # TODO: refresh empty point/line/poly layers
+                    # "permits_poly",
+                    # "permits_line",
+                    # "permits_point",
+                ]:
 
-                layer.setCrs(crs)
-                uri.setKeyColumn("permit_request_id")
-                uri.removeParam("url")
-                uri.setSrid("EPSG:2056")
-                uri.setParam(
-                    "url", f"http://web:9000/wfs3/?permit_request_id={id}"
-                )
-                layer.setDataSource(
-                    uri.uri(expandAuthConfig=False),
-                    uri.param("typename"),
-                    "OAPIF",
-                    QgsDataProvider.ProviderOptions(),
-                )
-                layer.dataProvider().updateExtents()
-                layer.dataProvider().reloadData()
-                layer.updateFields()
-                layer.triggerRepaint()
-                Logger().info(
-                    "qgis-printatlas - refreshed data source: "
-                    + uri.param("typename")
-                )
-                Logger().info(
-                    "qgis-printatlas - uri: " + uri.uri(expandAuthConfig=False)
-                )
+                    # replace url in order to filter for the required feature only
+                    uri.removeParam("url")
+                    uri.setParam("url", f"http://web:9000/wfs3/?permit_request_id={id}")
+                    Logger().info(
+                        "qgis-printatlas - uri: " + uri.uri(expandAuthConfig=False)
+                    )
+
+                    layer.setDataSource(
+                        uri.uri(expandAuthConfig=False),
+                        uri.param("typename"),
+                        "OAPIF",
+                        QgsDataProvider.ProviderOptions(),
+                    )
+                    layer.dataProvider().updateExtents()
+                    layer.dataProvider().reloadData()
+                    layer.updateFields()
+                    layer.triggerRepaint()
+                    Logger().info(
+                        "qgis-printatlas - refreshed data source: "
+                        + uri.param("typename")
+                    )
+                    Logger().info(
+                        "qgis-printatlas - uri: " + uri.uri(expandAuthConfig=False)
+                    )
 
             # refresh virtual layers
-            if layer.dataProvider().name() == "virtual":
+            if layer.dataProvider().name() == "virtual" and layer.isValid():
                 layer.dataProvider().updateExtents()
                 layer.dataProvider().reloadData()
                 layer.updateFields()
                 layer.triggerRepaint()
                 Logger().info(
-                    "qgis-printatlas - refreshed data source: "
+                    "qgis-printatlas - refreshed virtual layer: "
                     + uri.param("typename")
                 )

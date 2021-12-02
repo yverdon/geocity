@@ -610,14 +610,14 @@ def permit_request_print(request, permit_request_id, template_id):
         "SERVICE": "ATLAS",
         "REQUEST": "GETPRINT",
         "FORMAT": "PDF",
-        # "TRANSPARENT": "true",
+        "TRANSPARENT": "true",
         "SRS": "EPSG:2056",
-        # "DPI": "150",
+        "DPI": "150",
         "MAP": "/io/data/report_template.qgs"
         if template.qgis_project_file.name == "report_template.qgs"
         else "/private_documents/" + template.qgis_project_file.name,
         "TEMPLATE": template.qgis_print_template_name,
-        # "LAYERS": template.qgis_layers,
+        "LAYERS": template.qgis_layers,
         "EXP_FILTER": f"$id={permit_request_id}",
         "PERMIT_REQUEST_ID": permit_request_id,
     }
