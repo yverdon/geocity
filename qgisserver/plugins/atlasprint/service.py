@@ -202,7 +202,7 @@ class AtlasPrintService(QgsService):
             OAPIFRefresher.refresh_geocity_oapif_layers_for_current_atlas_feature(
                 additional_params["PERMIT_REQUEST_ID"]
             )
-            Logger().info("Refreshed ?: " + str(additional_params["PERMIT_REQUEST_ID"]))
+            Logger().info("Refreshed: " + str(additional_params["PERMIT_REQUEST_ID"]))
 
             output_path = print_layout(
                 project=project,

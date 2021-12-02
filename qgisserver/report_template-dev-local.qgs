@@ -25,25 +25,25 @@
       <layer-tree-layer legend_exp="" expanded="1" source="?query=select%20*%20from%20permits_point&amp;uid=permit_request_id" checked="Qt::Checked" id="permits_point_v_f63210ac_298a_4567_941b_196bdede0e00" name="permits_point_v" providerKey="virtual" patch_size="-1,-1" legend_split_behavior="0">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer legend_exp="" expanded="1" source=" pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_point' url='http://web:9000/wfs3/' version='auto'" checked="Qt::Checked" id="permits_point_be8902b8_70fb_4607_b846_1655affb7a20" name="permits_point" providerKey="OAPIF" patch_size="-1,-1" legend_split_behavior="0">
+      <layer-tree-layer legend_exp="" expanded="1" source="authcfg=5hxp70q pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_point' url='http://localhost:9095/wfs3/' version='auto'" checked="Qt::Checked" id="permits_point_be8902b8_70fb_4607_b846_1655affb7a20" name="permits_point" providerKey="OAPIF" patch_size="-1,-1" legend_split_behavior="0">
         <customproperties/>
       </layer-tree-layer>
       <layer-tree-layer legend_exp="" expanded="1" source="?query=select%20*%20from%20permits_line&amp;uid=permit_request_id" checked="Qt::Checked" id="permits_line_v_e12dd756_8a17_4d40_af8f_07277464b0c3" name="permits_line_v" providerKey="virtual" patch_size="-1,-1" legend_split_behavior="0">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer legend_exp="" expanded="1" source=" pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_line' url='http://web:9000/wfs3/' version='auto'" checked="Qt::Checked" id="permits_line_567d02d5_6f75_4d77_9f64_2dd9ad4313e2" name="permits_line" providerKey="OAPIF" patch_size="-1,-1" legend_split_behavior="0">
+      <layer-tree-layer legend_exp="" expanded="1" source="authcfg=5hxp70q pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_line' url='http://localhost:9095/wfs3/' version='auto'" checked="Qt::Checked" id="permits_line_567d02d5_6f75_4d77_9f64_2dd9ad4313e2" name="permits_line" providerKey="OAPIF" patch_size="-1,-1" legend_split_behavior="0">
         <customproperties/>
       </layer-tree-layer>
       <layer-tree-layer legend_exp="" expanded="1" source="?query=select%20*%20from%20permits_poly&amp;uid=permit_request_id" checked="Qt::Checked" id="permits_poly_v_e7773393_491e_49e9_a736_134a6df51c36" name="permits_poly_v" providerKey="virtual" patch_size="-1,-1" legend_split_behavior="0">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer legend_exp="" expanded="1" source=" pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_poly' url='http://web:9000/wfs3/' version='auto'" checked="Qt::Checked" id="permits_poly_3934ccbd_d4b9_4338_be3b_768192fcfa70" name="permits_poly" providerKey="OAPIF" patch_size="-1,-1" legend_split_behavior="0">
+      <layer-tree-layer legend_exp="" expanded="1" source="authcfg=5hxp70q pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_poly' url='http://localhost:9095/wfs3/' version='auto'" checked="Qt::Checked" id="permits_poly_3934ccbd_d4b9_4338_be3b_768192fcfa70" name="permits_poly" providerKey="OAPIF" patch_size="-1,-1" legend_split_behavior="0">
         <customproperties/>
       </layer-tree-layer>
       <layer-tree-layer legend_exp="" expanded="1" source="?query=select%20*%20from%20permits&amp;uid=permit_request_id" checked="Qt::Checked" id="permits_v_cc798c68_0eba_4c89_86de_a8a402897119" name="permits_v" providerKey="virtual" patch_size="-1,-1" legend_split_behavior="0">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer legend_exp="" expanded="1" source=" pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits' url='http://web:9000/wfs3/' version='auto'" checked="Qt::Checked" id="permits_b68d1e14_8b16_4b21_84a6_55cc5d292143" name="permits" providerKey="OAPIF" patch_size="-1,-1" legend_split_behavior="0">
+      <layer-tree-layer legend_exp="" expanded="1" source="authcfg=5hxp70q pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits' url='http://localhost:9095/wfs3/' version='auto'" checked="Qt::Checked" id="permits_b68d1e14_8b16_4b21_84a6_55cc5d292143" name="permits" providerKey="OAPIF" patch_size="-1,-1" legend_split_behavior="0">
         <customproperties/>
       </layer-tree-layer>
     </layer-tree-group>
@@ -391,7 +391,7 @@
         <ymax>1183060.7099999999627471</ymax>
       </extent>
       <id>permits_b68d1e14_8b16_4b21_84a6_55cc5d292143</id>
-      <datasource>" pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits' url='http://web:9000/wfs3/' version='auto'</datasource>
+      <datasource>authcfg=5hxp70q pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits' url='http://localhost:9095/wfs3/' version='auto'</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -410,15 +410,15 @@
         </spatialrefsys>
       </srs>
       <resourceMetadata>
-        <identifier>http://web:9000/wfs3/collections/permits</identifier>
+        <identifier>http://localhost:9095/wfs3/collections/permits</identifier>
         <parentidentifier></parentidentifier>
         <language></language>
         <type>dataset</type>
         <title>Demandes</title>
         <abstract>Toutes les demandes</abstract>
         <links>
-          <link url="http://web:9000/wfs3/collections/permits" size="" mimeType="application/geo+json" type="WWW:LINK" description="This document as JSON" name="self" format=""/>
-          <link url="http://web:9000/wfs3/collections/permits/items" size="" mimeType="application/geo+json" type="WWW:LINK" description="permits" name="items" format=""/>
+          <link url="http://localhost:9095/wfs3/collections/permits" size="" mimeType="application/geo+json" type="WWW:LINK" description="This document as JSON" name="self" format=""/>
+          <link url="http://localhost:9095/wfs3/collections/permits/items" size="" mimeType="application/geo+json" type="WWW:LINK" description="permits" name="items" format=""/>
         </links>
         <fees></fees>
         <encoding></encoding>
@@ -918,7 +918,7 @@ def my_form_open(dialog, layer, feature):
         <ymax>1182307.75</ymax>
       </extent>
       <id>permits_line_567d02d5_6f75_4d77_9f64_2dd9ad4313e2</id>
-      <datasource>" pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_line' url='http://web:9000/wfs3/' version='auto'</datasource>
+      <datasource>authcfg=5hxp70q pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_line' url='http://localhost:9095/wfs3/' version='auto'</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -937,7 +937,7 @@ def my_form_open(dialog, layer, feature):
         </spatialrefsys>
       </srs>
       <resourceMetadata>
-        <identifier>http://web:9000/wfs3/collections/permits_line</identifier>
+        <identifier>http://localhost:9095/wfs3/collections/permits_line</identifier>
         <parentidentifier></parentidentifier>
         <language></language>
         <type>dataset</type>
@@ -953,8 +953,8 @@ def my_form_open(dialog, layer, feature):
           <role></role>
         </contact>
         <links>
-          <link url="http://web:9000/wfs3/collections/permits_line" size="" mimeType="application/geo+json" type="WWW:LINK" description="This document as JSON" name="self" format=""/>
-          <link url="http://web:9000/wfs3/collections/permits_line/items" size="" mimeType="application/geo+json" type="WWW:LINK" description="permits_line" name="items" format=""/>
+          <link url="http://localhost:9095/wfs3/collections/permits_line" size="" mimeType="application/geo+json" type="WWW:LINK" description="This document as JSON" name="self" format=""/>
+          <link url="http://localhost:9095/wfs3/collections/permits_line/items" size="" mimeType="application/geo+json" type="WWW:LINK" description="permits_line" name="items" format=""/>
         </links>
         <fees></fees>
         <encoding></encoding>
@@ -1834,7 +1834,7 @@ def my_form_open(dialog, layer, feature):
         <ymax>1183059.7099999999627471</ymax>
       </extent>
       <id>permits_point_be8902b8_70fb_4607_b846_1655affb7a20</id>
-      <datasource>" pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_point' url='http://web:9000/wfs3/' version='auto'</datasource>
+      <datasource>authcfg=5hxp70q pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_point' url='http://localhost:9095/wfs3/' version='auto'</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -1853,7 +1853,7 @@ def my_form_open(dialog, layer, feature):
         </spatialrefsys>
       </srs>
       <resourceMetadata>
-        <identifier>http://web:9000/wfs3/collections/permits_point</identifier>
+        <identifier>http://localhost:9095/wfs3/collections/permits_point</identifier>
         <parentidentifier></parentidentifier>
         <language></language>
         <type>dataset</type>
@@ -1869,8 +1869,8 @@ def my_form_open(dialog, layer, feature):
           <role></role>
         </contact>
         <links>
-          <link url="http://web:9000/wfs3/collections/permits_point" size="" mimeType="application/geo+json" type="WWW:LINK" description="This document as JSON" name="self" format=""/>
-          <link url="http://web:9000/wfs3/collections/permits_point/items" size="" mimeType="application/geo+json" type="WWW:LINK" description="permits_point" name="items" format=""/>
+          <link url="http://localhost:9095/wfs3/collections/permits_point" size="" mimeType="application/geo+json" type="WWW:LINK" description="This document as JSON" name="self" format=""/>
+          <link url="http://localhost:9095/wfs3/collections/permits_point/items" size="" mimeType="application/geo+json" type="WWW:LINK" description="permits_point" name="items" format=""/>
         </links>
         <fees></fees>
         <encoding></encoding>
@@ -2744,7 +2744,7 @@ def my_form_open(dialog, layer, feature):
         <ymax>1182488.12000000011175871</ymax>
       </extent>
       <id>permits_poly_3934ccbd_d4b9_4338_be3b_768192fcfa70</id>
-      <datasource>" pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_poly' url='http://web:9000/wfs3/' version='auto'</datasource>
+      <datasource>authcfg=5hxp70q pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_poly' url='http://localhost:9095/wfs3/' version='auto'</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -2763,7 +2763,7 @@ def my_form_open(dialog, layer, feature):
         </spatialrefsys>
       </srs>
       <resourceMetadata>
-        <identifier>http://web:9000/wfs3/collections/permits_poly</identifier>
+        <identifier>http://localhost:9095/wfs3/collections/permits_poly</identifier>
         <parentidentifier></parentidentifier>
         <language></language>
         <type>dataset</type>
@@ -2779,8 +2779,8 @@ def my_form_open(dialog, layer, feature):
           <role></role>
         </contact>
         <links>
-          <link url="http://web:9000/wfs3/collections/permits_poly" size="" mimeType="application/geo+json" type="WWW:LINK" description="This document as JSON" name="self" format=""/>
-          <link url="http://web:9000/wfs3/collections/permits_poly/items" size="" mimeType="application/geo+json" type="WWW:LINK" description="permits_poly" name="items" format=""/>
+          <link url="http://localhost:9095/wfs3/collections/permits_poly" size="" mimeType="application/geo+json" type="WWW:LINK" description="This document as JSON" name="self" format=""/>
+          <link url="http://localhost:9095/wfs3/collections/permits_poly/items" size="" mimeType="application/geo+json" type="WWW:LINK" description="permits_poly" name="items" format=""/>
         </links>
         <fees></fees>
         <encoding></encoding>
@@ -4458,10 +4458,10 @@ def my_form_open(dialog, layer, feature):
           <Layer source="?query=select%20*%20from%20permits_line&amp;uid=permit_request_id" provider="virtual" name="permits_line_v">permits_line_v_e12dd756_8a17_4d40_af8f_07277464b0c3</Layer>
           <Layer source="?query=select%20*%20from%20permits&amp;uid=permit_request_id" provider="virtual" name="permits_v">permits_v_cc798c68_0eba_4c89_86de_a8a402897119</Layer>
           <Layer source="?query=select%20*%20from%20permits_poly&amp;uid=permit_request_id" provider="virtual" name="permits_poly_v">permits_poly_v_e7773393_491e_49e9_a736_134a6df51c36</Layer>
-          <Layer source=" pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_line' url='http://web:9000/wfs3/' version='auto'" provider="OAPIF" name="permits_line">permits_line_567d02d5_6f75_4d77_9f64_2dd9ad4313e2</Layer>
-          <Layer source=" pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_point' url='http://web:9000/wfs3/' version='auto'" provider="OAPIF" name="permits_point">permits_point_be8902b8_70fb_4607_b846_1655affb7a20</Layer>
-          <Layer source=" pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_poly' url='http://web:9000/wfs3/' version='auto'" provider="OAPIF" name="permits_poly">permits_poly_3934ccbd_d4b9_4338_be3b_768192fcfa70</Layer>
-          <Layer source=" pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits' url='http://web:9000/wfs3/' version='auto'" provider="OAPIF" name="permits">permits_b68d1e14_8b16_4b21_84a6_55cc5d292143</Layer>
+          <Layer source="authcfg=5hxp70q pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_line' url='http://localhost:9095/wfs3/' version='auto'" provider="OAPIF" name="permits_line">permits_line_567d02d5_6f75_4d77_9f64_2dd9ad4313e2</Layer>
+          <Layer source="authcfg=5hxp70q pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_point' url='http://localhost:9095/wfs3/' version='auto'" provider="OAPIF" name="permits_point">permits_point_be8902b8_70fb_4607_b846_1655affb7a20</Layer>
+          <Layer source="authcfg=5hxp70q pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_poly' url='http://localhost:9095/wfs3/' version='auto'" provider="OAPIF" name="permits_poly">permits_poly_3934ccbd_d4b9_4338_be3b_768192fcfa70</Layer>
+          <Layer source="authcfg=5hxp70q pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits' url='http://localhost:9095/wfs3/' version='auto'" provider="OAPIF" name="permits">permits_b68d1e14_8b16_4b21_84a6_55cc5d292143</Layer>
           <Layer source="contextualWMSLegend=0&amp;crs=EPSG:2056&amp;dpiMode=7&amp;featureCount=10&amp;format=image/png&amp;layers=asitvd.fond_cadastral&amp;styles=default&amp;tileDimensions=DIM1%3Ddefault;ELEVATION%3D0&amp;tileMatrixSet=2056&amp;url=https://wmts.asit-asso.ch/wmts" provider="wms" name="background">Fond_ASIT___cadastral_1d4c257d_d584_47fe_a982_3545136d9ff8</Layer>
         </LayerSet>
         <AtlasMap scalingMode="2" atlasDriven="1" margin="0.10000000000000001"/>
