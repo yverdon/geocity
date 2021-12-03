@@ -8,7 +8,17 @@ import json
 @qgsfunction(args="auto", group="Geocity")
 def get_permit_amend_properties(feature, parent):
     """
-    Function to get a string output from a list of actors
+    Function to get an HTML string output from the properties.amend_properties
+    element of the GeoJSON object send by the GeoCity REST API.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    retval : str
+        The HTML string to be displayed in the QGIS print layout.
     """
     get_keys = True
     field_names = [field.name() for field in feature.fields()]
@@ -45,7 +55,17 @@ def get_permit_amend_properties(feature, parent):
 @qgsfunction(args="auto", group="Geocity")
 def get_permit_author(feature, parent):
     """
-    Function to get a string output from a list of actors
+    Function to get an HTML string output from the properties.author
+    element of the GeoJSON object send by the GeoCity REST API.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    retval : str
+        The HTML string to be displayed in the QGIS print layout.
     """
     get_keys = False
     field_names = [field.name() for field in feature.fields()]
@@ -87,7 +107,19 @@ def get_permit_author(feature, parent):
 @qgsfunction(args="auto", group="Geocity")
 def get_permit_contacts(pos, feature, parent):
     """
-    Function to get a string output from a list of actors
+    Function to get an HTML string output from the properties.permit_request_actor
+    element of the GeoJSON object send by the GeoCity REST API.
+    
+    Parameters
+    ----------
+    pos : int
+        The index of the element to retrieve. For example, if there are several
+        contacts, 0 will return the first one, 1 the second one, and so on.
+
+    Returns
+    -------
+    retval : str
+        The HTML string to be displayed in the QGIS print layout.
     """
     try:
         pos
@@ -143,7 +175,17 @@ def get_permit_contacts(pos, feature, parent):
 @qgsfunction(args="auto", group="Geocity")
 def get_permit_geotime(feature, parent):
     """
-    Function to get a string output from a list of actors
+    Function to get an HTML string output from the properties.geotime_aggregated
+    element of the GeoJSON object send by the GeoCity REST API.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    retval : str
+        The HTML string to be displayed in the QGIS print layout.
     """
     get_keys = False
     field_names = [field.name() for field in feature.fields()]
@@ -179,7 +221,17 @@ def get_permit_geotime(feature, parent):
 @qgsfunction(args="auto", group="Geocity")
 def get_permit_request_properties(feature, parent):
     """
-    Function to get a string output from a list of actors
+    Function to get an HTML string output from the properties.request_properties
+    element of the GeoJSON object send by the GeoCity REST API.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    retval : str
+        The HTML string to be displayed in the QGIS print layout.
     """
     get_keys = True
     field_names = [field.name() for field in feature.fields()]
@@ -224,7 +276,17 @@ def get_permit_request_properties(feature, parent):
 @qgsfunction(args="auto", group="Geocity")
 def get_permit_validations(feature, parent):
     """
-    Function to get a string output from a list of actors
+    Function to get an HTML string output from the properties.validations
+    element of the GeoJSON object send by the GeoCity REST API.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    retval : str
+        The HTML string to be displayed in the QGIS print layout.
     """
     get_keys = False
     field_names = [field.name() for field in feature.fields()]
