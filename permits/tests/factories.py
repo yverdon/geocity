@@ -455,7 +455,6 @@ class QgisProjectFactory(factory.django.DjangoModelFactory):
 
     works_object_type = factory.SubFactory(WorksObjectTypeFactory)
     qgis_print_template_name = "atlas"
-    qgis_layers = "base,vpoly"
 
 
 class TemplateCustomizationFactory(factory.django.DjangoModelFactory):

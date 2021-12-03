@@ -12,6 +12,11 @@
 *   it under the terms of the GNU General Public License as published by  *
 *   the Free Software Foundation; either version 2 of the License, or     *
 *   (at your option) any later version.                                   *
+*   This code is a workaround in order to make qgisserver refreshes OAPIF *
+*   Sources on GetPrint request and applies a filter to the underlying    *
+*   REST enpoint so that only one feature of the endpoint is returned     *
+*   This implementation is specific to the endpoints of GEOCITY project   *
+*   https://github.com/yverdon/geocity
 *                                                                         *
 ***************************************************************************
 """
@@ -38,47 +43,54 @@ class OAPIFRefresher:
             uri = layer.dataProvider().uri()
             # refresh and filter OAPIF virtual layer
             if layer.dataProvider().name() == "OAPIF" and layer.isValid():
-                # only for geocity endpoints
+                # only for geocity endpoints listed in project
                 if uri.param("typename") in [
                     "permits",
-                    # TODO: refresh empty point/line/poly layers
-                    # "permits_poly",
-                    # "permits_line",
-                    # "permits_point",
+                    "permits_poly",
+                    "permits_line",
+                    "permits_point",
                 ]:
+                    try:
+                        # replace url in order to filter for the required feature only
+                        uri.removeParam("url")
+                        uri.setParam(
+                            "url", f"http://web:9000/wfs3/?permit_request_id={id}"
+                        )
+                        Logger().info(
+                            "qgis-printatlas - uri: " + uri.uri(expandAuthConfig=False)
+                        )
 
-                    # replace url in order to filter for the required feature only
-                    uri.removeParam("url")
-                    uri.setParam("url", f"http://web:9000/wfs3/?permit_request_id={id}")
-                    Logger().info(
-                        "qgis-printatlas - uri: " + uri.uri(expandAuthConfig=False)
-                    )
+                        layer.setDataSource(
+                            uri.uri(expandAuthConfig=False),
+                            uri.param("typename"),
+                            "OAPIF",
+                            QgsDataProvider.ProviderOptions(),
+                        )
+                        layer.dataProvider().updateExtents()
+                        layer.dataProvider().reloadData()
+                        layer.updateFields()
+                        layer.triggerRepaint()
+                        Logger().info(
+                            "qgis-printatlas - refreshed data source: "
+                            + uri.param("typename")
+                        )
+                    except:
+                        Logger().critical(
+                            "(skipped) qgis-printatlas: " + uri.param("typename")
+                        )
 
-                    layer.setDataSource(
-                        uri.uri(expandAuthConfig=False),
-                        uri.param("typename"),
-                        "OAPIF",
-                        QgsDataProvider.ProviderOptions(),
-                    )
+            # refresh virtual layers that we use as a bug workaround in QGIS OAPIF provider which does not set PKEY column correctly in 3.22.0
+            if layer.dataProvider().name() == "virtual" and layer.isValid():
+                try:
                     layer.dataProvider().updateExtents()
                     layer.dataProvider().reloadData()
                     layer.updateFields()
                     layer.triggerRepaint()
                     Logger().info(
-                        "qgis-printatlas - refreshed data source: "
+                        "qgis-printatlas - refreshed virtual layer: "
                         + uri.param("typename")
                     )
-                    Logger().info(
-                        "qgis-printatlas - uri: " + uri.uri(expandAuthConfig=False)
+                except:
+                    Logger().critical(
+                        "(skipped) qgis-printatlas: " + uri.param("typename")
                     )
-
-            # refresh virtual layers
-            if layer.dataProvider().name() == "virtual" and layer.isValid():
-                layer.dataProvider().updateExtents()
-                layer.dataProvider().reloadData()
-                layer.updateFields()
-                layer.triggerRepaint()
-                Logger().info(
-                    "qgis-printatlas - refreshed virtual layer: "
-                    + uri.param("typename")
-                )

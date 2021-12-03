@@ -617,7 +617,6 @@ def permit_request_print(request, permit_request_id, template_id):
         if template.qgis_project_file.name == "report_template.qgs"
         else "/private_documents/" + template.qgis_project_file.name,
         "TEMPLATE": template.qgis_print_template_name,
-        "LAYERS": template.qgis_layers,
         "EXP_FILTER": f"$id={permit_request_id}",
         "PERMIT_REQUEST_ID": permit_request_id,
     }

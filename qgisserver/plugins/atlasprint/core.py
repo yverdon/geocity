@@ -165,6 +165,7 @@ def print_layout(
 
         atlas.setFilterFeatures(True)
         atlas.setFilterExpression(feature_filter)
+        atlas.updateFeatures()
 
         if scale:
             atlas_layout.referenceMap().setAtlasScalingMode(QgsLayoutItemMap.Fixed)

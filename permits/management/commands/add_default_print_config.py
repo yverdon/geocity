@@ -9,7 +9,6 @@ def add_default_print_config():
         wot.qgisproject_set.create(
             qgis_project_file="report_template.qgs",
             qgis_print_template_name="print_template",
-            qgis_layers="background,permits,permits_point,permits_line,permits_poly",
             description="Impression standard",
         )
         wot.save()

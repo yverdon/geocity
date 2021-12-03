@@ -1163,12 +1163,6 @@ class QgisProject(models.Model):
     qgis_print_template_name = models.CharField(
         _("Nom du template d'impression QGIS"), max_length=150,
     )
-    qgis_layers = models.CharField(
-        _(
-            "Couches séparées par des ','. 'permits' est OBLIGATOIRE ici et dans le projet QGIS"
-        ),
-        max_length=500,
-    )
     description = models.CharField(max_length=150)
     works_object_type = models.ForeignKey(WorksObjectType, on_delete=models.CASCADE)
 
