@@ -80,6 +80,18 @@ def get_permit_author(feature, parent):
     lr = "<br>"
     ts = "&#8239;"
     has_data = False
+    keys = [
+        f"Prénom{ts}:",
+        f"Nom{ts}:",
+        f"Adresse{ts}:",
+        f"NPA{ts}:",
+        f"Localité{ts}:",
+        f"Raison sociale{ts}:",
+        f"Numéro TVA{ts}:",
+        f"Téléphone{ts}:",
+        f"Téléphone (2){ts}:",
+        f"E-mail{ts}:",
+    ]
     for idx, (k, v) in enumerate(author.items()):
         has_data = True if k is not None else False
         retval += "<table>"
@@ -90,18 +102,6 @@ def get_permit_author(feature, parent):
                 else f"<tr><th>{k}:</th> <td>{v}</td></tr>"
             )
         else:
-            keys = [
-                f"Prénom{ts}:",
-                f"Nom{ts}:",
-                f"Adresse{ts}:",
-                f"NPA{ts}:",
-                f"Localité{ts}:",
-                f"Raison sociale{ts}:",
-                f"Numéro TVA{ts}:",
-                f"Téléphone{ts}:",
-                f"Téléphone (2){ts}:",
-                f"E-mail{ts}:",
-            ]
             # strline = f"{v}{lr}" if str(idx) == 'id' else f"{v}{lr}"
             strline = f"<tr><th>{keys[idx]}</th><td>{v}</td></tr>"
         retval += strline
@@ -144,6 +144,19 @@ def get_permit_contacts(pos, feature, parent):
     lr = "<br>"
     ts = "&#8239;"
     has_data = False
+    keys = [
+        f"Type{ts}:",
+        f"Identifiant{ts}:",
+        f"Prénom{ts}:",
+        f"Nom{ts}:",
+        f"Raison sociale{ts}:",
+        f"Numéro TVA{ts}:",
+        f"Adresse{ts}:",
+        f"NPA{ts}:",
+        f"Localité{ts}:",
+        f"Téléphone{ts}:",
+        f"E-mail{ts}:",
+    ]
     for i, (j, actor) in enumerate(permit_request_actors.items()):
         if pos == i:
             strline = f"<h3>{j}</h3>"
@@ -158,19 +171,6 @@ def get_permit_contacts(pos, feature, parent):
                         else f"<tr><th>{k}</th> <td>{v}</td></tr>"
                     )
                 else:
-                    keys = [
-                        f"Type{ts}:",
-                        f"Identifiant{ts}:",
-                        f"Prénom{ts}:",
-                        f"Nom{ts}:",
-                        f"Raison sociale{ts}:",
-                        f"Numéro TVA{ts}:",
-                        f"Adresse{ts}:",
-                        f"NPA{ts}:",
-                        f"Localité{ts}:",
-                        f"Téléphone{ts}:",
-                        f"E-mail{ts}:",
-                    ]
                     strline = (
                         f"<tr><th>contact_{keys[idx]}</th> <td>{v}</td></tr>"
                         if str(k) == "id"
@@ -208,6 +208,12 @@ def get_permit_geotime(feature, parent):
     lr = "<br>"
     ts = "&#8239;"
     has_data = False
+    keys = [
+        f"Date de début{ts}:",
+        f"Date de fin{ts}:",
+        f"Commentaire{ts}:",
+        f"Lien externe{ts}:",
+    ]
     for idx, (k, v) in enumerate(geotime.items()):
         has_data = True if k is not None else False
         retval += "<table>"
@@ -218,12 +224,6 @@ def get_permit_geotime(feature, parent):
                 else f"<tr><th>{k}:</th> <td>{v}</td></tr>"
             )
         else:
-            keys = [
-                f"Date de début{ts}:",
-                f"Date de fin{ts}:",
-                f"Commentaire{ts}:",
-                f"Lien externe{ts}:",
-            ]
             # strline = f"{v}{lr}" if str(idx) == 'id' else f"{v}{lr}"
             strline = f"<tr><th>{keys[idx]}</th><td>{v}</td></tr>"
         retval += strline
@@ -281,6 +281,17 @@ def get_permit_request_properties(feature, parent):
     lr = "<br>"
     ts = "&#8239;"
     has_data = False
+    keys = [
+        f"Largeur [m]{ts}:",
+        f"Longueur [m]{ts}:",
+        f"Marquage routier endommmagé{ts}:",
+        f"Moins de 3m d'un tronc d'arbre ou haie{ts}:",
+        f"Sur la chaussée{ts}:",
+        f"Sur une surface verte{ts}:",
+        f"Sur un trottoir{ts}:",
+        f"Description{ts}:",
+        f"Documents complémentaires{ts}:",
+    ]
     for i, request_property in request_properties.items():
         strline = f"<h3>{i}</h3>"
         retval += strline
@@ -295,17 +306,6 @@ def get_permit_request_properties(feature, parent):
                     else f"<tr><th>{k}{ts}:</th> <td>{v}</td></tr>"
                 )
             else:
-                keys = [
-                    f"Largeur [m]{ts}:",
-                    f"Longueur [m]{ts}:",
-                    f"Marquage routier endommmagé{ts}:",
-                    f"Moins de 3m d'un tronc d'arbre ou haie{ts}:",
-                    f"Sur la chaussée{ts}:",
-                    f"Sur une surface verte{ts}:",
-                    f"Sur un trottoir{ts}:",
-                    f"Description{ts}:",
-                    f"Documents complémentaires{ts}:",
-                ]
                 # strline = f"<tr><th>{v}</th></tr>" if str(k) == 'id' else f"<tr><th>{v}</th></tr>"
                 strline = f"""<tr><th>property_{keys[idx]}</th> <td>{v}</td></th>" if str(k) == 'id' else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"""
             retval += strline
@@ -340,6 +340,12 @@ def get_permit_validations(feature, parent):
     lr = "<br>"
     ts = "&#8239;"
     has_data = False
+    keys = [
+        f"Statut{ts}:",
+        f"Commentaire (avant){ts}:",
+        f"Commentaire (pendant){ts}:",
+        f"Commentaire (après){ts}:",
+    ]
     for i, (j, validation) in enumerate(validations.items()):
         strline = f"<h3>{j}</h3>"
         retval += strline
@@ -353,12 +359,6 @@ def get_permit_validations(feature, parent):
                     else f"<tr><th>{k}</th> <td>{v}</td></tr>"
                 )
             else:
-                keys = [
-                    f"Statut{ts}:",
-                    f"Commentaire (avant){ts}:",
-                    f"Commentaire (pendant){ts}:",
-                    f"Commentaire (après){ts}:",
-                ]
                 strline = (
                     f"<tr><th>validation_{keys[idx]}</th> <td>{v}</td></tr>"
                     if str(k) == "id"
