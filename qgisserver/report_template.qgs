@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis version="3.22.0-Białowieża" saveDateTime="2021-12-06T14:59:17" projectname="" saveUser="NBL" saveUserFull="Blanc Nicolas">
+<qgis version="3.22.0-Białowieża" saveDateTime="2021-12-06T17:01:41" projectname="" saveUser="NBL" saveUserFull="Blanc Nicolas">
   <homePath path=""/>
   <title></title>
   <autotransaction active="0"/>
@@ -6041,7 +6041,124 @@ def my_form_open(dialog, layer, feature):
           <Guide units="mm" orientation="1" page="0" position="32"/>
         </GuideCollection>
       </PageCollection>
-      <LayoutItem uuid="{ad728ce9-ecc5-4e78-99be-e59375e12d91}" file="base64:PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIgogICB4bWxuczpjYz0iaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvbnMjIgogICB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgeG1sbnM6c29kaXBvZGk9Imh0dHA6Ly9zb2RpcG9kaS5zb3VyY2Vmb3JnZS5uZXQvRFREL3NvZGlwb2RpLTAuZHRkIgogICB4bWxuczppbmtzY2FwZT0iaHR0cDovL3d3dy5pbmtzY2FwZS5vcmcvbmFtZXNwYWNlcy9pbmtzY2FwZSIKICAgaW5rc2NhcGU6dmVyc2lvbj0iMS4wICg0MDM1YTRmYjQ5LCAyMDIwLTA1LTAxKSIKICAgaW5rc2NhcGU6ZXhwb3J0LXlkcGk9Ijk2IgogICBpbmtzY2FwZTpleHBvcnQteGRwaT0iOTYiCiAgIGlua3NjYXBlOmV4cG9ydC1maWxlbmFtZT0iQzpcVXNlcnNcTkJMXERvY3VtZW50c1xpY29uZXNcZ2VvY2l0eV9ub3JtYWwucG5nIgogICBzb2RpcG9kaTpkb2NuYW1lPSJnZW9jaXR5X25vcm1hbC5zdmciCiAgIGlkPSJzdmc4IgogICB2ZXJzaW9uPSIxLjEiCiAgIHZpZXdCb3g9IjAgMCAzOC44NzA2NCA3LjU1NjQ3NTgiCiAgIGhlaWdodD0iNy41NTY0NzYxbW0iCiAgIHdpZHRoPSIzOC44NzA2NG1tIj4KICA8ZGVmcwogICAgIGlkPSJkZWZzMiIgLz4KICA8c29kaXBvZGk6bmFtZWR2aWV3CiAgICAgaW5rc2NhcGU6c25hcC1pbnRlcnNlY3Rpb24tcGF0aHM9InRydWUiCiAgICAgaW5rc2NhcGU6c25hcC1zbW9vdGgtbm9kZXM9InRydWUiCiAgICAgaW5rc2NhcGU6c25hcC1taWRwb2ludHM9InRydWUiCiAgICAgaW5rc2NhcGU6c25hcC1wYWdlPSJ0cnVlIgogICAgIGlua3NjYXBlOnNuYXAtY2VudGVyPSJ0cnVlIgogICAgIGlua3NjYXBlOnNuYXAtb2JqZWN0LW1pZHBvaW50cz0idHJ1ZSIKICAgICBpbmtzY2FwZTpzbmFwLWdsb2JhbD0iZmFsc2UiCiAgICAgaW5rc2NhcGU6c25hcC1iYm94LW1pZHBvaW50cz0idHJ1ZSIKICAgICBpbmtzY2FwZTpzbmFwLWJib3gtZWRnZS1taWRwb2ludHM9InRydWUiCiAgICAgaW5rc2NhcGU6YmJveC1wYXRocz0idHJ1ZSIKICAgICBpbmtzY2FwZTpiYm94LW5vZGVzPSJ0cnVlIgogICAgIGlua3NjYXBlOnNuYXAtYmJveD0idHJ1ZSIKICAgICBpbmtzY2FwZTpzbmFwLXRleHQtYmFzZWxpbmU9InRydWUiCiAgICAgaW5rc2NhcGU6b2JqZWN0LXBhdGhzPSJ0cnVlIgogICAgIGZpdC1tYXJnaW4tYm90dG9tPSIwIgogICAgIGZpdC1tYXJnaW4tcmlnaHQ9IjAiCiAgICAgZml0LW1hcmdpbi1sZWZ0PSIwIgogICAgIGZpdC1tYXJnaW4tdG9wPSIwIgogICAgIGlua3NjYXBlOndpbmRvdy1tYXhpbWl6ZWQ9IjEiCiAgICAgaW5rc2NhcGU6d2luZG93LXk9Ii04IgogICAgIGlua3NjYXBlOndpbmRvdy14PSItOCIKICAgICBpbmtzY2FwZTp3aW5kb3ctaGVpZ2h0PSIxMzg3IgogICAgIGlua3NjYXBlOndpbmRvdy13aWR0aD0iMjU2MCIKICAgICBzaG93Z3JpZD0iZmFsc2UiCiAgICAgaW5rc2NhcGU6ZG9jdW1lbnQtcm90YXRpb249IjAiCiAgICAgaW5rc2NhcGU6Y3VycmVudC1sYXllcj0ibGF5ZXIxIgogICAgIGlua3NjYXBlOmRvY3VtZW50LXVuaXRzPSJtbSIKICAgICBpbmtzY2FwZTpjeT0iMzQuOTE5NTU4IgogICAgIGlua3NjYXBlOmN4PSI4Mi4zNzI0OTciCiAgICAgaW5rc2NhcGU6em9vbT0iOC4wMDAwMDAzIgogICAgIGlua3NjYXBlOnBhZ2VzaGFkb3c9IjIiCiAgICAgaW5rc2NhcGU6cGFnZW9wYWNpdHk9IjAuMCIKICAgICBib3JkZXJvcGFjaXR5PSIxLjAiCiAgICAgYm9yZGVyY29sb3I9IiM2NjY2NjYiCiAgICAgcGFnZWNvbG9yPSIjZmZmZmZmIgogICAgIGlkPSJiYXNlIiAvPgogIDxtZXRhZGF0YQogICAgIGlkPSJtZXRhZGF0YTUiPgogICAgPHJkZjpSREY+CiAgICAgIDxjYzpXb3JrCiAgICAgICAgIHJkZjphYm91dD0iIj4KICAgICAgICA8ZGM6Zm9ybWF0PmltYWdlL3N2Zyt4bWw8L2RjOmZvcm1hdD4KICAgICAgICA8ZGM6dHlwZQogICAgICAgICAgIHJkZjpyZXNvdXJjZT0iaHR0cDovL3B1cmwub3JnL2RjL2RjbWl0eXBlL1N0aWxsSW1hZ2UiIC8+CiAgICAgICAgPGRjOnRpdGxlPjwvZGM6dGl0bGU+CiAgICAgIDwvY2M6V29yaz4KICAgIDwvcmRmOlJERj4KICA8L21ldGFkYXRhPgogIDxnCiAgICAgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTE2LjQ3ODI0OCwtMzkuODE3NTQ4KSIKICAgICBpZD0ibGF5ZXIxIgogICAgIGlua3NjYXBlOmdyb3VwbW9kZT0ibGF5ZXIiCiAgICAgaW5rc2NhcGU6bGFiZWw9IkNhbHF1ZSAxIj4KICAgIDxnCiAgICAgICBzdHlsZT0iZm9udC1zdHlsZTpub3JtYWw7Zm9udC13ZWlnaHQ6bm9ybWFsO2ZvbnQtc2l6ZToxMC41ODMzcHg7bGluZS1oZWlnaHQ6MS4yNTtmb250LWZhbWlseTpzYW5zLXNlcmlmO2ZpbGw6IzAwMDAwMDtmaWxsLW9wYWNpdHk6MTtzdHJva2U6bm9uZTtzdHJva2Utd2lkdGg6MC4yNjQ1ODMiCiAgICAgICBpZD0idGV4dDgzNSIKICAgICAgIGFyaWEtbGFiZWw9IkdFT0NJVFkiPgogICAgICA8cGF0aAogICAgICAgICBpZD0icGF0aDg4MiIKICAgICAgICAgc3R5bGU9ImZvbnQtc3R5bGU6bm9ybWFsO2ZvbnQtdmFyaWFudDpub3JtYWw7Zm9udC13ZWlnaHQ6bm9ybWFsO2ZvbnQtc3RyZXRjaDpub3JtYWw7Zm9udC1zaXplOjEwLjU4MzNweDtmb250LWZhbWlseTonVGl0aWxsaXVtIFdlYic7LWlua3NjYXBlLWZvbnQtc3BlY2lmaWNhdGlvbjonVGl0aWxsaXVtIFdlYiwgTm9ybWFsJztmb250LXZhcmlhbnQtbGlnYXR1cmVzOm5vcm1hbDtmb250LXZhcmlhbnQtY2Fwczpub3JtYWw7Zm9udC12YXJpYW50LW51bWVyaWM6bm9ybWFsO2ZvbnQtdmFyaWFudC1lYXN0LWFzaWFuOm5vcm1hbDtmaWxsOiMwMDhjNmY7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlLXdpZHRoOjAuMjY0NTgzIgogICAgICAgICBkPSJtIDE5LjY3NDQwNSw0NC4yMzA3ODQgdiAtMC43MzAyNDggaCAyLjAyMTQxIHYgMy41OTgzMjIgcSAtMS4zMzM0OTYsMC4yNTQgLTIuMzgxMjQzLDAuMjU0IC0xLjU5ODA3OCwwIC0yLjIyMjQ5MywtMC45MjA3NDggLTAuNjEzODMxLC0wLjkyMDc0NyAtMC42MTM4MzEsLTIuODM2MzI0IDAsLTEuOTI2MTYgMC42MTM4MzEsLTIuODQ2OTA3IDAuNjI0NDE1LC0wLjkzMTMzMSAyLjIwMTMyNywtMC45MzEzMzEgMC45ODQyNDcsMCAyLjA0MjU3NywwLjIxMTY2NiBsIDAuMzU5ODMyLDAuMDYzNSAtMC4wMzE3NSwwLjY3NzMzMSBxIC0xLjMxMjMyOSwtMC4yMjIyNDkgLTIuMjc1NDEsLTAuMjIyMjQ5IC0xLjIxNzA3OSwwIC0xLjY0MDQxMSwwLjcwOTA4MSAtMC40MjMzMzIsMC42OTg0OTggLTAuNDIzMzMyLDIuMzM4OTA5IDAsMS42Mjk4MjggMC40MjMzMzIsMi4zMzg5MDkgMC40MjMzMzIsMC42OTg0OTggMS42Mjk4MjgsMC42OTg0OTggMC43NDA4MzEsMCAxLjUxMzQxMiwtMC4xNDgxNjYgdiAtMi4yNTQyNDMgeiIgLz4KICAgICAgPHBhdGgKICAgICAgICAgaWQ9InBhdGg4ODQiCiAgICAgICAgIHN0eWxlPSJmb250LXN0eWxlOm5vcm1hbDtmb250LXZhcmlhbnQ6bm9ybWFsO2ZvbnQtd2VpZ2h0Om5vcm1hbDtmb250LXN0cmV0Y2g6bm9ybWFsO2ZvbnQtc2l6ZToxMC41ODMzcHg7Zm9udC1mYW1pbHk6J1RpdGlsbGl1bSBXZWInOy1pbmtzY2FwZS1mb250LXNwZWNpZmljYXRpb246J1RpdGlsbGl1bSBXZWIsIE5vcm1hbCc7Zm9udC12YXJpYW50LWxpZ2F0dXJlczpub3JtYWw7Zm9udC12YXJpYW50LWNhcHM6bm9ybWFsO2ZvbnQtdmFyaWFudC1udW1lcmljOm5vcm1hbDtmb250LXZhcmlhbnQtZWFzdC1hc2lhbjpub3JtYWw7ZmlsbDojMDA4YzZmO2ZpbGwtb3BhY2l0eToxO3N0cm9rZS13aWR0aDowLjI2NDU4MyIKICAgICAgICAgZD0ibSAyMy4yODU3OSw0Ny4yNDcwMjUgdiAtNy4zMjM2NDQgaCA0LjQ1NTU3IHYgMC43MTk2NjUgaCAtMy42NDA2NTUgdiAyLjUyOTQwOCBoIDMuMDA1NjU3IHYgMC43MDkwODEgaCAtMy4wMDU2NTcgdiAyLjY0NTgyNSBoIDMuNjQwNjU1IHYgMC43MTk2NjUgeiIgLz4KICAgICAgPHBhdGgKICAgICAgICAgaWQ9InBhdGg4ODYiCiAgICAgICAgIHN0eWxlPSJmb250LXN0eWxlOm5vcm1hbDtmb250LXZhcmlhbnQ6bm9ybWFsO2ZvbnQtd2VpZ2h0Om5vcm1hbDtmb250LXN0cmV0Y2g6bm9ybWFsO2ZvbnQtc2l6ZToxMC41ODMzcHg7Zm9udC1mYW1pbHk6J1RpdGlsbGl1bSBXZWInOy1pbmtzY2FwZS1mb250LXNwZWNpZmljYXRpb246J1RpdGlsbGl1bSBXZWIsIE5vcm1hbCc7Zm9udC12YXJpYW50LWxpZ2F0dXJlczpub3JtYWw7Zm9udC12YXJpYW50LWNhcHM6bm9ybWFsO2ZvbnQtdmFyaWFudC1udW1lcmljOm5vcm1hbDtmb250LXZhcmlhbnQtZWFzdC1hc2lhbjpub3JtYWw7ZmlsbDojMDA4YzZmO2ZpbGwtb3BhY2l0eToxO3N0cm9rZS13aWR0aDowLjI2NDU4MyIKICAgICAgICAgZD0ibSAyOS41OTI2MSw0My42MTY5NTMgcSAwLDEuNjA4NjYxIDAuNDIzMzMyLDIuMzE3NzQyIDAuNDIzMzMyLDAuNjk4NDk4IDEuNjI5ODI4LDAuNjk4NDk4IDEuMjE3MDgsMCAxLjYyOTgyOCwtMC42ODc5MTQgMC40MjMzMzIsLTAuNjg3OTE1IDAuNDIzMzMyLC0yLjMwNzE2IDAsLTEuNjE5MjQ0IC0wLjQzMzkxNSwtMi4zNjAwNzUgLTAuNDMzOTE1LC0wLjc0MDgzMSAtMS42Mjk4MjgsLTAuNzQwODMxIC0xLjE4NTMzLDAgLTEuNjE5MjQ1LDAuNzQwODMxIC0wLjQyMzMzMiwwLjczMDI0NyAtMC40MjMzMzIsMi4zMzg5MDkgeiBtIDQuOTUyOTg0LDAuMDIxMTcgcSAwLDEuOTU3OTExIC0wLjYyNDQxNCwyLjgzNjMyNSAtMC42MjQ0MTUsMC44Nzg0MTQgLTIuMjc1NDEsMC44Nzg0MTQgLTEuNjQwNDExLDAgLTIuMjY0ODI2LC0wLjg5OTU4MSAtMC42MjQ0MTUsLTAuODk5NTggLTAuNjI0NDE1LC0yLjgyNTc0MSAwLC0xLjkzNjc0NCAwLjYzNDk5OCwtMi44NjgwNzQgMC42MzQ5OTgsLTAuOTQxOTE0IDIuMjU0MjQzLC0wLjk0MTkxNCAxLjYxOTI0NSwwIDIuMjU0MjQzLDAuOTMxMzMxIDAuNjQ1NTgxLDAuOTMxMzMgMC42NDU1ODEsMi44ODkyNCB6IiAvPgogICAgICA8cGF0aAogICAgICAgICBpZD0icGF0aDg4OCIKICAgICAgICAgc3R5bGU9ImZvbnQtd2VpZ2h0OmJvbGQ7ZmlsbDojMDA4YzZmO2ZpbGwtb3BhY2l0eToxIgogICAgICAgICBkPSJtIDQwLjQ4NDQ3OCw0Ny4xMzA2MDggcSAtMS4xMjE4MywwLjI0MzQxNiAtMi4wMjE0MSwwLjI0MzQxNiAtMC44OTk1ODEsMCAtMS40MzkzMjksLTAuMjIyMjQ5IC0wLjUzOTc0OCwtMC4yMjIyNDkgLTAuODQ2NjY0LC0wLjcwOTA4MSAtMC4zMDY5MTYsLTAuNDg2ODMyIC0wLjQyMzMzMiwtMS4xNDI5OTcgLTAuMTE2NDE2LC0wLjY1NjE2NCAtMC4xMTY0MTYsLTEuNjUwOTk0IDAsLTIuMDg0OTEgMC41ODIwODEsLTIuODk5ODI0IDAuNTkyNjY1LC0wLjgyNTQ5OCAyLjE2OTU3NywtMC44MjU0OTggMC45MTAxNjMsMCAyLjEwNjA3NiwwLjI4NTc0OSBsIC0wLjA0MjMzLDEuMTY0MTYzIHEgLTEuMDQ3NzQ3LC0wLjE1ODc0OSAtMS43NDYyNDQsLTAuMTU4NzQ5IC0wLjY4NzkxNSwwIC0wLjk4NDI0NywwLjE5MDQ5OSAtMC4yOTYzMzMsMC4xNzk5MTYgLTAuNDQ0NDk5LDAuNjk4NDk4IC0wLjEzNzU4MywwLjUxODU4MiAtMC4xMzc1ODMsMS43Njc0MTEgMCwxLjI0ODgyOSAwLjI4NTc0OSwxLjczNTY2MSAwLjI5NjMzMywwLjQ3NjI0OSAxLjE2NDE2MywwLjQ3NjI0OSAwLjg3ODQxNCwwIDEuODYyNjYxLC0wLjE0ODE2NyB6IiAvPgogICAgICA8cGF0aAogICAgICAgICBpZD0icGF0aDg5MCIKICAgICAgICAgc3R5bGU9ImZvbnQtd2VpZ2h0OmJvbGQ7ZmlsbDojMDA4YzZmO2ZpbGwtb3BhY2l0eToxIgogICAgICAgICBkPSJtIDQxLjY2OTQ3OSw0Ny4yNDcwMjUgdiAtNy4xOTY2NDQgaCAxLjQ2MDQ5NSB2IDcuMTk2NjQ0IHoiIC8+CiAgICAgIDxwYXRoCiAgICAgICAgIGlkPSJwYXRoODkyIgogICAgICAgICBzdHlsZT0iZm9udC13ZWlnaHQ6Ym9sZDtmaWxsOiMwMDhjNmY7ZmlsbC1vcGFjaXR5OjEiCiAgICAgICAgIGQ9Im0gNDQuMDQxNzksNDEuMzQxNTQzIHYgLTEuMjkxMTYyIGggNS4yOTE2NSB2IDEuMjkxMTYyIGggLTEuOTA0OTk0IHYgNS45MDU0ODIgaCAtMS40NjA0OTUgdiAtNS45MDU0ODIgeiIgLz4KICAgICAgPHBhdGgKICAgICAgICAgaWQ9InBhdGg4OTQiCiAgICAgICAgIHN0eWxlPSJmb250LXdlaWdodDpib2xkO2ZpbGw6IzAwOGM2ZjtmaWxsLW9wYWNpdHk6MSIKICAgICAgICAgZD0ibSA1My4xNDc1NjEsNDcuMjQ3MDI1IGggLTEuNDYwNDk1IHYgLTIuOTEwNDA4IGwgLTIuMjIyNDkzLC00LjI4NjIzNiBoIDEuNjE5MjQ1IGwgMS4zMjI5MTIsMi44NjgwNzQgMS4zMjI5MTMsLTIuODY4MDc0IGggMS42MTkyNDUgbCAtMi4yMDEzMjcsNC4yODYyMzYgeiIgLz4KICAgIDwvZz4KICAgIDxyZWN0CiAgICAgICB5PSIzOC43MDQ2ODEiCiAgICAgICB4PSI0MS4yNjYzNjUiCiAgICAgICBoZWlnaHQ9IjAuNDQ2NDgzODgiCiAgICAgICB3aWR0aD0iMi40ODg3MzU3IgogICAgICAgaWQ9InJlY3QxNDUzIgogICAgICAgc3R5bGU9ImZpbGw6I2ZmZmZmZjtmaWxsLW9wYWNpdHk6MTtzdHJva2U6bm9uZTtzdHJva2Utd2lkdGg6MC40NTkwNTU7c3Ryb2tlLWxpbmVqb2luOnJvdW5kO3N0cm9rZS1taXRlcmxpbWl0OjQ7c3Ryb2tlLWRhc2hhcnJheTpub25lO3N0cm9rZS1vcGFjaXR5OjE7cGFpbnQtb3JkZXI6bWFya2VycyBmaWxsIHN0cm9rZSIgLz4KICA8L2c+Cjwvc3ZnPgo=" positionLock="true" groupUuid="" anchorPoint="0" referencePoint="6" frame="false" outlineWidthM="0.3,mm" pictureRotation="0" positionOnPage="60,76,pt" visibility="1" svgFillColor="255,255,255,255" mapUuid="" northMode="0" svgBorderWidth="0.2" opacity="1" frameJoinStyle="miter" type="65640" templateUuid="{ad728ce9-ecc5-4e78-99be-e59375e12d91}" blendMode="0" pictureWidth="45.6003" resizeMode="0" background="false" mode="0" svgBorderColor="0,0,0,255" position="60,76,pt" pictureHeight="9.3539" id="" size="209.37,26.515,pt" zValue="25" itemRotation="0" northOffset="0" excludeFromExports="0">
+      <LayoutItem halign="8" marginY="0" uuid="{05e708ab-ada3-4098-889b-55e9ba48477b}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,619.528,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="1" type="65641" templateUuid="{05e708ab-ada3-4098-889b-55e9ba48477b}" blendMode="0" background="false" labelText="[%get_permit_validations(3)%]" position="60,2360,pt" id="&lt;HTML> Statut des validations" size="480,170,pt" zValue="84" itemRotation="0" excludeFromExports="0">
+        <FrameColor red="0" blue="0" green="0" alpha="255"/>
+        <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
+        <LayoutObject>
+          <dataDefinedProperties>
+            <Option type="Map">
+              <Option name="name" type="QString" value=""/>
+              <Option name="properties" type="Map">
+                <Option name="dataDefinedHeight" type="Map">
+                  <Option name="active" type="bool" value="true"/>
+                  <Option name="expression" type="QString" value="@textheight /4"/>
+                  <Option name="type" type="int" value="3"/>
+                </Option>
+                <Option name="dataDefinedPositionX" type="Map">
+                  <Option name="active" type="bool" value="true"/>
+                  <Option name="expression" type="QString" value="eval(@leftbody)"/>
+                  <Option name="type" type="int" value="3"/>
+                </Option>
+                <Option name="dataDefinedPositionY" type="Map">
+                  <Option name="active" type="bool" value="true"/>
+                  <Option name="expression" type="QString" value="eval(@topbody) + 2*(@paperheight + eval(@titleheight)) + 1*@titleheight +3*(@textheight/4)"/>
+                  <Option name="type" type="int" value="3"/>
+                </Option>
+                <Option name="dataDefinedWidth" type="Map">
+                  <Option name="active" type="bool" value="true"/>
+                  <Option name="expression" type="QString" value="@textwidth"/>
+                  <Option name="type" type="int" value="3"/>
+                </Option>
+              </Option>
+              <Option name="type" type="QString" value="collection"/>
+            </Option>
+          </dataDefinedProperties>
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </LayoutObject>
+        <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
+        <FontColor red="0" blue="0" green="0" alpha="255"/>
+      </LayoutItem>
+      <LayoutItem halign="8" marginY="0" uuid="{4cd52b74-72a6-493a-9f62-4a46e6fcf110}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,449.528,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="1" type="65641" templateUuid="{4cd52b74-72a6-493a-9f62-4a46e6fcf110}" blendMode="0" background="false" labelText="[%get_permit_validations(2)%]" position="60,2190,pt" id="&lt;HTML> Statut des validations" size="480,170,pt" zValue="57" itemRotation="0" excludeFromExports="0">
+        <FrameColor red="0" blue="0" green="0" alpha="255"/>
+        <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
+        <LayoutObject>
+          <dataDefinedProperties>
+            <Option type="Map">
+              <Option name="name" type="QString" value=""/>
+              <Option name="properties" type="Map">
+                <Option name="dataDefinedHeight" type="Map">
+                  <Option name="active" type="bool" value="true"/>
+                  <Option name="expression" type="QString" value="@textheight /4"/>
+                  <Option name="type" type="int" value="3"/>
+                </Option>
+                <Option name="dataDefinedPositionX" type="Map">
+                  <Option name="active" type="bool" value="true"/>
+                  <Option name="expression" type="QString" value="eval(@leftbody)"/>
+                  <Option name="type" type="int" value="3"/>
+                </Option>
+                <Option name="dataDefinedPositionY" type="Map">
+                  <Option name="active" type="bool" value="true"/>
+                  <Option name="expression" type="QString" value="eval(@topbody) + 2*(@paperheight + eval(@titleheight)) + 1*@titleheight +2*(@textheight/4)"/>
+                  <Option name="type" type="int" value="3"/>
+                </Option>
+                <Option name="dataDefinedWidth" type="Map">
+                  <Option name="active" type="bool" value="true"/>
+                  <Option name="expression" type="QString" value="@textwidth"/>
+                  <Option name="type" type="int" value="3"/>
+                </Option>
+              </Option>
+              <Option name="type" type="QString" value="collection"/>
+            </Option>
+          </dataDefinedProperties>
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </LayoutObject>
+        <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
+        <FontColor red="0" blue="0" green="0" alpha="255"/>
+      </LayoutItem>
+      <LayoutItem halign="8" marginY="0" uuid="{b3845099-2575-427c-96ed-691bd9fab5aa}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,279.528,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="1" type="65641" templateUuid="{b3845099-2575-427c-96ed-691bd9fab5aa}" blendMode="0" background="false" labelText="[%get_permit_validations(1)%]" position="60,2020,pt" id="&lt;HTML> Statut des validations" size="480,170,pt" zValue="31" itemRotation="0" excludeFromExports="0">
+        <FrameColor red="0" blue="0" green="0" alpha="255"/>
+        <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
+        <LayoutObject>
+          <dataDefinedProperties>
+            <Option type="Map">
+              <Option name="name" type="QString" value=""/>
+              <Option name="properties" type="Map">
+                <Option name="dataDefinedHeight" type="Map">
+                  <Option name="active" type="bool" value="true"/>
+                  <Option name="expression" type="QString" value="@textheight /4"/>
+                  <Option name="type" type="int" value="3"/>
+                </Option>
+                <Option name="dataDefinedPositionX" type="Map">
+                  <Option name="active" type="bool" value="true"/>
+                  <Option name="expression" type="QString" value="eval(@leftbody)"/>
+                  <Option name="type" type="int" value="3"/>
+                </Option>
+                <Option name="dataDefinedPositionY" type="Map">
+                  <Option name="active" type="bool" value="true"/>
+                  <Option name="expression" type="QString" value="eval(@topbody) + 2*(@paperheight + eval(@titleheight)) + 1*@titleheight +1*(@textheight/4)"/>
+                  <Option name="type" type="int" value="3"/>
+                </Option>
+                <Option name="dataDefinedWidth" type="Map">
+                  <Option name="active" type="bool" value="true"/>
+                  <Option name="expression" type="QString" value="@textwidth"/>
+                  <Option name="type" type="int" value="3"/>
+                </Option>
+              </Option>
+              <Option name="type" type="QString" value="collection"/>
+            </Option>
+          </dataDefinedProperties>
+          <customproperties>
+            <Option/>
+          </customproperties>
+        </LayoutObject>
+        <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
+        <FontColor red="0" blue="0" green="0" alpha="255"/>
+      </LayoutItem>
+      <LayoutItem uuid="{ad728ce9-ecc5-4e78-99be-e59375e12d91}" file="base64:PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjxzdmcKICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIgogICB4bWxuczpjYz0iaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvbnMjIgogICB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIKICAgeG1sbnM6c29kaXBvZGk9Imh0dHA6Ly9zb2RpcG9kaS5zb3VyY2Vmb3JnZS5uZXQvRFREL3NvZGlwb2RpLTAuZHRkIgogICB4bWxuczppbmtzY2FwZT0iaHR0cDovL3d3dy5pbmtzY2FwZS5vcmcvbmFtZXNwYWNlcy9pbmtzY2FwZSIKICAgaW5rc2NhcGU6dmVyc2lvbj0iMS4wICg0MDM1YTRmYjQ5LCAyMDIwLTA1LTAxKSIKICAgaW5rc2NhcGU6ZXhwb3J0LXlkcGk9Ijk2IgogICBpbmtzY2FwZTpleHBvcnQteGRwaT0iOTYiCiAgIGlua3NjYXBlOmV4cG9ydC1maWxlbmFtZT0iQzpcVXNlcnNcTkJMXERvY3VtZW50c1xpY29uZXNcZ2VvY2l0eV9ub3JtYWwucG5nIgogICBzb2RpcG9kaTpkb2NuYW1lPSJnZW9jaXR5X25vcm1hbC5zdmciCiAgIGlkPSJzdmc4IgogICB2ZXJzaW9uPSIxLjEiCiAgIHZpZXdCb3g9IjAgMCAzOC44NzA2NCA3LjU1NjQ3NTgiCiAgIGhlaWdodD0iNy41NTY0NzYxbW0iCiAgIHdpZHRoPSIzOC44NzA2NG1tIj4KICA8ZGVmcwogICAgIGlkPSJkZWZzMiIgLz4KICA8c29kaXBvZGk6bmFtZWR2aWV3CiAgICAgaW5rc2NhcGU6c25hcC1pbnRlcnNlY3Rpb24tcGF0aHM9InRydWUiCiAgICAgaW5rc2NhcGU6c25hcC1zbW9vdGgtbm9kZXM9InRydWUiCiAgICAgaW5rc2NhcGU6c25hcC1taWRwb2ludHM9InRydWUiCiAgICAgaW5rc2NhcGU6c25hcC1wYWdlPSJ0cnVlIgogICAgIGlua3NjYXBlOnNuYXAtY2VudGVyPSJ0cnVlIgogICAgIGlua3NjYXBlOnNuYXAtb2JqZWN0LW1pZHBvaW50cz0idHJ1ZSIKICAgICBpbmtzY2FwZTpzbmFwLWdsb2JhbD0iZmFsc2UiCiAgICAgaW5rc2NhcGU6c25hcC1iYm94LW1pZHBvaW50cz0idHJ1ZSIKICAgICBpbmtzY2FwZTpzbmFwLWJib3gtZWRnZS1taWRwb2ludHM9InRydWUiCiAgICAgaW5rc2NhcGU6YmJveC1wYXRocz0idHJ1ZSIKICAgICBpbmtzY2FwZTpiYm94LW5vZGVzPSJ0cnVlIgogICAgIGlua3NjYXBlOnNuYXAtYmJveD0idHJ1ZSIKICAgICBpbmtzY2FwZTpzbmFwLXRleHQtYmFzZWxpbmU9InRydWUiCiAgICAgaW5rc2NhcGU6b2JqZWN0LXBhdGhzPSJ0cnVlIgogICAgIGZpdC1tYXJnaW4tYm90dG9tPSIwIgogICAgIGZpdC1tYXJnaW4tcmlnaHQ9IjAiCiAgICAgZml0LW1hcmdpbi1sZWZ0PSIwIgogICAgIGZpdC1tYXJnaW4tdG9wPSIwIgogICAgIGlua3NjYXBlOndpbmRvdy1tYXhpbWl6ZWQ9IjEiCiAgICAgaW5rc2NhcGU6d2luZG93LXk9Ii04IgogICAgIGlua3NjYXBlOndpbmRvdy14PSItOCIKICAgICBpbmtzY2FwZTp3aW5kb3ctaGVpZ2h0PSIxMzg3IgogICAgIGlua3NjYXBlOndpbmRvdy13aWR0aD0iMjU2MCIKICAgICBzaG93Z3JpZD0iZmFsc2UiCiAgICAgaW5rc2NhcGU6ZG9jdW1lbnQtcm90YXRpb249IjAiCiAgICAgaW5rc2NhcGU6Y3VycmVudC1sYXllcj0ibGF5ZXIxIgogICAgIGlua3NjYXBlOmRvY3VtZW50LXVuaXRzPSJtbSIKICAgICBpbmtzY2FwZTpjeT0iMzQuOTE5NTU4IgogICAgIGlua3NjYXBlOmN4PSI4Mi4zNzI0OTciCiAgICAgaW5rc2NhcGU6em9vbT0iOC4wMDAwMDAzIgogICAgIGlua3NjYXBlOnBhZ2VzaGFkb3c9IjIiCiAgICAgaW5rc2NhcGU6cGFnZW9wYWNpdHk9IjAuMCIKICAgICBib3JkZXJvcGFjaXR5PSIxLjAiCiAgICAgYm9yZGVyY29sb3I9IiM2NjY2NjYiCiAgICAgcGFnZWNvbG9yPSIjZmZmZmZmIgogICAgIGlkPSJiYXNlIiAvPgogIDxtZXRhZGF0YQogICAgIGlkPSJtZXRhZGF0YTUiPgogICAgPHJkZjpSREY+CiAgICAgIDxjYzpXb3JrCiAgICAgICAgIHJkZjphYm91dD0iIj4KICAgICAgICA8ZGM6Zm9ybWF0PmltYWdlL3N2Zyt4bWw8L2RjOmZvcm1hdD4KICAgICAgICA8ZGM6dHlwZQogICAgICAgICAgIHJkZjpyZXNvdXJjZT0iaHR0cDovL3B1cmwub3JnL2RjL2RjbWl0eXBlL1N0aWxsSW1hZ2UiIC8+CiAgICAgICAgPGRjOnRpdGxlPjwvZGM6dGl0bGU+CiAgICAgIDwvY2M6V29yaz4KICAgIDwvcmRmOlJERj4KICA8L21ldGFkYXRhPgogIDxnCiAgICAgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTE2LjQ3ODI0OCwtMzkuODE3NTQ4KSIKICAgICBpZD0ibGF5ZXIxIgogICAgIGlua3NjYXBlOmdyb3VwbW9kZT0ibGF5ZXIiCiAgICAgaW5rc2NhcGU6bGFiZWw9IkNhbHF1ZSAxIj4KICAgIDxnCiAgICAgICBzdHlsZT0iZm9udC1zdHlsZTpub3JtYWw7Zm9udC13ZWlnaHQ6bm9ybWFsO2ZvbnQtc2l6ZToxMC41ODMzcHg7bGluZS1oZWlnaHQ6MS4yNTtmb250LWZhbWlseTpzYW5zLXNlcmlmO2ZpbGw6IzAwMDAwMDtmaWxsLW9wYWNpdHk6MTtzdHJva2U6bm9uZTtzdHJva2Utd2lkdGg6MC4yNjQ1ODMiCiAgICAgICBpZD0idGV4dDgzNSIKICAgICAgIGFyaWEtbGFiZWw9IkdFT0NJVFkiPgogICAgICA8cGF0aAogICAgICAgICBpZD0icGF0aDg4MiIKICAgICAgICAgc3R5bGU9ImZvbnQtc3R5bGU6bm9ybWFsO2ZvbnQtdmFyaWFudDpub3JtYWw7Zm9udC13ZWlnaHQ6bm9ybWFsO2ZvbnQtc3RyZXRjaDpub3JtYWw7Zm9udC1zaXplOjEwLjU4MzNweDtmb250LWZhbWlseTonVGl0aWxsaXVtIFdlYic7LWlua3NjYXBlLWZvbnQtc3BlY2lmaWNhdGlvbjonVGl0aWxsaXVtIFdlYiwgTm9ybWFsJztmb250LXZhcmlhbnQtbGlnYXR1cmVzOm5vcm1hbDtmb250LXZhcmlhbnQtY2Fwczpub3JtYWw7Zm9udC12YXJpYW50LW51bWVyaWM6bm9ybWFsO2ZvbnQtdmFyaWFudC1lYXN0LWFzaWFuOm5vcm1hbDtmaWxsOiMwMDhjNmY7ZmlsbC1vcGFjaXR5OjE7c3Ryb2tlLXdpZHRoOjAuMjY0NTgzIgogICAgICAgICBkPSJtIDE5LjY3NDQwNSw0NC4yMzA3ODQgdiAtMC43MzAyNDggaCAyLjAyMTQxIHYgMy41OTgzMjIgcSAtMS4zMzM0OTYsMC4yNTQgLTIuMzgxMjQzLDAuMjU0IC0xLjU5ODA3OCwwIC0yLjIyMjQ5MywtMC45MjA3NDggLTAuNjEzODMxLC0wLjkyMDc0NyAtMC42MTM4MzEsLTIuODM2MzI0IDAsLTEuOTI2MTYgMC42MTM4MzEsLTIuODQ2OTA3IDAuNjI0NDE1LC0wLjkzMTMzMSAyLjIwMTMyNywtMC45MzEzMzEgMC45ODQyNDcsMCAyLjA0MjU3NywwLjIxMTY2NiBsIDAuMzU5ODMyLDAuMDYzNSAtMC4wMzE3NSwwLjY3NzMzMSBxIC0xLjMxMjMyOSwtMC4yMjIyNDkgLTIuMjc1NDEsLTAuMjIyMjQ5IC0xLjIxNzA3OSwwIC0xLjY0MDQxMSwwLjcwOTA4MSAtMC40MjMzMzIsMC42OTg0OTggLTAuNDIzMzMyLDIuMzM4OTA5IDAsMS42Mjk4MjggMC40MjMzMzIsMi4zMzg5MDkgMC40MjMzMzIsMC42OTg0OTggMS42Mjk4MjgsMC42OTg0OTggMC43NDA4MzEsMCAxLjUxMzQxMiwtMC4xNDgxNjYgdiAtMi4yNTQyNDMgeiIgLz4KICAgICAgPHBhdGgKICAgICAgICAgaWQ9InBhdGg4ODQiCiAgICAgICAgIHN0eWxlPSJmb250LXN0eWxlOm5vcm1hbDtmb250LXZhcmlhbnQ6bm9ybWFsO2ZvbnQtd2VpZ2h0Om5vcm1hbDtmb250LXN0cmV0Y2g6bm9ybWFsO2ZvbnQtc2l6ZToxMC41ODMzcHg7Zm9udC1mYW1pbHk6J1RpdGlsbGl1bSBXZWInOy1pbmtzY2FwZS1mb250LXNwZWNpZmljYXRpb246J1RpdGlsbGl1bSBXZWIsIE5vcm1hbCc7Zm9udC12YXJpYW50LWxpZ2F0dXJlczpub3JtYWw7Zm9udC12YXJpYW50LWNhcHM6bm9ybWFsO2ZvbnQtdmFyaWFudC1udW1lcmljOm5vcm1hbDtmb250LXZhcmlhbnQtZWFzdC1hc2lhbjpub3JtYWw7ZmlsbDojMDA4YzZmO2ZpbGwtb3BhY2l0eToxO3N0cm9rZS13aWR0aDowLjI2NDU4MyIKICAgICAgICAgZD0ibSAyMy4yODU3OSw0Ny4yNDcwMjUgdiAtNy4zMjM2NDQgaCA0LjQ1NTU3IHYgMC43MTk2NjUgaCAtMy42NDA2NTUgdiAyLjUyOTQwOCBoIDMuMDA1NjU3IHYgMC43MDkwODEgaCAtMy4wMDU2NTcgdiAyLjY0NTgyNSBoIDMuNjQwNjU1IHYgMC43MTk2NjUgeiIgLz4KICAgICAgPHBhdGgKICAgICAgICAgaWQ9InBhdGg4ODYiCiAgICAgICAgIHN0eWxlPSJmb250LXN0eWxlOm5vcm1hbDtmb250LXZhcmlhbnQ6bm9ybWFsO2ZvbnQtd2VpZ2h0Om5vcm1hbDtmb250LXN0cmV0Y2g6bm9ybWFsO2ZvbnQtc2l6ZToxMC41ODMzcHg7Zm9udC1mYW1pbHk6J1RpdGlsbGl1bSBXZWInOy1pbmtzY2FwZS1mb250LXNwZWNpZmljYXRpb246J1RpdGlsbGl1bSBXZWIsIE5vcm1hbCc7Zm9udC12YXJpYW50LWxpZ2F0dXJlczpub3JtYWw7Zm9udC12YXJpYW50LWNhcHM6bm9ybWFsO2ZvbnQtdmFyaWFudC1udW1lcmljOm5vcm1hbDtmb250LXZhcmlhbnQtZWFzdC1hc2lhbjpub3JtYWw7ZmlsbDojMDA4YzZmO2ZpbGwtb3BhY2l0eToxO3N0cm9rZS13aWR0aDowLjI2NDU4MyIKICAgICAgICAgZD0ibSAyOS41OTI2MSw0My42MTY5NTMgcSAwLDEuNjA4NjYxIDAuNDIzMzMyLDIuMzE3NzQyIDAuNDIzMzMyLDAuNjk4NDk4IDEuNjI5ODI4LDAuNjk4NDk4IDEuMjE3MDgsMCAxLjYyOTgyOCwtMC42ODc5MTQgMC40MjMzMzIsLTAuNjg3OTE1IDAuNDIzMzMyLC0yLjMwNzE2IDAsLTEuNjE5MjQ0IC0wLjQzMzkxNSwtMi4zNjAwNzUgLTAuNDMzOTE1LC0wLjc0MDgzMSAtMS42Mjk4MjgsLTAuNzQwODMxIC0xLjE4NTMzLDAgLTEuNjE5MjQ1LDAuNzQwODMxIC0wLjQyMzMzMiwwLjczMDI0NyAtMC40MjMzMzIsMi4zMzg5MDkgeiBtIDQuOTUyOTg0LDAuMDIxMTcgcSAwLDEuOTU3OTExIC0wLjYyNDQxNCwyLjgzNjMyNSAtMC42MjQ0MTUsMC44Nzg0MTQgLTIuMjc1NDEsMC44Nzg0MTQgLTEuNjQwNDExLDAgLTIuMjY0ODI2LC0wLjg5OTU4MSAtMC42MjQ0MTUsLTAuODk5NTggLTAuNjI0NDE1LC0yLjgyNTc0MSAwLC0xLjkzNjc0NCAwLjYzNDk5OCwtMi44NjgwNzQgMC42MzQ5OTgsLTAuOTQxOTE0IDIuMjU0MjQzLC0wLjk0MTkxNCAxLjYxOTI0NSwwIDIuMjU0MjQzLDAuOTMxMzMxIDAuNjQ1NTgxLDAuOTMxMzMgMC42NDU1ODEsMi44ODkyNCB6IiAvPgogICAgICA8cGF0aAogICAgICAgICBpZD0icGF0aDg4OCIKICAgICAgICAgc3R5bGU9ImZvbnQtd2VpZ2h0OmJvbGQ7ZmlsbDojMDA4YzZmO2ZpbGwtb3BhY2l0eToxIgogICAgICAgICBkPSJtIDQwLjQ4NDQ3OCw0Ny4xMzA2MDggcSAtMS4xMjE4MywwLjI0MzQxNiAtMi4wMjE0MSwwLjI0MzQxNiAtMC44OTk1ODEsMCAtMS40MzkzMjksLTAuMjIyMjQ5IC0wLjUzOTc0OCwtMC4yMjIyNDkgLTAuODQ2NjY0LC0wLjcwOTA4MSAtMC4zMDY5MTYsLTAuNDg2ODMyIC0wLjQyMzMzMiwtMS4xNDI5OTcgLTAuMTE2NDE2LC0wLjY1NjE2NCAtMC4xMTY0MTYsLTEuNjUwOTk0IDAsLTIuMDg0OTEgMC41ODIwODEsLTIuODk5ODI0IDAuNTkyNjY1LC0wLjgyNTQ5OCAyLjE2OTU3NywtMC44MjU0OTggMC45MTAxNjMsMCAyLjEwNjA3NiwwLjI4NTc0OSBsIC0wLjA0MjMzLDEuMTY0MTYzIHEgLTEuMDQ3NzQ3LC0wLjE1ODc0OSAtMS43NDYyNDQsLTAuMTU4NzQ5IC0wLjY4NzkxNSwwIC0wLjk4NDI0NywwLjE5MDQ5OSAtMC4yOTYzMzMsMC4xNzk5MTYgLTAuNDQ0NDk5LDAuNjk4NDk4IC0wLjEzNzU4MywwLjUxODU4MiAtMC4xMzc1ODMsMS43Njc0MTEgMCwxLjI0ODgyOSAwLjI4NTc0OSwxLjczNTY2MSAwLjI5NjMzMywwLjQ3NjI0OSAxLjE2NDE2MywwLjQ3NjI0OSAwLjg3ODQxNCwwIDEuODYyNjYxLC0wLjE0ODE2NyB6IiAvPgogICAgICA8cGF0aAogICAgICAgICBpZD0icGF0aDg5MCIKICAgICAgICAgc3R5bGU9ImZvbnQtd2VpZ2h0OmJvbGQ7ZmlsbDojMDA4YzZmO2ZpbGwtb3BhY2l0eToxIgogICAgICAgICBkPSJtIDQxLjY2OTQ3OSw0Ny4yNDcwMjUgdiAtNy4xOTY2NDQgaCAxLjQ2MDQ5NSB2IDcuMTk2NjQ0IHoiIC8+CiAgICAgIDxwYXRoCiAgICAgICAgIGlkPSJwYXRoODkyIgogICAgICAgICBzdHlsZT0iZm9udC13ZWlnaHQ6Ym9sZDtmaWxsOiMwMDhjNmY7ZmlsbC1vcGFjaXR5OjEiCiAgICAgICAgIGQ9Im0gNDQuMDQxNzksNDEuMzQxNTQzIHYgLTEuMjkxMTYyIGggNS4yOTE2NSB2IDEuMjkxMTYyIGggLTEuOTA0OTk0IHYgNS45MDU0ODIgaCAtMS40NjA0OTUgdiAtNS45MDU0ODIgeiIgLz4KICAgICAgPHBhdGgKICAgICAgICAgaWQ9InBhdGg4OTQiCiAgICAgICAgIHN0eWxlPSJmb250LXdlaWdodDpib2xkO2ZpbGw6IzAwOGM2ZjtmaWxsLW9wYWNpdHk6MSIKICAgICAgICAgZD0ibSA1My4xNDc1NjEsNDcuMjQ3MDI1IGggLTEuNDYwNDk1IHYgLTIuOTEwNDA4IGwgLTIuMjIyNDkzLC00LjI4NjIzNiBoIDEuNjE5MjQ1IGwgMS4zMjI5MTIsMi44NjgwNzQgMS4zMjI5MTMsLTIuODY4MDc0IGggMS42MTkyNDUgbCAtMi4yMDEzMjcsNC4yODYyMzYgeiIgLz4KICAgIDwvZz4KICAgIDxyZWN0CiAgICAgICB5PSIzOC43MDQ2ODEiCiAgICAgICB4PSI0MS4yNjYzNjUiCiAgICAgICBoZWlnaHQ9IjAuNDQ2NDgzODgiCiAgICAgICB3aWR0aD0iMi40ODg3MzU3IgogICAgICAgaWQ9InJlY3QxNDUzIgogICAgICAgc3R5bGU9ImZpbGw6I2ZmZmZmZjtmaWxsLW9wYWNpdHk6MTtzdHJva2U6bm9uZTtzdHJva2Utd2lkdGg6MC40NTkwNTU7c3Ryb2tlLWxpbmVqb2luOnJvdW5kO3N0cm9rZS1taXRlcmxpbWl0OjQ7c3Ryb2tlLWRhc2hhcnJheTpub25lO3N0cm9rZS1vcGFjaXR5OjE7cGFpbnQtb3JkZXI6bWFya2VycyBmaWxsIHN0cm9rZSIgLz4KICA8L2c+Cjwvc3ZnPgo=" positionLock="true" groupUuid="" anchorPoint="0" referencePoint="6" frame="false" outlineWidthM="0.3,mm" pictureRotation="0" positionOnPage="60,76,pt" visibility="1" svgFillColor="255,255,255,255" mapUuid="" northMode="0" svgBorderWidth="0.2" opacity="1" frameJoinStyle="miter" type="65640" templateUuid="{ad728ce9-ecc5-4e78-99be-e59375e12d91}" blendMode="0" pictureWidth="45.6003" resizeMode="0" background="false" mode="0" svgBorderColor="0,0,0,255" position="60,76,pt" pictureHeight="9.35391" id="" size="209.37,26.515,pt" zValue="25" itemRotation="0" northOffset="0" excludeFromExports="0">
         <FrameColor red="0" blue="0" green="0" alpha="255"/>
         <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
         <LayoutObject>
@@ -6546,7 +6663,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor red="0" blue="0" green="0" alpha="255"/>
       </LayoutItem>
-      <LayoutItem halign="8" marginY="0" uuid="{3c8afeaf-08ac-4798-ab6b-b88e2e00f1bd}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,68.7638,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="0" type="65641" templateUuid="{3c8afeaf-08ac-4798-ab6b-b88e2e00f1bd}" blendMode="0" background="false" labelText="Contacts" position="60,939,pt" id="" size="480,24,pt" zValue="14" itemRotation="0" excludeFromExports="0">
+      <LayoutItem halign="8" marginY="0" uuid="{3c8afeaf-08ac-4798-ab6b-b88e2e00f1bd}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,89.7638,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="0" type="65641" templateUuid="{3c8afeaf-08ac-4798-ab6b-b88e2e00f1bd}" blendMode="0" background="false" labelText="Contacts" position="60,960,pt" id="" size="480,24,pt" zValue="14" itemRotation="0" excludeFromExports="0">
         <FrameColor red="0" blue="0" green="0" alpha="255"/>
         <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
         <LayoutObject>
@@ -6566,7 +6683,7 @@ def my_form_open(dialog, layer, feature):
                 </Option>
                 <Option name="dataDefinedPositionY" type="Map">
                   <Option name="active" type="bool" value="true"/>
-                  <Option name="expression" type="QString" value="eval(@topbody) + 1*@paperheight"/>
+                  <Option name="expression" type="QString" value="eval(@topbody) + 1*(@paperheight + eval(@titleheight))"/>
                   <Option name="type" type="int" value="3"/>
                 </Option>
                 <Option name="dataDefinedWidth" type="Map">
@@ -6585,7 +6702,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,16,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor red="0" blue="0" green="0" alpha="255"/>
       </LayoutItem>
-      <LayoutItem halign="8" marginY="0" uuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,100.764,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="1" type="65641" templateUuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" blendMode="0" background="false" labelText="[%get_permit_contacts(0)%]" position="60,971,pt" id="&lt;HTML> Contact 1" size="235,150,pt" zValue="13" itemRotation="0" excludeFromExports="0">
+      <LayoutItem halign="8" marginY="0" uuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,121.764,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="1" type="65641" templateUuid="{f032361e-840b-4d01-bdc3-20a8b5f8fcc1}" blendMode="0" background="false" labelText="[%get_permit_contacts(0)%]" position="60,992,pt" id="&lt;HTML> Contact 1" size="235,150,pt" zValue="13" itemRotation="0" excludeFromExports="0">
         <FrameColor red="0" blue="0" green="0" alpha="255"/>
         <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
         <LayoutObject>
@@ -6600,7 +6717,7 @@ def my_form_open(dialog, layer, feature):
                 </Option>
                 <Option name="dataDefinedPositionY" type="Map">
                   <Option name="active" type="bool" value="true"/>
-                  <Option name="expression" type="QString" value="eval(@topbody) + @paperheight +32"/>
+                  <Option name="expression" type="QString" value="eval(@topbody) +  1*(@paperheight + eval(@titleheight)) +32"/>
                   <Option name="type" type="int" value="3"/>
                 </Option>
                 <Option name="dataDefinedWidth" type="Map">
@@ -6619,7 +6736,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor red="0" blue="0" green="0" alpha="255"/>
       </LayoutItem>
-      <LayoutItem halign="8" marginY="0" uuid="{89230b06-46bc-469f-9c7f-a41ff20a1255}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="305,100.764,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="1" type="65641" templateUuid="{89230b06-46bc-469f-9c7f-a41ff20a1255}" blendMode="0" background="false" labelText="[%get_permit_contacts(1)%]" position="305,971,pt" id="&lt;HTML> Contact 2" size="235,150,pt" zValue="12" itemRotation="0" excludeFromExports="0">
+      <LayoutItem halign="8" marginY="0" uuid="{89230b06-46bc-469f-9c7f-a41ff20a1255}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="305,121.764,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="1" type="65641" templateUuid="{89230b06-46bc-469f-9c7f-a41ff20a1255}" blendMode="0" background="false" labelText="[%get_permit_contacts(1)%]" position="305,992,pt" id="&lt;HTML> Contact 2" size="235,150,pt" zValue="12" itemRotation="0" excludeFromExports="0">
         <FrameColor red="0" blue="0" green="0" alpha="255"/>
         <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
         <LayoutObject>
@@ -6634,7 +6751,7 @@ def my_form_open(dialog, layer, feature):
                 </Option>
                 <Option name="dataDefinedPositionY" type="Map">
                   <Option name="active" type="bool" value="true"/>
-                  <Option name="expression" type="QString" value="eval(@topbody) + @paperheight +32"/>
+                  <Option name="expression" type="QString" value="eval(@topbody) +  1*(@paperheight + eval(@titleheight)) +32"/>
                   <Option name="type" type="int" value="3"/>
                 </Option>
                 <Option name="dataDefinedWidth" type="Map">
@@ -6653,7 +6770,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor red="0" blue="0" green="0" alpha="255"/>
       </LayoutItem>
-      <LayoutItem halign="8" marginY="0" uuid="{46652bc9-a0f1-4e16-a471-ec334543005d}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,270.764,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="1" type="65641" templateUuid="{46652bc9-a0f1-4e16-a471-ec334543005d}" blendMode="0" background="false" labelText="[%get_permit_contacts(2)%]" position="60,1141,pt" id="&lt;HTML> Contact 3" size="235,150,pt" zValue="11" itemRotation="0" excludeFromExports="0">
+      <LayoutItem halign="8" marginY="0" uuid="{46652bc9-a0f1-4e16-a471-ec334543005d}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,291.764,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="1" type="65641" templateUuid="{46652bc9-a0f1-4e16-a471-ec334543005d}" blendMode="0" background="false" labelText="[%get_permit_contacts(2)%]" position="60,1162,pt" id="&lt;HTML> Contact 3" size="235,150,pt" zValue="11" itemRotation="0" excludeFromExports="0">
         <FrameColor red="0" blue="0" green="0" alpha="255"/>
         <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
         <LayoutObject>
@@ -6668,7 +6785,7 @@ def my_form_open(dialog, layer, feature):
                 </Option>
                 <Option name="dataDefinedPositionY" type="Map">
                   <Option name="active" type="bool" value="true"/>
-                  <Option name="expression" type="QString" value="eval(@topbody) + @paperheight + 202"/>
+                  <Option name="expression" type="QString" value="eval(@topbody) + 1*(@paperheight + eval(@titleheight)) + 202"/>
                   <Option name="type" type="int" value="3"/>
                 </Option>
                 <Option name="dataDefinedWidth" type="Map">
@@ -6687,7 +6804,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor red="0" blue="0" green="0" alpha="255"/>
       </LayoutItem>
-      <LayoutItem halign="8" marginY="0" uuid="{b3527640-abd7-4abf-ba6d-9088d96cd660}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="305,270.764,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="1" type="65641" templateUuid="{b3527640-abd7-4abf-ba6d-9088d96cd660}" blendMode="0" background="false" labelText="[%get_permit_contacts(3)%]" position="305,1141,pt" id="&lt;HTML> Contact 4" size="235,150,pt" zValue="10" itemRotation="0" excludeFromExports="0">
+      <LayoutItem halign="8" marginY="0" uuid="{b3527640-abd7-4abf-ba6d-9088d96cd660}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="305,291.764,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="1" type="65641" templateUuid="{b3527640-abd7-4abf-ba6d-9088d96cd660}" blendMode="0" background="false" labelText="[%get_permit_contacts(3)%]" position="305,1162,pt" id="&lt;HTML> Contact 4" size="235,150,pt" zValue="10" itemRotation="0" excludeFromExports="0">
         <FrameColor red="0" blue="0" green="0" alpha="255"/>
         <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
         <LayoutObject>
@@ -6702,7 +6819,7 @@ def my_form_open(dialog, layer, feature):
                 </Option>
                 <Option name="dataDefinedPositionY" type="Map">
                   <Option name="active" type="bool" value="true"/>
-                  <Option name="expression" type="QString" value="eval(@topbody) + @paperheight + 202"/>
+                  <Option name="expression" type="QString" value="eval(@topbody) + 1*(@paperheight + eval(@titleheight)) + 202"/>
                   <Option name="type" type="int" value="3"/>
                 </Option>
                 <Option name="dataDefinedWidth" type="Map">
@@ -6721,7 +6838,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor red="0" blue="0" green="0" alpha="255"/>
       </LayoutItem>
-      <LayoutItem halign="8" marginY="0" uuid="{0ff8826c-3fe7-47f5-816c-96ca0691c8d0}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,530.764,pt" visibility="0" opacity="1" frameJoinStyle="miter" htmlState="0" type="65641" templateUuid="{0ff8826c-3fe7-47f5-816c-96ca0691c8d0}" blendMode="0" background="false" labelText="Commentaires du service pilote" position="60,1401,pt" id="" size="480,24,pt" zValue="9" itemRotation="0" excludeFromExports="0">
+      <LayoutItem halign="8" marginY="0" uuid="{0ff8826c-3fe7-47f5-816c-96ca0691c8d0}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,551.764,pt" visibility="0" opacity="1" frameJoinStyle="miter" htmlState="0" type="65641" templateUuid="{0ff8826c-3fe7-47f5-816c-96ca0691c8d0}" blendMode="0" background="false" labelText="Commentaires du service pilote" position="60,1422,pt" id="" size="480,24,pt" zValue="9" itemRotation="0" excludeFromExports="0">
         <FrameColor red="0" blue="0" green="0" alpha="255"/>
         <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
         <LayoutObject>
@@ -6741,7 +6858,7 @@ def my_form_open(dialog, layer, feature):
                 </Option>
                 <Option name="dataDefinedPositionY" type="Map">
                   <Option name="active" type="bool" value="true"/>
-                  <Option name="expression" type="QString" value="eval(@topbody) + @paperheight + 462"/>
+                  <Option name="expression" type="QString" value="eval(@topbody) + 1*(@paperheight + eval(@titleheight)) + 462"/>
                   <Option name="type" type="int" value="3"/>
                 </Option>
                 <Option name="dataDefinedWidth" type="Map">
@@ -6760,7 +6877,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,16,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor red="0" blue="0" green="0" alpha="255"/>
       </LayoutItem>
-      <LayoutItem halign="8" marginY="0" uuid="{b10fdc2a-05ca-4c8e-87b2-ced49479ae3d}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,530.764,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="1" type="65641" templateUuid="{b10fdc2a-05ca-4c8e-87b2-ced49479ae3d}" blendMode="0" background="false" labelText="[%get_permit_amend_properties()%]" position="60,1401,pt" id="&lt;HTML> Commentaires du service pilote" size="480,250,pt" zValue="8" itemRotation="0" excludeFromExports="0">
+      <LayoutItem halign="8" marginY="0" uuid="{b10fdc2a-05ca-4c8e-87b2-ced49479ae3d}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,551.764,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="1" type="65641" templateUuid="{b10fdc2a-05ca-4c8e-87b2-ced49479ae3d}" blendMode="0" background="false" labelText="[%get_permit_amend_properties()%]" position="60,1422,pt" id="&lt;HTML> Commentaires du service pilote" size="480,250,pt" zValue="8" itemRotation="0" excludeFromExports="0">
         <FrameColor red="0" blue="0" green="0" alpha="255"/>
         <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
         <LayoutObject>
@@ -6791,7 +6908,7 @@ def my_form_open(dialog, layer, feature):
                 </Option>
                 <Option name="dataDefinedPositionY" type="Map">
                   <Option name="active" type="bool" value="true"/>
-                  <Option name="expression" type="QString" value="eval(@topbody) + @paperheight + 462"/>
+                  <Option name="expression" type="QString" value="eval(@topbody) + 1*(@paperheight + eval(@titleheight)) + 462"/>
                   <Option name="type" type="int" value="3"/>
                 </Option>
                 <Option name="dataDefinedWidth" type="Map">
@@ -6813,7 +6930,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,10,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor red="0" blue="0" green="0" alpha="255"/>
       </LayoutItem>
-      <LayoutItem halign="8" marginY="0" uuid="{b2c76482-7dee-4fb4-9c72-fedb0523b3a5}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,43.5276,pt" visibility="0" opacity="1" frameJoinStyle="miter" htmlState="0" type="65641" templateUuid="{b2c76482-7dee-4fb4-9c72-fedb0523b3a5}" blendMode="0" background="false" labelText="Statut des validations" position="60,1784,pt" id="" size="480,24,pt" zValue="7" itemRotation="0" excludeFromExports="0">
+      <LayoutItem halign="8" marginY="0" uuid="{b2c76482-7dee-4fb4-9c72-fedb0523b3a5}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,85.5276,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="0" type="65641" templateUuid="{b2c76482-7dee-4fb4-9c72-fedb0523b3a5}" blendMode="0" background="false" labelText="Statut des validations" position="60,1826,pt" id="" size="480,24,pt" zValue="7" itemRotation="0" excludeFromExports="0">
         <FrameColor red="0" blue="0" green="0" alpha="255"/>
         <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
         <LayoutObject>
@@ -6833,7 +6950,7 @@ def my_form_open(dialog, layer, feature):
                 </Option>
                 <Option name="dataDefinedPositionY" type="Map">
                   <Option name="active" type="bool" value="true"/>
-                  <Option name="expression" type="QString" value="eval(@topbody) + 2*@paperheight"/>
+                  <Option name="expression" type="QString" value="eval(@topbody) + 2*(@paperheight + eval(@titleheight))"/>
                   <Option name="type" type="int" value="3"/>
                 </Option>
                 <Option name="dataDefinedWidth" type="Map">
@@ -6852,7 +6969,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,16,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor red="0" blue="0" green="0" alpha="255"/>
       </LayoutItem>
-      <LayoutItem halign="8" marginY="0" uuid="{583711a5-1385-4904-acb3-93b6a7a0f2a8}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,67.5276,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="1" type="65641" templateUuid="{583711a5-1385-4904-acb3-93b6a7a0f2a8}" blendMode="0" background="false" labelText="[%get_permit_validations()%]" position="60,1808,pt" id="&lt;HTML> Statut des validations" size="480,733.048,pt" zValue="6" itemRotation="0" excludeFromExports="0">
+      <LayoutItem halign="8" marginY="0" uuid="{583711a5-1385-4904-acb3-93b6a7a0f2a8}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,109.528,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="1" type="65641" templateUuid="{583711a5-1385-4904-acb3-93b6a7a0f2a8}" blendMode="0" background="false" labelText="[%get_permit_validations(1)%]" position="60,1850,pt" id="&lt;HTML> Statut des validations" size="480,170,pt" zValue="6" itemRotation="0" excludeFromExports="0">
         <FrameColor red="0" blue="0" green="0" alpha="255"/>
         <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
         <LayoutObject>
@@ -6862,7 +6979,7 @@ def my_form_open(dialog, layer, feature):
               <Option name="properties" type="Map">
                 <Option name="dataDefinedHeight" type="Map">
                   <Option name="active" type="bool" value="true"/>
-                  <Option name="expression" type="QString" value="2.8 * array_length(string_to_array(&quot;validations&quot;, ',', '')) * var('sw_layout_height_header')"/>
+                  <Option name="expression" type="QString" value="@textheight /4"/>
                   <Option name="type" type="int" value="3"/>
                 </Option>
                 <Option name="dataDefinedPositionX" type="Map">
@@ -6872,7 +6989,7 @@ def my_form_open(dialog, layer, feature):
                 </Option>
                 <Option name="dataDefinedPositionY" type="Map">
                   <Option name="active" type="bool" value="true"/>
-                  <Option name="expression" type="QString" value="eval(@topbody) + 2*@paperheight + 1*@titleheight"/>
+                  <Option name="expression" type="QString" value="eval(@topbody) + 2*(@paperheight + eval(@titleheight)) + 1*@titleheight"/>
                   <Option name="type" type="int" value="3"/>
                 </Option>
                 <Option name="dataDefinedWidth" type="Map">
@@ -6909,7 +7026,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="MS Shell Dlg 2,10,-1,5,50,0,0,0,0,0" style=""/>
         <FontColor red="0" blue="0" green="0" alpha="255"/>
       </LayoutItem>
-      <LayoutItem halign="8" marginY="0" uuid="{9272dfe6-ad07-40e7-8ffc-b396d2bac468}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,18.2913,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="0" type="65641" templateUuid="{9272dfe6-ad07-40e7-8ffc-b396d2bac468}" blendMode="0" background="false" labelText="Localisation" position="60,2629,pt" id="" size="480,24,pt" zValue="4" itemRotation="0" excludeFromExports="0">
+      <LayoutItem halign="8" marginY="0" uuid="{9272dfe6-ad07-40e7-8ffc-b396d2bac468}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,81.2913,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="0" type="65641" templateUuid="{9272dfe6-ad07-40e7-8ffc-b396d2bac468}" blendMode="0" background="false" labelText="Localisation" position="60,2692,pt" id="" size="480,24,pt" zValue="4" itemRotation="0" excludeFromExports="0">
         <FrameColor red="0" blue="0" green="0" alpha="255"/>
         <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
         <LayoutObject>
@@ -6929,7 +7046,7 @@ def my_form_open(dialog, layer, feature):
                 </Option>
                 <Option name="dataDefinedPositionY" type="Map">
                   <Option name="active" type="bool" value="true"/>
-                  <Option name="expression" type="QString" value="eval(@topbody) + 3*@paperheight"/>
+                  <Option name="expression" type="QString" value="eval(@topbody) + 3*(@paperheight + eval(@titleheight))"/>
                   <Option name="type" type="int" value="3"/>
                 </Option>
                 <Option name="dataDefinedWidth" type="Map">
@@ -6948,7 +7065,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,16,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor red="0" blue="0" green="0" alpha="255"/>
       </LayoutItem>
-      <LayoutItem isTemporal="0" uuid="{3def4496-88fa-4986-b2b9-79eccb5666c3}" followPreset="false" positionLock="false" groupUuid="" referencePoint="0" frame="false" outlineWidthM="0.3,mm" positionOnPage="60,42.2913,pt" visibility="1" opacity="1" frameJoinStyle="miter" labelMargin="0,mm" keepLayerSet="false" type="65639" drawCanvasItems="true" templateUuid="{3def4496-88fa-4986-b2b9-79eccb5666c3}" blendMode="0" background="true" position="60,2653,pt" id="Map 2" size="480,355.2,pt" zValue="3" itemRotation="0" followPresetName="" mapRotation="0" mapFlags="0" excludeFromExports="0">
+      <LayoutItem isTemporal="0" uuid="{3def4496-88fa-4986-b2b9-79eccb5666c3}" followPreset="false" positionLock="false" groupUuid="" referencePoint="0" frame="false" outlineWidthM="0.3,mm" positionOnPage="60,105.291,pt" visibility="1" opacity="1" frameJoinStyle="miter" labelMargin="0,mm" keepLayerSet="false" type="65639" drawCanvasItems="true" templateUuid="{3def4496-88fa-4986-b2b9-79eccb5666c3}" blendMode="0" background="true" position="60,2716,pt" id="Map 2" size="480,408,pt" zValue="3" itemRotation="0" followPresetName="" mapRotation="0" mapFlags="0" excludeFromExports="0">
         <FrameColor red="0" blue="0" green="0" alpha="255"/>
         <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
         <LayoutObject>
@@ -6968,7 +7085,7 @@ def my_form_open(dialog, layer, feature):
                 </Option>
                 <Option name="dataDefinedPositionY" type="Map">
                   <Option name="active" type="bool" value="true"/>
-                  <Option name="expression" type="QString" value="eval(@topbody) + 3*@paperheight +@titleheight"/>
+                  <Option name="expression" type="QString" value="eval(@topbody) + 3*(@paperheight + eval(@titleheight)) +@titleheight"/>
                   <Option name="type" type="int" value="3"/>
                 </Option>
                 <Option name="dataDefinedWidth" type="Map">
@@ -6984,16 +7101,16 @@ def my_form_open(dialog, layer, feature):
             <Option/>
           </customproperties>
         </LayoutObject>
-        <Extent ymin="1173827.48478875611908734" xmax="2550106.8979451204650104" ymax="1189287.75133454939350486" xmin="2529214.64585621049627662"/>
+        <Extent ymin="nan" xmax="nan" ymax="nan" xmin="nan"/>
         <LayerSet/>
-        <AtlasMap margin="0.10000000000000001" scalingMode="2" atlasDriven="0"/>
+        <AtlasMap margin="0.20000000000000001" scalingMode="2" atlasDriven="1"/>
         <labelBlockingItems/>
         <atlasClippingSettings enabled="0" forceLabelsInside="0" clippingType="1" restrictLayers="0">
           <layersToClip/>
         </atlasClippingSettings>
         <itemClippingSettings enabled="0" forceLabelsInside="0" clippingType="1" clipSource=""/>
       </LayoutItem>
-      <LayoutItem halign="8" marginY="0" uuid="{8515c7ce-bc18-4485-9032-ff37f9d48c0c}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,421.171,pt" visibility="0" opacity="1" frameJoinStyle="miter" htmlState="0" type="65641" templateUuid="{8515c7ce-bc18-4485-9032-ff37f9d48c0c}" blendMode="0" background="false" labelText="Agenda" position="60,3031.88,pt" id="" size="480,24,pt" zValue="2" itemRotation="0" excludeFromExports="0">
+      <LayoutItem halign="8" marginY="0" uuid="{8515c7ce-bc18-4485-9032-ff37f9d48c0c}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,540.491,pt" visibility="0" opacity="1" frameJoinStyle="miter" htmlState="0" type="65641" templateUuid="{8515c7ce-bc18-4485-9032-ff37f9d48c0c}" blendMode="0" background="false" labelText="Agenda" position="60,3151.2,pt" id="" size="480,24,pt" zValue="2" itemRotation="0" excludeFromExports="0">
         <FrameColor red="0" blue="0" green="0" alpha="255"/>
         <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
         <LayoutObject>
@@ -7013,7 +7130,7 @@ def my_form_open(dialog, layer, feature):
                 </Option>
                 <Option name="dataDefinedPositionY" type="Map">
                   <Option name="active" type="bool" value="true"/>
-                  <Option name="expression" type="QString" value="eval(@topbody) + 3*@paperheight +0.64*@textheight +1*@titleheight"/>
+                  <Option name="expression" type="QString" value="eval(@topbody) + 3*(@paperheight + eval(@titleheight)) +0.64*@textheight +1*@titleheight"/>
                   <Option name="type" type="int" value="3"/>
                 </Option>
                 <Option name="dataDefinedWidth" type="Map">
@@ -7032,7 +7149,7 @@ def my_form_open(dialog, layer, feature):
         <LabelFont description="Arial,16,-1,5,50,0,0,0,0,0,Normal" style="Normal"/>
         <FontColor red="0" blue="0" green="0" alpha="255"/>
       </LayoutItem>
-      <LayoutItem halign="8" marginY="0" uuid="{6a789951-92ec-44c5-aff5-def0c50f2b56}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,421.171,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="1" type="65641" templateUuid="{6a789951-92ec-44c5-aff5-def0c50f2b56}" blendMode="0" background="false" labelText="[% get_permit_geotime() %]" position="60,3031.88,pt" id="&lt;HTML> Agenda" size="480,64,pt" zValue="1" itemRotation="0" excludeFromExports="0">
+      <LayoutItem halign="8" marginY="0" uuid="{6a789951-92ec-44c5-aff5-def0c50f2b56}" positionLock="false" groupUuid="" referencePoint="0" valign="32" frame="false" outlineWidthM="0.3,mm" marginX="0" positionOnPage="60,540.491,pt" visibility="1" opacity="1" frameJoinStyle="miter" htmlState="1" type="65641" templateUuid="{6a789951-92ec-44c5-aff5-def0c50f2b56}" blendMode="0" background="false" labelText="[% get_permit_geotime() %]" position="60,3151.2,pt" id="&lt;HTML> Agenda" size="480,64,pt" zValue="1" itemRotation="0" excludeFromExports="0">
         <FrameColor red="0" blue="0" green="0" alpha="255"/>
         <BackgroundColor red="255" blue="255" green="255" alpha="255"/>
         <LayoutObject>
@@ -7047,7 +7164,7 @@ def my_form_open(dialog, layer, feature):
                 </Option>
                 <Option name="dataDefinedPositionY" type="Map">
                   <Option name="active" type="bool" value="true"/>
-                  <Option name="expression" type="QString" value="eval(@topbody) + 3*@paperheight +0.64*@textheight +1*@titleheight"/>
+                  <Option name="expression" type="QString" value="eval(@topbody) + 3*(@paperheight + eval(@titleheight)) +0.64*@textheight +1*@titleheight"/>
                   <Option name="type" type="int" value="3"/>
                 </Option>
                 <Option name="dataDefinedWidth" type="Map">
@@ -7102,9 +7219,9 @@ def my_form_open(dialog, layer, feature):
             <Option type="QString" value="10"/>
             <Option type="QString" value="35"/>
             <Option type="QString" value="0"/>
-            <Option type="QString" value="845"/>
-            <Option type="QString" value="597"/>
-            <Option type="QString" value="592"/>
+            <Option type="QString" value="842"/>
+            <Option type="QString" value="595"/>
+            <Option type="QString" value="680"/>
             <Option type="QString" value="480"/>
             <Option type="QString" value="24"/>
             <Option type="QString" value="eval(eval(@layout_voffset) + eval(@voffset) + eval(@topmargin) + eval(@headheight) + eval(@headsep))"/>
@@ -7113,7 +7230,7 @@ def my_form_open(dialog, layer, feature):
           </Option>
         </Option>
       </customproperties>
-      <Atlas enabled="1" coverageLayerSource="?query=select%20*%0D%0Afrom%20permits%0D%0A;&amp;uid=permit_request_id" coverageLayerProvider="virtual" pageNameExpression="" coverageLayer="permits_v_42c80238_b48c_4c5e_b448_531c3c18e662" filterFeatures="1" filenamePattern="'output_'" coverageLayerName="permits_v" sortFeatures="0" hideCoverage="1" featureFilter="$id = 931"/>
+      <Atlas enabled="1" coverageLayerSource="?query=select%20*%0D%0Afrom%20permits%0D%0A;&amp;uid=permit_request_id" coverageLayerProvider="virtual" pageNameExpression="" coverageLayer="permits_v_42c80238_b48c_4c5e_b448_531c3c18e662" filterFeatures="0" filenamePattern="'output_'" coverageLayerName="permits_v" sortFeatures="0" hideCoverage="1"/>
     </Layout>
     <Layout worldFileMap="" units="mm" printResolution="300" name="print_template_table">
       <Snapper tolerance="5" snapToGrid="0" snapToGuides="1" snapToItems="1"/>
@@ -9949,7 +10066,7 @@ def my_form_open(dialog, layer, feature):
   <Bookmarks/>
   <ProjectViewSettings UseProjectScales="0">
     <Scales/>
-    <DefaultViewExtent ymin="1178283.07231165352277458" xmax="2543756.03360494086518884" ymax="1184832.16381165268830955" xmin="2535565.51019639009609818">
+    <DefaultViewExtent ymin="1178283.07231165352277458" xmax="2550106.78501675464212894" ymax="1184832.16381165268830955" xmin="2529214.75878457631915808">
       <spatialrefsys>
         <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Cadastre, engineering survey, topographic mapping (large and medium scale)."],AREA["Liechtenstein; Switzerland."],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
         <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
