@@ -307,7 +307,7 @@ def get_permit_request_properties(feature, parent):
                 )
             else:
                 # strline = f"<tr><th>{v}</th></tr>" if str(k) == 'id' else f"<tr><th>{v}</th></tr>"
-                strline = f"""<tr><th>property_{keys[idx]}</th> <td>{v}</td></th>" if str(k) == 'id' else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"""
+                strline = f"<tr><th>property_{keys[idx]}</th> <td>{v}</td></th>" if str(k) == 'id' else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"
             retval += strline
         retval += "</table>"
         if not has_data:
