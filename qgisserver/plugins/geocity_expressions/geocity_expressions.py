@@ -316,7 +316,7 @@ def get_permit_request_properties(feature, parent):
     return retval
 
 
-@qgsfunction(args='auto', group='Geocity')
+@qgsfunction(args="auto", group="Geocity")
 def get_permit_validations(feature, parent):
     """
     Function to get an HTML string output from the properties.validations
@@ -334,17 +334,17 @@ def get_permit_validations(feature, parent):
     get_keys = False
     field_names = [field.name() for field in feature.fields()]
     d = dict(zip(field_names, feature.attributes()))
-    validations = json.loads(d['validations'])
-    retval = ''
+    validations = json.loads(d["validations"])
+    retval = ""
     retval += "<style>body{font-family: arial; font-size: 12px;}h2{font-size: 16pt}th, td{padding: 0px;  text-align: left; font-size: 12px;}</style>"
-    lr = '<br>'
-    ts = '&#8239;'
+    lr = "<br>"
+    ts = "&#8239;"
     has_data = False
     keys = [
         f"Statut{ts}:",
         f"Commentaire (avant){ts}:",
         f"Commentaire (pendant){ts}:",
-        f"Commentaire (après){ts}:"
+        f"Commentaire (après){ts}:",
     ]
     title = "Statut des validations"
     retval += f"<h2>{title}</h2>"
@@ -354,12 +354,21 @@ def get_permit_validations(feature, parent):
         for idx, (k, v) in enumerate(validation.items()):
             has_data = True if k is not None else False
             if get_keys:
-                strline = f"<tr><th>validation_{k}</th> <td>{v}</td></th>" if str(k) == 'id' else f"<tr><th>{k}</th> <td>{v}</td></tr>"
+                strline = (
+                    f"<tr><th>validation_{k}</th> <td>{v}</td></th>"
+                    if str(k) == "id"
+                    else f"<tr><th>{k}</th> <td>{v}</td></tr>"
+                )
             else:
-                strline = f"<tr><th>validation_{keys[idx]}</th> <td>{v}</td></tr>" if str(k) == 'id' else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"
+                strline = (
+                    f"<tr><th>validation_{keys[idx]}</th> <td>{v}</td></tr>"
+                    if str(k) == "id"
+                    else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"
+                )
             retval += strline
         retval += "</table>"
-        if not has_data: retval = ''
+        if not has_data:
+            retval = ""
 
     return retval
 
