@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis version="3.22.0-Białowieża" projectname="" saveDateTime="2021-12-07T14:36:47" saveUser="NBL" saveUserFull="Blanc Nicolas">
+<qgis version="3.22.0-Białowieża" projectname="" saveDateTime="2021-12-07T14:59:15" saveUser="NBL" saveUserFull="Blanc Nicolas">
   <homePath path=""/>
   <title></title>
   <autotransaction active="0"/>
@@ -80,13 +80,12 @@
         </customproperties>
       </layer-tree-layer>
     </layer-tree-group>
-    <layer-tree-layer source="crs=EPSG:2056&amp;dpiMode=7&amp;format=image/png&amp;layers=asitvd.fond_couleur&amp;styles=default&amp;tileMatrixSet=2056&amp;url=https://wmts.asit-asso.ch/wmts" expanded="1" checked="Qt::Checked" name="fond" legend_exp="" id="Fond_ASIT___couleur_7310a042_baee_45a9_be64_daff9ce522bd" patch_size="-1,-1" providerKey="wms" legend_split_behavior="0">
+    <layer-tree-layer source="crs=EPSG:2056&amp;dpiMode=7&amp;format=image/png&amp;layers=asitvd.fond_cadastral&amp;styles=default&amp;tileMatrixSet=2056&amp;url=https://wmts.asit-asso.ch/wmts" expanded="1" checked="Qt::Checked" name="fond" legend_exp="" id="Fond_ASIT___cadastral_e064dcf9_c9e8_4a9c_9f99_24030b18f9d9" patch_size="-1,-1" providerKey="wms" legend_split_behavior="0">
       <customproperties>
         <Option/>
       </customproperties>
     </layer-tree-layer>
     <custom-order enabled="0">
-      <item>Fond_ASIT___couleur_7310a042_baee_45a9_be64_daff9ce522bd</item>
       <item>permits_f4e68657_9260_4212_84f4_3e0588dc8809</item>
       <item>permits_line_7b993f5c_5a03_4583_a98b_7344a9a2cccd</item>
       <item>permits_point_6132f4d4_b67d_4979_b370_cd38ee630200</item>
@@ -95,6 +94,7 @@
       <item>permits_line2_v_25f1d35a_dc03_44e2_b305_4d1d41093c48</item>
       <item>permits_poly2_v_25049a99_65f7_4b8f_8aea_0512e3c10353</item>
       <item>permits_v_42c80238_b48c_4c5e_b448_531c3c18e662</item>
+      <item>Fond_ASIT___cadastral_e064dcf9_c9e8_4a9c_9f99_24030b18f9d9</item>
     </custom-order>
   </layer-tree-group>
   <snapping-settings unit="1" self-snapping="0" minScale="0" maxScale="0" type="1" tolerance="12" scaleDependencyMode="0" enabled="0" mode="2" intersection-snapping="0">
@@ -114,10 +114,10 @@
   <mapcanvas name="theMapCanvas" annotationsVisible="1">
     <units>meters</units>
     <extent>
-      <xmin>2538991.05049403570592403</xmin>
-      <ymin>1181079.12241176422685385</ymin>
-      <xmax>2539053.25249403528869152</xmax>
-      <ymax>1181181.45196645148098469</ymax>
+      <xmin>2541699.87548345932736993</xmin>
+      <ymin>1181444.23779911594465375</ymin>
+      <xmax>2541948.68348345765843987</xmax>
+      <ymax>1181853.55601786496117711</ymax>
     </extent>
     <rotation>0</rotation>
     <destinationsrs>
@@ -184,7 +184,7 @@
     </legendgroup>
     <legendlayer showFeatureCount="0" open="true" checked="Qt::Checked" name="fond" drawingOrder="-1">
       <filegroup hidden="false" open="true">
-        <legendlayerfile isInOverview="0" layerid="Fond_ASIT___couleur_7310a042_baee_45a9_be64_daff9ce522bd" visible="1"/>
+        <legendlayerfile isInOverview="0" layerid="Fond_ASIT___cadastral_e064dcf9_c9e8_4a9c_9f99_24030b18f9d9" visible="1"/>
       </filegroup>
     </legendlayer>
   </legend>
@@ -254,8 +254,8 @@
         <xmax>11.69534156594466268</xmax>
         <ymax>48.30010787128173888</ymax>
       </wgs84extent>
-      <id>Fond_ASIT___couleur_7310a042_baee_45a9_be64_daff9ce522bd</id>
-      <datasource>crs=EPSG:2056&amp;dpiMode=7&amp;format=image/png&amp;layers=asitvd.fond_couleur&amp;styles=default&amp;tileMatrixSet=2056&amp;url=https://wmts.asit-asso.ch/wmts</datasource>
+      <id>Fond_ASIT___cadastral_e064dcf9_c9e8_4a9c_9f99_24030b18f9d9</id>
+      <datasource>crs=EPSG:2056&amp;dpiMode=7&amp;format=image/png&amp;layers=asitvd.fond_cadastral&amp;styles=default&amp;tileMatrixSet=2056&amp;url=https://wmts.asit-asso.ch/wmts</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -302,14 +302,14 @@
       <noData>
         <noDataList bandNo="1" useSrcNoData="0"/>
       </noData>
-      <map-layer-style-manager current="défaut">
-        <map-layer-style name="défaut"/>
+      <map-layer-style-manager current="default">
+        <map-layer-style name="default"/>
       </map-layer-style-manager>
       <metadataUrls/>
       <flags>
         <Identifiable>1</Identifiable>
         <Removable>1</Removable>
-        <Searchable>0</Searchable>
+        <Searchable>1</Searchable>
         <Private>0</Private>
       </flags>
       <temporal fetchMode="0" enabled="0" mode="0">
@@ -320,7 +320,7 @@
       </temporal>
       <customproperties>
         <Option type="Map">
-          <Option value="Undefined" type="QString" name="identify/format"/>
+          <Option value="Value" type="QString" name="identify/format"/>
         </Option>
       </customproperties>
       <pipe-data-defined-properties>
@@ -4378,7 +4378,6 @@ def my_form_open(dialog, layer, feature):
     </maplayer>
   </projectlayers>
   <layerorder>
-    <layer id="Fond_ASIT___couleur_7310a042_baee_45a9_be64_daff9ce522bd"/>
     <layer id="permits_f4e68657_9260_4212_84f4_3e0588dc8809"/>
     <layer id="permits_line_7b993f5c_5a03_4583_a98b_7344a9a2cccd"/>
     <layer id="permits_point_6132f4d4_b67d_4979_b370_cd38ee630200"/>
@@ -4387,6 +4386,7 @@ def my_form_open(dialog, layer, feature):
     <layer id="permits_line2_v_25f1d35a_dc03_44e2_b305_4d1d41093c48"/>
     <layer id="permits_poly2_v_25049a99_65f7_4b8f_8aea_0512e3c10353"/>
     <layer id="permits_v_42c80238_b48c_4c5e_b448_531c3c18e662"/>
+    <layer id="Fond_ASIT___cadastral_e064dcf9_c9e8_4a9c_9f99_24030b18f9d9"/>
   </layerorder>
   <properties>
     <DefaultStyles>
@@ -6185,7 +6185,7 @@ def my_form_open(dialog, layer, feature):
           </customproperties>
         </LayoutObject>
       </LayoutItem>
-      <LayoutItem zValue="25" id="" groupUuid="" labelText="[%'Permis n° ' || @atlas_featureid%]" referencePoint="8" positionOnPage="540,76,pt" templateUuid="{ad4a1ec3-4e42-411d-9287-2f6de97cd45d}" marginX="0" halign="2" background="false" excludeFromExports="0" outlineWidthM="0.3,mm" visibility="1" opacity="1" uuid="{ad4a1ec3-4e42-411d-9287-2f6de97cd45d}" frame="false" size="160,24,pt" valign="32" type="65641" frameJoinStyle="miter" blendMode="0" positionLock="true" marginY="0" htmlState="0" itemRotation="0" position="540,76,pt">
+      <LayoutItem zValue="25" id="" groupUuid="" labelText="[%'Permis n° ' || &quot;permit_request_id&quot; %]" referencePoint="8" positionOnPage="540,76,pt" templateUuid="{ad4a1ec3-4e42-411d-9287-2f6de97cd45d}" marginX="0" halign="2" background="false" excludeFromExports="0" outlineWidthM="0.3,mm" visibility="1" opacity="1" uuid="{ad4a1ec3-4e42-411d-9287-2f6de97cd45d}" frame="false" size="160,24,pt" valign="32" type="65641" frameJoinStyle="miter" blendMode="0" positionLock="true" marginY="0" htmlState="0" itemRotation="0" position="540,76,pt">
         <FrameColor blue="0" green="0" red="0" alpha="255"/>
         <BackgroundColor blue="255" green="255" red="255" alpha="255"/>
         <LayoutObject>
@@ -6687,7 +6687,7 @@ def my_form_open(dialog, layer, feature):
             <Option/>
           </customproperties>
         </LayoutObject>
-        <Extent xmin="2538424.27300000004470348" xmax="2538936.51699999999254942" ymax="1180594.20190999982878566" ymin="1180173.30808999994769692"/>
+        <Extent xmin="2534085.64452333236113191" xmax="2543634.65547666745260358" ymax="1183889.29199999500997365" ymin="1176043.18800000473856926"/>
         <LayerSet/>
         <ComposerMapGrid frameAnnotationDistance="1" unit="0" showAnnotation="0" frameFillColor2="0,0,0,255" gridFramePenThickness="0.29999999999999999" bottomAnnotationPosition="1" topAnnotationDirection="0" rotatedAnnotationsMarginToCorner="0" topAnnotationPosition="1" bottomAnnotationDirection="0" gridFrameStyle="0" gridFrameMargin="0" bottomAnnotationDisplay="0" gridFramePenColor="0,0,0,255" rotatedTicksMarginToCorner="0" leftAnnotationPosition="1" uuid="{fab92965-6317-46f0-ae47-93ee6fc206f8}" position="3" rightAnnotationPosition="1" rightFrameDivisions="0" rotatedAnnotationsEnabled="0" intervalY="500" annotationPrecision="3" name="Grid 1" leftAnnotationDisplay="0" topAnnotationDisplay="0" leftFrameDivisions="0" gridFrameSideFlags="15" leftAnnotationDirection="0" rotatedAnnotationsLengthMode="0" maximumIntervalWidth="100" annotationExpression="" rotatedAnnotationsMinimumAngle="0" show="1" gridStyle="0" rotatedTicksMinimumAngle="0" rightAnnotationDirection="0" offsetY="0" frameFillColor1="255,255,255,255" bottomFrameDivisions="0" blendMode="0" crossLength="3" rotatedTicksLengthMode="0" rotatedTicksEnabled="0" gridFrameWidth="2" annotationFormat="0" topFrameDivisions="0" rightAnnotationDisplay="0" intervalX="500" offsetX="0" minimumIntervalWidth="50">
           <lineStyle>
@@ -10287,7 +10287,7 @@ def my_form_open(dialog, layer, feature):
   <Bookmarks/>
   <ProjectViewSettings UseProjectScales="0">
     <Scales/>
-    <DefaultViewExtent xmin="2538858.93253909703344107" xmax="2539185.37044897396117449" ymax="1181181.45196645148098469" ymin="1181079.12241176422685385">
+    <DefaultViewExtent xmin="2541171.40366370417177677" xmax="2542477.15530321281403303" ymax="1181853.55601786496117711" ymin="1181444.23779911594465375">
       <spatialrefsys>
         <wkt>PROJCRS["CH1903+ / LV95",BASEGEOGCRS["CH1903+",DATUM["CH1903+",ELLIPSOID["Bessel 1841",6377397.155,299.1528128,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],ID["EPSG",4150]],CONVERSION["Swiss Oblique Mercator 1995",METHOD["Hotine Oblique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Latitude of projection centre",46.9524055555556,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8811]],PARAMETER["Longitude of projection centre",7.43958333333333,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8812]],PARAMETER["Azimuth of initial line",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angle from Rectified to Skew Grid",90,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8814]],PARAMETER["Scale factor on initial line",1,SCALEUNIT["unity",1],ID["EPSG",8815]],PARAMETER["Easting at projection centre",2600000,LENGTHUNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at projection centre",1200000,LENGTHUNIT["metre",1],ID["EPSG",8817]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1]],USAGE[SCOPE["Cadastre, engineering survey, topographic mapping (large and medium scale)."],AREA["Liechtenstein; Switzerland."],BBOX[45.82,5.96,47.81,10.49]],ID["EPSG",2056]]</wkt>
         <proj4>+proj=somerc +lat_0=46.9524055555556 +lon_0=7.43958333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs</proj4>
