@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis saveUserFull="Blanc Nicolas" version="3.22.0-Białowieża" saveUser="NBL" projectname="" saveDateTime="2021-12-07T11:09:28">
+<qgis saveUserFull="Blanc Nicolas" version="3.22.0-Białowieża" saveUser="NBL" projectname="" saveDateTime="2021-12-07T11:11:40">
   <homePath path=""/>
   <title></title>
   <autotransaction active="0"/>
@@ -7234,7 +7234,7 @@ def my_form_open(dialog, layer, feature):
           </Option>
         </Option>
       </customproperties>
-      <Atlas filenamePattern="'output_'" coverageLayerSource="?query=select%20*%0D%0Afrom%20permits%0D%0A;&amp;uid=permit_request_id" sortFeatures="0" enabled="1" hideCoverage="1" coverageLayer="permits_v_42c80238_b48c_4c5e_b448_531c3c18e662" coverageLayerName="permits_v" coverageLayerProvider="virtual" pageNameExpression="" filterFeatures="1" featureFilter="$id = 1569"/>
+      <Atlas filenamePattern="'output_'" coverageLayerSource="?query=select%20*%0D%0Afrom%20permits%0D%0A;&amp;uid=permit_request_id" sortFeatures="0" enabled="1" hideCoverage="1" coverageLayer="permits_v_42c80238_b48c_4c5e_b448_531c3c18e662" coverageLayerName="permits_v" coverageLayerProvider="virtual" pageNameExpression="" filterFeatures="0"/>
     </Layout>
     <Layout printResolution="300" units="mm" worldFileMap="" name="print_template_table">
       <Snapper tolerance="5" snapToGrid="0" snapToItems="1" snapToGuides="1"/>
