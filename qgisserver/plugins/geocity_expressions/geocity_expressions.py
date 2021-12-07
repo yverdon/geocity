@@ -36,7 +36,7 @@ def get_permit_amend_properties(feature, parent):
         retval += f"<h3>{i}</h3>"
         retval += "<table>"
         for k, v in amend_property.items():
-            has_data = True if k is not None else False
+            has_data = True if k is not None and v is not None else False
             if get_keys:
                 strline = (
                     f"<tr><th>property_{k}</th> <td>{v}</td></th>"
@@ -96,7 +96,7 @@ def get_permit_author(feature, parent):
     title = "Auteur·e de la demande"
     retval += f"<h2>{title}</h2>"
     for idx, (k, v) in enumerate(author.items()):
-        has_data = True if k is not None else False
+        has_data = True if k is not None and v is not None else False
         retval += "<table>"
         if get_keys:
             strline = (
@@ -115,7 +115,7 @@ def get_permit_author(feature, parent):
     return retval
 
 
-@qgsfunction(args="auto", group="Geocity")
+@qgsfunction(args=-1, group="Geocity")
 def get_permit_contacts(pos, feature, parent):
     """
     Function to get an HTML string output from the properties.permit_request_actor
@@ -123,19 +123,21 @@ def get_permit_contacts(pos, feature, parent):
     
     Parameters
     ----------
-    pos : int
+    pos : int or list in case where args=-1 in decorator
         The index of the element to retrieve. For example, if there are several
         contacts, 0 will return the first one, 1 the second one, and so on.
+        If not set, it will returns all values.
 
     Returns
     -------
     retval : str
         The HTML string to be displayed in the QGIS print layout.
     """
-    try:
-        pos
-    except NameError:
-        pos = 0
+
+    if not pos:
+        pos = None
+    else:
+        pos = pos[0]
 
     get_keys = False
     field_names = [field.name() for field in feature.fields()]
@@ -160,14 +162,15 @@ def get_permit_contacts(pos, feature, parent):
         f"Téléphone{ts}:",
         f"E-mail{ts}:",
     ]
-    title = f"Contact {pos+1}"
-    retval += f"<h2>{title}</h2>"
+    # title = f"Contacts"
+    # retval += f"<h2>{title}</h2>"
     for i, (j, actor) in enumerate(permit_request_actors.items()):
-        if pos == i:
-            retval += f"<h3>{j}</h3>"
+        if pos is None or pos < 0 or pos == i:
+            # title = f"Contact n° {j}"
+            # retval += f"<h3>{title}</h3>"
             retval += "<table>"
             for idx, (k, v) in enumerate(actor.items()):
-                has_data = True if k is not None else False
+                has_data = True if k is not None and v is not None else False
                 if get_keys:
                     strline = (
                         f"<tr><th>contact_{k}</th> <td>{v}</td></th>"
@@ -176,7 +179,7 @@ def get_permit_contacts(pos, feature, parent):
                     )
                 else:
                     strline = (
-                        f"<tr><th>contact_{keys[idx]}</th> <td>{v}</td></tr>"
+                        f""
                         if str(k) == "id"
                         else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"
                     )
@@ -221,7 +224,7 @@ def get_permit_geotime(feature, parent):
     title = "Agenda"
     retval += f"<h2>{title}</h2>"
     for idx, (k, v) in enumerate(geotime.items()):
-        has_data = True if k is not None else False
+        has_data = True if k is not None and v is not None else False
         retval += "<table>"
         if get_keys:
             strline = (
@@ -304,7 +307,7 @@ def get_permit_request_properties(feature, parent):
         retval += f"<h3>{i}</h3>"
         retval += "<table>"
         for idx, (k, v) in enumerate(request_property.items()):
-            has_data = True if k is not None else False
+            has_data = True if k is not None and v is not None else False
             v = translate_boolean(v)
             if get_keys:
                 strline = (
@@ -327,21 +330,29 @@ def get_permit_request_properties(feature, parent):
     return retval
 
 
-@qgsfunction(args="auto", group="Geocity")
-def get_permit_validations(feature, parent):
+@qgsfunction(args=-1, group="Geocity")
+def get_permit_validations(pos, feature, parent):
     """
     Function to get an HTML string output from the properties.validations
     element of the GeoJSON object send by the GeoCity REST API.
 
     Parameters
     ----------
-    None
+    pos : int or list in case where args=-1 in decorator
+        The index of the element to retrieve. For example, if there are several
+        contacts, 0 will return the first one, 1 the second one, and so on.
+        If not set, it will returns all values.
 
     Returns
     -------
     retval : str
         The HTML string to be displayed in the QGIS print layout.
     """
+    if not pos:
+        pos = None
+    else:
+        pos = pos[0]
+
     get_keys = False
     field_names = [field.name() for field in feature.fields()]
     d = dict(zip(field_names, feature.attributes()))
@@ -357,29 +368,30 @@ def get_permit_validations(feature, parent):
         f"Commentaire (pendant){ts}:",
         f"Commentaire (après){ts}:",
     ]
-    title = "Statut des validations"
-    retval += f"<h2>{title}</h2>"
+    # title = "Statut des validations"
+    # retval += f"<h2>{title}</h2>"
     for i, (j, validation) in enumerate(validations.items()):
-        retval += f"<h3>{j}</h3>"
-        retval += "<table>"
-        for idx, (k, v) in enumerate(validation.items()):
-            has_data = True if k is not None else False
-            if get_keys:
-                strline = (
-                    f"<tr><th>validation_{k}</th> <td>{v}</td></th>"
-                    if str(k) == "id"
-                    else f"<tr><th>{k}</th> <td>{v}</td></tr>"
-                )
-            else:
-                strline = (
-                    f"<tr><th>validation_{keys[idx]}</th> <td>{v}</td></tr>"
-                    if str(k) == "id"
-                    else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"
-                )
-            retval += strline
-        retval += "</table>"
-        if not has_data:
-            retval = ""
+        if pos is None or pos < 0 or pos == i:
+            retval += f"<h3>Validation{ts}: {j}</h3>"
+            retval += "<table>"
+            for idx, (k, v) in enumerate(validation.items()):
+                has_data = True if k is not None and v is not None else False
+                if get_keys:
+                    strline = (
+                        f"<tr><th>validation_{k}</th> <td>{v}</td></th>"
+                        if str(k) == "id"
+                        else f"<tr><th>{k}</th> <td>{v}</td></tr>"
+                    )
+                else:
+                    strline = (
+                        f"<tr><th>validation_{keys[idx]}</th> <td>{v}</td></tr>"
+                        if str(k) == "id"
+                        else f"<tr><th>{keys[idx]}</th> <td>{v}</td></tr>"
+                    )
+                retval += strline
+            retval += "</table>"
+            if not has_data:
+                retval = ""
 
     return retval
 
