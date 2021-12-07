@@ -28,6 +28,7 @@ from qgis.core import (
 )
 
 from .logger import Logger
+from os import getenv
 
 
 __copyright__ = "Copyright Yverdon-les-Bains"
@@ -55,6 +56,7 @@ class OAPIFRefresher:
         """
 
         project = QgsProject.instance()
+        prefix_url = getenv("PREFIX_URL", "")
         for layer in QgsProject.instance().mapLayers().values():
             uri = layer.dataProvider().uri()
             # refresh and filter OAPIF virtual layer
@@ -70,7 +72,8 @@ class OAPIFRefresher:
                         # replace url in order to filter for the required feature only
                         uri.removeParam("url")
                         uri.setParam(
-                            "url", f"http://web:9000/wfs3/?permit_request_id={id}"
+                            "url",
+                            f"http://web:9000/{prefix_url}wfs3/?permit_request_id={id}",
                         )
                         Logger().info(
                             "qgis-printatlas - uri: " + uri.uri(expandAuthConfig=False)

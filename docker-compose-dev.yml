@@ -45,6 +45,7 @@ services:
             - QGIS_SERVER_PARALLEL_RENDERING=true
             - QGIS_SERVER_IGNORE_BAD_LAYERS=true
             - QGIS_SERVER_LOG_LEVEL=0
+            - PREFIX_URL
 
     postgres:
         image: camptocamp/postgres:11
