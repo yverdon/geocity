@@ -301,7 +301,7 @@ def get_permit_request_properties(feature, parent):
         f"Description{ts}:",
         f"Documents complémentaires{ts}:",
     ]
-    title = "Propriétés de la requête"
+    title = "Propriétés de la demande"
     retval += f"<h2>{title}</h2>"
     for i, request_property in request_properties.items():
         retval += f"<h3>{i}</h3>"
