@@ -37,6 +37,22 @@ __email__ = "sit@ylb.ch"
 
 class OAPIFRefresher:
     def refresh_geocity_oapif_layers_for_current_atlas_feature(id):
+        """ Change dataSourceUri for OAPIF layers listed in QGIS project
+            so that the source is filtered server side. Then reload the
+            single feature which have $id = id. Thus, new feature are avalailable
+            for print despite QGIS SERVER cache and no full reload of endpoint
+            feature is required (which would cause a performance leak on endpoint).
+            Refreshing of virtual layer only ensure api structure evolution
+            would be reflected correctly.
+            QGIS SERVER atlas filtering does not work (3.22.0) if primary key is not defined correctly
+            which is the case for OAPIF sources. Thus, we're force to use virtual layers.
+            
+            Parameters
+            ----------
+            id : int
+                Feature to print
+    
+        """
 
         project = QgsProject.instance()
         for layer in QgsProject.instance().mapLayers().values():

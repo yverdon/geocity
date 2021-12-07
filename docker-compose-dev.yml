@@ -47,7 +47,7 @@ services:
             - QGIS_SERVER_LOG_LEVEL=0
 
     postgres:
-        image: postgis/postgis:14-3.1
+        image: camptocamp/postgres:11
         restart: unless-stopped
         environment:
             - POSTGRES_USER=${PGUSER}
