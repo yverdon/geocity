@@ -226,7 +226,7 @@ CONSTANCE_CONFIG = {
     "MAX_FILE_UPLOAD_SIZE": (10485760, "Taille maximum des fichiers uploadé", int,),
     "MAX_FEATURE_NUMBER_FOR_QGISSERVER": (
         10,
-        "Nombre maximum d'entités disponible pour QGISSERVER",
+        "Nombre maximum d'entités disponible pour QGISSERVER, un nombre trop élevé impactera négativement les performances de l'impression",
         int,
     ),
     "GEOCALENDAR_URL": (

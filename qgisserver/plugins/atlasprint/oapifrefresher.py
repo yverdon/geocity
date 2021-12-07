@@ -85,9 +85,9 @@ class OAPIFRefresher:
                             "OAPIF",
                             QgsDataProvider.ProviderOptions(),
                         )
-                        layer.dataProvider().updateExtents()
                         layer.dataProvider().reloadData()
                         layer.updateFields()
+                        layer.dataProvider().updateExtents()
                         layer.triggerRepaint()
                         Logger().info(
                             "qgis-printatlas - refreshed data source: "
@@ -101,8 +101,8 @@ class OAPIFRefresher:
             # refresh virtual layers that we use as a bug workaround in QGIS OAPIF provider which does not set PKEY column correctly in 3.22.0
             if layer.dataProvider().name() == "virtual" and layer.isValid():
                 try:
-                    layer.dataProvider().updateExtents()
                     layer.dataProvider().reloadData()
+                    layer.dataProvider().updateExtents()
                     layer.updateFields()
                     layer.triggerRepaint()
                     Logger().info(

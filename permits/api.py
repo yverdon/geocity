@@ -146,7 +146,7 @@ class PermitRequestViewSet(
         
         Notes:
             1.- For works objects types that do not have geometry, the returned 
-                geometry is the centroid of the administrative entity geometry
+                geometry is a 2x2 square around the centroid of the administrative entity geometry
             2.- This endpoint does not filter out items without geometry.
                 For works objects types that have only point geometry, the returned geometry
                 is a polygon of 2 x 2 meters
