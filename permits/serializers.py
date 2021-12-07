@@ -2,7 +2,7 @@ import json
 
 from collections import OrderedDict
 from django.contrib.gis.geos import GEOSGeometry
-from django.contrib.gis.db.models.functions import AsGeoJSON
+from django.contrib.gis.db.models.functions import AsGeoJSON, Centroid
 from django.db.models import Max, Min
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
@@ -72,17 +72,23 @@ class PropertiesValuesSerializer(serializers.RelatedField):
             "properties__property__name",
             "properties__value__val",
             "works_object_type_id",
+            "works_object_type__works_object__name",
+            "works_object_type__works_type__name",
         )
         amend_props = obj.values(
             "amend_properties__property__name",
             "amend_properties__value",
             "works_object_type_id",
+            "works_object_type__works_object__name",
+            "works_object_type__works_type__name",
         )
-        wot_and_amend_properties = {}
+        wot_properties = {}
+        amend_properties = {}
+
         if wot_props:
             for prop in wot_props:
-                wot = f'permit_request_works_object_property_value_{prop["works_object_type_id"]}'
-                wot_and_amend_properties[wot] = {
+                wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+                wot_properties[wot] = {
                     prop_i["properties__property__name"]: prop_i[
                         "properties__value__val"
                     ]
@@ -92,10 +98,8 @@ class PropertiesValuesSerializer(serializers.RelatedField):
                 }
 
         for prop in amend_props:
-            amends = (
-                f'permit_request_amend_property_value_{prop["works_object_type_id"]}'
-            )
-            wot_and_amend_properties[amends] = {
+            amends = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+            amend_properties[amends] = {
                 prop_i["amend_properties__property__name"]: prop_i[
                     "amend_properties__value"
                 ]
@@ -104,6 +108,10 @@ class PropertiesValuesSerializer(serializers.RelatedField):
                 and prop_i["amend_properties__property__name"]
             }
 
+        wot_and_amend_properties = {
+            "request_properties": wot_properties,
+            "amend_properties": amend_properties,
+        }
         return wot_and_amend_properties
 
 
@@ -116,13 +124,11 @@ class PermitRequestActorSerializer(serializers.Serializer):
         rep = {}
         if actors:
             for i, actor in enumerate(actors, 1):
+                actor_object = {}
+                actor_object["actor_type_display"] = actor.get_actor_type_display()
                 for field in actor.actor._meta.fields:
-                    rep[slugify(f"permit_request_actor_{i}_{field.name}")] = getattr(
-                        actor.actor, field.name
-                    )
-                rep[
-                    f"permit_request_actor_{i}_actor_type"
-                ] = actor.get_actor_type_display()
+                    actor_object[field.name] = getattr(actor.actor, field.name)
+                rep[f"{actor.id}"] = actor_object
 
         return rep
 
@@ -158,23 +164,19 @@ class PermitRequestValidationSerializer(serializers.Serializer):
         rep = {}
         if validations:
             for i, validation in enumerate(validations, 1):
+                values = {}
                 for field in validation._meta.fields:
+                    values[
+                        "validation_status"
+                    ] = validation.get_validation_status_display()
                     if field.name in [
                         "comment_before",
                         "comment_during",
                         "comment_after",
                     ]:
-                        rep[slugify(f"validation_{i}_{field.name}")] = getattr(
-                            validation, field.name
-                        )
+                        values[field.name] = getattr(validation, field.name)
 
-                    rep[
-                        slugify(f"validation_{i}_validation_status")
-                    ] = validation.get_validation_status_display()
-                    rep[
-                        slugify(f"validation_{i}_department")
-                    ] = validation.department.description
-
+                rep[validation.department.description] = values
             return rep
 
 
@@ -218,17 +220,17 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
         self.extract_geom = extract_geom
 
     def to_representation(self, value):
-
         geo_time_qs = value.all()
-
         if not geo_time_qs:
             return {
-                "geometry": {"type": "Point", "coordinates": []},
+                "geometry": {"type": "Polygon", "coordinates": []},
                 "properties": {
-                    "permit_request_geo_time_start_date": "",
-                    "permit_request_geo_time_end_date": "",
-                    "permit_request_geo_time_comments": [],
-                    "permit_request_geo_time_external_links": [],
+                    "geotime_aggregated": {
+                        "start_date": "",
+                        "end_date": "",
+                        "comments": [],
+                        "external_links": [],
+                    }
                 },
             }
 
@@ -251,31 +253,43 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
 
             result = {"properties": {}}
             if not aggregated_geotime_qs["singlegeom"]:
-                # Insert empty geometry if there is none
                 result["geometry"] = None
             else:
                 result["geometry"] = json.loads(
                     GEOSGeometry(aggregated_geotime_qs["singlegeom"]).json
                 )
 
-            result["properties"]["permit_request_geo_time_start_date"] = (
-                aggregated_geotime_qs["permit_request_geo_time_end_date"]
+            geotime_aggregated = {}
+            geotime_aggregated["start_date"] = (
+                aggregated_geotime_qs["permit_request_geo_time_end_date"].strftime(
+                    "%m.%d.%Y %H:%M"
+                )
                 if aggregated_geotime_qs["permit_request_geo_time_start_date"]
                 else ""
             )
-            result["properties"]["permit_request_geo_time_end_date"] = (
-                aggregated_geotime_qs["permit_request_geo_time_end_date"]
+            geotime_aggregated["end_date"] = (
+                aggregated_geotime_qs["permit_request_geo_time_end_date"].strftime(
+                    "%m.%d.%Y %H:%M"
+                )
                 if aggregated_geotime_qs["permit_request_geo_time_end_date"]
                 else ""
             )
 
             # Collect the comments and external links from all possible rows
-            result["properties"]["permit_request_geo_time_comments"] = [
+            geotime_aggregated["comments"] = [
                 obj.comment for obj in geo_time_qs if obj.comment
             ]
-            result["properties"]["permit_request_geo_time_external_links"] = [
+            if geotime_aggregated["comments"] == []:
+                geotime_aggregated["comments"] = ""
+
+            geotime_aggregated["external_links"] = [
                 obj.external_link for obj in geo_time_qs if obj.external_link
             ]
+
+            if geotime_aggregated["external_links"] == []:
+                geotime_aggregated["external_links"] = ""
+
+            result["properties"]["geotime_aggregated"] = geotime_aggregated
             return result
 
 
@@ -313,7 +327,7 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
     )
     permit_request_actor = PermitRequestActorSerializer(source="*", read_only=True)
     geo_envelop = PermitRequestGeoTimeGeoJSONSerializer(
-        source="geo_time", read_only=True
+        source="geo_time", read_only=True,
     )
 
     creditor_type = serializers.SerializerMethodField()
@@ -378,6 +392,23 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
 
     def to_representation(self, value):
         rep = super().to_representation(value)
+
+        # If the WOT has no geometry, we add the centroid of the administrative entity as a square (polygon)
+        if rep["properties"]["geo_envelop"]["geometry"]["coordinates"] == []:
+            administrative_entity_name = rep["properties"]["permit_request"][
+                "administrative_entity"
+            ]["name"]
+            administrative_entity = (
+                models.PermitAdministrativeEntity.objects.filter(
+                    name=administrative_entity_name
+                )
+                .annotate(centroid_geom=geoservices.JoinGeometries("geom"))
+                .first()
+            )
+            rep["properties"]["geo_envelop"]["geometry"] = json.loads(
+                administrative_entity.centroid_geom.geojson
+            )
+
         # Flattening the Geometry
         rep["geometry"] = rep["properties"]["geo_envelop"]["geometry"]
         for field, value in rep["properties"]["geo_envelop"]["properties"].items():
@@ -396,7 +427,6 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
             for field, value in rep["properties"][field_to_flatten].items():
                 rep["properties"][field] = value
             del rep["properties"][field_to_flatten]
-
         return rep
 
 

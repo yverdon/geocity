@@ -31,6 +31,11 @@ To debug and view the resulting `docker-compose-dev.yml` file use (uses the `.en
 docker-compose -f docker-compose-dev.yml config
 ```
 
+Check that qgisserver print server is up and running
+```
+http://localhost:9096/ogc/?REQUEST=GETCAPABILITIES&SERVICE=ATLAS&MAP=/io/data/report_template.qgs
+```
+
 ## Alternative demo setup
 
 Following command will setup a demo DB with more exhaustive configuration
@@ -39,6 +44,25 @@ Following command will setup a demo DB with more exhaustive configuration
 ```bash
 docker-compose -f docker-compose-demo.yml down --remove-orphans && docker-compose -f docker-compose-demo.yml up
 ```
+
+## Standard print setup
+
+
+To add default print templates for all Works Objects Types execute
+
+```bash
+ docker-compose exec web python manage.py add_default_print_config
+ ```
+
+ To update default print templates for all Works Objects Types execute
+
+```bash
+ docker-compose exec web python manage.py update_default_print_config
+ ```
+
+These commands will add/update a default print configuration that contains all data
+available in the API enpoint. Layout will in most cases require to be adapted
+to form configuration and user tast using QGIS 3.22
 
 ### Run the tests from within the docker container
 

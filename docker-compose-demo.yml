@@ -25,12 +25,15 @@ services:
             - "${DJANGO_DOCKER_PORT}:9000"
 
     qgisserver:
-        image: openquake/qgis-server:3.20
+        image: openquake/qgis-server:3.22
         restart: unless-stopped
         depends_on:
             - "postgres"
         volumes:
             - ./qgisserver/geocity.qgs:/io/data/geocity.qgs:ro
+            - ./qgisserver/report_template.qgs:/io/data/report_template.qgs:ro
+            - ./qgisserver/plugins/geocity_expressions:/io/plugins/geocity_expressions
+            - ./qgisserver/plugins/atlasprint:/io/plugins/atlasprint
             - ./qgisserver/pg_service.conf:/etc/postgresql-common/pg_service.conf:ro
             - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
         ports:
@@ -38,6 +41,8 @@ services:
         environment:
             - QGIS_SERVER_PARALLEL_RENDERING=true
             - QGIS_SERVER_IGNORE_BAD_LAYERS=true
+            - QGIS_SERVER_LOG_LEVEL=0
+            - PREFIX_URL
 
     postgres:
         image: camptocamp/postgres:11

@@ -13,6 +13,8 @@ from rest_framework.test import APIClient
 from permits import models
 
 from . import factories
+import urllib.parse
+import requests
 
 
 class PermitRequestAPITestCase(TestCase):
@@ -285,15 +287,6 @@ class PermitRequestAPITestCase(TestCase):
             ["«\xa0bad_status_type\xa0» n'est pas un choix valide."],
         )
 
-    def test_api_bad_geom_type_parameter_raises_exception(self):
-        self.client.login(username=self.secretariat_user.username, password="password")
-        response = self.client.get(reverse("permits-list"), {"geom_type": "whatever"})
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.json()["geom_type"],
-            ["«\xa0whatever\xa0» n'est pas un choix valide."],
-        )
-
     def test_api_bad_status_choice_raises_exception(self):
         self.client.login(username=self.secretariat_user.username, password="password")
         response = self.client.get(reverse("permits-list"), {"status": 25})
@@ -328,3 +321,74 @@ class PermitRequestAPITestCase(TestCase):
                 "features": [],
             },
         )
+
+    def test_api_permits_point_returns_only_points(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        response = self.client.get(reverse("permits_point-list"),)
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("line", str(response_json).lower())
+        self.assertNotIn("polygon", str(response_json).lower())
+
+    def test_api_permits_line_returns_only_lines(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        response = self.client.get(reverse("permits_line-list"),)
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("point", str(response_json).lower())
+        self.assertNotIn("polygon", str(response_json).lower())
+
+    def test_api_permits_poly_returns_only_polygons(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        response = self.client.get(reverse("permits_poly-list"),)
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("point", str(response_json).lower())
+        self.assertNotIn("line", str(response_json).lower())
+
+    def test_api_permits_does_not_contain_empty_geometry(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        response = self.client.get(reverse("permits-list"),)
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        for feature in response_json["features"]:
+            self.assertEqual(feature["geometry"]["type"], "Polygon")
+            self.assertNotEqual(feature["geometry"]["coordinates"], [])
+
+    def test_qgisserver_is_up_and_atlas_plugin_is_working(self):
+        values = {
+            "SERVICE": "ATLAS",
+            "REQUEST": "GETCAPABILITIES",
+            "MAP": "/io/data/report_template.qgs",
+        }
+
+        qgisserver_url = "http://qgisserver/ogc/?" + urllib.parse.urlencode(values)
+        qgisserver_response = requests.get(
+            qgisserver_url, headers={"Accept": "application/pdf"}, stream=True
+        )
+        self.assertEqual(qgisserver_response.status_code, 200)
+        self.assertEqual(qgisserver_response.json()["status"], "success")
+
+    def test_print_service_is_working_with_default_template(self):
+
+        values = {
+            "SERVICE": "ATLAS",
+            "REQUEST": "GETPRINT",
+            "FORMAT": "PDF",
+            "TRANSPARENT": "true",
+            "SRS": "EPSG:2056",
+            "DPI": "150",
+            "MAP": "/io/data/report_template.qgs",
+            "TEMPLATE": "print_template",
+            "LAYERS": "background,permits,permits_point,permits_line,permits_poly",
+            "EXP_FILTER": "permit_request_id in(1)",
+            "PERMIT_REQUEST_ID": 1,
+        }
+
+        qgisserver_url = "http://qgisserver/ogc/?" + urllib.parse.urlencode(values)
+        qgisserver_response = requests.get(
+            qgisserver_url, headers={"Accept": "application/pdf"}, stream=True
+        )
+        self.assertEqual(qgisserver_response.status_code, 200)
+
+    # TODO: test also the permits:permit_request_print route

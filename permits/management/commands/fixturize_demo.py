@@ -13,7 +13,7 @@ from geomapshark import settings
 from permits import admin, models
 import re
 import unicodedata
-
+from .add_default_print_config import add_default_print_config
 from constance import config
 
 
@@ -111,6 +111,8 @@ class Command(BaseCommand):
             self.create_template_customization()
             self.stdout.write("Configurating template customizations...")
             self.setup_homepage()
+            self.stdout.write("Creating default print templates...")
+            add_default_print_config()
             self.stdout.write("Fixturize succeed!")
 
     def setup_site(self):

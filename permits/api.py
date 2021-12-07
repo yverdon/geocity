@@ -143,7 +143,19 @@ class PermitRequestViewSet(
         1.- /rest/permits/?permit_request_id=1
         2.- /rest/permits/?works_object_type=1
         3.- /rest/permits/?status=0
-        4.- /rest/permits/?geom_type=lines | points | polygons
+        
+        Notes:
+            1.- For works objects types that do not have geometry, the returned 
+                geometry is a 2x2 square around the centroid of the administrative entity geometry
+            2.- This endpoint does not filter out items without geometry.
+                For works objects types that have only point geometry, the returned geometry
+                is a polygon of 2 x 2 meters
+
+            This endpoint is mainly designed for atlas print generation with QGIS Server
+            For standard geometric endpoints, please use the following endpoints
+            1.- Points: /rest/permits_point/
+            2.- Lines: /rest/permits_line/
+            3.- Polygons: /rest/permits_polygon/
     """
 
     serializer_class = serializers.PermitRequestPrintSerializer
@@ -154,18 +166,16 @@ class PermitRequestViewSet(
     wfs3_geom_lookup = "geo_time__geom"  # lookup for the geometry (on the queryset), used to determine bbox
     wfs3_srid = 2056
 
-    def get_queryset(self):
+    def get_queryset(self, geom_type=None):
         """
         This view should return a list of permits for which the logged user has
         view permissions
         """
         user = self.request.user
-
         filters_serializer = serializers.PermitRequestFiltersSerializer(
             data={
                 "works_object_type": self.request.query_params.get("works_object_type"),
                 "status": self.request.query_params.get("status"),
-                "geom_type": self.request.query_params.get("geom_type"),
                 "permit_request_id": self.request.query_params.get("permit_request_id"),
             }
         )
@@ -184,24 +194,26 @@ class PermitRequestViewSet(
             base_filter &= Q(pk=filters["permit_request_id"])
 
         geom_qs = models.PermitRequestGeoTime.objects.all()
-
-        if filters["geom_type"]:
+        # filter item which have the geom_type in their geometry column
+        if geom_type:
             geom_qs = geom_qs.annotate(geom_type=geoservices.GeomStAsText(F("geom"),))
-            if filters["geom_type"] == "lines":
+            if geom_type == "lines":
                 geom_qs = geom_qs.filter(geom_type__contains="LINE")
-            if filters["geom_type"] == "points":
+            if geom_type == "points":
                 geom_qs = geom_qs.filter(geom_type__contains="POINT")
-            if filters["geom_type"] == "polygons":
+            if geom_type == "polygons":
                 geom_qs = geom_qs.filter(geom_type__contains="POLY")
             base_filter &= Q(
                 id__in=set(geom_qs.values_list("permit_request_id", flat=True))
             )
 
         geotime_prefetch = Prefetch("geo_time", queryset=geom_qs)
-
         works_object_types_prefetch = Prefetch(
             "works_object_types",
             queryset=models.WorksObjectType.objects.select_related("works_type"),
+        )
+        request_comes_from_internal_qgisserver = services.check_request_comes_from_internal_qgisserver(
+            self.request
         )
 
         qs = (
@@ -210,9 +222,7 @@ class PermitRequestViewSet(
                 Q(
                     id__in=services.get_permit_requests_list_for_user(
                         user,
-                        request_comes_from_internal_qgisserver=services.check_request_comes_from_internal_qgisserver(
-                            self.request
-                        ),
+                        request_comes_from_internal_qgisserver=request_comes_from_internal_qgisserver,
                     )
                 )
                 | Q(is_public=True)
@@ -223,6 +233,8 @@ class PermitRequestViewSet(
             .prefetch_related("worksobjecttypechoice_set__amend_properties__property")
             .select_related("administrative_entity")
         )
+        if request_comes_from_internal_qgisserver:
+            qs = qs[: config.MAX_FEATURE_NUMBER_FOR_QGISSERVER]
 
         return qs
 
@@ -255,15 +267,20 @@ def permitRequestViewSetSubsetFactory(geom_type_name):
     Serializer.__name__ = f"PermitRequestViewSetSerializer{geom_type_name}"
 
     class ViewSet(PermitRequestViewSet):
+        """
+        Permits request endpoint Usage:
+            1.- /rest/permits/?permit_request_id=1
+            2.- /rest/permits/?works_object_type=1
+            3.- /rest/permits/?status=0
+        """
+
         wfs3_title = f"{PermitRequestViewSet.wfs3_title} ({geom_type_name})"
         wfs3_description = f"{PermitRequestViewSet.wfs3_description} (géométries de type {geom_type_name})"
         serializer_class = Serializer
 
         def get_queryset(self):
             # Inject the geometry filter
-            self.request.GET = self.request.GET.copy()
-            self.request.GET["geom_type"] = geom_type_name
-            return super().get_queryset()
+            return super().get_queryset(geom_type=geom_type_name)
 
     return ViewSet
 
