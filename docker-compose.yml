@@ -36,3 +36,4 @@ services:
         environment:
             - QGIS_SERVER_PARALLEL_RENDERING=true
             - QGIS_SERVER_IGNORE_BAD_LAYERS=true
+            - PREFIX_URL
