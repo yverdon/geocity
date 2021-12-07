@@ -1,3 +1,0 @@
-[submodule "qgisserver/plugins/qgis-atlasprint"]
-	path = qgisserver/plugins/qgis-atlasprint
-	url = https://github.com/yverdon/qgis-atlasprint

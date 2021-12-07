@@ -48,12 +48,21 @@ docker-compose -f docker-compose-demo.yml down --remove-orphans && docker-compos
 ## Standard print setup
 
 
-To setup or update default print template for all Works Objects Types execute
+To add default print templates for all Works Objects Types execute
 
 ```bash
  docker-compose exec web python manage.py add_default_print_config
  ```
 
+ To update default print templates for all Works Objects Types execute
+
+```bash
+ docker-compose exec web python manage.py update_default_print_config
+ ```
+
+These commands will add/update a default print configuration that contains all data
+available in the API enpoint. Layout will in most cases require to be adapted
+to form configuration and user tast using QGIS 3.22
 
 ### Run the tests from within the docker container
 
