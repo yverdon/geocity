@@ -1,5 +1,5 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
-<qgis version="3.22.0-Białowieża" projectname="" saveDateTime="2021-12-07T15:09:23" saveUser="NBL" saveUserFull="Blanc Nicolas">
+<qgis version="3.22.0-Białowieża" projectname="" saveDateTime="2021-12-07T15:32:56" saveUser="NBL" saveUserFull="Blanc Nicolas">
   <homePath path=""/>
   <title></title>
   <autotransaction active="0"/>
@@ -6570,7 +6570,7 @@ def my_form_open(dialog, layer, feature):
             <Option/>
           </customproperties>
         </LayoutObject>
-        <Extent xmin="2538424.27300000004470348" xmax="2538936.51699999999254942" ymax="1180594.20190999982878566" ymin="1180173.30808999994769692"/>
+        <Extent xmin="2538257.06166596757248044" xmax="2539103.72833403153344989" ymax="1180731.59388946299441159" ymin="1180035.91611053701490164"/>
         <LayerSet/>
         <ComposerMapGrid frameAnnotationDistance="1" unit="0" showAnnotation="0" frameFillColor2="0,0,0,255" gridFramePenThickness="0.29999999999999999" bottomAnnotationPosition="1" topAnnotationDirection="0" rotatedAnnotationsMarginToCorner="0" topAnnotationPosition="1" bottomAnnotationDirection="0" gridFrameStyle="0" gridFrameMargin="0" bottomAnnotationDisplay="0" gridFramePenColor="0,0,0,255" rotatedTicksMarginToCorner="0" leftAnnotationPosition="1" uuid="{fab92965-6317-46f0-ae47-93ee6fc206f8}" position="3" rightAnnotationPosition="1" rightFrameDivisions="0" rotatedAnnotationsEnabled="0" intervalY="500" annotationPrecision="3" name="Grid 1" leftAnnotationDisplay="0" topAnnotationDisplay="0" leftFrameDivisions="0" gridFrameSideFlags="15" leftAnnotationDirection="0" rotatedAnnotationsLengthMode="0" maximumIntervalWidth="100" annotationExpression="" rotatedAnnotationsMinimumAngle="0" show="1" gridStyle="0" rotatedTicksMinimumAngle="0" rightAnnotationDirection="0" offsetY="0" frameFillColor1="255,255,255,255" bottomFrameDivisions="0" blendMode="0" crossLength="3" rotatedTicksLengthMode="0" rotatedTicksEnabled="0" gridFrameWidth="2" annotationFormat="0" topFrameDivisions="0" rightAnnotationDisplay="0" intervalX="500" offsetX="0" minimumIntervalWidth="50">
           <lineStyle>
@@ -6779,7 +6779,7 @@ def my_form_open(dialog, layer, feature):
             </customproperties>
           </LayoutObject>
         </ComposerMapGrid>
-        <AtlasMap scalingMode="2" margin="0.20000000000000001" atlasDriven="1"/>
+        <AtlasMap scalingMode="1" margin="0.20000000000000001" atlasDriven="1"/>
         <labelBlockingItems/>
         <atlasClippingSettings forceLabelsInside="0" clippingType="1" restrictLayers="0" enabled="0">
           <layersToClip/>
