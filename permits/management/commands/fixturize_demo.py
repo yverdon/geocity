@@ -13,7 +13,7 @@ from geomapshark import settings
 from permits import admin, models
 import re
 import unicodedata
-
+from .add_default_print_config import add_default_print_config
 from constance import config
 
 
@@ -111,6 +111,8 @@ class Command(BaseCommand):
             self.create_template_customization()
             self.stdout.write("Configurating template customizations...")
             self.setup_homepage()
+            self.stdout.write("Creating default print templates...")
+            add_default_print_config()
             self.stdout.write("Fixturize succeed!")
 
     def setup_site(self):
@@ -554,14 +556,6 @@ class Command(BaseCommand):
             wot.permit_duration = 2
             wot.expiration_reminder = True
             wot.days_before_reminder = 5
-            wot.save()
-
-        for wot in models.WorksObjectType.objects.all():
-            wot.qgisproject_set.create(
-                qgis_project_file="report_template.qgs",
-                qgis_print_template_name="print_template",
-                description="Impression standard",
-            )
             wot.save()
 
     def create_permit(self):

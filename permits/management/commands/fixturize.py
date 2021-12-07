@@ -13,6 +13,7 @@ from geomapshark import settings
 from permits import admin, models
 import re
 import unicodedata
+from .add_default_print_config import add_default_print_config
 
 
 def strip_accents(text):
