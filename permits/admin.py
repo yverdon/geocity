@@ -438,11 +438,8 @@ class QgisProjectAdminForm(forms.ModelForm):
         sites = settings.ALLOWED_HOSTS
 
         # The final url. Docker communicate between layers
-        web_url = (
-            bytes("http://web:9000", encoder)
-            if not settings.PREFIX_URL
-            else bytes(f"http://web:9000/{settings.PREFIX_URL}", encoder)
-        )
+        web_url = bytes("http://web:9000", encoder)
+
         # Strings to complete the url
         protocol_suffix = "://"
         port_prefix = ":"
