@@ -25,25 +25,25 @@
       <layer-tree-layer providerKey="virtual" legend_split_behavior="0" name="permits_point_v" legend_exp="" expanded="1" source="?query=select%20permit_request_id,%20geometry%20from%20permits_point%0D%0Aunion%20all%0D%0A--%20add%20empty%20null%20row%20to%20prevent%20atlas%20crash%20if%20no%20row%0D%0Aselect%20null,%20null&amp;uid=permit_request_id" checked="Qt::Checked" id="permits_point_v_687bead6_4500_4991_b83b_83918dad0aba" patch_size="-1,-1">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer providerKey="OAPIF" legend_split_behavior="0" name="permits_point" legend_exp="" expanded="1" source="authcfg=i2bym1e pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_point' url='https://geocity-preprod.mapnv.ch/wfs3/' version='auto'" checked="Qt::Unchecked" id="permits_point_48eeaff0_bb16_451e_bf7c_9c3abd27a2e5" patch_size="-1,-1">
+      <layer-tree-layer providerKey="OAPIF" legend_split_behavior="0" name="permits_point" legend_exp="" expanded="1" source="authcfg=geocity pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_point' url='https://geocity.ch/wfs3/' version='auto'" checked="Qt::Unchecked" id="permits_point_48eeaff0_bb16_451e_bf7c_9c3abd27a2e5" patch_size="-1,-1">
         <customproperties/>
       </layer-tree-layer>
       <layer-tree-layer providerKey="virtual" legend_split_behavior="0" name="permits_line_v" legend_exp="" expanded="1" source="?query=select%20permit_request_id,%20geometry%20from%20permits_line%0D%0Aunion%20all%0D%0A--%20add%20empty%20null%20row%20to%20prevent%20atlas%20crash%20if%20no%20row%0D%0Aselect%20null,%20null&amp;uid=permit_request_id" checked="Qt::Checked" id="permits_line_v_2a584de7_7465_4ee6_9824_15318b5b8b21" patch_size="-1,-1">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer providerKey="OAPIF" legend_split_behavior="0" name="permits_line" legend_exp="" expanded="1" source="authcfg=i2bym1e pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_line' url='https://geocity-preprod.mapnv.ch/wfs3/' version='auto'" checked="Qt::Unchecked" id="permits_line_567d02d5_6f75_4d77_9f64_2dd9ad4313e2" patch_size="-1,-1">
+      <layer-tree-layer providerKey="OAPIF" legend_split_behavior="0" name="permits_line" legend_exp="" expanded="1" source="authcfg=geocity pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_line' url='https://geocity.ch/wfs3/' version='auto'" checked="Qt::Unchecked" id="permits_line_567d02d5_6f75_4d77_9f64_2dd9ad4313e2" patch_size="-1,-1">
         <customproperties/>
       </layer-tree-layer>
       <layer-tree-layer providerKey="virtual" legend_split_behavior="0" name="permits_poly_v" legend_exp="" expanded="1" source="?query=select%20permit_request_id,%20geometry%20from%20permits_poly%0D%0Aunion%20all%0D%0A--%20add%20empty%20null%20row%20to%20prevent%20atlas%20crash%20if%20no%20row%0D%0Aselect%20null,%20null&amp;uid=permit_request_id" checked="Qt::Checked" id="permits_poly_v_c9eb9630_1039_4645_b113_6a6bb7d97648" patch_size="-1,-1">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer providerKey="OAPIF" legend_split_behavior="0" name="permits_poly" legend_exp="" expanded="1" source="authcfg=i2bym1e pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_poly' url='https://geocity-preprod.mapnv.ch/wfs3/' version='auto'" checked="Qt::Unchecked" id="permits_poly_3934ccbd_d4b9_4338_be3b_768192fcfa70" patch_size="-1,-1">
+      <layer-tree-layer providerKey="OAPIF" legend_split_behavior="0" name="permits_poly" legend_exp="" expanded="1" source="authcfg=geocity pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_poly' url='https://geocity.ch/wfs3/' version='auto'" checked="Qt::Unchecked" id="permits_poly_3934ccbd_d4b9_4338_be3b_768192fcfa70" patch_size="-1,-1">
         <customproperties/>
       </layer-tree-layer>
       <layer-tree-layer providerKey="virtual" legend_split_behavior="0" name="permits_v" legend_exp="" expanded="1" source="?query=select%20*%20from%20permits&amp;uid=permit_request_id" checked="Qt::Checked" id="permits_v_cc798c68_0eba_4c89_86de_a8a402897119" patch_size="-1,-1">
         <customproperties/>
       </layer-tree-layer>
-      <layer-tree-layer providerKey="OAPIF" legend_split_behavior="0" name="permits" legend_exp="" expanded="1" source="authcfg=i2bym1e pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits' url='https://geocity-preprod.mapnv.ch/wfs3/' version='auto'" checked="Qt::Checked" id="permits_b68d1e14_8b16_4b21_84a6_55cc5d292143" patch_size="-1,-1">
+      <layer-tree-layer providerKey="OAPIF" legend_split_behavior="0" name="permits" legend_exp="" expanded="1" source="authcfg=geocity pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits' url='https://geocity.ch/wfs3/' version='auto'" checked="Qt::Checked" id="permits_b68d1e14_8b16_4b21_84a6_55cc5d292143" patch_size="-1,-1">
         <customproperties/>
       </layer-tree-layer>
     </layer-tree-group>
@@ -463,7 +463,7 @@
         <ymax>1186794.37999999988824129</ymax>
       </extent>
       <id>permits_b68d1e14_8b16_4b21_84a6_55cc5d292143</id>
-      <datasource>authcfg=i2bym1e pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits' url='https://geocity-preprod.mapnv.ch/wfs3/' version='auto'</datasource>
+      <datasource>authcfg=geocity pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits' url='https://geocity.ch/wfs3/' version='auto'</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -482,15 +482,15 @@
         </spatialrefsys>
       </srs>
       <resourceMetadata>
-        <identifier>https://geocity-preprod.mapnv.ch/wfs3/collections/permits</identifier>
+        <identifier>https://geocity.ch/wfs3/collections/permits</identifier>
         <parentidentifier></parentidentifier>
         <language></language>
         <type>dataset</type>
         <title>Demandes</title>
         <abstract>Toutes les demandes</abstract>
         <links>
-          <link url="https://geocity-preprod.mapnv.ch/wfs3/collections/permits" size="" name="self" type="WWW:LINK" description="This document as JSON" format="" mimeType="application/geo+json"/>
-          <link url="https://geocity-preprod.mapnv.ch/wfs3/collections/permits/items" size="" name="items" type="WWW:LINK" description="permits" format="" mimeType="application/geo+json"/>
+          <link url="https://geocity.ch/wfs3/collections/permits" size="" name="self" type="WWW:LINK" description="This document as JSON" format="" mimeType="application/geo+json"/>
+          <link url="https://geocity.ch/wfs3/collections/permits/items" size="" name="items" type="WWW:LINK" description="permits" format="" mimeType="application/geo+json"/>
         </links>
         <fees></fees>
         <encoding></encoding>
@@ -988,7 +988,7 @@ def my_form_open(dialog, layer, feature):
         <ymax>1184796.9599999999627471</ymax>
       </extent>
       <id>permits_line_567d02d5_6f75_4d77_9f64_2dd9ad4313e2</id>
-      <datasource>authcfg=i2bym1e pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_line' url='https://geocity-preprod.mapnv.ch/wfs3/' version='auto'</datasource>
+      <datasource>authcfg=geocity pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_line' url='https://geocity.ch/wfs3/' version='auto'</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -1007,15 +1007,15 @@ def my_form_open(dialog, layer, feature):
         </spatialrefsys>
       </srs>
       <resourceMetadata>
-        <identifier>https://geocity-preprod.mapnv.ch/wfs3/collections/permits_line</identifier>
+        <identifier>https://geocity.ch/wfs3/collections/permits_line</identifier>
         <parentidentifier></parentidentifier>
         <language></language>
         <type>dataset</type>
         <title>Demandes (lines)</title>
         <abstract>Toutes les demandes (géométries de type lines)</abstract>
         <links>
-          <link url="https://geocity-preprod.mapnv.ch/wfs3/collections/permits_line" size="" name="self" type="WWW:LINK" description="This document as JSON" format="" mimeType="application/geo+json"/>
-          <link url="https://geocity-preprod.mapnv.ch/wfs3/collections/permits_line/items" size="" name="items" type="WWW:LINK" description="permits_line" format="" mimeType="application/geo+json"/>
+          <link url="https://geocity.ch/wfs3/collections/permits_line" size="" name="self" type="WWW:LINK" description="This document as JSON" format="" mimeType="application/geo+json"/>
+          <link url="https://geocity.ch/wfs3/collections/permits_line/items" size="" name="items" type="WWW:LINK" description="permits_line" format="" mimeType="application/geo+json"/>
         </links>
         <fees></fees>
         <encoding></encoding>
@@ -1598,7 +1598,7 @@ def my_form_open(dialog, layer, feature):
         <ymax>1185722.22999999998137355</ymax>
       </extent>
       <id>permits_point_48eeaff0_bb16_451e_bf7c_9c3abd27a2e5</id>
-      <datasource>authcfg=i2bym1e pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_point' url='https://geocity-preprod.mapnv.ch/wfs3/' version='auto'</datasource>
+      <datasource>authcfg=geocity pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_point' url='https://geocity.ch/wfs3/' version='auto'</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -1617,15 +1617,15 @@ def my_form_open(dialog, layer, feature):
         </spatialrefsys>
       </srs>
       <resourceMetadata>
-        <identifier>https://geocity-preprod.mapnv.ch/wfs3/collections/permits_point</identifier>
+        <identifier>https://geocity.ch/wfs3/collections/permits_point</identifier>
         <parentidentifier></parentidentifier>
         <language></language>
         <type>dataset</type>
         <title>Demandes (points)</title>
         <abstract>Toutes les demandes (géométries de type points)</abstract>
         <links>
-          <link url="https://geocity-preprod.mapnv.ch/wfs3/collections/permits_point" size="" name="self" type="WWW:LINK" description="This document as JSON" format="" mimeType="application/geo+json"/>
-          <link url="https://geocity-preprod.mapnv.ch/wfs3/collections/permits_point/items" size="" name="items" type="WWW:LINK" description="permits_point" format="" mimeType="application/geo+json"/>
+          <link url="https://geocity.ch/wfs3/collections/permits_point" size="" name="self" type="WWW:LINK" description="This document as JSON" format="" mimeType="application/geo+json"/>
+          <link url="https://geocity.ch/wfs3/collections/permits_point/items" size="" name="items" type="WWW:LINK" description="permits_point" format="" mimeType="application/geo+json"/>
         </links>
         <fees></fees>
         <encoding></encoding>
@@ -2201,7 +2201,7 @@ def my_form_open(dialog, layer, feature):
         <ymax>1184804.73999999999068677</ymax>
       </extent>
       <id>permits_poly_3934ccbd_d4b9_4338_be3b_768192fcfa70</id>
-      <datasource>authcfg=i2bym1e pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_poly' url='https://geocity-preprod.mapnv.ch/wfs3/' version='auto'</datasource>
+      <datasource>authcfg=geocity pagingEnabled='true' preferCoordinatesForWfsT11='false' restrictToRequestBBOX='1' typename='permits_poly' url='https://geocity.ch/wfs3/' version='auto'</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -2220,15 +2220,15 @@ def my_form_open(dialog, layer, feature):
         </spatialrefsys>
       </srs>
       <resourceMetadata>
-        <identifier>https://geocity-preprod.mapnv.ch/wfs3/collections/permits_poly</identifier>
+        <identifier>https://geocity.ch/wfs3/collections/permits_poly</identifier>
         <parentidentifier></parentidentifier>
         <language></language>
         <type>dataset</type>
         <title>Demandes (polygons)</title>
         <abstract>Toutes les demandes (géométries de type polygons)</abstract>
         <links>
-          <link url="https://geocity-preprod.mapnv.ch/wfs3/collections/permits_poly" size="" name="self" type="WWW:LINK" description="This document as JSON" format="" mimeType="application/geo+json"/>
-          <link url="https://geocity-preprod.mapnv.ch/wfs3/collections/permits_poly/items" size="" name="items" type="WWW:LINK" description="permits_poly" format="" mimeType="application/geo+json"/>
+          <link url="https://geocity.ch/wfs3/collections/permits_poly" size="" name="self" type="WWW:LINK" description="This document as JSON" format="" mimeType="application/geo+json"/>
+          <link url="https://geocity.ch/wfs3/collections/permits_poly/items" size="" name="items" type="WWW:LINK" description="permits_poly" format="" mimeType="application/geo+json"/>
         </links>
         <fees></fees>
         <encoding></encoding>
