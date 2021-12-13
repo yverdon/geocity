@@ -22,6 +22,7 @@ from django.http import (
     StreamingHttpResponse,
 )
 from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -739,7 +740,7 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
             )
     else:
         administrative_entity_form = forms.AdministrativeEntityForm(
-            instance=permit_request, user=request.user, session=request.session,
+            instance=permit_request, user=request.user, session=request.session, sites_id=get_current_site(request).id
         )
     return render(
         request,

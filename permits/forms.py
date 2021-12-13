@@ -122,6 +122,8 @@ class AdministrativeEntityForm(forms.Form):
         self.instance = kwargs.pop("instance", None)
         self.user = kwargs.pop("user", None)
         session = kwargs.pop("session", None)
+        sites_id = kwargs.pop("sites_id", None)
+        # TODO: filter by sites
         tags = session["entityfilter"] if "entityfilter" in session else []
 
         if self.instance:

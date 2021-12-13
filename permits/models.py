@@ -5,6 +5,7 @@ from datetime import date, datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import Group, User
+from django.contrib.sites.models import Site
 from django.contrib.gis.db import models as geomodels
 from django.db.models import JSONField, UniqueConstraint
 from django.core.exceptions import ValidationError
@@ -206,6 +207,8 @@ class PermitAdministrativeEntity(models.Model):
             )
         ],
     )
+    sites = models.ManyToManyField(Site)
+
 
     class Meta:
         verbose_name = _(

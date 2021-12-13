@@ -754,6 +754,7 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
             "geom",
             "expeditor_email",
             "expeditor_name",
+            "sites",
         ]
         exclude = ["enabled_status"]
         widgets = {
