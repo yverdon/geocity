@@ -15,7 +15,8 @@
                 <dt> {{ field.label }} </dt>
                 <dd> {{ field.value|human_field_value }} </dd>
               {% else %}
-                {{ field.repr|safe }}
+                <dt style="white-space: nowrap;">{{ field.repr|safe }}</dt>
+                <dd></dd>
               {% endif %}
             {% endfor %}
         
