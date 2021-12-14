@@ -739,6 +739,8 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
                 services.get_next_step(steps, models.StepType.ADMINISTRATIVE_ENTITY).url
             )
     else:
+        print("++++++++++++++")
+        print(get_current_site(request))
         administrative_entity_form = forms.AdministrativeEntityForm(
             instance=permit_request, user=request.user, session=request.session, sites_id=get_current_site(request).id
         )
