@@ -4,7 +4,7 @@ import uuid
 from datetime import date
 
 from django.conf import settings
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Permission, User
 from django.test import TestCase
 from django.urls import reverse
 from django_otp import DEVICE_ID_SESSION_KEY
@@ -81,12 +81,85 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             self.group2fa = factories.GroupFactory()
             factories.PermitDepartmentFactory(group=self.group2fa, mandatory_2fa=True)
 
+    def test_integrator_cannot_see_user_if_no_integrator_email_domains_is_configured_by_admin(
+        self,
+    ):
+        user = User.objects.create_user(
+            email=f"yverdon-squad+admin@notalloweddomain.ch",
+            first_name="nonadminuser",
+            last_name="user",
+            username="standard",
+            password="demo",
+            is_staff=False,
+            is_superuser=False,
+        )
+        response = self.client.get(reverse("admin:auth_user_changelist"))
+        parser = get_parser(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(parser.select("tbody")), 0)
+
+    def test_integrator_can_see_user_if_integrator_email_domains_is_configured_by_admin(
+        self,
+    ):
+        self.group.permitdepartment.integrator_email_domains = "notalloweddomain.ch"
+        self.group.permitdepartment.save()
+        user = User.objects.create_user(
+            email=f"yverdon-squad+admin@notalloweddomain.ch",
+            first_name="nonadminuser",
+            last_name="user",
+            username="standard",
+            password="demo",
+            is_staff=False,
+            is_superuser=False,
+        )
+        response = self.client.get(reverse("admin:auth_user_changelist"))
+        parser = get_parser(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(parser.select("tbody")), 1)
+
+    def test_integrator_cannot_see_user_if_no_integrator_emails_exceptions_is_configured_by_admin(
+        self,
+    ):
+        user = User.objects.create_user(
+            email=f"dummyuser@notalloweddomain.ch",
+            first_name="nonadminuser",
+            last_name="user",
+            username="standard",
+            password="demo",
+            is_staff=False,
+            is_superuser=False,
+        )
+        response = self.client.get(reverse("admin:auth_user_changelist"))
+        parser = get_parser(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(parser.select("tbody")), 0)
+
+    def test_integrator_can_see_user_if_integrator_emails_exceptions_is_configured_by_admin(
+        self,
+    ):
+        self.group.permitdepartment.integrator_emails_exceptions = (
+            "dummyuser@notalloweddomain.ch"
+        )
+        self.group.permitdepartment.save()
+        user = User.objects.create_user(
+            email=f"dummyuser@notalloweddomain.ch",
+            first_name="nonadminuser",
+            last_name="user",
+            username="standard",
+            password="demo",
+            is_staff=False,
+            is_superuser=False,
+        )
+        response = self.client.get(reverse("admin:auth_user_changelist"))
+        parser = get_parser(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(parser.select("tbody")), 1)
+
     def test_integrator_can_only_see_own_permitadministrativeentity(self):
         response = self.client.get(
             reverse("admin:permits_permitadministrativeentity_changelist")
         )
         parser = get_parser(response.content)
-
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(parser.select(".field-__str__")), 1)
 
