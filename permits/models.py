@@ -135,7 +135,7 @@ class PermitDepartment(models.Model):
     integrator_email_domains = models.CharField(
         _("Domaines d'emails visibles pour l'intégrateur"),
         help_text=_(
-            "Liste de domaines (ex: yverdon-les-bains.ch) séparés par des virgules ',' de domaines correspondant à des administrations publiques"
+            "Liste de domaines séparés par des virgules ',' correspondant aux utilisateurs rattachés à l'entité administrative (ex: ma-commune.ch,commune.ch)"
         ),
         blank=True,
         max_length=254,
@@ -143,7 +143,7 @@ class PermitDepartment(models.Model):
     integrator_emails_exceptions = models.CharField(
         _("Emails complets visibles pour l'intégrateur"),
         help_text=_(
-            "Liste d'emails (ex: greffe@nowhere.com)séparés par des virgules ',' de domaines correspondant à des employés d'administrations publiques"
+            "Liste d'emails séparés par des virgules ',' d'utilisateurs spécifiques rattachés à l'entité administrative (ex: greffe@nowhere.com)"
         ),
         blank=True,
         max_length=254,
