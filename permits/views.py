@@ -22,7 +22,6 @@ from django.http import (
     StreamingHttpResponse,
 )
 from django.shortcuts import get_object_or_404, redirect, render
-from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -39,7 +38,6 @@ from .exceptions import BadPermitRequestStatus, NonProlongablePermitRequest
 from .search import match_type_label, search_permit_requests
 
 logger = logging.getLogger(__name__)
-
 
 def user_has_permitauthor(user):
     try:
@@ -739,10 +737,8 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
                 services.get_next_step(steps, models.StepType.ADMINISTRATIVE_ENTITY).url
             )
     else:
-        print("++++++++++++++")
-        print(get_current_site(request))
         administrative_entity_form = forms.AdministrativeEntityForm(
-            instance=permit_request, user=request.user, session=request.session, sites_id=get_current_site(request).id
+            instance=permit_request, user=request.user, session=request.session
         )
     return render(
         request,

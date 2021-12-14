@@ -29,6 +29,8 @@ from accounts.dootix.adapter import DootixSocialAccountAdapter
 from accounts.dootix.provider import DootixProvider
 from accounts.geomapfish.adapter import GeomapfishSocialAccountAdapter
 from accounts.geomapfish.provider import GeomapfishProvider
+from django.contrib.sites.models import Site
+
 
 from . import models, services
 
@@ -122,8 +124,8 @@ class AdministrativeEntityForm(forms.Form):
         self.instance = kwargs.pop("instance", None)
         self.user = kwargs.pop("user", None)
         session = kwargs.pop("session", None)
-        sites_id = kwargs.pop("sites_id", None)
-        # TODO: filter by sites
+        print("+++++++-----------++++++++")
+        print(Site.objects.get_current())
         tags = session["entityfilter"] if "entityfilter" in session else []
 
         if self.instance:
