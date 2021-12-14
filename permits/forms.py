@@ -29,7 +29,6 @@ from accounts.dootix.adapter import DootixSocialAccountAdapter
 from accounts.dootix.provider import DootixProvider
 from accounts.geomapfish.adapter import GeomapfishSocialAccountAdapter
 from accounts.geomapfish.provider import GeomapfishProvider
-from django.contrib.sites.models import Site
 
 
 from . import models, services
@@ -124,8 +123,6 @@ class AdministrativeEntityForm(forms.Form):
         self.instance = kwargs.pop("instance", None)
         self.user = kwargs.pop("user", None)
         session = kwargs.pop("session", None)
-        print("+++++++-----------++++++++")
-        print(Site.objects.get_current())
         tags = session["entityfilter"] if "entityfilter" in session else []
 
         if self.instance:
@@ -144,6 +141,7 @@ class AdministrativeEntityForm(forms.Form):
         ).filter_by_tags(tags)
         if not entities_by_tag.exists():
             session["entityfilter"] = []
+    
         self.fields["administrative_entity"].choices = [
             (ofs_id, [(entity.pk, entity.name) for entity in entities])
             for ofs_id, entities in regroup_by_ofs_id(

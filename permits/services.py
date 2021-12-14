@@ -27,6 +27,7 @@ from .exceptions import BadPermitRequestStatus
 from .utils import reverse_permit_request_url
 from PIL import Image
 from pdf2image import convert_from_path
+from django.contrib.sites.models import Site
 
 
 class GeoTimeInfo(enum.Enum):
@@ -217,11 +218,13 @@ def get_works_types(administrative_entity, user):
 
 def get_administrative_entities(user):
     # Default queryset, with all administrative entities
+    sites_id =  Site.objects.get_current().id
     queryset = (
         models.PermitAdministrativeEntity.objects.filter(
             pk__in=models.WorksObjectType.objects.values_list(
                 "administrative_entities", flat=True
             ),
+            sites=sites_id
         )
         .order_by("ofs_id", "-name")
         .distinct()
