@@ -225,7 +225,6 @@ class PermitAdministrativeEntity(models.Model):
     )
     sites = models.ManyToManyField(Site)
 
-
     class Meta:
         verbose_name = _(
             "1.1 Configuration de l'entité administrative (commune, organisation)"

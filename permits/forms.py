@@ -141,7 +141,7 @@ class AdministrativeEntityForm(forms.Form):
         ).filter_by_tags(tags)
         if not entities_by_tag.exists():
             session["entityfilter"] = []
-    
+
         self.fields["administrative_entity"].choices = [
             (ofs_id, [(entity.pk, entity.name) for entity in entities])
             for ofs_id, entities in regroup_by_ofs_id(

@@ -218,13 +218,13 @@ def get_works_types(administrative_entity, user):
 
 def get_administrative_entities(user):
     # Default queryset, with all administrative entities
-    sites_id =  Site.objects.get_current().id
+    sites_id = Site.objects.get_current().id
     queryset = (
         models.PermitAdministrativeEntity.objects.filter(
             pk__in=models.WorksObjectType.objects.values_list(
                 "administrative_entities", flat=True
             ),
-            sites=sites_id
+            sites=sites_id,
         )
         .order_by("ofs_id", "-name")
         .distinct()

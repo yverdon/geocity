@@ -39,6 +39,7 @@ from .search import match_type_label, search_permit_requests
 
 logger = logging.getLogger(__name__)
 
+
 def user_has_permitauthor(user):
     try:
         user.permitauthor
