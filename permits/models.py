@@ -133,6 +133,22 @@ class PermitDepartment(models.Model):
         "Intégrateur (accès à l'admin de django)", default=False
     )
     mandatory_2fa = models.BooleanField(_("2FA obligatoire"), default=False)
+    integrator_email_domains = models.CharField(
+        _("Domaines d'emails visibles pour l'intégrateur"),
+        help_text=_(
+            "Liste de domaines séparés par des virgules ',' correspondant aux utilisateurs rattachés à l'entité administrative (ex: ma-commune.ch,commune.ch)"
+        ),
+        blank=True,
+        max_length=254,
+    )
+    integrator_emails_exceptions = models.CharField(
+        _("Emails complets visibles pour l'intégrateur"),
+        help_text=_(
+            "Liste d'emails séparés par des virgules ',' d'utilisateurs spécifiques rattachés à l'entité administrative (ex: greffe@nowhere.com)"
+        ),
+        blank=True,
+        max_length=254,
+    )
 
     class Meta:
         verbose_name = _("2.1 Configuration du service (pilote, validateur...)")

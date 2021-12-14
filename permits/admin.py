@@ -6,7 +6,7 @@ from django import forms
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from geomapshark import settings
-from django.db.models import Q
+from django.db.models import Q, Value
 from simple_history.admin import SimpleHistoryAdmin
 from django.contrib.auth.models import Group, User, Permission
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -16,6 +16,7 @@ from django.contrib import messages
 from django.contrib.auth.forms import UserChangeForm
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from io import BytesIO
+from django.db.models.functions import StrIndex, Substr
 
 
 from . import forms as permit_forms
@@ -187,18 +188,39 @@ class UserAdmin(BaseUserAdmin):
     # Only superuser can edit superuser users
     def get_queryset(self, request):
         # Only allow integrator to change users that have no group, are not superuser or are in group administrated by integrator
+
         if request.user.is_superuser:
             qs = User.objects.all()
         else:
-            qs = User.objects.filter(
-                Q(is_superuser=False),
-                Q(
-                    groups__permitdepartment__integrator=request.user.groups.get(
-                        permitdepartment__is_integrator_admin=True
-                    ).pk
+
+            user_integrator_group = request.user.groups.get(
+                permitdepartment__is_integrator_admin=True
+            )
+            qs = (
+                User.objects.filter(
+                    Q(is_superuser=False),
+                    Q(groups__permitdepartment__integrator=user_integrator_group.pk)
+                    | Q(groups__isnull=True),
                 )
-                | Q(groups__isnull=True),
-            ).distinct()
+                .annotate(
+                    email_domain=Substr("email", StrIndex("email", Value("@")) + 1)
+                )
+                .distinct()
+            )
+
+            qs = qs.filter(
+                Q(
+                    email_domain__in=user_integrator_group.permitdepartment.integrator_email_domains.split(
+                        ","
+                    )
+                )
+                | Q(
+                    email__in=user_integrator_group.permitdepartment.integrator_emails_exceptions.split(
+                        ","
+                    )
+                )
+            )
+
         return qs
 
 
@@ -218,6 +240,8 @@ class DepartmentAdminForm(forms.ModelForm):
             "integrator",
             "is_integrator_admin",
             "mandatory_2fa",
+            "integrator_email_domains",
+            "integrator_emails_exceptions",
         ]
 
     # If the group is updated to be integrator, the users in this group should not be in another integrator group
@@ -298,7 +322,12 @@ class PermitDepartmentInline(admin.StackedInline):
         if request.user.is_superuser:
             return []
         else:
-            return ["integrator", "is_integrator_admin"]
+            return [
+                "integrator",
+                "is_integrator_admin",
+                "integrator_email_domains",
+                "integrator_emails_exceptions",
+            ]
 
 
 class GroupAdminForm(forms.ModelForm):
