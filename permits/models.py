@@ -905,6 +905,13 @@ class WorksObjectProperty(models.Model):
     order = models.PositiveIntegerField(
         _("ordre"), default=0, blank=False, null=False, db_index=True
     )
+    line_number_for_textarea = models.PositiveIntegerField(
+        _("Nombre de lignes de la zone de texte"),
+        blank=True,
+        default=1,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(50)],
+    )
     is_mandatory = models.BooleanField(_("obligatoire"), default=False)
     works_object_types = models.ManyToManyField(
         WorksObjectType, verbose_name=_("objets des travaux"), related_name="properties"

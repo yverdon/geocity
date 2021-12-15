@@ -35,6 +35,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const isRegexPatternVisible = inputType === 'regex';
 
+    const lineNumberForTextareaElement = document.getElementById('id_line_number_for_textarea');
+    const lineNumberForTextareaRowElement = lineNumberForTextareaElement.closest('.form-row.line_number_for_textarea');
+    const lineNumberForTextareaLabelElement = lineNumberForTextareaRowElement.querySelector('label');
+
+    const isLineNumberForTextareaVisible = inputType === 'text';
+
     choicesElement.removeAttribute('required');
     choicesRowElement.classList.add(hiddenClass);
     choicesLabelElement.classList.remove(requiredClass);
@@ -42,6 +48,10 @@ document.addEventListener('DOMContentLoaded', function() {
     regexElement.removeAttribute('required');
     regexRowElement.classList.add(hiddenClass);
     regexLabelElement.classList.remove(requiredClass);
+
+    lineNumberForTextareaElement.removeAttribute('required');
+    lineNumberForTextareaRowElement.classList.add(hiddenClass);
+    lineNumberForTextareaLabelElement.classList.remove(requiredClass);
 
     if (isChoicesVisible) {
       choicesElement.setAttribute('required', '');
@@ -52,6 +62,11 @@ document.addEventListener('DOMContentLoaded', function() {
       regexElement.setAttribute('required', '');
       regexRowElement.classList.remove(hiddenClass);
       regexLabelElement.classList.add(requiredClass);
+    }
+    else if (isLineNumberForTextareaVisible) {
+      lineNumberForTextareaElement.setAttribute('required', '');
+      lineNumberForTextareaRowElement.classList.remove(hiddenClass);
+      lineNumberForTextareaLabelElement.classList.add(requiredClass);
     }
   }
 

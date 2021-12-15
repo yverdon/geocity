@@ -731,6 +731,7 @@ class WorksObjectPropertyForm(forms.ModelForm):
             "order",
             "input_type",
             "choices",
+            "line_number_for_textarea",
             "regex_pattern",
             "is_mandatory",
             "works_object_types",
