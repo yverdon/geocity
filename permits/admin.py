@@ -773,17 +773,14 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
             "name",
             "tags",
             "ofs_id",
+            "custom_signature",
             "link",
             "archive_link",
             "general_informations",
-            "logo_main",
-            "logo_secondary",
-            "title_signature_1",
-            "title_signature_2",
-            "phone",
-            "geom",
             "expeditor_email",
             "expeditor_name",
+            "phone",
+            "geom",
         ]
         exclude = ["enabled_status"]
         widgets = {

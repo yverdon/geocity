@@ -172,17 +172,10 @@ class PermitAdministrativeEntity(models.Model):
     general_informations = models.CharField(
         _("Informations"), blank=True, max_length=1024,
     )
-    logo_main = fields.AdministrativeEntityFileField(
-        _("Logo principal"), blank=True, upload_to="administrative_entity_files/"
-    )
-    logo_secondary = fields.AdministrativeEntityFileField(
-        _("Logo secondaire"), blank=True, upload_to="administrative_entity_files/"
-    )
-    title_signature_1 = models.CharField(
-        _("Signature Gauche"), max_length=128, blank=True
-    )
-    title_signature_2 = models.CharField(
-        _("Signature Droite"), max_length=128, blank=True
+    custom_signature = models.TextField(
+        _("Signature des emails, si vide, le nom de l'entité sera utilisé"),
+        max_length=1024,
+        blank=True,
     )
     phone = models.CharField(
         _("Téléphone"),

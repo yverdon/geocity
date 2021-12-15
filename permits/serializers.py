@@ -20,8 +20,6 @@ class PermitAdministrativeEntitySerializer(serializers.ModelSerializer):
             "name",
             "ofs_id",
             "link",
-            "title_signature_1",
-            "title_signature_2",
             "phone",
         )
 
