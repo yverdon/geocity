@@ -12,6 +12,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.core.mail import send_mass_mail
 from django.core.validators import EmailValidator
+from django.contrib.sites.shortcuts import get_current_site
 from django.db import transaction
 from django.db.models import CharField, Count, F, Max, Min, Q, Value
 from django.db.models.functions import Concat
@@ -27,6 +28,7 @@ from .exceptions import BadPermitRequestStatus
 from .utils import reverse_permit_request_url
 from PIL import Image
 from pdf2image import convert_from_path
+from django.contrib.sites.models import Site
 
 
 class GeoTimeInfo(enum.Enum):
@@ -215,13 +217,14 @@ def get_works_types(administrative_entity, user):
     return queryset
 
 
-def get_administrative_entities(user):
+def get_administrative_entities(user, site=None):
     # Default queryset, with all administrative entities
     queryset = (
         models.PermitAdministrativeEntity.objects.filter(
             pk__in=models.WorksObjectType.objects.values_list(
                 "administrative_entities", flat=True
             ),
+            sites=site,
         )
         .order_by("ofs_id", "-name")
         .distinct()
@@ -840,9 +843,9 @@ def get_progress_bar_steps(request, permit_request):
     )
     entities_by_tag = None
     if entityfilter:
-        entities_by_tag = get_administrative_entities(request.user).filter_by_tags(
-            entityfilter
-        )
+        entities_by_tag = get_administrative_entities(
+            request.user, get_current_site(request)
+        ).filter_by_tags(entityfilter,)
 
     if entities_by_tag:
         if (

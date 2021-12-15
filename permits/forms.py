@@ -30,6 +30,7 @@ from accounts.dootix.provider import DootixProvider
 from accounts.geomapfish.adapter import GeomapfishSocialAccountAdapter
 from accounts.geomapfish.provider import GeomapfishProvider
 
+
 from . import models, services
 
 input_type_mapping = {
@@ -122,6 +123,7 @@ class AdministrativeEntityForm(forms.Form):
         self.instance = kwargs.pop("instance", None)
         self.user = kwargs.pop("user", None)
         session = kwargs.pop("session", None)
+        site = kwargs.pop("site", None)
         tags = session["entityfilter"] if "entityfilter" in session else []
 
         if self.instance:
@@ -136,16 +138,17 @@ class AdministrativeEntityForm(forms.Form):
 
         super().__init__(*args, **kwargs)
         entities_by_tag = services.get_administrative_entities(
-            self.user
+            self.user, site,
         ).filter_by_tags(tags)
         if not entities_by_tag.exists():
             session["entityfilter"] = []
+
         self.fields["administrative_entity"].choices = [
             (ofs_id, [(entity.pk, entity.name) for entity in entities])
             for ofs_id, entities in regroup_by_ofs_id(
                 entities_by_tag
                 if entities_by_tag
-                else services.get_administrative_entities(self.user)
+                else services.get_administrative_entities(self.user, site)
             )
         ]
 
