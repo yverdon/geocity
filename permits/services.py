@@ -1059,6 +1059,7 @@ def _parse_email_content(template, permit_request, absolute_uri_func):
             ),
             "administrative_entity": permit_request.administrative_entity,
             "name": permit_request.author.user.get_full_name(),
+            "permit_request": permit_request,
         },
     )
 

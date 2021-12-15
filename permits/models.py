@@ -475,6 +475,12 @@ class PermitRequest(models.Model):
     prolongation_status = models.PositiveSmallIntegerField(
         _("Décision"), choices=PROLONGATION_STATUS_CHOICES, null=True, blank=True,
     )
+    additional_decision_information = models.TextField(
+        _("Information complémentaire facultative à ajouter à l'email de la décision"),
+        max_length=2048,
+        blank=True,
+    )
+
     history = HistoricalRecords()
 
     class Meta:

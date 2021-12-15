@@ -4,6 +4,10 @@
 
 {% trans "Vous pouvez la consulter sur le lien suivant" %}: {{ permit_request_url }}
 
+{% if permit_request.additional_decision_information %}
+{{ permit_request.additional_decision_information }}
+{% endif}
+
 {% trans "Avec nos meilleures salutations," %}
 {% if administrative_entity.custom_signature %}
 {{ administrative_entity.custom_signature }}

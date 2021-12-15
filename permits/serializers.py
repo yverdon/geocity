@@ -360,6 +360,7 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
         fields = (
             "id",
             "permit_request",
+            "additional_decision_information",
             "wot_and_amend_properties",
             "permit_request_actor",
             "creditor_type",

@@ -131,13 +131,21 @@
             <div class="tab-pane{% if active_form == "poke" or not active_form and can_classify %} show active{% endif  %}" id="classify" role="tabpanel" aria-labelledby="classify-tab">
             <form method="post">
                 {% csrf_token %}
-
+                {% if permit_request.additional_decision_information %}
                 <dl>
+                    <dt>{% trans "Information complémentaire ajouté à l'email de la décision" %}</dt>
+                    <dd>{{ permit_request.additional_decision_information }}</dd>
+                </dl>
+                {% endif %}
+                    
+                <dl>
+                {% if validations %}
+                <dl><hr></dl>
+                {% endif %}
                 {% for validation in validations %}
                 <dt>{{ validation.department.group.name }}</dt>
                 <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
                     {{ validation.get_validation_status_display }}
-
                     {% if validation.comment_before %}
                     <br>
                     {% trans "Commentaire (avant)" %}: {{ validation.comment_before }}
