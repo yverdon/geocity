@@ -173,7 +173,10 @@ class PermitAdministrativeEntity(models.Model):
         _("Informations"), blank=True, max_length=1024,
     )
     custom_signature = models.TextField(
-        _("Signature des emails, si vide, le nom de l'entité sera utilisé"),
+        _("Signature des emails"),
+        help_text=_(
+            "Si vide, le nom de l'entité sera utilisé"
+        ),
         max_length=1024,
         blank=True,
     )
