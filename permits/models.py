@@ -477,9 +477,10 @@ class PermitRequest(models.Model):
         _("Décision"), choices=PROLONGATION_STATUS_CHOICES, null=True, blank=True,
     )
     additional_decision_information = models.TextField(
-        _("Information complémentaire facultative à ajouter à l'email de la décision"),
+        _("Information complémentaire"),
         max_length=2048,
         blank=True,
+        help_text=_("Facultative, sera transmise au requérant"),
     )
 
     history = HistoricalRecords()
