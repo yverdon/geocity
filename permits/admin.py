@@ -874,6 +874,19 @@ class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+    def save_model(self, request, obj, form, change):
+        obj.save()
+        has_workflow_status = models.PermitWorkflowStatus.objects.filter(
+            administrative_entity=obj
+        ).exists()
+        if not has_workflow_status:
+            for key, value in models.PermitRequest.STATUS_CHOICES:
+                models.PermitWorkflowStatus.objects.create(
+                    status = key,
+                    administrative_entity = obj,
+                )
+
+
 
 class PermitRequestAmendPropertyForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
