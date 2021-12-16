@@ -877,6 +877,11 @@ class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def save_model(self, request, obj, form, change):
+
+        if not request.user.is_superuser:
+            obj.integrator = request.user.groups.get(
+                permitdepartment__is_integrator_admin=True
+            )
         obj.save()
         has_workflow_status = models.PermitWorkflowStatus.objects.filter(
             administrative_entity=obj
