@@ -35,7 +35,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='permitadministrativeentity',
             name='custom_signature',
-            field=models.TextField(blank=True, max_length=1024, verbose_name="Signature des emails, si vide, le nom de l'entité sera utilisé"),
+            field=models.TextField(blank=True, help_text="Si vide, le nom de l'entité sera utilisé", max_length=1024, verbose_name="Signature des emails"),
         ),
         migrations.AddField(
             model_name='permitrequest',
