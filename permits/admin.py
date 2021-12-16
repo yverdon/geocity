@@ -822,6 +822,10 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
 class PermitWorkflowStatusInline(admin.StackedInline):
     model = models.PermitWorkflowStatus
     extra = 0
+    verbose_name = _("Étape - ")
+    verbose_name_plural = _(
+        "Étapes - Si aucune n'est ajoutée manuellement, toutes les étapes sont ajoutées automatiquement"
+    )
 
 
 class WorksObjectAdminForm(forms.ModelForm):
@@ -882,10 +886,8 @@ class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         if not has_workflow_status:
             for key, value in models.PermitRequest.STATUS_CHOICES:
                 models.PermitWorkflowStatus.objects.create(
-                    status = key,
-                    administrative_entity = obj,
+                    status=key, administrative_entity=obj,
                 )
-
 
 
 class PermitRequestAmendPropertyForm(forms.ModelForm):
