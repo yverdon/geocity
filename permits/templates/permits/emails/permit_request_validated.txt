@@ -5,12 +5,10 @@
 {% trans "Vous pouvez consulter la demande et la classer sur le lien suivant" %}: {{ permit_request_url }}
 
 {% trans "Avec nos meilleures salutations," %}
-
 {% if administrative_entity.custom_signature %}
 {{ administrative_entity.custom_signature }}
 {% else %}
 {{ administrative_entity.name }}
 {% endif %}
-
 {% trans "Ceci est un e-mail automatique, veuillez ne pas y répondre." %}
 {% endautoescape %}
