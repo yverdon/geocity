@@ -164,17 +164,6 @@
 
     {% endif %}
 
-    {% if permit_request.additional_decision_information %}
-    <div class="row sub-row">
-      <div class="col">
-        <h2>{% trans "Informations complémentaires" %}</h2>
-        <dl>
-            <dt>{% trans "Information complémentaire" %}</dt>
-            <dd>{{ permit_request.additional_decision_information }}</dd>
-        </dl>
-    </div></div>
-    {% endif %}
-
     {% if permit_request.can_be_prolonged and permit_request.prolongation_date %}
 
       <div class="row sub-row">
@@ -198,6 +187,17 @@
           {% permit_request_summary permit_request %}
       </div>
     </div>
+
+    {% if permit_request.additional_decision_information %}
+    <div class="row sub-row">
+      <div class="col">
+        <h2>{% trans "Informations complémentaires" %}</h2>
+        <dl>
+            <dt>{% trans "Information complémentaire" %}</dt>
+            <dd>{{ permit_request.additional_decision_information }}</dd>
+        </dl>
+    </div></div>
+    {% endif %}
 
     <div class="row sub-row">
       <div class="col">
