@@ -172,17 +172,11 @@ class PermitAdministrativeEntity(models.Model):
     general_informations = models.CharField(
         _("Informations"), blank=True, max_length=1024,
     )
-    logo_main = fields.AdministrativeEntityFileField(
-        _("Logo principal"), blank=True, upload_to="administrative_entity_files/"
-    )
-    logo_secondary = fields.AdministrativeEntityFileField(
-        _("Logo secondaire"), blank=True, upload_to="administrative_entity_files/"
-    )
-    title_signature_1 = models.CharField(
-        _("Signature Gauche"), max_length=128, blank=True
-    )
-    title_signature_2 = models.CharField(
-        _("Signature Droite"), max_length=128, blank=True
+    custom_signature = models.TextField(
+        _("Signature des emails"),
+        help_text=_("Si vide, le nom de l'entité sera utilisé"),
+        max_length=1024,
+        blank=True,
     )
     phone = models.CharField(
         _("Téléphone"),
@@ -482,6 +476,13 @@ class PermitRequest(models.Model):
     prolongation_status = models.PositiveSmallIntegerField(
         _("Décision"), choices=PROLONGATION_STATUS_CHOICES, null=True, blank=True,
     )
+    additional_decision_information = models.TextField(
+        _("Information complémentaire"),
+        max_length=2048,
+        blank=True,
+        help_text=_("Facultative, sera transmise au requérant"),
+    )
+
     history = HistoricalRecords()
 
     class Meta:
@@ -904,6 +905,13 @@ class WorksObjectProperty(models.Model):
     )
     order = models.PositiveIntegerField(
         _("ordre"), default=0, blank=False, null=False, db_index=True
+    )
+    line_number_for_textarea = models.PositiveIntegerField(
+        _("Nombre de lignes de la zone de texte"),
+        blank=True,
+        default=1,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(50)],
     )
     is_mandatory = models.BooleanField(_("obligatoire"), default=False)
     works_object_types = models.ManyToManyField(

@@ -20,8 +20,6 @@ class PermitAdministrativeEntitySerializer(serializers.ModelSerializer):
             "name",
             "ofs_id",
             "link",
-            "title_signature_1",
-            "title_signature_2",
             "phone",
         )
 
@@ -362,6 +360,7 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
         fields = (
             "id",
             "permit_request",
+            "additional_decision_information",
             "wot_and_amend_properties",
             "permit_request_actor",
             "creditor_type",
