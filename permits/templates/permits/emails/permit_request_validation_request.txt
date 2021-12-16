@@ -5,6 +5,7 @@
 {% trans "Vous pouvez la consulter et la valider sur le lien suivant" %}: {{ permit_request_url }}
 
 {% trans "Avec nos meilleures salutations," %}
+
 {% if administrative_entity.custom_signature %}
 {{ administrative_entity.custom_signature }}
 {% else %}
