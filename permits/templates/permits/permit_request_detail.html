@@ -44,10 +44,15 @@
             </a>
           </dd>
           <dd>
-            {{ permit_request.author.address }} {{ permit_request.author.zipcode }} {{ permit_request.author.city }}
+            {{ permit_request.author.address }}, {{ permit_request.author.zipcode }} {{ permit_request.author.city }}
           </dd>
           <dd>
-            {{ permit_request.author.phone_first }}  {{ permit_request.author.phone_second }}
+            {% if permit_request.author.phone_first %}
+            <a href="tel:{{ permit_request.author.phone_first }}" target="_blank" rel="noreferrer" title="{% trans 'Téléphone principal' %}">{{ permit_request.author.phone_first }}</a>
+            {% endif %}
+            {% if permit_request.author.phone_second %}
+            &nbsp;/&nbsp; <a href="tel:{{ permit_request.author.phone_second }}" target="_blank" rel="noreferrer" title="{% trans 'Téléphone secondaire' %}">{{ permit_request.author.phone_second }}</a>
+            {% endif %}
           </dd>
           <dd>
             {{ permit_request.author.company_name }} {{ permit_request.author.vat_number }}
