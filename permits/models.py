@@ -1040,9 +1040,21 @@ class PermitRequestValidation(models.Model):
     validation_status = models.IntegerField(
         _("Statut de validation"), choices=STATUS_CHOICES, default=STATUS_REQUESTED
     )
-    comment_before = models.TextField(_("Commentaires (avant)"), blank=True)
-    comment_during = models.TextField(_("Commentaires (pendant)"), blank=True)
-    comment_after = models.TextField(_("Commentaires (après)"), blank=True)
+    comment_before = models.TextField(
+        _("Commentaire (avant)"),
+        blank=True,
+        help_text=_("Facultatif, sera transmis uniquement au service pilote"),
+    )
+    comment_during = models.TextField(
+        _("Commentaire (pendant)"),
+        blank=True,
+        help_text=_("Facultatif, sera transmis uniquement au service pilote"),
+    )
+    comment_after = models.TextField(
+        _("Commentaire (après)"),
+        blank=True,
+        help_text=_("Facultatif, sera transmis uniquement au service pilote"),
+    )
     validated_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     validated_at = models.DateTimeField(_("Validé le"), null=True)
     history = HistoricalRecords()
