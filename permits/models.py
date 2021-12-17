@@ -43,15 +43,15 @@ ACTOR_TYPE_ASSOCIATION = 6
 ACTOR_TYPE_ENGINEER = 7
 ACTOR_TYPE_WORKDIRECTOR = 8
 ACTOR_TYPE_CHOICES = (
+    (ACTOR_TYPE_ENGINEER, _("Architecte/Ingénieur")),
+    (ACTOR_TYPE_ASSOCIATION, _("Association")),
     (ACTOR_TYPE_OTHER, _("Autres")),
-    (ACTOR_TYPE_OWNER, _("Propriétaire")),
+    (ACTOR_TYPE_WORKDIRECTOR, _("Direction des travaux")),
     (ACTOR_TYPE_COMPANY, _("Entreprise")),
     (ACTOR_TYPE_CLIENT, _("Maître d'ouvrage")),
-    (ACTOR_TYPE_REQUESTOR, _("Requérant si différent de l'auteur de la demande")),
+    (ACTOR_TYPE_OWNER, _("Propriétaire")),
+    (ACTOR_TYPE_REQUESTOR, _("Requérant (si différent de l'auteur de la demande)")),
     (ACTOR_TYPE_SECURITY, _("Sécurité")),
-    (ACTOR_TYPE_ASSOCIATION, _("Association")),
-    (ACTOR_TYPE_ENGINEER, _("Architecte/Ingénieur")),
-    (ACTOR_TYPE_WORKDIRECTOR, _("Direction des travaux")),
 )
 
 # Input types
