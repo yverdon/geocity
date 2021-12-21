@@ -438,7 +438,7 @@ def get_works_object_types_field(user):
     return WorksObjectTypeWithAdministrativeEntitiesField(
         queryset=qs,
         widget=forms.CheckboxSelectMultiple,
-        label=_("objets des travaux").capitalize(),
+        label=_("objets").capitalize(),
     )
 
 
@@ -965,7 +965,7 @@ class PermitRequestAdmin(admin.ModelAdmin):
         )
 
     get_works_object_types.admin_order_field = "works_object_types"
-    get_works_object_types.short_description = "Objets et types de travaux"
+    get_works_object_types.short_description = "Objets et types de demandes"
 
 
 class TemplateCustomizationAdmin(admin.ModelAdmin):

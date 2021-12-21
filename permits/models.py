@@ -339,7 +339,7 @@ class PermitActorType(models.Model):
     works_type = models.ForeignKey(
         "WorksType",
         on_delete=models.CASCADE,
-        verbose_name=_("type de travaux"),
+        verbose_name=_("type de demande"),
         related_name="works_contact_types",
     )
     is_mandatory = models.BooleanField(_("obligatoire"), default=True)
@@ -436,7 +436,7 @@ class PermitRequest(models.Model):
         "WorksObjectType",
         through=WorksObjectTypeChoice,
         related_name="permit_requests",
-        verbose_name=_("Objets et types de travaux"),
+        verbose_name=_("Objets et types de demandes"),
     )
     administrative_entity = models.ForeignKey(
         PermitAdministrativeEntity,
@@ -744,13 +744,13 @@ class WorksObjectType(models.Model):
     works_type = models.ForeignKey(
         "WorksType",
         on_delete=models.CASCADE,
-        verbose_name=_("type de travaux"),
+        verbose_name=_("type"),
         related_name="works_object_types",
     )
     works_object = models.ForeignKey(
         "WorksObject",
         on_delete=models.CASCADE,
-        verbose_name=_("objet des travaux"),
+        verbose_name=_("objet"),
         related_name="works_object_types",
     )
     administrative_entities = models.ManyToManyField(
@@ -915,7 +915,7 @@ class WorksObjectProperty(models.Model):
     )
     is_mandatory = models.BooleanField(_("obligatoire"), default=False)
     works_object_types = models.ManyToManyField(
-        WorksObjectType, verbose_name=_("objets des travaux"), related_name="properties"
+        WorksObjectType, verbose_name=_("objets"), related_name="properties"
     )
     choices = models.TextField(
         verbose_name=_("valeurs à choix"),
@@ -1006,7 +1006,7 @@ class WorksObjectPropertyValue(models.Model):
     )
     works_object_type_choice = models.ForeignKey(
         WorksObjectTypeChoice,
-        verbose_name=_("objet des travaux"),
+        verbose_name=_("objet"),
         on_delete=models.CASCADE,
         related_name="properties",
     )
@@ -1147,9 +1147,7 @@ class PermitRequestAmendProperty(models.Model):
         _("Visible par l'auteur de la demande"), default=True
     )
     works_object_types = models.ManyToManyField(
-        WorksObjectType,
-        verbose_name=_("objets des travaux"),
-        related_name="amend_properties",
+        WorksObjectType, verbose_name=_("objets"), related_name="amend_properties",
     )
     integrator = models.ForeignKey(
         Group,
@@ -1181,7 +1179,7 @@ class PermitRequestAmendPropertyValue(models.Model):
     )
     works_object_type_choice = models.ForeignKey(
         WorksObjectTypeChoice,
-        verbose_name=_("objet des travaux"),
+        verbose_name=_("objet"),
         on_delete=models.CASCADE,
         related_name="amend_properties",
     )
