@@ -9,7 +9,7 @@ from . import models, services
 class BasePermitRequestFilterSet(django_filters.FilterSet):
     id = django_filters.filters.NumberFilter(field_name="id")
     works_object_types__works_type = django_filters.filters.ModelChoiceFilter(
-        queryset=models.WorksType.objects.order_by("name"), label=_("Type de travaux")
+        queryset=models.WorksType.objects.order_by("name"), label=_("Type de demande")
     )
     created_at = django_filters.DateFilter(
         field_name="created_at",
@@ -62,10 +62,10 @@ class DepartmentPermitRequestFilterSet(BasePermitRequestFilterSet):
     )
     works_object_types__works_object = django_filters.filters.ModelChoiceFilter(
         queryset=models.WorksObject.objects.order_by("name"),
-        label=_("Objet des travaux"),
+        label=_("Objet de la demande"),
     )
     works_object_types__works_type = django_filters.filters.ModelChoiceFilter(
-        queryset=models.WorksType.objects.order_by("name"), label=_("Type de travaux")
+        queryset=models.WorksType.objects.order_by("name"), label=_("Type de demande")
     )
 
     class Meta:

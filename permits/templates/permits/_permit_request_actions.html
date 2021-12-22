@@ -130,30 +130,7 @@
         {% if forms.poke or can_classify %}
             <div class="tab-pane{% if active_form == "poke" or not active_form and can_classify %} show active{% endif  %}" id="classify" role="tabpanel" aria-labelledby="classify-tab">
             <form method="post">
-                {% csrf_token %}                    
-                <dl>
-                {% if validations %}
-                <dl><hr></dl>
-                {% endif %}
-                {% for validation in validations %}
-                <dt>{{ validation.department.group.name }}</dt>
-                <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
-                    {{ validation.get_validation_status_display }}
-                    {% if validation.comment_before %}
-                    <br>
-                    {% trans "Commentaire (avant)" %}: {{ validation.comment_before }}
-                    {% endif %}
-                    {% if validation.comment_during %}
-                    <br>
-                    {% trans "Commentaire (pendant)" %}: {{ validation.comment_during }}
-                    {% endif %}
-                    {% if validation.comment_after %}
-                    <br>
-                    {% trans "Commentaire (après)" %}: {{ validation.comment_after }}
-                    {% endif %}
-                </dd>
-                {% endfor %}
-                </dl>
+                {% csrf_token %}                     
 
                 {% if nb_pending_validations and not forms.poke.disabled %}
                 <div class="text-right">
