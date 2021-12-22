@@ -134,46 +134,48 @@
           </div>
         </div>
       </div>
-
-      <div class="row sub-row">
-        <div class="col">
-          <h2>{% trans "Statut des validations" %}</h2>
-            {% for validation in validations %}
-              <div class="container">
-                <dl>
-                  <dt> {{ validation.department.group.name }} </dt>
-                  <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
-                    {% if 'Approuvé' in validation.get_validation_status_display %}
-                      <i class="fa fa-check-circle" aria-hidden="true"></i>&#x202F;
-                    {% elif 'attente' in validation.get_validation_status_display %}
-                      <i class="fa fa-clock-o" aria-hidden="true"></i>&#x202F;
-                    {% else %}
-                      <i class="fa fa-times-circle" aria-hidden="true"></i>&#x202F;
-                    {% endif %}
-                    {{ validation.get_validation_status_display }} par
-                      {% if validation.validated_by %}
-                        {{ validation.validated_by.permitauthor.user.first_name }}
-                        {{ validation.validated_by.permitauthor.user.last_name }}
-                        le
-                        {{ validation.validated_at }}
-                      {% endif %}
-                  </dd>
-                  {% if validation.comment_before %}
-                    <dt>{% trans "Commentaire (avant)" %}:</dt> <dd> {{ validation.comment_before }} </dd>
-                  {% endif %}
-                  {% if validation.comment_during %}
-                    <dt>{% trans "Commentaire (pendant)" %}:</dt> <dd> {{ validation.comment_during }} </dd>
-                  {% endif %}
-                  {% if validation.comment_after %}
-                    <dt>{% trans "Commentaire (après)" %}:</dt> <dd> {{ validation.comment_after }} </dd>
-                  {% endif %}
-                </dl>
-              </div>
-            {% endfor %}
-        </div>
-      </div>
-
     {% endif %}
+    
+    {% if validations %}
+    <div class="row sub-row">
+      <div class="col">
+        <h2>{% trans "Commentaires des services consultés" %}</h2>
+          {% for validation in validations %}
+            <div class="container">
+              <dl>
+                <dt> {{ validation.department.group.name }} </dt>
+                <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
+                  {% if 'Approuvé' in validation.get_validation_status_display %}
+                    <i class="fa fa-check-circle" aria-hidden="true"></i>&#x202F;
+                  {% elif 'attente' in validation.get_validation_status_display %}
+                    <i class="fa fa-clock-o" aria-hidden="true"></i>&#x202F;
+                  {% else %}
+                    <i class="fa fa-times-circle" aria-hidden="true"></i>&#x202F;
+                  {% endif %}
+                  {{ validation.get_validation_status_display }} par
+                    {% if validation.validated_by %}
+                      {{ validation.validated_by.permitauthor.user.first_name }}
+                      {{ validation.validated_by.permitauthor.user.last_name }}
+                      le
+                      {{ validation.validated_at }}
+                    {% endif %}
+                </dd>
+                {% if validation.comment_before %}
+                  <dt>{% trans "Commentaire (avant)" %}:</dt> <dd> {{ validation.comment_before }} </dd>
+                {% endif %}
+                {% if validation.comment_during %}
+                  <dt>{% trans "Commentaire (pendant)" %}:</dt> <dd> {{ validation.comment_during }} </dd>
+                {% endif %}
+                {% if validation.comment_after %}
+                  <dt>{% trans "Commentaire (après)" %}:</dt> <dd> {{ validation.comment_after }} </dd>
+                {% endif %}
+              </dl>
+            </div>
+          {% endfor %}
+      </div>
+    </div>
+
+  {% endif %}
 
     {% if permit_request.can_be_prolonged and permit_request.prolongation_date %}
 

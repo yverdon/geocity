@@ -214,14 +214,10 @@ class PermitRequestDetailView(View):
         else:
             kwargs["nb_pending_validations"] = 0
 
-            if services.can_validate_permit_request(
-                self.request.user, self.permit_request
-            ):
-                kwargs["validations"] = self.permit_request.validations.select_related(
-                    "department", "department__group"
-                )
-            else:
-                kwargs["validations"] = []
+            kwargs["validations"] = self.permit_request.validations.select_related(
+                "department", "department__group"
+            )
+
 
         history = (
             self.permit_request.history.all()
