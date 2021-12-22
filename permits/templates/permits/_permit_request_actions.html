@@ -130,7 +130,7 @@
         {% if forms.poke or can_classify %}
             <div class="tab-pane{% if active_form == "poke" or not active_form and can_classify %} show active{% endif  %}" id="classify" role="tabpanel" aria-labelledby="classify-tab">
             <form method="post">
-                {% csrf_token %}                    
+                {% csrf_token %}                     
 
                 {% if nb_pending_validations and not forms.poke.disabled %}
                 <div class="text-right">

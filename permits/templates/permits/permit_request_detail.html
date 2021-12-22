@@ -150,13 +150,15 @@
                   {% else %}
                     <i class="fa fa-times-circle" aria-hidden="true"></i>&#x202F;
                   {% endif %}
-                  {{ validation.get_validation_status_display }} par
+                  {% if has_permission_to_classify or can_validate_permit_request%}
+                    {{ validation.get_validation_status_display }} par
                     {% if validation.validated_by %}
                       {{ validation.validated_by.permitauthor.user.first_name }}
                       {{ validation.validated_by.permitauthor.user.last_name }}
                       le
                       {{ validation.validated_at }}
                     {% endif %}
+                  {% endif %}
                 </dd>
                 {% if validation.comment_before %}
                   <dt>{% trans "Commentaire (avant)" %}:</dt> <dd> {{ validation.comment_before }} </dd>
