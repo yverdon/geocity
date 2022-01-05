@@ -215,23 +215,18 @@ class PermitRequestDetailView(View):
         else:
             kwargs["nb_pending_validations"] = 0
 
-            if services.can_validate_permit_request(
-                self.request.user, self.permit_request
-            ):
-                kwargs["validations"] = self.permit_request.validations.select_related(
-                    "department", "department__group"
-                )
-            else:
-                kwargs["validations"] = []
-
+            kwargs["validations"] = self.permit_request.validations.select_related(
+                "department", "department__group"
+            )
+        can_validate_permit_request = services.can_validate_permit_request(
+            self.request.user, self.permit_request
+        )
         history = (
             self.permit_request.history.all()
             if services.has_permission_to_amend_permit_request(
                 self.request.user, self.permit_request
             )
-            or services.can_validate_permit_request(
-                self.request.user, self.permit_request
-            )
+            or can_validate_permit_request
             else None
         )
 
@@ -248,6 +243,7 @@ class PermitRequestDetailView(View):
                 "can_classify": services.can_classify_permit_request(
                     self.request.user, self.permit_request
                 ),
+                "can_validate_permit_request": can_validate_permit_request,
                 "print_templates": services.get_permit_request_print_templates(
                     self.permit_request
                 ),

@@ -44,15 +44,15 @@ ACTOR_TYPE_ASSOCIATION = 6
 ACTOR_TYPE_ENGINEER = 7
 ACTOR_TYPE_WORKDIRECTOR = 8
 ACTOR_TYPE_CHOICES = (
+    (ACTOR_TYPE_ENGINEER, _("Architecte/Ingénieur")),
+    (ACTOR_TYPE_ASSOCIATION, _("Association")),
     (ACTOR_TYPE_OTHER, _("Autres")),
-    (ACTOR_TYPE_OWNER, _("Propriétaire")),
+    (ACTOR_TYPE_WORKDIRECTOR, _("Direction des travaux")),
     (ACTOR_TYPE_COMPANY, _("Entreprise")),
     (ACTOR_TYPE_CLIENT, _("Maître d'ouvrage")),
-    (ACTOR_TYPE_REQUESTOR, _("Requérant si différent de l'auteur de la demande")),
+    (ACTOR_TYPE_OWNER, _("Propriétaire")),
+    (ACTOR_TYPE_REQUESTOR, _("Requérant (si différent de l'auteur de la demande)")),
     (ACTOR_TYPE_SECURITY, _("Sécurité")),
-    (ACTOR_TYPE_ASSOCIATION, _("Association")),
-    (ACTOR_TYPE_ENGINEER, _("Architecte/Ingénieur")),
-    (ACTOR_TYPE_WORKDIRECTOR, _("Direction des travaux")),
 )
 
 # Input types
@@ -173,17 +173,11 @@ class PermitAdministrativeEntity(models.Model):
     general_informations = models.CharField(
         _("Informations"), blank=True, max_length=1024,
     )
-    logo_main = fields.AdministrativeEntityFileField(
-        _("Logo principal"), blank=True, upload_to="administrative_entity_files/"
-    )
-    logo_secondary = fields.AdministrativeEntityFileField(
-        _("Logo secondaire"), blank=True, upload_to="administrative_entity_files/"
-    )
-    title_signature_1 = models.CharField(
-        _("Signature Gauche"), max_length=128, blank=True
-    )
-    title_signature_2 = models.CharField(
-        _("Signature Droite"), max_length=128, blank=True
+    custom_signature = models.TextField(
+        _("Signature des emails"),
+        help_text=_("Si vide, le nom de l'entité sera utilisé"),
+        max_length=1024,
+        blank=True,
     )
     phone = models.CharField(
         _("Téléphone"),
@@ -347,7 +341,7 @@ class PermitActorType(models.Model):
     works_type = models.ForeignKey(
         "WorksType",
         on_delete=models.CASCADE,
-        verbose_name=_("type de travaux"),
+        verbose_name=_("type de demande"),
         related_name="works_contact_types",
     )
     is_mandatory = models.BooleanField(_("obligatoire"), default=True)
@@ -444,7 +438,7 @@ class PermitRequest(models.Model):
         "WorksObjectType",
         through=WorksObjectTypeChoice,
         related_name="permit_requests",
-        verbose_name=_("Objets et types de travaux"),
+        verbose_name=_("Objets et types de demandes"),
     )
     administrative_entity = models.ForeignKey(
         PermitAdministrativeEntity,
@@ -484,6 +478,13 @@ class PermitRequest(models.Model):
     prolongation_status = models.PositiveSmallIntegerField(
         _("Décision"), choices=PROLONGATION_STATUS_CHOICES, null=True, blank=True,
     )
+    additional_decision_information = models.TextField(
+        _("Information complémentaire"),
+        max_length=2048,
+        blank=True,
+        help_text=_("Facultative, sera transmise au requérant"),
+    )
+
     history = HistoricalRecords()
 
     class Meta:
@@ -745,13 +746,13 @@ class WorksObjectType(models.Model):
     works_type = models.ForeignKey(
         "WorksType",
         on_delete=models.CASCADE,
-        verbose_name=_("type de travaux"),
+        verbose_name=_("type"),
         related_name="works_object_types",
     )
     works_object = models.ForeignKey(
         "WorksObject",
         on_delete=models.CASCADE,
-        verbose_name=_("objet des travaux"),
+        verbose_name=_("objet"),
         related_name="works_object_types",
     )
     administrative_entities = models.ManyToManyField(
@@ -907,9 +908,16 @@ class WorksObjectProperty(models.Model):
     order = models.PositiveIntegerField(
         _("ordre"), default=0, blank=False, null=False, db_index=True
     )
+    line_number_for_textarea = models.PositiveIntegerField(
+        _("Nombre de lignes de la zone de texte"),
+        blank=True,
+        default=1,
+        null=True,
+        validators=[MinValueValidator(1), MaxValueValidator(50)],
+    )
     is_mandatory = models.BooleanField(_("obligatoire"), default=False)
     works_object_types = models.ManyToManyField(
-        WorksObjectType, verbose_name=_("objets des travaux"), related_name="properties"
+        WorksObjectType, verbose_name=_("objets"), related_name="properties"
     )
     choices = models.TextField(
         verbose_name=_("valeurs à choix"),
@@ -1000,7 +1008,7 @@ class WorksObjectPropertyValue(models.Model):
     )
     works_object_type_choice = models.ForeignKey(
         WorksObjectTypeChoice,
-        verbose_name=_("objet des travaux"),
+        verbose_name=_("objet"),
         on_delete=models.CASCADE,
         related_name="properties",
     )
@@ -1034,9 +1042,21 @@ class PermitRequestValidation(models.Model):
     validation_status = models.IntegerField(
         _("Statut de validation"), choices=STATUS_CHOICES, default=STATUS_REQUESTED
     )
-    comment_before = models.TextField(_("Commentaires (avant)"), blank=True)
-    comment_during = models.TextField(_("Commentaires (pendant)"), blank=True)
-    comment_after = models.TextField(_("Commentaires (après)"), blank=True)
+    comment_before = models.TextField(
+        _("Commentaire (avant)"),
+        blank=True,
+        help_text=_("Information supplémentaire facultative transmise au requérant"),
+    )
+    comment_during = models.TextField(
+        _("Commentaire (pendant)"),
+        blank=True,
+        help_text=_("Information supplémentaire facultative transmise au requérant"),
+    )
+    comment_after = models.TextField(
+        _("Commentaire (après)"),
+        blank=True,
+        help_text=_("Information supplémentaire facultative transmise au requérant"),
+    )
     validated_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     validated_at = models.DateTimeField(_("Validé le"), null=True)
     history = HistoricalRecords()
@@ -1129,9 +1149,7 @@ class PermitRequestAmendProperty(models.Model):
         _("Visible par l'auteur de la demande"), default=True
     )
     works_object_types = models.ManyToManyField(
-        WorksObjectType,
-        verbose_name=_("objets des travaux"),
-        related_name="amend_properties",
+        WorksObjectType, verbose_name=_("objets"), related_name="amend_properties",
     )
     integrator = models.ForeignKey(
         Group,
@@ -1163,7 +1181,7 @@ class PermitRequestAmendPropertyValue(models.Model):
     )
     works_object_type_choice = models.ForeignKey(
         WorksObjectTypeChoice,
-        verbose_name=_("objet des travaux"),
+        verbose_name=_("objet"),
         on_delete=models.CASCADE,
         related_name="amend_properties",
     )

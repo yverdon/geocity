@@ -438,7 +438,7 @@ def get_works_object_types_field(user):
     return WorksObjectTypeWithAdministrativeEntitiesField(
         queryset=qs,
         widget=forms.CheckboxSelectMultiple,
-        label=_("objets des travaux").capitalize(),
+        label=_("objets").capitalize(),
     )
 
 
@@ -731,6 +731,7 @@ class WorksObjectPropertyForm(forms.ModelForm):
             "order",
             "input_type",
             "choices",
+            "line_number_for_textarea",
             "regex_pattern",
             "is_mandatory",
             "works_object_types",
@@ -772,18 +773,14 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
             "name",
             "tags",
             "ofs_id",
+            "expeditor_email",
+            "expeditor_name",
+            "custom_signature",
             "link",
             "archive_link",
             "general_informations",
-            "logo_main",
-            "logo_secondary",
-            "title_signature_1",
-            "title_signature_2",
             "phone",
             "geom",
-            "expeditor_email",
-            "expeditor_name",
-            "sites",
         ]
         exclude = ["enabled_status"]
         widgets = {
@@ -823,6 +820,10 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
 class PermitWorkflowStatusInline(admin.StackedInline):
     model = models.PermitWorkflowStatus
     extra = 0
+    verbose_name = _("Étape - ")
+    verbose_name_plural = _(
+        "Étapes - Si aucune n'est ajoutée manuellement, toutes les étapes sont ajoutées automatiquement"
+    )
 
 
 class WorksObjectAdminForm(forms.ModelForm):
@@ -874,6 +875,22 @@ class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 permitdepartment__is_integrator_admin=True,
             )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def save_model(self, request, obj, form, change):
+
+        if not request.user.is_superuser:
+            obj.integrator = request.user.groups.get(
+                permitdepartment__is_integrator_admin=True
+            )
+        obj.save()
+        has_workflow_status = models.PermitWorkflowStatus.objects.filter(
+            administrative_entity=obj
+        ).exists()
+        if not has_workflow_status:
+            for key, value in models.PermitRequest.STATUS_CHOICES:
+                models.PermitWorkflowStatus.objects.create(
+                    status=key, administrative_entity=obj,
+                )
 
 
 class PermitRequestAmendPropertyForm(forms.ModelForm):
@@ -968,7 +985,7 @@ class PermitRequestAdmin(admin.ModelAdmin):
         )
 
     get_works_object_types.admin_order_field = "works_object_types"
-    get_works_object_types.short_description = "Objets et types de travaux"
+    get_works_object_types.short_description = "Objets et types de demandes"
 
 
 class TemplateCustomizationAdmin(admin.ModelAdmin):

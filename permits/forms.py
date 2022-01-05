@@ -408,7 +408,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
             **default_kwargs,
             "widget": forms.Textarea(
                 attrs={
-                    "rows": 1,
+                    "rows": prop.line_number_for_textarea,
                     "placeholder": ("ex: " + prop.placeholder)
                     if prop.placeholder != ""
                     else "",
@@ -1295,7 +1295,12 @@ class PermitRequestClassifyForm(forms.ModelForm):
 
     class Meta:
         model = models.PermitRequest
-        fields = ["is_public", "status", "validation_pdf"]
+        fields = [
+            "is_public",
+            "status",
+            "validation_pdf",
+            "additional_decision_information",
+        ]
 
     def __init__(self, *args, **kwargs):
         super(PermitRequestClassifyForm, self).__init__(*args, **kwargs)

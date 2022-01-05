@@ -3061,6 +3061,8 @@ class PermitRequestClassifyTestCase(TestCase):
         self.administrative_entity = (
             self.secretariat_group.permitdepartment.administrative_entity
         )
+        self.administrative_entity.custom_signature = "a custom signature for email"
+        self.administrative_entity.save()
         self.secretariat_user = factories.SecretariatUserFactory(
             groups=[self.secretariat_group]
         )
@@ -3073,6 +3075,7 @@ class PermitRequestClassifyTestCase(TestCase):
         )
 
     def test_secretariat_can_approve_permit_request_and_email_to_author_is_sent(self):
+
         validation = factories.PermitRequestValidationFactory(
             permit_request__administrative_entity=self.administrative_entity,
             permit_request__status=models.PermitRequest.STATUS_PROCESSING,
@@ -3110,8 +3113,12 @@ class PermitRequestClassifyTestCase(TestCase):
             "Nous vous informons que votre demande a été traitée et classée.",
             mail.outbox[0].message().as_string(),
         )
+        self.assertIn(
+            "a custom signature for email", mail.outbox[0].message().as_string(),
+        )
 
     def test_secretariat_can_reject_permit_request_and_email_to_author_is_sent(self):
+
         validation = factories.PermitRequestValidationFactory(
             permit_request__administrative_entity=self.administrative_entity,
             permit_request__status=models.PermitRequest.STATUS_PROCESSING,
@@ -3149,8 +3156,12 @@ class PermitRequestClassifyTestCase(TestCase):
             "Nous vous informons que votre demande a été traitée et classée.",
             mail.outbox[0].message().as_string(),
         )
+        self.assertIn(
+            "a custom signature for email", mail.outbox[0].message().as_string(),
+        )
 
     def test_secretariat_cannot_classify_permit_request_with_pending_validations(self):
+
         validation = factories.PermitRequestValidationFactory(
             permit_request__administrative_entity=self.administrative_entity
         )
@@ -3311,7 +3322,9 @@ class PermitRequestClassifyTestCase(TestCase):
             "test-send-2@geocity.ch",
             "test-send-1@geocity.ch",
         ]
-
+        self.assertIn(
+            "a custom signature for email", mail.outbox[0].message().as_string(),
+        )
         self.assertTrue(mail.outbox[1].to[0] in valid_services_emails)
         self.assertIn(services_message_content, mail.outbox[1].message().as_string())
         self.assertTrue(mail.outbox[2].to[0] in valid_services_emails)
