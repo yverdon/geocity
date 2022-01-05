@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('sites', '0002_alter_domain_unique'),
-        ('permits', '0052_add_email_domains_list_for_admin_filtering'),
+        ('permits', '0054_add_help_texts_and_sort_contacts_and_remove_term_travaux'),
     ]
 
     operations = [
