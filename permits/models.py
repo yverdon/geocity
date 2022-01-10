@@ -277,6 +277,7 @@ class PermitAuthor(models.Model):
             )
         ],
     )
+    email_notifications = False
     user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
     history = HistoricalRecords()
 
