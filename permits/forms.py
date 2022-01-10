@@ -644,7 +644,7 @@ class GenericAuthorForm(forms.ModelForm):
             "phone_second",
             "company_name",
             "vat_number",
-            "notifiy_per_email",
+            "notify_per_email",
         ]
         help_texts = {
             "vat_number": 'Trouvez votre numéro <a href="https://www.uid.admin.ch/Search.aspx?lang=fr" target="_blank">TVA</a>',
