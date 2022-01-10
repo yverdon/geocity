@@ -268,11 +268,11 @@ docker-compose exec web python3 manage.py migrate --help
 ```
 
 ### Practical example
-Note: append `docker-compose exec web ` to the following python calls if your app is containerized.
+Note: prepend `docker-compose exec web ` to the following python calls if your app is containerized.
 
 `<app_label>`: this is set automatically depending on which model file is modified. In Geocity, it will always be "permits" => so there is nothing to specify.
 
-`<migration_name>`: we try to name it with something meaningful, but there is no convention, for example, this command: `python manage.py makemigrations -n my_changes_to_the_user_model` will automatically create the following migration file for the permits app_label: `0056_my_changes_to_the_user_model.py`
+`<migration_name>`: we try to name it with something meaningful, but there is no convention, for example, this command: `python manage.py makemigrations -n my_changes_to_the_user_model` will automatically create the following migration file for the "permits" app_label: `0056_my_changes_to_the_user_model.py`
 
 Finally, you can apply it using:
 `python manage.py migrate permits 0056_my_changes_to_the_user_model`
