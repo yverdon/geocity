@@ -746,7 +746,11 @@ class WorksObjectPropertyForm(forms.ModelForm):
 class WorksObjectPropertyAdmin(
     IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdmin
 ):
-    list_display = ["__str__", "is_mandatory", "input_type"]
+    list_display = [
+        "__str__",
+        "is_mandatory",
+        "input_type",
+    ]
     list_filter = [
         "name",
         "input_type",
@@ -865,7 +869,13 @@ class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     search_fields = [
         "name",
     ]
-    list_display = ["__str__", "expeditor_name", "expeditor_email", "ofs_id"]
+    list_display = [
+        "__str__",
+        "expeditor_name",
+        "expeditor_email",
+        "ofs_id",
+        "tags",
+    ]
     form = PermitAdministrativeEntityAdminForm
     inlines = [
         PermitWorkflowStatusInline,
@@ -913,8 +923,11 @@ class PermitRequestAmendPropertyForm(forms.ModelForm):
 
 
 class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
-
-    list_display = ["sortable_str", "is_mandatory", "is_visible_by_author"]
+    list_display = [
+        "sortable_str",
+        "is_mandatory",
+        "is_visible_by_author",
+    ]
     search_fields = [
         "name",
     ]
@@ -943,7 +956,12 @@ class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
 
 class PermitActorTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
-    list_display = ["__str__", "type", "works_type", "is_mandatory"]
+    list_display = [
+        "__str__",
+        "type",
+        "works_type",
+        "is_mandatory",
+    ]
     list_filter = [
         "works_type",
         "is_mandatory",
@@ -960,9 +978,21 @@ class PermitActorTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-class WorksTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
-    pass
+class WorksTypeAdminForm(forms.ModelForm):
+    class Meta:
+        model = models.WorksType
+        fields = "__all__"
 
+class WorksTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    form = WorksTypeAdminForm
+    list_display = [
+        "__str__",
+        "meta_type",
+        "tags",
+    ]
+    search_fields = [
+        "id",
+    ]
 
 class PermitRequestAdmin(admin.ModelAdmin):
     list_display = [
