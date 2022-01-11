@@ -645,6 +645,8 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         works_object_type_administrative_entities,
         "is_public",
         "requires_payment",
+        "requires_validation_document",
+        "notify_services",
         "needs_date",
         "permit_duration",
         "expiration_reminder",
@@ -885,13 +887,16 @@ class WorksObjectAdminForm(forms.ModelForm):
 
 
 class WorksObjectAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    form = WorksObjectAdminForm
     list_filter = [
         "name",
     ]
     search_fields = [
         "name",
     ]
-    form = WorksObjectAdminForm
+    list_display = [
+        "__str__",
+    ]
 
 
 class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
