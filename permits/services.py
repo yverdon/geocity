@@ -966,9 +966,7 @@ def submit_permit_request(permit_request, request):
                         groups__permitdepartment__is_backoffice=True,
                     )
                 ),
-                Q(
-                    permitauthor__notify_per_email=True
-                ),
+                Q(permitauthor__notify_per_email=True),
             )
             .values_list("permitauthor__user__email", flat=True)
         )
@@ -1018,7 +1016,7 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
             .objects.filter(
                 Q(
                     groups__permitdepartment__in=departments,
-                    permitauthor__notify_per_email=True
+                    permitauthor__notify_per_email=True,
                 )
             )
             .values_list("permitauthor__user__email", flat=True)
@@ -1047,7 +1045,7 @@ def send_validation_reminder(permit_request, absolute_uri_func):
                 groups__permitdepartment__in=pending_validations.values_list(
                     "department", flat=True
                 ),
-                permitauthor__notify_per_email=True
+                permitauthor__notify_per_email=True,
             )
         )
         .values_list("permitauthor__user__email", flat=True)
@@ -1112,10 +1110,7 @@ def _get_secretary_email(permit_request):
         is_backoffice=True
     )
     secretary_group_users = get_user_model().objects.filter(
-        Q(
-            groups__permitdepartment__in=department,
-            permitauthor__notify_per_email=True
-        )
+        Q(groups__permitdepartment__in=department, permitauthor__notify_per_email=True)
     )
 
     return [user.email for user in secretary_group_users]
