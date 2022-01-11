@@ -366,10 +366,42 @@ class GroupAdminForm(forms.ModelForm):
 class GroupAdmin(admin.ModelAdmin):
     inlines = (PermitDepartmentInline,)
     form = GroupAdminForm
+    list_display = [
+        "__str__",
+        "get__is_validator",
+        "get__is_default_validator",
+        "get__integrator",
+        "get__mandatory_2fa",
+    ]
+
     filter_horizontal = ("permissions",)
     search_fields = [
         "name",
     ]
+
+    def get__is_validator(self, obj):
+        return obj.permitdepartment.is_validator
+
+    get__is_validator.admin_order_field = 'permitdepartment__is_validator'
+    get__is_validator.short_description = _('Validateur')
+
+    def get__is_default_validator(self, obj):
+        return obj.permitdepartment.is_default_validator
+
+    get__is_default_validator.admin_order_field = 'permitdepartment__is_default_validator'
+    get__is_default_validator.short_description = _('Validateur par défaut')
+
+    def get__integrator(self, obj):
+        return obj.permitdepartment.integrator
+
+    get__integrator.admin_order_field = 'permitdepartment__integrator'
+    get__integrator.short_description = _('Intégrateur')
+
+    def get__mandatory_2fa(self, obj):
+        return obj.permitdepartment.mandatory_2fa
+
+    get__mandatory_2fa.admin_order_field = 'permitdepartment__mandatory_2fa'
+    get__mandatory_2fa.short_description = _('2FA obligatoire')
 
     def get_queryset(self, request):
 
