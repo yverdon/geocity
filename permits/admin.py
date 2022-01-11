@@ -146,6 +146,8 @@ class UserAdmin(BaseUserAdmin):
         "last_name",
         "is_staff",
         "is_sociallogin",
+        "last_login",
+        "date_joined",
     )
 
     @admin.display(boolean=True)
