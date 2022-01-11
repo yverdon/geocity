@@ -640,8 +640,10 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
 
 
 class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    form = WorksObjectTypeAdminForm
+    inlines = [QgisProjectInline]
     list_display = [
-        "__str__",
+        "sortable_str",
         works_object_type_administrative_entities,
         "is_public",
         "requires_payment",
@@ -705,8 +707,13 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             },
         ),
     )
-    form = WorksObjectTypeAdminForm
-    inlines = [QgisProjectInline]
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "works_object__name"
+    sortable_str.short_description = _(
+        "1.1 Configuration de l'entité administrative (commune, organisation)"
+    )
 
     def get_queryset(self, request):
         qs = (
@@ -780,8 +787,9 @@ class WorksObjectPropertyForm(forms.ModelForm):
 class WorksObjectPropertyAdmin(
     IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdmin
 ):
+    form = WorksObjectPropertyForm
     list_display = [
-        "__str__",
+        "sortable_str",
         "is_mandatory",
         "input_type",
     ]
@@ -792,7 +800,12 @@ class WorksObjectPropertyAdmin(
     search_fields = [
         "name",
     ]
-    form = WorksObjectPropertyForm
+
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "name"
+    sortable_str.short_description = _("1.5 Configuration du champ")
 
     # Pass the request from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs):
@@ -895,11 +908,20 @@ class WorksObjectAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "name",
     ]
     list_display = [
-        "__str__",
+        "sortable_str",
     ]
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "name"
+    sortable_str.short_description = _("1.3 Configuration de l'objet")
 
 
 class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    form = PermitAdministrativeEntityAdminForm
+    inlines = [
+        PermitWorkflowStatusInline,
+    ]
     list_filter = [
         "name",
     ]
@@ -907,16 +929,19 @@ class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "name",
     ]
     list_display = [
-        "__str__",
+        "sortable_str",
         "expeditor_name",
         "expeditor_email",
         "ofs_id",
         "tags",
     ]
-    form = PermitAdministrativeEntityAdminForm
-    inlines = [
-        PermitWorkflowStatusInline,
-    ]
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "name"
+    sortable_str.short_description = (
+        "1.1 Configuration de l'entité administrative (commune, organisation)"
+    )
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "integrator":
@@ -994,7 +1019,7 @@ class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
 class PermitActorTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_display = [
-        "__str__",
+        "sortable_str",
         "type",
         "works_type",
         "is_mandatory",
@@ -1006,6 +1031,11 @@ class PermitActorTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     search_fields = [
         "name",
     ]
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "type"
+    sortable_str.short_description = _("1.6 Configuration du contact")
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "works_type":
@@ -1023,13 +1053,18 @@ class WorksTypeAdminForm(forms.ModelForm):
 class WorksTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = WorksTypeAdminForm
     list_display = [
-        "__str__",
+        "sortable_str",
         "meta_type",
         "tags",
     ]
     search_fields = [
         "id",
     ]
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "name"
+    sortable_str.short_description = _("1.2 Configuration du type")
 
 class PermitRequestAdmin(admin.ModelAdmin):
     list_display = [
