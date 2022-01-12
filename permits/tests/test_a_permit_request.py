@@ -13,6 +13,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from permits import models, services
+from django.contrib.sites.models import Site
 
 from . import factories
 from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_parser
@@ -54,6 +55,11 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             "form-INITIAL_FORMS": ["0"],
             "form-MIN_NUM_FORMS": ["0"],
         }
+        Site.objects.create(domain="yverdon.localhost", name="yverdon")
+        Site.objects.create(domain="grandson.localhost", name="grandson")
+        Site.objects.create(domain="vevey.localhost", name="vevey")
+        Site.objects.create(domain="lausanne.localhost", name="lausanne")
+        self.sites = Site.objects.all()
 
     def test_types_step_submit_redirects_to_objects_with_types_qs(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
@@ -967,7 +973,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
     def test_administrative_entity_is_filtered_by_tag(self):
         administrative_entities = [
-            factories.PermitAdministrativeEntityFactory(tags=[tag])
+            factories.PermitAdministrativeEntityFactory(tags=[tag], sites=self.sites)
             for tag in ["first", "second", "third"]
         ]
         works_object_types = models.WorksObjectType.objects.all()

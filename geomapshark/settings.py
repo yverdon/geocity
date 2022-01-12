@@ -93,8 +93,8 @@ ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 LOCAL_IP_WHITELIST = os.getenv("LOCAL_IP_WHITELIST")
 
 # Allauth requirement
-SITE_ID = 1
-SITE_DOMAIN = os.getenv("DEFAULT_SITE_DOMAIN", "localhost")
+# SITE_ID = 1
+# SITE_DOMAIN = os.getenv("DEFAULT_SITE_DOMAIN", "localhost")
 SITE_HTTPS = bool(int(os.getenv("SITE_HTTPS", True)))
 
 # Application definition
@@ -239,7 +239,7 @@ CONSTANCE_CONFIG = {
         "Définit si l'application du calendrier cartographique est utilisé ou pas (doit dans tous les cas être installée à part)",
         bool,
     ),
-    "LOCATION_STEP": ("Sélectionnez la commune / l'entité", "", str),
+    "LOCATION_STEP": ("Sélectionnez l'entité", "", str),
     "WORKS_TYPES_STEP": ("Sélectionnez le ou les type(s)", "", str),
     "WORKS_OBJECTS_STEP": ("Sélectionnez les objets", "", str),
     "PROPERTIES_STEP": ("Renseignez les caractéristiques des objets", "", str),
