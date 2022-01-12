@@ -93,9 +93,9 @@ ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 LOCAL_IP_WHITELIST = os.getenv("LOCAL_IP_WHITELIST")
 
 # Allauth requirement
-# SITE_ID = 1
-# SITE_DOMAIN = os.getenv("SITE_DOMAIN", "localhost")
-# SITE_HTTPS = bool(int(os.getenv("SITE_HTTPS", True)))
+SITE_ID = 1
+SITE_DOMAIN = os.getenv("DEFAULT_SITE_DOMAIN", "localhost")
+SITE_HTTPS = bool(int(os.getenv("SITE_HTTPS", True)))
 
 # Application definition
 INSTALLED_APPS = [
