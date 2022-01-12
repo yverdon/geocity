@@ -89,6 +89,13 @@ class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
 
         self.tags.set(*extracted)
 
+    @factory.post_generation
+    def sites(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        self.sites.set(extracted)
+
 
 class GroupFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: "Company{}".format(n))
