@@ -773,6 +773,7 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
             "name",
             "tags",
             "ofs_id",
+            "sites",
             "expeditor_email",
             "expeditor_name",
             "custom_signature",
@@ -863,11 +864,14 @@ class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     search_fields = [
         "name",
     ]
-    list_display = ["__str__", "expeditor_name", "expeditor_email", "ofs_id"]
+    list_display = ["__str__", "expeditor_name", "expeditor_email", "ofs_id", "sites"]
     form = PermitAdministrativeEntityAdminForm
     inlines = [
         PermitWorkflowStatusInline,
     ]
+
+    def sites(self, instance):
+        return "salut"
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "integrator":
