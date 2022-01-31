@@ -164,6 +164,9 @@ Use your favorite webserver to proxypass localhost:9095 to the outside world
 
 #### Demo accounts
 
+Standard user role:
+_user:admin_
+
 Administrator role (Django superuser):
 _admin:admin_
 
