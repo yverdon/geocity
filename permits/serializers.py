@@ -184,6 +184,7 @@ class PermitRequestGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
     class Meta:
         model = models.PermitRequestGeoTime
         geo_field = "geom"
+        auto_bbox = True
         fields = (
             "permit_request",
             "starts_at",
