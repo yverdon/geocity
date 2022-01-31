@@ -150,6 +150,9 @@ class UserAdmin(BaseUserAdmin):
         "date_joined",
     )
 
+    def has_add_permission(self, request):
+        return False
+
     @admin.display(boolean=True)
     def is_sociallogin(self, obj):
         return obj.socialaccount_set.exists()
