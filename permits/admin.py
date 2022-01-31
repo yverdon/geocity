@@ -826,6 +826,12 @@ class WorksObjectPropertyAdmin(
 
 
 class PermitAdministrativeEntityAdminForm(forms.ModelForm):
+    """ Form class to configure an administrative entity (commune, organisation)
+    """
+    def __init__(self, *args, **kwargs):
+        super(PermitAdministrativeEntityAdminForm, self).__init__(*args, **kwargs)
+        self.fields['expeditor_name'].disabled = False
+        self.fields['expeditor_name'].initial = None
     class Meta:
         model = models.PermitAdministrativeEntity
         fields = [
