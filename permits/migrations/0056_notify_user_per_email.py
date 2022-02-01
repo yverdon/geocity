@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0054_add_help_texts_and_sort_contacts_and_remove_term_travaux'),
+        ('permits', '0055_fiy_typo'),
     ]
 
     operations = [
