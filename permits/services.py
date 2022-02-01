@@ -1002,25 +1002,17 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
         models.PermitRequestValidation.objects.get_or_create(
             permit_request=permit_request, department=department
         )
-    if False:
-        users_to_notify = {
-            email
-            for department in departments
-            for email in department.group.user_set.values_list(
-                "permitauthor__user__email", flat=True
+
+    users_to_notify = set(
+        get_user_model()
+        .objects.filter(
+            Q(
+                groups__permitdepartment__in=departments,
+                permitauthor__notify_per_email=True,
             )
-        }
-    else:
-        users_to_notify = set(
-            get_user_model()
-            .objects.filter(
-                Q(
-                    groups__permitdepartment__in=departments,
-                    permitauthor__notify_per_email=True,
-                )
-            )
-            .values_list("permitauthor__user__email", flat=True)
         )
+        .values_list("permitauthor__user__email", flat=True)
+    )
 
     data = {
         "subject": _("Nouvelle demande en attente de validation"),
