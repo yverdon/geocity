@@ -797,7 +797,10 @@ class WorksObjectPropertyAdmin(
     list_display = [
         "sortable_str",
         "is_mandatory",
+        "name",
         "input_type",
+        "placeholder",
+        "help_text",
     ]
     list_filter = [
         "name",
