@@ -48,7 +48,7 @@ services:
             - PREFIX_URL
 
     postgres:
-        image: camptocamp/postgres:11
+        image: postgis/postgis:13-3.2
         restart: unless-stopped
         environment:
             - POSTGRES_USER=${PGUSER}
