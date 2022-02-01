@@ -464,7 +464,7 @@ class PermitRequest(models.Model):
         upload_to="validations",
     )
     creditor_type = models.PositiveSmallIntegerField(
-        _("Destinaire de la facture"),
+        _("Destinataire de la facture"),
         choices=ACTOR_TYPE_CHOICES,
         null=True,
         blank=True,
