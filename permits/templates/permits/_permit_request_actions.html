@@ -64,7 +64,7 @@
 
       {% endif %}
 
-      {% if forms.prolong %}
+      {% if forms.prolong and permit_request.can_be_prolonged %}
 
           <li class="nav-item">
               <a class="btn btn-primary btn-action nav-link{% if active_form == 'prolong' %} active{% endif %}" id="classify-tab" data-toggle="tab" href="#prolong" role="tab" aria-controls="prolong" aria-selected="{% if active_form == 'prolong' %}true{% else %}false{% endif %}">
@@ -204,7 +204,7 @@
             </div>
         {% endif %}
 
-        {% if forms.prolong %}
+        {% if forms.prolong and permit_request.can_be_prolonged %}
         <div class="tab-pane{% if active_form == 'prolong' %} show active{% endif  %}" id="prolong" role="tabpanel" aria-labelledby="prolong-tab">
 
         <form method="post">
@@ -223,6 +223,7 @@
         </form>
         </div>
         {% endif %}
+
       </div>
     </div>
   </div>
