@@ -2826,10 +2826,6 @@ class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase)
         )
 
         permit_request.refresh_from_db()
-        # test mails
-
-        # self.assertEqual(len(mail.outbox), 2)
-        # self.assertEqual(mail.outbox[0].to, [validator_user.permitauthor.user.email])
 
         self.assertEqual(
             permit_request.status, models.PermitRequest.STATUS_AWAITING_VALIDATION
