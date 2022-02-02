@@ -23,11 +23,9 @@
 {% block navbar %}{% endblock %}
 {% block content-fluid %}
   <div id="login-content">
-    <div id="login-welcome-text">
+    <div class="login-welcome-text">
       <h3>{{ customization.application_title|safe }}</h3>
       <h5>{{ customization.application_subtitle|safe }}</h5>
-      <br>
-      <div>{{ customization.application_description|safe }}</div>
     </div>
     <div id="login-container">
     {% if next and user.is_authenticated %}
@@ -45,7 +43,6 @@
         {% csrf_token %}
         <div>
           <h4>{% trans "Connexion" %}</h4>
-          <br>
           {{ wizard.management_form }}
           <p>{% trans "Connectez-vous à l'aide de vos identifiants" %}</p>
           <p>{% bootstrap_field form.username show_label=False placeholder="Identifiant" %}</p>
@@ -63,6 +60,9 @@
         <a class="form-text" href="{% url 'password_reset' %}">{% trans "Perdu votre mot de passe ?" %}</a>
         {% include "registration/_social_login.html" %}
       </div>
+    </div>
+    <div class="login-welcome-text">
+      <div>{{ customization.application_description|safe }}</div>
     </div>
 </div>
 <div>

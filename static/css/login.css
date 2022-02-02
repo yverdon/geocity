@@ -38,9 +38,8 @@ body {
   border-radius: 5px;
 }
 
-#login-welcome-text {
+.login-welcome-text {
   width: 60%;
-  padding: 10px 10px 10px 10px;
   color: black;
   float: left;
   text-align: left;
@@ -75,24 +74,26 @@ body {
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
     border-radius: 5px;
-    margin-top: -10px;
-    padding: 20px;
+    padding: 15px;
     margin-left: auto;
     margin-right: auto;
     float: none;
     width: 100%;
   }
 
+  #login-container p, #login-container a {
+    font-size: smaller;
+  }
+
   .text-center {
     font-size: 20px !important;
   }
 
-  #login-welcome-text .text-center {
+  .login-welcome-text .text-center {
     font-size: 15px;
   }
 
-  #login-welcome-text {
-    height: 100px;
+  .login-welcome-text {
     top: 5px;
     margin-top: 5px;
     padding: 5px 5px 5px 5px;
@@ -103,12 +104,8 @@ body {
     width: 100%;
   }
 
-  #login-welcome-text h5 {
-    visibility: hidden;
-  }
-
-  #login-welcome-text div {
-    visibility: hidden;
+  .login-welcome-text div {
+    font-size: 0.9rem;
   }
 
   .application-title {
@@ -123,5 +120,5 @@ body {
     left:40%;
     font-size: 12px;
   }
-  
+
 }
