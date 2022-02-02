@@ -1198,6 +1198,7 @@ class PermitRequestValidationForm(forms.ModelForm):
             "comment_after",
         ]
         widgets = {
+            "validation_status": forms.RadioSelect(),
             "comment_before": forms.Textarea(attrs={"rows": 3}),
             "comment_during": forms.Textarea(attrs={"rows": 3}),
             "comment_after": forms.Textarea(attrs={"rows": 3}),
@@ -1208,13 +1209,7 @@ class PermitRequestValidationForm(forms.ModelForm):
 
         # Show "----" instead of "en attente" for the default status
         self.fields["validation_status"].choices = [
-            (
-                value,
-                label
-                if value != models.PermitRequestValidation.STATUS_REQUESTED
-                else "-" * 9,
-            )
-            for value, label in self.fields["validation_status"].choices
+            (value, label,) for value, label in self.fields["validation_status"].choices
         ]
 
 
