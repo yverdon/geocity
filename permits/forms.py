@@ -1207,7 +1207,6 @@ class PermitRequestValidationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Show "----" instead of "en attente" for the default status
         self.fields["validation_status"].choices = [
             (value, label,) for value, label in self.fields["validation_status"].choices
         ]
