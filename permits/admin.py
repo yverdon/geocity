@@ -232,12 +232,13 @@ class UserAdmin(BaseUserAdmin):
         """ Set 'is_staff=True' when the saved user is in a integrator group.
         """
         if req.user.is_superuser:
-            obj.is_staff=False
-            for group in form.cleaned_data['groups']:
+            obj.is_staff = False
+            for group in form.cleaned_data["groups"]:
                 if group.permitdepartment.is_integrator_admin:
-                    obj.is_staff=True
+                    obj.is_staff = True
 
         super().save_model(req, obj, form, change)
+
 
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
