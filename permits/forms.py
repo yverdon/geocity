@@ -644,9 +644,13 @@ class GenericAuthorForm(forms.ModelForm):
             "phone_second",
             "company_name",
             "vat_number",
+            "notify_per_email",
         ]
         help_texts = {
             "vat_number": 'Trouvez votre numéro <a href="https://www.uid.admin.ch/Search.aspx?lang=fr" target="_blank">TVA</a>',
+            "notify_per_email": """Permet d'activer la réception des notifications
+                automatiques de suivi dans votre boîte mail, par exemple lorsqu'une
+                demande a été soumise ou est en attente de validation.""",
         }
         widgets = {
             "phone_first": forms.TextInput(attrs={"placeholder": "ex: 024 111 22 22"}),
@@ -1198,6 +1202,7 @@ class PermitRequestValidationForm(forms.ModelForm):
             "comment_after",
         ]
         widgets = {
+            "validation_status": forms.RadioSelect(),
             "comment_before": forms.Textarea(attrs={"rows": 3}),
             "comment_during": forms.Textarea(attrs={"rows": 3}),
             "comment_after": forms.Textarea(attrs={"rows": 3}),
@@ -1206,15 +1211,8 @@ class PermitRequestValidationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Show "----" instead of "en attente" for the default status
         self.fields["validation_status"].choices = [
-            (
-                value,
-                label
-                if value != models.PermitRequestValidation.STATUS_REQUESTED
-                else "-" * 9,
-            )
-            for value, label in self.fields["validation_status"].choices
+            (value, label,) for value, label in self.fields["validation_status"].choices
         ]
 
 
