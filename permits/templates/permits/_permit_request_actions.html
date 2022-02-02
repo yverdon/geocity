@@ -34,8 +34,7 @@
 
       {% endif %}
 
-      {% if has_permission_to_classify %}
-        {% if print_templates or directives %}
+      {% if has_permission_to_classify and print_templates %}
 
         <li class="nav-item">
         <a class="btn btn-primary btn-action nav-link" id="print-tab" data-toggle="tab" href="#print" role="tab" aria-controls="print">
@@ -43,7 +42,16 @@
         </a>
         </li>
 
-        {% endif %}
+      {% endif %}
+
+      {% if has_permission_to_classify and directives %}
+
+        <li class="nav-item">
+        <a class="btn btn-primary btn-action nav-link" id="directives-tab" data-toggle="tab" href="#directives" role="tab" aria-controls="directives">
+            {% trans "Directives" %}
+        </a>
+        </li>
+
       {% endif %}
 
       {% if forms.poke or can_classify %}
@@ -131,28 +139,28 @@
             </div>
         {% endif %}
 
-        {% if print_templates or directives %}
+        {% if print_templates %}
         <div class="tab-pane" id="print" role="tabpanel" aria-labelledby="print-tab">
             <div class="mb-4">
-            <h5>{% trans "Modèles d'impression" %}</h5>
-            {% if print_templates %}
+                <h5>{% trans "Modèles d'impression" %}</h5>
                 <form method="post">
-                {% csrf_token %}
-                {% for print_template in print_templates %}
-                    <button class="btn btn-primary mr-3" formaction="{% url 'permits:permit_request_print' permit_request_id=permit_request.pk template_id=print_template.pk %}">
-                    {{ print_template.description  }}
-                    </button>
-                {% endfor %}
+                    {% csrf_token %}
+                    {% for print_template in print_templates %}
+                        <button class="btn btn-primary mr-3" formaction="{% url 'permits:permit_request_print' permit_request_id=permit_request.pk template_id=print_template.pk %}">
+                        {{ print_template.description  }}
+                        </button>
+                    {% endfor %}
                 </form>
-            {% else %}
-                <span class="no_print_template">{% trans "Aucun modèle d'impression n'a été configuré"%}</span>
-            {% endif %}
             </div>
+        </div>
+        {% endif %}
+
+        {% if directives %}
+        <div class="tab-pane" id="directives" role="tabpanel" aria-labelledby="directives-tab">
             <h5>{% trans "Directives liées à la demande" %}</h5>
-            {% if directives %}
-                {% for directive_file, directive_description, additional_information in directives %}
-                <div{% if not forloop.last %} class="mb-3"{% endif %}>
-                    {% if directive_file and directive_description %}
+            {% for directive_file, directive_description, additional_information in directives %}
+            <div{% if not forloop.last %} class="mb-3"{% endif %}>
+                {% if directive_file and directive_description %}
                     {{forloop.counter}}.
                     <span class="directive_description">{{ directive_description }}</span> -
                     {% if directive_file %}
@@ -161,12 +169,9 @@
                         {% trans "Télécharger le fichier" %}
                         </a>
                     {% endif %} - <span class="additional_information">{{ additional_information }}</span>
-                    {% endif %}
-                </div>
-                {% endfor %}
-            {% else %}
-            <span class="no_directive">{% trans "Aucune directive n'a été ajoutée" %}</span>
-            {% endif %}
+                {% endif %}
+            </div>
+            {% endfor %}
         </div>
         {% endif %}
 
