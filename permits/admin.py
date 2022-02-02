@@ -228,6 +228,16 @@ class UserAdmin(BaseUserAdmin):
 
         return qs
 
+    def save_model(self, req, obj, form, change):
+        """ Set 'is_staff=True' when the saved user is in a integrator group.
+        """
+        if req.user.is_superuser:
+            obj.is_staff=False
+            for group in form.cleaned_data['groups']:
+                if group.permitdepartment.is_integrator_admin:
+                    obj.is_staff=True
+
+        super().save_model(req, obj, form, change)
 
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
@@ -294,7 +304,7 @@ class DepartmentAdminForm(forms.ModelForm):
             raise forms.ValidationError(
                 {
                     "administrative_entity": _(
-                        "Un groupe non integrator doit avoir une entité administrative"
+                        "Un groupe non intégrateur doit avoir une entité administrative"
                     )
                 }
             )
