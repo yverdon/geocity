@@ -161,7 +161,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         )
         parser = get_parser(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-__str__")), 1)
+        self.assertEqual(len(parser.select(".column-sortable_str")), 1)
 
     def test_admin_can_see_all_permitadministrativeentity(self):
         user = factories.SuperUserFactory()
@@ -175,14 +175,14 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
-        self.assertGreaterEqual(len(parser.select(".field-__str__")), 2)
+        self.assertGreaterEqual(len(parser.select(".column-sortable_str")), 2)
 
     def test_integrator_can_only_see_own_workstype(self):
         response = self.client.get(reverse("admin:permits_workstype_changelist"))
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-__str__")), 1)
+        self.assertEqual(len(parser.select(".column-sortable_str")), 1)
 
     def test_admin_can_see_all_workstype(self):
         user = factories.SuperUserFactory()
@@ -194,14 +194,14 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-__str__")), 16)
+        self.assertEqual(len(parser.select(".column-sortable_str")), 16)
 
     def test_integrator_can_only_see_own_worksobject(self):
         response = self.client.get(reverse("admin:permits_worksobject_changelist"))
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-__str__")), 1)
+        self.assertEqual(len(parser.select(".column-sortable_str")), 1)
 
     def test_admin_can_see_all_worksobject(self):
         user = factories.SuperUserFactory()
@@ -213,14 +213,14 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-__str__")), 8)
+        self.assertEqual(len(parser.select(".column-sortable_str")), 8)
 
     def test_integrator_can_only_see_own_worksobjecttype(self):
         response = self.client.get(reverse("admin:permits_worksobjecttype_changelist"))
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-__str__")), 1)
+        self.assertEqual(len(parser.select(".column-sortable_str")), 1)
 
     def test_admin_can_see_all_worksobjecttype(self):
         user = factories.SuperUserFactory()
@@ -232,7 +232,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-__str__")), 4)
+        self.assertEqual(len(parser.select(".column-sortable_str")), 4)
 
     def test_integrator_can_only_see_own_worksobjectproperty(self):
         response = self.client.get(
@@ -241,7 +241,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-__str__")), 1)
+        self.assertEqual(len(parser.select(".column-sortable_str")), 1)
 
     def test_admin_can_see_all_worksobjectproperty(self):
         user = factories.SuperUserFactory()
@@ -255,14 +255,14 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-__str__")), 4)
+        self.assertEqual(len(parser.select(".column-sortable_str")), 4)
 
     def test_integrator_can_only_see_own_permitactortype(self):
         response = self.client.get(reverse("admin:permits_permitactortype_changelist"))
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-__str__")), 2)
+        self.assertEqual(len(parser.select(".column-sortable_str")), 2)
 
     def test_admin_can_see_all_permitactortype(self):
         user = factories.SuperUserFactory()
@@ -274,7 +274,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-__str__")), 8)
+        self.assertEqual(len(parser.select(".column-sortable_str")), 8)
 
     def test_integrator_can_only_see_own_permitrequestamendproperty(self):
         response = self.client.get(
