@@ -966,6 +966,7 @@ def submit_permit_request(permit_request, request):
                         groups__permitdepartment__is_backoffice=True,
                     )
                 ),
+                Q(permitauthor__notify_per_email=True),
             )
             .values_list("permitauthor__user__email", flat=True)
         )
@@ -978,10 +979,11 @@ def submit_permit_request(permit_request, request):
         }
         send_email_notification(data)
 
-        data["subject"] = _("Votre demande")
-        data["users_to_notify"] = [permit_request.author.user.email]
-        data["template"] = "permit_request_acknowledgment.txt"
-        send_email_notification(data)
+        if permit_request.author.notify_per_email:
+            data["subject"] = _("Votre demande")
+            data["users_to_notify"] = [permit_request.author.user.email]
+            data["template"] = "permit_request_acknowledgment.txt"
+            send_email_notification(data)
 
     permit_request.status = models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
     if GeoTimeInfo.GEOMETRY in get_geotime_required_info(permit_request):
@@ -1002,13 +1004,16 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
             permit_request=permit_request, department=department
         )
 
-    users_to_notify = {
-        email
-        for department in departments
-        for email in department.group.user_set.values_list(
-            "permitauthor__user__email", flat=True
+    users_to_notify = set(
+        get_user_model()
+        .objects.filter(
+            Q(
+                groups__permitdepartment__in=departments,
+                permitauthor__notify_per_email=True,
+            )
         )
-    }
+        .values_list("permitauthor__user__email", flat=True)
+    )
 
     data = {
         "subject": _("Nouvelle demande en attente de validation"),
@@ -1029,8 +1034,11 @@ def send_validation_reminder(permit_request, absolute_uri_func):
     users_to_notify = set(
         get_user_model()
         .objects.filter(
-            groups__permitdepartment__in=pending_validations.values_list(
-                "department", flat=True
+            Q(
+                groups__permitdepartment__in=pending_validations.values_list(
+                    "department", flat=True
+                ),
+                permitauthor__notify_per_email=True,
             )
         )
         .values_list("permitauthor__user__email", flat=True)
@@ -1095,7 +1103,7 @@ def _get_secretary_email(permit_request):
         is_backoffice=True
     )
     secretary_group_users = get_user_model().objects.filter(
-        groups__permitdepartment__in=department
+        Q(groups__permitdepartment__in=department, permitauthor__notify_per_email=True)
     )
 
     return [user.email for user in secretary_group_users]

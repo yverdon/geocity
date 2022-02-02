@@ -277,6 +277,7 @@ class PermitAuthor(models.Model):
             )
         ],
     )
+    notify_per_email = models.BooleanField(_("Me notifier par e-mail"), default=True)
     user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
     history = HistoricalRecords()
 
@@ -463,7 +464,7 @@ class PermitRequest(models.Model):
         upload_to="validations",
     )
     creditor_type = models.PositiveSmallIntegerField(
-        _("Destinaire de la facture"),
+        _("Destinataire de la facture"),
         choices=ACTOR_TYPE_CHOICES,
         null=True,
         blank=True,
@@ -814,7 +815,7 @@ class WorksObjectType(models.Model):
         unique_together = [("works_type", "works_object")]
 
     def __str__(self):
-        return "{} ({})".format(self.works_object.name, self.works_type.name)
+        return "{}: {}".format(self.works_type.name, self.works_object.name)
 
     @property
     def has_geometry(self):
