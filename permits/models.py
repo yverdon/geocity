@@ -277,6 +277,7 @@ class PermitAuthor(models.Model):
             )
         ],
     )
+    notify_per_email = models.BooleanField(_("Me notifier par e-mail"), default=True)
     user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
     history = HistoricalRecords()
 
