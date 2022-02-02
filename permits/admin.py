@@ -842,6 +842,7 @@ class WorksObjectPropertyAdmin(
 class PermitAdministrativeEntityAdminForm(forms.ModelForm):
     """ Form class to configure an administrative entity (commune, organisation)
     """
+
     class Meta:
         model = models.PermitAdministrativeEntity
         fields = [
