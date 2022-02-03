@@ -1271,7 +1271,7 @@ def get_actions_for_administrative_entity(permit_request):
 
     actions = models.ACTIONS
 
-    # Statuses for which a given action should be availble
+    # Statuses for which a given action should be available
     required_statuses_for_actions = {
         "amend": list(models.PermitRequest.AMENDABLE_STATUSES),
         "request_validation": [models.PermitRequest.STATUS_AWAITING_VALIDATION],
