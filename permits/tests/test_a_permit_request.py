@@ -1893,11 +1893,8 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         permit_request = factories.PermitRequestFactory(
             status=models.PermitRequest.STATUS_APPROVED,
         )
-
         permit_request.works_object_types.set([self.wot_prolongable_with_date])
-
         permit_request.administrative_entity.departments.set([self.department])
-
         self.client.login(username=self.secretariat, password="password")
 
         response = self.client.get(
@@ -1906,7 +1903,6 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"permit_request_id": permit_request.pk},
             )
         )
-
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
@@ -1921,13 +1917,10 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         permit_request = factories.PermitRequestFactory(
             status=models.PermitRequest.STATUS_APPROVED,
         )
-
         permit_request.works_object_types.set(
             [self.wot_prolongable_with_date, self.wot_normal]
         )
-
         permit_request.administrative_entity.departments.set([self.department])
-
         self.client.login(username=self.secretariat, password="password")
 
         response = self.client.get(
@@ -1936,7 +1929,6 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"permit_request_id": permit_request.pk},
             )
         )
-
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
@@ -1951,11 +1943,8 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         permit_request = factories.PermitRequestFactory(
             status=models.PermitRequest.STATUS_APPROVED,
         )
-
         permit_request.works_object_types.set([self.wot_normal])
-
         permit_request.administrative_entity.departments.set([self.department])
-
         self.client.login(username=self.secretariat, password="password")
 
         response = self.client.get(
@@ -1964,7 +1953,6 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"permit_request_id": permit_request.pk},
             )
         )
-
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
