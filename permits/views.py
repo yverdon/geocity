@@ -300,10 +300,14 @@ class PermitRequestDetailView(View):
             # the status
 
             first_wot_type = (
-                services.get_works_object_type_choices(self.permit_request)
-                .first()
-                .works_object_type.works_object.name
-            )[:31]
+                (
+                    services.get_works_object_type_choices(self.permit_request)
+                    .first()
+                    .works_object_type.works_object.name
+                )
+                if self.permit_request
+                else None
+            )
 
             initial = (
                 {
