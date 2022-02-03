@@ -828,7 +828,11 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
 
     class Meta:
         model = models.PermitRequest
-        fields = ["is_public", "status"]
+        fields = [
+            "is_public",
+            "shortname",
+            "status",
+        ]
         widgets = {
             "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
         }
@@ -1286,6 +1290,9 @@ class PermitRequestClassifyForm(forms.ModelForm):
         ),
         widget=forms.HiddenInput,
         disabled=True,
+    )
+    is_public = forms.ChoiceField(
+        widget=forms.RadioSelect, choices=models.PUBLIC_TYPE_CHOICES, label=False
     )
 
     class Meta:

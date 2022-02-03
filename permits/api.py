@@ -59,6 +59,14 @@ class GeocityViewConfigViewSet(viewsets.ViewSet):
 
 
 class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Events request endpoint Usage:
+        1.- /rest/permits/?show_only_future=true (1 week before now)
+        2.- /rest/permits/?starts_at=2022-01-01
+        2.- /rest/permits/?ends_at=2020-01-01
+        3.- /rest/permits/?administrative_entity=3
+    
+    """
 
     serializer_class = serializers.PermitRequestGeoTimeSerializer
 
@@ -67,7 +75,7 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
         This view should return a list of events for which the logged user has
         view permissions
         """
-
+        show_only_future = self.request.query_params.get("show_only_future", None)
         starts_at = self.request.query_params.get("starts_at", None)
         ends_at = self.request.query_params.get("ends_at", None)
         administrative_entity = self.request.query_params.get("adminentity", None)
@@ -75,6 +83,9 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
         base_filter = Q()
         if starts_at:
             start = datetime.datetime.strptime(starts_at, "%Y-%m-%d")
+            base_filter &= Q(starts_at__gte=start)
+        if show_only_future:
+            start = datetime.datetime.now() - datetime.timedelta(days=7)
             base_filter &= Q(starts_at__gte=start)
         if ends_at:
             end = datetime.datetime.strptime(ends_at, "%Y-%m-%d")

@@ -298,8 +298,18 @@ class PermitRequestDetailView(View):
         ):
             # Only set the `status` default value if it's submitted for validation, to prevent accidentally resetting
             # the status
+
+            first_wot_type = (
+                services.get_works_object_type_choices(self.permit_request)
+                .first()
+                .works_object_type.works_object.name
+            )[:31]
+
             initial = (
-                {"status": models.PermitRequest.STATUS_PROCESSING}
+                {
+                    "shortname": first_wot_type,
+                    "status": models.PermitRequest.STATUS_PROCESSING,
+                }
                 if self.permit_request.status
                 == models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
                 else {}

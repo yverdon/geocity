@@ -427,7 +427,14 @@ class PermitRequest(models.Model):
         (PROLONGATION_STATUS_APPROVED, _("Approuvée")),
         (PROLONGATION_STATUS_REJECTED, _("Refusée")),
     )
-
+    shortname = models.CharField(
+        _("nom de la demande"),
+        max_length=32,
+        help_text=_(
+            "Sera affiché dans le calendrier si la demande est rendue tout publique, ex: Brandons, max. 32 caractères"
+        ),
+        blank=True,
+    )
     status = models.PositiveSmallIntegerField(
         _("état"), choices=STATUS_CHOICES, default=STATUS_DRAFT
     )

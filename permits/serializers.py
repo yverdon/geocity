@@ -54,6 +54,7 @@ class PermitRequestSerializer(serializers.ModelSerializer):
         model = models.PermitRequest
         fields = (
             "id",
+            "shortname",
             "status",
             "administrative_entity",
             "works_object_types",
