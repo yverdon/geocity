@@ -120,7 +120,7 @@
 
       <div class="row sub-row">
         <div class="col">
-          <h2>{% trans "Données du service pilote" %}</h2>
+          <h2>{% trans "Informations générales" %}</h2>
           <div class="container">
             <dl>
               {% if permit_request.status %}
@@ -133,11 +133,11 @@
         </div>
       </div>
     {% endif %}
-    
+
     {% if validations %}
     <div class="row sub-row">
       <div class="col">
-        <h2>{% trans "Commentaires des services consultés" %}</h2>
+        <h2>{% trans "Validation" %}</h2>
           {% for validation in validations %}
             <div class="container">
               <dl>

@@ -19,7 +19,7 @@
                 <dd></dd>
               {% endif %}
             {% endfor %}
-        
+
             {% for field in appendices %}
               <dt>{{ field.label }}</dt>
               <dd>
@@ -30,9 +30,9 @@
                 {% endif %}
               </dd>
             {% endfor %}
-        
+
             {% if amend_custom_properties %}
-              <h5>{% trans "Information du service responsable" %}</h5>
+              <h5>{% trans "Informations du service responsable" %}</h5>
               {% for object_property in amend_custom_properties %}
                 {% if object_property.property.is_visible_by_author %}
                   <dl>
@@ -48,7 +48,7 @@
     </div>
   </div>
 
-  
+
   {% if contacts %}
 
     <div class="row">
@@ -87,7 +87,7 @@
     </div>
 
   {% endif %}
- 
+
 
   <div class="row">
     <div class="col">
