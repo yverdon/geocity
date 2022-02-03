@@ -9,7 +9,7 @@ gdal
 gunicorn
 html5lib
 jdcal
-Pillow
+Pillow>=9.0.0
 psycopg2-binary
 pytz
 PyYAML
