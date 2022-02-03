@@ -1886,6 +1886,92 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(0, len(action_prolongation_requested))
         self.assertEqual(1, len(action_prolongation_rejected))
 
+    def test_secretariat_can_see_prolongation_buttons_if_wot_has_prolongation_enabled(
+        self,
+    ):
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_APPROVED,
+        )
+
+        permit_request.works_object_types.set([self.wot_prolongable_with_date])
+
+        permit_request.administrative_entity.departments.set([self.department])
+
+        self.client.login(username=self.secretariat, password="password")
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        parser = get_parser(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(parser.select(".tab-pane#prolong button")), 2,
+        )
+
+    def test_secretariat_can_see_prolongation_buttons_if_at_least_one_wot_has_prolongation_enabled(
+        self,
+    ):
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_APPROVED,
+        )
+
+        permit_request.works_object_types.set(
+            [self.wot_prolongable_with_date, self.wot_normal]
+        )
+
+        permit_request.administrative_entity.departments.set([self.department])
+
+        self.client.login(username=self.secretariat, password="password")
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        parser = get_parser(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(parser.select(".tab-pane#prolong button")), 2,
+        )
+
+    def test_secretariat_cannot_see_prolongation_buttons_if_wot_has_not_prolongation_enabled(
+        self,
+    ):
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_APPROVED,
+        )
+
+        permit_request.works_object_types.set([self.wot_normal])
+
+        permit_request.administrative_entity.departments.set([self.department])
+
+        self.client.login(username=self.secretariat, password="password")
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        parser = get_parser(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(parser.select(".tab-pane#prolong button")), 0,
+        )
+
 
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
