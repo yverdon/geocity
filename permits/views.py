@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import (
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Sum
 from django.forms import modelformset_factory
 from django.http import (
     Http404,
@@ -228,6 +228,12 @@ class PermitRequestDetailView(View):
             or can_validate_permit_request
             else None
         )
+        prolongation_enabled = (
+            services.get_works_object_type_choices(self.permit_request).aggregate(
+                Sum("works_object_type__permit_duration")
+            )["works_object_type__permit_duration__sum"]
+            is not None
+        )
 
         return {
             **kwargs,
@@ -249,6 +255,7 @@ class PermitRequestDetailView(View):
                 "directives": services.get_permit_request_directives(
                     self.permit_request
                 ),
+                "prolongation_enabled": prolongation_enabled,
             },
         }
 

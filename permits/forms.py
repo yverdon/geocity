@@ -1241,7 +1241,7 @@ class PermitRequestProlongationForm(forms.ModelForm):
                 "minDate": (datetime.today()).strftime("%Y/%m/%d"),
             }
         ).start_of("event days"),
-        help_text="Cliquer sur le champ et selectionner la nouvelle date de fin planifiée",
+        help_text="Cliquer sur le champ et sélectionner la nouvelle date de fin planifiée",
     )
 
     class Meta:
