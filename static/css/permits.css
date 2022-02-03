@@ -199,7 +199,7 @@ input:focus {
   width: 245px;
 }
 
-h1, h2, h3 {
+h1, h2, h3, h4, h5 {
   color: var(--title-color);
 }
 
@@ -213,6 +213,14 @@ h2 {
 
 h3 {
   font-size: 1.3em;
+}
+
+h4 {
+  font-size: 1.2em;
+}
+
+h5 {
+  font-size: 1.1em;
 }
 
 .progress-nav {
@@ -460,18 +468,6 @@ th.actions {
   color: #A0B46F;
 }
 
-h1 {
-  font-size: 1.7em;
-}
-
-h2 {
-  font-size: 1.5em;
-}
-
-h3 {
-  font-size: 1.3em;
-}
-
 #validation_pdf {
   margin-top: 20px;
 }
@@ -559,6 +555,14 @@ h3 {
 
   h3 {
     font-size: 1.75rem;
+  }
+
+  h4 {
+    font-size: 1.5rem;
+  }
+
+  h5 {
+    font-size: 1.3rem;
   }
 }
 
@@ -711,6 +715,15 @@ dd {
   /* adjust the width; make sure the total of both is 100% */
   padding: 0;
   margin: 0;
+}
+
+.properties-list dd {
+  margin-bottom: 2px;
+}
+
+.properties-list ul {
+  list-style-type: none;
+  padding: 0;
 }
 
 .grid-container{

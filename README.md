@@ -164,6 +164,9 @@ Use your favorite webserver to proxypass localhost:9095 to the outside world
 
 #### Demo accounts
 
+Standard user role:
+_user:admin_
+
 Administrator role (Django superuser):
 _admin:admin_
 
@@ -266,6 +269,16 @@ For more information about django's migrations, help is available at:
 docker-compose exec web python3 manage.py makemigrations --help
 docker-compose exec web python3 manage.py migrate --help
 ```
+
+### Practical example
+Note: prepend `docker-compose exec web ` to the following python calls if your app is containerized.
+
+`<app_label>`: this is set automatically depending on which model file is modified. In Geocity, it will always be "permits" => so there is nothing to specify.
+
+`<migration_name>`: we try to name it with something meaningful, but there is no convention, for example, this command: `python manage.py makemigrations -n my_changes_to_the_user_model` will automatically create the following migration file for the "permits" app_label: `0056_my_changes_to_the_user_model.py`
+
+Finally, you can apply it using:
+`python manage.py migrate permits 0056_my_changes_to_the_user_model`
 
 ## Wiki
 
