@@ -1464,7 +1464,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         title = parser.find("h3", string="Demande de prolongation de permis")
         widget = parser.find(
             "input",
-            title="Cliquer sur le champ et selectionner la nouvelle date de fin planifiée",
+            title="Cliquer sur le champ et sélectionner la nouvelle date de fin planifiée",
         )
         self.assertEqual(1, len(title))
         self.assertEqual("id_prolongation_date", widget.get("id"))
