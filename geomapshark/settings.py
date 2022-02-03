@@ -90,7 +90,6 @@ TAGGIT_TAGS_FROM_STRING = "permits.utils.comma_splitter"
 
 # 2FA activation
 ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
-LOCAL_IP_WHITELIST = os.getenv("LOCAL_IP_WHITELIST")
 
 # Allauth requirement
 SITE_ID = 1
@@ -122,6 +121,7 @@ INSTALLED_APPS = [
     "django_filters",
     "rest_framework",
     "rest_framework_gis",
+    "rest_framework.authtoken",
     "bootstrap4",
     "bootstrap_datepicker_plus",
     "django_tables2",
@@ -200,6 +200,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "ACTORS_STEP",
         "SUBMIT_STEP",
     ),
+    "API settings": ("IP_WHITELIST",),
 }
 
 CONSTANCE_CONFIG = {
@@ -271,6 +272,11 @@ CONSTANCE_CONFIG = {
     "TEXT_COLOR": ("#000000", "Couleur du texte", str,),
     "TITLE_COLOR": ("#000000", "Couleur du titre", str,),
     "TABLE_COLOR": ("#212529", "Couleur du texte dans les tableaux", str,),
+    "IP_WHITELIST": (
+        "172.16,172.17,localhost",
+        "IP privée autorisée pour l'authentification par QGIS Server",
+        str,
+    ),
 }
 
 TEMPLATES = [

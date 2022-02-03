@@ -17,6 +17,8 @@ from django.contrib.auth.forms import UserChangeForm
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from io import BytesIO
 from django.db.models.functions import StrIndex, Substr
+from rest_framework.authtoken.models import TokenProxy
+from rest_framework.authtoken.admin import TokenAdmin as BaseTokenAdmin
 
 
 from . import forms as permit_forms
@@ -53,6 +55,11 @@ OTHER_PERMISSIONS_CODENAMES = [
     "change_accesslog",
     "delete_accesslog",
     "view_accesslog",
+    # DRF Token authentication
+    "view_tokenproxy",
+    "add_tokenproxy",
+    "change_tokenproxy",
+    "delete_tokenproxy",
 ]
 AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
     "amend_permit_request",
@@ -1013,6 +1020,48 @@ class TemplateCustomizationAdmin(admin.ModelAdmin):
     has_background_image.admin_order_field = "background_image"
     has_background_image.short_description = "Image de fond"
 
+
+# AuthToken admin
+
+
+class TokenAdmin(BaseTokenAdmin):
+    list_display = [
+        "__str__",
+        "user",
+        "created",
+    ]
+    list_filter = [
+        "user",
+        "created",
+    ]
+    search_fields = [
+        "user",
+    ]
+
+    def get_queryset(self, request):
+        if request.user.is_superuser:
+            return TokenProxy.objects.all()
+        else:
+            return TokenProxy.objects.filter(user=request.user)
+
+    def has_add_permission(self, request):
+        if request.user.is_superuser:
+            return True
+        return False
+
+    def get_readonly_fields(self, request, obj=None):
+        if request.user.is_superuser:
+            return []
+        else:
+            return [
+                "user",
+                "key",
+                "created",
+            ]
+
+
+admin.site.unregister(TokenProxy)
+admin.site.register(TokenProxy, TokenAdmin)
 
 admin.site.register(models.PermitActorType, PermitActorTypeAdmin)
 admin.site.register(models.WorksType, WorksTypeAdmin)

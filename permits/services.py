@@ -1502,15 +1502,24 @@ def clear_session_filters(request):
     request.session["typefilter"] = []
 
 
+def check_request_ip_is_in_whithelist(request):
+    """
+    Check that the request is coming from allowed ip
+    """
+    for whitelisted_ip in config.IP_WHITELIST:
+        if request.META["REMOTE_ADDR"].startswith(whitelisted_ip):
+            return True
+
+    return False
+
+
 def check_request_comes_from_internal_qgisserver(request):
     """
-    Check that the request is coming from inside the docker composition AND that it is a private IP
+    Check that the request is coming from inside the docker composition AND that it is an allowed ip
     """
-
-    for whitelisted_ip in settings.LOCAL_IP_WHITELIST:
-        if (
-            request.META["REMOTE_ADDR"].startswith(whitelisted_ip)
-            and socket.gethostbyname("qgisserver") == request.META["REMOTE_ADDR"]
-        ):
-            return True
+    if (
+        check_request_ip_is_in_whithelist(request)
+        and socket.gethostbyname("qgisserver") == request.META["REMOTE_ADDR"]
+    ):
+        return True
     return False
