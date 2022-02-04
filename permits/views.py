@@ -303,10 +303,23 @@ class PermitRequestDetailView(View):
         if services.has_permission_to_amend_permit_request(
             self.request.user, self.permit_request
         ):
+            # Get the first object type selected as a shorname suggestion for pilot
+            first_wot_type = (
+                services.get_works_object_type_choices(self.permit_request)
+                .first()
+                .works_object_type.works_object.name
+                if self.permit_request
+                else ""
+            )
+
             # Only set the `status` default value if it's submitted for validation, to prevent accidentally resetting
             # the status
+
             initial = (
-                {"status": models.PermitRequest.STATUS_PROCESSING}
+                {
+                    "shortname": first_wot_type,
+                    "status": models.PermitRequest.STATUS_PROCESSING,
+                }
                 if self.permit_request.status
                 == models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
                 else {}

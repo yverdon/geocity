@@ -432,7 +432,7 @@ class PermitRequest(models.Model):
         _("état"), choices=STATUS_CHOICES, default=STATUS_DRAFT
     )
     shortname = models.CharField(
-        _("nom de la demande"),
+        _("nom court de la demande, de l'événement,..."),
         max_length=32,
         help_text=_(
             "Sera affiché dans le calendrier si la demande est rendue tout publique, ex: Brandons (max. 32 caractères)"
