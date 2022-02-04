@@ -1288,9 +1288,6 @@ class PermitRequestClassifyForm(forms.ModelForm):
         widget=forms.HiddenInput,
         disabled=True,
     )
-    is_public = forms.ChoiceField(
-        widget=forms.RadioSelect, choices=models.PUBLIC_TYPE_CHOICES, label=False
-    )
 
     class Meta:
         model = models.PermitRequest

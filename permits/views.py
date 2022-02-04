@@ -304,20 +304,15 @@ class PermitRequestDetailView(View):
             self.request.user, self.permit_request
         ):
             # Get the first object type selected as a shorname suggestion for pilot
-            first_wot_type = (
-                services.get_works_object_type_choices(self.permit_request)
-                .first()
-                .works_object_type.works_object.name
-                if self.permit_request
-                else ""
-            )
-
+  
+            first_wot = services.get_works_object_type_choices(self.permit_request).first()
+            shortname_value_proposal = first_wot.works_object_type.works_object.name if first_wot else ""
             # Only set the `status` default value if it's submitted for validation, to prevent accidentally resetting
             # the status
 
             initial = (
                 {
-                    "shortname": first_wot_type,
+                    "shortname": shortname_value_proposal,
                     "status": models.PermitRequest.STATUS_PROCESSING,
                 }
                 if self.permit_request.status
