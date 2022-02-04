@@ -97,15 +97,16 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
                 )
             )
         base_filter &= ~Q(permit_request__status=models.PermitRequest.STATUS_DRAFT)
+        # Only allow WOTs that have at least one geometry type mandatory
         works_object_types_prefetch = Prefetch(
             "permit_request__works_object_types",
             queryset=models.WorksObjectType.objects.filter(
-                Q(
-                    has_geometry_point=True,
-                    has_geometry_line=True,
-                    has_geometry_polygon=True,
+                (
+                    Q(has_geometry_point=True)
+                    | Q(has_geometry_line=True)
+                    | Q(has_geometry_polygon=True)
                 )
-                | Q(needs_date=True)
+                & Q(needs_date=True)
             ).select_related("works_type"),
         )
 
