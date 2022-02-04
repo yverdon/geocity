@@ -13,11 +13,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='historicalpermitrequest',
             name='shortname',
-            field=models.CharField(blank=True, help_text='Sera affiché dans le calendrier si la demande est rendue tout publique, ex: Brandons (max. 32 caractères)', max_length=32, verbose_name="nom court de la demande, de l'événement,..."),
+            field=models.CharField(blank=True, help_text='Sera affiché dans le calendrier si la demande est rendue tout publique, ex: Brandons (max. 32 caractères)', max_length=32, verbose_name="nom court de la demande, de l'événement, etc."),
         ),
         migrations.AddField(
             model_name='permitrequest',
             name='shortname',
-            field=models.CharField(blank=True, help_text='Sera affiché dans le calendrier si la demande est rendue tout publique, ex: Brandons (max. 32 caractères)', max_length=32, verbose_name="nom court de la demande, de l'événement,..."),
+            field=models.CharField(blank=True, help_text='Sera affiché dans le calendrier si la demande est rendue tout publique, ex: Brandons (max. 32 caractères)', max_length=32, verbose_name="nom court de la demande, de l'événement, etc."),
         ),
     ]

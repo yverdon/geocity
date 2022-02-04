@@ -303,8 +303,8 @@ class PermitRequestDetailView(View):
         if services.has_permission_to_amend_permit_request(
             self.request.user, self.permit_request
         ):
-            # Get the first object type selected as a shorname suggestion for pilot
 
+            # Get the first object type selected as a shorname suggestion for pilot
             first_wot = services.get_works_object_type_choices(
                 self.permit_request
             ).first()
