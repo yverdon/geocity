@@ -828,7 +828,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
 
     class Meta:
         model = models.PermitRequest
-        fields = ["is_public", "status"]
+        fields = ["is_public", "shortname", "status"]
         widgets = {
             "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
         }
@@ -868,6 +868,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
 
             if not config.ENABLE_GEOCALENDAR:
                 self.fields["is_public"].widget = forms.HiddenInput()
+                self.fields["shortname"].widget = forms.HiddenInput()
 
             for works_object_type, prop in self.get_properties():
                 field_name = self.get_field_name(works_object_type.id, prop.id)
@@ -1286,6 +1287,9 @@ class PermitRequestClassifyForm(forms.ModelForm):
         ),
         widget=forms.HiddenInput,
         disabled=True,
+    )
+    is_public = forms.ChoiceField(
+        widget=forms.RadioSelect, choices=models.PUBLIC_TYPE_CHOICES, label=False
     )
 
     class Meta:

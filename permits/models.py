@@ -431,6 +431,14 @@ class PermitRequest(models.Model):
     status = models.PositiveSmallIntegerField(
         _("état"), choices=STATUS_CHOICES, default=STATUS_DRAFT
     )
+    shortname = models.CharField(
+        _("nom de la demande"),
+        max_length=32,
+        help_text=_(
+            "Sera affiché dans le calendrier si la demande est rendue tout publique, ex: Brandons (max. 32 caractères)"
+        ),
+        blank=True,
+    )
     created_at = models.DateTimeField(_("date de création"), default=timezone.now)
     validated_at = models.DateTimeField(_("date de validation"), null=True)
     works_object_types = models.ManyToManyField(
