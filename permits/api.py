@@ -59,18 +59,27 @@ class GeocityViewConfigViewSet(viewsets.ViewSet):
 
 
 class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Events request endpoint Usage:
+        1.- /rest/permits/?show_only_future=true (past events get filtered out)
+        2.- /rest/permits/?starts_at=2022-01-01
+        2.- /rest/permits/?ends_at=2020-01-01
+        3.- /rest/permits/?adminentities=1,2,3
+    
+    """
 
     serializer_class = serializers.PermitRequestGeoTimeSerializer
 
     def get_queryset(self):
         """
         This view should return a list of events for which the logged user has
-        view permissions
+        view permissions or events set as public by pilot
         """
 
+        show_only_future = self.request.query_params.get("show_only_future", None)
         starts_at = self.request.query_params.get("starts_at", None)
         ends_at = self.request.query_params.get("ends_at", None)
-        administrative_entity = self.request.query_params.get("adminentity", None)
+        administrative_entities = self.request.query_params.get("adminentities", None)
 
         base_filter = Q()
         if starts_at:
@@ -79,12 +88,15 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
         if ends_at:
             end = datetime.datetime.strptime(ends_at, "%Y-%m-%d")
             base_filter &= Q(ends_at__lte=end)
-        if administrative_entity:
+        if show_only_future == "true":
+            base_filter &= Q(ends_at__gte=datetime.datetime.now())
+        if administrative_entities:
             base_filter &= Q(
-                permit_request__administrative_entity=administrative_entity
+                permit_request__administrative_entity__in=administrative_entities.split(
+                    ","
+                )
             )
         base_filter &= ~Q(permit_request__status=models.PermitRequest.STATUS_DRAFT)
-
         works_object_types_prefetch = Prefetch(
             "permit_request__works_object_types",
             queryset=models.WorksObjectType.objects.filter(
