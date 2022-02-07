@@ -4,6 +4,7 @@ import os.path
 from django import template
 from django.forms import modelformset_factory
 from django.template.loader import render_to_string
+from django.template.defaultfilters import floatformat
 from django.utils.translation import gettext as _
 from permits import forms, models, services
 from datetime import datetime, timedelta, timezone
@@ -77,6 +78,8 @@ def json_(value):
 def human_field_value(value):
     if isinstance(value, bool):
         return _("Oui") if value else _("Non")
+    elif isinstance(value, float):
+        return floatformat(value, arg=-2)
     elif isinstance(value, list):
         return render_to_string("permits/_field_value_list.html", {"values": value})
     elif not value:
