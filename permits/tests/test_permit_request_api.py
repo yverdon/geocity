@@ -327,24 +327,24 @@ class PermitRequestAPITestCase(TestCase):
         response = self.client.get(reverse("permits_point-list"),)
         response_json = response.json()
         self.assertEqual(response.status_code, 200)
-        self.assertNotIn("line", str(response_json).lower())
-        self.assertNotIn("polygon", str(response_json).lower())
+        self.assertNotIn("multilinestring", str(response_json).lower())
+        self.assertNotIn("multipolygon", str(response_json).lower())
 
     def test_api_permits_line_returns_only_lines(self):
         self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(reverse("permits_line-list"),)
         response_json = response.json()
         self.assertEqual(response.status_code, 200)
-        self.assertNotIn("point", str(response_json).lower())
-        self.assertNotIn("polygon", str(response_json).lower())
+        self.assertNotIn("multipoint", str(response_json).lower())
+        self.assertNotIn("multipolygon", str(response_json).lower())
 
     def test_api_permits_poly_returns_only_polygons(self):
         self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(reverse("permits_poly-list"),)
         response_json = response.json()
         self.assertEqual(response.status_code, 200)
-        self.assertNotIn("point", str(response_json).lower())
-        self.assertNotIn("line", str(response_json).lower())
+        self.assertNotIn("multipoint", str(response_json).lower())
+        self.assertNotIn("multilinestring", str(response_json).lower())
 
     def test_api_permits_does_not_contain_empty_geometry(self):
         self.client.login(username=self.admin_user.username, password="password")

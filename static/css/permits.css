@@ -717,6 +717,15 @@ dd {
   margin: 0;
 }
 
+.properties-list dd {
+  margin-bottom: 2px;
+}
+
+.properties-list ul {
+  list-style-type: none;
+  padding: 0;
+}
+
 .grid-container{
   display: grid;
   grid-template-columns: repeat(2, 1fr);

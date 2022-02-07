@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import (
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Sum
 from django.forms import modelformset_factory
 from django.http import (
     Http404,
@@ -228,6 +228,12 @@ class PermitRequestDetailView(View):
             or can_validate_permit_request
             else None
         )
+        prolongation_enabled = (
+            services.get_works_object_type_choices(self.permit_request).aggregate(
+                Sum("works_object_type__permit_duration")
+            )["works_object_type__permit_duration__sum"]
+            is not None
+        )
 
         return {
             **kwargs,
@@ -249,6 +255,7 @@ class PermitRequestDetailView(View):
                 "directives": services.get_permit_request_directives(
                     self.permit_request
                 ),
+                "prolongation_enabled": prolongation_enabled,
             },
         }
 
@@ -296,10 +303,22 @@ class PermitRequestDetailView(View):
         if services.has_permission_to_amend_permit_request(
             self.request.user, self.permit_request
         ):
+
+            # Get the first object type selected as a shorname suggestion for pilot
+            first_wot = services.get_works_object_type_choices(
+                self.permit_request
+            ).first()
+            shortname_value_proposal = (
+                first_wot.works_object_type.works_object.name if first_wot else ""
+            )
             # Only set the `status` default value if it's submitted for validation, to prevent accidentally resetting
             # the status
+
             initial = (
-                {"status": models.PermitRequest.STATUS_PROCESSING}
+                {
+                    "shortname": shortname_value_proposal,
+                    "status": models.PermitRequest.STATUS_PROCESSING,
+                }
                 if self.permit_request.status
                 == models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
                 else {}

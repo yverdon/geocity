@@ -828,7 +828,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
 
     class Meta:
         model = models.PermitRequest
-        fields = ["is_public", "status"]
+        fields = ["is_public", "shortname", "status"]
         widgets = {
             "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
         }
@@ -868,6 +868,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
 
             if not config.ENABLE_GEOCALENDAR:
                 self.fields["is_public"].widget = forms.HiddenInput()
+                self.fields["shortname"].widget = forms.HiddenInput()
 
             for works_object_type, prop in self.get_properties():
                 field_name = self.get_field_name(works_object_type.id, prop.id)
@@ -1202,6 +1203,7 @@ class PermitRequestValidationForm(forms.ModelForm):
             "comment_after",
         ]
         widgets = {
+            "validation_status": forms.RadioSelect(),
             "comment_before": forms.Textarea(attrs={"rows": 3}),
             "comment_during": forms.Textarea(attrs={"rows": 3}),
             "comment_after": forms.Textarea(attrs={"rows": 3}),
@@ -1210,15 +1212,8 @@ class PermitRequestValidationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Show "----" instead of "en attente" for the default status
         self.fields["validation_status"].choices = [
-            (
-                value,
-                label
-                if value != models.PermitRequestValidation.STATUS_REQUESTED
-                else "-" * 9,
-            )
-            for value, label in self.fields["validation_status"].choices
+            (value, label,) for value, label in self.fields["validation_status"].choices
         ]
 
 
@@ -1247,7 +1242,7 @@ class PermitRequestProlongationForm(forms.ModelForm):
                 "minDate": (datetime.today()).strftime("%Y/%m/%d"),
             }
         ).start_of("event days"),
-        help_text="Cliquer sur le champ et selectionner la nouvelle date de fin planifiée",
+        help_text="Cliquer sur le champ et sélectionner la nouvelle date de fin planifiée",
     )
 
     class Meta:

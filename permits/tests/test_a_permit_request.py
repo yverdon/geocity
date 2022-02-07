@@ -1464,7 +1464,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         title = parser.find("h3", string="Demande de prolongation de permis")
         widget = parser.find(
             "input",
-            title="Cliquer sur le champ et selectionner la nouvelle date de fin planifiée",
+            title="Cliquer sur le champ et sélectionner la nouvelle date de fin planifiée",
         )
         self.assertEqual(1, len(title))
         self.assertEqual("id_prolongation_date", widget.get("id"))
@@ -1885,6 +1885,80 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(0, len(action_request_prolongation))
         self.assertEqual(0, len(action_prolongation_requested))
         self.assertEqual(1, len(action_prolongation_rejected))
+
+    def test_secretariat_can_see_prolongation_buttons_if_wot_has_prolongation_enabled(
+        self,
+    ):
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_APPROVED,
+        )
+        permit_request.works_object_types.set([self.wot_prolongable_with_date])
+        permit_request.administrative_entity.departments.set([self.department])
+        self.client.login(username=self.secretariat, password="password")
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        parser = get_parser(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(parser.select(".tab-pane#prolong button")), 2,
+        )
+
+    def test_secretariat_can_see_prolongation_buttons_if_at_least_one_wot_has_prolongation_enabled(
+        self,
+    ):
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_APPROVED,
+        )
+        permit_request.works_object_types.set(
+            [self.wot_prolongable_with_date, self.wot_normal]
+        )
+        permit_request.administrative_entity.departments.set([self.department])
+        self.client.login(username=self.secretariat, password="password")
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        parser = get_parser(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(parser.select(".tab-pane#prolong button")), 2,
+        )
+
+    def test_secretariat_cannot_see_prolongation_buttons_if_wot_has_not_prolongation_enabled(
+        self,
+    ):
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_APPROVED,
+        )
+        permit_request.works_object_types.set([self.wot_normal])
+        permit_request.administrative_entity.departments.set([self.department])
+        self.client.login(username=self.secretariat, password="password")
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        parser = get_parser(response.content)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(parser.select(".tab-pane#prolong button")), 0,
+        )
 
 
 class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
@@ -2571,17 +2645,10 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
 
         self.assertEqual(response.status_code, 400)
 
-    def test_secretariat_can_see_print_buttons_and_directives(self):
-        first_works_object_type = factories.WorksObjectTypeFactory(
-            directive=SimpleUploadedFile("file.pdf", "contents".encode()),
-            directive_description="First directive description for a test",
-            additional_information="First additional information for a test",
-        )
-        second_works_object_type = factories.WorksObjectTypeFactory(
-            directive=SimpleUploadedFile("file.pdf", "contents".encode()),
-            directive_description="Second directive description for a test",
-            additional_information="Second additional information for a test",
-        )
+    def test_secretariat_can_see_print_buttons(self):
+        first_works_object_type = factories.WorksObjectTypeFactory()
+        second_works_object_type = factories.WorksObjectTypeFactory()
+
         factories.QgisProjectFactory(
             qgis_project_file=SimpleUploadedFile("template.qgs", "contents".encode()),
             description="Print Template 1",
@@ -2615,13 +2682,8 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(
             len(parser.select(".tab-pane#print button")), 2,
         )
-        self.assertEqual(
-            len(parser.select(".tab-pane#print span.directive_description")), 2,
-        )
 
-    def test_secretariat_cannot_see_print_buttons_and_directives_if_not_configured(
-        self,
-    ):
+    def test_secretariat_cannot_see_print_buttons_if_not_configured(self,):
         works_object_types = factories.WorksObjectTypeFactory.create_batch(2)
 
         permit_request = factories.PermitRequestFactory(
@@ -2643,14 +2705,63 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(
             len(parser.select(".tab-pane#print button")), 0,
         )
-        self.assertEqual(
-            len(parser.select(".tab-pane#print span.directive_description")), 0,
+
+    def test_secretariat_can_see_directives(self):
+        first_works_object_type = factories.WorksObjectTypeFactory(
+            directive=SimpleUploadedFile("file.pdf", "contents".encode()),
+            directive_description="First directive description for a test",
+            additional_information="First additional information for a test",
         )
-        self.assertEqual(
-            len(parser.select(".tab-pane#print span.no_directive")), 1,
+        second_works_object_type = factories.WorksObjectTypeFactory(
+            directive=SimpleUploadedFile("file.pdf", "contents".encode()),
+            directive_description="Second directive description for a test",
+            additional_information="Second additional information for a test",
         )
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            administrative_entity=self.administrative_entity,
+        )
+
+        permit_request.works_object_types.set(
+            [first_works_object_type, second_works_object_type]
+        )
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        parser = get_parser(response.content)
+
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            len(parser.select(".tab-pane#print span.no_print_template")), 1,
+            len(parser.select(".tab-pane#directives span.directive_description")), 2,
+        )
+
+    def test_secretariat_cannot_see_directives_if_not_configured(self,):
+        works_object_types = factories.WorksObjectTypeFactory.create_batch(2)
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            administrative_entity=self.administrative_entity,
+        )
+
+        permit_request.works_object_types.set(works_object_types)
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        parser = get_parser(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            len(parser.select(".tab-pane#directives span.directive_description")), 0,
         )
 
     def test_email_to_author_is_sent_when_secretariat_acknowledges_reception(self):
