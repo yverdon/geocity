@@ -15,6 +15,7 @@ from django.db.models import CharField, F, Prefetch, Q
 from rest_framework import viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework_gis.fields import GeometrySerializerMethodField
+from rest_framework.throttling import ScopedRateThrottle
 from django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 
 from . import geoservices, models, serializers, services
@@ -153,6 +154,14 @@ class PermitRequestViewSet(
     wfs3_geom_lookup = "geo_time__geom"  # lookup for the geometry (on the queryset), used to determine bbox
     wfs3_srid = 2056
 
+    def get_throttles(self):
+        # Do not throttle API if request is used py print internal service
+        if services.check_request_comes_from_internal_qgisserver(self.request):
+            throttle_classes = []
+        else:
+            throttle_classes = [ScopedRateThrottle]
+        return [throttle() for throttle in throttle_classes]
+
     def get_queryset(self, geom_type=None):
         """
         This view should return a list of permits for which the logged user has
@@ -265,6 +274,14 @@ def permitRequestViewSetSubsetFactory(geom_type_name):
         wfs3_title = f"{PermitRequestViewSet.wfs3_title} ({geom_type_name})"
         wfs3_description = f"{PermitRequestViewSet.wfs3_description} (géométries de type {geom_type_name})"
         serializer_class = Serializer
+
+        def get_throttles(self):
+            # Do not throttle API if request is used py print internal service
+            if services.check_request_comes_from_internal_qgisserver(self.request):
+                throttle_classes = []
+            else:
+                throttle_classes = [ScopedRateThrottle]
+            return [throttle() for throttle in throttle_classes]
 
         def get_queryset(self):
             # Inject the geometry filter
