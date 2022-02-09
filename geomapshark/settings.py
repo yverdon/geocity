@@ -200,7 +200,11 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "ACTORS_STEP",
         "SUBMIT_STEP",
     ),
-    "API settings": ("IP_WHITELIST",),
+    "API settings": (
+        "IP_WHITELIST",
+        "DRF_THROTTLE_RATE_PERMITS_API",
+        "DRF_THROTTLE_RATE_EVENTS_API",
+    ),
 }
 
 CONSTANCE_CONFIG = {
@@ -275,6 +279,16 @@ CONSTANCE_CONFIG = {
     "IP_WHITELIST": (
         "172.16,172.17,localhost",
         "IP privée autorisée pour l'authentification par QGIS Server",
+        str,
+    ),
+    "DRF_THROTTLE_RATE_PERMITS_API": (
+        "100/day",
+        "Nombre de requêtes par unité de temps autorisées sur l'enpoint /rest/permits, plus d'info sous https://www.django-rest-framework.org/api-guide/throttling/",
+        str,
+    ),
+    "DRF_THROTTLE_RATE_EVENTS_API": (
+        "100000/day",
+        "Nombre de requêtes par unité de temps autorisées sur l'enpoint /rest/events, plus d'infos sous https://www.django-rest-framework.org/api-guide/throttling/",
         str,
     ),
 }
@@ -438,13 +452,12 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_PAGINATION_CLASS": "django_wfs3.pagination.CustomPagination",
-    "DEFAULT_THROTTLE_CLASSES": [
-        "rest_framework.throttling.AnonRateThrottle",
-        "rest_framework.throttling.UserRateThrottle",
-    ],
+    "DEFAULT_THROTTLE_CLASSES": ["rest_framework.throttling.ScopedRateThrottle",],
     "DEFAULT_THROTTLE_RATES": {
-        "anon": os.getenv("DRF_THROTTLE_RATE_ANONYMOUS"),
-        "user": os.getenv("DRF_THROTTLE_RATE_AUTHENTIFIED"),
+        # Full API for permits
+        "permits": os.getenv("DRF_THROTTLE_RATE_PERMITS_API"),
+        # Limited pulic API used mainly by Geocalendar front app
+        "events": os.getenv("DRF_THROTTLE_RATE_EVENTS_API"),
     },
 }
 # Allow TokenAuthentication to the API.

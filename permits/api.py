@@ -69,6 +69,7 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
     """
 
     serializer_class = serializers.PermitRequestGeoTimeSerializer
+    throttle_scope = "events"
 
     def get_queryset(self):
         """
@@ -174,6 +175,7 @@ class PermitRequestViewSet(
             3.- Polygons: /rest/permits_polygon/
     """
 
+    throttle_scope = "permits"
     serializer_class = serializers.PermitRequestPrintSerializer
     permission_classes = [BlockRequesterUserPermission]
 
