@@ -200,11 +200,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "ACTORS_STEP",
         "SUBMIT_STEP",
     ),
-    "API settings": (
-        "IP_WHITELIST",
-        "DRF_THROTTLE_RATE_PERMITS_API",
-        "DRF_THROTTLE_RATE_EVENTS_API",
-    ),
+    "API settings": ("IP_WHITELIST",),
 }
 
 CONSTANCE_CONFIG = {
@@ -279,16 +275,6 @@ CONSTANCE_CONFIG = {
     "IP_WHITELIST": (
         "172.16,172.17,localhost",
         "IP privée autorisée pour l'authentification par QGIS Server",
-        str,
-    ),
-    "DRF_THROTTLE_RATE_PERMITS_API": (
-        "100/day",
-        "Nombre de requêtes par unité de temps autorisées sur l'enpoint /rest/permits, plus d'info sous https://www.django-rest-framework.org/api-guide/throttling/",
-        str,
-    ),
-    "DRF_THROTTLE_RATE_EVENTS_API": (
-        "100000/day",
-        "Nombre de requêtes par unité de temps autorisées sur l'enpoint /rest/events, plus d'infos sous https://www.django-rest-framework.org/api-guide/throttling/",
         str,
     ),
 }
