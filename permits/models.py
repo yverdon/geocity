@@ -1209,7 +1209,9 @@ class PermitRequestAmendPropertyValue(models.Model):
 
 class QgisProject(models.Model):
     qgis_project_file = fields.AdministrativeEntityFileField(
-        _("Fichier QGIS '*.qgs'"), upload_to="qgis_templates",
+        _("Fichier QGIS '*.qgs'"),
+        validators=[FileExtensionValidator(allowed_extensions=["qgs"])],
+        upload_to="qgis_templates",
     )
     qgis_print_template_name = models.CharField(
         _("Nom du template d'impression QGIS"), max_length=150,
