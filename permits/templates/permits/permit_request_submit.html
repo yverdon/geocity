@@ -31,13 +31,18 @@
           {% for directive_file, directive_description, additional_information in directives %}
             <div{% if not forloop.last %} class="mb-3"{% endif %}>
               {% if directive_file and directive_description %}
-                <span class="directive_description">{{ directive_description }}</span> - {% if directive_file %}<a class="directive_file" href="{{ directive_file.url }}" target="_blank" rel="noreferrer">{% trans "Télécharger le fichier" %}</a>{% endif %}<br>
+                <span class="directive_description">{{ directive_description }}</span>:
+                <i class="fa fa-download" aria-hidden="true"></i>
+                <a class="directive_file" href="{{ directive_file.url }}" target="_blank" rel="noreferrer">{% trans "Télécharger le fichier" %}</a>
+                <br>
               {% endif %}
-              <span class="additional_information">{{ additional_information }}</span>
+              {% if additional_information %}
+                <span class="additional_information">{{ additional_information }}</span>
+              {% endif %}
             </div>
           {% endfor %}
         </div>
-      {% endif %}  
+      {% endif %}
       {% if previous_step.url %}
         <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
       {% endif %}
