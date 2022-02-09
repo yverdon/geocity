@@ -163,13 +163,12 @@
                 {% if directive_file and directive_description %}
                     {{forloop.counter}}.
                     <span class="directive_description">{{ directive_description }}</span> -
-                    {% if directive_file %}
                         <i class="fa fa-download" aria-hidden="true"></i>
                         <a class="directive_file" href="{{ directive_file.url }}" target="_blank" rel="noreferrer">
                         {% trans "Télécharger le fichier" %}
-                        </a>
-                    {% endif %} - <span class="additional_information">{{ additional_information }}</span>
+                        </a><br>
                 {% endif %}
+                <span class="additional_information">{{ additional_information }}</span>
             </div>
             {% endfor %}
         </div>
