@@ -11,7 +11,7 @@
       {% if forms.amend %}
 
           <li class="nav-item">
-              <a class="btn btn-primary btn-action nav-link{% if active_form == "amend" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">{% trans "Traitement" %}</a>
+              <a class="btn btn-primary btn-action nav-link{% if active_form == "amend" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">{% trans "Général" %}</a>
           </li>
 
       {% endif %}
@@ -28,7 +28,7 @@
 
           <li class="nav-item">
               <a class="btn btn-primary btn-action nav-link{% if active_form == "validate" %} active{% endif %}" id="validate-tab" data-toggle="tab" href="#validate" role="tab" aria-controls="validate" aria-selected="{% if active_form == "validate" %}true{% else %}false{% endif %}">
-              {% trans "Valider" %}
+              {% trans "Validation" %}
               </a>
           </li>
 
