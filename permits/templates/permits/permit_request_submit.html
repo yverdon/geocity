@@ -7,6 +7,24 @@
   {% permit_progressbar steps StepType.SUBMIT %}
   <h3>{% trans "Résumé et envoi" %}</h3>
   <hr>
+  {% if directives %}
+    <div id="legal-infos">
+      <h5>{% trans "Les directives ci-dessous font partie intégrante des conditions de l’octroi de la demande" %}</h5>
+      {% for directive_file, directive_description, additional_information in directives %}
+        <div{% if not forloop.last %} class="mb-3"{% endif %}>
+          {% if directive_file and directive_description %}
+            <span class="directive_description">{{ directive_description }}</span>:
+            <i class="fa fa-download" aria-hidden="true"></i>
+            <a class="directive_file" href="{{ directive_file.url }}" target="_blank" rel="noreferrer">{% trans "Télécharger le fichier" %}</a>
+            <br>
+          {% endif %}
+          {% if additional_information %}
+            <span class="additional_information">{{ additional_information }}</span>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
   {% if incomplete_steps  %}
     <p>
       {% blocktrans trimmed %}
@@ -25,24 +43,6 @@
       {% if incomplete_steps %}
         <a class="btn btn-primary" href="{{ incomplete_steps|first }}">{% trans "Renseigner les informations manquantes" %}</a>
       {% else %}
-        {% if directives %}
-          <div id="legal-infos">
-            <h5>{% trans "Les directives ci-dessous font partie intégrante des conditions de l’octroi de la demande" %}</h5>
-            {% for directive_file, directive_description, additional_information in directives %}
-              <div{% if not forloop.last %} class="mb-3"{% endif %}>
-                {% if directive_file and directive_description %}
-                  <span class="directive_description">{{ directive_description }}</span>:
-                  <i class="fa fa-download" aria-hidden="true"></i>
-                  <a class="directive_file" href="{{ directive_file.url }}" target="_blank" rel="noreferrer">{% trans "Télécharger le fichier" %}</a>
-                  <br>
-                {% endif %}
-                {% if additional_information %}
-                  <span class="additional_information">{{ additional_information }}</span>
-                {% endif %}
-              </div>
-            {% endfor %}
-          </div>
-        {% endif %}
         {% if previous_step.url %}
           <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
         {% endif %}
