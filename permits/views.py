@@ -457,9 +457,13 @@ class PermitRequestDetailView(View):
             and form.instance.status is not initial_status
         ):
             permit_request = form.instance
-            wot_names = ", ".join(str(wot) for wot in permit_request.works_object_types.all())
+            wot_names = ", ".join(
+                str(wot) for wot in permit_request.works_object_types.all()
+            )
             data = {
-                "subject": "{} ({})".format(_("Votre annonce a été prise en compte et classée"), wot_names),
+                "subject": "{} ({})".format(
+                    _("Votre annonce a été prise en compte et classée"), wot_names
+                ),
                 "users_to_notify": [permit_request.author.user.email],
                 "template": "permit_request_received.txt",
                 "permit_request": permit_request,
@@ -533,9 +537,16 @@ class PermitRequestDetailView(View):
                         is not form.instance.validation_status
                     )
                 ):
-                    wot_names = ", ".join(str(wot) for wot in permit_request.works_object_types.all())
+                    wot_names = ", ".join(
+                        str(wot) for wot in permit_request.works_object_types.all()
+                    )
                     data = {
-                        "subject": "{} ({})".format(_("Les services chargés de la validation d'une demande ont donné leur préavis"), wot_names),
+                        "subject": "{} ({})".format(
+                            _(
+                                "Les services chargés de la validation d'une demande ont donné leur préavis"
+                            ),
+                            wot_names,
+                        ),
                         "users_to_notify": services._get_secretary_email(
                             self.permit_request
                         ),
@@ -1443,11 +1454,15 @@ def permit_request_classify(request, permit_request_id, approve):
 
         if classify_form.is_valid():
             classify_form.save()
-            wot_names = ", ".join(str(wot) for wot in permit_request.works_object_types.all())
+            wot_names = ", ".join(
+                str(wot) for wot in permit_request.works_object_types.all()
+            )
 
             # Notify the permit author
             data = {
-                "subject": "{} ({})".format(_("Votre demande a été traitée et classée"), wot_names),
+                "subject": "{} ({})".format(
+                    _("Votre demande a été traitée et classée"), wot_names
+                ),
                 "users_to_notify": [permit_request.author.user.email],
                 "template": "permit_request_classified.txt",
                 "permit_request": permit_request,
@@ -1474,7 +1489,12 @@ def permit_request_classify(request, permit_request_id, approve):
 
                 if mailing_list:
                     data = {
-                        "subject": "{} ({})".format(_("Une demande a été traitée et classée par le secrétariat"), wot_names),
+                        "subject": "{} ({})".format(
+                            _(
+                                "Une demande a été traitée et classée par le secrétariat"
+                            ),
+                            wot_names,
+                        ),
                         "users_to_notify": set(mailing_list),
                         "template": "permit_request_classified_for_services.txt",
                         "permit_request": permit_request,
