@@ -3617,6 +3617,7 @@ class PermitRequestClassifyTestCase(TestCase):
 
         services_message_content = "Nous vous informons qu'une demande a été traitée et classée par le secrétariat."
         valid_services_emails = [
+            "not-repeated-email@liip.ch",
             "test-send-2@geocity.ch",
             "test-send-1@geocity.ch",
         ]
