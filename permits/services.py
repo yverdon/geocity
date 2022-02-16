@@ -1054,6 +1054,7 @@ def send_validation_reminder(permit_request, absolute_uri_func):
         .distinct()
     )
     wot_names = ", ".join(str(wot) for wot in permit_request.works_object_types.all())
+
     data = {
         "subject": "{} ({})".format(
             _("Demande toujours en attente de validation"), wot_names

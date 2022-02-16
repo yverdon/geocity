@@ -460,6 +460,7 @@ class PermitRequestDetailView(View):
             wot_names = ", ".join(
                 str(wot) for wot in permit_request.works_object_types.all()
             )
+
             data = {
                 "subject": "{} ({})".format(
                     _("Votre annonce a été prise en compte et classée"), wot_names
@@ -538,8 +539,9 @@ class PermitRequestDetailView(View):
                     )
                 ):
                     wot_names = ", ".join(
-                        str(wot) for wot in permit_request.works_object_types.all()
+                        str(wot) for wot in self.permit_request.works_object_types.all()
                     )
+
                     data = {
                         "subject": "{} ({})".format(
                             _(
