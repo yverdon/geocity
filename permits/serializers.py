@@ -261,7 +261,7 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
 
             geotime_aggregated = {}
             geotime_aggregated["start_date"] = (
-                aggregated_geotime_qs["permit_request_geo_time_end_date"].strftime(
+                aggregated_geotime_qs["permit_request_geo_time_start_date"].strftime(
                     "%d.%m.%Y %H:%M"
                 )
                 if aggregated_geotime_qs["permit_request_geo_time_start_date"]
