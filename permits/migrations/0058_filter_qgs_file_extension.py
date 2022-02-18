@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='qgisproject',
             name='qgis_project_file',
-            field=permits.fields.AdministrativeEntityFileField(storage=permits.fields.PrivateFileSystemStorage(), upload_to='qgis_templates', validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['qgs'])], verbose_name="Fichier QGIS '*.qgs'"),
+            field=permits.fields.AdministrativeEntityFileField(storage=permits.fields.PrivateFileSystemStorage(), upload_to='qgis_templates', validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['qgs'])], verbose_name="Projet QGIS '*.qgs'"),
         ),
     ]
