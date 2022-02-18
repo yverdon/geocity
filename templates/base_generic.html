@@ -104,10 +104,10 @@
                       <div class="dropdown-divider"></div>
                       {% endif %}
                       <a class="dropdown-item" href="{% url 'permit_author_edit' %}">{% trans "Modifier mon compte" %}</a>
-                      <a class="dropdown-item" href="{% url 'password_change' %}">{% trans "Changer mon mot de passe" %}</a>
                       {% if ENABLE_2FA %}
                       <a class="dropdown-item" href="{% url 'two_factor:profile' %}">{% trans "Account Security" %}</a>
                       {% endif %}
+                      <a class="dropdown-item" href="{% url 'password_change' %}">{% trans "Changer mon mot de passe" %}</a>
                       <div class="dropdown-divider"></div>
                       <a class="dropdown-item" href="{% url 'logout' %}">{% trans "Me déconnecter" %}</a>
                   </div>
@@ -126,14 +126,14 @@
                       <li class="nav-item">
                         <a class="nav-link" href="{% url 'permit_author_edit' %}">{% trans "Modifier mon compte" %}</a>
                       </li>
-                      <li class="nav-item">
-                        <a class="nav-link" href="{% url 'password_change' %}">{% trans "Changer mon mot de passe" %}</a>
-                      </li>
                       {% if ENABLE_2FA %}
                       <li class="nav-item">
                         <a class="nav-link" href="{% url 'two_factor:profile' %}">{% trans "Account Security" %}</a>
                       </li>
                       {% endif %}
+                      <li class="nav-item">
+                        <a class="nav-link" href="{% url 'password_change' %}">{% trans "Changer mon mot de passe" %}</a>
+                      </li>
                       <div class="dropdown-divider"></div>
                       <li class="nav-item">
                         <a class="nav-link" href="{% url 'logout' %}">{% trans "Me déconnecter" %}</a>
