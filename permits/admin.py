@@ -230,9 +230,10 @@ class UserAdmin(BaseUserAdmin):
 
     def save_model(self, req, obj, form, change):
         """ Set 'is_staff=True' when the saved user is in a integrator group.
+        But let is_staff=True for super users.
         """
         if req.user.is_superuser:
-            obj.is_staff = False
+            obj.is_staff = False if not obj.is_superuser else True
             for group in form.cleaned_data["groups"]:
                 if group.permitdepartment.is_integrator_admin:
                     obj.is_staff = True
