@@ -435,4 +435,4 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             self.client.login(username=user.username, password="password")
             response = self.client.get(reverse("profile"), follow=True,)
             self.assertEqual(response.status_code, 200)
-            self.assertContains(response, "Securité du compte")
+            self.assertContains(response, "Sécurité du compte")
