@@ -55,9 +55,16 @@ ACTOR_TYPE_CHOICES = (
 )
 
 # Input types
-INPUT_TYPE_LIST_SINGLE = "list_single"
+INPUT_TYPE_ADDRESS = "address"
+INPUT_TYPE_CHECKBOX = "checkbox"
+INPUT_TYPE_DATE = "date"
+INPUT_TYPE_FILE = "file"
 INPUT_TYPE_LIST_MULTIPLE = "list_multiple"
+INPUT_TYPE_LIST_SINGLE = "list_single"
+INPUT_TYPE_NUMBER = "number"
 INPUT_TYPE_REGEX = "regex"
+INPUT_TYPE_TEXT = "text"
+INPUT_TYPE_TITLE = "title"
 
 # Actions
 ACTION_AMEND = "amend"
@@ -878,16 +885,17 @@ class WorksObject(models.Model):
 
 
 class WorksObjectProperty(models.Model):
-    INPUT_TYPE_TEXT = "text"
-    INPUT_TYPE_CHECKBOX = "checkbox"
-    INPUT_TYPE_NUMBER = "number"
-    INPUT_TYPE_FILE = "file"
-    INPUT_TYPE_ADDRESS = "address"
-    INPUT_TYPE_DATE = "date"
+    INPUT_TYPE_TEXT = INPUT_TYPE_TEXT
+    INPUT_TYPE_CHECKBOX = INPUT_TYPE_CHECKBOX
+    INPUT_TYPE_NUMBER = INPUT_TYPE_NUMBER
+    INPUT_TYPE_FILE = INPUT_TYPE_FILE
+    INPUT_TYPE_ADDRESS = INPUT_TYPE_ADDRESS
+    INPUT_TYPE_DATE = INPUT_TYPE_DATE
     INPUT_TYPE_REGEX = INPUT_TYPE_REGEX
     INPUT_TYPE_LIST_SINGLE = INPUT_TYPE_LIST_SINGLE
     INPUT_TYPE_LIST_MULTIPLE = INPUT_TYPE_LIST_MULTIPLE
-    INPUT_TYPE_TITLE = "title"
+    INPUT_TYPE_TITLE = INPUT_TYPE_TITLE
+    # The choices are sorted according to their values
     INPUT_TYPE_CHOICES = (
         (INPUT_TYPE_ADDRESS, _("Adresse")),
         (INPUT_TYPE_CHECKBOX, _("Case à cocher")),

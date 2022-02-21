@@ -218,7 +218,14 @@ def search_properties(search_str, permit_requests_qs, limit=None):
     qs = (
         add_score(
             models.WorksObjectPropertyValue.objects.filter(
-                property__input_type=models.WorksObjectProperty.INPUT_TYPE_TEXT,
+                property__input_type__in=[
+                    models.WorksObjectProperty.INPUT_TYPE_ADDRESS,
+                    models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE,
+                    models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE,
+                    models.WorksObjectProperty.INPUT_TYPE_NUMBER,
+                    models.WorksObjectProperty.INPUT_TYPE_TEXT,
+                    models.WorksObjectProperty.INPUT_TYPE_REGEX,
+                ],
                 works_object_type_choice__permit_request__in=permit_requests_qs,
             ).annotate(
                 txt_value=Cast(
