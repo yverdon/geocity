@@ -922,7 +922,7 @@ class WorksObjectAdminForm(forms.ModelForm):
         }
 
 
-class WorksObjectAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+class WorksObjectAdmin(IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdmin):
     form = WorksObjectAdminForm
     list_filter = [
         "name",
