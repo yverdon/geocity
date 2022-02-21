@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0057_add_shortname_to_permitrequest'),
+        ('permits', '0058_filter_qgs_file_extension'),
     ]
 
     operations = [
