@@ -867,12 +867,16 @@ class WorksObject(models.Model):
         related_name="works_objects",
         verbose_name=_("types"),
     )
+    order = models.PositiveIntegerField(
+        _("ordre"), default=0, blank=False, null=False, db_index=True
+    )
     wms_layers = models.URLField(_("Couche(s) WMS"), blank=True, max_length=1024)
     wms_layers_order = models.PositiveIntegerField(
         _("Ordre de(s) couche(s)"), default=1
     )
 
     class Meta:
+        ordering = ["order"]
         verbose_name = _("1.3 Configuration de l'objet")
         verbose_name_plural = _("1.3 Configuration des objets")
 
@@ -1209,7 +1213,9 @@ class PermitRequestAmendPropertyValue(models.Model):
 
 class QgisProject(models.Model):
     qgis_project_file = fields.AdministrativeEntityFileField(
-        _("Fichier QGIS '*.qgs'"), upload_to="qgis_templates",
+        _("Projet QGIS '*.qgs'"),
+        validators=[FileExtensionValidator(allowed_extensions=["qgs"])],
+        upload_to="qgis_templates",
     )
     qgis_print_template_name = models.CharField(
         _("Nom du template d'impression QGIS"), max_length=150,

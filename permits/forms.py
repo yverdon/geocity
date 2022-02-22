@@ -226,6 +226,7 @@ class WorksObjectsForm(forms.Form):
                 )
                 .distinct()
                 .select_related("works_object")
+                .order_by("works_type", "works_object")
             )
 
             if not user_has_perm:
