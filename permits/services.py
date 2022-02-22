@@ -1506,7 +1506,7 @@ def check_request_ip_is_in_whithelist(request):
     """
     Check that the request is coming from allowed ip
     """
-    for whitelisted_ip in config.IP_WHITELIST:
+    for whitelisted_ip in config.IP_WHITELIST.split(','):
         if request.META["REMOTE_ADDR"].startswith(whitelisted_ip):
             return True
 
