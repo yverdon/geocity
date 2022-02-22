@@ -394,12 +394,14 @@ class GroupAdmin(admin.ModelAdmin):
         "name",
     ]
 
+    @admin.display(boolean=True)
     def get__is_validator(self, obj):
         return obj.permitdepartment.is_validator
 
     get__is_validator.admin_order_field = "permitdepartment__is_validator"
     get__is_validator.short_description = _("Validateur")
 
+    @admin.display(boolean=True)
     def get__is_default_validator(self, obj):
         return obj.permitdepartment.is_default_validator
 
@@ -414,6 +416,7 @@ class GroupAdmin(admin.ModelAdmin):
     get__integrator.admin_order_field = "permitdepartment__integrator"
     get__integrator.short_description = _("Intégrateur")
 
+    @admin.display(boolean=True)
     def get__mandatory_2fa(self, obj):
         return obj.permitdepartment.mandatory_2fa
 
