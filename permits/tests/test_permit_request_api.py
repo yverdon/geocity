@@ -15,6 +15,7 @@ from permits import models
 from . import factories
 import urllib.parse
 import requests
+from constance import config
 
 
 class PermitRequestAPITestCase(TestCase):
@@ -308,7 +309,9 @@ class PermitRequestAPITestCase(TestCase):
         # check that login admin user is allowed to get data
         response = self.client.get(reverse("permits-list"), {})
         self.assertEqual(response.status_code, 200)
-        # check that login admin user is NOT allowed to get data from IP not allowed
+        # Set only localhost allowed in constance settings
+        config.IP_WHITELIST = "127.0.0.1"
+        # Fake the client ip to something not allowed
         response = self.client.get(
             reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0"
         )

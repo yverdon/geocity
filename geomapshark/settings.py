@@ -273,7 +273,7 @@ CONSTANCE_CONFIG = {
     "TITLE_COLOR": ("#000000", "Couleur du titre", str,),
     "TABLE_COLOR": ("#212529", "Couleur du texte dans les tableaux", str,),
     "IP_WHITELIST": (
-        "172.16,172.17,localhost",
+        "172.16,172.17,localhost,127.0.0.1",
         "IP privée autorisée pour l'authentification par QGIS Server, séparées par des ','",
         str,
     ),
