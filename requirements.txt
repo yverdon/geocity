@@ -102,7 +102,7 @@ djangorestframework-gis==0.18
     # via -r requirements.in
 filetype==1.0.10
     # via -r requirements.in
-gdal==3.4.1
+gdal==3.3.2
     # via -r requirements.in
 gunicorn==20.1.0
     # via -r requirements.in

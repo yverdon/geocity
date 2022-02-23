@@ -163,7 +163,7 @@ faker==13.2.0
     #   factory-boy
 filetype==1.0.10
     # via -r requirements.txt
-gdal==3.4.1
+gdal==3.3.2
     # via -r requirements.txt
 gunicorn==20.1.0
     # via -r requirements.txt
