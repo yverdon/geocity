@@ -85,7 +85,7 @@ django==3.2.12
     #   djangorestframework
 django-admin-sortable2==1.0.4
     # via -r requirements.txt
-django-allauth==0.48.0
+django-allauth==0.45.0
     # via -r requirements.txt
 django-axes==5.31.0
     # via -r requirements.txt
