@@ -1074,9 +1074,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             is_public=True,
         )
 
-        self.works_types[0].tags.set("work_type_a")
-        self.works_types[1].tags.set("work_type_a")
-        additional_works_type.tags.set("work_type_b")
+        self.works_types[0].tags.add("work_type_a")
+        self.works_types[1].tags.add("work_type_a")
+        additional_works_type.tags.add("work_type_b")
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         permit_request.administrative_entity.works_object_types.set(
             models.WorksObjectType.objects.all()
@@ -1106,9 +1106,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             is_public=True,
         )
 
-        self.works_types[0].tags.set("work_type_a")
-        self.works_types[1].tags.set("work_type_a")
-        additional_works_type.tags.set("work_type_b")
+        self.works_types[0].tags.add("work_type_a")
+        self.works_types[1].tags.add("work_type_a")
+        additional_works_type.tags.add("work_type_b")
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         permit_request.administrative_entity.works_object_types.set(
             models.WorksObjectType.objects.all()
