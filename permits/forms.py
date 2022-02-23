@@ -5,7 +5,7 @@ from itertools import groupby
 
 from allauth.socialaccount.forms import SignupForm
 from allauth.socialaccount.providers.base import ProviderException
-from bootstrap_datepicker_plus import DatePickerInput, DateTimePickerInput
+from bootstrap_datepicker_plus.widgets import DatePickerInput, DateTimePickerInput
 from constance import config
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Field, Fieldset, Layout

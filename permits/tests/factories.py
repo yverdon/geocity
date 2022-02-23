@@ -87,7 +87,7 @@ class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
         if not create or not extracted:
             return
 
-        self.tags.set(*extracted)
+        self.tags.add(*extracted)
 
 
 class GroupFactory(factory.django.DjangoModelFactory):
@@ -288,7 +288,7 @@ class WorksTypeFactory(factory.django.DjangoModelFactory):
         if not create or not extracted:
             return
 
-        self.tags.set(*extracted)
+        self.tags.add(*extracted)
 
 
 class PermitActorTypeFactory(factory.django.DjangoModelFactory):
