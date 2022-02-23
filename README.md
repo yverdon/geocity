@@ -17,6 +17,7 @@ docker-compose -f docker-compose-dev.yml down --remove-orphans && docker-compose
 ```
 
 Copy `docker-compose-dev.yml` to a `docker-compose-override.yml`, adapt it to your needs, then run :
+
 ```
 docker-compose up
 ```
@@ -32,6 +33,7 @@ docker-compose -f docker-compose-dev.yml config
 ```
 
 Check that qgisserver print server is up and running
+
 ```
 http://localhost:9096/ogc/?REQUEST=GETCAPABILITIES&SERVICE=ATLAS&MAP=/io/data/report_template.qgs
 ```
@@ -39,7 +41,6 @@ http://localhost:9096/ogc/?REQUEST=GETCAPABILITIES&SERVICE=ATLAS&MAP=/io/data/re
 ## Alternative demo setup
 
 Following command will setup a demo DB with more exhaustive configuration
-
 
 ```bash
 docker-compose -f docker-compose-demo.yml down --remove-orphans && docker-compose -f docker-compose-demo.yml up
@@ -51,14 +52,14 @@ docker-compose -f docker-compose-demo.yml down --remove-orphans && docker-compos
 To add default print templates for all Works Objects Types execute
 
 ```bash
- docker-compose exec web python manage.py add_default_print_config
- ```
+docker-compose exec web python manage.py add_default_print_config
+```
 
- To update default print templates for all Works Objects Types execute
+To update default print templates for all Works Objects Types execute
 
 ```bash
- docker-compose exec web python manage.py update_default_print_config
- ```
+docker-compose exec web python manage.py update_default_print_config
+```
 
 These commands will add/update a default print configuration that contains all data
 available in the API enpoint. Layout will in most cases require to be adapted
@@ -182,16 +183,16 @@ _eaux-yverdon:admin_
 ## Permissions
 
 The user belonging to backoffice group can be granted specific permissions:
-- ```see_private_requests```, "Voir les demandes restreintes": allows the user to make requests that are not visible by standard user. Typically during the setup stage of a new form configuration
-- ```amend_permit_request```,"Traiter les demandes de permis": allow the user the process (amend) the requests (fill the backoffice fields), require validation for other departments and print the documents
-- ```validate_permit_request```,"Valider les demandes de permis": allow the user to fill the validation form
-- ```classify_permit_request```,"Classer les demandes de permis" allow the user to accept/reject the requests if validations services have all accepted it.
-- ```edit_permit_request```, "Éditer les demandes de permis": allow the user to edit de requests filled by another person
+- `see_private_requests`, "Voir les demandes restreintes": allows the user to make requests that are not visible by standard user. Typically during the setup stage of a new form configuration
+- `amend_permit_request`,"Traiter les demandes de permis": allow the user the process (amend) the requests (fill the backoffice fields), require validation for other departments and print the documents
+- `validate_permit_request`,"Valider les demandes de permis": allow the user to fill the validation form
+- `classify_permit_request`,"Classer les demandes de permis" allow the user to accept/reject the requests if validations services have all accepted it.
+- `edit_permit_request`, "Éditer les demandes de permis": allow the user to edit de requests filled by another person
 
 
 ### QGISSERVER LOGS
 
-Use ```docker-compose logs -f --tail=20 qgisserver``` to see qgisserver logs
+Use `docker-compose logs -f --tail=20 qgisserver` to see qgisserver logs
 
 ## Two factor authentification
 
@@ -304,16 +305,19 @@ Used `_` instead of `:` for `Define the category separator` because the characte
 You can login with a GEOMAPFISH account if you have one.
 * Create a SocialApp using the geomapfish provider.
 * Add the fields required for oauth2 process:
+
 ```
 client_id
 secret
 key
 certificate_key
 ```
+
 * Save the SocialApp, the GEOMAPFISH login is ready to use.
 * Don't create 2 SocialApp with the same provider.
 
 * Redirect URI configuration in oAuth provider for dev
+
 ```
 http://localhost:9095/geomapfish/login/callback/
 ```
