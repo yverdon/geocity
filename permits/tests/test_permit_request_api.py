@@ -301,7 +301,7 @@ class PermitRequestAPITestCase(TestCase):
         self.assertEqual(
             response.json()["detail"], "Informations d'authentification non fournies."
         )
-    
+
     def test_non_authorized_ip_raises_exception(self):
         # login as admin
         self.client.login(username=self.admin_user.username, password="password")
@@ -309,9 +309,10 @@ class PermitRequestAPITestCase(TestCase):
         response = self.client.get(reverse("permits-list"), {})
         self.assertEqual(response.status_code, 200)
         # check that login admin user is NOT allowed to get data from IP not allowed
-        response = self.client.get(reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0")
+        response = self.client.get(
+            reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0"
+        )
         self.assertEqual(response.status_code, 403)
-
 
     def test_non_existent_permit_request_raises_exception(self):
         permit_requests = models.PermitRequest.objects.all().only("id")
