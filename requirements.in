@@ -27,6 +27,7 @@ django-cors-headers
 django-constance[database]
 django-two-factor-auth[phonenumbers]
 django-taggit
+django-sesame[ua]
 filetype
 # Open authentication provider
 django-oauth-toolkit

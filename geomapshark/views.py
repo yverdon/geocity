@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import PasswordResetView
+from sesame.utils import get_user
 
 if settings.ENABLE_2FA:
     from two_factor.views import LoginView
@@ -55,6 +56,7 @@ class CustomPasswordResetView(PasswordResetView):
 
 class CustomLoginView(LoginView):
     def get_context_data(self, **kwargs):
+        print(get_user(self.request))
         context = super().get_context_data(**kwargs)
         context.update({"social_apps": SocialApp.objects.all()})
 

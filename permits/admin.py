@@ -17,7 +17,7 @@ from django.contrib.auth.forms import UserChangeForm
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from io import BytesIO
 from django.db.models.functions import StrIndex, Substr
-
+from sesame.utils import get_token
 
 from . import forms as permit_forms
 from . import models
@@ -118,11 +118,12 @@ class UserAdminForm(UserChangeForm):
 
 class UserAdmin(BaseUserAdmin):
     form = UserAdminForm
+    # TODO: add is_anonymous_user to form
     fieldsets = (
         (None, {"fields": ("username",)},),
         (
             "Informations personnelles",
-            {"fields": ("first_name", "last_name", "email")},
+            {"fields": ("first_name", "last_name", "email",)},
         ),
         (
             "Permissions",
@@ -148,6 +149,7 @@ class UserAdmin(BaseUserAdmin):
         "is_sociallogin",
         "last_login",
         "date_joined",
+        "get__anonymous_user_token",
     )
 
     def has_add_permission(self, request):
@@ -176,6 +178,9 @@ class UserAdmin(BaseUserAdmin):
                 "last_login",
                 "date_joined",
             ]
+
+    def get__anonymous_user_token(self, obj):
+        return get_token(obj) if obj.permitauthor.is_anonymous_user else None
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "groups":

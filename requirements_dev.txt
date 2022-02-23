@@ -78,6 +78,7 @@ django==3.2.12
     #   django-otp
     #   django-phonenumber-field
     #   django-picklefield
+    #   django-sesame
     #   django-tables2
     #   django-tables2-column-shifter
     #   django-taggit
@@ -135,6 +136,8 @@ django-picklefield==3.0.1
     # via
     #   -r requirements.txt
     #   django-constance
+django-sesame[ua]==2.4
+    # via -r requirements.txt
 django-simple-history==3.0.0
     # via -r requirements.txt
 django-tables2==2.4.1
@@ -293,6 +296,10 @@ traitlets==5.1.1
     #   matplotlib-inline
 typed-ast==1.5.2
     # via black
+ua-parser==0.10.0
+    # via
+    #   -r requirements.txt
+    #   django-sesame
 uritemplate==4.1.1
     # via -r requirements.txt
 urllib3==1.26.8

@@ -32,6 +32,7 @@ from django_filters.views import FilterView
 from django_otp import user_has_device
 from django_tables2.export.views import ExportMixin
 from django_tables2.views import SingleTableMixin, SingleTableView
+from sesame.utils import get_token
 
 from . import fields, filters, forms, models, services, tables
 from .exceptions import BadPermitRequestStatus, NonProlongablePermitRequest
@@ -146,6 +147,25 @@ def check_mandatory_2FA(
     decorator = user_passes_test(
         test, login_url=login_url, redirect_field_name=redirect_field_name
     )
+
+    return decorator if (view is None) else decorator(view)
+
+
+def user_is_not_anonymous(
+    view=None, redirect_field_name="next", login_url=None, if_configured=False
+):
+    """
+    Checks if user is not anonymous in OneToOne permitauthor model
+    Only user that are not anonymous can pass this check
+    """
+
+    def test(user):
+        if user.permitauthor.is_anonymous_user:
+            return False
+        else:
+            return True
+
+    decorator = user_passes_test(test, login_url=None, redirect_field_name=None)
 
     return decorator if (view is None) else decorator(view)
 
@@ -1231,6 +1251,7 @@ def permit_request_media_download(request, property_value_id):
 
 @method_decorator(login_required, name="dispatch")
 @method_decorator(check_mandatory_2FA, name="dispatch")
+@method_decorator(user_is_not_anonymous, name="dispatch")
 class PermitRequestList(SingleTableMixin, FilterView):
     paginate_by = int(os.environ["PAGINATE_BY"])
     template_name = "permits/permit_requests_list.html"

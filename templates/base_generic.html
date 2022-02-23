@@ -53,15 +53,17 @@
           {% if user.is_authenticated %}
             <div class="collapse navbar-collapse navbar-toggle">
               <ul class="navbar-nav mr-auto">
+                {% if not user.permitauthor.is_anonymous_user %}
                 <li class="nav-item d-flex align-items-center">
                     <a href="{% url 'permits:permit_requests_list' %}" role="button">
                       <i class="fa fa-list-ul" aria-hidden="true"></i>
                       {% trans "Mes demandes" %}
                     </a>
                 </li>
+                {% endif %}
 
 
-                  {% if config.ENABLE_GEOCALENDAR %}
+                  {% if config.ENABLE_GEOCALENDAR and not user.permitauthor.is_anonymous_user %}
                     <li class="nav-item d-flex align-items-center">
                       <a href="{{ config.GEOCALENDAR_URL }}" target="_blank" rel="noreferrer" role="button">
                         <i class="fa fa-calendar aria-hidden="true"></i>
@@ -86,13 +88,16 @@
               </ul>
               <ul class="navbar-nav ml-auto">
                 <li class="nav-item d-flex align-items-center">
+                  {% if not user.permitauthor.is_anonymous_user %}
                   <div class="global-search-form-container">
                     <form  class="navbar-form navbar-right" method="get" action="{% url 'permits:permit_requests_search' %}" id="global-search-form">
                       <input data-role="search-input" placeholder="{% trans "Recherche…" %}" type="text" name="search" class="w-100 search-input form-control" autocomplete="off">
                       <div data-role="search-results" class="search-results-container"></div>
                     </form>
                   </div>
+                  {% endif %}
                 </li>
+                {% if not user.permitauthor.is_anonymous_user %}
                 <li class="nav-item d-flex align-items-center login-navbar-desktop">
                     <a class="nav-link dropdown-toggle ml-auto" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                       <i class="fa fa-user"></i>
@@ -112,7 +117,7 @@
                       <a class="dropdown-item" href="{% url 'logout' %}">{% trans "Me déconnecter" %}</a>
                   </div>
                 </li>
-
+                {% endif %}
                 <li class="nav-item d-flex align-items-center login-navbar-mobile">
                    <!-- On mobile -->
                   <div class="collapse navbar-collapse navbar-toggle" id="navbarNavDropdown">

@@ -17,6 +17,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE = os.getenv("CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE")
 
+DEFAULT_PUBLIC_USER_WITHOUT_LOGIN_INSTANCE = os.getenv(
+    "DEFAULT_PUBLIC_USER_WITHOUT_LOGIN_INSTANCE", False
+)
+
 
 SECURE_PROXY_SSL_HEADER = (
     tuple(os.getenv("SECURE_PROXY_SSL_HEADER").split(","))
@@ -157,6 +161,8 @@ MIDDLEWARE = [
 
 if ENABLE_2FA:
     MIDDLEWARE += ["django_otp.middleware.OTPMiddleware"]
+if DEFAULT_PUBLIC_USER_WITHOUT_LOGIN_INSTANCE:
+    MIDDLEWARE += ["sesame.middleware.AuthenticationMiddleware"]
 
 MIDDLEWARE += [
     "django.contrib.sites.middleware.CurrentSiteMiddleware",
@@ -300,6 +306,10 @@ AUTHENTICATION_BACKENDS = [
     # SocialAccount authentication backend with allauth
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
+
+if DEFAULT_PUBLIC_USER_WITHOUT_LOGIN_INSTANCE:
+    # TODO: configure axes not to consider sesame login as connexion attemps!
+    AUTHENTICATION_BACKENDS += ["sesame.backends.ModelBackend"]
 
 AUTH_PROVIDER_GEOMAPFISH_URL = os.getenv("AUTH_PROVIDER_GEOMAPFISH_URL", "")
 AUTH_PROVIDER_DOOTIX_URL = os.getenv("AUTH_PROVIDER_DOOTIX_URL", "")

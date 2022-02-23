@@ -285,6 +285,9 @@ class PermitAuthor(models.Model):
         ],
     )
     notify_per_email = models.BooleanField(_("Me notifier par e-mail"), default=True)
+    is_anonymous_user = models.BooleanField(
+        _("Utilisateur anonyme pour utilisation de liens django-sesame"), default=False
+    )
     user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
     history = HistoricalRecords()
 
