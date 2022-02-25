@@ -724,6 +724,7 @@ dd {
 .properties-list ul {
   list-style-type: none;
   padding: 0;
+  margin-bottom: 0;
 }
 
 .grid-container{
