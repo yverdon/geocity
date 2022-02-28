@@ -1,0 +1,14 @@
+{% extends "base_generic.html" %}
+
+{% load static %}
+{% load i18n %}
+{% load bootstrap4 %}
+{% block stylesheets%}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/permits.css' %}">
+{% endblock %}
+
+{% block content %}
+  <div id="aknowledgment-content">
+    <h1><b>{% trans "Merci pour votre contribution !" %}</b></h1>
+  </div>
+{% endblock %}

@@ -1104,7 +1104,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             "edit_point": has_geom_point,
             "edit_line": has_geom_line,
             "edit_polygon": has_geom_polygon,
-            "min_zoom": 5,
+            "min_zoom": 8,
             "wmts_capabilities_url": settings.WMTS_GETCAP,
             "wmts_layer": settings.WMTS_LAYER,
             "wmts_capabilities_url_alternative": settings.WMTS_GETCAP_ALTERNATIVE,

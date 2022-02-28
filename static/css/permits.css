@@ -353,8 +353,7 @@ h5 {
 }
 
 .container {
-  padding: 0;
-  padding-bottom: 8px;
+  padding: 0 5px 8px 5px;
 }
 
 #legal-infos {
@@ -510,6 +509,15 @@ th.actions {
 
 #history_timeline ul li:last-child:before {
   display: none;
+}
+
+#aknowledgment-content {
+  background-position: center center fixed;
+  background-size: cover;
+  min-width: 100%;
+  min-height: 500px;
+  background-image: url('../images/surveys/neighborhood.svg');
+  background-repeat: no-repeat;
 }
 
 /* /////////////////////////////////// */

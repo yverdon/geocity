@@ -72,10 +72,21 @@
         </div>
         <br>
       </div>
-      <small class="custom-file">
-        <input type="file" class="custom-file-input" accept=".kml" data-action="addKML" title="Charger des géométries (point, ligne, polygone) depuis un fichier KML">
-        <label class="custom-file-label" for="selectfile">Charger des géométries (point, ligne, polygone) depuis un fichier KML</label>
-      </small>
+      <a data-action="importKML" class="btn btn-sm btn-outline-secondary mr-1 mb-2" data-toggle="collapse" href="#import-kml-{{ id }}" role="button" aria-expanded="false" aria-controls="import-kml">
+        <i class="fa fa-map-pin"></i> Importer un KML
+      </a>
+      <div class="collapse import-kml" id="import-kml-{{ id }}">
+        <br>
+        <div class="card card-body">
+          <div class="row">
+            <small class="custom-file">
+              <input type="file" class="custom-file-input" accept=".kml" data-action="addKML" title="Charger des géométries (point, ligne, polygone) depuis un fichier KML">
+              <label class="custom-file-label" for="selectfile">Charger des géométries (point, ligne, polygone) depuis un fichier KML</label>
+            </small>
+          </div>
+        </div>
+        <br>
+      </div>
     </div>
     <hr>
   {% endif %}

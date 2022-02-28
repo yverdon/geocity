@@ -46,11 +46,11 @@
               <img src={% static "images/geocity_normal.svg" %} style="vertical-align:baseline" alt="logo" height="16"/>
           </div>
 
+          {% if user.is_authenticated and not user.permitauthor.is_anonymous_user %}
+
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-toggle" aria-controls="navbar-toggle" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
-
-          {% if user.is_authenticated %}
             <div class="collapse navbar-collapse navbar-toggle">
               <ul class="navbar-nav mr-auto">
                 {% if not user.permitauthor.is_anonymous_user %}

@@ -89,4 +89,6 @@ urlpatterns = [
     ),
     path("qgisserverproxy/", geoviews.qgisserver_proxy, name="qgisserver_proxy"),
     path("search/", views.permit_requests_search, name="permit_requests_search"),
+    path("aknowledge_anonymous_survey_submission/", views.aknowledge_anonymous_survey_submission, name="aknowledge_anonymous_survey_submission"),
+
 ]

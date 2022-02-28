@@ -1549,6 +1549,16 @@ def administrative_infos(request):
     )
 
 
+def aknowledge_anonymous_survey_submission(request):
+    """
+    Landing page for anonymous users after survey submission
+    """
+    return render(
+        request,
+        "permits/aknowledge_anonymous_survey_submission.html",
+    )
+
+
 @login_required
 def permit_requests_search(request):
     def to_json_result(result):

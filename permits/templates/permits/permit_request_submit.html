@@ -35,7 +35,7 @@
     </p>
   {% endif %}
   <p>
-    {% trans "Vous trouverez ci-dessous un récapitulatif de votre demande." %}
+    {% trans "Récapitulatif" %}
   </p>
   <form method="post">
     {% csrf_token %}
@@ -46,8 +46,13 @@
         {% if previous_step.url %}
           <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
         {% endif %}
-        <a class="btn btn-primary" href="{% url 'permits:permit_request_submit_confirmed' permit_request_id=permit_request.pk %}" class="mr-2">
-        {% trans "Envoyer" %}</a>
+        {% if request.user.permitauthor.is_anonymous_user %}
+          <a class="btn btn-primary" href="{% url 'permits:aknowledge_anonymous_survey_submission' %}" class="mr-2">
+          {% trans "Envoyer" %}</a>
+        {% else %}
+          <a class="btn btn-primary" href="{% url 'permits:permit_request_submit_confirmed' permit_request_id=permit_request.pk %}" class="mr-2">
+          {% trans "Envoyer" %}</a>
+        {% endif %}
       {% endif %}
     {% endbuttons %}
   </form>
