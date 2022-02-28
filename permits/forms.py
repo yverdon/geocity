@@ -38,6 +38,7 @@ input_type_mapping = {
     models.WorksObjectProperty.INPUT_TYPE_NUMBER: forms.FloatField,
     models.WorksObjectProperty.INPUT_TYPE_FILE: forms.FileField,
     models.WorksObjectProperty.INPUT_TYPE_ADDRESS: forms.CharField,
+    models.WorksObjectProperty.INPUT_TYPE_CADASTRE: forms.CharField,
     models.WorksObjectProperty.INPUT_TYPE_DATE: forms.DateField,
     models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE: forms.ChoiceField,
     models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE: forms.MultipleChoiceField,
@@ -77,7 +78,6 @@ class AddressWidget(forms.widgets.TextInput):
         autocomplete_options = {
             "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
             "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
-            "origins": "address",
             "zipcode_field": "zipcode",
             "city_field": "city",
             "placeholder": gettext("ex: Place Pestalozzi 2, 1400 Yverdon"),
@@ -387,7 +387,8 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
 
         extra_kwargs = {
             models.WorksObjectProperty.INPUT_TYPE_TEXT: self.get_text_field_kwargs,
-            models.WorksObjectProperty.INPUT_TYPE_ADDRESS: self.get_address_field_kwargs,
+            models.WorksObjectProperty.INPUT_TYPE_ADDRESS: self.get_location_field_kwargs,
+            models.WorksObjectProperty.INPUT_TYPE_CADASTRE: self.get_location_field_kwargs,
             models.WorksObjectProperty.INPUT_TYPE_DATE: self.get_date_field_kwargs,
             models.WorksObjectProperty.INPUT_TYPE_NUMBER: self.get_number_field_kwargs,
             models.WorksObjectProperty.INPUT_TYPE_FILE: self.get_file_field_kwargs,
@@ -439,11 +440,16 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
             ],
         }
 
-    def get_address_field_kwargs(self, prop, default_kwargs):
+    def get_location_field_kwargs(self, prop, default_kwargs):
         return {
             **default_kwargs,
             "widget": AddressWidget(
-                autocomplete_options={"single_address_field": True},
+                autocomplete_options={
+                    "single_address_field": True,
+                    "origins": ("address")
+                    if self.get_field_name() == "address"
+                    else "parcel",
+                },
                 attrs={
                     "placeholder": ("ex: " + prop.placeholder)
                     if prop.placeholder != ""
