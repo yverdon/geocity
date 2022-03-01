@@ -107,7 +107,9 @@
                       {% if ENABLE_2FA %}
                       <a class="dropdown-item" href="{% url 'two_factor:profile' %}">{% trans "Gérer la sécurité de mon compte" %}</a>
                       {% endif %}
+                      {% if not user.socialaccount_set.exists %}
                       <a class="dropdown-item" href="{% url 'password_change' %}">{% trans "Modifier mon mot de passe" %}</a>
+                      {% endif %}
                       <div class="dropdown-divider"></div>
                       <a class="dropdown-item" href="{% url 'logout' %}">{% trans "Me déconnecter" %}</a>
                   </div>
@@ -131,9 +133,11 @@
                         <a class="nav-link" href="{% url 'two_factor:profile' %}">{% trans "Gérer la sécurité de mon compte" %}</a>
                       </li>
                       {% endif %}
+                      {% if not user.socialaccount_set.exists %}
                       <li class="nav-item">
                         <a class="nav-link" href="{% url 'password_change' %}">{% trans "Modifier mon mot de passe" %}</a>
                       </li>
+                      {% endif %}
                       <div class="dropdown-divider"></div>
                       <li class="nav-item">
                         <a class="nav-link" href="{% url 'logout' %}">{% trans "Me déconnecter" %}</a>
