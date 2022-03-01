@@ -317,6 +317,48 @@ class PermitRequestAPITestCase(TestCase):
         )
         self.assertEqual(response.status_code, 403)
 
+    def test_authorized_ip_does_not_raise_exception(self):
+        # login as admin
+        self.client.login(username=self.admin_user.username, password="password")
+        # check that login admin user is allowed to get data
+        response = self.client.get(reverse("permits-list"), {})
+        self.assertEqual(response.status_code, 200)
+        # Set only localhost allowed in constance settings
+        config.IP_WHITELIST = "112.144.0.0"
+        # Fake the client ip to something not allowed
+        response = self.client.get(
+            reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0"
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_non_authorized_network_raises_exception(self):
+        # login as admin
+        self.client.login(username=self.admin_user.username, password="password")
+        # check that login admin user is allowed to get data
+        response = self.client.get(reverse("permits-list"), {})
+        self.assertEqual(response.status_code, 200)
+        # Set only localhost allowed in constance settings
+        config.NETWORK_WHITELIST = "172.16.0.0/12,192.168.0.0/16"
+        # Fake the client ip to something not allowed
+        response = self.client.get(
+            reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0"
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_authorized_network_does_not_raise_exception(self):
+        # login as admin
+        self.client.login(username=self.admin_user.username, password="password")
+        # check that login admin user is allowed to get data
+        response = self.client.get(reverse("permits-list"), {})
+        self.assertEqual(response.status_code, 200)
+        # Set only localhost allowed in constance settings
+        config.NETWORK_WHITELIST = "172.16.0.0/12,192.168.0.0/16"
+        # Fake the client ip to something not allowed
+        response = self.client.get(
+            reverse("permits-list"), {}, REMOTE_ADDR="172.19.0.0"
+        )
+        self.assertEqual(response.status_code, 200)
+
     def test_non_existent_permit_request_raises_exception(self):
         permit_requests = models.PermitRequest.objects.all().only("id")
         permit_requests_ids = [perm.id for perm in permit_requests]

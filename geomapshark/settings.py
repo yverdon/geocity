@@ -200,7 +200,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "ACTORS_STEP",
         "SUBMIT_STEP",
     ),
-    "API settings": ("IP_WHITELIST",),
+    "API settings": ("IP_WHITELIST", "NETWORK_WHITELIST",),
 }
 
 CONSTANCE_CONFIG = {
@@ -273,8 +273,13 @@ CONSTANCE_CONFIG = {
     "TITLE_COLOR": ("#000000", "Couleur du titre", str,),
     "TABLE_COLOR": ("#212529", "Couleur du texte dans les tableaux", str,),
     "IP_WHITELIST": (
-        "172.16,172.17,localhost,127.0.0.1",
-        "IP privée autorisée pour l'authentification par QGIS Server, séparées par des ','",
+        "172.16.0.1,172.17.0.1,127.0.0.1,localhost",
+        "IP  autorisées pour l'utilisation de l'API complète (/rest/permits), séparées par des ','",
+        str,
+    ),
+    "NETWORK_WHITELIST": (
+        "172.16.0.0/12,192.168.0.0/16",
+        "Réseaux  autorisés pour l'utilisation de l'API complète (/rest/permits), séparées par des ','",
         str,
     ),
 }

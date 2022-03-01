@@ -113,9 +113,8 @@ class BlockRequesterUserPermission(BasePermission):
 
     def has_permission(self, request, view):
 
-        if (
-            request.user.is_authenticated
-            and services.check_request_ip_is_in_whithelist(request)
+        if request.user.is_authenticated and services.check_request_ip_is_allowed(
+            request
         ):
             return request.user.get_all_permissions()
         else:

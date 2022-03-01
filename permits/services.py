@@ -4,6 +4,7 @@ import os
 import urllib
 from collections import defaultdict
 import socket
+import ipaddress
 
 import filetype
 from constance import config
@@ -1502,12 +1503,19 @@ def clear_session_filters(request):
     request.session["typefilter"] = []
 
 
-def check_request_ip_is_in_whithelist(request):
+def check_request_ip_is_allowed(request):
     """
     Check that the request is coming from allowed ip
     """
+    # Check for exact ip
     for whitelisted_ip in config.IP_WHITELIST.split(","):
-        if request.META["REMOTE_ADDR"].startswith(whitelisted_ip):
+        if request.META["REMOTE_ADDR"] == whitelisted_ip:
+            return True
+    # Check for network
+    for whitelisted_network in config.NETWORK_WHITELIST.split(","):
+        ip_address = ipaddress.ip_address(request.META["REMOTE_ADDR"])
+        ip_network = ipaddress.ip_network(whitelisted_network)
+        if ip_address in ip_network:
             return True
 
     return False
@@ -1517,8 +1525,9 @@ def check_request_comes_from_internal_qgisserver(request):
     """
     Check that the request is coming from inside the docker composition AND that it is an allowed ip
     """
+
     if (
-        check_request_ip_is_in_whithelist(request)
+        check_request_ip_is_allowed(request)
         and socket.gethostbyname("qgisserver") == request.META["REMOTE_ADDR"]
     ):
         return True
