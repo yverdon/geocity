@@ -109,6 +109,7 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
 class BlockRequesterUserPermission(BasePermission):
     """
     Block access to Permit Requesters (General Public)
+    Only superuser or integrators can user these enpoints
     """
 
     def has_permission(self, request, view):
@@ -116,7 +117,10 @@ class BlockRequesterUserPermission(BasePermission):
         if request.user.is_authenticated and services.check_request_ip_is_allowed(
             request
         ):
-            return request.user.get_all_permissions()
+            return (
+                request.user.permitauthor.is_integrator_admin
+                or request.user.is_superuser
+            )
         else:
             return services.check_request_comes_from_internal_qgisserver(request)
 
