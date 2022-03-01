@@ -38,7 +38,7 @@ input_type_mapping = {
     models.WorksObjectProperty.INPUT_TYPE_NUMBER: forms.FloatField,
     models.WorksObjectProperty.INPUT_TYPE_FILE: forms.FileField,
     models.WorksObjectProperty.INPUT_TYPE_ADDRESS: forms.CharField,
-    models.WorksObjectProperty.INPUT_TYPE_CADASTRE: forms.CharField,
+    models.WorksObjectProperty.INPUT_TYPE_PARCEL: forms.CharField,
     models.WorksObjectProperty.INPUT_TYPE_DATE: forms.DateField,
     models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE: forms.ChoiceField,
     models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE: forms.MultipleChoiceField,
@@ -75,6 +75,12 @@ class AddressWidget(forms.widgets.TextInput):
         )
 
     def __init__(self, attrs=None, autocomplete_options=None):
+        is_address = (
+            True
+            if autocomplete_options["origins"]
+            == models.WorksObjectProperty.INPUT_TYPE_ADDRESS
+            else False
+        )
         autocomplete_options = {
             "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
             "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
@@ -83,6 +89,7 @@ class AddressWidget(forms.widgets.TextInput):
             "placeholder": gettext("ex: Place Pestalozzi 2, 1400 Yverdon"),
             "single_contact": True,
             "single_address_field": False,
+            "is_address": is_address,
             **(autocomplete_options or {}),
         }
         super().__init__(
@@ -388,7 +395,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         extra_kwargs = {
             models.WorksObjectProperty.INPUT_TYPE_TEXT: self.get_text_field_kwargs,
             models.WorksObjectProperty.INPUT_TYPE_ADDRESS: self.get_location_field_kwargs,
-            models.WorksObjectProperty.INPUT_TYPE_CADASTRE: self.get_location_field_kwargs,
+            models.WorksObjectProperty.INPUT_TYPE_PARCEL: self.get_location_field_kwargs,
             models.WorksObjectProperty.INPUT_TYPE_DATE: self.get_date_field_kwargs,
             models.WorksObjectProperty.INPUT_TYPE_NUMBER: self.get_number_field_kwargs,
             models.WorksObjectProperty.INPUT_TYPE_FILE: self.get_file_field_kwargs,
@@ -446,9 +453,12 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
             "widget": AddressWidget(
                 autocomplete_options={
                     "single_address_field": True,
-                    "origins": ("address")
-                    if self.get_field_name() == "address"
-                    else "parcel",
+                    "origins": (
+                        models.WorksObjectProperty.INPUT_TYPE_ADDRESS
+                        if prop.input_type
+                        == models.WorksObjectProperty.INPUT_TYPE_ADDRESS
+                        else models.WorksObjectProperty.INPUT_TYPE_PARCEL
+                    ),
                 },
                 attrs={
                     "placeholder": ("ex: " + prop.placeholder)
@@ -625,7 +635,13 @@ class GenericAuthorForm(forms.ModelForm):
 
     required_css_class = "required"
     address = forms.CharField(
-        max_length=100, label=_("Adresse"), widget=AddressWidget()
+        max_length=100,
+        label=_("Adresse"),
+        widget=AddressWidget(
+            autocomplete_options={
+                "origins": models.WorksObjectProperty.INPUT_TYPE_ADDRESS
+            }
+        ),
     )
 
     zipcode = forms.IntegerField(
@@ -745,6 +761,7 @@ class PermitRequestActorForm(forms.ModelForm):
             autocomplete_options={
                 "single_address_field": False,
                 "single_contact": False,
+                "origins": models.WorksObjectProperty.INPUT_TYPE_ADDRESS,
             },
         ),
     )
@@ -1347,7 +1364,13 @@ class SocialSignupForm(SignupForm):
     required_css_class = "required"
 
     address = forms.CharField(
-        max_length=100, label=_("Adresse"), widget=AddressWidget()
+        max_length=100,
+        label=_("Adresse"),
+        widget=AddressWidget(
+            autocomplete_options={
+                "origins": models.WorksObjectProperty.INPUT_TYPE_ADDRESS
+            }
+        ),
     )
 
     zipcode = forms.IntegerField(

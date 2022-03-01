@@ -30,7 +30,7 @@ $(function () {
                 x: f.attrs.x,
                 y: f.attrs.y,
                 id: f.attrs.featureId,
-                label: f.attrs.label.replace("<b>", "").replace("</b>", ""),
+                label: f.attrs.label.replace(/ [<br]*>/g, ", ").replace(/<[^>]*>/g, ""),
                 value: f.attrs.detail,
                 origins: f.attrs.origin,
               };
@@ -45,11 +45,7 @@ $(function () {
         var dataRemoteAutocomplete = jQuery.parseJSON(
           $("#" + item.id).attr("data_remote_autocomplete")
         );
-        console.log(ui.item.origins);
-        if (ui.item.origins == "parcel") {
-          item.value = ui.item.label;
-        }
-        if (ui.item.origins == "address") {
+        if (dataRemoteAutocomplete.is_address) {
           $.ajax({
             url: dataRemoteAutocomplete.apiurl_detail + ui.item.id,
             dataType: "json",
@@ -99,6 +95,9 @@ $(function () {
               }
             },
           });
+        }
+        else {
+          item.value = ui.item.label.replace(/ *\([^)]*\) */g, "");
         }
         return false;
       },
