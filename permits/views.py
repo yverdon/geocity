@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import (
     permission_required,
     user_passes_test,
 )
+from django.contrib.auth import logout
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.files.base import ContentFile
 from django.db import transaction
@@ -1553,10 +1554,11 @@ def aknowledge_anonymous_survey_submission(request):
     """
     Landing page for anonymous users after survey submission
     """
-    return render(
-        request,
-        "permits/aknowledge_anonymous_survey_submission.html",
-    )
+
+    # Logout user once form is submitted
+    logout(request)
+
+    return render(request, "permits/aknowledge_anonymous_survey_submission.html",)
 
 
 @login_required
