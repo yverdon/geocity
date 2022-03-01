@@ -117,10 +117,11 @@ class BlockRequesterUserPermission(BasePermission):
         if request.user.is_authenticated and services.check_request_ip_is_allowed(
             request
         ):
-            return (
-                request.user.permitauthor.is_integrator_admin
-                or request.user.is_superuser
-            )
+
+            is_integrator_admin = request.user.groups.filter(
+                permitdepartment__is_integrator_admin=True
+            ).exists()
+            return is_integrator_admin or request.user.is_superuser
         else:
             return services.check_request_comes_from_internal_qgisserver(request)
 
