@@ -155,33 +155,21 @@ class PermitRequestAPITestCase(TestCase):
         self.client.login(username=validator_user.username, password="password")
         response = self.client.get(reverse("permits-list"), {})
         response_json = response.json()
-        permit_requests_all = models.PermitRequest.objects.all().only("id")
-        permit_requests = permit_requests_all.filter(
-            status=models.PermitRequest.STATUS_AWAITING_VALIDATION
-        ).only("id")
-        permit_requests_ids = [perm.id for perm in permit_requests]
-        self.assertEqual(response.status_code, 200)
-        self.assertNotEqual(permit_requests.count(), permit_requests_all.count())
-        self.assertEqual(len(response_json["features"]), permit_requests.count())
-        for i, perm in enumerate(permit_requests):
-            self.assertIn(
-                response_json["features"][i]["properties"]["permit_request_id"],
-                permit_requests_ids,
-            )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.json()["detail"],
+            "Vous n'avez pas la permission d'effectuer cette action.",
+        )
 
-    def test_api_secretaire_user(self):
+    def test_api_secretariat_user(self):
         self.client.login(username=self.secretariat_user.username, password="password")
         response = self.client.get(reverse("permits-list"), {})
         response_json = response.json()
-        permit_requests = models.PermitRequest.objects.all().only("id")
-        permit_requests_ids = [perm.id for perm in permit_requests]
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response_json["features"]), permit_requests.count())
-        for i, perm in enumerate(permit_requests):
-            self.assertIn(
-                response_json["features"][i]["properties"]["permit_request_id"],
-                permit_requests_ids,
-            )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.json()["detail"],
+            "Vous n'avez pas la permission d'effectuer cette action.",
+        )
 
     def test_api_filtering_by_status(self):
         self.client.login(username=self.admin_user.username, password="password")
@@ -255,7 +243,7 @@ class PermitRequestAPITestCase(TestCase):
             )
 
     def test_api_bad_permit_id_type_parameter_raises_exception(self):
-        self.client.login(username=self.secretariat_user.username, password="password")
+        self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(
             reverse("permits-list"), {"permit_request_id": "bad_permit_id_type"}
         )
@@ -266,7 +254,7 @@ class PermitRequestAPITestCase(TestCase):
         )
 
     def test_api_bad_works_object_type_id_type_parameter_raises_exception(self):
-        self.client.login(username=self.secretariat_user.username, password="password")
+        self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(
             reverse("permits-list"),
             {"works_object_type": "bad_works_object_type_id_type"},
@@ -278,7 +266,7 @@ class PermitRequestAPITestCase(TestCase):
         )
 
     def test_api_bad_status_type_parameter_raises_exception(self):
-        self.client.login(username=self.secretariat_user.username, password="password")
+        self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(
             reverse("permits-list"), {"status": "bad_status_type"}
         )
@@ -289,7 +277,7 @@ class PermitRequestAPITestCase(TestCase):
         )
 
     def test_api_bad_status_choice_raises_exception(self):
-        self.client.login(username=self.secretariat_user.username, password="password")
+        self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(reverse("permits-list"), {"status": 25})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
