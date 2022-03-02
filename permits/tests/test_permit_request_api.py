@@ -123,7 +123,6 @@ class PermitRequestAPITestCase(TestCase):
         config.IP_WHITELIST = "localhost,127.0.0.1"
         config.NETWORK_WHITELIST = "172.16.0.0/12,192.168.0.0/16"
 
-
     def test_api_normal_user(self):
         self.client.login(username=self.normal_user.username, password="password")
         response = self.client.get(reverse("permits-list"), {})
@@ -384,7 +383,7 @@ class PermitRequestAPITestCase(TestCase):
             qgisserver_url, headers={"Accept": "application/pdf"}, stream=True
         )
         self.assertEqual(qgisserver_response.status_code, 200)
-    
+
     def test_non_authorized_ip_raises_exception(self):
         # login as admin
         self.client.login(username=self.admin_user.username, password="password")
