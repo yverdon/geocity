@@ -1509,7 +1509,7 @@ def check_request_ip_is_allowed(request):
     """
     # Check for exact ip
     for whitelisted_ip in config.IP_WHITELIST.split(","):
-        if request.META["REMOTE_ADDR"] == whitelisted_ip:
+        if request.META["REMOTE_ADDR"] in whitelisted_ip:
             return True
     # Check for network
     for whitelisted_network in config.NETWORK_WHITELIST.split(","):
