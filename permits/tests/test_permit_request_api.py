@@ -119,6 +119,11 @@ class PermitRequestAPITestCase(TestCase):
             geom=GeometryCollection(MultiPoint(Point(0, 0), Point(1, 1))),
         )
 
+        ## IP and NEWTORK restrictions setup
+        config.IP_WHITELIST = "localhost,127.0.0.1"
+        config.NETWORK_WHITELIST = "172.16.0.0/12,192.168.0.0/16"
+
+
     def test_api_normal_user(self):
         self.client.login(username=self.normal_user.username, password="password")
         response = self.client.get(reverse("permits-list"), {})

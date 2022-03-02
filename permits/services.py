@@ -1508,15 +1508,17 @@ def check_request_ip_is_allowed(request):
     Check that the request is coming from allowed ip
     """
     # Check for exact ip
-    for whitelisted_ip in config.IP_WHITELIST.split(","):
-        if request.META["REMOTE_ADDR"] in whitelisted_ip:
-            return True
+    if config.IP_WHITELIST != "":
+        for whitelisted_ip in config.IP_WHITELIST.split(","):
+            if request.META["REMOTE_ADDR"] in whitelisted_ip:
+                return True
     # Check for network
-    for whitelisted_network in config.NETWORK_WHITELIST.split(","):
-        ip_address = ipaddress.ip_address(request.META["REMOTE_ADDR"])
-        ip_network = ipaddress.ip_network(whitelisted_network)
-        if ip_address in ip_network:
-            return True
+    if config.NETWORK_WHITELIST != "":
+        for whitelisted_network in config.NETWORK_WHITELIST.split(","):
+            ip_address = ipaddress.ip_address(request.META["REMOTE_ADDR"])
+            ip_network = ipaddress.ip_network(whitelisted_network)
+            if ip_address in ip_network:
+                return True
 
     return False
 
