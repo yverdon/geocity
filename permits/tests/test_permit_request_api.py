@@ -9,6 +9,7 @@ from django.contrib.gis.geos import (
 from django.test import TestCase
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
+from django.conf import settings
 
 from permits import models
 
@@ -16,6 +17,7 @@ from . import factories
 import urllib.parse
 import requests
 from constance import config
+from rest_framework.authtoken.models import Token
 
 
 class PermitRequestAPITestCase(TestCase):
@@ -383,6 +385,23 @@ class PermitRequestAPITestCase(TestCase):
             qgisserver_url, headers={"Accept": "application/pdf"}, stream=True
         )
         self.assertEqual(qgisserver_response.status_code, 200)
+
+    def test_api_is_accessible_with_token_authentication(self):
+        # Create token
+        token = Token.objects.create(user=self.admin_user)
+        # Set token in header
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + token.key)
+        response = self.client.get(reverse("permits-list"), {})
+        response_json = response.json()
+        permit_requests = models.PermitRequest.objects.all().only("id")
+        permit_requests_ids = [perm.id for perm in permit_requests]
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response_json["features"]), permit_requests.count())
+        for i, perm in enumerate(permit_requests):
+            self.assertIn(
+                response_json["features"][i]["properties"]["permit_request_id"],
+                permit_requests_ids,
+            )
 
     def test_non_authorized_ip_raises_exception(self):
         # login as admin
