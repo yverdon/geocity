@@ -15,6 +15,7 @@ from django.db.models import CharField, F, Prefetch, Q
 from rest_framework import viewsets
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework_gis.fields import GeometrySerializerMethodField
+from rest_framework.throttling import ScopedRateThrottle
 from django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 
 from . import geoservices, models, serializers, services
@@ -25,37 +26,6 @@ import datetime
 # ///////////////////////////////////
 # DJANGO REST API
 # ///////////////////////////////////
-
-
-class GeocityViewConfigViewSet(viewsets.ViewSet):
-    def list(self, request):
-
-        config = {
-            "meta_types": dict(
-                (str(x), y) for x, y in models.WorksType.META_TYPE_CHOICES
-            )
-        }
-
-        config["map_config"] = {
-            "wmts_capabilities": settings.WMTS_GETCAP,
-            "wmts_layer": settings.WMTS_LAYER,
-            "wmts_capabilities_alternative": settings.WMTS_GETCAP_ALTERNATIVE,
-            "wmts_layer_aternative": settings.WMTS_LAYER_ALTERNATIVE,
-        }
-
-        geojson = json.loads(
-            serialize(
-                "geojson",
-                models.PermitAdministrativeEntity.objects.all(),
-                geometry_field="geom",
-                srid=2056,
-                fields=("id", "name", "ofs_id", "link",),
-            )
-        )
-
-        config["administrative_entities"] = geojson
-
-        return JsonResponse(config, safe=False)
 
 
 class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
@@ -69,6 +39,7 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
     """
 
     serializer_class = serializers.PermitRequestGeoTimeSerializer
+    throttle_scope = "events"
 
     def get_queryset(self):
         """
@@ -138,12 +109,19 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
 class BlockRequesterUserPermission(BasePermission):
     """
     Block access to Permit Requesters (General Public)
+    Only superuser or integrators can user these enpoints
     """
 
     def has_permission(self, request, view):
 
-        if request.user.is_authenticated:
-            return request.user.get_all_permissions()
+        if request.user.is_authenticated and services.check_request_ip_is_allowed(
+            request
+        ):
+
+            is_integrator_admin = request.user.groups.filter(
+                permitdepartment__is_integrator_admin=True
+            ).exists()
+            return is_integrator_admin or request.user.is_superuser
         else:
             return services.check_request_comes_from_internal_qgisserver(request)
 
@@ -171,6 +149,7 @@ class PermitRequestViewSet(
             3.- Polygons: /rest/permits_polygon/
     """
 
+    throttle_scope = "permits"
     serializer_class = serializers.PermitRequestPrintSerializer
     permission_classes = [BlockRequesterUserPermission]
 
@@ -178,6 +157,14 @@ class PermitRequestViewSet(
     wfs3_description = "Toutes les demandes"
     wfs3_geom_lookup = "geo_time__geom"  # lookup for the geometry (on the queryset), used to determine bbox
     wfs3_srid = 2056
+
+    def get_throttles(self):
+        # Do not throttle API if request is used py print internal service
+        if services.check_request_comes_from_internal_qgisserver(self.request):
+            throttle_classes = []
+        else:
+            throttle_classes = [ScopedRateThrottle]
+        return [throttle() for throttle in throttle_classes]
 
     def get_queryset(self, geom_type=None):
         """
@@ -287,9 +274,18 @@ def permitRequestViewSetSubsetFactory(geom_type_name):
             3.- /rest/permits/?status=0
         """
 
+        throttle_scope = "permits"
         wfs3_title = f"{PermitRequestViewSet.wfs3_title} ({geom_type_name})"
         wfs3_description = f"{PermitRequestViewSet.wfs3_description} (géométries de type {geom_type_name})"
         serializer_class = Serializer
+
+        def get_throttles(self):
+            # Do not throttle API if request is used py print internal service
+            if services.check_request_comes_from_internal_qgisserver(self.request):
+                throttle_classes = []
+            else:
+                throttle_classes = [ScopedRateThrottle]
+            return [throttle() for throttle in throttle_classes]
 
         def get_queryset(self):
             # Inject the geometry filter
