@@ -274,12 +274,12 @@ CONSTANCE_CONFIG = {
     "TABLE_COLOR": ("#212529", "Couleur du texte dans les tableaux", str,),
     "IP_WHITELIST": (
         "172.16.0.1,172.17.0.1,127.0.0.1,localhost",
-        "IP  autorisées pour l'utilisation de l'API complète (/rest/permits), séparées par des ','",
+        "IP autorisées pour l'utilisation de l'API complète (/rest/permits), séparées par des ','",
         str,
     ),
     "NETWORK_WHITELIST": (
         "172.16.0.0/12,192.168.0.0/16",
-        "Réseaux  autorisés pour l'utilisation de l'API complète (/rest/permits), séparées par des ','",
+        "Réseaux  autorisés pour l'utilisation de l'API complète (/rest/permits), séparés par des ','",
         str,
     ),
 }
