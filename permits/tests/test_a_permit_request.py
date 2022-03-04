@@ -465,7 +465,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             administrative_entity=department.administrative_entity,
         )
         works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory(name="Bar object")
+        works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeFactory(
             works_type=works_type, works_object=works_object,
         )
@@ -484,7 +484,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(mail.outbox[0].to, ["secretary@geocity.ch"])
         self.assertEqual(
             mail.outbox[0].subject,
-            "La demande de compléments a été traitée (Foo type: Bar object)",
+            "La demande de compléments a été traitée (Foo type)",
         )
         self.assertIn(
             "La demande de compléments a été traitée",
@@ -506,7 +506,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             )
         ).permit_request
         works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory(name="Bar object")
+        works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeFactory(
             works_type=works_type, works_object=works_object,
         )
@@ -518,7 +518,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"permit_request_id": permit_request.pk},
             )
         )
-        emails = get_emails("Nouvelle demande (Foo type: Bar object)")
+        emails = get_emails("Nouvelle demande (Foo type)")
 
         self.assertEqual(len(emails), 1)
         self.assertEqual(emails[0].to, ["secretariat@yverdon.ch"])
@@ -2904,7 +2904,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             author=user.permitauthor,
         )
         works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory(name="Bar object")
+        works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeFactory(
             works_type=works_type, works_object=works_object,
         )
@@ -2929,7 +2929,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
         self.assertEqual(
             mail.outbox[0].subject,
-            "Votre annonce a été prise en compte et classée (Foo type: Bar object)",
+            "Votre annonce a été prise en compte et classée (Foo type)",
         )
         self.assertIn(
             "Nous vous informons que votre annonce a été prise en compte et classée.",
@@ -2957,7 +2957,7 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
 
     def test_secretary_email_and_name_are_set_for_the_administrative_entity(self):
         works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory(name="Bar object")
+        works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeFactory(
             works_type=works_type, works_object=works_object,
         )
@@ -2982,7 +2982,7 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         )
         self.assertEqual(
             mail.outbox[0].subject,
-            "Votre annonce a été prise en compte et classée (Foo type: Bar object)",
+            "Votre annonce a été prise en compte et classée (Foo type)",
         )
         self.assertIn(
             "Nous vous informons que votre annonce a été prise en compte et classée.",
@@ -2991,7 +2991,7 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
 
     def test_just_secretary_email_is_set_for_the_administrative_entity(self):
         works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory(name="Bar object")
+        works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeFactory(
             works_type=works_type, works_object=works_object,
         )
@@ -3023,7 +3023,7 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         self.assertEqual(mail.outbox[0].from_email, "<geocity_rocks@geocity.ch>")
         self.assertEqual(
             mail.outbox[0].subject,
-            "Votre annonce a été prise en compte et classée (Foo type: Bar object)",
+            "Votre annonce a été prise en compte et classée (Foo type)",
         )
         self.assertIn(
             "Nous vous informons que votre annonce a été prise en compte et classée.",
@@ -3032,7 +3032,7 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
 
     def test_no_secretary_email_is_set_for_the_administrative_entity(self):
         works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory(name="Bar object")
+        works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeFactory(
             works_type=works_type, works_object=works_object,
         )
@@ -3064,7 +3064,7 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         self.assertEqual(mail.outbox[0].from_email, "your_noreply_email")
         self.assertEqual(
             mail.outbox[0].subject,
-            "Votre annonce a été prise en compte et classée (Foo type: Bar object)",
+            "Votre annonce a été prise en compte et classée (Foo type)",
         )
         self.assertIn(
             "Nous vous informons que votre annonce a été prise en compte et classée.",
@@ -3292,7 +3292,7 @@ class PermitRequestValidationTestcase(TestCase):
         )
         validation.permit_request.administrative_entity.departments.set([department])
         works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory(name="Bar object")
+        works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeFactory(
             works_type=works_type, works_object=works_object,
         )
@@ -3324,7 +3324,7 @@ class PermitRequestValidationTestcase(TestCase):
         self.assertEqual(mail.outbox[0].to, ["secretary@geocity.ch"])
         self.assertEqual(
             mail.outbox[0].subject,
-            "Les services chargés de la validation d'une demande ont donné leur préavis (Foo type: Bar object)",
+            "Les services chargés de la validation d'une demande ont donné leur préavis (Foo type)",
         )
         self.assertIn(
             "Les services chargés de la validation d'une demande ont donné leur préavis",
@@ -3360,7 +3360,7 @@ class PermitRequestClassifyTestCase(TestCase):
             permit_request__author__user__email="user@geocity.com",
         )
         works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory(name="Bar object")
+        works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeFactory(
             works_type=works_type, works_object=works_object,
         )
@@ -3390,8 +3390,7 @@ class PermitRequestClassifyTestCase(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
         self.assertEqual(
-            mail.outbox[0].subject,
-            "Votre demande a été traitée et classée (Foo type: Bar object)",
+            mail.outbox[0].subject, "Votre demande a été traitée et classée (Foo type)",
         )
         self.assertIn(
             "Nous vous informons que votre demande a été traitée et classée.",
@@ -3410,7 +3409,7 @@ class PermitRequestClassifyTestCase(TestCase):
             permit_request__author__user__email="user@geocity.com",
         )
         works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory(name="Bar object")
+        works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeFactory(
             works_type=works_type, works_object=works_object,
         )
@@ -3440,8 +3439,7 @@ class PermitRequestClassifyTestCase(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
         self.assertEqual(
-            mail.outbox[0].subject,
-            "Votre demande a été traitée et classée (Foo type: Bar object)",
+            mail.outbox[0].subject, "Votre demande a été traitée et classée (Foo type)",
         )
         self.assertIn(
             "Nous vous informons que votre demande a été traitée et classée.",
@@ -3559,22 +3557,22 @@ class PermitRequestClassifyTestCase(TestCase):
         self.assertIsNotNone(validation.permit_request.validated_at)
 
     def test_email_to_services_is_sent_when_secretariat_classifies_permit_request(self):
-        works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object_1 = factories.WorksObjectFactory(name="Bar object")
-        works_object_2 = factories.WorksObjectFactory(name="Baz object")
+        works_type_1 = factories.WorksTypeFactory(name="Foo type")
+        works_type_2 = factories.WorksTypeFactory(name="Bar type")
+        works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeFactory(
             requires_validation_document=False,
             notify_services=True,
             services_to_notify="test-send-1@geocity.ch, test-send-2@geocity.ch, test-i-am-not-an-email,  ,\n\n\n",
-            works_type=works_type,
-            works_object=works_object_1,
+            works_type=works_type_1,
+            works_object=works_object,
         )
         wot2 = factories.WorksObjectTypeFactory(
             requires_validation_document=False,
             notify_services=True,
             services_to_notify="not-repeated-email@liip.ch, test-send-1@geocity.ch, \n, test-send-2@geocity.ch, test-i-am-not-an-email,  ,",
-            works_type=works_type,
-            works_object=works_object_2,
+            works_type=works_type_2,
+            works_object=works_object,
         )
         validation = factories.PermitRequestValidationFactory(
             permit_request__administrative_entity=self.administrative_entity,
@@ -3608,7 +3606,7 @@ class PermitRequestClassifyTestCase(TestCase):
 
         self.assertEqual(
             mail.outbox[0].subject,
-            "Votre demande a été traitée et classée (Foo type: Bar object, Foo type: Baz object)",
+            "Votre demande a été traitée et classée (Foo type, Bar type)",
         )
         self.assertIn(
             "Nous vous informons que votre demande a été traitée et classée.",
