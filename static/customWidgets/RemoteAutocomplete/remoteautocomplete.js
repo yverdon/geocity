@@ -30,9 +30,8 @@ $(function () {
                 x: f.attrs.x,
                 y: f.attrs.y,
                 id: f.attrs.featureId,
-                label: f.attrs.label.replace(/ [<br]*>/g, ", ").replace(/<[^>]*>/g, ""),
+                label: f.attrs.label.replace(/\s<b>\s*/g, ", ").replace(/\s*[<\(][^)>]*[>\)]*/g, ""),
                 value: f.attrs.detail,
-                origins: f.attrs.origin,
               };
               items.push(item);
             }
@@ -80,7 +79,6 @@ $(function () {
                   data.feature.attributes.dplz4
                 );
               }
-
               if (
                 dataRemoteAutocomplete.city_field != "" &&
                 !dataRemoteAutocomplete.single_contact
@@ -97,7 +95,7 @@ $(function () {
           });
         }
         else {
-          item.value = ui.item.label.replace(/ *\([^)]*\) */g, "");
+          item.value = ui.item.label;
         }
         return false;
       },
