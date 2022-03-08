@@ -30,7 +30,7 @@ $(function () {
                 x: f.attrs.x,
                 y: f.attrs.y,
                 id: f.attrs.featureId,
-                label: f.attrs.label.replace(/\s<b>\s*/g, ", ").replace(/\s*[<\(][^)>]*[>\)]*/g, ""),
+                label: f.attrs.label.replace(/\s\<b\>\s*/g, ", ").replace(/\s*[\<\(][^\)\>]*[\)\>]*/g, ""),
                 value: f.attrs.detail,
               };
               items.push(item);
