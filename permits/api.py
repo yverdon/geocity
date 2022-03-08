@@ -102,6 +102,27 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 # //////////////////////////////////
+# CURRENT USER ENDPOINT
+# //////////////////////////////////
+
+
+class CurrentUserViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Current user endpoint Usage:
+        /rest/current_user/     shows current user, is empty if logged out
+    """
+
+    serializer_class = serializers.CurrentUserSerializer
+
+    # Returns the logged user, if there's any
+    def get_queryset(self):
+        qs = None
+        if self.request.user:
+            qs = User.objects.filter(Q(username=self.request.user))
+        return qs
+
+
+# //////////////////////////////////
 # PERMIT REQUEST ENDPOINT
 # //////////////////////////////////
 
