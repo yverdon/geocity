@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
-from . import geoservices, models, api_services
+from . import geoservices, models, services_api_drf
 
 
 class PermitAdministrativeEntitySerializer(serializers.ModelSerializer):
@@ -66,20 +66,20 @@ class PermitRequestSerializer(serializers.ModelSerializer):
 
 class WotPropertiesValuesSerializer(serializers.RelatedField):
     def to_representation(self, value):
-        wot_properties = api_services.get_wot_properties(value)
+        wot_properties = services_api_drf.get_wot_properties(value)
         return wot_properties
 
 
 class AmendPropertiesValuesSerializer(serializers.RelatedField):
     def to_representation(self, value):
-        amend_properties = api_services.get_amend_properties(value)
+        amend_properties = services_api_drf.get_amend_properties(value)
         return amend_properties
 
 
 class PropertiesValuesSerializer(serializers.RelatedField):
     def to_representation(self, value):
-        wot_properties = api_services.get_wot_properties(value)
-        amend_properties = api_services.get_amend_properties(value)
+        wot_properties = services_api_drf.get_wot_properties(value)
+        amend_properties = services_api_drf.get_amend_properties(value)
 
         wot_and_amend_properties = {
             "request_properties": wot_properties,
