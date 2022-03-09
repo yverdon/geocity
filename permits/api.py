@@ -239,6 +239,57 @@ class PermitRequestViewSet(
         return qs
 
 
+class PermitRequestDetailsViewSet(
+    WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelViewSet
+):
+    """
+    Permit request details endpoint Usage:
+        1.- /rest/permits_details/?permit_request_id=1
+    """
+
+    throttle_scope = "permits"
+    # serializer_class = serializers.PermitRequestPrintSerializer
+    serializer_class = serializers.PermitRequestDetailsSerializer
+    permission_classes = [BlockRequesterUserPermission]
+
+    def get_queryset(self, geom_type=None):
+        """
+        This view should return a list of permits for which the logged user has
+        view permissions
+        """
+        user = self.request.user
+        filters_serializer = serializers.PermitRequestFiltersSerializer(
+            data={
+                "permit_request_id": self.request.query_params.get("permit_request_id"),
+            }
+        )
+        filters_serializer.is_valid(raise_exception=True)
+        filters = filters_serializer.validated_data
+
+        base_filter = Q()
+
+        if filters["permit_request_id"]:
+            base_filter &= Q(pk=filters["permit_request_id"])
+
+        request_comes_from_internal_qgisserver = services.check_request_comes_from_internal_qgisserver(
+            self.request
+        )
+
+        qs = models.PermitRequest.objects.filter(base_filter).filter(
+            Q(
+                id__in=services.get_permit_requests_list_for_user(
+                    user,
+                    request_comes_from_internal_qgisserver=request_comes_from_internal_qgisserver,
+                )
+            )
+            | Q(is_public=True)
+        )
+        if request_comes_from_internal_qgisserver:
+            qs = qs[: config.MAX_FEATURE_NUMBER_FOR_QGISSERVER]
+
+        return qs
+
+
 def permitRequestViewSetSubsetFactory(geom_type_name):
     """Returns a subclass of PermitRequestViewSet with a specific multi-geometry instead
     of the bounding box"""
