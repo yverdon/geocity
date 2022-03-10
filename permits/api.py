@@ -18,7 +18,7 @@ from rest_framework_gis.fields import GeometrySerializerMethodField
 from rest_framework.throttling import ScopedRateThrottle
 from django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 
-from . import geoservices, models, serializers, services
+from . import geoservices, models, serializers, services, services_authentication
 from constance import config
 import datetime
 
@@ -87,7 +87,7 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
                 Q(
                     permit_request__in=services.get_permit_requests_list_for_user(
                         self.request.user,
-                        request_comes_from_internal_qgisserver=services.check_request_comes_from_internal_qgisserver(
+                        request_comes_from_internal_qgisserver=services_authentication.check_request_comes_from_internal_qgisserver(
                             self.request
                         ),
                     )
@@ -114,8 +114,9 @@ class BlockRequesterUserPermission(BasePermission):
 
     def has_permission(self, request, view):
 
-        if request.user.is_authenticated and services.check_request_ip_is_allowed(
-            request
+        if (
+            request.user.is_authenticated
+            and services_authentication.check_request_ip_is_allowed(request)
         ):
 
             is_integrator_admin = request.user.groups.filter(
@@ -123,7 +124,9 @@ class BlockRequesterUserPermission(BasePermission):
             ).exists()
             return is_integrator_admin or request.user.is_superuser
         else:
-            return services.check_request_comes_from_internal_qgisserver(request)
+            return services_authentication.check_request_comes_from_internal_qgisserver(
+                request
+            )
 
 
 class PermitRequestViewSet(
@@ -160,7 +163,9 @@ class PermitRequestViewSet(
 
     def get_throttles(self):
         # Do not throttle API if request is used py print internal service
-        if services.check_request_comes_from_internal_qgisserver(self.request):
+        if services_authentication.check_request_comes_from_internal_qgisserver(
+            self.request
+        ):
             throttle_classes = []
         else:
             throttle_classes = [ScopedRateThrottle]
@@ -212,7 +217,7 @@ class PermitRequestViewSet(
             "works_object_types",
             queryset=models.WorksObjectType.objects.select_related("works_type"),
         )
-        request_comes_from_internal_qgisserver = services.check_request_comes_from_internal_qgisserver(
+        request_comes_from_internal_qgisserver = services_authentication.check_request_comes_from_internal_qgisserver(
             self.request
         )
 
@@ -281,7 +286,9 @@ def permitRequestViewSetSubsetFactory(geom_type_name):
 
         def get_throttles(self):
             # Do not throttle API if request is used py print internal service
-            if services.check_request_comes_from_internal_qgisserver(self.request):
+            if services_authentication.check_request_comes_from_internal_qgisserver(
+                self.request
+            ):
                 throttle_classes = []
             else:
                 throttle_classes = [ScopedRateThrottle]
