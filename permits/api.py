@@ -109,7 +109,7 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
 class BlockRequesterUserPermission(BasePermission):
     """
     Block access to Permit Requesters (General Public)
-    Only superuser or integrators can user these enpoints
+    Only superuser or integrators can use these endpoints
     """
 
     def has_permission(self, request, view):
