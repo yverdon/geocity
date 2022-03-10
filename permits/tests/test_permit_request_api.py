@@ -131,7 +131,7 @@ class PermitRequestAPITestCase(TestCase):
         response_json = response.json()
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            response.json()["detail"],
+            response_json["detail"],
             "Vous n'avez pas la permission d'effectuer cette action.",
         )
 
@@ -163,7 +163,7 @@ class PermitRequestAPITestCase(TestCase):
         response_json = response.json()
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            response.json()["detail"],
+            response_json["detail"],
             "Vous n'avez pas la permission d'effectuer cette action.",
         )
 
@@ -173,7 +173,7 @@ class PermitRequestAPITestCase(TestCase):
         response_json = response.json()
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            response.json()["detail"],
+            response_json["detail"],
             "Vous n'avez pas la permission d'effectuer cette action.",
         )
 
