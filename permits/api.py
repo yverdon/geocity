@@ -117,13 +117,25 @@ class BlockRequesterUserPermission(BasePermission):
         if request.user.is_authenticated and services.check_request_ip_is_allowed(
             request
         ):
-
             is_integrator_admin = request.user.groups.filter(
                 permitdepartment__is_integrator_admin=True
             ).exists()
             return is_integrator_admin or request.user.is_superuser
         else:
             return services.check_request_comes_from_internal_qgisserver(request)
+
+
+class BlockRequesterUserLoggedOnToken(BasePermission):
+    """
+    Block access to any user using a token instead of credentials
+    """
+
+    def has_permission(self, request, view):
+
+        if request.session._SessionBase__session_key:
+            return True
+        else:
+            return False
 
 
 class PermitRequestViewSet(
@@ -250,7 +262,7 @@ class PermitRequestDetailsViewSet(
     throttle_scope = "permits"
     # serializer_class = serializers.PermitRequestPrintSerializer
     serializer_class = serializers.PermitRequestDetailsSerializer
-    permission_classes = [BlockRequesterUserPermission]
+    permission_classes = [BlockRequesterUserLoggedOnToken]
 
     def get_queryset(self, geom_type=None):
         """

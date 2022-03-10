@@ -131,7 +131,7 @@ class PermitRequestAPITestCase(TestCase):
         response_json = response.json()
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            response.json()["detail"],
+            response_json["detail"],
             "Vous n'avez pas la permission d'effectuer cette action.",
         )
 
@@ -163,7 +163,7 @@ class PermitRequestAPITestCase(TestCase):
         response_json = response.json()
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            response.json()["detail"],
+            response_json["detail"],
             "Vous n'avez pas la permission d'effectuer cette action.",
         )
 
@@ -173,7 +173,7 @@ class PermitRequestAPITestCase(TestCase):
         response_json = response.json()
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            response.json()["detail"],
+            response_json["detail"],
             "Vous n'avez pas la permission d'effectuer cette action.",
         )
 
@@ -402,6 +402,19 @@ class PermitRequestAPITestCase(TestCase):
                 response_json["features"][i]["properties"]["permit_request_id"],
                 permit_requests_ids,
             )
+
+    def test_api_permits_details_is_accessible_with_credetials(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        response = self.client.get(reverse("permits_details-list"),)
+        self.assertEqual(response.status_code, 200)
+
+    def test_api_permits_details_is_not_accessible_with_token_authentication(self):
+        # Create token
+        token = Token.objects.create(user=self.admin_user)
+        # Set token in header
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + token.key)
+        response = self.client.get(reverse("permits_details-list"),)
+        self.assertEqual(response.status_code, 403)
 
     def test_non_authorized_ip_raises_exception(self):
         # login as admin
