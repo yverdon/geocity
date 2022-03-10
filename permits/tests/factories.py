@@ -31,6 +31,7 @@ class UserFactory(factory.django.DjangoModelFactory):
     username = factory.Faker("user_name")
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")
+    email = factory.Faker("email")
     actor = factory.RelatedFactory(PermitAuthorFactory, "user")
     password = "password"
 

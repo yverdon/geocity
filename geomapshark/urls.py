@@ -31,6 +31,7 @@ if settings.ENABLE_2FA:
 router = routers.DefaultRouter()
 router.register(r"events", api.PermitRequestGeoTimeViewSet, "events")
 router.register(r"permits", api.PermitRequestViewSet, "permits")
+router.register(r"current_user", api.CurrentUserViewSet, "current_user")
 router.register(r"permits_point", api.PermitRequestPointViewSet, "permit_point")
 router.register(r"permits_line", api.PermitRequestLineViewSet, "permit_line")
 router.register(r"permits_poly", api.PermitRequestPolyViewSet, "permit_poly")
