@@ -478,7 +478,7 @@ class PermitRequestAPITestCase(TestCase):
         response = self.client.get(
             reverse("search-list"), {"search": "InexistantStringReturningNoResult"}
         )
-        
+
     def test_current_user_returns_correct_username_and_email(self):
         self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(reverse("current_user-list"), {})
