@@ -304,6 +304,7 @@ class SearchViewSet(viewsets.ReadOnlyModelViewSet):
         Replace the number after limit to changes the number of elements to show
     """
 
+    throttle_scope = "search"
     serializer_class = serializers.SearchSerializer
 
     def get_queryset(self):

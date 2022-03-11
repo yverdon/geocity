@@ -449,6 +449,8 @@ REST_FRAMEWORK = {
         "permits": os.getenv("DRF_THROTTLE_RATE_PERMITS_API"),
         # Limited pulic API used mainly by Geocalendar front app
         "events": os.getenv("DRF_THROTTLE_RATE_EVENTS_API"),
+        # Full API for search
+        "search": os.getenv("DRF_THROTTLE_RATE_SEARCH_API"),
     },
 }
 # Allow TokenAuthentication to the API.
