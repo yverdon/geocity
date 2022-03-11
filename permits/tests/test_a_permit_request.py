@@ -3,6 +3,7 @@ import datetime
 import re
 import urllib.parse
 import uuid
+import PIL
 from datetime import date
 
 from django.conf import settings
@@ -218,6 +219,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
 
     def test_documents_step_filetype_allows_pdf(self):
+        PIL.Image.MAX_IMAGE_PIXELS = 933120000
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         factories.WorksObjectTypeChoiceFactory.create_batch(
             3, permit_request=permit_request
