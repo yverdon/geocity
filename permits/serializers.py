@@ -10,7 +10,8 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
-from . import geoservices, models
+from . import geoservices, models, search
+
 
 
 class PermitAdministrativeEntitySerializer(serializers.ModelSerializer):
@@ -440,3 +441,9 @@ class PermitRequestFiltersSerializer(serializers.Serializer):
         ("lines", "points", "polygons"), default=None, allow_null=True
     )
     permit_request_id = serializers.IntegerField(default=None, allow_null=True)
+
+
+class SearchSerializer(serializers.Serializer):
+    def to_representation(self, value):
+        print(value)
+        return search.search_result_to_json(value)

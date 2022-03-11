@@ -34,6 +34,8 @@ router.register(r"permits", api.PermitRequestViewSet, "permits")
 router.register(r"permits_point", api.PermitRequestPointViewSet, "permit_point")
 router.register(r"permits_line", api.PermitRequestLineViewSet, "permit_line")
 router.register(r"permits_poly", api.PermitRequestPolyViewSet, "permit_poly")
+router.register(r"search", api.SearchViewSet, "search")
+
 
 # Django-configuration
 urlpatterns = [

@@ -18,7 +18,7 @@ from rest_framework_gis.fields import GeometrySerializerMethodField
 from rest_framework.throttling import ScopedRateThrottle
 from django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 
-from . import geoservices, models, serializers, services
+from . import geoservices, models, serializers, services, search
 from constance import config
 import datetime
 
@@ -292,6 +292,34 @@ def permitRequestViewSetSubsetFactory(geom_type_name):
             return super().get_queryset(geom_type=geom_type_name)
 
     return ViewSet
+
+
+class SearchViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Search endpoint Usage:
+        1.- /rest/search/?search=my_search
+        2.- /rest/search/?search=my_search&limit=10
+        Replace "my_search" by the text/words you want to find
+        By default only 5 elements are shown
+        Replace the number after limit to changes the number of elements to show
+    """
+
+    serializer_class = serializers.SearchSerializer
+
+    def get_queryset(self):
+        terms = self.request.query_params.get("search")
+        limit_params = self.request.query_params.get("limit")
+
+        # If a digit is given in query params, take this value casted to int, if not take 5 as default limit
+        limit = int(limit_params) if limit_params and limit_params.isdigit() else 5
+        if terms:
+            permit_requests = services.get_permit_requests_list_for_user(self.request.user)
+            results = search.search_permit_requests(
+                search_str=terms, permit_requests_qs=permit_requests, limit=limit
+            )
+            return results
+        else:
+            return None
 
 
 PermitRequestPointViewSet = permitRequestViewSetSubsetFactory("points")

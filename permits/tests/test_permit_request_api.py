@@ -463,4 +463,19 @@ class PermitRequestAPITestCase(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    def test_search_api_found(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        author_permit_request = models.PermitRequest.objects.get(pk=1).author
+        response = self.client.get(reverse("search-list"), {"search": author_permit_request})
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertNotEqual(response_json, [])
+
+    def test_search_api_nothing_found(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        response = self.client.get(reverse("search-list"), {"search": "InexistantStringReturningNoResult"})
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response_json, [])
+
     # TODO: test also the permits:permit_request_print route

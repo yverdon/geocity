@@ -24,6 +24,7 @@ from django.db.models import (
 from django.db.models.functions import Cast, Concat, Greatest
 from django.db.models.lookups import PostgresOperatorLookup
 from django.utils.translation import ugettext_lazy as _
+from django.urls import reverse
 
 from . import models
 
@@ -440,3 +441,25 @@ def search_permit_requests(search_str, limit, permit_requests_qs):
             reverse=True,
         )
     )
+
+
+def search_result_to_json(result):
+    return {
+        "permitRequest": {
+            "id": result.permit_request_id,
+            "url": reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": result.permit_request_id,},
+            ),
+            "author": result.author_name,
+            "status": result.permit_request_status,
+            "createdAt": result.permit_request_created_at.strftime("%d.%m.%Y"),
+        },
+        "match": {
+            "fieldLabel": result.field_label,
+            "fieldValue": result.field_value,
+            "score": result.score,
+            "type": result.match_type.value,
+            "typeLabel": match_type_label(result.match_type),
+        },
+    }
