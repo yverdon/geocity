@@ -18,7 +18,14 @@ from rest_framework_gis.fields import GeometrySerializerMethodField
 from rest_framework.throttling import ScopedRateThrottle
 from django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 
-from . import geoservices, models, serializers, services, services_authentication
+from . import (
+    geoservices,
+    models,
+    serializers,
+    services,
+    services_authentication,
+    search,
+)
 from constance import config
 import datetime
 
