@@ -1540,4 +1540,6 @@ def permit_requests_search(request):
     else:
         results = []
 
-    return JsonResponse({"results": [search_result_to_json(result) for result in results]})
+    return JsonResponse(
+        {"results": [search_result_to_json(result) for result in results]}
+    )

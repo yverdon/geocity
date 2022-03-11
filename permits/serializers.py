@@ -13,7 +13,6 @@ from rest_framework_gis import serializers as gis_serializers
 from . import geoservices, models, search
 
 
-
 class PermitAdministrativeEntitySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.PermitAdministrativeEntity
