@@ -131,7 +131,7 @@ class PermitRequestAPITestCase(TestCase):
         response_json = response.json()
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            response.json()["detail"],
+            response_json["detail"],
             "Vous n'avez pas la permission d'effectuer cette action.",
         )
 
@@ -163,7 +163,7 @@ class PermitRequestAPITestCase(TestCase):
         response_json = response.json()
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            response.json()["detail"],
+            response_json["detail"],
             "Vous n'avez pas la permission d'effectuer cette action.",
         )
 
@@ -173,7 +173,7 @@ class PermitRequestAPITestCase(TestCase):
         response_json = response.json()
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            response.json()["detail"],
+            response_json["detail"],
             "Vous n'avez pas la permission d'effectuer cette action.",
         )
 
@@ -478,6 +478,19 @@ class PermitRequestAPITestCase(TestCase):
         response = self.client.get(
             reverse("search-list"), {"search": "InexistantStringReturningNoResult"}
         )
+        
+    def test_current_user_returns_correct_username_and_email(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        response = self.client.get(reverse("current_user-list"), {})
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response_json[0],
+            {"username": self.admin_user.username, "email": self.admin_user.email,},
+        )
+
+    def test_not_logged_returns_nothing_on_current_user(self):
+        response = self.client.get(reverse("current_user-list"), {})
         response_json = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response_json, [])

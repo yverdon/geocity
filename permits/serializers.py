@@ -154,6 +154,15 @@ class PermitAuthorSerializer(serializers.ModelSerializer):
         )
 
 
+class CurrentUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.User
+        fields = (
+            "username",
+            "email",
+        )
+
+
 class PermitRequestValidationSerializer(serializers.Serializer):
     def to_representation(self, value):
         validations = models.PermitRequestValidation.objects.filter(
