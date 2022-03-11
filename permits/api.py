@@ -260,7 +260,7 @@ class PermitRequestDetailsViewSet(
         1.- /rest/permits_details/?permit_request_id=1
     """
 
-    throttle_scope = "permits"
+    throttle_scope = "permits_details"
     # serializer_class = serializers.PermitRequestPrintSerializer
     serializer_class = serializers.PermitRequestDetailsSerializer
     permission_classes = [BlockRequesterUserLoggedOnToken]
