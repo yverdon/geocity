@@ -465,7 +465,7 @@ class PermitRequestAPITestCase(TestCase):
 
     def test_search_api_found(self):
         self.client.login(username=self.admin_user.username, password="password")
-        author_permit_request = models.PermitRequest.objects.get(pk=1).author
+        author_permit_request = models.PermitRequest.objects.first().author
         response = self.client.get(
             reverse("search-list"), {"search": author_permit_request}
         )

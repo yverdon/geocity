@@ -453,5 +453,4 @@ class PermitRequestFiltersSerializer(serializers.Serializer):
 
 class SearchSerializer(serializers.Serializer):
     def to_representation(self, value):
-        print(value)
         return search.search_result_to_json(value)
