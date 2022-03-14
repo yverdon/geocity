@@ -344,10 +344,7 @@ class SearchViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         terms = self.request.query_params.get("search")
-        limit_params = self.request.query_params.get("limit")
-
-        # If a digit is given in query params, take this value casted to int, if not take 5 as default limit
-        limit = int(limit_params) if limit_params and limit_params.isdigit() else 5
+        limit = self.request.query_params.get("limit", 5)
         if terms:
             permit_requests = services.get_permit_requests_list_for_user(
                 self.request.user
