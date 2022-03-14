@@ -403,7 +403,7 @@ class PermitRequestAPITestCase(TestCase):
                 permit_requests_ids,
             )
 
-    def test_api_permits_details_is_accessible_with_credetials(self):
+    def test_api_permits_details_is_accessible_with_credentials(self):
         self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(reverse("permits_details-list"),)
         self.assertEqual(response.status_code, 200)
