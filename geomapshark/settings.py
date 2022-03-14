@@ -447,6 +447,8 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         # Full API for permits
         "permits": os.getenv("DRF_THROTTLE_RATE_PERMITS_API"),
+        # Full API for permits_details
+        "permits_details": os.getenv("DRF_THROTTLE_RATE_PERMITS_DETAILS_API"),
         # Limited pulic API used mainly by Geocalendar front app
         "events": os.getenv("DRF_THROTTLE_RATE_EVENTS_API"),
     },

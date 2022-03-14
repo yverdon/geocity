@@ -1501,3 +1501,94 @@ def store_tags_in_session(request):
 def clear_session_filters(request):
     request.session["entityfilter"] = []
     request.session["typefilter"] = []
+
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(",")[0]
+    else:
+        ip = request.META.get("REMOTE_ADDR")
+    return ip
+
+
+def check_request_ip_is_allowed(request):
+    """
+    Check that the request is coming from allowed ip
+    """
+    # Check for exact ip
+    client_ip = get_client_ip(request)
+    if config.IP_WHITELIST != "":
+        for whitelisted_ip in config.IP_WHITELIST.split(","):
+            if client_ip in whitelisted_ip:
+                return True
+    # Check for network
+    if config.NETWORK_WHITELIST != "":
+        for whitelisted_network in config.NETWORK_WHITELIST.split(","):
+            ip_address = ipaddress.ip_address(client_ip)
+            ip_network = ipaddress.ip_network(whitelisted_network)
+            if ip_address in ip_network:
+                return True
+
+    return False
+
+
+def check_request_comes_from_internal_qgisserver(request):
+    """
+    Check that the request is coming from inside the docker composition AND that it is an allowed ip
+    """
+
+    if (
+        check_request_ip_is_allowed(request)
+        and socket.gethostbyname("qgisserver") == request.META["REMOTE_ADDR"]
+    ):
+        return True
+    return False
+
+
+def get_wot_properties(value):
+    obj = value.all()
+    wot_props = obj.values(
+        "properties__property__name",
+        "properties__value__val",
+        "works_object_type_id",
+        "works_object_type__works_object__name",
+        "works_object_type__works_type__name",
+    )
+    wot_properties = {}
+
+    if wot_props:
+        for prop in wot_props:
+            wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+            wot_properties[wot] = {
+                prop_i["properties__property__name"]: prop_i["properties__value__val"]
+                for prop_i in wot_props
+                if prop_i["works_object_type_id"] == prop["works_object_type_id"]
+                and prop_i["properties__property__name"]
+            }
+    return wot_properties
+
+
+def get_amend_properties(value):
+    obj = value.all()
+    amend_props = obj.values(
+        "amend_properties__property__name",
+        "amend_properties__value",
+        "works_object_type_id",
+        "works_object_type__works_object__name",
+        "works_object_type__works_type__name",
+    )
+    amend_properties = {}
+
+    for prop in amend_props:
+        amends = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+        amend_properties[amends] = {
+            prop_i["amend_properties__property__name"]: prop_i[
+                "amend_properties__value"
+            ]
+            for prop_i in amend_props
+            if prop_i["works_object_type_id"] == prop["works_object_type_id"]
+            and prop_i["amend_properties__property__name"]
+        }
+
+    return amend_properties
