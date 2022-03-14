@@ -152,7 +152,7 @@ class BlockRequesterUserPermission(BasePermission):
 class BlockRequesterUserLoggedOnToken(BasePermission):
     """
     Block access to any user using a token instead of credentials
-    2FA is mandatory, without it the user won't be able to connect
+    If 2FA is mandatory for one of user's group, it will be mandatory
     """
 
     def has_permission(self, request, view):
