@@ -11,6 +11,7 @@ from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
 from . import geoservices, models, search
+from . import geoservices, models, services, search
 
 
 class PermitAdministrativeEntitySerializer(serializers.ModelSerializer):
@@ -64,48 +65,22 @@ class PermitRequestSerializer(serializers.ModelSerializer):
         )
 
 
+class WotPropertiesValuesSerializer(serializers.RelatedField):
+    def to_representation(self, value):
+        wot_properties = services.get_wot_properties(value)
+        return wot_properties
+
+
+class AmendPropertiesValuesSerializer(serializers.RelatedField):
+    def to_representation(self, value):
+        amend_properties = services.get_amend_properties(value)
+        return amend_properties
+
+
 class PropertiesValuesSerializer(serializers.RelatedField):
     def to_representation(self, value):
-        obj = value.all()
-        wot_props = obj.values(
-            "properties__property__name",
-            "properties__value__val",
-            "works_object_type_id",
-            "works_object_type__works_object__name",
-            "works_object_type__works_type__name",
-        )
-        amend_props = obj.values(
-            "amend_properties__property__name",
-            "amend_properties__value",
-            "works_object_type_id",
-            "works_object_type__works_object__name",
-            "works_object_type__works_type__name",
-        )
-        wot_properties = {}
-        amend_properties = {}
-
-        if wot_props:
-            for prop in wot_props:
-                wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
-                wot_properties[wot] = {
-                    prop_i["properties__property__name"]: prop_i[
-                        "properties__value__val"
-                    ]
-                    for prop_i in wot_props
-                    if prop_i["works_object_type_id"] == prop["works_object_type_id"]
-                    and prop_i["properties__property__name"]
-                }
-
-        for prop in amend_props:
-            amends = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
-            amend_properties[amends] = {
-                prop_i["amend_properties__property__name"]: prop_i[
-                    "amend_properties__value"
-                ]
-                for prop_i in amend_props
-                if prop_i["works_object_type_id"] == prop["works_object_type_id"]
-                and prop_i["amend_properties__property__name"]
-            }
+        wot_properties = services.get_wot_properties(value)
+        amend_properties = services.get_amend_properties(value)
 
         wot_and_amend_properties = {
             "request_properties": wot_properties,
@@ -438,6 +413,19 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
                 rep["properties"][field] = value
             del rep["properties"][field_to_flatten]
         return rep
+
+
+class PermitRequestDetailsSerializer(serializers.ModelSerializer):
+    wot_properties = WotPropertiesValuesSerializer(
+        source="worksobjecttypechoice_set", read_only=True
+    )
+
+    class Meta:
+        model = models.PermitRequest
+        fields = (
+            "id",
+            "wot_properties",
+        )
 
 
 class PermitRequestFiltersSerializer(serializers.Serializer):

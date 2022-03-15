@@ -137,7 +137,7 @@ class CurrentUserViewSet(viewsets.ReadOnlyModelViewSet):
 class BlockRequesterUserPermission(BasePermission):
     """
     Block access to Permit Requesters (General Public)
-    Only superuser or integrators can user these enpoints
+    Only superuser or integrators can use these endpoints
     """
 
     def has_permission(self, request, view):
@@ -146,7 +146,6 @@ class BlockRequesterUserPermission(BasePermission):
             request.user.is_authenticated
             and services_authentication.check_request_ip_is_allowed(request)
         ):
-
             is_integrator_admin = request.user.groups.filter(
                 permitdepartment__is_integrator_admin=True
             ).exists()
@@ -155,6 +154,20 @@ class BlockRequesterUserPermission(BasePermission):
             return services_authentication.check_request_comes_from_internal_qgisserver(
                 request
             )
+
+
+class BlockRequesterUserLoggedOnToken(BasePermission):
+    """
+    Block access to any user using a token instead of credentials
+    If 2FA is mandatory for one of user's group, it will be mandatory
+    """
+
+    def has_permission(self, request, view):
+
+        if request.session._SessionBase__session_key:
+            return True
+        else:
+            return False
 
 
 class PermitRequestViewSet(
@@ -265,6 +278,56 @@ class PermitRequestViewSet(
             .prefetch_related("worksobjecttypechoice_set__properties__property")
             .prefetch_related("worksobjecttypechoice_set__amend_properties__property")
             .select_related("administrative_entity")
+        )
+        if request_comes_from_internal_qgisserver:
+            qs = qs[: config.MAX_FEATURE_NUMBER_FOR_QGISSERVER]
+
+        return qs
+
+
+class PermitRequestDetailsViewSet(
+    WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelViewSet
+):
+    """
+    Permit request details endpoint Usage:
+        1.- /rest/permits_details/?permit_request_id=1
+    """
+
+    throttle_scope = "permits_details"
+    serializer_class = serializers.PermitRequestDetailsSerializer
+    permission_classes = [BlockRequesterUserLoggedOnToken]
+
+    def get_queryset(self, geom_type=None):
+        """
+        This view should return a list of permits for which the logged user has
+        view permissions
+        """
+        user = self.request.user
+        filters_serializer = serializers.PermitRequestFiltersSerializer(
+            data={
+                "permit_request_id": self.request.query_params.get("permit_request_id"),
+            }
+        )
+        filters_serializer.is_valid(raise_exception=True)
+        filters = filters_serializer.validated_data
+
+        base_filter = Q()
+
+        if filters["permit_request_id"]:
+            base_filter &= Q(pk=filters["permit_request_id"])
+
+        request_comes_from_internal_qgisserver = services.check_request_comes_from_internal_qgisserver(
+            self.request
+        )
+
+        qs = models.PermitRequest.objects.filter(base_filter).filter(
+            Q(
+                id__in=services.get_permit_requests_list_for_user(
+                    user,
+                    request_comes_from_internal_qgisserver=request_comes_from_internal_qgisserver,
+                )
+            )
+            | Q(is_public=True)
         )
         if request_comes_from_internal_qgisserver:
             qs = qs[: config.MAX_FEATURE_NUMBER_FOR_QGISSERVER]
