@@ -477,7 +477,46 @@ class PermitRequestAPITestCase(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-    def test_current_user_returns_user_informations(self):
+    def test_search_api_found(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        author_permit_request = models.PermitRequest.objects.first().author
+        response = self.client.get(
+            reverse("search-list"), {"search": author_permit_request}
+        )
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertNotEqual(response_json, [])
+
+    def test_search_api_nothing_found_for_not_logged(self):
+        author_permit_request = models.PermitRequest.objects.first().author
+        response = self.client.get(
+            reverse("search-list"), {"search": author_permit_request}
+        )
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response_json, [])
+
+    def test_search_api_nothing_found_for_not_authorized(self):
+        user_wo_permit_request = factories.UserFactory()
+        self.client.login(username=user_wo_permit_request.username, password="password")
+        author_permit_request = models.PermitRequest.objects.first().author
+        response = self.client.get(
+            reverse("search-list"), {"search": author_permit_request}
+        )
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response_json, [])
+
+    def test_search_api_nothing_found_for_wrong_string(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        response = self.client.get(
+            reverse("search-list"), {"search": "InexistantStringReturningNoResult"}
+        )
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response_json, [])
+
+    def def test_current_user_returns_user_informations(self):
         self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(reverse("current_user-list"), {})
         response_json = response.json()
