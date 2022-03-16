@@ -477,7 +477,7 @@ class PermitRequestAPITestCase(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-    def test_current_user_returns_users_informations(self):
+    def test_current_user_returns_user_informations(self):
         self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(reverse("current_user-list"), {})
         response_json = response.json()
