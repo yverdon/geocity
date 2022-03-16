@@ -9,6 +9,8 @@ from django.utils.translation import gettext as _
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
+from datetime import timedelta
+from geomapshark import settings
 
 from . import geoservices, models, search
 from . import geoservices, models, services, search
@@ -129,13 +131,24 @@ class PermitAuthorSerializer(serializers.ModelSerializer):
         )
 
 
-class CurrentUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.User
-        fields = (
-            "username",
-            "email",
-        )
+class CurrentUserSerializer(serializers.Serializer):
+    def to_representation(self, value):
+        if value == "F":
+            json = {
+                "is_logged": False,
+            }
+        else:
+            json = {
+                "is_logged": True,
+                "username": value.username,
+                "email": value.email,
+                "login_datetime": value.last_login.strftime("%Y-%m-%d %H:%M:%S"),
+                "expiration_datetime": (
+                    value.last_login + timedelta(seconds=settings.SESSION_COOKIE_AGE)
+                ).strftime("%Y-%m-%d %H:%M:%S"),
+            }
+
+        return json
 
 
 class PermitRequestValidationSerializer(serializers.Serializer):

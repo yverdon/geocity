@@ -9,7 +9,8 @@ from django.contrib.gis.geos import (
 from django.test import TestCase
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
-from django.conf import settings
+from datetime import datetime, timedelta
+from geomapshark import settings
 
 from permits import models
 
@@ -515,20 +516,36 @@ class PermitRequestAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response_json, [])
 
-    def test_current_user_returns_correct_username_and_email(self):
+    def test_current_user_returns_user_informations(self):
         self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(reverse("current_user-list"), {})
         response_json = response.json()
+        login_datetime = models.User.objects.get(
+            username=self.admin_user.username
+        ).last_login
+        expiration_datetime = login_datetime + timedelta(
+            seconds=settings.SESSION_COOKIE_AGE
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response_json[0],
-            {"username": self.admin_user.username, "email": self.admin_user.email,},
+            {
+                "is_logged": True,
+                "username": self.admin_user.username,
+                "email": self.admin_user.email,
+                "login_datetime": login_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+                "expiration_datetime": expiration_datetime.strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                ),
+            },
         )
 
     def test_not_logged_returns_nothing_on_current_user(self):
         response = self.client.get(reverse("current_user-list"), {})
         response_json = response.json()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response_json, [])
+        self.assertEqual(
+            response_json[0], {"is_logged": False,},
+        )
 
     # TODO: test also the permits:permit_request_print route

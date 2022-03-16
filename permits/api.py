@@ -123,9 +123,10 @@ class CurrentUserViewSet(viewsets.ReadOnlyModelViewSet):
 
     # Returns the logged user, if there's any
     def get_queryset(self):
-        qs = None
-        if self.request.user:
-            qs = User.objects.filter(Q(username=self.request.user))
+        qs = User.objects.filter(Q(username=self.request.user))
+        if not qs:
+            qs = "F"  # Needs an iterable object to pass the queryset
+
         return qs
 
 
