@@ -128,6 +128,96 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             1,
         )
 
+    def test_types_step_submit_redirects_to_detail_if_logged_as_backoffice(self):
+
+        secretary_group = factories.GroupFactory(name="Secrétariat")
+        department = factories.PermitDepartmentFactory(
+            group=secretary_group, is_backoffice=True
+        )
+
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor,
+            status=models.PermitRequest.STATUS_APPROVED,
+            administrative_entity=department.administrative_entity,
+        )
+        self.wot_prolongable_with_date_and_reminder = factories.WorksObjectTypeFactory(
+            needs_date=True,
+            permit_duration=120,
+            expiration_reminder=True,
+            days_before_reminder=10,
+        )
+        permit_request.works_object_types.set(
+            [self.wot_prolongable_with_date_and_reminder]
+        )
+        secretary_group.user_set.add(self.user)
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_prolongation",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+
+        self.client.login(username=self.user.username, password="password")
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_submit",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+
+    def test_types_step_submit_redirects_to_detail_if_logged_as_integrator_admin(self):
+
+        integrator_group = factories.GroupFactory(name="Integrator")
+        department = factories.PermitDepartmentFactory(
+            group=integrator_group, is_integrator_admin=True
+        )
+
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor,
+            status=models.PermitRequest.STATUS_APPROVED,
+            administrative_entity=department.administrative_entity,
+        )
+        self.wot_prolongable_with_date_and_reminder = factories.WorksObjectTypeFactory(
+            needs_date=True,
+            permit_duration=120,
+            expiration_reminder=True,
+            days_before_reminder=10,
+        )
+        permit_request.works_object_types.set(
+            [self.wot_prolongable_with_date_and_reminder]
+        )
+        integrator_group.user_set.add(self.user)
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_prolongation",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+
+        self.client.login(username=self.user.username, password="password")
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_submit",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+
     def test_non_required_properties_can_be_left_blank(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         factories.WorksObjectTypeChoiceFactory.create_batch(
