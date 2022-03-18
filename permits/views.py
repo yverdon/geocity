@@ -1348,7 +1348,7 @@ def permit_request_submit_confirmed(request, permit_request_id):
         | Q(permitdepartment__is_integrator_admin=True),
     )
 
-    # Backoffice and integrators creating a permit request for their own administrative entity, are directly redirected to the request detail
+    # Backoffice and integrators creating a permit request for their own administrative entity, are directly redirected to the permit detail
     if user_is_backoffice_or_integrator_for_administrative_entity:
         return redirect(
             "permits:permit_request_detail", permit_request_id=permit_request.id
