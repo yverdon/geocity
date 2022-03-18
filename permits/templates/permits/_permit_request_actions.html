@@ -74,6 +74,11 @@
 
       {% endif %}
 
+        <li class="nav-item">
+          <a class="btn btn-primary btn-action nav-link" id="documents-tab" data-toggle="tab" href="#documents" role="tab" aria-controls="documents">
+              Documents
+          </a>
+        </li>
       </ul>
 
     </div>
@@ -234,6 +239,17 @@
                 </form>
             </div>
         {% endif %}
+
+        <div class="tab-pane" id="documents" role="tabpanel" aria-labelledby="documents-tab">
+            <h4>Ajout de documents à la demande</h4>
+            <form method="post">
+                {% csrf_token %}
+                <label for="description"></label>
+                <input id="description" type="text" placeholder="description">
+                <labe>Documents</labe>
+                <input type="file" id="documents">
+            </form>
+        </div>
 
       </div>
     </div>
