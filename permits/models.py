@@ -1370,6 +1370,26 @@ class PermitRequestAmendPropertyValue(models.Model):
         unique_together = [("property", "works_object_type_choice")]
 
 
+class PermitRequestComplementaryDocument(models.Model):
+    document_name = models.CharField(_("Nom du document"), max_length=255)
+    description = models.TextField(
+        _("Description du document"),
+        blank=True,
+    )
+    integrator = models.ForeignKey(
+        Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs"),
+    )
+    permit_request = models.ForeignKey(
+        PermitRequest,
+        null=False,
+        on_delete=models.CASCADE,
+        verbose_name=_("Demande de permis"),
+    )
+
+
 class QgisProject(models.Model):
     qgis_project_file = fields.AdministrativeEntityFileField(
         _("Projet QGIS '*.qgs'"),
