@@ -1370,6 +1370,9 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequestComplementaryDocument
         fields = ["document", "description"]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 2, "cols": 20}),
+        }
 
 
 class SocialSignupForm(SignupForm):
