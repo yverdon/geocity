@@ -1199,8 +1199,10 @@ def has_permission_to_edit_permit_request(user, permit_request):
 
 
 def can_edit_permit_request(user, permit_request):
-    return permit_request.can_be_edited_by_pilot() and has_permission_to_edit_permit_request(
-        user, permit_request
+    return (
+        permit_request.can_be_edited_by_pilot()
+        and has_permission_to_edit_permit_request(user, permit_request)
+        or permit_request.can_always_be_updated()
     )
 
 
@@ -1269,8 +1271,6 @@ def get_actions_for_administrative_entity(permit_request):
     Filter out administrative workflow step that are not coherent
     with current permit_request status
     """
-
-    actions = models.ACTIONS
 
     # Statuses for which a given action should be available
     required_statuses_for_actions = {

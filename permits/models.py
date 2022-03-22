@@ -538,6 +538,9 @@ class PermitRequest(models.Model):
     def can_be_edited_by_pilot(self):
         return self.status in self.EDITABLE_STATUSES
 
+    def can_always_be_updated(self):
+        return self.works_object_types.filter(can_always_update=True).exists()
+
     def can_be_validated(self):
         return self.status in {self.STATUS_AWAITING_VALIDATION, self.STATUS_PROCESSING}
 
@@ -773,6 +776,9 @@ class WorksObjectType(models.Model):
         PermitAdministrativeEntity,
         verbose_name=_("entités administratives"),
         related_name="works_object_types",
+    )
+    can_always_update = models.BooleanField(
+        _("Demande modifiable en tous temps par le secrétariat"), default=False
     )
     has_geometry_point = models.BooleanField(_("Point"), default=True)
     has_geometry_line = models.BooleanField(_("Ligne"), default=True)

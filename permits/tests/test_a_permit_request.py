@@ -379,6 +379,33 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             ),
         )
 
+    def test_user_can_edit_non_draft_request_if_wot_can_always_be_updated(self):
+        permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor,
+            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+        )
+        works_object_type = factories.WorksObjectTypeFactory(can_always_update=True,)
+        factories.WorksObjectTypeChoiceFactory(
+            permit_request=permit_request, works_object_type=works_object_type,
+        )
+        permit_request.administrative_entity.works_object_types.set(
+            permit_request.works_object_types.all()
+        )
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_select_types",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        self.assertNotEqual(
+            response,
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+
     def test_secretary_email_is_sent_when_user_treated_requested_complements(self):
         secretary_group = factories.GroupFactory(name="Secrétariat")
         department = factories.PermitDepartmentFactory(
