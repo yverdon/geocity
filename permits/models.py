@@ -72,6 +72,7 @@ ACTION_REQUEST_VALIDATION = "request_validation"
 ACTION_VALIDATE = "validate"
 ACTION_POKE = "poke"
 ACTION_PROLONG = "prolong"
+ACTION_COMPLEMENTARY_DOCUMENTS = "complementary_documents"
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
 ACTIONS = [
@@ -80,6 +81,7 @@ ACTIONS = [
     ACTION_VALIDATE,
     ACTION_POKE,
     ACTION_PROLONG,
+    ACTION_COMPLEMENTARY_DOCUMENTS,
 ]
 
 
@@ -1212,10 +1214,16 @@ class PermitRequestAmendPropertyValue(models.Model):
 
 
 class PermitRequestComplementaryDocument(models.Model):
-    document_name = models.CharField(_("Nom du document"), max_length=255)
+    document = models.FileField(_("Document"))
     description = models.TextField(
         _("Description du document"),
         blank=True,
+    )
+    owner = models.ForeignKey(
+        User,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Propriétaire du document"),
     )
     integrator = models.ForeignKey(
         Group,
