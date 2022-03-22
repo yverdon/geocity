@@ -272,7 +272,7 @@ class PermitRequestDetailView(View):
         if action not in models.ACTIONS:
             return HttpResponse(status=400)
 
-        form = self.get_form_for_action(action, data=request.POST)
+        form = self.get_form_for_action(action, data=request.POST, files=request.FILES)
         if not form:
             raise PermissionDenied
         elif getattr(form, "disabled", False):
@@ -287,18 +287,19 @@ class PermitRequestDetailView(View):
 
         return self.render_to_response(context)
 
-    def get_form_for_action(self, action, data=None):
+    def get_form_for_action(self, action, data=None, files=None):
         actions_forms = {
             models.ACTION_AMEND: self.get_amend_form,
             models.ACTION_REQUEST_VALIDATION: self.get_request_validation_form,
             models.ACTION_VALIDATE: self.get_validation_form,
             models.ACTION_POKE: self.get_poke_form,
             models.ACTION_PROLONG: self.get_prolongation_form,
+            models.ACTION_COMPLEMENTARY_DOCUMENTS: self.get_complementary_documents_form,
         }
 
-        return actions_forms[action](data=data)
+        return actions_forms[action](data=data, files=files)
 
-    def get_amend_form(self, data=None):
+    def get_amend_form(self, data=None, **kwargs):
 
         if services.has_permission_to_amend_permit_request(
             self.request.user, self.permit_request
@@ -337,7 +338,7 @@ class PermitRequestDetailView(View):
 
         return None
 
-    def get_request_validation_form(self, data=None):
+    def get_request_validation_form(self, data=None, **kwargs):
         if services.has_permission_to_amend_permit_request(
             self.request.user, self.permit_request
         ):
@@ -354,7 +355,7 @@ class PermitRequestDetailView(View):
 
         return None
 
-    def get_validation_form(self, data=None):
+    def get_validation_form(self, data=None, **kwargs):
         if not services.has_permission_to_validate_permit_request(
             self.request.user, self.permit_request
         ):
@@ -387,7 +388,7 @@ class PermitRequestDetailView(View):
 
         return form
 
-    def get_poke_form(self, data=None):
+    def get_poke_form(self, data=None, **kwargs):
         if services.has_permission_to_poke_permit_request(
             self.request.user, self.permit_request
         ):
@@ -403,7 +404,7 @@ class PermitRequestDetailView(View):
 
         return None
 
-    def get_prolongation_form(self, data=None):
+    def get_prolongation_form(self, data=None, **kwargs):
         if services.has_permission_to_poke_permit_request(
             self.request.user, self.permit_request
         ):
@@ -420,6 +421,11 @@ class PermitRequestDetailView(View):
 
         return None
 
+    def get_complementary_documents_form(self, data=None, **kwargs):
+        return forms.PermitRequestComplementaryDocumentsForm(
+            data=data, files=kwargs["files"]
+        )
+
     def handle_form_submission(self, form, action):
         if action == models.ACTION_AMEND:
             return self.handle_amend_form_submission(form)
@@ -431,6 +437,8 @@ class PermitRequestDetailView(View):
             return self.handle_poke(form)
         elif action == models.ACTION_PROLONG:
             return self.handle_prolongation_form_submission(form)
+        elif action == models.ACTION_COMPLEMENTARY_DOCUMENTS:
+            return self.handle_complementary_documents_form_submission(form)
 
     def handle_amend_form_submission(self, form):
         initial_status = (
@@ -601,6 +609,18 @@ class PermitRequestDetailView(View):
             }
             services.send_email_notification(data)
 
+        if "save_continue" in self.request.POST:
+            return redirect(
+                "permits:permit_request_detail",
+                permit_request_id=self.permit_request.pk,
+            )
+        else:
+            return redirect("permits:permit_requests_list")
+
+    def handle_complementary_documents_form_submission(self, form):
+        form.instance.owner = self.request.user
+        form.instance.permit_request_id = self.permit_request.pk
+        form.save()
         if "save_continue" in self.request.POST:
             return redirect(
                 "permits:permit_request_detail",
