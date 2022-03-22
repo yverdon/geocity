@@ -140,15 +140,6 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             status=models.PermitRequest.STATUS_APPROVED,
             administrative_entity=department.administrative_entity,
         )
-        self.wot_prolongable_with_date_and_reminder = factories.WorksObjectTypeFactory(
-            needs_date=True,
-            permit_duration=120,
-            expiration_reminder=True,
-            days_before_reminder=10,
-        )
-        permit_request.works_object_types.set(
-            [self.wot_prolongable_with_date_and_reminder]
-        )
         secretary_group.user_set.add(self.user)
 
         response = self.client.get(
@@ -184,15 +175,6 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             author=self.user.permitauthor,
             status=models.PermitRequest.STATUS_APPROVED,
             administrative_entity=department.administrative_entity,
-        )
-        self.wot_prolongable_with_date_and_reminder = factories.WorksObjectTypeFactory(
-            needs_date=True,
-            permit_duration=120,
-            expiration_reminder=True,
-            days_before_reminder=10,
-        )
-        permit_request.works_object_types.set(
-            [self.wot_prolongable_with_date_and_reminder]
         )
         integrator_group.user_set.add(self.user)
 
