@@ -156,7 +156,8 @@ class AdministrativeEntityForm(forms.Form):
 
         if not self.instance:
             return models.PermitRequest.objects.create(
-                administrative_entity=administrative_entity_instance, author=author,
+                administrative_entity=administrative_entity_instance,
+                author=author,
             )
         else:
             services.set_administrative_entity(
@@ -435,7 +436,10 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                 },
             ),
             "validators": [
-                RegexValidator(regex=prop.regex_pattern, message=error_message,)
+                RegexValidator(
+                    regex=prop.regex_pattern,
+                    message=error_message,
+                )
             ],
         }
 
@@ -560,9 +564,18 @@ def check_existing_email(email, user):
 
 class NewDjangoAuthUserForm(UserCreationForm):
 
-    first_name = forms.CharField(label=_("Prénom"), max_length=30,)
-    last_name = forms.CharField(label=_("Nom"), max_length=150,)
-    email = forms.EmailField(label=_("Email"), max_length=254,)
+    first_name = forms.CharField(
+        label=_("Prénom"),
+        max_length=30,
+    )
+    last_name = forms.CharField(
+        label=_("Nom"),
+        max_length=150,
+    )
+    email = forms.EmailField(
+        label=_("Email"),
+        max_length=254,
+    )
     required_css_class = "required"
 
     def clean_email(self):
@@ -706,18 +719,30 @@ class PermitRequestActorForm(forms.ModelForm):
     first_name = forms.CharField(
         max_length=150,
         label=_("Prénom"),
-        widget=forms.TextInput(attrs={"placeholder": "ex: Marcel",}),
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": "ex: Marcel",
+            }
+        ),
     )
     last_name = forms.CharField(
         max_length=100,
         label=_("Nom"),
-        widget=forms.TextInput(attrs={"placeholder": "ex: Dupond",}),
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": "ex: Dupond",
+            }
+        ),
     )
     phone = forms.CharField(
         min_length=10,
         max_length=16,
         label=_("Téléphone"),
-        widget=forms.TextInput(attrs={"placeholder": "ex: 024 111 22 22",}),
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": "ex: 024 111 22 22",
+            }
+        ),
         validators=[
             RegexValidator(
                 regex=r"^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
@@ -730,7 +755,11 @@ class PermitRequestActorForm(forms.ModelForm):
     email = forms.EmailField(
         max_length=100,
         label=_("Email"),
-        widget=forms.TextInput(attrs={"placeholder": "ex: exemple@exemple.com",}),
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": "ex: exemple@exemple.com",
+            }
+        ),
     )
     address = forms.CharField(
         max_length=100,
@@ -751,7 +780,11 @@ class PermitRequestActorForm(forms.ModelForm):
     city = forms.CharField(
         max_length=100,
         label=_("Ville"),
-        widget=forms.TextInput(attrs={"placeholder": "ex: Yverdon",}),
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": "ex: Yverdon",
+            }
+        ),
     )
     company_name = forms.CharField(
         required=False,
@@ -831,7 +864,9 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
         model = models.PermitRequest
         fields = ["is_public", "shortname", "status"]
         widgets = {
-            "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
+            "is_public": forms.RadioSelect(
+                choices=models.PUBLIC_TYPE_CHOICES,
+            ),
         }
 
     def __init__(self, *args, **kwargs):
@@ -1214,7 +1249,11 @@ class PermitRequestValidationForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields["validation_status"].choices = [
-            (value, label,) for value, label in self.fields["validation_status"].choices
+            (
+                value,
+                label,
+            )
+            for value, label in self.fields["validation_status"].choices
         ]
 
 
@@ -1320,6 +1359,17 @@ class PermitRequestClassifyForm(forms.ModelForm):
             permit_request.save()
 
         return permit_request
+
+
+class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
+    # Add permission to pilote & other thing to upload documents
+    # -> Read manual or whatever
+    # Display uploaded files
+    # Maybe prep for file encryption
+
+    class Meta:
+        model = models.PermitRequestComplementaryDocument
+        fields = ["document", "description"]
 
 
 class SocialSignupForm(SignupForm):
