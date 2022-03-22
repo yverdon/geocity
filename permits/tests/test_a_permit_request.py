@@ -384,7 +384,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             author=self.user.permitauthor,
             status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
         )
-        works_object_type = factories.WorksObjectTypeFactory(can_always_update=True,)
+        works_object_type = factories.WorksObjectTypeFactory(can_always_update=True)
         factories.WorksObjectTypeChoiceFactory(
             permit_request=permit_request, works_object_type=works_object_type,
         )
