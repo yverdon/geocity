@@ -1357,6 +1357,10 @@ def get_actions_for_administrative_entity(permit_request):
             models.PermitRequest.STATUS_PROCESSING,
         ],
         "prolong": list(models.PermitRequest.PROLONGABLE_STATUSES),
+        "complementary_documents": [
+            models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            models.PermitRequest.STATUS_PROCESSING,
+        ],
     }
 
     available_statuses_for_administrative_entity = get_status_choices_for_administrative_entity(
