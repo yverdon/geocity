@@ -3,6 +3,7 @@
 {% load i18n %}
 {% load bootstrap4 %}
 {% load permits_extras %}
+{% load static %}
 {% load render_table from django_tables2 %}
 
 {% block content %}
@@ -223,4 +224,7 @@
   </div>
 
 </div>
+{% endblock %}
+{% block scripts %}
+  <script src="{% static 'js/permits_complementary_documents.js' %}" />
 {% endblock %}
