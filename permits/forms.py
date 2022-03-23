@@ -1430,16 +1430,11 @@ class PermitRequestClassifyForm(forms.ModelForm):
 
 
 class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
-    # Add permission to pilote & other thing to upload documents
-    # -> Read manual or whatever
-    # Display uploaded files
-    # Maybe prep for file encryption
-
     class Meta:
         model = models.PermitRequestComplementaryDocument
         fields = ["document", "description"]
         widgets = {
-            "description": forms.Textarea(attrs={"rows": 2, "cols": 20}),
+            "description": forms.Textarea(attrs={"rows": 2}),
         }
 
 
