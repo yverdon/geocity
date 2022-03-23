@@ -282,6 +282,14 @@ class PermitRequestDetailView(View):
             return HttpResponse(status=400)
 
         form = self.get_form_for_action(action, data=request.POST, files=request.FILES)
+        form_type = "forms"
+        # if no form was found, it might be a formset
+        if not form:
+            form = self.get_formset_for_action(
+                action, data=request.POST, files=request.FILES
+            )
+            form_type = "formsets"
+
         if not form:
             raise PermissionDenied
         elif getattr(form, "disabled", False):
@@ -292,7 +300,7 @@ class PermitRequestDetailView(View):
 
         # Replace unbound form by bound form in the context
         context = self.get_context_data()
-        context["forms"][action] = form
+        context[form_type][action] = form
 
         return self.render_to_response(context)
 
@@ -303,10 +311,13 @@ class PermitRequestDetailView(View):
             models.ACTION_VALIDATE: self.get_validation_form,
             models.ACTION_POKE: self.get_poke_form,
             models.ACTION_PROLONG: self.get_prolongation_form,
-            models.ACTION_COMPLEMENTARY_DOCUMENTS: None,
         }
 
-        return actions_forms[action](data=data, files=files)
+        return (
+            actions_forms[action](data=data, files=files)
+            if action in actions_forms
+            else None
+        )
 
     def get_formset_for_action(self, action, data=None, files=None):
         actions_formset = {
@@ -448,9 +459,11 @@ class PermitRequestDetailView(View):
         return None
 
     def get_complementary_documents_formset(self, data=None, **kwargs):
-        return formset_factory(
+        complementary_documents_form_set = formset_factory(
             form=forms.PermitRequestComplementaryDocumentsForm, extra=1
         )
+
+        return complementary_documents_form_set(data, kwargs["files"])
 
     def handle_form_submission(self, form, action):
         if action == models.ACTION_AMEND:
@@ -653,9 +666,17 @@ class PermitRequestDetailView(View):
             return redirect("permits:permit_requests_list")
 
     def handle_complementary_documents_form_submission(self, form):
-        form.instance.owner = self.request.user
-        form.instance.permit_request_id = self.permit_request.pk
-        form.save()
+        for f in form:
+            f.instance.owner = self.request.user
+            f.instance.permit_request_id = self.permit_request.pk
+            f.save()
+
+        success_message = (
+            _("Les documents ont bien été ajoutés à la demande #%s.")
+            % self.permit_request.pk
+        )
+        messages.success(self.request, success_message)
+
         if "save_continue" in self.request.POST:
             return redirect(
                 "permits:permit_request_detail",
