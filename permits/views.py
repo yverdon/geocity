@@ -19,7 +19,7 @@ from django.core.exceptions import (
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.db.models import Prefetch, Sum, Q, CharField, Value
-from django.forms import modelformset_factory
+from django.forms import modelformset_factory, formset_factory
 from django.http import (
     Http404,
     HttpResponse,
@@ -183,14 +183,21 @@ class PermitRequestDetailView(View):
             self.permit_request
         )
 
-        forms = {action: self.get_form_for_action(action) for action in current_actions}
-        available_actions = [action for action in current_actions if forms[action]]
+        action_forms = {
+            action: self.get_form_for_action(action) for action in current_actions
+        }
+        action_formsets = {
+            action: self.get_formset_for_action(action) for action in current_actions
+        }
+        available_actions = [
+            action for action in current_actions if action_forms[action]
+        ]
 
         try:
             active_forms = [
                 action
                 for action in available_actions
-                if not getattr(forms[action], "disabled", False)
+                if not getattr(action_forms[action], "disabled", False)
             ]
             if "poke" in active_forms and "validate" in active_forms:
                 active_form = active_forms[active_forms.index("validate")]
@@ -205,7 +212,7 @@ class PermitRequestDetailView(View):
 
         kwargs["has_validations"] = self.permit_request.has_validations()
 
-        if forms.get(models.ACTION_POKE):
+        if action_forms.get(models.ACTION_POKE):
             kwargs[
                 "nb_pending_validations"
             ] = self.permit_request.get_pending_validations().count()
@@ -241,7 +248,8 @@ class PermitRequestDetailView(View):
             **{
                 "permit_request": self.permit_request,
                 "history": history,
-                "forms": forms,
+                "forms": action_forms,
+                "formsets": action_formsets,
                 "active_form": active_form,
                 "has_permission_to_classify": services.has_permission_to_classify_permit_request(
                     self.request.user, self.permit_request
@@ -295,10 +303,21 @@ class PermitRequestDetailView(View):
             models.ACTION_VALIDATE: self.get_validation_form,
             models.ACTION_POKE: self.get_poke_form,
             models.ACTION_PROLONG: self.get_prolongation_form,
-            models.ACTION_COMPLEMENTARY_DOCUMENTS: self.get_complementary_documents_form,
+            models.ACTION_COMPLEMENTARY_DOCUMENTS: None,
         }
 
         return actions_forms[action](data=data, files=files)
+
+    def get_formset_for_action(self, action, data=None, files=None):
+        actions_formset = {
+            models.ACTION_COMPLEMENTARY_DOCUMENTS: self.get_complementary_documents_formset,
+        }
+
+        return (
+            actions_formset[action](data=data, files=files)
+            if action in actions_formset
+            else None
+        )
 
     def get_amend_form(self, data=None, **kwargs):
 
@@ -428,9 +447,9 @@ class PermitRequestDetailView(View):
 
         return None
 
-    def get_complementary_documents_form(self, data=None, **kwargs):
-        return forms.PermitRequestComplementaryDocumentsForm(
-            data=data, files=kwargs["files"]
+    def get_complementary_documents_formset(self, data=None, **kwargs):
+        return formset_factory(
+            form=forms.PermitRequestComplementaryDocumentsForm, extra=1
         )
 
     def handle_form_submission(self, form, action):
