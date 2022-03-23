@@ -1393,7 +1393,7 @@ class PermitRequestClassifyForm(forms.ModelForm):
 class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequestComplementaryDocument
-        fields = ["document", "description"]
+        fields = ["document", "description", "status"]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 2}),
         }
