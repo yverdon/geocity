@@ -1214,6 +1214,18 @@ class PermitRequestAmendPropertyValue(models.Model):
 
 
 class PermitRequestComplementaryDocument(models.Model):
+    STATUS_TEMP = 0
+    STATUS_FINALE = 1
+    STATUS_OTHER = 2
+    STATUS_CANCELED = 3
+
+    STATUS_CHOICES = (
+        (STATUS_TEMP, _("Provisoire")),
+        (STATUS_FINALE, _("Final")),
+        (STATUS_OTHER, _("Autre")),
+        (STATUS_CANCELED, _("Annulé")),
+    )
+
     document = models.FileField(_("Document"))
     description = models.TextField(_("Description du document"), blank=True,)
     owner = models.ForeignKey(
@@ -1233,6 +1245,9 @@ class PermitRequestComplementaryDocument(models.Model):
         null=False,
         on_delete=models.CASCADE,
         verbose_name=_("Demande de permis"),
+    )
+    status = models.PositiveSmallIntegerField(
+        _("Statut du document"), choices=STATUS_CHOICES,
     )
 
 
