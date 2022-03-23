@@ -1393,12 +1393,6 @@ class PermitRequestComplementaryDocument(models.Model):
         on_delete=models.SET_NULL,
         verbose_name=_("Propriétaire du document"),
     )
-    integrator = models.ForeignKey(
-        Group,
-        null=True,
-        on_delete=models.SET_NULL,
-        verbose_name=_("Groupe des administrateurs"),
-    )
     permit_request = models.ForeignKey(
         PermitRequest,
         null=False,
@@ -1408,6 +1402,11 @@ class PermitRequestComplementaryDocument(models.Model):
     status = models.PositiveSmallIntegerField(
         _("Statut du document"), choices=STATUS_CHOICES,
     )
+    authorised_departments = models.ManyToManyField(
+        PermitDepartment,
+        verbose_name=_("Département autorisé à visualiser le document"),
+    )
+    is_public = models.BooleanField(default=False, verbose_name=_("Public"))
 
 
 class QgisProject(models.Model):
