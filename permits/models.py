@@ -1374,10 +1374,7 @@ class PermitRequestAmendPropertyValue(models.Model):
 
 class PermitRequestComplementaryDocument(models.Model):
     document = models.FileField(_("Document"))
-    description = models.TextField(
-        _("Description du document"),
-        blank=True,
-    )
+    description = models.TextField(_("Description du document"), blank=True,)
     owner = models.ForeignKey(
         User,
         null=True,
