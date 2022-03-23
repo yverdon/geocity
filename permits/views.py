@@ -1,6 +1,7 @@
 import logging
 import mimetypes
 import os
+from pyexpat import model
 import urllib.parse
 
 import requests
@@ -1330,8 +1331,13 @@ def permit_request_submit(request, permit_request_id):
 @login_required
 @check_mandatory_2FA
 def permit_request_submit_confirmed(request, permit_request_id):
+    
 
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
+    # permit_request_works_object_property = services.get_properties(permit_request)
+    # print(permit_request_works_object_property)
+    # print(permit_request_works_object_property[0])
+    # print(permit_request_works_object_property[0][1])
 
     incomplete_steps = [
         step.url
@@ -1341,6 +1347,112 @@ def permit_request_submit_confirmed(request, permit_request_id):
 
     if incomplete_steps:
         raise SuspiciousOperation
+    
+    
+    
+    # Notify the services
+    # works_object_property_to_notify = permit_request_works_object_property[0][1].filter(
+    #     services_to_notify__isnull=False
+    # )
+
+    # if works_object_property_to_notify.exists():
+    #     mailing_list = []
+    #     for emails in works_object_property_to_notify.values_list(
+    #         "services_to_notify", flat=True
+    #     ):
+    #         emails_addresses = emails.replace("\n", ",").split(",")
+    #         mailing_list += [
+    #             ea.strip()
+    #             for ea in emails_addresses
+    #             if services.validate_email(ea.strip())
+    #         ]
+
+    #     if mailing_list:
+    #         data = {
+    #             "subject": _(
+    #                 "Votre service à été mentionné dans une demande"
+    #             ),
+    #             "users_to_notify": set(mailing_list),
+    #             "template": "permit_request_submitted_with_mention.txt",
+    #             "permit_request": permit_request,
+    #             "absolute_uri_func": request.build_absolute_uri,
+    #         }
+    #         services.send_email_notification(data)
+    
+    
+    
+    
+    
+    
+    
+    # works_object_property_to_notify = permit_request.works_object_types.all()
+    # print(works_object_property_to_notify)
+    # works_object_property_to_notify = permit_request_works_object_property[0][1].filter(
+    #     services_to_notify__isnull=False
+    # )
+    
+    # print(vars(permit_request_works_object_property[0][1][4]))
+    
+    # for work_object in permit_request_works_object_property:
+    #     for objects in work_object:
+    #         print(objects.input_type)
+    
+    
+    
+    # wot_choices = services.get_works_object_type_choices(permit_request)
+    
+    work_object_property_value = services.get_properties_values(permit_request)
+    print(work_object_property_value)
+    
+    work_object_with_true_checkbox = work_object_property_value.filter(
+        value={'val': True}
+    )
+    print(work_object_with_true_checkbox)
+    
+    # print(vars(work_object_with_true_checkbox))
+    # print(work_object_with_true_checkbox.works_object_type_choice.works_object_type) # Need WorksObjectType to search directly on correct model
+    
+    
+    
+    # for wo in work_object_with_true_checkbox:
+    #     print(wo.works_object_type_choice.works_object_type)
+    
+    
+    # test = 
+    
+    
+    # for wot in wot_choices:
+    #     print(vars(wot))
+
+    if work_object_with_true_checkbox.exists():
+        work_object_type = work_object_with_true_checkbox[0].works_object_type_choice.works_object_type
+        print(work_object_type)
+        works_object_property_to_notify = models.WorksObjectProperty.objects.filter(
+            works_object_types=work_object_type
+        )
+        print(works_object_property_to_notify)
+        mailing_list = []
+        for emails in works_object_property_to_notify.values_list(
+            "services_to_notify", flat=True
+        ):
+            emails_addresses = emails.replace("\n", ",").split(",")
+            mailing_list += [
+                ea.strip()
+                for ea in emails_addresses
+                if services.validate_email(ea.strip())
+            ]
+
+        if mailing_list:
+            data = {
+                "subject": _(
+                    "Votre service à été mentionné dans une demande"
+                ),
+                "users_to_notify": set(mailing_list),
+                "template": "permit_request_submitted_with_mention.txt",
+                "permit_request": permit_request,
+                "absolute_uri_func": request.build_absolute_uri,
+            }
+            services.send_email_notification(data)
 
     services.submit_permit_request(permit_request, request)
     return redirect("permits:permit_requests_list")
