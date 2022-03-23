@@ -244,6 +244,7 @@
           <div class="tab-pane" id="documents" role="tabpanel" aria-labelledby="documents-tab">
               <h4>Ajout de documents à la demande</h4>
               <form method="post" enctype="multipart/form-data">
+                {{ formsets.complementary_documents.management_form }}
                 {% csrf_token %}
                 <div id="complementary-documents">
                   {% for form in formsets.complementary_documents %}

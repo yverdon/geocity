@@ -11,6 +11,7 @@ document.getElementById('add-document').addEventListener('click', (e) => {
 
   // increase the number of documents
   ++nbDocuments
+  document.getElementById("id_form-TOTAL_FORMS").value = nbDocuments
   // change the "form number"
   clone.innerHTML = clone.innerHTML.replace(regex, `form-${nbDocuments-1}-`)
   container.appendChild(document.createElement('hr'))
