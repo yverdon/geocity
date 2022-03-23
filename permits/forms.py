@@ -1325,10 +1325,30 @@ class PermitRequestClassifyForm(forms.ModelForm):
 class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequestComplementaryDocument
-        fields = ["document", "description", "status"]
+        fields = [
+            "document",
+            "description",
+            "status",
+            "authorised_departments",
+            "is_public",
+        ]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 2}),
         }
+
+    def __init__(self, *args, **kwargs):
+        permit_request = kwargs.pop("permit_request")
+        super(PermitRequestComplementaryDocumentsForm, self).__init__(*args, **kwargs)
+
+        self.fields[
+            "authorised_departments"
+        ].queryset = models.PermitDepartment.objects.filter(
+            administrative_entity=permit_request.administrative_entity
+        ).all()
+
+    authorised_departments = forms.ModelMultipleChoiceField(
+        queryset=None, widget=forms.CheckboxSelectMultiple,
+    )
 
 
 class SocialSignupForm(SignupForm):

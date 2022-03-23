@@ -452,11 +452,13 @@ class PermitRequestDetailView(View):
         return None
 
     def get_complementary_documents_formset(self, data=None, **kwargs):
-        complementary_documents_form_set = formset_factory(
+        ComplementaryDocumentsFormSet = formset_factory(
             form=forms.PermitRequestComplementaryDocumentsForm, extra=1
         )
 
-        return complementary_documents_form_set(data, kwargs["files"])
+        return ComplementaryDocumentsFormSet(
+            data, kwargs["files"], form_kwargs={"permit_request": self.permit_request}
+        )
 
     def handle_form_submission(self, form, action):
         if action == models.ACTION_AMEND:
