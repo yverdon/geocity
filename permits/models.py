@@ -949,6 +949,11 @@ class WorksObjectProperty(models.Model):
         blank=True,
         help_text=_("Exemple: ^[0-9]{4}$"),
     )
+    services_to_notify = models.TextField(
+        _("Emails des services à notifier"),
+        blank=True,
+        help_text='Veuillez séparer les emails par une virgule ","',
+    )
 
     class Meta(object):
         ordering = ["order"]
@@ -1011,7 +1016,7 @@ class WorksObjectProperty(models.Model):
 
         if self.input_type == INPUT_TYPE_REGEX:
             if not self.regex_pattern:
-                raise ValidationError({"regex_pattern": _("This field is required.")})
+                raise ValidationError({"regex_pattern": _("This field is required.")})            
 
 
 class WorksObjectPropertyValue(models.Model):

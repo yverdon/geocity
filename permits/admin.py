@@ -801,6 +801,7 @@ class WorksObjectPropertyForm(forms.ModelForm):
             "integrator",
             "order",
             "input_type",
+            "services_to_notify",
             "choices",
             "line_number_for_textarea",
             "regex_pattern",

@@ -41,6 +41,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const isLineNumberForTextareaVisible = inputType === 'text';
 
+    const servicesToNotifyElement = document.getElementById('id_services_to_notify');
+    const servicesToNotifyRowElement = servicesToNotifyElement.closest('.form-row.services_to_notify');
+    const servicesToNotifyLabelElement = servicesToNotifyRowElement.querySelector('label');
+    
+    const isServicesToNotifyPatternVisible = inputType === 'checkbox';
+
     choicesElement.removeAttribute('required');
     choicesRowElement.classList.add(hiddenClass);
     choicesLabelElement.classList.remove(requiredClass);
@@ -52,6 +58,10 @@ document.addEventListener('DOMContentLoaded', function() {
     lineNumberForTextareaElement.removeAttribute('required');
     lineNumberForTextareaRowElement.classList.add(hiddenClass);
     lineNumberForTextareaLabelElement.classList.remove(requiredClass);
+
+    servicesToNotifyElement.removeAttribute('required');
+    servicesToNotifyRowElement.classList.add(hiddenClass);
+    servicesToNotifyLabelElement.classList.remove(requiredClass);
 
     if (isChoicesVisible) {
       choicesElement.setAttribute('required', '');
@@ -67,6 +77,11 @@ document.addEventListener('DOMContentLoaded', function() {
       lineNumberForTextareaElement.setAttribute('required', '');
       lineNumberForTextareaRowElement.classList.remove(hiddenClass);
       lineNumberForTextareaLabelElement.classList.add(requiredClass);
+    }
+    else if (isServicesToNotifyPatternVisible) {
+      servicesToNotifyElement.setAttribute('required', '');
+      servicesToNotifyRowElement.classList.remove(hiddenClass);
+      servicesToNotifyLabelElement.classList.add(requiredClass);
     }
   }
 
