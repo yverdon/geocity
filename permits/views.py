@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import (
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.db.models import Prefetch, Sum
+from django.db.models import Prefetch, Sum, Q
 from django.forms import modelformset_factory
 from django.http import (
     Http404,
@@ -173,11 +173,9 @@ class PermitRequestDetailView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def render_to_response(self, context):
-
         return render(self.request, "permits/permit_request_detail.html", context)
 
     def get_context_data(self, **kwargs):
-
         current_actions = services.get_actions_for_administrative_entity(
             self.permit_request
         )
@@ -1343,7 +1341,20 @@ def permit_request_submit_confirmed(request, permit_request_id):
         raise SuspiciousOperation
 
     services.submit_permit_request(permit_request, request)
-    return redirect("permits:permit_requests_list")
+
+    user_is_backoffice_or_integrator_for_administrative_entity = request.user.groups.filter(
+        Q(permitdepartment__administrative_entity=permit_request.administrative_entity),
+        Q(permitdepartment__is_backoffice=True)
+        | Q(permitdepartment__is_integrator_admin=True),
+    )
+
+    # Backoffice and integrators creating a permit request for their own administrative entity, are directly redirected to the permit detail
+    if user_is_backoffice_or_integrator_for_administrative_entity:
+        return redirect(
+            "permits:permit_request_detail", permit_request_id=permit_request.id
+        )
+    else:
+        return redirect("permits:permit_requests_list")
 
 
 @redirect_bad_status_to_detail
