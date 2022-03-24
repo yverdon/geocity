@@ -4,17 +4,47 @@ let nbDocuments = documents.length;
 
 document.getElementById('add-document').addEventListener('click', (e) => {
   e.preventDefault()
-  // clone the form
-  let clone = documents[0].cloneNode(true)
+
+  // display the remove button
+  document.getElementById('remove-document').removeAttribute('hidden')
+  // increase the number of documents
+  ++nbDocuments
+
   // regex to find all instances of the form number
   let regex = RegExp(`form-(\\d){1}-`,'g')
 
-  // increase the number of documents
-  ++nbDocuments
-  document.getElementById("id_form-TOTAL_FORMS").value = nbDocuments
-  // change the "form number"
+  // clone the form
+  let clone = documents[0].cloneNode(true)
+  clone.id = `document-${nbDocuments-1}`
   clone.innerHTML = clone.innerHTML.replace(regex, `form-${nbDocuments-1}-`)
-  container.appendChild(document.createElement('hr'))
+
+  // change the "form number"
+  document.getElementById("id_form-TOTAL_FORMS").value = nbDocuments
+
+  clone.prepend(document.createElement('hr'))
   container.appendChild(clone)
 })
 
+document.getElementById('remove-document').addEventListener('click', (e) => {
+  e.preventDefault()
+
+  // we don't want to delete the last form
+  if (nbDocuments === 1) {
+    return
+  }
+
+  // decrease the number of documents
+  --nbDocuments
+
+  // we don't need the remove button anymore
+  if (nbDocuments === 1) {
+    e.target.setAttribute('hidden', '')
+  }
+
+  // update the number of total forms
+  document.getElementById("id_form-TOTAL_FORMS").value = nbDocuments
+
+  // remove the last form
+  let target = [...documents].pop()
+  target.remove()
+})
