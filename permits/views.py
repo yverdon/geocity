@@ -14,7 +14,7 @@ from django.contrib.auth.decorators import (
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.db.models import Prefetch, Sum
+from django.db.models import Prefetch, Sum, Q
 from django.forms import modelformset_factory
 from django.http import (
     Http404,
@@ -1347,19 +1347,30 @@ def permit_request_submit_confirmed(request, permit_request_id):
     work_object_property_value = services.get_properties_values(permit_request)
 
     # First filter on WorksObjectPropertyValue, get only the boolean at true
-    work_object_with_true_checkbox = work_object_property_value.filter(
+    work_objects_with_true_checkbox = work_object_property_value.filter(
         value={"val": True}
     )
 
-    if work_object_with_true_checkbox.exists():
+    # Get property of WorksObjectPropertyValue to get the correct checkbox
+    # If removed, even if a checkbox with services_to_notify is false, it's going to send an email
+    work_object_property = []
+    for work_object in work_objects_with_true_checkbox:
+        work_object_property.append(work_object.property)
+
+    if work_objects_with_true_checkbox.exists():
+        work_object_types = []
         # Get the WorksObjectType through the relation WorksObjectTypeChoice from WorksObjectPropertyValue
-        work_object_type = work_object_with_true_checkbox[
-            0
-        ].works_object_type_choice.works_object_type
+        for work_object_type_with_true_checkbox in work_objects_with_true_checkbox:
+            work_object_types.append(
+                work_object_type_with_true_checkbox.works_object_type_choice.works_object_type
+            )
+
         # Get the WorksObjectProperty corresponding to the correct WorksObjectPropertyValue (boolean at true)
         works_object_property_to_notify = models.WorksObjectProperty.objects.filter(
-            works_object_types=work_object_type
+            Q(works_object_types__in=work_object_types),
+            Q(name__in=work_object_property),
         )
+
         mailing_list = []
         for emails in works_object_property_to_notify.values_list(
             "services_to_notify", flat=True
@@ -1379,6 +1390,7 @@ def permit_request_submit_confirmed(request, permit_request_id):
                 "permit_request": permit_request,
                 "absolute_uri_func": request.build_absolute_uri,
             }
+            # services.send_email_notification(data)
             services.send_email_notification(data)
 
     services.submit_permit_request(permit_request, request)
