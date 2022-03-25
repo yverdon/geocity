@@ -467,8 +467,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             )
         )
 
+        print(mail.outbox)
         self.assertEqual(len(mail.outbox), 3)
-        self.assertEqual(mail.outbox[0].to, ["test-send-1@geocity.ch"])
+        self.assertIn(mail.outbox[0].to, [["test-send-1@geocity.ch"], ["test-send-2@geocity.ch"]])
 
         self.assertEqual(
             mail.outbox[0].subject, "Votre service à été mentionné dans une demande"
