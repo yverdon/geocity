@@ -27,12 +27,13 @@ from django.http import (
     StreamingHttpResponse,
 )
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views import View
+from django.views.generic.edit import DeleteView
 from django_filters.views import FilterView
 from django_tables2.export.views import ExportMixin
 from django_tables2.views import SingleTableMixin, SingleTableView
@@ -686,6 +687,37 @@ class PermitRequestDetailView(View):
             )
         else:
             return redirect("permits:permit_requests_list")
+
+
+class PermitRequestComplementaryDocumentDeleteView(DeleteView):
+    model = models.PermitRequestComplementaryDocument
+    success_message = _("Le document '%s' a été supprimé avec succès")
+    final_error_message = _("Les documents finaux ne peuvent pas être supprimés")
+    owner_error_message = _("Vous pouvez seulement supprimer vos documents")
+
+    def get(self, request, *args, **kwargs):
+        return self.post(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+
+        if not obj.owner == self.request.user:
+            messages.add_message(request, messages.ERROR, self.owner_error_message)
+            return redirect(self.get_success_url())
+
+        # Final documents can't be deleted!
+        if obj.status == models.PermitRequestComplementaryDocument.STATUS_FINALE:
+            messages.add_message(request, messages.ERROR, self.final_error_message)
+            return redirect(self.get_success_url())
+
+        messages.success(self.request, self.success_message % obj.document)
+        return super().delete(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy(
+            "permits:permit_request_detail",
+            kwargs={"permit_request_id": self.get_object().permit_request_id},
+        )
 
 
 def permit_request_print(request, permit_request_id, template_id):
