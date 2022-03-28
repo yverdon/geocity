@@ -33,6 +33,9 @@ def permit_request_summary(context, permit_request):
     objects_infos = services.get_permit_objects(permit_request)
     contacts = services.get_contacts_summary(permit_request)
     requires_payment = services.permit_requests_has_paid_wot(permit_request)
+    documents = services.get_permit_complementary_documents(
+        permit_request, user=context.request.user
+    )
 
     PermitRequestGeoTimeFormSet = modelformset_factory(
         models.PermitRequestGeoTime, form=forms.PermitRequestGeoTimeForm, extra=0,
@@ -60,6 +63,7 @@ def permit_request_summary(context, permit_request):
         "creditor": creditor,
         "contacts": contacts,
         "objects_infos": objects_infos,
+        "documents": documents,
         "geo_time_formset": geo_time_formset,
         "intersected_geometries": permit_request.intersected_geometries
         if permit_request.intersected_geometries != ""

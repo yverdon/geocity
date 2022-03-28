@@ -1305,6 +1305,21 @@ def get_contacts_summary(permit_request):
     return contacts
 
 
+def get_permit_complementary_documents(permit_request, user):
+    groups = user.groups.all()
+    return (
+        models.PermitRequestComplementaryDocument.objects.filter(
+            Q(permit_request=permit_request),
+            Q(is_public=True)
+            | Q(owner=user)
+            | Q(authorised_departments__group__in=groups),
+        )
+        .order_by("pk")
+        .all()
+        .distinct()
+    )
+
+
 def get_permit_objects(permit_request):
 
     properties_form = forms.WorksObjectsPropertiesForm(instance=permit_request)
