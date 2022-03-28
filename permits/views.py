@@ -1340,6 +1340,28 @@ def permit_request_submit_confirmed(request, permit_request_id):
     if incomplete_steps:
         raise SuspiciousOperation
 
+    checkbox_to_notify = models.WorksObjectPropertyValue.objects.filter(
+        works_object_type_choice__permit_request=permit_request, value={"val": True}
+    ).values_list("property__services_to_notify", flat=True)
+
+    if checkbox_to_notify.exists():
+        mailing_list = []
+        for emails in checkbox_to_notify:
+            emails_addresses = emails.replace("\n", ",").split(",")
+            mailing_list += [
+                ea.strip()
+                for ea in emails_addresses
+                if services.validate_email(ea.strip())
+            ]
+        if mailing_list:
+            data = {
+                "subject": _("Votre service à été mentionné dans une demande"),
+                "users_to_notify": set(mailing_list),
+                "template": "permit_request_submitted_with_mention.txt",
+                "permit_request": permit_request,
+                "absolute_uri_func": request.build_absolute_uri,
+            }
+            services.send_email_notification(data)
     services.submit_permit_request(permit_request, request)
 
     user_is_backoffice_or_integrator_for_administrative_entity = request.user.groups.filter(

@@ -949,6 +949,11 @@ class WorksObjectProperty(models.Model):
         blank=True,
         help_text=_("Exemple: ^[0-9]{4}$"),
     )
+    services_to_notify = models.TextField(
+        _("Emails des services à notifier"),
+        blank=True,
+        help_text='Veuillez séparer les emails par une virgule ","',
+    )
 
     class Meta(object):
         ordering = ["order"]

@@ -505,9 +505,52 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             )
         )
         emails = get_emails("Nouvelle demande")
-
         self.assertEqual(len(emails), 1)
         self.assertEqual(emails[0].to, ["secretariat@yverdon.ch"])
+
+    def test_submit_permit_request_sends_email_to_services_to_notify_from_workobjectproperty(
+        self,
+    ):
+        permit_request = factories.PermitRequestGeoTimeFactory(
+            permit_request=factories.PermitRequestFactory(
+                author=self.user.permitauthor, status=models.PermitRequest.STATUS_DRAFT,
+            )
+        ).permit_request
+
+        work_object_type_choice = factories.WorksObjectTypeChoiceFactory(
+            permit_request=permit_request
+        )
+
+        prop = factories.WorksObjectPropertyFactory(
+            services_to_notify="test-send-1@geocity.ch, test-send-2@geocity.ch, test-i-am-not-an-email,  ,\n\n\n",
+            input_type=models.WorksObjectProperty.INPUT_TYPE_CHECKBOX,
+        )
+
+        prop.works_object_types.set(permit_request.works_object_types.all())
+        factories.WorksObjectPropertyValueFactory(
+            property=prop,
+            works_object_type_choice=work_object_type_choice,
+            value={"val": True},
+        )
+        self.client.post(
+            reverse(
+                "permits:permit_request_submit_confirmed",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        self.assertEqual(len(mail.outbox), 3)
+        self.assertIn(
+            mail.outbox[0].to, [["test-send-1@geocity.ch"], ["test-send-2@geocity.ch"]]
+        )
+
+        self.assertEqual(
+            mail.outbox[0].subject, "Votre service à été mentionné dans une demande"
+        )
+        self.assertIn(
+            "Une nouvelle demande mentionnant votre service vient d'être soumise.",
+            mail.outbox[0].message().as_string(),
+        )
 
     def test_missing_mandatory_date_property_gives_invalid_feedback(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
