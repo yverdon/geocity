@@ -112,3 +112,9 @@ def is_expired(context):
                 return ""
     else:
         return ""
+
+
+@register.simple_tag(takes_context=True)
+def can_always_be_updated(context):
+    if context["record"] is not None:
+        return context["record"].can_always_be_updated(context["request"].user)

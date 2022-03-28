@@ -50,12 +50,25 @@ def user_has_permitauthor(user):
 
 
 def get_permit_request_for_edition(user, permit_request_id):
+    permit_request = models.PermitRequest.objects.get(pk=permit_request_id)
+    if permit_request.can_always_be_updated(user):
+        allowed_statuses = {
+            models.PermitRequest.STATUS_DRAFT,
+            models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+            models.PermitRequest.STATUS_APPROVED,
+            models.PermitRequest.STATUS_PROCESSING,
+            models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+            models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            models.PermitRequest.STATUS_REJECTED,
+            models.PermitRequest.STATUS_RECEIVED,
+        }
+    else:
+        allowed_statuses = {
+            models.PermitRequest.STATUS_DRAFT,
+            models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+            models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+        }
 
-    allowed_statuses = {
-        models.PermitRequest.STATUS_DRAFT,
-        models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
-        models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-    }
     permit_request = services.get_permit_request_for_user_or_404(
         user, permit_request_id, statuses=allowed_statuses,
     )

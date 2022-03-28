@@ -538,8 +538,20 @@ class PermitRequest(models.Model):
     def can_be_edited_by_pilot(self):
         return self.status in self.EDITABLE_STATUSES
 
-    def can_always_be_updated(self):
-        return self.works_object_types.filter(can_always_update=True).exists()
+    def can_always_be_updated(self, user):
+        can_always_update = self.works_object_types.filter(
+            can_always_update=True
+        ).exists()
+        user_is_integrator_admin = user.groups.filter(
+            permitdepartment__is_integrator_admin=True
+        ).exists()
+        user_is_backoffice = user_is_integrator_admin = user.groups.filter(
+            permitdepartment__is_backoffice=True
+        ).exists()
+        user_is_superuser = user.is_superuser
+        return can_always_update and (
+            user_is_integrator_admin or user_is_backoffice or user_is_superuser
+        )
 
     def can_be_validated(self):
         return self.status in {self.STATUS_AWAITING_VALIDATION, self.STATUS_PROCESSING}

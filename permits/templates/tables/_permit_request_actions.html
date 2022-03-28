@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load permits_extras %}
 
 <ul class="list-inline">
   {% if record.author == request.user.permitauthor and not record.can_be_edited_by_author or can_view %}
@@ -9,7 +10,8 @@
   </li>
   {% endif %}
 
-  {% if record.author == request.user.permitauthor and record.can_be_edited_by_author or record.can_always_be_updated or request.user.is_superuser or perms.permits.edit_permit_request and record.can_be_edited_by_pilot %}
+  {% can_always_be_updated as can_update %}
+  {% if record.author == request.user.permitauthor and record.can_be_edited_by_author or request.user.is_superuser or perms.permits.edit_permit_request and record.can_be_edited_by_pilot or can_update %}
     <li>
       <a title="{% trans "Modifier" %}" href="{% url 'permits:permit_request_properties' record.id %}">
         <i class="fa fa-edit fa-lg"></i>

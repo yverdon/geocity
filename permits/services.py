@@ -1202,7 +1202,7 @@ def can_edit_permit_request(user, permit_request):
     return (
         permit_request.can_be_edited_by_pilot()
         and has_permission_to_edit_permit_request(user, permit_request)
-        or permit_request.can_always_be_updated()
+        or permit_request.can_always_be_updated(user)
     )
 
 
