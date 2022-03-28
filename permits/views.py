@@ -1343,45 +1343,19 @@ def permit_request_submit_confirmed(request, permit_request_id):
     if incomplete_steps:
         raise SuspiciousOperation
 
-    # Get property values from WorksObjectPropertyValue
-    work_object_property_value = services.get_properties_values(permit_request)
+    checkbox_to_notify = models.WorksObjectPropertyValue.objects.filter(
+        works_object_type_choice__permit_request=permit_request, value={"val": True}
+    ).values_list("property__services_to_notify", flat=True)
 
-    # First filter on WorksObjectPropertyValue, get only the boolean at true
-    work_objects_with_true_checkbox = work_object_property_value.filter(
-        value={"val": True}
-    )
-
-    # Get property of WorksObjectPropertyValue to get the correct checkbox
-    # If removed, even if a checkbox with services_to_notify is false, it's going to send an email
-    work_object_property = []
-    for work_object in work_objects_with_true_checkbox:
-        work_object_property.append(work_object.property)
-
-    if work_objects_with_true_checkbox.exists():
-        work_object_types = []
-        # Get the WorksObjectType through the relation WorksObjectTypeChoice from WorksObjectPropertyValue
-        for work_object_type_with_true_checkbox in work_objects_with_true_checkbox:
-            work_object_types.append(
-                work_object_type_with_true_checkbox.works_object_type_choice.works_object_type
-            )
-
-        # Get the WorksObjectProperty corresponding to the correct WorksObjectPropertyValue (boolean at true)
-        works_object_property_to_notify = models.WorksObjectProperty.objects.filter(
-            Q(works_object_types__in=work_object_types),
-            Q(name__in=work_object_property),
-        )
-
+    if checkbox_to_notify.exists():
         mailing_list = []
-        for emails in works_object_property_to_notify.values_list(
-            "services_to_notify", flat=True
-        ):
+        for emails in checkbox_to_notify:
             emails_addresses = emails.replace("\n", ",").split(",")
             mailing_list += [
                 ea.strip()
                 for ea in emails_addresses
                 if services.validate_email(ea.strip())
             ]
-
         if mailing_list:
             data = {
                 "subject": _("Votre service à été mentionné dans une demande"),
@@ -1390,9 +1364,7 @@ def permit_request_submit_confirmed(request, permit_request_id):
                 "permit_request": permit_request,
                 "absolute_uri_func": request.build_absolute_uri,
             }
-            # services.send_email_notification(data)
             services.send_email_notification(data)
-
     services.submit_permit_request(permit_request, request)
     return redirect("permits:permit_requests_list")
 
