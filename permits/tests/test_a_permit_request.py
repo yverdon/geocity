@@ -467,7 +467,6 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             )
         )
 
-        print(mail.outbox)
         self.assertEqual(len(mail.outbox), 3)
         self.assertIn(
             mail.outbox[0].to, [["test-send-1@geocity.ch"], ["test-send-2@geocity.ch"]]

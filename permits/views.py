@@ -1,7 +1,6 @@
 import logging
 import mimetypes
 import os
-from pyexpat import model
 import urllib.parse
 
 import requests
@@ -14,7 +13,7 @@ from django.contrib.auth.decorators import (
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.db.models import Prefetch, Sum, Q
+from django.db.models import Prefetch, Sum
 from django.forms import modelformset_factory
 from django.http import (
     Http404,
