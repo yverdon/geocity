@@ -60,6 +60,7 @@ def permit_request_summary(context, permit_request):
             )
 
     return {
+        "user": context.request.user,
         "creditor": creditor,
         "contacts": contacts,
         "objects_infos": objects_infos,

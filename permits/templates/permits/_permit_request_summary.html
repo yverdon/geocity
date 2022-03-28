@@ -126,7 +126,9 @@
                 </div>
                 <div class="col-6 text-right">
                   <a href="/media/{{ document.document }}/"><i class="fa fa-download" aria-hidden="true"></i></a>
-                  <a class="text-danger" href="/permit-requests/documents/{{ document.id }}/delete" type=""><i class="fa fa-trash" aria-hidden="true"></i></a>
+                  {% if user == document.owner %}
+                    <a class="text-danger" href="/permit-requests/documents/{{ document.id }}/delete" type=""><i class="fa fa-trash" aria-hidden="true"></i></a>
+                  {% endif %}
                 </div>
             </dd>
 
