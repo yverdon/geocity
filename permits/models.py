@@ -1250,6 +1250,36 @@ class PermitRequestComplementaryDocument(models.Model):
     is_public = models.BooleanField(default=False, verbose_name=_("Public"))
 
 
+class ComplementaryDocumentType(models.Model):
+    name = models.CharField(_("nom"), max_length=255)
+    parent = models.ForeignKey(
+        "ComplementaryDocumentType",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        verbose_name=_("Type parent"),
+    )
+    work_object_types = models.ForeignKey(
+        WorksObjectType,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        verbose_name=_("Objets"),
+    )
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=(Q(parent__isnull=False) & Q(work_object_types__isnull=True))
+                | (Q(parent__isnull=True) & Q(work_object_types__isnull=False)),
+                name="Only parent types can be linked to a work object type",
+            )
+        ]
+
+    def __str__(self):
+        return self.name
+
+
 class QgisProject(models.Model):
     qgis_project_file = fields.AdministrativeEntityFileField(
         _("Projet QGIS '*.qgs'"),
