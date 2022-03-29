@@ -43,6 +43,9 @@ urlpatterns = [
     path("", permits_views.permit_request_select_administrative_entity),
     path("permit-requests/", include("permits.urls")),
     path("grappelli/", include("grappelli.urls")),  # grappelli URLS
+    # TODO: Change url and try to list it in /rest/
+    # TODO: Write tests
+    path('rest/auth/register/', api.PermitAuthorCreateAPI.as_view(), name='register'), # API to create user
 ]
 
 if settings.ENABLE_2FA:

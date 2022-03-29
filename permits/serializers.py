@@ -12,8 +12,7 @@ from rest_framework_gis import serializers as gis_serializers
 from datetime import timedelta
 from geomapshark import settings
 
-from . import geoservices, models, search
-from . import geoservices, models, services, search
+from . import geoservices, models, services, search, forms
 
 
 class PermitAdministrativeEntitySerializer(serializers.ModelSerializer):
@@ -455,3 +454,63 @@ class PermitRequestFiltersSerializer(serializers.Serializer):
 class SearchSerializer(serializers.Serializer):
     def to_representation(self, value):
         return search.search_result_to_json(value)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'password','first_name', 'last_name', 'email')
+
+
+class PermitAuthorCreateSerializer(serializers.Serializer):
+    """
+    Serializer for user creation
+    """
+    username = serializers.CharField(allow_blank=False, required=True, label="Nom d'utilisateur *")
+    password = serializers.CharField(allow_blank=False, required=True, label="Mot de passe *", style={"input_type": "password"})
+    email = serializers.EmailField(allow_blank=False, required=True, label="Courriel *")
+    address = serializers.CharField(allow_blank=False, required=True, label="Adresse *")
+    zipcode = serializers.CharField(allow_blank=False, required=True, label="NPA *")
+    city = serializers.CharField(allow_blank=False, required=True, label="Ville *", help_text="ex: Yverdon")
+    phone_first = serializers.CharField(allow_blank=False, required=True, label="Téléphone principal *", help_text="ex: 024 111 22 22")
+    first_name = serializers.CharField(allow_blank=True, required=False, label="Prénom")
+    last_name = serializers.CharField(allow_blank=True, required=False, label="Nom")
+    phone_second = serializers.CharField(allow_blank=True, required=False, label="Téléphone secondaire", help_text="ex: 079 111 22 22")
+    company_name = serializers.CharField(allow_blank=True, required=False, label="Raison Sociale", help_text="ex: Construction SA")
+    vat_number = serializers.CharField(allow_blank=True, required=False, label="Numéro TVA", help_text="ex: CHE-123.456.789")
+    notify_per_email = serializers.BooleanField(required=False, initial=True, label="Me notifier par e-mail", help_text="Permet d'activer la réception des notifications automatiques de suivi dans votre boîte mail, par exemple lorsqu'une demande a été soumise ou est en attente de validation.")
+    
+    def create(self, validated_data):
+        error_handler = {}
+        
+        if(User.objects.filter(email=validated_data["email"]).exists()):
+            error_handler["Email"] = "This email already exists"
+            
+        if(User.objects.filter(username=validated_data["username"]).exists()):
+            error_handler["Username"] = "This username already exists"
+            
+        if(error_handler != {}):
+            return error_handler
+        
+        user = User(
+            username=validated_data["username"],
+            first_name=validated_data["first_name"],
+            last_name=validated_data["last_name"],
+            email=validated_data["email"],
+        )
+        user.set_password(validated_data["password"])
+        user_id = user.save()
+
+        models.PermitAuthor(
+            company_name=validated_data["company_name"],
+            vat_number=validated_data["vat_number"],
+            address=validated_data["address"],
+            zipcode=validated_data["zipcode"],
+            city=validated_data["city"],
+            phone_first=validated_data["phone_first"],
+            phone_second=validated_data["phone_second"],
+            notify_per_email=validated_data["notify_per_email"],
+            user=user_id
+        ).save()
+        
+        return user

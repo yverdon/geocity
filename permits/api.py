@@ -12,7 +12,8 @@ from django.contrib.gis.geos.collections import (
     MultiPolygon,
 )
 from django.db.models import CharField, F, Prefetch, Q
-from rest_framework import viewsets
+from rest_framework import viewsets, generics
+from rest_framework.response import Response
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework_gis.fields import GeometrySerializerMethodField
 from rest_framework.throttling import ScopedRateThrottle
@@ -426,6 +427,28 @@ class SearchViewSet(viewsets.ReadOnlyModelViewSet):
             return results
         else:
             return None
+
+
+class PermitAuthorCreateAPI(generics.GenericAPIView):
+    """
+    User creation endpoint Usage:
+        Username, password, email, address, zipcode, city and phone_first are required
+    """
+    serializer_class = serializers.PermitAuthorCreateSerializer
+    
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        
+        if(type(user) is dict):
+            return Response(user)
+        else:
+            return Response({
+                "user": serializers.UserSerializer(user, context=self.get_serializer_context()).data,
+            })
+            
+        
 
 
 PermitRequestPointViewSet = permitRequestViewSetSubsetFactory("points")
