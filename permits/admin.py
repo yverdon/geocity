@@ -300,7 +300,7 @@ class UserAdmin(BaseUserAdmin):
         return qs
 
     def save_model(self, req, obj, form, change):
-        """ Set 'is_staff=True' when the saved user is in a integrator group.
+        """Set 'is_staff=True' when the saved user is in a integrator group.
         But let is_staff=True for super users.
         """
         if req.user.is_superuser:
@@ -927,8 +927,7 @@ class WorksObjectPropertyAdmin(
 
 
 class PermitAdministrativeEntityAdminForm(forms.ModelForm):
-    """ Form class to configure an administrative entity (commune, organisation)
-    """
+    """Form class to configure an administrative entity (commune, organisation)"""
 
     class Meta:
         model = models.PermitAdministrativeEntity
@@ -1288,3 +1287,4 @@ admin.site.register(models.WorksObject, WorksObjectAdmin)
 admin.site.register(models.PermitRequestAmendProperty, PermitRequestAmendPropertyAdmin)
 admin.site.register(models.TemplateCustomization, TemplateCustomizationAdmin)
 admin.site.register(models.PermitRequest, PermitRequestAdmin)
+admin.site.register(models.ComplementaryDocumentType)
