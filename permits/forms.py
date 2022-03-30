@@ -1434,12 +1434,19 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             self.fields[name].label = ""
 
     def save(self, commit=True):
-        self.instance.document_type = models.ComplementaryDocumentType.objects.filter(
+        document = super().save(commit=False)
+
+        # set the child type as the documents type
+        document.document_type = models.ComplementaryDocumentType.objects.filter(
             pk=self.cleaned_data[
                 "parent_{}".format(self.cleaned_data["document_type"].pk)
             ].pk
         ).get()
-        super().save()
+
+        if commit:
+            document.save()
+
+        return document
 
     authorised_departments = forms.ModelMultipleChoiceField(
         queryset=None, widget=forms.CheckboxSelectMultiple,
