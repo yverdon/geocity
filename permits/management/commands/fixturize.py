@@ -424,6 +424,7 @@ class Command(BaseCommand):
                 works_object_type.administrative_entities.add(
                     administrative_entity_vevey
                 )
+                self.create_document_types(works_object_type)
                 for prop in props:
                     prop.works_object_types.add(works_object_type)
 
@@ -631,3 +632,37 @@ class Command(BaseCommand):
             application_subtitle="Demandes en lignes",
             application_description="Demandes concernant l' <i>administration</i>",
         )
+
+    def create_document_types(self, wot):
+        document_types = [
+            (
+                "{} Parent #1".format(wot.pk),
+                wot,
+                [
+                    "{} Child #1.1".format(wot.pk),
+                    "{} Child #1.2".format(wot.pk),
+                    "{} Child #1.3".format(wot.pk),
+                ],
+            ),
+            (
+                "{} Parent #2".format(wot.pk),
+                wot,
+                [
+                    "{} Child #2.1".format(wot.pk),
+                    "{} Child #2.2".format(wot.pk),
+                    "{} Child #2.3".format(wot.pk),
+                    "{} Child #2.4".format(wot.pk),
+                ],
+            ),
+        ]
+
+        for document_type in document_types:
+            name, work_object_type, children = document_type
+            parent = models.ComplementaryDocumentType.objects.create(
+                name=name, work_object_types=work_object_type, parent=None
+            )
+
+            for child in children:
+                models.ComplementaryDocumentType.objects.create(
+                    name=child, work_object_types=None, parent=parent
+                )
