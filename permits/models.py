@@ -1248,6 +1248,12 @@ class PermitRequestComplementaryDocument(models.Model):
         verbose_name=_("Département autorisé à visualiser le document"),
     )
     is_public = models.BooleanField(default=False, verbose_name=_("Public"))
+    document_type = models.ForeignKey(
+        "ComplementaryDocumentType",
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Type du document"),
+    )
 
 
 class ComplementaryDocumentType(models.Model):
