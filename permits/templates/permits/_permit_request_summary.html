@@ -137,6 +137,9 @@
 
             <dt>{% trans "Description" %}</dt>
             <dd>{{ document.description }}</dd>
+
+            <dt>{% trans "Type" %}</dt>
+            <dd>{{ document.document_type }}</dd>
           </dl>
           {% if not forloop.last %}
             <hr>
