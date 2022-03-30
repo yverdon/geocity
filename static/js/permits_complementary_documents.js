@@ -48,3 +48,14 @@ document.getElementById('remove-document').addEventListener('click', (e) => {
   let target = [...documents].pop()
   target.remove()
 })
+
+document.getElementById('id_form-0-document_type').addEventListener('change', (e) => {
+  for (let child of document.getElementsByClassName('child-type')) {
+    child.setAttribute('hidden', '')
+  }
+
+  let targetChild = document.getElementById(`id_form-0-parent_${e.target.value}`)
+  if (targetChild) {
+    targetChild.removeAttribute('hidden')
+  }
+})
