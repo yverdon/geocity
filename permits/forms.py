@@ -1331,6 +1331,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             "status",
             "authorised_departments",
             "is_public",
+            "document_type",
         ]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 2}),
@@ -1345,6 +1346,32 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         ].queryset = models.PermitDepartment.objects.filter(
             administrative_entity=permit_request.administrative_entity
         ).all()
+
+        parent_types = models.ComplementaryDocumentType.objects.filter(
+            work_object_types__in=permit_request.works_object_types.all()
+        ).all()
+
+        self.fields["document_type"].queryset = parent_types
+
+        for parent in parent_types:
+            name = "parent_{}".format(parent.pk)
+            self.fields[name] = forms.ModelChoiceField(queryset=None, required=False)
+            self.fields[
+                name
+            ].queryset = models.ComplementaryDocumentType.objects.filter(
+                work_object_types=None, parent=parent
+            )
+            self.fields[name].widget.attrs["hidden"] = ""
+            self.fields[name].widget.attrs["class"] = "child-type"
+            self.fields[name].label = ""
+
+    def save(self, commit=True):
+        self.instance.document_type = models.ComplementaryDocumentType.objects.filter(
+            pk=self.cleaned_data[
+                "parent_{}".format(self.cleaned_data["document_type"].pk)
+            ].pk
+        ).get()
+        super().save()
 
     authorised_departments = forms.ModelMultipleChoiceField(
         queryset=None, widget=forms.CheckboxSelectMultiple,
