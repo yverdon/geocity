@@ -23,13 +23,11 @@ class TestComplementaryDocuments(GeocityTestCase):
         self.child_type = factories.ChildComplementaryDocumentTypeFactory(
             parent=self.parent_type
         )
-        self.department = models.PermitDepartment.objects.filter(
-            group=self.groups[self.SECRETARIAT]
-        ).get()
+
         self.permit_request = factories.PermitRequestFactory(
             author=self.user.permitauthor,
             status=models.PermitRequest.STATUS_RECEIVED,
-            administrative_entity=self.department.administrative_entity,
+            administrative_entity=self.administrative_entity,
         )
         self.permit_request.works_object_types.add(self.parent_type.work_object_types)
 
@@ -63,7 +61,7 @@ class TestComplementaryDocuments(GeocityTestCase):
                 "form-0-status": [
                     models.PermitRequestComplementaryDocument.STATUS_OTHER
                 ],
-                "form-0-authorised_departments": [self.department.pk],
+                "form-0-authorised_departments": [self.departments[self.VALIDATOR].pk],
                 "form-0-is_public": ["0"],
                 "form-0-document": [file],
                 "form-0-document_type": [self.parent_type.pk],
@@ -79,7 +77,7 @@ class TestComplementaryDocuments(GeocityTestCase):
                 "form-0-status": [
                     models.PermitRequestComplementaryDocument.STATUS_OTHER
                 ],
-                "form-0-authorised_departments": [self.department.pk],
+                "form-0-authorised_departments": [self.departments[self.VALIDATOR].pk],
                 "form-0-is_public": ["0"],
                 "form-0-document": [file],
                 "form-0-document_type": [self.parent_type.pk],
@@ -88,7 +86,7 @@ class TestComplementaryDocuments(GeocityTestCase):
                 "form-1-status": [
                     models.PermitRequestComplementaryDocument.STATUS_FINALE
                 ],
-                "form-1-authorised_departments": [self.department.pk],
+                "form-1-authorised_departments": [self.departments[self.VALIDATOR].pk],
                 "form-1-is_public": ["0"],
                 "form-1-document": [file],
                 "form-1-document_type": [self.parent_type.pk],
@@ -96,3 +94,46 @@ class TestComplementaryDocuments(GeocityTestCase):
             }
 
             self.execute_complementary_document_upload_test(data)
+
+    def test_authorised_department_has_documents_in_summary(self):
+        self.login(email="pilot@test.com", group=self.SECRETARIAT)
+        self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            ),
+            data={
+                "action": "request_validation",
+                "departments": [self.departments[self.VALIDATOR].pk],
+            },
+        )
+
+        self.login(email="validator@geocity.lo", group=self.VALIDATOR)
+        document = factories.ComplementaryDocumentFactory.create(
+            permit_request=self.permit_request,
+            authorised_departments=[self.departments[self.VALIDATOR].pk],
+        )
+        permit_request_detail = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            )
+        )
+
+        expected_title = "<h2>Documents</h2>"
+        self.assertInHTML(expected_title, permit_request_detail.content.decode())
+        self.assertInHTML(
+            document.document.name, permit_request_detail.content.decode()
+        )
+
+    def test_public_document_visible_by_everyone(self):
+        pass
+
+    def test_document_owner_can_delete_file(self):
+        pass
+
+    def test_final_documents_can_not_be_deleted(self):
+        pass
+
+    def test_non_owners_can_not_delete_documents(self):
+        pass
