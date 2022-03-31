@@ -548,4 +548,174 @@ class PermitRequestAPITestCase(TestCase):
             response_json[0], {"is_logged": False,},
         )
 
+    # ///////////////////////////////////
+    # /rest/permitauthorcreate (user creation)
+    # ///////////////////////////////////
+
+    def test_permit_author_create_not_logged_message(self):
+        response = self.client.post(
+            reverse("permitauthorcreate"),
+            {
+                "username": "user_permitauthorcreate",
+                "password": "password_permitauthorcreate",
+                "email": "user_permitauthorcreate@ylb.ch",
+                "address": "Place pestalozzi 2",
+                "zipcode": "1401",
+                "city": "Yverdon-les-Bains",
+                "phone_first": "024 111 22 22",
+                "first_name": "",
+                "last_name": "",
+                "phone_second": "",
+                "company_name": "",
+                "vat_number": "",
+                "notify_per_email": True,
+            },
+        )
+        response_json = response.json()
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(
+            response_json, {"detail": "Informations d'authentification non fournies."}
+        )
+
+    def test_permit_author_create_logged_as_unauthorized_simple_user(self):
+        self.client.login(username=self.normal_user.username, password="password")
+        response = self.client.post(
+            reverse("permitauthorcreate"),
+            {
+                "username": "user_permitauthorcreate",
+                "password": "password_permitauthorcreate",
+                "email": "user_permitauthorcreate@ylb.ch",
+                "address": "Place pestalozzi 2",
+                "zipcode": "1401",
+                "city": "Yverdon-les-Bains",
+                "phone_first": "024 111 22 22",
+                "first_name": "",
+                "last_name": "",
+                "phone_second": "",
+                "company_name": "",
+                "vat_number": "",
+                "notify_per_email": True,
+            },
+        )
+        response_json = response.json()
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response_json,
+            {"detail": "Vous n'avez pas la permission d'effectuer cette action."},
+        )
+
+    def test_permit_author_create_get_is_unauthorized(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        response = self.client.get(reverse("permitauthorcreate"))
+        response_json = response.json()
+        self.assertEqual(response.status_code, 405)
+        # "detail": "Méthode « GET » non autorisée."
+        self.assertEqual(
+            response_json, {"detail": "Méthode «\xa0GET\xa0» non autorisée."}
+        )
+
+    def test_permit_author_create_missing_mandatory_elements(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        response = self.client.post(
+            reverse("permitauthorcreate"),
+            {
+                "username": "",
+                "password": "",
+                "email": "",
+                "address": "",
+                "zipcode": "",
+                "city": "",
+                "phone_first": "",
+                "first_name": "",
+                "last_name": "",
+                "phone_second": "",
+                "company_name": "",
+                "vat_number": "",
+                "notify_per_email": "",
+            },
+        )
+        response_json = response.json()
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response_json,
+            {
+                "username": ["Ce champ ne peut être vide."],
+                "password": ["Ce champ ne peut être vide."],
+                "email": ["Ce champ ne peut être vide."],
+                "address": ["Ce champ ne peut être vide."],
+                "zipcode": ["Ce champ ne peut être vide."],
+                "city": ["Ce champ ne peut être vide."],
+                "phone_first": ["Ce champ ne peut être vide."],
+            },
+        )
+
+    def test_permit_author_create_duplicate_email_and_username(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        user = models.User.objects.first()
+        response = self.client.post(
+            reverse("permitauthorcreate"),
+            {
+                "username": user.username,
+                "password": "password_permitauthorcreate",
+                "email": user.email,
+                "address": "Place pestalozzi 2",
+                "zipcode": "1401",
+                "city": "Yverdon-les-Bains",
+                "phone_first": "024 111 22 22",
+                "first_name": "",
+                "last_name": "",
+                "phone_second": "",
+                "company_name": "",
+                "vat_number": "",
+                "notify_per_email": True,
+            },
+        )
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response_json,
+            {
+                "Email": "This email already exists",
+                "Username": "This username already exists",
+            },
+        )
+
+    def test_permit_author_create_create_user_in_db(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        response = self.client.post(
+            reverse("permitauthorcreate"),
+            {
+                "username": "user_permitauthorcreate",
+                "password": "password_permitauthorcreate",
+                "email": "user_permitauthorcreate@ylb.ch",
+                "address": "Place pestalozzi 2",
+                "zipcode": "1401",
+                "city": "Yverdon-les-Bains",
+                "phone_first": "024 111 22 22",
+                "first_name": "",
+                "last_name": "",
+                "phone_second": "",
+                "company_name": "",
+                "vat_number": "",
+                "notify_per_email": True,
+            },
+        )
+        response_json = response.json()
+        user = models.User.objects.get(username="user_permitauthorcreate")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(user)
+        self.assertEqual(
+            response_json,
+            {
+                "user": {
+                    "id": user.id,
+                    "username": "user_permitauthorcreate",
+                    "password": user.password,
+                    "first_name": "",
+                    "last_name": "",
+                    "email": "user_permitauthorcreate@ylb.ch",
+                }
+            },
+        )
+
     # TODO: test also the permits:permit_request_print route

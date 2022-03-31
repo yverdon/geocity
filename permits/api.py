@@ -434,21 +434,26 @@ class PermitAuthorCreateAPI(generics.GenericAPIView):
     User creation endpoint Usage:
         Username, password, email, address, zipcode, city and phone_first are required
     """
+
+    throttle_scope = "permitauthorcreate"
     serializer_class = serializers.PermitAuthorCreateSerializer
-    
+    permission_classes = [BlockRequesterUserPermission]
+
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        
-        if(type(user) is dict):
+
+        if type(user) is dict:
             return Response(user)
         else:
-            return Response({
-                "user": serializers.UserSerializer(user, context=self.get_serializer_context()).data,
-            })
-            
-        
+            return Response(
+                {
+                    "user": serializers.UserSerializer(
+                        user, context=self.get_serializer_context()
+                    ).data,
+                }
+            )
 
 
 PermitRequestPointViewSet = permitRequestViewSetSubsetFactory("points")

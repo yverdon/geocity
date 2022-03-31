@@ -453,6 +453,8 @@ REST_FRAMEWORK = {
         "events": os.getenv("DRF_THROTTLE_RATE_EVENTS_API"),
         # Full API for search
         "search": os.getenv("DRF_THROTTLE_RATE_SEARCH_API"),
+        # Full API for create user
+        "permitauthorcreate": os.getenv("DRF_THROTTLE_RATE_PERMIT_AUTHOR_CREATE_API"),
     },
 }
 # Allow TokenAuthentication to the API.

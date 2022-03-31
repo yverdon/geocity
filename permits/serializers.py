@@ -459,39 +459,74 @@ class SearchSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'password','first_name', 'last_name', 'email')
+        fields = ("id", "username", "password", "first_name", "last_name", "email")
 
 
 class PermitAuthorCreateSerializer(serializers.Serializer):
     """
     Serializer for user creation
     """
-    username = serializers.CharField(allow_blank=False, required=True, label="Nom d'utilisateur *")
-    password = serializers.CharField(allow_blank=False, required=True, label="Mot de passe *", style={"input_type": "password"})
+
+    username = serializers.CharField(
+        allow_blank=False, required=True, label="Nom d'utilisateur *"
+    )
+    password = serializers.CharField(
+        allow_blank=False,
+        required=True,
+        label="Mot de passe *",
+        style={"input_type": "password"},
+    )
     email = serializers.EmailField(allow_blank=False, required=True, label="Courriel *")
     address = serializers.CharField(allow_blank=False, required=True, label="Adresse *")
     zipcode = serializers.CharField(allow_blank=False, required=True, label="NPA *")
-    city = serializers.CharField(allow_blank=False, required=True, label="Ville *", help_text="ex: Yverdon")
-    phone_first = serializers.CharField(allow_blank=False, required=True, label="Téléphone principal *", help_text="ex: 024 111 22 22")
+    city = serializers.CharField(
+        allow_blank=False, required=True, label="Ville *", help_text="ex: Yverdon"
+    )
+    phone_first = serializers.CharField(
+        allow_blank=False,
+        required=True,
+        label="Téléphone principal *",
+        help_text="ex: 024 111 22 22",
+    )
     first_name = serializers.CharField(allow_blank=True, required=False, label="Prénom")
     last_name = serializers.CharField(allow_blank=True, required=False, label="Nom")
-    phone_second = serializers.CharField(allow_blank=True, required=False, label="Téléphone secondaire", help_text="ex: 079 111 22 22")
-    company_name = serializers.CharField(allow_blank=True, required=False, label="Raison Sociale", help_text="ex: Construction SA")
-    vat_number = serializers.CharField(allow_blank=True, required=False, label="Numéro TVA", help_text="ex: CHE-123.456.789")
-    notify_per_email = serializers.BooleanField(required=False, initial=True, label="Me notifier par e-mail", help_text="Permet d'activer la réception des notifications automatiques de suivi dans votre boîte mail, par exemple lorsqu'une demande a été soumise ou est en attente de validation.")
-    
+    phone_second = serializers.CharField(
+        allow_blank=True,
+        required=False,
+        label="Téléphone secondaire",
+        help_text="ex: 079 111 22 22",
+    )
+    company_name = serializers.CharField(
+        allow_blank=True,
+        required=False,
+        label="Raison Sociale",
+        help_text="ex: Construction SA",
+    )
+    vat_number = serializers.CharField(
+        allow_blank=True,
+        required=False,
+        label="Numéro TVA",
+        help_text="ex: CHE-123.456.789",
+    )
+    notify_per_email = serializers.BooleanField(
+        required=False,
+        initial=True,
+        label="Me notifier par e-mail",
+        help_text="Permet d'activer la réception des notifications automatiques de suivi dans votre boîte mail, par exemple lorsqu'une demande a été soumise ou est en attente de validation.",
+    )
+
     def create(self, validated_data):
         error_handler = {}
-        
-        if(User.objects.filter(email=validated_data["email"]).exists()):
+
+        if User.objects.filter(email=validated_data["email"]).exists():
             error_handler["Email"] = "This email already exists"
-            
-        if(User.objects.filter(username=validated_data["username"]).exists()):
+
+        if User.objects.filter(username=validated_data["username"]).exists():
             error_handler["Username"] = "This username already exists"
-            
-        if(error_handler != {}):
+
+        if error_handler != {}:
             return error_handler
-        
+
         user = User(
             username=validated_data["username"],
             first_name=validated_data["first_name"],
@@ -510,7 +545,7 @@ class PermitAuthorCreateSerializer(serializers.Serializer):
             phone_first=validated_data["phone_first"],
             phone_second=validated_data["phone_second"],
             notify_per_email=validated_data["notify_per_email"],
-            user=user_id
+            user=user_id,
         ).save()
-        
+
         return user
