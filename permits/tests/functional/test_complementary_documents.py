@@ -19,6 +19,10 @@ class TestComplementaryDocuments(GeocityTestCase):
         super().setUp()
 
         self.login(email="user@test.com")
+        self.parent_type = factories.ParentComplementaryDocumentTypeFactory()
+        self.child_type = factories.ChildComplementaryDocumentTypeFactory(
+            parent=self.parent_type
+        )
         self.department = models.PermitDepartment.objects.filter(
             group=self.groups[self.SECRETARIAT]
         ).get()
@@ -27,7 +31,7 @@ class TestComplementaryDocuments(GeocityTestCase):
             status=models.PermitRequest.STATUS_RECEIVED,
             administrative_entity=self.department.administrative_entity,
         )
-        self.permit_request.refresh_from_db()
+        self.permit_request.works_object_types.add(self.parent_type.work_object_types)
 
     def execute_complementary_document_upload_test(self, data):
         self.login(email="pilot@test.com", group=self.SECRETARIAT)
@@ -62,6 +66,8 @@ class TestComplementaryDocuments(GeocityTestCase):
                 "form-0-authorised_departments": [self.department.pk],
                 "form-0-is_public": ["0"],
                 "form-0-document": [file],
+                "form-0-document_type": [self.parent_type.pk],
+                "form-0-parent_{}".format(self.parent_type.pk): [self.child_type.pk],
             }
 
             self.execute_complementary_document_upload_test(data)
@@ -76,6 +82,8 @@ class TestComplementaryDocuments(GeocityTestCase):
                 "form-0-authorised_departments": [self.department.pk],
                 "form-0-is_public": ["0"],
                 "form-0-document": [file],
+                "form-0-document_type": [self.parent_type.pk],
+                "form-0-parent_{}".format(self.parent_type.pk): [self.child_type.pk],
                 "form-1-description": ["Multiple document upload. #2"],
                 "form-1-status": [
                     models.PermitRequestComplementaryDocument.STATUS_FINALE
@@ -83,6 +91,8 @@ class TestComplementaryDocuments(GeocityTestCase):
                 "form-1-authorised_departments": [self.department.pk],
                 "form-1-is_public": ["0"],
                 "form-1-document": [file],
+                "form-1-document_type": [self.parent_type.pk],
+                "form-1-parent_{}".format(self.parent_type.pk): [self.child_type.pk],
             }
 
             self.execute_complementary_document_upload_test(data)
