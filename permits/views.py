@@ -190,7 +190,9 @@ class PermitRequestDetailView(View):
             action: self.get_formset_for_action(action) for action in current_actions
         }
         available_actions = [
-            action for action in current_actions if action_forms[action]
+            action
+            for action in current_actions
+            if action_forms[action] or action_formsets[action]
         ]
 
         try:
@@ -655,7 +657,7 @@ class PermitRequestDetailView(View):
     def handle_complementary_documents_form_submission(self, form):
         for f in form:
             f.instance.owner = self.request.user
-            f.instance.permit_request_id = self.permit_request.pk
+            f.instance.permit_request = self.permit_request
             f.save()
 
         success_message = (

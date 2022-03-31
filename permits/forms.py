@@ -1323,6 +1323,10 @@ class PermitRequestClassifyForm(forms.ModelForm):
 
 
 class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
+    authorised_departments = forms.ModelMultipleChoiceField(
+        queryset=None, widget=forms.CheckboxSelectMultiple,
+    )
+
     class Meta:
         model = models.PermitRequestComplementaryDocument
         fields = [
@@ -1380,9 +1384,13 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
 
         return document
 
-    authorised_departments = forms.ModelMultipleChoiceField(
-        queryset=None, widget=forms.CheckboxSelectMultiple,
-    )
+    def clean(self):
+        cleaned_data = self.cleaned_data
+
+        if not cleaned_data["parent_{}".format(cleaned_data["document_type"].pk)]:
+            raise ValidationError(_("Un sous-type doit être renseigné!"))
+
+        return cleaned_data
 
 
 class SocialSignupForm(SignupForm):
