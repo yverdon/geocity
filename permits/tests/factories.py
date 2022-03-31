@@ -466,3 +466,20 @@ class TemplateCustomizationFactory(factory.django.DjangoModelFactory):
     application_title = "mycustomtitle"
     application_subtitle = "mycustomsubtitle"
     application_description = "mycustomdescription"
+
+
+class ComplementaryDocumentTypeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.ComplementaryDocumentType
+
+    name = factory.Faker("first_name")
+
+
+class ParentComplementaryDocumentTypeFactory(ComplementaryDocumentTypeFactory):
+    work_object_types = factory.SubFactory(WorksObjectTypeFactory)
+    parent = None
+
+
+class ChildComplementaryDocumentTypeFactory(ComplementaryDocumentTypeFactory):
+    work_object_types = None
+    parent = factory.SubFactory(ParentComplementaryDocumentTypeFactory)
