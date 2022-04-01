@@ -120,14 +120,22 @@ class TestComplementaryDocuments(GeocityTestCase):
             )
         )
 
-        expected_title = "<h2>Documents</h2>"
-        self.assertInHTML(expected_title, permit_request_detail.content.decode())
-        self.assertInHTML(
-            document.document.name, permit_request_detail.content.decode()
-        )
+        self.assertIn(document, list(permit_request_detail.context["documents"]))
 
     def test_public_document_visible_by_everyone(self):
-        pass
+        # we're logged in as the other of the request
+        document = factories.ComplementaryDocumentFactory.create(
+            permit_request=self.permit_request,
+            authorised_departments=[self.departments[self.VALIDATOR].pk],
+            is_public=True,
+        )
+        permit_request_detail = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            )
+        )
+        self.assertIn(document, list(permit_request_detail.context["documents"]))
 
     def test_document_owner_can_delete_file(self):
         pass
