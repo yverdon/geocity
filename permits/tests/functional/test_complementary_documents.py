@@ -1,7 +1,8 @@
 from .. import factories
-from permits import models
+from permits import models, views
 from ..geocity_test_case import GeocityTestCase
 from django.urls import reverse
+from django.contrib import messages
 
 
 class TestComplementaryDocuments(GeocityTestCase):
@@ -137,11 +138,65 @@ class TestComplementaryDocuments(GeocityTestCase):
         )
         self.assertIn(document, list(permit_request_detail.context["documents"]))
 
+    def prepare_document_test(self, document_args):
+
+        document = factories.ComplementaryDocumentFactory.create(
+            **{
+                **{
+                    "permit_request": self.permit_request,
+                    "authorised_departments": [self.departments[self.VALIDATOR].pk],
+                },
+                **document_args,
+            }
+        )
+
+        response = self.client.get(
+            reverse(
+                "permits:complementary_documents_delete", kwargs={"pk": document.pk},
+            ),
+            follow=True,
+        )
+
+        return document, response
+
     def test_document_owner_can_delete_file(self):
-        pass
+        self.login(email="pilot@test.com", group=self.SECRETARIAT)
+        document, _ = self.prepare_document_test(document_args={"owner": self.user,})
+
+        self.assertFalse(
+            models.PermitRequestComplementaryDocument.objects.filter(
+                pk=document.pk
+            ).exists()
+        )
 
     def test_final_documents_can_not_be_deleted(self):
-        pass
+        self.login(email="pilot@test.com", group=self.SECRETARIAT)
+        document, response = self.prepare_document_test(
+            document_args={
+                "owner": self.user,
+                "status": models.PermitRequestComplementaryDocument.STATUS_FINALE,
+            }
+        )
+
+        message = [m for m in response.context["messages"]][0]
+        actual = (message.message, message.level)
+        expected = (
+            views.PermitRequestComplementaryDocumentDeleteView.final_error_message,
+            messages.ERROR,
+        )
+        self.assertResponseMessageContains(actual, expected)
 
     def test_non_owners_can_not_delete_documents(self):
-        pass
+        document, response = self.prepare_document_test(
+            document_args={
+                "status": models.PermitRequestComplementaryDocument.STATUS_FINALE,
+            }
+        )
+
+        message = [m for m in response.context["messages"]][0]
+        actual = (message.message, message.level)
+        expected = (
+            views.PermitRequestComplementaryDocumentDeleteView.owner_error_message,
+            messages.ERROR,
+        )
+        self.assertResponseMessageContains(actual, expected)
