@@ -56,3 +56,14 @@ class GeocityTestCase(TestCase):
         self.user = self.get_user(email=email, password=password, group=group)
 
         self.client.login(username=self.user.username, password=password)
+
+    def assertResponseMessageContains(self, actual, expected):
+        actual_message, actual_level = actual
+        expected_message, expected_level = expected
+        if not actual_level == expected_level:
+            raise AssertionError(
+                "Message level {} != {}".format(actual_level, expected_level)
+            )
+
+        if not actual_message == expected_message:
+            raise AssertionError("{} != {}".format(actual_message, expected_message))
