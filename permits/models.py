@@ -3,6 +3,7 @@ import dataclasses
 import enum
 from datetime import date, datetime, timedelta
 
+import os
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
@@ -1413,6 +1414,11 @@ class PermitRequestComplementaryDocument(models.Model):
         on_delete=models.SET_NULL,
         verbose_name=_("Type du document"),
     )
+
+    def delete(self, using=None, keep_parents=False):
+        # delete the uploaded file
+        os.remove(os.path.join(settings.MEDIA_ROOT, self.document.name))
+        return super().delete(using, keep_parents)
 
 
 class ComplementaryDocumentType(models.Model):
