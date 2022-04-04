@@ -3604,10 +3604,18 @@ class PermitRequestClassifyTestCase(TestCase):
         self.assertEqual(len(mail.outbox), 4)
         self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
 
-        self.assertEqual(
-            mail.outbox[0].subject,
-            "Votre demande a été traitée et classée (Foo type, Bar type)",
+        self.assertIn(
+            "Votre demande a été traitée et classée", mail.outbox[0].subject,
         )
+
+        self.assertIn(
+            "Bar type", mail.outbox[0].subject,
+        )
+
+        self.assertIn(
+            "Foo type", mail.outbox[0].subject,
+        )
+
         self.assertIn(
             "Nous vous informons que votre demande a été traitée et classée.",
             mail.outbox[0].message().as_string(),
