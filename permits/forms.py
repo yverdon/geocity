@@ -1394,6 +1394,9 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
     def clean(self):
         cleaned_data = self.cleaned_data
 
+        if not self.cleaned_data.get("document_type"):
+            raise ValidationError(_("Un type doit être renseigné!"))
+
         if not cleaned_data["parent_{}".format(cleaned_data["document_type"].pk)]:
             raise ValidationError(_("Un sous-type doit être renseigné!"))
 
