@@ -1406,6 +1406,7 @@ class PermitRequestComplementaryDocument(models.Model):
     authorised_departments = models.ManyToManyField(
         PermitDepartment,
         verbose_name=_("Département autorisé à visualiser le document"),
+        db_table=_("permits_authorised_departments"),
     )
     is_public = models.BooleanField(default=False, verbose_name=_("Public"))
     document_type = models.ForeignKey(
