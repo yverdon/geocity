@@ -53,8 +53,12 @@ document.getElementById('remove-document').addEventListener('click', (e) => {
   target.remove()
 })
 
-document.getElementById('id_form-0-document_type').addEventListener('change', (e) => {
-  for (const child of document.getElementsByClassName('child-type')) {
+document.addEventListener('change', (e) => {
+  // check if we're working with a document_type select
+  if (!e.target.id.match(/form-(\d){1}-document_type/))
+    return
+
+  for (const child of e.target.closest('.complementary-document').getElementsByClassName('child-type')) {
     child.setAttribute('hidden', '')
     child.closest('.form-group').style.display = 'none'
   }
