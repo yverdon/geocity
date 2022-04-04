@@ -466,8 +466,8 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
         works_type = factories.WorksTypeFactory(name="Foo type")
         works_object = factories.WorksObjectFactory()
-        wot = factories.WorksObjectTypeFactory(
-            works_type=works_type, works_object=works_object,
+        wot = factories.WorksObjectTypeWithoutGeometryFactory(
+            works_type=works_type, works_object=works_object, needs_date=False,
         )
         permit_request.works_object_types.set([wot])
         self.client.post(
