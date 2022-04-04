@@ -1460,7 +1460,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         return document
 
     def clean(self):
-        cleaned_data = self.cleaned_data
+        cleaned_data = super(PermitRequestComplementaryDocumentsForm, self).clean()
 
         if not self.cleaned_data.get("document_type"):
             raise ValidationError(_("Un type doit être renseigné!"))
@@ -1568,3 +1568,16 @@ class SocialSignupForm(SignupForm):
 class AnonymousRequestForm(forms.Form):
     required_css_class = "required"
     captcha = CaptchaField(required=True)
+
+
+class ComplementaryDocumentTypeAdminForm(forms.ModelForm):
+    model = models.ComplementaryDocumentType
+
+    def clean(self):
+        cleaned_data = super(ComplementaryDocumentTypeAdminForm, self).clean()
+        if cleaned_data["parent"] and cleaned_data["work_object_types"]:
+            raise ValidationError(
+                _("Seul les types parents peuvent être lié a un Work Object Type")
+            )
+
+        return cleaned_data

@@ -1275,6 +1275,10 @@ class TokenAdmin(BaseTokenAdmin):
             ]
 
 
+class ComplementaryDocumentTypeAdmin(admin.ModelAdmin):
+    form = permit_forms.ComplementaryDocumentTypeAdminForm
+
+
 admin.site.unregister(TokenProxy)
 admin.site.register(TokenProxy, TokenAdmin)
 
@@ -1287,4 +1291,4 @@ admin.site.register(models.WorksObject, WorksObjectAdmin)
 admin.site.register(models.PermitRequestAmendProperty, PermitRequestAmendPropertyAdmin)
 admin.site.register(models.TemplateCustomization, TemplateCustomizationAdmin)
 admin.site.register(models.PermitRequest, PermitRequestAdmin)
-admin.site.register(models.ComplementaryDocumentType)
+admin.site.register(models.ComplementaryDocumentType, ComplementaryDocumentTypeAdmin)
