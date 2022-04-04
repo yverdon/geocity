@@ -50,12 +50,21 @@ document.getElementById('remove-document').addEventListener('click', (e) => {
 })
 
 document.getElementById('id_form-0-document_type').addEventListener('change', (e) => {
-  for (let child of document.getElementsByClassName('child-type')) {
+  for (const child of document.getElementsByClassName('child-type')) {
     child.setAttribute('hidden', '')
+    child.closest('.form-group').style.display = 'none'
   }
 
-  let targetChild = document.getElementById(`id_form-0-parent_${e.target.value}`)
+  // get the "form id" $
+  // e.g. id_form-0
+  const formID = e.target.id.split('document_type')[0]
+  const targetChild = document.getElementById(`${formID}parent_${e.target.value}`)
   if (targetChild) {
     targetChild.removeAttribute('hidden')
+    targetChild.closest('.form-group').style.display = 'flex'
   }
 })
+
+for (const child of document.getElementsByClassName('child-type')) {
+  child.closest('.form-group').style.display = 'none'
+}
