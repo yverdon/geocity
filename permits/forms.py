@@ -1452,6 +1452,13 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
 
         return document
 
+    def clean_document(self):
+        document = self.cleaned_data.get("document")
+
+        services.validate_file(document)
+
+        return document
+
     def clean(self):
         cleaned_data = self.cleaned_data
 
