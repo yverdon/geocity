@@ -195,22 +195,20 @@ class PermitRequestDetailView(View):
             if action_forms[action] or action_formsets[action]
         ]
 
-        try:
-            active_forms = [
-                action
-                for action in available_actions
-                if not getattr(action_forms[action], "disabled", False)
-            ]
+        active_forms = [
+            action
+            for action in available_actions
+            if not getattr(action_forms[action], "disabled", False)
+            or not getattr(action_formsets[action], "disabled", False)
+        ]
+
+        if kwargs.get("active_form"):
+            active_form = kwargs.get("active_form")
+
             if "poke" in active_forms and "validate" in active_forms:
                 active_form = active_forms[active_forms.index("validate")]
-            else:
-                active_form = active_forms[0]
-            # This is to maintain the prolongation tab active in case of POST error
-            if "action=prolong" in str(self.request.body):
-                active_form = active_forms[active_forms.index("prolong")]
-
-        except IndexError:
-            active_form = available_actions[-1] if len(available_actions) > 0 else None
+        else:
+            active_form = active_forms[0]
 
         kwargs["has_validations"] = self.permit_request.has_validations()
 
@@ -301,7 +299,7 @@ class PermitRequestDetailView(View):
             return self.handle_form_submission(form, action)
 
         # Replace unbound form by bound form in the context
-        context = self.get_context_data()
+        context = self.get_context_data(active_form=action)
         context[form_type][action] = form
 
         return self.render_to_response(context)
