@@ -2,6 +2,8 @@ let container = document.getElementById('complementary-documents')
 let documents = document.getElementsByClassName('complementary-document')
 let nbDocuments = documents.length;
 
+hideChildrenDocumentTypes(document)
+
 document.getElementById('add-document').addEventListener('click', (e) => {
   e.preventDefault()
 
@@ -20,6 +22,8 @@ document.getElementById('add-document').addEventListener('click', (e) => {
 
   // change the "form number"
   document.getElementById("id_form-TOTAL_FORMS").value = nbDocuments
+
+  hideChildrenDocumentTypes(clone)
 
   clone.prepend(document.createElement('hr'))
   container.appendChild(clone)
@@ -65,6 +69,8 @@ document.getElementById('id_form-0-document_type').addEventListener('change', (e
   }
 })
 
-for (const child of document.getElementsByClassName('child-type')) {
-  child.closest('.form-group').style.display = 'none'
+function hideChildrenDocumentTypes(parent) {
+  for (const child of parent.getElementsByClassName('child-type')) {
+    child.closest('.form-group').style.display = 'none'
+  }
 }
