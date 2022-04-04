@@ -75,8 +75,8 @@
       {% endif %}
       {% if formsets.complementary_documents %}
           <li class="nav-item">
-            <a class="btn btn-primary btn-action nav-link" id="documents-tab" data-toggle="tab" href="#documents" role="tab" aria-controls="documents">
-                Documents
+            <a class="btn btn-primary btn-action nav-linkk{% if active_form == 'complementary_documents' %} active{% endif %}" id="documents-tab" data-toggle="tab" href="#documents" role="tab" aria-controls="documents">
+                {% trans "Documents" %}
             </a>
           </li>
       {% endif %}
@@ -241,7 +241,7 @@
         {% endif %}
 
         {% if formsets.complementary_documents %}
-          <div class="tab-pane" id="documents" role="tabpanel" aria-labelledby="documents-tab">
+          <div class="tab-pane{% if active_form == "complementary_documents" %} show active{% endif %}" id="documents" role="tabpanel" aria-labelledby="documents-tab">
               <h4>{% trans "Ajout de documents à la demande" %}</h4>
               <form method="post" enctype="multipart/form-data">
                 {{ formsets.complementary_documents.management_form }}
