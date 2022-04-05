@@ -4,14 +4,20 @@ import re
 from adminsortable2.admin import SortableAdminMixin
 from django import forms
 from django.contrib import admin
+from django.contrib.admin import AdminSite, site
+from django.contrib.admin.views.decorators import staff_member_required
+from django.core.management import call_command, CommandError
+from django.http import Http404
+from django.shortcuts import redirect
+from django.urls import re_path, reverse
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.http import require_POST
+
 from geomapshark import settings
 from django.db.models import Q, Value
-from simple_history.admin import SimpleHistoryAdmin
 from django.contrib.auth.models import Group, User, Permission
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.core.exceptions import PermissionDenied
-from django.forms import ValidationError
 from django.contrib import messages
 from django.contrib.auth.forms import UserChangeForm
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -92,6 +98,62 @@ def get_integrator_readonly_fields(user):
         return []
     else:
         return ["integrator"]
+
+
+class PermitsAdminSite(AdminSite):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._registry.update(site._registry)
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            re_path(
+                r"^create-anonymous-user/$",
+                self.create_anonymous_user,
+                name="create_anonymous_user",
+            ),
+        ]
+        return custom_urls + urls
+
+    @method_decorator(staff_member_required)
+    @method_decorator(require_POST)
+    def create_anonymous_user(self, request):
+        """
+        Admin custom view to create the anonymous user for the given Administrative
+        entity.
+        FIXME: Special permission required to do that ?
+         Like being an integrator of the given entity ?
+        """
+        try:
+            entity_id = int(request.POST.get("entity_id"))
+        except ValueError:
+            raise Http404
+
+        try:
+            call_command("create_anonymous_users", entity_id)
+        except CommandError:
+            # Display error
+            messages.add_message(
+                request,
+                messages.ERROR,
+                _("Echec de la création de l'utilisateur anonyme.")
+            )
+        else:
+            messages.add_message(
+                request,
+                messages.SUCCESS,
+                _("Utilisateur anonyme créé avec succès.")
+            )
+
+        return redirect(
+            reverse(
+                "admin:permits_permitadministrativeentity_change",
+                kwargs={
+                    "object_id": entity_id
+                }
+            )
+        )
 
 
 class IntegratorFilterMixin:
@@ -675,6 +737,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "is_public",
         "requires_payment",
         "requires_validation_document",
+        "is_anonymous_available",
         "notify_services",
         "needs_date",
         "permit_duration",
@@ -701,6 +764,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     "is_public",
                     "requires_payment",
                     "requires_validation_document",
+                    "is_anonymous_available",
                     "integrator",
                 )
             },
@@ -961,6 +1025,7 @@ class WorksObjectAdmin(IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdm
 
 
 class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    change_form_template = "permits/admin/permit_administrative_entity_change.html"
     form = PermitAdministrativeEntityAdminForm
     inlines = [
         PermitWorkflowStatusInline,

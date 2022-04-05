@@ -289,6 +289,28 @@ class PermitAuthor(models.Model):
     user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
     history = HistoricalRecords()
 
+    administrative_entity = models.OneToOneField(
+        "PermitAdministrativeEntity",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="anonymous_user",
+        verbose_name=_("entité administrative"),
+    )
+
+    def clean(self):
+        if self.user and self.user.is_active and self.administrative_entity is not None:
+            raise ValidationError(
+                _(
+                    "Only inactive PermitAuthor can have a related administrative "
+                    "entity, and be considered as anonymous."
+                )
+            )
+
+    @cached_property
+    def is_anonymous(self):
+        return self.user and not self.user.is_active and self.administrative_entity is not None
+
     class Meta:
         verbose_name = _("3.2 Consultation de l'auteur")
         verbose_name_plural = _("3.2 Consultation des auteurs")
@@ -822,6 +844,10 @@ class WorksObjectType(models.Model):
         _("Document de validation obligatoire"), default=True
     )
     is_public = models.BooleanField(_("Public"), default=False)
+    is_anonymous_available = models.BooleanField(
+        _("Supporte les demandes anonymes"),
+        default=False,
+    )
     notify_services = models.BooleanField(_("Notifier les services"), default=False)
     services_to_notify = models.TextField(
         _("Emails des services à notifier"),
