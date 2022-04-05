@@ -561,7 +561,6 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
 
 
 def check_existing_email(email, user):
-
     if (
         User.objects.filter(email=email)
         .exclude(Q(id=user.id) if user else Q())
@@ -573,7 +572,6 @@ def check_existing_email(email, user):
 
 
 class NewDjangoAuthUserForm(UserCreationForm):
-
     first_name = forms.CharField(label=_("Prénom"), max_length=30,)
     last_name = forms.CharField(label=_("Nom"), max_length=150,)
     email = forms.EmailField(label=_("Email"), max_length=254,)
@@ -674,7 +672,6 @@ class DjangoAuthUserForm(forms.ModelForm):
 
 
 class GenericAuthorForm(forms.ModelForm):
-
     required_css_class = "required"
     address = forms.CharField(
         max_length=100, label=_("Adresse"), widget=AddressWidget()
@@ -1003,7 +1000,6 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
 
 # extend django gis osm openlayers widget
 class GeometryWidget(geoforms.OSMWidget):
-
     template_name = "geometrywidget/geometrywidget.html"
     map_srid = 2056
 
@@ -1020,7 +1016,6 @@ class GeometryWidget(geoforms.OSMWidget):
 
 
 class PermitRequestGeoTimeForm(forms.ModelForm):
-
     required_css_class = "required"
     starts_at = forms.DateTimeField(
         label=_("Date planifiée de début"),
@@ -1579,6 +1574,27 @@ class SocialSignupForm(SignupForm):
 class AnonymousRequestForm(forms.Form):
     required_css_class = "required"
     captcha = CaptchaField(required=True)
+
+
+class PermitRequestInquiryForm(forms.ModelForm):
+    start_date = forms.DateField(
+        label=_("Date planifiée de début"),
+        input_formats=[settings.DATE_INPUT_FORMAT],
+        widget=DatePickerInput(
+            options={"format": "DD.MM.YYYY", "locale": "fr-CH", "useCurrent": False,}
+        ).start_of("event days"),
+    )
+    end_date = forms.DateField(
+        label=_("Date planifiée de fin"),
+        input_formats=[settings.DATE_INPUT_FORMAT],
+        widget=DatePickerInput(
+            options={"format": "DD.MM.YYYY", "locale": "fr-CH", "useCurrent": False,}
+        ).start_of("event days"),
+    )
+
+    class Meta:
+        model = models.PermitRequestInquiry
+        fields = ["start_date", "end_date", "documents"]
 
 
 class ComplementaryDocumentTypeAdminForm(forms.ModelForm):

@@ -82,6 +82,7 @@ ACTION_VALIDATE = "validate"
 ACTION_POKE = "poke"
 ACTION_PROLONG = "prolong"
 ACTION_COMPLEMENTARY_DOCUMENTS = "complementary_documents"
+ACTION_REQUEST_INQUIRY = "request_inquiry"
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
 ACTIONS = [
@@ -91,6 +92,7 @@ ACTIONS = [
     ACTION_POKE,
     ACTION_PROLONG,
     ACTION_COMPLEMENTARY_DOCUMENTS,
+    ACTION_REQUEST_INQUIRY,
 ]
 
 
@@ -1426,6 +1428,9 @@ class PermitRequestComplementaryDocument(models.Model):
             raise ProtectedError(
                 _("Le document {} n'a pas pu être supprimé".format(self)), e
             )
+
+    def __str__(self):
+        return self.document.name
 
     def __str__(self):
         return self.document.name
