@@ -937,12 +937,12 @@ def submit_permit_request(permit_request, request):
         permit_request.status == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
     )
 
-    # Using a set to have only unique values
-    work_type_names_set = set()
-    for wot in permit_request.works_object_types.all():
-        work_type_names_set.add(str(wot.works_type))
     work_type_names = ", ".join(
-        work_type_name for work_type_name in work_type_names_set
+        list(
+            permit_request.works_object_types.all()
+            .values_list("works_type__name", flat=True)
+            .distinct()
+        )
     )
 
     if is_awaiting_supplement:
@@ -1028,12 +1028,12 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
         .values_list("permitauthor__user__email", flat=True)
     )
 
-    # Using a set to have only unique values
-    work_type_names_set = set()
-    for wot in permit_request.works_object_types.all():
-        work_type_names_set.add(str(wot.works_type))
     work_type_names = ", ".join(
-        work_type_name for work_type_name in work_type_names_set
+        list(
+            permit_request.works_object_types.all()
+            .values_list("works_type__name", flat=True)
+            .distinct()
+        )
     )
 
     data = {
@@ -1068,12 +1068,12 @@ def send_validation_reminder(permit_request, absolute_uri_func):
         .distinct()
     )
 
-    # Using a set to have only unique values
-    work_type_names_set = set()
-    for wot in permit_request.works_object_types.all():
-        work_type_names_set.add(str(wot.works_type))
     work_type_names = ", ".join(
-        work_type_name for work_type_name in work_type_names_set
+        list(
+            permit_request.works_object_types.all()
+            .values_list("works_type__name", flat=True)
+            .distinct()
+        )
     )
 
     data = {

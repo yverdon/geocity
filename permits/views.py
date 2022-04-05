@@ -458,12 +458,12 @@ class PermitRequestDetailView(View):
         ):
             permit_request = form.instance
 
-            # Using a set to have only unique values
-            work_type_names_set = set()
-            for wot in permit_request.works_object_types.all():
-                work_type_names_set.add(str(wot.works_type))
             work_type_names = ", ".join(
-                work_type_name for work_type_name in work_type_names_set
+                list(
+                    permit_request.works_object_types.all()
+                    .values_list("works_type__name", flat=True)
+                    .distinct()
+                )
             )
 
             data = {
@@ -544,12 +544,12 @@ class PermitRequestDetailView(View):
                     )
                 ):
 
-                    # Using a set to have only unique values
-                    work_type_names_set = set()
-                    for wot in self.permit_request.works_object_types.all():
-                        work_type_names_set.add(str(wot.works_type))
                     work_type_names = ", ".join(
-                        work_type_name for work_type_name in work_type_names_set
+                        list(
+                            self.permit_request.works_object_types.all()
+                            .values_list("works_type__name", flat=True)
+                            .distinct()
+                        )
                     )
 
                     data = {
@@ -1467,12 +1467,12 @@ def permit_request_classify(request, permit_request_id, approve):
         if classify_form.is_valid():
             classify_form.save()
 
-            # Using a set to have only unique values
-            work_type_names_set = set()
-            for wot in permit_request.works_object_types.all():
-                work_type_names_set.add(str(wot.works_type))
             work_type_names = ", ".join(
-                work_type_name for work_type_name in work_type_names_set
+                list(
+                    permit_request.works_object_types.all()
+                    .values_list("works_type__name", flat=True)
+                    .distinct()
+                )
             )
 
             # Notify the permit author
