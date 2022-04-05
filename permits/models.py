@@ -1301,6 +1301,29 @@ class ComplementaryDocumentType(models.Model):
         return self.name
 
 
+class PermitRequestInquiry(models.Model):
+    start_date = models.DateField()
+    end_date = models.DateField()
+    documents = models.ManyToManyField(
+        PermitRequestComplementaryDocument, verbose_name=_("Documents complémentaire"),
+    )
+    permit_request = (
+        models.ForeignKey(
+            PermitRequest,
+            null=False,
+            on_delete=models.CASCADE,
+            verbose_name=_("Demande de permis"),
+        ),
+    )
+    owner = models.ForeignKey(
+        User,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Demandeur de l'enquête"),
+    )
+    history = HistoricalRecords()
+
+
 class QgisProject(models.Model):
     qgis_project_file = fields.AdministrativeEntityFileField(
         _("Projet QGIS '*.qgs'"),
