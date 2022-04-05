@@ -1507,19 +1507,47 @@ class PermitRequestInquiryForm(forms.ModelForm):
         input_formats=[settings.DATE_INPUT_FORMAT],
         widget=DatePickerInput(
             options={"format": "DD.MM.YYYY", "locale": "fr-CH", "useCurrent": False,}
-        ).start_of("event days"),
+        ),
     )
     end_date = forms.DateField(
         label=_("Date planifiée de fin"),
         input_formats=[settings.DATE_INPUT_FORMAT],
         widget=DatePickerInput(
             options={"format": "DD.MM.YYYY", "locale": "fr-CH", "useCurrent": False,}
-        ).start_of("event days"),
+        ),
     )
 
     class Meta:
         model = models.PermitRequestInquiry
         fields = ["start_date", "end_date", "documents"]
+
+    def __init__(self, permit_request, *args, **kwargs):
+        super(PermitRequestInquiryForm, self).__init__(*args, **kwargs)
+
+        self.fields[
+            "documents"
+        ].queryset = models.PermitRequestComplementaryDocument.objects.filter(
+            permit_request=permit_request
+        ).all()
+        self.fields["documents"].help_text = _(
+            "Attention, les documents non-publics seront public une fois la mise à l'enquête démarrée!"
+        )
+
+    def save(self, commit=True):
+        inquiry = super().save(commit=False)
+
+        for document in self.cleaned_data["documents"]:
+            if document.is_public:
+                continue
+
+            document.is_public = True
+            document.save()
+
+        if commit:
+            inquiry.save()
+            self.save_m2m()
+
+        return inquiry
 
 
 class ComplementaryDocumentTypeAdminForm(forms.ModelForm):

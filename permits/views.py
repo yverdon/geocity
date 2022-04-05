@@ -376,7 +376,9 @@ class PermitRequestDetailView(View):
         ):
             return None
 
-        return forms.PermitRequestInquiryForm(data=data)
+        return forms.PermitRequestInquiryForm(
+            data=data, permit_request=self.permit_request
+        )
 
     def get_request_validation_form(self, data=None, **kwargs):
         if services.has_permission_to_amend_permit_request(
@@ -483,6 +485,8 @@ class PermitRequestDetailView(View):
             return self.handle_prolongation_form_submission(form)
         elif action == models.ACTION_COMPLEMENTARY_DOCUMENTS:
             return self.handle_complementary_documents_form_submission(form)
+        elif action == models.ACTION_REQUEST_INQUIRY:
+            return self.handle_request_inquiry_form_submission(form)
 
     def handle_amend_form_submission(self, form):
         initial_status = (
@@ -680,6 +684,18 @@ class PermitRequestDetailView(View):
             )
         else:
             return redirect("permits:permit_requests_list")
+
+    def handle_request_inquiry_form_submission(self, form):
+        form.instance.submitter = self.request.user
+        form.instance.permit_request = self.permit_request
+        form.save()
+
+        success_message = _("La mise à l'enquête a bien été enregistré")
+        messages.success(self.request, success_message)
+
+        return redirect(
+            "permits:permit_request_detail", permit_request_id=self.permit_request.pk,
+        )
 
 
 class PermitRequestComplementaryDocumentDeleteView(DeleteView):
