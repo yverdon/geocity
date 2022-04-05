@@ -311,6 +311,7 @@ class PermitRequestDetailView(View):
             models.ACTION_VALIDATE: self.get_validation_form,
             models.ACTION_POKE: self.get_poke_form,
             models.ACTION_PROLONG: self.get_prolongation_form,
+            models.ACTION_REQUEST_INQUIRY: self.get_request_inquiry_form,
         }
 
         return (
@@ -368,6 +369,14 @@ class PermitRequestDetailView(View):
             return form
 
         return None
+
+    def get_request_inquiry_form(self, data=None, **kwargs):
+        if not services.has_permission_to_amend_permit_request(
+            self.request.user, self.permit_request
+        ):
+            return None
+
+        return forms.PermitRequestInquiryForm(data=data)
 
     def get_request_validation_form(self, data=None, **kwargs):
         if services.has_permission_to_amend_permit_request(

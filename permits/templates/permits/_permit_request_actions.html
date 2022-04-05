@@ -113,6 +113,19 @@
                         <button class="btn btn-primary" name="save_continue" {% if forms.amend.disabled %}disabled{% endif %}>{% trans "Enregistrer et continuer les modifications" %}</button>
                     </div>
                 </form>
+
+              <hr>
+              <h4>{% trans "Mise à l'enquête" %}</h4>
+              <form method="post">
+                {% csrf_token %}
+
+                {% bootstrap_form forms.request_inquiry layout='horizontal' %}
+                <div class="text-right">
+                    <input name="action" type="hidden" value="request_inquiry">
+                    <button class="btn btn-primary" {% if forms.request_validation.disabled %}disabled{% endif %}>{% trans "Envoyer pour validation" %}</button>
+                </div>
+              </form>
+
             </div>
         {% endif %}
 
