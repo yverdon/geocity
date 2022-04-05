@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import (
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.db.models import Prefetch, Sum, Q
+from django.db.models import Prefetch, Sum, Q, CharField, Value
 from django.forms import modelformset_factory
 from django.http import (
     Http404,
@@ -36,6 +36,9 @@ from django_tables2.views import SingleTableMixin, SingleTableView
 from . import fields, filters, forms, models, services, tables
 from .exceptions import BadPermitRequestStatus, NonProlongablePermitRequest
 from .search import search_permit_requests, search_result_to_json
+import django_tables2 as tableslib
+
+from .tables import CustomAccessablePermitRequest, get_custom_dynamic_table
 
 logger = logging.getLogger(__name__)
 
@@ -1239,9 +1242,17 @@ class PermitRequestList(SingleTableMixin, FilterView):
     paginate_by = int(os.environ["PAGINATE_BY"])
     template_name = "permits/permit_requests_list.html"
 
+    def _get_wot_filter(self):
+        return self.request.GET.get("works_object_types__works_object")
+
     def get_queryset(self):
-        return (
-            services.get_permit_requests_list_for_user(self.request.user)
+        works_object_filter = self._get_wot_filter()
+        qs = (
+            (
+                services.get_permit_requests_list_for_user(
+                    self.request.user, works_object_filter=works_object_filter
+                )
+            )
             .prefetch_related(
                 Prefetch(
                     "works_object_types",
@@ -1253,15 +1264,66 @@ class PermitRequestList(SingleTableMixin, FilterView):
             .order_by("-created_at")
         )
 
+        if works_object_filter:
+            qs = qs.prefetch_related("worksobjecttypechoice_set__properties__property")
+
+        return qs
+
+    def get_table_data(self):
+        works_object_filter = self._get_wot_filter()
+        if works_object_filter:
+            return [CustomAccessablePermitRequest(obj) for obj in self.object_list]
+        else:
+            return self.object_list
+
     def is_department_user(self):
         return self.request.user.groups.filter(permitdepartment__isnull=False).exists()
 
+    def _get_extra_column_specs(self, works_object_filter):
+        extra_column_specs = dict()
+        for permit_request in self.object_list:
+            for wot, properties in services.get_properties(permit_request):
+                if str(wot.works_object_id) != works_object_filter:
+                    continue
+                for property in properties:
+                    property_id = f"{works_object_filter}_{property.id}"
+                    if property_id not in extra_column_specs:
+                        extra_column_specs[property_id] = tableslib.Column(
+                            verbose_name=property.name,
+                            orderable=False,
+                            accessor=f"#{property_id}",
+                        )
+        return list(extra_column_specs.items())
+
     def get_table_class(self):
-        return (
-            tables.DepartmentPermitRequestsTable
-            if self.is_department_user()
-            else tables.OwnPermitRequestsTable
-        )
+        filterset = self.get_filterset(self.get_filterset_class())
+        works_object_filter = self._get_wot_filter()
+
+        if self.is_department_user():
+            if (
+                works_object_filter
+                and "works_object_types__works_object" in filterset.filters
+            ):
+                extra_columns = self._get_extra_column_specs(works_object_filter)
+                extra_column_names = tuple([col_name for col_name, __ in extra_columns])
+                table_class = get_custom_dynamic_table(
+                    tables.DepartmentPermitRequestsTable, extra_column_names, "actions"
+                )
+            else:
+                table_class = tables.DepartmentPermitRequestsTable
+        else:
+            table_class = tables.OwnPermitRequestsTable
+        return table_class
+
+    def get_table_kwargs(self):
+        wot_filter = self._get_wot_filter()
+        if wot_filter:
+            return {
+                "extra_column_specs": self._get_extra_column_specs(
+                    self._get_wot_filter()
+                )
+            }
+        return {}
 
     def get_filterset_class(self):
         return (
