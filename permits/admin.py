@@ -819,10 +819,11 @@ class WorksObjectPropertyForm(forms.ModelForm):
             "works_object_types",
         ]
 
-    def clean(self):
+    def clean_file_download(self):
         if self.cleaned_data["input_type"] == "file_download":
             if not self.cleaned_data["file_download"]:
-                raise ValidationError({"file_download": _("This field is required.")})
+                raise forms.ValidationError(_("This field is required."))
+        return self.cleaned_data["file_download"]
 
     class Media:
         js = ("js/admin/works_object_property.js",)
