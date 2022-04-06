@@ -133,11 +133,8 @@ class PermitAuthorSerializer(serializers.ModelSerializer):
 
 class CurrentUserSerializer(serializers.Serializer):
     def to_representation(self, value):
-        if value == "F":
-            json = {
-                "is_logged": False,
-            }
-        else:
+        if value:
+            value = value.first()
             json = {
                 "is_logged": True,
                 "username": value.username,
@@ -146,6 +143,10 @@ class CurrentUserSerializer(serializers.Serializer):
                 "expiration_datetime": (
                     value.last_login + timedelta(seconds=settings.SESSION_COOKIE_AGE)
                 ).strftime("%Y-%m-%d %H:%M:%S"),
+            }
+        else:
+            json = {
+                "is_logged": False,
             }
 
         return json

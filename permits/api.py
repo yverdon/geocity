@@ -13,6 +13,7 @@ from django.contrib.gis.geos.collections import (
 )
 from django.db.models import CharField, F, Prefetch, Q
 from rest_framework import viewsets
+from rest_framework.response import Response
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework_gis.fields import GeometrySerializerMethodField
 from rest_framework.throttling import ScopedRateThrottle
@@ -116,17 +117,25 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
 class CurrentUserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Current user endpoint Usage:
-        /rest/current_user/     shows current user, is empty if logged out
+        /rest/current_user/     shows current user
     """
 
     serializer_class = serializers.CurrentUserSerializer
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
 
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=False)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=False)
+        return Response(serializer.data)
+    
     # Returns the logged user, if there's any
     def get_queryset(self):
         qs = User.objects.filter(Q(username=self.request.user))
-        if not qs:
-            qs = "F"  # Needs an iterable object to pass the queryset
-
         return qs
 
 
