@@ -544,7 +544,7 @@ class PermitRequestAPITestCase(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            response_json[0],
+            response_json,
             {
                 "is_logged": True,
                 "username": self.admin_user.username,
@@ -561,7 +561,7 @@ class PermitRequestAPITestCase(TestCase):
         response_json = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            response_json[0], {"is_logged": False,},
+            response_json, {"is_logged": False,},
         )
 
     # TODO: test also the permits:permit_request_print route
