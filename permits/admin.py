@@ -737,7 +737,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "is_public",
         "requires_payment",
         "requires_validation_document",
-        "is_anonymous_available",
+        "is_anonymous",
         "notify_services",
         "needs_date",
         "permit_duration",
@@ -764,7 +764,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     "is_public",
                     "requires_payment",
                     "requires_validation_document",
-                    "is_anonymous_available",
+                    "is_anonymous",
                     "integrator",
                 )
             },

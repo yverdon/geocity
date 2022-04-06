@@ -844,8 +844,8 @@ class WorksObjectType(models.Model):
         _("Document de validation obligatoire"), default=True
     )
     is_public = models.BooleanField(_("Public"), default=False)
-    is_anonymous_available = models.BooleanField(
-        _("Supporte les demandes anonymes"),
+    is_anonymous = models.BooleanField(
+        _("Demandes anonymes uniquement"),
         default=False,
     )
     notify_services = models.BooleanField(_("Notifier les services"), default=False)
