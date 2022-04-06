@@ -104,11 +104,15 @@ def redirect_bad_status_to_detail(func):
     return inner
 
 
-def disable_form(form):
-    for field in form.fields.values():
-        field.disabled = True
+def disable_form(form, editable_fields=None):
 
-    form.disabled = True
+    for field in form.fields:
+        if editable_fields and field in editable_fields:
+            continue
+        form.fields[field].disabled = True
+
+    if not editable_fields:
+        form.disabled = True
 
     return form
 
