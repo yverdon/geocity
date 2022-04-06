@@ -937,18 +937,11 @@ def submit_permit_request(permit_request, request):
         permit_request.status == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
     )
 
-    work_type_names = ", ".join(
-        list(
-            permit_request.works_object_types.all()
-            .values_list("works_type__name", flat=True)
-            .distinct()
-        )
-    )
-
     if is_awaiting_supplement:
         data = {
             "subject": "{} ({})".format(
-                _("La demande de compléments a été traitée"), work_type_names
+                _("La demande de compléments a été traitée"),
+                get_works_type_names_list(permit_request),
             ),
             "users_to_notify": _get_secretary_email(permit_request),
             "template": "permit_request_complemented.txt",
@@ -984,7 +977,9 @@ def submit_permit_request(permit_request, request):
         )
 
         data = {
-            "subject": "{} ({})".format(_("Nouvelle demande"), work_type_names),
+            "subject": "{} ({})".format(
+                _("Nouvelle demande"), get_works_type_names_list(permit_request)
+            ),
             "users_to_notify": users_to_notify,
             "template": "permit_request_submitted.txt",
             "permit_request": permit_request,
@@ -993,7 +988,9 @@ def submit_permit_request(permit_request, request):
         send_email_notification(data)
 
         if permit_request.author.notify_per_email:
-            data["subject"] = "{} ({})".format(_("Votre demande"), work_type_names)
+            data["subject"] = "{} ({})".format(
+                _("Votre demande"), get_works_type_names_list(permit_request)
+            )
             data["users_to_notify"] = [permit_request.author.user.email]
             data["template"] = "permit_request_acknowledgment.txt"
             send_email_notification(data)
@@ -1028,17 +1025,10 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
         .values_list("permitauthor__user__email", flat=True)
     )
 
-    work_type_names = ", ".join(
-        list(
-            permit_request.works_object_types.all()
-            .values_list("works_type__name", flat=True)
-            .distinct()
-        )
-    )
-
     data = {
         "subject": "{} ({})".format(
-            _("Nouvelle demande en attente de validation"), work_type_names
+            _("Nouvelle demande en attente de validation"),
+            get_works_type_names_list(permit_request),
         ),
         "users_to_notify": users_to_notify,
         "template": "permit_request_validation_request.txt",
@@ -1068,17 +1058,10 @@ def send_validation_reminder(permit_request, absolute_uri_func):
         .distinct()
     )
 
-    work_type_names = ", ".join(
-        list(
-            permit_request.works_object_types.all()
-            .values_list("works_type__name", flat=True)
-            .distinct()
-        )
-    )
-
     data = {
         "subject": "{} ({})".format(
-            _("Demande toujours en attente de validation"), work_type_names
+            _("Demande toujours en attente de validation"),
+            get_works_type_names_list(permit_request),
         ),
         "users_to_notify": users_to_notify,
         "template": "permit_request_validation_reminder.txt",
@@ -1625,3 +1608,14 @@ def get_amend_properties(value):
         }
 
     return amend_properties
+
+
+def get_works_type_names_list(permit_request):
+
+    return ", ".join(
+        list(
+            permit_request.works_object_types.all()
+            .values_list("works_type__name", flat=True)
+            .distinct()
+        )
+    )

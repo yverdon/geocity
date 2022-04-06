@@ -458,17 +458,10 @@ class PermitRequestDetailView(View):
         ):
             permit_request = form.instance
 
-            work_type_names = ", ".join(
-                list(
-                    permit_request.works_object_types.all()
-                    .values_list("works_type__name", flat=True)
-                    .distinct()
-                )
-            )
-
             data = {
                 "subject": "{} ({})".format(
-                    _("Votre annonce a été prise en compte et classée"), work_type_names
+                    _("Votre annonce a été prise en compte et classée"),
+                    services.get_works_type_names_list(permit_request),
                 ),
                 "users_to_notify": [permit_request.author.user.email],
                 "template": "permit_request_received.txt",
@@ -544,20 +537,12 @@ class PermitRequestDetailView(View):
                     )
                 ):
 
-                    work_type_names = ", ".join(
-                        list(
-                            self.permit_request.works_object_types.all()
-                            .values_list("works_type__name", flat=True)
-                            .distinct()
-                        )
-                    )
-
                     data = {
                         "subject": "{} ({})".format(
                             _(
                                 "Les services chargés de la validation d'une demande ont donné leur préavis"
                             ),
-                            work_type_names,
+                            services.get_works_type_names_list(self.permit_request),
                         ),
                         "users_to_notify": services._get_secretary_email(
                             self.permit_request
@@ -1467,18 +1452,11 @@ def permit_request_classify(request, permit_request_id, approve):
         if classify_form.is_valid():
             classify_form.save()
 
-            work_type_names = ", ".join(
-                list(
-                    permit_request.works_object_types.all()
-                    .values_list("works_type__name", flat=True)
-                    .distinct()
-                )
-            )
-
             # Notify the permit author
             data = {
                 "subject": "{} ({})".format(
-                    _("Votre demande a été traitée et classée"), work_type_names
+                    _("Votre demande a été traitée et classée"),
+                    services.get_works_type_names_list(permit_request),
                 ),
                 "users_to_notify": [permit_request.author.user.email],
                 "template": "permit_request_classified.txt",
@@ -1510,7 +1488,7 @@ def permit_request_classify(request, permit_request_id, approve):
                             _(
                                 "Une demande a été traitée et classée par le secrétariat"
                             ),
-                            work_type_names,
+                            services.get_works_type_names_list(permit_request),
                         ),
                         "users_to_notify": set(mailing_list),
                         "template": "permit_request_classified_for_services.txt",
