@@ -70,6 +70,11 @@ urlpatterns = [
         name="permit_request_file_download",
     ),
     path(
+        "wot-files/<path:path>",
+        views.works_object_property_file_download,
+        name="works_object_property_file_download",
+    ),
+    path(
         "admin-data/<path:path>",
         views.administrative_entity_file_download,
         name="administrative_entity_file_download",

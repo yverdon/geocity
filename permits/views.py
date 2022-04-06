@@ -950,6 +950,9 @@ def permit_request_properties(request, permit_request_id):
         form = forms.WorksObjectsPropertiesForm(
             instance=permit_request, enable_required=False
         )
+    files_downloads = services.get_permit_request_properties_files_downloads(
+        permit_request
+    )
 
     return render(
         request,
@@ -957,6 +960,7 @@ def permit_request_properties(request, permit_request_id):
         {
             "permit_request": permit_request,
             "permit_request_form": form,
+            "files_downloads": files_downloads if len(files_downloads) else None,
             **steps_context,
         },
     )
@@ -1513,6 +1517,18 @@ def permit_request_file_download(request, path):
 
     services.get_permit_request_for_user_or_404(request.user, permit_request_id)
 
+    mime_type, encoding = mimetypes.guess_type(path)
+    storage = fields.PrivateFileSystemStorage()
+    file = storage.open(path)
+    response = StreamingHttpResponse(file, content_type=mime_type)
+    response["Content-Disposition"] = 'attachment; filename="' + file.name + '"'
+    return response
+
+
+def works_object_property_file_download(request, path):
+    """
+    Download the wot file at the given `path` as an attachment.
+    """
     mime_type, encoding = mimetypes.guess_type(path)
     storage = fields.PrivateFileSystemStorage()
     file = storage.open(path)

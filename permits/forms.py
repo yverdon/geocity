@@ -377,7 +377,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
 
     def get_field_kwargs(self, prop):
         """
-        Return the options used when instanciating the field for the given `prop`.
+        Return the options used when instantiating the field for the given `prop`.
         """
         default_kwargs = {
             "required": self.enable_required and prop.is_mandatory,

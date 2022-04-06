@@ -59,6 +59,7 @@ INPUT_TYPE_ADDRESS = "address"
 INPUT_TYPE_CHECKBOX = "checkbox"
 INPUT_TYPE_DATE = "date"
 INPUT_TYPE_FILE = "file"
+INPUT_TYPE_FILE_DOWNLOAD = "file_download"
 INPUT_TYPE_LIST_MULTIPLE = "list_multiple"
 INPUT_TYPE_LIST_SINGLE = "list_single"
 INPUT_TYPE_NUMBER = "number"
@@ -890,6 +891,7 @@ class WorksObjectProperty(models.Model):
     INPUT_TYPE_CHECKBOX = INPUT_TYPE_CHECKBOX
     INPUT_TYPE_NUMBER = INPUT_TYPE_NUMBER
     INPUT_TYPE_FILE = INPUT_TYPE_FILE
+    INPUT_TYPE_FILE_DOWNLOAD = INPUT_TYPE_FILE_DOWNLOAD
     INPUT_TYPE_ADDRESS = INPUT_TYPE_ADDRESS
     INPUT_TYPE_DATE = INPUT_TYPE_DATE
     INPUT_TYPE_REGEX = INPUT_TYPE_REGEX
@@ -908,6 +910,7 @@ class WorksObjectProperty(models.Model):
         (INPUT_TYPE_TEXT, _("Texte")),
         (INPUT_TYPE_REGEX, _("Texte (regex)")),
         (INPUT_TYPE_TITLE, _("Titre")),
+        (INPUT_TYPE_FILE_DOWNLOAD, _("Fichier (à télécharger)")),
     )
     integrator = models.ForeignKey(
         Group,
@@ -954,6 +957,15 @@ class WorksObjectProperty(models.Model):
         _("Emails des services à notifier"),
         blank=True,
         help_text='Veuillez séparer les emails par une virgule ","',
+    )
+    file_download = fields.WorkObjectTypeFileField(
+        _("Fichier"),
+        validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
+        null=True,
+        upload_to="wot_files",
+    )
+    file_download_description = models.CharField(
+        _("Fichier (à télécharger)"), max_length=200, blank=True
     )
 
     class Meta(object):
