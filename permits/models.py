@@ -398,6 +398,7 @@ class PermitRequest(models.Model):
     STATUS_AWAITING_VALIDATION = 5
     STATUS_REJECTED = 6
     STATUS_RECEIVED = 7
+    STATUS_INQUIRY_IN_PROGRESS = 8
 
     STATUS_CHOICES = (
         (STATUS_DRAFT, _("Brouillon")),
@@ -408,12 +409,14 @@ class PermitRequest(models.Model):
         (STATUS_APPROVED, _("Approuvée")),
         (STATUS_REJECTED, _("Refusée")),
         (STATUS_RECEIVED, _("Réceptionnée")),
+        (STATUS_INQUIRY_IN_PROGRESS, _("Mise à l'enquête en cours")),
     )
     AMENDABLE_STATUSES = {
         STATUS_SUBMITTED_FOR_VALIDATION,
         STATUS_PROCESSING,
         STATUS_AWAITING_SUPPLEMENT,
         STATUS_RECEIVED,
+        STATUS_INQUIRY_IN_PROGRESS,
     }
 
     # Statuses that can be edited by pilot service if granted permission "edit_permit_request"
