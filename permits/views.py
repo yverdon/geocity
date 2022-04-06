@@ -713,6 +713,8 @@ class PermitRequestDetailView(View):
     def handle_request_inquiry_form_submission(self, form):
         form.instance.submitter = self.request.user
         form.instance.permit_request = self.permit_request
+        self.permit_request.status = models.PermitRequest.STATUS_INQUIRY_IN_PROGRESS
+        self.permit_request.save()
         form.save()
 
         success_message = _("La mise à l'enquête a bien été enregistré")
