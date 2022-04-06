@@ -125,17 +125,15 @@ def redirect_bad_status_to_detail(func):
     return inner
 
 
-# Don't disable form if there's any amend property always amendable
-def disable_form(form, amend_property_always_amendable=[]):
-    form.disabled = True
+def disable_form(form, editable_fields=None):
 
-    for field in form.fields.values():
+    for field in form.fields:
+        if editable_fields and field in editable_fields:
+            continue
+        form.fields[field].disabled = True
 
-        if field.label in amend_property_always_amendable:
-            field.disabled = False
-            form.disabled = False
-        else:
-            field.disabled = True
+    if not editable_fields:
+        form.disabled = True
 
 
 def progress_bar_context(request, permit_request, current_step_type):
