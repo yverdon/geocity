@@ -122,7 +122,7 @@
                 {% bootstrap_form forms.request_inquiry layout='horizontal' %}
                 <div class="text-right">
                     <input name="action" type="hidden" value="request_inquiry">
-                    <button class="btn btn-primary" {% if forms.request_validation.disabled %}disabled{% endif %}>{% trans "Envoyer pour validation" %}</button>
+                    <button class="btn btn-primary" {% if forms.request_inquiry.disabled %}disabled{% endif %}>{% trans "Envoyer" %}</button>
                 </div>
               </form>
 

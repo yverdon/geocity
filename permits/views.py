@@ -269,6 +269,8 @@ class PermitRequestDetailView(View):
                     self.permit_request
                 ),
                 "prolongation_enabled": prolongation_enabled,
+                "inquiry_in_progress": self.permit_request.status
+                == models.PermitRequest.STATUS_INQUIRY_IN_PROGRESS,
             },
         }
 
