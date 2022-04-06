@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import GeometryCollection, Point
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils.text import Truncator
 from permits import models, admin
 from django.db.models import Q
@@ -358,6 +359,17 @@ class WorksObjectPropertyFactoryTypeTitle(factory.django.DjangoModelFactory):
     help_text = factory.Faker("word")
     input_type = models.WorksObjectProperty.INPUT_TYPE_TITLE
     order = factory.Sequence(int)
+
+
+class WorksObjectPropertyFactoryTypeFileDownload(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.WorksObjectProperty
+
+    name = factory.Faker("word")
+    help_text = factory.Faker("word")
+    input_type = models.WorksObjectProperty.INPUT_TYPE_FILE_DOWNLOAD
+    order = factory.Sequence(int)
+    file_download = SimpleUploadedFile("file.pdf", "contents".encode())
 
 
 class WorksObjectTypeFactory(factory.django.DjangoModelFactory):
