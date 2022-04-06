@@ -980,7 +980,7 @@ class WorksObjectProperty(models.Model):
     file_download = fields.WorkObjectTypeFileField(
         _("Fichier"),
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
-        null=True,
+        blank=True,
         upload_to="wot_files",
     )
     file_download_description = models.CharField(
