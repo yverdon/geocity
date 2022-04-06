@@ -381,9 +381,18 @@ class PermitRequestDetailView(View):
         ):
             return None
 
-        return forms.PermitRequestInquiryForm(
-            data=data, permit_request=self.permit_request
+        current_inquiry = models.PermitRequestInquiry.get_current_inquiry(
+            permit_request=self.permit_request
         )
+
+        form = forms.PermitRequestInquiryForm(
+            data=data, permit_request=self.permit_request, instance=current_inquiry,
+        )
+
+        if current_inquiry:
+            disable_form(form, editable_fields=["documents"])
+
+        return form
 
     def get_request_validation_form(self, data=None, **kwargs):
         if services.has_permission_to_amend_permit_request(
