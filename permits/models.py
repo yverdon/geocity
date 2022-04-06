@@ -554,6 +554,25 @@ class PermitRequest(models.Model):
             )
         )
 
+    def files_download_html(self):
+        """
+        Return the list of downloadable files for any WOT on the Permit Request
+        to be used in list table
+        """
+        files_downloads = []
+        for wot in self.works_object_types.all():
+            file = wot.properties.filter(
+                input_type=WorksObjectProperty.INPUT_TYPE_FILE_DOWNLOAD
+            ).get()
+            files_downloads.append(file)
+
+        return format_html(
+            "<br>".join(
+                f"<a href=\"{reverse('permits:works_object_property_file_download', kwargs={'path':file.file_download})}\">{file.name}</a>"
+                for file in set(files_downloads)
+            )
+        )
+
     def get_pending_validations(self):
         return self.validations.filter(
             validation_status=PermitRequestValidation.STATUS_REQUESTED
