@@ -942,19 +942,11 @@ class GeometryWidget(geoforms.OSMWidget):
     @property
     def media(self):
         return forms.Media(
-            css={
-                "all": (
-                    "libs/js/openlayers6/ol.css",
-                    "css/geotime.css",
-                    "customWidgets/RemoteAutocomplete/remoteautocomplete.css",
-                    "libs/js/jquery-ui-custom/jquery-ui.min.css",
-                )
-            },
+            css={"all": ("libs/js/openlayers6/ol.css", "css/geotime.css")},
             js=(
                 "libs/js/openlayers6/ol.js",
                 "libs/js/proj4js/proj4-src.js",
                 "customWidgets/GeometryWidget/geometrywidget.js",
-                "libs/js/jquery-ui-custom/jquery-ui.js",
             ),
         )
 
