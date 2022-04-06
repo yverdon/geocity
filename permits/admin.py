@@ -805,6 +805,7 @@ class WorksObjectPropertyForm(forms.ModelForm):
             "choices",
             "line_number_for_textarea",
             "regex_pattern",
+            "file_download",
             "is_mandatory",
             "works_object_types",
         ]
