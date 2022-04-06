@@ -5,6 +5,7 @@ import urllib.parse
 
 import requests
 from django.contrib import messages
+from django.contrib.auth import login
 from django.contrib.auth.decorators import (
     login_required,
     permission_required,
@@ -665,6 +666,73 @@ def permit_request_print(request, permit_request_id, template_id):
     response["Content-Disposition"] = 'attachment; filename="' + file_name + '"'
 
     return response
+
+
+def anonymous_permit_request(request):
+    # FIXME: Wrap it in a decorator
+    if not request.user.is_anonymous and not request.user.permitauthor.is_temporary:
+        raise Http404
+
+    services.store_tags_in_session(request)
+
+    # Requires an entity (GET entry point)
+    if request.session["entityfilter"]:
+        entityfilter = request.session["entityfilter"]
+        typefilter = request.session["typefilter"]
+
+        entities_by_tag = (
+            models.PermitAdministrativeEntity.objects.public()
+            .filter_by_tags(entityfilter)
+        )
+
+        if len(entities_by_tag) == 1:
+            entity = entities_by_tag[0]
+
+            # FIXME Display captcha
+
+            temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
+
+            login(request, temp_author.user, "django.contrib.auth.backends.ModelBackend")
+
+            permit_request = models.PermitRequest.objects.create(
+                administrative_entity=entity,
+                author=temp_author,
+            )
+
+            works_object_types = models.WorksObjectType.anonymous_objects.filter(
+                administrative_entities__in=entities_by_tag,
+            )
+            if not works_object_types:
+                # This entity has no available WorksObjectType for anonymous requests.
+                raise Http404
+
+            else:
+
+                types = models.WorksType.objects.filter(
+                    works_object_types__is_anonymous=True
+                )
+                if len(typefilter) > 0:
+                    types = (
+                        types.filter_by_tags(typefilter).values_list("pk", flat=True)
+                    )
+
+                    works_object_types = works_object_types.filter(
+                        works_type__in=types,
+                    )
+
+                # If filter combinations return only one works_object_types object,
+                # this combination must be set on permit_request object
+                if len(works_object_types) == 1:
+                    permit_request.works_object_types.set(works_object_types)
+
+                steps = services.get_progress_bar_steps(
+                    request=request, permit_request=permit_request
+                )
+                return redirect(
+                    services.get_next_step(steps, models.StepType.ADMINISTRATIVE_ENTITY).url
+                )
+
+    raise Http404
 
 
 @redirect_bad_status_to_detail
