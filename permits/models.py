@@ -1488,6 +1488,14 @@ class PermitRequestInquiry(models.Model):
     )
     history = HistoricalRecords()
 
+    @classmethod
+    def get_current_inquiry(cls, permit_request):
+        return cls.objects.filter(
+            Q(permit_request=permit_request)
+            & Q(start_date__lte=datetime.today().strftime("%Y-%m-%d"))
+            & Q(end_date__gte=datetime.today().strftime("%Y-%m-%d"))
+        ).first()
+
 
 class QgisProject(models.Model):
     qgis_project_file = fields.AdministrativeEntityFileField(
