@@ -1536,6 +1536,8 @@ class PermitRequestInquiryForm(forms.ModelForm):
     def save(self, commit=True):
         inquiry = super().save(commit=False)
 
+        # insure all the documents added to the inquiry are public
+        # if, not, make them public
         for document in self.cleaned_data["documents"]:
             if document.is_public:
                 continue
