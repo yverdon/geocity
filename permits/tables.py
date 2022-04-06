@@ -42,9 +42,6 @@ class OwnPermitRequestsTable(ColumnShiftTable):
     administrative_entity = tables.Column(
         verbose_name=_("Entité administrative"), orderable=False
     )
-    files_download_html = tables.Column(
-        verbose_name=_("Fichiers (à télécharger)"), orderable=False
-    )
 
     class Meta:
         model = models.PermitRequest
@@ -56,7 +53,6 @@ class OwnPermitRequestsTable(ColumnShiftTable):
             "ends_at_max",
             "works_objects_html",
             "administrative_entity",
-            "files_download_html",
         )
         template_name = "django_tables2/bootstrap.html"
 
@@ -88,9 +84,6 @@ class DepartmentPermitRequestsTable(ColumnShiftTable):
     administrative_entity = tables.Column(
         verbose_name=_("Entité administrative"), orderable=False,
     )
-    files_download_html = tables.Column(
-        verbose_name=_("Fichiers (à télécharger)"), orderable=False
-    )
     author_fullname = tables.Column(
         verbose_name=_("Auteur de la demande"), attrs=ATTRIBUTES, orderable=True,
     )
@@ -110,7 +103,6 @@ class DepartmentPermitRequestsTable(ColumnShiftTable):
             "ends_at_max",
             "works_objects_html",
             "administrative_entity",
-            "files_download_html",
         )
         template_name = "django_tables2/bootstrap.html"
 
