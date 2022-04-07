@@ -528,7 +528,7 @@ class PermitRequest(models.Model):
 
     def can_be_amended(self):
         return self.status in self.AMENDABLE_STATUSES
-    
+
     def get_amend_property_list_always_amendable(self):
         amend_properties = []
         qs = PermitRequestAmendProperty.objects.filter(
