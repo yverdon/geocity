@@ -4,7 +4,6 @@ from django.test import TestCase
 from django.urls import reverse
 
 from permits.tests import factories
-from permits.models import TemplateCustomization
 from constance import config
 from bs4 import BeautifulSoup
 
@@ -120,3 +119,94 @@ class TestLoginPage(TestCase):
         self.assertHTMLEqual(title, expected_title)
         self.assertHTMLEqual(subtitle, expected_subtitle)
         self.assertHTMLEqual(description, expected_description)
+
+
+class TestRemoteUserLogin(TestCase):
+    def test_automatic_login_of_remote_user(self):
+        user = factories.UserFactory()
+        response = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity"),
+            follow=True,
+            REMOTE_USER=user.username,
+        )
+
+        self.assertTrue(response.context["user"].is_authenticated)
+        self.assertNotContains(response, "Connexion")
+        self.assertContains(response, "Entité administrative")
+
+    def test_automatic_login_of_remote_user_refuses_inactive_users(self):
+        user = factories.UserFactory(is_active=False)
+        response = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity"),
+            follow=True,
+            REMOTE_USER=user.username,
+        )
+
+        self.assertFalse(response.context["user"].is_authenticated)
+        self.assertContains(response, "Connexion")
+        self.assertNotContains(response, "Entité administrative")
+
+    def test_automatic_login_of_remote_user_refuses_when_user_is_empty(self):
+        response = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity"),
+            follow=True,
+            REMOTE_USER="",
+        )
+
+        self.assertFalse(response.context["user"].is_authenticated)
+        self.assertContains(response, "Connexion")
+        self.assertNotContains(response, "Entité administrative")
+
+    def test_login_with_credentials_works_when_remote_user_is_empty(self):
+        user = factories.UserFactory()
+        response1 = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity"),
+            follow=True,
+            REMOTE_USER="",
+        )
+
+        self.assertEqual(response1.status_code, 200)
+        self.assertRedirects(
+            response1,
+            f"{resolve_url('account_login')}?next=/permit-requests/administrative-entity/",
+        )
+        self.assertFalse(response1.context["user"].is_authenticated)
+        self.assertContains(response1, "Connexion")
+        self.assertNotContains(response1, "Entité administrative")
+
+        self.client.login(username=user.username, password="password")
+        response2 = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity"),
+            follow=True,
+            REMOTE_USER="",
+        )
+
+        self.assertTrue(response2.context["user"].is_authenticated)
+        self.assertNotContains(response2, "Connexion")
+        self.assertContains(response2, "Entité administrative")
+
+
+# Disabling the REMOTE_USER
+class TestRemoteUserLoginNotAllowed(TestCase):
+    def test_automatic_login_of_remote_user_is_denied(self):
+        # Tests run twice! Second time, setting will be already gone.
+        try:
+            settings.AUTHENTICATION_BACKENDS.remove(
+                "django.contrib.auth.backends.RemoteUserBackend"
+            )
+            settings.MIDDLEWARE.remove(
+                "django.contrib.auth.middleware.RemoteUserMiddleware"
+            )
+        except ValueError:
+            pass
+
+        user = factories.UserFactory()
+        response = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity"),
+            follow=True,
+            REMOTE_USER=user.username,
+        )
+
+        self.assertFalse(response.context["user"].is_authenticated)
+        self.assertContains(response, "Connexion")
+        self.assertNotContains(response, "Entité administrative")
