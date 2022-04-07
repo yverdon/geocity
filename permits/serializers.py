@@ -69,7 +69,7 @@ class PermitRequestSerializer(serializers.ModelSerializer):
 
 class WotPropertiesValuesSerializer(serializers.RelatedField):
     def to_representation(self, value):
-        wot_properties = services.get_wot_properties(value)
+        wot_properties = services.get_wot_properties(value, flat=True)
         return wot_properties
 
 
