@@ -222,6 +222,7 @@ class UserAdmin(BaseUserAdmin):
     def is_sociallogin(self, obj):
         return obj.socialaccount_set.exists()
 
+    is_sociallogin.admin_order_field = "socialaccount"
     is_sociallogin.short_description = "Social"
 
     def get_readonly_fields(self, request, obj=None):
