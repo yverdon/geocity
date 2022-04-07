@@ -322,15 +322,15 @@ class DepartmentAdminForm(forms.ModelForm):
         model = models.PermitDepartment
         fields = [
             "description",
+            "administrative_entity",
             "is_validator",
             "is_default_validator",
             "is_backoffice",
-            "administrative_entity",
-            "integrator",
             "is_integrator_admin",
             "mandatory_2fa",
             "integrator_email_domains",
             "integrator_emails_exceptions",
+            "integrator",
         ]
 
     # If the group is updated to be integrator, the users in this group should not be in another integrator group
@@ -455,10 +455,10 @@ class GroupAdmin(admin.ModelAdmin):
     form = GroupAdminForm
     list_display = [
         "__str__",
+        "get__integrator",
         "get__is_validator",
         "get__is_default_validator",
         "get__is_backoffice",
-        "get__integrator",
         "get__mandatory_2fa",
     ]
 
@@ -491,10 +491,10 @@ class GroupAdmin(admin.ModelAdmin):
     get__is_backoffice.short_description = _("Secrétariat")
 
     def get__integrator(self, obj):
-        return obj.permitdepartment.integrator
+        return Group.objects.get(pk=obj.permitdepartment.integrator)
 
     get__integrator.admin_order_field = "permitdepartment__integrator"
-    get__integrator.short_description = _("Intégrateur")
+    get__integrator.short_description = _("Groupe des administrateurs")
 
     @admin.display(boolean=True)
     def get__mandatory_2fa(self, obj):
@@ -875,7 +875,6 @@ class WorksObjectPropertyForm(forms.ModelForm):
             "name",
             "placeholder",
             "help_text",
-            "integrator",
             "order",
             "input_type",
             "services_to_notify",
@@ -887,6 +886,7 @@ class WorksObjectPropertyForm(forms.ModelForm):
             "additional_searchtext_for_address_field",
             "store_geometry_for_address_field",
             "works_object_types",
+            "integrator",
         ]
 
     def clean_file_download(self):
@@ -955,6 +955,7 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
             "general_informations",
             "phone",
             "geom",
+            "integrator",
         ]
         exclude = ["enabled_status"]
         widgets = {
@@ -1003,7 +1004,12 @@ class PermitWorkflowStatusInline(admin.StackedInline):
 class WorksObjectAdminForm(forms.ModelForm):
     class Meta:
         model = models.WorksObject
-        fields = "__all__"
+        fields = [
+            "name",
+            "wms_layers",
+            "wms_layers_order",
+            "integrator",
+        ]
         widgets = {
             "wms_layers": forms.Textarea(
                 attrs={
@@ -1180,7 +1186,12 @@ class PermitActorTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 class WorksTypeAdminForm(forms.ModelForm):
     class Meta:
         model = models.WorksType
-        fields = "__all__"
+        fields = [
+            "name",
+            "meta_type",
+            "tags",
+            "integrator",
+        ]
 
 
 class WorksTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
