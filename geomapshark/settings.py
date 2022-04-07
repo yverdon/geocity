@@ -468,4 +468,5 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 CRON_CLASSES = [
     "permits.cron.PermitRequestExpirationReminder",
+    "permits.cron.PermitRequestInquiryClosing",
 ]
