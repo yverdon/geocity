@@ -701,6 +701,25 @@ class PermitRequestDetailView(View):
             return redirect("permits:permit_requests_list")
 
     def handle_request_inquiry_form_submission(self, form):
+        # check if we're coming from the confirmation page
+        if not form.data.get("confirmation"):
+            non_public_documents = []
+            for document in form.cleaned_data["documents"]:
+                if not document.is_public:
+                    non_public_documents.append(document)
+
+            # check if any of the documents aren't public
+            # if so, redirect to confirmation page
+            if non_public_documents:
+                return render(
+                    self.request,
+                    "permits/permit_request_confirm_inquiry.html",
+                    {
+                        "non_public_documents": non_public_documents,
+                        "inquiry_form": form,
+                        "permit_request": self.permit_request,
+                    },
+                )
         form.instance.submitter = self.request.user
         form.instance.permit_request = self.permit_request
         self.permit_request.start_inquiry()
