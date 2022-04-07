@@ -1388,6 +1388,7 @@ class TemplateCustomization(models.Model):
         _("Identifiant"),
         max_length=64,
         blank=True,
+        help_text="Permettant d'afficher la page de login par l'url: https://geocity.ch/?template=vevey",
         validators=[
             RegexValidator(
                 regex=r"^[a-zA-Z0-9_]*$",
