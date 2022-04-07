@@ -116,12 +116,16 @@ class PermitDepartment(models.Model):
     description = models.CharField(_("description"), max_length=100, default="Service")
     is_validator = models.BooleanField(
         _("validateur"),
-        help_text="Cocher si les membres doivent apparaître dans la liste des services consultables pour la validation",
+        help_text=_(
+            "Cocher si les membres doivent apparaître dans la liste des services consultables pour la validation"
+        ),
     )
     is_backoffice = models.BooleanField(
         _("secrétariat"),
         default=False,
-        help_text="Cocher si les membres font partie du secrétariat. Ils seront notifiés des évolutions de la demande",
+        help_text=_(
+            "Cocher si les membres font partie du secrétariat. Ils seront notifiés des évolutions de la demande"
+        ),
     )
     administrative_entity = models.ForeignKey(
         "PermitAdministrativeEntity",
@@ -140,9 +144,17 @@ class PermitDepartment(models.Model):
         default=0,
     )
     is_integrator_admin = models.BooleanField(
-        "Intégrateur (accès à l'admin de django)", default=False
+        _("Intégrateur"),
+        help_text=_("Cocher si les membres peuvent accéder à l'admin de Django"),
+        default=False,
     )
-    mandatory_2fa = models.BooleanField(_("2FA obligatoire"), default=False)
+    mandatory_2fa = models.BooleanField(
+        _("2FA obligatoire"),
+        help_text=_(
+            "Cocher si les membres doivent obligatoirement utiliser la double authentification"
+        ),
+        default=False,
+    )
     integrator_email_domains = models.CharField(
         _("Domaines d'emails visibles pour l'intégrateur"),
         help_text=_(
