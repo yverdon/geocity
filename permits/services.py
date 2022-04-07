@@ -1558,6 +1558,7 @@ def get_wot_properties(value, flat=False):
     wot_properties = {}
 
     if wot_props:
+        # Flat view is used in geocalandar, the WOT shows only the works_object__name and not the type
         if flat:
             for prop in wot_props:
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
