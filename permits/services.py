@@ -1599,7 +1599,7 @@ def check_request_comes_from_internal_qgisserver(request):
     return False
 
 
-def get_wot_properties(value):
+def get_wot_properties(value, flat=False):
     obj = value.all()
     wot_props = obj.values(
         "properties__property__name",
@@ -1611,14 +1611,29 @@ def get_wot_properties(value):
     wot_properties = {}
 
     if wot_props:
-        for prop in wot_props:
-            wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
-            wot_properties[wot] = {
-                prop_i["properties__property__name"]: prop_i["properties__value__val"]
-                for prop_i in wot_props
-                if prop_i["works_object_type_id"] == prop["works_object_type_id"]
-                and prop_i["properties__property__name"]
-            }
+        if flat:
+            for prop in wot_props:
+                wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+                wot_properties["WOT"] = prop["works_object_type__works_object__name"]
+                for prop_i in wot_props:
+                    if (
+                        prop_i["works_object_type_id"] == prop["works_object_type_id"]
+                        and prop_i["properties__property__name"]
+                    ):
+                        wot_properties[prop_i["properties__property__name"]] = prop_i[
+                            "properties__value__val"
+                        ]
+        else:
+            for prop in wot_props:
+                wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+                wot_properties[wot] = {
+                    prop_i["properties__property__name"]: prop_i[
+                        "properties__value__val"
+                    ]
+                    for prop_i in wot_props
+                    if prop_i["works_object_type_id"] == prop["works_object_type_id"]
+                    and prop_i["properties__property__name"]
+                }
     return wot_properties
 
 
