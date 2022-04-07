@@ -2,9 +2,9 @@ import logging
 
 from django.core.management import call_command, CommandError
 from django_cron import CronJobBase, Schedule
-from datetime import date, timedelta
-from .models import PermitRequest
-from django.db.models import Max
+from datetime import date, datetime, timedelta
+from .models import PermitRequest, PermitRequestInquiry
+from django.db.models import Max, Min
 from django.utils.translation import gettext_lazy as _
 from .services import send_email_notification
 
@@ -71,3 +71,39 @@ class CleanupAnonymousRequests(CronJobBase):
             logger.info(
                 "The anonymous permit requests cleanup Cronjob finished successfully"
             )
+
+
+class PermitRequestInquiryClosing(CronJobBase):
+    RUN_AT_TIMES = ["15:00"]
+    schedule = Schedule(run_at_times=RUN_AT_TIMES)
+
+    code = "permits.permit_request_inquiry_closing"
+
+    def do(self):
+        inquiries_to_close = PermitRequestInquiry.objects.filter(
+            end_date=datetime.today().strftime("%Y-%m-%d")
+        )
+
+        for inquiry in inquiries_to_close:
+            if (
+                not inquiry.permit_request.status
+                == PermitRequest.STATUS_INQUIRY_IN_PROGRESS
+            ):
+                continue
+
+            inquiry.permit_request.status = PermitRequest.STATUS_PROCESSING
+            inquiry.permit_request.save()
+
+            data = {
+                "subject": _("Fin de l'enquête publique"),
+                "users_to_notify": [
+                    inquiry.permit_request.author.user.email,
+                    inquiry.submitter.email,
+                ],
+                "permit_request": inquiry.permit_request,
+                "absolute_uri_func": inquiry.permit_request.get_absolute_url,
+                "template": "permit_request_inquiry_closing.txt",
+            }
+            send_email_notification(data)
+
+        logger.info("The permit inquiry closing Cronjob finished")
