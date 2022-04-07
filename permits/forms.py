@@ -6,6 +6,7 @@ from itertools import groupby
 from allauth.socialaccount.forms import SignupForm
 from allauth.socialaccount.providers.base import ProviderException
 from bootstrap_datepicker_plus.widgets import DatePickerInput, DateTimePickerInput
+from captcha.fields import CaptchaField
 from constance import config
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Field, Fieldset, Layout
@@ -1435,3 +1436,8 @@ class SocialSignupForm(SignupForm):
             raise ProviderException(_("Unknown social account provider"))
 
         return adapter.save_user(request, self.sociallogin, form=self)
+
+
+class AnonymousRequestForm(forms.Form):
+    required_css_class = "required"
+    captcha = CaptchaField(required=True)

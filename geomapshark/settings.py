@@ -131,6 +131,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "django_cron",
     "axes",
+    "captcha",
 ]
 
 if ENABLE_2FA:
@@ -189,6 +190,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "TABLE_COLOR",
     ),
     "Step Options": (
+        "ANONYMOUS_CAPTCHA_STEP",
         "LOCATION_STEP",
         "WORKS_TYPES_STEP",
         "WORKS_OBJECTS_STEP",
@@ -244,6 +246,7 @@ CONSTANCE_CONFIG = {
         "Définit si l'application du calendrier cartographique est utilisé ou pas (doit dans tous les cas être installée à part)",
         bool,
     ),
+    "ANONYMOUS_CAPTCHA_STEP": ("Votre demande anonyme", "", str),
     "LOCATION_STEP": ("Sélectionnez la commune / l'entité", "", str),
     "WORKS_TYPES_STEP": ("Sélectionnez le ou les type(s)", "", str),
     "WORKS_OBJECTS_STEP": ("Sélectionnez les objets", "", str),
@@ -477,3 +480,6 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 CRON_CLASSES = [
     "permits.cron.PermitRequestExpirationReminder",
 ]
+
+CAPTCHA_IMAGE_SIZE = (150, 50)
+CAPTCHA_FONT_SIZE = 26

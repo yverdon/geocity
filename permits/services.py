@@ -10,7 +10,7 @@ import ipaddress
 import filetype
 from constance import config
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, login
 from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.core.mail import send_mass_mail
 from django.core.validators import EmailValidator
@@ -1600,6 +1600,27 @@ def get_amend_properties(value):
         }
 
     return amend_properties
+
+
+def is_anonymous_request_logged_in(request, entity):
+    """
+    Verify the authentication for anonymous permit requests.
+    """
+    return (
+        request.user.is_authenticated
+        and request.user.permitauthor.is_temporary
+        and request.session.get("anonymous_request_token", None)
+        == hash((request.user.permitauthor, entity))
+    )
+
+
+def login_for_anonymous_request(request, entity):
+    """
+    Authenticate with a new temporary user to proceed with an anonymous permit request.
+    """
+    temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
+    login(request, temp_author.user, "django.contrib.auth.backends.ModelBackend")
+    request.session["anonymous_request_token"] = hash((temp_author, entity))
 
 
 def download_file(path):

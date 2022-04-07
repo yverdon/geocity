@@ -128,6 +128,7 @@ urlpatterns += [
     path("wfs3/", include(wfs3_router.urls)),  # Django-rest urls
     path("admin/", admin.site.urls),
     path("oauth/", include("oauth2_provider.urls", namespace="oauth2_provider")),
+    path('captcha/', include('captcha.urls')),
 ]
 
 if settings.PREFIX_URL:

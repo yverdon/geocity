@@ -669,70 +669,76 @@ def permit_request_print(request, permit_request_id, template_id):
 
 
 def anonymous_permit_request(request):
-    # FIXME: Wrap it in a decorator
+    # Accept only non-logged users, or temporary users
     if not request.user.is_anonymous and not request.user.permitauthor.is_temporary:
         raise Http404
 
+    # Validate entity
     services.store_tags_in_session(request)
+    entityfilter = request.session.get("entityfilter", [])
+    entities_by_tag = models.PermitAdministrativeEntity.objects.public().filter_by_tags(
+        entityfilter
+    )
+    if len(entities_by_tag) != 1:
+        raise Http404
+    entity = entities_by_tag[0]
 
-    # Requires an entity (GET entry point)
-    if request.session["entityfilter"]:
-        entityfilter = request.session["entityfilter"]
-        typefilter = request.session["typefilter"]
+    # Validate types
+    typefilter = request.session.get("typefilter", [])
+    work_types = (
+        models.WorksType.objects.filter(works_object_types__is_anonymous=True)
+        .filter_by_tags(typefilter)
+        .values_list("pk", flat=True)
+    )
+    if len(work_types) == 0:
+        raise Http404
 
-        entities_by_tag = (
-            models.PermitAdministrativeEntity.objects.public()
-            .filter_by_tags(entityfilter)
-        )
+    # Validate available work objects types
+    works_object_types = models.WorksObjectType.anonymous_objects.filter(
+        administrative_entities=entity, works_type__in=work_types,
+    )
+    if not works_object_types:
+        raise Http404
 
-        if len(entities_by_tag) == 1:
-            entity = entities_by_tag[0]
-
-            # FIXME Display captcha
-
-            temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
-
-            login(request, temp_author.user, "django.contrib.auth.backends.ModelBackend")
-
-            permit_request = models.PermitRequest.objects.create(
-                administrative_entity=entity,
-                author=temp_author,
-            )
-
-            works_object_types = models.WorksObjectType.anonymous_objects.filter(
-                administrative_entities__in=entities_by_tag,
-            )
-            if not works_object_types:
-                # This entity has no available WorksObjectType for anonymous requests.
-                raise Http404
-
+    if not services.is_anonymous_request_logged_in(request, entity):
+        # Captcha page
+        if request.method == "POST":
+            anonymous_request_form = forms.AnonymousRequestForm(request.POST)
+            if anonymous_request_form.is_valid():
+                # Perform temporary login
+                services.login_for_anonymous_request(request, entity)
             else:
-
-                types = models.WorksType.objects.filter(
-                    works_object_types__is_anonymous=True
+                return render(
+                    request,
+                    "permits/permit_request_anonymous_captcha.html",
+                    {"anonymous_request_form": anonymous_request_form},
                 )
-                if len(typefilter) > 0:
-                    types = (
-                        types.filter_by_tags(typefilter).values_list("pk", flat=True)
-                    )
+        else:
+            return render(
+                request,
+                "permits/permit_request_anonymous_captcha.html",
+                {"anonymous_request_form": forms.AnonymousRequestForm()},
+            )
 
-                    works_object_types = works_object_types.filter(
-                        works_type__in=types,
-                    )
+    # Permit request page
 
-                # If filter combinations return only one works_object_types object,
-                # this combination must be set on permit_request object
-                if len(works_object_types) == 1:
-                    permit_request.works_object_types.set(works_object_types)
+    temp_author = request.user.permitauthor
+    # Never create a second permit request for the same temp_author
+    permit_request, _ = models.PermitRequest.objects.get_or_create(
+        administrative_entity=entity, author=temp_author,
+    )
 
-                steps = services.get_progress_bar_steps(
-                    request=request, permit_request=permit_request
-                )
-                return redirect(
-                    services.get_next_step(steps, models.StepType.ADMINISTRATIVE_ENTITY).url
-                )
+    # If filter combinations return only one works_object_types object,
+    # this combination must be set on permit_request object
+    if len(works_object_types) == 1:
+        permit_request.works_object_types.set(works_object_types)
 
-    raise Http404
+    steps = services.get_progress_bar_steps(
+        request=request, permit_request=permit_request
+    )
+    return redirect(
+        services.get_next_step(steps, models.StepType.ADMINISTRATIVE_ENTITY).url
+    )
 
 
 @redirect_bad_status_to_detail
