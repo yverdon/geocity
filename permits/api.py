@@ -121,7 +121,7 @@ class CurrentUserViewSet(viewsets.ReadOnlyModelViewSet):
     """
 
     serializer_class = serializers.CurrentUserSerializer
-    
+
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
@@ -132,7 +132,7 @@ class CurrentUserViewSet(viewsets.ReadOnlyModelViewSet):
 
         serializer = self.get_serializer(queryset, many=False)
         return Response(serializer.data)
-    
+
     # Returns the logged user, if there's any
     def get_queryset(self):
         qs = User.objects.filter(Q(username=self.request.user))
