@@ -103,13 +103,17 @@ def redirect_bad_status_to_detail(func):
     return inner
 
 
-def disable_form(form):
-    for field in form.fields.values():
-        field.disabled = True
-
+# Don't disable form if there's any amend property always amendable
+def disable_form(form, amend_property_always_amendable=[]):
     form.disabled = True
 
-    return form
+    for field in form.fields.values():
+
+        if field.label in amend_property_always_amendable:
+            field.disabled = False
+            form.disabled = False
+        else:
+            field.disabled = True
 
 
 def progress_bar_context(request, permit_request, current_step_type):
@@ -329,7 +333,9 @@ class PermitRequestDetailView(View):
             if not services.can_amend_permit_request(
                 self.request.user, self.permit_request
             ):
-                disable_form(form)
+                disable_form(
+                    form, self.permit_request.get_amend_property_list_always_amendable()
+                )
 
             return form
 
