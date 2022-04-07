@@ -704,6 +704,12 @@ class PermitRequest(models.Model):
         )
         return f"{protocol}://{settings.SITE_DOMAIN}{port}{relative_url}"
 
+    def start_inquiry(self):
+        if self.status == self.STATUS_INQUIRY_IN_PROGRESS:
+            return
+        self.status = self.STATUS_INQUIRY_IN_PROGRESS
+        self.save()
+
 
 class WorksTypeQuerySet(models.QuerySet):
     def filter_by_tags(self, tags):
