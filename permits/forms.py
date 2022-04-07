@@ -855,11 +855,28 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                     self.instance.administrative_entity
                 )
             )
-            filter1 = [
-                tup
-                for tup in models.PermitRequest.STATUS_CHOICES
-                if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)
-            ]
+            # If an amend propoerty in the permit request can always be amended and permit request is already approved, STATUS_APPROVED needs to be selected as default
+            if (
+                self.instance.get_amend_property_list_always_amendable()
+                and self.instance.status == models.PermitRequest.STATUS_APPROVED
+            ):
+                filter1 = [
+                    tup
+                    for tup in models.PermitRequest.STATUS_CHOICES
+                    if any(
+                        i in tup
+                        for i in [
+                            models.PermitRequest.AMENDABLE_STATUSES,
+                            models.PermitRequest.STATUS_APPROVED,
+                        ]
+                    )
+                ]
+            else:
+                filter1 = [
+                    tup
+                    for tup in models.PermitRequest.STATUS_CHOICES
+                    if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)
+                ]
             filter2 = [
                 el
                 for el in filter1
@@ -962,7 +979,8 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 "format": "DD.MM.YYYY HH:mm",
                 "locale": "fr-CH",
                 "useCurrent": False,
-            }
+            },
+            attrs={"autocomplete": "off"},
         ).start_of("event days"),
         help_text="Cliquer sur le champ et selectionner la date planifiée de début à l'aide de l'outil mis à disposition",
     )
@@ -974,7 +992,8 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 "format": "DD.MM.YYYY HH:mm",
                 "locale": "fr-CH",
                 "useCurrent": False,
-            }
+            },
+            attrs={"autocomplete": "off"},
         ).end_of("event days"),
         help_text="Cliquer sur le champ et selectionner la date planifiée de fin à l'aide de l'outil mis à disposition",
     )

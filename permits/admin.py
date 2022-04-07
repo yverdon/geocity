@@ -1016,6 +1016,7 @@ class PermitRequestAmendPropertyForm(forms.ModelForm):
             "name",
             "is_mandatory",
             "is_visible_by_author",
+            "can_always_update",
             "works_object_types",
             "integrator",
         ]
