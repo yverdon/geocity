@@ -1218,6 +1218,8 @@ class PermitRequestAdmin(admin.ModelAdmin):
     ]
     search_fields = [
         "id",
+        "author__user__first_name",
+        "author__user__last_name",
     ]
     list_filter = ("status", "author", "works_object_types", "administrative_entity")
 
