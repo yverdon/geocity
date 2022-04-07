@@ -1055,7 +1055,7 @@ class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "expeditor_name",
         "expeditor_email",
         "ofs_id",
-        "tags",
+        "get__tags",
     ]
 
     def sortable_str(self, obj):
@@ -1065,6 +1065,11 @@ class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     sortable_str.short_description = (
         "1.1 Configuration de l'entité administrative (commune, organisation)"
     )
+
+    def get__tags(self, obj):
+        return list(obj.tags.all())
+
+    get__tags.short_description = _("Mots-clés")
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "integrator":
@@ -1182,7 +1187,7 @@ class WorksTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_display = [
         "sortable_str",
         "meta_type",
-        "tags",
+        "get__tags",
     ]
     search_fields = [
         "id",
@@ -1193,6 +1198,11 @@ class WorksTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
     sortable_str.admin_order_field = "name"
     sortable_str.short_description = _("1.2 Configuration du type")
+
+    def get__tags(self, obj):
+        return list(obj.tags.all())
+
+    get__tags.short_description = _("Mots-clés")
 
 
 class PermitRequestAdmin(admin.ModelAdmin):
