@@ -1615,7 +1615,7 @@ def get_wot_properties(value, flat=False):
         if flat:
             for prop in wot_props:
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
-                wot_properties["WOT"] = prop["works_object_type__works_object__name"]
+                wot_properties["Objet"] = prop["works_object_type__works_object__name"]
                 for prop_i in wot_props:
                     if (
                         prop_i["works_object_type_id"] == prop["works_object_type_id"]
