@@ -1495,7 +1495,6 @@ class PermitRequestInquiry(models.Model):
         on_delete=models.SET_NULL,
         verbose_name=_("Demandeur de l'enquête"),
     )
-    history = HistoricalRecords()
 
     @classmethod
     def get_current_inquiry(cls, permit_request):
