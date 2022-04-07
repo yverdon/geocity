@@ -11,7 +11,7 @@
       {% if forms.amend %}
 
           <li class="nav-item">
-              <a class="btn btn-primary btn-action nav-link{% if active_form == "amend" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">{% trans "Traitement" %}</a>
+              <a class="btn btn-primary btn-action nav-link{% if active_form == "amend" or active_form == "request_inquiry" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">{% trans "Traitement" %}</a>
           </li>
 
       {% endif %}
@@ -89,7 +89,7 @@
       <div class="pt-3 tab-content box box--default box--tabbed">
 
         {% if forms.amend %}
-            <div class="tab-pane{% if active_form == "amend" %} show active{% endif %}" id="amend" role="tabpanel" aria-labelledby="amend-tab">
+            <div class="tab-pane{% if active_form == "amend" or active_form == "request_inquiry" %} show active{% endif %}" id="amend" role="tabpanel" aria-labelledby="amend-tab">
                 <h4>{% trans "Informations générales" %}</h4>
                 <form method="post">
                     {% csrf_token %}

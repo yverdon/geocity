@@ -1523,7 +1523,7 @@ class PermitRequestInquiryForm(forms.ModelForm):
 
     def __init__(self, permit_request, *args, **kwargs):
         super(PermitRequestInquiryForm, self).__init__(*args, **kwargs)
-
+        self.permit_request = permit_request
         self.fields[
             "documents"
         ].queryset = models.PermitRequestComplementaryDocument.objects.filter(
@@ -1532,6 +1532,27 @@ class PermitRequestInquiryForm(forms.ModelForm):
         self.fields["documents"].help_text = _(
             "Attention, les documents non-publics seront public une fois la mise à l'enquête démarrée!"
         )
+
+    def clean(self):
+        cleaned_data = super(PermitRequestInquiryForm, self).clean()
+        start_date = self.cleaned_data.get("start_date")
+        end_date = self.cleaned_data.get("end_date")
+
+        overlap = models.PermitRequestInquiry.objects.filter(
+            Q(permit_request=self.permit_request)
+            & (
+                (Q(start_date__lte=start_date) & Q(end_date__gte=start_date))
+                | (Q(start_date__lte=end_date) & Q(end_date__gte=end_date))
+                | (Q(start_date__gte=start_date) & Q(end_date__lte=end_date))
+                | (Q(start_date__lte=start_date) & Q(end_date__gte=end_date))
+            )
+        )
+        if overlap:
+            raise ValidationError(
+                _("Une enquête est déjà en cours pendant cette période")
+            )
+
+        return cleaned_data
 
     def save(self, commit=True):
         inquiry = super().save(commit=False)
