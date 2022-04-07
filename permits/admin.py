@@ -1146,6 +1146,7 @@ class TemplateCustomizationAdmin(admin.ModelAdmin):
         "__str__",
         "templatename",
         "application_title",
+        "application_subtitle",
         "has_background_image",
     ]
     list_filter = [
