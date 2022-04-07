@@ -528,6 +528,18 @@ class PermitRequest(models.Model):
 
     def can_be_amended(self):
         return self.status in self.AMENDABLE_STATUSES
+    
+    def get_amend_property_list_always_amendable(self):
+        amend_properties = []
+        qs = PermitRequestAmendProperty.objects.filter(
+            Q(
+                works_object_types__administrative_entities__name=self.administrative_entity
+            )
+            & Q(can_always_update=True)
+        ).distinct()
+        for object in qs:
+            amend_properties.append(object.name)
+        return amend_properties
 
     def can_be_sent_for_validation(self):
         """
@@ -1181,6 +1193,9 @@ class PermitRequestAmendProperty(models.Model):
     is_mandatory = models.BooleanField(_("obligatoire"), default=False)
     is_visible_by_author = models.BooleanField(
         _("Visible par l'auteur de la demande"), default=True
+    )
+    can_always_update = models.BooleanField(
+        _("Editable même après classement de la demande"), default=False
     )
     works_object_types = models.ManyToManyField(
         WorksObjectType, verbose_name=_("objets"), related_name="amend_properties",
