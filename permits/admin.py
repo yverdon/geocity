@@ -450,6 +450,7 @@ class GroupAdmin(admin.ModelAdmin):
         "__str__",
         "get__is_validator",
         "get__is_default_validator",
+        "get__is_backoffice",
         "get__integrator",
         "get__mandatory_2fa",
     ]
@@ -474,6 +475,13 @@ class GroupAdmin(admin.ModelAdmin):
         "permitdepartment__is_default_validator"
     )
     get__is_default_validator.short_description = _("Validateur par défaut")
+
+    @admin.display(boolean=True)
+    def get__is_backoffice(self, obj):
+        return obj.permitdepartment.is_backoffice
+
+    get__is_backoffice.admin_order_field = "permitdepartment__is_backoffice"
+    get__is_backoffice.short_description = _("Secrétariat")
 
     def get__integrator(self, obj):
         return obj.permitdepartment.integrator
