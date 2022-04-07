@@ -141,7 +141,11 @@ class PermitDepartment(models.Model):
     is_default_validator = models.BooleanField(
         _("sélectionné par défaut pour les validations"), default=False
     )
-    integrator = models.IntegerField(_("Intégrateur responsable"), default=0,)
+    integrator = models.IntegerField(
+        _("Groupe des administrateurs"),
+        help_text=_("Identifiant du groupe"),
+        default=0,
+    )
     is_integrator_admin = models.BooleanField(
         "Intégrateur (accès à l'admin de django)", default=False
     )
