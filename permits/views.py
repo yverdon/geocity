@@ -46,6 +46,8 @@ import django_tables2 as tableslib
 
 from .tables import CustomPropertyValueAccessiblePermitRequest, get_custom_dynamic_table
 
+from datetime import datetime
+
 logger = logging.getLogger(__name__)
 
 
@@ -732,7 +734,10 @@ class PermitRequestDetailView(View):
                 )
         form.instance.submitter = self.request.user
         form.instance.permit_request = self.permit_request
-        self.permit_request.start_inquiry()
+
+        if form.cleaned_data.get("start_date") == datetime.today().date():
+            self.permit_request.start_inquiry()
+
         form.save()
 
         success_message = _("La mise à l'enquête a bien été enregistré")
