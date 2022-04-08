@@ -1548,10 +1548,28 @@ class PermitRequestInquiryForm(forms.ModelForm):
             "Attention, les documents non-publics seront public une fois la mise à l'enquête démarrée!"
         )
 
+    def clean_start_date(self):
+        start_date = self.cleaned_data.get("start_date")
+
+        if start_date < datetime.today().date():
+            raise ValidationError(
+                _("La date de début doit être postérieure à la date d'aujourd'hui.")
+            )
+
+        return start_date
+
     def clean(self):
         cleaned_data = super(PermitRequestInquiryForm, self).clean()
         start_date = self.cleaned_data.get("start_date")
         end_date = self.cleaned_data.get("end_date")
+
+        if not start_date:
+            return cleaned_data
+
+        if end_date < start_date:
+            raise ValidationError(
+                _("La date de fin doit être postérieure à la date de début.")
+            )
 
         overlap = models.PermitRequestInquiry.objects.filter(
             Q(permit_request=self.permit_request)
