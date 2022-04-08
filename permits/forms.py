@@ -1622,7 +1622,7 @@ class PermitRequestInquiryForm(forms.ModelForm):
                 | (Q(start_date__lte=start_date) & Q(end_date__gte=end_date))
             )
         )
-        if overlap:
+        if overlap and not self.instance.pk:
             raise ValidationError(
                 _("Une enquête est déjà en cours pendant cette période")
             )
