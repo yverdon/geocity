@@ -38,6 +38,8 @@ from . import fields, filters, forms, models, services, tables
 from .exceptions import BadPermitRequestStatus, NonProlongablePermitRequest
 from .search import search_permit_requests, search_result_to_json
 
+from datetime import datetime
+
 logger = logging.getLogger(__name__)
 
 
@@ -722,7 +724,10 @@ class PermitRequestDetailView(View):
                 )
         form.instance.submitter = self.request.user
         form.instance.permit_request = self.permit_request
-        self.permit_request.start_inquiry()
+
+        if form.cleaned_data.get("start_date") == datetime.today().date():
+            self.permit_request.start_inquiry()
+
         form.save()
 
         success_message = _("La mise à l'enquête a bien été enregistré")

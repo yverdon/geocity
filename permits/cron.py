@@ -86,3 +86,23 @@ class PermitRequestInquiryClosing(CronJobBase):
             send_email_notification(data)
 
         logger.info("The permit inquiry closing Cronjob finished")
+
+
+class PermitRequestInquiryOpening(CronJobBase):
+    RUN_AT_TIMES = ["01:00"]
+    schedule = Schedule(run_at_times=RUN_AT_TIMES)
+
+    code = "permits.permit_request_inquiry_opening"
+
+    def do(self):
+        inquiries_to_open = PermitRequestInquiry.objects.filter(
+            start_date=datetime.today().strftime("%Y-%m-%d")
+        )
+        for inquiry in inquiries_to_open:
+            if not inquiry.permit_request.status == PermitRequest.STATUS_PROCESSING:
+                continue
+
+            inquiry.permit_request.status = PermitRequest.STATUS_INQUIRY_IN_PROGRESS
+            inquiry.permit_request.save()
+
+        logger.info("The permit inquiry opening Cronjob finished")
