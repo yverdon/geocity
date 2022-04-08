@@ -982,6 +982,21 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
         """
         return [self[field] for field in self.base_fields]
 
+    def clean_status(self):
+        status = self.cleaned_data.get("status")
+
+        if (
+            self.instance.status == models.PermitRequest.STATUS_INQUIRY_IN_PROGRESS
+            and not status == models.PermitRequest.STATUS_INQUIRY_IN_PROGRESS
+        ):
+            raise ValidationError(
+                _(
+                    "Vous ne pouvez pas changer le status de la demande car une enquête public est en cours"
+                )
+            )
+
+        return status
+
     def save(self, commit=True):
         permit_request = super().save(commit=False)
         for works_object_type, prop in self.get_properties():
