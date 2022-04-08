@@ -1,6 +1,7 @@
 from django.test import TestCase
 
 from permits.tests import factories
+from django.urls import reverse
 
 
 class GeocityTestCase(TestCase):
@@ -67,3 +68,25 @@ class GeocityTestCase(TestCase):
 
         if not actual_message == expected_message:
             raise AssertionError("{} != {}".format(actual_message, expected_message))
+
+    def execute_permit_request_action(self, data):
+        self.login(email="pilot@test.com", group=self.SECRETARIAT)
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            ),
+            data=data,
+        )
+        self.assertEqual(response.status_code, 302)
+
+        detail = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            )
+        )
+        self.permit_request.refresh_from_db()
+
+        return detail
