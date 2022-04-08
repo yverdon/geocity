@@ -538,3 +538,13 @@ class ComplementaryDocumentFactory(factory.django.DjangoModelFactory):
             return
 
         self.authorised_departments.add(*extracted)
+
+
+class PermitRequestInquiryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitRequestInquiry
+
+    submitter = factory.SubFactory(UserFactory)
+    permit_request = factory.SubFactory(PermitRequestFactory)
+    start_date = factory.Faker("date")
+    end_date = factory.Faker("date")
