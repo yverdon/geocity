@@ -136,6 +136,12 @@ class PermitRequestAPITestCase(TestCase):
             "Vous n'avez pas la permission d'effectuer cette action.",
         )
 
+    def test_logout_next_action(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        logout_page = reverse("logout") + "?next=" + reverse("permit_author_create")
+        response = self.client.get(logout_page)
+        self.assertRedirects(response, expected_url=reverse("permit_author_create"))
+
     def test_api_admin_user(self):
         self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(reverse("permits-list"), {})

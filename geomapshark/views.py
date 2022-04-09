@@ -25,11 +25,15 @@ def logout_view(request):
         else None
     )
     logout(request)
-    return redirect(
-        f'{reverse("account_login")}?template={templatename}'
-        if templatename
-        else reverse("account_login")
-    )
+    if request.GET.get("next", None):
+        redirect_to = request.GET.get("next", None)
+    else:
+        redirect_to = (
+            f'{reverse("account_login")}?template={templatename}'
+            if templatename
+            else reverse("account_login")
+        )
+    return redirect(redirect_to)
 
 
 # User has tried to many login attemps
