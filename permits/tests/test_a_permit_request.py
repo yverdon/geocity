@@ -2344,7 +2344,6 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
             set(current_works_object_types + [new_works_object_type]),
         )
 
-    # TODO
     def test_properties_step_submit_updates_permit_request(self):
         new_prop = factories.WorksObjectPropertyFactory()
         new_prop.works_object_types.set(self.permit_request.works_object_types.all())
