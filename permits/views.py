@@ -1238,7 +1238,7 @@ def permit_request_media_download(request, property_value_id):
 
 @method_decorator(login_required, name="dispatch")
 @method_decorator(check_mandatory_2FA, name="dispatch")
-class PermitRequestList(SingleTableMixin, FilterView):
+class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
     paginate_by = int(os.environ["PAGINATE_BY"])
     template_name = "permits/permit_requests_list.html"
 
@@ -1295,24 +1295,30 @@ class PermitRequestList(SingleTableMixin, FilterView):
                         )
         return list(extra_column_specs.items())
 
+    def is_exporting(self):
+        return bool(self.request.GET.get(self.export_trigger_param, None))
+
     def get_table_class(self):
-        filterset = self.get_filterset(self.get_filterset_class())
         works_object_filter = self._get_wot_filter()
 
         if self.is_department_user():
-            if (
-                works_object_filter
-                and "works_object_types__works_object" in filterset.filters
-            ):
+            if works_object_filter:
                 extra_columns = self._get_extra_column_specs(works_object_filter)
                 extra_column_names = tuple([col_name for col_name, __ in extra_columns])
-                table_class = get_custom_dynamic_table(
-                    tables.DepartmentPermitRequestsTable, extra_column_names, "actions"
-                )
             else:
-                table_class = tables.DepartmentPermitRequestsTable
+                extra_column_names = tuple()
+            table_class = (
+                tables.DepartmentPermitRequestsExportTable
+                if self.is_exporting()
+                else tables.DepartmentPermitRequestsHTMLTable
+            )
+            table_class = get_custom_dynamic_table(table_class, extra_column_names)
         else:
-            table_class = tables.OwnPermitRequestsTable
+            table_class = (
+                tables.OwnPermitRequestsExportTable
+                if self.is_exporting()
+                else tables.OwnPermitRequestsHTMLTable
+            )
         return table_class
 
     def get_table_kwargs(self):
@@ -1332,28 +1338,12 @@ class PermitRequestList(SingleTableMixin, FilterView):
             else filters.OwnPermitRequestFilterSet
         )
 
-
-@method_decorator(login_required, name="dispatch")
-@method_decorator(check_mandatory_2FA, name="dispatch")
-class PermitExportView(ExportMixin, SingleTableView):
-    table_class = tables.OwnPermitRequestsTable
-    template_name = "django_tables2/bootstrap.html"
-
-    def get_queryset(self):
-        return (
-            services.get_permit_requests_list_for_user(self.request.user)
-            .prefetch_related(
-                Prefetch(
-                    "works_object_types",
-                    queryset=models.WorksObjectType.objects.select_related(
-                        "works_type", "works_object"
-                    ),
-                )
-            )
-            .order_by("-created_at")
-        )
-
-    exclude_columns = ("actions",)
+    def get_context_data(self, **kwargs):
+        context = super(PermitRequestList, self).get_context_data(**kwargs)
+        params = {key: value[0] for key, value in dict(self.request.GET).items()}
+        params.update({'_export': 'csv'})
+        context['export_csv_url_params'] = urllib.parse.urlencode(params)
+        return context
 
 
 @redirect_bad_status_to_detail
