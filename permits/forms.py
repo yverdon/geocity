@@ -581,24 +581,32 @@ class NewDjangoAuthUserForm(UserCreationForm):
     def clean_email(self):
         return check_existing_email(self.cleaned_data["email"], user=None)
 
-    def clean_first_name(self):
-        if self.cleaned_data["first_name"] == settings.ANONYMOUS_NAME:
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data["username"].startswith(settings.TEMPORARY_USER_PREFIX):
             raise ValidationError(
-                _("Le prénom ne peut pas être %s") % settings.ANONYMOUS_NAME
+                {
+                    "username": _(
+                        "Le nom d'utilisat·eur·rice ne peut pas commencer par %s"
+                    )
+                    % settings.TEMPORARY_USER_PREFIX
+                }
             )
 
-    def clean_last_name(self):
-        if self.cleaned_data["last_name"] == settings.ANONYMOUS_NAME:
+        if cleaned_data["first_name"] == settings.ANONYMOUS_NAME:
             raise ValidationError(
-                _("Le nom ne peut pas être %s") % settings.ANONYMOUS_NAME
+                {
+                    "first_name": _("Le prénom ne peut pas être %s")
+                    % settings.ANONYMOUS_NAME
+                }
             )
 
-    def clean_username(self):
-        if self.cleaned_data["username"].startswith(settings.TEMPORARY_USER_PREFIX):
+        if cleaned_data["last_name"] == settings.ANONYMOUS_NAME:
             raise ValidationError(
-                _("Le nom d'utilisat·eur·rice ne peut pas commencer par %s")
-                % settings.TEMPORARY_USER_PREFIX
+                {"last_name": _("Le nom ne peut pas être %s") % settings.ANONYMOUS_NAME}
             )
+
+        return cleaned_data
 
     def save(self, commit=True):
         user = super(NewDjangoAuthUserForm, self).save(commit=False)

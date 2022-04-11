@@ -387,6 +387,13 @@ class WorksObjectTypeFactory(factory.django.DjangoModelFactory):
 
         self.integrator = extracted
 
+    @factory.post_generation
+    def administrative_entities(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        self.administrative_entities.add(*extracted)
+
 
 class WorksObjectTypeWithoutGeometryFactory(factory.django.DjangoModelFactory):
     class Meta:

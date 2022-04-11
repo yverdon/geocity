@@ -762,7 +762,7 @@ def anonymous_permit_request(request):
     )
 
     for step_type, step in steps.items():
-        if step.enabled and not step.completed:
+        if step and step.enabled and not step.completed:
             return redirect(step.url)
 
 

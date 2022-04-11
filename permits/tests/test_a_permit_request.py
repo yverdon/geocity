@@ -17,6 +17,8 @@ from permits import models, services
 
 from . import factories
 from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_parser
+from ..forms import PermitRequestGeoTimeForm
+from ..management.commands import create_anonymous_users
 
 
 def to_works_objects_dict(works_object_types):
@@ -3871,7 +3873,7 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             len(get_parser(response.content).select(".form-check-label")), 2
         )
 
-    def test_work_type_step_show_private_requests_to_user_with_specific_permission(
+    def test_work_type_step_show_private_requests_with_choices_to_user_with_specific_permission(
         self,
     ):
 
@@ -3879,6 +3881,7 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             codename="see_private_requests"
         )
         self.user.user_permissions.add(see_private_requests_permission)
+
         public_works_object_types = factories.WorksObjectTypeFactory.create_batch(
             2, is_public=True
         )
@@ -4037,3 +4040,112 @@ class PermitRequestFilteredWorksObjectListTestCase(LoggedInSecretariatMixin, Tes
         )
 
         self.assertContains(response, self.prop_value.value["val"])
+
+class PermitRequestAnonymousTestCase(TestCase):
+    def setUp(self):
+        super().setUp()
+        # self.works_types = factories.WorksTypeFactory.create_batch(2)
+        # self.works_objects = factories.WorksObjectFactory.create_batch(2)
+        #
+        # models.WorksObjectType.objects.create(
+        #     works_type=self.works_types[0],
+        #     works_object=self.works_objects[0],
+        #     is_public=True,
+        # )
+        # models.WorksObjectType.objects.create(
+        #     works_type=self.works_types[1],
+        #     works_object=self.works_objects[1],
+        #     is_public=True,
+        # )
+        # self.geotime_step_formset_data = {
+        #     "form-TOTAL_FORMS": ["1"],
+        #     "form-INITIAL_FORMS": ["0"],
+        #     "form-MIN_NUM_FORMS": ["0"],
+        # }
+
+    def test_anonymous_request_on_non_anonymous_entity_returns_404(self):
+        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        type = factories.WorksTypeFactory(tags=["a"])
+
+        response = self.client.get(
+            reverse("permits:anonymous_permit_request"),
+            data={
+                "entityfilter": entity.tags.get().slug,
+                "typefilter": type.tags.get().slug,
+            }
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_anonymous_request_on_anonymous_entity_displays_captcha_form(self):
+        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        create_anonymous_users._create_anonymous_user_for_entity(entity)
+
+        type = factories.WorksTypeFactory(tags=["a"])
+
+        response = self.client.get(
+            reverse("permits:anonymous_permit_request"),
+            data={
+                "entityfilter": entity.tags.get().slug,
+                "typefilter": type.tags.get().slug,
+            }
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("anonymous_request_form", response.context)
+
+    def test_anonymous_request_temporary_loggedin_no_wot_displays_request_form(self):
+        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        create_anonymous_users._create_anonymous_user_for_entity(entity)
+
+        temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
+        self.client.force_login(temp_author.user)
+        session = self.client.session
+        session["anonymous_request_token"] = hash((temp_author, entity))
+        session.save()
+
+        type = factories.WorksTypeFactory(tags=["a"])
+
+        response = self.client.get(
+            reverse("permits:anonymous_permit_request"),
+            data={
+                "entityfilter": entity.tags.get().slug,
+                "typefilter": type.tags.get().slug,
+            }
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_anonymous_request_temporary_loggedin_displays_request_form(self):
+        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        create_anonymous_users._create_anonymous_user_for_entity(entity)
+
+        temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
+        self.client.force_login(temp_author.user)
+        session = self.client.session
+        session["anonymous_request_token"] = hash((temp_author, entity))
+        session.save()
+
+        type = factories.WorksTypeFactory(tags=["a"])
+        factories.WorksObjectTypeFactory(
+            is_anonymous=True,
+            works_type=type,
+            administrative_entities=[entity],
+        )
+
+        response = self.client.get(
+            reverse("permits:anonymous_permit_request"),
+            data={
+                "entityfilter": entity.tags.get().slug,
+                "typefilter": type.tags.get().slug,
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        # As the wot has to properties, going directly to next step
+        self.assertTrue(isinstance(
+            response.context["formset"].forms[0],
+            PermitRequestGeoTimeForm
+        ))
+

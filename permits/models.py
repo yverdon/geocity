@@ -1,13 +1,13 @@
 import collections
 import dataclasses
 import enum
-import re
 from datetime import date, datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
-from django.db.models import JSONField, UniqueConstraint
+from django.db.models import JSONField, UniqueConstraint, F, ExpressionWrapper, \
+    BooleanField
 from django.core.exceptions import ValidationError
 from django.core.validators import (
     FileExtensionValidator,
@@ -252,11 +252,7 @@ class PermitAdministrativeEntity(models.Model):
 class PermitAuthorManager(models.Manager):
     def create_temporary_user(self, entity):
         # Multiple temp users might exist at the same time
-        last_temp_user = (
-            self.get_queryset()
-            .filter(user__username__startswith=settings.TEMPORARY_USER_PREFIX)
-            .last()
-        )
+        last_temp_user = self.get_queryset().filter(is_temporary=True).last()
         if last_temp_user:
             nb = int(last_temp_user.user.username.split("_")[2]) + 1
         else:
@@ -273,6 +269,14 @@ class PermitAuthorManager(models.Manager):
         new_temp_author = super().create(user=temp_user, zipcode=zipcode,)
 
         return new_temp_author
+
+    def get_queryset(self):
+        return super().get_queryset().annotate(
+            is_temporary=ExpressionWrapper(
+                Q(user__username__startswith=settings.TEMPORARY_USER_PREFIX),
+                output_field=BooleanField(),
+            )
+        )
 
 
 class PermitAuthor(models.Model):
@@ -362,10 +366,8 @@ class PermitAuthor(models.Model):
         PermitAuthor created when starting an anonymous permit request,
         then deleted at the submission (replaced by an anonymous user).
         """
-        return self.user and bool(
-            re.match(
-                r"^" + settings.TEMPORARY_USER_PREFIX + r"\d+$", self.user.username
-            )
+        return self.user and self.user.username.startswith(
+            settings.TEMPORARY_USER_PREFIX
         )
 
     class Meta:
@@ -843,10 +845,6 @@ class WorksType(models.Model):
         return self.name
 
 
-class WorksObjectTypeManager(models.Manager):
-    pass
-
-
 class AnonymousWorksObjectTypeManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(is_anonymous=True)
@@ -935,7 +933,7 @@ class WorksObjectType(models.Model):
     )
 
     # All objects
-    objects = WorksObjectTypeManager()
+    objects = models.Manager()
 
     # Only anonymous objects
     anonymous_objects = AnonymousWorksObjectTypeManager()

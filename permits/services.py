@@ -844,7 +844,9 @@ def get_anonymous_steps(type, user, permit_request):
         user=user,
         typefilter=[type],
     )
-    objects_step.completed = has_works_objects_types
+
+    if objects_step:
+        objects_step.completed = has_works_objects_types
 
     steps = {
         models.StepType.WORKS_OBJECTS: objects_step,
