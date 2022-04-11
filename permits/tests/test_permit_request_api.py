@@ -80,6 +80,7 @@ class PermitRequestAPITestCase(TestCase):
             status=models.PermitRequest.STATUS_PROCESSING,
             administrative_entity=self.administrative_entity,
             author=self.secretariat_user.permitauthor,
+            is_public=True,
         )
         works_object_type_choice = factories.WorksObjectTypeChoiceFactory(
             permit_request=self.permit_request_secretary_user,
@@ -102,6 +103,13 @@ class PermitRequestAPITestCase(TestCase):
                     ),
                 )
             ),
+        )
+        start_date = datetime.today()
+        end_date = start_date + timedelta(days=10)
+        factories.PermitRequestInquiryFactory(
+            permit_request=self.permit_request_secretary_user,
+            start_date=start_date,
+            end_date=end_date,
         )
 
         ## For Validator User ##
@@ -566,3 +574,18 @@ class PermitRequestAPITestCase(TestCase):
         )
 
     # TODO: test also the permits:permit_request_print route
+
+    def test_events_api_returns_current_inquiries(self):
+        self.client.login(username=self.secretariat_user.username, password="password")
+
+        response = self.client.get(
+            reverse(
+                "events-detail", kwargs={"pk": self.permit_request_secretary_user.pk}
+            )
+        )
+        request = response.json()["properties"]["permit_request"]
+        self.assertIn("current_inquiry", request)
+        self.assertEqual(
+            self.permit_request_secretary_user.current_inquiry.pk,
+            request["current_inquiry"]["id"],
+        )
