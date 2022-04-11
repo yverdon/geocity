@@ -13,18 +13,6 @@
     {% csrf_token %}
     {{ permit_request_form.media }}
     {% crispy permit_request_form %}
-    {% if files_downloads %}
-      <div id="files_downloads">
-        <h4>{% trans "Fichiers à télécharger" %}</h4>
-        <ul>
-          {% for properties in files_downloads %}
-            <li>
-            {{ properties.help_text }} <a href="{% url 'permits:works_object_property_file_download' path=properties.file_download %}">{{ properties.name }}</a>
-            </li>
-          {% endfor %}
-        </ul>
-      </div>
-    {% endif %}
     {% buttons %}
       {% if previous_step.url %}
         <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>

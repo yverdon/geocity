@@ -2600,10 +2600,10 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
             )
         )
         content = response.content.decode()
-        expected = f'{prop_file.help_text} <a href="/permit-requests/wot-files/{prop_file.file_download.name}">{prop_file.name}</a>'
+        expected = f'<a class="file_download" href="/permit-requests/wot-files/{prop_file.file_download.name}" target="_blank" rel="noreferrer">Télécharger le fichier</a>'
         self.assertInHTML(expected, content)
 
-    def test_properties_step_shows_downloadable_files_do_not_repeat(self):
+    def test_properties_step_shows_downloadable_files_more_than_once(self):
         works_object_type_choices = services.get_works_object_type_choices(
             self.permit_request
         )
@@ -2625,17 +2625,14 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
             )
         )
 
-        same_property_file_in_different_permit_request_wots = models.WorksObjectProperty.objects.filter(
-            input_type=models.WorksObjectProperty.INPUT_TYPE_FILE_DOWNLOAD,
-            works_object_types__in=self.permit_request.works_object_types.all(),
-        )
+        expected = f'<a class="file_download" href="/permit-requests/wot-files/{prop_file.file_download.name}" target="_blank" rel="noreferrer">Télécharger le fichier</a>'
 
         expected_href = rf"/permit-requests/wot-files/{prop_file.file_download.name}"
         parser = get_parser(response.content)
-
         file_links = parser.find_all("a", href=re.compile(expected_href))
-        self.assertEqual(2, len(same_property_file_in_different_permit_request_wots))
-        self.assertEqual(1, len(file_links))
+
+        self.assertInHTML(expected, response.content.decode())
+        self.assertEqual(2, len(file_links))
 
 
 class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
