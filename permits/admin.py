@@ -805,9 +805,16 @@ class WorksObjectPropertyForm(forms.ModelForm):
             "choices",
             "line_number_for_textarea",
             "regex_pattern",
+            "file_download",
             "is_mandatory",
             "works_object_types",
         ]
+
+    def clean_file_download(self):
+        if self.cleaned_data["input_type"] == "file_download":
+            if not self.cleaned_data["file_download"]:
+                raise forms.ValidationError(_("This field is required."))
+        return self.cleaned_data["file_download"]
 
     class Media:
         js = ("js/admin/works_object_property.js",)

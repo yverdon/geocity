@@ -1,5 +1,6 @@
 import enum
 import itertools
+import mimetypes
 import os
 import urllib
 from collections import defaultdict
@@ -17,6 +18,7 @@ from django.db import transaction
 from django.db.models import CharField, Count, F, Max, Min, Q, Value
 from django.db.models.functions import Concat
 from django.forms import modelformset_factory
+from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -270,7 +272,9 @@ def _get_properties_filtered(permit_request, props_filter):
 def get_properties(permit_request):
     return _get_properties_filtered(
         permit_request,
-        lambda qs: qs.exclude(input_type=models.WorksObjectProperty.INPUT_TYPE_FILE),
+        lambda qs: qs.exclude(
+            input_type__in=[models.WorksObjectProperty.INPUT_TYPE_FILE,]
+        ),
     )
 
 
@@ -1592,3 +1596,12 @@ def get_amend_properties(value):
         }
 
     return amend_properties
+
+
+def download_file(path):
+    mime_type, encoding = mimetypes.guess_type(path)
+    storage = fields.PrivateFileSystemStorage()
+    file = storage.open(path)
+    response = StreamingHttpResponse(file, content_type=mime_type)
+    response["Content-Disposition"] = 'attachment; filename="' + file.name + '"'
+    return response

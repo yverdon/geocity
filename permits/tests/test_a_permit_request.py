@@ -2584,6 +2584,55 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
         position_2 = content.find(prop_2.name)
         self.assertGreater(position_1, position_2)
 
+    def test_properties_step_shows_downloadable_file(self):
+        works_object_type_choice = services.get_works_object_type_choices(
+            self.permit_request
+        ).first()
+
+        prop_file = factories.WorksObjectPropertyFactoryTypeFileDownload()
+        prop_file.works_object_types.add(works_object_type_choice.works_object_type)
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            )
+        )
+        content = response.content.decode()
+        expected = f'<a class="file_download" href="/permit-requests/wot-files/{prop_file.file_download.name}" target="_blank" rel="noreferrer">Télécharger le fichier</a>'
+        self.assertInHTML(expected, content)
+
+    def test_properties_step_shows_downloadable_files_more_than_once(self):
+        works_object_type_choices = services.get_works_object_type_choices(
+            self.permit_request
+        )
+        works_object_type_choice_first = works_object_type_choices.first()
+        works_object_type_choice_last = works_object_type_choices.last()
+
+        prop_file = factories.WorksObjectPropertyFactoryTypeFileDownload()
+        prop_file.works_object_types.add(
+            works_object_type_choice_first.works_object_type
+        )
+        prop_file.works_object_types.add(
+            works_object_type_choice_last.works_object_type
+        )
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            )
+        )
+
+        expected = f'<a class="file_download" href="/permit-requests/wot-files/{prop_file.file_download.name}" target="_blank" rel="noreferrer">Télécharger le fichier</a>'
+
+        expected_href = rf"/permit-requests/wot-files/{prop_file.file_download.name}"
+        parser = get_parser(response.content)
+        file_links = parser.find_all("a", href=re.compile(expected_href))
+
+        self.assertInHTML(expected, response.content.decode())
+        self.assertEqual(2, len(file_links))
+
 
 class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
     def test_non_secretariat_user_cannot_amend_request(self):

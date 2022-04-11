@@ -52,8 +52,18 @@ def _title_html_representation(prop, for_summary=False):
     return base
 
 
+def _file_download_html_representation(prop, for_summary=False):
+    if not for_summary and prop.file_download:
+        return f"""<span class='propertyTitle'>Fichiers à télécharger</span><br> <strong>{prop.name}</strong> : {prop.help_text}
+            <i class="fa fa-download" aria-hidden="true"></i>
+            <a class="file_download" href="{ reverse('permits:works_object_property_file_download',  kwargs={'path':prop.file_download}) }" target="_blank" rel="noreferrer">{_("Télécharger le fichier")}</a>
+            <br>"""
+    return ""
+
+
 non_value_input_type_mapping = {
     models.WorksObjectProperty.INPUT_TYPE_TITLE: _title_html_representation,
+    models.WorksObjectProperty.INPUT_TYPE_FILE_DOWNLOAD: _file_download_html_representation,
 }
 
 
@@ -377,7 +387,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
 
     def get_field_kwargs(self, prop):
         """
-        Return the options used when instanciating the field for the given `prop`.
+        Return the options used when instantiating the field for the given `prop`.
         """
         default_kwargs = {
             "required": self.enable_required and prop.is_mandatory,
