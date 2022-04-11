@@ -905,11 +905,11 @@ class WorksObjectProperty(models.Model):
         (INPUT_TYPE_LIST_SINGLE, _("Choix simple")),
         (INPUT_TYPE_DATE, _("Date")),
         (INPUT_TYPE_FILE, _("Fichier")),
+        (INPUT_TYPE_FILE_DOWNLOAD, _("Fichier (à télécharger)")),
         (INPUT_TYPE_NUMBER, _("Nombre")),
         (INPUT_TYPE_TEXT, _("Texte")),
         (INPUT_TYPE_REGEX, _("Texte (regex)")),
         (INPUT_TYPE_TITLE, _("Titre")),
-        (INPUT_TYPE_FILE_DOWNLOAD, _("Fichier (à télécharger)")),
     )
     integrator = models.ForeignKey(
         Group,
@@ -962,9 +962,6 @@ class WorksObjectProperty(models.Model):
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
         blank=True,
         upload_to="wot_files",
-    )
-    file_download_description = models.CharField(
-        _("Fichier (à télécharger)"), max_length=200, blank=True
     )
 
     class Meta(object):

@@ -199,19 +199,6 @@ def get_permit_request_appendices(permit_request):
             yield (works_object_type, prop)
 
 
-def get_permit_request_properties_files_downloads(permit_request):
-    """
-    Yield `(WorksObjectType, WorksObjectProperty)` tuples for every `works_object_type_choices`, only returning
-    properties with input type file_download.
-    """
-    objects_props = get_properties_files_downloads(permit_request)
-    files = []
-    for works_object_type, props in objects_props:
-        for prop in props:
-            files.append(prop)
-    return set(files)
-
-
 def get_works_types(administrative_entity, user):
     queryset = (
         models.WorksType.objects.filter(
@@ -284,10 +271,7 @@ def get_properties(permit_request):
     return _get_properties_filtered(
         permit_request,
         lambda qs: qs.exclude(
-            input_type__in=[
-                models.WorksObjectProperty.INPUT_TYPE_FILE,
-                models.WorksObjectProperty.INPUT_TYPE_FILE_DOWNLOAD,
-            ]
+            input_type__in=[models.WorksObjectProperty.INPUT_TYPE_FILE,]
         ),
     )
 
@@ -296,15 +280,6 @@ def get_appendices(permit_request):
     return _get_properties_filtered(
         permit_request,
         lambda qs: qs.filter(input_type=models.WorksObjectProperty.INPUT_TYPE_FILE),
-    )
-
-
-def get_properties_files_downloads(permit_request):
-    return _get_properties_filtered(
-        permit_request,
-        lambda qs: qs.filter(
-            input_type=models.WorksObjectProperty.INPUT_TYPE_FILE_DOWNLOAD
-        ),
     )
 
 

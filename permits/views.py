@@ -950,9 +950,6 @@ def permit_request_properties(request, permit_request_id):
         form = forms.WorksObjectsPropertiesForm(
             instance=permit_request, enable_required=False
         )
-    files_downloads = services.get_permit_request_properties_files_downloads(
-        permit_request
-    )
 
     return render(
         request,
@@ -960,7 +957,6 @@ def permit_request_properties(request, permit_request_id):
         {
             "permit_request": permit_request,
             "permit_request_form": form,
-            "files_downloads": files_downloads if len(files_downloads) else None,
             **steps_context,
         },
     )
