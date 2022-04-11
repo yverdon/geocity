@@ -1043,6 +1043,7 @@ class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "sortable_str",
         "is_mandatory",
         "is_visible_by_author",
+        "can_always_update",
     ]
     search_fields = [
         "name",
