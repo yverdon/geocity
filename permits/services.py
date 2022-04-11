@@ -834,6 +834,44 @@ def get_submit_step(permit_request, enabled, total_errors):
     )
 
 
+def get_anonymous_steps(type, user, permit_request):
+    has_works_objects_types = permit_request.works_object_types.exists()
+
+    objects_step = get_works_objects_step(
+        permit_request=permit_request,
+        enabled=not has_works_objects_types,
+        works_types=[type],
+        user=user,
+        typefilter=[type],
+    )
+    objects_step.completed = has_works_objects_types
+
+    steps = {
+        models.StepType.WORKS_OBJECTS: objects_step,
+        models.StepType.PROPERTIES: get_properties_step(
+            permit_request=permit_request, enabled=has_works_objects_types
+        ),
+        models.StepType.GEO_TIME: get_geo_time_step(
+            permit_request=permit_request, enabled=has_works_objects_types
+        ),
+        models.StepType.APPENDICES: get_appendices_step(
+            permit_request=permit_request, enabled=has_works_objects_types
+        ),
+        models.StepType.ACTORS: get_actors_step(
+            permit_request=permit_request, enabled=has_works_objects_types
+        ),
+    }
+
+    total_errors = sum([step.errors_count for step in steps.values() if step])
+    steps[models.StepType.SUBMIT] = get_submit_step(
+        permit_request=permit_request,
+        enabled=has_works_objects_types,
+        total_errors=total_errors,
+    )
+
+    return {step_type: step for step_type, step in steps.items() if step is not None}
+
+
 def get_progress_bar_steps(request, permit_request):
     """
     Return a dict of `Step` items that can be used to track the user progress through

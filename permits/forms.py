@@ -243,6 +243,8 @@ class WorksObjectsForm(forms.Form):
             if not user_has_perm:
                 queryset = queryset.filter(is_public=True)
 
+            queryset = queryset.filter(is_anonymous=self.user.permitauthor.is_temporary)
+
             self.fields[str(works_type.pk)] = WorksObjectsTypeChoiceField(
                 queryset=queryset,
                 widget=forms.CheckboxSelectMultiple(),
@@ -579,6 +581,25 @@ class NewDjangoAuthUserForm(UserCreationForm):
     def clean_email(self):
         return check_existing_email(self.cleaned_data["email"], user=None)
 
+    def clean_first_name(self):
+        if self.cleaned_data["first_name"] == settings.ANONYMOUS_NAME:
+            raise ValidationError(
+                _("Le prénom ne peut pas être %s") % settings.ANONYMOUS_NAME
+            )
+
+    def clean_last_name(self):
+        if self.cleaned_data["last_name"] == settings.ANONYMOUS_NAME:
+            raise ValidationError(
+                _("Le nom ne peut pas être %s") % settings.ANONYMOUS_NAME
+            )
+
+    def clean_username(self):
+        if self.cleaned_data["username"].startswith(settings.TEMPORARY_USER_PREFIX):
+            raise ValidationError(
+                _("Le nom d'utilisat·eur·rice ne peut pas commencer par %s")
+                % settings.TEMPORARY_USER_PREFIX
+            )
+
     def save(self, commit=True):
         user = super(NewDjangoAuthUserForm, self).save(commit=False)
         user.email = self.cleaned_data["email"]
@@ -620,6 +641,18 @@ class DjangoAuthUserForm(forms.ModelForm):
 
     def clean_email(self):
         return check_existing_email(self.cleaned_data["email"], self.instance)
+
+    def clean_first_name(self):
+        if self.cleaned_data["first_name"] == settings.ANONYMOUS_NAME:
+            raise ValidationError(
+                _("Le prénom ne peut pas être %s") % settings.ANONYMOUS_NAME
+            )
+
+    def clean_last_name(self):
+        if self.cleaned_data["last_name"] == settings.ANONYMOUS_NAME:
+            raise ValidationError(
+                _("Le nom ne peut pas être %s") % settings.ANONYMOUS_NAME
+            )
 
     class Meta:
         model = User

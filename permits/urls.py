@@ -21,11 +21,7 @@ permit_request_urlpatterns = [
 ]
 
 anonymous_permit_request_urlpatterns = [
-    path(
-        "anonymous/",
-        views.anonymous_permit_request,
-        name="anonymous_permit_request",
-    )
+    path("anonymous/", views.anonymous_permit_request, name="anonymous_permit_request",)
 ]
 
 existing_permit_request_urlpatterns = [
@@ -89,8 +85,7 @@ urlpatterns = [
     ),
     path("", views.PermitRequestList.as_view(), name="permit_requests_list"),
     path(
-        "",
-        include(permit_request_urlpatterns + anonymous_permit_request_urlpatterns)
+        "", include(permit_request_urlpatterns + anonymous_permit_request_urlpatterns)
     ),
     path(
         "media/<int:property_value_id>/",

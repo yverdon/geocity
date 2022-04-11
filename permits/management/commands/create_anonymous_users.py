@@ -27,9 +27,7 @@ def _create_anonymous_user_for_entity(entity):
         user_id = user.save()
 
         PermitAuthor(
-            administrative_entity=entity,
-            user=user_id,
-            zipcode=ANONYMOUS_ZIPCODE,
+            administrative_entity=entity, user=user_id, zipcode=ANONYMOUS_ZIPCODE,
         ).save()
 
 
@@ -68,6 +66,4 @@ class Command(BaseCommand):
             except IntegrityError:
                 raise CommandError
 
-        self.stdout.write(
-            "Anonymous users successfully created."
-        )
+        self.stdout.write("Anonymous users successfully created.")

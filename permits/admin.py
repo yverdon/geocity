@@ -137,21 +137,17 @@ class PermitsAdminSite(AdminSite):
             messages.add_message(
                 request,
                 messages.ERROR,
-                _("Echec de la création de l'utilisateur anonyme.")
+                _("Echec de la création de l'utilisateur anonyme."),
             )
         else:
             messages.add_message(
-                request,
-                messages.SUCCESS,
-                _("Utilisateur anonyme créé avec succès.")
+                request, messages.SUCCESS, _("Utilisateur anonyme créé avec succès.")
             )
 
         return redirect(
             reverse(
                 "admin:permits_permitadministrativeentity_change",
-                kwargs={
-                    "object_id": entity_id
-                }
+                kwargs={"object_id": entity_id},
             )
         )
 

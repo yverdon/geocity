@@ -252,32 +252,25 @@ class PermitAdministrativeEntity(models.Model):
 class PermitAuthorManager(models.Manager):
     def create_temporary_user(self, entity):
         # Multiple temp users might exist at the same time
-        last_temp_user = self.get_queryset().filter(user__username__startswith="temp_user_").last()
+        last_temp_user = (
+            self.get_queryset()
+            .filter(user__username__startswith=settings.TEMPORARY_USER_PREFIX)
+            .last()
+        )
         if last_temp_user:
             nb = int(last_temp_user.user.username.split("_")[2]) + 1
         else:
             nb = 0
 
-        # FIXME use some settings
-        username = "temp_user_%s" % nb
-        email = "%s@geocity.com" % username
-        zipcode = 9998
-
-        group_name = "Temp users %s" % entity.name
-        group, created = Group.objects.get_or_create(name=group_name)
+        username = "%s%s" % (settings.TEMPORARY_USER_PREFIX, nb)
+        email = "%s@%s" % (username, settings.SITE_DOMAIN)
+        zipcode = settings.TEMPORARY_USER_ZIPCODE
 
         temp_user = User.objects.create_user(
-            username,
-            email,
-            "temp",  # FIXME Generate a secure password ?
-            first_name="temp",
-            last_name="temp"
+            username, email, password=None, first_name="Anonyme", last_name="Anonyme"
         )
-        temp_user.groups.set([group])
 
-        new_temp_author = super().create(
-            user=temp_user, zipcode=zipcode,
-        )
+        new_temp_author = super().create(user=temp_user, zipcode=zipcode,)
 
         return new_temp_author
 
@@ -357,7 +350,11 @@ class PermitAuthor(models.Model):
         PermitAuthor unique per AdministrativeEntity.
         Never logged in. Used to save anonymous requests.
         """
-        return self.user and not self.user.is_active and self.administrative_entity is not None
+        return (
+            self.user
+            and not self.user.is_active
+            and self.administrative_entity is not None
+        )
 
     @cached_property
     def is_temporary(self):
@@ -365,10 +362,11 @@ class PermitAuthor(models.Model):
         PermitAuthor created when starting an anonymous permit request,
         then deleted at the submission (replaced by an anonymous user).
         """
-        # FIXME:
-        #  - Use a good way to identify it
-        #  - Prevent signup with same characteristics
-        return self.user and bool(re.match(r"^temp_user_\d+$", self.user.username))
+        return self.user and bool(
+            re.match(
+                r"^" + settings.TEMPORARY_USER_PREFIX + r"\d+$", self.user.username
+            )
+        )
 
     class Meta:
         verbose_name = _("3.2 Consultation de l'auteur")
@@ -913,8 +911,7 @@ class WorksObjectType(models.Model):
     )
     is_public = models.BooleanField(_("Public"), default=False)
     is_anonymous = models.BooleanField(
-        _("Demandes anonymes uniquement"),
-        default=False,
+        _("Demandes anonymes uniquement"), default=False,
     )
     notify_services = models.BooleanField(_("Notifier les services"), default=False)
     services_to_notify = models.TextField(
