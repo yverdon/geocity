@@ -1275,6 +1275,14 @@ class PermitRequestComplementaryDocument(models.Model):
         verbose_name=_("Type du document"),
     )
 
+    @property
+    def uri(self):
+        return self.document.url
+
+    @property
+    def name(self):
+        return self.document.name
+
     def delete(self, using=None, keep_parents=False):
         # delete the uploaded file
         try:
