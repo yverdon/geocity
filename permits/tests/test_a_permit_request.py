@@ -2963,6 +2963,56 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             mail.outbox[0].message().as_string(),
         )
 
+    def test_secretariat_can_amend_permit_request_with_status_approved_if_property_is_always_amandable(
+        self,
+    ):
+        props_quantity = 3
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_APPROVED,
+            administrative_entity=self.administrative_entity,
+        )
+
+        wot = factories.WorksObjectTypeFactory()
+        wot.administrative_entities.set([permit_request.administrative_entity])
+
+        works_object_type_choice = factories.WorksObjectTypeChoiceFactory(
+            permit_request=permit_request, works_object_type=wot
+        )
+
+        props = factories.PermitRequestAmendPropertyFactory.create_batch(
+            props_quantity, can_always_update=True
+        )
+
+        data = {
+            "action": models.ACTION_AMEND,
+            "status": models.PermitRequest.STATUS_APPROVED,
+        }
+
+        works_object_types_pk = permit_request.works_object_types.first().pk
+
+        for prop in props:
+            prop.works_object_types.set(permit_request.works_object_types.all())
+            factories.PermitRequestAmendPropertyValueFactory(
+                property=prop, works_object_type_choice=works_object_type_choice,
+            )
+            data[
+                f"{works_object_types_pk}_{prop.pk}"
+            ] = "I am a new property value, I am alive!"
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data={
+                "status": models.PermitRequest.STATUS_APPROVED,
+                "action": models.ACTION_AMEND,
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+
 
 class AdministrativeEntitySecretaryEmailTestcase(TestCase):
     def setUp(self):
