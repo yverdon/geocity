@@ -2963,7 +2963,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             mail.outbox[0].message().as_string(),
         )
 
-    def test_secretariat_can_amend_permit_request_with_status_approved_if_property_is_always_amandable(
+    def test_secretariat_can_amend_permit_request_with_status_approved_if_property_is_always_amendable(
         self,
     ):
         props_quantity = 3
