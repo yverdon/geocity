@@ -710,6 +710,13 @@ class PermitRequest(models.Model):
         self.status = self.STATUS_INQUIRY_IN_PROGRESS
         self.save()
 
+    @property
+    def current_inquiry(self):
+        today = datetime.today()
+        return PermitRequestInquiry.objects.filter(
+            permit_request=self, start_date__lte=today, end_date__gte=today
+        ).first()
+
 
 class WorksTypeQuerySet(models.QuerySet):
     def filter_by_tags(self, tags):
