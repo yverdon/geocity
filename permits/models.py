@@ -554,16 +554,22 @@ class PermitRequest(models.Model):
     def can_be_validated(self):
         return self.status in {self.STATUS_AWAITING_VALIDATION, self.STATUS_PROCESSING}
 
+    def works_objects_list(self):
+        return [
+            f"{item.works_object.name} ({item.works_type.name})"
+            for item in self.works_object_types.all()
+        ]
+
     def works_objects_html(self):
         """
         Return the works objects as a string, separated by <br> characters.
         """
         return format_html(
-            "<br>".join(
-                escape(f"{item.works_object.name} ({item.works_type.name})")
-                for item in self.works_object_types.all()
-            )
+            "<br>".join([escape(wo) for wo in self.works_objects_list()])
         )
+
+    def works_objects_str(self):
+        return " / ".join(self.works_objects_list())
 
     def get_pending_validations(self):
         return self.validations.filter(
