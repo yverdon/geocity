@@ -21,7 +21,8 @@ permit_request_urlpatterns = [
 ]
 
 anonymous_permit_request_urlpatterns = [
-    path("anonymous/", views.anonymous_permit_request, name="anonymous_permit_request",)
+    path("anonymous/", views.anonymous_permit_request, name="anonymous_permit_request",),
+    path("anonymous/sent", views.anonymous_permit_request_sent, name="anonymous_permit_request_sent",),
 ]
 
 existing_permit_request_urlpatterns = [

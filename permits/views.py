@@ -5,13 +5,17 @@ import urllib.parse
 
 import requests
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import (
     login_required,
     permission_required,
     user_passes_test,
 )
-from django.core.exceptions import PermissionDenied, SuspiciousOperation
+from django.core.exceptions import (
+    PermissionDenied,
+    SuspiciousOperation,
+    ObjectDoesNotExist,
+)
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.db.models import Prefetch, Sum, Q, CharField, Value
@@ -668,7 +672,19 @@ def permit_request_print(request, permit_request_id, template_id):
     return response
 
 
+def anonymous_permit_request_sent(request):
+    return render(
+        request,
+        "permits/permit_request_anonymous_sent.html",
+        {},
+    )
+
+
 def anonymous_permit_request(request):
+    # Logout silently any real user
+    if request.user.is_authenticated and not request.user.permitauthor.is_temporary:
+        logout(request)
+
     # Accept only non-logged users, or temporary users
     if not request.user.is_anonymous and not request.user.permitauthor.is_temporary:
         raise Http404
@@ -1510,12 +1526,32 @@ def permit_request_submit_confirmed(request, permit_request_id):
         | Q(permitdepartment__is_integrator_admin=True),
     )
 
-    # Backoffice and integrators creating a permit request for their own administrative entity, are directly redirected to the permit detail
+    # Backoffice and integrators creating a permit request for their own administrative
+    # entity, are directly redirected to the permit detail
     if user_is_backoffice_or_integrator_for_administrative_entity:
         return redirect(
             "permits:permit_request_detail", permit_request_id=permit_request.id
         )
     else:
+
+        if (
+            request.user.permitauthor.is_temporary
+            and permit_request.author == request.user.permitauthor
+        ):
+            try:
+                anonymous_user = permit_request.administrative_entity.anonymous_user
+            except ObjectDoesNotExist:
+                # Might happen only if the entity's anonymous user has been removed
+                # between the creation and the submission of the permit request
+                raise Http404
+            else:
+                permit_request.author = anonymous_user
+                permit_request.save()
+                temp_user = request.user
+                logout(request)
+                temp_user.delete()
+                return redirect("permits:anonymous_permit_request_sent")
+
         return redirect("permits:permit_requests_list")
 
 

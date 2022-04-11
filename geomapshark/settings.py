@@ -247,6 +247,8 @@ CONSTANCE_CONFIG = {
         bool,
     ),
     "ANONYMOUS_CAPTCHA_STEP": ("Votre demande anonyme", "", str),
+    "ANONYMOUS_REQUEST_SENT_TITLE": ("Merci pour votre requête", "", str),
+    "ANONYMOUS_REQUEST_SENT_BODY": ("Nous avons bien reçu votre requête anonyme.", "", str),
     "LOCATION_STEP": ("Sélectionnez la commune / l'entité", "", str),
     "WORKS_TYPES_STEP": ("Sélectionnez le ou les type(s)", "", str),
     "WORKS_OBJECTS_STEP": ("Sélectionnez les objets", "", str),
