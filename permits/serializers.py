@@ -42,6 +42,35 @@ class WorksObjectTypesNames(serializers.RelatedField):
         return wot_names
 
 
+class PermitRequestComplementaryDocumentSerializer(serializers.ModelSerializer):
+    uri = serializers.SerializerMethodField()
+
+    def get_uri(self, document):
+        request = self.context.get("request")
+        return request.build_absolute_uri(document.uri)
+
+    class Meta:
+        model = models.PermitRequestComplementaryDocument
+
+        fields = (
+            "name",
+            "uri",
+        )
+
+
+class PermitRequestInquirySerializer(serializers.ModelSerializer):
+    documents = PermitRequestComplementaryDocumentSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = models.PermitRequestInquiry
+        fields = (
+            "id",
+            "start_date",
+            "end_date",
+            "documents",
+        )
+
+
 class PermitRequestSerializer(serializers.ModelSerializer):
     administrative_entity = PermitAdministrativeEntitySerializer(read_only=True)
     meta_types = MetaTypesField(source="works_object_types", read_only=True)
@@ -49,6 +78,7 @@ class PermitRequestSerializer(serializers.ModelSerializer):
         source="works_object_types", read_only=True
     )
     intersected_geometries = serializers.SerializerMethodField()
+    current_inquiry = PermitRequestInquirySerializer(read_only=True)
 
     def get_intersected_geometries(self, obj):
         return obj.intersected_geometries if obj.intersected_geometries else ""
@@ -64,6 +94,7 @@ class PermitRequestSerializer(serializers.ModelSerializer):
             "meta_types",
             "intersected_geometries",
             "works_object_types_names",
+            "current_inquiry",
         )
 
 
