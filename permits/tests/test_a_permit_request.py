@@ -3068,31 +3068,17 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             ),
         )
 
-        content = response.content.decode()
-
-        expected = (
-            '<div class="form-group row"><label class="col-md-3 col-form-label" for="id_'
-            + str(permit_request.id)
-            + '_1">Editable_prop</label><div class="col-md-9"><textarea name="'
-            + str(permit_request.id)
-            + '_1" cols="40" rows="3" class="form-control" title="" id="id_'
-            + str(permit_request.id)
-            + '_1">Editable_prop</textarea></div></div>'
-        )
-        self.assertInHTML(expected, content)
-
-        expected = (
-            '<div class="form-group row"><label class="col-md-3 col-form-label" for="id_'
-            + str(permit_request.id)
-            + '_2">Not_editable_prop</label><div class="col-md-9"><textarea name="'
-            + str(permit_request.id)
-            + '_2" cols="40" rows="3" class="form-control" title="" disabled id="id_'
-            + str(permit_request.id)
-            + '_2">Not_editable_prop</textarea></div></div>'
-        )
-        self.assertInHTML(expected, content)
+        parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            len(parser.select(".form-group textarea")), 2,
+        )
+
+        self.assertEqual(
+            len(parser.select(".form-group textarea[disabled]")), 1,
+        )
 
 
 class AdministrativeEntitySecretaryEmailTestcase(TestCase):
