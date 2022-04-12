@@ -284,7 +284,7 @@ class Command(BaseCommand):
         self.stdout.write("integrator-yverdon / admin")
 
         # Insert status choices from PermitRequest and insert status for adminsitrative_entity
-        for status_value in models.PermitRequest.STATUS_CHOICES:
+        for status_value in  models.PermitRequest.STATUS_CHOICES:
             for entity in [
                 administrative_entity_yverdon,
                 administrative_entity_grandson,
@@ -477,9 +477,17 @@ class Command(BaseCommand):
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
         )
 
-        models.WorksObjectTypeChoice.objects.create(
+        wot_choice2 = models.WorksObjectTypeChoice.objects.create(
             permit_request=permit_request2,
             works_object_type=demo_works_object_type_no_validation_document,
+        )
+
+        models.WorksObjectPropertyValue.objects.create(
+            property=demo_works_object_type.properties.first(),
+            works_object_type_choice=wot_choice2,
+            value={"val": "Ceci est un commentaire de démonstration pour demande {}".format(
+                permit_request2.id
+            )}
         )
 
         models.PermitRequestGeoTime.objects.create(
@@ -503,15 +511,30 @@ class Command(BaseCommand):
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
         )
 
-        models.WorksObjectTypeChoice.objects.create(
+        wot_choice3_1 = models.WorksObjectTypeChoice.objects.create(
             permit_request=permit_request3, works_object_type=demo_works_object_type
         )
 
-        models.WorksObjectTypeChoice.objects.create(
+        models.WorksObjectPropertyValue.objects.create(
+            property=demo_works_object_type.properties.first(),
+            works_object_type_choice=wot_choice3_1,
+            value={"val": "Ceci est un commentaire de démonstration pour demande {}_{}".format(
+                permit_request3.id, wot_choice3_1.id
+            )}
+        )
+
+        wot_choice3_2 = models.WorksObjectTypeChoice.objects.create(
             permit_request=permit_request3,
             works_object_type=demo_works_object_type_no_validation_document,
         )
 
+        models.WorksObjectPropertyValue.objects.create(
+            property=demo_works_object_type.properties.first(),
+            works_object_type_choice=wot_choice3_2,
+            value={"val": "Ceci est un commentaire de démonstration pour demande {}_{}".format(
+                permit_request3.id, wot_choice3_2.id
+            )}
+        )
         models.PermitRequestGeoTime.objects.create(
             permit_request=permit_request3,
             starts_at=timezone.now(),
