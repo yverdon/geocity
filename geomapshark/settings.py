@@ -200,7 +200,11 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "ACTORS_STEP",
         "SUBMIT_STEP",
     ),
-    "API settings": ("IP_WHITELIST", "NETWORK_WHITELIST",),
+    "API settings": (
+        "IP_WHITELIST",
+        "NETWORK_WHITELIST",
+        "LOGOUT_REDIRECT_HOSTNAME_WHITELIST",
+    ),
 }
 
 CONSTANCE_CONFIG = {
@@ -281,6 +285,10 @@ CONSTANCE_CONFIG = {
         "172.16.0.0/12,192.168.0.0/16",
         "Réseaux  autorisés pour l'utilisation de l'API complète (/rest/permits), séparés par des ','",
         str,
+    ),
+    "LOGOUT_REDIRECT_HOSTNAME_WHITELIST": (
+        "localhost,geocity.ch",
+        "Domaines autorisés à la redirection après logout",
     ),
 }
 
