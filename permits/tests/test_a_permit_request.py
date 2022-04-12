@@ -4006,8 +4006,7 @@ class PermitRequestFilteredWorksObjectListTestCase(LoggedInSecretariatMixin, Tes
         super().setUp()
         self.wot_normal = factories.WorksObjectTypeFactory()
         self.permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_APPROVED,
+            author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED,
         )
         self.permit_request.works_object_types.set([self.wot_normal])
         factories.PermitRequestGeoTimeFactory(permit_request=self.permit_request)
@@ -4016,8 +4015,7 @@ class PermitRequestFilteredWorksObjectListTestCase(LoggedInSecretariatMixin, Tes
         prop = factories.WorksObjectPropertyFactory()
         prop.works_object_types.add(works_object_type_choice.works_object_type)
         self.prop_value = factories.WorksObjectPropertyValueFactory(
-            works_object_type_choice=works_object_type_choice,
-            property=prop
+            works_object_type_choice=works_object_type_choice, property=prop
         )
 
     def test_secretariat_user_can_see_filtered_permits_details(self,):
@@ -4028,7 +4026,7 @@ class PermitRequestFilteredWorksObjectListTestCase(LoggedInSecretariatMixin, Tes
             )
         )
 
-        self.assertInHTML(self.prop_value.value['val'], response.content.decode())
+        self.assertInHTML(self.prop_value.value["val"], response.content.decode())
 
     def test_secretariat_user_can_see_filtered_permits_details_in_csv(self,):
         response = self.client.get(
@@ -4038,5 +4036,4 @@ class PermitRequestFilteredWorksObjectListTestCase(LoggedInSecretariatMixin, Tes
             )
         )
 
-        self.assertContains(response, self.prop_value.value['val'])
-
+        self.assertContains(response, self.prop_value.value["val"])

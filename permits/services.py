@@ -404,7 +404,6 @@ def get_permit_requests_list_for_user(
     annotate_with = dict(
         starts_at_min=Min("geo_time__starts_at"),
         ends_at_max=Max("geo_time__ends_at"),
-        test_column_delete_this=Max("geo_time__ends_at"),
         permit_duration_max=Max("works_object_types__permit_duration"),
         remaining_validations=Count("validations")
         - Count(
