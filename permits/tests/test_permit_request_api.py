@@ -576,16 +576,41 @@ class PermitRequestAPITestCase(TestCase):
     # TODO: test also the permits:permit_request_print route
 
     def test_events_api_returns_current_inquiries(self):
-        self.client.login(username=self.secretariat_user.username, password="password")
+        self.client.login(username=self.normal_user.username, password="password")
+
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_PROCESSING,
+            administrative_entity=self.administrative_entity,
+            author=self.normal_user.permitauthor,
+            is_public=True,
+        )
+
+        factories.PermitRequestGeoTimeFactory(
+            permit_request=permit_request,
+            geom=GeometryCollection(
+                MultiLineString(
+                    LineString(
+                        (2539096.09997796, 1181119.41274907),
+                        (2539094.37477054, 1181134.07701214),
+                    ),
+                    LineString(
+                        (2539196.09997796, 1181219.41274907),
+                        (2539294.37477054, 1181134.07701214),
+                    ),
+                )
+            ),
+        )
+        start_date = datetime.today()
+        end_date = start_date + timedelta(days=10)
+        factories.PermitRequestInquiryFactory(
+            permit_request=permit_request, start_date=start_date, end_date=end_date,
+        )
 
         response = self.client.get(
-            reverse(
-                "events-detail", kwargs={"pk": self.permit_request_secretary_user.pk}
-            )
+            reverse("events-detail", kwargs={"pk": permit_request.pk})
         )
         request = response.json()["properties"]["permit_request"]
         self.assertIn("current_inquiry", request)
         self.assertEqual(
-            self.permit_request_secretary_user.current_inquiry.pk,
-            request["current_inquiry"]["id"],
+            permit_request.current_inquiry.pk, request["current_inquiry"]["id"],
         )
