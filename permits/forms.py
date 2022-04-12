@@ -855,23 +855,14 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                     self.instance.administrative_entity
                 )
             )
-            # If an amend property in the permit request can always be amended and permit request is already approved, STATUS_APPROVED needs to be selected as default
-            if (
-                self.instance.get_amend_property_list_always_amendable()
-                and self.instance.status == models.PermitRequest.STATUS_APPROVED
-            ):
-                filter1 = [
-                    tup
-                    for tup in models.PermitRequest.STATUS_CHOICES
-                    if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)
-                    or models.PermitRequest.STATUS_APPROVED in tup
-                ]
-            else:
-                filter1 = [
-                    tup
-                    for tup in models.PermitRequest.STATUS_CHOICES
-                    if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)
-                ]
+            # If an amend property in the permit request can always be amended, STATUS_APPROVED is added to the list
+            filter1 = [
+                tup
+                for tup in models.PermitRequest.STATUS_CHOICES
+                if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)
+                or models.PermitRequest.STATUS_APPROVED in tup
+                if self.instance.get_amend_property_list_always_amendable()
+            ]
             filter2 = [
                 el
                 for el in filter1
