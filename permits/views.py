@@ -34,11 +34,11 @@ from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views import View
 from django_filters.views import FilterView
-from django_otp import user_has_device
 from django_tables2.export.views import ExportMixin
 from django_tables2.views import SingleTableMixin, SingleTableView
 
 from . import fields, filters, forms, models, services, tables
+from .decorators import check_mandatory_2FA, permanent_user_required
 from .exceptions import BadPermitRequestStatus, NonProlongablePermitRequest
 from .search import search_permit_requests, search_result_to_json
 import django_tables2 as tableslib
@@ -137,29 +137,6 @@ def progress_bar_context(request, permit_request, current_step_type):
         previous_step = None
 
     return {"steps": steps, "previous_step": previous_step}
-
-
-def check_mandatory_2FA(
-    view=None, redirect_field_name="next", login_url="profile", if_configured=False
-):
-    """
-    Do same as :func:`django_otp.decorators.otp_required`, but verify first if the user
-    is in a group where 2FA is required.
-    """
-
-    def test(user):
-        if services.is_2FA_mandatory(user):
-            return user.is_verified() or (
-                if_configured and user.is_authenticated and not user_has_device(user)
-            )
-        else:
-            return True
-
-    decorator = user_passes_test(
-        test, login_url=login_url, redirect_field_name=redirect_field_name
-    )
-
-    return decorator if (view is None) else decorator(view)
 
 
 @method_decorator(login_required, name="dispatch")
@@ -765,6 +742,7 @@ def anonymous_permit_request(request):
 @redirect_bad_status_to_detail
 @login_required
 @user_passes_test(user_has_permitauthor)
+@permanent_user_required
 @check_mandatory_2FA
 def permit_request_select_administrative_entity(request, permit_request_id=None):
 
@@ -874,6 +852,7 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
 
 @redirect_bad_status_to_detail
 @login_required
+@permanent_user_required
 @check_mandatory_2FA
 def permit_request_select_types(request, permit_request_id):
     """
@@ -948,8 +927,8 @@ def permit_request_select_types(request, permit_request_id):
 @check_mandatory_2FA
 def permit_request_select_objects(request, permit_request_id):
     """
-    Step to select works objects. This view supports either editing an existing permit request (if `permit_request_id`
-    is set) or creating a new permit request.
+    Step to select works objects. This view supports either editing an existing permit
+    request (if `permit_request_id` is set) or creating a new permit request.
     """
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
     steps_context = progress_bar_context(
@@ -1333,6 +1312,7 @@ def permit_request_media_download(request, property_value_id):
 
 @method_decorator(login_required, name="dispatch")
 @method_decorator(check_mandatory_2FA, name="dispatch")
+@method_decorator(permanent_user_required, name="dispatch")
 class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
     paginate_by = int(os.environ["PAGINATE_BY"])
     template_name = "permits/permit_requests_list.html"
@@ -1578,6 +1558,7 @@ def permit_request_reject(request, permit_request_id):
 
 
 @login_required
+@permanent_user_required
 @permission_required("permits.classify_permit_request")
 @check_mandatory_2FA
 def permit_request_classify(request, permit_request_id, approve):
@@ -1695,6 +1676,7 @@ def works_object_property_file_download(request, path):
 
 
 @login_required
+@permanent_user_required
 @check_mandatory_2FA
 def administrative_entity_file_download(request, path):
     """
@@ -1708,6 +1690,7 @@ def administrative_entity_file_download(request, path):
 
 
 @login_required
+@permanent_user_required
 @check_mandatory_2FA
 def genericauthorview(request, pk):
 
@@ -1722,6 +1705,7 @@ def genericauthorview(request, pk):
 
 
 @login_required
+@permanent_user_required
 @check_mandatory_2FA
 def administrative_infos(request):
 
@@ -1735,6 +1719,7 @@ def administrative_infos(request):
 
 
 @login_required
+@permanent_user_required
 def permit_requests_search(request):
     terms = request.GET.get("search")
 
