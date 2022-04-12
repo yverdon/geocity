@@ -1555,24 +1555,28 @@ def get_wot_properties(value, api=False):
         "works_object_type__works_object__name",
         "works_object_type__works_type__name",
     )
+    list_wot_properties = list()
     wot_properties = list()
 
     if wot_props:
         # Flat view is used in the api for geocalandar, the WOT shows only the works_object__name and not the type
         if api:
             for prop in wot_props:
-                wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+                if list_wot_properties:
+                    wot_properties.append(list_wot_properties)
+                    list_wot_properties = []
 
+                wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+                list_wot_properties.append(
+                    {"key": "Object", "value": wot, "type": "text",}
+                )
                 for prop_i in wot_props:
                     if (
                         prop_i["works_object_type_id"] == prop["works_object_type_id"]
                         and prop_i["properties__property__name"]
                     ):
-                        wot_properties.append(
+                        list_wot_properties.append(
                             {
-                                "key": "Object",
-                                "value": wot,
-                                "type": "text",
                                 "key": f'{prop_i["properties__property__name"]} ({wot})',
                                 "value": prop_i["properties__value__val"],
                                 "type": None,
