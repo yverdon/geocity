@@ -3033,7 +3033,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             permit_request=permit_request, works_object_type=wot
         )
 
-        prop_edtiable = factories.PermitRequestAmendPropertyFactory(
+        prop_editable = factories.PermitRequestAmendPropertyFactory(
             name="Editable_prop", can_always_update=True
         )
 
@@ -3041,7 +3041,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             name="Not_editable_prop", can_always_update=False
         )
 
-        props = [prop_edtiable, prop_not_editable]
+        props = [prop_editable, prop_not_editable]
 
         data = {
             "action": models.ACTION_AMEND,
@@ -3057,9 +3057,8 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
                 works_object_type_choice=works_object_type_choice,
                 value=prop.name,
             )
-            data[
-                f"{works_object_types_pk}_{prop.pk}"
-            ] = "I am a new property value, I am alive!"
+            if prop.name == "Editable_prop":
+                data[f"{works_object_types_pk}_{prop.pk}"] = "I have been edited!"
 
         response = self.client.get(
             reverse(
@@ -3079,6 +3078,25 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(
             len(parser.select(".form-group textarea[disabled]")), 1,
         )
+
+        # Send form edit
+        response2 = self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=data,
+            follow=True,
+        )
+
+        new_properties_values_qs = models.PermitRequestAmendPropertyValue.objects.values_list(
+            "value", flat=True
+        )
+
+        self.assertIn(
+            "I have been edited!", new_properties_values_qs,
+        )
+        self.assertEqual(response2.status_code, 200)
 
 
 class AdministrativeEntitySecretaryEmailTestcase(TestCase):
