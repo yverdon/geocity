@@ -15,11 +15,12 @@ ATTRIBUTES = {
 }
 
 
-class CustomAccessablePermitRequest:
+class CustomPropertyValueAccessiblePermitRequest:
     def __init__(self, original_permit_request):
         self.original_permit_request = original_permit_request
 
     def __getattr__(self, name):
+        # In order to retrieve property values, we need to use a custom accessor format
         if name.startswith("#"):
             works_object_filter, property_id = name.strip("#").split("_")
             permit_id = self.original_permit_request.id
@@ -36,6 +37,7 @@ class CustomAccessablePermitRequest:
 
 
 def get_custom_dynamic_table(inherits_from, extra_column_names):
+    # In order to define additional columns at runtime, we need a table class factory
     class custom_class(inherits_from):
         class Meta(inherits_from.Meta):
             fields = inherits_from.Meta.fields + extra_column_names

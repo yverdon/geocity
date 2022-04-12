@@ -38,7 +38,7 @@ from .exceptions import BadPermitRequestStatus, NonProlongablePermitRequest
 from .search import search_permit_requests, search_result_to_json
 import django_tables2 as tableslib
 
-from .tables import CustomAccessablePermitRequest, get_custom_dynamic_table
+from .tables import CustomPropertyValueAccessiblePermitRequest, get_custom_dynamic_table
 
 logger = logging.getLogger(__name__)
 
@@ -1272,7 +1272,10 @@ class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
     def get_table_data(self):
         works_object_filter = self._get_wot_filter()
         if works_object_filter:
-            return [CustomAccessablePermitRequest(obj) for obj in self.object_list]
+            return [
+                CustomPropertyValueAccessiblePermitRequest(obj)
+                for obj in self.object_list
+            ]
         else:
             return self.object_list
 
@@ -1341,8 +1344,8 @@ class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
     def get_context_data(self, **kwargs):
         context = super(PermitRequestList, self).get_context_data(**kwargs)
         params = {key: value[0] for key, value in dict(self.request.GET).items()}
-        params.update({'_export': 'csv'})
-        context['export_csv_url_params'] = urllib.parse.urlencode(params)
+        params.update({"_export": "csv"})
+        context["export_csv_url_params"] = urllib.parse.urlencode(params)
         return context
 
 
