@@ -2955,12 +2955,93 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
                 "permits:permit_request_detail",
                 kwargs={"permit_request_id": permit_request.pk},
             ),
-            data={
-                "status": models.PermitRequest.STATUS_APPROVED,
-                "action": models.ACTION_AMEND,
-            },
+            data=data,
             follow=True,
         )
+
+        new_properties_values_qs = models.PermitRequestAmendPropertyValue.objects.values_list(
+            "value", flat=True
+        )
+
+        self.assertIn(
+            "I am a new property value, I am alive!", new_properties_values_qs,
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_amend_property_are_editable_in_status_approved_if_property_is_always_amendable(
+        self,
+    ):
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_APPROVED,
+            administrative_entity=self.administrative_entity,
+        )
+
+        wot = factories.WorksObjectTypeFactory()
+        wot.administrative_entities.set([permit_request.administrative_entity])
+
+        works_object_type_choice = factories.WorksObjectTypeChoiceFactory(
+            permit_request=permit_request, works_object_type=wot
+        )
+
+        prop_edtiable = factories.PermitRequestAmendPropertyFactory(
+            name="Editable_prop", can_always_update=True
+        )
+
+        prop_not_editable = factories.PermitRequestAmendPropertyFactory(
+            name="Not_editable_prop", can_always_update=False
+        )
+
+        props = [prop_edtiable, prop_not_editable]
+
+        data = {
+            "action": models.ACTION_AMEND,
+            "status": models.PermitRequest.STATUS_APPROVED,
+        }
+
+        works_object_types_pk = permit_request.works_object_types.first().pk
+
+        for prop in props:
+            prop.works_object_types.set(permit_request.works_object_types.all())
+            factories.PermitRequestAmendPropertyValueFactory(
+                property=prop,
+                works_object_type_choice=works_object_type_choice,
+                value=prop.name,
+            )
+            data[
+                f"{works_object_types_pk}_{prop.pk}"
+            ] = "I am a new property value, I am alive!"
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+
+        content = response.content.decode()
+
+        expected = (
+            '<div class="form-group row"><label class="col-md-3 col-form-label" for="id_'
+            + str(permit_request.id)
+            + '_1">Editable_prop</label><div class="col-md-9"><textarea name="'
+            + str(permit_request.id)
+            + '_1" cols="40" rows="3" class="form-control" title="" id="id_'
+            + str(permit_request.id)
+            + '_1">Editable_prop</textarea></div></div>'
+        )
+        self.assertInHTML(expected, content)
+
+        expected = (
+            '<div class="form-group row"><label class="col-md-3 col-form-label" for="id_'
+            + str(permit_request.id)
+            + '_2">Not_editable_prop</label><div class="col-md-9"><textarea name="'
+            + str(permit_request.id)
+            + '_2" cols="40" rows="3" class="form-control" title="" disabled id="id_'
+            + str(permit_request.id)
+            + '_2">Not_editable_prop</textarea></div></div>'
+        )
+        self.assertInHTML(expected, content)
 
         self.assertEqual(response.status_code, 200)
 
