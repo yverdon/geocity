@@ -866,13 +866,19 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                 )
             )
             # If an amend property in the permit request can always be amended, STATUS_APPROVED is added to the list
-            filter1 = [
-                tup
-                for tup in models.PermitRequest.STATUS_CHOICES
-                if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)
-                or models.PermitRequest.STATUS_APPROVED in tup
-                if self.instance.get_amend_property_list_always_amendable()
-            ]
+            if self.instance.get_amend_property_list_always_amendable():
+                filter1 = [
+                    tup
+                    for tup in models.PermitRequest.STATUS_CHOICES
+                    if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)
+                    or models.PermitRequest.STATUS_APPROVED in tup
+                ]
+            else:
+                filter1 = [
+                    tup
+                    for tup in models.PermitRequest.STATUS_CHOICES
+                    if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)
+                ]
             filter2 = [
                 el
                 for el in filter1
