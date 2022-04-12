@@ -1293,7 +1293,7 @@ class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
                     if property_id not in extra_column_specs:
                         extra_column_specs[property_id] = tableslib.Column(
                             verbose_name=property.name,
-                            orderable=False,
+                            orderable=True,
                             accessor=f"#{property_id}",
                         )
         return list(extra_column_specs.items())
