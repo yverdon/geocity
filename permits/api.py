@@ -299,8 +299,20 @@ class PermitRequestDetailsViewSet(
     WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelViewSet
 ):
     """
-    Permit request details endpoint Usage:
+    Permit request details endpoint usage:
         1.- /rest/permits_details/?permit_request_id=1
+        
+    Liste types :
+    - address
+    - checkbox
+    - date
+    - file
+    - list_multiple
+    - list_single
+    - number
+    - regex
+    - text
+    - title
     """
 
     throttle_scope = "permits_details"

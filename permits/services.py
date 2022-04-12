@@ -1599,7 +1599,7 @@ def check_request_comes_from_internal_qgisserver(request):
     return False
 
 
-def get_wot_properties(value, flat=False):
+def get_wot_properties(value, api=False):
     obj = value.all()
     wot_props = obj.values(
         "properties__property__name",
@@ -1608,22 +1608,29 @@ def get_wot_properties(value, flat=False):
         "works_object_type__works_object__name",
         "works_object_type__works_type__name",
     )
-    wot_properties = {}
+    wot_properties = list()
 
     if wot_props:
-        # Flat view is used in geocalandar, the WOT shows only the works_object__name and not the type
-        if flat:
+        # Flat view is used in the api for geocalandar, the WOT shows only the works_object__name and not the type
+        if api:
             for prop in wot_props:
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
-                wot_properties["Object"] = prop["works_object_type__works_object__name"]
+
                 for prop_i in wot_props:
                     if (
                         prop_i["works_object_type_id"] == prop["works_object_type_id"]
                         and prop_i["properties__property__name"]
                     ):
-                        wot_properties[prop_i["properties__property__name"]] = prop_i[
-                            "properties__value__val"
-                        ]
+                        wot_properties.append(
+                            {
+                                "key": "Object",
+                                "value": wot,
+                                "type": "text",
+                                "key": f'{prop_i["properties__property__name"]} ({wot})',
+                                "value": prop_i["properties__value__val"],
+                                "type": None,
+                            }
+                        )
         else:
             for prop in wot_props:
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
