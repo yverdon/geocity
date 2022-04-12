@@ -86,7 +86,6 @@ urlpatterns = [
         views.permit_request_media_download,
         name="permit_request_media_download",
     ),
-    path("listexport/", views.PermitExportView.as_view(), name="listexport"),
     path(
         "adminentitiesgeojson/<int:administrative_entity_id>/",
         geoviews.administrative_entities_geojson,

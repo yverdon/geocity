@@ -396,13 +396,12 @@ def get_permit_request_for_user_or_404(user, permit_request_id, statuses=None):
 
 
 def get_permit_requests_list_for_user(
-    user, request_comes_from_internal_qgisserver=False
+    user, request_comes_from_internal_qgisserver=False, works_object_filter=None
 ):
     """
     Return the list of permit requests this user has access to.
     """
-
-    qs = models.PermitRequest.objects.annotate(
+    annotate_with = dict(
         starts_at_min=Min("geo_time__starts_at"),
         ends_at_max=Max("geo_time__ends_at"),
         permit_duration_max=Max("works_object_types__permit_duration"),
@@ -424,6 +423,11 @@ def get_permit_requests_list_for_user(
             output_field=CharField(),
         ),
     )
+
+    if works_object_filter is not None:
+        annotate_with.update({"works_object_filter": Value(works_object_filter)})
+
+    qs = models.PermitRequest.objects.annotate(**annotate_with)
 
     if not user.is_authenticated and not request_comes_from_internal_qgisserver:
         return qs.none()

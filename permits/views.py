@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import (
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.db.models import Prefetch, Sum, Q
+from django.db.models import Prefetch, Sum, Q, CharField, Value
 from django.forms import modelformset_factory
 from django.http import (
     Http404,
@@ -36,6 +36,9 @@ from django_tables2.views import SingleTableMixin, SingleTableView
 from . import fields, filters, forms, models, services, tables
 from .exceptions import BadPermitRequestStatus, NonProlongablePermitRequest
 from .search import search_permit_requests, search_result_to_json
+import django_tables2 as tableslib
+
+from .tables import CustomPropertyValueAccessiblePermitRequest, get_custom_dynamic_table
 
 logger = logging.getLogger(__name__)
 
@@ -1235,13 +1238,21 @@ def permit_request_media_download(request, property_value_id):
 
 @method_decorator(login_required, name="dispatch")
 @method_decorator(check_mandatory_2FA, name="dispatch")
-class PermitRequestList(SingleTableMixin, FilterView):
+class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
     paginate_by = int(os.environ["PAGINATE_BY"])
     template_name = "permits/permit_requests_list.html"
 
+    def _get_wot_filter(self):
+        return self.request.GET.get("works_object_types__works_object", None)
+
     def get_queryset(self):
-        return (
-            services.get_permit_requests_list_for_user(self.request.user)
+        works_object_filter = self._get_wot_filter()
+        qs = (
+            (
+                services.get_permit_requests_list_for_user(
+                    self.request.user, works_object_filter=works_object_filter
+                )
+            )
             .prefetch_related(
                 Prefetch(
                     "works_object_types",
@@ -1253,15 +1264,71 @@ class PermitRequestList(SingleTableMixin, FilterView):
             .order_by("-created_at")
         )
 
+        if works_object_filter is not None:
+            qs = qs.prefetch_related("worksobjecttypechoice_set__properties__property")
+
+        return qs
+
+    def get_table_data(self):
+        works_object_filter = self._get_wot_filter()
+        if works_object_filter:
+            return [
+                CustomPropertyValueAccessiblePermitRequest(obj)
+                for obj in self.object_list
+            ]
+        else:
+            return self.object_list
+
     def is_department_user(self):
         return self.request.user.groups.filter(permitdepartment__isnull=False).exists()
 
+    def _get_extra_column_specs(self, works_object_filter):
+        extra_column_specs = dict()
+        for permit_request in self.object_list:
+            for wot, properties in services.get_properties(permit_request):
+                if str(wot.works_object_id) != works_object_filter:
+                    continue
+                for property in properties:
+                    property_id = f"{works_object_filter}_{property.id}"
+                    if property_id not in extra_column_specs:
+                        extra_column_specs[property_id] = tableslib.Column(
+                            verbose_name=property.name,
+                            orderable=True,
+                            accessor=f"#{property_id}",
+                        )
+        return list(extra_column_specs.items())
+
+    def is_exporting(self):
+        return bool(self.request.GET.get(self.export_trigger_param, None))
+
     def get_table_class(self):
-        return (
-            tables.DepartmentPermitRequestsTable
-            if self.is_department_user()
-            else tables.OwnPermitRequestsTable
-        )
+        works_object_filter = self._get_wot_filter()
+
+        if self.is_department_user():
+            if works_object_filter:
+                extra_columns = self._get_extra_column_specs(works_object_filter)
+                extra_column_names = tuple([col_name for col_name, __ in extra_columns])
+            else:
+                extra_column_names = tuple()
+            table_class = (
+                tables.DepartmentPermitRequestsExportTable
+                if self.is_exporting()
+                else tables.DepartmentPermitRequestsHTMLTable
+            )
+            table_class = get_custom_dynamic_table(table_class, extra_column_names)
+        else:
+            table_class = (
+                tables.OwnPermitRequestsExportTable
+                if self.is_exporting()
+                else tables.OwnPermitRequestsHTMLTable
+            )
+        return table_class
+
+    def get_table_kwargs(self):
+        wot_filter = self._get_wot_filter()
+        if wot_filter:
+            return {"extra_column_specs": self._get_extra_column_specs(wot_filter)}
+        return {}
 
     def get_filterset_class(self):
         return (
@@ -1270,28 +1337,12 @@ class PermitRequestList(SingleTableMixin, FilterView):
             else filters.OwnPermitRequestFilterSet
         )
 
-
-@method_decorator(login_required, name="dispatch")
-@method_decorator(check_mandatory_2FA, name="dispatch")
-class PermitExportView(ExportMixin, SingleTableView):
-    table_class = tables.OwnPermitRequestsTable
-    template_name = "django_tables2/bootstrap.html"
-
-    def get_queryset(self):
-        return (
-            services.get_permit_requests_list_for_user(self.request.user)
-            .prefetch_related(
-                Prefetch(
-                    "works_object_types",
-                    queryset=models.WorksObjectType.objects.select_related(
-                        "works_type", "works_object"
-                    ),
-                )
-            )
-            .order_by("-created_at")
-        )
-
-    exclude_columns = ("actions",)
+    def get_context_data(self, **kwargs):
+        context = super(PermitRequestList, self).get_context_data(**kwargs)
+        params = {key: value[0] for key, value in dict(self.request.GET).items()}
+        params.update({"_export": "csv"})
+        context["export_csv_url_params"] = urllib.parse.urlencode(params)
+        return context
 
 
 @redirect_bad_status_to_detail

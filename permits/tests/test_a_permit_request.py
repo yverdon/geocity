@@ -3999,3 +3999,41 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(
             len(get_parser(response.content).select(".form-check-label")), 3
         )
+
+
+class PermitRequestFilteredWorksObjectListTestCase(LoggedInSecretariatMixin, TestCase):
+    def setUp(self):
+        super().setUp()
+        self.wot_normal = factories.WorksObjectTypeFactory()
+        self.permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED,
+        )
+        self.permit_request.works_object_types.set([self.wot_normal])
+        factories.PermitRequestGeoTimeFactory(permit_request=self.permit_request)
+
+        works_object_type_choice = self.permit_request.worksobjecttypechoice_set.first()
+        prop = factories.WorksObjectPropertyFactory()
+        prop.works_object_types.add(works_object_type_choice.works_object_type)
+        self.prop_value = factories.WorksObjectPropertyValueFactory(
+            works_object_type_choice=works_object_type_choice, property=prop
+        )
+
+    def test_secretariat_user_can_see_filtered_permits_details(self,):
+        response = self.client.get(
+            "{}?works_object_types__works_object={}".format(
+                reverse("permits:permit_requests_list",),
+                self.permit_request.works_object_types.first().works_object.id,
+            )
+        )
+
+        self.assertInHTML(self.prop_value.value["val"], response.content.decode())
+
+    def test_secretariat_user_can_see_filtered_permits_details_in_csv(self,):
+        response = self.client.get(
+            "{}?works_object_types__works_object={}&_export=csv".format(
+                reverse("permits:permit_requests_list",),
+                self.permit_request.works_object_types.first().works_object.id,
+            )
+        )
+
+        self.assertContains(response, self.prop_value.value["val"])
