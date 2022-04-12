@@ -1,4 +1,8 @@
+from urllib.parse import urlparse
+
 from allauth.socialaccount.models import SocialApp
+from constance import config
+
 from django.conf import settings
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -25,15 +29,18 @@ def logout_view(request):
         else None
     )
     logout(request)
-    if request.GET.get("next", None):
-        redirect_to = request.GET.get("next", None)
-    else:
-        redirect_to = (
-            f'{reverse("account_login")}?template={templatename}'
-            if templatename
-            else reverse("account_login")
-        )
-    return redirect(redirect_to)
+
+    redirect_uri = request.GET.get("next", None)
+    # Check if redirect URI is whitelisted
+    if redirect_uri and urlparse(
+        redirect_uri
+    ).hostname in config.LOGOUT_REDIRECT_HOSTNAME_WHITELIST.split(","):
+        return redirect(redirect_uri)
+    return redirect(
+        f'{reverse("account_login")}?template={templatename}'
+        if templatename
+        else reverse("account_login")
+    )
 
 
 # User has tried to many login attemps
