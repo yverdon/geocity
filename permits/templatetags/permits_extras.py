@@ -15,10 +15,11 @@ register = template.Library()
 
 @register.inclusion_tag("permits/_permit_progressbar.html", takes_context=True)
 def permit_progressbar(context, steps, active_step):
-    return {} if context['user'].permitauthor.is_temporary else {
-        "steps": steps,
-        "active_step": active_step,
-    }
+    return (
+        {}
+        if context["user"].permitauthor.is_temporary
+        else {"steps": steps, "active_step": active_step,}
+    )
 
 
 @register.filter

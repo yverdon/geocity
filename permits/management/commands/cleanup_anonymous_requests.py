@@ -12,8 +12,8 @@ from permits.models import PermitRequest
 class Command(BaseCommand):
     help = gettext(
         "Delete any anonymous requests and associated temporary users that are not "
-        "validated and older than %s hours." %
-        settings.PENDING_ANONYMOUS_REQUEST_MAX_AGE
+        "validated and older than %s hours."
+        % settings.PENDING_ANONYMOUS_REQUEST_MAX_AGE
     )
 
     def handle(self, *args, **options):
@@ -21,12 +21,13 @@ class Command(BaseCommand):
             "Deleting old pending an anonymous requests and temporary users..."
         )
 
-        permit_requests = list(PermitRequest.objects.prefetch_related("author").filter(
-            created_at__lt=timezone.now() - datetime.timedelta(
-                hours=settings.PENDING_ANONYMOUS_REQUEST_MAX_AGE
-            ),
-            author__user__username__startswith=settings.TEMPORARY_USER_PREFIX,
-        ))
+        permit_requests = list(
+            PermitRequest.objects.prefetch_related("author").filter(
+                created_at__lt=timezone.now()
+                - datetime.timedelta(hours=settings.PENDING_ANONYMOUS_REQUEST_MAX_AGE),
+                author__user__username__startswith=settings.TEMPORARY_USER_PREFIX,
+            )
+        )
 
         with transaction.atomic():
             try:

@@ -1,5 +1,4 @@
-import pprint
-
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.management import BaseCommand, CommandError
@@ -16,7 +15,6 @@ def _create_anonymous_user_for_entity(entity):
         username = "anonymous_user_%s" % entity.pk
         first_name = "Anonymous user"
         last_name = entity.name
-        ANONYMOUS_ZIPCODE = 9999
 
         user = User(
             username=username,
@@ -24,10 +22,12 @@ def _create_anonymous_user_for_entity(entity):
             last_name=last_name,
             is_active=False,
         )
-        user_id = user.save()
+        user.save()
 
         PermitAuthor(
-            administrative_entity=entity, user=user_id, zipcode=ANONYMOUS_ZIPCODE,
+            administrative_entity=entity,
+            user_id=user.id,
+            zipcode=settings.ANONYMOUS_USER_ZIPCODE,
         ).save()
 
 

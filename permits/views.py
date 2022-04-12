@@ -673,11 +673,7 @@ def permit_request_print(request, permit_request_id, template_id):
 
 
 def anonymous_permit_request_sent(request):
-    return render(
-        request,
-        "permits/permit_request_anonymous_sent.html",
-        {},
-    )
+    return render(request, "permits/permit_request_anonymous_sent.html", {},)
 
 
 def anonymous_permit_request(request):

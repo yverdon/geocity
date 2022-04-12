@@ -6,8 +6,13 @@ from datetime import date, datetime, timedelta
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
-from django.db.models import JSONField, UniqueConstraint, F, ExpressionWrapper, \
-    BooleanField
+from django.db.models import (
+    JSONField,
+    UniqueConstraint,
+    F,
+    ExpressionWrapper,
+    BooleanField,
+)
 from django.core.exceptions import ValidationError
 from django.core.validators import (
     FileExtensionValidator,
@@ -271,10 +276,14 @@ class PermitAuthorManager(models.Manager):
         return new_temp_author
 
     def get_queryset(self):
-        return super().get_queryset().annotate(
-            is_temporary=ExpressionWrapper(
-                Q(user__username__startswith=settings.TEMPORARY_USER_PREFIX),
-                output_field=BooleanField(),
+        return (
+            super()
+            .get_queryset()
+            .annotate(
+                is_temporary=ExpressionWrapper(
+                    Q(user__username__startswith=settings.TEMPORARY_USER_PREFIX),
+                    output_field=BooleanField(),
+                )
             )
         )
 
