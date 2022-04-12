@@ -2963,6 +2963,141 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             mail.outbox[0].message().as_string(),
         )
 
+    def test_secretariat_can_amend_permit_request_with_status_approved_if_property_is_always_amendable(
+        self,
+    ):
+        props_quantity = 3
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_APPROVED,
+            administrative_entity=self.administrative_entity,
+        )
+
+        wot = factories.WorksObjectTypeFactory()
+        wot.administrative_entities.set([permit_request.administrative_entity])
+
+        works_object_type_choice = factories.WorksObjectTypeChoiceFactory(
+            permit_request=permit_request, works_object_type=wot
+        )
+
+        props = factories.PermitRequestAmendPropertyFactory.create_batch(
+            props_quantity, can_always_update=True
+        )
+
+        data = {
+            "action": models.ACTION_AMEND,
+            "status": models.PermitRequest.STATUS_APPROVED,
+        }
+
+        works_object_types_pk = permit_request.works_object_types.first().pk
+
+        for prop in props:
+            prop.works_object_types.set(permit_request.works_object_types.all())
+            factories.PermitRequestAmendPropertyValueFactory(
+                property=prop, works_object_type_choice=works_object_type_choice,
+            )
+            data[
+                f"{works_object_types_pk}_{prop.pk}"
+            ] = "I am a new property value, I am alive!"
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=data,
+            follow=True,
+        )
+
+        new_properties_values_qs = models.PermitRequestAmendPropertyValue.objects.values_list(
+            "value", flat=True
+        )
+
+        self.assertIn(
+            "I am a new property value, I am alive!", new_properties_values_qs,
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_amend_property_are_editable_in_status_approved_if_property_is_always_amendable(
+        self,
+    ):
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_APPROVED,
+            administrative_entity=self.administrative_entity,
+        )
+
+        wot = factories.WorksObjectTypeFactory()
+        wot.administrative_entities.set([permit_request.administrative_entity])
+
+        works_object_type_choice = factories.WorksObjectTypeChoiceFactory(
+            permit_request=permit_request, works_object_type=wot
+        )
+
+        prop_editable = factories.PermitRequestAmendPropertyFactory(
+            name="Editable_prop", can_always_update=True
+        )
+
+        prop_not_editable = factories.PermitRequestAmendPropertyFactory(
+            name="Not_editable_prop", can_always_update=False
+        )
+
+        props = [prop_editable, prop_not_editable]
+
+        data = {
+            "action": models.ACTION_AMEND,
+            "status": models.PermitRequest.STATUS_APPROVED,
+        }
+
+        works_object_types_pk = permit_request.works_object_types.first().pk
+
+        for prop in props:
+            prop.works_object_types.set(permit_request.works_object_types.all())
+            factories.PermitRequestAmendPropertyValueFactory(
+                property=prop,
+                works_object_type_choice=works_object_type_choice,
+                value=prop.name,
+            )
+            if prop.name == "Editable_prop":
+                data[f"{works_object_types_pk}_{prop.pk}"] = "I have been edited!"
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+
+        parser = get_parser(response.content)
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            len(parser.select(".form-group textarea")), 2,
+        )
+
+        self.assertEqual(
+            len(parser.select(".form-group textarea[disabled]")), 1,
+        )
+
+        # Send form edit
+        response2 = self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=data,
+            follow=True,
+        )
+
+        new_properties_values_qs = models.PermitRequestAmendPropertyValue.objects.values_list(
+            "value", flat=True
+        )
+
+        self.assertIn(
+            "I have been edited!", new_properties_values_qs,
+        )
+        self.assertEqual(response2.status_code, 200)
+
 
 class AdministrativeEntitySecretaryEmailTestcase(TestCase):
     def setUp(self):
