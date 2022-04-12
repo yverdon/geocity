@@ -863,13 +863,8 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                 filter1 = [
                     tup
                     for tup in models.PermitRequest.STATUS_CHOICES
-                    if any(
-                        i in tup
-                        for i in [
-                            models.PermitRequest.AMENDABLE_STATUSES,
-                            models.PermitRequest.STATUS_APPROVED,
-                        ]
-                    )
+                    if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)
+                    or models.PermitRequest.STATUS_APPROVED in tup
                 ]
             else:
                 filter1 = [
