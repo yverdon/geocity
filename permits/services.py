@@ -424,7 +424,7 @@ def get_permit_requests_list_for_user(
         ),
     )
 
-    if works_object_filter:
+    if works_object_filter is not None:
         annotate_with.update({"works_object_filter": Value(works_object_filter)})
 
     qs = models.PermitRequest.objects.annotate(**annotate_with)
