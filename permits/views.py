@@ -1243,7 +1243,7 @@ class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
     template_name = "permits/permit_requests_list.html"
 
     def _get_wot_filter(self):
-        return self.request.GET.get("works_object_types__works_object")
+        return self.request.GET.get("works_object_types__works_object", None)
 
     def get_queryset(self):
         works_object_filter = self._get_wot_filter()
@@ -1264,7 +1264,7 @@ class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
             .order_by("-created_at")
         )
 
-        if works_object_filter:
+        if works_object_filter is not None:
             qs = qs.prefetch_related("worksobjecttypechoice_set__properties__property")
 
         return qs
@@ -1327,11 +1327,7 @@ class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
     def get_table_kwargs(self):
         wot_filter = self._get_wot_filter()
         if wot_filter:
-            return {
-                "extra_column_specs": self._get_extra_column_specs(
-                    self._get_wot_filter()
-                )
-            }
+            return {"extra_column_specs": self._get_extra_column_specs(wot_filter)}
         return {}
 
     def get_filterset_class(self):
