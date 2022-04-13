@@ -2598,9 +2598,12 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"permit_request_id": self.permit_request.pk},
             )
         )
-        content = response.content.decode()
-        expected = f'<a class="file_download" href="/permit-requests/wot-files/{prop_file.file_download.name}" target="_blank" rel="noreferrer">Télécharger le fichier</a>'
-        self.assertInHTML(expected, content)
+
+        expected_href = rf"/permit-requests/wot-files/{prop_file.file_download.name}"
+        parser = get_parser(response.content)
+        file_links = parser.find_all("a", href=re.compile(expected_href))
+        self.assertEqual(1, len(file_links))
+        self.assertIn(expected_href, response.content.decode())
 
     def test_properties_step_shows_downloadable_files_more_than_once(self):
         works_object_type_choices = services.get_works_object_type_choices(
@@ -2624,14 +2627,12 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
             )
         )
 
-        expected = f'<a class="file_download" href="/permit-requests/wot-files/{prop_file.file_download.name}" target="_blank" rel="noreferrer">Télécharger le fichier</a>'
-
         expected_href = rf"/permit-requests/wot-files/{prop_file.file_download.name}"
         parser = get_parser(response.content)
         file_links = parser.find_all("a", href=re.compile(expected_href))
 
-        self.assertInHTML(expected, response.content.decode())
         self.assertEqual(2, len(file_links))
+        self.assertIn(expected_href, response.content.decode())
 
 
 class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):

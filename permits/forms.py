@@ -54,10 +54,10 @@ def _title_html_representation(prop, for_summary=False):
 
 def _file_download_html_representation(prop, for_summary=False):
     if not for_summary and prop.file_download:
-        return f"""<span class='propertyTitle'>Fichiers à télécharger</span><br> <strong>{prop.name}</strong> : {prop.help_text}
+        description = prop.help_text if prop.help_text else _("Télécharger le fichier")
+        return f"""<strong>{ prop.name }:</strong>
             <i class="fa fa-download" aria-hidden="true"></i>
-            <a class="file_download" href="{ reverse('permits:works_object_property_file_download',  kwargs={'path':prop.file_download}) }" target="_blank" rel="noreferrer">{_("Télécharger le fichier")}</a>
-            <br>"""
+            <a class="file_download" href="{ reverse('permits:works_object_property_file_download', kwargs={'path':prop.file_download}) }" target="_blank" rel="noreferrer">{ description }</a>"""
     return ""
 
 
