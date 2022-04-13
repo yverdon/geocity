@@ -269,11 +269,16 @@ def _get_properties_filtered(permit_request, props_filter):
     ]
 
 
-def get_properties(permit_request):
+def get_properties(permit_request, additional_type_exclusions=None):
+    exclusions = [
+        models.WorksObjectProperty.INPUT_TYPE_FILE,
+    ]
+    if additional_type_exclusions is not None:
+        exclusions += additional_type_exclusions
     return _get_properties_filtered(
         permit_request,
         lambda qs: qs.exclude(
-            input_type__in=[models.WorksObjectProperty.INPUT_TYPE_FILE,]
+            input_type__in=[models.WorksObjectProperty.INPUT_TYPE_FILE,] + exclusions
         ),
     )
 

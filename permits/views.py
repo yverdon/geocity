@@ -1362,7 +1362,13 @@ class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
     def _get_extra_column_specs(self, works_object_filter):
         extra_column_specs = dict()
         for permit_request in self.object_list:
-            for wot, properties in services.get_properties(permit_request):
+            for wot, properties in services.get_properties(
+                permit_request,
+                [
+                    models.WorksObjectProperty.INPUT_TYPE_FILE_DOWNLOAD,
+                    models.WorksObjectProperty.INPUT_TYPE_TITLE,
+                ],
+            ):
                 if str(wot.works_object_id) != works_object_filter:
                     continue
                 for property in properties:
@@ -1417,6 +1423,7 @@ class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
     def get_context_data(self, **kwargs):
         context = super(PermitRequestList, self).get_context_data(**kwargs)
         params = {key: value[0] for key, value in dict(self.request.GET).items()}
+        context["display_clear_filters"] = bool(params)
         params.update({"_export": "csv"})
         context["export_csv_url_params"] = urllib.parse.urlencode(params)
         return context

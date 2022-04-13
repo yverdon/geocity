@@ -19,12 +19,14 @@
       </a>
     </div>
 
+    {% if display_clear_filters %}
     <div class="p-2 permits-action-btns">
         <a class="btn btn-outline-primary" href="{% url 'permits:permit_requests_list' %}" role="button">
           <i class="fa fa-eraser"></i>
           {% trans "Effacer le filtre" %}
         </a>
     </div>
+    {% endif %}
 
     <div class="p-2 permits-action-btns">
         <a class="btn btn-outline-primary" href="{% url 'permits:permit_requests_list' %}?{{ export_csv_url_params }}" role="button">
