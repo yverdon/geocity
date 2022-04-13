@@ -1612,13 +1612,15 @@ def get_wot_properties(value, api=False):
         "works_object_type__works_object__name",
         "works_object_type__works_type__name",
     )
-    permit_request = models.PermitRequest.objects.get(pk=1)
+
+    wot_properties = dict()
+    property = list()
 
     if wot_props:
         # Flat view is used in the api for geocalandar, the WOT shows only the works_object__name and not the type
         if api:
             wot_properties = list()
-            property = list()
+            permit_request = models.PermitRequest.objects.get(pk=1)
             for prop in wot_props:
                 # List of a lost, to split wot in objects
                 if property:
@@ -1666,7 +1668,6 @@ def get_wot_properties(value, api=False):
                                 }
                             )
         else:
-            wot_properties = dict()
             for prop in wot_props:
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
                 wot_properties[wot] = {
