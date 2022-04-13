@@ -1635,25 +1635,36 @@ def get_wot_properties(value, api=False):
                         prop_i["works_object_type_id"] == prop["works_object_type_id"]
                         and prop_i["properties__property__name"]
                     ):
-                        # Reconstituate download link if it's a file
                         if prop_i["properties__property__input_type"] == "file":
+
+                            # Reconstituate download link if it's a file
                             property_object = models.WorksObjectPropertyValue.objects.get(
                                 property__name=prop_i["properties__property__name"]
                             )
                             # attendu : WorksObjectPropertyValue
                             url = get_property_value(property_object).url
                             absolute_url = permit_request.get_absolute_url(url)
-                            prop_i["properties__value__val"] = absolute_url
-
-                        # Properties of WOT
-                        property.append(
-                            {
-                                "key": prop_i["properties__property__name"],
-                                "value": prop_i["properties__value__val"],
-                                "type": prop_i["properties__property__input_type"],
-                            }
-                        )
-
+                            file_name = prop_i["properties__value__val"].split("/", -1)[
+                                -1
+                            ]
+                            # Properties of WOT
+                            property.append(
+                                {
+                                    "key": prop_i["properties__property__name"],
+                                    "value": absolute_url,
+                                    "name": file_name,
+                                    "type": prop_i["properties__property__input_type"],
+                                }
+                            )
+                        else:
+                            # Properties of WOT
+                            property.append(
+                                {
+                                    "key": prop_i["properties__property__name"],
+                                    "value": prop_i["properties__value__val"],
+                                    "type": prop_i["properties__property__input_type"],
+                                }
+                            )
         else:
             wot_properties = dict()
             for prop in wot_props:
