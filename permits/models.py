@@ -797,7 +797,8 @@ class PermitRequest(models.Model):
                     ends_at=today + timedelta(days=permit_duration_max)
                 )
 
-    def get_absolute_url(self, relative_url):
+    @staticmethod
+    def get_absolute_url(relative_url):
         protocol = "https" if settings.SITE_HTTPS else "http"
         port = (
             f":{settings.DJANGO_DOCKER_PORT}"

@@ -27,6 +27,7 @@ from django.utils.translation import gettext_lazy as _
 
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
+from .models import PermitRequest
 from .utils import reverse_permit_request_url
 from PIL import Image
 from pdf2image import convert_from_path
@@ -1620,7 +1621,6 @@ def get_wot_properties(value, api=False):
         # Flat view is used in the api for geocalandar, the WOT shows only the works_object__name and not the type
         if api:
             wot_properties = list()
-            permit_request = models.PermitRequest.objects.get(pk=1)
             for prop in wot_props:
                 # List of a lost, to split wot in objects
                 if property:
@@ -1645,7 +1645,7 @@ def get_wot_properties(value, api=False):
                             )
                             # attendu : WorksObjectPropertyValue
                             url = get_property_value(property_object).url
-                            absolute_url = permit_request.get_absolute_url(url)
+                            absolute_url = PermitRequest.get_absolute_url(url)
                             file_name = prop_i["properties__value__val"].split("/", -1)[
                                 -1
                             ]
