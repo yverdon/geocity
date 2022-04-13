@@ -2599,7 +2599,7 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
             )
         )
         content = response.content.decode()
-        expected = f'<a class="file_download" href="/permit-requests/wot-files/{prop_file.file_download.name}" target="_blank" rel="noreferrer">Télécharger le fichier</a>'
+        expected = f'<a class="file_download" href="/permit-requests/wot-files/{prop_file.file_download.name}" target="_blank" rel="noreferrer">'
         self.assertInHTML(expected, content)
 
     def test_properties_step_shows_downloadable_files_more_than_once(self):
@@ -2624,7 +2624,7 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
             )
         )
 
-        expected = f'<a class="file_download" href="/permit-requests/wot-files/{prop_file.file_download.name}" target="_blank" rel="noreferrer">Télécharger le fichier</a>'
+        expected = f'<a class="file_download" href="/permit-requests/wot-files/{prop_file.file_download.name}" target="_blank" rel="noreferrer">'
 
         expected_href = rf"/permit-requests/wot-files/{prop_file.file_download.name}"
         parser = get_parser(response.content)
