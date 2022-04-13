@@ -12,11 +12,14 @@ from accounts.geomapfish.provider import GeomapfishProvider
 from accounts.dootix.provider import DootixProvider
 from permits import api
 from permits import views as permits_views
+from permits.admin import PermitsAdminSite
 from django_wfs3.urls import wfs3_router
 
 from . import views
 
 logger = logging.getLogger(__name__)
+
+admin.site = PermitsAdminSite()
 
 
 # See TWO_FACTOR_PATCH_ADMIN
@@ -125,6 +128,7 @@ urlpatterns += [
     path("wfs3/", include(wfs3_router.urls)),  # Django-rest urls
     path("admin/", admin.site.urls),
     path("oauth/", include("oauth2_provider.urls", namespace="oauth2_provider")),
+    path("captcha/", include("captcha.urls")),
 ]
 
 if settings.PREFIX_URL:

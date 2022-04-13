@@ -131,6 +131,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "django_cron",
     "axes",
+    "captcha",
 ]
 
 if ENABLE_2FA:
@@ -178,6 +179,8 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "MAX_FEATURE_NUMBER_FOR_QGISSERVER",
         "GEOCALENDAR_URL",
         "ENABLE_GEOCALENDAR",
+        "ANONYMOUS_REQUEST_SENT_TITLE",
+        "ANONYMOUS_REQUEST_SENT_BODY",
     ),
     "Theme Options": (
         "BACKGROUND_COLOR",
@@ -189,6 +192,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "TABLE_COLOR",
     ),
     "Step Options": (
+        "ANONYMOUS_CAPTCHA_STEP",
         "LOCATION_STEP",
         "WORKS_TYPES_STEP",
         "WORKS_OBJECTS_STEP",
@@ -243,6 +247,13 @@ CONSTANCE_CONFIG = {
         True,
         "Définit si l'application du calendrier cartographique est utilisé ou pas (doit dans tous les cas être installée à part)",
         bool,
+    ),
+    "ANONYMOUS_CAPTCHA_STEP": ("Votre demande anonyme", "", str),
+    "ANONYMOUS_REQUEST_SENT_TITLE": ("Merci pour votre requête", "", str),
+    "ANONYMOUS_REQUEST_SENT_BODY": (
+        "Nous avons bien reçu votre requête anonyme.",
+        "",
+        str,
     ),
     "LOCATION_STEP": ("Sélectionnez la commune / l'entité", "", str),
     "WORKS_TYPES_STEP": ("Sélectionnez le ou les type(s)", "", str),
@@ -477,3 +488,12 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 CRON_CLASSES = [
     "permits.cron.PermitRequestExpirationReminder",
 ]
+
+CAPTCHA_IMAGE_SIZE = (150, 50)
+CAPTCHA_FONT_SIZE = 26
+TEMPORARY_USER_PREFIX = "temp_user_"
+TEMPORARY_USER_ZIPCODE = 9998
+ANONYMOUS_USER_ZIPCODE = 9999
+ANONYMOUS_USER_PREFIX = "anonymous_user_"
+ANONYMOUS_NAME = "Anonyme"
+PENDING_ANONYMOUS_REQUEST_MAX_AGE = 24

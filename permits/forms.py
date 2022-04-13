@@ -6,6 +6,7 @@ from itertools import groupby
 from allauth.socialaccount.forms import SignupForm
 from allauth.socialaccount.providers.base import ProviderException
 from bootstrap_datepicker_plus.widgets import DatePickerInput, DateTimePickerInput
+from captcha.fields import CaptchaField
 from constance import config
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Field, Fieldset, Layout
@@ -241,6 +242,8 @@ class WorksObjectsForm(forms.Form):
 
             if not user_has_perm:
                 queryset = queryset.filter(is_public=True)
+
+            queryset = queryset.filter(is_anonymous=self.user.permitauthor.is_temporary)
 
             self.fields[str(works_type.pk)] = WorksObjectsTypeChoiceField(
                 queryset=queryset,
@@ -578,6 +581,38 @@ class NewDjangoAuthUserForm(UserCreationForm):
     def clean_email(self):
         return check_existing_email(self.cleaned_data["email"], user=None)
 
+    def clean(self):
+        cleaned_data = super().clean()
+
+        for reserved_usernames in (
+            settings.TEMPORARY_USER_PREFIX,
+            settings.ANONYMOUS_USER_PREFIX,
+        ):
+            if cleaned_data["username"].startswith(reserved_usernames):
+                raise ValidationError(
+                    {
+                        "username": _(
+                            "Le nom d'utilisat·eur·rice ne peut pas commencer par %s"
+                        )
+                        % reserved_usernames
+                    }
+                )
+
+        if cleaned_data["first_name"] == settings.ANONYMOUS_NAME:
+            raise ValidationError(
+                {
+                    "first_name": _("Le prénom ne peut pas être %s")
+                    % settings.ANONYMOUS_NAME
+                }
+            )
+
+        if cleaned_data["last_name"] == settings.ANONYMOUS_NAME:
+            raise ValidationError(
+                {"last_name": _("Le nom ne peut pas être %s") % settings.ANONYMOUS_NAME}
+            )
+
+        return cleaned_data
+
     def save(self, commit=True):
         user = super(NewDjangoAuthUserForm, self).save(commit=False)
         user.email = self.cleaned_data["email"]
@@ -619,6 +654,18 @@ class DjangoAuthUserForm(forms.ModelForm):
 
     def clean_email(self):
         return check_existing_email(self.cleaned_data["email"], self.instance)
+
+    def clean_first_name(self):
+        if self.cleaned_data["first_name"] == settings.ANONYMOUS_NAME:
+            raise ValidationError(
+                _("Le prénom ne peut pas être %s") % settings.ANONYMOUS_NAME
+            )
+
+    def clean_last_name(self):
+        if self.cleaned_data["last_name"] == settings.ANONYMOUS_NAME:
+            raise ValidationError(
+                _("Le nom ne peut pas être %s") % settings.ANONYMOUS_NAME
+            )
 
     class Meta:
         model = User
@@ -1435,3 +1482,8 @@ class SocialSignupForm(SignupForm):
             raise ProviderException(_("Unknown social account provider"))
 
         return adapter.save_user(request, self.sociallogin, form=self)
+
+
+class AnonymousRequestForm(forms.Form):
+    required_css_class = "required"
+    captcha = CaptchaField(required=True)

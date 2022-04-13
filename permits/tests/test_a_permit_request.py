@@ -7,6 +7,7 @@ import PIL
 from datetime import date
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -17,6 +18,8 @@ from permits import models, services
 
 from . import factories
 from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_parser
+from ..forms import PermitRequestGeoTimeForm
+from ..management.commands import create_anonymous_users
 
 
 def to_works_objects_dict(works_object_types):
@@ -3872,7 +3875,7 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             len(get_parser(response.content).select(".form-check-label")), 2
         )
 
-    def test_work_type_step_show_private_requests_to_user_with_specific_permission(
+    def test_work_type_step_show_private_requests_with_choices_to_user_with_specific_permission(
         self,
     ):
 
@@ -3880,6 +3883,7 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             codename="see_private_requests"
         )
         self.user.user_permissions.add(see_private_requests_permission)
+
         public_works_object_types = factories.WorksObjectTypeFactory.create_batch(
             2, is_public=True
         )
@@ -3937,7 +3941,8 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"permit_request_id": permit_request.pk},
             )
             + "?types={}&types={}".format(
-                public_works_object_types[0].pk, public_works_object_types[1].pk
+                public_works_object_types[0].works_type.pk,
+                public_works_object_types[1].works_type.pk,
             ),
         )
         self.assertEqual(
@@ -3984,17 +3989,15 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             permit_request=permit_request, works_object_type=private_works_object_type
         )
 
-        # Fixme without any WorksObject created, returns 404
-
         response = self.client.get(
             reverse(
                 "permits:permit_request_select_objects",
                 kwargs={"permit_request_id": permit_request.pk},
             )
             + "?types={}&types={}&types={}".format(
-                public_works_object_types[0].pk,
-                public_works_object_types[1].pk,
-                private_works_object_type.pk,
+                public_works_object_types[0].works_type.pk,
+                public_works_object_types[1].works_type.pk,
+                private_works_object_type.works_type.pk,
             ),
         )
         self.assertEqual(
@@ -4038,3 +4041,144 @@ class PermitRequestFilteredWorksObjectListTestCase(LoggedInSecretariatMixin, Tes
         )
 
         self.assertContains(response, self.prop_value.value["val"])
+
+
+class PermitRequestAnonymousTestCase(TestCase):
+    def setUp(self):
+        super().setUp()
+
+    def test_anonymous_request_on_non_anonymous_entity_returns_404(self):
+        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        type = factories.WorksTypeFactory(tags=["a"])
+
+        response = self.client.get(
+            reverse("permits:anonymous_permit_request"),
+            data={
+                "entityfilter": entity.tags.get().slug,
+                "typefilter": type.tags.get().slug,
+            },
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_anonymous_request_on_anonymous_entity_displays_captcha_form(self):
+        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        create_anonymous_users._create_anonymous_user_for_entity(entity)
+
+        type = factories.WorksTypeFactory(tags=["a"])
+
+        response = self.client.get(
+            reverse("permits:anonymous_permit_request"),
+            data={
+                "entityfilter": entity.tags.get().slug,
+                "typefilter": type.tags.get().slug,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("anonymous_request_form", response.context)
+
+    def test_anonymous_request_temporary_logged_in_no_wot_displays_request_form(self):
+        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        create_anonymous_users._create_anonymous_user_for_entity(entity)
+
+        temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
+        self.client.force_login(temp_author.user)
+        session = self.client.session
+        session["anonymous_request_token"] = hash((temp_author, entity))
+        session.save()
+
+        type = factories.WorksTypeFactory(tags=["a"])
+
+        response = self.client.get(
+            reverse("permits:anonymous_permit_request"),
+            data={
+                "entityfilter": entity.tags.get().slug,
+                "typefilter": type.tags.get().slug,
+            },
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_anonymous_request_temporary_logged_in_displays_request_form(self):
+        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        create_anonymous_users._create_anonymous_user_for_entity(entity)
+
+        temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
+        self.client.force_login(temp_author.user)
+        session = self.client.session
+        session["anonymous_request_token"] = hash((temp_author, entity))
+        session.save()
+
+        type = factories.WorksTypeFactory(tags=["a"])
+        factories.WorksObjectTypeFactory(
+            is_anonymous=True, works_type=type, administrative_entities=[entity],
+        )
+
+        response = self.client.get(
+            reverse("permits:anonymous_permit_request"),
+            data={
+                "entityfilter": entity.tags.get().slug,
+                "typefilter": type.tags.get().slug,
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        # As the wot has to properties, going directly to next step
+        self.assertTrue(
+            isinstance(response.context["formset"].forms[0], PermitRequestGeoTimeForm)
+        )
+
+    def test_anonymous_request_submission_deletes_temporary_user(self):
+        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        create_anonymous_users._create_anonymous_user_for_entity(entity)
+
+        temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
+        self.client.force_login(temp_author.user)
+        session = self.client.session
+        session["anonymous_request_token"] = hash((temp_author, entity))
+        session.save()
+
+        type = factories.WorksTypeFactory(tags=["a"])
+        wot = factories.WorksObjectTypeWithoutGeometryFactory(
+            is_anonymous=True,
+            works_type=type,
+            administrative_entities=[entity],
+            needs_date=False,
+        )
+
+        # Filled permit request
+        permit_request = factories.PermitRequestFactory(
+            author=temp_author,
+            status=models.PermitRequest.STATUS_DRAFT,
+            administrative_entity=entity,
+        )
+        work_object_type_choice = factories.WorksObjectTypeChoiceFactory(
+            permit_request=permit_request, works_object_type=wot,
+        )
+        prop = factories.WorksObjectPropertyFactory()
+        prop.works_object_types.set([wot])
+        factories.WorksObjectPropertyValueFactory(
+            property=prop,
+            works_object_type_choice=work_object_type_choice,
+            value={"val": True},
+        )
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_submit_confirmed",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        permit_request.refresh_from_db()
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("permits:anonymous_permit_request_sent"))
+
+        self.assertEqual(permit_request.author, entity.anonymous_user)
+
+        self.assertEqual(
+            get_user_model().objects.get().pk, permit_request.author.user_id,
+        )

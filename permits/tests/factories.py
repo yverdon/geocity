@@ -387,6 +387,13 @@ class WorksObjectTypeFactory(factory.django.DjangoModelFactory):
 
         self.integrator = extracted
 
+    @factory.post_generation
+    def administrative_entities(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        self.administrative_entities.add(*extracted)
+
 
 class WorksObjectTypeWithoutGeometryFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -398,6 +405,13 @@ class WorksObjectTypeWithoutGeometryFactory(factory.django.DjangoModelFactory):
     has_geometry_point = False
     has_geometry_line = False
     has_geometry_polygon = False
+
+    @factory.post_generation
+    def administrative_entities(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        self.administrative_entities.add(*extracted)
 
 
 class WorksObjectTypeChoiceFactory(factory.django.DjangoModelFactory):

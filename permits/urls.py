@@ -20,6 +20,17 @@ permit_request_urlpatterns = [
     ),
 ]
 
+anonymous_permit_request_urlpatterns = [
+    path(
+        "anonymous/", views.anonymous_permit_request, name="anonymous_permit_request",
+    ),
+    path(
+        "anonymous/sent",
+        views.anonymous_permit_request_sent,
+        name="anonymous_permit_request_sent",
+    ),
+]
+
 existing_permit_request_urlpatterns = [
     path("", views.PermitRequestDetailView.as_view(), name="permit_request_detail"),
     path(
@@ -80,7 +91,9 @@ urlpatterns = [
         name="administrative_entity_file_download",
     ),
     path("", views.PermitRequestList.as_view(), name="permit_requests_list"),
-    path("", include(permit_request_urlpatterns)),
+    path(
+        "", include(permit_request_urlpatterns + anonymous_permit_request_urlpatterns)
+    ),
     path(
         "media/<int:property_value_id>/",
         views.permit_request_media_download,

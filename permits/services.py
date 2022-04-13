@@ -10,7 +10,7 @@ import ipaddress
 import filetype
 from constance import config
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, login
 from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.core.mail import send_mass_mail
 from django.core.validators import EmailValidator
@@ -834,6 +834,46 @@ def get_submit_step(permit_request, enabled, total_errors):
     )
 
 
+def get_anonymous_steps(type, user, permit_request):
+    has_works_objects_types = permit_request.works_object_types.exists()
+
+    objects_step = get_works_objects_step(
+        permit_request=permit_request,
+        enabled=not has_works_objects_types,
+        works_types=[type],
+        user=user,
+        typefilter=[type],
+    )
+
+    if objects_step:
+        objects_step.completed = has_works_objects_types
+
+    steps = {
+        models.StepType.WORKS_OBJECTS: objects_step,
+        models.StepType.PROPERTIES: get_properties_step(
+            permit_request=permit_request, enabled=has_works_objects_types
+        ),
+        models.StepType.GEO_TIME: get_geo_time_step(
+            permit_request=permit_request, enabled=has_works_objects_types
+        ),
+        models.StepType.APPENDICES: get_appendices_step(
+            permit_request=permit_request, enabled=has_works_objects_types
+        ),
+        models.StepType.ACTORS: get_actors_step(
+            permit_request=permit_request, enabled=has_works_objects_types
+        ),
+    }
+
+    total_errors = sum([step.errors_count for step in steps.values() if step])
+    steps[models.StepType.SUBMIT] = get_submit_step(
+        permit_request=permit_request,
+        enabled=has_works_objects_types,
+        total_errors=total_errors,
+    )
+
+    return {step_type: step for step_type, step in steps.items() if step is not None}
+
+
 def get_progress_bar_steps(request, permit_request):
     """
     Return a dict of `Step` items that can be used to track the user progress through
@@ -1600,6 +1640,27 @@ def get_amend_properties(value):
         }
 
     return amend_properties
+
+
+def is_anonymous_request_logged_in(request, entity):
+    """
+    Verify the authentication for anonymous permit requests.
+    """
+    return (
+        request.user.is_authenticated
+        and request.user.permitauthor.is_temporary
+        and request.session.get("anonymous_request_token", None)
+        == hash((request.user.permitauthor, entity))
+    )
+
+
+def login_for_anonymous_request(request, entity):
+    """
+    Authenticate with a new temporary user to proceed with an anonymous permit request.
+    """
+    temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
+    login(request, temp_author.user, "django.contrib.auth.backends.ModelBackend")
+    request.session["anonymous_request_token"] = hash((temp_author, entity))
 
 
 def download_file(path):

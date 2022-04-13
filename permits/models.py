@@ -6,7 +6,13 @@ from datetime import date, datetime, timedelta
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
-from django.db.models import JSONField, UniqueConstraint
+from django.db.models import (
+    JSONField,
+    UniqueConstraint,
+    F,
+    ExpressionWrapper,
+    BooleanField,
+)
 from django.core.exceptions import ValidationError
 from django.core.validators import (
     FileExtensionValidator,
@@ -172,6 +178,14 @@ class PermitAdministrativeEntityQuerySet(models.QuerySet):
         return self.filter(tags__name__in=[tag.lower() for tag in tags])
 
 
+class PermitAdministrativeEntityManager(models.Manager):
+    def get_queryset(self):
+        return PermitAdministrativeEntityQuerySet(self.model)
+
+    def public(self):
+        return self.get_queryset().filter(anonymous_user__isnull=False)
+
+
 class PermitAdministrativeEntity(models.Model):
     name = models.CharField(_("name"), max_length=128)
     ofs_id = models.PositiveIntegerField(_("Numéro OFS"))
@@ -209,7 +223,7 @@ class PermitAdministrativeEntity(models.Model):
         verbose_name="Mots-clés",
         help_text="Mots clefs sans espaces, séparés par des virgules permettant de filtrer les entités par l'url: https://geocity.ch/?entityfilter=yverdon",
     )
-    objects = PermitAdministrativeEntityQuerySet.as_manager()
+    objects = PermitAdministrativeEntityManager()
     expeditor_name = models.CharField(
         _("Nom de l'expéditeur des notifications"), max_length=255, blank=True
     )
@@ -238,6 +252,40 @@ class PermitAdministrativeEntity(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class PermitAuthorManager(models.Manager):
+    def create_temporary_user(self, entity):
+        # Multiple temp users might exist at the same time
+        last_temp_user = self.get_queryset().filter(is_temporary=True).last()
+        if last_temp_user:
+            nb = int(last_temp_user.user.username.split("_")[2]) + 1
+        else:
+            nb = 0
+
+        username = "%s%s" % (settings.TEMPORARY_USER_PREFIX, nb)
+        email = "%s@%s" % (username, settings.SITE_DOMAIN)
+        zipcode = settings.TEMPORARY_USER_ZIPCODE
+
+        temp_user = User.objects.create_user(
+            username, email, password=None, first_name="Temporaire", last_name="Anonyme"
+        )
+
+        new_temp_author = super().create(user=temp_user, zipcode=zipcode,)
+
+        return new_temp_author
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .annotate(
+                is_temporary=ExpressionWrapper(
+                    Q(user__username__startswith=settings.TEMPORARY_USER_PREFIX),
+                    output_field=BooleanField(),
+                )
+            )
+        )
 
 
 class PermitAuthor(models.Model):
@@ -288,6 +336,49 @@ class PermitAuthor(models.Model):
     notify_per_email = models.BooleanField(_("Me notifier par e-mail"), default=True)
     user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
     history = HistoricalRecords()
+
+    administrative_entity = models.OneToOneField(
+        "PermitAdministrativeEntity",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="anonymous_user",
+        verbose_name=_("entité administrative"),
+    )
+
+    objects = PermitAuthorManager()
+
+    def clean(self):
+        if self.user and self.user.is_active and self.administrative_entity is not None:
+            raise ValidationError(
+                _(
+                    "Seul·e un·e auteur désactivé·e peut être relié directement "
+                    "à une entité administrative, et ainsi être considéré·e "
+                    "auteur·e anonyme de l'entité."
+                )
+            )
+
+    @cached_property
+    def is_anonymous(self):
+        """
+        PermitAuthor unique per AdministrativeEntity.
+        Never logged in. Used to save anonymous requests.
+        """
+        return (
+            self.user
+            and not self.user.is_active
+            and self.administrative_entity is not None
+        )
+
+    @cached_property
+    def is_temporary(self):
+        """
+        PermitAuthor created when starting an anonymous permit request,
+        then deleted at the submission (replaced by an anonymous user).
+        """
+        return self.user and self.user.username.startswith(
+            settings.TEMPORARY_USER_PREFIX
+        )
 
     class Meta:
         verbose_name = _("3.2 Consultation de l'auteur")
@@ -764,6 +855,11 @@ class WorksType(models.Model):
         return self.name
 
 
+class AnonymousWorksObjectTypeManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_anonymous=True)
+
+
 class WorksObjectType(models.Model):
     """
     Represents a works object for a specific works type.
@@ -822,6 +918,9 @@ class WorksObjectType(models.Model):
         _("Document de validation obligatoire"), default=True
     )
     is_public = models.BooleanField(_("Public"), default=False)
+    is_anonymous = models.BooleanField(
+        _("Demandes anonymes uniquement"), default=False,
+    )
     notify_services = models.BooleanField(_("Notifier les services"), default=False)
     services_to_notify = models.TextField(
         _("Emails des services à notifier"),
@@ -842,6 +941,12 @@ class WorksObjectType(models.Model):
     days_before_reminder = models.IntegerField(
         _("Délai de rappel (jours)"), blank=True, null=True
     )
+
+    # All objects
+    objects = models.Manager()
+
+    # Only anonymous objects
+    anonymous_objects = AnonymousWorksObjectTypeManager()
 
     class Meta:
         verbose_name = _("1.4 Configuration type-objet-entité administrative")
