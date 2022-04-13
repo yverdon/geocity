@@ -92,8 +92,8 @@ TAGGIT_TAGS_FROM_STRING = "permits.utils.comma_splitter"
 ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 
 # Allauth requirement
-# SITE_ID = 1
-# SITE_DOMAIN = os.getenv("DEFAULT_SITE_DOMAIN", "localhost")
+SITE_ID = 1
+SITE_DOMAIN = os.getenv("SITE_DOMAIN", "localhost")
 SITE_HTTPS = bool(int(os.getenv("SITE_HTTPS", True)))
 
 # Application definition

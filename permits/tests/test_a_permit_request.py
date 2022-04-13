@@ -1132,6 +1132,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         content2 = response2.content.decode()
         element_parsed = parser2.select(".form-check-label")
 
+        # # DELETE ME AFTER USE
+        # import ipdb; ipdb.set_trace()
+        # # ###################
         # Check that selected item is there
         self.assertEqual(1, len(element_parsed))
         # Check that filtered items are NOT there
@@ -3847,12 +3850,15 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             name="privateEntity"
         )
         private_works_object_type = models.WorksObjectType.objects.create(
-            works_type=works_types[0], works_object=works_objects[0], is_public=False,
+            works_type=works_types[0], works_object=works_objects[0], is_public=True,
         )
         private_works_object_type.administrative_entities.set([administrative_entity])
         response = self.client.get(
             reverse("permits:permit_request_select_administrative_entity",),
         )
+        # DELETE ME AFTER USE
+        import ipdb; ipdb.set_trace()
+        # ###################
 
         self.assertContains(response, "privateEntity")
 
