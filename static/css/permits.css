@@ -724,6 +724,7 @@ dd {
 .properties-list ul {
   list-style-type: none;
   padding: 0;
+  margin-bottom: 0;
 }
 
 .grid-container{
@@ -790,4 +791,8 @@ table.table thead th.desc {
   vertical-align: top;
   position: relative;
   top: -0.1em;
+}
+
+img.captcha {
+  margin-bottom: 5px;
 }

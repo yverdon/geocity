@@ -1,14 +1,16 @@
 import enum
 import itertools
+import mimetypes
 import os
 import urllib
 from collections import defaultdict
 import socket
+import ipaddress
 
 import filetype
 from constance import config
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, login
 from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.core.mail import send_mass_mail
 from django.core.validators import EmailValidator
@@ -17,6 +19,7 @@ from django.db import transaction
 from django.db.models import CharField, Count, F, Max, Min, Q, Value
 from django.db.models.functions import Concat
 from django.forms import modelformset_factory
+from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -269,10 +272,17 @@ def _get_properties_filtered(permit_request, props_filter):
     ]
 
 
-def get_properties(permit_request):
+def get_properties(permit_request, additional_type_exclusions=None):
+    exclusions = [
+        models.WorksObjectProperty.INPUT_TYPE_FILE,
+    ]
+    if additional_type_exclusions is not None:
+        exclusions += additional_type_exclusions
     return _get_properties_filtered(
         permit_request,
-        lambda qs: qs.exclude(input_type=models.WorksObjectProperty.INPUT_TYPE_FILE),
+        lambda qs: qs.exclude(
+            input_type__in=[models.WorksObjectProperty.INPUT_TYPE_FILE,] + exclusions
+        ),
     )
 
 
@@ -394,13 +404,12 @@ def get_permit_request_for_user_or_404(user, permit_request_id, statuses=None):
 
 
 def get_permit_requests_list_for_user(
-    user, request_comes_from_internal_qgisserver=False
+    user, request_comes_from_internal_qgisserver=False, works_object_filter=None
 ):
     """
     Return the list of permit requests this user has access to.
     """
-
-    qs = models.PermitRequest.objects.annotate(
+    annotate_with = dict(
         starts_at_min=Min("geo_time__starts_at"),
         ends_at_max=Max("geo_time__ends_at"),
         permit_duration_max=Max("works_object_types__permit_duration"),
@@ -422,6 +431,11 @@ def get_permit_requests_list_for_user(
             output_field=CharField(),
         ),
     )
+
+    if works_object_filter is not None:
+        annotate_with.update({"works_object_filter": Value(works_object_filter)})
+
+    qs = models.PermitRequest.objects.annotate(**annotate_with)
 
     if not user.is_authenticated and not request_comes_from_internal_qgisserver:
         return qs.none()
@@ -826,6 +840,46 @@ def get_submit_step(permit_request, enabled, total_errors):
         errors_count=total_errors,
         completed=total_errors == 0,
     )
+
+
+def get_anonymous_steps(type, user, permit_request):
+    has_works_objects_types = permit_request.works_object_types.exists()
+
+    objects_step = get_works_objects_step(
+        permit_request=permit_request,
+        enabled=not has_works_objects_types,
+        works_types=[type],
+        user=user,
+        typefilter=[type],
+    )
+
+    if objects_step:
+        objects_step.completed = has_works_objects_types
+
+    steps = {
+        models.StepType.WORKS_OBJECTS: objects_step,
+        models.StepType.PROPERTIES: get_properties_step(
+            permit_request=permit_request, enabled=has_works_objects_types
+        ),
+        models.StepType.GEO_TIME: get_geo_time_step(
+            permit_request=permit_request, enabled=has_works_objects_types
+        ),
+        models.StepType.APPENDICES: get_appendices_step(
+            permit_request=permit_request, enabled=has_works_objects_types
+        ),
+        models.StepType.ACTORS: get_actors_step(
+            permit_request=permit_request, enabled=has_works_objects_types
+        ),
+    }
+
+    total_errors = sum([step.errors_count for step in steps.values() if step])
+    steps[models.StepType.SUBMIT] = get_submit_step(
+        permit_request=permit_request,
+        enabled=has_works_objects_types,
+        total_errors=total_errors,
+    )
+
+    return {step_type: step for step_type, step in steps.items() if step is not None}
 
 
 def get_progress_bar_steps(request, permit_request):
@@ -1524,15 +1578,122 @@ def clear_session_filters(request):
     request.session["typefilter"] = []
 
 
+def get_client_ip(request):
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(",")[0]
+    else:
+        ip = request.META.get("REMOTE_ADDR")
+    return ip
+
+
+def check_request_ip_is_allowed(request):
+    """
+    Check that the request is coming from allowed ip
+    """
+    # Check for exact ip
+    client_ip = get_client_ip(request)
+    if config.IP_WHITELIST != "":
+        for whitelisted_ip in config.IP_WHITELIST.split(","):
+            if client_ip in whitelisted_ip:
+                return True
+    # Check for network
+    if config.NETWORK_WHITELIST != "":
+        for whitelisted_network in config.NETWORK_WHITELIST.split(","):
+            ip_address = ipaddress.ip_address(client_ip)
+            ip_network = ipaddress.ip_network(whitelisted_network)
+            if ip_address in ip_network:
+                return True
+
+    return False
+
+
 def check_request_comes_from_internal_qgisserver(request):
     """
-    Check that the request is coming from inside the docker composition AND that it is a private IP
+    Check that the request is coming from inside the docker composition AND that it is an allowed ip
     """
 
-    for whitelisted_ip in settings.LOCAL_IP_WHITELIST:
-        if (
-            request.META["REMOTE_ADDR"].startswith(whitelisted_ip)
-            and socket.gethostbyname("qgisserver") == request.META["REMOTE_ADDR"]
-        ):
-            return True
+    if (
+        check_request_ip_is_allowed(request)
+        and socket.gethostbyname("qgisserver") == request.META["REMOTE_ADDR"]
+    ):
+        return True
     return False
+
+
+def get_wot_properties(value):
+    obj = value.all()
+    wot_props = obj.values(
+        "properties__property__name",
+        "properties__value__val",
+        "works_object_type_id",
+        "works_object_type__works_object__name",
+        "works_object_type__works_type__name",
+    )
+    wot_properties = {}
+
+    if wot_props:
+        for prop in wot_props:
+            wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+            wot_properties[wot] = {
+                prop_i["properties__property__name"]: prop_i["properties__value__val"]
+                for prop_i in wot_props
+                if prop_i["works_object_type_id"] == prop["works_object_type_id"]
+                and prop_i["properties__property__name"]
+            }
+    return wot_properties
+
+
+def get_amend_properties(value):
+    obj = value.all()
+    amend_props = obj.values(
+        "amend_properties__property__name",
+        "amend_properties__value",
+        "works_object_type_id",
+        "works_object_type__works_object__name",
+        "works_object_type__works_type__name",
+    )
+    amend_properties = {}
+
+    for prop in amend_props:
+        amends = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+        amend_properties[amends] = {
+            prop_i["amend_properties__property__name"]: prop_i[
+                "amend_properties__value"
+            ]
+            for prop_i in amend_props
+            if prop_i["works_object_type_id"] == prop["works_object_type_id"]
+            and prop_i["amend_properties__property__name"]
+        }
+
+    return amend_properties
+
+
+def is_anonymous_request_logged_in(request, entity):
+    """
+    Verify the authentication for anonymous permit requests.
+    """
+    return (
+        request.user.is_authenticated
+        and request.user.permitauthor.is_temporary
+        and request.session.get("anonymous_request_token", None)
+        == hash((request.user.permitauthor, entity))
+    )
+
+
+def login_for_anonymous_request(request, entity):
+    """
+    Authenticate with a new temporary user to proceed with an anonymous permit request.
+    """
+    temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
+    login(request, temp_author.user, "django.contrib.auth.backends.ModelBackend")
+    request.session["anonymous_request_token"] = hash((temp_author, entity))
+
+
+def download_file(path):
+    mime_type, encoding = mimetypes.guess_type(path)
+    storage = fields.PrivateFileSystemStorage()
+    file = storage.open(path)
+    response = StreamingHttpResponse(file, content_type=mime_type)
+    response["Content-Disposition"] = 'attachment; filename="' + file.name + '"'
+    return response

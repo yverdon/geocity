@@ -5,7 +5,8 @@ from itertools import groupby
 
 from allauth.socialaccount.forms import SignupForm
 from allauth.socialaccount.providers.base import ProviderException
-from bootstrap_datepicker_plus import DatePickerInput, DateTimePickerInput
+from bootstrap_datepicker_plus.widgets import DatePickerInput, DateTimePickerInput
+from captcha.fields import CaptchaField
 from constance import config
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import HTML, Field, Fieldset, Layout
@@ -53,8 +54,18 @@ def _title_html_representation(prop, for_summary=False):
     return base
 
 
+def _file_download_html_representation(prop, for_summary=False):
+    if not for_summary and prop.file_download:
+        description = prop.help_text if prop.help_text else _("Télécharger le fichier")
+        return f"""<strong>{ prop.name }:</strong>
+            <i class="fa fa-download" aria-hidden="true"></i>
+            <a class="file_download" href="{ reverse('permits:works_object_property_file_download', kwargs={'path':prop.file_download}) }" target="_blank" rel="noreferrer">{ description }</a>"""
+    return ""
+
+
 non_value_input_type_mapping = {
     models.WorksObjectProperty.INPUT_TYPE_TITLE: _title_html_representation,
+    models.WorksObjectProperty.INPUT_TYPE_FILE_DOWNLOAD: _file_download_html_representation,
 }
 
 
@@ -229,10 +240,13 @@ class WorksObjectsForm(forms.Form):
                 )
                 .distinct()
                 .select_related("works_object")
+                .order_by("works_type", "works_object")
             )
 
             if not user_has_perm:
                 queryset = queryset.filter(is_public=True)
+
+            queryset = queryset.filter(is_anonymous=self.user.permitauthor.is_temporary)
 
             self.fields[str(works_type.pk)] = WorksObjectsTypeChoiceField(
                 queryset=queryset,
@@ -379,7 +393,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
 
     def get_field_kwargs(self, prop):
         """
-        Return the options used when instanciating the field for the given `prop`.
+        Return the options used when instantiating the field for the given `prop`.
         """
         default_kwargs = {
             "required": self.enable_required and prop.is_mandatory,
@@ -570,6 +584,38 @@ class NewDjangoAuthUserForm(UserCreationForm):
     def clean_email(self):
         return check_existing_email(self.cleaned_data["email"], user=None)
 
+    def clean(self):
+        cleaned_data = super().clean()
+
+        for reserved_usernames in (
+            settings.TEMPORARY_USER_PREFIX,
+            settings.ANONYMOUS_USER_PREFIX,
+        ):
+            if cleaned_data["username"].startswith(reserved_usernames):
+                raise ValidationError(
+                    {
+                        "username": _(
+                            "Le nom d'utilisat·eur·rice ne peut pas commencer par %s"
+                        )
+                        % reserved_usernames
+                    }
+                )
+
+        if cleaned_data["first_name"] == settings.ANONYMOUS_NAME:
+            raise ValidationError(
+                {
+                    "first_name": _("Le prénom ne peut pas être %s")
+                    % settings.ANONYMOUS_NAME
+                }
+            )
+
+        if cleaned_data["last_name"] == settings.ANONYMOUS_NAME:
+            raise ValidationError(
+                {"last_name": _("Le nom ne peut pas être %s") % settings.ANONYMOUS_NAME}
+            )
+
+        return cleaned_data
+
     def save(self, commit=True):
         user = super(NewDjangoAuthUserForm, self).save(commit=False)
         user.email = self.cleaned_data["email"]
@@ -611,6 +657,18 @@ class DjangoAuthUserForm(forms.ModelForm):
 
     def clean_email(self):
         return check_existing_email(self.cleaned_data["email"], self.instance)
+
+    def clean_first_name(self):
+        if self.cleaned_data["first_name"] == settings.ANONYMOUS_NAME:
+            raise ValidationError(
+                _("Le prénom ne peut pas être %s") % settings.ANONYMOUS_NAME
+            )
+
+    def clean_last_name(self):
+        if self.cleaned_data["last_name"] == settings.ANONYMOUS_NAME:
+            raise ValidationError(
+                _("Le nom ne peut pas être %s") % settings.ANONYMOUS_NAME
+            )
 
     class Meta:
         model = User
@@ -831,7 +889,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
 
     class Meta:
         model = models.PermitRequest
-        fields = ["is_public", "status"]
+        fields = ["is_public", "shortname", "status"]
         widgets = {
             "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
         }
@@ -857,11 +915,20 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                     self.instance.administrative_entity
                 )
             )
-            filter1 = [
-                tup
-                for tup in models.PermitRequest.STATUS_CHOICES
-                if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)
-            ]
+            # If an amend property in the permit request can always be amended, STATUS_APPROVED is added to the list
+            if self.instance.get_amend_property_list_always_amendable():
+                filter1 = [
+                    tup
+                    for tup in models.PermitRequest.STATUS_CHOICES
+                    if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)
+                    or models.PermitRequest.STATUS_APPROVED in tup
+                ]
+            else:
+                filter1 = [
+                    tup
+                    for tup in models.PermitRequest.STATUS_CHOICES
+                    if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)
+                ]
             filter2 = [
                 el
                 for el in filter1
@@ -871,6 +938,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
 
             if not config.ENABLE_GEOCALENDAR:
                 self.fields["is_public"].widget = forms.HiddenInput()
+                self.fields["shortname"].widget = forms.HiddenInput()
 
             for works_object_type, prop in self.get_properties():
                 field_name = self.get_field_name(works_object_type.id, prop.id)
@@ -963,7 +1031,8 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 "format": "DD.MM.YYYY HH:mm",
                 "locale": "fr-CH",
                 "useCurrent": False,
-            }
+            },
+            attrs={"autocomplete": "off"},
         ).start_of("event days"),
         help_text="Cliquer sur le champ et selectionner la date planifiée de début à l'aide de l'outil mis à disposition",
     )
@@ -975,7 +1044,8 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 "format": "DD.MM.YYYY HH:mm",
                 "locale": "fr-CH",
                 "useCurrent": False,
-            }
+            },
+            attrs={"autocomplete": "off"},
         ).end_of("event days"),
         help_text="Cliquer sur le champ et selectionner la date planifiée de fin à l'aide de l'outil mis à disposition",
     )
@@ -1415,3 +1485,8 @@ class SocialSignupForm(SignupForm):
             raise ProviderException(_("Unknown social account provider"))
 
         return adapter.save_user(request, self.sociallogin, form=self)
+
+
+class AnonymousRequestForm(forms.Form):
+    required_css_class = "required"
+    captcha = CaptchaField(required=True)

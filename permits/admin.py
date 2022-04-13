@@ -4,19 +4,27 @@ import re
 from adminsortable2.admin import SortableAdminMixin
 from django import forms
 from django.contrib import admin
+from django.contrib.admin import AdminSite, site
+from django.contrib.admin.views.decorators import staff_member_required
+from django.core.management import call_command, CommandError
+from django.http import Http404
+from django.shortcuts import redirect
+from django.urls import re_path, reverse
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.http import require_POST
+
 from geomapshark import settings
 from django.db.models import Q, Value
-from simple_history.admin import SimpleHistoryAdmin
 from django.contrib.auth.models import Group, User, Permission
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.core.exceptions import PermissionDenied
-from django.forms import ValidationError
 from django.contrib import messages
 from django.contrib.auth.forms import UserChangeForm
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from io import BytesIO
 from django.db.models.functions import StrIndex, Substr
+from rest_framework.authtoken.models import TokenProxy
+from rest_framework.authtoken.admin import TokenAdmin as BaseTokenAdmin
 
 
 from . import forms as permit_forms
@@ -53,6 +61,11 @@ OTHER_PERMISSIONS_CODENAMES = [
     "change_accesslog",
     "delete_accesslog",
     "view_accesslog",
+    # DRF Token authentication
+    "view_tokenproxy",
+    "add_tokenproxy",
+    "change_tokenproxy",
+    "delete_tokenproxy",
 ]
 AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
     "amend_permit_request",
@@ -85,6 +98,58 @@ def get_integrator_readonly_fields(user):
         return []
     else:
         return ["integrator"]
+
+
+class PermitsAdminSite(AdminSite):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._registry.update(site._registry)
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            re_path(
+                r"^create-anonymous-user/$",
+                self.create_anonymous_user,
+                name="create_anonymous_user",
+            ),
+        ]
+        return custom_urls + urls
+
+    @method_decorator(staff_member_required)
+    @method_decorator(require_POST)
+    def create_anonymous_user(self, request):
+        """
+        Admin custom view to create the anonymous user for the given Administrative
+        entity.
+        FIXME: Special permission required to do that ?
+         Like being an integrator of the given entity ?
+        """
+        try:
+            entity_id = int(request.POST.get("entity_id"))
+        except ValueError:
+            raise Http404
+
+        try:
+            call_command("create_anonymous_users", entity_id)
+        except CommandError:
+            # Display error
+            messages.add_message(
+                request,
+                messages.ERROR,
+                _("Echec de la création de l'utilisateur anonyme."),
+            )
+        else:
+            messages.add_message(
+                request, messages.SUCCESS, _("Utilisateur anonyme créé avec succès.")
+            )
+
+        return redirect(
+            reverse(
+                "admin:permits_permitadministrativeentity_change",
+                kwargs={"object_id": entity_id},
+            )
+        )
 
 
 class IntegratorFilterMixin:
@@ -146,7 +211,12 @@ class UserAdmin(BaseUserAdmin):
         "last_name",
         "is_staff",
         "is_sociallogin",
+        "last_login",
+        "date_joined",
     )
+
+    def has_add_permission(self, request):
+        return False
 
     @admin.display(boolean=True)
     def is_sociallogin(self, obj):
@@ -223,6 +293,18 @@ class UserAdmin(BaseUserAdmin):
 
         return qs
 
+    def save_model(self, req, obj, form, change):
+        """ Set 'is_staff=True' when the saved user is in a integrator group.
+        But let is_staff=True for super users.
+        """
+        if req.user.is_superuser:
+            obj.is_staff = False if not obj.is_superuser else True
+            for group in form.cleaned_data["groups"]:
+                if group.permitdepartment.is_integrator_admin:
+                    obj.is_staff = True
+
+        super().save_model(req, obj, form, change)
+
 
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
@@ -289,7 +371,7 @@ class DepartmentAdminForm(forms.ModelForm):
             raise forms.ValidationError(
                 {
                     "administrative_entity": _(
-                        "Un groupe non integrator doit avoir une entité administrative"
+                        "Un groupe non intégrateur doit avoir une entité administrative"
                     )
                 }
             )
@@ -364,10 +446,47 @@ class GroupAdminForm(forms.ModelForm):
 class GroupAdmin(admin.ModelAdmin):
     inlines = (PermitDepartmentInline,)
     form = GroupAdminForm
+    list_display = [
+        "__str__",
+        "get__is_validator",
+        "get__is_default_validator",
+        "get__integrator",
+        "get__mandatory_2fa",
+    ]
+
     filter_horizontal = ("permissions",)
     search_fields = [
         "name",
     ]
+
+    @admin.display(boolean=True)
+    def get__is_validator(self, obj):
+        return obj.permitdepartment.is_validator
+
+    get__is_validator.admin_order_field = "permitdepartment__is_validator"
+    get__is_validator.short_description = _("Validateur")
+
+    @admin.display(boolean=True)
+    def get__is_default_validator(self, obj):
+        return obj.permitdepartment.is_default_validator
+
+    get__is_default_validator.admin_order_field = (
+        "permitdepartment__is_default_validator"
+    )
+    get__is_default_validator.short_description = _("Validateur par défaut")
+
+    def get__integrator(self, obj):
+        return obj.permitdepartment.integrator
+
+    get__integrator.admin_order_field = "permitdepartment__integrator"
+    get__integrator.short_description = _("Intégrateur")
+
+    @admin.display(boolean=True)
+    def get__mandatory_2fa(self, obj):
+        return obj.permitdepartment.mandatory_2fa
+
+    get__mandatory_2fa.admin_order_field = "permitdepartment__mandatory_2fa"
+    get__mandatory_2fa.short_description = _("2FA obligatoire")
 
     def get_queryset(self, request):
 
@@ -606,11 +725,16 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
 
 
 class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    form = WorksObjectTypeAdminForm
+    inlines = [QgisProjectInline]
     list_display = [
-        "__str__",
+        "sortable_str",
         works_object_type_administrative_entities,
         "is_public",
         "requires_payment",
+        "requires_validation_document",
+        "is_anonymous",
+        "notify_services",
         "needs_date",
         "permit_duration",
         "expiration_reminder",
@@ -636,6 +760,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     "is_public",
                     "requires_payment",
                     "requires_validation_document",
+                    "is_anonymous",
                     "integrator",
                 )
             },
@@ -669,8 +794,14 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             },
         ),
     )
-    form = WorksObjectTypeAdminForm
-    inlines = [QgisProjectInline]
+
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "works_object__name"
+    sortable_str.short_description = _(
+        "1.1 Configuration de l'entité administrative (commune, organisation)"
+    )
 
     def get_queryset(self, request):
         qs = (
@@ -730,12 +861,20 @@ class WorksObjectPropertyForm(forms.ModelForm):
             "integrator",
             "order",
             "input_type",
+            "services_to_notify",
             "choices",
             "line_number_for_textarea",
             "regex_pattern",
+            "file_download",
             "is_mandatory",
             "works_object_types",
         ]
+
+    def clean_file_download(self):
+        if self.cleaned_data["input_type"] == "file_download":
+            if not self.cleaned_data["file_download"]:
+                raise forms.ValidationError(_("This field is required."))
+        return self.cleaned_data["file_download"]
 
     class Media:
         js = ("js/admin/works_object_property.js",)
@@ -744,7 +883,15 @@ class WorksObjectPropertyForm(forms.ModelForm):
 class WorksObjectPropertyAdmin(
     IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdmin
 ):
-    list_display = ["__str__", "is_mandatory", "input_type"]
+    form = WorksObjectPropertyForm
+    list_display = [
+        "sortable_str",
+        "is_mandatory",
+        "name",
+        "input_type",
+        "placeholder",
+        "help_text",
+    ]
     list_filter = [
         "name",
         "input_type",
@@ -752,7 +899,12 @@ class WorksObjectPropertyAdmin(
     search_fields = [
         "name",
     ]
-    form = WorksObjectPropertyForm
+
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "name"
+    sortable_str.short_description = _("1.5 Configuration du champ")
 
     # Pass the request from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs):
@@ -767,6 +919,9 @@ class WorksObjectPropertyAdmin(
 
 
 class PermitAdministrativeEntityAdminForm(forms.ModelForm):
+    """ Form class to configure an administrative entity (commune, organisation)
+    """
+
     class Meta:
         model = models.PermitAdministrativeEntity
         fields = [
@@ -847,28 +1002,53 @@ class WorksObjectAdminForm(forms.ModelForm):
         }
 
 
-class WorksObjectAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+class WorksObjectAdmin(IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdmin):
+    form = WorksObjectAdminForm
     list_filter = [
         "name",
     ]
     search_fields = [
         "name",
     ]
-    form = WorksObjectAdminForm
+    list_display = [
+        "sortable_str",
+    ]
+
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "name"
+    sortable_str.short_description = _("1.3 Configuration de l'objet")
 
 
 class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
-    list_filter = [
-        "name",
-    ]
-    search_fields = [
-        "name",
-    ]
-    list_display = ["__str__", "expeditor_name", "expeditor_email", "ofs_id", "sites"]
+    change_form_template = "permits/admin/permit_administrative_entity_change.html"
     form = PermitAdministrativeEntityAdminForm
     inlines = [
         PermitWorkflowStatusInline,
     ]
+    list_filter = [
+        "name",
+    ]
+    search_fields = [
+        "name",
+    ]
+    list_display = [
+        "sortable_str",
+        "expeditor_name",
+        "expeditor_email",
+        "ofs_id",
+        "tags",
+        "sites",
+    ]
+
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "name"
+    sortable_str.short_description = (
+        "1.1 Configuration de l'entité administrative (commune, organisation)"
+    )
 
     def sites(self, instance):
         return "salut"
@@ -909,14 +1089,19 @@ class PermitRequestAmendPropertyForm(forms.ModelForm):
             "name",
             "is_mandatory",
             "is_visible_by_author",
+            "can_always_update",
             "works_object_types",
             "integrator",
         ]
 
 
 class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
-
-    list_display = ["sortable_str", "is_mandatory", "is_visible_by_author"]
+    list_display = [
+        "sortable_str",
+        "is_mandatory",
+        "is_visible_by_author",
+        "can_always_update",
+    ]
     search_fields = [
         "name",
     ]
@@ -945,7 +1130,12 @@ class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
 
 class PermitActorTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
-    list_display = ["__str__", "type", "works_type", "is_mandatory"]
+    list_display = [
+        "sortable_str",
+        "type",
+        "works_type",
+        "is_mandatory",
+    ]
     list_filter = [
         "works_type",
         "is_mandatory",
@@ -953,6 +1143,12 @@ class PermitActorTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     search_fields = [
         "name",
     ]
+
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "type"
+    sortable_str.short_description = _("1.6 Configuration du contact")
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "works_type":
@@ -962,8 +1158,28 @@ class PermitActorTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
+class WorksTypeAdminForm(forms.ModelForm):
+    class Meta:
+        model = models.WorksType
+        fields = "__all__"
+
+
 class WorksTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
-    pass
+    form = WorksTypeAdminForm
+    list_display = [
+        "sortable_str",
+        "meta_type",
+        "tags",
+    ]
+    search_fields = [
+        "id",
+    ]
+
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "name"
+    sortable_str.short_description = _("1.2 Configuration du type")
 
 
 class PermitRequestAdmin(admin.ModelAdmin):
@@ -1017,6 +1233,48 @@ class TemplateCustomizationAdmin(admin.ModelAdmin):
     has_background_image.admin_order_field = "background_image"
     has_background_image.short_description = "Image de fond"
 
+
+# AuthToken admin
+
+
+class TokenAdmin(BaseTokenAdmin):
+    list_display = [
+        "__str__",
+        "user",
+        "created",
+    ]
+    list_filter = [
+        "user",
+        "created",
+    ]
+    search_fields = [
+        "user",
+    ]
+
+    def get_queryset(self, request):
+        if request.user.is_superuser:
+            return TokenProxy.objects.all()
+        else:
+            return TokenProxy.objects.filter(user=request.user)
+
+    def has_add_permission(self, request):
+        if request.user.is_superuser:
+            return True
+        return False
+
+    def get_readonly_fields(self, request, obj=None):
+        if request.user.is_superuser:
+            return []
+        else:
+            return [
+                "user",
+                "key",
+                "created",
+            ]
+
+
+admin.site.unregister(TokenProxy)
+admin.site.register(TokenProxy, TokenAdmin)
 
 admin.site.register(models.PermitActorType, PermitActorTypeAdmin)
 admin.site.register(models.WorksType, WorksTypeAdmin)

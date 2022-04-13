@@ -9,12 +9,16 @@ from django.contrib.gis.geos import (
 from django.test import TestCase
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
+from datetime import datetime, timedelta
+from geomapshark import settings
 
 from permits import models
 
 from . import factories
 import urllib.parse
 import requests
+from constance import config
+from rest_framework.authtoken.models import Token
 
 
 class PermitRequestAPITestCase(TestCase):
@@ -118,15 +122,35 @@ class PermitRequestAPITestCase(TestCase):
             geom=GeometryCollection(MultiPoint(Point(0, 0), Point(1, 1))),
         )
 
+        ## IP and NEWTORK restrictions setup
+        config.IP_WHITELIST = "localhost,127.0.0.1"
+        config.NETWORK_WHITELIST = "172.16.0.0/12,192.168.0.0/16"
+
     def test_api_normal_user(self):
         self.client.login(username=self.normal_user.username, password="password")
         response = self.client.get(reverse("permits-list"), {})
         response_json = response.json()
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            response.json()["detail"],
+            response_json["detail"],
             "Vous n'avez pas la permission d'effectuer cette action.",
         )
+
+    def test_logout_next_action_if_redirect_uri_not_whitelisted(self):
+        config.LOGOUT_REDIRECT_HOSTNAME_WHITELIST = ""
+        self.client.login(username=self.admin_user.username, password="password")
+        redirect_uri = "http://testserver" + reverse("permit_author_create")
+        logout_page = reverse("logout") + "?next=" + redirect_uri
+        response = self.client.get(logout_page)
+        self.assertRedirects(response, expected_url=reverse("account_login"))
+
+    def test_logout_next_action_if_redirect_uri_is_whitelisted(self):
+        config.LOGOUT_REDIRECT_HOSTNAME_WHITELIST = "testserver"
+        self.client.login(username=self.admin_user.username, password="password")
+        redirect_uri = "http://testserver" + reverse("permit_author_create")
+        logout_page = reverse("logout") + "?next=" + redirect_uri
+        response = self.client.get(logout_page)
+        self.assertRedirects(response, expected_url=redirect_uri)
 
     def test_api_admin_user(self):
         self.client.login(username=self.admin_user.username, password="password")
@@ -154,33 +178,21 @@ class PermitRequestAPITestCase(TestCase):
         self.client.login(username=validator_user.username, password="password")
         response = self.client.get(reverse("permits-list"), {})
         response_json = response.json()
-        permit_requests_all = models.PermitRequest.objects.all().only("id")
-        permit_requests = permit_requests_all.filter(
-            status=models.PermitRequest.STATUS_AWAITING_VALIDATION
-        ).only("id")
-        permit_requests_ids = [perm.id for perm in permit_requests]
-        self.assertEqual(response.status_code, 200)
-        self.assertNotEqual(permit_requests.count(), permit_requests_all.count())
-        self.assertEqual(len(response_json["features"]), permit_requests.count())
-        for i, perm in enumerate(permit_requests):
-            self.assertIn(
-                response_json["features"][i]["properties"]["permit_request_id"],
-                permit_requests_ids,
-            )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response_json["detail"],
+            "Vous n'avez pas la permission d'effectuer cette action.",
+        )
 
-    def test_api_secretaire_user(self):
+    def test_api_secretariat_user(self):
         self.client.login(username=self.secretariat_user.username, password="password")
         response = self.client.get(reverse("permits-list"), {})
         response_json = response.json()
-        permit_requests = models.PermitRequest.objects.all().only("id")
-        permit_requests_ids = [perm.id for perm in permit_requests]
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response_json["features"]), permit_requests.count())
-        for i, perm in enumerate(permit_requests):
-            self.assertIn(
-                response_json["features"][i]["properties"]["permit_request_id"],
-                permit_requests_ids,
-            )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response_json["detail"],
+            "Vous n'avez pas la permission d'effectuer cette action.",
+        )
 
     def test_api_filtering_by_status(self):
         self.client.login(username=self.admin_user.username, password="password")
@@ -254,7 +266,7 @@ class PermitRequestAPITestCase(TestCase):
             )
 
     def test_api_bad_permit_id_type_parameter_raises_exception(self):
-        self.client.login(username=self.secretariat_user.username, password="password")
+        self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(
             reverse("permits-list"), {"permit_request_id": "bad_permit_id_type"}
         )
@@ -265,7 +277,7 @@ class PermitRequestAPITestCase(TestCase):
         )
 
     def test_api_bad_works_object_type_id_type_parameter_raises_exception(self):
-        self.client.login(username=self.secretariat_user.username, password="password")
+        self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(
             reverse("permits-list"),
             {"works_object_type": "bad_works_object_type_id_type"},
@@ -277,7 +289,7 @@ class PermitRequestAPITestCase(TestCase):
         )
 
     def test_api_bad_status_type_parameter_raises_exception(self):
-        self.client.login(username=self.secretariat_user.username, password="password")
+        self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(
             reverse("permits-list"), {"status": "bad_status_type"}
         )
@@ -288,7 +300,7 @@ class PermitRequestAPITestCase(TestCase):
         )
 
     def test_api_bad_status_choice_raises_exception(self):
-        self.client.login(username=self.secretariat_user.username, password="password")
+        self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(reverse("permits-list"), {"status": 25})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
@@ -390,5 +402,166 @@ class PermitRequestAPITestCase(TestCase):
             qgisserver_url, headers={"Accept": "application/pdf"}, stream=True
         )
         self.assertEqual(qgisserver_response.status_code, 200)
+
+    def test_api_is_accessible_with_token_authentication(self):
+        # Create token
+        token = Token.objects.create(user=self.admin_user)
+        # Set token in header
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + token.key)
+        response = self.client.get(reverse("permits-list"), {})
+        response_json = response.json()
+        permit_requests = models.PermitRequest.objects.all().only("id")
+        permit_requests_ids = [perm.id for perm in permit_requests]
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response_json["features"]), permit_requests.count())
+        for i, perm in enumerate(permit_requests):
+            self.assertIn(
+                response_json["features"][i]["properties"]["permit_request_id"],
+                permit_requests_ids,
+            )
+
+    def test_api_permits_details_is_accessible_with_credentials(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        response = self.client.get(reverse("permits_details-list"),)
+        self.assertEqual(response.status_code, 200)
+
+    def test_api_permits_details_is_not_accessible_with_token_authentication(self):
+        # Create token
+        token = Token.objects.create(user=self.admin_user)
+        # Set token in header
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + token.key)
+        response = self.client.get(reverse("permits_details-list"),)
+        self.assertEqual(response.status_code, 403)
+
+    def test_non_authorized_ip_raises_exception(self):
+        # login as admin
+        self.client.login(username=self.admin_user.username, password="password")
+        # check that login admin user is allowed to get data
+        response = self.client.get(reverse("permits-list"), {})
+        self.assertEqual(response.status_code, 200)
+        # Set only localhost allowed in constance settings
+        config.IP_WHITELIST = "127.0.0.1"
+        config.NETWORK_WHITELIST = ""
+        # Fake the client ip to something not allowed
+        response = self.client.get(
+            reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0"
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_authorized_ip_does_not_raise_exception(self):
+        # login as admin
+        self.client.login(username=self.admin_user.username, password="password")
+        # check that login admin user is allowed to get data
+        response = self.client.get(reverse("permits-list"), {})
+        self.assertEqual(response.status_code, 200)
+        # Set only localhost allowed in constance settings
+        config.IP_WHITELIST = "112.144.0.0"
+        config.NETWORK_WHITELIST = ""
+        # Fake the client ip to something not allowed
+        response = self.client.get(
+            reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0"
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_non_authorized_network_raises_exception(self):
+        # login as admin
+        self.client.login(username=self.admin_user.username, password="password")
+        # check that login admin user is allowed to get data
+        response = self.client.get(reverse("permits-list"), {})
+        self.assertEqual(response.status_code, 200)
+        # Set only localhost allowed in constance settings
+        config.IP_WHITELIST = ""
+        config.NETWORK_WHITELIST = "172.16.0.0/12,192.168.0.0/16"
+        # Fake the client ip to something not allowed
+        response = self.client.get(
+            reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0"
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_authorized_network_does_not_raise_exception(self):
+        # login as admin
+        self.client.login(username=self.admin_user.username, password="password")
+        # check that login admin user is allowed to get data
+        response = self.client.get(reverse("permits-list"), {})
+        self.assertEqual(response.status_code, 200)
+        # Set only localhost allowed in constance settings
+        config.IP_WHITELIST = ""
+        config.NETWORK_WHITELIST = "172.16.0.0/12,192.168.0.0/16"
+        # Fake the client ip to something not allowed
+        response = self.client.get(
+            reverse("permits-list"), {}, REMOTE_ADDR="172.19.0.0"
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_search_api_found(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        author_permit_request = models.PermitRequest.objects.first().author
+        response = self.client.get(
+            reverse("search-list"), {"search": author_permit_request}
+        )
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertNotEqual(response_json, [])
+
+    def test_search_api_nothing_found_for_not_logged(self):
+        author_permit_request = models.PermitRequest.objects.first().author
+        response = self.client.get(
+            reverse("search-list"), {"search": author_permit_request}
+        )
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response_json, [])
+
+    def test_search_api_nothing_found_for_not_authorized(self):
+        user_wo_permit_request = factories.UserFactory()
+        self.client.login(username=user_wo_permit_request.username, password="password")
+        author_permit_request = models.PermitRequest.objects.first().author
+        response = self.client.get(
+            reverse("search-list"), {"search": author_permit_request}
+        )
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response_json, [])
+
+    def test_search_api_nothing_found_for_wrong_string(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        response = self.client.get(
+            reverse("search-list"), {"search": "InexistantStringReturningNoResult"}
+        )
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response_json, [])
+
+    def test_current_user_returns_user_informations(self):
+        self.client.login(username=self.admin_user.username, password="password")
+        response = self.client.get(reverse("current_user-list"), {})
+        response_json = response.json()
+        login_datetime = models.User.objects.get(
+            username=self.admin_user.username
+        ).last_login
+        expiration_datetime = login_datetime + timedelta(
+            seconds=settings.SESSION_COOKIE_AGE
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response_json[0],
+            {
+                "is_logged": True,
+                "username": self.admin_user.username,
+                "email": self.admin_user.email,
+                "login_datetime": login_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+                "expiration_datetime": expiration_datetime.strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                ),
+            },
+        )
+
+    def test_not_logged_returns_nothing_on_current_user(self):
+        response = self.client.get(reverse("current_user-list"), {})
+        response_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response_json[0], {"is_logged": False,},
+        )
 
     # TODO: test also the permits:permit_request_print route

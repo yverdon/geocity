@@ -137,7 +137,7 @@ class Command(BaseCommand):
             geom="SRID=2056;MultiPolygon (((2538391 1176432, 2538027 1178201, 2538485 1178804, 2537777 1179199, 2536748 1178450, 2536123 1179647, 2537382 1180593, 2537143 1181623, 2538651 1183257, 2540368 1183236, 2541252 1181093, 2541460 1180458, 2540160 1179543, 2540097 1178877, 2538391 1176432)))",
         )
 
-        administrative_entity_yverdon.tags.set("yverdon")
+        administrative_entity_yverdon.tags.add("yverdon")
         administrative_entity_yverdon.sites.add(Site.objects.get(name="yverdon"))
         administrative_entity_yverdon.sites.add(Site.objects.get(name="localhost"))
 
@@ -149,7 +149,7 @@ class Command(BaseCommand):
             geom="SRID=2056;MultiPolygon (((2543281 1184952, 2542053 1186731, 2541148 1186887, 2538214 1186367, 2537195 1184609, 2537153 1183330, 2537757 1182653, 2539317 1182404, 2543281 1184952)))",
         )
 
-        administrative_entity_grandson.tags.set("grandson")
+        administrative_entity_grandson.tags.add("grandson")
         administrative_entity_grandson.sites.add(Site.objects.get(name="grandson"))
         administrative_entity_grandson.sites.add(Site.objects.get(name="localhost"))
 
@@ -161,7 +161,7 @@ class Command(BaseCommand):
             geom="SRID=2056;MultiPolygon (((2533045 1151566, 2533789 1154840, 2538236 1155380, 2541064 1154989, 2541790 1157408, 2540934 1160087, 2543074 1161259, 2546553 1159715, 2545399 1156329, 2542757 1155361, 2542348 1153798, 2542497 1152347, 2540692 1150617, 2535855 1152105, 2533045 1151566)),((2529938 1157110, 2529789 1160329, 2532245 1161557, 2532580 1160273, 2530831 1158934, 2530757 1157259, 2529938 1157110)))",
         )
 
-        administrative_entity_lausanne.tags.set("lausanne")
+        administrative_entity_lausanne.tags.add("lausanne")
         administrative_entity_lausanne.sites.add(Site.objects.get(name="lausanne"))
         administrative_entity_lausanne.sites.add(Site.objects.get(name="localhost"))
 
@@ -173,7 +173,7 @@ class Command(BaseCommand):
             geom="SRID=2056;MultiPolygon (((2553381 1146430, 2553679 1145798, 2553660 1145500, 2554777 1145296, 2555502 1145965, 2554870 1146617, 2555335 1147398, 2555037 1147417, 2554311 1146803, 2553418 1146840, 2553269 1146524, 2553381 1146430)))",
         )
 
-        administrative_entity_vevey.tags.set("vevey")
+        administrative_entity_vevey.tags.add("vevey")
         administrative_entity_vevey.sites.add(Site.objects.get(name="vevey"))
         administrative_entity_vevey.sites.add(Site.objects.get(name="localhost"))
 
@@ -489,19 +489,19 @@ class Command(BaseCommand):
         administrative_entity_yverdon = models.PermitAdministrativeEntity.objects.get(
             name="Démo Yverdon",
         )
-        administrative_entity_yverdon.tags.set("yverdon")
+        administrative_entity_yverdon.tags.add("yverdon")
         administrative_entity_grandson = models.PermitAdministrativeEntity.objects.get(
             name="Démo Grandson",
         )
-        administrative_entity_grandson.tags.set("grandson")
+        administrative_entity_grandson.tags.add("grandson")
         administrative_entity_lausanne = models.PermitAdministrativeEntity.objects.get(
             name="Démo Lausanne",
         )
-        administrative_entity_lausanne.tags.set("lausanne")
+        administrative_entity_lausanne.tags.add("lausanne")
         administrative_entity_vevey = models.PermitAdministrativeEntity.objects.get(
             name="Démo Vevey",
         )
-        administrative_entity_vevey.tags.set("vevey")
+        administrative_entity_vevey.tags.add("vevey")
 
         additional_information_text = """
         Texte expliquant la ou les conditions particulière(s) s'appliquant à cette demande.
@@ -511,7 +511,7 @@ class Command(BaseCommand):
 
         for works_type, objs in works_types:
             works_type_obj = models.WorksType.objects.create(name=works_type)
-            works_type_obj.tags.set(unaccent(works_type))
+            works_type_obj.tags.add(unaccent(works_type))
             models.PermitActorType.objects.create(
                 type=models.ACTOR_TYPE_OTHER,
                 works_type=works_type_obj,

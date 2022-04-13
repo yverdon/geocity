@@ -90,7 +90,6 @@ TAGGIT_TAGS_FROM_STRING = "permits.utils.comma_splitter"
 
 # 2FA activation
 ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
-LOCAL_IP_WHITELIST = os.getenv("LOCAL_IP_WHITELIST")
 
 # Allauth requirement
 # SITE_ID = 1
@@ -122,6 +121,7 @@ INSTALLED_APPS = [
     "django_filters",
     "rest_framework",
     "rest_framework_gis",
+    "rest_framework.authtoken",
     "bootstrap4",
     "bootstrap_datepicker_plus",
     "django_tables2",
@@ -131,6 +131,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "django_cron",
     "axes",
+    "captcha",
 ]
 
 if ENABLE_2FA:
@@ -178,6 +179,8 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "MAX_FEATURE_NUMBER_FOR_QGISSERVER",
         "GEOCALENDAR_URL",
         "ENABLE_GEOCALENDAR",
+        "ANONYMOUS_REQUEST_SENT_TITLE",
+        "ANONYMOUS_REQUEST_SENT_BODY",
     ),
     "Theme Options": (
         "BACKGROUND_COLOR",
@@ -189,6 +192,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "TABLE_COLOR",
     ),
     "Step Options": (
+        "ANONYMOUS_CAPTCHA_STEP",
         "LOCATION_STEP",
         "WORKS_TYPES_STEP",
         "WORKS_OBJECTS_STEP",
@@ -199,6 +203,11 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "APPENDICES_STEP",
         "ACTORS_STEP",
         "SUBMIT_STEP",
+    ),
+    "API settings": (
+        "IP_WHITELIST",
+        "NETWORK_WHITELIST",
+        "LOGOUT_REDIRECT_HOSTNAME_WHITELIST",
     ),
 }
 
@@ -239,6 +248,13 @@ CONSTANCE_CONFIG = {
         "Définit si l'application du calendrier cartographique est utilisé ou pas (doit dans tous les cas être installée à part)",
         bool,
     ),
+    "ANONYMOUS_CAPTCHA_STEP": ("Votre demande anonyme", "", str),
+    "ANONYMOUS_REQUEST_SENT_TITLE": ("Merci pour votre requête", "", str),
+    "ANONYMOUS_REQUEST_SENT_BODY": (
+        "Nous avons bien reçu votre requête anonyme.",
+        "",
+        str,
+    ),
     "LOCATION_STEP": ("Sélectionnez l'entité", "", str),
     "WORKS_TYPES_STEP": ("Sélectionnez le ou les type(s)", "", str),
     "WORKS_OBJECTS_STEP": ("Sélectionnez les objets", "", str),
@@ -271,6 +287,20 @@ CONSTANCE_CONFIG = {
     "TEXT_COLOR": ("#000000", "Couleur du texte", str,),
     "TITLE_COLOR": ("#000000", "Couleur du titre", str,),
     "TABLE_COLOR": ("#212529", "Couleur du texte dans les tableaux", str,),
+    "IP_WHITELIST": (
+        "172.16.0.1,172.17.0.1,127.0.0.1,localhost",
+        "IP autorisées pour l'utilisation de l'API complète (/rest/permits), séparées par des ','",
+        str,
+    ),
+    "NETWORK_WHITELIST": (
+        "172.16.0.0/12,192.168.0.0/16",
+        "Réseaux  autorisés pour l'utilisation de l'API complète (/rest/permits), séparés par des ','",
+        str,
+    ),
+    "LOGOUT_REDIRECT_HOSTNAME_WHITELIST": (
+        "localhost,geocity.ch",
+        "Domaines autorisés à la redirection après logout",
+    ),
 }
 
 TEMPLATES = [
@@ -422,13 +452,33 @@ OL_MAP_HEIGHT = os.getenv("OL_MAP_HEIGHT")
 
 GRAPPELLI_ADMIN_TITLE = "Interface d'administration Geocity"
 
+# Django REST Framework
+DRF_ALLOW_TOKENAUTHENTICATION = (
+    os.getenv("DRF_ALLOW_TOKENAUTHENTICATION", "false").lower() == "true"
+)
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
         "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_PAGINATION_CLASS": "django_wfs3.pagination.CustomPagination",
+    "DEFAULT_THROTTLE_CLASSES": ["rest_framework.throttling.ScopedRateThrottle",],
+    "DEFAULT_THROTTLE_RATES": {
+        # Full API for permits
+        "permits": os.getenv("DRF_THROTTLE_RATE_PERMITS_API"),
+        # Full API for permits_details
+        "permits_details": os.getenv("DRF_THROTTLE_RATE_PERMITS_DETAILS_API"),
+        # Limited pulic API used mainly by Geocalendar front app
+        "events": os.getenv("DRF_THROTTLE_RATE_EVENTS_API"),
+        # Full API for search
+        "search": os.getenv("DRF_THROTTLE_RATE_SEARCH_API"),
+    },
 }
+# Allow TokenAuthentication to the API.
+if DRF_ALLOW_TOKENAUTHENTICATION:
+    REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] += (
+        "rest_framework.authentication.TokenAuthentication",
+    )
 
 WFS3_TITLE = "OGC API Features - Geocity"
 WFS3_DESCRIPTION = "Point d'accès OGC API Features aux données Geocity."
@@ -438,3 +488,12 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 CRON_CLASSES = [
     "permits.cron.PermitRequestExpirationReminder",
 ]
+
+CAPTCHA_IMAGE_SIZE = (150, 50)
+CAPTCHA_FONT_SIZE = 26
+TEMPORARY_USER_PREFIX = "temp_user_"
+TEMPORARY_USER_ZIPCODE = 9998
+ANONYMOUS_USER_ZIPCODE = 9999
+ANONYMOUS_USER_PREFIX = "anonymous_user_"
+ANONYMOUS_NAME = "Anonyme"
+PENDING_ANONYMOUS_REQUEST_MAX_AGE = 24

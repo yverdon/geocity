@@ -7,7 +7,13 @@ from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.sites.models import Site
 from django.contrib.gis.db import models as geomodels
-from django.db.models import JSONField, UniqueConstraint
+from django.db.models import (
+    JSONField,
+    UniqueConstraint,
+    F,
+    ExpressionWrapper,
+    BooleanField,
+)
 from django.core.exceptions import ValidationError
 from django.core.validators import (
     FileExtensionValidator,
@@ -56,9 +62,17 @@ ACTOR_TYPE_CHOICES = (
 )
 
 # Input types
-INPUT_TYPE_LIST_SINGLE = "list_single"
+INPUT_TYPE_ADDRESS = "address"
+INPUT_TYPE_CHECKBOX = "checkbox"
+INPUT_TYPE_DATE = "date"
+INPUT_TYPE_FILE = "file"
+INPUT_TYPE_FILE_DOWNLOAD = "file_download"
 INPUT_TYPE_LIST_MULTIPLE = "list_multiple"
+INPUT_TYPE_LIST_SINGLE = "list_single"
+INPUT_TYPE_NUMBER = "number"
 INPUT_TYPE_REGEX = "regex"
+INPUT_TYPE_TEXT = "text"
+INPUT_TYPE_TITLE = "title"
 
 # Actions
 ACTION_AMEND = "amend"
@@ -165,6 +179,14 @@ class PermitAdministrativeEntityQuerySet(models.QuerySet):
         return self.filter(tags__name__in=[tag.lower() for tag in tags])
 
 
+class PermitAdministrativeEntityManager(models.Manager):
+    def get_queryset(self):
+        return PermitAdministrativeEntityQuerySet(self.model)
+
+    def public(self):
+        return self.get_queryset().filter(anonymous_user__isnull=False)
+
+
 class PermitAdministrativeEntity(models.Model):
     name = models.CharField(_("name"), max_length=128)
     ofs_id = models.PositiveIntegerField(_("Numéro OFS"))
@@ -202,7 +224,7 @@ class PermitAdministrativeEntity(models.Model):
         verbose_name="Mots-clés",
         help_text="Mots clefs sans espaces, séparés par des virgules permettant de filtrer les entités par l'url: https://geocity.ch/?entityfilter=yverdon",
     )
-    objects = PermitAdministrativeEntityQuerySet.as_manager()
+    objects = PermitAdministrativeEntityManager()
     expeditor_name = models.CharField(
         _("Nom de l'expéditeur des notifications"), max_length=255, blank=True
     )
@@ -232,6 +254,40 @@ class PermitAdministrativeEntity(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class PermitAuthorManager(models.Manager):
+    def create_temporary_user(self, entity):
+        # Multiple temp users might exist at the same time
+        last_temp_user = self.get_queryset().filter(is_temporary=True).last()
+        if last_temp_user:
+            nb = int(last_temp_user.user.username.split("_")[2]) + 1
+        else:
+            nb = 0
+
+        username = "%s%s" % (settings.TEMPORARY_USER_PREFIX, nb)
+        email = "%s@%s" % (username, settings.SITE_DOMAIN)
+        zipcode = settings.TEMPORARY_USER_ZIPCODE
+
+        temp_user = User.objects.create_user(
+            username, email, password=None, first_name="Temporaire", last_name="Anonyme"
+        )
+
+        new_temp_author = super().create(user=temp_user, zipcode=zipcode,)
+
+        return new_temp_author
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .annotate(
+                is_temporary=ExpressionWrapper(
+                    Q(user__username__startswith=settings.TEMPORARY_USER_PREFIX),
+                    output_field=BooleanField(),
+                )
+            )
+        )
 
 
 class PermitAuthor(models.Model):
@@ -282,6 +338,49 @@ class PermitAuthor(models.Model):
     notify_per_email = models.BooleanField(_("Me notifier par e-mail"), default=True)
     user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
     history = HistoricalRecords()
+
+    administrative_entity = models.OneToOneField(
+        "PermitAdministrativeEntity",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="anonymous_user",
+        verbose_name=_("entité administrative"),
+    )
+
+    objects = PermitAuthorManager()
+
+    def clean(self):
+        if self.user and self.user.is_active and self.administrative_entity is not None:
+            raise ValidationError(
+                _(
+                    "Seul·e un·e auteur désactivé·e peut être relié directement "
+                    "à une entité administrative, et ainsi être considéré·e "
+                    "auteur·e anonyme de l'entité."
+                )
+            )
+
+    @cached_property
+    def is_anonymous(self):
+        """
+        PermitAuthor unique per AdministrativeEntity.
+        Never logged in. Used to save anonymous requests.
+        """
+        return (
+            self.user
+            and not self.user.is_active
+            and self.administrative_entity is not None
+        )
+
+    @cached_property
+    def is_temporary(self):
+        """
+        PermitAuthor created when starting an anonymous permit request,
+        then deleted at the submission (replaced by an anonymous user).
+        """
+        return self.user and self.user.username.startswith(
+            settings.TEMPORARY_USER_PREFIX
+        )
 
     class Meta:
         verbose_name = _("3.2 Consultation de l'auteur")
@@ -433,6 +532,14 @@ class PermitRequest(models.Model):
     status = models.PositiveSmallIntegerField(
         _("état"), choices=STATUS_CHOICES, default=STATUS_DRAFT
     )
+    shortname = models.CharField(
+        _("nom court de la demande, de l'événement, etc."),
+        max_length=32,
+        help_text=_(
+            "Sera affiché dans le calendrier si la demande est rendue tout publique, ex: Brandons (max. 32 caractères)"
+        ),
+        blank=True,
+    )
     created_at = models.DateTimeField(_("date de création"), default=timezone.now)
     validated_at = models.DateTimeField(_("date de validation"), null=True)
     works_object_types = models.ManyToManyField(
@@ -514,6 +621,18 @@ class PermitRequest(models.Model):
     def can_be_amended(self):
         return self.status in self.AMENDABLE_STATUSES
 
+    def get_amend_property_list_always_amendable(self):
+        amend_properties = []
+        qs = PermitRequestAmendProperty.objects.filter(
+            Q(
+                works_object_types__administrative_entities__name=self.administrative_entity
+            )
+            & Q(can_always_update=True)
+        ).distinct()
+        for object in qs:
+            amend_properties.append(object.name)
+        return amend_properties
+
     def can_be_sent_for_validation(self):
         """
         This check Enables/disables the send for validation form after the permit status
@@ -528,16 +647,22 @@ class PermitRequest(models.Model):
     def can_be_validated(self):
         return self.status in {self.STATUS_AWAITING_VALIDATION, self.STATUS_PROCESSING}
 
+    def works_objects_list(self):
+        return [
+            f"{item.works_object.name} ({item.works_type.name})"
+            for item in self.works_object_types.all()
+        ]
+
     def works_objects_html(self):
         """
         Return the works objects as a string, separated by <br> characters.
         """
         return format_html(
-            "<br>".join(
-                escape(f"{item.works_object.name} ({item.works_type.name})")
-                for item in self.works_object_types.all()
-            )
+            "<br>".join([escape(wo) for wo in self.works_objects_list()])
         )
+
+    def works_objects_str(self):
+        return " / ".join(self.works_objects_list())
 
     def get_pending_validations(self):
         return self.validations.filter(
@@ -732,6 +857,11 @@ class WorksType(models.Model):
         return self.name
 
 
+class AnonymousWorksObjectTypeManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_anonymous=True)
+
+
 class WorksObjectType(models.Model):
     """
     Represents a works object for a specific works type.
@@ -790,6 +920,9 @@ class WorksObjectType(models.Model):
         _("Document de validation obligatoire"), default=True
     )
     is_public = models.BooleanField(_("Public"), default=False)
+    is_anonymous = models.BooleanField(
+        _("Demandes anonymes uniquement"), default=False,
+    )
     notify_services = models.BooleanField(_("Notifier les services"), default=False)
     services_to_notify = models.TextField(
         _("Emails des services à notifier"),
@@ -810,6 +943,12 @@ class WorksObjectType(models.Model):
     days_before_reminder = models.IntegerField(
         _("Délai de rappel (jours)"), blank=True, null=True
     )
+
+    # All objects
+    objects = models.Manager()
+
+    # Only anonymous objects
+    anonymous_objects = AnonymousWorksObjectTypeManager()
 
     class Meta:
         verbose_name = _("1.4 Configuration type-objet-entité administrative")
@@ -854,12 +993,16 @@ class WorksObject(models.Model):
         related_name="works_objects",
         verbose_name=_("types"),
     )
+    order = models.PositiveIntegerField(
+        _("ordre"), default=0, blank=False, null=False, db_index=True
+    )
     wms_layers = models.URLField(_("Couche(s) WMS"), blank=True, max_length=1024)
     wms_layers_order = models.PositiveIntegerField(
         _("Ordre de(s) couche(s)"), default=1
     )
 
     class Meta:
+        ordering = ["order"]
         verbose_name = _("1.3 Configuration de l'objet")
         verbose_name_plural = _("1.3 Configuration des objets")
 
@@ -868,16 +1011,18 @@ class WorksObject(models.Model):
 
 
 class WorksObjectProperty(models.Model):
-    INPUT_TYPE_TEXT = "text"
-    INPUT_TYPE_CHECKBOX = "checkbox"
-    INPUT_TYPE_NUMBER = "number"
-    INPUT_TYPE_FILE = "file"
-    INPUT_TYPE_ADDRESS = "address"
-    INPUT_TYPE_DATE = "date"
+    INPUT_TYPE_TEXT = INPUT_TYPE_TEXT
+    INPUT_TYPE_CHECKBOX = INPUT_TYPE_CHECKBOX
+    INPUT_TYPE_NUMBER = INPUT_TYPE_NUMBER
+    INPUT_TYPE_FILE = INPUT_TYPE_FILE
+    INPUT_TYPE_FILE_DOWNLOAD = INPUT_TYPE_FILE_DOWNLOAD
+    INPUT_TYPE_ADDRESS = INPUT_TYPE_ADDRESS
+    INPUT_TYPE_DATE = INPUT_TYPE_DATE
     INPUT_TYPE_REGEX = INPUT_TYPE_REGEX
     INPUT_TYPE_LIST_SINGLE = INPUT_TYPE_LIST_SINGLE
     INPUT_TYPE_LIST_MULTIPLE = INPUT_TYPE_LIST_MULTIPLE
-    INPUT_TYPE_TITLE = "title"
+    INPUT_TYPE_TITLE = INPUT_TYPE_TITLE
+    # The choices are sorted according to their values
     INPUT_TYPE_CHOICES = (
         (INPUT_TYPE_ADDRESS, _("Adresse")),
         (INPUT_TYPE_CHECKBOX, _("Case à cocher")),
@@ -885,6 +1030,7 @@ class WorksObjectProperty(models.Model):
         (INPUT_TYPE_LIST_SINGLE, _("Choix simple")),
         (INPUT_TYPE_DATE, _("Date")),
         (INPUT_TYPE_FILE, _("Fichier")),
+        (INPUT_TYPE_FILE_DOWNLOAD, _("Fichier (à télécharger)")),
         (INPUT_TYPE_NUMBER, _("Nombre")),
         (INPUT_TYPE_TEXT, _("Texte")),
         (INPUT_TYPE_REGEX, _("Texte (regex)")),
@@ -930,6 +1076,17 @@ class WorksObjectProperty(models.Model):
         max_length=255,
         blank=True,
         help_text=_("Exemple: ^[0-9]{4}$"),
+    )
+    services_to_notify = models.TextField(
+        _("Emails des services à notifier"),
+        blank=True,
+        help_text='Veuillez séparer les emails par une virgule ","',
+    )
+    file_download = fields.WorkObjectTypeFileField(
+        _("Fichier"),
+        validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
+        blank=True,
+        upload_to="wot_files",
     )
 
     class Meta(object):
@@ -1149,6 +1306,9 @@ class PermitRequestAmendProperty(models.Model):
     is_visible_by_author = models.BooleanField(
         _("Visible par l'auteur de la demande"), default=True
     )
+    can_always_update = models.BooleanField(
+        _("Editable même après classement de la demande"), default=False
+    )
     works_object_types = models.ManyToManyField(
         WorksObjectType, verbose_name=_("objets"), related_name="amend_properties",
     )
@@ -1195,7 +1355,9 @@ class PermitRequestAmendPropertyValue(models.Model):
 
 class QgisProject(models.Model):
     qgis_project_file = fields.AdministrativeEntityFileField(
-        _("Fichier QGIS '*.qgs'"), upload_to="qgis_templates",
+        _("Projet QGIS '*.qgs'"),
+        validators=[FileExtensionValidator(allowed_extensions=["qgs"])],
+        upload_to="qgis_templates",
     )
     qgis_print_template_name = models.CharField(
         _("Nom du template d'impression QGIS"), max_length=150,
