@@ -140,6 +140,7 @@ def progress_bar_context(request, permit_request, current_step_type):
 
 
 @method_decorator(login_required, name="dispatch")
+@method_decorator(permanent_user_required, name="dispatch")
 @method_decorator(check_mandatory_2FA, name="dispatch")
 class PermitRequestDetailView(View):
 
@@ -1047,6 +1048,7 @@ def permit_request_properties(request, permit_request_id):
 
 @redirect_bad_status_to_detail
 @login_required
+@permanent_user_required
 @check_mandatory_2FA
 def permit_request_prolongation(request, permit_request_id):
     """
@@ -1533,6 +1535,7 @@ def permit_request_submit_confirmed(request, permit_request_id):
 
 @redirect_bad_status_to_detail
 @login_required
+@permanent_user_required
 @check_mandatory_2FA
 def permit_request_delete(request, permit_request_id):
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
@@ -1652,6 +1655,8 @@ def permit_request_classify(request, permit_request_id, approve):
     )
 
 
+@login_required
+@permanent_user_required
 def permit_request_file_download(request, path):
     """
     Securely download the permit request file at the given `path`. The path must start with the permit request id, such
@@ -1668,6 +1673,7 @@ def permit_request_file_download(request, path):
     return services.download_file(path)
 
 
+@login_required
 def works_object_property_file_download(request, path):
     """
     Download the wot file at the given `path` as an attachment.
@@ -1702,20 +1708,6 @@ def genericauthorview(request, pk):
         form.fields[field].disabled = True
 
     return render(request, "permits/permit_request_author.html", {"form": form})
-
-
-@login_required
-@permanent_user_required
-@check_mandatory_2FA
-def administrative_infos(request):
-
-    administrative_entities = models.PermitAdministrativeEntity.objects.all()
-
-    return render(
-        request,
-        "permits/administrative_infos.html",
-        {"administrative_entities": administrative_entities},
-    )
 
 
 @login_required

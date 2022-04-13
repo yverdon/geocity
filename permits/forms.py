@@ -586,14 +586,15 @@ class NewDjangoAuthUserForm(UserCreationForm):
 
         for reserved_usernames in (
             settings.TEMPORARY_USER_PREFIX,
-            settings.ANONYMOUS_USER_PREFIX
+            settings.ANONYMOUS_USER_PREFIX,
         ):
             if cleaned_data["username"].startswith(reserved_usernames):
                 raise ValidationError(
                     {
                         "username": _(
                             "Le nom d'utilisat·eur·rice ne peut pas commencer par %s"
-                        ) % reserved_usernames
+                        )
+                        % reserved_usernames
                     }
                 )
 
