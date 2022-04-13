@@ -268,7 +268,7 @@ class PermitAuthorManager(models.Manager):
         zipcode = settings.TEMPORARY_USER_ZIPCODE
 
         temp_user = User.objects.create_user(
-            username, email, password=None, first_name="Anonyme", last_name="Anonyme"
+            username, email, password=None, first_name="Temporaire", last_name="Anonyme"
         )
 
         new_temp_author = super().create(user=temp_user, zipcode=zipcode,)
@@ -352,8 +352,9 @@ class PermitAuthor(models.Model):
         if self.user and self.user.is_active and self.administrative_entity is not None:
             raise ValidationError(
                 _(
-                    "Only inactive PermitAuthor can have a related administrative "
-                    "entity, and be considered as anonymous."
+                    "Seul·e un·e auteur désactivé·e peut être relié directement "
+                    "à une entité administrative, et ainsi être considéré·e "
+                    "auteur·e anonyme de l'entité."
                 )
             )
 

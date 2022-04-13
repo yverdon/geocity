@@ -12,7 +12,7 @@ def _create_anonymous_user_for_entity(entity):
     try:
         entity.anonymous_user
     except ObjectDoesNotExist:
-        username = "anonymous_user_%s" % entity.pk
+        username = "%s%s" % (settings.ANONYMOUS_USER_PREFIX, entity.pk)
         first_name = "Anonymous user"
         last_name = entity.name
 
