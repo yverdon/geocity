@@ -1567,7 +1567,11 @@ def get_wot_properties(value, api=False):
         # Flat view is used in the api for geocalandar, the WOT shows only the works_object__name and not the type
         if api:
             wot_properties = list()
-            permit_request = models.PermitRequest.objects.get(pk=1)
+            try:
+                permit_request = models.PermitRequest.objects.all().first()
+            except models.PermitRequest.DoesNotExist:
+                permit_request = None
+
             for prop in wot_props:
                 # List of a lost, to split wot in objects
                 if property:
@@ -1584,7 +1588,10 @@ def get_wot_properties(value, api=False):
                         prop_i["works_object_type_id"] == prop["works_object_type_id"]
                         and prop_i["properties__property__name"]
                     ):
-                        if prop_i["properties__property__input_type"] == "file":
+                        if (
+                            prop_i["properties__property__input_type"] == "file"
+                            and permit_request
+                        ):
 
                             # Reconstituate download link if it's a file
                             property_object = models.WorksObjectPropertyValue.objects.get(

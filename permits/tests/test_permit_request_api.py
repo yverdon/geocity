@@ -406,7 +406,6 @@ class PermitRequestAPITestCase(TestCase):
 
     def test_api_permits_details_is_accessible_with_credentials(self):
         # Need PermitRequest to create absolut_url in api for file type
-        factories.PermitRequestFactory()
         self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(reverse("permits_details-list"),)
         self.assertEqual(response.status_code, 200)
