@@ -1600,42 +1600,56 @@ def check_request_comes_from_internal_qgisserver(request):
 
 
 def get_wot_properties(value, api=False):
+    """
+    Return wot properties in a list for the api, in a dict for backend
+    """
     obj = value.all()
     wot_props = obj.values(
         "properties__property__name",
+        "properties__property__input_type",
         "properties__value__val",
         "works_object_type_id",
         "works_object_type__works_object__name",
         "works_object_type__works_type__name",
     )
-    list_wot_properties = list()
-    wot_properties = list()
 
     if wot_props:
         # Flat view is used in the api for geocalandar, the WOT shows only the works_object__name and not the type
         if api:
+            wot_properties = list()
+            property = list()
             for prop in wot_props:
-                if list_wot_properties:
-                    wot_properties.append(list_wot_properties)
-                    list_wot_properties = []
+                # List of a lost, to split wot in objects
+                if property:
+                    wot_properties.append(property)
+                    property = []
 
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
-                list_wot_properties.append(
-                    {"key": "Object", "value": wot, "type": "text",}
+                # WOT
+                property.append(
+                    {"key": "work_object_type", "value": wot, "type": "text",}
                 )
                 for prop_i in wot_props:
                     if (
                         prop_i["works_object_type_id"] == prop["works_object_type_id"]
                         and prop_i["properties__property__name"]
                     ):
-                        list_wot_properties.append(
+                        # Reconstituate download link if it's a file
+                        if prop_i["properties__property__input_type"] == "file":
+                            prop_i["properties__value__val"] = prop_i[
+                                "properties__value__val"
+                            ]
+
+                        # Properties of WOT
+                        property.append(
                             {
-                                "key": f'{prop_i["properties__property__name"]} ({wot})',
+                                "key": prop_i["properties__property__name"],
                                 "value": prop_i["properties__value__val"],
-                                "type": None,
+                                "type": prop_i["properties__property__input_type"],
                             }
                         )
         else:
+            wot_properties = dict()
             for prop in wot_props:
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
                 wot_properties[wot] = {
