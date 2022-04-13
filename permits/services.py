@@ -1559,6 +1559,7 @@ def get_wot_properties(value, api=False):
         "works_object_type__works_object__name",
         "works_object_type__works_type__name",
     )
+    permit_request = models.PermitRequest.objects.get(pk=1)
 
     if wot_props:
         # Flat view is used in the api for geocalandar, the WOT shows only the works_object__name and not the type
@@ -1583,9 +1584,13 @@ def get_wot_properties(value, api=False):
                     ):
                         # Reconstituate download link if it's a file
                         if prop_i["properties__property__input_type"] == "file":
-                            prop_i["properties__value__val"] = prop_i[
-                                "properties__value__val"
-                            ]
+                            property_object = models.WorksObjectPropertyValue.objects.get(
+                                property__name=prop_i["properties__property__name"]
+                            )
+                            # attendu : WorksObjectPropertyValue
+                            url = get_property_value(property_object).url
+                            absolute_url = permit_request.get_absolute_url(url)
+                            prop_i["properties__value__val"] = absolute_url
 
                         # Properties of WOT
                         property.append(
@@ -1595,6 +1600,7 @@ def get_wot_properties(value, api=False):
                                 "type": prop_i["properties__property__input_type"],
                             }
                         )
+
         else:
             wot_properties = dict()
             for prop in wot_props:
