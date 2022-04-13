@@ -61,7 +61,11 @@ class DepartmentPermitRequestFilterSet(BasePermitRequestFilterSet):
         lookup_expr="icontains", label=_("Auteur de la demande"),
     )
     works_object_types__works_object = django_filters.filters.ModelChoiceFilter(
-        queryset=models.WorksObject.objects.order_by("name"),
+        queryset=models.WorksObject.objects.filter(
+            works_object_types__permit_requests__isnull=False
+        )
+        .distinct()
+        .order_by("name"),
         label=_("Objet de la demande"),
     )
     works_object_types__works_type = django_filters.filters.ModelChoiceFilter(
@@ -70,4 +74,15 @@ class DepartmentPermitRequestFilterSet(BasePermitRequestFilterSet):
 
     class Meta:
         model = models.PermitRequest
-        fields = ["status"]
+        # fields = ["status"]
+        fields = [
+            "id",
+            "status",
+            "administrative_entity",
+            "works_object_types__works_type",
+            "works_object_types__works_object",
+            "created_at",
+            "starts_at_min",
+            "ends_at_max",
+            "author__user__last_name",
+        ]
