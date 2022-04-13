@@ -74,7 +74,6 @@ class DepartmentPermitRequestFilterSet(BasePermitRequestFilterSet):
 
     class Meta:
         model = models.PermitRequest
-        # fields = ["status"]
         fields = [
             "id",
             "status",
