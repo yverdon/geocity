@@ -360,6 +360,7 @@ def get_property_value(object_property_value):
         == models.WorksObjectProperty.INPUT_TYPE_FILE
     ):
         private_storage = fields.PrivateFileSystemStorage()
+        # TODO: handle missing files! Database pointing empty files should be removed
         try:
             f = private_storage.open(value)
             # The `url` attribute of the file is used to detect if there was already a file set (it is used by

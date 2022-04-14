@@ -176,8 +176,7 @@ class BlockRequesterUserLoggedOnToken(BasePermission):
     """
 
     def has_permission(self, request, view):
-
-        if request.session._SessionBase__session_key:
+        if request.session._SessionBase__session_key and request.user.is_authenticated:
             return True
         else:
             return False
