@@ -122,6 +122,23 @@ class TestLoginPage(TestCase):
 
 
 class TestRemoteUserLogin(TestCase):
+    def setUp(self):
+        super().setUp()
+        if (
+            "django.contrib.auth.backends.RemoteUserBackend"
+            not in settings.AUTHENTICATION_BACKENDS
+        ):
+            settings.AUTHENTICATION_BACKENDS.append(
+                "django.contrib.auth.backends.RemoteUserBackend"
+            )
+        if (
+            "django.contrib.auth.middleware.RemoteUserMiddleware"
+            not in settings.MIDDLEWARE
+        ):
+            settings.MIDDLEWARE.append(
+                "django.contrib.auth.middleware.RemoteUserMiddleware"
+            )
+
     def test_automatic_login_of_remote_user(self):
         user = factories.UserFactory()
         response = self.client.get(
@@ -188,7 +205,8 @@ class TestRemoteUserLogin(TestCase):
 
 # Disabling the REMOTE_USER
 class TestRemoteUserLoginNotAllowed(TestCase):
-    def test_automatic_login_of_remote_user_is_denied(self):
+    def setUp(self):
+        super().setUp()
         # Tests run twice! Second time, setting will be already gone.
         try:
             settings.AUTHENTICATION_BACKENDS.remove(
@@ -200,6 +218,7 @@ class TestRemoteUserLoginNotAllowed(TestCase):
         except ValueError:
             pass
 
+    def test_automatic_login_of_remote_user_is_denied(self):
         user = factories.UserFactory()
         response = self.client.get(
             reverse("permits:permit_request_select_administrative_entity"),
