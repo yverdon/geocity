@@ -360,14 +360,16 @@ def get_property_value(object_property_value):
         == models.WorksObjectProperty.INPUT_TYPE_FILE
     ):
         private_storage = fields.PrivateFileSystemStorage()
-        # TODO: handle missing files!
-        f = private_storage.open(value)
-        # The `url` attribute of the file is used to detect if there was already a file set (it is used by
-        # `ClearableFileInput` and by the `set_object_property_value` function)
-        f.url = reverse(
-            "permits:permit_request_media_download",
-            kwargs={"property_value_id": object_property_value.pk},
-        )
+        try:
+            f = private_storage.open(value)
+            # The `url` attribute of the file is used to detect if there was already a file set (it is used by
+            # `ClearableFileInput` and by the `set_object_property_value` function)
+            f.url = reverse(
+                "permits:permit_request_media_download",
+                kwargs={"property_value_id": object_property_value.pk},
+            )
+        except IOError:
+            f = None
 
         return f
 
@@ -1645,21 +1647,24 @@ def get_wot_properties(value, api=False):
                                 property__name=prop_i["properties__property__name"],
                                 works_object_type_choice__id=prop_i["id"],
                             )
-                            # attendu : WorksObjectPropertyValue
-                            url = get_property_value(property_object).url
-                            absolute_url = PermitRequest.get_absolute_url(url)
-                            file_name = prop_i["properties__value__val"].split("/", -1)[
-                                -1
-                            ]
-                            # Properties of WOT
-                            property.append(
-                                {
-                                    "key": prop_i["properties__property__name"],
-                                    "value": absolute_url,
-                                    "name": file_name,
-                                    "type": prop_i["properties__property__input_type"],
-                                }
-                            )
+                            # get_property_value return None if file does not exist
+                            file = get_property_value(property_object)
+                            if file:
+                                absolute_url = PermitRequest.get_absolute_url(file.url)
+                                file_name = prop_i["properties__value__val"].split(
+                                    "/", -1
+                                )[-1]
+                                # Properties of WOT
+                                property.append(
+                                    {
+                                        "key": prop_i["properties__property__name"],
+                                        "value": absolute_url,
+                                        "name": file_name,
+                                        "type": prop_i[
+                                            "properties__property__input_type"
+                                        ],
+                                    }
+                                )
                         else:
                             # Properties of WOT
                             property.append(
