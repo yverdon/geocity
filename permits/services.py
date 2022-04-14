@@ -1610,6 +1610,7 @@ def get_wot_properties(value, api=False):
         "properties__property__input_type",
         "properties__value__val",
         "works_object_type_id",
+        "id",
         "works_object_type__works_object__name",
         "works_object_type__works_type__name",
     )
@@ -1641,7 +1642,8 @@ def get_wot_properties(value, api=False):
 
                             # Reconstituate download link if it's a file
                             property_object = models.WorksObjectPropertyValue.objects.get(
-                                property__name=prop_i["properties__property__name"]
+                                property__name=prop_i["properties__property__name"],
+                                works_object_type_choice__id=prop_i["id"]
                             )
                             # attendu : WorksObjectPropertyValue
                             url = get_property_value(property_object).url
