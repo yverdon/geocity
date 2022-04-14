@@ -76,3 +76,23 @@ class AdministrativeEntityFileField(models.FileField):
     def __init__(self, verbose_name=None, name=None, **kwargs):
         kwargs["storage"] = PrivateFileSystemStorage()
         super().__init__(verbose_name, name, **kwargs)
+
+
+class WorkObjectTypeFieldFile(FieldFile):
+    @property
+    def url(self):
+        return reverse(
+            "permits:works_object_property_file_download", kwargs={"path": self.name},
+        )
+
+
+class WorkObjectTypeFileField(models.FileField):
+    """
+    FileField storing information in a private media root.
+    """
+
+    attr_class = WorkObjectTypeFieldFile
+
+    def __init__(self, verbose_name=None, name=None, **kwargs):
+        kwargs["storage"] = PrivateFileSystemStorage()
+        super().__init__(verbose_name, name, **kwargs)
