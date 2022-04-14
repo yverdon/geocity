@@ -221,7 +221,7 @@ class PermitAdministrativeEntity(models.Model):
     geom = geomodels.MultiPolygonField(_("geom"), null=True, srid=2056)
     tags = TaggableManager(
         blank=True,
-        verbose_name="Mots-clés",
+        verbose_name=_("Mots-clés"),
         help_text="Mots clefs sans espaces, séparés par des virgules permettant de filtrer les entités par l'url: https://geocity.ch/?entityfilter=yverdon",
     )
     objects = PermitAdministrativeEntityManager()
