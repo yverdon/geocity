@@ -53,7 +53,7 @@ if settings.ENABLE_2FA:
     urlpatterns += [
         path(
             "account/login/",
-            views.CustomLoginView.as_view(template_name="two_factor/login.html"),
+            views.CustomTwoFactorLoginView.as_view(template_name="two_factor/login.html"),
             name="account_login",
         ),
         path(
@@ -65,6 +65,11 @@ if settings.ENABLE_2FA:
             "account/two_factor/setup/complete/",
             SetupCompleteView.as_view(template_name="two_factor/setup_complete.html"),
             name="setup_complete",
+        ),
+        path(
+            "account/duo_callback/",
+            views.DuoCallbackView.as_view(),
+            name="duo_callback",
         ),
         path("", include(tf_urls)),
     ]
