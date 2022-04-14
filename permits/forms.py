@@ -1324,7 +1324,7 @@ class PermitRequestClassifyForm(forms.ModelForm):
 
 class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
     authorised_departments = forms.ModelMultipleChoiceField(
-        queryset=None, widget=forms.CheckboxSelectMultiple,
+        queryset=None, widget=forms.CheckboxSelectMultiple, required=False,
     )
 
     class Meta:
@@ -1393,6 +1393,15 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super(PermitRequestComplementaryDocumentsForm, self).clean()
+
+        if not self.cleaned_data.get(
+            "authorised_departments"
+        ) and not self.cleaned_data.get("is_public"):
+            raise ValidationError(
+                _(
+                    "Un département doit être renseigner ou le document doit être publique"
+                )
+            )
 
         if not self.cleaned_data.get("document_type"):
             raise ValidationError(_("Un type doit être renseigné!"))
