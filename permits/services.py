@@ -27,6 +27,7 @@ from django.utils.translation import gettext_lazy as _
 
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
+from .models import PermitRequest
 from .utils import reverse_permit_request_url
 from PIL import Image
 from pdf2image import convert_from_path
@@ -359,14 +360,17 @@ def get_property_value(object_property_value):
         == models.WorksObjectProperty.INPUT_TYPE_FILE
     ):
         private_storage = fields.PrivateFileSystemStorage()
-        # TODO: handle missing files!
-        f = private_storage.open(value)
-        # The `url` attribute of the file is used to detect if there was already a file set (it is used by
-        # `ClearableFileInput` and by the `set_object_property_value` function)
-        f.url = reverse(
-            "permits:permit_request_media_download",
-            kwargs={"property_value_id": object_property_value.pk},
-        )
+        # TODO: handle missing files! Database pointing empty files should be removed
+        try:
+            f = private_storage.open(value)
+            # The `url` attribute of the file is used to detect if there was already a file set (it is used by
+            # `ClearableFileInput` and by the `set_object_property_value` function)
+            f.url = reverse(
+                "permits:permit_request_media_download",
+                kwargs={"property_value_id": object_property_value.pk},
+            )
+        except IOError:
+            f = None
 
         return f
 
@@ -1599,26 +1603,89 @@ def check_request_comes_from_internal_qgisserver(request):
     return False
 
 
-def get_wot_properties(value):
+def get_wot_properties(value, api=False):
+    """
+    Return wot properties in a list for the api, in a dict for backend
+    """
     obj = value.all()
     wot_props = obj.values(
         "properties__property__name",
+        "properties__property__input_type",
         "properties__value__val",
         "works_object_type_id",
+        "id",
         "works_object_type__works_object__name",
         "works_object_type__works_type__name",
     )
-    wot_properties = {}
+
+    wot_properties = dict()
+    property = list()
 
     if wot_props:
-        for prop in wot_props:
-            wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
-            wot_properties[wot] = {
-                prop_i["properties__property__name"]: prop_i["properties__value__val"]
-                for prop_i in wot_props
-                if prop_i["works_object_type_id"] == prop["works_object_type_id"]
-                and prop_i["properties__property__name"]
-            }
+        # Flat view is used in the api for geocalandar, the WOT shows only the works_object__name and not the type
+        if api:
+            wot_properties = list()
+            for prop in wot_props:
+                # List of a lost, to split wot in objects
+                if property:
+                    wot_properties.append(property)
+                    property = []
+
+                wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+                # WOT
+                property.append(
+                    {"key": "work_object_type", "value": wot, "type": "text",}
+                )
+                for prop_i in wot_props:
+                    if (
+                        prop_i["works_object_type_id"] == prop["works_object_type_id"]
+                        and prop_i["properties__property__name"]
+                    ):
+                        if prop_i["properties__property__input_type"] == "file":
+
+                            # Reconstituate download link if it's a file
+                            property_object = models.WorksObjectPropertyValue.objects.get(
+                                property__name=prop_i["properties__property__name"],
+                                works_object_type_choice__id=prop_i["id"],
+                            )
+                            # get_property_value return None if file does not exist
+                            file = get_property_value(property_object)
+                            if file:
+                                absolute_url = PermitRequest.get_absolute_url(file.url)
+                                file_name = prop_i["properties__value__val"].split(
+                                    "/", -1
+                                )[-1]
+                                # Properties of WOT
+                                property.append(
+                                    {
+                                        "key": prop_i["properties__property__name"],
+                                        "value": absolute_url,
+                                        "name": file_name,
+                                        "type": prop_i[
+                                            "properties__property__input_type"
+                                        ],
+                                    }
+                                )
+                        else:
+                            # Properties of WOT
+                            property.append(
+                                {
+                                    "key": prop_i["properties__property__name"],
+                                    "value": prop_i["properties__value__val"],
+                                    "type": prop_i["properties__property__input_type"],
+                                }
+                            )
+        else:
+            for prop in wot_props:
+                wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+                wot_properties[wot] = {
+                    prop_i["properties__property__name"]: prop_i[
+                        "properties__value__val"
+                    ]
+                    for prop_i in wot_props
+                    if prop_i["works_object_type_id"] == prop["works_object_type_id"]
+                    and prop_i["properties__property__name"]
+                }
     return wot_properties
 
 

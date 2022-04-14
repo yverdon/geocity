@@ -421,6 +421,7 @@ class PermitRequestAPITestCase(TestCase):
             )
 
     def test_api_permits_details_is_accessible_with_credentials(self):
+        # Need PermitRequest to create absolut_url in api for file type
         self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(reverse("permits_details-list"),)
         self.assertEqual(response.status_code, 200)
@@ -534,7 +535,7 @@ class PermitRequestAPITestCase(TestCase):
 
     def test_current_user_returns_user_informations(self):
         self.client.login(username=self.admin_user.username, password="password")
-        response = self.client.get(reverse("current_user-list"), {})
+        response = self.client.get(reverse("current_user"), {})
         response_json = response.json()
         login_datetime = models.User.objects.get(
             username=self.admin_user.username
@@ -544,7 +545,7 @@ class PermitRequestAPITestCase(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            response_json[0],
+            response_json,
             {
                 "is_logged": True,
                 "username": self.admin_user.username,
@@ -557,11 +558,11 @@ class PermitRequestAPITestCase(TestCase):
         )
 
     def test_not_logged_returns_nothing_on_current_user(self):
-        response = self.client.get(reverse("current_user-list"), {})
+        response = self.client.get(reverse("current_user"), {})
         response_json = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            response_json[0], {"is_logged": False,},
+            response_json, {"is_logged": False,},
         )
 
     # TODO: test also the permits:permit_request_print route

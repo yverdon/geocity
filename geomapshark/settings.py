@@ -409,7 +409,7 @@ AUTH_PASSWORD_VALIDATORS = [
 CORS_ALLOWED_ORIGINS = [] + os.getenv("ALLOWED_CORS").split(",")
 
 
-if DEBUG:
+if DEBUG and not CORS_ALLOWED_ORIGINS:
     CORS_ALLOW_ALL_ORIGINS = True
 
 # Internationalization

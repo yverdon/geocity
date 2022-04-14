@@ -47,7 +47,7 @@ class PermitRequestExpirationReminder(CronJobBase):
                         "users_to_notify": [permit_request.author.user.email],
                         "template": "permit_request_prolongation_reminder.txt",
                         "permit_request": permit_request,
-                        "absolute_uri_func": permit_request.get_absolute_url,
+                        "absolute_uri_func": PermitRequest.get_absolute_url,
                     }
                     send_email_notification(data)
 
