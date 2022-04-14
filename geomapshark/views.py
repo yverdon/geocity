@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import PasswordResetView
+from django.contrib.sites.shortcuts import get_current_site
 
 if settings.ENABLE_2FA:
     from two_factor.views import LoginView
@@ -43,9 +44,17 @@ def logout_view(request):
     )
 
 
-# User has tried to many login attemps
+# User has tried to many login attempts
 def lockout_view(request):
     return render(request, "account/lockout.html",)
+
+
+class SetCurrentSiteMixin:
+    def __init__(self, *args, **kwargs):
+        super.__init__(*args, **kwargs)
+        current_site = get_current_site(self.request)
+        settings.SITE_ID = current_site.id
+        settings.SITE_DOMAIN = current_site.domain
 
 
 class CustomPasswordResetView(PasswordResetView):
@@ -64,7 +73,7 @@ class CustomPasswordResetView(PasswordResetView):
         return context
 
 
-class CustomLoginView(LoginView):
+class CustomLoginView(LoginView, SetCurrentSiteMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({"social_apps": SocialApp.objects.all()})

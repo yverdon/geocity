@@ -91,9 +91,15 @@ TAGGIT_TAGS_FROM_STRING = "permits.utils.comma_splitter"
 # 2FA activation
 ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 
-# Allauth requirement
-SITE_ID = 1
-SITE_DOMAIN = os.getenv("SITE_DOMAIN", "localhost")
+# Allauth requirements
+#  We define it here as None, since these variables will be set upon arriving to the
+#  CustomLogin view.
+#  It also ensures get_current_site will get the right Site, which includes a subdomain.
+#  Note: Every subdomain is treated as a different Site, they require to login separately
+#  See: geomapshark.views.SetCurrentSiteMixin(), also: settings_test.py
+SITE_ID = None
+SITE_DOMAIN = None
+
 SITE_HTTPS = bool(int(os.getenv("SITE_HTTPS", True)))
 
 # Application definition

@@ -1051,14 +1051,16 @@ class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     )
 
     def get_sites(self, obj):
-        return [site['name'] for site in obj.sites.all().values('name')]
-    get_sites.short_description = _('Sites')
-    get_sites.admin_order_field = 'sites__name'
+        return [site["name"] for site in obj.sites.all().values("name")]
+
+    get_sites.short_description = _("Sites")
+    get_sites.admin_order_field = "sites__name"
 
     def get_tags(self, obj):
-        return [tag['name'] for tag in obj.tags.all().values('name')]
+        return [tag["name"] for tag in obj.tags.all().values("name")]
+
     get_tags.short_description = _("Mots-clés")
-    get_tags.admin_order_field = 'tags__name'
+    get_tags.admin_order_field = "tags__name"
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "integrator":

@@ -3857,9 +3857,6 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
     #     response = self.client.get(
     #         reverse("permits:permit_request_select_administrative_entity",),
     #     )
-    #     # DELETE ME AFTER USE
-    #     import ipdb; ipdb.set_trace()
-    #     # ###################
     #
     #     self.assertContains(response, "privateEntity")
 

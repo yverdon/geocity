@@ -50,7 +50,7 @@ urlpatterns = [
 
 if settings.ENABLE_2FA:
     from two_factor.urls import urlpatterns as tf_urls
-    from two_factor.views import LoginView, ProfileView, SetupCompleteView
+    from two_factor.views import ProfileView, SetupCompleteView
 
     logger.info("2 factors authentification is enabled")
     urlpatterns += [

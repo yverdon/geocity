@@ -749,13 +749,22 @@ def anonymous_permit_request(request):
 def permit_request_select_administrative_entity(request, permit_request_id=None):
 
     services.store_tags_in_session(request)
+    current_site = get_current_site(request)
 
     if permit_request_id:
         permit_request = get_permit_request_for_edition(request.user, permit_request_id)
     else:
         permit_request = None
 
-    # Prevent unecessary queries to DB if no tag filter is applied anyway
+    # FIXME:
+    #  1.- Impact of entityfilter for each site, because, each subdomain is treated as
+    #  a different site, therefore still to determine:
+    #     1.1.- does it makes sense to have this filter? -> for the pilote, maybe, hmmm!
+    #  2.- Apply same usage of Preselecting entity if it returns one object???
+    #     At this moment the entites are being filtered, but it gives the chance
+    #     to select the entity manually...
+
+    # Prevent unnecessary queries to DB if no tag filter is applied anyway
     if request.session["entityfilter"]:
         # Handle single tag filters combinations
         entityfilter = (
@@ -839,7 +848,7 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
             instance=permit_request,
             user=request.user,
             session=request.session,
-            site=get_current_site(request),
+            site=current_site,
         )
     return render(
         request,
