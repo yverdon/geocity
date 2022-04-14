@@ -133,8 +133,7 @@ class PermitAuthorSerializer(serializers.ModelSerializer):
 
 class CurrentUserSerializer(serializers.Serializer):
     def to_representation(self, value):
-        if value:
-            value = value.first()
+        if value.is_authenticated:
             json = {
                 "is_logged": True,
                 "username": value.username,

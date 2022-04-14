@@ -7,6 +7,7 @@ import PIL
 from datetime import date
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -17,6 +18,8 @@ from permits import models, services
 
 from . import factories
 from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_parser
+from ..forms import PermitRequestGeoTimeForm
+from ..management.commands import create_anonymous_users
 
 
 def to_works_objects_dict(works_object_types):
@@ -2584,6 +2587,56 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
         position_2 = content.find(prop_2.name)
         self.assertGreater(position_1, position_2)
 
+    def test_properties_step_shows_downloadable_file(self):
+        works_object_type_choice = services.get_works_object_type_choices(
+            self.permit_request
+        ).first()
+
+        prop_file = factories.WorksObjectPropertyFactoryTypeFileDownload()
+        prop_file.works_object_types.add(works_object_type_choice.works_object_type)
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            )
+        )
+
+        expected_href = rf"/permit-requests/wot-files/{prop_file.file_download.name}"
+        parser = get_parser(response.content)
+        file_links = parser.find_all("a", href=re.compile(expected_href))
+        self.assertEqual(1, len(file_links))
+        self.assertIn(expected_href, response.content.decode())
+
+    def test_properties_step_shows_downloadable_files_more_than_once(self):
+        works_object_type_choices = services.get_works_object_type_choices(
+            self.permit_request
+        )
+        works_object_type_choice_first = works_object_type_choices.first()
+        works_object_type_choice_last = works_object_type_choices.last()
+
+        prop_file = factories.WorksObjectPropertyFactoryTypeFileDownload()
+        prop_file.works_object_types.add(
+            works_object_type_choice_first.works_object_type
+        )
+        prop_file.works_object_types.add(
+            works_object_type_choice_last.works_object_type
+        )
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            )
+        )
+
+        expected_href = rf"/permit-requests/wot-files/{prop_file.file_download.name}"
+        parser = get_parser(response.content)
+        file_links = parser.find_all("a", href=re.compile(expected_href))
+
+        self.assertEqual(2, len(file_links))
+        self.assertIn(expected_href, response.content.decode())
+
 
 class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
     def test_non_secretariat_user_cannot_amend_request(self):
@@ -2913,6 +2966,141 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             "Nous vous informons que votre annonce a été prise en compte et classée.",
             mail.outbox[0].message().as_string(),
         )
+
+    def test_secretariat_can_amend_permit_request_with_status_approved_if_property_is_always_amendable(
+        self,
+    ):
+        props_quantity = 3
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_APPROVED,
+            administrative_entity=self.administrative_entity,
+        )
+
+        wot = factories.WorksObjectTypeFactory()
+        wot.administrative_entities.set([permit_request.administrative_entity])
+
+        works_object_type_choice = factories.WorksObjectTypeChoiceFactory(
+            permit_request=permit_request, works_object_type=wot
+        )
+
+        props = factories.PermitRequestAmendPropertyFactory.create_batch(
+            props_quantity, can_always_update=True
+        )
+
+        data = {
+            "action": models.ACTION_AMEND,
+            "status": models.PermitRequest.STATUS_APPROVED,
+        }
+
+        works_object_types_pk = permit_request.works_object_types.first().pk
+
+        for prop in props:
+            prop.works_object_types.set(permit_request.works_object_types.all())
+            factories.PermitRequestAmendPropertyValueFactory(
+                property=prop, works_object_type_choice=works_object_type_choice,
+            )
+            data[
+                f"{works_object_types_pk}_{prop.pk}"
+            ] = "I am a new property value, I am alive!"
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=data,
+            follow=True,
+        )
+
+        new_properties_values_qs = models.PermitRequestAmendPropertyValue.objects.values_list(
+            "value", flat=True
+        )
+
+        self.assertIn(
+            "I am a new property value, I am alive!", new_properties_values_qs,
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_amend_property_are_editable_in_status_approved_if_property_is_always_amendable(
+        self,
+    ):
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_APPROVED,
+            administrative_entity=self.administrative_entity,
+        )
+
+        wot = factories.WorksObjectTypeFactory()
+        wot.administrative_entities.set([permit_request.administrative_entity])
+
+        works_object_type_choice = factories.WorksObjectTypeChoiceFactory(
+            permit_request=permit_request, works_object_type=wot
+        )
+
+        prop_editable = factories.PermitRequestAmendPropertyFactory(
+            name="Editable_prop", can_always_update=True
+        )
+
+        prop_not_editable = factories.PermitRequestAmendPropertyFactory(
+            name="Not_editable_prop", can_always_update=False
+        )
+
+        props = [prop_editable, prop_not_editable]
+
+        data = {
+            "action": models.ACTION_AMEND,
+            "status": models.PermitRequest.STATUS_APPROVED,
+        }
+
+        works_object_types_pk = permit_request.works_object_types.first().pk
+
+        for prop in props:
+            prop.works_object_types.set(permit_request.works_object_types.all())
+            factories.PermitRequestAmendPropertyValueFactory(
+                property=prop,
+                works_object_type_choice=works_object_type_choice,
+                value=prop.name,
+            )
+            if prop.name == "Editable_prop":
+                data[f"{works_object_types_pk}_{prop.pk}"] = "I have been edited!"
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+
+        parser = get_parser(response.content)
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            len(parser.select(".form-group textarea")), 2,
+        )
+
+        self.assertEqual(
+            len(parser.select(".form-group textarea[disabled]")), 1,
+        )
+
+        # Send form edit
+        response2 = self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data=data,
+            follow=True,
+        )
+
+        new_properties_values_qs = models.PermitRequestAmendPropertyValue.objects.values_list(
+            "value", flat=True
+        )
+
+        self.assertIn(
+            "I have been edited!", new_properties_values_qs,
+        )
+        self.assertEqual(response2.status_code, 200)
 
 
 class AdministrativeEntitySecretaryEmailTestcase(TestCase):
@@ -3687,7 +3875,7 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             len(get_parser(response.content).select(".form-check-label")), 2
         )
 
-    def test_work_type_step_show_private_requests_to_user_with_specific_permission(
+    def test_work_type_step_show_private_requests_with_choices_to_user_with_specific_permission(
         self,
     ):
 
@@ -3695,6 +3883,7 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             codename="see_private_requests"
         )
         self.user.user_permissions.add(see_private_requests_permission)
+
         public_works_object_types = factories.WorksObjectTypeFactory.create_batch(
             2, is_public=True
         )
@@ -3752,7 +3941,8 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"permit_request_id": permit_request.pk},
             )
             + "?types={}&types={}".format(
-                public_works_object_types[0].pk, public_works_object_types[1].pk
+                public_works_object_types[0].works_type.pk,
+                public_works_object_types[1].works_type.pk,
             ),
         )
         self.assertEqual(
@@ -3799,19 +3989,196 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             permit_request=permit_request, works_object_type=private_works_object_type
         )
 
-        # Fixme without any WorksObject created, returns 404
-
         response = self.client.get(
             reverse(
                 "permits:permit_request_select_objects",
                 kwargs={"permit_request_id": permit_request.pk},
             )
             + "?types={}&types={}&types={}".format(
-                public_works_object_types[0].pk,
-                public_works_object_types[1].pk,
-                private_works_object_type.pk,
+                public_works_object_types[0].works_type.pk,
+                public_works_object_types[1].works_type.pk,
+                private_works_object_type.works_type.pk,
             ),
         )
         self.assertEqual(
             len(get_parser(response.content).select(".form-check-label")), 3
+        )
+
+
+class PermitRequestFilteredWorksObjectListTestCase(LoggedInSecretariatMixin, TestCase):
+    def setUp(self):
+        super().setUp()
+        self.wot_normal = factories.WorksObjectTypeFactory()
+        self.permit_request = factories.PermitRequestFactory(
+            author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED,
+        )
+        self.permit_request.works_object_types.set([self.wot_normal])
+        factories.PermitRequestGeoTimeFactory(permit_request=self.permit_request)
+
+        works_object_type_choice = self.permit_request.worksobjecttypechoice_set.first()
+        prop = factories.WorksObjectPropertyFactory()
+        prop.works_object_types.add(works_object_type_choice.works_object_type)
+        self.prop_value = factories.WorksObjectPropertyValueFactory(
+            works_object_type_choice=works_object_type_choice, property=prop
+        )
+
+    def test_secretariat_user_can_see_filtered_permits_details(self,):
+        response = self.client.get(
+            "{}?works_object_types__works_object={}".format(
+                reverse("permits:permit_requests_list",),
+                self.permit_request.works_object_types.first().works_object.id,
+            )
+        )
+
+        self.assertInHTML(self.prop_value.value["val"], response.content.decode())
+
+    def test_secretariat_user_can_see_filtered_permits_details_in_csv(self,):
+        response = self.client.get(
+            "{}?works_object_types__works_object={}&_export=csv".format(
+                reverse("permits:permit_requests_list",),
+                self.permit_request.works_object_types.first().works_object.id,
+            )
+        )
+
+        self.assertContains(response, self.prop_value.value["val"])
+
+
+class PermitRequestAnonymousTestCase(TestCase):
+    def setUp(self):
+        super().setUp()
+
+    def test_anonymous_request_on_non_anonymous_entity_returns_404(self):
+        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        type = factories.WorksTypeFactory(tags=["a"])
+
+        response = self.client.get(
+            reverse("permits:anonymous_permit_request"),
+            data={
+                "entityfilter": entity.tags.get().slug,
+                "typefilter": type.tags.get().slug,
+            },
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_anonymous_request_on_anonymous_entity_displays_captcha_form(self):
+        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        create_anonymous_users._create_anonymous_user_for_entity(entity)
+
+        type = factories.WorksTypeFactory(tags=["a"])
+
+        response = self.client.get(
+            reverse("permits:anonymous_permit_request"),
+            data={
+                "entityfilter": entity.tags.get().slug,
+                "typefilter": type.tags.get().slug,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("anonymous_request_form", response.context)
+
+    def test_anonymous_request_temporary_logged_in_no_wot_displays_request_form(self):
+        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        create_anonymous_users._create_anonymous_user_for_entity(entity)
+
+        temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
+        self.client.force_login(temp_author.user)
+        session = self.client.session
+        session["anonymous_request_token"] = hash((temp_author, entity))
+        session.save()
+
+        type = factories.WorksTypeFactory(tags=["a"])
+
+        response = self.client.get(
+            reverse("permits:anonymous_permit_request"),
+            data={
+                "entityfilter": entity.tags.get().slug,
+                "typefilter": type.tags.get().slug,
+            },
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_anonymous_request_temporary_logged_in_displays_request_form(self):
+        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        create_anonymous_users._create_anonymous_user_for_entity(entity)
+
+        temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
+        self.client.force_login(temp_author.user)
+        session = self.client.session
+        session["anonymous_request_token"] = hash((temp_author, entity))
+        session.save()
+
+        type = factories.WorksTypeFactory(tags=["a"])
+        factories.WorksObjectTypeFactory(
+            is_anonymous=True, works_type=type, administrative_entities=[entity],
+        )
+
+        response = self.client.get(
+            reverse("permits:anonymous_permit_request"),
+            data={
+                "entityfilter": entity.tags.get().slug,
+                "typefilter": type.tags.get().slug,
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        # As the wot has to properties, going directly to next step
+        self.assertTrue(
+            isinstance(response.context["formset"].forms[0], PermitRequestGeoTimeForm)
+        )
+
+    def test_anonymous_request_submission_deletes_temporary_user(self):
+        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        create_anonymous_users._create_anonymous_user_for_entity(entity)
+
+        temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
+        self.client.force_login(temp_author.user)
+        session = self.client.session
+        session["anonymous_request_token"] = hash((temp_author, entity))
+        session.save()
+
+        type = factories.WorksTypeFactory(tags=["a"])
+        wot = factories.WorksObjectTypeWithoutGeometryFactory(
+            is_anonymous=True,
+            works_type=type,
+            administrative_entities=[entity],
+            needs_date=False,
+        )
+
+        # Filled permit request
+        permit_request = factories.PermitRequestFactory(
+            author=temp_author,
+            status=models.PermitRequest.STATUS_DRAFT,
+            administrative_entity=entity,
+        )
+        work_object_type_choice = factories.WorksObjectTypeChoiceFactory(
+            permit_request=permit_request, works_object_type=wot,
+        )
+        prop = factories.WorksObjectPropertyFactory()
+        prop.works_object_types.set([wot])
+        factories.WorksObjectPropertyValueFactory(
+            property=prop,
+            works_object_type_choice=work_object_type_choice,
+            value={"val": True},
+        )
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_submit_confirmed",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        permit_request.refresh_from_db()
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("permits:anonymous_permit_request_sent"))
+
+        self.assertEqual(permit_request.author, entity.anonymous_user)
+
+        self.assertEqual(
+            get_user_model().objects.get().pk, permit_request.author.user_id,
         )

@@ -1,0 +1,5 @@
+{% for item in record.works_object_types.all %}
+  {% if record.works_object_filter == item.works_object.id|stringformat:"i"  %}
+  <strong>{% endif %}{{ item.works_object.name }}{% if record.works_object_filter %}
+  </strong>{% endif %} ({{ item.works_type.name }}) <br />
+{% endfor %}

@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import GeometryCollection, Point
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils.text import Truncator
 from permits import models, admin
 from django.db.models import Q
@@ -360,6 +361,17 @@ class WorksObjectPropertyFactoryTypeTitle(factory.django.DjangoModelFactory):
     order = factory.Sequence(int)
 
 
+class WorksObjectPropertyFactoryTypeFileDownload(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.WorksObjectProperty
+
+    name = factory.Faker("word")
+    help_text = factory.Faker("word")
+    input_type = models.WorksObjectProperty.INPUT_TYPE_FILE_DOWNLOAD
+    order = factory.Sequence(int)
+    file_download = SimpleUploadedFile("file.pdf", "contents".encode())
+
+
 class WorksObjectTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.WorksObjectType
@@ -375,6 +387,13 @@ class WorksObjectTypeFactory(factory.django.DjangoModelFactory):
 
         self.integrator = extracted
 
+    @factory.post_generation
+    def administrative_entities(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        self.administrative_entities.add(*extracted)
+
 
 class WorksObjectTypeWithoutGeometryFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -386,6 +405,13 @@ class WorksObjectTypeWithoutGeometryFactory(factory.django.DjangoModelFactory):
     has_geometry_point = False
     has_geometry_line = False
     has_geometry_polygon = False
+
+    @factory.post_generation
+    def administrative_entities(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        self.administrative_entities.add(*extracted)
 
 
 class WorksObjectTypeChoiceFactory(factory.django.DjangoModelFactory):

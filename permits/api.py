@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import (
     user_passes_test,
 )
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.geos.collections import (
     GeometryCollection,
     MultiLineString,
@@ -13,6 +13,7 @@ from django.contrib.gis.geos.collections import (
 )
 from django.db.models import CharField, F, Prefetch, Q
 from rest_framework import viewsets
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework_gis.fields import GeometrySerializerMethodField
@@ -43,7 +44,7 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
         2.- /rest/permits/?starts_at=2022-01-01
         2.- /rest/permits/?ends_at=2020-01-01
         3.- /rest/permits/?adminentities=1,2,3
-    
+
     """
 
     serializer_class = serializers.PermitRequestGeoTimeSerializer
@@ -114,7 +115,7 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
 # //////////////////////////////////
 
 
-class CurrentUserViewSet(viewsets.ReadOnlyModelViewSet):
+class CurrentUserAPIView(RetrieveAPIView):
     """
     Current user endpoint Usage:
         /rest/current_user/     shows current user
@@ -134,9 +135,11 @@ class CurrentUserViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(serializer.data)
 
     # Returns the logged user, if there's any
-    def get_queryset(self):
-        qs = User.objects.filter(Q(username=self.request.user))
-        return qs
+    def get_object(self):
+        try:
+            return User.objects.get(Q(username=self.request.user))
+        except User.DoesNotExist:
+            return AnonymousUser()
 
 
 # //////////////////////////////////
@@ -188,9 +191,9 @@ class PermitRequestViewSet(
         1.- /rest/permits/?permit_request_id=1
         2.- /rest/permits/?works_object_type=1
         3.- /rest/permits/?status=0
-        
+
         Notes:
-            1.- For works objects types that do not have geometry, the returned 
+            1.- For works objects types that do not have geometry, the returned
                 geometry is a 2x2 square around the centroid of the administrative entity geometry
             2.- This endpoint does not filter out items without geometry.
                 For works objects types that have only point geometry, the returned geometry
@@ -301,7 +304,6 @@ class PermitRequestDetailsViewSet(
     """
     Permit request details endpoint usage:
         1.- /rest/permits_details/?permit_request_id=1
-        
     Liste types :
     - address
     - checkbox
