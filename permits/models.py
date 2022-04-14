@@ -139,6 +139,7 @@ class PermitDepartment(models.Model):
         "Intégrateur (accès à l'admin de django)", default=False
     )
     mandatory_2fa = models.BooleanField(_("2FA obligatoire"), default=False)
+    duo_2fa = models.BooleanField(_("2FA mode duo MFA"), default=False)
     integrator_email_domains = models.CharField(
         _("Domaines d'emails visibles pour l'intégrateur"),
         help_text=_(

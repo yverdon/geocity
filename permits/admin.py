@@ -264,6 +264,7 @@ class DepartmentAdminForm(forms.ModelForm):
             "integrator",
             "is_integrator_admin",
             "mandatory_2fa",
+            "duo_2fa",
             "integrator_email_domains",
             "integrator_emails_exceptions",
         ]
@@ -394,6 +395,7 @@ class GroupAdmin(admin.ModelAdmin):
         "get__is_default_validator",
         "get__integrator",
         "get__mandatory_2fa",
+        # "get__duo_2fa",
     ]
 
     filter_horizontal = ("permissions",)
@@ -429,6 +431,13 @@ class GroupAdmin(admin.ModelAdmin):
 
     get__mandatory_2fa.admin_order_field = "permitdepartment__mandatory_2fa"
     get__mandatory_2fa.short_description = _("2FA obligatoire")
+    
+    # @admin.display(boolean=True)
+    # def get__duo_2fa(self, obj):
+    #     return obj.permitdepartment.mandatory_2fa
+
+    # get__duo_2fa.admin_order_field = "permitdepartment__duo_2fa"
+    # get__duo_2fa.short_description = _("2FA mode duo MFA")
 
     def get_queryset(self, request):
 
