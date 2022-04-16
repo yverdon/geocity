@@ -56,16 +56,24 @@ class OwnPermitRequestFilterSet(BasePermitRequestFilterSet):
     pass
 
 
+def _get_works_objects_queryset_for_current_user(request):
+    return (
+        models.WorksObject.objects.filter(
+            works_object_types__permit_requests__in=services.get_permit_requests_list_for_user(
+                request.user
+            )
+        )
+        .distinct()
+        .order_by("name")
+    )
+
+
 class DepartmentPermitRequestFilterSet(BasePermitRequestFilterSet):
     author__user__last_name = django_filters.filters.CharFilter(
         lookup_expr="icontains", label=_("Auteur de la demande"),
     )
     works_object_types__works_object = django_filters.filters.ModelChoiceFilter(
-        queryset=models.WorksObject.objects.filter(
-            works_object_types__permit_requests__isnull=False
-        )
-        .distinct()
-        .order_by("name"),
+        queryset=_get_works_objects_queryset_for_current_user,
         label=_("Objet de la demande"),
     )
     works_object_types__works_type = django_filters.filters.ModelChoiceFilter(
