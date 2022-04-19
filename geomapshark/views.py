@@ -82,7 +82,6 @@ def permit_author_create(request):
         permitauthorform.instance.user = new_user
         permitauthorform.save()
 
-        login(request, new_user)
         permits_services.store_tags_in_session(request)
         if settings.ENABLE_2FA:
             return HttpResponseRedirect(
