@@ -56,6 +56,30 @@ class OwnPermitRequestFilterSet(BasePermitRequestFilterSet):
     pass
 
 
+def _get_administrative_entities_queryset_for_current_user(request):
+    return (
+        models.PermitAdministrativeEntity.objects.filter(
+            works_object_types__permit_requests__in=services.get_permit_requests_list_for_user(
+                request.user
+            )
+        )
+        .distinct()
+        .order_by("name")
+    )
+
+
+def _get_works_types_queryset_for_current_user(request):
+    return (
+        models.WorksType.objects.filter(
+            works_object_types__permit_requests__in=services.get_permit_requests_list_for_user(
+                request.user
+            )
+        )
+        .distinct()
+        .order_by("name")
+    )
+
+
 def _get_works_objects_queryset_for_current_user(request):
     return (
         models.WorksObject.objects.filter(
@@ -69,15 +93,19 @@ def _get_works_objects_queryset_for_current_user(request):
 
 
 class DepartmentPermitRequestFilterSet(BasePermitRequestFilterSet):
-    author__user__last_name = django_filters.filters.CharFilter(
-        lookup_expr="icontains", label=_("Auteur de la demande"),
+    works_object_types__administrative_entities = django_filters.filters.ModelChoiceFilter(
+        queryset=_get_administrative_entities_queryset_for_current_user,
+        label=_("Entité administrative"),
+    )
+    works_object_types__works_type = django_filters.filters.ModelChoiceFilter(
+        queryset=_get_works_types_queryset_for_current_user, label=_("Type de demande")
     )
     works_object_types__works_object = django_filters.filters.ModelChoiceFilter(
         queryset=_get_works_objects_queryset_for_current_user,
         label=_("Objet de la demande"),
     )
-    works_object_types__works_type = django_filters.filters.ModelChoiceFilter(
-        queryset=models.WorksType.objects.order_by("name"), label=_("Type de demande")
+    author__user__last_name = django_filters.filters.CharFilter(
+        lookup_expr="icontains", label=_("Auteur de la demande"),
     )
 
     class Meta:
@@ -85,7 +113,7 @@ class DepartmentPermitRequestFilterSet(BasePermitRequestFilterSet):
         fields = [
             "id",
             "status",
-            "administrative_entity",
+            "works_object_types__administrative_entities",
             "works_object_types__works_type",
             "works_object_types__works_object",
             "created_at",
