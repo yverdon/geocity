@@ -914,6 +914,7 @@ class WorksObjectPropertyAdmin(
     list_filter = [
         "name",
         "input_type",
+        "works_object_types",
     ]
     search_fields = [
         "name",
