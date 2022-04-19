@@ -59,9 +59,7 @@ class OwnPermitRequestFilterSet(BasePermitRequestFilterSet):
 def _get_administrative_entities_queryset_for_current_user(request):
     return (
         models.PermitAdministrativeEntity.objects.filter(
-            works_object_types__permit_requests__in=services.get_permit_requests_list_for_user(
-                request.user
-            )
+            permit_requests__in=services.get_permit_requests_list_for_user(request.user)
         )
         .distinct()
         .order_by("name")
