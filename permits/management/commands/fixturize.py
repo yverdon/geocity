@@ -638,21 +638,12 @@ class Command(BaseCommand):
             (
                 "{} Parent #1".format(wot.pk),
                 wot,
-                [
-                    "{} Child #1.1".format(wot.pk),
-                    "{} Child #1.2".format(wot.pk),
-                    "{} Child #1.3".format(wot.pk),
-                ],
+                [ "{} Child #1.{}".format(wot.pk, i) for i in range(1, 4) ],
             ),
             (
                 "{} Parent #2".format(wot.pk),
                 wot,
-                [
-                    "{} Child #2.1".format(wot.pk),
-                    "{} Child #2.2".format(wot.pk),
-                    "{} Child #2.3".format(wot.pk),
-                    "{} Child #2.4".format(wot.pk),
-                ],
+                [ "{} Child #2.{}".format(wot.pk, i) for i in range(1, 5) ],
             ),
         ]
 
