@@ -1230,6 +1230,26 @@ def get_contacts_summary(permit_request):
     return contacts
 
 
+def get_permit_complementary_documents(permit_request, user):
+    qs = models.PermitRequestComplementaryDocument.objects.filter(
+        Q(permit_request=permit_request)
+    )
+
+    if user.is_superuser:
+        return qs.order_by("pk").all().distinct()
+
+    return (
+        qs.filter(
+            Q(is_public=True)
+            | Q(owner=user)
+            | Q(authorised_departments__group__in=user.groups.all()),
+        )
+        .order_by("pk")
+        .all()
+        .distinct()
+    )
+
+
 def get_permit_objects(permit_request):
 
     properties_form = forms.WorksObjectsPropertiesForm(instance=permit_request)
@@ -1284,6 +1304,10 @@ def get_actions_for_administrative_entity(permit_request):
             models.PermitRequest.STATUS_PROCESSING,
         ],
         "prolong": list(models.PermitRequest.PROLONGABLE_STATUSES),
+        "complementary_documents": [
+            models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            models.PermitRequest.STATUS_PROCESSING,
+        ],
     }
 
     available_statuses_for_administrative_entity = get_status_choices_for_administrative_entity(

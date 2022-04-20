@@ -3,10 +3,11 @@ import dataclasses
 import enum
 from datetime import date, datetime, timedelta
 
+import os
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
-from django.db.models import JSONField, UniqueConstraint
+from django.db.models import JSONField, UniqueConstraint, ProtectedError
 from django.core.exceptions import ValidationError
 from django.core.validators import (
     FileExtensionValidator,
@@ -72,6 +73,7 @@ ACTION_REQUEST_VALIDATION = "request_validation"
 ACTION_VALIDATE = "validate"
 ACTION_POKE = "poke"
 ACTION_PROLONG = "prolong"
+ACTION_COMPLEMENTARY_DOCUMENTS = "complementary_documents"
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
 ACTIONS = [
@@ -80,6 +82,7 @@ ACTIONS = [
     ACTION_VALIDATE,
     ACTION_POKE,
     ACTION_PROLONG,
+    ACTION_COMPLEMENTARY_DOCUMENTS,
 ]
 
 
@@ -1209,6 +1212,93 @@ class PermitRequestAmendPropertyValue(models.Model):
 
     class Meta:
         unique_together = [("property", "works_object_type_choice")]
+
+
+class PermitRequestComplementaryDocument(models.Model):
+    STATUS_TEMP = 0
+    STATUS_FINALE = 1
+    STATUS_OTHER = 2
+    STATUS_CANCELED = 3
+
+    STATUS_CHOICES = (
+        (STATUS_TEMP, _("Provisoire")),
+        (STATUS_FINALE, _("Final")),
+        (STATUS_OTHER, _("Autre")),
+        (STATUS_CANCELED, _("Annulé")),
+    )
+
+    document = models.FileField(_("Document"))
+    description = models.TextField(_("Description du document"), blank=True,)
+    owner = models.ForeignKey(
+        User,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Propriétaire du document"),
+    )
+    permit_request = models.ForeignKey(
+        PermitRequest,
+        null=False,
+        on_delete=models.CASCADE,
+        verbose_name=_("Demande de permis"),
+    )
+    status = models.PositiveSmallIntegerField(
+        _("Statut du document"), choices=STATUS_CHOICES,
+    )
+    authorised_departments = models.ManyToManyField(
+        PermitDepartment,
+        verbose_name=_("Département autorisé à visualiser le document"),
+        db_table=_("permits_authorised_departments"),
+    )
+    is_public = models.BooleanField(default=False, verbose_name=_("Public"))
+    document_type = models.ForeignKey(
+        "ComplementaryDocumentType",
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Type du document"),
+    )
+
+    def delete(self, using=None, keep_parents=False):
+        # delete the uploaded file
+        try:
+            os.remove(os.path.join(settings.MEDIA_ROOT, self.document.name))
+            return super().delete(using, keep_parents)
+        except OSError as e:
+            raise ProtectedError(
+                _("Le document {} n'a pas pu être supprimé".format(self)), e
+            )
+
+    def __str__(self):
+        return self.document.name
+
+
+class ComplementaryDocumentType(models.Model):
+    name = models.CharField(_("nom"), max_length=255)
+    parent = models.ForeignKey(
+        "ComplementaryDocumentType",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        verbose_name=_("Type parent"),
+    )
+    work_object_types = models.ForeignKey(
+        WorksObjectType,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        verbose_name=_("Objets"),
+    )
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=(Q(parent__isnull=False) & Q(work_object_types__isnull=True))
+                | (Q(parent__isnull=True) & Q(work_object_types__isnull=False)),
+                name="Only parent types can be linked to a work object type",
+            )
+        ]
+
+    def __str__(self):
+        return self.name
 
 
 class QgisProject(models.Model):

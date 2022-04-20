@@ -109,5 +109,44 @@
     </div>
   </div>
 
+  {% if documents %}
+    <div class="row">
+      <div class="col">
+        <h2>Documents</h2>
 
+        {% for document in documents %}
+          <dl class="mb-4">
+            <dt>{% trans "Nom" %}</dt>
+            <dd>
+                <div class="pl-0 col-10">
+                  {{ document.document }}
+                  {% if document.is_public %}
+                    <span class="badge badge-pill badge-pill-55 badge-success">{% trans "Publique" %}</span>
+                  {% endif %}
+                </div>
+                <div class="col-2 text-right">
+                  <a href="/media/{{ document.document }}/" download target="_blank"><i class="fa fa-download" aria-hidden="true"></i></a>
+                  {% if user == document.owner or user.is_superuser %}
+                    <a class="text-danger" href="/permit-requests/documents/{{ document.id }}/delete" type=""><i class="fa fa-trash" aria-hidden="true"></i></a>
+                  {% endif %}
+                </div>
+            </dd>
+
+            <dt>{% trans "Status" %}</dt>
+            <dd>{{ document.get_status_display }}</dd>
+
+            <dt>{% trans "Description" %}</dt>
+            <dd>{{ document.description }}</dd>
+
+            <dt>{% trans "Type" %}</dt>
+            <dd>{{ document.document_type }}</dd>
+          </dl>
+          {% if not forloop.last %}
+            <hr>
+          {% endif %}
+        {% endfor %}
+
+      </div>
+    </div>
+  {% endif %}
 </div>

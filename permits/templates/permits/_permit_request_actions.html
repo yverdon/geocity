@@ -73,9 +73,14 @@
           </li>
 
       {% endif %}
-
+      {% if formsets.complementary_documents %}
+          <li class="nav-item">
+            <a class="btn btn-primary btn-action nav-link{% if active_form == 'complementary_documents' %} active{% endif %}" id="documents-tab" data-toggle="tab" href="#documents" role="tab" aria-controls="documents">
+                {% trans "Documents" %}
+            </a>
+          </li>
+      {% endif %}
       </ul>
-
     </div>
   </div>
 
@@ -233,6 +238,32 @@
                     </div>
                 </form>
             </div>
+        {% endif %}
+
+        {% if formsets.complementary_documents %}
+          <div class="tab-pane{% if active_form == "complementary_documents" %} show active{% endif %}" id="documents" role="tabpanel" aria-labelledby="documents-tab">
+              <h4>{% trans "Ajout de documents à la demande" %}</h4>
+              <form method="post" enctype="multipart/form-data">
+                {{ formsets.complementary_documents.management_form }}
+                {% csrf_token %}
+                <div id="complementary-documents">
+                  {% for form in formsets.complementary_documents %}
+                    <div class="complementary-document">
+                      {% bootstrap_form form layout='horizontal' %}
+                    </div>
+                  {% endfor %}
+                </div>
+                <div class="text-center mb-4">
+                  <a href="#" id="add-document"><i class="fa fa-plus"></i> {% trans "Ajouter un autre document" %}</a>
+                  <a href="#" id="remove-document" class="text-danger" hidden><i class="fa fa-minus"></i> {% trans "Supprimer un document" %}</a>
+                </div>
+                <div class="text-right">
+                  <input name="action" type="hidden" value="complementary_documents">
+                  <button class="btn btn-primary" {% if forms.complementary_documents.disabled %}disabled{% endif %}>{% trans "Enregistrer" %}</button>
+                  <button class="btn btn-primary" name="save_continue" {% if forms.complementary_documents.disabled %}disabled{% endif %}>{% trans "Enregistrer et continuer les modifications" %}</button>
+                </div>
+              </form>
+          </div>
         {% endif %}
 
       </div>

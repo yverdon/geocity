@@ -792,3 +792,7 @@ table.table thead th.desc {
   position: relative;
   top: -0.1em;
 }
+
+.badge-pill-55 {
+  font-size: 55%;
+}

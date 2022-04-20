@@ -1322,6 +1322,96 @@ class PermitRequestClassifyForm(forms.ModelForm):
         return permit_request
 
 
+class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
+    authorised_departments = forms.ModelMultipleChoiceField(
+        queryset=None, widget=forms.CheckboxSelectMultiple, required=False,
+    )
+
+    class Meta:
+        model = models.PermitRequestComplementaryDocument
+        fields = [
+            "document",
+            "description",
+            "status",
+            "authorised_departments",
+            "is_public",
+            "document_type",
+        ]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 2}),
+        }
+
+    def __init__(self, permit_request, *args, **kwargs):
+        super(PermitRequestComplementaryDocumentsForm, self).__init__(*args, **kwargs)
+
+        self.fields[
+            "authorised_departments"
+        ].queryset = models.PermitDepartment.objects.filter(
+            administrative_entity=permit_request.administrative_entity
+        ).all()
+
+        parent_types = models.ComplementaryDocumentType.objects.filter(
+            work_object_types__in=permit_request.works_object_types.all()
+        ).all()
+
+        self.fields["document_type"].queryset = parent_types
+        self.fields["document_type"].required = True
+
+        for parent in parent_types:
+            name = "parent_{}".format(parent.pk)
+            self.fields[name] = forms.ModelChoiceField(
+                queryset=models.ComplementaryDocumentType.objects.filter(
+                    work_object_types=None, parent=parent
+                ),
+                required=False,
+            )
+            self.fields[name].widget.attrs["hidden"] = ""
+            self.fields[name].widget.attrs["class"] = "child-type"
+            self.fields[name].label = ""
+
+    def save(self, commit=True):
+        document = super().save(commit=False)
+
+        # set the child type as the documents type
+        document.document_type = models.ComplementaryDocumentType.objects.filter(
+            pk=self.cleaned_data[
+                "parent_{}".format(self.cleaned_data["document_type"].pk)
+            ].pk
+        ).get()
+
+        if commit:
+            document.save()
+
+        return document
+
+    def clean_document(self):
+        document = self.cleaned_data.get("document")
+
+        services.validate_file(document)
+
+        return document
+
+    def clean(self):
+        cleaned_data = super(PermitRequestComplementaryDocumentsForm, self).clean()
+
+        if not self.cleaned_data.get(
+            "authorised_departments"
+        ) and not self.cleaned_data.get("is_public"):
+            raise ValidationError(
+                _(
+                    "Un département doit être renseigner ou le document doit être publique"
+                )
+            )
+
+        if not self.cleaned_data.get("document_type"):
+            return cleaned_data
+
+        if not cleaned_data["parent_{}".format(cleaned_data.get("document_type").pk)]:
+            raise ValidationError(_("Un sous-type doit être renseigné!"))
+
+        return cleaned_data
+
+
 class SocialSignupForm(SignupForm):
     first_name = forms.CharField(
         max_length=30,
@@ -1414,3 +1504,16 @@ class SocialSignupForm(SignupForm):
             raise ProviderException(_("Unknown social account provider"))
 
         return adapter.save_user(request, self.sociallogin, form=self)
+
+
+class ComplementaryDocumentTypeAdminForm(forms.ModelForm):
+    model = models.ComplementaryDocumentType
+
+    def clean(self):
+        cleaned_data = super(ComplementaryDocumentTypeAdminForm, self).clean()
+        if cleaned_data["parent"] and cleaned_data["work_object_types"]:
+            raise ValidationError(
+                _("Seul les types parents peuvent être lié a un Work Object Type")
+            )
+
+        return cleaned_data
