@@ -685,7 +685,7 @@ class PermitRequestComplementaryDocumentDeleteView(DeleteView):
     def delete(self, request, *args, **kwargs):
         obj = self.get_object()
 
-        if not obj.owner == self.request.user:
+        if not obj.owner == self.request.user and not self.request.user.is_superuser:
             messages.add_message(request, messages.ERROR, self.owner_error_message)
             return redirect(self.get_success_url())
 
