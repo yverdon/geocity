@@ -231,7 +231,6 @@ class UserAdmin(BaseUserAdmin):
         # limit editable fields to protect user data, superuser creation must be done using django shell
         if request.user.is_superuser:
             return [
-                "email",
                 "is_superuser",
                 "is_sociallogin",
             ]
