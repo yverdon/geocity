@@ -7,7 +7,7 @@ import os
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
-from django.db.models import JSONField, UniqueConstraint
+from django.db.models import JSONField, UniqueConstraint, ProtectedError
 from django.core.exceptions import ValidationError
 from django.core.validators import (
     FileExtensionValidator,
@@ -1259,8 +1259,16 @@ class PermitRequestComplementaryDocument(models.Model):
 
     def delete(self, using=None, keep_parents=False):
         # delete the uploaded file
-        os.remove(os.path.join(settings.MEDIA_ROOT, self.document.name))
-        return super().delete(using, keep_parents)
+        try:
+            os.remove(os.path.join(settings.MEDIA_ROOT, self.document.name))
+            return super().delete(using, keep_parents)
+        except OSError as e:
+            raise ProtectedError(
+                _("Le document {} n'a pas pu être supprimé".format(self)), e
+            )
+
+    def __str__(self):
+        return self.document.name
 
 
 class ComplementaryDocumentType(models.Model):
