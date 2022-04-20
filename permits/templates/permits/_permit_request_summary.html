@@ -118,13 +118,13 @@
           <dl class="mb-4">
             <dt>{% trans "Nom" %}</dt>
             <dd>
-                <div class="pl-0 col-6">
+                <div class="pl-0 col-10">
                   {{ document.document }}
                   {% if document.is_public %}
-                    <span class="badge badge-pill badge-success">{% trans "Publique" %}</span>
+                    <span class="badge badge-pill badge-pill-55 badge-success">{% trans "Publique" %}</span>
                   {% endif %}
                 </div>
-                <div class="col-6 text-right">
+                <div class="col-2 text-right">
                   <a href="/media/{{ document.document }}/" download target="_blank"><i class="fa fa-download" aria-hidden="true"></i></a>
                   {% if user == document.owner or user.is_superuser %}
                     <a class="text-danger" href="/permit-requests/documents/{{ document.id }}/delete" type=""><i class="fa fa-trash" aria-hidden="true"></i></a>
