@@ -6,14 +6,21 @@ from constance import config
 from django.conf import settings
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.auth.views import PasswordResetView
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.utils.translation import gettext_lazy as _
 
 if settings.ENABLE_2FA:
     from two_factor.views import LoginView
 else:
     from django.contrib.auth.views import LoginView
 
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
@@ -79,27 +86,46 @@ def permit_author_create(request):
 
     if is_valid:
         new_user = djangouserform.save()
+        # email wasn't verified yet, so account isn't active just yet
+        new_user.is_active = False
         permitauthorform.instance.user = new_user
         permitauthorform.save()
 
-        permits_services.store_tags_in_session(request)
-        if settings.ENABLE_2FA:
-            return HttpResponseRedirect(
-                reverse("two_factor:profile")
-                + (
-                    "?" + request.META["QUERY_STRING"]
-                    if request.META["QUERY_STRING"]
-                    else ""
-                )
-            )
-        return HttpResponseRedirect(
-            reverse("permits:permit_request_select_administrative_entity")
-            + (
-                "?" + request.META["QUERY_STRING"]
-                if request.META["QUERY_STRING"]
-                else ""
-            )
+        current_site = get_current_site(request)
+        mail_subject = _("Activer votre compte")
+        message = render_to_string('registration/emails/email_confirmation.txt', {
+            'user': new_user,
+            'domain': current_site.domain,
+            'uid': urlsafe_base64_encode(force_bytes(new_user.pk)),
+            'token': PasswordResetTokenGenerator().make_token(new_user),
+            'signature': 'Geocity'
+        })
+
+        email = EmailMessage(
+            mail_subject, message, to=[new_user.email]
         )
+        email.send()
+        return HttpResponse(
+            'Please confirm your email address to complete the registration')
+
+        # permits_services.store_tags_in_session(request)
+        # if settings.ENABLE_2FA:
+        #     return HttpResponseRedirect(
+        #         reverse("two_factor:profile")
+        #         + (
+        #             "?" + request.META["QUERY_STRING"]
+        #             if request.META["QUERY_STRING"]
+        #             else ""
+        #         )
+        #     )
+        # return HttpResponseRedirect(
+        #     reverse("permits:permit_request_select_administrative_entity")
+        #     + (
+        #         "?" + request.META["QUERY_STRING"]
+        #         if request.META["QUERY_STRING"]
+        #         else ""
+        #     )
+        # )
 
     return render(
         request,
