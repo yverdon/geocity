@@ -1,5 +1,6 @@
 from allauth.socialaccount.models import SocialApp
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -88,20 +89,27 @@ def permit_author_create(request):
             {
                 "user": new_user,
                 "domain": "geocity.docker.test",  # get_current_site(request).domain,
-                "url": reverse("activate_account", kwargs={
-                    # we need the user id to validate the token
-                    "uid": urlsafe_base64_encode(force_bytes(new_user.pk)),
-                    "token": PasswordResetTokenGenerator().make_token(new_user),
-                }),
+                "url": reverse(
+                    "activate_account",
+                    kwargs={
+                        # we need the user id to validate the token
+                        "uid": urlsafe_base64_encode(force_bytes(new_user.pk)),
+                        "token": PasswordResetTokenGenerator().make_token(new_user),
+                    },
+                ),
                 "signature": _("L'équipe de Geocity"),
             },
         )
 
         email = EmailMessage(mail_subject, message, to=[new_user.email])
         email.send()
-        return HttpResponse(
-            "Please confirm your email address to complete the registration"
+        messages.success(
+            request,
+            _(
+                "Votre compte a été créé avec succès! Vous allez recevoir un email pour valider votre email"
+            ),
         )
+        return redirect(reverse("account_login"))
 
         # permits_services.store_tags_in_session(request)
         # if settings.ENABLE_2FA:
@@ -135,8 +143,19 @@ class ActivateAccountView(View):
             uid = force_text(urlsafe_base64_decode(uid))
             user = User.objects.get(pk=uid)
         except User.DoesNotExist:
-            return redirect(reverse("permit_author_create"))
-        res = PasswordResetTokenGenerator().check_token(user, token)
+            user = None
+
+        if not user or not PasswordResetTokenGenerator().check_token(user, token):
+            messages.add_message(
+                request,
+                messages.ERROR,
+                _("Une erreur est survenu lors de l'activation"),
+            )
+        else:
+            user.is_active = True
+            user.save()
+            messages.success(request, _("Votre compte a été activé avec succès!"))
+
         return redirect(reverse("account_login"))
 
 
