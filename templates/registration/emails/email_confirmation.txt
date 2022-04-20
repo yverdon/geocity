@@ -4,7 +4,7 @@
 
 {% trans "Nous devons simplement vérifier votre adresse e-mail avant que vous puissiez accéder à Geocity." %}
 
-{% trans "Vérifiez votre adresse e-mail: " %}https://{{ domain }}/{{ uid }}/{{ token }}
+{% trans "Vérifiez votre adresse e-mail: " %}https://{{ domain }}{{ url }}
 
 {% trans "Avec nos meilleures salutations," %}
 {{ signature }}

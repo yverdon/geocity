@@ -6,14 +6,15 @@ from constance import config
 from django.conf import settings
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.auth.views import PasswordResetView
-from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.translation import gettext_lazy as _
+from django.views import View
 
 if settings.ENABLE_2FA:
     from two_factor.views import LoginView
@@ -88,25 +89,30 @@ def permit_author_create(request):
         new_user = djangouserform.save()
         # email wasn't verified yet, so account isn't active just yet
         new_user.is_active = False
+        new_user.save()
         permitauthorform.instance.user = new_user
         permitauthorform.save()
 
-        current_site = get_current_site(request)
         mail_subject = _("Activer votre compte")
-        message = render_to_string('registration/emails/email_confirmation.txt', {
-            'user': new_user,
-            'domain': current_site.domain,
-            'uid': urlsafe_base64_encode(force_bytes(new_user.pk)),
-            'token': PasswordResetTokenGenerator().make_token(new_user),
-            'signature': 'Geocity'
-        })
-
-        email = EmailMessage(
-            mail_subject, message, to=[new_user.email]
+        message = render_to_string(
+            "registration/emails/email_confirmation.txt",
+            {
+                "user": new_user,
+                "domain": "geocity.docker.test",  # get_current_site(request).domain,
+                "url": reverse("activate_account", kwargs={
+                    # we need the user id to validate the token
+                    "uid": urlsafe_base64_encode(force_bytes(new_user.pk)),
+                    "token": PasswordResetTokenGenerator().make_token(new_user),
+                }),
+                "signature": _("L'équipe de Geocity"),
+            },
         )
+
+        email = EmailMessage(mail_subject, message, to=[new_user.email])
         email.send()
         return HttpResponse(
-            'Please confirm your email address to complete the registration')
+            "Please confirm your email address to complete the registration"
+        )
 
         # permits_services.store_tags_in_session(request)
         # if settings.ENABLE_2FA:
