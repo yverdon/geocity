@@ -187,7 +187,7 @@ class UserAdmin(BaseUserAdmin):
         (None, {"fields": ("username",)},),
         (
             "Informations personnelles",
-            {"fields": ("first_name", "last_name", "email")},
+            {"fields": ("first_name", "last_name", "email", "is_sociallogin",)},
         ),
         (
             "Permissions",
@@ -209,7 +209,9 @@ class UserAdmin(BaseUserAdmin):
         "email",
         "first_name",
         "last_name",
+        "is_active",
         "is_staff",
+        "is_superuser",
         "is_sociallogin",
         "last_login",
         "date_joined",
@@ -231,6 +233,7 @@ class UserAdmin(BaseUserAdmin):
             return [
                 "email",
                 "is_superuser",
+                "is_sociallogin",
             ]
         else:
             return [
@@ -238,6 +241,7 @@ class UserAdmin(BaseUserAdmin):
                 "username",
                 "user_permissions",
                 "is_superuser",
+                "is_sociallogin",
                 "is_staff",
                 "last_login",
                 "date_joined",
