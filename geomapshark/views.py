@@ -157,11 +157,7 @@ class ActivateAccountView(View):
             user = None
 
         if not user or not PasswordResetTokenGenerator().check_token(user, token):
-            messages.add_message(
-                request,
-                messages.ERROR,
-                _("Une erreur est survenu lors de l'activation"),
-            )
+            messages.error(request, _("Une erreur est survenu lors de l'activation"))
         else:
             user.is_active = True
             user.save()
