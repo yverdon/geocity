@@ -117,6 +117,11 @@ urlpatterns += [
         name="password_change",
     ),
     path(
+        "account/activate/<uid>/<token>/",
+        views.ActivateAccountView.as_view(),
+        name="activate_account",
+    ),
+    path(
         "permitauthorcreate/", views.permit_author_create, name="permit_author_create"
     ),
     path("permitauthoredit/", views.permit_author_edit, name="permit_author_edit"),
