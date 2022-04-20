@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0060_add_services_to_notify_in_WorksObjectProperty'),
+        ('permits', '0063_anonymous_requests_users_and_wots'),
     ]
 
     operations = [
