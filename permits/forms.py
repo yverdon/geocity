@@ -1341,8 +1341,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             "description": forms.Textarea(attrs={"rows": 2}),
         }
 
-    def __init__(self, *args, **kwargs):
-        permit_request = kwargs.pop("permit_request")
+    def __init__(self, permit_request, *args, **kwargs):
         super(PermitRequestComplementaryDocumentsForm, self).__init__(*args, **kwargs)
 
         self.fields[
