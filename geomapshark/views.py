@@ -140,6 +140,17 @@ def permit_author_create(request):
     )
 
 
+class ActivateAccountView(View):
+    def get(self, request, uid, token):
+        try:
+            uid = force_text(urlsafe_base64_decode(uid))
+            user = User.objects.get(pk=uid)
+        except User.DoesNotExist:
+            return redirect(reverse("permit_author_create"))
+        res = PasswordResetTokenGenerator().check_token(user, token)
+        return redirect(reverse("account_login"))
+
+
 @login_required
 def permit_author_edit(request):
 
