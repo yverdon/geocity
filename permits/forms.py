@@ -1431,7 +1431,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
                 queryset=models.ComplementaryDocumentType.objects.filter(
                     work_object_types=None, parent=parent
                 ),
-                required=True,
+                required=False,
             )
             self.fields[name].widget.attrs["hidden"] = ""
             self.fields[name].widget.attrs["class"] = "child-type"
@@ -1470,6 +1470,9 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
                     "Un département doit être renseigner ou le document doit être publique"
                 )
             )
+
+        if not cleaned_data["parent_{}".format(cleaned_data["document_type"].pk)]:
+            raise ValidationError(_("Un sous-type doit être renseigné!"))
 
         return cleaned_data
 
