@@ -1235,7 +1235,7 @@ def get_permit_complementary_documents(permit_request, user):
         models.PermitRequestComplementaryDocument.objects.filter(
             Q(permit_request=permit_request),
             Q(is_public=True)
-            | Q(owner=user.groups.all())
+            | Q(owner=user)
             | Q(authorised_departments__group__in=user.groups.all()),
         )
         .order_by("pk")
