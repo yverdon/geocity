@@ -3,6 +3,7 @@ let documents = document.getElementsByClassName('complementary-document')
 let nbDocuments = documents.length;
 
 hideChildrenDocumentTypes(document)
+displayChildSelect(documents[0])
 
 document.getElementById('add-document').addEventListener('click', (e) => {
   e.preventDefault()
@@ -13,12 +14,12 @@ document.getElementById('add-document').addEventListener('click', (e) => {
   ++nbDocuments
 
   // regex to find all instances of the form number
-  let regex = RegExp(`form-(\\d){1}-`,'g')
+  const regex = RegExp(`form-(\\d){1}`,'g')
 
   // clone the form
   let clone = documents[0].cloneNode(true)
   clone.id = `document-${nbDocuments-1}`
-  clone.innerHTML = clone.innerHTML.replace(regex, `form-${nbDocuments-1}-`)
+  clone.innerHTML = clone.innerHTML.replace(regex, `form-${nbDocuments-1}`)
 
   // change the "form number"
   document.getElementById("id_form-TOTAL_FORMS").value = nbDocuments
@@ -27,6 +28,8 @@ document.getElementById('add-document').addEventListener('click', (e) => {
 
   clone.prepend(document.createElement('hr'))
   container.appendChild(clone)
+
+  displayChildSelect(clone)
 })
 
 document.getElementById('remove-document').addEventListener('click', (e) => {
@@ -53,25 +56,22 @@ document.getElementById('remove-document').addEventListener('click', (e) => {
   target.remove()
 })
 
-document.addEventListener('change', (e) => {
-  // check if we're working with a document_type select
-  if (!e.target.id.match(/form-(\d){1}-document_type/))
-    return
+function displayChildSelect(parent) {
+  const regex = RegExp(`form-(\\d){1}`,'g')
+  const prefix = parent.innerHTML.match(regex)[0]
+  document.getElementById(`id_${prefix}-document_type`).addEventListener('change', (e) => {
+    for (const child of parent.getElementsByClassName('child-type')) {
+      child.setAttribute('hidden', '')
+      child.closest('.form-group').style.display = 'none'
+    }
 
-  for (const child of e.target.closest('.complementary-document').getElementsByClassName('child-type')) {
-    child.setAttribute('hidden', '')
-    child.closest('.form-group').style.display = 'none'
-  }
-
-  // get the "form id" $
-  // e.g. id_form-0
-  const formID = e.target.id.split('document_type')[0]
-  const targetChild = document.getElementById(`${formID}parent_${e.target.value}`)
-  if (targetChild) {
-    targetChild.removeAttribute('hidden')
-    targetChild.closest('.form-group').style.display = 'flex'
-  }
-})
+    const targetChild = document.getElementById(`id_${prefix}-parent_${e.target.value}`)
+    if (targetChild) {
+      targetChild.removeAttribute('hidden')
+      targetChild.closest('.form-group').style.display = 'flex'
+    }
+  })
+}
 
 function hideChildrenDocumentTypes(parent) {
   for (const child of parent.getElementsByClassName('child-type')) {
