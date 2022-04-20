@@ -1426,11 +1426,11 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
 
         for parent in parent_types:
             name = "parent_{}".format(parent.pk)
-            self.fields[name] = forms.ModelChoiceField(queryset=None, required=False)
-            self.fields[
-                name
-            ].queryset = models.ComplementaryDocumentType.objects.filter(
-                work_object_types=None, parent=parent
+            self.fields[name] = forms.ModelChoiceField(
+                queryset=models.ComplementaryDocumentType.objects.filter(
+                    work_object_types=None, parent=parent
+                ),
+                required=False,
             )
             self.fields[name].widget.attrs["hidden"] = ""
             self.fields[name].widget.attrs["class"] = "child-type"
