@@ -18,7 +18,7 @@ from django.core.exceptions import (
 )
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.db.models import Prefetch, Sum, Q, CharField, Value
+from django.db.models import Prefetch, Sum, Q, CharField, Value, ProtectedError
 from django.forms import modelformset_factory, formset_factory
 from django.http import (
     Http404,
@@ -710,8 +710,18 @@ class PermitRequestComplementaryDocumentDeleteView(DeleteView):
             messages.add_message(request, messages.ERROR, self.final_error_message)
             return redirect(self.get_success_url())
 
+        try:
+            res = super().delete(request, *args, **kwargs)
+        except ProtectedError as error:
+            messages.add_message(
+                request,
+                messages.ERROR,
+                _("%s. [%s]") % (error.args[0], error.args[1].args[1]),
+            )
+            return redirect(self.get_success_url())
+
         messages.success(self.request, self.success_message % obj.document)
-        return super().delete(request, *args, **kwargs)
+        return res
 
     def get_success_url(self):
         return reverse_lazy(

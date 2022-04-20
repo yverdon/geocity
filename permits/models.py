@@ -13,6 +13,7 @@ from django.db.models import (
     F,
     ExpressionWrapper,
     BooleanField,
+    ProtectedError,
 )
 from django.core.exceptions import ValidationError
 from django.core.validators import (
@@ -1418,8 +1419,16 @@ class PermitRequestComplementaryDocument(models.Model):
 
     def delete(self, using=None, keep_parents=False):
         # delete the uploaded file
-        os.remove(os.path.join(settings.MEDIA_ROOT, self.document.name))
-        return super().delete(using, keep_parents)
+        try:
+            os.remove(os.path.join(settings.MEDIA_ROOT, self.document.name))
+            return super().delete(using, keep_parents)
+        except OSError as e:
+            raise ProtectedError(
+                _("Le document {} n'a pas pu être supprimé".format(self)), e
+            )
+
+    def __str__(self):
+        return self.document.name
 
 
 class ComplementaryDocumentType(models.Model):
