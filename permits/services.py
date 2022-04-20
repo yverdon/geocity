@@ -1306,9 +1306,15 @@ def get_contacts_summary(permit_request):
 
 
 def get_permit_complementary_documents(permit_request, user):
+    qs = models.PermitRequestComplementaryDocument.objects.filter(
+        Q(permit_request=permit_request)
+    )
+
+    if user.is_superuser:
+        return qs.order_by("pk").all().distinct()
+
     return (
-        models.PermitRequestComplementaryDocument.objects.filter(
-            Q(permit_request=permit_request),
+        qs.filter(
             Q(is_public=True)
             | Q(owner=user)
             | Q(authorised_departments__group__in=user.groups.all()),
