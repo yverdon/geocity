@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordResetView
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
@@ -64,9 +64,8 @@ class CustomPasswordResetView(PasswordResetView):
 
 
 class CustomLoginView(LoginView):
-
     def get(self, request, *args, **kwargs):
-        successful = request.GET.get('success')
+        successful = request.GET.get("success")
         # check if we need to display an activation message
         # if the value is None, we didn't come from the activation view
         if successful is None:
@@ -82,6 +81,22 @@ class CustomLoginView(LoginView):
         context.update({"social_apps": SocialApp.objects.all()})
 
         return services.get_context_data(context, self.request)
+
+    def done(self, form_list, **kwargs):
+        permits_services.store_tags_in_session(self.request)
+        return super(CustomLoginView, self).done(form_list, **kwargs)
+
+    def get_success_url(self):
+        return (
+            reverse("two_factor:profile")
+            if settings.ENABLE_2FA and not self.request.user.totpdevice_set.exists()
+            else reverse("permits:permit_request_select_administrative_entity")
+            + (
+                "?" + self.request.META["QUERY_STRING"]
+                if self.request.META["QUERY_STRING"]
+                else ""
+            )
+        )
 
 
 def permit_author_create(request):
@@ -108,7 +123,7 @@ def permit_author_create(request):
                     kwargs={
                         # we need the user id to validate the token
                         "uid": urlsafe_base64_encode(force_bytes(new_user.pk)),
-                        "token": PasswordResetTokenGenerator().make_token(new_user),
+                        "token": default_token_generator.make_token(new_user),
                     },
                 ),
                 "signature": _("L'équipe de Geocity"),
@@ -125,25 +140,6 @@ def permit_author_create(request):
         )
         return redirect(reverse("account_login"))
 
-        # permits_services.store_tags_in_session(request)
-        # if settings.ENABLE_2FA:
-        #     return HttpResponseRedirect(
-        #         reverse("two_factor:profile")
-        #         + (
-        #             "?" + request.META["QUERY_STRING"]
-        #             if request.META["QUERY_STRING"]
-        #             else ""
-        #         )
-        #     )
-        # return HttpResponseRedirect(
-        #     reverse("permits:permit_request_select_administrative_entity")
-        #     + (
-        #         "?" + request.META["QUERY_STRING"]
-        #         if request.META["QUERY_STRING"]
-        #         else ""
-        #     )
-        # )
-
     return render(
         request,
         "permits/permit_request_author.html",
@@ -159,7 +155,7 @@ class ActivateAccountView(View):
         except User.DoesNotExist:
             user = None
 
-        successful = user and PasswordResetTokenGenerator().check_token(user, token)
+        successful = user and default_token_generator.check_token(user, token)
         if successful:
             user.is_active = True
             user.save()
