@@ -81,7 +81,7 @@ class CustomLoginView(LoginView):
         # if the value is None, we didn't come from the activation view
         if successful is None:
             pass
-        elif successful:
+        elif successful == "True":
             messages.success(request, _("Votre compte a été activé avec succès!"))
         else:
             messages.error(request, _("Une erreur est survenu lors de l'activation"))
