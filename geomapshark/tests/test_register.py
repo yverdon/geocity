@@ -3,6 +3,8 @@ from django.shortcuts import resolve_url
 from django.test import TestCase
 from django.urls import reverse
 from captcha.models import CaptchaStore
+from django.contrib.auth import logout
+from django.core import mail
 
 
 class TestRegisterMixin:
@@ -78,10 +80,11 @@ class TestRegisterView(TestCase, TestRegisterMixin):
 
         def test_post_register_view(self):
             response = self.execute_post_register()
-
             self.assertEqual(response.status_code, 200)
-            self.assertTrue(response.context["user"].is_authenticated)
-            self.assertRedirects(
+            self.assertFalse(response.context["user"].is_authenticated)
+            self.assertRedirects(response, resolve_url("account_login"))
+            self.assertContains(
                 response,
-                resolve_url("permits:permit_request_select_administrative_entity"),
+                "Votre compte a été créé avec succès! Vous allez recevoir un email pour valider votre email",
             )
+            self.assertEqual(len(mail.outbox), 1)
