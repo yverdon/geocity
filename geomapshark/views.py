@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.auth.views import PasswordResetView
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_text
@@ -63,6 +64,19 @@ class CustomPasswordResetView(PasswordResetView):
 
 
 class CustomLoginView(LoginView):
+
+    def get(self, request, *args, **kwargs):
+        successful = request.GET.get('success')
+        # check if we need to display an activation message
+        # if the value is None, we didn't come from the activation view
+        if successful is None:
+            pass
+        elif successful:
+            messages.success(request, _("Votre compte a été activé avec succès!"))
+        else:
+            messages.error(request, _("Une erreur est survenu lors de l'activation"))
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({"social_apps": SocialApp.objects.all()})
@@ -88,7 +102,7 @@ def permit_author_create(request):
             "registration/emails/email_confirmation.txt",
             {
                 "user": new_user,
-                "domain": "geocity.docker.test",  # get_current_site(request).domain,
+                "domain": get_current_site(request).domain,
                 "url": reverse(
                     "activate_account",
                     kwargs={
@@ -145,14 +159,12 @@ class ActivateAccountView(View):
         except User.DoesNotExist:
             user = None
 
-        if not user or not PasswordResetTokenGenerator().check_token(user, token):
-            messages.error(request, _("Une erreur est survenu lors de l'activation"))
-        else:
+        successful = user and PasswordResetTokenGenerator().check_token(user, token)
+        if successful:
             user.is_active = True
             user.save()
-            messages.success(request, _("Votre compte a été activé avec succès!"))
 
-        return redirect(reverse("account_login"))
+        return redirect(reverse("account_login") + f"?success={successful}")
 
 
 @login_required
