@@ -5,6 +5,11 @@ from django.urls import reverse
 from captcha.models import CaptchaStore
 from django.contrib.auth import logout
 from django.core import mail
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.models import User
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from permits.tests import factories
 
 
 class TestRegisterMixin:
@@ -50,15 +55,6 @@ class TestRegisterView(TestCase, TestRegisterMixin):
         self.assertContains(response, "Cet email est déjà utilisé.")
         self.assertFalse(response.context["user"].is_authenticated)
 
-    def test_user_cannot_register_if_captcha_isnot_filled(self):
-        data = self.get_user_data()
-        response = self.client.post(reverse("permit_author_create"), data, follow=True)
-        self.assertEquals(
-            response.context[0]["permitauthorform"].errors["captcha"],
-            ["Ce champ est obligatoire."],
-        )
-        self.assertFalse(response.context["user"].is_authenticated)
-
     def execute_post_register(self):
         data = self.get_user_data()
         captcha = self.generate_captcha()
@@ -67,6 +63,60 @@ class TestRegisterView(TestCase, TestRegisterMixin):
             {**data, **{"captcha_0": captcha.hashkey, "captcha_1": captcha.response},},
             follow=True,
         )
+
+    def test_account_activation_success(self):
+        # data = self.get_user_data()
+        # captcha = self.generate_captcha()
+        # self.client.post(reverse("permit_author_create"), {**data, **{"captcha_0": captcha.hashkey, "captcha_1": captcha.response}}, follow=True)
+        self.execute_post_register()
+        user = User.objects.get(email=self.get_user_data()["email"])
+
+        response = self.client.get(
+            reverse(
+                "activate_account",
+                kwargs={
+                    "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+                    "token": default_token_generator.make_token(user),
+                },
+            ),
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.request["QUERY_STRING"], "success=True")
+        self.assertContains(response, "Votre compte a été activé avec succès!")
+
+    def test_account_activation_fail(self):
+        # data = self.get_user_data()
+        # captcha = self.generate_captcha()
+        # self.client.post(reverse("permit_author_create"), {**data, **{"captcha_0": captcha.hashkey, "captcha_1": captcha.response}}, follow=True)
+        self.execute_post_register()
+        user = User.objects.get(email=self.get_user_data()["email"])
+        user2 = factories.UserFactory()
+
+        response = self.client.get(
+            reverse(
+                "activate_account",
+                kwargs={
+                    "uid": urlsafe_base64_encode(force_bytes(user2.pk)),
+                    "token": default_token_generator.make_token(user),
+                },
+            ),
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.request["QUERY_STRING"], "success=False")
+        self.assertContains(response, "Une erreur est survenu")
+
+    def test_user_cannot_register_if_captcha_isnot_filled(self):
+        data = self.get_user_data()
+        response = self.client.post(reverse("permit_author_create"), data, follow=True)
+        self.assertEquals(
+            response.context[0]["permitauthorform"].errors["captcha"],
+            ["Ce champ est obligatoire."],
+        )
+        self.assertFalse(response.context["user"].is_authenticated)
 
     if settings.ENABLE_2FA:
 
