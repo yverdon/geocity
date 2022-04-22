@@ -2,22 +2,7 @@ from django.conf import settings
 from django.shortcuts import resolve_url
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth import logout
-
-
-def get_user_data():
-    return {
-        "username": "joe",
-        "password1": "4512carlos",
-        "password2": "4512carlos",
-        "first_name": "Joe",
-        "last_name": "Blow",
-        "email": "foo@bar.com",
-        "address": "an address",
-        "zipcode": 1007,
-        "city": "Lausanne",
-        "phone_first": "0789124692",
-    }
+from captcha.models import CaptchaStore
 
 
 class TestRegisterMixin:
@@ -33,22 +18,58 @@ class TestRegisterMixin:
 
 
 class TestRegisterView(TestCase, TestRegisterMixin):
+    def generate_captcha(self):
+        return CaptchaStore.objects.get(hashkey=CaptchaStore.generate_key())
+
+    def get_user_data(self):
+        return {
+            "username": "joe",
+            "password1": "yCKntcz@#3&U%8",
+            "password2": "yCKntcz@#3&U%8",
+            "first_name": "Joe",
+            "last_name": "Blow",
+            "email": "foo@bar.com",
+            "address": "an address",
+            "zipcode": 1007,
+            "city": "Lausanne",
+            "phone_first": "0789124692",
+        }
+
     def test_user_cannot_register_if_email_is_used(self):
-        data = get_user_data()
-        self.client.post(reverse("permit_author_create"), data, follow=True)
+        data = self.get_user_data()
+        captcha = self.generate_captcha()
+        self.client.post(
+            reverse("permit_author_create"),
+            {**data, **{"captcha_0": captcha.hashkey, "captcha_1": captcha.response}},
+            follow=True,
+        )
         self.client.post(reverse("logout"))
         response = self.client.post(reverse("permit_author_create"), data, follow=True)
         self.assertContains(response, "Cet email est déjà utilisé.")
         self.assertFalse(response.context["user"].is_authenticated)
 
+    def test_user_cannot_register_if_captcha_isnot_filled(self):
+        data = self.get_user_data()
+        response = self.client.post(reverse("permit_author_create"), data, follow=True)
+        self.assertEquals(
+            response.context[0]["permitauthorform"].errors["captcha"],
+            ["Ce champ est obligatoire."],
+        )
+        self.assertFalse(response.context["user"].is_authenticated)
+
+    def execute_post_register(self):
+        data = self.get_user_data()
+        captcha = self.generate_captcha()
+        return self.client.post(
+            reverse("permit_author_create"),
+            {**data, **{"captcha_0": captcha.hashkey, "captcha_1": captcha.response},},
+            follow=True,
+        )
+
     if settings.ENABLE_2FA:
 
         def test_post_register_view(self):
-            data = get_user_data()
-            response = self.client.post(
-                reverse("permit_author_create"), data, follow=True
-            )
-
+            response = self.execute_post_register()
             self.assertEqual(response.status_code, 200)
             self.assertTrue(response.context["user"].is_authenticated)
             self.assertRedirects(response, resolve_url("two_factor:profile"))
@@ -56,10 +77,7 @@ class TestRegisterView(TestCase, TestRegisterMixin):
     else:
 
         def test_post_register_view(self):
-            data = get_user_data()
-            response = self.client.post(
-                reverse("permit_author_create"), data, follow=True
-            )
+            response = self.execute_post_register()
 
             self.assertEqual(response.status_code, 200)
             self.assertTrue(response.context["user"].is_authenticated)
