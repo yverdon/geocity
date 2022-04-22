@@ -24,6 +24,7 @@ from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
+from captcha.fields import CaptchaField
 
 from accounts.dootix.adapter import DootixSocialAccountAdapter
 from accounts.dootix.provider import DootixProvider
@@ -634,6 +635,7 @@ class GenericAuthorForm(forms.ModelForm):
             attrs={"placeholder": "ex: Yverdon", "required": "required"}
         ),
     )
+    captcha = CaptchaField(required=True)
 
     class Meta:
         model = models.PermitAuthor
