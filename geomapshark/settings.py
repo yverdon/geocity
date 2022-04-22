@@ -131,6 +131,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "django_cron",
     "axes",
+    "captcha",
 ]
 
 if ENABLE_2FA:
@@ -469,3 +470,6 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 CRON_CLASSES = [
     "permits.cron.PermitRequestExpirationReminder",
 ]
+
+CAPTCHA_IMAGE_SIZE = (150, 50)
+CAPTCHA_FONT_SIZE = 26
