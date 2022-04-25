@@ -1147,24 +1147,31 @@ def _parse_email_content(template, permit_request, absolute_uri_func):
 
 
 def send_email_notification(data):
-    email_contents = _parse_email_content(
-        data["template"], data["permit_request"], data["absolute_uri_func"]
-    )
-
     from_email_name = (
-        f'{data["permit_request"].administrative_entity.expeditor_name} '
+        data["permit_request"].administrative_entity.expeditor_name
         if data["permit_request"].administrative_entity.expeditor_name
         else ""
     )
     from_email = (
-        f'{from_email_name}<{data["permit_request"].administrative_entity.expeditor_email}>'
+        data["permit_request"].administrative_entity.expeditor_email
         if data["permit_request"].administrative_entity.expeditor_email
         else settings.DEFAULT_FROM_EMAIL
     )
+    send_email(
+        template=data["template"],
+        sender=(from_email_name, from_email),
+        receivers=data["users_to_notify"],
+        subject=data["subject"],
+        context=data,
+    )
 
+
+def send_email(template, sender, receivers, subject, context):
+    email_content = render_to_string(f"permits/emails/{template}", context)
+    name, email = sender
     emails = [
-        (data["subject"], email_contents, from_email, [email_address],)
-        for email_address in data["users_to_notify"]
+        (subject, email_content, f"{name}<{email}>", [email_address],)
+        for email_address in receivers
         if validate_email(email_address)
     ]
 
