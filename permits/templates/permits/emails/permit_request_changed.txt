@@ -1,0 +1,17 @@
+{% load i18n %}{% autoescape off %}{% trans "Bonjour," %}
+
+{% trans "Le status de votre demande à changé." %}
+{% trans "Nouveau status:" %} {{ status }}
+{% trans "Raison du changement:" %}
+{{ reason }}
+
+{% trans "Vous pouvez la consulter sur le lien suivant" %}: {{ permit_request_url }}
+
+{% trans "Avec nos meilleures salutations," %}
+{% if administrative_entity.custom_signature %}
+{{ administrative_entity.custom_signature }}
+{% else %}
+{{ administrative_entity.name }}
+{% endif %}
+{% trans "Ceci est un e-mail automatique, veuillez ne pas y répondre." %}
+{% endautoescape %}
