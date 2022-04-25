@@ -883,14 +883,14 @@ class PermitRequestActorForm(forms.ModelForm):
 class PermitRequestAdditionalInformationForm(forms.ModelForm):
     required_css_class = "required"
 
+    notify_author = forms.BooleanField(
+        label=_("Notifier l'auteur de la demande"), required=False,
+    )
     reason = forms.CharField(
         label=_("Raison"),
         widget=forms.Textarea(attrs={"rows": 1}),
         required=False,
         help_text=_("(Optionnel) Raison du changement du statut de la demande"),
-    )
-    notify_author = forms.BooleanField(
-        label=_("Notifier l'auteur de la demande"), required=False,
     )
 
     class Meta:
