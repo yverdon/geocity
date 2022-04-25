@@ -39,3 +39,4 @@ django-crispy-forms
 django-cron
 django-axes
 pdf2image
+django-simple-captcha
