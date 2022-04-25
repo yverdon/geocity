@@ -1148,29 +1148,38 @@ def _parse_email_content(template, permit_request, absolute_uri_func):
 
 def send_email_notification(data):
     from_email_name = (
-        data["permit_request"].administrative_entity.expeditor_name
+        f'{data["permit_request"].administrative_entity.expeditor_name} '
         if data["permit_request"].administrative_entity.expeditor_name
         else ""
     )
-    from_email = (
-        data["permit_request"].administrative_entity.expeditor_email
+    sender = (
+        f'{from_email_name}<{data["permit_request"].administrative_entity.expeditor_email}>'
         if data["permit_request"].administrative_entity.expeditor_email
         else settings.DEFAULT_FROM_EMAIL
     )
     send_email(
         template=data["template"],
-        sender=(from_email_name, from_email),
+        sender=sender,
         receivers=data["users_to_notify"],
         subject=data["subject"],
-        context=data,
+        context={
+            "permit_request_url": data["permit_request"].get_absolute_url(
+                reverse(
+                    "permits:permit_request_detail",
+                    kwargs={"permit_request_id": data["permit_request"].pk},
+                )
+            ),
+            "administrative_entity": data["permit_request"].administrative_entity,
+            "name": data["permit_request"].author.user.get_full_name(),
+            "permit_request": data["permit_request"],
+        },
     )
 
 
 def send_email(template, sender, receivers, subject, context):
     email_content = render_to_string(f"permits/emails/{template}", context)
-    name, email = sender
     emails = [
-        (subject, email_content, f"{name} <{email}>", [email_address],)
+        (subject, email_content, sender, [email_address],)
         for email_address in receivers
         if validate_email(email_address)
     ]
