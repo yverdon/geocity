@@ -1170,7 +1170,7 @@ def send_email(template, sender, receivers, subject, context):
     email_content = render_to_string(f"permits/emails/{template}", context)
     name, email = sender
     emails = [
-        (subject, email_content, f"{name}<{email}>", [email_address],)
+        (subject, email_content, f"{name} <{email}>", [email_address],)
         for email_address in receivers
         if validate_email(email_address)
     ]
