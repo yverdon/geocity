@@ -883,6 +883,16 @@ class PermitRequestActorForm(forms.ModelForm):
 class PermitRequestAdditionalInformationForm(forms.ModelForm):
     required_css_class = "required"
 
+    reason = forms.CharField(
+        label=_("Raison"),
+        widget=forms.Textarea(attrs={"rows": 1}),
+        required=False,
+        help_text=_("(Optionnel) Raison du changement du statut de la demande"),
+    )
+    notify_author = forms.BooleanField(
+        label=_("Notifier l'auteur de la demande"), required=False,
+    )
+
     class Meta:
         model = models.PermitRequest
         fields = ["is_public", "shortname", "status"]
@@ -1009,6 +1019,9 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                 ],
             )
         if commit:
+            if self.cleaned_data.get("notify_author"):
+                permit_request.notify_author(self.cleaned_data.get("reason"))
+
             permit_request.save()
         return permit_request
 
