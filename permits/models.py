@@ -32,7 +32,7 @@ from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 
-from . import fields, services
+from . import fields
 
 # public types: for public/restricted features
 PUBLIC_TYPE_CHOICES = (
@@ -836,33 +836,6 @@ class PermitRequest(models.Model):
             return
         self.status = self.STATUS_INQUIRY_IN_PROGRESS
         self.save()
-    def notify_author(self, reason):
-        sender_name = (
-            self.administrative_entity.expeditor_name
-            if self.administrative_entity.expeditor_name
-            else ""
-        )
-        sender_email = (
-            self.administrative_entity.expeditor_email
-            if self.administrative_entity.expeditor_email
-            else settings.DEFAULT_FROM_EMAIL
-        )
-        services.send_email(
-            template="permit_request_changed.txt",
-            sender=(sender_name, sender_email),
-            receivers=[self.author.user.email],
-            subject=_("Votre demande #%s à changé") % self.id,
-            context={
-                "status": dict(self.STATUS_CHOICES)[self.status],
-                "reason": (reason if reason else ""),
-                "permit_request_url": self.get_absolute_url(
-                    reverse(
-                        "permits:permit_request_detail",
-                        kwargs={"permit_request_id": self.pk},
-                    )
-                ),
-            },
-        )
 
     @property
     def current_inquiry(self):

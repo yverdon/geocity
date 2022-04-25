@@ -1020,10 +1020,41 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
             )
         if commit:
             if self.cleaned_data.get("notify_author"):
-                permit_request.notify_author(self.cleaned_data.get("reason"))
-
+                self._notify_author(permit_request)
             permit_request.save()
         return permit_request
+
+    def _notify_author(self, permit_request):
+        sender_name = (
+            permit_request.administrative_entity.expeditor_name
+            if permit_request.administrative_entity.expeditor_name
+            else ""
+        )
+        sender_email = (
+            permit_request.administrative_entity.expeditor_email
+            if permit_request.administrative_entity.expeditor_email
+            else settings.DEFAULT_FROM_EMAIL
+        )
+        services.send_email(
+            template="permit_request_changed.txt",
+            sender=(sender_name, sender_email),
+            receivers=[permit_request.author.user.email],
+            subject=_("Votre demande #%s à changé") % permit_request.id,
+            context={
+                "status": dict(permit_request.STATUS_CHOICES)[permit_request.status],
+                "reason": (
+                    self.cleaned_data.get("reason")
+                    if self.cleaned_data.get("reason")
+                    else ""
+                ),
+                "permit_request_url": permit_request.get_absolute_url(
+                    reverse(
+                        "permits:permit_request_detail",
+                        kwargs={"permit_request_id": permit_request.pk},
+                    )
+                ),
+            },
+        )
 
 
 # extend django gis osm openlayers widget
