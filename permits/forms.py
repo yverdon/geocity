@@ -456,11 +456,14 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         return {
             **default_kwargs,
             "widget": AddressWidget(
-                autocomplete_options={"single_address_field": True},
+                autocomplete_options={"single_address_field": True,},
                 attrs={
                     "placeholder": ("ex: " + prop.placeholder)
                     if prop.placeholder != ""
-                    else ""
+                    else "",
+                    "additional_searchtext_for_address_field": prop.additional_searchtext_for_address_field
+                    if prop.additional_searchtext_for_address_field
+                    else "",
                 },
             ),
         }

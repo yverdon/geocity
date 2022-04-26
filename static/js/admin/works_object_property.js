@@ -45,6 +45,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const isLineNumberForTextareaVisible = inputType === 'text';
 
+    const additionalSearchtextForAddressFieldElement = document.getElementById('id_additional_searchtext_for_address_field');
+    const additionalSearchtextForAddressFieldRowElement = lineNumberForTextareaElement.closest('.form-row.additional_searchtext_for_address_field');
+    const additionalSearchtextForAddressFieldLabelElement = lineNumberForTextareaRowElement.querySelector('label');
+
+    const additionalSearchtextForAddressFieldVisible = inputType === 'address';
+
     const servicesToNotifyElement = document.getElementById('id_services_to_notify');
     const servicesToNotifyRowElement = servicesToNotifyElement.closest('.form-row.services_to_notify');
     const servicesToNotifyLabelElement = servicesToNotifyRowElement.querySelector('label');
@@ -68,6 +74,10 @@ document.addEventListener('DOMContentLoaded', function() {
     lineNumberForTextareaElement.removeAttribute('required');
     lineNumberForTextareaRowElement.classList.add(hiddenClass);
     lineNumberForTextareaLabelElement.classList.remove(requiredClass);
+
+    additionalSearchtextForAddressFieldElement.removeAttribute('required');
+    additionalSearchtextForAddressFieldRowElement.classList.add(hiddenClass);
+    additionalSearchtextForAddressFieldLabelElement.classList.remove(requiredClass);
 
     servicesToNotifyElement.removeAttribute('required');
     servicesToNotifyRowElement.classList.add(hiddenClass);
@@ -101,6 +111,11 @@ document.addEventListener('DOMContentLoaded', function() {
       fileElement.setAttribute('required', '');
       fileRowElement.classList.remove(hiddenClass);
       fileLabelElement.classList.add(requiredClass);
+  }
+    else if (additionalSearchtextForAddressFieldVisible) {
+      additionalSearchtextForAddressFieldElement.setAttribute('required', '');
+      additionalSearchtextForAddressFieldRowElement.classList.remove(hiddenClass);
+      additionalSearchtextForAddressFieldLabelElement.classList.add(requiredClass);
     }
   }
 
