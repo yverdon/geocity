@@ -1,13 +1,16 @@
+from urllib.parse import urlparse
+
 from allauth.socialaccount.models import SocialApp
+from constance import config
+
 from django.conf import settings
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import PasswordResetView
+from django.views import View
 
-if settings.ENABLE_2FA:
-    from two_factor.views import LoginView
-else:
-    from django.contrib.auth.views import LoginView
+from two_factor.views import LoginView as TwoFactorLoginView
+from django.contrib.auth.views import LoginView
 
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
@@ -25,6 +28,13 @@ def logout_view(request):
         else None
     )
     logout(request)
+
+    redirect_uri = request.GET.get("next", None)
+    # Check if redirect URI is whitelisted
+    if redirect_uri and urlparse(
+        redirect_uri
+    ).hostname in config.LOGOUT_REDIRECT_HOSTNAME_WHITELIST.split(","):
+        return redirect(redirect_uri)
     return redirect(
         f'{reverse("account_login")}?template={templatename}'
         if templatename
@@ -59,6 +69,44 @@ class CustomLoginView(LoginView):
         context.update({"social_apps": SocialApp.objects.all()})
 
         return services.get_context_data(context, self.request)
+
+
+class CustomTwoFactorLoginView(TwoFactorLoginView):
+    def get_context_data(self, **kwargs):
+
+        context = super().get_context_data(**kwargs)
+        context.update({"social_apps": SocialApp.objects.all()})
+
+        return services.get_context_data(context, self.request)
+
+    def process_step(self, form):
+        if self.steps.current == 'token':
+            import duo_universal
+            from django.contrib.sessions.backends.db import SessionStore
+            # TODO: retrieve credentials from environment
+            # TODO: callback_url = self.request.build_absolute_uri(reverse('duo_callback'))
+            callback_url = "https://geocity.docker.test/account/duo_callback"
+            #duo_client = duo_universal.Client(client_id, client_secret, host, callback_url)
+
+            state = duo_client.generate_state()
+            s = SessionStore()
+            s["state"] = state
+            # TODO get username
+            prompt_uri = duo_client.create_auth_url("aju", state)
+            print(prompt_uri)
+            redirect(prompt_uri)
+
+
+class DuoCallbackView(View):
+    def get(self, request, *args, **kwargs):
+        state = request.GET.get('state')
+        username = request.GET.get('username')
+        # TODO:  Check if state and username matches session data
+        # TODO: get session and compare state
+
+        # TODO: if state is OK, login, then redirect to URL
+        # login(username)
+        return redirect(settings.LOGIN_REDIRECT_URL)
 
 
 def permit_author_create(request):

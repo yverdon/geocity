@@ -39,4 +39,9 @@ django-crispy-forms
 django-cron
 django-axes
 pdf2image
+<<<<<<< HEAD
 duo_universal
+=======
+duo_universal
+django-simple-captcha
+>>>>>>> f6435b6038fe1138b21b0cb9def4887c66f182e4

@@ -80,6 +80,8 @@ django==3.2.12
     #   django-otp
     #   django-phonenumber-field
     #   django-picklefield
+    #   django-ranged-response
+    #   django-simple-captcha
     #   django-tables2
     #   django-tables2-column-shifter
     #   django-taggit
@@ -137,6 +139,12 @@ django-picklefield==3.0.1
     # via
     #   -r requirements.txt
     #   django-constance
+django-ranged-response==0.2.0
+    # via
+    #   -r requirements.txt
+    #   django-simple-captcha
+django-simple-captcha==0.5.17
+    # via -r requirements.txt
 django-simple-history==3.0.0
     # via -r requirements.txt
 django-tables2==2.4.1
@@ -215,6 +223,7 @@ pickleshare==0.7.5
 pillow==9.0.1
     # via
     #   -r requirements.txt
+    #   django-simple-captcha
     #   pdf2image
 pip-tools==6.5.1
     # via -r requirements_dev.in
