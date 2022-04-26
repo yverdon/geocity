@@ -1,19 +1,19 @@
 $(function () {
   $("[data_remote_autocomplete]").each(function (index, item) {
-    $("#" + item.id).autocomplete({
+    var itemId = $("#" + item.id);
+    itemId.autocomplete({
       classes: {
         "ui-autocomplete": "sit-autocomplete",
       },
       source: function (request, response) {
         var dataRemoteAutocomplete = jQuery.parseJSON(
-          $("#" + item.id).attr("data_remote_autocomplete")
+          itemId.attr("data_remote_autocomplete")
         );
-        var additionalSearchtext = $("#" + item.id).attr("additional_searchtext_for_address_field");
+        var additionalSearchtext = itemId.attr("additional_searchtext_for_address_field");
         if(additionalSearchtext) {
           request.term += ' ' + additionalSearchtext;
         }
 
-        console.log(request.term);
         $.ajax({
           url: dataRemoteAutocomplete.apiurl,
           dataType: "json",
@@ -47,7 +47,7 @@ $(function () {
       minLength: 2,
       select: function (event, ui) {
         var dataRemoteAutocomplete = jQuery.parseJSON(
-          $("#" + item.id).attr("data_remote_autocomplete")
+          itemId.attr("data_remote_autocomplete")
         );
         $.ajax({
           url: dataRemoteAutocomplete.apiurl_detail + ui.item.id,

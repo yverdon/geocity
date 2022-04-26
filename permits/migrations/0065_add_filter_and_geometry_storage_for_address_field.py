@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='worksobjectproperty',
             name='additional_searchtext_for_address_field',
-            field=models.CharField(blank=True, help_text='Ex: yverdon-les-bains pour limiter les recherches à Yverdon, <a href="https://api3.geo.admin.ch/services/sdiservices.html#search" target="_blank">Plus d\'informations</a>', max_length=255, verbose_name="Filtre additionnel pour la recherche d'adresse"),
+            field=models.CharField(blank=True, help_text='Ex: "Yverdon-les-Bains" afin de limiter les recherches à Yverdon, <a href="https://api3.geo.admin.ch/services/sdiservices.html#search" target="_blank">Plus d\'informations</a>', max_length=255, verbose_name="Filtre additionnel pour la recherche d'adresse"),
         ),
         migrations.AddField(
             model_name='worksobjectproperty',
