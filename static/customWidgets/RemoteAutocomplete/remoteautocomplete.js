@@ -9,8 +9,6 @@ $(function () {
           $("#" + item.id).attr("data_remote_autocomplete")
         );
         var additionalSearchtext = $("#" + item.id).attr("additional_searchtext_for_address_field");
-        console.log("titti")
-        console.log(additionalSearchtext)
         if(additionalSearchtext) {
           request.term += ' ' + additionalSearchtext;
         }
