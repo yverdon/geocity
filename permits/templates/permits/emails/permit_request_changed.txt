@@ -1,6 +1,6 @@
 {% load i18n %}{% autoescape off %}{% trans "Bonjour," %}
 
-{% trans "Votre demande à changé." %}
+{% trans "Votre demande a changé." %}
 {% trans "Nouveau status:" %} {{ status }}
 {% trans "Raison du changement:" %}
 {{ reason }}

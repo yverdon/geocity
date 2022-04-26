@@ -1040,7 +1040,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
             template="permit_request_changed.txt",
             sender=sender,
             receivers=[permit_request.author.user.email],
-            subject=_("Votre demande #%s à changé") % permit_request.id,
+            subject=_("Votre demande #%s a changé") % permit_request.id,
             context={
                 "status": dict(permit_request.STATUS_CHOICES)[permit_request.status],
                 "reason": (
