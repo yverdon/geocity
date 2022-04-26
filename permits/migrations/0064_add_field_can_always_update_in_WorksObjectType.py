@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0059_add_order_field_to_works_object'),
+        ('permits', '0063_anonymous_requests_users_and_wots'),
     ]
 
     operations = [
