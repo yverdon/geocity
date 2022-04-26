@@ -1573,12 +1573,8 @@ class PermitRequestInquiryForm(forms.ModelForm):
 
         overlap = models.PermitRequestInquiry.objects.filter(
             Q(permit_request=self.permit_request)
-            & (
-                (Q(start_date__lte=start_date) & Q(end_date__gte=start_date))
-                | (Q(start_date__lte=end_date) & Q(end_date__gte=end_date))
-                | (Q(start_date__gte=start_date) & Q(end_date__lte=end_date))
-                | (Q(start_date__lte=start_date) & Q(end_date__gte=end_date))
-            )
+            & Q(end_date__gte=start_date)
+            & Q(start_date__lte=end_date)
         )
         if overlap and not self.instance.pk:
             raise ValidationError(
