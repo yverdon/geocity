@@ -61,6 +61,7 @@ def set_object_property_value(permit_request, object_type, prop, value):
     )
     is_file = prop.input_type == models.WorksObjectProperty.INPUT_TYPE_FILE
     is_date = prop.input_type == models.WorksObjectProperty.INPUT_TYPE_DATE
+    is_address = prop.input_type == models.WorksObjectProperty.INPUT_TYPE_ADDRESS
 
     if value == "" or value is None:
         existing_value_obj.delete()
@@ -131,6 +132,11 @@ def set_object_property_value(permit_request, object_type, prop, value):
         elif is_date:
             value = value.isoformat()
 
+        elif is_address and prop.store_geometry_for_address_field:
+            geoservices.reverse_geocode_and_store_address_geometry(
+                permit_request, value, existing_value_obj
+            )
+
         value_dict = {"val": value}
         nb_objs = existing_value_obj.update(value=value_dict)
 
@@ -153,6 +159,23 @@ def get_properties_values(permit_request):
     """
     Return a queryset of `WorksObjectPropertyValue` objects for the given `permit_request`, excluding properties of type
     file.
+    """
+    return (
+        models.WorksObjectPropertyValue.objects.filter(
+            works_object_type_choice__permit_request=permit_request
+        )
+        .exclude(property__input_type=models.WorksObjectProperty.INPUT_TYPE_FILE)
+        .select_related(
+            "works_object_type_choice",
+            "works_object_type_choice__works_object_type",
+            "property",
+        )
+    )
+
+
+def get_properties_value(permit_request, property):
+    """
+    Return a `WorksObjectPropertyValue` object for the given `permit_request` and given property
     """
     return (
         models.WorksObjectPropertyValue.objects.filter(

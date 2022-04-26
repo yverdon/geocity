@@ -13,7 +13,6 @@ $(function () {
           request.term += ' ' + additionalSearchtext;
         }
 
-        console.log(request.term);
         $.ajax({
           url: dataRemoteAutocomplete.apiurl,
           dataType: "json",
@@ -83,7 +82,6 @@ $(function () {
                 data.feature.attributes.dplz4
               );
             }
-
             if (
               dataRemoteAutocomplete.city_field != "" &&
               !dataRemoteAutocomplete.single_contact
