@@ -1105,6 +1105,17 @@ class WorksObjectProperty(models.Model):
         blank=True,
         upload_to="wot_files",
     )
+    additional_searchtext_for_address_field = models.CharField(
+        _("Filtre additionnel pour la recherche d'adresse"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            'Ex: yverdon-les-bains pour limiter les recherches à Yverdon, <a href="https://api3.geo.admin.ch/services/sdiservices.html#search" target="_blank">Plus d\'informations</a>'
+        ),
+    )
+    store_geometry_for_address_field = models.BooleanField(
+        _("Stocker la géométrie de l'adresse dans la table géométrique"), default=False
+    )
 
     class Meta(object):
         ordering = ["order"]

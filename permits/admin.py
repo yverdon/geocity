@@ -875,6 +875,8 @@ class WorksObjectPropertyForm(forms.ModelForm):
             "regex_pattern",
             "file_download",
             "is_mandatory",
+            "additional_searchtext_for_address_field",
+            "store_geometry_for_address_field",
             "works_object_types",
         ]
 
