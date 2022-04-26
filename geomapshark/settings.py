@@ -91,6 +91,9 @@ TAGGIT_TAGS_FROM_STRING = "permits.utils.comma_splitter"
 # 2FA activation
 ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 
+# Allow REMOTE_USER Authentication
+ALLOW_REMOTE_USER_AUTH = os.getenv("ALLOW_REMOTE_USER_AUTH", "false").lower() == "true"
+
 # Allauth requirement
 SITE_ID = 1
 SITE_DOMAIN = os.getenv("SITE_DOMAIN", "localhost")
@@ -497,3 +500,18 @@ ANONYMOUS_USER_ZIPCODE = 9999
 ANONYMOUS_USER_PREFIX = "anonymous_user_"
 ANONYMOUS_NAME = "Anonyme"
 PENDING_ANONYMOUS_REQUEST_MAX_AGE = 24
+
+if ALLOW_REMOTE_USER_AUTH:
+    # Add the auth middleware
+    MIDDLEWARE += ["django.contrib.auth.middleware.RemoteUserMiddleware"]
+
+    # Remove Axes middleware and app
+    MIDDLEWARE.remove("axes.middleware.AxesMiddleware")
+    INSTALLED_APPS.remove("axes")
+
+    # When using the RemoteUserBackend for intranet users override AUTHENTICATION_BACKENDS
+    AUTHENTICATION_BACKENDS = [
+        # Classic django authentication backend
+        "django.contrib.auth.backends.RemoteUserBackend",
+        "django.contrib.auth.backends.ModelBackend",
+    ]

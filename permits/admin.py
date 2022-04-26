@@ -52,21 +52,27 @@ OTHER_PERMISSIONS_CODENAMES = [
     "change_group",
     "delete_group",
     "see_private_requests",
-    # Django axes
-    "add_accessattempt",
-    "change_accessattempt",
-    "delete_accessattempt",
-    "view_accessattempt",
-    "add_accesslog",
-    "change_accesslog",
-    "delete_accesslog",
-    "view_accesslog",
     # DRF Token authentication
     "view_tokenproxy",
     "add_tokenproxy",
     "change_tokenproxy",
     "delete_tokenproxy",
 ]
+
+if not settings.ALLOW_REMOTE_USER_AUTH:
+    # Django axes
+    OTHER_PERMISSIONS_CODENAMES += [
+        "add_accessattempt",
+        "change_accessattempt",
+        "delete_accessattempt",
+        "view_accessattempt",
+        "add_accesslog",
+        "change_accesslog",
+        "delete_accesslog",
+        "view_accesslog",
+    ]
+
+
 AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
     "amend_permit_request",
     "validate_permit_request",
