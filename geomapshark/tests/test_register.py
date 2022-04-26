@@ -112,21 +112,6 @@ class TestRegisterView(TestCase, TestRegisterMixin):
         )
         self.assertFalse(response.context["user"].is_authenticated)
 
-    # if settings.ENABLE_2FA:
-    #
-    #     def test_post_register_view(self):
-    #         response = self.execute_post_register()
-    #         self.assertEqual(response.status_code, 200)
-    #         self.assertFalse(response.context["user"].is_authenticated)
-    #         self.assertRedirects(response, resolve_url("account_login"))
-    #         self.assertContains(
-    #             response,
-    #             "Votre compte a été créé avec succès! Vous allez recevoir un email pour valider votre email",
-    #         )
-    #         self.assertEqual(len(mail.outbox), 1)
-    #
-    # else:
-
     def test_post_register_view(self):
         response = self.execute_post_register()
         self.assertEqual(response.status_code, 200)
