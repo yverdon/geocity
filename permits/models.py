@@ -1350,10 +1350,11 @@ class PermitRequestInquiry(models.Model):
 
     @classmethod
     def get_current_inquiry(cls, permit_request):
+        today = datetime.today().strftime("%Y-%m-%d")
         return cls.objects.filter(
             Q(permit_request=permit_request)
-            & Q(start_date__lte=datetime.today().strftime("%Y-%m-%d"))
-            & Q(end_date__gte=datetime.today().strftime("%Y-%m-%d"))
+            & Q(start_date__lte=today)
+            & Q(end_date__gte=today)
         ).first()
 
 
