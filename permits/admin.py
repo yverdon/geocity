@@ -736,6 +736,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_display = [
         "sortable_str",
         works_object_type_administrative_entities,
+        "can_always_update",
         "is_public",
         "requires_payment",
         "requires_validation_document",
@@ -763,6 +764,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     "works_type",
                     "works_object",
                     "administrative_entities",
+                    "can_always_update",
                     "is_public",
                     "requires_payment",
                     "requires_validation_document",
