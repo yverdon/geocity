@@ -7,6 +7,7 @@ import PIL
 from datetime import date
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -17,6 +18,8 @@ from permits import models, services
 
 from . import factories
 from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_parser
+from ..forms import PermitRequestGeoTimeForm
+from ..management.commands import create_anonymous_users
 
 
 def to_works_objects_dict(works_object_types):
@@ -464,6 +467,12 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             author=self.user.permitauthor,
             administrative_entity=department.administrative_entity,
         )
+        works_type = factories.WorksTypeFactory(name="Foo type")
+        works_object = factories.WorksObjectFactory()
+        wot = factories.WorksObjectTypeWithoutGeometryFactory(
+            works_type=works_type, works_object=works_object, needs_date=False,
+        )
+        permit_request.works_object_types.set([wot])
         self.client.post(
             reverse(
                 "permits:permit_request_submit",
@@ -477,7 +486,8 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["secretary@geocity.ch"])
         self.assertEqual(
-            mail.outbox[0].subject, "La demande de compléments a été traitée"
+            mail.outbox[0].subject,
+            "La demande de compléments a été traitée (Foo type)",
         )
         self.assertIn(
             "La demande de compléments a été traitée",
@@ -498,13 +508,21 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
                 status=models.PermitRequest.STATUS_DRAFT,
             )
         ).permit_request
+        works_type = factories.WorksTypeFactory(name="Foo type")
+        works_object = factories.WorksObjectFactory()
+        wot = factories.WorksObjectTypeFactory(
+            works_type=works_type, works_object=works_object,
+        )
+        permit_request.works_object_types.set([wot])
+
         self.client.post(
             reverse(
                 "permits:permit_request_submit",
                 kwargs={"permit_request_id": permit_request.pk},
             )
         )
-        emails = get_emails("Nouvelle demande")
+        emails = get_emails("Nouvelle demande (Foo type)")
+
         self.assertEqual(len(emails), 1)
         self.assertEqual(emails[0].to, ["secretariat@yverdon.ch"])
 
@@ -2598,9 +2616,12 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"permit_request_id": self.permit_request.pk},
             )
         )
-        content = response.content.decode()
-        expected = f'<a class="file_download" href="/permit-requests/wot-files/{prop_file.file_download.name}" target="_blank" rel="noreferrer">Télécharger le fichier</a>'
-        self.assertInHTML(expected, content)
+
+        expected_href = rf"/permit-requests/wot-files/{prop_file.file_download.name}"
+        parser = get_parser(response.content)
+        file_links = parser.find_all("a", href=re.compile(expected_href))
+        self.assertEqual(1, len(file_links))
+        self.assertIn(expected_href, response.content.decode())
 
     def test_properties_step_shows_downloadable_files_more_than_once(self):
         works_object_type_choices = services.get_works_object_type_choices(
@@ -2624,14 +2645,12 @@ class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
             )
         )
 
-        expected = f'<a class="file_download" href="/permit-requests/wot-files/{prop_file.file_download.name}" target="_blank" rel="noreferrer">Télécharger le fichier</a>'
-
         expected_href = rf"/permit-requests/wot-files/{prop_file.file_download.name}"
         parser = get_parser(response.content)
         file_links = parser.find_all("a", href=re.compile(expected_href))
 
-        self.assertInHTML(expected, response.content.decode())
         self.assertEqual(2, len(file_links))
+        self.assertIn(expected_href, response.content.decode())
 
 
 class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
@@ -2937,6 +2956,12 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             administrative_entity=self.administrative_entity,
             author=user.permitauthor,
         )
+        works_type = factories.WorksTypeFactory(name="Foo type")
+        works_object = factories.WorksObjectFactory()
+        wot = factories.WorksObjectTypeFactory(
+            works_type=works_type, works_object=works_object,
+        )
+        permit_request.works_object_types.set([wot])
         factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
         response = self.client.post(
             reverse(
@@ -2956,7 +2981,8 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
         self.assertEqual(
-            mail.outbox[0].subject, "Votre annonce a été prise en compte et classée"
+            mail.outbox[0].subject,
+            "Votre annonce a été prise en compte et classée (Foo type)",
         )
         self.assertIn(
             "Nous vous informons que votre annonce a été prise en compte et classée.",
@@ -3118,6 +3144,12 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         )
 
     def test_secretary_email_and_name_are_set_for_the_administrative_entity(self):
+        works_type = factories.WorksTypeFactory(name="Foo type")
+        works_object = factories.WorksObjectFactory()
+        wot = factories.WorksObjectTypeFactory(
+            works_type=works_type, works_object=works_object,
+        )
+        self.permit_request.works_object_types.set([wot])
 
         response = self.client.post(
             reverse(
@@ -3137,7 +3169,8 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
             mail.outbox[0].from_email, "Geocity Rocks <geocity_rocks@geocity.ch>"
         )
         self.assertEqual(
-            mail.outbox[0].subject, "Votre annonce a été prise en compte et classée"
+            mail.outbox[0].subject,
+            "Votre annonce a été prise en compte et classée (Foo type)",
         )
         self.assertIn(
             "Nous vous informons que votre annonce a été prise en compte et classée.",
@@ -3145,6 +3178,12 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         )
 
     def test_just_secretary_email_is_set_for_the_administrative_entity(self):
+        works_type = factories.WorksTypeFactory(name="Foo type")
+        works_object = factories.WorksObjectFactory()
+        wot = factories.WorksObjectTypeFactory(
+            works_type=works_type, works_object=works_object,
+        )
+        self.permit_request.works_object_types.set([wot])
         self.administrative_entity_expeditor = (
             models.PermitAdministrativeEntity.objects.first()
         )
@@ -3171,7 +3210,8 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].from_email, "<geocity_rocks@geocity.ch>")
         self.assertEqual(
-            mail.outbox[0].subject, "Votre annonce a été prise en compte et classée"
+            mail.outbox[0].subject,
+            "Votre annonce a été prise en compte et classée (Foo type)",
         )
         self.assertIn(
             "Nous vous informons que votre annonce a été prise en compte et classée.",
@@ -3179,6 +3219,12 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         )
 
     def test_no_secretary_email_is_set_for_the_administrative_entity(self):
+        works_type = factories.WorksTypeFactory(name="Foo type")
+        works_object = factories.WorksObjectFactory()
+        wot = factories.WorksObjectTypeFactory(
+            works_type=works_type, works_object=works_object,
+        )
+        self.permit_request.works_object_types.set([wot])
         self.administrative_entity_expeditor = (
             models.PermitAdministrativeEntity.objects.first()
         )
@@ -3205,7 +3251,8 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         self.assertNotEqual(mail.outbox[0].from_email, "geocity_rocks@geocity.ch")
         self.assertEqual(mail.outbox[0].from_email, "your_noreply_email")
         self.assertEqual(
-            mail.outbox[0].subject, "Votre annonce a été prise en compte et classée"
+            mail.outbox[0].subject,
+            "Votre annonce a été prise en compte et classée (Foo type)",
         )
         self.assertIn(
             "Nous vous informons que votre annonce a été prise en compte et classée.",
@@ -3432,6 +3479,12 @@ class PermitRequestValidationTestcase(TestCase):
             groups=[secretary_group], email="secretary@geocity.ch"
         )
         validation.permit_request.administrative_entity.departments.set([department])
+        works_type = factories.WorksTypeFactory(name="Foo type")
+        works_object = factories.WorksObjectFactory()
+        wot = factories.WorksObjectTypeFactory(
+            works_type=works_type, works_object=works_object,
+        )
+        validation.permit_request.works_object_types.set([wot])
 
         validator = factories.ValidatorUserFactory(
             groups=[validation.department.group, factories.ValidatorGroupFactory()],
@@ -3459,7 +3512,7 @@ class PermitRequestValidationTestcase(TestCase):
         self.assertEqual(mail.outbox[0].to, ["secretary@geocity.ch"])
         self.assertEqual(
             mail.outbox[0].subject,
-            "Les services chargés de la validation d'une demande ont donné leur préavis",
+            "Les services chargés de la validation d'une demande ont donné leur préavis (Foo type)",
         )
         self.assertIn(
             "Les services chargés de la validation d'une demande ont donné leur préavis",
@@ -3494,6 +3547,12 @@ class PermitRequestClassifyTestCase(TestCase):
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
             permit_request__author__user__email="user@geocity.com",
         )
+        works_type = factories.WorksTypeFactory(name="Foo type")
+        works_object = factories.WorksObjectFactory()
+        wot = factories.WorksObjectTypeFactory(
+            works_type=works_type, works_object=works_object,
+        )
+        validation.permit_request.works_object_types.set([wot])
 
         self.client.login(username=self.secretariat_user.username, password="password")
         factories.PermitRequestGeoTimeFactory(permit_request=validation.permit_request)
@@ -3519,7 +3578,7 @@ class PermitRequestClassifyTestCase(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
         self.assertEqual(
-            mail.outbox[0].subject, "Votre demande a été traitée et classée"
+            mail.outbox[0].subject, "Votre demande a été traitée et classée (Foo type)",
         )
         self.assertIn(
             "Nous vous informons que votre demande a été traitée et classée.",
@@ -3537,6 +3596,12 @@ class PermitRequestClassifyTestCase(TestCase):
             validation_status=models.PermitRequestValidation.STATUS_REJECTED,
             permit_request__author__user__email="user@geocity.com",
         )
+        works_type = factories.WorksTypeFactory(name="Foo type")
+        works_object = factories.WorksObjectFactory()
+        wot = factories.WorksObjectTypeFactory(
+            works_type=works_type, works_object=works_object,
+        )
+        validation.permit_request.works_object_types.set([wot])
 
         self.client.login(username=self.secretariat_user.username, password="password")
         factories.PermitRequestGeoTimeFactory(permit_request=validation.permit_request)
@@ -3562,7 +3627,7 @@ class PermitRequestClassifyTestCase(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
         self.assertEqual(
-            mail.outbox[0].subject, "Votre demande a été traitée et classée"
+            mail.outbox[0].subject, "Votre demande a été traitée et classée (Foo type)",
         )
         self.assertIn(
             "Nous vous informons que votre demande a été traitée et classée.",
@@ -3680,15 +3745,22 @@ class PermitRequestClassifyTestCase(TestCase):
         self.assertIsNotNone(validation.permit_request.validated_at)
 
     def test_email_to_services_is_sent_when_secretariat_classifies_permit_request(self):
+        works_type_1 = factories.WorksTypeFactory(name="Foo type")
+        works_type_2 = factories.WorksTypeFactory(name="Bar type")
+        works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeFactory(
             requires_validation_document=False,
             notify_services=True,
             services_to_notify="test-send-1@geocity.ch, test-send-2@geocity.ch, test-i-am-not-an-email,  ,\n\n\n",
+            works_type=works_type_1,
+            works_object=works_object,
         )
         wot2 = factories.WorksObjectTypeFactory(
             requires_validation_document=False,
             notify_services=True,
             services_to_notify="not-repeated-email@liip.ch, test-send-1@geocity.ch, \n, test-send-2@geocity.ch, test-i-am-not-an-email,  ,",
+            works_type=works_type_2,
+            works_object=works_object,
         )
         validation = factories.PermitRequestValidationFactory(
             permit_request__administrative_entity=self.administrative_entity,
@@ -3720,9 +3792,18 @@ class PermitRequestClassifyTestCase(TestCase):
         self.assertEqual(len(mail.outbox), 4)
         self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
 
-        self.assertEqual(
-            mail.outbox[0].subject, "Votre demande a été traitée et classée"
+        self.assertIn(
+            "Votre demande a été traitée et classée", mail.outbox[0].subject,
         )
+
+        self.assertIn(
+            "Bar type", mail.outbox[0].subject,
+        )
+
+        self.assertIn(
+            "Foo type", mail.outbox[0].subject,
+        )
+
         self.assertIn(
             "Nous vous informons que votre demande a été traitée et classée.",
             mail.outbox[0].message().as_string(),
@@ -3871,7 +3952,7 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             len(get_parser(response.content).select(".form-check-label")), 2
         )
 
-    def test_work_type_step_show_private_requests_to_user_with_specific_permission(
+    def test_work_type_step_show_private_requests_with_choices_to_user_with_specific_permission(
         self,
     ):
 
@@ -3879,6 +3960,7 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             codename="see_private_requests"
         )
         self.user.user_permissions.add(see_private_requests_permission)
+
         public_works_object_types = factories.WorksObjectTypeFactory.create_batch(
             2, is_public=True
         )
@@ -3936,7 +4018,8 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"permit_request_id": permit_request.pk},
             )
             + "?types={}&types={}".format(
-                public_works_object_types[0].pk, public_works_object_types[1].pk
+                public_works_object_types[0].works_type.pk,
+                public_works_object_types[1].works_type.pk,
             ),
         )
         self.assertEqual(
@@ -3983,17 +4066,15 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             permit_request=permit_request, works_object_type=private_works_object_type
         )
 
-        # Fixme without any WorksObject created, returns 404
-
         response = self.client.get(
             reverse(
                 "permits:permit_request_select_objects",
                 kwargs={"permit_request_id": permit_request.pk},
             )
             + "?types={}&types={}&types={}".format(
-                public_works_object_types[0].pk,
-                public_works_object_types[1].pk,
-                private_works_object_type.pk,
+                public_works_object_types[0].works_type.pk,
+                public_works_object_types[1].works_type.pk,
+                private_works_object_type.works_type.pk,
             ),
         )
         self.assertEqual(
@@ -4037,3 +4118,144 @@ class PermitRequestFilteredWorksObjectListTestCase(LoggedInSecretariatMixin, Tes
         )
 
         self.assertContains(response, self.prop_value.value["val"])
+
+
+class PermitRequestAnonymousTestCase(TestCase):
+    def setUp(self):
+        super().setUp()
+
+    def test_anonymous_request_on_non_anonymous_entity_returns_404(self):
+        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        type = factories.WorksTypeFactory(tags=["a"])
+
+        response = self.client.get(
+            reverse("permits:anonymous_permit_request"),
+            data={
+                "entityfilter": entity.tags.get().slug,
+                "typefilter": type.tags.get().slug,
+            },
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_anonymous_request_on_anonymous_entity_displays_captcha_form(self):
+        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        create_anonymous_users._create_anonymous_user_for_entity(entity)
+
+        type = factories.WorksTypeFactory(tags=["a"])
+
+        response = self.client.get(
+            reverse("permits:anonymous_permit_request"),
+            data={
+                "entityfilter": entity.tags.get().slug,
+                "typefilter": type.tags.get().slug,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("anonymous_request_form", response.context)
+
+    def test_anonymous_request_temporary_logged_in_no_wot_displays_request_form(self):
+        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        create_anonymous_users._create_anonymous_user_for_entity(entity)
+
+        temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
+        self.client.force_login(temp_author.user)
+        session = self.client.session
+        session["anonymous_request_token"] = hash((temp_author, entity))
+        session.save()
+
+        type = factories.WorksTypeFactory(tags=["a"])
+
+        response = self.client.get(
+            reverse("permits:anonymous_permit_request"),
+            data={
+                "entityfilter": entity.tags.get().slug,
+                "typefilter": type.tags.get().slug,
+            },
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_anonymous_request_temporary_logged_in_displays_request_form(self):
+        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        create_anonymous_users._create_anonymous_user_for_entity(entity)
+
+        temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
+        self.client.force_login(temp_author.user)
+        session = self.client.session
+        session["anonymous_request_token"] = hash((temp_author, entity))
+        session.save()
+
+        type = factories.WorksTypeFactory(tags=["a"])
+        factories.WorksObjectTypeFactory(
+            is_anonymous=True, works_type=type, administrative_entities=[entity],
+        )
+
+        response = self.client.get(
+            reverse("permits:anonymous_permit_request"),
+            data={
+                "entityfilter": entity.tags.get().slug,
+                "typefilter": type.tags.get().slug,
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        # As the wot has to properties, going directly to next step
+        self.assertTrue(
+            isinstance(response.context["formset"].forms[0], PermitRequestGeoTimeForm)
+        )
+
+    def test_anonymous_request_submission_deletes_temporary_user(self):
+        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        create_anonymous_users._create_anonymous_user_for_entity(entity)
+
+        temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
+        self.client.force_login(temp_author.user)
+        session = self.client.session
+        session["anonymous_request_token"] = hash((temp_author, entity))
+        session.save()
+
+        type = factories.WorksTypeFactory(tags=["a"])
+        wot = factories.WorksObjectTypeWithoutGeometryFactory(
+            is_anonymous=True,
+            works_type=type,
+            administrative_entities=[entity],
+            needs_date=False,
+        )
+
+        # Filled permit request
+        permit_request = factories.PermitRequestFactory(
+            author=temp_author,
+            status=models.PermitRequest.STATUS_DRAFT,
+            administrative_entity=entity,
+        )
+        work_object_type_choice = factories.WorksObjectTypeChoiceFactory(
+            permit_request=permit_request, works_object_type=wot,
+        )
+        prop = factories.WorksObjectPropertyFactory()
+        prop.works_object_types.set([wot])
+        factories.WorksObjectPropertyValueFactory(
+            property=prop,
+            works_object_type_choice=work_object_type_choice,
+            value={"val": True},
+        )
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_submit_confirmed",
+                kwargs={"permit_request_id": permit_request.pk},
+            )
+        )
+
+        permit_request.refresh_from_db()
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("permits:anonymous_permit_request_sent"))
+
+        self.assertEqual(permit_request.author, entity.anonymous_user)
+
+        self.assertEqual(
+            get_user_model().objects.get().pk, permit_request.author.user_id,
+        )

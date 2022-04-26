@@ -1,4 +1,6 @@
+from datetime import datetime
 import django_tables2 as tables
+from django.template.defaultfilters import floatformat
 from django.utils.translation import gettext_lazy as _
 from django_tables2_column_shifter.tables import ColumnShiftTable
 
@@ -30,7 +32,30 @@ class CustomPropertyValueAccessiblePermitRequest:
                     works_object_type_choice__permit_request__id=permit_id,
                     works_object_type_choice__works_object_type__works_object__id=works_object_filter,
                 )
-                return property_value.value.get("val", "")
+                value = property_value.value.get("val", "")
+                if (
+                    property_value.property.input_type
+                    == property_value.property.INPUT_TYPE_CHECKBOX
+                ):
+                    return _("Oui") if value else _("Non")
+                elif (
+                    property_value.property.input_type
+                    == property_value.property.INPUT_TYPE_NUMBER
+                ):
+                    return floatformat(value, arg=-2)
+                elif (
+                    property_value.property.input_type
+                    == property_value.property.INPUT_TYPE_LIST_MULTIPLE
+                ):
+                    return ", ".join(value)
+                elif (
+                    property_value.property.input_type
+                    == property_value.property.INPUT_TYPE_DATE
+                    == "date"
+                ):
+                    return datetime.strptime(value, "%Y-%m-%d").strftime("%d %B %Y")
+                else:
+                    return value
             except models.WorksObjectPropertyValue.DoesNotExist:
                 return None
         return getattr(self.original_permit_request, name)
@@ -60,11 +85,6 @@ class DynamicColumnsTable(ColumnShiftTable):
 
 
 class GenericPermitRequestTable(ColumnShiftTable):
-    actions = tables.TemplateColumn(
-        template_name="tables/_permit_request_actions.html",
-        verbose_name=_("Actions"),
-        orderable=False,
-    )
     status = tables.TemplateColumn(
         template_name="tables/_permit_request_status.html",
         attrs=ATTRIBUTES,
@@ -89,6 +109,11 @@ class OwnPermitRequestsHTMLTable(GenericPermitRequestTable):
         verbose_name=_("Objets et types de demandes"),
         orderable=False,
         template_name="tables/_permit_request_works_objects.html",
+    )
+    actions = tables.TemplateColumn(
+        template_name="tables/_permit_request_actions.html",
+        verbose_name=_("Actions"),
+        orderable=False,
     )
 
     class Meta:
@@ -150,6 +175,11 @@ class DepartmentPermitRequestsHTMLTable(GenericDepartmentPermitRequestsTable):
         verbose_name=_("Objets et types de demandes"),
         orderable=False,
         template_name="tables/_permit_request_works_objects.html",
+    )
+    actions = tables.TemplateColumn(
+        template_name="tables/_permit_request_actions.html",
+        verbose_name=_("Actions"),
+        orderable=False,
     )
 
     class Meta:

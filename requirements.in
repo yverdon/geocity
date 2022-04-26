@@ -40,3 +40,4 @@ django-cron
 django-axes
 pdf2image
 duo_universal
+django-simple-captcha
