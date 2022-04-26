@@ -1456,9 +1456,6 @@ class PermitRequestComplementaryDocument(models.Model):
     def __str__(self):
         return self.document.name
 
-    def __str__(self):
-        return self.document.name
-
 
 class ComplementaryDocumentType(models.Model):
     name = models.CharField(_("nom"), max_length=255)
