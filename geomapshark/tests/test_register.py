@@ -65,9 +65,6 @@ class TestRegisterView(TestCase, TestRegisterMixin):
         )
 
     def test_account_activation_success(self):
-        # data = self.get_user_data()
-        # captcha = self.generate_captcha()
-        # self.client.post(reverse("permit_author_create"), {**data, **{"captcha_0": captcha.hashkey, "captcha_1": captcha.response}}, follow=True)
         self.execute_post_register()
         user = User.objects.get(email=self.get_user_data()["email"])
 
@@ -87,9 +84,6 @@ class TestRegisterView(TestCase, TestRegisterMixin):
         self.assertContains(response, "Votre compte a été activé avec succès!")
 
     def test_account_activation_fail(self):
-        # data = self.get_user_data()
-        # captcha = self.generate_captcha()
-        # self.client.post(reverse("permit_author_create"), {**data, **{"captcha_0": captcha.hashkey, "captcha_1": captcha.response}}, follow=True)
         self.execute_post_register()
         user = User.objects.get(email=self.get_user_data()["email"])
         user2 = factories.UserFactory()
@@ -118,23 +112,28 @@ class TestRegisterView(TestCase, TestRegisterMixin):
         )
         self.assertFalse(response.context["user"].is_authenticated)
 
-    if settings.ENABLE_2FA:
+    # if settings.ENABLE_2FA:
+    #
+    #     def test_post_register_view(self):
+    #         response = self.execute_post_register()
+    #         self.assertEqual(response.status_code, 200)
+    #         self.assertFalse(response.context["user"].is_authenticated)
+    #         self.assertRedirects(response, resolve_url("account_login"))
+    #         self.assertContains(
+    #             response,
+    #             "Votre compte a été créé avec succès! Vous allez recevoir un email pour valider votre email",
+    #         )
+    #         self.assertEqual(len(mail.outbox), 1)
+    #
+    # else:
 
-        def test_post_register_view(self):
-            response = self.execute_post_register()
-            self.assertEqual(response.status_code, 200)
-            self.assertTrue(response.context["user"].is_authenticated)
-            self.assertRedirects(response, resolve_url("two_factor:profile"))
-
-    else:
-
-        def test_post_register_view(self):
-            response = self.execute_post_register()
-            self.assertEqual(response.status_code, 200)
-            self.assertFalse(response.context["user"].is_authenticated)
-            self.assertRedirects(response, resolve_url("account_login"))
-            self.assertContains(
-                response,
-                "Votre compte a été créé avec succès! Vous allez recevoir un email pour valider votre email",
-            )
-            self.assertEqual(len(mail.outbox), 1)
+    def test_post_register_view(self):
+        response = self.execute_post_register()
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context["user"].is_authenticated)
+        self.assertRedirects(response, resolve_url("account_login"))
+        self.assertContains(
+            response,
+            "Votre compte a été créé avec succès! Vous allez recevoir un email pour valider votre email",
+        )
+        self.assertEqual(len(mail.outbox), 1)
