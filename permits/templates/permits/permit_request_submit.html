@@ -19,7 +19,7 @@
             <br>
           {% endif %}
           {% if additional_information %}
-            <span class="additional_information">{{ additional_information }}</span>
+            <span class="additional_information">{{ additional_information|safe }}</span>
           {% endif %}
         </div>
       {% endfor %}

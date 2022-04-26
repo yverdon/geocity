@@ -69,7 +69,7 @@ class PermitRequestSerializer(serializers.ModelSerializer):
 
 class WotPropertiesValuesSerializer(serializers.RelatedField):
     def to_representation(self, value):
-        wot_properties = services.get_wot_properties(value)
+        wot_properties = services.get_wot_properties(value, api=True)
         return wot_properties
 
 
@@ -133,11 +133,7 @@ class PermitAuthorSerializer(serializers.ModelSerializer):
 
 class CurrentUserSerializer(serializers.Serializer):
     def to_representation(self, value):
-        if value == "F":
-            json = {
-                "is_logged": False,
-            }
-        else:
+        if value.is_authenticated:
             json = {
                 "is_logged": True,
                 "username": value.username,
@@ -146,6 +142,10 @@ class CurrentUserSerializer(serializers.Serializer):
                 "expiration_datetime": (
                     value.last_login + timedelta(seconds=settings.SESSION_COOKIE_AGE)
                 ).strftime("%Y-%m-%d %H:%M:%S"),
+            }
+        else:
+            json = {
+                "is_logged": False,
             }
 
         return json

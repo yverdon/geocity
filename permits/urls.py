@@ -20,6 +20,17 @@ permit_request_urlpatterns = [
     ),
 ]
 
+anonymous_permit_request_urlpatterns = [
+    path(
+        "anonymous/", views.anonymous_permit_request, name="anonymous_permit_request",
+    ),
+    path(
+        "anonymous/sent",
+        views.anonymous_permit_request_sent,
+        name="anonymous_permit_request_sent",
+    ),
+]
+
 existing_permit_request_urlpatterns = [
     path("", views.PermitRequestDetailView.as_view(), name="permit_request_detail"),
     path(
@@ -70,18 +81,24 @@ urlpatterns = [
         name="permit_request_file_download",
     ),
     path(
+        "wot-files/<path:path>",
+        views.works_object_property_file_download,
+        name="works_object_property_file_download",
+    ),
+    path(
         "admin-data/<path:path>",
         views.administrative_entity_file_download,
         name="administrative_entity_file_download",
     ),
     path("", views.PermitRequestList.as_view(), name="permit_requests_list"),
-    path("", include(permit_request_urlpatterns)),
+    path(
+        "", include(permit_request_urlpatterns + anonymous_permit_request_urlpatterns)
+    ),
     path(
         "media/<int:property_value_id>/",
         views.permit_request_media_download,
         name="permit_request_media_download",
     ),
-    path("listexport/", views.PermitExportView.as_view(), name="listexport"),
     path(
         "adminentitiesgeojson/<int:administrative_entity_id>/",
         geoviews.administrative_entities_geojson,

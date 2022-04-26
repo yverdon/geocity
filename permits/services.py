@@ -1,5 +1,6 @@
 import enum
 import itertools
+import mimetypes
 import os
 import urllib
 from collections import defaultdict
@@ -9,7 +10,7 @@ import ipaddress
 import filetype
 from constance import config
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, login
 from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.core.mail import send_mass_mail
 from django.core.validators import EmailValidator
@@ -17,6 +18,7 @@ from django.db import transaction
 from django.db.models import CharField, Count, F, Max, Min, Q, Value
 from django.db.models.functions import Concat
 from django.forms import modelformset_factory
+from django.http import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -25,6 +27,7 @@ from django.utils.translation import gettext_lazy as _
 
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
+from .models import PermitRequest
 from .utils import reverse_permit_request_url
 from PIL import Image
 from pdf2image import convert_from_path
@@ -267,10 +270,17 @@ def _get_properties_filtered(permit_request, props_filter):
     ]
 
 
-def get_properties(permit_request):
+def get_properties(permit_request, additional_type_exclusions=None):
+    exclusions = [
+        models.WorksObjectProperty.INPUT_TYPE_FILE,
+    ]
+    if additional_type_exclusions is not None:
+        exclusions += additional_type_exclusions
     return _get_properties_filtered(
         permit_request,
-        lambda qs: qs.exclude(input_type=models.WorksObjectProperty.INPUT_TYPE_FILE),
+        lambda qs: qs.exclude(
+            input_type__in=[models.WorksObjectProperty.INPUT_TYPE_FILE,] + exclusions
+        ),
     )
 
 
@@ -350,14 +360,17 @@ def get_property_value(object_property_value):
         == models.WorksObjectProperty.INPUT_TYPE_FILE
     ):
         private_storage = fields.PrivateFileSystemStorage()
-        # TODO: handle missing files!
-        f = private_storage.open(value)
-        # The `url` attribute of the file is used to detect if there was already a file set (it is used by
-        # `ClearableFileInput` and by the `set_object_property_value` function)
-        f.url = reverse(
-            "permits:permit_request_media_download",
-            kwargs={"property_value_id": object_property_value.pk},
-        )
+        # TODO: handle missing files! Database pointing empty files should be removed
+        try:
+            f = private_storage.open(value)
+            # The `url` attribute of the file is used to detect if there was already a file set (it is used by
+            # `ClearableFileInput` and by the `set_object_property_value` function)
+            f.url = reverse(
+                "permits:permit_request_media_download",
+                kwargs={"property_value_id": object_property_value.pk},
+            )
+        except IOError:
+            f = None
 
         return f
 
@@ -392,13 +405,12 @@ def get_permit_request_for_user_or_404(user, permit_request_id, statuses=None):
 
 
 def get_permit_requests_list_for_user(
-    user, request_comes_from_internal_qgisserver=False
+    user, request_comes_from_internal_qgisserver=False, works_object_filter=None
 ):
     """
     Return the list of permit requests this user has access to.
     """
-
-    qs = models.PermitRequest.objects.annotate(
+    annotate_with = dict(
         starts_at_min=Min("geo_time__starts_at"),
         ends_at_max=Max("geo_time__ends_at"),
         permit_duration_max=Max("works_object_types__permit_duration"),
@@ -420,6 +432,11 @@ def get_permit_requests_list_for_user(
             output_field=CharField(),
         ),
     )
+
+    if works_object_filter is not None:
+        annotate_with.update({"works_object_filter": Value(works_object_filter)})
+
+    qs = models.PermitRequest.objects.annotate(**annotate_with)
 
     if not user.is_authenticated and not request_comes_from_internal_qgisserver:
         return qs.none()
@@ -826,6 +843,46 @@ def get_submit_step(permit_request, enabled, total_errors):
     )
 
 
+def get_anonymous_steps(type, user, permit_request):
+    has_works_objects_types = permit_request.works_object_types.exists()
+
+    objects_step = get_works_objects_step(
+        permit_request=permit_request,
+        enabled=not has_works_objects_types,
+        works_types=[type],
+        user=user,
+        typefilter=[type],
+    )
+
+    if objects_step:
+        objects_step.completed = has_works_objects_types
+
+    steps = {
+        models.StepType.WORKS_OBJECTS: objects_step,
+        models.StepType.PROPERTIES: get_properties_step(
+            permit_request=permit_request, enabled=has_works_objects_types
+        ),
+        models.StepType.GEO_TIME: get_geo_time_step(
+            permit_request=permit_request, enabled=has_works_objects_types
+        ),
+        models.StepType.APPENDICES: get_appendices_step(
+            permit_request=permit_request, enabled=has_works_objects_types
+        ),
+        models.StepType.ACTORS: get_actors_step(
+            permit_request=permit_request, enabled=has_works_objects_types
+        ),
+    }
+
+    total_errors = sum([step.errors_count for step in steps.values() if step])
+    steps[models.StepType.SUBMIT] = get_submit_step(
+        permit_request=permit_request,
+        enabled=has_works_objects_types,
+        total_errors=total_errors,
+    )
+
+    return {step_type: step for step_type, step in steps.items() if step is not None}
+
+
 def get_progress_bar_steps(request, permit_request):
     """
     Return a dict of `Step` items that can be used to track the user progress through
@@ -936,9 +993,13 @@ def submit_permit_request(permit_request, request):
     is_awaiting_supplement = (
         permit_request.status == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
     )
+
     if is_awaiting_supplement:
         data = {
-            "subject": _("La demande de compléments a été traitée"),
+            "subject": "{} ({})".format(
+                _("La demande de compléments a été traitée"),
+                get_works_type_names_list(permit_request),
+            ),
             "users_to_notify": _get_secretary_email(permit_request),
             "template": "permit_request_complemented.txt",
             "permit_request": permit_request,
@@ -971,8 +1032,11 @@ def submit_permit_request(permit_request, request):
             )
             .values_list("permitauthor__user__email", flat=True)
         )
+
         data = {
-            "subject": _("Nouvelle demande"),
+            "subject": "{} ({})".format(
+                _("Nouvelle demande"), get_works_type_names_list(permit_request)
+            ),
             "users_to_notify": users_to_notify,
             "template": "permit_request_submitted.txt",
             "permit_request": permit_request,
@@ -981,7 +1045,9 @@ def submit_permit_request(permit_request, request):
         send_email_notification(data)
 
         if permit_request.author.notify_per_email:
-            data["subject"] = _("Votre demande")
+            data["subject"] = "{} ({})".format(
+                _("Votre demande"), get_works_type_names_list(permit_request)
+            )
             data["users_to_notify"] = [permit_request.author.user.email]
             data["template"] = "permit_request_acknowledgment.txt"
             send_email_notification(data)
@@ -1017,7 +1083,10 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
     )
 
     data = {
-        "subject": _("Nouvelle demande en attente de validation"),
+        "subject": "{} ({})".format(
+            _("Nouvelle demande en attente de validation"),
+            get_works_type_names_list(permit_request),
+        ),
         "users_to_notify": users_to_notify,
         "template": "permit_request_validation_request.txt",
         "permit_request": permit_request,
@@ -1045,8 +1114,12 @@ def send_validation_reminder(permit_request, absolute_uri_func):
         .values_list("permitauthor__user__email", flat=True)
         .distinct()
     )
+
     data = {
-        "subject": _("Demande toujours en attente de validation"),
+        "subject": "{} ({})".format(
+            _("Demande toujours en attente de validation"),
+            get_works_type_names_list(permit_request),
+        ),
         "users_to_notify": users_to_notify,
         "template": "permit_request_validation_reminder.txt",
         "permit_request": permit_request,
@@ -1546,26 +1619,89 @@ def check_request_comes_from_internal_qgisserver(request):
     return False
 
 
-def get_wot_properties(value):
+def get_wot_properties(value, api=False):
+    """
+    Return wot properties in a list for the api, in a dict for backend
+    """
     obj = value.all()
     wot_props = obj.values(
         "properties__property__name",
+        "properties__property__input_type",
         "properties__value__val",
         "works_object_type_id",
+        "id",
         "works_object_type__works_object__name",
         "works_object_type__works_type__name",
     )
-    wot_properties = {}
+
+    wot_properties = dict()
+    property = list()
 
     if wot_props:
-        for prop in wot_props:
-            wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
-            wot_properties[wot] = {
-                prop_i["properties__property__name"]: prop_i["properties__value__val"]
-                for prop_i in wot_props
-                if prop_i["works_object_type_id"] == prop["works_object_type_id"]
-                and prop_i["properties__property__name"]
-            }
+        # Flat view is used in the api for geocalandar, the WOT shows only the works_object__name and not the type
+        if api:
+            wot_properties = list()
+            for prop in wot_props:
+                # List of a lost, to split wot in objects
+                if property:
+                    wot_properties.append(property)
+                    property = []
+
+                wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+                # WOT
+                property.append(
+                    {"key": "work_object_type", "value": wot, "type": "text",}
+                )
+                for prop_i in wot_props:
+                    if (
+                        prop_i["works_object_type_id"] == prop["works_object_type_id"]
+                        and prop_i["properties__property__name"]
+                    ):
+                        if prop_i["properties__property__input_type"] == "file":
+
+                            # Reconstituate download link if it's a file
+                            property_object = models.WorksObjectPropertyValue.objects.get(
+                                property__name=prop_i["properties__property__name"],
+                                works_object_type_choice__id=prop_i["id"],
+                            )
+                            # get_property_value return None if file does not exist
+                            file = get_property_value(property_object)
+                            if file:
+                                absolute_url = PermitRequest.get_absolute_url(file.url)
+                                file_name = prop_i["properties__value__val"].split(
+                                    "/", -1
+                                )[-1]
+                                # Properties of WOT
+                                property.append(
+                                    {
+                                        "key": prop_i["properties__property__name"],
+                                        "value": absolute_url,
+                                        "name": file_name,
+                                        "type": prop_i[
+                                            "properties__property__input_type"
+                                        ],
+                                    }
+                                )
+                        else:
+                            # Properties of WOT
+                            property.append(
+                                {
+                                    "key": prop_i["properties__property__name"],
+                                    "value": prop_i["properties__value__val"],
+                                    "type": prop_i["properties__property__input_type"],
+                                }
+                            )
+        else:
+            for prop in wot_props:
+                wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+                wot_properties[wot] = {
+                    prop_i["properties__property__name"]: prop_i[
+                        "properties__value__val"
+                    ]
+                    for prop_i in wot_props
+                    if prop_i["works_object_type_id"] == prop["works_object_type_id"]
+                    and prop_i["properties__property__name"]
+                }
     return wot_properties
 
 
@@ -1592,3 +1728,44 @@ def get_amend_properties(value):
         }
 
     return amend_properties
+
+
+def is_anonymous_request_logged_in(request, entity):
+    """
+    Verify the authentication for anonymous permit requests.
+    """
+    return (
+        request.user.is_authenticated
+        and request.user.permitauthor.is_temporary
+        and request.session.get("anonymous_request_token", None)
+        == hash((request.user.permitauthor, entity))
+    )
+
+
+def login_for_anonymous_request(request, entity):
+    """
+    Authenticate with a new temporary user to proceed with an anonymous permit request.
+    """
+    temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
+    login(request, temp_author.user, "django.contrib.auth.backends.ModelBackend")
+    request.session["anonymous_request_token"] = hash((temp_author, entity))
+
+
+def download_file(path):
+    mime_type, encoding = mimetypes.guess_type(path)
+    storage = fields.PrivateFileSystemStorage()
+    file = storage.open(path)
+    response = StreamingHttpResponse(file, content_type=mime_type)
+    response["Content-Disposition"] = 'attachment; filename="' + file.name + '"'
+    return response
+
+
+def get_works_type_names_list(permit_request):
+
+    return ", ".join(
+        list(
+            permit_request.works_object_types.all()
+            .values_list("works_type__name", flat=True)
+            .distinct()
+        )
+    )

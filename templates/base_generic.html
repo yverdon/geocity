@@ -50,7 +50,7 @@
             <span class="navbar-toggler-icon"></span>
           </button>
 
-          {% if user.is_authenticated %}
+          {% if user.is_authenticated and not user.permitauthor.is_temporary %}
             <div class="collapse navbar-collapse navbar-toggle">
               <ul class="navbar-nav mr-auto">
                 <li class="nav-item d-flex align-items-center">
@@ -148,19 +148,12 @@
 
               </ul>
             </div>
-
-
-
-
-
-
-
           {% endif %}
 
         </nav>
 
       {% endblock %}
-
+    </header>
 
       {% if messages %}
         <div class="container-fluid mb-4">
@@ -186,6 +179,6 @@
 
       {% block scripts %}{% endblock %}
 
-  </header>
+
   </body>
 </html>
