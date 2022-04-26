@@ -5,15 +5,20 @@ import urllib.parse
 
 import requests
 from django.contrib import messages
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import (
     login_required,
     permission_required,
     user_passes_test,
 )
-from django.core.exceptions import PermissionDenied, SuspiciousOperation
+from django.core.exceptions import (
+    PermissionDenied,
+    SuspiciousOperation,
+    ObjectDoesNotExist,
+)
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.db.models import Prefetch, Sum, Q
+from django.db.models import Prefetch, Sum, Q, CharField, Value
 from django.forms import modelformset_factory
 from django.http import (
     Http404,
@@ -29,13 +34,16 @@ from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views import View
 from django_filters.views import FilterView
-from django_otp import user_has_device
 from django_tables2.export.views import ExportMixin
 from django_tables2.views import SingleTableMixin, SingleTableView
 
 from . import fields, filters, forms, models, services, tables
+from .decorators import check_mandatory_2FA, permanent_user_required
 from .exceptions import BadPermitRequestStatus, NonProlongablePermitRequest
 from .search import search_permit_requests, search_result_to_json
+import django_tables2 as tableslib
+
+from .tables import CustomPropertyValueAccessiblePermitRequest, get_custom_dynamic_table
 
 logger = logging.getLogger(__name__)
 
@@ -103,13 +111,17 @@ def redirect_bad_status_to_detail(func):
     return inner
 
 
-def disable_form(form):
-    for field in form.fields.values():
-        field.disabled = True
-
+# Don't disable form if there's any amend property always amendable
+def disable_form(form, amend_property_always_amendable=[]):
     form.disabled = True
 
-    return form
+    for field in form.fields.values():
+
+        if field.label in amend_property_always_amendable:
+            field.disabled = False
+            form.disabled = False
+        else:
+            field.disabled = True
 
 
 def progress_bar_context(request, permit_request, current_step_type):
@@ -127,30 +139,8 @@ def progress_bar_context(request, permit_request, current_step_type):
     return {"steps": steps, "previous_step": previous_step}
 
 
-def check_mandatory_2FA(
-    view=None, redirect_field_name="next", login_url="profile", if_configured=False
-):
-    """
-    Do same as :func:`django_otp.decorators.otp_required`, but verify first if the user
-    is in a group where 2FA is required.
-    """
-
-    def test(user):
-        if services.is_2FA_mandatory(user):
-            return user.is_verified() or (
-                if_configured and user.is_authenticated and not user_has_device(user)
-            )
-        else:
-            return True
-
-    decorator = user_passes_test(
-        test, login_url=login_url, redirect_field_name=redirect_field_name
-    )
-
-    return decorator if (view is None) else decorator(view)
-
-
 @method_decorator(login_required, name="dispatch")
+@method_decorator(permanent_user_required, name="dispatch")
 @method_decorator(check_mandatory_2FA, name="dispatch")
 class PermitRequestDetailView(View):
 
@@ -333,7 +323,9 @@ class PermitRequestDetailView(View):
             if not services.can_amend_permit_request(
                 self.request.user, self.permit_request
             ):
-                disable_form(form)
+                disable_form(
+                    form, self.permit_request.get_amend_property_list_always_amendable()
+                )
 
             return form
 
@@ -671,9 +663,100 @@ def permit_request_print(request, permit_request_id, template_id):
     return response
 
 
+def anonymous_permit_request_sent(request):
+    return render(request, "permits/permit_request_anonymous_sent.html", {},)
+
+
+def anonymous_permit_request(request):
+    # Logout silently any real user
+    if request.user.is_authenticated and not request.user.permitauthor.is_temporary:
+        logout(request)
+
+    # Accept only non-logged users, or temporary users
+    if not request.user.is_anonymous and not request.user.permitauthor.is_temporary:
+        raise Http404
+
+    # Validate tags
+    services.store_tags_in_session(request)
+    entityfilter = request.session.get("entityfilter", [])
+    typefilter = request.session.get("typefilter", [])
+    if not len(entityfilter) > 0 or not len(typefilter) > 0:
+        raise Http404
+
+    # Validate entity
+    entities_by_tag = models.PermitAdministrativeEntity.objects.public().filter_by_tags(
+        entityfilter
+    )
+    if len(entities_by_tag) != 1:
+        raise Http404
+    entity = entities_by_tag[0]
+
+    # Validate captcha and temporary user connection
+    if not services.is_anonymous_request_logged_in(request, entity):
+        # Captcha page
+        if request.method == "POST":
+            anonymous_request_form = forms.AnonymousRequestForm(request.POST)
+            if anonymous_request_form.is_valid():
+                # Perform temporary login
+                services.login_for_anonymous_request(request, entity)
+            else:
+                return render(
+                    request,
+                    "permits/permit_request_anonymous_captcha.html",
+                    {"anonymous_request_form": anonymous_request_form},
+                )
+        else:
+            return render(
+                request,
+                "permits/permit_request_anonymous_captcha.html",
+                {"anonymous_request_form": forms.AnonymousRequestForm()},
+            )
+
+    # Validate type
+    work_types = (
+        models.WorksType.objects.filter(works_object_types__is_anonymous=True)
+        .filter_by_tags(typefilter)
+        .distinct()
+        .values_list("pk", flat=True)
+    )
+
+    if len(work_types) != 1:
+        raise Http404
+    work_type = work_types[0]
+
+    # Validate available work objects types
+    works_object_types = models.WorksObjectType.anonymous_objects.filter(
+        administrative_entities=entity, works_type=work_type,
+    )
+
+    if not works_object_types:
+        raise Http404
+
+    # Permit request page
+
+    # Never create a second permit request for the same temp_author
+    permit_request, _ = models.PermitRequest.objects.get_or_create(
+        administrative_entity=entity, author=request.user.permitauthor,
+    )
+
+    # If filter combinations return only one works_object_types object,
+    # this combination must be set on permit_request object
+    if len(works_object_types) == 1:
+        permit_request.works_object_types.set(works_object_types)
+
+    steps = services.get_anonymous_steps(
+        type=work_type, user=request.user, permit_request=permit_request
+    )
+
+    for step_type, step in steps.items():
+        if step and step.enabled and not step.completed:
+            return redirect(step.url)
+
+
 @redirect_bad_status_to_detail
 @login_required
 @user_passes_test(user_has_permitauthor)
+@permanent_user_required
 @check_mandatory_2FA
 def permit_request_select_administrative_entity(request, permit_request_id=None):
 
@@ -783,6 +866,7 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
 
 @redirect_bad_status_to_detail
 @login_required
+@permanent_user_required
 @check_mandatory_2FA
 def permit_request_select_types(request, permit_request_id):
     """
@@ -857,8 +941,8 @@ def permit_request_select_types(request, permit_request_id):
 @check_mandatory_2FA
 def permit_request_select_objects(request, permit_request_id):
     """
-    Step to select works objects. This view supports either editing an existing permit request (if `permit_request_id`
-    is set) or creating a new permit request.
+    Step to select works objects. This view supports either editing an existing permit
+    request (if `permit_request_id` is set) or creating a new permit request.
     """
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
     steps_context = progress_bar_context(
@@ -977,6 +1061,7 @@ def permit_request_properties(request, permit_request_id):
 
 @redirect_bad_status_to_detail
 @login_required
+@permanent_user_required
 @check_mandatory_2FA
 def permit_request_prolongation(request, permit_request_id):
     """
@@ -1242,13 +1327,22 @@ def permit_request_media_download(request, property_value_id):
 
 @method_decorator(login_required, name="dispatch")
 @method_decorator(check_mandatory_2FA, name="dispatch")
-class PermitRequestList(SingleTableMixin, FilterView):
+@method_decorator(permanent_user_required, name="dispatch")
+class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
     paginate_by = int(os.environ["PAGINATE_BY"])
     template_name = "permits/permit_requests_list.html"
 
+    def _get_wot_filter(self):
+        return self.request.GET.get("works_object_types__works_object", None)
+
     def get_queryset(self):
-        return (
-            services.get_permit_requests_list_for_user(self.request.user)
+        works_object_filter = self._get_wot_filter()
+        qs = (
+            (
+                services.get_permit_requests_list_for_user(
+                    self.request.user, works_object_filter=works_object_filter
+                )
+            )
             .prefetch_related(
                 Prefetch(
                     "works_object_types",
@@ -1260,15 +1354,77 @@ class PermitRequestList(SingleTableMixin, FilterView):
             .order_by("-created_at")
         )
 
+        if works_object_filter is not None:
+            qs = qs.prefetch_related("worksobjecttypechoice_set__properties__property")
+
+        return qs
+
+    def get_table_data(self):
+        works_object_filter = self._get_wot_filter()
+        if works_object_filter:
+            return [
+                CustomPropertyValueAccessiblePermitRequest(obj)
+                for obj in self.object_list
+            ]
+        else:
+            return self.object_list
+
     def is_department_user(self):
         return self.request.user.groups.filter(permitdepartment__isnull=False).exists()
 
+    def _get_extra_column_specs(self, works_object_filter):
+        extra_column_specs = dict()
+        for permit_request in self.object_list:
+            for wot, properties in services.get_properties(
+                permit_request,
+                [
+                    models.WorksObjectProperty.INPUT_TYPE_FILE_DOWNLOAD,
+                    models.WorksObjectProperty.INPUT_TYPE_TITLE,
+                ],
+            ):
+                if str(wot.works_object_id) != works_object_filter:
+                    continue
+                for property in properties:
+                    property_id = f"{works_object_filter}_{property.id}"
+                    if property_id not in extra_column_specs:
+                        extra_column_specs[property_id] = tableslib.Column(
+                            verbose_name=property.name,
+                            orderable=True,
+                            accessor=f"#{property_id}",
+                        )
+        return list(extra_column_specs.items())
+
+    def is_exporting(self):
+        return bool(self.request.GET.get(self.export_trigger_param, None))
+
     def get_table_class(self):
-        return (
-            tables.DepartmentPermitRequestsTable
-            if self.is_department_user()
-            else tables.OwnPermitRequestsTable
-        )
+        works_object_filter = self._get_wot_filter()
+
+        if self.is_department_user():
+            if works_object_filter:
+                extra_columns = self._get_extra_column_specs(works_object_filter)
+                extra_column_names = tuple([col_name for col_name, __ in extra_columns])
+            else:
+                extra_column_names = tuple()
+            table_class = (
+                tables.DepartmentPermitRequestsExportTable
+                if self.is_exporting()
+                else tables.DepartmentPermitRequestsHTMLTable
+            )
+            table_class = get_custom_dynamic_table(table_class, extra_column_names)
+        else:
+            table_class = (
+                tables.OwnPermitRequestsExportTable
+                if self.is_exporting()
+                else tables.OwnPermitRequestsHTMLTable
+            )
+        return table_class
+
+    def get_table_kwargs(self):
+        wot_filter = self._get_wot_filter()
+        if wot_filter:
+            return {"extra_column_specs": self._get_extra_column_specs(wot_filter)}
+        return {}
 
     def get_filterset_class(self):
         return (
@@ -1277,28 +1433,13 @@ class PermitRequestList(SingleTableMixin, FilterView):
             else filters.OwnPermitRequestFilterSet
         )
 
-
-@method_decorator(login_required, name="dispatch")
-@method_decorator(check_mandatory_2FA, name="dispatch")
-class PermitExportView(ExportMixin, SingleTableView):
-    table_class = tables.OwnPermitRequestsTable
-    template_name = "django_tables2/bootstrap.html"
-
-    def get_queryset(self):
-        return (
-            services.get_permit_requests_list_for_user(self.request.user)
-            .prefetch_related(
-                Prefetch(
-                    "works_object_types",
-                    queryset=models.WorksObjectType.objects.select_related(
-                        "works_type", "works_object"
-                    ),
-                )
-            )
-            .order_by("-created_at")
-        )
-
-    exclude_columns = ("actions",)
+    def get_context_data(self, **kwargs):
+        context = super(PermitRequestList, self).get_context_data(**kwargs)
+        params = {key: value[0] for key, value in dict(self.request.GET).items()}
+        context["display_clear_filters"] = bool(params)
+        params.update({"_export": "csv"})
+        context["export_csv_url_params"] = urllib.parse.urlencode(params)
+        return context
 
 
 @redirect_bad_status_to_detail
@@ -1383,17 +1524,38 @@ def permit_request_submit_confirmed(request, permit_request_id):
         | Q(permitdepartment__is_integrator_admin=True),
     )
 
-    # Backoffice and integrators creating a permit request for their own administrative entity, are directly redirected to the permit detail
+    # Backoffice and integrators creating a permit request for their own administrative
+    # entity, are directly redirected to the permit detail
     if user_is_backoffice_or_integrator_for_administrative_entity:
         return redirect(
             "permits:permit_request_detail", permit_request_id=permit_request.id
         )
     else:
+
+        if (
+            request.user.permitauthor.is_temporary
+            and permit_request.author == request.user.permitauthor
+        ):
+            try:
+                anonymous_user = permit_request.administrative_entity.anonymous_user
+            except ObjectDoesNotExist:
+                # Might happen only if the entity's anonymous user has been removed
+                # between the creation and the submission of the permit request
+                raise Http404
+            else:
+                permit_request.author = anonymous_user
+                permit_request.save()
+                temp_user = request.user
+                logout(request)
+                temp_user.delete()
+                return redirect("permits:anonymous_permit_request_sent")
+
         return redirect("permits:permit_requests_list")
 
 
 @redirect_bad_status_to_detail
 @login_required
+@permanent_user_required
 @check_mandatory_2FA
 def permit_request_delete(request, permit_request_id):
     permit_request = get_permit_request_for_edition(request.user, permit_request_id)
@@ -1419,6 +1581,7 @@ def permit_request_reject(request, permit_request_id):
 
 
 @login_required
+@permanent_user_required
 @permission_required("permits.classify_permit_request")
 @check_mandatory_2FA
 def permit_request_classify(request, permit_request_id, approve):
@@ -1519,6 +1682,8 @@ def permit_request_classify(request, permit_request_id, approve):
     )
 
 
+@login_required
+@permanent_user_required
 def permit_request_file_download(request, path):
     """
     Securely download the permit request file at the given `path`. The path must start with the permit request id, such
@@ -1532,16 +1697,19 @@ def permit_request_file_download(request, path):
         raise Http404
 
     services.get_permit_request_for_user_or_404(request.user, permit_request_id)
-
-    mime_type, encoding = mimetypes.guess_type(path)
-    storage = fields.PrivateFileSystemStorage()
-    file = storage.open(path)
-    response = StreamingHttpResponse(file, content_type=mime_type)
-    response["Content-Disposition"] = 'attachment; filename="' + file.name + '"'
-    return response
+    return services.download_file(path)
 
 
 @login_required
+def works_object_property_file_download(request, path):
+    """
+    Download the wot file at the given `path` as an attachment.
+    """
+    return services.download_file(path)
+
+
+@login_required
+@permanent_user_required
 @check_mandatory_2FA
 def administrative_entity_file_download(request, path):
     """
@@ -1555,6 +1723,7 @@ def administrative_entity_file_download(request, path):
 
 
 @login_required
+@permanent_user_required
 @check_mandatory_2FA
 def genericauthorview(request, pk):
 
@@ -1569,19 +1738,7 @@ def genericauthorview(request, pk):
 
 
 @login_required
-@check_mandatory_2FA
-def administrative_infos(request):
-
-    administrative_entities = models.PermitAdministrativeEntity.objects.all()
-
-    return render(
-        request,
-        "permits/administrative_infos.html",
-        {"administrative_entities": administrative_entities},
-    )
-
-
-@login_required
+@permanent_user_required
 def permit_requests_search(request):
     terms = request.GET.get("search")
 
