@@ -3125,11 +3125,11 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(response.status_code, 200)
 
         self.assertEqual(
-            len(parser.select("#amend .form-group textarea")), 2,
+            len(parser.select("#amend .form-group textarea")), 3,
         )
 
         self.assertEqual(
-            len(parser.select("#amend .form-group textarea[disabled]")), 1,
+            len(parser.select("#amend .form-group textarea[disabled]")), 2,
         )
 
         # Send form edit
