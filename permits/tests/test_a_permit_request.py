@@ -3181,7 +3181,8 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
         self.assertEqual(
-            mail.outbox[0].subject, f"Votre demande #{permit_request.pk} a changé"
+            mail.outbox[0].subject,
+            f"Votre demande {permit_request.works_objects_str()} a changé",
         )
         self.assertIn(
             "Votre demande a changé.", mail.outbox[0].message().as_string(),
