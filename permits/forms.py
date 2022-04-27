@@ -31,7 +31,7 @@ from accounts.dootix.provider import DootixProvider
 from accounts.geomapfish.adapter import GeomapfishSocialAccountAdapter
 from accounts.geomapfish.provider import GeomapfishProvider
 
-from . import models, services
+from . import models, services, geoservices
 
 input_type_mapping = {
     models.WorksObjectProperty.INPUT_TYPE_TEXT: forms.CharField,
@@ -531,6 +531,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         }
 
     def save(self):
+        to_geocode_addresses = []
         for works_object_type, prop in self.get_properties():
             if prop.is_value_property():
                 services.set_object_property_value(
@@ -541,6 +542,17 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                         self.get_field_name(works_object_type, prop)
                     ],
                 )
+            if (
+                prop.input_type == models.WorksObjectProperty.INPUT_TYPE_ADDRESS
+                and prop.store_geometry_for_address_field
+            ):
+                to_geocode_addresses.append(
+                    self.cleaned_data[self.get_field_name(works_object_type, prop)]
+                )
+        if len(to_geocode_addresses) > 0:
+            geoservices.reverse_geocode_and_store_address_geometry(
+                self.instance, to_geocode_addresses
+            )
 
 
 class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
@@ -1091,7 +1103,9 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             del self.fields["starts_at"]
             del self.fields["ends_at"]
 
-        if services.GeoTimeInfo.GEOMETRY not in required_info:
+        if (
+            services.GeoTimeInfo.GEOMETRY and services.GeoTimeInfo.GEOCODED_GEOMETRY
+        ) not in required_info:
             del self.fields["geom"]
 
         else:
@@ -1101,7 +1115,13 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             self.fields["geom"].widget.attrs["options"][
                 "edit_geom"
             ] = not disable_fields
-        if not config.ENABLE_GEOCALENDAR:
+        if not config.ENABLE_GEOCALENDAR or (
+            services.GeoTimeInfo.GEOCODED_GEOMETRY in required_info
+            and (
+                (services.GeoTimeInfo.GEOMETRY and services.GeoTimeInfo.DATE)
+                not in required_info
+            )
+        ):
             del self.fields["comment"]
             del self.fields["external_link"]
         if disable_fields:

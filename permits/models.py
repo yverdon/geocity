@@ -1270,11 +1270,8 @@ class PermitRequestGeoTime(models.Model):
     ends_at = models.DateTimeField(_("Date planifiée de fin"), blank=True, null=True)
     comment = models.CharField(_("Commentaire"), max_length=1024, blank=True)
     external_link = models.URLField(_("Lien externe"), blank=True)
-    worksobjectpropertyvalue = models.ForeignKey(
-        WorksObjectPropertyValue,
-        null=True,
-        on_delete=models.SET_NULL,
-        verbose_name=_("Champ de type adresse à l'origin de la géométrie"),
+    comes_from_automatic_geocoding = models.BooleanField(
+        _("Géométrie obtenue par géocodage d'adresse"), default=False
     )
     geom = geomodels.GeometryCollectionField(_("Localisation"), null=True, srid=2056)
     history = HistoricalRecords()

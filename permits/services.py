@@ -36,6 +36,8 @@ from pdf2image import convert_from_path
 class GeoTimeInfo(enum.Enum):
     DATE = enum.auto()
     GEOMETRY = enum.auto()
+    # Geometry automatically genrerate from address field using geoadmin API
+    GEOCODED_GEOMETRY = enum.auto()
 
 
 def get_works_object_type_choices(permit_request):
@@ -131,11 +133,6 @@ def set_object_property_value(permit_request, object_type, prop, value):
 
         elif is_date:
             value = value.isoformat()
-
-        elif is_address and prop.store_geometry_for_address_field:
-            geoservices.reverse_geocode_and_store_address_geometry(
-                permit_request, value, existing_value_obj
-            )
 
         value_dict = {"val": value}
         nb_objs = existing_value_obj.update(value=value_dict)
@@ -792,6 +789,18 @@ def get_geotime_required_info(permit_request):
 
     if any(works_object_type.has_geometry for works_object_type in works_object_types):
         required_info.add(GeoTimeInfo.GEOMETRY)
+    else:
+        exclusions = [
+            x[0]
+            for x in models.WorksObjectProperty.INPUT_TYPE_CHOICES
+            if x[0] != models.INPUT_TYPE_ADDRESS
+        ]
+
+        if (
+            len(get_properties(permit_request, exclusions)) >= 0
+            and get_geotime_objects(permit_request.pk).exists()
+        ):
+            required_info.add(GeoTimeInfo.GEOCODED_GEOMETRY)
 
     return required_info
 

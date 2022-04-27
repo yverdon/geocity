@@ -65,35 +65,36 @@ class ExtractPolys(Aggregate):
     template = "ST_CollectionExtract(ST_Collect(%(expressions)s), 3)"
 
 
-def reverse_geocode_and_store_address_geometry(
-    permit_request, value, existing_value_obj
-):
-
+def reverse_geocode_and_store_address_geometry(permit_request, to_geocode_addresses):
     geoadmin_address_search_api = (
         "https://api3.geo.admin.ch/rest/services/api/SearchServer"
     )
-    search_params = {
-        "searchText": value,
-        "limit": 1,
-        "partitionlimit": 1,
-        "type": "locations",
-        "sr": "2056",
-        "lang": "fr",
-        "origins": "address",
-    }
+    geom = GeometryCollection()
+    for address in to_geocode_addresses:
 
-    data = urllib.parse.urlencode(search_params)
-    url = f"{geoadmin_address_search_api}?{data}"
+        search_params = {
+            "searchText": address,
+            "limit": 1,
+            "partitionlimit": 1,
+            "type": "locations",
+            "sr": "2056",
+            "lang": "fr",
+            "origins": "address",
+        }
 
-    response = requests.get(url)
-    if response.status_code == 200:
-        x = response.json()["results"][0]["attrs"]["x"]
-        y = response.json()["results"][0]["attrs"]["y"]
-        address_geom = GeometryCollection(MultiPoint(Point(y, x, srid=2056)))
+        data = urllib.parse.urlencode(search_params)
+        url = f"{geoadmin_address_search_api}?{data}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            x = response.json()["results"][0]["attrs"]["x"]
+            y = response.json()["results"][0]["attrs"]["y"]
+            geom.append(MultiPoint(Point(y, x, srid=2056)))
 
-        models.PermitRequestGeoTime.objects.update_or_create(
-            permit_request=permit_request,
-            # TODO: make sure this is correct with multiple address fields
-            worksobjectpropertyvalue=existing_value_obj.first(),
-            geom=address_geom,
-        )
+    # Clear the previously geocoded geometries
+    models.PermitRequestGeoTime.objects.filter(
+        permit_request=permit_request, comes_from_automatic_geocoding=True
+    ).delete()
+    # Save the new ones
+    models.PermitRequestGeoTime.objects.create(
+        permit_request=permit_request, comes_from_automatic_geocoding=True, geom=geom,
+    )
