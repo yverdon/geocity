@@ -128,11 +128,10 @@ def redirect_bad_status_to_detail(func):
 
 
 def disable_form(form, editable_fields=None):
-
-    for field in form.fields:
-        if editable_fields and field in editable_fields:
+    for field in form.fields.values():
+        if editable_fields and field.label in editable_fields:
             continue
-        form.fields[field].disabled = True
+        field.disabled = True
 
     if not editable_fields:
         form.disabled = True
@@ -394,7 +393,7 @@ class PermitRequestDetailView(View):
         )
 
         if current_inquiry:
-            disable_form(form, editable_fields=["documents"])
+            disable_form(form, editable_fields=[form.fields['documents'].label])
 
         return form
 
