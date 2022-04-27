@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0062_permitrequestcomplementarydocument_document_type'),
+        ('permits', '0067_permitrequestcomplementarydocument_document_type'),
     ]
 
     operations = [

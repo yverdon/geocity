@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('permits', '0059_add_order_field_to_works_object'),
+        ('permits', '0064_add_field_can_always_update_in_WorksObjectType'),
     ]
 
     operations = [

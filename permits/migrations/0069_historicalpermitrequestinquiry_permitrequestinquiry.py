@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('permits', '0063_alter_permitrequestcomplementarydocument_authorised_departments'),
+        ('permits', '0068_alter_permitrequestcomplementarydocument_authorised_departments'),
     ]
 
     operations = [

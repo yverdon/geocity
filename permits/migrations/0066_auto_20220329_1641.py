@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0060_permitrequestcomplementarydocument'),
+        ('permits', '0065_permitrequestcomplementarydocument'),
     ]
 
     operations = [
