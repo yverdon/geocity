@@ -393,7 +393,7 @@ class PermitRequestDetailView(View):
         )
 
         if current_inquiry:
-            disable_form(form, editable_fields=[form.fields['documents'].label])
+            disable_form(form, editable_fields=[form.fields["documents"].label])
 
         return form
 
