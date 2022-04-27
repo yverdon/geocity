@@ -32,6 +32,29 @@ class TestComplementaryDocuments(GeocityTestCase):
         )
         self.permit_request.works_object_types.add(self.parent_type.work_object_types)
 
+    def execute_complementary_document_upload_test(self, data):
+        self.login(email="pilot@test.com", group=self.SECRETARIAT)
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            ),
+            data={**self.management_form, **data},
+        )
+        self.assertEqual(response.status_code, 302)
+
+        permit_request_detail = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            )
+        )
+        expected = "<div class='alert alert-success'>Les documents ont bien été ajoutés à la demande #{pk}.</div>".format(
+            pk=self.permit_request.pk,
+        )
+        self.assertInHTML(expected, permit_request_detail.content.decode())
+
     def test_pilot_can_upload_single_complementary_document(self):
         with open("permits/tests/files/real_pdf.pdf", "rb") as file:
             data = {
@@ -46,14 +69,7 @@ class TestComplementaryDocuments(GeocityTestCase):
                 "form-0-parent_{}".format(self.parent_type.pk): [self.child_type.pk],
             }
 
-            detail = self.execute_permit_request_action(
-                data={**self.management_form, **data}
-            )
-
-            expected = "<div class='alert alert-success'>Les documents ont bien été ajoutés à la demande #{pk}.</div>".format(
-                pk=self.permit_request.pk,
-            )
-            self.assertInHTML(expected, detail.content.decode())
+            self.execute_complementary_document_upload_test(data)
 
     def test_pilot_can_upload_multiple_complementary_documents(self):
         with open("permits/tests/files/real_pdf.pdf", "rb") as file:
@@ -78,14 +94,7 @@ class TestComplementaryDocuments(GeocityTestCase):
                 "form-1-parent_{}".format(self.parent_type.pk): [self.child_type.pk],
             }
 
-            detail = self.execute_permit_request_action(
-                data={**self.management_form, **data}
-            )
-
-            expected = "<div class='alert alert-success'>Les documents ont bien été ajoutés à la demande #{pk}.</div>".format(
-                pk=self.permit_request.pk,
-            )
-            self.assertInHTML(expected, detail.content.decode())
+            self.execute_complementary_document_upload_test(data)
 
     def test_authorised_department_has_documents_in_summary(self):
         self.login(email="pilot@test.com", group=self.SECRETARIAT)

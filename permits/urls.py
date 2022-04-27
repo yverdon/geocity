@@ -116,4 +116,24 @@ urlpatterns = [
     ),
     path("qgisserverproxy/", geoviews.qgisserver_proxy, name="qgisserver_proxy"),
     path("search/", views.permit_requests_search, name="permit_requests_search"),
+    path(
+        "archives/",
+        views.ArchivedPermitRequestListView.as_view(),
+        name="archived_permit_request_list",
+    ),
+    path(
+        "archives/<int:pk>/delete",
+        views.ArchivedPermitRequestDeleteView.as_view(),
+        name="archived_permit_request_delete",
+    ),
+    path(
+        "archives/<int:pk>/download",
+        views.ArchivedPermitRequestDownloadView.as_view(),
+        name="archived_permit_request_download",
+    ),
+    path(
+        "archives/bulk-download",
+        views.ArchivedPermitRequestBulkDownloadView.as_view(),
+        name="archived_permit_request_bulk_download",
+    ),
 ]

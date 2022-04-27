@@ -35,6 +35,15 @@
         </a>
     </div>
 
+    <div class="p-2 permits-action-btns">
+        <form id="archive-form" action="/permit-requests/archives/" method="post">
+          {% csrf_token %}
+          <button class="btn btn-outline-primary" type="submit">
+            <i class="fa fa-archive"></i>
+            {% trans "Archiver" %}
+          </button>
+        </form>
+    </div>
   </div>
 {% endif %}
 

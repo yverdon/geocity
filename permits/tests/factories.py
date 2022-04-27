@@ -548,3 +548,11 @@ class PermitRequestInquiryFactory(factory.django.DjangoModelFactory):
     permit_request = factory.SubFactory(PermitRequestFactory)
     start_date = factory.Faker("date")
     end_date = factory.Faker("date")
+
+
+class ArchivedPermitRequestFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.ArchivedPermitRequest
+
+    permit_request = factory.SubFactory(PermitRequestFactory)
+    archivist = factory.SubFactory(UserFactory)

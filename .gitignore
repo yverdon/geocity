@@ -24,3 +24,5 @@ private_documents/
 .coverage
 env.backup
 /media/
+/archive/
+/permits/tests/files/archive/*

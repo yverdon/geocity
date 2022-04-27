@@ -60,6 +60,12 @@
                     </a>
                 </li>
 
+                <li class="nav-item d-flex align-items-center">
+                    <a href="{% url 'permits:archived_permit_request_list' %}" role="button">
+                      <i class="fa fa-list-ul" aria-hidden="true"></i>
+                      {% trans "Demandes archivées" %}
+                    </a>
+                </li>
 
                   {% if config.ENABLE_GEOCALENDAR %}
                     <li class="nav-item d-flex align-items-center">
@@ -163,6 +169,8 @@
               alert-danger
               {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
               alert-success
+              {% elif message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+              alert-info
               {% endif %}
               ">{{ message }}</div>
           {% endfor %}

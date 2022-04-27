@@ -122,3 +122,10 @@ def is_expired(context):
 def can_always_be_updated(context):
     if context["record"] is not None:
         return context["record"].can_always_be_updated(context["request"].user)
+
+
+@register.simple_tag(takes_context=True)
+def can_download_archive(context):
+    return (
+        context["record"].archivist.groups.all() & context["user"].groups.all()
+    ).exists()
