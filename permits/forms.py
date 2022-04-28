@@ -1013,6 +1013,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
         if (
             self.cleaned_data.get("status")
             == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
+            and self.cleaned_data.get("notify_author")
             and not reason
         ):
             raise ValidationError(
