@@ -1007,6 +1007,20 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
 
         return status
 
+    def clean_reason(self):
+        reason = self.cleaned_data.get("reason")
+
+        if (
+            self.cleaned_data.get("status")
+            == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
+            and not reason
+        ):
+            raise ValidationError(
+                _("Vous devez fournir une raison pour la demande de compléments")
+            )
+
+        return reason
+
     def save(self, commit=True):
         permit_request = super().save(commit=False)
         for works_object_type, prop in self.get_properties():
