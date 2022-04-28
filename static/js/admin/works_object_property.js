@@ -46,10 +46,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const isLineNumberForTextareaVisible = inputType === 'text';
 
     const additionalSearchtextForAddressFieldElement = document.getElementById('id_additional_searchtext_for_address_field');
-    const additionalSearchtextForAddressFieldRowElement = lineNumberForTextareaElement.closest('.form-row.additional_searchtext_for_address_field');
-    const additionalSearchtextForAddressFieldLabelElement = lineNumberForTextareaRowElement.querySelector('label');
+    const additionalSearchtextForAddressFieldRowElement = additionalSearchtextForAddressFieldElement.closest('.form-row.additional_searchtext_for_address_field');
 
     const additionalSearchtextForAddressFieldVisible = inputType === 'address';
+
+    const storeGeometryForAddressFieldElement = document.getElementById('id_store_geometry_for_address_field');
+    const storeGeometryForAddressFieldRowElement = storeGeometryForAddressFieldElement.closest('.form-row.store_geometry_for_address_field');
 
     const servicesToNotifyElement = document.getElementById('id_services_to_notify');
     const servicesToNotifyRowElement = servicesToNotifyElement.closest('.form-row.services_to_notify');
@@ -77,7 +79,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     additionalSearchtextForAddressFieldElement.removeAttribute('required');
     additionalSearchtextForAddressFieldRowElement.classList.add(hiddenClass);
-    additionalSearchtextForAddressFieldLabelElement.classList.remove(requiredClass);
+    
+    storeGeometryForAddressFieldElement.removeAttribute('required');
+    storeGeometryForAddressFieldRowElement.classList.add(hiddenClass);
 
     servicesToNotifyElement.removeAttribute('required');
     servicesToNotifyRowElement.classList.add(hiddenClass);
@@ -113,9 +117,8 @@ document.addEventListener('DOMContentLoaded', function() {
       fileLabelElement.classList.add(requiredClass);
   }
     else if (additionalSearchtextForAddressFieldVisible) {
-      additionalSearchtextForAddressFieldElement.setAttribute('required', '');
       additionalSearchtextForAddressFieldRowElement.classList.remove(hiddenClass);
-      additionalSearchtextForAddressFieldLabelElement.classList.add(requiredClass);
+      storeGeometryForAddressFieldRowElement.classList.remove(hiddenClass);
     }
   }
 
