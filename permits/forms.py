@@ -1007,6 +1007,20 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
 
         return status
 
+    def clean_notify_author(self):
+        notify_author = self.cleaned_data.get("notify_author")
+
+        if (
+            self.cleaned_data.get("status")
+            == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
+            and not notify_author
+        ):
+            raise ValidationError(
+                _("Vous devez notifier l'autheur pour une demande de compléments")
+            )
+
+        return notify_author
+
     def clean_reason(self):
         reason = self.cleaned_data.get("reason")
 
