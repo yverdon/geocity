@@ -2,9 +2,10 @@
 
 {% trans "Votre demande a changé." %}
 {% trans "Nouveau status:" %} {{ status }}
+{% if reason %}
 {% trans "Raison du changement:" %}
 {{ reason }}
-
+{% endif %}
 {% trans "Vous pouvez la consulter sur le lien suivant" %}: {{ permit_request_url }}
 
 {% trans "Avec nos meilleures salutations," %}
