@@ -85,10 +85,14 @@ def reverse_geocode_and_store_address_geometry(permit_request, to_geocode_addres
         data = urllib.parse.urlencode(search_params)
         url = f"{geoadmin_address_search_api}?{data}"
         response = requests.get(url)
-        if response.status_code == 200:
+        if response.status_code == 200 and len(response.json()["results"]) > 0:
             x = response.json()["results"][0]["attrs"]["x"]
             y = response.json()["results"][0]["attrs"]["y"]
             geom.append(MultiPoint(Point(y, x, srid=2056)))
+
+        # If geocoding matches nothing, set the adress value on the administrative_entity centroid point
+        else:
+            geom.append(MultiPoint(permit_request.administrative_entity.geom.centroid))
 
     # Clear the previously geocoded geometries
     models.PermitRequestGeoTime.objects.filter(

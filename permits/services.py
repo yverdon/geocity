@@ -797,11 +797,12 @@ def get_geotime_required_info(permit_request):
         ]
 
         if (
-            len(get_properties(permit_request, exclusions)) >= 0
-            and get_geotime_objects(permit_request.pk).exists()
+            len(get_properties(permit_request, exclusions)) > 0
+            and get_geotime_objects(permit_request.pk)
+            .filter(comes_from_automatic_geocoding=True)
+            .exists()
         ):
             required_info.add(GeoTimeInfo.GEOCODED_GEOMETRY)
-
     return required_info
 
 

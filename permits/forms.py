@@ -1102,10 +1102,10 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         if services.GeoTimeInfo.DATE not in required_info:
             del self.fields["starts_at"]
             del self.fields["ends_at"]
-
         if (
-            services.GeoTimeInfo.GEOMETRY and services.GeoTimeInfo.GEOCODED_GEOMETRY
-        ) not in required_info:
+            services.GeoTimeInfo.GEOMETRY not in required_info
+            and services.GeoTimeInfo.GEOCODED_GEOMETRY not in required_info
+        ):
             del self.fields["geom"]
 
         else:
