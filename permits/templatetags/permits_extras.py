@@ -15,12 +15,11 @@ register = template.Library()
 
 @register.inclusion_tag("permits/_permit_progressbar.html", takes_context=True)
 def permit_progressbar(context, steps, active_step):
-    steps_states = {
-        "steps": steps,
-        "active_step": active_step,
-    }
-
-    return steps_states
+    return (
+        {}
+        if context["user"].permitauthor.is_temporary
+        else {"steps": steps, "active_step": active_step,}
+    )
 
 
 @register.filter
@@ -112,3 +111,9 @@ def is_expired(context):
                 return ""
     else:
         return ""
+
+
+@register.simple_tag(takes_context=True)
+def can_always_be_updated(context):
+    if context["record"] is not None:
+        return context["record"].can_always_be_updated(context["request"].user)

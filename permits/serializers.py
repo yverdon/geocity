@@ -9,8 +9,11 @@ from django.utils.translation import gettext as _
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
+from datetime import timedelta
+from geomapshark import settings
 
-from . import geoservices, models
+from . import geoservices, models, search
+from . import geoservices, models, services, search
 
 
 class PermitAdministrativeEntitySerializer(serializers.ModelSerializer):
@@ -64,48 +67,22 @@ class PermitRequestSerializer(serializers.ModelSerializer):
         )
 
 
+class WotPropertiesValuesSerializer(serializers.RelatedField):
+    def to_representation(self, value):
+        wot_properties = services.get_wot_properties(value, api=True)
+        return wot_properties
+
+
+class AmendPropertiesValuesSerializer(serializers.RelatedField):
+    def to_representation(self, value):
+        amend_properties = services.get_amend_properties(value)
+        return amend_properties
+
+
 class PropertiesValuesSerializer(serializers.RelatedField):
     def to_representation(self, value):
-        obj = value.all()
-        wot_props = obj.values(
-            "properties__property__name",
-            "properties__value__val",
-            "works_object_type_id",
-            "works_object_type__works_object__name",
-            "works_object_type__works_type__name",
-        )
-        amend_props = obj.values(
-            "amend_properties__property__name",
-            "amend_properties__value",
-            "works_object_type_id",
-            "works_object_type__works_object__name",
-            "works_object_type__works_type__name",
-        )
-        wot_properties = {}
-        amend_properties = {}
-
-        if wot_props:
-            for prop in wot_props:
-                wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
-                wot_properties[wot] = {
-                    prop_i["properties__property__name"]: prop_i[
-                        "properties__value__val"
-                    ]
-                    for prop_i in wot_props
-                    if prop_i["works_object_type_id"] == prop["works_object_type_id"]
-                    and prop_i["properties__property__name"]
-                }
-
-        for prop in amend_props:
-            amends = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
-            amend_properties[amends] = {
-                prop_i["amend_properties__property__name"]: prop_i[
-                    "amend_properties__value"
-                ]
-                for prop_i in amend_props
-                if prop_i["works_object_type_id"] == prop["works_object_type_id"]
-                and prop_i["amend_properties__property__name"]
-            }
+        wot_properties = services.get_wot_properties(value)
+        amend_properties = services.get_amend_properties(value)
 
         wot_and_amend_properties = {
             "request_properties": wot_properties,
@@ -152,6 +129,26 @@ class PermitAuthorSerializer(serializers.ModelSerializer):
             "phone_second",
             "email",
         )
+
+
+class CurrentUserSerializer(serializers.Serializer):
+    def to_representation(self, value):
+        if value.is_authenticated:
+            json = {
+                "is_logged": True,
+                "username": value.username,
+                "email": value.email,
+                "login_datetime": value.last_login.strftime("%Y-%m-%d %H:%M:%S"),
+                "expiration_datetime": (
+                    value.last_login + timedelta(seconds=settings.SESSION_COOKIE_AGE)
+                ).strftime("%Y-%m-%d %H:%M:%S"),
+            }
+        else:
+            json = {
+                "is_logged": False,
+            }
+
+        return json
 
 
 class PermitRequestValidationSerializer(serializers.Serializer):
@@ -431,6 +428,19 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
         return rep
 
 
+class PermitRequestDetailsSerializer(serializers.ModelSerializer):
+    wot_properties = WotPropertiesValuesSerializer(
+        source="worksobjecttypechoice_set", read_only=True
+    )
+
+    class Meta:
+        model = models.PermitRequest
+        fields = (
+            "id",
+            "wot_properties",
+        )
+
+
 class PermitRequestFiltersSerializer(serializers.Serializer):
     works_object_type = serializers.IntegerField(default=None, allow_null=True)
     status = serializers.ChoiceField(
@@ -440,3 +450,8 @@ class PermitRequestFiltersSerializer(serializers.Serializer):
         ("lines", "points", "polygons"), default=None, allow_null=True
     )
     permit_request_id = serializers.IntegerField(default=None, allow_null=True)
+
+
+class SearchSerializer(serializers.Serializer):
+    def to_representation(self, value):
+        return search.search_result_to_json(value)
