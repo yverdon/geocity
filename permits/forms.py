@@ -1429,6 +1429,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         ].queryset = models.PermitDepartment.objects.filter(
             administrative_entity=permit_request.administrative_entity
         ).all()
+        self.fields["authorised_departments"].label = _("Département autorisé")
 
         parent_types = models.ComplementaryDocumentType.objects.filter(
             work_object_types__in=permit_request.works_object_types.all()

@@ -59,7 +59,9 @@ document.getElementById('remove-document').addEventListener('click', (e) => {
 function displayChildSelect(parent) {
   const regex = RegExp(`form-(\\d){1}`,'g')
   const prefix = parent.innerHTML.match(regex)[0]
-  document.getElementById(`id_${prefix}-document_type`).addEventListener('change', (e) => {
+
+  const documentType = document.getElementById(`id_${prefix}-document_type`)
+  documentType.addEventListener('change', (e) => {
     for (const child of parent.getElementsByClassName('child-type')) {
       child.setAttribute('hidden', '')
       child.closest('.form-group').style.display = 'none'
@@ -71,6 +73,10 @@ function displayChildSelect(parent) {
       targetChild.closest('.form-group').style.display = 'flex'
     }
   })
+
+  if (documentType.value) {
+    documentType.dispatchEvent(new Event('change'))
+  }
 }
 
 function hideChildrenDocumentTypes(parent) {
