@@ -1777,11 +1777,13 @@ def login_for_anonymous_request(request, entity):
 
 
 def download_file(path):
-    mime_type, encoding = mimetypes.guess_type(path)
     storage = fields.PrivateFileSystemStorage()
     file = storage.open(path)
-    response = StreamingHttpResponse(file, content_type=mime_type)
-    response["Content-Disposition"] = 'attachment; filename="' + file.name + '"'
+    # for some strange reason, firefox refuses to download the file.
+    # so we need to set the `Content-Type` to `application/force-download` so
+    # firefox will download it
+    response = StreamingHttpResponse(file, content_type="application/force-download")
+    response["Content-Disposition"] = f'attachment; filename="{file.name}"'
     return response
 
 
