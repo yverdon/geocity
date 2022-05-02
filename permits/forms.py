@@ -1451,7 +1451,9 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             self.fields[name].label = ""
 
     def save(self, commit=True):
-        document = super().save(commit=False)
+        document = super(PermitRequestComplementaryDocumentsForm, self).save(
+            commit=False
+        )
 
         # set the child type as the documents type
         document.document_type = models.ComplementaryDocumentType.objects.filter(

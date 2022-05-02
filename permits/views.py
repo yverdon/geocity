@@ -700,6 +700,7 @@ class PermitRequestDetailView(View):
             f.instance.owner = self.request.user
             f.instance.permit_request = self.permit_request
             f.save()
+            f.save_m2m()
 
         success_message = (
             _("Les documents ont bien été ajoutés à la demande #%s.")
