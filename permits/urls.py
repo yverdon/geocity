@@ -86,6 +86,11 @@ urlpatterns = [
         name="works_object_property_file_download",
     ),
     path(
+        "documents/<path:path>/download",
+        views.ComplementaryDocumentDownloadView.as_view(),
+        name="complementary_documents_download",
+    ),
+    path(
         "documents/<int:pk>/delete",
         views.PermitRequestComplementaryDocumentDeleteView.as_view(),
         name="complementary_documents_delete",

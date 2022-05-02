@@ -796,6 +796,14 @@ class PermitRequestComplementaryDocumentDeleteView(DeleteView):
         )
 
 
+@method_decorator(login_required, name="dispatch")
+@method_decorator(permanent_user_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
+class ComplementaryDocumentDownloadView(View):
+    def get(self, request, path, *args, **kwargs):
+        return services.download_file(path)
+
+
 def permit_request_print(request, permit_request_id, template_id):
     permit_request = services.get_permit_request_for_user_or_404(
         request.user, permit_request_id

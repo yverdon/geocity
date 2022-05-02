@@ -1781,7 +1781,7 @@ def download_file(path):
     file = storage.open(path)
     # for some strange reason, firefox refuses to download the file.
     # so we need to set the `Content-Type` to `application/force-download` so
-    # firefox will download it
+    # firefox will download it. For the time being, this "dirty" hack works
     response = StreamingHttpResponse(file, content_type="application/force-download")
     response["Content-Disposition"] = f'attachment; filename="{file.name}"'
     return response
