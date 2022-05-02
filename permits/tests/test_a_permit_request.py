@@ -3218,7 +3218,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(permit_request.status, models.PermitRequest.STATUS_PROCESSING)
         self.assertEqual(
             response.context[0]["forms"]["amend"].errors["notify_author"],
-            ["Vous devez notifier l'autheur pour une demande de compléments"],
+            ["Vous devez notifier l'auteur pour une demande de compléments"],
         )
 
 

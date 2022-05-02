@@ -1016,7 +1016,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
             and not notify_author
         ):
             raise ValidationError(
-                _("Vous devez notifier l'autheur pour une demande de compléments")
+                _("Vous devez notifier l'auteur pour une demande de compléments")
             )
 
         return notify_author
