@@ -1405,7 +1405,7 @@ class PermitRequestComplementaryDocument(models.Model):
         (STATUS_CANCELED, _("Annulé")),
     )
 
-    document = models.FileField(_("Document"))
+    document = fields.ComplementaryDocumentFileField(_("Document"))
     description = models.TextField(_("Description du document"), blank=True,)
     owner = models.ForeignKey(
         User,

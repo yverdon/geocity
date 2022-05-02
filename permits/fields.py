@@ -96,3 +96,23 @@ class WorkObjectTypeFileField(models.FileField):
     def __init__(self, verbose_name=None, name=None, **kwargs):
         kwargs["storage"] = PrivateFileSystemStorage()
         super().__init__(verbose_name, name, **kwargs)
+
+
+class ComplementaryDocumentFieldFile(FieldFile):
+    @property
+    def url(self):
+        return reverse(
+            "permits:complementary_documents_download", kwargs={"path": self.name},
+        )
+
+
+class ComplementaryDocumentFileField(models.FileField):
+    """
+    FileField storing information in a private media root.
+    """
+
+    attr_class = ComplementaryDocumentFieldFile
+
+    def __init__(self, verbose_name=None, name=None, **kwargs):
+        kwargs["storage"] = PrivateFileSystemStorage()
+        super().__init__(verbose_name, name, **kwargs)
