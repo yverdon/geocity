@@ -393,7 +393,7 @@ class PermitRequestDetailView(View):
         )
 
         if current_inquiry:
-            disable_form(form, editable_fields=[form.fields['documents'].label])
+            disable_form(form, editable_fields=[form.fields["documents"].label])
 
         return form
 
@@ -516,14 +516,12 @@ class PermitRequestDetailView(View):
         )
 
         if form.instance.status == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT:
-            success_message += (
-                " "
-                + _(
-                    "Le statut de la demande a été passé à en attente de compléments. Vous devez maintenant"
-                    " contacter le requérant par email (%s) afin de lui demander de fournir les informations manquantes."
-                )
-                % self.permit_request.author.user.email
+            success_message += " " + _(
+                "Le statut de la demande a été passé à en attente de compléments."
             )
+
+        if form.cleaned_data.get("notify_author"):
+            success_message += _("Le requérant a été notifié du changement par email.")
 
         messages.success(self.request, success_message)
 

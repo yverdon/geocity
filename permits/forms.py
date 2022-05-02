@@ -883,6 +883,16 @@ class PermitRequestActorForm(forms.ModelForm):
 class PermitRequestAdditionalInformationForm(forms.ModelForm):
     required_css_class = "required"
 
+    notify_author = forms.BooleanField(
+        label=_("Notifier l'auteur de la demande"), required=False,
+    )
+    reason = forms.CharField(
+        label=_("Raison"),
+        widget=forms.Textarea(attrs={"rows": 1}),
+        required=False,
+        help_text=_("(Optionnel) Raison du changement du statut de la demande"),
+    )
+
     class Meta:
         model = models.PermitRequest
         fields = ["is_public", "shortname", "status"]
@@ -997,6 +1007,35 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
 
         return status
 
+    def clean_notify_author(self):
+        notify_author = self.cleaned_data.get("notify_author")
+
+        if (
+            self.cleaned_data.get("status")
+            == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
+            and not notify_author
+        ):
+            raise ValidationError(
+                _("Vous devez notifier l'auteur pour une demande de compléments")
+            )
+
+        return notify_author
+
+    def clean_reason(self):
+        reason = self.cleaned_data.get("reason")
+
+        if (
+            self.cleaned_data.get("status")
+            == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
+            and self.cleaned_data.get("notify_author")
+            and not reason
+        ):
+            raise ValidationError(
+                _("Vous devez fournir une raison pour la demande de compléments")
+            )
+
+        return reason
+
     def save(self, commit=True):
         permit_request = super().save(commit=False)
         for works_object_type, prop in self.get_properties():
@@ -1009,8 +1048,43 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                 ],
             )
         if commit:
+            if self.cleaned_data.get("notify_author"):
+                self._notify_author(permit_request)
             permit_request.save()
         return permit_request
+
+    def _notify_author(self, permit_request):
+        sender_name = (
+            f"{permit_request.administrative_entity.expeditor_name} "
+            if permit_request.administrative_entity.expeditor_name
+            else ""
+        )
+        sender = (
+            f"{sender_name}<{permit_request.administrative_entity.expeditor_email}>"
+            if permit_request.administrative_entity.expeditor_email
+            else settings.DEFAULT_FROM_EMAIL
+        )
+
+        services.send_email(
+            template="permit_request_changed.txt",
+            sender=sender,
+            receivers=[permit_request.author.user.email],
+            subject=_("Votre demande %s a changé") % permit_request.works_objects_str(),
+            context={
+                "status": dict(permit_request.STATUS_CHOICES)[permit_request.status],
+                "reason": (
+                    self.cleaned_data.get("reason")
+                    if self.cleaned_data.get("reason")
+                    else ""
+                ),
+                "permit_request_url": permit_request.get_absolute_url(
+                    reverse(
+                        "permits:permit_request_detail",
+                        kwargs={"permit_request_id": permit_request.pk},
+                    )
+                ),
+            },
+        )
 
 
 # extend django gis osm openlayers widget
