@@ -19,6 +19,7 @@ from django.db.models import CharField, Count, F, Max, Min, Q, Value
 from django.db.models.functions import Concat
 from django.forms import modelformset_factory
 from django.http import StreamingHttpResponse
+from django.http.response import FileResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -1778,13 +1779,10 @@ def login_for_anonymous_request(request, entity):
 
 def download_file(path):
     storage = fields.PrivateFileSystemStorage()
-    file = storage.open(path)
     # for some strange reason, firefox refuses to download the file.
-    # so we need to set the `Content-Type` to `application/force-download` so
+    # so we need to set the `Content-Type` to `application/octet-stream` so
     # firefox will download it. For the time being, this "dirty" hack works
-    response = StreamingHttpResponse(file, content_type="application/force-download")
-    response["Content-Disposition"] = f'attachment; filename="{file.name}"'
-    return response
+    return FileResponse(storage.open(path), content_type="application/octet-stream")
 
 
 def get_works_type_names_list(permit_request):
