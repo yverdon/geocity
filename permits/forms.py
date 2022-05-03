@@ -546,7 +546,6 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                 prop.input_type == models.WorksObjectProperty.INPUT_TYPE_ADDRESS
                 and prop.store_geometry_for_address_field
                 and self.cleaned_data[self.get_field_name(works_object_type, prop)]
-                != ""
             ):
                 to_geocode_addresses.append(
                     self.cleaned_data[self.get_field_name(works_object_type, prop)]
