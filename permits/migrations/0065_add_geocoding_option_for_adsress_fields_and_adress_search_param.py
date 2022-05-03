@@ -28,6 +28,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='worksobjectproperty',
             name='store_geometry_for_address_field',
-            field=models.BooleanField(default=False, help_text='L\'API Geoadmin est utilisée afin de trouver un point correspondant à l\'adresse. En cas d\'échec, le centroïde de l\'entité administrative est utilisée  <a href="https://api3.geo.admin.ch/services/sdiservices.html#search" target="_blank">Plus d\'informations</a>', verbose_name="Stocker la géométrie de l'adresse dans la table géométrique"),
+            field=models.BooleanField(default=False, help_text='L\'API Geoadmin est utilisée afin de trouver un point correspondant à l\'adresse. En cas d\'échec, le centroïde de l\'entité administrative est utilisée <a href="https://api3.geo.admin.ch/services/sdiservices.html#search" target="_blank">Plus d\'informations</a>', verbose_name="Stocker la géométrie de l'adresse dans la table géométrique"),
         ),
     ]

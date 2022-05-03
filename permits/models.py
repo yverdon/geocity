@@ -1117,7 +1117,7 @@ class WorksObjectProperty(models.Model):
         _("Stocker la géométrie de l'adresse dans la table géométrique"),
         default=False,
         help_text=_(
-            "L'API Geoadmin est utilisée afin de trouver un point correspondant à l'adresse. En cas d'échec, le centroïde de l'entité administrative est utilisée  <a href=\"https://api3.geo.admin.ch/services/sdiservices.html#search\" target=\"_blank\">Plus d'informations</a>"
+            "L'API Geoadmin est utilisée afin de trouver un point correspondant à l'adresse. En cas d'échec, le centroïde de l'entité administrative est utilisée <a href=\"https://api3.geo.admin.ch/services/sdiservices.html#search\" target=\"_blank\">Plus d'informations</a>"
         ),
     )
 

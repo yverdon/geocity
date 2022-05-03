@@ -545,11 +545,13 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
             if (
                 prop.input_type == models.WorksObjectProperty.INPUT_TYPE_ADDRESS
                 and prop.store_geometry_for_address_field
+                and self.cleaned_data[self.get_field_name(works_object_type, prop)]
+                != ""
             ):
                 to_geocode_addresses.append(
                     self.cleaned_data[self.get_field_name(works_object_type, prop)]
                 )
-        if len(to_geocode_addresses) > 0:
+        if to_geocode_addresses:
             geoservices.reverse_geocode_and_store_address_geometry(
                 self.instance, to_geocode_addresses
             )

@@ -791,13 +791,13 @@ def get_geotime_required_info(permit_request):
         required_info.add(GeoTimeInfo.GEOMETRY)
     else:
         exclusions = [
-            x[0]
-            for x in models.WorksObjectProperty.INPUT_TYPE_CHOICES
-            if x[0] != models.INPUT_TYPE_ADDRESS
+            prop[0]
+            for prop in models.WorksObjectProperty.INPUT_TYPE_CHOICES
+            if prop[0] != models.INPUT_TYPE_ADDRESS
         ]
 
         if (
-            len(get_properties(permit_request, exclusions)) > 0
+            get_properties(permit_request, exclusions)
             and get_geotime_objects(permit_request.pk)
             .filter(comes_from_automatic_geocoding=True)
             .exists()
