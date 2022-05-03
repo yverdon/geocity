@@ -1503,6 +1503,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         ].queryset = models.PermitDepartment.objects.filter(
             administrative_entity=permit_request.administrative_entity
         ).all()
+        self.fields["authorised_departments"].label = _("Département autorisé")
 
         parent_types = models.ComplementaryDocumentType.objects.filter(
             work_object_types__in=permit_request.works_object_types.all()
@@ -1524,7 +1525,9 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             self.fields[name].label = ""
 
     def save(self, commit=True):
-        document = super().save(commit=False)
+        document = super(PermitRequestComplementaryDocumentsForm, self).save(
+            commit=False
+        )
 
         # set the child type as the documents type
         document.document_type = models.ComplementaryDocumentType.objects.filter(

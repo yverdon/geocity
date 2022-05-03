@@ -202,8 +202,12 @@ class PermitRequestDetailView(View):
             or not getattr(action_formsets[action], "disabled", False)
         ]
 
-        if kwargs.get("active_form"):
-            active_form = kwargs.get("active_form")
+        if kwargs.get("active_form") or self.request.GET.get("prev_active_form"):
+            active_form = (
+                kwargs.get("active_form")
+                if kwargs.get("active_form")
+                else self.request.GET.get("prev_active_form")
+            )
 
             if "poke" in active_forms and "validate" in active_forms:
                 active_form = active_forms[active_forms.index("validate")]
@@ -694,6 +698,7 @@ class PermitRequestDetailView(View):
             f.instance.owner = self.request.user
             f.instance.permit_request = self.permit_request
             f.save()
+            f.save_m2m()
 
         success_message = (
             _("Les documents ont bien été ajoutés à la demande #%s.")
@@ -702,12 +707,16 @@ class PermitRequestDetailView(View):
         messages.success(self.request, success_message)
 
         if "save_continue" in self.request.POST:
-            return redirect(
+            target = reverse(
                 "permits:permit_request_detail",
-                permit_request_id=self.permit_request.pk,
+                kwargs={"permit_request_id": self.permit_request.pk},
             )
-        else:
-            return redirect("permits:permit_requests_list")
+            query_string = urllib.parse.urlencode(
+                {"prev_active_form": models.ACTION_COMPLEMENTARY_DOCUMENTS}
+            )
+            return redirect(f"{target}?{query_string}")
+
+        return redirect("permits:permit_requests_list")
 
     def handle_request_inquiry_form_submission(self, form):
         # check if we're coming from the confirmation page
@@ -784,6 +793,14 @@ class PermitRequestComplementaryDocumentDeleteView(DeleteView):
             "permits:permit_request_detail",
             kwargs={"permit_request_id": self.get_object().permit_request_id},
         )
+
+
+@method_decorator(login_required, name="dispatch")
+@method_decorator(permanent_user_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
+class ComplementaryDocumentDownloadView(View):
+    def get(self, request, path, *args, **kwargs):
+        return services.download_file(path)
 
 
 def permit_request_print(request, permit_request_id, template_id):

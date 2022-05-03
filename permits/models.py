@@ -1405,7 +1405,7 @@ class PermitRequestComplementaryDocument(models.Model):
         (STATUS_CANCELED, _("Annulé")),
     )
 
-    document = models.FileField(_("Document"))
+    document = fields.ComplementaryDocumentFileField(_("Document"))
     description = models.TextField(_("Description du document"), blank=True,)
     owner = models.ForeignKey(
         User,
@@ -1446,7 +1446,7 @@ class PermitRequestComplementaryDocument(models.Model):
     def delete(self, using=None, keep_parents=False):
         # delete the uploaded file
         try:
-            os.remove(os.path.join(settings.MEDIA_ROOT, self.document.name))
+            os.remove(self.document.path)
             return super().delete(using, keep_parents)
         except OSError as e:
             raise ProtectedError(
