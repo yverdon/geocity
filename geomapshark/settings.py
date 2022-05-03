@@ -184,6 +184,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "ENABLE_GEOCALENDAR",
         "ANONYMOUS_REQUEST_SENT_TITLE",
         "ANONYMOUS_REQUEST_SENT_BODY",
+        "LOCATIONS_SEARCH_API",
     ),
     "Theme Options": (
         "BACKGROUND_COLOR",
@@ -256,6 +257,11 @@ CONSTANCE_CONFIG = {
     "ANONYMOUS_REQUEST_SENT_BODY": (
         "Nous avons bien reçu votre requête anonyme.",
         "",
+        str,
+    ),
+    "LOCATIONS_SEARCH_API": (
+        "https://api3.geo.admin.ch/rest/services/api/SearchServer",
+        "URL de l'api de recherche d'adresse",
         str,
     ),
     "LOCATION_STEP": ("Sélectionnez la commune / l'entité", "", str),

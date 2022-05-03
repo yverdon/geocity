@@ -2467,6 +2467,41 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
         )
         self.assertEqual(prop_val.value, {"val": "Hôtel Martinez, Cannes"})
 
+    def test_properties_step_submit_updates_geotime_with_address_store_geometry_for_address_field(
+        self,
+    ):
+
+        address_prop = factories.WorksObjectPropertyFactoryTypeAddress(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS,
+            store_geometry_for_address_field=True,
+        )
+        address_prop.works_object_types.set(
+            self.permit_request.works_object_types.all()
+        )
+        works_object_type = self.permit_request.works_object_types.first()
+        data = {
+            f"properties-{works_object_type.pk}_{address_prop.pk}": "Place pestalozzi 2, 1400 Yverdon-les-Bains"
+        }
+        self.client.post(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            ),
+            data=data,
+        )
+
+        self.permit_request.refresh_from_db()
+        prop_val = services.get_properties_values(self.permit_request).get(
+            property__input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS
+        )
+        self.assertEqual(
+            prop_val.value, {"val": "Place pestalozzi 2, 1400 Yverdon-les-Bains"}
+        )
+        geocoded_geotime_row = models.PermitRequestGeoTime.objects.filter(
+            permit_request=self.permit_request, comes_from_automatic_geocoding=True
+        ).count()
+        self.assertEqual(1, geocoded_geotime_row)
+
     def test_properties_step_submit_updates_permit_request_with_date(self):
 
         date_prop = factories.WorksObjectPropertyFactory(

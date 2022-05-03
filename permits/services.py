@@ -36,6 +36,8 @@ from pdf2image import convert_from_path
 class GeoTimeInfo(enum.Enum):
     DATE = enum.auto()
     GEOMETRY = enum.auto()
+    # Geometry automatically genrerate from address field using geoadmin API
+    GEOCODED_GEOMETRY = enum.auto()
 
 
 def get_works_object_type_choices(permit_request):
@@ -61,6 +63,7 @@ def set_object_property_value(permit_request, object_type, prop, value):
     )
     is_file = prop.input_type == models.WorksObjectProperty.INPUT_TYPE_FILE
     is_date = prop.input_type == models.WorksObjectProperty.INPUT_TYPE_DATE
+    is_address = prop.input_type == models.WorksObjectProperty.INPUT_TYPE_ADDRESS
 
     if value == "" or value is None:
         existing_value_obj.delete()
@@ -153,6 +156,23 @@ def get_properties_values(permit_request):
     """
     Return a queryset of `WorksObjectPropertyValue` objects for the given `permit_request`, excluding properties of type
     file.
+    """
+    return (
+        models.WorksObjectPropertyValue.objects.filter(
+            works_object_type_choice__permit_request=permit_request
+        )
+        .exclude(property__input_type=models.WorksObjectProperty.INPUT_TYPE_FILE)
+        .select_related(
+            "works_object_type_choice",
+            "works_object_type_choice__works_object_type",
+            "property",
+        )
+    )
+
+
+def get_properties_value(permit_request, property):
+    """
+    Return a `WorksObjectPropertyValue` object for the given `permit_request` and given property
     """
     return (
         models.WorksObjectPropertyValue.objects.filter(
@@ -769,7 +789,20 @@ def get_geotime_required_info(permit_request):
 
     if any(works_object_type.has_geometry for works_object_type in works_object_types):
         required_info.add(GeoTimeInfo.GEOMETRY)
+    else:
+        exclusions = [
+            prop[0]
+            for prop in models.WorksObjectProperty.INPUT_TYPE_CHOICES
+            if prop[0] != models.INPUT_TYPE_ADDRESS
+        ]
 
+        if (
+            get_properties(permit_request, exclusions)
+            and get_geotime_objects(permit_request.pk)
+            .filter(comes_from_automatic_geocoding=True)
+            .exists()
+        ):
+            required_info.add(GeoTimeInfo.GEOCODED_GEOMETRY)
     return required_info
 
 

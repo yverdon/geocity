@@ -1277,11 +1277,12 @@ def permit_request_geo_time(request, permit_request_id):
         min_num=1,
         can_delete=True,
     )
-
     formset = PermitRequestGeoTimeFormSet(
         request.POST if request.method == "POST" else None,
         form_kwargs={"permit_request": permit_request},
-        queryset=permit_request.geo_time.all(),
+        queryset=permit_request.geo_time.filter(
+            comes_from_automatic_geocoding=False
+        ).all(),
     )
 
     if request.method == "POST":

@@ -1114,7 +1114,11 @@ class WorksObjectProperty(models.Model):
         ),
     )
     store_geometry_for_address_field = models.BooleanField(
-        _("Stocker la géométrie de l'adresse dans la table géométrique"), default=False
+        _("Stocker la géométrie de l'adresse dans la table géométrique"),
+        default=False,
+        help_text=_(
+            "L'API Geoadmin est utilisée afin de trouver un point correspondant à l'adresse. En cas d'échec, le centroïde de l'entité administrative est utilisée <a href=\"https://api3.geo.admin.ch/services/sdiservices.html#search\" target=\"_blank\">Plus d'informations</a>"
+        ),
     )
 
     class Meta(object):
@@ -1270,6 +1274,9 @@ class PermitRequestGeoTime(models.Model):
     ends_at = models.DateTimeField(_("Date planifiée de fin"), blank=True, null=True)
     comment = models.CharField(_("Commentaire"), max_length=1024, blank=True)
     external_link = models.URLField(_("Lien externe"), blank=True)
+    comes_from_automatic_geocoding = models.BooleanField(
+        _("Géométrie obtenue par géocodage d'adresse"), default=False
+    )
     geom = geomodels.GeometryCollectionField(_("Localisation"), null=True, srid=2056)
     history = HistoricalRecords()
 

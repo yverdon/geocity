@@ -83,7 +83,6 @@ $(function () {
                 data.feature.attributes.dplz4
               );
             }
-
             if (
               dataRemoteAutocomplete.city_field != "" &&
               !dataRemoteAutocomplete.single_contact
