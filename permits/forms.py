@@ -1085,7 +1085,6 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.permit_request = kwargs.pop("permit_request", None)
         disable_fields = kwargs.pop("disable_fields", False)
-
         initial = {}
         if (
             self.permit_request.prolongation_date
@@ -1100,12 +1099,15 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
 
         required_info = services.get_geotime_required_info(self.permit_request)
 
-        if services.GeoTimeInfo.DATE not in required_info:
+        if (
+            services.GeoTimeInfo.DATE not in required_info
+            or self.instance.comes_from_automatic_geocoding
+        ):
             del self.fields["starts_at"]
             del self.fields["ends_at"]
         if (
             services.GeoTimeInfo.GEOMETRY not in required_info
-            and services.GeoTimeInfo.GEOCODED_GEOMETRY not in required_info
+            and not self.instance.comes_from_automatic_geocoding
         ):
             del self.fields["geom"]
 
@@ -1116,9 +1118,10 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             self.fields["geom"].widget.attrs["options"][
                 "edit_geom"
             ] = not disable_fields
-        if not config.ENABLE_GEOCALENDAR or (
-            services.GeoTimeInfo.GEOCODED_GEOMETRY in required_info
-            and (
+        if (
+            not config.ENABLE_GEOCALENDAR
+            or self.instance.comes_from_automatic_geocoding
+            or (
                 (services.GeoTimeInfo.GEOMETRY and services.GeoTimeInfo.DATE)
                 not in required_info
             )
