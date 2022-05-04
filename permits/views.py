@@ -746,7 +746,7 @@ class PermitRequestDetailView(View):
 
         form.save()
 
-        success_message = _("La mise à l'enquête a bien été enregistré")
+        success_message = _("La mise en consultation publique a bien été enregistré")
         messages.success(self.request, success_message)
 
         return redirect(

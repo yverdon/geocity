@@ -1,6 +1,6 @@
 {% load i18n %}{% autoescape off %}{% blocktrans %}Bonjour {{ name }}{% endblocktrans %},
 
-{% trans "Nous vous informons que l'enquête publique relative à la demande" %}: {{ permit_request_url }} est terminée.
+{% trans "Nous vous informons que la mise en consultation publique relative à la demande" %}: {{ permit_request_url }} est terminée.
 
 {% trans "Avec nos meilleures salutations," %}
 {% if administrative_entity.custom_signature %}

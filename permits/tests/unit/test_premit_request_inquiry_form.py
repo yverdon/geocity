@@ -51,5 +51,5 @@ class TestPermitRequestInquiry(GeocityTestCase):
             self.assertFalse(form.is_valid())
             self.assertEqual(
                 form.errors,
-                {"__all__": ["Une enquête est déjà en cours pendant cette période"]},
+                {"__all__": ["Une consultation publique est déjà en cours pendant cette période"]},
             )

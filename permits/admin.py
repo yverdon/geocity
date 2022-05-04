@@ -1278,6 +1278,11 @@ class TokenAdmin(BaseTokenAdmin):
 class ComplementaryDocumentTypeAdmin(admin.ModelAdmin):
     form = permit_forms.ComplementaryDocumentTypeAdminForm
 
+    def sortable_str(self, obj):
+        return obj.__str__()
+    sortable_str.admin_order_field = "name"
+    sortable_str.short_description = _("1.7 Configuration des types de documents")
+
 
 admin.site.unregister(TokenProxy)
 admin.site.register(TokenProxy, TokenAdmin)

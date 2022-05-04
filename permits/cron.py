@@ -95,7 +95,7 @@ class PermitRequestInquiryClosing(CronJobBase):
             inquiry.permit_request.save()
 
             data = {
-                "subject": _("Fin de l'enquête publique"),
+                "subject": _("Fin de la consultation publique publique"),
                 "users_to_notify": [
                     inquiry.permit_request.author.user.email,
                     inquiry.submitter.email,

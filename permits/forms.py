@@ -1001,7 +1001,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
         ):
             raise ValidationError(
                 _(
-                    "Vous ne pouvez pas changer le status de la demande car une enquête public est en cours"
+                    "Vous ne pouvez pas changer le status de la demande car une consultation publique est en cours"
                 )
             )
 
@@ -1697,7 +1697,7 @@ class PermitRequestInquiryForm(forms.ModelForm):
             permit_request=permit_request
         ).all()
         self.fields["documents"].help_text = _(
-            "Attention, les documents non-publics seront public une fois la mise à l'enquête démarrée!"
+            "Attention, les documents non-publics seront public une fois la mise en consultation publique démarrée!"
         )
 
     def clean_start_date(self):
@@ -1730,7 +1730,7 @@ class PermitRequestInquiryForm(forms.ModelForm):
         )
         if overlap and not self.instance.pk:
             raise ValidationError(
-                _("Une enquête est déjà en cours pendant cette période")
+                _("Une consultation publique est déjà en cours pendant cette période")
             )
 
         return cleaned_data

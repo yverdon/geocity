@@ -502,7 +502,7 @@ class PermitRequest(models.Model):
         (STATUS_APPROVED, _("Approuvée")),
         (STATUS_REJECTED, _("Refusée")),
         (STATUS_RECEIVED, _("Réceptionnée")),
-        (STATUS_INQUIRY_IN_PROGRESS, _("Mise à l'enquête en cours")),
+        (STATUS_INQUIRY_IN_PROGRESS, _("Consultation publique en cours")),
     )
     AMENDABLE_STATUSES = {
         STATUS_SUBMITTED_FOR_VALIDATION,
@@ -1483,6 +1483,9 @@ class ComplementaryDocumentType(models.Model):
             )
         ]
 
+        verbose_name = _("1.7 Configuration du type de document")
+        verbose_name_plural = _("1.7 Configuration des types de documents")
+
     def __str__(self):
         return self.name
 
@@ -1505,7 +1508,7 @@ class PermitRequestInquiry(models.Model):
         User,
         null=True,
         on_delete=models.SET_NULL,
-        verbose_name=_("Demandeur de l'enquête"),
+        verbose_name=_("Responsable de la mise en consultation publique"),
     )
 
     @classmethod
