@@ -17,8 +17,8 @@ form.addEventListener('submit', async (e) => {
     mode: 'same-origin',
     body: data,
   })
-
-  if (response.status === 302) {
+  console.log(response)
+  if (response.status === 403) {
     const data = await response.json()
     let error = document.createElement("div")
     error.classList.add("alert", "alert-danger")
