@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('permits', '0071_delete_historicalpermitrequestinquiry'),
+        ('permits', '0072_alter_permitrequestcomplementarydocument_document'),
     ]
 
     operations = [
