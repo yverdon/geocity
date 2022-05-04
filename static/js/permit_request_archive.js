@@ -17,7 +17,7 @@ form.addEventListener('submit', async (e) => {
     mode: 'same-origin',
     body: data,
   })
-  console.log(response)
+
   if (response.status === 403) {
     const data = await response.json()
     let error = document.createElement("div")
