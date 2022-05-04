@@ -218,6 +218,7 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
 
     def to_representation(self, value):
         geo_time_qs = value.all()
+
         if not geo_time_qs:
             return {
                 "geometry": {"type": "Polygon", "coordinates": []},
@@ -230,7 +231,6 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
                     }
                 },
             }
-
         else:
 
             if self.extract_geom == self.EXTRACT_POINTS:
@@ -250,7 +250,7 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
 
             result = {"properties": {}}
             if not aggregated_geotime_qs["singlegeom"]:
-                result["geometry"] = None
+                result["geometry"] = {"type": "Polygon", "coordinates": []}
             else:
                 result["geometry"] = json.loads(
                     GEOSGeometry(aggregated_geotime_qs["singlegeom"]).json
