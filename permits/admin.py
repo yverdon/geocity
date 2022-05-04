@@ -779,7 +779,13 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         ),
         (
             "Planning et localisation",
-            {"fields": ("geometry_types", "needs_date", "start_delay",)},
+            {
+                "fields": (
+                    "geometry_types",
+                    "needs_date",
+                    "start_delay",
+                )
+            },
         ),
         (
             "Prolongation",
@@ -945,6 +951,7 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
             "archive_link",
             "general_informations",
             "phone",
+            "additional_searchtext_for_address_field",
             "geom",
         ]
         exclude = ["enabled_status"]

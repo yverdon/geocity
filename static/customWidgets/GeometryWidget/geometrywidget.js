@@ -202,6 +202,86 @@
 
     this._addEventListeners();
     this.ready = true;
+
+    // Fulltext search on geoadmin api to center the view on select
+    var itemId = $('#' + el.querySelector("[data-role=fulltext-location-search]").id);
+    var thisScope = this;
+    itemId.autocomplete({
+      classes: {
+        "ui-autocomplete": "sit-autocomplete",
+      },
+      source: function (request, response) {
+        var dataRemoteAutocomplete = jQuery.parseJSON(
+          itemId.attr("data-options")
+        );
+
+        if(dataRemoteAutocomplete.ftsearch_additional_searchtext_for_address_field) {
+          request.term += ' ' + dataRemoteAutocomplete.ftsearch_additional_searchtext_for_address_field;
+        }
+        $.ajax({
+          url: dataRemoteAutocomplete.ftsearch_apiurl,
+          dataType: "json",
+          data: {
+            searchText: request.term,
+            limit: 20,
+            partitionlimit: 24,
+            type: "locations",
+            sr: 2056,
+            lang: "fr",
+            origins: dataRemoteAutocomplete.ftsearch_apiurl_origins,
+          },
+          success: function (data) {
+            let features = data.results;
+            let items = [];
+            for (let i = 0; i < features.length; i++) {
+              let f = features[i];
+              let item = {
+                x: f.attrs.x,
+                y: f.attrs.y,
+                id: f.attrs.featureId,
+                label: f.attrs.label.replace("<b>", " - ").replace("</b>", ""),
+                value: f.attrs.detail,
+              };
+              items.push(item);
+            }
+            response(items);
+          },
+        });
+      },
+      minLength: 2,
+      select: function (event, ui) {
+        var dataRemoteAutocomplete = jQuery.parseJSON(
+          itemId.attr("data-options")
+        );
+        $.ajax({
+          url: dataRemoteAutocomplete.ftsearch_apiurl_detail + ui.item.id,
+          dataType: "json",
+          data: {
+            returnGeometry: false,
+          },
+          success: function (data) {
+            var nmr = data.feature.attributes.deinr;
+            var street = "";
+            if (nmr == null || nmr === "") {
+              street = data.feature.attributes.strname.join(" ");
+            } else {
+              street = data.feature.attributes.strname.join(" ") + " " + nmr;
+            }
+            thisScope.vectorSource.addFeature(new ol.Feature({
+              geometry: new ol.geom.MultiPoint([[ui.item.y, ui.item.x]]),
+            }));
+            thisScope.map.getView().animate({
+              center: [ui.item.y, ui.item.x],
+              zoom: 13
+            });
+            var formattedAddress = street + ", " + data.feature.attributes.dplz4 + " " + data.feature.attributes.dplzname
+            $('#' + el.querySelector("[data-role=fulltext-location-search]").id).val(formattedAddress);
+          },
+        });
+        return false;
+      },
+    });
+
   }
 
   // Add new swiss CRS to proj4js

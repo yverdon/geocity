@@ -217,6 +217,14 @@ class PermitAdministrativeEntity(models.Model):
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
     )
+    additional_searchtext_for_address_field = models.CharField(
+        _("Filtre additionnel pour la recherche d'adresse"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            'Ex: "Yverdon-les-Bains" afin de limiter les recherches à Yverdon, <a href="https://api3.geo.admin.ch/services/sdiservices.html#search" target="_blank">Plus d\'informations</a>'
+        ),
+    )
     geom = geomodels.MultiPolygonField(_("geom"), null=True, srid=2056)
     tags = TaggableManager(
         blank=True,
