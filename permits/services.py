@@ -806,9 +806,10 @@ def get_geotime_required_info(permit_request):
     return required_info
 
 
-def get_geotime_objects(permit_request_id):
+def get_geotime_objects(permit_request_id, exlude_geocoded_geom=False):
     return models.PermitRequestGeoTime.objects.filter(
-        permit_request_id=permit_request_id
+        permit_request_id=permit_request_id,
+        comes_from_automatic_geocoding=exlude_geocoded_geom,
     )
 
 

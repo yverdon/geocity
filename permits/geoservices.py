@@ -101,9 +101,13 @@ def reverse_geocode_and_store_address_geometry(permit_request, to_geocode_addres
                 geom.append(MultiPoint(Point(y, x, srid=2056)))
             # If geocoding matches nothing, set the address value on the administrative_entity centroid point
             else:
-                geom.append(MultiPoint(permit_request.administrative_entity.geom.centroid))
+                geom.append(
+                    MultiPoint(permit_request.administrative_entity.geom.centroid)
+                )
 
         # Save the new ones
         models.PermitRequestGeoTime.objects.create(
-            permit_request=permit_request, comes_from_automatic_geocoding=True, geom=geom,
+            permit_request=permit_request,
+            comes_from_automatic_geocoding=True,
+            geom=geom,
         )
