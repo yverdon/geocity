@@ -1280,6 +1280,7 @@ class ComplementaryDocumentTypeAdmin(admin.ModelAdmin):
 
     def sortable_str(self, obj):
         return obj.__str__()
+
     sortable_str.admin_order_field = "name"
     sortable_str.short_description = _("1.7 Configuration des types de documents")
 
