@@ -1086,7 +1086,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             "ends_at": "Date de fin du chantier ou d'occupation du territoire. Si l'heure n'est pas pertinente, insérer 23:59.",
         }
         widgets = {
-            "geom": GeometryWidget(attrs={"salut-toto": "off"},),
+            "geom": GeometryWidget(),
             "comment": forms.Textarea(attrs={"rows": 2}),
         }
 
@@ -1223,7 +1223,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             "ftsearch_additional_searchtext_for_address_field": ftsearch_additional_searchtext_for_address_field,
             "ftsearch_apiurl": config.LOCATIONS_SEARCH_API,
             "ftsearch_apiurl_detail": config.LOCATIONS_SEARCH_API_DETAILS,
-            "ftsearch_apiurl_origins": "address",
+            "ftsearch_apiurl_origins": "address,parcel",
         }
 
         return options

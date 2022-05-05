@@ -235,11 +235,18 @@
             let items = [];
             for (let i = 0; i < features.length; i++) {
               let f = features[i];
+
+              var label = '';
+              if (f.attrs.origin == 'address') {
+                label = f.attrs.label.replace("<b>", " - ").replace("</b>", "");
+              } else if (f.attrs.origin == 'parcel') {
+                label = "Parcelle: " + f.attrs.label.replace(/\s\<b\>\s*/g, ", ").replace(/\s*(([\<][^\>]*[\>])|(\(CH[\s\d]+\)))/g, "");
+              }
               let item = {
                 x: f.attrs.x,
                 y: f.attrs.y,
                 id: f.attrs.featureId,
-                label: f.attrs.label.replace("<b>", " - ").replace("</b>", ""),
+                label: label,
                 value: f.attrs.detail,
               };
               items.push(item);
@@ -250,34 +257,16 @@
       },
       minLength: 2,
       select: function (event, ui) {
-        var dataRemoteAutocomplete = jQuery.parseJSON(
-          itemId.attr("data-options")
-        );
-        $.ajax({
-          url: dataRemoteAutocomplete.ftsearch_apiurl_detail + ui.item.id,
-          dataType: "json",
-          data: {
-            returnGeometry: false,
-          },
-          success: function (data) {
-            var nmr = data.feature.attributes.deinr;
-            var street = "";
-            if (nmr == null || nmr === "") {
-              street = data.feature.attributes.strname.join(" ");
-            } else {
-              street = data.feature.attributes.strname.join(" ") + " " + nmr;
-            }
-            thisScope.vectorSource.addFeature(new ol.Feature({
-              geometry: new ol.geom.MultiPoint([[ui.item.y, ui.item.x]]),
-            }));
-            thisScope.map.getView().animate({
-              center: [ui.item.y, ui.item.x],
-              zoom: 13
-            });
-            var formattedAddress = street + ", " + data.feature.attributes.dplz4 + " " + data.feature.attributes.dplzname
-            $('#' + el.querySelector("[data-role=fulltext-location-search]").id).val(formattedAddress);
-          },
+
+        thisScope.vectorSource.addFeature(new ol.Feature({
+          geometry: new ol.geom.MultiPoint([[ui.item.y, ui.item.x]]),
+        }));
+        thisScope.map.getView().animate({
+          center: [ui.item.y, ui.item.x],
+          zoom: 13
         });
+        $('#' + el.querySelector("[data-role=fulltext-location-search]").id).val(ui.item.label);
+
         return false;
       },
     });
