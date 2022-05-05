@@ -125,7 +125,7 @@
                   {% endif %}
                 </div>
                 <div class="col-2 text-right">
-                  <a href="/media/{{ document.document }}/" download="{{ document.document }}"><i class="fa fa-download" aria-hidden="true"></i></a>
+                  <a href="{% url 'permits:complementary_documents_download' document.name %}"><i class="fa fa-download" aria-hidden="true"></i></a>
                   {% if user == document.owner or user.is_superuser %}
                     <a class="text-danger" href="/permit-requests/documents/{{ document.id }}/delete" type=""><i class="fa fa-trash" aria-hidden="true"></i></a>
                   {% endif %}
