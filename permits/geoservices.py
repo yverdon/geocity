@@ -67,40 +67,43 @@ class ExtractPolys(Aggregate):
 
 
 def reverse_geocode_and_store_address_geometry(permit_request, to_geocode_addresses):
-    geoadmin_address_search_api = config.LOCATIONS_SEARCH_API
-    geom = GeometryCollection()
-    for address in to_geocode_addresses:
-        search_params = {
-            "searchText": address,
-            "limit": 1,
-            "partitionlimit": 1,
-            "type": "locations",
-            "sr": "2056",
-            "lang": "fr",
-            "origins": "address",
-        }
-
-        data = urllib.parse.urlencode(search_params)
-        url = f"{geoadmin_address_search_api}?{data}"
-        # GEOADMIN API might be down and we don't want to block the user
-        try:
-            response = requests.get(url, timeout=2)
-        except requests.exceptions.RequestException:
-            return None
-
-        if response.status_code == 200 and response.json()["results"]:
-            x = response.json()["results"][0]["attrs"]["x"]
-            y = response.json()["results"][0]["attrs"]["y"]
-            geom.append(MultiPoint(Point(y, x, srid=2056)))
-        # If geocoding matches nothing, set the address value on the administrative_entity centroid point
-        else:
-            geom.append(MultiPoint(permit_request.administrative_entity.geom.centroid))
 
     # Delete the previous geocoded geometries
     models.PermitRequestGeoTime.objects.filter(
         permit_request=permit_request, comes_from_automatic_geocoding=True
     ).delete()
-    # Save the new ones
-    models.PermitRequestGeoTime.objects.create(
-        permit_request=permit_request, comes_from_automatic_geocoding=True, geom=geom,
-    )
+
+    if to_geocode_addresses:
+        geoadmin_address_search_api = config.LOCATIONS_SEARCH_API
+        geom = GeometryCollection()
+        for address in to_geocode_addresses:
+            search_params = {
+                "searchText": address,
+                "limit": 1,
+                "partitionlimit": 1,
+                "type": "locations",
+                "sr": "2056",
+                "lang": "fr",
+                "origins": "address",
+            }
+
+            data = urllib.parse.urlencode(search_params)
+            url = f"{geoadmin_address_search_api}?{data}"
+            # GEOADMIN API might be down and we don't want to block the user
+            try:
+                response = requests.get(url, timeout=2)
+            except requests.exceptions.RequestException:
+                return None
+
+            if response.status_code == 200 and response.json()["results"]:
+                x = response.json()["results"][0]["attrs"]["x"]
+                y = response.json()["results"][0]["attrs"]["y"]
+                geom.append(MultiPoint(Point(y, x, srid=2056)))
+            # If geocoding matches nothing, set the address value on the administrative_entity centroid point
+            else:
+                geom.append(MultiPoint(permit_request.administrative_entity.geom.centroid))
+
+        # Save the new ones
+        models.PermitRequestGeoTime.objects.create(
+            permit_request=permit_request, comes_from_automatic_geocoding=True, geom=geom,
+        )
