@@ -222,7 +222,7 @@ CONSTANCE_CONFIG = {
         str,
     ),
     "APPLICATION_SUBTITLE": (
-        "Petits travaux, abattages, fouilles, dépôts,...",
+        "Petits travaux, abattages, fouilles, dépôts, etc.",
         "Sous-titre de la page de login",
         str,
     ),
@@ -233,10 +233,10 @@ CONSTANCE_CONFIG = {
     ),
     "ALLOWED_FILE_EXTENSIONS": (  # Supported file extensions https://pypi.org/project/filetype/
         "pdf, jpg, png",
-        "Extensions autorisées lors de l'upload de document, seuls des types images PIL et pdf sont supportés",
+        "Extensions autorisées lors de l'upload de document, seuls des types images PIL et PDF sont supportés",
         str,
     ),
-    "MAX_FILE_UPLOAD_SIZE": (10485760, "Taille maximum des fichiers uploadé", int,),
+    "MAX_FILE_UPLOAD_SIZE": (10485760, "Taille maximum des fichiers uploadés", int,),
     "MAX_FEATURE_NUMBER_FOR_QGISSERVER": (
         10,
         "Nombre maximum d'entités disponible pour QGISSERVER, un nombre trop élevé impactera négativement les performances de l'impression",
@@ -249,7 +249,7 @@ CONSTANCE_CONFIG = {
     ),
     "ENABLE_GEOCALENDAR": (
         True,
-        "Définit si l'application du calendrier cartographique est utilisé ou pas (doit dans tous les cas être installée à part)",
+        "Définit si l'application du calendrier cartographique est utilisée ou pas (doit dans tous les cas être installée à part)",
         bool,
     ),
     "ANONYMOUS_CAPTCHA_STEP": ("Votre demande anonyme", "", str),
@@ -280,7 +280,7 @@ CONSTANCE_CONFIG = {
         str,
     ),
     "APPLICATION_SUBTITLE": (
-        "Petits travaux, abattages, fouilles, dépôts,...",
+        "Petits travaux, abattages, fouilles, dépôts, etc.",
         "Sous-titre de la page de login",
         str,
     ),
@@ -291,8 +291,8 @@ CONSTANCE_CONFIG = {
     ),
     "BACKGROUND_COLOR": ("#FFFFFF", "Couleur unie du fond", str,),
     "LOGIN_BACKGROUND_COLOR": ("#FFFFFF", "Couleur unie du fond login", str,),
-    "PRIMARY_COLOR": ("#008c6f", "Couleur de theme principale", str,),
-    "SECONDARY_COLOR": ("#01755d", "Couleur de theme secondaire", str,),
+    "PRIMARY_COLOR": ("#008c6f", "Couleur de thème principale", str,),
+    "SECONDARY_COLOR": ("#01755d", "Couleur de thème secondaire", str,),
     "TEXT_COLOR": ("#000000", "Couleur du texte", str,),
     "TITLE_COLOR": ("#000000", "Couleur du titre", str,),
     "TABLE_COLOR": ("#212529", "Couleur du texte dans les tableaux", str,),
@@ -303,7 +303,7 @@ CONSTANCE_CONFIG = {
     ),
     "NETWORK_WHITELIST": (
         "172.16.0.0/12,192.168.0.0/16",
-        "Réseaux  autorisés pour l'utilisation de l'API complète (/rest/permits), séparés par des ','",
+        "Réseaux autorisés pour l'utilisation de l'API complète (/rest/permits), séparés par des ','",
         str,
     ),
     "LOGOUT_REDIRECT_HOSTNAME_WHITELIST": (
