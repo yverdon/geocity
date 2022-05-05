@@ -123,12 +123,16 @@ class PermitDepartment(models.Model):
     description = models.CharField(_("description"), max_length=100, default="Service")
     is_validator = models.BooleanField(
         _("validateur"),
-        help_text="Cocher si les membres doivent apparaître dans la liste des services consultables pour la validation",
+        help_text=_(
+            "Cocher si les membres doivent apparaître dans la liste des services consultables pour la validation"
+        ),
     )
     is_backoffice = models.BooleanField(
         _("secrétariat"),
         default=False,
-        help_text="Cocher si les membres font partie du secrétariat. Ils seront notifiés des évolutions de la demande",
+        help_text=_(
+            "Cocher si les membres font partie du secrétariat. Ils seront notifiés des évolutions de la demande"
+        ),
     )
     administrative_entity = models.ForeignKey(
         "PermitAdministrativeEntity",
@@ -141,11 +145,23 @@ class PermitDepartment(models.Model):
     is_default_validator = models.BooleanField(
         _("sélectionné par défaut pour les validations"), default=False
     )
-    integrator = models.IntegerField(_("Intégrateur responsable"), default=0,)
-    is_integrator_admin = models.BooleanField(
-        "Intégrateur (accès à l'admin de django)", default=False
+    integrator = models.IntegerField(
+        _("Groupe des administrateurs"),
+        help_text=_("Identifiant du groupe"),
+        default=0,
     )
-    mandatory_2fa = models.BooleanField(_("2FA obligatoire"), default=False)
+    is_integrator_admin = models.BooleanField(
+        _("Intégrateur"),
+        help_text=_("Cocher si les membres peuvent accéder à l'admin de Django"),
+        default=False,
+    )
+    mandatory_2fa = models.BooleanField(
+        _("2FA obligatoire"),
+        help_text=_(
+            "Cocher si les membres doivent obligatoirement utiliser la double authentification"
+        ),
+        default=False,
+    )
     integrator_email_domains = models.CharField(
         _("Domaines d'emails visibles pour l'intégrateur"),
         help_text=_(
@@ -1432,6 +1448,7 @@ class TemplateCustomization(models.Model):
         _("Identifiant"),
         max_length=64,
         blank=True,
+        help_text="Permettant d'afficher la page de login par l'url: https://geocity.ch/?template=vevey",
         validators=[
             RegexValidator(
                 regex=r"^[a-zA-Z0-9_]*$",
