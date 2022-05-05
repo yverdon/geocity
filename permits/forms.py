@@ -1040,6 +1040,7 @@ class GeometryWidget(geoforms.OSMWidget):
             ),
         )
 
+
 class PermitRequestGeoTimeForm(forms.ModelForm):
 
     required_css_class = "required"
@@ -1085,9 +1086,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             "ends_at": "Date de fin du chantier ou d'occupation du territoire. Si l'heure n'est pas pertinente, insérer 23:59.",
         }
         widgets = {
-            "geom": GeometryWidget(
-                attrs={"salut-toto": "off"},
-            ),
+            "geom": GeometryWidget(attrs={"salut-toto": "off"},),
             "comment": forms.Textarea(attrs={"rows": 2}),
         }
 
@@ -1186,7 +1185,11 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             for works_object_type in works_object_types
         )
 
-        ftsearch_additional_searchtext_for_address_field = permit_request.administrative_entity.additional_searchtext_for_address_field if permit_request else ''
+        ftsearch_additional_searchtext_for_address_field = (
+            permit_request.administrative_entity.additional_searchtext_for_address_field
+            if permit_request
+            else ""
+        )
         options = {
             "administrative_entity_url": reverse(
                 "permits:administrative_entities_geojson",

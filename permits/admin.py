@@ -791,13 +791,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         ),
         (
             "Planning et localisation",
-            {
-                "fields": (
-                    "geometry_types",
-                    "needs_date",
-                    "start_delay",
-                )
-            },
+            {"fields": ("geometry_types", "needs_date", "start_delay",)},
         ),
         (
             "Prolongation",
