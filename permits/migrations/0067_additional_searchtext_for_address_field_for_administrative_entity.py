@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0065_add_geocoding_option_for_adsress_fields_and_adress_search_param'),
+        ('permits', '0066_adapt_admin_texts'),
     ]
 
     operations = [
