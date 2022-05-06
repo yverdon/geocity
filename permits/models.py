@@ -260,7 +260,7 @@ class PermitAdministrativeEntity(models.Model):
             "1.1 Configuration de l'entité administrative (commune, organisation)"
         )
         verbose_name_plural = _(
-            "1.1 Configuration de l'entité administrative (commune, organisation)"
+            "1.1 Configuration des entités administratives (commune, organisation)"
         )
         permissions = [
             ("see_private_requests", _("Voir les demandes restreintes")),
@@ -565,7 +565,7 @@ class PermitRequest(models.Model):
     administrative_entity = models.ForeignKey(
         PermitAdministrativeEntity,
         on_delete=models.CASCADE,
-        verbose_name=_("commune"),
+        verbose_name=_("entité administrative"),
         related_name="permit_requests",
     )
     author = models.ForeignKey(
@@ -984,8 +984,8 @@ class WorksObjectType(models.Model):
     anonymous_objects = AnonymousWorksObjectTypeManager()
 
     class Meta:
-        verbose_name = _("1.4 Configuration type-objet-entité administrative")
-        verbose_name_plural = _("1.4 Configurations type-objet-entité administrative")
+        verbose_name = _("1.4 Configuration du type-objet-entité")
+        verbose_name_plural = _("1.4 Configuration des type-objet-entité")
         unique_together = [("works_type", "works_object")]
 
     def __str__(self):
@@ -1371,7 +1371,7 @@ class PermitRequestAmendProperty(models.Model):
     )
 
     class Meta:
-        verbose_name = _("2.2 Configuration de champ de traitement de demande")
+        verbose_name = _("2.2 Configuration du champ de traitement des demandes")
         verbose_name_plural = _(
             "2.2 Configuration des champs de traitement des demandes"
         )

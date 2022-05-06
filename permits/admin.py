@@ -579,7 +579,9 @@ def get_works_object_types_field(user):
     )
 
 
-works_object_type_administrative_entities.short_description = _("Communes")
+works_object_type_administrative_entities.short_description = _(
+    "Entités administratives"
+)
 
 
 class QgisProjectAdminForm(forms.ModelForm):
@@ -819,9 +821,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return obj.__str__()
 
     sortable_str.admin_order_field = "works_object__name"
-    sortable_str.short_description = _(
-        "1.1 Configuration de l'entité administrative (commune, organisation)"
-    )
+    sortable_str.short_description = _("1.4 Configuration du type-objet-entité")
 
     def get_queryset(self, request):
         qs = (
@@ -1140,7 +1140,7 @@ class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return str(obj)
 
     sortable_str.short_description = (
-        "2.2 Configuration des champs de traitement des demandes"
+        "2.2 Configuration du champ de traitement des demandes"
     )
     sortable_str.admin_order_field = "name"
 
