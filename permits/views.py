@@ -1690,6 +1690,10 @@ def permit_request_geo_time(request, permit_request_id):
         ).all(),
     )
 
+    can_have_multiple_ranges = services.permit_requests_can_have_multiple_ranges(
+        permit_request
+    )
+
     if request.method == "POST":
         if formset.is_valid():
             with transaction.atomic():
@@ -1714,6 +1718,7 @@ def permit_request_geo_time(request, permit_request_id):
         {
             "formset": formset,
             "permit_request": permit_request,
+            "can_have_multiple_ranges": can_have_multiple_ranges,
             "geo_title": title_step["title"],
             "geo_step": title_step["step_name"],
             **steps_context,

@@ -1056,6 +1056,9 @@ class WorksObjectType(models.Model):
     can_always_update = models.BooleanField(
         _("Demande modifiable en tous temps par le secrétariat"), default=False
     )
+    can_have_multiple_ranges = models.BooleanField(
+        _("Peut avoir plusieurs plages"), default=False
+    )
     has_geometry_point = models.BooleanField(_("Point"), default=True)
     has_geometry_line = models.BooleanField(_("Ligne"), default=True)
     has_geometry_polygon = models.BooleanField(_("Surface"), default=True)

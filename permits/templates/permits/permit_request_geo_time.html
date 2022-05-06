@@ -29,7 +29,9 @@
       {% if previous_step.url %}
         <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
       {% endif %}
-      <button class="btn btn-secondary" type="button" data-geo-time-role="addForm">{% trans "Ajouter un nouveau" %}</button>
+      {% if can_have_multiple_ranges %}
+        <button class="btn btn-secondary" type="button" data-geo-time-role="addForm">{% trans "Ajouter un nouveau" %}</button>
+      {% endif %}
       <button class="btn btn-primary">{% trans "Enregistrer et poursuivre" %}</button>
     {% endbuttons %}
   </form>
