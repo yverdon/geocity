@@ -34,6 +34,9 @@
 
     <div class="row floating-elem">
       <div class="col">
+
+        {% if not permit_request.author.is_anonymous %}
+
         <dl>
           <dd>
             <h4>{% trans "Auteur-e" %}</h4>
@@ -56,6 +59,8 @@
             {{ permit_request.author.company_name }} {{ permit_request.author.vat_number }}
           </dd>
         </dl>
+
+        {% endif %}
 
         {% if permit_request.validation_pdf %}
 
