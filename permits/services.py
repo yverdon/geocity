@@ -27,7 +27,7 @@ from django.utils.translation import gettext_lazy as _
 
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
-from .models import PermitRequest
+from .models import PermitRequest, WorksObjectType
 from .utils import reverse_permit_request_url
 from PIL import Image
 from pdf2image import convert_from_path
@@ -1460,7 +1460,7 @@ def get_default_works_object_types(
     if (works_types is None and len(available_works_types) > 1) or len(
         available_works_objects
     ) > 1:
-        return []
+        return WorksObjectType.objects.none()
 
     return works_object_types
 
