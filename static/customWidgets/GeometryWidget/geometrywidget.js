@@ -244,7 +244,7 @@
                   }
                   label = f.attrs.label.replace("<b>", " - ").replace("</b>", "");
                 } else if (f.attrs.origin == 'parcel') {
-                  label = "Parcelle: " + f.attrs.label.replace(/\s\<b\>\s*/g, ", ").replace(/\s*(([\<][^\>]*[\>])|(\(CH[\s\d]+\)))/g, "");
+                  label = "Parcelle: " + f.attrs.label.replace(/\s\<b\>\s*/g, "&comma;&nbsp").replace(/\s*(([\<][^\>]*[\>])|(\(CH[\s\d]+\)))/g, "");
                 }
                 let item = {
                   x: f.attrs.x,
