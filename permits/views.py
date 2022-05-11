@@ -914,7 +914,7 @@ def permit_request_select_types(request, permit_request_id):
                     administrative_entity=permit_request.administrative_entity,
                     user=request.user,
                     works_types=selected_works_types,
-                )
+                ).filter(is_anonymous=False)
                 if works_object_types:
                     services.set_works_object_types(
                         permit_request=permit_request,

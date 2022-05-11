@@ -153,11 +153,17 @@ class GenericDepartmentPermitRequestsTable(
     administrative_entity = tables.Column(
         verbose_name=_("Entité administrative"), orderable=False,
     )
-    author_fullname = tables.Column(
-        verbose_name=_("Auteur de la demande"), attrs=ATTRIBUTES, orderable=True,
+    author_fullname = tables.TemplateColumn(
+        verbose_name=_("Auteur de la demande"),
+        attrs=ATTRIBUTES,
+        orderable=True,
+        template_name="tables/_permit_request_author_fullname.html",
     )
-    author_details = tables.Column(
-        verbose_name=_("Coordonnées de l'auteur"), attrs=ATTRIBUTES, orderable=True,
+    author_details = tables.TemplateColumn(
+        verbose_name=_("Coordonnées de l'auteur"),
+        attrs=ATTRIBUTES,
+        orderable=True,
+        template_name="tables/_permit_request_author_details.html",
     )
 
     def before_render(self, request):
