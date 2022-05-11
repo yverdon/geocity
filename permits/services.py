@@ -1696,37 +1696,25 @@ def get_wot_properties(value, api=False):
 
                 last_wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
 
-                for prop_i in wot_props:
-                    if (
-                        prop_i["works_object_type_id"] == prop["works_object_type_id"]
-                        and prop_i["properties__property__name"]
-                    ):
-
-                        if prop["properties__property__input_type"] == "file":
-
-                            # Reconstituate download link if it's a file
-                            property_object = models.WorksObjectPropertyValue.objects.get(
-                                property__name=prop["properties__property__name"],
-                                works_object_type_choice__id=prop["id"],
-                            )
-                            # get_property_value return None if file does not exist
-                            file = get_property_value(property_object)
-                            if file:
-                                absolute_url = PermitRequest.get_absolute_url(file.url)
-                                file_name = prop["properties__value__val"].split(
-                                    "/", -1
-                                )[-1]
-                                # Properties of WOT
-                                property.append(
-                                    {
-                                        "key": prop["properties__property__name"],
-                                        "value": absolute_url,
-                                        "name": file_name,
-                                        "type": prop[
-                                            "properties__property__input_type"
-                                        ],
-                                    }
-                                )
+                if prop["properties__property__input_type"] == "file":
+                    # Reconstituate download link if it's a file
+                    property_object = models.WorksObjectPropertyValue.objects.get(
+                        property__name=prop["properties__property__name"],
+                        works_object_type_choice__id=prop["id"],
+                    )
+                    # get_property_value return None if file does not exist
+                    file = get_property_value(property_object)
+                    if file:
+                        file_name = prop["properties__value__val"].split("/", -1)[-1]
+                        # Properties of WOT
+                        property.append(
+                            {
+                                "key": prop["properties__property__name"],
+                                "value": file.url,
+                                "name": file_name,
+                                "type": prop["properties__property__input_type"],
+                            }
+                        )
                 else:
                     # Properties of WOT
                     property.append(
