@@ -898,7 +898,9 @@ class PermitRequest(models.Model):
     def to_csv(self):
         from .tables import OwnPermitRequestsExportTable
 
-        table = OwnPermitRequestsExportTable(data=PermitRequest.objects.filter(id=self.id))
+        table = OwnPermitRequestsExportTable(
+            data=PermitRequest.objects.filter(id=self.id)
+        )
 
         exporter = TableExport(export_format=TableExport.CSV, table=table)
 

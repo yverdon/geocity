@@ -816,7 +816,9 @@ class ArchivedPermitRequestListView(SingleTableMixin, ListView):
     model = models.ArchivedPermitRequest
     template_name = "permits/archived_permit_request_list.html"
 
-    permission_error_message = _("Vous n'avez pas les permissions pour archiver cette demande")
+    permission_error_message = _(
+        "Vous n'avez pas les permissions pour archiver cette demande"
+    )
     archive_failed_error_message = _("Une erreur est survenue lors de l'archivage")
 
     def post(self, request, *args, **kwargs):
@@ -845,7 +847,8 @@ class ArchivedPermitRequestListView(SingleTableMixin, ListView):
 
         if not department.is_backoffice and not department.is_integrator_admin:
             return JsonResponse(
-                data={"error": True, "message": self.permission_error_message}, status=403
+                data={"error": True, "message": self.permission_error_message},
+                status=403,
             )
         try:
             with transaction.atomic():
@@ -1688,8 +1691,7 @@ class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
         qs = (
             (
                 services.get_permit_requests_list_for_user(
-                    self.request.user,
-                    works_object_filter=works_object_filter,
+                    self.request.user, works_object_filter=works_object_filter,
                 )
             )
             .prefetch_related(
