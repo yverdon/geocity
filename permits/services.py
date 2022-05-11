@@ -1684,12 +1684,12 @@ def get_wot_properties(value, api=False):
                     property = []
 
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
-                
+
                 # WOT
                 property.append(
                     {"key": "work_object_type", "value": wot, "type": "text",}
                 )
-                
+
                 if prop["properties__property__input_type"] == "file":
 
                     # Reconstituate download link if it's a file
@@ -1701,18 +1701,14 @@ def get_wot_properties(value, api=False):
                     file = get_property_value(property_object)
                     if file:
                         absolute_url = PermitRequest.get_absolute_url(file.url)
-                        file_name = prop["properties__value__val"].split(
-                            "/", -1
-                        )[-1]
+                        file_name = prop["properties__value__val"].split("/", -1)[-1]
                         # Properties of WOT
                         property.append(
                             {
                                 "key": prop["properties__property__name"],
                                 "value": absolute_url,
                                 "name": file_name,
-                                "type": prop[
-                                    "properties__property__input_type"
-                                ],
+                                "type": prop["properties__property__input_type"],
                             }
                         )
                 else:
