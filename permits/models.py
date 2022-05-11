@@ -39,7 +39,6 @@ from django.apps import apps
 
 from . import fields
 
-# from .tables import OwnPermitRequestsExportTable
 
 # public types: for public/restricted features
 PUBLIC_TYPE_CHOICES = (
