@@ -414,7 +414,7 @@ def get_permit_requests_list_for_user(
     user,
     request_comes_from_internal_qgisserver=False,
     works_object_filter=None,
-    ignore_archived=False,
+    ignore_archived=True,
 ):
     """
     Return the list of permit requests this user has access to.

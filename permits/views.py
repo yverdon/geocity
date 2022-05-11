@@ -1690,7 +1690,6 @@ class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
                 services.get_permit_requests_list_for_user(
                     self.request.user,
                     works_object_filter=works_object_filter,
-                    ignore_archived=True,
                 )
             )
             .prefetch_related(
