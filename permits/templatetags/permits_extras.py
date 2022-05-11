@@ -127,3 +127,15 @@ def can_always_be_updated(context):
 @register.simple_tag(takes_context=True)
 def can_download_archive(context):
     return services.can_download_archive(context["user"], context["record"].archivist)
+
+
+@register.simple_tag(takes_context=True)
+def can_archive(context):
+    department = models.PermitDepartment.objects.filter(
+        group__in=context["user"].groups.all()
+    ).first()
+    return department is not None and (
+        context["user"].is_superuser
+        or department.is_backoffice
+        or department.is_integrator_admin
+    )
