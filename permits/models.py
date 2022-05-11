@@ -865,19 +865,22 @@ class PermitRequest(models.Model):
     def archive(self, archivist):
         # make sure the request wasn't already archived
         if ArchivedPermitRequest.objects.filter(permit_request=self,).first():
-            raise SuspiciousOperation(_("La demande a déjà été archivées"))
+            raise SuspiciousOperation(_("La demande a déjà été archivée"))
 
         archive = ArchivedPermitRequest.objects.create(
             permit_request=self, archivist=archivist,
         )
 
-        os.mkdir(archive.path)
+        try:
+            os.mkdir(archive.path)
 
-        for document in self.complementary_documents:
-            shutil.copy2(src=document.path, dst=archive.path)
+            for document in self.complementary_documents:
+                shutil.copy2(src=document.path, dst=archive.path)
 
-        with open(os.path.join(archive.path, "permit_request.csv"), "w") as f:
-            f.write(self.to_csv())
+            with open(os.path.join(archive.path, "permit_request.csv"), "w") as f:
+                f.write(self.to_csv())
+        except OSError as e:
+            raise Exception(_("La demande n'a pas pu être archivée"), e)
 
         self.status = self.STATUS_ARCHIVED
         self.save()
@@ -895,8 +898,7 @@ class PermitRequest(models.Model):
     def to_csv(self):
         from .tables import OwnPermitRequestsExportTable
 
-        table_class = OwnPermitRequestsExportTable
-        table = table_class(data=PermitRequest.objects.filter(id=self.id))
+        table = OwnPermitRequestsExportTable(data=PermitRequest.objects.filter(id=self.id))
 
         exporter = TableExport(export_format=TableExport.CSV, table=table)
 

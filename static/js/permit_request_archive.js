@@ -18,7 +18,8 @@ form.addEventListener('submit', async (e) => {
     body: data,
   })
 
-  if (response.status === 403) {
+  if (response.status === 403 || response.status === 500) {
+    document.getElementById('archive-in_progress').firstElementChild.classList.add('display-none')
     const data = await response.json()
     let error = document.createElement("div")
     error.classList.add("alert", "alert-danger")
