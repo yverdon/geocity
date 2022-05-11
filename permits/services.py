@@ -247,6 +247,7 @@ def get_administrative_entities(user):
             pk__in=models.WorksObjectType.objects.values_list(
                 "administrative_entities", flat=True
             ),
+            works_object_types__is_anonymous=False,
         )
         .order_by("ofs_id", "-name")
         .distinct()
