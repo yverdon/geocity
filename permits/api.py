@@ -283,7 +283,6 @@ class PermitRequestViewSet(
                         request_comes_from_internal_qgisserver=request_comes_from_internal_qgisserver,
                     )
                 )
-                | Q(is_public=True)
             )
             .prefetch_related(works_object_types_prefetch)
             .prefetch_related(geotime_prefetch)
@@ -350,7 +349,6 @@ class PermitRequestDetailsViewSet(
                     request_comes_from_internal_qgisserver=request_comes_from_internal_qgisserver,
                 )
             )
-            | Q(is_public=True)
         )
         if request_comes_from_internal_qgisserver:
             qs = qs[: config.MAX_FEATURE_NUMBER_FOR_QGISSERVER]
