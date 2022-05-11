@@ -432,6 +432,7 @@ class SearchViewSet(viewsets.ReadOnlyModelViewSet):
 
     throttle_scope = "search"
     serializer_class = serializers.SearchSerializer
+    permission_classes = [BlockRequesterUserPermission]
 
     def get_queryset(self):
         terms = self.request.query_params.get("search")
