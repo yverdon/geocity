@@ -105,7 +105,7 @@ class PermitRequestCheckboxColumn(tables.CheckBoxColumn):
     @property
     def header(self):
         """
-        In its default implementation, de header property always returns an input
+        In its default implementation, the header property always returns an input
         for the table header, as we do not want this, we override the function to do
         nothing
         """
