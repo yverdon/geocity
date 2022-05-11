@@ -126,10 +126,4 @@ def can_always_be_updated(context):
 
 @register.simple_tag(takes_context=True)
 def can_download_archive(context):
-    return (
-        context["record"].archivist == context["user"]
-        or context["user"].is_superuser
-        or (
-            context["record"].archivist.groups.all() & context["user"].groups.all()
-        ).exists()
-    )
+    return services.can_download_archive(context["user"], context["record"].archivist)

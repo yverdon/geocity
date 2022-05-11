@@ -1880,4 +1880,8 @@ def compress_directory(dir_path):
 
 
 def can_download_archive(user, archivist):
-    return (user.groups.all() & archivist.groups.all()).exists() or user.is_superuser
+    return (
+        user == archivist
+        or user.is_superuser
+        or (user.groups.all() & archivist.groups.all()).exists()
+    )
