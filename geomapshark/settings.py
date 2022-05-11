@@ -252,10 +252,14 @@ CONSTANCE_CONFIG = {
         "Définit si l'application du calendrier cartographique est utilisée ou pas (doit dans tous les cas être installée à part)",
         bool,
     ),
-    "ANONYMOUS_CAPTCHA_STEP": ("Votre demande anonyme", "", str),
-    "ANONYMOUS_REQUEST_SENT_TITLE": ("Merci pour votre requête", "", str),
+    "ANONYMOUS_CAPTCHA_STEP": (
+        "Veuillez confirmer que vous n'êtes pas un robot",
+        "",
+        str,
+    ),
+    "ANONYMOUS_REQUEST_SENT_TITLE": ("Merci pour votre envoi", "", str),
     "ANONYMOUS_REQUEST_SENT_BODY": (
-        "Nous avons bien reçu votre requête anonyme.",
+        "Nous avons bien reçu votre envoi et vous en remercions.",
         "",
         str,
     ),
