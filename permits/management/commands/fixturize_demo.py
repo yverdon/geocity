@@ -371,14 +371,14 @@ class Command(BaseCommand):
             "adresse": models.WorksObjectProperty.objects.create(
                 name="Adresse",
                 input_type="address",
-                placeholder="Place pestalozzi 2, 1400 Yverdon-les-Bains",
+                placeholder="Place Pestalozzi 2, 1400 Yverdon-les-Bains",
                 is_mandatory=False,
                 order=5,
             ),
             "adresse_geocode": models.WorksObjectProperty.objects.create(
                 name="Adresse avec géocodage",
                 input_type="address",
-                placeholder="Place pestalozzi 2, 1400 Yverdon-les-Bains",
+                placeholder="Place Pestalozzi 2, 1400 Yverdon-les-Bains",
                 is_mandatory=False,
                 store_geometry_for_address_field=True,
                 order=5,
