@@ -1678,23 +1678,26 @@ def get_wot_properties(value, api=False):
         if api:
             wot_properties = list()
             for prop in wot_props:
-                
+
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
-                
+
                 # List of a lost, to split wot in objects. Check if last wot changed or never assigned, means first iteration
                 if property and wot != last_wot or not last_wot:
                     wot_properties.append(property)
                     property = []
-                    
+
                     # WOT
                     property.append(
-                    {"key": "work_object_type", "value": wot, "type": "text",}
-                )
-                
+                        {"key": "work_object_type", "value": wot, "type": "text",}
+                    )
+
                 last_wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
 
                 for prop_i in wot_props:
-                    if prop_i["works_object_type_id"] == prop["works_object_type_id"] and prop_i["properties__property__name"]:
+                    if (
+                        prop_i["works_object_type_id"] == prop["works_object_type_id"]
+                        and prop_i["properties__property__name"]
+                    ):
 
                         if prop["properties__property__input_type"] == "file":
 
@@ -1707,14 +1710,18 @@ def get_wot_properties(value, api=False):
                             file = get_property_value(property_object)
                             if file:
                                 absolute_url = PermitRequest.get_absolute_url(file.url)
-                                file_name = prop["properties__value__val"].split("/", -1)[-1]
+                                file_name = prop["properties__value__val"].split(
+                                    "/", -1
+                                )[-1]
                                 # Properties of WOT
                                 property.append(
                                     {
                                         "key": prop["properties__property__name"],
                                         "value": absolute_url,
                                         "name": file_name,
-                                        "type": prop["properties__property__input_type"],
+                                        "type": prop[
+                                            "properties__property__input_type"
+                                        ],
                                     }
                                 )
                 else:
