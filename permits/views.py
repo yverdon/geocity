@@ -907,9 +907,7 @@ class ArchivedPermitRequestDownloadView(View):
         if not archive:
             raise SuspiciousOperation
 
-        if not (
-            self.request.user.groups.all() & archive.archivist.groups.all()
-        ).exists():
+        if not services.can_download_archive(self.request.user, archive.archivist):
             messages.error(request, self.error_message)
             return redirect(reverse_lazy("permits:archived_permit_request_list"))
 
@@ -939,9 +937,7 @@ class ArchivedPermitRequestBulkDownloadView(View):
             if not archive:
                 raise SuspiciousOperation
 
-            if not (
-                self.request.user.groups.all() & archive.archivist.groups.all()
-            ).exists():
+            if not services.can_download_archive(self.request.user, archive.archivist):
                 messages.error(request, self.error_message)
                 return redirect(reverse_lazy("permits:archived_permit_request_list"))
 

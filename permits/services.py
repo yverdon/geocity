@@ -1857,3 +1857,7 @@ def compress_directory(dir_path):
         for filepath in directory.rglob("*"):
             archive.write(filepath, arcname=filepath.relative_to(directory))
     return archive_name
+
+
+def can_download_archive(user, archivist):
+    return (user.groups.all() & archivist.groups.all()).exists() or user.is_superuser
