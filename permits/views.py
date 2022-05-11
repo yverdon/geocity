@@ -876,20 +876,19 @@ class ArchivedPermitRequestDeleteView(DeleteView):
     error_message = _("Vous n'avez pas les permissions pour supprimer cette archive")
 
     def post(self, request, *args, **kwargs):
-        archive = models.ArchivedPermitRequest.objects.filter(
-            permit_request=kwargs.get("pk")
-        ).first()
 
-        if not archive:
+        try:
+            archive = models.ArchivedPermitRequest.objects.get(pk=kwargs.get("pk"))
+
+            if not self.request.user == archive.archivist:
+                messages.error(self.request, self.error_message)
+                return redirect(self.success_url)
+
+            return super(ArchivedPermitRequestDeleteView, self).post(
+                request, *args, **kwargs
+            )
+        except models.ArchivedPermitRequest.DoesNotExist:
             raise SuspiciousOperation
-
-        if not self.request.user == archive.archivist:
-            messages.error(self.request, self.error_message)
-            return redirect(self.success_url)
-
-        return super(ArchivedPermitRequestDeleteView, self).post(
-            request, *args, **kwargs
-        )
 
     def get_success_url(self):
         messages.success(self.request, self.success_message % self.object.pk)
