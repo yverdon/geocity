@@ -65,21 +65,18 @@ class TestPermitRequestArchiving(GeocityTestCase):
 
     def test_single_download_archive(self):
         self.login(email="pilot@test.com", group=self.SECRETARIAT)
-        archive = factories.ArchivedPermitRequestFactory(
-            permit_request=self.permit_request, archivist=self.user
-        )
-
+        self.permit_request.archive(self.user)
         file_response = self.client.get(
             reverse(
                 "permits:archived_permit_request_download",
-                kwargs={"pk": archive.permit_request.pk,},
+                kwargs={"pk": self.permit_request.pk,},
             ),
         )
 
         self.assertEqual(file_response.get("Content-Type"), "application/zip")
         self.assertEqual(
             file_response.get("Content-Disposition"),
-            f'inline; filename="{archive.dirname}.zip"',
+            f'inline; filename="Archive_{datetime.today().strftime("%d.%m.%Y.%H.%M.%S")}.zip"',
         )
 
     def test_bulk_download(self):
@@ -90,7 +87,7 @@ class TestPermitRequestArchiving(GeocityTestCase):
         ).first()
         file_response = self.client.get(
             reverse("permits:archived_permit_request_bulk_download",),
-            data={"to_download": archive.permit_request.pk},
+            data={"to_download": self.permit_request.pk},
         )
 
         self.assertEqual(file_response.get("Content-Type"), "application/zip")
