@@ -1682,11 +1682,16 @@ def get_wot_properties(value, api=False):
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
 
                 # List of a lost, to split wot in objects. Check if last wot changed or never assigned, means first iteration
-                if property and wot != last_wot or not last_wot:
+                if property and wot != last_wot:
                     wot_properties.append(property)
                     property = []
 
                     # WOT
+                    property.append(
+                        {"key": "work_object_type", "value": wot, "type": "text",}
+                    )
+
+                if not last_wot:
                     property.append(
                         {"key": "work_object_type", "value": wot, "type": "text",}
                     )
