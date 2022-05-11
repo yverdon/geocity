@@ -9,7 +9,7 @@
   </li>
 
   {% can_download_archive as can_download %}
-  {% if record.archivist == request.user or request.user.is_superuser or can_download %}
+  {% if can_download %}
     <li>
       <a title="{% trans "Télcharger la demande" %}" href="{% url 'permits:archived_permit_request_download' record.pk %}">
         <i class="fa fa-download fa-lg"></i>
