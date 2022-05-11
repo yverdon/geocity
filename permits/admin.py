@@ -958,6 +958,7 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
             "archive_link",
             "general_informations",
             "phone",
+            "additional_searchtext_for_address_field",
             "geom",
             "integrator",
         ]

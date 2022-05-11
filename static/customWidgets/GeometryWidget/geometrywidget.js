@@ -202,6 +202,80 @@
 
     this._addEventListeners();
     this.ready = true;
+
+    // Fulltext search on geoadmin api to center the view on select
+    if (this.options.edit_geom) {
+      var itemId = $('#' + el.querySelector("[data-role=fulltext-location-search]").id);
+      var thisScope = this;
+      itemId.autocomplete({
+        classes: {
+          "ui-autocomplete": "sit-autocomplete",
+        },
+        source: function (request, response) {
+          var dataRemoteAutocomplete = jQuery.parseJSON(
+            itemId.attr("data-options")
+          );
+
+          if(dataRemoteAutocomplete.ftsearch_additional_searchtext_for_address_field) {
+            request.term += ' ' + dataRemoteAutocomplete.ftsearch_additional_searchtext_for_address_field;
+          }
+          $.ajax({
+            url: dataRemoteAutocomplete.ftsearch_apiurl,
+            dataType: "json",
+            data: {
+              searchText: request.term,
+              limit: 20,
+              partitionlimit: 24,
+              type: "locations",
+              sr: 2056,
+              lang: "fr",
+              origins: dataRemoteAutocomplete.ftsearch_apiurl_origins,
+            },
+            success: function (data) {
+              let features = data.results;
+              let items = [];
+              for (let i = 0; i < features.length; i++) {
+                let f = features[i];
+
+                var label = '';
+                if (f.attrs.origin == 'address') {
+                  if (f.attrs.label.trim().startsWith("<b>")){
+                    continue;
+                  }
+                  label = f.attrs.label.replace("<b>", " - ").replace("</b>", "");
+                } else if (f.attrs.origin == 'parcel') {
+                  label = "Parcelle: " + f.attrs.label.replace("<b>", "").replace("</b>", "").split("(CH")[0];
+                }
+                let item = {
+                  x: f.attrs.x,
+                  y: f.attrs.y,
+                  id: f.attrs.featureId,
+                  label: label,
+                  value: f.attrs.detail,
+                };
+                items.push(item);
+              }
+              response(items);
+            },
+          });
+        },
+        minLength: 2,
+        select: function (event, ui) {
+
+          thisScope.vectorSource.addFeature(new ol.Feature({
+            geometry: new ol.geom.MultiPoint([[ui.item.y, ui.item.x]]),
+          }));
+          thisScope.map.getView().animate({
+            center: [ui.item.y, ui.item.x],
+            zoom: 13
+          });
+          $('#' + el.querySelector("[data-role=fulltext-location-search]").id).val(ui.item.label);
+
+          return false;
+        },
+      });
+    }
+
   }
 
   // Add new swiss CRS to proj4js

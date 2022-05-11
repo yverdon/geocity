@@ -86,8 +86,8 @@ class AddressWidget(forms.widgets.TextInput):
 
     def __init__(self, attrs=None, autocomplete_options=None):
         autocomplete_options = {
-            "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
-            "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
+            "apiurl": config.LOCATIONS_SEARCH_API,
+            "apiurl_detail": config.LOCATIONS_SEARCH_API_DETAILS,
             "origins": "address",
             "zipcode_field": "zipcode",
             "city_field": "city",
@@ -1023,11 +1023,19 @@ class GeometryWidget(geoforms.OSMWidget):
     @property
     def media(self):
         return forms.Media(
-            css={"all": ("libs/js/openlayers6/ol.css", "css/geotime.css")},
+            css={
+                "all": (
+                    "libs/js/openlayers6/ol.css",
+                    "customWidgets/RemoteAutocomplete/remoteautocomplete.css",
+                    "libs/js/jquery-ui-custom/jquery-ui.min.css",
+                    "css/geotime.css",
+                )
+            },
             js=(
                 "libs/js/openlayers6/ol.js",
                 "libs/js/proj4js/proj4-src.js",
                 "customWidgets/GeometryWidget/geometrywidget.js",
+                "libs/js/jquery-ui-custom/jquery-ui.js",
             ),
         )
 
@@ -1176,6 +1184,11 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             for works_object_type in works_object_types
         )
 
+        ftsearch_additional_searchtext_for_address_field = (
+            permit_request.administrative_entity.additional_searchtext_for_address_field
+            if permit_request
+            else ""
+        )
         options = {
             "administrative_entity_url": reverse(
                 "permits:administrative_entities_geojson",
@@ -1206,6 +1219,10 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             "restriction_area_enabled": True,
             "geometry_db_type": "GeometryCollection",
             "qgisserver_proxy": reverse("permits:qgisserver_proxy"),
+            "ftsearch_additional_searchtext_for_address_field": ftsearch_additional_searchtext_for_address_field,
+            "ftsearch_apiurl": config.LOCATIONS_SEARCH_API,
+            "ftsearch_apiurl_detail": config.LOCATIONS_SEARCH_API_DETAILS,
+            "ftsearch_apiurl_origins": "address,parcel",
         }
 
         return options

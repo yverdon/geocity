@@ -185,6 +185,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "ANONYMOUS_REQUEST_SENT_TITLE",
         "ANONYMOUS_REQUEST_SENT_BODY",
         "LOCATIONS_SEARCH_API",
+        "LOCATIONS_SEARCH_API_DETAILS",
     ),
     "Theme Options": (
         "BACKGROUND_COLOR",
@@ -265,7 +266,12 @@ CONSTANCE_CONFIG = {
     ),
     "LOCATIONS_SEARCH_API": (
         "https://api3.geo.admin.ch/rest/services/api/SearchServer",
-        "URL de l'api de recherche d'adresse",
+        "URL de l'API de recherche d'adresse",
+        str,
+    ),
+    "LOCATIONS_SEARCH_API_DETAILS": (
+        "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
+        "URL de l'API des détails de recherche d'adresse",
         str,
     ),
     "LOCATION_STEP": ("Sélectionnez la commune / l'entité", "", str),
