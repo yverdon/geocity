@@ -550,10 +550,9 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                 to_geocode_addresses.append(
                     self.cleaned_data[self.get_field_name(works_object_type, prop)]
                 )
-        if to_geocode_addresses:
-            geoservices.reverse_geocode_and_store_address_geometry(
-                self.instance, to_geocode_addresses
-            )
+        geoservices.reverse_geocode_and_store_address_geometry(
+            self.instance, to_geocode_addresses
+        )
 
 
 class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
