@@ -822,10 +822,11 @@ class ArchivedPermitRequestListView(SingleTableMixin, ListView):
     archive_failed_error_message = _("Une erreur est survenue lors de l'archivage")
 
     def post(self, request, *args, **kwargs):
-        action = request.POST.get("action")
 
-        if action == "archive-requests":
+        if request.POST.get("action") == "archive-requests":
             return self.archive()
+
+        return HttpResponseNotFound(_("Aucune action spécifiée"))
 
     def get_queryset(self):
         return services.get_archived_request_list_for_user(self.request.user).order_by(
