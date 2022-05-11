@@ -227,7 +227,8 @@ def get_works_types(administrative_entity, user):
         models.WorksType.objects.filter(
             pk__in=models.WorksObjectType.objects.filter(
                 administrative_entities=administrative_entity
-            ).values_list("works_type_id", flat=True)
+            ).values_list("works_type_id", flat=True),
+            works_object_types__is_anonymous=False,
         )
         .order_by("name")
         .distinct()
