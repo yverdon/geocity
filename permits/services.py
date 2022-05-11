@@ -1678,9 +1678,7 @@ def get_wot_properties(value, api=False):
         if api:
             wot_properties = list()
             for prop in wot_props:
-
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
-
                 # List of a lost, to split wot in objects. Check if last wot changed or never assigned, means first iteration
                 if property and wot != last_wot:
                     wot_properties.append(property)
@@ -1738,6 +1736,8 @@ def get_wot_properties(value, api=False):
                             "type": prop["properties__property__input_type"],
                         }
                     )
+            # Add last wot_properties, or show something when there's only one
+            wot_properties.append(property)
         else:
             for prop in wot_props:
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
