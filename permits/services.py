@@ -14,7 +14,12 @@ import pathlib
 from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
-from django.core.exceptions import SuspiciousOperation, ValidationError
+from django.core.exceptions import (
+    SuspiciousOperation,
+    ValidationError,
+    ObjectDoesNotExist,
+    PermissionDenied,
+)
 from django.core.mail import send_mass_mail
 from django.core.validators import EmailValidator
 from django.db import transaction
@@ -1835,19 +1840,34 @@ def get_works_type_names_list(permit_request):
     return permit_request.get_works_type_names_list()
 
 
-def generate_archive(permit_requests, archive_date):
-    for permit_request in permit_requests:
-        dirname = "{:02d}_{}-{}".format(
-            permit_request.id,
-            archive_date.strftime("%d.%m.%Y.%H.%M.%S"),
-            slugify(get_works_type_names_list(permit_request)),
+def download_archives(archive_ids, user):
+    archives = []
+    for archive_id in archive_ids:
+        archive = models.ArchivedPermitRequest.objects.filter(
+            permit_request=archive_id
+        ).first()
+
+        if not archive:
+            raise ObjectDoesNotExist
+
+        if not can_download_archive(user, archive.archivist):
+            raise PermissionDenied
+
+        archives.append(archive)
+
+    parent_name = f"Archive_{datetime.today().strftime('%d.%m.%Y.%H.%M.%S')}"
+    parent_path = os.path.join(settings.ARCHIVE_ROOT, parent_name)
+
+    os.mkdir(parent_path)
+    for archive in archives:
+        shutil.copytree(
+            src=archive.path, dst=os.path.join(parent_path, archive.dirname)
         )
-
-        path = os.path.join(settings.ARCHIVE_ROOT, dirname)
-        os.mkdir(path)
-
-        for document in permit_request.complementary_documents:
-            shutil.copy2(src=document.path, dst=path)
+    zippath = compress_directory(parent_path)
+    response = FileResponse(open(zippath, "rb"))
+    shutil.rmtree(parent_path)
+    os.remove(zippath)
+    return response
 
 
 def compress_directory(dir_path):

@@ -898,30 +898,37 @@ class ArchivedPermitRequestDeleteView(DeleteView):
 @method_decorator(login_required, name="dispatch")
 @method_decorator(check_mandatory_2FA, name="dispatch")
 class ArchivedPermitRequestDownloadView(View):
-    error_message = _("Vous n'avez pas les permissions pour télécharger cette archive")
+    permission_error_message = _(
+        "Vous n'avez pas les permissions pour télécharger cette archive"
+    )
+    not_exist_error_message = _("L'archive demandée n'existe pas")
 
     def get(self, request, *args, **kwargs):
-        archive = models.ArchivedPermitRequest.objects.filter(
-            permit_request=kwargs.get("pk")
-        ).first()
-        if not archive:
-            raise SuspiciousOperation
+        try:
+            return services.download_archives(
+                archive_ids=[kwargs.get("pk")], user=self.request.user
+            )
+        except PermissionDenied:
+            error_message = self.permission_error_message
+        except ObjectDoesNotExist:
+            error_message = self.not_exist_error_message
+        except Exception:
+            error_message = _(
+                "Une erreur est survenue lors de la création du fichier compressé. Veuillez contacter votre administrateur"
+            )
 
-        if not services.can_download_archive(self.request.user, archive.archivist):
-            messages.error(request, self.error_message)
-            return redirect(reverse_lazy("permits:archived_permit_request_list"))
-
-        zippath = services.compress_directory(archive.path)
-        response = FileResponse(open(zippath, "rb"))
-        os.remove(zippath)
-        return response
+        messages.error(request, error_message)
+        return redirect(reverse_lazy("permits:archived_permit_request_list"))
 
 
 @method_decorator(login_required, name="dispatch")
 @method_decorator(check_mandatory_2FA, name="dispatch")
 class ArchivedPermitRequestBulkDownloadView(View):
-    error_message = _("Vous n'avez pas les permissions pour télécharger ces archives")
+    permission_error_message = _(
+        "Vous n'avez pas les permissions pour télécharger ces archives"
+    )
     info_message = _("Rien à télécharger")
+    not_exist_error_message = _("Une des archives demandées n'existe pas")
 
     def get(self, request, *args, **kwargs):
         to_download = self.request.GET.getlist("to_download")
@@ -929,35 +936,21 @@ class ArchivedPermitRequestBulkDownloadView(View):
             messages.info(request, self.info_message)
             return redirect(reverse_lazy("permits:archived_permit_request_list"))
 
-        archives = []
-        for archive_id in to_download:
-            archive = models.ArchivedPermitRequest.objects.filter(
-                permit_request=archive_id
-            ).first()
-            if not archive:
-                raise SuspiciousOperation
-
-            if not services.can_download_archive(self.request.user, archive.archivist):
-                messages.error(request, self.error_message)
-                return redirect(reverse_lazy("permits:archived_permit_request_list"))
-
-            archives.append(archive)
-
-        parent_name = f"Archive_{datetime.today().strftime('%d.%m.%Y.%H.%M.%S')}"
-        parent_path = os.path.join(settings.ARCHIVE_ROOT, parent_name)
-        os.mkdir(parent_path)
-
-        for archive in archives:
-            shutil.copytree(
-                src=archive.path, dst=os.path.join(parent_path, archive.dirname)
+        try:
+            return services.download_archives(
+                archive_ids=to_download, user=self.request.user
+            )
+        except PermissionDenied:
+            error_message = self.permission_error_message
+        except ObjectDoesNotExist:
+            error_message = self.not_exist_error_message
+        except Exception:
+            error_message = _(
+                "Une erreur est survenue lors de la création du fichier compressé. Veuillez contacter votre administrateur"
             )
 
-        zippath = services.compress_directory(parent_path)
-        # we can now delete the created directory
-        shutil.rmtree(parent_path)
-        response = FileResponse(open(zippath, "rb"))
-        os.remove(zippath)
-        return response
+        messages.error(request, error_message)
+        return redirect(reverse_lazy("permits:archived_permit_request_list"))
 
 
 def permit_request_print(request, permit_request_id, template_id):
