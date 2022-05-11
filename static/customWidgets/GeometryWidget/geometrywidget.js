@@ -239,6 +239,9 @@
 
                 var label = '';
                 if (f.attrs.origin == 'address') {
+                  if (f.attrs.label.trim().startsWith("<b>")){
+                    continue;
+                  }
                   label = f.attrs.label.replace("<b>", " - ").replace("</b>", "");
                 } else if (f.attrs.origin == 'parcel') {
                   label = "Parcelle: " + f.attrs.label.replace(/\s\<b\>\s*/g, ", ").replace(/\s*(([\<][^\>]*[\>])|(\(CH[\s\d]+\)))/g, "");
