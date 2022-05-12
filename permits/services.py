@@ -1715,7 +1715,7 @@ def get_wot_properties(value, api=False):
                                 "type": prop["properties__property__input_type"],
                             }
                         )
-                else:
+                elif prop["properties__value__val"]:
                     # Properties of WOT
                     property.append(
                         {
