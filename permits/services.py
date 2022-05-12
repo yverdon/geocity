@@ -1653,7 +1653,7 @@ def check_request_comes_from_internal_qgisserver(request):
         return True
     return False
 
-
+# TODO: Find a better word for this flag (api), cause the other way is used in api too, but as a list
 def get_wot_properties(value, api=False):
     """
     Return wot properties in a list for the api, in a dict for backend
@@ -1705,13 +1705,11 @@ def get_wot_properties(value, api=False):
                     # get_property_value return None if file does not exist
                     file = get_property_value(property_object)
                     if file:
-                        file_name = prop["properties__value__val"].split("/", -1)[-1]
                         # Properties of WOT
                         property.append(
                             {
                                 "key": prop["properties__property__name"],
                                 "value": file.url,
-                                "name": file_name,
                                 "type": prop["properties__property__input_type"],
                             }
                         )
@@ -1733,6 +1731,13 @@ def get_wot_properties(value, api=False):
                     prop_i["properties__property__name"]: prop_i[
                         "properties__value__val"
                     ]
+                    if prop_i["properties__property__input_type"] != "file"
+                    else get_property_value(
+                        models.WorksObjectPropertyValue.objects.get(
+                            property__name=prop_i["properties__property__name"],
+                            works_object_type_choice__id=prop_i["id"],
+                        )
+                    ).url
                     for prop_i in wot_props
                     if prop_i["works_object_type_id"] == prop["works_object_type_id"]
                     and prop_i["properties__property__name"]
