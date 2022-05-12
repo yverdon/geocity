@@ -116,7 +116,9 @@ def set_object_property_value(permit_request, object_type, prop, value):
             # Postprocess PDF: convert everything to image, do not keep other content
             elif upper_ext == "PDF":
                 # File size to fix decompression bomb error
-                all_images = convert_from_path(private_storage.location + "/" + path, size=933120000)
+                all_images = convert_from_path(
+                    private_storage.location + "/" + path, size=933120000
+                )
                 first_image = all_images[0]
                 following_images = all_images[1:]
                 if len(following_images) > 0:
