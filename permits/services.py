@@ -6,6 +6,7 @@ import urllib
 from collections import defaultdict
 import socket
 import ipaddress
+import PIL
 
 import filetype
 from constance import config
@@ -116,9 +117,9 @@ def set_object_property_value(permit_request, object_type, prop, value):
             # Postprocess PDF: convert everything to image, do not keep other content
             elif upper_ext == "PDF":
                 # File size to fix decompression bomb error
-                all_images = convert_from_path(
-                    private_storage.location + "/" + path, size=933120000
-                )
+                PIL.Image.MAX_IMAGE_PIXELS = None
+
+                all_images = convert_from_path(private_storage.location + "/" + path)
                 first_image = all_images[0]
                 following_images = all_images[1:]
                 if len(following_images) > 0:
