@@ -1653,6 +1653,7 @@ def check_request_comes_from_internal_qgisserver(request):
         return True
     return False
 
+
 # TODO: Find a better word for this flag (api), cause the other way is used in api too, but as a list
 def get_wot_properties(value, api=False):
     """
