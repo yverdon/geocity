@@ -510,8 +510,10 @@ class PermitRequestAPITestCase(TestCase):
             reverse("search-list"), {"search": author_permit_request}
         )
         response_json = response.json()
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response_json, [])
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(
+            response_json, {"detail": "Informations d'authentification non fournies."}
+        )
 
     def test_search_api_nothing_found_for_not_authorized(self):
         user_wo_permit_request = factories.UserFactory()
@@ -521,8 +523,11 @@ class PermitRequestAPITestCase(TestCase):
             reverse("search-list"), {"search": author_permit_request}
         )
         response_json = response.json()
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response_json, [])
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response_json,
+            {"detail": "Vous n'avez pas la permission d'effectuer cette action."},
+        )
 
     def test_search_api_nothing_found_for_wrong_string(self):
         self.client.login(username=self.admin_user.username, password="password")

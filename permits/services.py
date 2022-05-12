@@ -1654,6 +1654,7 @@ def check_request_comes_from_internal_qgisserver(request):
     return False
 
 
+# TODO: Find a better word for this flag (api), cause the other way is used in api too, but as a list
 def get_wot_properties(value, api=False):
     """
     Return wot properties in a list for the api, in a dict for backend
@@ -1671,61 +1672,59 @@ def get_wot_properties(value, api=False):
 
     wot_properties = dict()
     property = list()
+    last_wot = ""
 
     if wot_props:
         # Flat view is used in the api for geocalandar, the WOT shows only the works_object__name and not the type
         if api:
             wot_properties = list()
             for prop in wot_props:
-                # List of a lost, to split wot in objects
-                if property:
+                wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+                # List of a lost, to split wot in objects. Check if last wot changed or never assigned, means first iteration
+                if property and wot != last_wot:
                     wot_properties.append(property)
                     property = []
 
-                wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
-                # WOT
-                property.append(
-                    {"key": "work_object_type", "value": wot, "type": "text",}
-                )
-                for prop_i in wot_props:
-                    if (
-                        prop_i["works_object_type_id"] == prop["works_object_type_id"]
-                        and prop_i["properties__property__name"]
-                    ):
-                        if prop_i["properties__property__input_type"] == "file":
+                    # WOT
+                    property.append(
+                        {"key": "work_object_type", "value": wot, "type": "text",}
+                    )
 
-                            # Reconstituate download link if it's a file
-                            property_object = models.WorksObjectPropertyValue.objects.get(
-                                property__name=prop_i["properties__property__name"],
-                                works_object_type_choice__id=prop_i["id"],
-                            )
-                            # get_property_value return None if file does not exist
-                            file = get_property_value(property_object)
-                            if file:
-                                absolute_url = PermitRequest.get_absolute_url(file.url)
-                                file_name = prop_i["properties__value__val"].split(
-                                    "/", -1
-                                )[-1]
-                                # Properties of WOT
-                                property.append(
-                                    {
-                                        "key": prop_i["properties__property__name"],
-                                        "value": absolute_url,
-                                        "name": file_name,
-                                        "type": prop_i[
-                                            "properties__property__input_type"
-                                        ],
-                                    }
-                                )
-                        else:
-                            # Properties of WOT
-                            property.append(
-                                {
-                                    "key": prop_i["properties__property__name"],
-                                    "value": prop_i["properties__value__val"],
-                                    "type": prop_i["properties__property__input_type"],
-                                }
-                            )
+                if not last_wot:
+                    property.append(
+                        {"key": "work_object_type", "value": wot, "type": "text",}
+                    )
+
+                last_wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+
+                if prop["properties__property__input_type"] == "file":
+                    # Reconstituate download link if it's a file
+                    property_object = models.WorksObjectPropertyValue.objects.get(
+                        property__name=prop["properties__property__name"],
+                        works_object_type_choice__id=prop["id"],
+                    )
+                    # get_property_value return None if file does not exist
+                    file = get_property_value(property_object)
+                    if file:
+                        # Properties of WOT
+                        property.append(
+                            {
+                                "key": prop["properties__property__name"],
+                                "value": file.url,
+                                "type": prop["properties__property__input_type"],
+                            }
+                        )
+                elif prop["properties__value__val"]:
+                    # Properties of WOT
+                    property.append(
+                        {
+                            "key": prop["properties__property__name"],
+                            "value": prop["properties__value__val"],
+                            "type": prop["properties__property__input_type"],
+                        }
+                    )
+            # Add last wot_properties, or show something when there's only one
+            wot_properties.append(property)
         else:
             for prop in wot_props:
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
@@ -1733,6 +1732,13 @@ def get_wot_properties(value, api=False):
                     prop_i["properties__property__name"]: prop_i[
                         "properties__value__val"
                     ]
+                    if prop_i["properties__property__input_type"] != "file"
+                    else get_property_value(
+                        models.WorksObjectPropertyValue.objects.get(
+                            property__name=prop_i["properties__property__name"],
+                            works_object_type_choice__id=prop_i["id"],
+                        )
+                    ).url
                     for prop_i in wot_props
                     if prop_i["works_object_type_id"] == prop["works_object_type_id"]
                     and prop_i["properties__property__name"]
