@@ -1184,12 +1184,18 @@ def permit_request_appendices(request, permit_request_id):
         )
 
         if form.is_valid():
-            form.save()
-            return redirect(
-                services.get_next_step(
-                    steps_context["steps"], models.StepType.APPENDICES
-                ).url
-            )
+            try:
+                form.save()
+
+                return redirect(
+                    services.get_next_step(
+                        steps_context["steps"], models.StepType.APPENDICES
+                    ).url
+                )
+            except:
+                messages.error(
+                    request, _("Une erreur est survenue lors de l'upload de fichier."),
+                )
     else:
         form = forms.WorksObjectsAppendicesForm(
             instance=permit_request, enable_required=False
