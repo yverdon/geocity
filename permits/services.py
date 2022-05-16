@@ -1659,8 +1659,7 @@ def check_request_comes_from_internal_qgisserver(request):
     return False
 
 
-# TODO: Find a better word for this flag (api), cause the other way is used in api too, but as a list
-def get_wot_properties(value, api=False):
+def get_wot_properties(value, value_with_type=False):
     """
     Return wot properties in a list for the api, in a dict for backend
     """
@@ -1681,7 +1680,7 @@ def get_wot_properties(value, api=False):
 
     if wot_props:
         # Flat view is used in the api for geocalandar, the WOT shows only the works_object__name and not the type
-        if api:
+        if value_with_type:
             wot_properties = list()
             for prop in wot_props:
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
@@ -1710,6 +1709,7 @@ def get_wot_properties(value, api=False):
                     )
                     # get_property_value return None if file does not exist
                     file = get_property_value(property_object)
+                    # Check if file exist
                     if file:
                         # Properties of WOT
                         property.append(
@@ -1734,16 +1734,21 @@ def get_wot_properties(value, api=False):
             for prop in wot_props:
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
                 wot_properties[wot] = {
-                    prop_i["properties__property__name"]: prop_i[
-                        "properties__value__val"
-                    ]
-                    if prop_i["properties__property__input_type"] != "file"
-                    else get_property_value(
+                    prop_i["properties__property__name"]: get_property_value(
                         models.WorksObjectPropertyValue.objects.get(
                             property__name=prop_i["properties__property__name"],
                             works_object_type_choice__id=prop_i["id"],
                         )
                     ).url
+                    # Check this is a file and the file exist
+                    if prop_i["properties__property__input_type"] == "file"
+                    and get_property_value(
+                        models.WorksObjectPropertyValue.objects.get(
+                            property__name=prop_i["properties__property__name"],
+                            works_object_type_choice__id=prop_i["id"],
+                        )
+                    ).url
+                    else prop_i["properties__value__val"]
                     for prop_i in wot_props
                     if prop_i["works_object_type_id"] == prop["works_object_type_id"]
                     and prop_i["properties__property__name"]
