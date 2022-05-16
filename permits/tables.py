@@ -165,6 +165,12 @@ class GenericDepartmentPermitRequestsTable(
         orderable=True,
         template_name="tables/_permit_request_author_details.html",
     )
+    shortname = tables.Column(
+        verbose_name=_("Nom court"), attrs=ATTRIBUTES, orderable=True
+    )
+    is_public = tables.BooleanColumn(
+        verbose_name=_("Public"), attrs=ATTRIBUTES, orderable=True
+    )
 
     def before_render(self, request):
         self.columns["actions"].column.extra_context = {
@@ -193,6 +199,7 @@ class DepartmentPermitRequestsHTMLTable(GenericDepartmentPermitRequestsTable):
         fields = (
             "id",
             "shortname",
+            "is_public",
             "author_fullname",
             "author_details",
             "created_at",
