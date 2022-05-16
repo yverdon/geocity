@@ -409,8 +409,7 @@ def get_property_value_based_on_property(prop):
         works_object_type_choice__id=prop["id"],
     )
     # get_property_value return None if file does not exist
-    file = get_property_value(property_object)
-    return file
+    return get_property_value(property_object)
 
 
 def get_user_administrative_entities(user):
