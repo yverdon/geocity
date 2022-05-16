@@ -476,6 +476,7 @@ DRF_ALLOW_TOKENAUTHENTICATION = (
     os.getenv("DRF_ALLOW_TOKENAUTHENTICATION", "false").lower() == "true"
 )
 REST_FRAMEWORK = {
+    "PAGE_SIZE": 100,
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
         "rest_framework.authentication.SessionAuthentication",
