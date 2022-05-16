@@ -192,6 +192,7 @@ class DepartmentPermitRequestsHTMLTable(GenericDepartmentPermitRequestsTable):
         model = models.PermitRequest
         fields = (
             "id",
+            "shortname",
             "author_fullname",
             "author_details",
             "created_at",
@@ -211,6 +212,7 @@ class DepartmentPermitRequestsExportTable(GenericDepartmentPermitRequestsTable):
         model = models.PermitRequest
         fields = (
             "id",
+            "shortname",
             "author_fullname",
             "author_details",
             "created_at",
