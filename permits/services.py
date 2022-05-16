@@ -403,6 +403,16 @@ def get_property_value(object_property_value):
     return value
 
 
+def get_property_value_based_on_property(prop):
+    property_object = models.WorksObjectPropertyValue.objects.get(
+        property__name=prop["properties__property__name"],
+        works_object_type_choice__id=prop["id"],
+    )
+    # get_property_value return None if file does not exist
+    file = get_property_value(property_object)
+    return file
+
+
 def get_user_administrative_entities(user):
     return models.PermitAdministrativeEntity.objects.filter(
         departments__group__in=user.groups.all(),
@@ -1702,13 +1712,8 @@ def get_wot_properties(value, value_with_type=False):
                 last_wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
 
                 if prop["properties__property__input_type"] == "file":
-                    # Reconstituate download link if it's a file
-                    property_object = models.WorksObjectPropertyValue.objects.get(
-                        property__name=prop["properties__property__name"],
-                        works_object_type_choice__id=prop["id"],
-                    )
                     # get_property_value return None if file does not exist
-                    file = get_property_value(property_object)
+                    file = get_property_value_based_on_property(prop)
                     # Check if file exist
                     if file:
                         # Properties of WOT
@@ -1734,20 +1739,12 @@ def get_wot_properties(value, value_with_type=False):
             for prop in wot_props:
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
                 wot_properties[wot] = {
-                    prop_i["properties__property__name"]: get_property_value(
-                        models.WorksObjectPropertyValue.objects.get(
-                            property__name=prop_i["properties__property__name"],
-                            works_object_type_choice__id=prop_i["id"],
-                        )
-                    ).url
+                    prop_i[
+                        "properties__property__name"
+                    ]: get_property_value_based_on_property(prop_i).url
                     # Check this is a file and the file exist
                     if prop_i["properties__property__input_type"] == "file"
-                    and get_property_value(
-                        models.WorksObjectPropertyValue.objects.get(
-                            property__name=prop_i["properties__property__name"],
-                            works_object_type_choice__id=prop_i["id"],
-                        )
-                    ).url
+                    and get_property_value_based_on_property(prop_i)
                     else prop_i["properties__value__val"]
                     for prop_i in wot_props
                     if prop_i["works_object_type_id"] == prop["works_object_type_id"]
