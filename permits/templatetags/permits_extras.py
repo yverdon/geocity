@@ -134,8 +134,7 @@ def can_archive(context):
     department = models.PermitDepartment.objects.filter(
         group__in=context["user"].groups.all()
     ).first()
-    return department is not None and (
-        context["user"].is_superuser
-        or department.is_backoffice
-        or department.is_integrator_admin
+    return context["user"].is_superuser or (
+        department is not None
+        and (department.is_backoffice or department.is_integrator_admin)
     )

@@ -846,7 +846,11 @@ class ArchivedPermitRequestListView(SingleTableMixin, ListView):
             group__in=self.request.user.groups.all()
         ).first()
 
-        if not department.is_backoffice and not department.is_integrator_admin:
+        if (
+            not self.request.user.is_superuser
+            and not department.is_backoffice
+            and not department.is_integrator_admin
+        ):
             return JsonResponse(
                 data={"error": True, "message": self.permission_error_message},
                 status=403,
