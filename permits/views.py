@@ -1,9 +1,13 @@
+import datetime
 import logging
 import mimetypes
 import os
 import urllib.parse
 
 import requests
+import shutil
+
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import (
@@ -15,6 +19,7 @@ from django.core.exceptions import (
     PermissionDenied,
     SuspiciousOperation,
     ObjectDoesNotExist,
+    BadRequest,
 )
 from django.core.files.base import ContentFile
 from django.db import transaction
@@ -26,6 +31,7 @@ from django.http import (
     JsonResponse,
     StreamingHttpResponse,
 )
+from django.http.response import HttpResponseNotFound, FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -33,7 +39,8 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views import View
-from django.views.generic.edit import DeleteView
+from django.views.generic.edit import DeleteView, CreateView
+from django.views.generic.list import ListView
 from django_filters.views import FilterView
 from django_tables2.export.views import ExportMixin
 from django_tables2.views import SingleTableMixin, SingleTableView
@@ -803,6 +810,153 @@ class ComplementaryDocumentDownloadView(View):
         return services.download_file(path)
 
 
+@method_decorator(login_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
+class ArchivedPermitRequestListView(SingleTableMixin, ListView):
+    model = models.ArchivedPermitRequest
+    template_name = "permits/archived_permit_request_list.html"
+
+    permission_error_message = _(
+        "Vous n'avez pas les permissions pour archiver cette demande"
+    )
+    archive_failed_error_message = _("Une erreur est survenue lors de l'archivage")
+
+    def post(self, request, *args, **kwargs):
+
+        if request.POST.get("action") == "archive-requests":
+            return self.archive()
+
+        return HttpResponseNotFound(_("Aucune action spécifiée"))
+
+    def get_queryset(self):
+        return services.get_archived_request_list_for_user(self.request.user).order_by(
+            "-archived_date"
+        )
+
+    def get_table_class(self):
+        return tables.ArchivedPermitRequestsTable
+
+    def archive(self):
+        permit_request_ids = self.request.POST.getlist("to_archive[]")
+
+        if not permit_request_ids:
+            return HttpResponseNotFound(_("Rien à archiver"))
+
+        department = models.PermitDepartment.objects.filter(
+            group__in=self.request.user.groups.all()
+        ).first()
+
+        if (
+            not self.request.user.is_superuser
+            and not department.is_backoffice
+            and not department.is_integrator_admin
+        ):
+            return JsonResponse(
+                data={"error": True, "message": self.permission_error_message},
+                status=403,
+            )
+        try:
+            with transaction.atomic():
+                for permit_request_id in permit_request_ids:
+                    permit_request = services.get_permit_request_for_user_or_404(
+                        self.request.user, permit_request_id
+                    )
+                    permit_request.archive(self.request.user)
+        except Exception:
+            return JsonResponse(
+                data={"message": self.archive_failed_error_message}, status=500
+            )
+
+        return JsonResponse({"message": _("Demandes archivées avec succès")})
+
+
+@method_decorator(login_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
+class ArchivedPermitRequestDeleteView(DeleteView):
+    model = models.ArchivedPermitRequest
+    success_url = reverse_lazy("permits:archived_permit_request_list")
+
+    success_message = _("L'archive #%s a été supprimé avec succès")
+    error_message = _("Vous n'avez pas les permissions pour supprimer cette archive")
+
+    def post(self, request, *args, **kwargs):
+
+        try:
+            archive = models.ArchivedPermitRequest.objects.get(pk=kwargs.get("pk"))
+
+            if not self.request.user == archive.archivist:
+                messages.error(self.request, self.error_message)
+                return redirect(self.success_url)
+
+            return super(ArchivedPermitRequestDeleteView, self).post(
+                request, *args, **kwargs
+            )
+        except models.ArchivedPermitRequest.DoesNotExist:
+            raise SuspiciousOperation
+
+    def get_success_url(self):
+        messages.success(self.request, self.success_message % self.object.pk)
+        return self.success_url
+
+
+@method_decorator(login_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
+class ArchivedPermitRequestDownloadView(View):
+    permission_error_message = _(
+        "Vous n'avez pas les permissions pour télécharger cette archive"
+    )
+    not_exist_error_message = _("L'archive demandée n'existe pas")
+
+    def get(self, request, *args, **kwargs):
+        try:
+            return services.download_archives(
+                archive_ids=[kwargs.get("pk")], user=self.request.user
+            )
+        except PermissionDenied:
+            error_message = self.permission_error_message
+        except ObjectDoesNotExist:
+            error_message = self.not_exist_error_message
+        except Exception:
+            error_message = _(
+                "Une erreur est survenue lors de la création du fichier compressé. Veuillez contacter votre administrateur"
+            )
+
+        messages.error(request, error_message)
+        return redirect(reverse_lazy("permits:archived_permit_request_list"))
+
+
+@method_decorator(login_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
+class ArchivedPermitRequestBulkDownloadView(View):
+    permission_error_message = _(
+        "Vous n'avez pas les permissions pour télécharger ces archives"
+    )
+    info_message = _("Rien à télécharger")
+    not_exist_error_message = _("Une des archives demandées n'existe pas")
+
+    def get(self, request, *args, **kwargs):
+        to_download = self.request.GET.getlist("to_download")
+        if not to_download:
+            messages.info(request, self.info_message)
+            return redirect(reverse_lazy("permits:archived_permit_request_list"))
+
+        try:
+            return services.download_archives(
+                archive_ids=to_download, user=self.request.user
+            )
+        except PermissionDenied:
+            error_message = self.permission_error_message
+        except ObjectDoesNotExist:
+            error_message = self.not_exist_error_message
+        except Exception:
+            error_message = _(
+                "Une erreur est survenue lors de la création du fichier compressé. Veuillez contacter votre administrateur"
+            )
+
+        messages.error(request, error_message)
+        return redirect(reverse_lazy("permits:archived_permit_request_list"))
+
+
 def permit_request_print(request, permit_request_id, template_id):
     permit_request = services.get_permit_request_for_user_or_404(
         request.user, permit_request_id
@@ -1530,7 +1684,7 @@ class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
         qs = (
             (
                 services.get_permit_requests_list_for_user(
-                    self.request.user, works_object_filter=works_object_filter
+                    self.request.user, works_object_filter=works_object_filter,
                 )
             )
             .prefetch_related(

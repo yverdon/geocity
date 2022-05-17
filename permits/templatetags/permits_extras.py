@@ -122,3 +122,19 @@ def is_expired(context):
 def can_always_be_updated(context):
     if context["record"] is not None:
         return context["record"].can_always_be_updated(context["request"].user)
+
+
+@register.simple_tag(takes_context=True)
+def can_download_archive(context):
+    return services.can_download_archive(context["user"], context["record"].archivist)
+
+
+@register.simple_tag(takes_context=True)
+def can_archive(context):
+    department = models.PermitDepartment.objects.filter(
+        group__in=context["user"].groups.all()
+    ).first()
+    return context["user"].is_superuser or (
+        department is not None
+        and (department.is_backoffice or department.is_integrator_admin)
+    )

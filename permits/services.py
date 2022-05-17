@@ -2,16 +2,24 @@ import enum
 import itertools
 import mimetypes
 import os
+import shutil
 import urllib
 from collections import defaultdict
 import socket
 import ipaddress
+from datetime import datetime
 
 import filetype
+import pathlib
 from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
-from django.core.exceptions import SuspiciousOperation, ValidationError
+from django.core.exceptions import (
+    SuspiciousOperation,
+    ValidationError,
+    ObjectDoesNotExist,
+    PermissionDenied,
+)
 from django.core.mail import send_mass_mail
 from django.core.validators import EmailValidator
 from django.db import transaction
@@ -25,6 +33,8 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext_lazy as _
+from django.template.defaultfilters import slugify
+from zipfile import ZipFile
 
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
@@ -406,7 +416,10 @@ def get_permit_request_for_user_or_404(user, permit_request_id, statuses=None):
 
 
 def get_permit_requests_list_for_user(
-    user, request_comes_from_internal_qgisserver=False, works_object_filter=None
+    user,
+    request_comes_from_internal_qgisserver=False,
+    works_object_filter=None,
+    ignore_archived=True,
 ):
     """
     Return the list of permit requests this user has access to.
@@ -439,6 +452,9 @@ def get_permit_requests_list_for_user(
 
     qs = models.PermitRequest.objects.annotate(**annotate_with)
 
+    if ignore_archived:
+        qs = qs.filter(~Q(status=models.PermitRequest.STATUS_ARCHIVED))
+
     if not user.is_authenticated and not request_comes_from_internal_qgisserver:
         return qs.none()
 
@@ -459,6 +475,25 @@ def get_permit_requests_list_for_user(
         return qs.filter(qs_filter)
 
     return qs
+
+
+def get_archived_request_list_for_user(user):
+    """
+    Return the list of archived requests this user has access to.
+    """
+    qs = models.ArchivedPermitRequest.objects.all()
+    if not user.is_authenticated:
+        return qs.none()
+
+    if user.is_superuser:
+        return qs
+
+    qs_filter = Q(archivist=user)
+    qs_filter |= Q(
+        permit_request__administrative_entity__in=get_user_administrative_entities(user)
+    )
+
+    return qs.filter(qs_filter)
 
 
 def get_actors_types(permit_request):
@@ -1802,11 +1837,51 @@ def download_file(path):
 
 
 def get_works_type_names_list(permit_request):
+    return permit_request.get_works_type_names_list()
 
-    return ", ".join(
-        list(
-            permit_request.works_object_types.all()
-            .values_list("works_type__name", flat=True)
-            .distinct()
+
+def download_archives(archive_ids, user):
+    archives = []
+    for archive_id in archive_ids:
+        archive = models.ArchivedPermitRequest.objects.filter(
+            permit_request=archive_id
+        ).first()
+
+        if not archive:
+            raise ObjectDoesNotExist
+
+        if not can_download_archive(user, archive.archivist):
+            raise PermissionDenied
+
+        archives.append(archive)
+
+    parent_name = f"Archive_{datetime.today().strftime('%d.%m.%Y.%H.%M.%S')}"
+    parent_path = os.path.join(settings.ARCHIVE_ROOT, parent_name)
+
+    os.mkdir(parent_path)
+    for archive in archives:
+        shutil.copytree(
+            src=archive.path, dst=os.path.join(parent_path, archive.dirname)
         )
+    zippath = compress_directory(parent_path)
+    response = FileResponse(open(zippath, "rb"))
+    shutil.rmtree(parent_path)
+    os.remove(zippath)
+    return response
+
+
+def compress_directory(dir_path):
+    directory = pathlib.Path(dir_path)
+    archive_name = "{}.zip".format(dir_path)
+    with ZipFile(archive_name, "w") as archive:
+        for filepath in directory.rglob("*"):
+            archive.write(filepath, arcname=filepath.relative_to(directory))
+    return archive_name
+
+
+def can_download_archive(user, archivist):
+    return (
+        user == archivist
+        or user.is_superuser
+        or (user.groups.all() & archivist.groups.all()).exists()
     )

@@ -4,6 +4,8 @@ import enum
 from datetime import date, datetime, timedelta
 
 import os
+
+import shutil
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
@@ -15,7 +17,7 @@ from django.db.models import (
     BooleanField,
     ProtectedError,
 )
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, SuspiciousOperation
 from django.core.validators import (
     FileExtensionValidator,
     MaxValueValidator,
@@ -24,15 +26,19 @@ from django.core.validators import (
 )
 from django.db import models
 from django.db.models import Q, Max, Min
+from django.template.defaultfilters import slugify
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
+from django_tables2.export import TableExport
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
+from django.apps import apps
 
 from . import fields
+
 
 # public types: for public/restricted features
 PUBLIC_TYPE_CHOICES = (
@@ -492,6 +498,7 @@ class PermitRequest(models.Model):
     STATUS_REJECTED = 6
     STATUS_RECEIVED = 7
     STATUS_INQUIRY_IN_PROGRESS = 8
+    STATUS_ARCHIVED = 9
 
     STATUS_CHOICES = (
         (STATUS_DRAFT, _("Brouillon")),
@@ -503,6 +510,7 @@ class PermitRequest(models.Model):
         (STATUS_REJECTED, _("Refusée")),
         (STATUS_RECEIVED, _("Réceptionnée")),
         (STATUS_INQUIRY_IN_PROGRESS, _("Mise à l'enquête en cours")),
+        (STATUS_ARCHIVED, _("Archivée")),
     )
     AMENDABLE_STATUSES = {
         STATUS_SUBMITTED_FOR_VALIDATION,
@@ -843,6 +851,63 @@ class PermitRequest(models.Model):
         return PermitRequestInquiry.objects.filter(
             permit_request=self, start_date__lte=today, end_date__gte=today
         ).first()
+
+    def get_works_type_names_list(self):
+
+        return ", ".join(
+            list(
+                self.works_object_types.all()
+                .values_list("works_type__name", flat=True)
+                .distinct()
+            )
+        )
+
+    def archive(self, archivist):
+        # make sure the request wasn't already archived
+        if ArchivedPermitRequest.objects.filter(permit_request=self,).first():
+            raise SuspiciousOperation(_("La demande a déjà été archivée"))
+
+        archive = ArchivedPermitRequest.objects.create(
+            permit_request=self, archivist=archivist,
+        )
+
+        try:
+            os.mkdir(archive.path)
+
+            for document in self.complementary_documents:
+                shutil.copy2(src=document.path, dst=archive.path)
+
+            with open(os.path.join(archive.path, "permit_request.csv"), "w") as f:
+                f.write(self.to_csv())
+        except OSError as e:
+            raise Exception(_("La demande n'a pas pu être archivée"), e)
+
+        self.status = self.STATUS_ARCHIVED
+        self.save()
+
+    @property
+    def is_archived(self):
+        return self.status == self.STATUS_ARCHIVED
+
+    @property
+    def complementary_documents(self):
+        return PermitRequestComplementaryDocument.objects.filter(
+            permit_request=self
+        ).all()
+
+    def to_csv(self):
+        from .tables import OwnPermitRequestsExportTable
+
+        table = OwnPermitRequestsExportTable(
+            data=PermitRequest.objects.filter(id=self.id)
+        )
+
+        exporter = TableExport(export_format=TableExport.CSV, table=table)
+
+        return exporter.export()
+
+    def __str__(self):
+        return self.shortname
 
 
 class WorksTypeQuerySet(models.QuerySet):
@@ -1443,6 +1508,10 @@ class PermitRequestComplementaryDocument(models.Model):
     def name(self):
         return self.document.name
 
+    @property
+    def path(self):
+        return os.path.join(settings.MEDIA_ROOT, self.document.name)
+
     def delete(self, using=None, keep_parents=False):
         # delete the uploaded file
         try:
@@ -1516,6 +1585,37 @@ class PermitRequestInquiry(models.Model):
             & Q(start_date__lte=today)
             & Q(end_date__gte=today)
         ).first()
+
+
+class ArchivedPermitRequest(models.Model):
+    archived_date = models.DateTimeField(auto_now_add=True)
+    archivist = models.ForeignKey(
+        User,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Personne ayant archivé la demande"),
+    )
+    permit_request = models.OneToOneField(
+        PermitRequest, on_delete=models.CASCADE, primary_key=True,
+    )
+
+    @property
+    def dirname(self):
+        archived_date = self.archived_date.strftime("%d.%m.%Y.%H.%M.%S")
+        return f"{self.permit_request.id:02d}_{archived_date}-{slugify(self.permit_request.get_works_type_names_list())}"
+
+    @property
+    def path(self):
+        return os.path.join(settings.ARCHIVE_ROOT, self.dirname)
+
+    def delete(self, using=None, keep_parents=False):
+        # delete the archive
+        shutil.rmtree(self.path)
+
+        # delete the permit request linked to the archive
+        self.permit_request.delete()
+
+        return super().delete(using, keep_parents)
 
 
 class QgisProject(models.Model):
