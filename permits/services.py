@@ -1816,3 +1816,23 @@ def get_works_type_names_list(permit_request):
             .distinct()
         )
     )
+
+
+def get_services_to_notify_mailing_list(permit_request):
+
+    mailing_list = []
+
+    works_object_types_to_notify = permit_request.works_object_types.filter(
+        notify_services=True
+    )
+
+    if works_object_types_to_notify.exists():
+        for emails in works_object_types_to_notify.values_list(
+            "services_to_notify", flat=True
+        ):
+            emails_addresses = emails.replace("\n", ",").split(",")
+            mailing_list += [
+                ea.strip() for ea in emails_addresses if validate_email(ea.strip())
+            ]
+
+    return mailing_list
