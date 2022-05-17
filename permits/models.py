@@ -34,7 +34,7 @@ from . import fields
 
 # public types: for public/restricted features
 PUBLIC_TYPE_CHOICES = (
-    (True, _("Visible par tous les utilisateurs")),
+    (True, _("Visibilité grand public")),
     (False, _("Visible uniquement par les utilisateur autorisés")),
 )
 
@@ -555,7 +555,7 @@ class PermitRequest(models.Model):
         _("état"), choices=STATUS_CHOICES, default=STATUS_DRAFT
     )
     shortname = models.CharField(
-        _("nom court de la demande, de l'événement, etc."),
+        _("nom court"),
         max_length=32,
         help_text=_(
             "Sera affiché dans le calendrier si la demande est rendue tout publique, ex: Brandons (max. 32 caractères)"
@@ -600,7 +600,7 @@ class PermitRequest(models.Model):
         null=True,
         blank=True,
     )
-    is_public = models.BooleanField(_("Publier"), default=False)
+    is_public = models.BooleanField(_("Publication calendrier"), default=False)
     prolongation_date = models.DateTimeField(
         _("Nouvelle date de fin"), null=True, blank=True
     )
@@ -960,7 +960,7 @@ class WorksObjectType(models.Model):
     requires_validation_document = models.BooleanField(
         _("Document de validation obligatoire"), default=True
     )
-    is_public = models.BooleanField(_("Public"), default=False)
+    is_public = models.BooleanField(_("Visibilité "), default=False)
     is_anonymous = models.BooleanField(
         _("Demandes anonymes uniquement"), default=False,
     )

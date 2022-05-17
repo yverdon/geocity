@@ -44,6 +44,7 @@ from .search import search_permit_requests, search_result_to_json
 import django_tables2 as tableslib
 
 from .tables import CustomPropertyValueAccessiblePermitRequest, get_custom_dynamic_table
+from constance import config
 
 logger = logging.getLogger(__name__)
 
@@ -1426,6 +1427,10 @@ class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
                 extra_column_names = tuple([col_name for col_name, __ in extra_columns])
             else:
                 extra_column_names = tuple()
+
+            if config.ENABLE_GEOCALENDAR:
+                extra_column_names += tuple(["shortname", "is_public"])
+
             table_class = (
                 tables.DepartmentPermitRequestsExportTable
                 if self.is_exporting()

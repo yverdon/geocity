@@ -3,7 +3,6 @@ import django_tables2 as tables
 from django.template.defaultfilters import floatformat
 from django.utils.translation import gettext_lazy as _
 from django_tables2_column_shifter.tables import ColumnShiftTable
-
 from . import models
 
 ATTRIBUTES = {
@@ -165,12 +164,6 @@ class GenericDepartmentPermitRequestsTable(
         orderable=True,
         template_name="tables/_permit_request_author_details.html",
     )
-    shortname = tables.Column(
-        verbose_name=_("Nom court"), attrs=ATTRIBUTES, orderable=True
-    )
-    is_public = tables.BooleanColumn(
-        verbose_name=_("Public"), attrs=ATTRIBUTES, orderable=True
-    )
 
     def before_render(self, request):
         self.columns["actions"].column.extra_context = {
@@ -198,8 +191,6 @@ class DepartmentPermitRequestsHTMLTable(GenericDepartmentPermitRequestsTable):
         model = models.PermitRequest
         fields = (
             "id",
-            "shortname",
-            "is_public",
             "author_fullname",
             "author_details",
             "created_at",
