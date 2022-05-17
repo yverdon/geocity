@@ -69,7 +69,7 @@ class PermitRequestSerializer(serializers.ModelSerializer):
 
 class WotPropertiesValuesSerializer(serializers.RelatedField):
     def to_representation(self, value):
-        wot_properties = services.get_wot_properties(value)
+        wot_properties = services.get_wot_properties(value, value_with_type=True)
         return wot_properties
 
 
@@ -133,11 +133,7 @@ class PermitAuthorSerializer(serializers.ModelSerializer):
 
 class CurrentUserSerializer(serializers.Serializer):
     def to_representation(self, value):
-        if value == "F":
-            json = {
-                "is_logged": False,
-            }
-        else:
+        if value.is_authenticated:
             json = {
                 "is_logged": True,
                 "username": value.username,
@@ -146,6 +142,10 @@ class CurrentUserSerializer(serializers.Serializer):
                 "expiration_datetime": (
                     value.last_login + timedelta(seconds=settings.SESSION_COOKIE_AGE)
                 ).strftime("%Y-%m-%d %H:%M:%S"),
+            }
+        else:
+            json = {
+                "is_logged": False,
             }
 
         return json
@@ -218,6 +218,7 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
 
     def to_representation(self, value):
         geo_time_qs = value.all()
+
         if not geo_time_qs:
             return {
                 "geometry": {"type": "Polygon", "coordinates": []},
@@ -230,7 +231,6 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
                     }
                 },
             }
-
         else:
 
             if self.extract_geom == self.EXTRACT_POINTS:
@@ -250,7 +250,7 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
 
             result = {"properties": {}}
             if not aggregated_geotime_qs["singlegeom"]:
-                result["geometry"] = None
+                result["geometry"] = {"type": "Polygon", "coordinates": []}
             else:
                 result["geometry"] = json.loads(
                     GEOSGeometry(aggregated_geotime_qs["singlegeom"]).json

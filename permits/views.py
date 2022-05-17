@@ -59,12 +59,25 @@ def user_has_permitauthor(user):
 
 
 def get_permit_request_for_edition(user, permit_request_id):
+    permit_request = models.PermitRequest.objects.get(pk=permit_request_id)
+    if permit_request.can_always_be_updated(user):
+        allowed_statuses = {
+            models.PermitRequest.STATUS_DRAFT,
+            models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+            models.PermitRequest.STATUS_APPROVED,
+            models.PermitRequest.STATUS_PROCESSING,
+            models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+            models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            models.PermitRequest.STATUS_REJECTED,
+            models.PermitRequest.STATUS_RECEIVED,
+        }
+    else:
+        allowed_statuses = {
+            models.PermitRequest.STATUS_DRAFT,
+            models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+            models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+        }
 
-    allowed_statuses = {
-        models.PermitRequest.STATUS_DRAFT,
-        models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
-        models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-    }
     permit_request = services.get_permit_request_for_user_or_404(
         user, permit_request_id, statuses=allowed_statuses,
     )
@@ -298,7 +311,11 @@ class PermitRequestDetailView(View):
                 self.permit_request
             ).first()
             shortname_value_proposal = (
-                first_wot.works_object_type.works_object.name if first_wot else ""
+                first_wot.works_object_type.works_object.name
+                if first_wot
+                and len(first_wot.works_object_type.works_object.name)
+                <= models.PermitRequest._meta.get_field("shortname").max_length
+                else None
             )
             # Only set the `status` default value if it's submitted for validation, to prevent accidentally resetting
             # the status
@@ -449,11 +466,16 @@ class PermitRequestDetailView(View):
             form.instance.status == models.PermitRequest.STATUS_RECEIVED
             and form.instance.status is not initial_status
         ):
+            permit_request = form.instance
+
             data = {
-                "subject": _("Votre annonce a été prise en compte et classée"),
-                "users_to_notify": [form.instance.author.user.email],
+                "subject": "{} ({})".format(
+                    _("Votre annonce a été prise en compte et classée"),
+                    services.get_works_type_names_list(permit_request),
+                ),
+                "users_to_notify": [permit_request.author.user.email],
                 "template": "permit_request_received.txt",
-                "permit_request": form.instance,
+                "permit_request": permit_request,
                 "absolute_uri_func": self.request.build_absolute_uri,
             }
             services.send_email_notification(data)
@@ -524,9 +546,13 @@ class PermitRequestDetailView(View):
                         is not form.instance.validation_status
                     )
                 ):
+
                     data = {
-                        "subject": _(
-                            "Les services chargés de la validation d'une demande ont donné leur préavis"
+                        "subject": "{} ({})".format(
+                            _(
+                                "Les services chargés de la validation d'une demande ont donné leur préavis"
+                            ),
+                            services.get_works_type_names_list(self.permit_request),
                         ),
                         "users_to_notify": services._get_secretary_email(
                             self.permit_request
@@ -901,7 +927,7 @@ def permit_request_select_types(request, permit_request_id):
                     administrative_entity=permit_request.administrative_entity,
                     user=request.user,
                     works_types=selected_works_types,
-                )
+                ).filter(is_anonymous=False)
                 if works_object_types:
                     services.set_works_object_types(
                         permit_request=permit_request,
@@ -1171,12 +1197,18 @@ def permit_request_appendices(request, permit_request_id):
         )
 
         if form.is_valid():
-            form.save()
-            return redirect(
-                services.get_next_step(
-                    steps_context["steps"], models.StepType.APPENDICES
-                ).url
-            )
+            try:
+                form.save()
+
+                return redirect(
+                    services.get_next_step(
+                        steps_context["steps"], models.StepType.APPENDICES
+                    ).url
+                )
+            except:
+                messages.error(
+                    request, _("Une erreur est survenue lors de l'upload de fichier."),
+                )
     else:
         form = forms.WorksObjectsAppendicesForm(
             instance=permit_request, enable_required=False
@@ -1264,11 +1296,12 @@ def permit_request_geo_time(request, permit_request_id):
         min_num=1,
         can_delete=True,
     )
-
     formset = PermitRequestGeoTimeFormSet(
         request.POST if request.method == "POST" else None,
         form_kwargs={"permit_request": permit_request},
-        queryset=permit_request.geo_time.all(),
+        queryset=permit_request.geo_time.filter(
+            comes_from_automatic_geocoding=False
+        ).all(),
     )
 
     if request.method == "POST":
@@ -1618,9 +1651,13 @@ def permit_request_classify(request, permit_request_id, approve):
 
         if classify_form.is_valid():
             classify_form.save()
+
             # Notify the permit author
             data = {
-                "subject": _("Votre demande a été traitée et classée"),
+                "subject": "{} ({})".format(
+                    _("Votre demande a été traitée et classée"),
+                    services.get_works_type_names_list(permit_request),
+                ),
                 "users_to_notify": [permit_request.author.user.email],
                 "template": "permit_request_classified.txt",
                 "permit_request": permit_request,
@@ -1647,8 +1684,11 @@ def permit_request_classify(request, permit_request_id, approve):
 
                 if mailing_list:
                     data = {
-                        "subject": _(
-                            "Une demande a été traitée et classée par le secrétariat"
+                        "subject": "{} ({})".format(
+                            _(
+                                "Une demande a été traitée et classée par le secrétariat"
+                            ),
+                            services.get_works_type_names_list(permit_request),
                         ),
                         "users_to_notify": set(mailing_list),
                         "template": "permit_request_classified_for_services.txt",

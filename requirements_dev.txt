@@ -59,7 +59,7 @@ deprecated==1.2.13
     # via
     #   -r requirements.txt
     #   jwcrypto
-django==3.2.12
+django==3.2.13
     # via
     #   -r requirements.txt
     #   django-admin-sortable2

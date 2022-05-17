@@ -5,7 +5,7 @@ import faker
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.gis.geos import GeometryCollection, Point
+from django.contrib.gis.geos import GeometryCollection, MultiPolygon, Polygon, Point
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils.text import Truncator
 from permits import models, admin
@@ -62,6 +62,7 @@ class SuperUserFactory(factory.django.DjangoModelFactory):
 class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
     ofs_id = 0
     name = factory.Faker("company")
+    geom = MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
 
     class Meta:
         model = models.PermitAdministrativeEntity

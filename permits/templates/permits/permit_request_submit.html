@@ -15,7 +15,7 @@
           {% if directive_file and directive_description %}
             <span class="directive_description">{{ directive_description }}</span>:
             <i class="fa fa-download" aria-hidden="true"></i>
-            <a class="directive_file" href="{{ directive_file.url }}" target="_blank" rel="noreferrer">{% trans "Télécharger le fichier" %}</a>
+            <a class="directive_file" href="{{ directive_file.url }}" target="_blank" rel="noreferrer">{% trans "Télécharger la directive" %}</a>
             <br>
           {% endif %}
           {% if additional_information %}
@@ -35,7 +35,7 @@
     </p>
   {% endif %}
   <p>
-    {% trans "Vous trouverez ci-dessous un récapitulatif de votre demande." %}
+    {% trans "Vous trouverez ci-dessous un récapitulatif de votre saisie." %}
   </p>
   <form method="post">
     {% csrf_token %}

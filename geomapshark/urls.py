@@ -34,7 +34,6 @@ if settings.ENABLE_2FA:
 router = routers.DefaultRouter()
 router.register(r"events", api.PermitRequestGeoTimeViewSet, "events")
 router.register(r"permits", api.PermitRequestViewSet, "permits")
-router.register(r"current_user", api.CurrentUserViewSet, "current_user")
 router.register(r"permits_point", api.PermitRequestPointViewSet, "permit_point")
 router.register(r"permits_line", api.PermitRequestLineViewSet, "permit_line")
 router.register(r"permits_poly", api.PermitRequestPolyViewSet, "permit_poly")
@@ -125,6 +124,7 @@ urlpatterns += [
     path("permitauthoredit/", views.permit_author_edit, name="permit_author_edit"),
     path("account/", include("django.contrib.auth.urls")),
     path("rest/", include(router.urls)),  # Django-rest urls
+    path("rest/current_user/", api.CurrentUserAPIView.as_view(), name="current_user"),
     path("wfs3/", include(wfs3_router.urls)),  # Django-rest urls
     path("admin/", admin.site.urls),
     path("oauth/", include("oauth2_provider.urls", namespace="oauth2_provider")),

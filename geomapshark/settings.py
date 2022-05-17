@@ -100,6 +100,9 @@ ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 SITE_ID = None
 SITE_DOMAIN = None
 
+# Allow REMOTE_USER Authentication
+ALLOW_REMOTE_USER_AUTH = os.getenv("ALLOW_REMOTE_USER_AUTH", "false").lower() == "true"
+
 SITE_HTTPS = bool(int(os.getenv("SITE_HTTPS", True)))
 
 # Application definition
@@ -187,6 +190,8 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "ENABLE_GEOCALENDAR",
         "ANONYMOUS_REQUEST_SENT_TITLE",
         "ANONYMOUS_REQUEST_SENT_BODY",
+        "LOCATIONS_SEARCH_API",
+        "LOCATIONS_SEARCH_API_DETAILS",
     ),
     "Theme Options": (
         "BACKGROUND_COLOR",
@@ -224,7 +229,7 @@ CONSTANCE_CONFIG = {
         str,
     ),
     "APPLICATION_SUBTITLE": (
-        "Petits travaux, abattages, fouilles, dépôts,...",
+        "Petits travaux, abattages, fouilles, dépôts, etc.",
         "Sous-titre de la page de login",
         str,
     ),
@@ -235,10 +240,10 @@ CONSTANCE_CONFIG = {
     ),
     "ALLOWED_FILE_EXTENSIONS": (  # Supported file extensions https://pypi.org/project/filetype/
         "pdf, jpg, png",
-        "Extensions autorisées lors de l'upload de document, seuls des types images PIL et pdf sont supportés",
+        "Extensions autorisées lors de l'upload de document, seuls des types images PIL et PDF sont supportés",
         str,
     ),
-    "MAX_FILE_UPLOAD_SIZE": (10485760, "Taille maximum des fichiers uploadé", int,),
+    "MAX_FILE_UPLOAD_SIZE": (10485760, "Taille maximum des fichiers uploadés", int,),
     "MAX_FEATURE_NUMBER_FOR_QGISSERVER": (
         10,
         "Nombre maximum d'entités disponible pour QGISSERVER, un nombre trop élevé impactera négativement les performances de l'impression",
@@ -251,17 +256,31 @@ CONSTANCE_CONFIG = {
     ),
     "ENABLE_GEOCALENDAR": (
         True,
-        "Définit si l'application du calendrier cartographique est utilisé ou pas (doit dans tous les cas être installée à part)",
+        "Définit si l'application du calendrier cartographique est utilisée ou pas (doit dans tous les cas être installée à part)",
         bool,
     ),
-    "ANONYMOUS_CAPTCHA_STEP": ("Votre demande anonyme", "", str),
-    "ANONYMOUS_REQUEST_SENT_TITLE": ("Merci pour votre requête", "", str),
-    "ANONYMOUS_REQUEST_SENT_BODY": (
-        "Nous avons bien reçu votre requête anonyme.",
+    "ANONYMOUS_CAPTCHA_STEP": (
+        "Veuillez confirmer que vous n'êtes pas un robot",
         "",
         str,
     ),
-    "LOCATION_STEP": ("Sélectionnez l'entité", "", str),
+    "ANONYMOUS_REQUEST_SENT_TITLE": ("Merci pour votre envoi", "", str),
+    "ANONYMOUS_REQUEST_SENT_BODY": (
+        "Nous avons bien reçu votre envoi et vous en remercions.",
+        "",
+        str,
+    ),
+    "LOCATIONS_SEARCH_API": (
+        "https://api3.geo.admin.ch/rest/services/api/SearchServer",
+        "URL de l'API de recherche d'adresse",
+        str,
+    ),
+    "LOCATIONS_SEARCH_API_DETAILS": (
+        "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
+        "URL de l'API des détails de recherche d'adresse",
+        str,
+    ),
+    "LOCATION_STEP": ("Sélectionnez la commune / l'entité", "", str),
     "WORKS_TYPES_STEP": ("Sélectionnez le ou les type(s)", "", str),
     "WORKS_OBJECTS_STEP": ("Sélectionnez les objets", "", str),
     "PROPERTIES_STEP": ("Renseignez les caractéristiques des objets", "", str),
@@ -277,7 +296,7 @@ CONSTANCE_CONFIG = {
         str,
     ),
     "APPLICATION_SUBTITLE": (
-        "Petits travaux, abattages, fouilles, dépôts,...",
+        "Petits travaux, abattages, fouilles, dépôts, etc.",
         "Sous-titre de la page de login",
         str,
     ),
@@ -288,8 +307,8 @@ CONSTANCE_CONFIG = {
     ),
     "BACKGROUND_COLOR": ("#FFFFFF", "Couleur unie du fond", str,),
     "LOGIN_BACKGROUND_COLOR": ("#FFFFFF", "Couleur unie du fond login", str,),
-    "PRIMARY_COLOR": ("#008c6f", "Couleur de theme principale", str,),
-    "SECONDARY_COLOR": ("#01755d", "Couleur de theme secondaire", str,),
+    "PRIMARY_COLOR": ("#008c6f", "Couleur de thème principale", str,),
+    "SECONDARY_COLOR": ("#01755d", "Couleur de thème secondaire", str,),
     "TEXT_COLOR": ("#000000", "Couleur du texte", str,),
     "TITLE_COLOR": ("#000000", "Couleur du titre", str,),
     "TABLE_COLOR": ("#212529", "Couleur du texte dans les tableaux", str,),
@@ -300,7 +319,7 @@ CONSTANCE_CONFIG = {
     ),
     "NETWORK_WHITELIST": (
         "172.16.0.0/12,192.168.0.0/16",
-        "Réseaux  autorisés pour l'utilisation de l'API complète (/rest/permits), séparés par des ','",
+        "Réseaux autorisés pour l'utilisation de l'API complète (/rest/permits), séparés par des ','",
         str,
     ),
     "LOGOUT_REDIRECT_HOSTNAME_WHITELIST": (
@@ -415,7 +434,7 @@ AUTH_PASSWORD_VALIDATORS = [
 CORS_ALLOWED_ORIGINS = [] + os.getenv("ALLOWED_CORS").split(",")
 
 
-if DEBUG:
+if DEBUG and not CORS_ALLOWED_ORIGINS:
     CORS_ALLOW_ALL_ORIGINS = True
 
 # Internationalization
@@ -503,3 +522,18 @@ ANONYMOUS_USER_ZIPCODE = 9999
 ANONYMOUS_USER_PREFIX = "anonymous_user_"
 ANONYMOUS_NAME = "Anonyme"
 PENDING_ANONYMOUS_REQUEST_MAX_AGE = 24
+
+if ALLOW_REMOTE_USER_AUTH:
+    # Add the auth middleware
+    MIDDLEWARE += ["django.contrib.auth.middleware.RemoteUserMiddleware"]
+
+    # Remove Axes middleware and app
+    MIDDLEWARE.remove("axes.middleware.AxesMiddleware")
+    INSTALLED_APPS.remove("axes")
+
+    # When using the RemoteUserBackend for intranet users override AUTHENTICATION_BACKENDS
+    AUTHENTICATION_BACKENDS = [
+        # Classic django authentication backend
+        "django.contrib.auth.backends.RemoteUserBackend",
+        "django.contrib.auth.backends.ModelBackend",
+    ]
