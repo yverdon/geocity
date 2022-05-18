@@ -4,6 +4,7 @@ import os
 import urllib.parse
 
 import requests
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import (
@@ -705,6 +706,11 @@ def anonymous_permit_request(request):
     entity = entities_by_tag[0]
 
     # Validate captcha and temporary user connection
+    captcha_refresh_url = (
+        "/" + settings.PREFIX_URL + "captcha/refresh/"
+        if settings.PREFIX_URL
+        else "/captcha/refresh/"
+    )
     if not services.is_anonymous_request_logged_in(request, entity):
         # Captcha page
         if request.method == "POST":
@@ -716,13 +722,19 @@ def anonymous_permit_request(request):
                 return render(
                     request,
                     "permits/permit_request_anonymous_captcha.html",
-                    {"anonymous_request_form": anonymous_request_form},
+                    {
+                        "anonymous_request_form": anonymous_request_form,
+                        "captcha_refresh_url": captcha_refresh_url,
+                    },
                 )
         else:
             return render(
                 request,
                 "permits/permit_request_anonymous_captcha.html",
-                {"anonymous_request_form": forms.AnonymousRequestForm()},
+                {
+                    "anonymous_request_form": forms.AnonymousRequestForm(),
+                    "captcha_refresh_url": captcha_refresh_url,
+                },
             )
 
     # Validate type
