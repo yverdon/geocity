@@ -468,6 +468,7 @@ class PermitRequestDetailView(View):
         ):
             permit_request = form.instance
 
+            # Notify the permit author
             data = {
                 "subject": "{} ({})".format(
                     _("Votre annonce a été prise en compte et classée"),
@@ -479,6 +480,24 @@ class PermitRequestDetailView(View):
                 "absolute_uri_func": self.request.build_absolute_uri,
             }
             services.send_email_notification(data)
+
+            # Notify the services
+            mailing_list = services.get_services_to_notify_mailing_list(permit_request)
+
+            if mailing_list:
+                data = {
+                    "subject": "{} ({})".format(
+                        _(
+                            "Une annonce a été prise en compte et classée par le secrétariat"
+                        ),
+                        services.get_works_type_names_list(permit_request),
+                    ),
+                    "users_to_notify": set(mailing_list),
+                    "template": "permit_request_received_for_services.txt",
+                    "permit_request": permit_request,
+                    "absolute_uri_func": self.request.build_absolute_uri,
+                }
+                services.send_email_notification(data)
 
         if "save_continue" in self.request.POST:
 
@@ -1665,36 +1684,20 @@ def permit_request_classify(request, permit_request_id, approve):
             services.send_email_notification(data)
 
             # Notify the services
-            works_object_types_to_notify = permit_request.works_object_types.filter(
-                notify_services=True
-            )
+            mailing_list = services.get_services_to_notify_mailing_list(permit_request)
 
-            if works_object_types_to_notify.exists():
-                mailing_list = []
-                for emails in works_object_types_to_notify.values_list(
-                    "services_to_notify", flat=True
-                ):
-                    emails_addresses = emails.replace("\n", ",").split(",")
-                    mailing_list += [
-                        ea.strip()
-                        for ea in emails_addresses
-                        if services.validate_email(ea.strip())
-                    ]
-
-                if mailing_list:
-                    data = {
-                        "subject": "{} ({})".format(
-                            _(
-                                "Une demande a été traitée et classée par le secrétariat"
-                            ),
-                            services.get_works_type_names_list(permit_request),
-                        ),
-                        "users_to_notify": set(mailing_list),
-                        "template": "permit_request_classified_for_services.txt",
-                        "permit_request": permit_request,
-                        "absolute_uri_func": request.build_absolute_uri,
-                    }
-                    services.send_email_notification(data)
+            if mailing_list:
+                data = {
+                    "subject": "{} ({})".format(
+                        _("Une demande a été traitée et classée par le secrétariat"),
+                        services.get_works_type_names_list(permit_request),
+                    ),
+                    "users_to_notify": set(mailing_list),
+                    "template": "permit_request_classified_for_services.txt",
+                    "permit_request": permit_request,
+                    "absolute_uri_func": request.build_absolute_uri,
+                }
+                services.send_email_notification(data)
 
             return redirect("permits:permit_requests_list")
     else:
