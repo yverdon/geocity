@@ -7,7 +7,6 @@ from rest_framework.exceptions import APIException
 from .models import PermitRequestGeoTime
 import urllib
 import requests
-from constance import config
 from django.contrib.gis.geos import Point, MultiPoint, GeometryCollection
 
 from . import models
@@ -74,7 +73,7 @@ def reverse_geocode_and_store_address_geometry(permit_request, to_geocode_addres
     ).delete()
 
     if to_geocode_addresses:
-        geoadmin_address_search_api = config.LOCATIONS_SEARCH_API
+        geoadmin_address_search_api = os.getenv("LOCATIONS_SEARCH_API")
         geom = GeometryCollection()
         for address in to_geocode_addresses:
             search_params = {
