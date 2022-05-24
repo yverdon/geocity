@@ -1577,6 +1577,10 @@ class PermitRequestInquiry(models.Model):
         verbose_name=_("Demandeur de l'enquête"),
     )
 
+    class Meta:
+        verbose_name = _("3.2 Enquête public")
+        verbose_name_plural = _("3.2 Enquêtes publics")
+
     @classmethod
     def get_current_inquiry(cls, permit_request):
         today = datetime.today().strftime("%Y-%m-%d")

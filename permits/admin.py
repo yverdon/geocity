@@ -1279,6 +1279,16 @@ class ComplementaryDocumentTypeAdmin(admin.ModelAdmin):
     form = permit_forms.ComplementaryDocumentTypeAdminForm
 
 
+class PermitRequestInquiryAdmin(admin.ModelAdmin):
+    list_display = ("id", "start_date", "end_date", "submitter", "permit_request")
+
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "name"
+    sortable_str.short_description = _("3.2 Enquêtes public")
+
+
 admin.site.unregister(TokenProxy)
 admin.site.register(TokenProxy, TokenAdmin)
 
@@ -1292,3 +1302,4 @@ admin.site.register(models.PermitRequestAmendProperty, PermitRequestAmendPropert
 admin.site.register(models.TemplateCustomization, TemplateCustomizationAdmin)
 admin.site.register(models.PermitRequest, PermitRequestAdmin)
 admin.site.register(models.ComplementaryDocumentType, ComplementaryDocumentTypeAdmin)
+admin.site.register(models.PermitRequestInquiry, PermitRequestInquiryAdmin)
