@@ -1567,7 +1567,11 @@ def permit_request_submit_confirmed(request, permit_request_id):
                 "absolute_uri_func": request.build_absolute_uri,
             }
             services.send_email_notification(data)
-    services.submit_permit_request(permit_request, request)
+
+    # Only submit request when it's editable by author, to prevent a "raise SuspiciousOperation"
+    # When editing a permit_request, submit isn't required to save the modifications, as every view saves the updates
+    if permit_request.can_be_edited_by_author():
+        services.submit_permit_request(permit_request, request)
 
     user_is_backoffice_or_integrator_for_administrative_entity = request.user.groups.filter(
         Q(permitdepartment__administrative_entity=permit_request.administrative_entity),
@@ -1577,9 +1581,13 @@ def permit_request_submit_confirmed(request, permit_request_id):
 
     # Backoffice and integrators creating a permit request for their own administrative
     # entity, are directly redirected to the permit detail
-    if user_is_backoffice_or_integrator_for_administrative_entity:
+    # Same flow for requests when permit_request can't be edited by author
+    if (
+        user_is_backoffice_or_integrator_for_administrative_entity
+        and not permit_request.can_be_edited_by_author()
+    ):
         return redirect(
-            "permits:permit_request_detail", permit_request_id=permit_request.id
+            "permits:permit_request_detail", permit_request_id=permit_request_id
         )
     else:
 
