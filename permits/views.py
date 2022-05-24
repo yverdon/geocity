@@ -1568,13 +1568,14 @@ def permit_request_submit_confirmed(request, permit_request_id):
             }
             services.send_email_notification(data)
 
-    permit_request_editable = permit_request.status in models.PermitRequest.EDITABLE_STATUSES
-    
+    permit_request_editable = (
+        permit_request.status in models.PermitRequest.EDITABLE_STATUSES
+    )
+
     # Only submit request when it's editable, to prevent a "raise SuspiciousOperation"
     # When editing a permit_request, submit isn't required to save the modifications, as every view saves the updates
     if permit_request_editable:
         services.submit_permit_request(permit_request, request)
-    
 
     user_is_backoffice_or_integrator_for_administrative_entity = request.user.groups.filter(
         Q(permitdepartment__administrative_entity=permit_request.administrative_entity),
@@ -1585,7 +1586,10 @@ def permit_request_submit_confirmed(request, permit_request_id):
     # Backoffice and integrators creating a permit request for their own administrative
     # entity, are directly redirected to the permit detail
     # Same flow for requests with status not editable
-    if user_is_backoffice_or_integrator_for_administrative_entity and not permit_request_editable:
+    if (
+        user_is_backoffice_or_integrator_for_administrative_entity
+        and not permit_request_editable
+    ):
         return redirect(
             "permits:permit_request_detail", permit_request_id=permit_request_id
         )
