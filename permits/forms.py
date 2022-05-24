@@ -1,5 +1,4 @@
 import json
-import os
 from collections import defaultdict
 from datetime import datetime, timedelta
 from itertools import groupby
@@ -87,8 +86,8 @@ class AddressWidget(forms.widgets.TextInput):
 
     def __init__(self, attrs=None, autocomplete_options=None):
         autocomplete_options = {
-            "apiurl": os.getenv("LOCATIONS_SEARCH_API"),
-            "apiurl_detail": os.getenv("LOCATIONS_SEARCH_API_DETAILS"),
+            "apiurl": settings.LOCATIONS_SEARCH_API,
+            "apiurl_detail": settings.LOCATIONS_SEARCH_API_DETAILS,
             "origins": "address",
             "zipcode_field": "zipcode",
             "city_field": "city",
@@ -1221,8 +1220,8 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             "geometry_db_type": "GeometryCollection",
             "qgisserver_proxy": reverse("permits:qgisserver_proxy"),
             "ftsearch_additional_searchtext_for_address_field": ftsearch_additional_searchtext_for_address_field,
-            "ftsearch_apiurl": os.getenv("LOCATIONS_SEARCH_API"),
-            "ftsearch_apiurl_detail": os.getenv("LOCATIONS_SEARCH_API_DETAILS"),
+            "ftsearch_apiurl": settings.LOCATIONS_SEARCH_API,
+            "ftsearch_apiurl_detail": settings.LOCATIONS_SEARCH_API_DETAILS,
             "ftsearch_apiurl_origins": "address,parcel",
         }
 

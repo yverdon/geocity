@@ -99,6 +99,9 @@ SITE_ID = 1
 SITE_DOMAIN = os.getenv("SITE_DOMAIN", "localhost")
 SITE_HTTPS = bool(int(os.getenv("SITE_HTTPS", True)))
 
+LOCATIONS_SEARCH_API = os.getenv("LOCATIONS_SEARCH_API")
+LOCATIONS_SEARCH_API_DETAILS = os.getenv("LOCATIONS_SEARCH_API_DETAILS")
+
 # Application definition
 INSTALLED_APPS = [
     "adminsortable2",
