@@ -1681,23 +1681,33 @@ def get_wot_properties(value, value_with_type=False):
         "id",
         "works_object_type__works_object__name",
         "works_object_type__works_type__name",
+        "properties__property__is_public_when_permitrequest_is_public",
+        "permit_request__is_public",
     )
 
     wot_properties = dict()
     property = list()
     last_wot = ""
 
+    """
+    TODO 
+    1 - For allowed user, return all properties
+    2 - For public user return only properties that are True for is_public_when_permitrequest_is_public for is_public=True permitRequests
+    """
     if wot_props:
         # Flat view is used in the api for geocalandar, the WOT shows only the works_object__name and not the type
         if value_with_type:
             wot_properties = list()
             for prop in wot_props:
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+                print(
+                    prop["properties__property__is_public_when_permitrequest_is_public"]
+                )
+
                 # List of a lost, to split wot in objects. Check if last wot changed or never assigned, means first iteration
                 if property and wot != last_wot:
                     wot_properties.append(property)
                     property = []
-
                     # WOT
                     property.append(
                         {"key": "work_object_type", "value": wot, "type": "text",}

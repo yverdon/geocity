@@ -42,8 +42,8 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
     Events request endpoint Usage:
         1.- /rest/permits/?show_only_future=true (past events get filtered out)
         2.- /rest/permits/?starts_at=2022-01-01
-        2.- /rest/permits/?ends_at=2020-01-01
-        3.- /rest/permits/?adminentities=1,2,3
+        3.- /rest/permits/?ends_at=2020-01-01
+        4.- /rest/permits/?adminentities=1,2,3
 
     """
 
@@ -317,7 +317,6 @@ class PermitRequestDetailsViewSet(
 
     throttle_scope = "permits_details"
     serializer_class = serializers.PermitRequestDetailsSerializer
-    permission_classes = [BlockRequesterUserLoggedOnToken]
 
     def get_queryset(self, geom_type=None):
         """
@@ -349,6 +348,7 @@ class PermitRequestDetailsViewSet(
                     request_comes_from_internal_qgisserver=request_comes_from_internal_qgisserver,
                 )
             )
+            | Q(is_public=True)
         )
         if request_comes_from_internal_qgisserver:
             qs = qs[: config.MAX_FEATURE_NUMBER_FOR_QGISSERVER]
