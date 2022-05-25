@@ -3058,6 +3058,57 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             mail.outbox[0].message().as_string(),
         )
 
+    def test_email_to_services_is_sent_when_secretariat_acknowledges_reception(self):
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+            administrative_entity=self.administrative_entity,
+        )
+        wot = factories.WorksObjectTypeFactory(
+            requires_validation_document=False,
+            notify_services=True,
+            services_to_notify="service-1@geocity.ch, service-2@geocity.ch, i-am-not-an-email,  ,\n\n\n",
+        )
+        permit_request.works_object_types.set([wot])
+        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data={
+                "status": models.PermitRequest.STATUS_RECEIVED,
+                "action": models.ACTION_AMEND,
+            },
+            follow=True,
+        )
+
+        permit_request.refresh_from_db()
+        self.assertEqual(permit_request.status, models.PermitRequest.STATUS_RECEIVED)
+
+        # 1 email to author + 2 emails to services
+        self.assertEqual(len(mail.outbox), 3)
+
+        services_message_subject = (
+            "Une annonce a été prise en compte et classée par le secrétariat"
+        )
+        services_message_content = "Nous vous informons qu'une annonce a été prise en compte et classée par le secrétariat."
+        valid_services_emails = [
+            "service-1@geocity.ch",
+            "service-2@geocity.ch",
+        ]
+
+        self.assertTrue(mail.outbox[1].to[0] in valid_services_emails)
+        self.assertIn(
+            services_message_subject, mail.outbox[1].subject,
+        )
+        self.assertIn(services_message_content, mail.outbox[1].message().as_string())
+        self.assertTrue(mail.outbox[2].to[0] in valid_services_emails)
+        self.assertIn(
+            services_message_subject, mail.outbox[2].subject,
+        )
+        self.assertIn(services_message_content, mail.outbox[2].message().as_string())
+
     def test_secretariat_can_amend_permit_request_with_status_approved_if_property_is_always_amendable(
         self,
     ):

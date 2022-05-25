@@ -3,7 +3,6 @@ import django_tables2 as tables
 from django.template.defaultfilters import floatformat
 from django.utils.translation import gettext_lazy as _
 from django_tables2_column_shifter.tables import ColumnShiftTable
-
 from . import models
 
 ATTRIBUTES = {

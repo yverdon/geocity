@@ -4,6 +4,7 @@ import os
 import urllib.parse
 
 import requests
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import (
@@ -45,6 +46,7 @@ from .search import search_permit_requests, search_result_to_json
 import django_tables2 as tableslib
 
 from .tables import CustomPropertyValueAccessiblePermitRequest, get_custom_dynamic_table
+from constance import config
 
 logger = logging.getLogger(__name__)
 
@@ -468,6 +470,7 @@ class PermitRequestDetailView(View):
         ):
             permit_request = form.instance
 
+            # Notify the permit author
             data = {
                 "subject": "{} ({})".format(
                     _("Votre annonce a été prise en compte et classée"),
@@ -479,6 +482,24 @@ class PermitRequestDetailView(View):
                 "absolute_uri_func": self.request.build_absolute_uri,
             }
             services.send_email_notification(data)
+
+            # Notify the services
+            mailing_list = services.get_services_to_notify_mailing_list(permit_request)
+
+            if mailing_list:
+                data = {
+                    "subject": "{} ({})".format(
+                        _(
+                            "Une annonce a été prise en compte et classée par le secrétariat"
+                        ),
+                        services.get_works_type_names_list(permit_request),
+                    ),
+                    "users_to_notify": set(mailing_list),
+                    "template": "permit_request_received_for_services.txt",
+                    "permit_request": permit_request,
+                    "absolute_uri_func": self.request.build_absolute_uri,
+                }
+                services.send_email_notification(data)
 
         if "save_continue" in self.request.POST:
 
@@ -706,6 +727,11 @@ def anonymous_permit_request(request):
     entity = entities_by_tag[0]
 
     # Validate captcha and temporary user connection
+    captcha_refresh_url = (
+        "/" + settings.PREFIX_URL + "captcha/refresh/"
+        if settings.PREFIX_URL
+        else "/captcha/refresh/"
+    )
     if not services.is_anonymous_request_logged_in(request, entity):
         # Captcha page
         if request.method == "POST":
@@ -717,13 +743,19 @@ def anonymous_permit_request(request):
                 return render(
                     request,
                     "permits/permit_request_anonymous_captcha.html",
-                    {"anonymous_request_form": anonymous_request_form},
+                    {
+                        "anonymous_request_form": anonymous_request_form,
+                        "captcha_refresh_url": captcha_refresh_url,
+                    },
                 )
         else:
             return render(
                 request,
                 "permits/permit_request_anonymous_captcha.html",
-                {"anonymous_request_form": forms.AnonymousRequestForm()},
+                {
+                    "anonymous_request_form": forms.AnonymousRequestForm(),
+                    "captcha_refresh_url": captcha_refresh_url,
+                },
             )
 
     # Validate type
@@ -1439,6 +1471,10 @@ class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
                 extra_column_names = tuple([col_name for col_name, __ in extra_columns])
             else:
                 extra_column_names = tuple()
+
+            if config.ENABLE_GEOCALENDAR:
+                extra_column_names += tuple(["shortname", "is_public"])
+
             table_class = (
                 tables.DepartmentPermitRequestsExportTable
                 if self.is_exporting()
@@ -1549,7 +1585,11 @@ def permit_request_submit_confirmed(request, permit_request_id):
                 "absolute_uri_func": request.build_absolute_uri,
             }
             services.send_email_notification(data)
-    services.submit_permit_request(permit_request, request)
+
+    # Only submit request when it's editable by author, to prevent a "raise SuspiciousOperation"
+    # When editing a permit_request, submit isn't required to save the modifications, as every view saves the updates
+    if permit_request.can_be_edited_by_author():
+        services.submit_permit_request(permit_request, request)
 
     user_is_backoffice_or_integrator_for_administrative_entity = request.user.groups.filter(
         Q(permitdepartment__administrative_entity=permit_request.administrative_entity),
@@ -1559,9 +1599,13 @@ def permit_request_submit_confirmed(request, permit_request_id):
 
     # Backoffice and integrators creating a permit request for their own administrative
     # entity, are directly redirected to the permit detail
-    if user_is_backoffice_or_integrator_for_administrative_entity:
+    # Same flow for requests when permit_request can't be edited by author
+    if (
+        user_is_backoffice_or_integrator_for_administrative_entity
+        and not permit_request.can_be_edited_by_author()
+    ):
         return redirect(
-            "permits:permit_request_detail", permit_request_id=permit_request.id
+            "permits:permit_request_detail", permit_request_id=permit_request_id
         )
     else:
 
@@ -1666,36 +1710,20 @@ def permit_request_classify(request, permit_request_id, approve):
             services.send_email_notification(data)
 
             # Notify the services
-            works_object_types_to_notify = permit_request.works_object_types.filter(
-                notify_services=True
-            )
+            mailing_list = services.get_services_to_notify_mailing_list(permit_request)
 
-            if works_object_types_to_notify.exists():
-                mailing_list = []
-                for emails in works_object_types_to_notify.values_list(
-                    "services_to_notify", flat=True
-                ):
-                    emails_addresses = emails.replace("\n", ",").split(",")
-                    mailing_list += [
-                        ea.strip()
-                        for ea in emails_addresses
-                        if services.validate_email(ea.strip())
-                    ]
-
-                if mailing_list:
-                    data = {
-                        "subject": "{} ({})".format(
-                            _(
-                                "Une demande a été traitée et classée par le secrétariat"
-                            ),
-                            services.get_works_type_names_list(permit_request),
-                        ),
-                        "users_to_notify": set(mailing_list),
-                        "template": "permit_request_classified_for_services.txt",
-                        "permit_request": permit_request,
-                        "absolute_uri_func": request.build_absolute_uri,
-                    }
-                    services.send_email_notification(data)
+            if mailing_list:
+                data = {
+                    "subject": "{} ({})".format(
+                        _("Une demande a été traitée et classée par le secrétariat"),
+                        services.get_works_type_names_list(permit_request),
+                    ),
+                    "users_to_notify": set(mailing_list),
+                    "template": "permit_request_classified_for_services.txt",
+                    "permit_request": permit_request,
+                    "absolute_uri_func": request.build_absolute_uri,
+                }
+                services.send_email_notification(data)
 
             return redirect("permits:permit_requests_list")
     else:

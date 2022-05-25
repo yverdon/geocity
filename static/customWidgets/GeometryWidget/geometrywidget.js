@@ -261,10 +261,6 @@
         },
         minLength: 2,
         select: function (event, ui) {
-
-          thisScope.vectorSource.addFeature(new ol.Feature({
-            geometry: new ol.geom.MultiPoint([[ui.item.y, ui.item.x]]),
-          }));
           thisScope.map.getView().animate({
             center: [ui.item.y, ui.item.x],
             zoom: 13
@@ -596,7 +592,7 @@
 
     this.map.addInteraction(this.interactions.modify);
     this.map.addInteraction(this.interactions.select);
-    
+
     // Get the first element of each form-check-input which are geometry types and check the radio button setDrawInteraction
     if (this.options.geometry_db_type == "GeometryCollection") {
       const firstInteractionElem = $(".form-check-input[data-interaction-type]", this.el).first();
