@@ -28,7 +28,7 @@ from django.utils.translation import gettext_lazy as _
 
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
-from .models import PermitRequest, WorksObjectType
+from .models import PermitRequest, WorksObjectType, Report
 from .utils import reverse_permit_request_url
 from PIL import Image
 from pdf2image import convert_from_path
@@ -1541,6 +1541,15 @@ def get_permit_request_print_templates(permit_request):
         works_object_type__in=permit_request.works_object_types.all()
     )
 
+
+def get_permit_request_reports(permit_request):
+    reports = []
+    wots = permit_request.works_object_types.all()
+    for wot in wots:
+        for report in wot.reports.all():
+            reports.append(report)
+    return reports
+    # return Report.objects.filter(worksobjecttypes__permit_request=permit_request)
 
 # Validate a file, from checking the first bytes and detecting the kind of the file
 # Exemple : User puts "my_malware.exe" and rename as "file.txt"

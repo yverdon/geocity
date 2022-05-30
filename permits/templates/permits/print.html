@@ -8,18 +8,28 @@
         margin: 0;
       }
 
-      .paper{
-        border: solid 1px;
-        box-shadow: 0px 10px 10px rgba(0,0,0, 0.1);
-        width: 21.0cm;
-        height: 29.7cm;
-        box-sizing: border-box;
-        margin: 0 auto;
-        padding: 5.5cm 2cm 2cm 2cm;
-        position: relative;
+      @page {
+        size: {{report.layout.width}}mm {{report.layout.height}}mm;
       }
 
-      .background {
+      #paper{
+        border: solid 1px;
+        box-shadow: 0px 10px 10px rgba(0,0,0, 0.1);
+        width: {{report.layout.width}}mm;
+        height: {{report.layout.height}}mm;
+        box-sizing: border-box;
+        margin: 0 auto;
+        padding-top: {{report.layout.margin_top}}mm;
+        padding-right: {{report.layout.margin_right}}mm;
+        padding-bottom: {{report.layout.margin_bottom}}mm;
+        padding-left: {{report.layout.margin_left}}mm;
+        position: relative;
+        {% if report.layout.font %}
+        font-family: "{{report.layout.font}}";
+        {% endif %}
+      }
+
+      #background {
         position: absolute;
         width: 100%;
         height: 100%;
@@ -30,10 +40,7 @@
 
       @media print {
 
-        @page {
-          size: 21cm 29.7cm;
-        }
-        .paper{
+        #paper{
           width: 100%;
           height: 100%;
           border: none;
@@ -44,12 +51,12 @@
   </head>
   <body>
 
-    <div class="paper">
-      {% if print_setup.background %}
-        <img src="{% if internal_urls %}file://{{print_setup.background.path}}{% else %}{{print_setup.background.url}}{% endif %}" class="background" />
+    <div id="paper">
+      {% if report.layout.background %}
+        <img src="{% if internal_urls %}file://{{report.layout.background.path}}{% else %}{{report.layout.background.url}}{% endif %}" id="background" />
       {% endif %}
 
-      {% stream_render print_setup.stream permit_request=permit_request %}
+      {% stream_render report.stream permit_request=permit_request %}
     </div>
   </body>
 </html>

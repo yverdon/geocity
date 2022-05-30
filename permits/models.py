@@ -987,7 +987,7 @@ class WorksObjectType(models.Model):
     days_before_reminder = models.IntegerField(
         _("Délai de rappel (jours)"), blank=True, null=True
     )
-    print_setups = models.ManyToManyField("PrintSetup")
+    reports = models.ManyToManyField("Report", related_name="worksobjecttypes")
 
     # All objects
     objects = models.Manager()
@@ -1487,14 +1487,34 @@ class TemplateCustomization(models.Model):
 
 
 
+class ReportLayout(models.Model):
+    """Page size/background/marings/fonts/etc, used by print setups."""
 
-
-class PrintSetup(models.Model):
     class Meta:
-        verbose_name = _("5.1 Configuration de l'impression")
-        verbose_name_plural = _("5.1 Configuration des impressions")
+        verbose_name = _("5.1 Configuration du modèle d'impression de rapport")
+        verbose_name_plural = _("5.1 Configuration des modèles d'impression de rapport")
+
     name = models.CharField(max_length=150)
+    width = models.PositiveIntegerField(default=210)
+    height = models.PositiveIntegerField(default=297)
+    margin_top = models.PositiveIntegerField(default=10)
+    margin_right = models.PositiveIntegerField(default=10)
+    margin_bottom = models.PositiveIntegerField(default=10)
+    margin_left = models.PositiveIntegerField(default=10)
+    font = models.CharField(max_length=1024, blank=True, null=True)
     background = models.ImageField(null=True, blank=True, help_text="Arrière-plan")
+
+    def __str__(self):
+        return self.name
+
+
+class Report(models.Model):
+    class Meta:
+        verbose_name = _("5.2 Configuration du rapport")
+        verbose_name_plural = _("5.2 Configuration des rapports")
+
+    name = models.CharField(max_length=150)
+    layout = models.ForeignKey(ReportLayout, on_delete=models.RESTRICT)
     stream = StreamField(model_list=STREAMBLOCKS_MODELS)
 
     def __str__(self):

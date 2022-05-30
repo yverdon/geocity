@@ -259,6 +259,9 @@ class PermitRequestDetailView(View):
                 "print_templates": services.get_permit_request_print_templates(
                     self.permit_request
                 ),
+                "reports": services.get_permit_request_reports(
+                    self.permit_request
+                ),
                 "directives": services.get_permit_request_directives(
                     self.permit_request
                 ),
@@ -1811,41 +1814,56 @@ def permit_requests_search(request):
 
 @login_required
 @permanent_user_required
-def print_setup_pdf(request, permit_request_id, print_setup_id):
-    with tempfile.TemporaryDirectory() as tempdir:
-
-        input_path = os.path.join(tempdir, "input.html")
-        output_path = os.path.join(tempdir, "output.pdf")
-
-        content = _get_print_setup_content(request, permit_request_id, print_setup_id, internal_urls=True)
-        with open(input_path, "w") as input_file:
-            input_file.write(content)
-
-        subprocess.check_call(
-            ["wkhtmltopdf", "-T", "0", "-R", "0", "-B", "0", "-L", "0", input_path, output_path]
-        )
-
-        return FileResponse(open(output_path, 'rb'))
-
-
-@login_required
-@permanent_user_required
-def print_setup(request, permit_request_id, print_setup_id):
-    content = _get_print_setup_content(request, permit_request_id, print_setup_id)
-    return HttpResponse(content)
-
-
-def _get_print_setup_content(request, permit_request_id, print_setup_id, internal_urls=False):
+def report(request, permit_request_id, report_id, as_pdf=False):
     # TODO CRITICAL: ensure user has permissions on permit
     permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
     # TODO CRITICAL: ensure print setup is part of WorksObjectType
-    print_setup = get_object_or_404(models.PrintSetup, pk=print_setup_id)
+    report = get_object_or_404(models.Report, pk=report_id)
 
-    return render_to_string(
+    contents = render_to_string(
         'permits/print.html',
         {
-            'print_setup': print_setup,
+            'report': report,
             'permit_request': permit_request,
-            'internal_urls': internal_urls,
+            'internal_urls': as_pdf,
         }
     )
+
+    if as_pdf:
+        with tempfile.TemporaryDirectory() as tempdir:
+
+            input_path = os.path.join(tempdir, "input.html")
+            output_path = os.path.join(tempdir, "output.pdf")
+
+            with open(input_path, "w") as input_file:
+                input_file.write(contents)
+
+            try:
+                subprocess.check_call(
+                    [
+                        "wkhtmltopdf",
+                        "-T",
+                        "0",
+                        "-R",
+                        "0",
+                        "-B",
+                        "0",
+                        "-L",
+                        "0",
+                        "--page-width",
+                        f"{report.layout.width}",
+                        "--page-height",
+                        f"{report.layout.height}",
+                        "--debug-javascript",
+                        input_path,
+                        output_path
+                    ]
+                )
+            except subprocess.CalledProcessError as e:
+                raise Exception(e.output) from e
+
+            return FileResponse(open(output_path, 'rb'))
+
+    else:
+        return HttpResponse(contents)
+
