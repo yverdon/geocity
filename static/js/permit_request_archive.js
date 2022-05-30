@@ -19,11 +19,21 @@ form.addEventListener('submit', async (e) => {
   })
 
   if (response.status === 403 || response.status === 500) {
-    document.getElementById('archive-in_progress').firstElementChild.classList.add('display-none')
     const data = await response.json()
-    let error = document.createElement("div")
-    error.classList.add("alert", "alert-danger")
-    error.innerText = data.message
-    document.getElementById("archive-in_progress").appendChild(error)
+    displayAlert(data.message, "danger")
+    document.getElementById('archive-in_progress').firstElementChild.classList.add('display-none')
+  }
+
+  if (response.status === 200) {
+    const data = await response.json()
+    displayAlert(data.message, "success")
   }
 })
+
+function displayAlert(message, type) {
+    document.getElementById('archive-in_progress').firstElementChild.classList.add('display-none')
+    let container = document.createElement("div")
+    container.classList.add("alert", `alert-${type}`)
+    container.innerText = message
+    document.getElementById("archive-in_progress").appendChild(container)
+}
