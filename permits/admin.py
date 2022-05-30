@@ -269,8 +269,8 @@ class UserAdmin(BaseUserAdmin):
     def get_queryset(self, request):
         # Only allow integrator to change users that have no group, are not superuser or are in group administrated by integrator.
         # If an user is updating himself, he can see all his groups. Prevents from self removing any integrator group
-        user_being_updated = request.resolver_match.kwargs["object_id"]
-        if request.user.is_superuser or user_being_updated and user_being_updated == request.user.id:
+        user_being_updated = request.resolver_match.kwargs["object_id"] if "object_id" in request.resolver_match.kwargs else None
+        if request.user.is_superuser or user_being_updated == request.user.id:
             qs = User.objects.all()
         else:
             user_integrator_group = request.user.groups.get(
