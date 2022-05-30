@@ -253,24 +253,32 @@ class UserAdmin(BaseUserAdmin):
             ]
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
+        user_being_updated = int(request.resolver_match.kwargs["object_id"]) if "object_id" in request.resolver_match.kwargs else None
         if db_field.name == "groups":
             if request.user.is_superuser:
                 kwargs["queryset"] = Group.objects.all()
+            # User can see his groups when he's editing himself. Prevents from removing integrator group
+            elif user_being_updated == request.user.id:
+                kwargs["queryset"] = Group.objects.filter(
+                    permitdepartment__integrator=request.user.groups.get(
+                        permitdepartment__is_integrator_admin=True
+                    ).pk,
+                ) | request.user.groups.all()
             else:
                 kwargs["queryset"] = Group.objects.filter(
                     permitdepartment__integrator=request.user.groups.get(
                         permitdepartment__is_integrator_admin=True
                     ).pk,
                 )
+            
+            
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
     # Only superuser can edit superuser users
     def get_queryset(self, request):
         # Only allow integrator to change users that have no group, are not superuser or are in group administrated by integrator.
-        # If an user is updating himself, he can see all his groups. Prevents from self removing any integrator group
-        user_being_updated = int(request.resolver_match.kwargs["object_id"]) if "object_id" in request.resolver_match.kwargs else None
-        if request.user.is_superuser or user_being_updated == request.user.id:
+        if request.user.is_superuser:
             qs = User.objects.all()
         else:
             user_integrator_group = request.user.groups.get(
