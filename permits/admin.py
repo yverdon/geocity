@@ -682,6 +682,10 @@ class QgisProjectInline(admin.TabularInline):
     form = QgisProjectAdminForm
 
 
+class PrintSetupInline(admin.TabularInline):
+    model = models.PrintSetup
+
+
 class WorksObjectTypeAdminForm(forms.ModelForm):
     class GeometryTypes(django.db.models.TextChoices):
         POINT = "has_geometry_point", _("Point")
@@ -746,7 +750,7 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
 
 class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = WorksObjectTypeAdminForm
-    inlines = [QgisProjectInline]
+    inlines = [QgisProjectInline, PrintSetupInline]
     list_display = [
         "sortable_str",
         works_object_type_administrative_entities,

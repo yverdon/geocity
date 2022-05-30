@@ -1479,3 +1479,39 @@ class TemplateCustomization(models.Model):
 
     def __str__(self):
         return self.templatename
+
+
+
+class PrintSetup(models.Model):
+    description = models.CharField(max_length=150)
+    works_object_type = models.ForeignKey(WorksObjectType, on_delete=models.CASCADE)
+
+    def to_html(self):
+        print("TODO")
+
+
+class PrintBlock(models.Model):
+    print_setup = models.ForeignKey(PrintSetup, on_delete=models.CASCADE)
+
+    def to_html(self):
+        print("TODO")
+
+class PrintBlockParagraph(PrintBlock):
+    content = models.TextField()
+
+    def to_html(self):
+        print("TODO")
+
+class PrintBlockMap(PrintBlock):
+    url = models.CharField(max_length=1000)
+
+    def to_html(self):
+        print("TODO")
+
+class PrintBlockContacts(PrintBlock):
+    def to_html(self):
+        print("TODO")
+
+class PrintBlockValidation(PrintBlock):
+    def to_html(self):
+        print("TODO")
