@@ -3,6 +3,7 @@ import dataclasses
 import enum
 from datetime import date, datetime, timedelta
 
+from polymorphic.models import PolymorphicModel
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
@@ -984,6 +985,7 @@ class WorksObjectType(models.Model):
     days_before_reminder = models.IntegerField(
         _("Délai de rappel (jours)"), blank=True, null=True
     )
+    print_setups = models.ManyToManyField("PrintSetup")
 
     # All objects
     objects = models.Manager()
@@ -1483,35 +1485,42 @@ class TemplateCustomization(models.Model):
 
 
 class PrintSetup(models.Model):
+    class Meta:
+        verbose_name = _("5.1 Configuration de l'impression")
+        verbose_name_plural = _("5.1 Configuration des impressions")
     description = models.CharField(max_length=150)
-    works_object_type = models.ForeignKey(WorksObjectType, on_delete=models.CASCADE)
 
-    def to_html(self):
-        print("TODO")
+    def render(self):
+        blocks = []
+        for block in self.blocks.all():
+            blocks.append(block.render())
+        return "".join(blocks)
+
+    def __str__(self):
+        return self.description
 
 
-class PrintBlock(models.Model):
-    print_setup = models.ForeignKey(PrintSetup, on_delete=models.CASCADE)
 
-    def to_html(self):
-        print("TODO")
+class PrintBlock(PolymorphicModel):
+    print_setup = models.ForeignKey(PrintSetup, on_delete=models.CASCADE, related_name="blocks")
 
 class PrintBlockParagraph(PrintBlock):
+    title = models.CharField(max_length=1000)
     content = models.TextField()
-
-    def to_html(self):
-        print("TODO")
+    def render(self):
+        return format_html("<h1>{}</h1><p>{}</p>", self.title, self.content)
 
 class PrintBlockMap(PrintBlock):
     url = models.CharField(max_length=1000)
-
-    def to_html(self):
-        print("TODO")
+    def render(self):
+        return format_html("<h1>Map</h1><img src=\"{}\" alt=\"carte\">", self.url)
 
 class PrintBlockContacts(PrintBlock):
-    def to_html(self):
-        print("TODO")
+    content = models.TextField()
+    def render(self):
+        return format_html("<h1>Contacts</h1><p>{}</p>", self.content)
 
 class PrintBlockValidation(PrintBlock):
-    def to_html(self):
-        print("TODO")
+    content = models.TextField()
+    def render(self):
+        return format_html("<h1>Validations</h1><p>{}</p>", self.content)

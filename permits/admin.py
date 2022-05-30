@@ -1,4 +1,5 @@
 import django.db.models
+from polymorphic.admin import PolymorphicInlineSupportMixin, StackedPolymorphicInline
 import re
 
 from adminsortable2.admin import SortableAdminMixin
@@ -682,9 +683,6 @@ class QgisProjectInline(admin.TabularInline):
     form = QgisProjectAdminForm
 
 
-class PrintSetupInline(admin.TabularInline):
-    model = models.PrintSetup
-
 
 class WorksObjectTypeAdminForm(forms.ModelForm):
     class GeometryTypes(django.db.models.TextChoices):
@@ -750,7 +748,7 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
 
 class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = WorksObjectTypeAdminForm
-    inlines = [QgisProjectInline, PrintSetupInline]
+    inlines = [QgisProjectInline]
     list_display = [
         "sortable_str",
         works_object_type_administrative_entities,
@@ -816,6 +814,14 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     "directive",
                     "directive_description",
                     "additional_information",
+                )
+            },
+        ),
+        (
+            "Impression",
+            {
+                "fields": (
+                    "print_setups",
                 )
             },
         ),
@@ -1320,6 +1326,40 @@ class TokenAdmin(BaseTokenAdmin):
             ]
 
 
+# Print setups
+
+# class PrintSetupBlockInlineAdmin(admin.StackedInline):
+class PrintSetupBlockInlineAdmin(StackedPolymorphicInline):
+
+    class ParagraphInline(StackedPolymorphicInline.Child):
+        model = models.PrintBlockParagraph
+
+    class MapInline(StackedPolymorphicInline.Child):
+        model = models.PrintBlockMap
+
+    class ContactsInline(StackedPolymorphicInline.Child):
+        model = models.PrintBlockContacts
+
+    class ValidationInline(StackedPolymorphicInline.Child):
+        model = models.PrintBlockValidation
+
+    extras = 0
+    model = models.PrintBlock
+    child_inlines = (
+        ParagraphInline,
+        MapInline,
+        ContactsInline,
+        ValidationInline,
+    )
+
+
+
+# class PrintSetupAdmin(admin.ModelAdmin):
+class PrintSetupAdmin(PolymorphicInlineSupportMixin, admin.ModelAdmin):
+    inlines = [PrintSetupBlockInlineAdmin]
+
+
+
 admin.site.unregister(TokenProxy)
 admin.site.register(TokenProxy, TokenAdmin)
 
@@ -1332,3 +1372,4 @@ admin.site.register(models.WorksObject, WorksObjectAdmin)
 admin.site.register(models.PermitRequestAmendProperty, PermitRequestAmendPropertyAdmin)
 admin.site.register(models.TemplateCustomization, TemplateCustomizationAdmin)
 admin.site.register(models.PermitRequest, PermitRequestAdmin)
+admin.site.register(models.PrintSetup, PrintSetupAdmin)

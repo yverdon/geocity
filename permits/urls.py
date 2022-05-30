@@ -106,4 +106,6 @@ urlpatterns = [
     ),
     path("qgisserverproxy/", geoviews.qgisserver_proxy, name="qgisserver_proxy"),
     path("search/", views.permit_requests_search, name="permit_requests_search"),
+    path("print-setup/<int:permit_request_id>/<int:print_setup_id>/", views.print_setup, name="print-setup"),
+    path("print-setup/<int:permit_request_id>/<int:print_setup_id>.pdf", views.print_setup_pdf, name="print-setup"),
 ]

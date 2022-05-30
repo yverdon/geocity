@@ -2,6 +2,9 @@ import logging
 import mimetypes
 import os
 import urllib.parse
+import subprocess
+import tempfile
+import pathlib
 
 import requests
 from django.conf import settings
@@ -24,6 +27,7 @@ from django.forms import modelformset_factory
 from django.http import (
     Http404,
     HttpResponse,
+    FileResponse,
     JsonResponse,
     StreamingHttpResponse,
 )
@@ -1801,3 +1805,37 @@ def permit_requests_search(request):
     return JsonResponse(
         {"results": [search_result_to_json(result) for result in results]}
     )
+
+
+
+
+@login_required
+@permanent_user_required
+def print_setup_pdf(request, permit_request_id, print_setup_id):
+    with tempfile.TemporaryDirectory() as tempdir:
+
+        input_path = os.path.join(tempdir, "input.html")
+        output_path = os.path.join(tempdir, "output.pdf")
+
+        content = _get_print_setup_content(request, permit_request_id, print_setup_id)
+        with open(input_path, "w") as input_file:
+            input_file.write(content)
+
+        subprocess.check_call(["wkhtmltopdf",  input_path, output_path])
+
+        return FileResponse(open(output_path, 'rb'))
+
+
+@login_required
+@permanent_user_required
+def print_setup(request, permit_request_id, print_setup_id):
+    content = _get_print_setup_content(request, permit_request_id, print_setup_id)
+    return HttpResponse(content)
+
+
+def _get_print_setup_content(request, permit_request_id, print_setup_id):
+    # TODO CRITICAL: ensure user has permissions on permit
+    permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
+    # TODO CRITICAL: ensure print setup is part of WorksObjectType
+    print_setup = get_object_or_404(models.PrintSetup, pk=print_setup_id)
+    return print_setup.render()

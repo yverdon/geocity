@@ -30,6 +30,28 @@
 
 
 <div class="row">
+  <div class="col">
+    TEST IMPRESSIONS
+    <ul>
+      {% for wot in permit_request.works_object_types.all %}
+      <li>
+        {{wot}}
+        <ul>
+        {% for print_setup in wot.print_setups.all %}
+        <li>
+          <a href="{% url 'permits:print-setup' permit_request.pk print_setup.pk %}">Print {{print_setup.description}}</a>
+        </li>
+        {% endfor %}
+        </ul>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+
+
+<div class="row">
   <div class="col-md-4">
 
     <div class="row floating-elem">
