@@ -41,7 +41,6 @@ django==3.2.13
     #   django-otp
     #   django-phonenumber-field
     #   django-picklefield
-    #   django-polymorphic
     #   django-ranged-response
     #   django-simple-captcha
     #   django-tables2
@@ -85,13 +84,13 @@ django-phonenumber-field==6.1.0
     # via django-two-factor-auth
 django-picklefield==3.0.1
     # via django-constance
-django-polymorphic==3.1.0
-    # via -r requirements.in
 django-ranged-response==0.2.0
     # via django-simple-captcha
 django-simple-captcha==0.5.17
     # via -r requirements.in
 django-simple-history==3.0.0
+    # via -r requirements.in
+django-streamfield==1.4.3
     # via -r requirements.in
 django-tables2==2.4.1
     # via

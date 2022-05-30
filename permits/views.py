@@ -5,7 +5,7 @@ import urllib.parse
 import subprocess
 import tempfile
 import pathlib
-
+from django.template.loader import render_to_string
 import requests
 from django.conf import settings
 from django.contrib import messages
@@ -1838,4 +1838,11 @@ def _get_print_setup_content(request, permit_request_id, print_setup_id):
     permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
     # TODO CRITICAL: ensure print setup is part of WorksObjectType
     print_setup = get_object_or_404(models.PrintSetup, pk=print_setup_id)
-    return print_setup.render()
+
+    return render_to_string(
+        'permits/print.html',
+        {
+            'print_setup': print_setup,
+            'permit_request': permit_request,
+        }
+    )

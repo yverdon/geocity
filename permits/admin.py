@@ -1,5 +1,4 @@
 import django.db.models
-from polymorphic.admin import PolymorphicInlineSupportMixin, StackedPolymorphicInline
 import re
 
 from adminsortable2.admin import SortableAdminMixin
@@ -1327,36 +1326,8 @@ class TokenAdmin(BaseTokenAdmin):
 
 
 # Print setups
-
-# class PrintSetupBlockInlineAdmin(admin.StackedInline):
-class PrintSetupBlockInlineAdmin(StackedPolymorphicInline):
-
-    class ParagraphInline(StackedPolymorphicInline.Child):
-        model = models.PrintBlockParagraph
-
-    class MapInline(StackedPolymorphicInline.Child):
-        model = models.PrintBlockMap
-
-    class ContactsInline(StackedPolymorphicInline.Child):
-        model = models.PrintBlockContacts
-
-    class ValidationInline(StackedPolymorphicInline.Child):
-        model = models.PrintBlockValidation
-
-    extras = 0
-    model = models.PrintBlock
-    child_inlines = (
-        ParagraphInline,
-        MapInline,
-        ContactsInline,
-        ValidationInline,
-    )
-
-
-
-# class PrintSetupAdmin(admin.ModelAdmin):
-class PrintSetupAdmin(PolymorphicInlineSupportMixin, admin.ModelAdmin):
-    inlines = [PrintSetupBlockInlineAdmin]
+class PrintSetupAdmin(admin.ModelAdmin):
+    pass
 
 
 

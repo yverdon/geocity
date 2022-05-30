@@ -40,4 +40,4 @@ django-cron
 django-axes
 pdf2image
 django-simple-captcha
-django-polymorphic
+django-streamfield

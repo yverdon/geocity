@@ -106,7 +106,7 @@ LOCATIONS_SEARCH_API_DETAILS = os.getenv("LOCATIONS_SEARCH_API_DETAILS")
 INSTALLED_APPS = [
     "adminsortable2",
     "grappelli",
-    "polymorphic",
+    "streamfield",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
