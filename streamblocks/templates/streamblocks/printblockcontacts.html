@@ -1,0 +1,12 @@
+<div>
+  <h3>Contacts</h3>
+  {% if permit_request.actors.count %}}
+  <ul>
+    {% for actor in permit_request.actors.all %}
+      <li>{{actor}}</li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>Aucun contact pour cette demande</p>
+  {% endif %}
+  </div>

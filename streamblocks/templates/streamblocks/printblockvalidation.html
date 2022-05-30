@@ -1,0 +1,8 @@
+<div>
+  <h3>Validation</h3>
+  {% if permit_request.validated_at %}}
+  <b>Validé le {{permit_request.validated_at}}</b>
+  {% else %}
+  <p>Cette demande n'a pas été validée !</p>
+  {% endif %}
+  </div>

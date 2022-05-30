@@ -3,20 +3,53 @@
 <html>
   <head>
     <style>
+      html, body{
+        padding: 0;
+        margin: 0;
+      }
+
       .paper{
         border: solid 1px;
         box-shadow: 0px 10px 10px rgba(0,0,0, 0.1);
         width: 21.0cm;
         height: 29.7cm;
+        box-sizing: border-box;
         margin: 0 auto;
+        padding: 5.5cm 2cm 2cm 2cm;
+        position: relative;
+      }
+
+      .background {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: -10;
+      }
+
+      @media print {
+
+        @page {
+          size: 21cm 29.7cm;
+        }
+        .paper{
+          width: 100%;
+          height: 100%;
+          border: none;
+          box-shadow: none;
+        }
       }
     </style>
   </head>
   <body>
+
     <div class="paper">
+      {% if print_setup.background %}
+        <img src="{% if internal_urls %}file://{{print_setup.background.path}}{% else %}{{print_setup.background.url}}{% endif %}" class="background" />
+      {% endif %}
+
       {% stream_render print_setup.stream permit_request=permit_request %}
-      {{print_setup.stream.render}}
     </div>
-    <hr/>
   </body>
 </html>

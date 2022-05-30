@@ -150,7 +150,10 @@ if ENABLE_2FA:
     ]
 
 # project applications
-INSTALLED_APPS += ["permits"]
+INSTALLED_APPS += [
+    "permits",
+    "streamblocks",
+]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
