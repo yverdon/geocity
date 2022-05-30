@@ -56,7 +56,7 @@
         <img src="{% if internal_urls %}file://{{report.layout.background.path}}{% else %}{{report.layout.background.url}}{% endif %}" id="background" />
       {% endif %}
 
-      {% stream_render report.stream permit_request=permit_request %}
+      {% stream_render report.stream permit_request=permit_request data=permit_request_data %}
     </div>
   </body>
 </html>

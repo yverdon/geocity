@@ -1,4 +1,6 @@
+{% load reports %}
+
 <div>
-  <h3>{{block_content.title}}</h3>
-  <p>{{block_content.content}}</p>
+  <h2>{{block_content.title}}</h2>
+  {% render block_content.content data %}
 </div>

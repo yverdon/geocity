@@ -41,6 +41,7 @@ from django.views import View
 from django_filters.views import FilterView
 from django_tables2.export.views import ExportMixin
 from django_tables2.views import SingleTableMixin, SingleTableView
+from permits.serializers import PermitRequestPrintSerializer
 
 from . import fields, filters, forms, models, services, tables
 from .decorators import check_mandatory_2FA, permanent_user_required
@@ -1825,6 +1826,7 @@ def report(request, permit_request_id, report_id, as_pdf=False):
         {
             'report': report,
             'permit_request': permit_request,
+            'permit_request_data': PermitRequestPrintSerializer(permit_request).data,
             'internal_urls': as_pdf,
         }
     )
