@@ -956,7 +956,7 @@ def get_progress_bar_steps(request, permit_request):
     )
     single_entity_for_site = len(entities_for_site) == 1
 
-    # Don't care about filter is there is only one entity for the current site
+    # Don't care about filter if there is only one entity for the current site
     if entityfilter and not single_entity_for_site:
         entities_by_tag = get_administrative_entities(
             request.user, get_current_site(request)
