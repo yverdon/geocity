@@ -2,8 +2,11 @@
   <h3>dummy image</h3>
   <img src="https://wmts.asit-asso.ch/wmts?layer=asitvd.fond_cadastral&style=default&tilematrixset=2056&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image%2Fpng&TileMatrix=25&TileCol=464&TileRow=658&DIM1=default&ELEVATION=0" alt="map" />
   <h3>map from qgis</h3>
-  <span>TODO: allow to further customize query</span>
-  <span>FIXME: this query fails with error 400 when ATLAS_PK is anything but 1</span>
-  <span>QUERY (debug): http://qgisserver/ogc/?SERVICE=WMS&REQUEST=GETPRINT&FORMAT=PNG&TRANSPARENT=false&SRS=EPSG:2056&DPI=150&MAP={{block_content.qgis_project_file.path}}&TEMPLATE={{block_content.qgis_print_template_name}}&ATLAS_PK={{permit_request.pk}}</span>
-  <img src='http://qgisserver/ogc/?SERVICE=WMS&REQUEST=GETPRINT&FORMAT=PNG&TRANSPARENT=false&SRS=EPSG:2056&DPI=150&MAP={{block_content.qgis_project_file.path}}&TEMPLATE={{block_content.qgis_print_template_name}}&ATLAS_PK=1' alt="map" />
+  <div style="overflow-wrap: break-word;">TODO: allow to further customize query</div>
+  <div style="overflow-wrap: break-word;">FIXME: this query fails with error 400 when ATLAS_PK is anything but 1</div>
+  <div style="overflow-wrap: break-word;">INTERNAL QUERY (debug): http://qgisserver/ogc/?SERVICE=WMS&REQUEST=GETPRINT&FORMAT=PNG&TRANSPARENT=false&SRS=EPSG:2056&DPI=150&MAP={{block_content.qgis_project_file.path}}&TEMPLATE={{block_content.qgis_print_template_name}}&ATLAS_PK={{permit_request.pk}}</div>
+  <div style="overflow-wrap: break-word;">EXTERNAL QUERY (debug): http://localhost:9096/ogc/?SERVICE=WMS&REQUEST=GETPRINT&FORMAT=PNG&TRANSPARENT=false&SRS=EPSG:2056&DPI=150&MAP={{block_content.qgis_project_file.path}}&TEMPLATE={{block_content.qgis_print_template_name}}&ATLAS_PK={{permit_request.pk}}</div>
+
+  <img style="width: 250px; height: 250px; border: solid 3px" src='http://qgisserver/ogc/?SERVICE=WMS&REQUEST=GETPRINT&FORMAT=PNG&TRANSPARENT=false&SRS=EPSG:2056&DPI=150&MAP={{block_content.qgis_project_file.path}}&TEMPLATE={{block_content.qgis_print_template_name}}&ATLAS_PK={{permit_request.pk}}' alt="map" />
+
 </div>
