@@ -1841,7 +1841,7 @@ def report(request, permit_request_id, report_id, as_pdf=False):
                 input_file.write(contents)
 
             try:
-                subprocess.check_call(
+                output = subprocess.run(
                     [
                         "wkhtmltopdf",
                         "-T",
@@ -1859,10 +1859,14 @@ def report(request, permit_request_id, report_id, as_pdf=False):
                         "--debug-javascript",
                         input_path,
                         output_path
-                    ]
-                )
+                    ],
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    encoding="utf-8"
+                ).stdout
             except subprocess.CalledProcessError as e:
-                raise Exception(e.output) from e
+                raise Exception(f"PDF generation error.\n{e.output}") from e
 
             return FileResponse(open(output_path, 'rb'))
 
