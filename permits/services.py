@@ -1668,7 +1668,7 @@ def check_request_comes_from_internal_qgisserver(request):
     return False
 
 
-def get_wot_properties(value, value_with_type=False):
+def get_wot_properties(value, is_logged=None, value_with_type=False):
     """
     Return wot properties in a list for the api, in a dict for backend
     """
@@ -1682,29 +1682,20 @@ def get_wot_properties(value, value_with_type=False):
         "works_object_type__works_object__name",
         "works_object_type__works_type__name",
         "properties__property__is_public_when_permitrequest_is_public",
-        "permit_request__is_public",
     )
 
     wot_properties = dict()
     property = list()
     last_wot = ""
 
-    """
-    TODO 
-    1 - For allowed user, return all properties
-    2 - For public user return only properties that are True for is_public_when_permitrequest_is_public for is_public=True permitRequests
-    """
     if wot_props:
         # Flat view is used in the api for geocalandar, the WOT shows only the works_object__name and not the type
         if value_with_type:
             wot_properties = list()
             for prop in wot_props:
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
-                print(
-                    prop["properties__property__is_public_when_permitrequest_is_public"]
-                )
 
-                # List of a lost, to split wot in objects. Check if last wot changed or never assigned, means first iteration
+                # List of a list, to split wot in objects. Check if last wot changed or never assigned. Means it's first iteration
                 if property and wot != last_wot:
                     wot_properties.append(property)
                     property = []
@@ -1720,7 +1711,12 @@ def get_wot_properties(value, value_with_type=False):
 
                 last_wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
 
-                if prop["properties__property__input_type"] == "file":
+                if prop["properties__property__input_type"] == "file" and (
+                    is_logged
+                    or prop[
+                        "properties__property__is_public_when_permitrequest_is_public"
+                    ]
+                ):
                     # get_property_value return None if file does not exist
                     file = get_property_value_based_on_property(prop)
                     # Check if file exist
@@ -1733,7 +1729,12 @@ def get_wot_properties(value, value_with_type=False):
                                 "type": prop["properties__property__input_type"],
                             }
                         )
-                elif prop["properties__value__val"]:
+                elif prop["properties__value__val"] and (
+                    is_logged
+                    or prop[
+                        "properties__property__is_public_when_permitrequest_is_public"
+                    ]
+                ):
                     # Properties of WOT
                     property.append(
                         {

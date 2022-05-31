@@ -910,6 +910,7 @@ class WorksObjectPropertyAdmin(
     list_display = [
         "sortable_str",
         "is_mandatory",
+        "is_public_when_permitrequest_is_public",
         "name",
         "input_type",
         "placeholder",

@@ -69,7 +69,15 @@ class PermitRequestSerializer(serializers.ModelSerializer):
 
 class WotPropertiesValuesSerializer(serializers.RelatedField):
     def to_representation(self, value):
-        wot_properties = services.get_wot_properties(value, value_with_type=True)
+        current_user = None
+        request = self.context.get("request", None)
+        if request:
+            current_user = request.user
+
+        is_logged = not current_user.is_anonymous
+        wot_properties = services.get_wot_properties(
+            value, is_logged, value_with_type=True
+        )
         return wot_properties
 
 
