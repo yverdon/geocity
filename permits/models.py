@@ -1488,7 +1488,7 @@ class TemplateCustomization(models.Model):
 
 
 class ReportLayout(models.Model):
-    """Page size/background/marings/fonts/etc, used by print setups."""
+    """Page size/background/marings/fonts/etc, used by reports"""
 
     class Meta:
         verbose_name = _("5.1 Configuration du modèle d'impression de rapport")
@@ -1509,6 +1509,8 @@ class ReportLayout(models.Model):
 
 
 class Report(models.Model):
+    """Report definition, allowing to generate reports for permit requests"""
+
     class Meta:
         verbose_name = _("5.2 Configuration du rapport")
         verbose_name_plural = _("5.2 Configuration des rapports")
