@@ -25,7 +25,7 @@ services:
             - "${DJANGO_DOCKER_PORT}:9000"
 
     qgisserver:
-        image: openquake/qgis-server:3.22
+        image: opengisch/qgis-server:3.22.7
         restart: unless-stopped
         depends_on:
             - "postgres"
