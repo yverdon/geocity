@@ -5,10 +5,6 @@ ARG dev_dependencies
 # Copy files in another location to solved windows rights issues
 # These files are only used during build process and by entrypoint.sh for dev
 
-# TODO: move the base image
-ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y wkhtmltopdf
-
 WORKDIR /code
 COPY requirements_dev.txt requirements_dev.txt
 COPY requirements.txt requirements.txt

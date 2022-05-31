@@ -10,16 +10,22 @@ beautifulsoup4==4.10.0
     # via
     #   -r requirements.in
     #   django-bootstrap4
+brotli==1.0.9
+    # via fonttools
 certifi==2021.10.8
     # via requests
 cffi==1.15.0
-    # via cryptography
+    # via
+    #   cryptography
+    #   weasyprint
 charset-normalizer==2.0.12
     # via requests
 cryptography==36.0.1
     # via
     #   jwcrypto
     #   pyjwt
+cssselect2==0.6.0
+    # via weasyprint
 defusedxml==0.7.1
     # via python3-openid
 deprecated==1.2.13
@@ -47,6 +53,7 @@ django==3.2.13
     #   django-tables2-column-shifter
     #   django-taggit
     #   django-two-factor-auth
+    #   django-weasyprint
     #   djangorestframework
 django-admin-sortable2==1.0.4
     # via -r requirements.in
@@ -102,6 +109,8 @@ django-taggit==2.1.0
     # via -r requirements.in
 django-two-factor-auth[phonenumbers]==1.13.2
     # via -r requirements.in
+django-weasyprint==2.1.0
+    # via -r requirements.in
 djangorestframework==3.13.1
     # via
     #   -r requirements.in
@@ -110,12 +119,16 @@ djangorestframework-gis==0.18
     # via -r requirements.in
 filetype==1.0.10
     # via -r requirements.in
+fonttools[woff]==4.33.3
+    # via weasyprint
 gdal==3.3.2
     # via -r requirements.in
 gunicorn==20.1.0
     # via -r requirements.in
 html5lib==1.1
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   weasyprint
 idna==3.3
     # via requests
 jdcal==1.4.1
@@ -135,12 +148,17 @@ pillow==9.0.1
     #   -r requirements.in
     #   django-simple-captcha
     #   pdf2image
+    #   weasyprint
 psycopg2-binary==2.9.3
     # via -r requirements.in
 pycparser==2.21
     # via cffi
+pydyf==0.2.0
+    # via weasyprint
 pyjwt[crypto]==2.3.0
     # via django-allauth
+pyphen==0.12.0
+    # via weasyprint
 python-dotenv==0.19.2
     # via -r requirements.in
 python3-openid==3.2.0
@@ -170,16 +188,27 @@ sqlparse==0.4.2
     # via django
 tablib==3.2.0
     # via -r requirements.in
+tinycss2==1.1.1
+    # via
+    #   cssselect2
+    #   weasyprint
 uritemplate==4.1.1
     # via -r requirements.in
 urllib3==1.26.8
     # via requests
+weasyprint==55.0
+    # via django-weasyprint
 webencodings==0.5.1
-    # via html5lib
+    # via
+    #   cssselect2
+    #   html5lib
+    #   tinycss2
 whitenoise==6.0.0
     # via -r requirements.in
 wrapt==1.13.3
     # via deprecated
+zopfli==0.2.1
+    # via fonttools
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

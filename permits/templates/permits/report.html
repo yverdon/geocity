@@ -1,0 +1,63 @@
+{% load streamfield_tags %}
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Report</title>
+    <meta name="description" content="Report example">
+
+    <style>
+
+      @page {
+
+        /* page size */
+        size: {{report.layout.width}}mm {{report.layout.height}}mm;
+        margin-top: {{report.layout.margin_top}}mm;
+        margin-right: {{report.layout.margin_right}}mm;
+        margin-bottom: {{report.layout.margin_bottom}}mm;
+        margin-left: {{report.layout.margin_left}}mm;
+
+        /* background */
+        background-image: url("file://{{report.layout.background.path}}");
+        background-size: {{report.layout.width}}mm {{report.layout.height}}mm;
+        background-position: -{{report.layout.margin_left}}mm -{{report.layout.margin_top}}mm;
+
+        /* meta content (see https://www.quackit.com/css/at-rules/css_top-left-corner_at-rule.cfm) */
+        @bottom-right-corner {
+          content: counter(page);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        @top-right {
+          content: string(heading);
+        }
+
+      }
+
+      h2 {
+        /* break-before: always; */
+        string-set: heading content();
+      }
+
+      .page-break {
+        page-break-before: always;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      td, th {
+        border-bottom: solid 1px;
+      }
+
+    </style>
+  </head>
+
+  <body>
+    {% stream_render report.stream permit_request=permit_request data=permit_request_data %}
+  </body>
+</html>
+

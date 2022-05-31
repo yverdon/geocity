@@ -1,5 +1,5 @@
 from io import StringIO
-
+import random
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
@@ -793,8 +793,8 @@ class Command(BaseCommand):
 
     def create_reports(self):
         # Create report setup
-        block_paragraph_first = streamblock_models.PrintBlockParagraph(title="Demo report", content="This is a generic paragraph")
-        block_paragraph_first.save()
+        block_paragraph_1 = streamblock_models.PrintBlockParagraph(title="Approval", content="This is an example report. It could be an approval, or any type of report related to a request.")
+        block_paragraph_1.save()
 
         # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
         qgis_project = services.alter_qgis_project_for_internal_user(open("/code/qgisserver/report-template-dev.qgs", 'rb'))
@@ -802,18 +802,24 @@ class Command(BaseCommand):
         block_map.qgis_project_file.save("report-template-dev.qgs", File(qgis_project), save=True)
         block_map.save()
 
+        rows = "".join([f"<tr><td>Row {i}</td><td>{random.randint(0,100)} %</td></tr>" for i in range(25)])
+        block_paragraph_2 = streamblock_models.PrintBlockParagraph(title="Data", content=f"<p>We can also have long data</p><table><tr><th>Label</th><th>Value</th></tr>{rows}</table>")
+        block_paragraph_2.save()
+
         block_validation = streamblock_models.PrintBlockValidation()
         block_validation.save()
 
-        block_paragraph_last = streamblock_models.PrintBlockParagraph(title="Conclusion", content="Merci pour votre demande.")
-        block_paragraph_last.save()
+        block_paragraph_3 = streamblock_models.PrintBlockParagraph(title="Conclusion", content="Merci pour votre demande.")
+        block_paragraph_3.save()
 
         # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
         background_image = open("/code/qgisserver/report-letter-paper.png", "rb")
         layout = models.ReportLayout(
             name="demo_layout",
-            margin_top=40,
-            margin_bottom=25,
+            margin_top=30,
+            margin_right=10,
+            margin_bottom=20,
+            margin_left=22,
         )
         layout.background.save("report-letter-paper.png", File(background_image), save=True)
         layout.save()
@@ -824,7 +830,7 @@ class Command(BaseCommand):
                 model_list=streamblock_models.STREAMBLOCKS_MODELS,
                 value=[
                     {
-                        "id": block_paragraph_first.pk,
+                        "id": block_paragraph_1.pk,
                         "unique_id": "lsupu",
                         "model_name": "PrintBlockParagraph",
                         "options": {},
@@ -842,12 +848,18 @@ class Command(BaseCommand):
                         "options": {},
                     },
                     {
+                        "id": block_paragraph_2.pk,
+                        "unique_id": "lsupu",
+                        "model_name": "PrintBlockParagraph",
+                        "options": {},
+                    },
+                    {
                         "unique_id": "1sv56j",
                         "model_name": "PrintBlockPageBreak",
                         "options": {},
                     },
                     {
-                        "id": block_paragraph_last.pk,
+                        "id": block_paragraph_3.pk,
                         "unique_id": "lsupu",
                         "model_name": "PrintBlockParagraph",
                         "options": {},

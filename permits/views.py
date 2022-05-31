@@ -15,6 +15,7 @@ from django.contrib.auth.decorators import (
     permission_required,
     user_passes_test,
 )
+from django.views.generic.base import TemplateView
 from django.core.exceptions import (
     PermissionDenied,
     SuspiciousOperation,
@@ -42,6 +43,9 @@ from django_filters.views import FilterView
 from django_tables2.export.views import ExportMixin
 from django_tables2.views import SingleTableMixin, SingleTableView
 from permits.serializers import PermitRequestPrintSerializer
+
+from django_weasyprint import WeasyTemplateResponseMixin
+from django_weasyprint.views import WeasyTemplateResponse, WeasyTemplateView
 
 from . import fields, filters, forms, models, services, tables
 from .decorators import check_mandatory_2FA, permanent_user_required
@@ -1812,65 +1816,23 @@ def permit_requests_search(request):
 
 
 
+@method_decorator(login_required, name='dispatch')
+@method_decorator(permanent_user_required, name='dispatch')
+class ReportView(WeasyTemplateView):
+# class ReportView(TemplateView):
+    # uncomment to download file as attachment
+    # pdf_filename = 'download.pdf'
+    template_name = 'permits/report.html'
 
-@login_required
-@permanent_user_required
-def report(request, permit_request_id, report_id, as_pdf=False):
-    # TODO: remove "as_pdf" and only support generating PDFs, so we don't need to expose QGIS server (and only need to access static files in one way)
-    # TODO CRITICAL: ensure user has permissions on permit
-    permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
-    # TODO CRITICAL: ensure print setup is part of WorksObjectType
-    report = get_object_or_404(models.Report, pk=report_id)
+    def get_context_data(self, permit_request_id, report_id):
+        # TODO CRITICAL: ensure user has permissions on permit
+        permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
+        # TODO CRITICAL: ensure print setup is part of WorksObjectType
+        report = get_object_or_404(models.Report, pk=report_id)
 
-    contents = render_to_string(
-        'permits/print.html',
-        {
+        return  {
             'report': report,
             'permit_request': permit_request,
             'permit_request_data': PermitRequestPrintSerializer(permit_request).data,
-            'internal_urls': as_pdf,
         }
-    )
-
-    if as_pdf:
-        with tempfile.TemporaryDirectory() as tempdir:
-
-            input_path = os.path.join(tempdir, "input.html")
-            output_path = os.path.join(tempdir, "output.pdf")
-
-            with open(input_path, "w") as input_file:
-                input_file.write(contents)
-
-            try:
-                output = subprocess.run(
-                    [
-                        "wkhtmltopdf",
-                        "-T",
-                        "0",
-                        "-R",
-                        "0",
-                        "-B",
-                        "0",
-                        "-L",
-                        "0",
-                        "--page-width",
-                        f"{report.layout.width}",
-                        "--page-height",
-                        f"{report.layout.height}",
-                        "--debug-javascript",
-                        input_path,
-                        output_path
-                    ],
-                    check=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                    encoding="utf-8"
-                ).stdout
-            except subprocess.CalledProcessError as e:
-                raise Exception(f"PDF generation error.\n{e.output}") from e
-
-            return FileResponse(open(output_path, 'rb'))
-
-    else:
-        return HttpResponse(contents)
 
