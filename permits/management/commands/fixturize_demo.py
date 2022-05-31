@@ -623,6 +623,9 @@ class Command(BaseCommand):
             permit_request=permit_request2,
             department=department,
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+            comment_before="Ce projet n'est pas admissible, veuillez l'améliorer.",
+            comment_during="Les améliorations ont été prise en compte.",
+            comment_after="Excellent projet qui bénéficiera à la communauté.",
         )
 
         models.WorksObjectTypeChoice.objects.create(
@@ -649,6 +652,9 @@ class Command(BaseCommand):
             permit_request=permit_request3,
             department=department,
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+            comment_before="Ce projet n'est pas admissible, veuillez l'améliorer.",
+            comment_during="Les améliorations ont été prise en compte.",
+            comment_after="Excellent projet qui bénéficiera à la communauté.",
         )
 
         models.WorksObjectTypeChoice.objects.create(
@@ -679,6 +685,9 @@ class Command(BaseCommand):
             permit_request=permit_request4,
             department=department,
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+            comment_before="Ce projet n'est pas admissible, veuillez l'améliorer.",
+            comment_during="Les améliorations ont été prise en compte.",
+            comment_after="Excellent projet qui bénéficiera à la communauté.",
         )
         models.WorksObjectTypeChoice.objects.create(
             permit_request=permit_request4, works_object_type=demo_works_object_type
@@ -702,6 +711,9 @@ class Command(BaseCommand):
             permit_request=permit_request5,
             department=department,
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+            comment_before="Ce projet n'est pas admissible, veuillez l'améliorer.",
+            comment_during="Les améliorations ont été prise en compte.",
+            comment_after="Excellent projet qui bénéficiera à la communauté.",
         )
 
         models.WorksObjectTypeChoice.objects.create(
@@ -727,6 +739,9 @@ class Command(BaseCommand):
 
         models.PermitRequestValidation.objects.get_or_create(
             permit_request=permit_request6, department=department,
+            comment_before="Ce projet n'est pas admissible, veuillez l'améliorer.",
+            comment_during="Les améliorations ont été prise en compte.",
+
         )
 
         models.WorksObjectTypeChoice.objects.create(
@@ -787,6 +802,9 @@ class Command(BaseCommand):
         block_map.qgis_project_file.save("report-template-dev.qgs", File(qgis_project), save=True)
         block_map.save()
 
+        block_validation = streamblock_models.PrintBlockValidation()
+        block_validation.save()
+
         # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
         background_image = open("/code/qgisserver/report-letter-paper.png", "rb")
         layout = models.ReportLayout(
@@ -811,6 +829,12 @@ class Command(BaseCommand):
                         "id": block_map.pk,
                         "unique_id": "vlbh7j",
                         "model_name": "PrintBlockMap",
+                        "options": {},
+                    },
+                    {
+                        "id": block_validation.pk,
+                        "unique_id": "a5uhhm",
+                        "model_name": "PrintBlockValidation",
                         "options": {},
                     }
                 ]
