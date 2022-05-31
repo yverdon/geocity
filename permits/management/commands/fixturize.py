@@ -8,6 +8,7 @@ from django.core import management
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from django.utils import timezone
+from django.core.files import File
 
 from geomapshark import settings
 from permits import admin, models
@@ -640,7 +641,6 @@ class Command(BaseCommand):
 
         # Create report setup
 
-        from django.core.files import File
 
         block_paragraph = streamblock_models.PrintBlockParagraph(id=1, title="Demo report", content="This is a generic paragraph")
         block_paragraph.save()
