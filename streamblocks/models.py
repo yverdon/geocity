@@ -23,7 +23,6 @@ class PrintBlockParagraph(models.Model):
     )
 
 class PrintBlockMap(models.Model):
-    url = models.CharField(max_length=1000)
     qgis_project_file = fields.AdministrativeEntityFileField(
         _("Projet QGIS '*.qgs'"),
         validators=[FileExtensionValidator(allowed_extensions=["qgs"])],
