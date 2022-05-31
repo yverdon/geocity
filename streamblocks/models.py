@@ -38,10 +38,15 @@ class PrintBlockContacts(models.Model):
 class PrintBlockValidation(models.Model):
     content = models.TextField()
 
+class PrintBlockPageBreak(models.Model):
+    class Meta:
+        abstract = True
+
 # Register blocks for StreamField as list of models
 STREAMBLOCKS_MODELS = [
     PrintBlockParagraph,
     PrintBlockMap,
     PrintBlockContacts,
     PrintBlockValidation,
+    PrintBlockPageBreak,
 ]

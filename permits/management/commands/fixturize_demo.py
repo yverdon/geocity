@@ -793,8 +793,8 @@ class Command(BaseCommand):
 
     def create_reports(self):
         # Create report setup
-        block_paragraph = streamblock_models.PrintBlockParagraph(title="Demo report", content="This is a generic paragraph")
-        block_paragraph.save()
+        block_paragraph_first = streamblock_models.PrintBlockParagraph(title="Demo report", content="This is a generic paragraph")
+        block_paragraph_first.save()
 
         # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
         qgis_project = services.alter_qgis_project_for_internal_user(open("/code/qgisserver/report-template-dev.qgs", 'rb'))
@@ -805,11 +805,15 @@ class Command(BaseCommand):
         block_validation = streamblock_models.PrintBlockValidation()
         block_validation.save()
 
+        block_paragraph_last = streamblock_models.PrintBlockParagraph(title="Conclusion", content="Merci pour votre demande.")
+        block_paragraph_last.save()
+
         # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
         background_image = open("/code/qgisserver/report-letter-paper.png", "rb")
         layout = models.ReportLayout(
             name="demo_layout",
             margin_top=40,
+            margin_bottom=25,
         )
         layout.background.save("report-letter-paper.png", File(background_image), save=True)
         layout.save()
@@ -820,7 +824,7 @@ class Command(BaseCommand):
                 model_list=streamblock_models.STREAMBLOCKS_MODELS,
                 value=[
                     {
-                        "id": block_paragraph.pk,
+                        "id": block_paragraph_first.pk,
                         "unique_id": "lsupu",
                         "model_name": "PrintBlockParagraph",
                         "options": {},
@@ -836,7 +840,18 @@ class Command(BaseCommand):
                         "unique_id": "a5uhhm",
                         "model_name": "PrintBlockValidation",
                         "options": {},
-                    }
+                    },
+                    {
+                        "unique_id": "1sv56j",
+                        "model_name": "PrintBlockPageBreak",
+                        "options": {},
+                    },
+                    {
+                        "id": block_paragraph_last.pk,
+                        "unique_id": "lsupu",
+                        "model_name": "PrintBlockParagraph",
+                        "options": {},
+                    },
                 ]
             )
         )
