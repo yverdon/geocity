@@ -426,14 +426,6 @@ class PermitRequestAPITestCase(TestCase):
         response = self.client.get(reverse("permits_details-list"),)
         self.assertEqual(response.status_code, 200)
 
-    def test_api_permits_details_is_not_accessible_with_token_authentication(self):
-        # Create token
-        token = Token.objects.create(user=self.admin_user)
-        # Set token in header
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + token.key)
-        response = self.client.get(reverse("permits_details-list"),)
-        self.assertEqual(response.status_code, 403)
-
     def test_non_authorized_ip_raises_exception(self):
         # login as admin
         self.client.login(username=self.admin_user.username, password="password")

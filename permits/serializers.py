@@ -73,10 +73,14 @@ class WotPropertiesValuesSerializer(serializers.RelatedField):
         request = self.context.get("request", None)
         if request:
             current_user = request.user
+            basic_authentication = request.session._SessionBase__session_key
 
-        is_logged = not current_user.is_anonymous
+        # User is logged by basic_authentication
+        user_is_authenticated = (
+            True if current_user.is_authenticated and basic_authentication else False
+        )
         wot_properties = services.get_wot_properties(
-            value, is_logged, value_with_type=True
+            value, user_is_authenticated, value_with_type=True
         )
         return wot_properties
 

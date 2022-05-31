@@ -1668,7 +1668,7 @@ def check_request_comes_from_internal_qgisserver(request):
     return False
 
 
-def get_wot_properties(value, is_logged=None, value_with_type=False):
+def get_wot_properties(value, user_is_authenticated=None, value_with_type=False):
     """
     Return wot properties in a list for the api, in a dict for backend
     """
@@ -1712,7 +1712,7 @@ def get_wot_properties(value, is_logged=None, value_with_type=False):
                 last_wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
 
                 if prop["properties__property__input_type"] == "file" and (
-                    is_logged
+                    user_is_authenticated
                     or prop[
                         "properties__property__is_public_when_permitrequest_is_public"
                     ]
@@ -1730,7 +1730,7 @@ def get_wot_properties(value, is_logged=None, value_with_type=False):
                             }
                         )
                 elif prop["properties__value__val"] and (
-                    is_logged
+                    user_is_authenticated
                     or prop[
                         "properties__property__is_public_when_permitrequest_is_public"
                     ]
