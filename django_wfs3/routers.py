@@ -11,7 +11,7 @@ from .views import RootView, CollectionsView
 
 
 class WFS3Router(routers.SimpleRouter):
-    """Router to explose a WFS3 Endpoint.
+    """Router to expose a WFS3 Endpoint.
 
     This works just like a regular DRF router, where you need
     to register your viewsets using `router.register(...)`.

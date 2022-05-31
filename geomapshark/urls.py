@@ -129,6 +129,10 @@ urlpatterns += [
     path("admin/", admin.site.urls),
     path("oauth/", include("oauth2_provider.urls", namespace="oauth2_provider")),
     path("captcha/", include("captcha.urls")),
+<<<<<<< HEAD
+=======
+    path("streamfield/", include("streamfield.urls")),
+>>>>>>> 190d9ef8 (wip)
 ]
 
 if settings.PREFIX_URL:
