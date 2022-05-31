@@ -1816,6 +1816,7 @@ def permit_requests_search(request):
 @login_required
 @permanent_user_required
 def report(request, permit_request_id, report_id, as_pdf=False):
+    # TODO: remove "as_pdf" and only support generating PDFs, so we don't need to expose QGIS server (and only need to access static files in one way)
     # TODO CRITICAL: ensure user has permissions on permit
     permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
     # TODO CRITICAL: ensure print setup is part of WorksObjectType
