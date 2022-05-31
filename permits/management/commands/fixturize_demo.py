@@ -778,12 +778,12 @@ class Command(BaseCommand):
 
     def create_reports(self):
         # Create report setup
-        block_paragraph = streamblock_models.PrintBlockParagraph(id=1, title="Demo report", content="This is a generic paragraph")
+        block_paragraph = streamblock_models.PrintBlockParagraph(title="Demo report", content="This is a generic paragraph")
         block_paragraph.save()
 
         # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
         qgis_project = services.alter_qgis_project_for_internal_user(open("/code/qgisserver/report-template-dev.qgs", 'rb'))
-        block_map = streamblock_models.PrintBlockMap(id=1, qgis_print_template_name="a4")
+        block_map = streamblock_models.PrintBlockMap(qgis_print_template_name="a4")
         block_map.qgis_project_file.save("report-template-dev.qgs", File(qgis_project), save=True)
         block_map.save()
 
@@ -795,13 +795,13 @@ class Command(BaseCommand):
                 model_list=streamblock_models.STREAMBLOCKS_MODELS,
                 value=[
                     {
-                        "id": 1,
+                        "id": block_paragraph.pk,
                         "unique_id": "lsupu",
                         "model_name": "PrintBlockParagraph",
                         "options": {},
                     },
                     {
-                        "id": 1,
+                        "id": block_map.pk,
                         "unique_id": "vlbh7j",
                         "model_name": "PrintBlockMap",
                         "options": {},
