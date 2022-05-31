@@ -649,8 +649,15 @@ class Command(BaseCommand):
         block_map.qgis_project_file.save("report-template-dev.qgs", File(qgis_project), save=True)
         block_map.save()
 
-        layout = models.ReportLayout.objects.create(name="demo_layout")
-        report = models.Report.objects.create(
+        # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
+        background_image = open("/code/qgisserver/report-letter-paper.png", "rb")
+        layout = models.ReportLayout(
+            name="demo_layout",
+            margin_top=40,
+        )
+        layout.background.save("report-letter-paper.png", File(background_image), save=True)
+        layout.save()
+        report = models.Report(
             name="demo_report",
             layout=layout,
             stream=StreamObject(
@@ -671,6 +678,7 @@ class Command(BaseCommand):
                 ]
             )
         )
+        report.save()
 
         # Assign to all work objects types
         for wot in models.WorksObjectType.objects.all():
