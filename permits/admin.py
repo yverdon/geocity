@@ -1,5 +1,6 @@
 import django.db.models
 import re
+import os
 
 from adminsortable2.admin import SortableAdminMixin
 from django import forms
@@ -599,12 +600,18 @@ class QgisProjectAdminForm(forms.ModelForm):
         # Use the constructor of InMemoryUploadedFile to be able to set the value of self.cleaned_data['qgis_project_file']
         file = services.alter_qgis_project_for_internal_user(qgis_project_file)
 
+        # Get the file size (no clear way to do that ?!)
+        _old_pos = file.tell()
+        file.seek(0, os.SEEK_END)
+        file_size = file.tell()
+        file.seek(_old_pos, os.SEEK_SET)
+
         return InMemoryUploadedFile(
             file,
             qgis_project_file.field_name,
             qgis_project_file._name,
             qgis_project_file.content_type,
-            # len(file),
+            file_size,
             charset=qgis_project_file.charset,
             content_type_extra=qgis_project_file.content_type_extra,
         )
@@ -1264,7 +1271,7 @@ class ReportLayoutAdmin(admin.ModelAdmin):
 
 # Print setups
 class ReportAdmin(admin.ModelAdmin):
-    form = QgisProjectAdminForm
+    pass
 
 
 admin.site.unregister(TokenProxy)
