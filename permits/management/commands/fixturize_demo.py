@@ -19,6 +19,7 @@ import re
 import unicodedata
 from .add_default_print_config import add_default_print_config
 from constance import config
+from ... import services
 
 
 def strip_accents(text):
@@ -779,9 +780,11 @@ class Command(BaseCommand):
         # Create report setup
         block_paragraph = streamblock_models.PrintBlockParagraph(id=1, title="Demo report", content="This is a generic paragraph")
         block_paragraph.save()
-        block_map = streamblock_models.PrintBlockMap(id=1, qgis_print_template_name="a4")
+
         # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
-        block_map.qgis_project_file.save("report-template-dev.qgs", File(open("/code/qgisserver/report-template-dev.qgs", 'rb')), save=True)
+        qgis_project = services.alter_qgis_project_for_internal_user(open("/code/qgisserver/report-template-dev.qgs", 'rb'))
+        block_map = streamblock_models.PrintBlockMap(id=1, qgis_print_template_name="a4")
+        block_map.qgis_project_file.save("report-template-dev.qgs", File(qgis_project), save=True)
         block_map.save()
 
         layout = models.ReportLayout.objects.create(name="demo_layout")

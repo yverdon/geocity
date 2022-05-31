@@ -26,7 +26,7 @@ from django.db.models.functions import StrIndex, Substr
 from rest_framework.authtoken.models import TokenProxy
 from rest_framework.authtoken.admin import TokenAdmin as BaseTokenAdmin
 
-
+from . import services
 from . import forms as permit_forms
 from . import models
 
@@ -596,85 +596,18 @@ class QgisProjectAdminForm(forms.ModelForm):
         if qgis_project_file.__class__.__name__ == "AdministrativeEntityFieldFile":
             return
 
-        encoder = "utf-8"
-
-        # Content of uploaded file in bytes
-        data = qgis_project_file.read()
-        # List of strings to replace
-        protocols = ["http", "https"]
-        hosts = ["localhost", "127.0.0.1"]
-        sites = settings.ALLOWED_HOSTS
-
-        # The final url. Docker communicate between layers
-        web_url = bytes("http://web:9000", encoder)
-
-        # Strings to complete the url
-        protocol_suffix = "://"
-        port_prefix = ":"
-        # Replace the url strings from the user
-        for protocol in protocols:
-            for host in hosts:
-                url = bytes(
-                    protocol
-                    + protocol_suffix
-                    + host
-                    + port_prefix
-                    + settings.DJANGO_DOCKER_PORT,
-                    encoder,
-                )
-                if not "web" in host:
-                    data = data.replace(url, web_url)
-            for site in sites:
-                url = bytes(protocol + protocol_suffix + site, encoder)
-                if not "web" in site:
-                    data = data.replace(url, web_url)
-
-        # Get characters between | and " or < without spaces, to prevent to take multiple lines
-        regex_url = bytes('\|[\S+]+"', encoder)
-        regex_element = bytes("\|[\S+]+<", encoder)
-
-        # Get characters between /?access_token and & or " without spaces
-        regex_authcfg_string = bytes("authcfg=\S+", encoder)
-        regex_user_string = bytes("user=\S+", encoder)
-        regex_password_string = bytes("password=\S+", encoder)
-        source_string = bytes('source=""', encoder)
-        coverage_source_string = bytes('coverageLayerSource=""', encoder)
-
-        # The regex will take the first to the last character, so we need to add it back
-        empty_bytes_string = bytes('"', encoder)
-        empty_bytes_balise = bytes("<", encoder)
-        empty_bytes_params = bytes("", encoder)
-        empty_source_params = bytes('source="', encoder)
-        empty_coverage_source_params = bytes('coverageLayerSource="', encoder)
-
-        # Replace characters using regex
-        data = re.sub(regex_url, empty_bytes_string, data)
-        data = re.sub(regex_element, empty_bytes_balise, data)
-
-        # Remove access_token without removing other params
-        data = re.sub(regex_authcfg_string, empty_bytes_string, data)
-        data = re.sub(regex_user_string, empty_bytes_string, data)
-        data = re.sub(regex_password_string, empty_bytes_string, data)
-        data = re.sub(source_string, empty_source_params, data)
-        data = re.sub(coverage_source_string, empty_coverage_source_params, data)
-
-        # Write the data in bytes in a new file
-        file = BytesIO()
-        file.write(data)
-
         # Use the constructor of InMemoryUploadedFile to be able to set the value of self.cleaned_data['qgis_project_file']
+        file = services.alter_qgis_project_for_internal_user(qgis_project_file)
 
-        qgis_project_file = InMemoryUploadedFile(
+        return InMemoryUploadedFile(
             file,
             qgis_project_file.field_name,
             qgis_project_file._name,
             qgis_project_file.content_type,
-            len(data),
-            qgis_project_file.charset,
-            qgis_project_file.content_type_extra,
+            # len(file),
+            charset=qgis_project_file.charset,
+            content_type_extra=qgis_project_file.content_type_extra,
         )
-
-        return qgis_project_file
 
 
 class QgisProjectInline(admin.TabularInline):
@@ -1331,7 +1264,7 @@ class ReportLayoutAdmin(admin.ModelAdmin):
 
 # Print setups
 class ReportAdmin(admin.ModelAdmin):
-    pass
+    form = QgisProjectAdminForm
 
 
 admin.site.unregister(TokenProxy)

@@ -1,4 +1,5 @@
 import enum
+import typing
 import itertools
 import mimetypes
 import os
@@ -7,10 +8,12 @@ from collections import defaultdict
 import socket
 import ipaddress
 import PIL
-
+import re
+from io import BytesIO
 import filetype
 from constance import config
 from django.conf import settings
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.contrib.auth import get_user_model, login
 from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.core.mail import send_mass_mail
@@ -1845,3 +1848,74 @@ def get_services_to_notify_mailing_list(permit_request):
             ]
 
     return mailing_list
+
+
+def alter_qgis_project_for_internal_user(qgis_project_file: typing.IO) -> typing.IO:
+    """Returns a file descriptor of the QGIS project, altered to work internall from Docker (replacing hosts and authcfg)"""
+
+    encoder = "utf-8"
+
+    # Content of uploaded file in bytes
+    data = qgis_project_file.read()
+    # List of strings to replace
+    protocols = ["http", "https"]
+    hosts = ["localhost", "127.0.0.1"]
+    sites = settings.ALLOWED_HOSTS
+
+    # The final url. Docker communicate between layers
+    web_url = bytes("http://web:9000", encoder)
+
+    # Strings to complete the url
+    protocol_suffix = "://"
+    port_prefix = ":"
+    # Replace the url strings from the user
+    for protocol in protocols:
+        for host in hosts:
+            url = bytes(
+                protocol
+                + protocol_suffix
+                + host
+                + port_prefix
+                + settings.DJANGO_DOCKER_PORT,
+                encoder,
+            )
+            if not "web" in host:
+                data = data.replace(url, web_url)
+        for site in sites:
+            url = bytes(protocol + protocol_suffix + site, encoder)
+            if not "web" in site:
+                data = data.replace(url, web_url)
+
+    # Get characters between | and " or < without spaces, to prevent to take multiple lines
+    regex_url = bytes('\|[\S+]+"', encoder)
+    regex_element = bytes("\|[\S+]+<", encoder)
+
+    # Get characters between /?access_token and & or " without spaces
+    regex_authcfg_string = bytes("authcfg=\S+", encoder)
+    regex_user_string = bytes("user=\S+", encoder)
+    regex_password_string = bytes("password=\S+", encoder)
+    source_string = bytes('source=""', encoder)
+    coverage_source_string = bytes('coverageLayerSource=""', encoder)
+
+    # The regex will take the first to the last character, so we need to add it back
+    empty_bytes_string = bytes('"', encoder)
+    empty_bytes_balise = bytes("<", encoder)
+    empty_bytes_params = bytes("", encoder)
+    empty_source_params = bytes('source="', encoder)
+    empty_coverage_source_params = bytes('coverageLayerSource="', encoder)
+
+    # Replace characters using regex
+    data = re.sub(regex_url, empty_bytes_string, data)
+    data = re.sub(regex_element, empty_bytes_balise, data)
+
+    # Remove access_token without removing other params
+    data = re.sub(regex_authcfg_string, empty_bytes_string, data)
+    data = re.sub(regex_user_string, empty_bytes_string, data)
+    data = re.sub(regex_password_string, empty_bytes_string, data)
+    data = re.sub(source_string, empty_source_params, data)
+    data = re.sub(coverage_source_string, empty_coverage_source_params, data)
+
+    # Write the data in bytes in a new file
+    file = BytesIO()
+    file.write(data)
+    return file
