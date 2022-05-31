@@ -11,6 +11,8 @@ from django.utils import timezone
 
 from geomapshark import settings
 from permits import admin, models
+from streamblocks import models as streamblock_models
+from streamfield.base import StreamObject
 import re
 import unicodedata
 from .add_default_print_config import add_default_print_config
@@ -108,6 +110,8 @@ class Command(BaseCommand):
             self.create_geom_layer_entity()
             self.stdout.write("Creating template customizations...")
             self.create_template_customization()
+            self.stdout.write("Creating reports...")
+            self.create_reports()
             self.stdout.write("Fixturize succeed.")
 
     def setup_site(self):
@@ -631,3 +635,44 @@ class Command(BaseCommand):
             application_subtitle="Demandes en lignes",
             application_description="Demandes concernant l' <i>administration</i>",
         )
+
+    def create_reports(self):
+
+        # Create report setup
+
+        from django.core.files import File
+
+        block_paragraph = streamblock_models.PrintBlockParagraph(id=1, title="Demo report", content="This is a generic paragraph")
+        block_paragraph.save()
+        block_map = streamblock_models.PrintBlockMap(id=1, qgis_print_template_name="print_template", url="none")
+        # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
+        block_map.qgis_project_file.save("report_template.qgs", File(open("/code/qgisserver/report_template.qgs", 'rb')), save=True)
+        block_map.save()
+
+        layout = models.ReportLayout.objects.create(name="demo_layout")
+        report = models.Report.objects.create(
+            name="demo_report",
+            layout=layout,
+            stream=StreamObject(
+                model_list=streamblock_models.STREAMBLOCKS_MODELS,
+                value=[
+                    {
+                        "id": 1,
+                        "unique_id": "lsupu",
+                        "model_name": "PrintBlockParagraph",
+                        "options": {},
+                    },
+                    {
+                        "id": 1,
+                        "unique_id": "vlbh7j",
+                        "model_name": "PrintBlockMap",
+                        "options": {},
+                    }
+                ]
+            )
+        )
+
+        # Assign to all work objects types
+        for wot in models.WorksObjectType.objects.all():
+            wot.reports.set([report])
+

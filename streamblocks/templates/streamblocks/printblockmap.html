@@ -1,3 +1,8 @@
 <div>
+  <h3>dummy image</h3>
   <img src="{{block_content.url}}" alt="map" />
+  <h3>map from qgis</h3>
+  <span>FIXME: this query returns 500 error with templat eproject</span>
+  <span>TODO: allow to further customize)</span>
+  <img src='http://qgisserver/ogc/?SERVICE=ATLAS&REQUEST=GETPRINT&FORMAT=PNG&TRANSPARENT=false&SRS=EPSG:2056&DPI=150&MAP={{block_content.qgis_project_file.path}}&TEMPLATE={{block_content.qgis_print_template_name}}&EXP_FILTER="%24id%3D1"&PERMIT_REQUEST_ID=1' alt="map" />
 </div>
