@@ -95,17 +95,30 @@ urlpatterns = [
         "", include(permit_request_urlpatterns + anonymous_permit_request_urlpatterns)
     ),
     path(
-        "media/<int:property_value_id>/",
-        views.permit_request_media_download,
-        name="permit_request_media_download",
-    ),
-    path(
         "adminentitiesgeojson/<int:administrative_entity_id>/",
         geoviews.administrative_entities_geojson,
         name="administrative_entities_geojson",
     ),
+    path(
+        "adminentitiesmaskgeojson/<int:administrative_entity_id>/",
+        geoviews.administrative_entities_mask_geojson,
+        name="administrative_entities_mask_geojson",
+    ),
+    path(
+        "media/<int:property_value_id>/",
+        views.permit_request_media_download,
+        name="permit_request_media_download",
+    ),
     path("qgisserverproxy/", geoviews.qgisserver_proxy, name="qgisserver_proxy"),
     path("search/", views.permit_requests_search, name="permit_requests_search"),
-    path("print-setup/<int:permit_request_id>/<int:print_setup_id>/", views.print_setup, name="print-setup"),
-    path("print-setup/<int:permit_request_id>/<int:print_setup_id>.pdf", views.print_setup_pdf, name="print-setup"),
+    path(
+        "print-setup/<int:permit_request_id>/<int:print_setup_id>/",
+        views.print_setup,
+        name="print-setup",
+    ),
+    path(
+        "print-setup/<int:permit_request_id>/<int:print_setup_id>.pdf",
+        views.print_setup_pdf,
+        name="print-setup",
+    ),
 ]

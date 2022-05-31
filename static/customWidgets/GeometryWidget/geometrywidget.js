@@ -54,7 +54,6 @@
     this.wmsLayerGroup = new ol.layer.Group({
       layers: layer_list,
     });
-
     this.rasterMaskLayer = new ol.layer.Image({
       source: new ol.source.ImageWMS({
         url: this.options.qgisserver_proxy,
@@ -321,6 +320,7 @@
     if (restriction_area_enabled) {
       map.addLayer(vectorMaskLayer);
       map.addLayer(rasterMaskLayer);
+      console.log("ici")
     }
 
     map.addLayer(this.wmsLayerGroup);

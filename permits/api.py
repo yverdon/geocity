@@ -452,3 +452,33 @@ class SearchViewSet(viewsets.ReadOnlyModelViewSet):
 PermitRequestPointViewSet = permitRequestViewSetSubsetFactory("points")
 PermitRequestLineViewSet = permitRequestViewSetSubsetFactory("lines")
 PermitRequestPolyViewSet = permitRequestViewSetSubsetFactory("polygons")
+
+
+# //////////////////////////////////
+# ADMINISTRATIVE ENTITY ENDPOINT
+# //////////////////////////////////
+class AdministrativeEntityViewSet(
+    WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelViewSet
+):
+    """
+    Administrative entity endpoint Usage:
+        1.- /rest/administrative_entity/1
+    """
+
+    throttle_scope = "administrative_entities"
+    serializer_class = serializers.AdministrativeEntitySerializer
+
+    wfs3_title = "Entités administratives"
+    wfs3_description = "Toutes les entités administratives"
+    wfs3_geom_lookup = (
+        "geom"  # lookup for the geometry (on the queryset), used to determine bbox
+    )
+    wfs3_srid = 2056
+
+    def get_queryset(self):
+        """
+        This view should return a list of events for which the logged user has
+        view permissions or events set as public by pilot
+        """
+
+        return models.PermitAdministrativeEntity.objects.all()

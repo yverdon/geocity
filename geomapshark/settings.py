@@ -486,6 +486,10 @@ REST_FRAMEWORK = {
         "events": os.getenv("DRF_THROTTLE_RATE_EVENTS_API"),
         # Full API for search
         "search": os.getenv("DRF_THROTTLE_RATE_SEARCH_API"),
+        # API for Administrative Entity Geometries and ID
+        "administrative_entities": os.getenv(
+            "DRF_THROTTLE_RATE_ADMINISTRATIVE_ENTITIES_API"
+        ),
     },
 }
 # Allow TokenAuthentication to the API.

@@ -1321,7 +1321,7 @@ def permit_request_geo_time(request, permit_request_id):
     )
     formset = PermitRequestGeoTimeFormSet(
         request.POST if request.method == "POST" else None,
-        form_kwargs={"permit_request": permit_request},
+        form_kwargs={"permit_request": permit_request, "request": request},
         queryset=permit_request.geo_time.filter(
             comes_from_automatic_geocoding=False
         ).all(),
@@ -1807,8 +1807,6 @@ def permit_requests_search(request):
     )
 
 
-
-
 @login_required
 @permanent_user_required
 def print_setup_pdf(request, permit_request_id, print_setup_id):
@@ -1817,15 +1815,29 @@ def print_setup_pdf(request, permit_request_id, print_setup_id):
         input_path = os.path.join(tempdir, "input.html")
         output_path = os.path.join(tempdir, "output.pdf")
 
-        content = _get_print_setup_content(request, permit_request_id, print_setup_id, internal_urls=True)
+        content = _get_print_setup_content(
+            request, permit_request_id, print_setup_id, internal_urls=True
+        )
         with open(input_path, "w") as input_file:
             input_file.write(content)
 
         subprocess.check_call(
-            ["wkhtmltopdf", "-T", "0", "-R", "0", "-B", "0", "-L", "0", input_path, output_path]
+            [
+                "wkhtmltopdf",
+                "-T",
+                "0",
+                "-R",
+                "0",
+                "-B",
+                "0",
+                "-L",
+                "0",
+                input_path,
+                output_path,
+            ]
         )
 
-        return FileResponse(open(output_path, 'rb'))
+        return FileResponse(open(output_path, "rb"))
 
 
 @login_required
@@ -1835,17 +1847,19 @@ def print_setup(request, permit_request_id, print_setup_id):
     return HttpResponse(content)
 
 
-def _get_print_setup_content(request, permit_request_id, print_setup_id, internal_urls=False):
+def _get_print_setup_content(
+    request, permit_request_id, print_setup_id, internal_urls=False
+):
     # TODO CRITICAL: ensure user has permissions on permit
     permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
     # TODO CRITICAL: ensure print setup is part of WorksObjectType
     print_setup = get_object_or_404(models.PrintSetup, pk=print_setup_id)
 
     return render_to_string(
-        'permits/print.html',
+        "permits/print.html",
         {
-            'print_setup': print_setup,
-            'permit_request': permit_request,
-            'internal_urls': internal_urls,
-        }
+            "print_setup": print_setup,
+            "permit_request": permit_request,
+            "internal_urls": internal_urls,
+        },
     )

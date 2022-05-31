@@ -455,3 +455,15 @@ class PermitRequestFiltersSerializer(serializers.Serializer):
 class SearchSerializer(serializers.Serializer):
     def to_representation(self, value):
         return search.search_result_to_json(value)
+
+
+class AdministrativeEntitySerializer(gis_serializers.GeoFeatureModelSerializer):
+    class Meta:
+        model = models.PermitAdministrativeEntity
+        geo_field = "geom"
+        auto_bbox = True
+        id_field = False
+        fields = (
+            "id",
+            "name",
+        )

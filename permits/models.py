@@ -1485,14 +1485,11 @@ class TemplateCustomization(models.Model):
         return self.templatename
 
 
-
-
-
-
 class PrintSetup(models.Model):
     class Meta:
         verbose_name = _("5.1 Configuration de l'impression")
         verbose_name_plural = _("5.1 Configuration des impressions")
+
     name = models.CharField(max_length=150)
     background = models.ImageField(null=True, blank=True, help_text="Arrière-plan")
     stream = StreamField(model_list=STREAMBLOCKS_MODELS)

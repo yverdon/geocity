@@ -1091,6 +1091,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.permit_request = kwargs.pop("permit_request", None)
+        self.request = kwargs.pop("request", None)
         disable_fields = kwargs.pop("disable_fields", False)
         initial = {}
         if (
@@ -1218,7 +1219,9 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             "wmts_layer_alternative": settings.WMTS_LAYER_ALTERNATIVE,
             "restriction_area_enabled": True,
             "geometry_db_type": "GeometryCollection",
-            "qgisserver_proxy": reverse("permits:qgisserver_proxy"),
+            "qgisserver_proxy": self.request.build_absolute_uri(
+                reverse("permits:qgisserver_proxy")
+            ),
             "ftsearch_additional_searchtext_for_address_field": ftsearch_additional_searchtext_for_address_field,
             "ftsearch_apiurl": settings.LOCATIONS_SEARCH_API,
             "ftsearch_apiurl_detail": settings.LOCATIONS_SEARCH_API_DETAILS,

@@ -682,7 +682,6 @@ class QgisProjectInline(admin.TabularInline):
     form = QgisProjectAdminForm
 
 
-
 class WorksObjectTypeAdminForm(forms.ModelForm):
     class GeometryTypes(django.db.models.TextChoices):
         POINT = "has_geometry_point", _("Point")
@@ -816,14 +815,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 )
             },
         ),
-        (
-            "Impression",
-            {
-                "fields": (
-                    "print_setups",
-                )
-            },
-        ),
+        ("Impression", {"fields": ("print_setups",)},),
     )
 
     def sortable_str(self, obj):
@@ -1328,7 +1320,6 @@ class TokenAdmin(BaseTokenAdmin):
 # Print setups
 class PrintSetupAdmin(admin.ModelAdmin):
     pass
-
 
 
 admin.site.unregister(TokenProxy)
