@@ -779,7 +779,7 @@ class Command(BaseCommand):
         # Create report setup
         block_paragraph = streamblock_models.PrintBlockParagraph(id=1, title="Demo report", content="This is a generic paragraph")
         block_paragraph.save()
-        block_map = streamblock_models.PrintBlockMap(id=1, qgis_print_template_name="print_template")
+        block_map = streamblock_models.PrintBlockMap(id=1, qgis_print_template_name="a4")
         # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
         block_map.qgis_project_file.save("report-template-dev.qgs", File(open("/code/qgisserver/report-template-dev.qgs", 'rb')), save=True)
         block_map.save()
