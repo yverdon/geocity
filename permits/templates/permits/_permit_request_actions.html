@@ -173,7 +173,7 @@
                     {% csrf_token %}
 
                     {% for report in reports %}
-                        <button class="btn btn-primary mr-3" formaction="{% url 'permits:permit_request_report' permit_request_id=permit_request.pk print_setup_id=report.pk %}">
+                        <button class="btn btn-primary mr-3" formaction="{% url 'permits:permit_request_report' permit_request_id=permit_request.pk report_id=report.pk %}">
                             <i class="fa fa-print" aria-hidden="true"></i> {{ report.name }}
                         </button>
                     {% endfor %}
