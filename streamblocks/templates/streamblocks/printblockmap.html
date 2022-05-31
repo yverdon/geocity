@@ -2,7 +2,8 @@
   <h3>dummy image</h3>
   <img src="https://wmts.asit-asso.ch/wmts?layer=asitvd.fond_cadastral&style=default&tilematrixset=2056&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image%2Fpng&TileMatrix=25&TileCol=464&TileRow=658&DIM1=default&ELEVATION=0" alt="map" />
   <h3>map from qgis</h3>
-  <span>FIXME: this query returns 500 error with templat eproject</span>
-  <span>TODO: allow to further customize)</span>
-  <img src='http://qgisserver/ogc/?SERVICE=ATLAS&REQUEST=GETPRINT&FORMAT=PNG&TRANSPARENT=false&SRS=EPSG:2056&DPI=150&MAP={{block_content.qgis_project_file.path}}&TEMPLATE={{block_content.qgis_print_template_name}}&EXP_FILTER="%24id%3D1"&PERMIT_REQUEST_ID=1' alt="map" />
+  <span>TODO: allow to further customize query</span>
+  <span>FIXME: this query fails with error 400 when ATLAS_PK is anything but 1</span>
+  <span>QUERY (debug): http://qgisserver/ogc/?SERVICE=WMS&REQUEST=GETPRINT&FORMAT=PNG&TRANSPARENT=false&SRS=EPSG:2056&DPI=150&MAP={{block_content.qgis_project_file.path}}&TEMPLATE={{block_content.qgis_print_template_name}}&ATLAS_PK={{permit_request.pk}}</span>
+  <img src='http://qgisserver/ogc/?SERVICE=WMS&REQUEST=GETPRINT&FORMAT=PNG&TRANSPARENT=false&SRS=EPSG:2056&DPI=150&MAP={{block_content.qgis_project_file.path}}&TEMPLATE={{block_content.qgis_print_template_name}}&ATLAS_PK=1' alt="map" />
 </div>
