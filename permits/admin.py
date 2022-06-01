@@ -254,26 +254,33 @@ class UserAdmin(BaseUserAdmin):
             ]
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
+        user_being_updated = User.objects.get(
+            id=(int(request.resolver_match.kwargs["object_id"]))
+        )
+        integrator_group_for_user_being_updated = user_being_updated.groups.filter(
+            permitdepartment__is_integrator_admin=True
+        )
         if db_field.name == "groups":
             if request.user.is_superuser:
                 kwargs["queryset"] = Group.objects.all()
             else:
-                kwargs["queryset"] = Group.objects.filter(
-                    permitdepartment__integrator=request.user.groups.get(
-                        permitdepartment__is_integrator_admin=True
-                    ).pk,
+                kwargs["queryset"] = (
+                    Group.objects.filter(
+                        permitdepartment__integrator=request.user.groups.get(
+                            permitdepartment__is_integrator_admin=True
+                        ).pk,
+                    )
+                    | integrator_group_for_user_being_updated
                 )
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
     # Only superuser can edit superuser users
     def get_queryset(self, request):
-        # Only allow integrator to change users that have no group, are not superuser or are in group administrated by integrator
-
+        # Only allow integrator to change users that have no group, are not superuser or are in group administrated by integrator.
         if request.user.is_superuser:
             qs = User.objects.all()
         else:
-
             user_integrator_group = request.user.groups.get(
                 permitdepartment__is_integrator_admin=True
             )
@@ -835,6 +842,7 @@ class WorksObjectPropertyForm(forms.ModelForm):
             "regex_pattern",
             "file_download",
             "is_mandatory",
+            "is_public_when_permitrequest_is_public",
             "additional_searchtext_for_address_field",
             "store_geometry_for_address_field",
             "works_object_types",
@@ -858,6 +866,7 @@ class WorksObjectPropertyAdmin(
     list_display = [
         "sortable_str",
         "is_mandatory",
+        "is_public_when_permitrequest_is_public",
         "name",
         "input_type",
         "placeholder",
