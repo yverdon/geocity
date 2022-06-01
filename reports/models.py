@@ -8,6 +8,7 @@ from weasyprint import HTML
 from .streamblocks.models import STREAMBLOCKS_MODELS
 from django.template.loader import render_to_string
 
+
 class ReportLayout(models.Model):
     """Page size/background/marings/fonts/etc, used by reports"""
 
@@ -54,7 +55,8 @@ class Report(models.Model):
 
     def render(self, permit_request) -> typing.IO:
         from permits.serializers import PermitRequestPrintSerializer
-        context =  {
+
+        context = {
             "report": self,
             "permit_request": permit_request,
             "permit_request_data": PermitRequestPrintSerializer(permit_request).data,
@@ -65,7 +67,6 @@ class Report(models.Model):
         HTML(string=html_string).write_pdf(buffer)
         buffer.seek(io.SEEK_SET)
         return buffer
-
 
     def __str__(self):
         return self.name

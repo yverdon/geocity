@@ -8,6 +8,6 @@ urlpatterns = [
     path(
         "report/<int:permit_request_id>/<int:report_id>.pdf",
         views.report_view,
-        name="permit_request_report"
+        name="permit_request_report",
     ),
 ]

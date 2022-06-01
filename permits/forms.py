@@ -1626,7 +1626,9 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
                 )
             )
 
-        if not self.cleaned_data.get("document") and not self.cleaned_data.get("report_preset"):
+        if not self.cleaned_data.get("document") and not self.cleaned_data.get(
+            "report_preset"
+        ):
             raise ValidationError(
                 _(
                     "Vous devez soit uploader un fichier, soit générer un document à partir d'un modèle."
@@ -1636,7 +1638,10 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         # If document is null, it must be because we use a preset
         if not self.cleaned_data.get("document"):
             report = self.cleaned_data.get("report_preset")
-            self.cleaned_data["document"] = File(report.render(self.permit_request), name=f"{report.name} ({_('(autogénéré)')}).pdf")
+            self.cleaned_data["document"] = File(
+                report.render(self.permit_request),
+                name=f"{report.name} ({_('(autogénéré)')}).pdf",
+            )
             self.cleaned_data["document_type"] = report.type
 
         if not self.cleaned_data.get("document_type"):
