@@ -33,6 +33,7 @@ from accounts.geomapfish.adapter import GeomapfishSocialAccountAdapter
 from accounts.geomapfish.provider import GeomapfishProvider
 
 from . import models, services, geoservices
+from reports.models import Report
 
 input_type_mapping = {
     models.WorksObjectProperty.INPUT_TYPE_TEXT: forms.CharField,
@@ -1522,16 +1523,21 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
     authorised_departments = forms.ModelMultipleChoiceField(
         queryset=None, widget=forms.CheckboxSelectMultiple, required=False,
     )
+    report_preset = forms.ModelChoiceField(
+        queryset=None, widget=forms.CheckboxSelectMultiple, required=False, label = _("Générer à partir du modèle")
+    )
 
     class Meta:
         model = models.PermitRequestComplementaryDocument
         fields = [
+
+            "report_preset",
             "document",
+            "document_type",
             "description",
             "status",
             "authorised_departments",
             "is_public",
-            "document_type",
         ]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 2}),
@@ -1546,6 +1552,11 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             administrative_entity=permit_request.administrative_entity
         ).all()
         self.fields["authorised_departments"].label = _("Département autorisé")
+
+        # TODO: only list available reports !!
+        self.fields[
+            "report_preset"
+        ].queryset = Report.objects.all()
 
         parent_types = models.ComplementaryDocumentType.objects.filter(
             work_object_types__in=permit_request.works_object_types.all()

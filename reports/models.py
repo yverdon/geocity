@@ -36,6 +36,7 @@ class Report(models.Model):
     name = models.CharField(max_length=150)
     layout = models.ForeignKey(ReportLayout, on_delete=models.RESTRICT)
     stream = StreamField(model_list=STREAMBLOCKS_MODELS)
+    type = models.ForeignKey("permits.ComplementaryDocumentType", on_delete=models.RESTRICT)
 
     def __str__(self):
         return self.name

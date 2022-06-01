@@ -329,7 +329,10 @@ class Command(BaseCommand):
         )
         user.groups.set([group])
         models.PermitAuthor.objects.create(
-            user=user, address="Rue du Lac", zipcode=1400, city="Yverdon",
+            user=user,
+            address="Rue du Lac",
+            zipcode=1400,
+            city="Yverdon",
         )
         models.PermitDepartment.objects.create(
             group=group,
@@ -393,7 +396,10 @@ class Command(BaseCommand):
                 order=5,
             ),
             "date": models.WorksObjectProperty.objects.create(
-                name="Date", input_type="date", is_mandatory=False, order=6,
+                name="Date",
+                input_type="date",
+                is_mandatory=False,
+                order=6,
             ),
             "checkbox": models.WorksObjectProperty.objects.create(
                 name="Impact sur la chaussée",
@@ -420,7 +426,11 @@ class Command(BaseCommand):
             (
                 "Stationnement (ex. de demande devant être prolongée)",
                 [
-                    ("Demande de macaron", properties["comment"], properties["date"],),
+                    (
+                        "Demande de macaron",
+                        properties["comment"],
+                        properties["date"],
+                    ),
                     (
                         "Accès au centre-ville historique",
                         properties["comment"],
@@ -487,8 +497,14 @@ class Command(BaseCommand):
             (
                 "Suvbentions (ex. de demande sans géométrie ni période temporelle)",
                 [
-                    ("Prime éco-mobilité", properties["comment"],),
-                    ("Abonnement de bus", properties["comment"],),
+                    (
+                        "Prime éco-mobilité",
+                        properties["comment"],
+                    ),
+                    (
+                        "Abonnement de bus",
+                        properties["comment"],
+                    ),
                 ],
             ),
         ]
@@ -588,11 +604,14 @@ class Command(BaseCommand):
         models.WorksObjectType.objects.filter(id=5).update(
             requires_validation_document=False
         )
-        demo_works_object_type_no_validation_document = models.WorksObjectType.objects.filter(
-            requires_validation_document=False
-        ).first()
+        demo_works_object_type_no_validation_document = (
+            models.WorksObjectType.objects.filter(
+                requires_validation_document=False
+            ).first()
+        )
         department = models.PermitDepartment.objects.filter(
-            administrative_entity=demo_administrative_entity, is_validator=True,
+            administrative_entity=demo_administrative_entity,
+            is_validator=True,
         ).first()
 
         # Basic permit request
@@ -740,10 +759,10 @@ class Command(BaseCommand):
         )
 
         models.PermitRequestValidation.objects.get_or_create(
-            permit_request=permit_request6, department=department,
+            permit_request=permit_request6,
+            department=department,
             comment_before="Ce projet n'est pas admissible, veuillez l'améliorer.",
             comment_during="Les améliorations ont été prise en compte.",
-
         )
 
         models.WorksObjectTypeChoice.objects.create(
@@ -795,22 +814,32 @@ class Command(BaseCommand):
 
     def create_reports(self):
         # Create report setup
-        block_paragraph_1 = reports_blocks_models.PrintBlockRichText(content="<div><h2>Approval</h2><p>This is an example report. It could be an approval, or any type of report related to a request.</p></div>")
+        block_paragraph_1 = reports_blocks_models.PrintBlockRichText(
+            content="<div><h2>Approval</h2><p>This is an example report. It could be an approval, or any type of report related to a request.</p></div>"
+        )
         block_paragraph_1.save()
 
         # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
-        qgis_project = services.alter_qgis_project_for_internal_user(open("/code/qgisserver/report-template-dev.qgs", 'rb'))
+        qgis_project = services.alter_qgis_project_for_internal_user(
+            open("/code/qgisserver/report-template-dev.qgs", "rb")
+        )
         block_map = reports_blocks_models.PrintBlockMap(qgis_print_template_name="a4")
-        block_map.qgis_project_file.save("report-template-dev.qgs", File(qgis_project), save=True)
+        block_map.qgis_project_file.save(
+            "report-template-dev.qgs", File(qgis_project), save=True
+        )
         block_map.save()
 
-        block_paragraph_2 = reports_blocks_models.PrintBlockRichText(content=r"<div><h2>Data</h2><p>We can also have long data</p><table><tr><th>Label</th><th>Value</th></tr>{% for i in '0123456789'|make_list %}<tr><td>Row {{i}}</td><td>{{'0123456789'|random}}</td></tr>{% endfor %}</table></p></div>")
+        block_paragraph_2 = reports_blocks_models.PrintBlockRichText(
+            content=r"<div><h2>Data</h2><p>We can also have long data</p><table><tr><th>Label</th><th>Value</th></tr>{% for i in '0123456789'|make_list %}<tr><td>Row {{i}}</td><td>{{'0123456789'|random}}</td></tr>{% endfor %}</table></p></div>"
+        )
         block_paragraph_2.save()
 
         block_validation = reports_blocks_models.PrintBlockValidation()
         block_validation.save()
 
-        block_paragraph_3 = reports_blocks_models.PrintBlockRichText(content="<div><h2>Approval</h2><p>Thank you for your request.</p></div>")
+        block_paragraph_3 = reports_blocks_models.PrintBlockRichText(
+            content="<div><h2>Approval</h2><p>Thank you for your request.</p></div>"
+        )
         block_paragraph_3.save()
 
         # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
@@ -822,11 +851,14 @@ class Command(BaseCommand):
             margin_bottom=20,
             margin_left=22,
         )
-        layout.background.save("report-letter-paper.png", File(background_image), save=True)
+        layout.background.save(
+            "report-letter-paper.png", File(background_image), save=True
+        )
         layout.save()
         report = reports_models.Report(
             name="demo_report",
             layout=layout,
+            type=TYPE,
             stream=StreamObject(
                 model_list=reports_models.STREAMBLOCKS_MODELS,
                 value=[
@@ -865,15 +897,14 @@ class Command(BaseCommand):
                         "model_name": "PrintBlockRichText",
                         "options": {},
                     },
-                ]
-            )
+                ],
+            ),
         )
         report.save()
 
         # Assign to all work objects types
         for wot in models.WorksObjectType.objects.all():
             wot.reports.set([report])
-
 
     def setup_homepage(self):
         config.APPLICATION_TITLE = "Démo Geocity"
