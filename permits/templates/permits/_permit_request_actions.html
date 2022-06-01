@@ -44,16 +44,6 @@
 
       {% endif %}
 
-      {% if has_permission_to_classify and reports %}
-
-        <li class="nav-item">
-        <a class="btn btn-primary btn-action nav-link" id="reports-tab" data-toggle="tab" href="#reports" role="tab" aria-controls="reports">
-            {% trans "Rapports" %}
-        </a>
-        </li>
-
-      {% endif %}
-
       {% if has_permission_to_classify and directives %}
 
         <li class="nav-item">
@@ -178,21 +168,6 @@
                     {% for print_template in print_templates %}
                         <button class="btn btn-primary mr-3" formaction="{% url 'permits:permit_request_print' permit_request_id=permit_request.pk template_id=print_template.pk %}">
                             <i class="fa fa-print" aria-hidden="true"></i> {{ print_template.description  }}
-                        </button>
-                    {% endfor %}
-                </form>
-            </div>
-        {% endif %}
-
-        {% if reports %}
-            <div class="tab-pane" id="reports" role="tabpanel" aria-labelledby="reports-tab">
-                <h4>{% trans "Rapports" %}</h4>
-                <form method="post">
-                    {% csrf_token %}
-
-                    {% for report in reports %}
-                        <button class="btn btn-primary mr-3" formaction="{% url 'reports:permit_request_report' permit_request_id=permit_request.pk report_id=report.pk %}">
-                            <i class="fa fa-print" aria-hidden="true"></i> {{ report.name }}
                         </button>
                     {% endfor %}
                 </form>
