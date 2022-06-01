@@ -26,7 +26,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
 from captcha.fields import CaptchaField
-
+from django.core.files import File
 from accounts.dootix.adapter import DootixSocialAccountAdapter
 from accounts.dootix.provider import DootixProvider
 from accounts.geomapfish.adapter import GeomapfishSocialAccountAdapter
@@ -1548,6 +1548,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
     def __init__(self, permit_request, *args, **kwargs):
         super(PermitRequestComplementaryDocumentsForm, self).__init__(*args, **kwargs)
 
+        self.permit_request = permit_request
         self.fields[
             "authorised_departments"
         ].queryset = models.PermitDepartment.objects.filter(
@@ -1564,6 +1565,9 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
 
         self.fields["document_type"].queryset = parent_types
         self.fields["document_type"].required = True
+
+        # Document is not required, as user can also use a generated report
+        self.fields["document"].required = False
 
         for parent in parent_types:
             name = "parent_{}".format(parent.pk)
@@ -1597,7 +1601,9 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
     def clean_document(self):
         document = self.cleaned_data.get("document")
 
-        services.validate_file(document)
+        # Document is not required, as user can also use a generated report
+        if document:
+            services.validate_file(document)
 
         return document
 
@@ -1613,12 +1619,25 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
                 )
             )
 
-        if self.cleaned_data["document"] and self.cleaned_data["report_preset"]:
+        if self.cleaned_data.get("document") and self.cleaned_data.get("report_preset"):
             raise ValidationError(
                 _(
                     "Vous pouvez soit uploader un fichier, soit générer un document à partir d'un modèle, mais pas les deux."
                 )
             )
+
+        if not self.cleaned_data.get("document") and not self.cleaned_data.get("report_preset"):
+            raise ValidationError(
+                _(
+                    "Vous devez soit uploader un fichier, soit générer un document à partir d'un modèle."
+                )
+            )
+
+        # If document is null, it must be because we use a preset
+        if not self.cleaned_data.get("document"):
+            report = self.cleaned_data.get("report_preset")
+            self.cleaned_data["document"] = File(report.render(self.permit_request), name=f"{report.name} ({_('(autogénéré)')}).pdf")
+            self.cleaned_data["document_type"] = report.type
 
         if not self.cleaned_data.get("document_type"):
             return cleaned_data
