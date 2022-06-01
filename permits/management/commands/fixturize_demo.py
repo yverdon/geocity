@@ -795,22 +795,22 @@ class Command(BaseCommand):
 
     def create_reports(self):
         # Create report setup
-        block_paragraph_1 = streamblock_models.PrintBlockRichText(content="<div><h2>Approval</h2><p>This is an example report. It could be an approval, or any type of report related to a request.</p></div>")
+        block_paragraph_1 = reports_blocks_models.PrintBlockRichText(content="<div><h2>Approval</h2><p>This is an example report. It could be an approval, or any type of report related to a request.</p></div>")
         block_paragraph_1.save()
 
         # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
         qgis_project = services.alter_qgis_project_for_internal_user(open("/code/qgisserver/report-template-dev.qgs", 'rb'))
-        block_map = streamblock_models.PrintBlockMap(qgis_print_template_name="a4")
+        block_map = reports_blocks_models.PrintBlockMap(qgis_print_template_name="a4")
         block_map.qgis_project_file.save("report-template-dev.qgs", File(qgis_project), save=True)
         block_map.save()
 
-        block_paragraph_2 = streamblock_models.PrintBlockRichText(content=r"<div><h2>Data</h2><p>We can also have long data</p><table><tr><th>Label</th><th>Value</th></tr>{% for i in '0123456789'|make_list %}<tr><td>Row {{i}}</td><td>{{'0123456789'|random}}</td></tr>{% endfor %}</table></p></div>")
+        block_paragraph_2 = reports_blocks_models.PrintBlockRichText(content=r"<div><h2>Data</h2><p>We can also have long data</p><table><tr><th>Label</th><th>Value</th></tr>{% for i in '0123456789'|make_list %}<tr><td>Row {{i}}</td><td>{{'0123456789'|random}}</td></tr>{% endfor %}</table></p></div>")
         block_paragraph_2.save()
 
-        block_validation = streamblock_models.PrintBlockValidation()
+        block_validation = reports_blocks_models.PrintBlockValidation()
         block_validation.save()
 
-        block_paragraph_3 = streamblock_models.PrintBlockRichText(content="<div><h2>Approval</h2><p>Thank you for your request.</p></div>")
+        block_paragraph_3 = reports_blocks_models.PrintBlockRichText(content="<div><h2>Approval</h2><p>Thank you for your request.</p></div>")
         block_paragraph_3.save()
 
         # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
