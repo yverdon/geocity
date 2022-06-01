@@ -1642,7 +1642,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             now = timezone.now()
             name = f"{report.name}_generated_{now:%Y-%m-%d}.pdf"
             cleaned_data["document"] = File(
-                report.render(self.permit_request), name=name
+                report.render_pdf(self.permit_request), name=name
             )
             cleaned_data["document_type"] = report.type
             cleaned_data[f"parent_{report.type.pk}"] = report.type

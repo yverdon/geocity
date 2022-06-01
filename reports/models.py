@@ -2,11 +2,14 @@ from django.db import models
 
 import io
 import typing
+import urllib
+from urllib.request import urlopen
 from django.utils.translation import gettext_lazy as _
 from streamfield.fields import StreamField
-from weasyprint import HTML
+from weasyprint import HTML, default_url_fetcher
 from .streamblocks.models import STREAMBLOCKS_MODELS
 from django.template.loader import render_to_string
+from django.conf import settings
 
 
 class ReportLayout(models.Model):
@@ -53,7 +56,7 @@ class Report(models.Model):
         "permits.ComplementaryDocumentType", on_delete=models.RESTRICT
     )
 
-    def render(self, permit_request) -> typing.IO:
+    def render_string(self, permit_request) -> str:
         from permits.serializers import PermitRequestPrintSerializer
 
         context = {
@@ -61,10 +64,31 @@ class Report(models.Model):
             "permit_request": permit_request,
             "permit_request_data": PermitRequestPrintSerializer(permit_request).data,
         }
-        html_string = render_to_string("reports/report.html", context)
+        return render_to_string("reports/report.html", context)
+
+    def render_pdf(self, permit_request) -> typing.IO:
+        def my_fetcher(url):
+
+            print("~" * 80)
+            print(f"FETCHING {url}")
+
+            if url.startswith("http://localhost:9096/"):
+                internal_url = url.replace("http://localhost:9096/", "http://qgisserver/")
+                return {"file_obj": urlopen(internal_url)}
+
+            if url.startswith("http://relative/media/"):
+                local_path = url.replace("http://relative/media", settings.MEDIA_ROOT)
+                print("~" * 80)
+                print(local_path)
+                return {"file_obj": open(local_path, "rb")}
+            return default_url_fetcher(url)
 
         buffer = io.BytesIO()
-        HTML(string=html_string).write_pdf(buffer)
+        HTML(
+            string=self.render_string(permit_request),
+            url_fetcher=my_fetcher,
+            base_url="http://relative",  # seems required to get relative URLs to work
+        ).write_pdf(buffer)
         buffer.seek(io.SEEK_SET)
         return buffer
 
