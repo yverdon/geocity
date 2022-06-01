@@ -1144,6 +1144,13 @@ class WorksObjectProperty(models.Model):
             "L'API Geoadmin est utilisée afin de trouver un point correspondant à l'adresse. En cas d'échec, le centroïde de l'entité administrative est utilisée <a href=\"https://api3.geo.admin.ch/services/sdiservices.html#search\" target=\"_blank\">Plus d'informations</a>"
         ),
     )
+    is_public_when_permitrequest_is_public = models.BooleanField(
+        _("Afficher ce champs au grand public si la demande est publique"),
+        default=False,
+        help_text=_(
+            "Ce champs sera visible sur l'application géocalendrier si la demande est publique"
+        ),
+    )
 
     class Meta(object):
         ordering = ["order"]

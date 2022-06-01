@@ -1668,7 +1668,7 @@ def check_request_comes_from_internal_qgisserver(request):
     return False
 
 
-def get_wot_properties(value, value_with_type=False):
+def get_wot_properties(value, user_is_authenticated=None, value_with_type=False):
     """
     Return wot properties in a list for the api, in a dict for backend
     """
@@ -1681,6 +1681,7 @@ def get_wot_properties(value, value_with_type=False):
         "id",
         "works_object_type__works_object__name",
         "works_object_type__works_type__name",
+        "properties__property__is_public_when_permitrequest_is_public",
     )
 
     wot_properties = dict()
@@ -1693,11 +1694,11 @@ def get_wot_properties(value, value_with_type=False):
             wot_properties = list()
             for prop in wot_props:
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
-                # List of a lost, to split wot in objects. Check if last wot changed or never assigned, means first iteration
+
+                # List of a list, to split wot in objects. Check if last wot changed or never assigned. Means it's first iteration
                 if property and wot != last_wot:
                     wot_properties.append(property)
                     property = []
-
                     # WOT
                     property.append(
                         {"key": "work_object_type", "value": wot, "type": "text",}
@@ -1710,7 +1711,12 @@ def get_wot_properties(value, value_with_type=False):
 
                 last_wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
 
-                if prop["properties__property__input_type"] == "file":
+                if prop["properties__property__input_type"] == "file" and (
+                    user_is_authenticated
+                    or prop[
+                        "properties__property__is_public_when_permitrequest_is_public"
+                    ]
+                ):
                     # get_property_value return None if file does not exist
                     file = get_property_value_based_on_property(prop)
                     # Check if file exist
@@ -1723,7 +1729,12 @@ def get_wot_properties(value, value_with_type=False):
                                 "type": prop["properties__property__input_type"],
                             }
                         )
-                elif prop["properties__value__val"]:
+                elif prop["properties__value__val"] and (
+                    user_is_authenticated
+                    or prop[
+                        "properties__property__is_public_when_permitrequest_is_public"
+                    ]
+                ):
                     # Properties of WOT
                     property.append(
                         {
