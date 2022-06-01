@@ -1,9 +1,12 @@
 from django.db import models
+
+import io
+import typing
 from django.utils.translation import gettext_lazy as _
 from streamfield.fields import StreamField
-
+from weasyprint import HTML
 from .streamblocks.models import STREAMBLOCKS_MODELS
-
+from django.template.loader import render_to_string
 
 class ReportLayout(models.Model):
     """Page size/background/marings/fonts/etc, used by reports"""
@@ -37,6 +40,21 @@ class Report(models.Model):
     layout = models.ForeignKey(ReportLayout, on_delete=models.RESTRICT)
     stream = StreamField(model_list=STREAMBLOCKS_MODELS)
     type = models.ForeignKey("permits.ComplementaryDocumentType", on_delete=models.RESTRICT)
+
+    def render(self, permit_request) -> typing.IO:
+        from permits.serializers import PermitRequestPrintSerializer
+        context =  {
+            "report": self,
+            "permit_request": permit_request,
+            "permit_request_data": PermitRequestPrintSerializer(permit_request).data,
+        }
+        html_string = render_to_string("reports/report.html", context)
+
+        buffer = io.BytesIO()
+        HTML(string=html_string).write_pdf(buffer)
+        buffer.seek(io.SEEK_SET)
+        return buffer
+
 
     def __str__(self):
         return self.name
