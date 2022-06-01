@@ -32,8 +32,8 @@
         color: "#ffffff00",
       }),
       stroke: new ol.style.Stroke({
-        color: "#fc4c9e88",
-        width: 1,
+        color: "#dddddd",
+        width: 5,
       }),
     });
 
@@ -54,20 +54,6 @@
     this.wmsLayerGroup = new ol.layer.Group({
       layers: layer_list,
     });
-    this.rasterMaskLayer = new ol.layer.Image({
-      source: new ol.source.ImageWMS({
-        url: this.options.qgisserver_proxy,
-        params: {
-          LAYERS: "permits_permitadministrativeentity",
-          FILTER:
-            'permits_permitadministrativeentity:"id" = ' +
-            this.options.administrative_entity_id,
-        },
-        projection: "EPSG:2056",
-      }),
-      style: restrictionStyle,
-      opacity: 0.9,
-    });
 
     this.vectorMaskLayer = new ol.layer.Vector({
       source: new ol.source.Vector({
@@ -83,7 +69,6 @@
     });
 
     this.map = this.createMap(
-      this.rasterMaskLayer,
       this.vectorMaskLayer,
       this.options.restriction_area_enabled
     );
@@ -184,9 +169,41 @@
         var extent = this.vectorMaskLayer.getSource().getExtent();
         this.map
           .getView()
-          .fit(extent, { padding: [100, 100, 100, 100], minResolution: 1 });
+          .fit(extent, { padding: [10, 10, 10, 10], minResolution: 1 });
+          // Clip to mask layer extent
+          this.wmtsLayer.setExtent(this.vectorMaskLayer.getSource().getExtent());
+          this.wmtsLayerAlternative.setExtent(this.vectorMaskLayer.getSource().getExtent())
       });
     }
+
+    var this_ = this;
+    this.wmtsLayer.on('postrender', function (e) {
+      const vectorContext = ol.render.getVectorContext(e);
+      e.context.globalCompositeOperation = 'destination-in';
+      this_.vectorMaskLayer.getSource().forEachFeature(function (feature) {
+        const style = new ol.style.Style({
+          fill: new ol.style.Fill({
+            color: 'white',
+          }),
+        });
+        vectorContext.drawFeature(feature, style);
+      });
+      e.context.globalCompositeOperation = 'source-over';
+    });
+
+    this.wmtsLayerAlternative.on('postrender', function (e) {
+      const vectorContext = ol.render.getVectorContext(e);
+      e.context.globalCompositeOperation = 'destination-in';
+      this_.vectorMaskLayer.getSource().forEachFeature(function (feature) {
+        const style = new ol.style.Style({
+          fill: new ol.style.Fill({
+            color: 'white',
+          }),
+        });
+        vectorContext.drawFeature(feature, style);
+      });
+      e.context.globalCompositeOperation = 'source-over';
+    });
 
     this.createInteractions();
 
@@ -292,7 +309,6 @@
     Create ol.Map instance
     */
   geometryWidget.prototype.createMap = function (
-    rasterMaskLayer,
     vectorMaskLayer,
     restriction_area_enabled
   ) {
@@ -319,8 +335,6 @@
     });
     if (restriction_area_enabled) {
       map.addLayer(vectorMaskLayer);
-      map.addLayer(rasterMaskLayer);
-      console.log("ici")
     }
 
     map.addLayer(this.wmsLayerGroup);
@@ -640,7 +654,7 @@
           } else {
             this.showWarning("Votre saisie sort du territoire du territoire concerné");
             return false;
-          }
+          } 
         } else {
           return true;
         }
