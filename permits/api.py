@@ -323,7 +323,14 @@ class PermitRequestDetailsViewSet(
         This view should return a list of permits for which the logged user has
         view permissions
         """
-        user = self.request.user
+        # Only take user with session authentication
+        user = (
+            self.request.user
+            if self.request.user.is_authenticated
+            and self.request.session._SessionBase__session_key
+            else None
+        )
+
         filters_serializer = serializers.PermitRequestFiltersSerializer(
             data={
                 "permit_request_id": self.request.query_params.get("permit_request_id"),
@@ -341,15 +348,21 @@ class PermitRequestDetailsViewSet(
             self.request
         )
 
-        qs = models.PermitRequest.objects.filter(base_filter).filter(
-            Q(
-                id__in=services.get_permit_requests_list_for_user(
-                    user,
-                    request_comes_from_internal_qgisserver=request_comes_from_internal_qgisserver,
+        if user:
+            qs = models.PermitRequest.objects.filter(base_filter).filter(
+                Q(
+                    id__in=services.get_permit_requests_list_for_user(
+                        user,
+                        request_comes_from_internal_qgisserver=request_comes_from_internal_qgisserver,
+                    )
                 )
+                | Q(is_public=True)
             )
-            | Q(is_public=True)
-        )
+        else:
+            qs = models.PermitRequest.objects.filter(base_filter).filter(
+                Q(is_public=True)
+            )
+
         if request_comes_from_internal_qgisserver:
             qs = qs[: config.MAX_FEATURE_NUMBER_FOR_QGISSERVER]
 
