@@ -1265,14 +1265,6 @@ class TokenAdmin(BaseTokenAdmin):
             ]
 
 
-# Print setups
-class ReportLayoutAdmin(admin.ModelAdmin):
-    pass
-
-# Print setups
-class ReportAdmin(admin.ModelAdmin):
-    pass
-
 
 admin.site.unregister(TokenProxy)
 admin.site.register(TokenProxy, TokenAdmin)
@@ -1286,5 +1278,3 @@ admin.site.register(models.WorksObject, WorksObjectAdmin)
 admin.site.register(models.PermitRequestAmendProperty, PermitRequestAmendPropertyAdmin)
 admin.site.register(models.TemplateCustomization, TemplateCustomizationAdmin)
 admin.site.register(models.PermitRequest, PermitRequestAdmin)
-admin.site.register(models.Report, ReportAdmin)
-admin.site.register(models.ReportLayout, ReportLayoutAdmin)

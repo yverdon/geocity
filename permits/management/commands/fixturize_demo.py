@@ -21,6 +21,8 @@ from .add_default_print_config import add_default_print_config
 from constance import config
 from ... import services
 
+from reports import models as reports_models
+
 
 def strip_accents(text):
     """
@@ -813,7 +815,7 @@ class Command(BaseCommand):
 
         # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
         background_image = open("/code/qgisserver/report-letter-paper.png", "rb")
-        layout = models.ReportLayout(
+        layout = reports_models.ReportLayout(
             name="demo_layout",
             margin_top=30,
             margin_right=10,
@@ -822,7 +824,7 @@ class Command(BaseCommand):
         )
         layout.background.save("report-letter-paper.png", File(background_image), save=True)
         layout.save()
-        report = models.Report(
+        report = reports_models.Report(
             name="demo_report",
             layout=layout,
             stream=StreamObject(

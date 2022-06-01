@@ -1814,25 +1814,3 @@ def permit_requests_search(request):
         {"results": [search_result_to_json(result) for result in results]}
     )
 
-
-
-@method_decorator(login_required, name='dispatch')
-@method_decorator(permanent_user_required, name='dispatch')
-class ReportView(WeasyTemplateView):
-# class ReportView(TemplateView):
-    # uncomment to download file as attachment
-    # pdf_filename = 'download.pdf'
-    template_name = 'permits/report.html'
-
-    def get_context_data(self, permit_request_id, report_id):
-        # TODO CRITICAL: ensure user has permissions on permit
-        permit_request = get_object_or_404(models.PermitRequest, pk=permit_request_id)
-        # TODO CRITICAL: ensure print setup is part of WorksObjectType
-        report = get_object_or_404(models.Report, pk=report_id)
-
-        return  {
-            'report': report,
-            'permit_request': permit_request,
-            'permit_request_data': PermitRequestPrintSerializer(permit_request).data,
-        }
-

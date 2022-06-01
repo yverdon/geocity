@@ -153,6 +153,7 @@ if ENABLE_2FA:
 # project applications
 INSTALLED_APPS += [
     "permits",
+    "reports",
     "streamblocks",
 ]
 

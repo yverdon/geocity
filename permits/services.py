@@ -31,7 +31,7 @@ from django.utils.translation import gettext_lazy as _
 
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
-from .models import PermitRequest, WorksObjectType, Report
+from .models import PermitRequest, WorksObjectType
 from .utils import reverse_permit_request_url
 from PIL import Image
 from pdf2image import convert_from_path
