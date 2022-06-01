@@ -19,8 +19,17 @@ class ReportLayout(models.Model):
     margin_right = models.PositiveIntegerField(default=10)
     margin_bottom = models.PositiveIntegerField(default=10)
     margin_left = models.PositiveIntegerField(default=10)
-    font = models.CharField(max_length=1024, blank=True, null=True, help_text=_("La liste des polices disponbiles est visible sur <a href=\"https://fonts.google.com/\" target=\"_blank\">Goole Fonts</a>"))
-    background = models.ImageField(null=True, blank=True, help_text=_("Image d'arrière plan (\"papier à en-tête\")"))
+    font = models.CharField(
+        max_length=1024,
+        blank=True,
+        null=True,
+        help_text=_(
+            'La liste des polices disponbiles est visible sur <a href="https://fonts.google.com/" target="_blank">Goole Fonts</a>'
+        ),
+    )
+    background = models.ImageField(
+        null=True, blank=True, help_text=_('Image d\'arrière plan ("papier à en-tête")')
+    )
 
     def __str__(self):
         return self.name
@@ -36,7 +45,9 @@ class Report(models.Model):
     name = models.CharField(max_length=150)
     layout = models.ForeignKey(ReportLayout, on_delete=models.RESTRICT)
     stream = StreamField(model_list=STREAMBLOCKS_MODELS)
-    type = models.ForeignKey("permits.ComplementaryDocumentType", on_delete=models.RESTRICT)
+    type = models.ForeignKey(
+        "permits.ComplementaryDocumentType", on_delete=models.RESTRICT
+    )
 
     def __str__(self):
         return self.name

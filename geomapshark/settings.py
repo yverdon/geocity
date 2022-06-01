@@ -534,16 +534,24 @@ if ALLOW_REMOTE_USER_AUTH:
     ]
 
 CKEDITOR_CONFIGS = {
-    'default': {
+    "default": {
         # TODO: find a way to customize style and format dropdowns
-        'toolbar': 'custom',
-        'toolbar_custom': [
-            [ 'Undo', 'Redo' ],
-            [ 'Image', 'Table', 'HorizontalRule', 'SpecialChar' ],
-            [ 'Bold', 'Italic', 'Strike', '-', 'RemoveFormat' ],
-            [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote' ],
-            [ 'Styles', 'Format' ],
-            [ 'Source' ],
+        "toolbar": "custom",
+        "toolbar_custom": [
+            ["Undo", "Redo"],
+            ["Image", "Table", "HorizontalRule", "SpecialChar"],
+            ["Bold", "Italic", "Strike", "-", "RemoveFormat"],
+            [
+                "NumberedList",
+                "BulletedList",
+                "-",
+                "Outdent",
+                "Indent",
+                "-",
+                "Blockquote",
+            ],
+            ["Styles", "Format"],
+            ["Source"],
         ],
     },
 }

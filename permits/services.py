@@ -1631,6 +1631,7 @@ def get_permit_request_reports(permit_request):
     return reports
     # return Report.objects.filter(worksobjecttypes__permit_request=permit_request)
 
+
 # Validate a file, from checking the first bytes and detecting the kind of the file
 # Exemple : User puts "my_malware.exe" and rename as "file.txt"
 # kind.extension => will return "exe"
