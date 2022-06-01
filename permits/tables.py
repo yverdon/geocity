@@ -259,7 +259,9 @@ class DepartmentPermitRequestsExportTable(GenericDepartmentPermitRequestsTable):
 
 
 class ArchivedPermitRequestsTable(ColumnShiftTable):
-    check = PermitRequestCheckboxColumn(accessor="permit_request_id", verbose_name="Archiver")
+    check = PermitRequestCheckboxColumn(
+        accessor="permit_request_id", verbose_name="Archiver"
+    )
     permit_request_id = tables.Column(verbose_name=_("ID"), orderable=True)
     archived_date = tables.Column(verbose_name=_("Date d'archivage"), orderable=True)
     archivist = tables.Column(verbose_name=_("Archivé par"), orderable=True)
