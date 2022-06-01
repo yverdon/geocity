@@ -13,8 +13,6 @@ do
 done
 
 cd /code
-# create demo pg_service.conf file if not exist
-cp -n qgisserver/pg_service.conf_demo qgisserver/pg_service.conf
 
 python3 manage.py migrate
 # django-constance models

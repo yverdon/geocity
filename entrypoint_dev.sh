@@ -15,8 +15,6 @@ done
 cd /code
 # create demo env file if not exist
 cp -n env.demo .env
-# create demo pg_service.conf file if not exist
-cp -n qgisserver/pg_service.conf_demo qgisserver/pg_service.conf
 # setup app using the django tools
 
 python3 manage.py migrate
