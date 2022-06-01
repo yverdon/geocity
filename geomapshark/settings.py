@@ -139,7 +139,7 @@ INSTALLED_APPS = [
     "django_cron",
     "axes",
     "captcha",
-    "tinymce",
+    "ckeditor",
 ]
 
 if ENABLE_2FA:
@@ -527,3 +527,18 @@ if ALLOW_REMOTE_USER_AUTH:
         "django.contrib.auth.backends.RemoteUserBackend",
         "django.contrib.auth.backends.ModelBackend",
     ]
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        # TODO: find a way to customize style and format dropdowns
+        'toolbar': 'custom',
+        'toolbar_custom': [
+            [ 'Undo', 'Redo' ],
+            [ 'Image', 'Table', 'HorizontalRule', 'SpecialChar' ],
+            [ 'Bold', 'Italic', 'Strike', '-', 'RemoveFormat' ],
+            [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote' ],
+            [ 'Styles', 'Format' ],
+            [ 'Source' ],
+        ],
+    },
+}

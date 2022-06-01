@@ -9,13 +9,13 @@ from django.core.validators import (
     MinValueValidator,
     RegexValidator,
 )
-from tinymce import models as tinymce_models
+from ckeditor.fields import RichTextField
 
 
 from permits import fields
 
 class PrintBlockRichText(models.Model):
-    content = tinymce_models.HTMLField(
+    content = RichTextField(
         # TODO: reverse_lazy and parametrize URL instead of hardcode
         # TODO WIP: use rich text editor
         help_text=_(

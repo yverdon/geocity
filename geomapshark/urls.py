@@ -130,7 +130,6 @@ urlpatterns += [
     path("oauth/", include("oauth2_provider.urls", namespace="oauth2_provider")),
     path("captcha/", include("captcha.urls")),
     path('streamfield/', include('streamfield.urls')),
-    path('tinymce/', include('tinymce.urls')),
 ]
 
 if settings.PREFIX_URL:
