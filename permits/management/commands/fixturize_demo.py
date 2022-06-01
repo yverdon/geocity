@@ -1,3 +1,4 @@
+from cgitb import text
 from io import StringIO
 import random
 from django.contrib.auth import get_user_model
@@ -20,6 +21,7 @@ import unicodedata
 from .add_default_print_config import add_default_print_config
 from constance import config
 from ... import services
+
 
 
 def strip_accents(text):
@@ -421,8 +423,16 @@ class Command(BaseCommand):
             (
                 "Stationnement (ex. de demande devant être prolongée)",
                 [
-                    ("Demande de macaron", properties["comment"], properties["date"],),
-                    (
+                    ("Demande de macaron", 
+                         properties["plan"],
+                        properties["width"],
+                        properties["comment"],
+                        properties["title"],
+                        properties["date"],
+                        properties["checkbox"],
+                        properties["adresse"],
+                        properties["list_multiple"],
+                    ),(
                         "Accès au centre-ville historique",
                         properties["plan"],
                         properties["width"],
@@ -791,7 +801,7 @@ class Command(BaseCommand):
             author=demo_author,
             is_public=True,
         )
-
+        # Validations with long text
         models.PermitRequestValidation.objects.get_or_create(
             permit_request=permit_request7,
             department=department,
@@ -825,6 +835,7 @@ class Command(BaseCommand):
             geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
         )
 
+        # Amend propertie with long text
         amend_property_1 = models.PermitRequestAmendProperty.objects.create(
             name="Commentaire interne",
             is_visible_by_author=False,
@@ -863,6 +874,69 @@ class Command(BaseCommand):
             works_object_type_choice=works_object_type_choice_2,
             value=demo_long_text,
         )
+
+        # Set default values for properties
+        for prop in models.WorksObjectProperty.objects.all():
+            for works_object_type_choice in [works_object_type_choice_1, works_object_type_choice_2]:
+                if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_DATE:
+                    models.WorksObjectPropertyValue.objects.create(
+                        property=prop,
+                        works_object_type_choice=works_object_type_choice,
+                        value={
+                            "val": "01.01.2021"
+                        },
+                    )
+                if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_ADDRESS:
+                    models.WorksObjectPropertyValue.objects.create(
+                        property=prop,
+                        works_object_type_choice=works_object_type_choice,
+                        value={
+                            "val": "Place pestalozzi 2, 1400 Yverdon-les-Bains"
+                        },
+                    )
+                if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_CHECKBOX:
+                    models.WorksObjectPropertyValue.objects.create(
+                        property=prop,
+                        works_object_type_choice=works_object_type_choice,
+                        value={
+                            "val": True
+                        },
+                    )
+                if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_NUMBER:
+                    models.WorksObjectPropertyValue.objects.create(
+                        property=prop,
+                        works_object_type_choice=works_object_type_choice,
+                        value={
+                            "val": 42
+                        },
+                    )
+                if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE:
+                    models.WorksObjectPropertyValue.objects.create(
+                        property=prop,
+                        works_object_type_choice=works_object_type_choice,
+                        value={
+                            "val": "Oui"
+                        },
+                    )
+                if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE:
+                    models.WorksObjectPropertyValue.objects.create(
+                        property=prop,
+                        works_object_type_choice=works_object_type_choice,
+                        value={
+                            "val": "Le bon choix"
+                        },
+                    )
+                if (prop.input_type == models.WorksObjectProperty.INPUT_TYPE_TEXT 
+                    or prop.input_type == models.WorksObjectProperty.INPUT_TYPE_REGEX 
+                    or prop.input_type == models.WorksObjectProperty.INPUT_TYPE_TITLE):
+                    models.WorksObjectPropertyValue.objects.create(
+                        property=prop,
+                        works_object_type_choice=works_object_type_choice,
+                        value={
+                            "val": demo_medium_text
+                        },
+                    )
+
 
     def create_geom_layer_entity(self):
 
@@ -995,10 +1069,6 @@ class Command(BaseCommand):
         => <a href="https://mailhog.geocity.ch" target="_blank">Boîte mail de demo<a/>
         """
 
-"""
-A long text to fille demo permits text fields
-"""
-
 demo_long_text = """
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor 
@@ -1042,3 +1112,13 @@ of duty or the obligations of business it will frequently occur that pleasures h
 The wise man therefore always holds in these matters to this principle of selection: he rejects pleasures to secure other greater pleasures,
 or else he endures pains to avoid worse pains.
 """
+
+demo_medium_text = """
+On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by the charms of pleasure 
+of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are bound to ensue; and equal blame belongs to 
+those who fail in their duty through weakness of will, which is the same as saying through shrinking from toil and pain. These cases 
+are perfectly simple and easy to distinguish. In a free hour, when our power of choice is untrammelled and when nothing prevents our being 
+able to do what we like best, every pleasure is to be welcomed and every pain avoided. But in certain circumstances and owing to the claims
+of duty or the obligations of business it will frequently occur that pleasures have to be repudiated and annoyances accepted.
+The wise man therefore always holds in these matters to this principle of selection: he rejects pleasures to secure other greater pleasures,
+or else he endures pains to avoid worse pains"""
