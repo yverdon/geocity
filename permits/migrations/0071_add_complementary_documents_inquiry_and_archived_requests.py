@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
     replaces = [('permits', '0065_permitrequestcomplementarydocument'), ('permits', '0066_auto_20220329_1641'), ('permits', '0067_permitrequestcomplementarydocument_document_type'), ('permits', '0068_alter_permitrequestcomplementarydocument_authorised_departments'), ('permits', '0069_historicalpermitrequestinquiry_permitrequestinquiry'), ('permits', '0070_auto_20220406_1421'), ('permits', '0071_delete_historicalpermitrequestinquiry'), ('permits', '0072_alter_permitrequestcomplementarydocument_document'), ('permits', '0073_archivedpermitrequest'), ('permits', '0074_auto_20220427_1644'), ('permits', '0075_alter_archivedpermitrequest_archived_date'), ('permits', '0076_alter_permitrequestinquiry_options')]
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('permits', '0064_add_field_can_always_update_in_WorksObjectType'),
+        ('permits', '0070_publish_fields_for_public_permitrequests'),
     ]
 
     operations = [
