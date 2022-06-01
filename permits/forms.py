@@ -31,6 +31,7 @@ from accounts.dootix.adapter import DootixSocialAccountAdapter
 from accounts.dootix.provider import DootixProvider
 from accounts.geomapfish.adapter import GeomapfishSocialAccountAdapter
 from accounts.geomapfish.provider import GeomapfishProvider
+from django.utils import timezone
 
 from . import models, services, geoservices
 from reports.models import Report
@@ -1565,9 +1566,9 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         ).all()
 
         self.fields["document_type"].queryset = parent_types
-        self.fields["document_type"].required = True
 
-        # Document is not required, as user can also use a generated report
+        # Document, document type are not required, as user can also use a generated report
+        self.fields["document_type"].required = False
         self.fields["document"].required = False
 
         for parent in parent_types:
@@ -1635,10 +1636,13 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             )
 
         # If document is null, it must be because we use a preset
-        if not self.cleaned_data.get("document"):
-            report = self.cleaned_data.get("report_preset")
-            self.cleaned_data["document"] = File(report.render(self.permit_request), name=f"{report.name} ({_('(autogénéré)')}).pdf")
-            self.cleaned_data["document_type"] = report.type
+        if not cleaned_data.get("document"):
+            report = cleaned_data.get("report_preset")
+            now = timezone.now()
+            name = f"{report.name}_generated_{now:%Y-%m-%d}.pdf"
+            cleaned_data["document"] = File(report.render(self.permit_request), name=name)
+            cleaned_data["document_type"] = report.type
+            cleaned_data[f"parent_{report.type.pk}"] = report.type
 
         if not self.cleaned_data.get("document_type"):
             return cleaned_data
