@@ -3,8 +3,8 @@
 {% load i18n %}
 {% load permits_extras %}
 
-{% block content-fluid %}
-  <h3>{% trans "Requête anonyme" %}</h3>
+{% block content %}
+  <h3>{% trans "Formulaire" %}</h3>
   <hr>
   <div class="card mb-3">
     <div class="card-body">
@@ -14,7 +14,7 @@
         {% bootstrap_form anonymous_request_form layout='horizontal' %}
         {% buttons %}
           <button class='js-captcha-refresh btn btn-secondary'>
-            {% trans "Rafraichir le captcha" %}
+            {% trans "Rafraîchir le captcha" %}
           </button>
           <button type="submit" class="btn btn-primary">{% trans "Continuer" %}</button>
         {% endbuttons %}
@@ -28,7 +28,7 @@
   <script>
     $('.js-captcha-refresh').click(function(){
       const $form = $(this).parents('form');
-      $.getJSON('/captcha/refresh/', function(json) {
+      $.getJSON('{{ captcha_refresh_url }}', function(json) {
         $('.captcha', $form).attr('src', json['image_url']);
         $('#id_captcha_0', $form).val(json['key'])
       });

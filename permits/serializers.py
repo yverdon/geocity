@@ -100,7 +100,19 @@ class PermitRequestSerializer(serializers.ModelSerializer):
 
 class WotPropertiesValuesSerializer(serializers.RelatedField):
     def to_representation(self, value):
-        wot_properties = services.get_wot_properties(value, api=True)
+        current_user = None
+        request = self.context.get("request", None)
+        if request:
+            current_user = request.user
+            session_authentication = request.session._SessionBase__session_key
+
+        # User is logged by session_authentication
+        user_is_authenticated = (
+            True if current_user.is_authenticated and session_authentication else False
+        )
+        wot_properties = services.get_wot_properties(
+            value, user_is_authenticated, value_with_type=True
+        )
         return wot_properties
 
 
@@ -249,6 +261,7 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
 
     def to_representation(self, value):
         geo_time_qs = value.all()
+
         if not geo_time_qs:
             return {
                 "geometry": {"type": "Polygon", "coordinates": []},
@@ -261,7 +274,6 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
                     }
                 },
             }
-
         else:
 
             if self.extract_geom == self.EXTRACT_POINTS:
@@ -281,7 +293,7 @@ class PermitRequestGeoTimeGeoJSONSerializer(serializers.Serializer):
 
             result = {"properties": {}}
             if not aggregated_geotime_qs["singlegeom"]:
-                result["geometry"] = None
+                result["geometry"] = {"type": "Polygon", "coordinates": []}
             else:
                 result["geometry"] = json.loads(
                     GEOSGeometry(aggregated_geotime_qs["singlegeom"]).json

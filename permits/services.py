@@ -8,6 +8,7 @@ from collections import defaultdict
 import socket
 import ipaddress
 from datetime import datetime
+import PIL
 
 import filetype
 import pathlib
@@ -38,7 +39,7 @@ from zipfile import ZipFile
 
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
-from .models import PermitRequest
+from .models import PermitRequest, WorksObjectType
 from .utils import reverse_permit_request_url
 from PIL import Image
 from pdf2image import convert_from_path
@@ -47,6 +48,8 @@ from pdf2image import convert_from_path
 class GeoTimeInfo(enum.Enum):
     DATE = enum.auto()
     GEOMETRY = enum.auto()
+    # Geometry automatically genrerate from address field using geoadmin API
+    GEOCODED_GEOMETRY = enum.auto()
 
 
 def get_works_object_type_choices(permit_request):
@@ -72,6 +75,7 @@ def set_object_property_value(permit_request, object_type, prop, value):
     )
     is_file = prop.input_type == models.WorksObjectProperty.INPUT_TYPE_FILE
     is_date = prop.input_type == models.WorksObjectProperty.INPUT_TYPE_DATE
+    is_address = prop.input_type == models.WorksObjectProperty.INPUT_TYPE_ADDRESS
 
     if value == "" or value is None:
         existing_value_obj.delete()
@@ -123,6 +127,9 @@ def set_object_property_value(permit_request, object_type, prop, value):
                     )
             # Postprocess PDF: convert everything to image, do not keep other content
             elif upper_ext == "PDF":
+                # File size to fix decompression bomb error
+                PIL.Image.MAX_IMAGE_PIXELS = None
+
                 all_images = convert_from_path(private_storage.location + "/" + path)
                 first_image = all_images[0]
                 following_images = all_images[1:]
@@ -178,6 +185,23 @@ def get_properties_values(permit_request):
     )
 
 
+def get_properties_value(permit_request, property):
+    """
+    Return a `WorksObjectPropertyValue` object for the given `permit_request` and given property
+    """
+    return (
+        models.WorksObjectPropertyValue.objects.filter(
+            works_object_type_choice__permit_request=permit_request
+        )
+        .exclude(property__input_type=models.WorksObjectProperty.INPUT_TYPE_FILE)
+        .select_related(
+            "works_object_type_choice",
+            "works_object_type_choice__works_object_type",
+            "property",
+        )
+    )
+
+
 def get_appendices_values(permit_request):
     """
     Return a queryset of `WorksObjectPropertyValue` objects of type file for the given `permit_request`.
@@ -218,7 +242,8 @@ def get_works_types(administrative_entity, user):
         models.WorksType.objects.filter(
             pk__in=models.WorksObjectType.objects.filter(
                 administrative_entities=administrative_entity
-            ).values_list("works_type_id", flat=True)
+            ).values_list("works_type_id", flat=True),
+            works_object_types__is_anonymous=False,
         )
         .order_by("name")
         .distinct()
@@ -237,6 +262,7 @@ def get_administrative_entities(user):
             pk__in=models.WorksObjectType.objects.values_list(
                 "administrative_entities", flat=True
             ),
+            works_object_types__is_anonymous=False,
         )
         .order_by("ofs_id", "-name")
         .distinct()
@@ -386,6 +412,15 @@ def get_property_value(object_property_value):
         return f
 
     return value
+
+
+def get_property_value_based_on_property(prop):
+    property_object = models.WorksObjectPropertyValue.objects.get(
+        property__name=prop["properties__property__name"],
+        works_object_type_choice__id=prop["id"],
+    )
+    # get_property_value return None if file does not exist
+    return get_property_value(property_object)
 
 
 def get_user_administrative_entities(user):
@@ -805,13 +840,27 @@ def get_geotime_required_info(permit_request):
 
     if any(works_object_type.has_geometry for works_object_type in works_object_types):
         required_info.add(GeoTimeInfo.GEOMETRY)
+    else:
+        exclusions = [
+            prop[0]
+            for prop in models.WorksObjectProperty.INPUT_TYPE_CHOICES
+            if prop[0] != models.INPUT_TYPE_ADDRESS
+        ]
 
+        if (
+            get_properties(permit_request, exclusions)
+            and get_geotime_objects(permit_request.pk)
+            .filter(comes_from_automatic_geocoding=True)
+            .exists()
+        ):
+            required_info.add(GeoTimeInfo.GEOCODED_GEOMETRY)
     return required_info
 
 
-def get_geotime_objects(permit_request_id):
+def get_geotime_objects(permit_request_id, exlude_geocoded_geom=False):
     return models.PermitRequestGeoTime.objects.filter(
-        permit_request_id=permit_request_id
+        permit_request_id=permit_request_id,
+        comes_from_automatic_geocoding=exlude_geocoded_geom,
     )
 
 
@@ -1504,7 +1553,7 @@ def get_default_works_object_types(
     if (works_types is None and len(available_works_types) > 1) or len(
         available_works_objects
     ) > 1:
-        return []
+        return WorksObjectType.objects.none()
 
     return works_object_types
 
@@ -1696,7 +1745,7 @@ def check_request_comes_from_internal_qgisserver(request):
     return False
 
 
-def get_wot_properties(value, api=False):
+def get_wot_properties(value, user_is_authenticated=None, value_with_type=False):
     """
     Return wot properties in a list for the api, in a dict for backend
     """
@@ -1709,72 +1758,81 @@ def get_wot_properties(value, api=False):
         "id",
         "works_object_type__works_object__name",
         "works_object_type__works_type__name",
+        "properties__property__is_public_when_permitrequest_is_public",
     )
 
     wot_properties = dict()
     property = list()
+    last_wot = ""
 
     if wot_props:
         # Flat view is used in the api for geocalandar, the WOT shows only the works_object__name and not the type
-        if api:
+        if value_with_type:
             wot_properties = list()
             for prop in wot_props:
-                # List of a lost, to split wot in objects
-                if property:
+                wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+
+                # List of a list, to split wot in objects. Check if last wot changed or never assigned. Means it's first iteration
+                if property and wot != last_wot:
                     wot_properties.append(property)
                     property = []
+                    # WOT
+                    property.append(
+                        {"key": "work_object_type", "value": wot, "type": "text",}
+                    )
 
-                wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
-                # WOT
-                property.append(
-                    {"key": "work_object_type", "value": wot, "type": "text",}
-                )
-                for prop_i in wot_props:
-                    if (
-                        prop_i["works_object_type_id"] == prop["works_object_type_id"]
-                        and prop_i["properties__property__name"]
-                    ):
-                        if prop_i["properties__property__input_type"] == "file":
+                if not last_wot:
+                    property.append(
+                        {"key": "work_object_type", "value": wot, "type": "text",}
+                    )
 
-                            # Reconstituate download link if it's a file
-                            property_object = models.WorksObjectPropertyValue.objects.get(
-                                property__name=prop_i["properties__property__name"],
-                                works_object_type_choice__id=prop_i["id"],
-                            )
-                            # get_property_value return None if file does not exist
-                            file = get_property_value(property_object)
-                            if file:
-                                absolute_url = PermitRequest.get_absolute_url(file.url)
-                                file_name = prop_i["properties__value__val"].split(
-                                    "/", -1
-                                )[-1]
-                                # Properties of WOT
-                                property.append(
-                                    {
-                                        "key": prop_i["properties__property__name"],
-                                        "value": absolute_url,
-                                        "name": file_name,
-                                        "type": prop_i[
-                                            "properties__property__input_type"
-                                        ],
-                                    }
-                                )
-                        else:
-                            # Properties of WOT
-                            property.append(
-                                {
-                                    "key": prop_i["properties__property__name"],
-                                    "value": prop_i["properties__value__val"],
-                                    "type": prop_i["properties__property__input_type"],
-                                }
-                            )
+                last_wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+
+                if prop["properties__property__input_type"] == "file" and (
+                    user_is_authenticated
+                    or prop[
+                        "properties__property__is_public_when_permitrequest_is_public"
+                    ]
+                ):
+                    # get_property_value return None if file does not exist
+                    file = get_property_value_based_on_property(prop)
+                    # Check if file exist
+                    if file:
+                        # Properties of WOT
+                        property.append(
+                            {
+                                "key": prop["properties__property__name"],
+                                "value": file.url,
+                                "type": prop["properties__property__input_type"],
+                            }
+                        )
+                elif prop["properties__value__val"] and (
+                    user_is_authenticated
+                    or prop[
+                        "properties__property__is_public_when_permitrequest_is_public"
+                    ]
+                ):
+                    # Properties of WOT
+                    property.append(
+                        {
+                            "key": prop["properties__property__name"],
+                            "value": prop["properties__value__val"],
+                            "type": prop["properties__property__input_type"],
+                        }
+                    )
+            # Add last wot_properties, or show something when there's only one
+            wot_properties.append(property)
         else:
             for prop in wot_props:
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
                 wot_properties[wot] = {
-                    prop_i["properties__property__name"]: prop_i[
-                        "properties__value__val"
-                    ]
+                    prop_i[
+                        "properties__property__name"
+                    ]: get_property_value_based_on_property(prop_i).url
+                    # Check this is a file and the file exist
+                    if prop_i["properties__property__input_type"] == "file"
+                    and get_property_value_based_on_property(prop_i)
+                    else prop_i["properties__value__val"]
                     for prop_i in wot_props
                     if prop_i["works_object_type_id"] == prop["works_object_type_id"]
                     and prop_i["properties__property__name"]
@@ -1885,3 +1943,23 @@ def can_download_archive(user, archivist):
         or user.is_superuser
         or (user.groups.all() & archivist.groups.all()).exists()
     )
+
+
+def get_services_to_notify_mailing_list(permit_request):
+
+    mailing_list = []
+
+    works_object_types_to_notify = permit_request.works_object_types.filter(
+        notify_services=True
+    )
+
+    if works_object_types_to_notify.exists():
+        for emails in works_object_types_to_notify.values_list(
+            "services_to_notify", flat=True
+        ):
+            emails_addresses = emails.replace("\n", ",").split(",")
+            mailing_list += [
+                ea.strip() for ea in emails_addresses if validate_email(ea.strip())
+            ]
+
+    return mailing_list

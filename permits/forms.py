@@ -32,7 +32,7 @@ from accounts.dootix.provider import DootixProvider
 from accounts.geomapfish.adapter import GeomapfishSocialAccountAdapter
 from accounts.geomapfish.provider import GeomapfishProvider
 
-from . import models, services
+from . import models, services, geoservices
 
 input_type_mapping = {
     models.WorksObjectProperty.INPUT_TYPE_TEXT: forms.CharField,
@@ -87,8 +87,8 @@ class AddressWidget(forms.widgets.TextInput):
 
     def __init__(self, attrs=None, autocomplete_options=None):
         autocomplete_options = {
-            "apiurl": "https://api3.geo.admin.ch/rest/services/api/SearchServer?",
-            "apiurl_detail": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.bfs.gebaeude_wohnungs_register/",
+            "apiurl": settings.LOCATIONS_SEARCH_API,
+            "apiurl_detail": settings.LOCATIONS_SEARCH_API_DETAILS,
             "origins": "address",
             "zipcode_field": "zipcode",
             "city_field": "city",
@@ -457,11 +457,14 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         return {
             **default_kwargs,
             "widget": AddressWidget(
-                autocomplete_options={"single_address_field": True},
+                autocomplete_options={"single_address_field": True,},
                 attrs={
                     "placeholder": ("ex: " + prop.placeholder)
                     if prop.placeholder != ""
-                    else ""
+                    else "",
+                    "additional_searchtext_for_address_field": prop.additional_searchtext_for_address_field
+                    if prop.additional_searchtext_for_address_field
+                    else "",
                 },
             ),
         }
@@ -529,6 +532,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         }
 
     def save(self):
+        to_geocode_addresses = []
         for works_object_type, prop in self.get_properties():
             if prop.is_value_property():
                 services.set_object_property_value(
@@ -539,6 +543,17 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                         self.get_field_name(works_object_type, prop)
                     ],
                 )
+            if (
+                prop.input_type == models.WorksObjectProperty.INPUT_TYPE_ADDRESS
+                and prop.store_geometry_for_address_field
+                and self.cleaned_data[self.get_field_name(works_object_type, prop)]
+            ):
+                to_geocode_addresses.append(
+                    self.cleaned_data[self.get_field_name(works_object_type, prop)]
+                )
+        geoservices.reverse_geocode_and_store_address_geometry(
+            self.instance, to_geocode_addresses
+        )
 
 
 class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
@@ -1095,11 +1110,19 @@ class GeometryWidget(geoforms.OSMWidget):
     @property
     def media(self):
         return forms.Media(
-            css={"all": ("libs/js/openlayers6/ol.css", "css/geotime.css")},
+            css={
+                "all": (
+                    "libs/js/openlayers6/ol.css",
+                    "customWidgets/RemoteAutocomplete/remoteautocomplete.css",
+                    "libs/js/jquery-ui-custom/jquery-ui.min.css",
+                    "css/geotime.css",
+                )
+            },
             js=(
                 "libs/js/openlayers6/ol.js",
                 "libs/js/proj4js/proj4-src.js",
                 "customWidgets/GeometryWidget/geometrywidget.js",
+                "libs/js/jquery-ui-custom/jquery-ui.js",
             ),
         )
 
@@ -1155,7 +1178,6 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.permit_request = kwargs.pop("permit_request", None)
         disable_fields = kwargs.pop("disable_fields", False)
-
         initial = {}
         if (
             self.permit_request.prolongation_date
@@ -1170,11 +1192,16 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
 
         required_info = services.get_geotime_required_info(self.permit_request)
 
-        if services.GeoTimeInfo.DATE not in required_info:
+        if (
+            services.GeoTimeInfo.DATE not in required_info
+            or self.instance.comes_from_automatic_geocoding
+        ):
             del self.fields["starts_at"]
             del self.fields["ends_at"]
-
-        if services.GeoTimeInfo.GEOMETRY not in required_info:
+        if (
+            services.GeoTimeInfo.GEOMETRY not in required_info
+            and not self.instance.comes_from_automatic_geocoding
+        ):
             del self.fields["geom"]
 
         else:
@@ -1184,7 +1211,14 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             self.fields["geom"].widget.attrs["options"][
                 "edit_geom"
             ] = not disable_fields
-        if not config.ENABLE_GEOCALENDAR:
+        if (
+            not config.ENABLE_GEOCALENDAR
+            or self.instance.comes_from_automatic_geocoding
+            or (
+                (services.GeoTimeInfo.GEOMETRY and services.GeoTimeInfo.DATE)
+                not in required_info
+            )
+        ):
             del self.fields["comment"]
             del self.fields["external_link"]
         if disable_fields:
@@ -1236,6 +1270,11 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             for works_object_type in works_object_types
         )
 
+        ftsearch_additional_searchtext_for_address_field = (
+            permit_request.administrative_entity.additional_searchtext_for_address_field
+            if permit_request
+            else ""
+        )
         options = {
             "administrative_entity_url": reverse(
                 "permits:administrative_entities_geojson",
@@ -1266,6 +1305,10 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             "restriction_area_enabled": True,
             "geometry_db_type": "GeometryCollection",
             "qgisserver_proxy": reverse("permits:qgisserver_proxy"),
+            "ftsearch_additional_searchtext_for_address_field": ftsearch_additional_searchtext_for_address_field,
+            "ftsearch_apiurl": settings.LOCATIONS_SEARCH_API,
+            "ftsearch_apiurl_detail": settings.LOCATIONS_SEARCH_API_DETAILS,
+            "ftsearch_apiurl_origins": "address,parcel",
         }
 
         return options

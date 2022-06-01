@@ -42,8 +42,8 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
     Events request endpoint Usage:
         1.- /rest/permits/?show_only_future=true (past events get filtered out)
         2.- /rest/permits/?starts_at=2022-01-01
-        2.- /rest/permits/?ends_at=2020-01-01
-        3.- /rest/permits/?adminentities=1,2,3
+        3.- /rest/permits/?ends_at=2020-01-01
+        4.- /rest/permits/?adminentities=1,2,3
 
     """
 
@@ -283,7 +283,6 @@ class PermitRequestViewSet(
                         request_comes_from_internal_qgisserver=request_comes_from_internal_qgisserver,
                     )
                 )
-                | Q(is_public=True)
             )
             .prefetch_related(works_object_types_prefetch)
             .prefetch_related(geotime_prefetch)
@@ -318,14 +317,20 @@ class PermitRequestDetailsViewSet(
 
     throttle_scope = "permits_details"
     serializer_class = serializers.PermitRequestDetailsSerializer
-    permission_classes = [BlockRequesterUserLoggedOnToken]
 
     def get_queryset(self, geom_type=None):
         """
         This view should return a list of permits for which the logged user has
         view permissions
         """
-        user = self.request.user
+        # Only take user with session authentication
+        user = (
+            self.request.user
+            if self.request.user.is_authenticated
+            and self.request.session._SessionBase__session_key
+            else None
+        )
+
         filters_serializer = serializers.PermitRequestFiltersSerializer(
             data={
                 "permit_request_id": self.request.query_params.get("permit_request_id"),
@@ -343,15 +348,21 @@ class PermitRequestDetailsViewSet(
             self.request
         )
 
-        qs = models.PermitRequest.objects.filter(base_filter).filter(
-            Q(
-                id__in=services.get_permit_requests_list_for_user(
-                    user,
-                    request_comes_from_internal_qgisserver=request_comes_from_internal_qgisserver,
+        if user:
+            qs = models.PermitRequest.objects.filter(base_filter).filter(
+                Q(
+                    id__in=services.get_permit_requests_list_for_user(
+                        user,
+                        request_comes_from_internal_qgisserver=request_comes_from_internal_qgisserver,
+                    )
                 )
+                | Q(is_public=True)
             )
-            | Q(is_public=True)
-        )
+        else:
+            qs = models.PermitRequest.objects.filter(base_filter).filter(
+                Q(is_public=True)
+            )
+
         if request_comes_from_internal_qgisserver:
             qs = qs[: config.MAX_FEATURE_NUMBER_FOR_QGISSERVER]
 
@@ -432,6 +443,7 @@ class SearchViewSet(viewsets.ReadOnlyModelViewSet):
 
     throttle_scope = "search"
     serializer_class = serializers.SearchSerializer
+    permission_classes = [BlockRequesterUserPermission]
 
     def get_queryset(self):
         terms = self.request.query_params.get("search")

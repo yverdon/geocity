@@ -371,8 +371,16 @@ class Command(BaseCommand):
             "adresse": models.WorksObjectProperty.objects.create(
                 name="Adresse",
                 input_type="address",
-                placeholder="place pestalozzi 2, 1400 Yverdon-les-Bains",
+                placeholder="Place Pestalozzi 2, 1400 Yverdon-les-Bains",
                 is_mandatory=False,
+                order=5,
+            ),
+            "adresse_geocode": models.WorksObjectProperty.objects.create(
+                name="Adresse avec géocodage",
+                input_type="address",
+                placeholder="Place Pestalozzi 2, 1400 Yverdon-les-Bains",
+                is_mandatory=False,
+                store_geometry_for_address_field=True,
                 order=5,
             ),
             "date": models.WorksObjectProperty.objects.create(
@@ -451,6 +459,7 @@ class Command(BaseCommand):
                         properties["title"],
                         properties["comment"],
                         properties["adresse"],
+                        properties["adresse_geocode"],
                         properties["checkbox"],
                         properties["list_single"],
                     ),
@@ -461,6 +470,7 @@ class Command(BaseCommand):
                         properties["comment"],
                         properties["title"],
                         properties["adresse"],
+                        properties["adresse_geocode"],
                         properties["checkbox"],
                     ),
                 ],

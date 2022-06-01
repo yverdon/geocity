@@ -3,7 +3,6 @@ import datetime
 import re
 import urllib.parse
 import uuid
-import PIL
 from datetime import date
 
 from django.conf import settings
@@ -294,7 +293,6 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
 
     def test_documents_step_filetype_allows_pdf(self):
-        PIL.Image.MAX_IMAGE_PIXELS = 933120000
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         factories.WorksObjectTypeChoiceFactory.create_batch(
             3, permit_request=permit_request
@@ -2467,6 +2465,41 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
         )
         self.assertEqual(prop_val.value, {"val": "Hôtel Martinez, Cannes"})
 
+    def test_properties_step_submit_updates_geotime_with_address_store_geometry_for_address_field(
+        self,
+    ):
+
+        address_prop = factories.WorksObjectPropertyFactoryTypeAddress(
+            input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS,
+            store_geometry_for_address_field=True,
+        )
+        address_prop.works_object_types.set(
+            self.permit_request.works_object_types.all()
+        )
+        works_object_type = self.permit_request.works_object_types.first()
+        data = {
+            f"properties-{works_object_type.pk}_{address_prop.pk}": "Place pestalozzi 2, 1400 Yverdon-les-Bains"
+        }
+        self.client.post(
+            reverse(
+                "permits:permit_request_properties",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            ),
+            data=data,
+        )
+
+        self.permit_request.refresh_from_db()
+        prop_val = services.get_properties_values(self.permit_request).get(
+            property__input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS
+        )
+        self.assertEqual(
+            prop_val.value, {"val": "Place pestalozzi 2, 1400 Yverdon-les-Bains"}
+        )
+        geocoded_geotime_row = models.PermitRequestGeoTime.objects.filter(
+            permit_request=self.permit_request, comes_from_automatic_geocoding=True
+        ).count()
+        self.assertEqual(1, geocoded_geotime_row)
+
     def test_properties_step_submit_updates_permit_request_with_date(self):
 
         date_prop = factories.WorksObjectPropertyFactory(
@@ -3017,6 +3050,57 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             "Nous vous informons que votre annonce a été prise en compte et classée.",
             mail.outbox[0].message().as_string(),
         )
+
+    def test_email_to_services_is_sent_when_secretariat_acknowledges_reception(self):
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+            administrative_entity=self.administrative_entity,
+        )
+        wot = factories.WorksObjectTypeFactory(
+            requires_validation_document=False,
+            notify_services=True,
+            services_to_notify="service-1@geocity.ch, service-2@geocity.ch, i-am-not-an-email,  ,\n\n\n",
+        )
+        permit_request.works_object_types.set([wot])
+        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
+
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data={
+                "status": models.PermitRequest.STATUS_RECEIVED,
+                "action": models.ACTION_AMEND,
+            },
+            follow=True,
+        )
+
+        permit_request.refresh_from_db()
+        self.assertEqual(permit_request.status, models.PermitRequest.STATUS_RECEIVED)
+
+        # 1 email to author + 2 emails to services
+        self.assertEqual(len(mail.outbox), 3)
+
+        services_message_subject = (
+            "Une annonce a été prise en compte et classée par le secrétariat"
+        )
+        services_message_content = "Nous vous informons qu'une annonce a été prise en compte et classée par le secrétariat."
+        valid_services_emails = [
+            "service-1@geocity.ch",
+            "service-2@geocity.ch",
+        ]
+
+        self.assertTrue(mail.outbox[1].to[0] in valid_services_emails)
+        self.assertIn(
+            services_message_subject, mail.outbox[1].subject,
+        )
+        self.assertIn(services_message_content, mail.outbox[1].message().as_string())
+        self.assertTrue(mail.outbox[2].to[0] in valid_services_emails)
+        self.assertIn(
+            services_message_subject, mail.outbox[2].subject,
+        )
+        self.assertIn(services_message_content, mail.outbox[2].message().as_string())
 
     def test_secretariat_can_amend_permit_request_with_status_approved_if_property_is_always_amendable(
         self,

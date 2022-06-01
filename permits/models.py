@@ -42,7 +42,7 @@ from . import fields
 
 # public types: for public/restricted features
 PUBLIC_TYPE_CHOICES = (
-    (True, _("Visible par tous les utilisateurs")),
+    (True, _("Visibilité grand public")),
     (False, _("Visible uniquement par les utilisateur autorisés")),
 )
 
@@ -135,12 +135,16 @@ class PermitDepartment(models.Model):
     description = models.CharField(_("description"), max_length=100, default="Service")
     is_validator = models.BooleanField(
         _("validateur"),
-        help_text="Cocher si les membres doivent apparaître dans la liste des services consultables pour la validation",
+        help_text=_(
+            "Cocher si les membres doivent apparaître dans la liste des services consultables pour la validation"
+        ),
     )
     is_backoffice = models.BooleanField(
         _("secrétariat"),
         default=False,
-        help_text="Cocher si les membres font partie du secrétariat. Ils seront notifiés des évolutions de la demande",
+        help_text=_(
+            "Cocher si les membres font partie du secrétariat. Ils seront notifiés des évolutions de la demande"
+        ),
     )
     administrative_entity = models.ForeignKey(
         "PermitAdministrativeEntity",
@@ -153,11 +157,23 @@ class PermitDepartment(models.Model):
     is_default_validator = models.BooleanField(
         _("sélectionné par défaut pour les validations"), default=False
     )
-    integrator = models.IntegerField(_("Intégrateur responsable"), default=0,)
-    is_integrator_admin = models.BooleanField(
-        "Intégrateur (accès à l'admin de django)", default=False
+    integrator = models.IntegerField(
+        _("Groupe des administrateurs"),
+        help_text=_("Identifiant du groupe"),
+        default=0,
     )
-    mandatory_2fa = models.BooleanField(_("2FA obligatoire"), default=False)
+    is_integrator_admin = models.BooleanField(
+        _("Intégrateur"),
+        help_text=_("Cocher si les membres peuvent accéder à l'admin de Django"),
+        default=False,
+    )
+    mandatory_2fa = models.BooleanField(
+        _("2FA obligatoire"),
+        help_text=_(
+            "Cocher si les membres doivent obligatoirement utiliser la double authentification"
+        ),
+        default=False,
+    )
     integrator_email_domains = models.CharField(
         _("Domaines d'emails visibles pour l'intégrateur"),
         help_text=_(
@@ -229,6 +245,14 @@ class PermitAdministrativeEntity(models.Model):
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
     )
+    additional_searchtext_for_address_field = models.CharField(
+        _("Filtre additionnel pour la recherche d'adresse"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            'Ex: "Yverdon-les-Bains" afin de limiter les recherches à Yverdon, <a href="https://api3.geo.admin.ch/services/sdiservices.html#search" target="_blank">Plus d\'informations</a>'
+        ),
+    )
     geom = geomodels.MultiPolygonField(_("geom"), null=True, srid=2056)
     tags = TaggableManager(
         blank=True,
@@ -256,7 +280,7 @@ class PermitAdministrativeEntity(models.Model):
             "1.1 Configuration de l'entité administrative (commune, organisation)"
         )
         verbose_name_plural = _(
-            "1.1 Configuration de l'entité administrative (commune, organisation)"
+            "1.1 Configuration des entités administratives (commune, organisation)"
         )
         permissions = [
             ("see_private_requests", _("Voir les demandes restreintes")),
@@ -548,7 +572,7 @@ class PermitRequest(models.Model):
         _("état"), choices=STATUS_CHOICES, default=STATUS_DRAFT
     )
     shortname = models.CharField(
-        _("nom court de la demande, de l'événement, etc."),
+        _("nom court"),
         max_length=32,
         help_text=_(
             "Sera affiché dans le calendrier si la demande est rendue tout publique, ex: Brandons (max. 32 caractères)"
@@ -566,7 +590,7 @@ class PermitRequest(models.Model):
     administrative_entity = models.ForeignKey(
         PermitAdministrativeEntity,
         on_delete=models.CASCADE,
-        verbose_name=_("commune"),
+        verbose_name=_("entité administrative"),
         related_name="permit_requests",
     )
     author = models.ForeignKey(
@@ -593,7 +617,7 @@ class PermitRequest(models.Model):
         null=True,
         blank=True,
     )
-    is_public = models.BooleanField(_("Publier"), default=False)
+    is_public = models.BooleanField(_("Publication calendrier"), default=False)
     prolongation_date = models.DateTimeField(
         _("Nouvelle date de fin"), null=True, blank=True
     )
@@ -1023,7 +1047,7 @@ class WorksObjectType(models.Model):
     requires_validation_document = models.BooleanField(
         _("Document de validation obligatoire"), default=True
     )
-    is_public = models.BooleanField(_("Public"), default=False)
+    is_public = models.BooleanField(_("Visibilité "), default=False)
     is_anonymous = models.BooleanField(
         _("Demandes anonymes uniquement"), default=False,
     )
@@ -1055,8 +1079,8 @@ class WorksObjectType(models.Model):
     anonymous_objects = AnonymousWorksObjectTypeManager()
 
     class Meta:
-        verbose_name = _("1.4 Configuration type-objet-entité administrative")
-        verbose_name_plural = _("1.4 Configurations type-objet-entité administrative")
+        verbose_name = _("1.4 Configuration du type-objet-entité")
+        verbose_name_plural = _("1.4 Configuration des type-objet-entité")
         unique_together = [("works_type", "works_object")]
 
     def __str__(self):
@@ -1191,6 +1215,28 @@ class WorksObjectProperty(models.Model):
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
         blank=True,
         upload_to="wot_files",
+    )
+    additional_searchtext_for_address_field = models.CharField(
+        _("Filtre additionnel pour la recherche d'adresse"),
+        max_length=255,
+        blank=True,
+        help_text=_(
+            'Ex: "Yverdon-les-Bains" afin de limiter les recherches à Yverdon, <a href="https://api3.geo.admin.ch/services/sdiservices.html#search" target="_blank">Plus d\'informations</a>'
+        ),
+    )
+    store_geometry_for_address_field = models.BooleanField(
+        _("Stocker la géométrie de l'adresse dans la table géométrique"),
+        default=False,
+        help_text=_(
+            "L'API Geoadmin est utilisée afin de trouver un point correspondant à l'adresse. En cas d'échec, le centroïde de l'entité administrative est utilisée <a href=\"https://api3.geo.admin.ch/services/sdiservices.html#search\" target=\"_blank\">Plus d'informations</a>"
+        ),
+    )
+    is_public_when_permitrequest_is_public = models.BooleanField(
+        _("Afficher ce champs au grand public si la demande est publique"),
+        default=False,
+        help_text=_(
+            "Ce champs sera visible sur l'application géocalendrier si la demande est publique"
+        ),
     )
 
     class Meta(object):
@@ -1346,6 +1392,9 @@ class PermitRequestGeoTime(models.Model):
     ends_at = models.DateTimeField(_("Date planifiée de fin"), blank=True, null=True)
     comment = models.CharField(_("Commentaire"), max_length=1024, blank=True)
     external_link = models.URLField(_("Lien externe"), blank=True)
+    comes_from_automatic_geocoding = models.BooleanField(
+        _("Géométrie obtenue par géocodage d'adresse"), default=False
+    )
     geom = geomodels.GeometryCollectionField(_("Localisation"), null=True, srid=2056)
     history = HistoricalRecords()
 
@@ -1424,7 +1473,7 @@ class PermitRequestAmendProperty(models.Model):
     )
 
     class Meta:
-        verbose_name = _("2.2 Configuration de champ de traitement de demande")
+        verbose_name = _("2.2 Configuration du champ de traitement des demandes")
         verbose_name_plural = _(
             "2.2 Configuration des champs de traitement des demandes"
         )
@@ -1658,6 +1707,7 @@ class TemplateCustomization(models.Model):
         _("Identifiant"),
         max_length=64,
         blank=True,
+        help_text="Permettant d'afficher la page de login par l'url: https://geocity.ch/?template=vevey",
         validators=[
             RegexValidator(
                 regex=r"^[a-zA-Z0-9_]*$",

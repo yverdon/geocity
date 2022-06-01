@@ -76,6 +76,19 @@
         <input type="file" class="custom-file-input" accept=".kml" data-action="addKML" title="Charger des géométries (point, ligne, polygone) depuis un fichier KML">
         <label class="custom-file-label" for="selectfile">Charger des géométries (point, ligne, polygone) depuis un fichier KML</label>
       </small>
+      &nbsp
+      <div>
+        <input
+          type="text"
+          data-role="fulltext-location-search"
+          name="fulltext-location-search-{{ id }}"
+          placeholder="ex: Place Pestalozzi 2, 1400 Yverdon-les-Bains"
+          title=""
+          data-options="{{ options|json }}"
+          class="addresswidget form-control ui-autocomplete-input"
+          id="fulltext-location-search-{{ id }}"
+          autocomplete="off">
+      </div>
     </div>
     <hr>
   {% endif %}

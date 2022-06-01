@@ -193,7 +193,7 @@ class UserAdmin(BaseUserAdmin):
         (None, {"fields": ("username",)},),
         (
             "Informations personnelles",
-            {"fields": ("first_name", "last_name", "email")},
+            {"fields": ("first_name", "last_name", "email", "is_sociallogin",)},
         ),
         (
             "Permissions",
@@ -215,7 +215,9 @@ class UserAdmin(BaseUserAdmin):
         "email",
         "first_name",
         "last_name",
+        "is_active",
         "is_staff",
+        "is_superuser",
         "is_sociallogin",
         "last_login",
         "date_joined",
@@ -228,14 +230,15 @@ class UserAdmin(BaseUserAdmin):
     def is_sociallogin(self, obj):
         return obj.socialaccount_set.exists()
 
+    is_sociallogin.admin_order_field = "socialaccount"
     is_sociallogin.short_description = "Social"
 
     def get_readonly_fields(self, request, obj=None):
         # limit editable fields to protect user data, superuser creation must be done using django shell
         if request.user.is_superuser:
             return [
-                "email",
                 "is_superuser",
+                "is_sociallogin",
             ]
         else:
             return [
@@ -243,32 +246,40 @@ class UserAdmin(BaseUserAdmin):
                 "username",
                 "user_permissions",
                 "is_superuser",
+                "is_sociallogin",
                 "is_staff",
                 "last_login",
                 "date_joined",
             ]
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
+        user_being_updated = User.objects.get(
+            id=(int(request.resolver_match.kwargs["object_id"]))
+        )
+        integrator_group_for_user_being_updated = user_being_updated.groups.filter(
+            permitdepartment__is_integrator_admin=True
+        )
         if db_field.name == "groups":
             if request.user.is_superuser:
                 kwargs["queryset"] = Group.objects.all()
             else:
-                kwargs["queryset"] = Group.objects.filter(
-                    permitdepartment__integrator=request.user.groups.get(
-                        permitdepartment__is_integrator_admin=True
-                    ).pk,
+                kwargs["queryset"] = (
+                    Group.objects.filter(
+                        permitdepartment__integrator=request.user.groups.get(
+                            permitdepartment__is_integrator_admin=True
+                        ).pk,
+                    )
+                    | integrator_group_for_user_being_updated
                 )
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
     # Only superuser can edit superuser users
     def get_queryset(self, request):
-        # Only allow integrator to change users that have no group, are not superuser or are in group administrated by integrator
-
+        # Only allow integrator to change users that have no group, are not superuser or are in group administrated by integrator.
         if request.user.is_superuser:
             qs = User.objects.all()
         else:
-
             user_integrator_group = request.user.groups.get(
                 permitdepartment__is_integrator_admin=True
             )
@@ -321,15 +332,15 @@ class DepartmentAdminForm(forms.ModelForm):
         model = models.PermitDepartment
         fields = [
             "description",
+            "administrative_entity",
             "is_validator",
             "is_default_validator",
             "is_backoffice",
-            "administrative_entity",
-            "integrator",
             "is_integrator_admin",
             "mandatory_2fa",
             "integrator_email_domains",
             "integrator_emails_exceptions",
+            "integrator",
         ]
 
     # If the group is updated to be integrator, the users in this group should not be in another integrator group
@@ -454,9 +465,10 @@ class GroupAdmin(admin.ModelAdmin):
     form = GroupAdminForm
     list_display = [
         "__str__",
+        "get__integrator",
         "get__is_validator",
         "get__is_default_validator",
-        "get__integrator",
+        "get__is_backoffice",
         "get__mandatory_2fa",
     ]
 
@@ -481,11 +493,18 @@ class GroupAdmin(admin.ModelAdmin):
     )
     get__is_default_validator.short_description = _("Validateur par défaut")
 
+    @admin.display(boolean=True)
+    def get__is_backoffice(self, obj):
+        return obj.permitdepartment.is_backoffice
+
+    get__is_backoffice.admin_order_field = "permitdepartment__is_backoffice"
+    get__is_backoffice.short_description = _("Secrétariat")
+
     def get__integrator(self, obj):
-        return obj.permitdepartment.integrator
+        return Group.objects.get(pk=obj.permitdepartment.integrator)
 
     get__integrator.admin_order_field = "permitdepartment__integrator"
-    get__integrator.short_description = _("Intégrateur")
+    get__integrator.short_description = _("Groupe des administrateurs")
 
     @admin.display(boolean=True)
     def get__mandatory_2fa(self, obj):
@@ -567,7 +586,9 @@ def get_works_object_types_field(user):
     )
 
 
-works_object_type_administrative_entities.short_description = _("Communes")
+works_object_type_administrative_entities.short_description = _(
+    "Entités administratives"
+)
 
 
 class QgisProjectAdminForm(forms.ModelForm):
@@ -807,9 +828,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return obj.__str__()
 
     sortable_str.admin_order_field = "works_object__name"
-    sortable_str.short_description = _(
-        "1.1 Configuration de l'entité administrative (commune, organisation)"
-    )
+    sortable_str.short_description = _("1.4 Configuration du type-objet-entité")
 
     def get_queryset(self, request):
         qs = (
@@ -866,7 +885,6 @@ class WorksObjectPropertyForm(forms.ModelForm):
             "name",
             "placeholder",
             "help_text",
-            "integrator",
             "order",
             "input_type",
             "services_to_notify",
@@ -875,7 +893,11 @@ class WorksObjectPropertyForm(forms.ModelForm):
             "regex_pattern",
             "file_download",
             "is_mandatory",
+            "is_public_when_permitrequest_is_public",
+            "additional_searchtext_for_address_field",
+            "store_geometry_for_address_field",
             "works_object_types",
+            "integrator",
         ]
 
     def clean_file_download(self):
@@ -895,6 +917,7 @@ class WorksObjectPropertyAdmin(
     list_display = [
         "sortable_str",
         "is_mandatory",
+        "is_public_when_permitrequest_is_public",
         "name",
         "input_type",
         "placeholder",
@@ -903,6 +926,7 @@ class WorksObjectPropertyAdmin(
     list_filter = [
         "name",
         "input_type",
+        "works_object_types",
     ]
     search_fields = [
         "name",
@@ -942,7 +966,9 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
             "archive_link",
             "general_informations",
             "phone",
+            "additional_searchtext_for_address_field",
             "geom",
+            "integrator",
         ]
         exclude = ["enabled_status"]
         widgets = {
@@ -991,7 +1017,12 @@ class PermitWorkflowStatusInline(admin.StackedInline):
 class WorksObjectAdminForm(forms.ModelForm):
     class Meta:
         model = models.WorksObject
-        fields = "__all__"
+        fields = [
+            "name",
+            "wms_layers",
+            "wms_layers_order",
+            "integrator",
+        ]
         widgets = {
             "wms_layers": forms.Textarea(
                 attrs={
@@ -1044,7 +1075,7 @@ class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "expeditor_name",
         "expeditor_email",
         "ofs_id",
-        "tags",
+        "get__tags",
     ]
 
     def sortable_str(self, obj):
@@ -1054,6 +1085,11 @@ class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     sortable_str.short_description = (
         "1.1 Configuration de l'entité administrative (commune, organisation)"
     )
+
+    def get__tags(self, obj):
+        return list(obj.tags.all())
+
+    get__tags.short_description = _("Mots-clés")
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "integrator":
@@ -1113,7 +1149,7 @@ class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return str(obj)
 
     sortable_str.short_description = (
-        "2.2 Configuration des champs de traitement des demandes"
+        "2.2 Configuration du champ de traitement des demandes"
     )
     sortable_str.admin_order_field = "name"
 
@@ -1163,7 +1199,12 @@ class PermitActorTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 class WorksTypeAdminForm(forms.ModelForm):
     class Meta:
         model = models.WorksType
-        fields = "__all__"
+        fields = [
+            "name",
+            "meta_type",
+            "tags",
+            "integrator",
+        ]
 
 
 class WorksTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
@@ -1171,7 +1212,7 @@ class WorksTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_display = [
         "sortable_str",
         "meta_type",
-        "tags",
+        "get__tags",
     ]
     search_fields = [
         "id",
@@ -1182,6 +1223,11 @@ class WorksTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
     sortable_str.admin_order_field = "name"
     sortable_str.short_description = _("1.2 Configuration du type")
+
+    def get__tags(self, obj):
+        return list(obj.tags.all())
+
+    get__tags.short_description = _("Mots-clés")
 
 
 class PermitRequestAdmin(admin.ModelAdmin):
@@ -1195,6 +1241,8 @@ class PermitRequestAdmin(admin.ModelAdmin):
     ]
     search_fields = [
         "id",
+        "author__user__first_name",
+        "author__user__last_name",
     ]
     list_filter = ("status", "author", "works_object_types", "administrative_entity")
 
@@ -1215,6 +1263,7 @@ class TemplateCustomizationAdmin(admin.ModelAdmin):
         "__str__",
         "templatename",
         "application_title",
+        "application_subtitle",
         "has_background_image",
     ]
     list_filter = [

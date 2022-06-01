@@ -45,6 +45,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const isLineNumberForTextareaVisible = inputType === 'text';
 
+    const additionalSearchtextForAddressFieldElement = document.getElementById('id_additional_searchtext_for_address_field');
+    const additionalSearchtextForAddressFieldRowElement = additionalSearchtextForAddressFieldElement.closest('.form-row.additional_searchtext_for_address_field');
+
+    const additionalSearchtextForAddressFieldVisible = inputType === 'address';
+
+    const storeGeometryForAddressFieldElement = document.getElementById('id_store_geometry_for_address_field');
+    const storeGeometryForAddressFieldRowElement = storeGeometryForAddressFieldElement.closest('.form-row.store_geometry_for_address_field');
+
     const servicesToNotifyElement = document.getElementById('id_services_to_notify');
     const servicesToNotifyRowElement = servicesToNotifyElement.closest('.form-row.services_to_notify');
     const servicesToNotifyLabelElement = servicesToNotifyRowElement.querySelector('label');
@@ -68,6 +76,12 @@ document.addEventListener('DOMContentLoaded', function() {
     lineNumberForTextareaElement.removeAttribute('required');
     lineNumberForTextareaRowElement.classList.add(hiddenClass);
     lineNumberForTextareaLabelElement.classList.remove(requiredClass);
+
+    additionalSearchtextForAddressFieldElement.removeAttribute('required');
+    additionalSearchtextForAddressFieldRowElement.classList.add(hiddenClass);
+    
+    storeGeometryForAddressFieldElement.removeAttribute('required');
+    storeGeometryForAddressFieldRowElement.classList.add(hiddenClass);
 
     servicesToNotifyElement.removeAttribute('required');
     servicesToNotifyRowElement.classList.add(hiddenClass);
@@ -101,6 +115,10 @@ document.addEventListener('DOMContentLoaded', function() {
       fileElement.setAttribute('required', '');
       fileRowElement.classList.remove(hiddenClass);
       fileLabelElement.classList.add(requiredClass);
+  }
+    else if (additionalSearchtextForAddressFieldVisible) {
+      additionalSearchtextForAddressFieldRowElement.classList.remove(hiddenClass);
+      storeGeometryForAddressFieldRowElement.classList.remove(hiddenClass);
     }
   }
 

@@ -1,0 +1,8 @@
+{% load i18n %}
+{% load permits_extras %}
+
+{% if not record.author.is_anonymous %}
+  {{ record.author.user.email }} / {{ record.author.phone_first }}
+{% else %}
+  —
+{% endif %}

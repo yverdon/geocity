@@ -26,7 +26,8 @@
                 {% if not field.value %}
                   <em>{% trans "Information non fournie" %}</em>
                 {% else %}
-                  <a href="{{ field.value.url }}" rel="noreferrer" target="_blank">{{ field.value.name|basename }}</a>
+                  <i class="fa fa-download pt-1 mr-1" aria-hidden="true"></i>
+                  <a href="{{ field.value.url }}" rel="noreferrer" target="_blank">{% trans "Télécharger le document" %}</a>
                 {% endif %}
               </dd>
             {% endfor %}
