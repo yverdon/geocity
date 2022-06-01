@@ -31,7 +31,7 @@ from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 
-from streamblocks.models import STREAMBLOCKS_MODELS
+from reports.models import STREAMBLOCKS_MODELS
 
 from . import fields
 

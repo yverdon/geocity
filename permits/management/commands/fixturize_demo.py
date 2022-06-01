@@ -10,7 +10,6 @@ from django.db import connection, transaction
 from django.utils import timezone
 
 from django.core.files import File
-from streamblocks import models as streamblock_models
 from streamfield.base import StreamObject
 
 from geomapshark import settings
@@ -22,6 +21,7 @@ from constance import config
 from ... import services
 
 from reports import models as reports_models
+from reports.streamblocks import models as reports_blocks_models
 
 
 def strip_accents(text):
@@ -828,7 +828,7 @@ class Command(BaseCommand):
             name="demo_report",
             layout=layout,
             stream=StreamObject(
-                model_list=streamblock_models.STREAMBLOCKS_MODELS,
+                model_list=reports_models.STREAMBLOCKS_MODELS,
                 value=[
                     {
                         "id": block_paragraph_1.pk,

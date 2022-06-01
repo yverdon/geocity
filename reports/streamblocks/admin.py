@@ -4,6 +4,7 @@ from streamfield.admin import StreamBlocksAdmin
 from permits.admin import QgisProjectAdminForm
 from . import models
 
+
 # django-streamfield auto-registers the models, we need to unregister them
 # to customize their admin
 # see: https://github.com/raagin/django-streamfield#custom-admin-class-for-blocks-models
@@ -22,6 +23,7 @@ class PrintBlockAdmin(admin.ModelAdmin):
     # prevent the model from showing up in the index page
     def has_module_permission(self, request):
         return False
+
 
 @admin.register(models.PrintBlockMap)
 class PrintBlockMapAdmin(StreamBlocksAdmin, PrintBlockAdmin):

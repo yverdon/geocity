@@ -1,7 +1,9 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from streamfield.fields import StreamField
-from streamblocks.models import STREAMBLOCKS_MODELS
+
+from .streamblocks.models import STREAMBLOCKS_MODELS
+
 
 class ReportLayout(models.Model):
     """Page size/background/marings/fonts/etc, used by reports"""
