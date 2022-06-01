@@ -859,7 +859,8 @@ class Command(BaseCommand):
         report = reports_models.Report(
             name="demo_report",
             layout=layout,
-            type=TYPE,
+            # TODO: ensure this is available to the owner of the report
+            type=models.ComplementaryDocumentType.objects.first(),
             stream=StreamObject(
                 model_list=reports_models.STREAMBLOCKS_MODELS,
                 value=[

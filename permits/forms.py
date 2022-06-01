@@ -1524,7 +1524,10 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         queryset=None, widget=forms.CheckboxSelectMultiple, required=False,
     )
     report_preset = forms.ModelChoiceField(
-        queryset=None, widget=forms.CheckboxSelectMultiple, required=False, label = _("Générer à partir du modèle")
+        queryset=Report.objects.all(),
+        widget=forms.Select,
+        required=False,
+        label=_("Générer à partir du modèle"),
     )
 
     class Meta:
@@ -1554,9 +1557,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         self.fields["authorised_departments"].label = _("Département autorisé")
 
         # TODO: only list available reports !!
-        self.fields[
-            "report_preset"
-        ].queryset = Report.objects.all()
+        # self.fields["report_preset"].queryset = Report.objects.all()
 
         parent_types = models.ComplementaryDocumentType.objects.filter(
             work_object_types__in=permit_request.works_object_types.all()
@@ -1610,6 +1611,13 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             raise ValidationError(
                 _(
                     "Un département doit être renseigner ou le document doit être publique"
+                )
+            )
+
+        if self.cleaned_data["document"] and self.cleaned_data["report_preset"]:
+            raise ValidationError(
+                _(
+                    "Vous pouvez soit uploader un fichier, soit générer un document à partir d'un modèle, mais pas les deux."
                 )
             )
 
