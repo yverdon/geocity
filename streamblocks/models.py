@@ -13,8 +13,7 @@ from django.core.validators import (
 
 from permits import fields
 
-class PrintBlockParagraph(models.Model):
-    title = models.CharField(max_length=1000)
+class PrintBlockCustom(models.Model):
     content = models.TextField(
         # TODO: reverse_lazy and parametrize URL instead of hardcode
         help_text=_(
@@ -44,9 +43,9 @@ class PrintBlockPageBreak(models.Model):
 
 # Register blocks for StreamField as list of models
 STREAMBLOCKS_MODELS = [
-    PrintBlockParagraph,
     PrintBlockMap,
     PrintBlockContacts,
     PrintBlockValidation,
     PrintBlockPageBreak,
+    PrintBlockCustom,
 ]
