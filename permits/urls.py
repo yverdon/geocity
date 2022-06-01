@@ -114,7 +114,6 @@ urlpatterns = [
         geoviews.administrative_entities_geojson,
         name="administrative_entities_geojson",
     ),
-    path("qgisserverproxy/", geoviews.qgisserver_proxy, name="qgisserver_proxy"),
     path("search/", views.permit_requests_search, name="permit_requests_search"),
     path(
         "archives/",
