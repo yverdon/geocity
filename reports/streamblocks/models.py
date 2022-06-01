@@ -44,6 +44,10 @@ class PrintBlockValidation(models.Model):
     content = models.TextField()
 
 
+class PrintBlockRawData(models.Model):
+    class Meta:
+        abstract = True
+
 class PrintBlockPageBreak(models.Model):
     class Meta:
         abstract = True
@@ -55,6 +59,7 @@ STREAMBLOCKS_MODELS = [
     PrintBlockMap,
     PrintBlockContacts,
     PrintBlockValidation,
+    PrintBlockRawData,
     PrintBlockPageBreak,
     PrintBlockCustom,
 ]

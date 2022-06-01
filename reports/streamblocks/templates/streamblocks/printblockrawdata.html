@@ -1,0 +1,19 @@
+{% load reports %}
+
+<style>
+  li {
+    margin-bottom: 0.5rem;
+  }
+</style>
+
+<div>
+  <h2>Données brutes</h2>
+  <ul>
+    {% for keys, val, type in data|iterate_nested_dict %}
+    <li>
+      {{keys}} [{{type}}] <br/>
+      <b>{{val}}</b>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
