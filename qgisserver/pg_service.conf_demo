@@ -1,6 +1,0 @@
-[pg_geocity]
-host=postgres
-dbname=geocity
-user=geocity
-password=geocity
-port=5432

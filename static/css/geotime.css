@@ -54,6 +54,10 @@ label.custom-file-label:after {
   content: "Parcourir...";
 }
 
+.map {
+  background: #f1f4f8;
+}
+
 .map-buttons a {
   margin-top: 10px;
 }

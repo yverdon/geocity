@@ -1,3 +1,4 @@
+from weakref import proxy
 from django.urls import include, path
 
 from django_wfs3.urls import wfs3_router
@@ -104,6 +105,5 @@ urlpatterns = [
         geoviews.administrative_entities_geojson,
         name="administrative_entities_geojson",
     ),
-    path("qgisserverproxy/", geoviews.qgisserver_proxy, name="qgisserver_proxy"),
     path("search/", views.permit_requests_search, name="permit_requests_search"),
 ]
