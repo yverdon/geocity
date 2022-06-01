@@ -19,13 +19,13 @@ admin.site.unregister(models.PrintBlockValidation)
 @admin.register(models.PrintBlockCustom)
 @admin.register(models.PrintBlockContacts)
 @admin.register(models.PrintBlockValidation)
-class PrintBlockAdmin(admin.ModelAdmin):
+class PrintBlockAdmin(StreamBlocksAdmin):
     # prevent the model from showing up in the index page
     def has_module_permission(self, request):
         return False
 
 
 @admin.register(models.PrintBlockMap)
-class PrintBlockMapAdmin(StreamBlocksAdmin, PrintBlockAdmin):
+class PrintBlockMapAdmin(PrintBlockAdmin):
     # use a form that takes care of processing the QGIS project so that it works internally
     form = QgisProjectAdminForm
