@@ -9,9 +9,19 @@ from django.core.validators import (
     MinValueValidator,
     RegexValidator,
 )
+from tinymce import models as tinymce_models
 
 
 from permits import fields
+
+class PrintBlockRichText(models.Model):
+    content = tinymce_models.HTMLField(
+        # TODO: reverse_lazy and parametrize URL instead of hardcode
+        # TODO WIP: use rich text editor
+        help_text=_(
+        "You can access the contents of the data returned by the API with placeholders like `{{data.properties.geotime_aggregated.start_date}}`. Have a look at <a href=\"http://localhost:9095/wfs3/collections/permits/items/1\">the API</a> to see available data."
+        )
+    )
 
 class PrintBlockCustom(models.Model):
     content = models.TextField(
@@ -43,6 +53,7 @@ class PrintBlockPageBreak(models.Model):
 
 # Register blocks for StreamField as list of models
 STREAMBLOCKS_MODELS = [
+    PrintBlockRichText,
     PrintBlockMap,
     PrintBlockContacts,
     PrintBlockValidation,

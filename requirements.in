@@ -42,3 +42,4 @@ pdf2image
 django-simple-captcha
 django-streamfield
 django-weasyprint
+django-tinymce

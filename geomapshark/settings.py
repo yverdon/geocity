@@ -139,6 +139,7 @@ INSTALLED_APPS = [
     "django_cron",
     "axes",
     "captcha",
+    "tinymce",
 ]
 
 if ENABLE_2FA:
