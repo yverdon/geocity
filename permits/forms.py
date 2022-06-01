@@ -1534,7 +1534,6 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequestComplementaryDocument
         fields = [
-
             "report_preset",
             "document",
             "document_type",
@@ -1628,7 +1627,9 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
                 )
             )
 
-        if not self.cleaned_data.get("document") and not self.cleaned_data.get("report_preset"):
+        if not self.cleaned_data.get("document") and not self.cleaned_data.get(
+            "report_preset"
+        ):
             raise ValidationError(
                 _(
                     "Vous devez soit uploader un fichier, soit générer un document à partir d'un modèle."
@@ -1640,7 +1641,9 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             report = cleaned_data.get("report_preset")
             now = timezone.now()
             name = f"{report.name}_generated_{now:%Y-%m-%d}.pdf"
-            cleaned_data["document"] = File(report.render(self.permit_request), name=name)
+            cleaned_data["document"] = File(
+                report.render(self.permit_request), name=name
+            )
             cleaned_data["document_type"] = report.type
             cleaned_data[f"parent_{report.type.pk}"] = report.type
 

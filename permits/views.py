@@ -280,9 +280,7 @@ class PermitRequestDetailView(View):
                 "print_templates": services.get_permit_request_print_templates(
                     self.permit_request
                 ),
-                "reports": services.get_permit_request_reports(
-                    self.permit_request
-                ),
+                "reports": services.get_permit_request_reports(self.permit_request),
                 "directives": services.get_permit_request_directives(
                     self.permit_request
                 ),
@@ -2141,4 +2139,3 @@ def permit_requests_search(request):
     return JsonResponse(
         {"results": [search_result_to_json(result) for result in results]}
     )
-

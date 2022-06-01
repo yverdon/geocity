@@ -629,7 +629,6 @@ class QgisProjectInline(admin.TabularInline):
     form = QgisProjectAdminForm
 
 
-
 class WorksObjectTypeAdminForm(forms.ModelForm):
     class GeometryTypes(django.db.models.TextChoices):
         POINT = "has_geometry_point", _("Point")
@@ -763,14 +762,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 )
             },
         ),
-        (
-            "Impression",
-            {
-                "fields": (
-                    "reports",
-                )
-            },
-        ),
+        ("Impression", {"fields": ("reports",)},),
     )
 
     def sortable_str(self, obj):

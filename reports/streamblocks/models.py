@@ -32,8 +32,7 @@ class PrintBlockMap(models.Model):
         upload_to="qgis_templates",
     )
     qgis_print_template_name = models.CharField(
-        _("Nom du template d'impression QGIS"),
-        max_length=150,
+        _("Nom du template d'impression QGIS"), max_length=150,
     )
 
 

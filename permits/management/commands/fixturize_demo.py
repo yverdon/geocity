@@ -25,7 +25,6 @@ from reports import models as reports_models
 from reports.streamblocks import models as reports_blocks_models
 
 
-
 def strip_accents(text):
     """
     Strip accents from input String.
@@ -307,10 +306,9 @@ class Command(BaseCommand):
                 )
         # Add admin user in all groups
         groups = Group.objects.all()
-        user_admin = User.objects.get(username='admin')
+        user_admin = User.objects.get(username="admin")
         for group in groups:
             user_admin.groups.add(group)
-
 
     def create_user(
         self,
@@ -334,10 +332,7 @@ class Command(BaseCommand):
         )
         user.groups.set([group])
         models.PermitAuthor.objects.create(
-            user=user,
-            address="Rue du Lac",
-            zipcode=1400,
-            city="Yverdon",
+            user=user, address="Rue du Lac", zipcode=1400, city="Yverdon",
         )
         models.PermitDepartment.objects.create(
             group=group,
@@ -401,10 +396,7 @@ class Command(BaseCommand):
                 order=5,
             ),
             "date": models.WorksObjectProperty.objects.create(
-                name="Date",
-                input_type="date",
-                is_mandatory=False,
-                order=6,
+                name="Date", input_type="date", is_mandatory=False, order=6,
             ),
             "checkbox": models.WorksObjectProperty.objects.create(
                 name="Impact sur la chaussée",
@@ -432,7 +424,7 @@ class Command(BaseCommand):
                 "Stationnement (ex. de demande devant être prolongée)",
                 [
                     (
-                        "Demande de macaron", 
+                        "Demande de macaron",
                         properties["plan"],
                         properties["width"],
                         properties["comment"],
@@ -533,14 +525,8 @@ class Command(BaseCommand):
             (
                 "Suvbentions (ex. de demande sans géométrie ni période temporelle)",
                 [
-                    (
-                        "Prime éco-mobilité",
-                        properties["comment"],
-                    ),
-                    (
-                        "Abonnement de bus",
-                        properties["comment"],
-                    ),
+                    ("Prime éco-mobilité", properties["comment"],),
+                    ("Abonnement de bus", properties["comment"],),
                 ],
             ),
         ]
@@ -641,14 +627,11 @@ class Command(BaseCommand):
         models.WorksObjectType.objects.filter(id=5).update(
             requires_validation_document=False
         )
-        demo_works_object_type_no_validation_document = (
-            models.WorksObjectType.objects.filter(
-                requires_validation_document=False
-            ).first()
-        )
+        demo_works_object_type_no_validation_document = models.WorksObjectType.objects.filter(
+            requires_validation_document=False
+        ).first()
         department = models.PermitDepartment.objects.filter(
-            administrative_entity=demo_administrative_entity,
-            is_validator=True,
+            administrative_entity=demo_administrative_entity, is_validator=True,
         ).first()
 
         # Basic permit request
@@ -857,18 +840,19 @@ class Command(BaseCommand):
 
         # Amend propertie with long text
         amend_property_1 = models.PermitRequestAmendProperty.objects.create(
-            name="Commentaire interne",
-            is_visible_by_author=False,
+            name="Commentaire interne", is_visible_by_author=False,
         )
-        amend_property_1.works_object_types.set([demo_works_object_type, demo_works_object_type_no_validation_document])
+        amend_property_1.works_object_types.set(
+            [demo_works_object_type, demo_works_object_type_no_validation_document]
+        )
         amend_property_2 = models.PermitRequestAmendProperty.objects.create(
-            name="Commentaire visible par le requérant",
-            is_visible_by_author=True,
+            name="Commentaire visible par le requérant", is_visible_by_author=True,
         )
-        amend_property_2.works_object_types.set([demo_works_object_type, demo_works_object_type_no_validation_document])
+        amend_property_2.works_object_types.set(
+            [demo_works_object_type, demo_works_object_type_no_validation_document]
+        )
         works_object_type_choice_1 = models.WorksObjectTypeChoice.objects.get(
-            permit_request=permit_request7,
-            works_object_type=demo_works_object_type,
+            permit_request=permit_request7, works_object_type=demo_works_object_type,
         )
         works_object_type_choice_2 = models.WorksObjectTypeChoice.objects.get(
             permit_request=permit_request7,
@@ -897,66 +881,59 @@ class Command(BaseCommand):
 
         # Set default values for properties
         for prop in models.WorksObjectProperty.objects.all():
-            for works_object_type_choice in [works_object_type_choice_1, works_object_type_choice_2]:
+            for works_object_type_choice in [
+                works_object_type_choice_1,
+                works_object_type_choice_2,
+            ]:
                 if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_DATE:
                     models.WorksObjectPropertyValue.objects.create(
                         property=prop,
                         works_object_type_choice=works_object_type_choice,
-                        value={
-                            "val": "01.01.2021"
-                        },
+                        value={"val": "01.01.2021"},
                     )
                 if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_ADDRESS:
                     models.WorksObjectPropertyValue.objects.create(
                         property=prop,
                         works_object_type_choice=works_object_type_choice,
-                        value={
-                            "val": "Place pestalozzi 2, 1400 Yverdon-les-Bains"
-                        },
+                        value={"val": "Place pestalozzi 2, 1400 Yverdon-les-Bains"},
                     )
                 if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_CHECKBOX:
                     models.WorksObjectPropertyValue.objects.create(
                         property=prop,
                         works_object_type_choice=works_object_type_choice,
-                        value={
-                            "val": True
-                        },
+                        value={"val": True},
                     )
                 if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_NUMBER:
                     models.WorksObjectPropertyValue.objects.create(
                         property=prop,
                         works_object_type_choice=works_object_type_choice,
-                        value={
-                            "val": 42
-                        },
+                        value={"val": 42},
                     )
                 if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE:
                     models.WorksObjectPropertyValue.objects.create(
                         property=prop,
                         works_object_type_choice=works_object_type_choice,
-                        value={
-                            "val": "Oui"
-                        },
+                        value={"val": "Oui"},
                     )
-                if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE:
+                if (
+                    prop.input_type
+                    == models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE
+                ):
                     models.WorksObjectPropertyValue.objects.create(
                         property=prop,
                         works_object_type_choice=works_object_type_choice,
-                        value={
-                            "val": "Le bon choix"
-                        },
+                        value={"val": "Le bon choix"},
                     )
-                if (prop.input_type == models.WorksObjectProperty.INPUT_TYPE_TEXT 
-                    or prop.input_type == models.WorksObjectProperty.INPUT_TYPE_REGEX 
-                    or prop.input_type == models.WorksObjectProperty.INPUT_TYPE_TITLE):
+                if (
+                    prop.input_type == models.WorksObjectProperty.INPUT_TYPE_TEXT
+                    or prop.input_type == models.WorksObjectProperty.INPUT_TYPE_REGEX
+                    or prop.input_type == models.WorksObjectProperty.INPUT_TYPE_TITLE
+                ):
                     models.WorksObjectPropertyValue.objects.create(
                         property=prop,
                         works_object_type_choice=works_object_type_choice,
-                        value={
-                            "val": demo_medium_text
-                        },
+                        value={"val": demo_medium_text},
                     )
-
 
     def create_geom_layer_entity(self):
 
@@ -1126,6 +1103,7 @@ class Command(BaseCommand):
                 models.ComplementaryDocumentType.objects.create(
                     name=child, work_object_types=None, parent=parent
                 )
+
 
 demo_long_text = """
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 

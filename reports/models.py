@@ -8,6 +8,7 @@ from weasyprint import HTML
 from .streamblocks.models import STREAMBLOCKS_MODELS
 from django.template.loader import render_to_string
 
+
 class ReportLayout(models.Model):
     """Page size/background/marings/fonts/etc, used by reports"""
 
@@ -22,8 +23,17 @@ class ReportLayout(models.Model):
     margin_right = models.PositiveIntegerField(default=10)
     margin_bottom = models.PositiveIntegerField(default=10)
     margin_left = models.PositiveIntegerField(default=10)
-    font = models.CharField(max_length=1024, blank=True, null=True, help_text=_("La liste des polices disponbiles est visible sur <a href=\"https://fonts.google.com/\" target=\"_blank\">Goole Fonts</a>"))
-    background = models.ImageField(null=True, blank=True, help_text=_("Image d'arrière plan (\"papier à en-tête\")"))
+    font = models.CharField(
+        max_length=1024,
+        blank=True,
+        null=True,
+        help_text=_(
+            'La liste des polices disponbiles est visible sur <a href="https://fonts.google.com/" target="_blank">Goole Fonts</a>'
+        ),
+    )
+    background = models.ImageField(
+        null=True, blank=True, help_text=_('Image d\'arrière plan ("papier à en-tête")')
+    )
 
     def __str__(self):
         return self.name
@@ -39,11 +49,14 @@ class Report(models.Model):
     name = models.CharField(max_length=150)
     layout = models.ForeignKey(ReportLayout, on_delete=models.RESTRICT)
     stream = StreamField(model_list=STREAMBLOCKS_MODELS)
-    type = models.ForeignKey("permits.ComplementaryDocumentType", on_delete=models.RESTRICT)
+    type = models.ForeignKey(
+        "permits.ComplementaryDocumentType", on_delete=models.RESTRICT
+    )
 
     def render(self, permit_request) -> typing.IO:
         from permits.serializers import PermitRequestPrintSerializer
-        context =  {
+
+        context = {
             "report": self,
             "permit_request": permit_request,
             "permit_request_data": PermitRequestPrintSerializer(permit_request).data,
@@ -54,7 +67,6 @@ class Report(models.Model):
         HTML(string=html_string).write_pdf(buffer)
         buffer.seek(io.SEEK_SET)
         return buffer
-
 
     def __str__(self):
         return self.name

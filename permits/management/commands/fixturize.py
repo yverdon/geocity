@@ -641,22 +641,27 @@ class Command(BaseCommand):
 
     def create_reports(self):
         # Create report setup
-        block_paragraph = streamblock_models.PrintBlockParagraph(title="Demo report", content="This is a generic paragraph")
+        block_paragraph = streamblock_models.PrintBlockParagraph(
+            title="Demo report", content="This is a generic paragraph"
+        )
         block_paragraph.save()
 
         # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
-        qgis_project = services.alter_qgis_project_for_internal_user(open("/code/qgisserver/report-template-dev.qgs", 'rb'))
+        qgis_project = services.alter_qgis_project_for_internal_user(
+            open("/code/qgisserver/report-template-dev.qgs", "rb")
+        )
         block_map = streamblock_models.PrintBlockMap(qgis_print_template_name="a4")
-        block_map.qgis_project_file.save("report-template-dev.qgs", File(qgis_project), save=True)
+        block_map.qgis_project_file.save(
+            "report-template-dev.qgs", File(qgis_project), save=True
+        )
         block_map.save()
 
         # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
         background_image = open("/code/qgisserver/report-letter-paper.png", "rb")
-        layout = models.ReportLayout(
-            name="demo_layout",
-            margin_top=40,
+        layout = models.ReportLayout(name="demo_layout", margin_top=40,)
+        layout.background.save(
+            "report-letter-paper.png", File(background_image), save=True
         )
-        layout.background.save("report-letter-paper.png", File(background_image), save=True)
         layout.save()
         report = models.Report(
             name="demo_report",
@@ -675,9 +680,9 @@ class Command(BaseCommand):
                         "unique_id": "vlbh7j",
                         "model_name": "PrintBlockMap",
                         "options": {},
-                    }
-                ]
-            )
+                    },
+                ],
+            ),
         )
         report.save()
 
