@@ -3,19 +3,27 @@ import typing
 import itertools
 import mimetypes
 import os
+import shutil
 import urllib
 from collections import defaultdict
 import socket
 import ipaddress
+from datetime import datetime
 import PIL
 import re
 from io import BytesIO
 import filetype
+import pathlib
 from constance import config
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.contrib.auth import get_user_model, login
-from django.core.exceptions import SuspiciousOperation, ValidationError
+from django.core.exceptions import (
+    SuspiciousOperation,
+    ValidationError,
+    ObjectDoesNotExist,
+    PermissionDenied,
+)
 from django.core.mail import send_mass_mail
 from django.core.validators import EmailValidator
 from django.db import transaction
@@ -23,11 +31,14 @@ from django.db.models import CharField, Count, F, Max, Min, Q, Value
 from django.db.models.functions import Concat
 from django.forms import modelformset_factory
 from django.http import StreamingHttpResponse
+from django.http.response import FileResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext_lazy as _
+from django.template.defaultfilters import slugify
+from zipfile import ZipFile
 
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
@@ -443,7 +454,10 @@ def get_permit_request_for_user_or_404(user, permit_request_id, statuses=None):
 
 
 def get_permit_requests_list_for_user(
-    user, request_comes_from_internal_qgisserver=False, works_object_filter=None
+    user,
+    request_comes_from_internal_qgisserver=False,
+    works_object_filter=None,
+    ignore_archived=True,
 ):
     """
     Return the list of permit requests this user has access to.
@@ -476,6 +490,9 @@ def get_permit_requests_list_for_user(
 
     qs = models.PermitRequest.objects.annotate(**annotate_with)
 
+    if ignore_archived:
+        qs = qs.filter(~Q(status=models.PermitRequest.STATUS_ARCHIVED))
+
     if not user.is_authenticated and not request_comes_from_internal_qgisserver:
         return qs.none()
 
@@ -496,6 +513,25 @@ def get_permit_requests_list_for_user(
         return qs.filter(qs_filter)
 
     return qs
+
+
+def get_archived_request_list_for_user(user):
+    """
+    Return the list of archived requests this user has access to.
+    """
+    qs = models.ArchivedPermitRequest.objects.all()
+    if not user.is_authenticated:
+        return qs.none()
+
+    if user.is_superuser:
+        return qs
+
+    qs_filter = Q(archivist=user)
+    qs_filter |= Q(
+        permit_request__administrative_entity__in=get_user_administrative_entities(user)
+    )
+
+    return qs.filter(qs_filter)
 
 
 def get_actors_types(permit_request):
@@ -1199,24 +1235,40 @@ def _parse_email_content(template, permit_request, absolute_uri_func):
 
 
 def send_email_notification(data):
-    email_contents = _parse_email_content(
-        data["template"], data["permit_request"], data["absolute_uri_func"]
-    )
-
     from_email_name = (
         f'{data["permit_request"].administrative_entity.expeditor_name} '
         if data["permit_request"].administrative_entity.expeditor_name
         else ""
     )
-    from_email = (
+    sender = (
         f'{from_email_name}<{data["permit_request"].administrative_entity.expeditor_email}>'
         if data["permit_request"].administrative_entity.expeditor_email
         else settings.DEFAULT_FROM_EMAIL
     )
+    send_email(
+        template=data["template"],
+        sender=sender,
+        receivers=data["users_to_notify"],
+        subject=data["subject"],
+        context={
+            "permit_request_url": data["permit_request"].get_absolute_url(
+                reverse(
+                    "permits:permit_request_detail",
+                    kwargs={"permit_request_id": data["permit_request"].pk},
+                )
+            ),
+            "administrative_entity": data["permit_request"].administrative_entity,
+            "name": data["permit_request"].author.user.get_full_name(),
+            "permit_request": data["permit_request"],
+        },
+    )
 
+
+def send_email(template, sender, receivers, subject, context):
+    email_content = render_to_string(f"permits/emails/{template}", context)
     emails = [
-        (data["subject"], email_contents, from_email, [email_address],)
-        for email_address in data["users_to_notify"]
+        (subject, email_content, sender, [email_address],)
+        for email_address in receivers
         if validate_email(email_address)
     ]
 
@@ -1357,6 +1409,26 @@ def get_contacts_summary(permit_request):
     return contacts
 
 
+def get_permit_complementary_documents(permit_request, user):
+    qs = models.PermitRequestComplementaryDocument.objects.filter(
+        Q(permit_request=permit_request)
+    )
+
+    if user.is_superuser:
+        return qs.order_by("pk").all().distinct()
+
+    return (
+        qs.filter(
+            Q(is_public=True)
+            | Q(owner=user)
+            | Q(authorised_departments__group__in=user.groups.all()),
+        )
+        .order_by("pk")
+        .all()
+        .distinct()
+    )
+
+
 def get_permit_objects(permit_request):
 
     properties_form = forms.WorksObjectsPropertiesForm(instance=permit_request)
@@ -1409,6 +1481,11 @@ def get_actions_for_administrative_entity(permit_request):
             models.PermitRequest.STATUS_PROCESSING,
         ],
         "prolong": list(models.PermitRequest.PROLONGABLE_STATUSES),
+        "complementary_documents": [
+            models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            models.PermitRequest.STATUS_PROCESSING,
+        ],
+        "request_inquiry": list(models.PermitRequest.AMENDABLE_STATUSES),
     }
 
     available_statuses_for_administrative_entity = get_status_choices_for_administrative_entity(
@@ -1822,22 +1899,61 @@ def login_for_anonymous_request(request, entity):
 
 
 def download_file(path):
-    mime_type, encoding = mimetypes.guess_type(path)
     storage = fields.PrivateFileSystemStorage()
-    file = storage.open(path)
-    response = StreamingHttpResponse(file, content_type=mime_type)
-    response["Content-Disposition"] = 'attachment; filename="' + file.name + '"'
-    return response
+    # for some strange reason, firefox refuses to download the file.
+    # so we need to set the `Content-Type` to `application/octet-stream` so
+    # firefox will download it. For the time being, this "dirty" hack works
+    return FileResponse(storage.open(path), content_type="application/octet-stream")
 
 
 def get_works_type_names_list(permit_request):
+    return permit_request.get_works_type_names_list()
 
-    return ", ".join(
-        list(
-            permit_request.works_object_types.all()
-            .values_list("works_type__name", flat=True)
-            .distinct()
+
+def download_archives(archive_ids, user):
+    archives = []
+    for archive_id in archive_ids:
+        archive = models.ArchivedPermitRequest.objects.filter(
+            permit_request=archive_id
+        ).first()
+
+        if not archive:
+            raise ObjectDoesNotExist
+
+        if not can_download_archive(user, archive.archivist):
+            raise PermissionDenied
+
+        archives.append(archive)
+
+    parent_name = f"Archive_{datetime.today().strftime('%d.%m.%Y.%H.%M.%S')}"
+    parent_path = os.path.join(settings.ARCHIVE_ROOT, parent_name)
+
+    os.mkdir(parent_path)
+    for archive in archives:
+        shutil.copytree(
+            src=archive.path, dst=os.path.join(parent_path, archive.dirname)
         )
+    zippath = compress_directory(parent_path)
+    response = FileResponse(open(zippath, "rb"))
+    shutil.rmtree(parent_path)
+    os.remove(zippath)
+    return response
+
+
+def compress_directory(dir_path):
+    directory = pathlib.Path(dir_path)
+    archive_name = "{}.zip".format(dir_path)
+    with ZipFile(archive_name, "w") as archive:
+        for filepath in directory.rglob("*"):
+            archive.write(filepath, arcname=filepath.relative_to(directory))
+    return archive_name
+
+
+def can_download_archive(user, archivist):
+    return (
+        user == archivist
+        or user.is_superuser
+        or (user.groups.all() & archivist.groups.all()).exists()
     )
 
 

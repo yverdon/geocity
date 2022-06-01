@@ -1,0 +1,25 @@
+{% extends "base_generic.html" %}
+
+{% load i18n %}
+
+{% block content %}
+  <h3 class="mt-2">{% trans "Mise à l'enquête" %}</h3>
+    <form method="post">
+      {% csrf_token %}
+      <p>{% trans "Attention, les documents suivants devienderont public une fois la mise à l'enquête démarré :" %}</p>
+      <ul>
+        {% for non_public_document in non_public_documents %}
+          <li>{{ non_public_document }}</li>
+        {% endfor %}
+      </ul>
+      <div class="form display-none">
+        {{ inquiry_form }}
+      </div>
+      <div class="text-right">
+        <input name="action" type="hidden" value="request_inquiry">
+        <input name="confirmation" type="hidden" value="confirmed">
+        <a class="ml-2" href="{% url 'permits:permit_request_detail' permit_request.pk %}">{% trans "Annuler" %}</a>
+        <button class="btn btn-primary">{% trans "Continuer" %}</button>
+      </div>
+    </form>
+{% endblock %}

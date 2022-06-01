@@ -86,6 +86,16 @@ urlpatterns = [
         name="works_object_property_file_download",
     ),
     path(
+        "documents/<path:path>/download",
+        views.ComplementaryDocumentDownloadView.as_view(),
+        name="complementary_documents_download",
+    ),
+    path(
+        "documents/<int:pk>/delete",
+        views.PermitRequestComplementaryDocumentDeleteView.as_view(),
+        name="complementary_documents_delete",
+    ),
+    path(
         "admin-data/<path:path>",
         views.administrative_entity_file_download,
         name="administrative_entity_file_download",
@@ -105,4 +115,24 @@ urlpatterns = [
         name="administrative_entities_geojson",
     ),
     path("search/", views.permit_requests_search, name="permit_requests_search"),
+    path(
+        "archives/",
+        views.ArchivedPermitRequestListView.as_view(),
+        name="archived_permit_request_list",
+    ),
+    path(
+        "archives/<int:pk>/delete",
+        views.ArchivedPermitRequestDeleteView.as_view(),
+        name="archived_permit_request_delete",
+    ),
+    path(
+        "archives/<int:pk>/download",
+        views.ArchivedPermitRequestDownloadView.as_view(),
+        name="archived_permit_request_download",
+    ),
+    path(
+        "archives/bulk-download",
+        views.ArchivedPermitRequestBulkDownloadView.as_view(),
+        name="archived_permit_request_bulk_download",
+    ),
 ]

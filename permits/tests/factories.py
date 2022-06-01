@@ -1,6 +1,7 @@
 from datetime import timezone
 
 import factory
+import factory.fuzzy
 import faker
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
@@ -493,3 +494,66 @@ class TemplateCustomizationFactory(factory.django.DjangoModelFactory):
     application_title = "mycustomtitle"
     application_subtitle = "mycustomsubtitle"
     application_description = "mycustomdescription"
+
+
+class ComplementaryDocumentTypeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.ComplementaryDocumentType
+
+    name = factory.Faker("name")
+
+
+class ParentComplementaryDocumentTypeFactory(ComplementaryDocumentTypeFactory):
+    work_object_types = factory.SubFactory(WorksObjectTypeFactory)
+    parent = None
+
+
+class ChildComplementaryDocumentTypeFactory(ComplementaryDocumentTypeFactory):
+    work_object_types = None
+    parent = factory.SubFactory(ParentComplementaryDocumentTypeFactory)
+
+
+class ComplementaryDocumentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitRequestComplementaryDocument
+
+    document = factory.django.FileField(filename="awesome_file.pdf")
+    description = factory.Faker("sentence")
+    # the "models.PermitRequestComplementaryDocument.STATUS_CANCELED" status
+    # has extra logic, so to avoid any weird issues, it isn't among the choices
+    status = factory.fuzzy.FuzzyChoice(
+        choices=[
+            models.PermitRequestComplementaryDocument.STATUS_OTHER,
+            models.PermitRequestComplementaryDocument.STATUS_TEMP,
+            models.PermitRequestComplementaryDocument.STATUS_CANCELED,
+        ]
+    )
+    owner = factory.SubFactory(UserFactory)
+    permit_request = factory.SubFactory(PermitRequestFactory)
+    document_type = factory.SubFactory(ChildComplementaryDocumentTypeFactory)
+    is_public = False
+
+    @factory.post_generation
+    def authorised_departments(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        self.authorised_departments.add(*extracted)
+
+
+class PermitRequestInquiryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitRequestInquiry
+
+    submitter = factory.SubFactory(UserFactory)
+    permit_request = factory.SubFactory(PermitRequestFactory)
+    start_date = factory.Faker("date")
+    end_date = factory.Faker("date")
+
+
+class ArchivedPermitRequestFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.ArchivedPermitRequest
+
+    permit_request = factory.SubFactory(PermitRequestFactory)
+    archivist = factory.SubFactory(UserFactory)

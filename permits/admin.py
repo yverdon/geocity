@@ -312,7 +312,7 @@ class UserAdmin(BaseUserAdmin):
         return qs
 
     def save_model(self, req, obj, form, change):
-        """ Set 'is_staff=True' when the saved user is in a integrator group.
+        """Set 'is_staff=True' when the saved user is in a integrator group.
         But let is_staff=True for super users.
         """
         if req.user.is_superuser:
@@ -900,8 +900,7 @@ class WorksObjectPropertyAdmin(
 
 
 class PermitAdministrativeEntityAdminForm(forms.ModelForm):
-    """ Form class to configure an administrative entity (commune, organisation)
-    """
+    """Form class to configure an administrative entity (commune, organisation)"""
 
     class Meta:
         model = models.PermitAdministrativeEntity
@@ -1274,6 +1273,19 @@ class TokenAdmin(BaseTokenAdmin):
             ]
 
 
+class ComplementaryDocumentTypeAdmin(admin.ModelAdmin):
+    form = permit_forms.ComplementaryDocumentTypeAdminForm
+
+
+class PermitRequestInquiryAdmin(admin.ModelAdmin):
+    list_display = ("id", "start_date", "end_date", "submitter", "permit_request")
+
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "name"
+    sortable_str.short_description = _("3.2 Enquêtes public")
+
 
 admin.site.unregister(TokenProxy)
 admin.site.register(TokenProxy, TokenAdmin)
@@ -1287,3 +1299,5 @@ admin.site.register(models.WorksObject, WorksObjectAdmin)
 admin.site.register(models.PermitRequestAmendProperty, PermitRequestAmendPropertyAdmin)
 admin.site.register(models.TemplateCustomization, TemplateCustomizationAdmin)
 admin.site.register(models.PermitRequest, PermitRequestAdmin)
+admin.site.register(models.ComplementaryDocumentType, ComplementaryDocumentTypeAdmin)
+admin.site.register(models.PermitRequestInquiry, PermitRequestInquiryAdmin)

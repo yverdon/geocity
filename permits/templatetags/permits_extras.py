@@ -33,6 +33,9 @@ def permit_request_summary(context, permit_request):
     objects_infos = services.get_permit_objects(permit_request)
     contacts = services.get_contacts_summary(permit_request)
     requires_payment = services.permit_requests_has_paid_wot(permit_request)
+    documents = services.get_permit_complementary_documents(
+        permit_request, user=context.request.user
+    )
 
     PermitRequestGeoTimeFormSet = modelformset_factory(
         models.PermitRequestGeoTime, form=forms.PermitRequestGeoTimeForm, extra=0,
@@ -57,9 +60,11 @@ def permit_request_summary(context, permit_request):
             )
 
     return {
+        "user": context.request.user,
         "creditor": creditor,
         "contacts": contacts,
         "objects_infos": objects_infos,
+        "documents": documents,
         "geo_time_formset": geo_time_formset,
         "intersected_geometries": permit_request.intersected_geometries
         if permit_request.intersected_geometries != ""
@@ -117,3 +122,19 @@ def is_expired(context):
 def can_always_be_updated(context):
     if context["record"] is not None:
         return context["record"].can_always_be_updated(context["request"].user)
+
+
+@register.simple_tag(takes_context=True)
+def can_download_archive(context):
+    return services.can_download_archive(context["user"], context["record"].archivist)
+
+
+@register.simple_tag(takes_context=True)
+def can_archive(context):
+    department = models.PermitDepartment.objects.filter(
+        group__in=context["user"].groups.all()
+    ).first()
+    return context["user"].is_superuser or (
+        department is not None
+        and (department.is_backoffice or department.is_integrator_admin)
+    )

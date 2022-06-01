@@ -3,6 +3,7 @@
 {% load i18n %}
 {% load bootstrap4 %}
 {% load permits_extras %}
+{% load static %}
 {% load render_table from django_tables2 %}
 
 {% block content %}
@@ -17,17 +18,24 @@
       <span class="badge badge-pill badge-danger">Privée</span>
     {% endif %}
   {% endif %}
+  {% if inquiry_in_progress %}
+    <span class="badge badge-pill badge-info">{% trans "Mise à l'enquête" %}</span>
+  {% endif %}
+  {% if permit_request.is_archived %}
+    <span class="badge badge-pill badge-info">{% trans "Archivée" %}</span>
+  {% endif %}
 </h1>
 
 <p title=""></p>
 
 
+{% if not permit_request.is_archived %}
 <div class="row">
   <div class="col">
     {% include "permits/_permit_request_actions.html" %}
   </div>
 </div>
-
+{% endif %}
 
 <div class="row">
   <div class="col-md-4">
@@ -90,7 +98,7 @@
                   <li>
                     <div class="row-1">
                       <i class="fa fa-circle status{{archive.status}}"></i>
-                      {{ archive.history_date }}</div>
+                      {{ archive.history_date }}
                       <b>{% trans "Demande soumise par" %}</b>
                     </div>
                     <div class="row-2 history_user">
@@ -220,7 +228,11 @@
     <div class="row sub-row">
       <div class="col">
         <p class="mt-4">
-          <a href="{% url 'permits:permit_requests_list' %}">{% trans "Retour à la liste des demandes" %}</a>
+          {% if permit_request.is_archived %}
+            <a href="{% url 'permits:archived_permit_request_list' %}">{% trans "Retour à la liste des demandes archivées" %}</a>
+          {% else %}
+            <a href="{% url 'permits:permit_requests_list' %}">{% trans "Retour à la liste des demandes" %}</a>
+          {% endif %}
         </p>
       </div>
     </div>
@@ -228,4 +240,8 @@
   </div>
 
 </div>
+{% endblock %}
+{% block scripts %}
+  <script src="{% static 'js/permits_complementary_documents.js' %}"></script>
+  <script src="{% static 'js/permit_request_amending.js' %}"></script>
 {% endblock %}

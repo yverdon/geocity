@@ -25,6 +25,7 @@ from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
+from captcha.fields import CaptchaField
 
 from accounts.dootix.adapter import DootixSocialAccountAdapter
 from accounts.dootix.provider import DootixProvider
@@ -575,7 +576,6 @@ class WorksObjectsAppendicesForm(WorksObjectsPropertiesForm):
 
 
 def check_existing_email(email, user):
-
     if (
         User.objects.filter(email=email)
         .exclude(Q(id=user.id) if user else Q())
@@ -587,7 +587,6 @@ def check_existing_email(email, user):
 
 
 class NewDjangoAuthUserForm(UserCreationForm):
-
     first_name = forms.CharField(label=_("Prénom"), max_length=30,)
     last_name = forms.CharField(label=_("Nom"), max_length=150,)
     email = forms.EmailField(label=_("Email"), max_length=254,)
@@ -688,7 +687,6 @@ class DjangoAuthUserForm(forms.ModelForm):
 
 
 class GenericAuthorForm(forms.ModelForm):
-
     required_css_class = "required"
     address = forms.CharField(
         max_length=100, label=_("Adresse"), widget=AddressWidget()
@@ -706,6 +704,7 @@ class GenericAuthorForm(forms.ModelForm):
             attrs={"placeholder": "ex: Yverdon", "required": "required"}
         ),
     )
+    captcha = CaptchaField(required=True)
 
     class Meta:
         model = models.PermitAuthor
@@ -899,6 +898,16 @@ class PermitRequestActorForm(forms.ModelForm):
 class PermitRequestAdditionalInformationForm(forms.ModelForm):
     required_css_class = "required"
 
+    notify_author = forms.BooleanField(
+        label=_("Notifier l'auteur de la demande"), required=False,
+    )
+    reason = forms.CharField(
+        label=_("Raison"),
+        widget=forms.Textarea(attrs={"rows": 1}),
+        required=False,
+        help_text=_("(Optionnel) Raison du changement du statut de la demande"),
+    )
+
     class Meta:
         model = models.PermitRequest
         fields = ["is_public", "shortname", "status"]
@@ -998,6 +1007,50 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
         """
         return [self[field] for field in self.base_fields]
 
+    def clean_status(self):
+        status = self.cleaned_data.get("status")
+
+        if (
+            self.instance.status == models.PermitRequest.STATUS_INQUIRY_IN_PROGRESS
+            and not status == models.PermitRequest.STATUS_INQUIRY_IN_PROGRESS
+        ):
+            raise ValidationError(
+                _(
+                    "Vous ne pouvez pas changer le status de la demande car une enquête public est en cours"
+                )
+            )
+
+        return status
+
+    def clean_notify_author(self):
+        notify_author = self.cleaned_data.get("notify_author")
+
+        if (
+            self.cleaned_data.get("status")
+            == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
+            and not notify_author
+        ):
+            raise ValidationError(
+                _("Vous devez notifier l'auteur pour une demande de compléments")
+            )
+
+        return notify_author
+
+    def clean_reason(self):
+        reason = self.cleaned_data.get("reason")
+
+        if (
+            self.cleaned_data.get("status")
+            == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
+            and self.cleaned_data.get("notify_author")
+            and not reason
+        ):
+            raise ValidationError(
+                _("Vous devez fournir une raison pour la demande de compléments")
+            )
+
+        return reason
+
     def save(self, commit=True):
         permit_request = super().save(commit=False)
         for works_object_type, prop in self.get_properties():
@@ -1010,13 +1063,47 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                 ],
             )
         if commit:
+            if self.cleaned_data.get("notify_author"):
+                self._notify_author(permit_request)
             permit_request.save()
         return permit_request
+
+    def _notify_author(self, permit_request):
+        sender_name = (
+            f"{permit_request.administrative_entity.expeditor_name} "
+            if permit_request.administrative_entity.expeditor_name
+            else ""
+        )
+        sender = (
+            f"{sender_name}<{permit_request.administrative_entity.expeditor_email}>"
+            if permit_request.administrative_entity.expeditor_email
+            else settings.DEFAULT_FROM_EMAIL
+        )
+
+        services.send_email(
+            template="permit_request_changed.txt",
+            sender=sender,
+            receivers=[permit_request.author.user.email],
+            subject=_("Votre demande %s a changé") % permit_request.works_objects_str(),
+            context={
+                "status": dict(permit_request.STATUS_CHOICES)[permit_request.status],
+                "reason": (
+                    self.cleaned_data.get("reason")
+                    if self.cleaned_data.get("reason")
+                    else ""
+                ),
+                "permit_request_url": permit_request.get_absolute_url(
+                    reverse(
+                        "permits:permit_request_detail",
+                        kwargs={"permit_request_id": permit_request.pk},
+                    )
+                ),
+            },
+        )
 
 
 # extend django gis osm openlayers widget
 class GeometryWidget(geoforms.OSMWidget):
-
     template_name = "geometrywidget/geometrywidget.html"
     map_srid = 2056
 
@@ -1041,7 +1128,6 @@ class GeometryWidget(geoforms.OSMWidget):
 
 
 class PermitRequestGeoTimeForm(forms.ModelForm):
-
     required_css_class = "required"
     starts_at = forms.DateTimeField(
         label=_("Date planifiée de début"),
@@ -1432,6 +1518,99 @@ class PermitRequestClassifyForm(forms.ModelForm):
         return permit_request
 
 
+class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
+    authorised_departments = forms.ModelMultipleChoiceField(
+        queryset=None, widget=forms.CheckboxSelectMultiple, required=False,
+    )
+
+    class Meta:
+        model = models.PermitRequestComplementaryDocument
+        fields = [
+            "document",
+            "description",
+            "status",
+            "authorised_departments",
+            "is_public",
+            "document_type",
+        ]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 2}),
+        }
+
+    def __init__(self, permit_request, *args, **kwargs):
+        super(PermitRequestComplementaryDocumentsForm, self).__init__(*args, **kwargs)
+
+        self.fields[
+            "authorised_departments"
+        ].queryset = models.PermitDepartment.objects.filter(
+            administrative_entity=permit_request.administrative_entity
+        ).all()
+        self.fields["authorised_departments"].label = _("Département autorisé")
+
+        parent_types = models.ComplementaryDocumentType.objects.filter(
+            work_object_types__in=permit_request.works_object_types.all()
+        ).all()
+
+        self.fields["document_type"].queryset = parent_types
+        self.fields["document_type"].required = True
+
+        for parent in parent_types:
+            name = "parent_{}".format(parent.pk)
+            self.fields[name] = forms.ModelChoiceField(
+                queryset=models.ComplementaryDocumentType.objects.filter(
+                    work_object_types=None, parent=parent
+                ),
+                required=False,
+            )
+            self.fields[name].widget.attrs["hidden"] = ""
+            self.fields[name].widget.attrs["class"] = "child-type"
+            self.fields[name].label = ""
+
+    def save(self, commit=True):
+        document = super(PermitRequestComplementaryDocumentsForm, self).save(
+            commit=False
+        )
+
+        # set the child type as the documents type
+        document.document_type = models.ComplementaryDocumentType.objects.filter(
+            pk=self.cleaned_data[
+                "parent_{}".format(self.cleaned_data["document_type"].pk)
+            ].pk
+        ).get()
+
+        if commit:
+            document.save()
+
+        return document
+
+    def clean_document(self):
+        document = self.cleaned_data.get("document")
+
+        services.validate_file(document)
+
+        return document
+
+    def clean(self):
+        cleaned_data = super(PermitRequestComplementaryDocumentsForm, self).clean()
+
+        if not self.cleaned_data.get(
+            "authorised_departments"
+        ) and not self.cleaned_data.get("is_public"):
+            raise ValidationError(
+                _(
+                    "Un département doit être renseigner ou le document doit être publique"
+                )
+            )
+
+        if not self.cleaned_data.get("document_type"):
+            return cleaned_data
+
+        if not cleaned_data["parent_{}".format(cleaned_data.get("document_type").pk)]:
+            raise ValidationError(_("Un sous-type doit être renseigné!"))
+
+        return cleaned_data
+
+
 class SocialSignupForm(SignupForm):
     first_name = forms.CharField(
         max_length=30,
@@ -1529,3 +1708,102 @@ class SocialSignupForm(SignupForm):
 class AnonymousRequestForm(forms.Form):
     required_css_class = "required"
     captcha = CaptchaField(required=True)
+
+
+class PermitRequestInquiryForm(forms.ModelForm):
+    start_date = forms.DateField(
+        label=_("Date planifiée de début"),
+        input_formats=[settings.DATE_INPUT_FORMAT],
+        widget=DatePickerInput(
+            options={"format": "DD.MM.YYYY", "locale": "fr-CH", "useCurrent": False,}
+        ),
+    )
+    end_date = forms.DateField(
+        label=_("Date planifiée de fin"),
+        input_formats=[settings.DATE_INPUT_FORMAT],
+        widget=DatePickerInput(
+            options={"format": "DD.MM.YYYY", "locale": "fr-CH", "useCurrent": False,}
+        ),
+    )
+
+    class Meta:
+        model = models.PermitRequestInquiry
+        fields = ["start_date", "end_date", "documents"]
+
+    def __init__(self, permit_request, *args, **kwargs):
+        super(PermitRequestInquiryForm, self).__init__(*args, **kwargs)
+        self.permit_request = permit_request
+        self.fields[
+            "documents"
+        ].queryset = models.PermitRequestComplementaryDocument.objects.filter(
+            permit_request=permit_request
+        ).all()
+        self.fields["documents"].help_text = _(
+            "Attention, les documents non-publics seront public une fois la mise à l'enquête démarrée!"
+        )
+
+    def clean_start_date(self):
+        start_date = self.cleaned_data.get("start_date")
+
+        if start_date < datetime.today().date():
+            raise ValidationError(
+                _("La date de début doit être postérieure à la date d'aujourd'hui.")
+            )
+
+        return start_date
+
+    def clean(self):
+        cleaned_data = super(PermitRequestInquiryForm, self).clean()
+        start_date = self.cleaned_data.get("start_date")
+        end_date = self.cleaned_data.get("end_date")
+
+        if not start_date:
+            return cleaned_data
+
+        if end_date < start_date:
+            raise ValidationError(
+                _("La date de fin doit être postérieure à la date de début.")
+            )
+
+        overlap = models.PermitRequestInquiry.objects.filter(
+            Q(permit_request=self.permit_request)
+            & Q(end_date__gte=start_date)
+            & Q(start_date__lte=end_date)
+        )
+        if overlap and not self.instance.pk:
+            raise ValidationError(
+                _("Une enquête est déjà en cours pendant cette période")
+            )
+
+        return cleaned_data
+
+    def save(self, commit=True):
+        inquiry = super().save(commit=False)
+
+        # insure all the documents added to the inquiry are public
+        # if, not, make them public
+        for document in self.cleaned_data["documents"]:
+            if document.is_public:
+                continue
+
+            document.is_public = True
+            document.save()
+
+        if commit:
+            inquiry.save()
+            self.save_m2m()
+
+        return inquiry
+
+
+class ComplementaryDocumentTypeAdminForm(forms.ModelForm):
+    model = models.ComplementaryDocumentType
+
+    def clean(self):
+        cleaned_data = super(ComplementaryDocumentTypeAdminForm, self).clean()
+        if cleaned_data["parent"] and cleaned_data["work_object_types"]:
+            raise ValidationError(
+                _("Seul les types parents peuvent être lié a un Work Object Type")
+            )
+
+        return cleaned_data

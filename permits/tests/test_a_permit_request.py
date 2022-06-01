@@ -2863,6 +2863,8 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             data={
                 "status": models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
                 "action": models.ACTION_AMEND,
+                "notify_author": "on",
+                "reason": "reason",
             },
             follow=True,
         )
@@ -3209,11 +3211,11 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(response.status_code, 200)
 
         self.assertEqual(
-            len(parser.select(".form-group textarea")), 2,
+            len(parser.select("#amend .form-group textarea")), 3,
         )
 
         self.assertEqual(
-            len(parser.select(".form-group textarea[disabled]")), 1,
+            len(parser.select("#amend .form-group textarea[disabled]")), 2,
         )
 
         # Send form edit
@@ -3234,6 +3236,74 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             "I have been edited!", new_properties_values_qs,
         )
         self.assertEqual(response2.status_code, 200)
+
+    def test_email_to_author_is_sent_when_secretariat_checks_notify(self):
+        user = factories.UserFactory(email="user@geocity.com")
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+            administrative_entity=self.administrative_entity,
+            author=user.permitauthor,
+        )
+        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data={
+                "status": models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+                "notify_author": "1",
+                "reason": "Testing email sending",
+                "action": models.ACTION_AMEND,
+            },
+            follow=True,
+        )
+
+        permit_request.refresh_from_db()
+        self.assertEqual(
+            permit_request.status, models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
+        )
+        self.assertContains(response, "compléments")
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
+        self.assertEqual(
+            mail.outbox[0].subject,
+            f"Votre demande {permit_request.works_objects_str()} a changé",
+        )
+        self.assertIn(
+            "Votre demande a changé.", mail.outbox[0].message().as_string(),
+        )
+        self.assertIn(
+            "Nouveau status:", mail.outbox[0].message().as_string(),
+        )
+        self.assertIn(
+            "Raison du changement:", mail.outbox[0].message().as_string(),
+        )
+
+    # def test_permit_request_status_cannot_change_to_awaiting_supplement_if_no_reason_is_given(
+    def test_awaiting_supplement_requires_to_notify_author(self,):
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_PROCESSING,
+            administrative_entity=self.administrative_entity,
+        )
+        response = self.client.post(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data={
+                "status": models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+                "action": models.ACTION_AMEND,
+            },
+            follow=True,
+        )
+        permit_request.refresh_from_db()
+
+        self.assertEqual(permit_request.status, models.PermitRequest.STATUS_PROCESSING)
+        self.assertEqual(
+            response.context[0]["forms"]["amend"].errors["notify_author"],
+            ["Vous devez notifier l'auteur pour une demande de compléments"],
+        )
 
 
 class AdministrativeEntitySecretaryEmailTestcase(TestCase):

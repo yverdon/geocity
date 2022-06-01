@@ -430,6 +430,7 @@ class Command(BaseCommand):
                 works_object_type.administrative_entities.add(
                     administrative_entity_vevey
                 )
+                self.create_document_types(works_object_type)
                 for prop in props:
                     prop.works_object_types.add(works_object_type)
 
@@ -684,3 +685,27 @@ class Command(BaseCommand):
         for wot in models.WorksObjectType.objects.all():
             wot.reports.set([report])
 
+    def create_document_types(self, wot):
+        document_types = [
+            (
+                "{} Parent #1".format(wot.pk),
+                wot,
+                ["{} Child #1.{}".format(wot.pk, i) for i in range(1, 4)],
+            ),
+            (
+                "{} Parent #2".format(wot.pk),
+                wot,
+                ["{} Child #2.{}".format(wot.pk, i) for i in range(1, 5)],
+            ),
+        ]
+
+        for document_type in document_types:
+            name, work_object_type, children = document_type
+            parent = models.ComplementaryDocumentType.objects.create(
+                name=name, work_object_types=work_object_type, parent=None
+            )
+
+            for child in children:
+                models.ComplementaryDocumentType.objects.create(
+                    name=child, work_object_types=None, parent=parent
+                )
