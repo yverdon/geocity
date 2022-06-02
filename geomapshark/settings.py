@@ -91,6 +91,9 @@ TAGGIT_TAGS_FROM_STRING = "permits.utils.comma_splitter"
 # 2FA activation
 ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 
+# Allow REMOTE_USER Authentication
+ALLOW_REMOTE_USER_AUTH = os.getenv("ALLOW_REMOTE_USER_AUTH", "false").lower() == "true"
+
 # Allauth requirement
 SITE_ID = 1
 SITE_DOMAIN = os.getenv("SITE_DOMAIN", "localhost")
@@ -131,6 +134,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "django_cron",
     "axes",
+    "captcha",
 ]
 
 if ENABLE_2FA:
@@ -178,6 +182,8 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "MAX_FEATURE_NUMBER_FOR_QGISSERVER",
         "GEOCALENDAR_URL",
         "ENABLE_GEOCALENDAR",
+        "ANONYMOUS_REQUEST_SENT_TITLE",
+        "ANONYMOUS_REQUEST_SENT_BODY",
     ),
     "Theme Options": (
         "BACKGROUND_COLOR",
@@ -189,6 +195,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "TABLE_COLOR",
     ),
     "Step Options": (
+        "ANONYMOUS_CAPTCHA_STEP",
         "LOCATION_STEP",
         "WORKS_TYPES_STEP",
         "WORKS_OBJECTS_STEP",
@@ -200,7 +207,11 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "ACTORS_STEP",
         "SUBMIT_STEP",
     ),
-    "API settings": ("IP_WHITELIST", "NETWORK_WHITELIST",),
+    "API settings": (
+        "IP_WHITELIST",
+        "NETWORK_WHITELIST",
+        "LOGOUT_REDIRECT_HOSTNAME_WHITELIST",
+    ),
 }
 
 CONSTANCE_CONFIG = {
@@ -239,6 +250,13 @@ CONSTANCE_CONFIG = {
         True,
         "Définit si l'application du calendrier cartographique est utilisé ou pas (doit dans tous les cas être installée à part)",
         bool,
+    ),
+    "ANONYMOUS_CAPTCHA_STEP": ("Votre demande anonyme", "", str),
+    "ANONYMOUS_REQUEST_SENT_TITLE": ("Merci pour votre requête", "", str),
+    "ANONYMOUS_REQUEST_SENT_BODY": (
+        "Nous avons bien reçu votre requête anonyme.",
+        "",
+        str,
     ),
     "LOCATION_STEP": ("Sélectionnez la commune / l'entité", "", str),
     "WORKS_TYPES_STEP": ("Sélectionnez le ou les type(s)", "", str),
@@ -281,6 +299,10 @@ CONSTANCE_CONFIG = {
         "172.16.0.0/12,192.168.0.0/16",
         "Réseaux  autorisés pour l'utilisation de l'API complète (/rest/permits), séparés par des ','",
         str,
+    ),
+    "LOGOUT_REDIRECT_HOSTNAME_WHITELIST": (
+        "localhost,geocity.ch",
+        "Domaines autorisés à la redirection après logout",
     ),
 }
 
@@ -390,7 +412,7 @@ AUTH_PASSWORD_VALIDATORS = [
 CORS_ALLOWED_ORIGINS = [] + os.getenv("ALLOWED_CORS").split(",")
 
 
-if DEBUG:
+if DEBUG and not CORS_ALLOWED_ORIGINS:
     CORS_ALLOW_ALL_ORIGINS = True
 
 # Internationalization
@@ -469,3 +491,27 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 CRON_CLASSES = [
     "permits.cron.PermitRequestExpirationReminder",
 ]
+
+CAPTCHA_IMAGE_SIZE = (150, 50)
+CAPTCHA_FONT_SIZE = 26
+TEMPORARY_USER_PREFIX = "temp_user_"
+TEMPORARY_USER_ZIPCODE = 9998
+ANONYMOUS_USER_ZIPCODE = 9999
+ANONYMOUS_USER_PREFIX = "anonymous_user_"
+ANONYMOUS_NAME = "Anonyme"
+PENDING_ANONYMOUS_REQUEST_MAX_AGE = 24
+
+if ALLOW_REMOTE_USER_AUTH:
+    # Add the auth middleware
+    MIDDLEWARE += ["django.contrib.auth.middleware.RemoteUserMiddleware"]
+
+    # Remove Axes middleware and app
+    MIDDLEWARE.remove("axes.middleware.AxesMiddleware")
+    INSTALLED_APPS.remove("axes")
+
+    # When using the RemoteUserBackend for intranet users override AUTHENTICATION_BACKENDS
+    AUTHENTICATION_BACKENDS = [
+        # Classic django authentication backend
+        "django.contrib.auth.backends.RemoteUserBackend",
+        "django.contrib.auth.backends.ModelBackend",
+    ]

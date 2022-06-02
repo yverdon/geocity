@@ -13,7 +13,6 @@
     {% csrf_token %}
     {{ permit_request_form.media }}
     {% crispy permit_request_form %}
-
     {% buttons %}
       {% if previous_step.url %}
         <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
