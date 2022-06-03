@@ -16,7 +16,7 @@ def iterate_nested_dict(data):
 
     def _iterate(val, keys: list):
         if isinstance(val, dict):
-            for k,v in val.items():
+            for k, v in val.items():
                 yield from _iterate(v, [*keys, str(k)])
         else:
             yield (".".join(keys), repr(val), val.__class__.__name__)

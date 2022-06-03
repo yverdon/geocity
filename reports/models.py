@@ -73,7 +73,9 @@ class Report(models.Model):
             print(f"FETCHING {url}")
 
             if url.startswith("http://localhost:9096/"):
-                internal_url = url.replace("http://localhost:9096/", "http://qgisserver/")
+                internal_url = url.replace(
+                    "http://localhost:9096/", "http://qgisserver/"
+                )
                 return {"file_obj": urlopen(internal_url)}
 
             if url.startswith("http://relative/media/"):

@@ -28,5 +28,5 @@ def report_view(request, permit_request_id, report_id, as_html=False):
         file = report.render_pdf(permit_request)
         response = FileResponse(file)
         response["Content-Disposition"] = 'inline; filename="report.pdf"'
-        response["Content-Type"] = 'application/pdf'
+        response["Content-Type"] = "application/pdf"
         return response

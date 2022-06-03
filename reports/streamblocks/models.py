@@ -48,6 +48,7 @@ class PrintBlockRawData(models.Model):
     class Meta:
         abstract = True
 
+
 class PrintBlockPageBreak(models.Model):
     class Meta:
         abstract = True
