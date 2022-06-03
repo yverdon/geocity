@@ -1674,13 +1674,16 @@ def permit_request_geo_time(request, permit_request_id):
         permit_request=permit_request,
         current_step_type=models.StepType.GEO_TIME,
     )
+    can_have_multiple_ranges = services.permit_requests_can_have_multiple_ranges(
+        permit_request
+    )
 
     PermitRequestGeoTimeFormSet = modelformset_factory(
         models.PermitRequestGeoTime,
         form=forms.PermitRequestGeoTimeForm,
         extra=0,
         min_num=1,
-        can_delete=True,
+        can_delete=can_have_multiple_ranges,
     )
     formset = PermitRequestGeoTimeFormSet(
         request.POST if request.method == "POST" else None,
@@ -1688,10 +1691,6 @@ def permit_request_geo_time(request, permit_request_id):
         queryset=permit_request.geo_time.filter(
             comes_from_automatic_geocoding=False
         ).all(),
-    )
-
-    can_have_multiple_ranges = services.permit_requests_can_have_multiple_ranges(
-        permit_request
     )
 
     if request.method == "POST":
