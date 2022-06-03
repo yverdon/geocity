@@ -1536,11 +1536,11 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         fields = [
             "report_preset",
             "document",
-            "document_type",
             "description",
             "status",
             "authorised_departments",
             "is_public",
+            "document_type",
         ]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 2}),

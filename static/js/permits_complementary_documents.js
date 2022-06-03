@@ -30,6 +30,8 @@ document.getElementById('add-document').addEventListener('click', (e) => {
   container.appendChild(clone)
 
   displayChildSelect(clone)
+
+  setEventOnTemplateSelect(nbDocuments-1)
 })
 
 document.getElementById('remove-document').addEventListener('click', (e) => {
@@ -84,3 +86,20 @@ function hideChildrenDocumentTypes(parent) {
     child.closest('.form-group').style.display = 'none'
   }
 }
+
+function setEventOnTemplateSelect(id){
+  let reportTemplateField = document.getElementById(`id_form-${id}-report_preset`);
+
+    reportTemplateField.addEventListener('change', (e) => {
+      if (e.originalTarget.value == "") {
+        document.getElementById(`id_form-${id}-document`).disabled=false;
+        document.getElementById(`id_form-${id}-document_type`).disabled=false;
+      } else {
+        document.getElementById(`id_form-${id}-document`).disabled=true;
+        document.getElementById(`id_form-${id}-document_type`).disabled=true;
+      }
+    })
+}
+
+setEventOnTemplateSelect(0)
+

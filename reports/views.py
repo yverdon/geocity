@@ -12,7 +12,6 @@ from permits.models import PermitRequest
 from .models import Report
 from django.http import FileResponse, HttpResponse
 
-
 @login_required
 @permanent_user_required
 def report_view(request, permit_request_id, report_id, as_html=False):
