@@ -500,9 +500,13 @@ def get_actors_types(permit_request):
     Get actors type defined for each work type defined for the permit_request
     """
 
-    return models.PermitActorType.objects.filter(
-        works_type__in=get_permit_request_works_types(permit_request)
-    ).values_list("type", "is_mandatory")
+    return (
+        models.PermitActorType.objects.filter(
+            works_type__in=get_permit_request_works_types(permit_request)
+        )
+        .values_list("type", "is_mandatory")
+        .order_by("-is_mandatory")
+    )
 
 
 def filter_only_missing_actor_types(actor_types, permit_request):
