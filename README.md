@@ -12,24 +12,8 @@ Django developpment server in reload mode.
 ```bash
 git clone git@github.com:yverdon/geocity.git && cd geocity
 cp -n env.demo .env
-docker-compose -f docker-compose-dev.yml build
-docker-compose -f docker-compose-dev.yml down --remove-orphans && docker-compose -f docker-compose-dev.yml up
-```
-
-Copy `docker-compose-dev.yml` to a `docker-compose-override.yml`, adapt it to your needs, then run :
-
-```
-docker-compose up
-```
-
-This process will create the .env file only if it does not already exist
-
-The demo application is now running on _localhost:9095_
-
-To debug and view the resulting `docker-compose-dev.yml` file use (uses the `.env` file for variables substitution):
-
-```bash
-docker-compose -f docker-compose-dev.yml config
+docker-compose build
+docker-compose down --remove-orphans && docker-compose up
 ```
 
 Check that qgisserver print server is up and running
@@ -43,7 +27,7 @@ http://localhost:9096/ogc/?REQUEST=GETCAPABILITIES&SERVICE=ATLAS&MAP=/io/data/re
 Following command will setup a demo DB with more exhaustive configuration
 
 ```bash
-docker-compose -f docker-compose-demo.yml down --remove-orphans && docker-compose -f docker-compose-demo.yml up
+docker-compose down --remove-orphans && docker-compose up
 ```
 
 ## Standard print setup

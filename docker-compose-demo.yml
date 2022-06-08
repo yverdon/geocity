@@ -1,46 +1,29 @@
-version: "3"
+# Overrides for development
 
-volumes:
-    gmsdata:
-    pgdata:
+version: "3"
 
 services:
     web:
-        image: gms_web
-        restart: unless-stopped
-        depends_on:
-            - "qgisserver"
-            - "postgres"
-        build:
-            context: ./
-            args:
-                dev_dependencies: "${DEV_DEPENDENCIES}"
-        entrypoint: /code/entrypoint_demo.sh
-        # command: "gunicorn geomapshark.wsgi -b :9000 --error-logfile gunicorn_log.log --workers=2 --threads=4 --worker-class=gthread"
+        # Runserver for live reload
+        entrypoint: /code/entrypoint_dev.sh
         command: "python3 manage.py runserver 0.0.0.0:9000"
         volumes:
+            # Mount code for live reload
             - .:/code
-            - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
+            # Local mount to debug QGIS projects
+            - ./private_documents:/private_documents
         ports:
             - "${DJANGO_DOCKER_PORT}:9000"
+        environment:
+            # Debug settings
+            - DJANGO_SETTINGS_MODULE=geomapshark.settings_dev
 
     qgisserver:
-        image: openquake/qgis-server:3.22
-        restart: unless-stopped
-        depends_on:
-            - "postgres"
         volumes:
-            - ./qgisserver/report_template.qgs:/io/data/report_template.qgs:ro
-            - ./qgisserver/plugins/geocity_expressions:/io/plugins/geocity_expressions
-            - ./qgisserver/plugins/atlasprint:/io/plugins/atlasprint
-            - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
-        ports:
-            - "${QGISSERVER_DOCKER_PORT}:80"
+            # Local mount to debug QGIS projects
+            - ./private_documents:/private_documents #used to access to the private documents via a volume (check env.demo) search(ctrl+f) -> #access_to_private_document_local
         environment:
-            - QGIS_SERVER_PARALLEL_RENDERING=true
-            - QGIS_SERVER_IGNORE_BAD_LAYERS=true
             - QGIS_SERVER_LOG_LEVEL=0
-            - PREFIX_URL
 
     postgres:
         image: postgis/postgis:13-3.2
