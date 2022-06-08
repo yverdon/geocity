@@ -40,7 +40,15 @@ services:
             - QGIS_SERVER_IGNORE_BAD_LAYERS=true
             - PREFIX_URL
 
+    qgis:
+        restart: unless-stopped
+        build:
+            context: services/qgis
+        networks:
+            - pdf_generation
+
     pdf:
+        restart: unless-stopped
         build:
             context: services/pdf
         networks:

@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y libpango-1.0-0 libpangoft2-1.0-0
 ADD requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
+WORKDIR /app
+
 ADD app.py app.py
 
 ENV FLASK_APP=app

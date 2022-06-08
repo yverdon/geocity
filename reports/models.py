@@ -58,13 +58,14 @@ class Report(models.Model):
         "permits.ComplementaryDocumentType", on_delete=models.RESTRICT
     )
 
-    def render_string(self, permit_request) -> str:
+    def render_string(self, permit_request, request) -> str:
         from permits.serializers import PermitRequestPrintSerializer
 
         context = {
             "report": self,
             "permit_request": permit_request,
             "permit_request_data": PermitRequestPrintSerializer(permit_request).data,
+            "request": request,
         }
         return render_to_string("reports/report.html", context)
 

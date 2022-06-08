@@ -33,6 +33,10 @@ td, th {
   padding-left: 60%;
 }
 
+.block-map img {
+  max-width: 100%;
+}
+
 /* Overrides from the layout */
 @page {
   /* page size */

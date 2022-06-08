@@ -25,7 +25,7 @@ def report_view_contents(request, permit_request_id, report_id):
     permit_request = get_object_or_404(PermitRequest, pk=permit_request_id)
     # TODO CRITICAL: ensure print setup is part of WorksObjectType
     report = get_object_or_404(Report, pk=report_id)
-    return HttpResponse(report.render_string(permit_request))
+    return HttpResponse(report.render_string(permit_request, request))
 
 
 @login_required

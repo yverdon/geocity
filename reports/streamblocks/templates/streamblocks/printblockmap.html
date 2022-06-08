@@ -1,7 +1,5 @@
-<div>
-  <img
-    style="width: 100%;"
-    src='http://localhost:9096/ogc/?SERVICE=WMS&REQUEST=GETPRINT&FORMAT=PNG&TRANSPARENT=false&SRS=EPSG:2056&DPI=150&MAP={{block_content.qgis_project_file.path}}&TEMPLATE={{block_content.qgis_print_template_name}}&ATLAS_PK={{permit_request.pk}}'
-    alt="map"
-  />
+{% load reports %}
+
+<div class="block-map">
+  {% include_qgis_map %}
 </div>
