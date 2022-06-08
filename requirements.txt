@@ -139,8 +139,12 @@ idna==3.3
     # via requests
 jdcal==1.4.1
     # via -r requirements.in
+jinja2==3.1.2
+    # via -r requirements.in
 jwcrypto==1.0
     # via django-oauth-toolkit
+markupsafe==2.1.1
+    # via jinja2
 oauthlib==3.2.0
     # via
     #   django-oauth-toolkit

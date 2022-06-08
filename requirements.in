@@ -43,3 +43,4 @@ django-simple-captcha
 django-streamfield
 django-weasyprint
 django-ckeditor
+Jinja2

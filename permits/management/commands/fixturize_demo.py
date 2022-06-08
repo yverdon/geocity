@@ -987,18 +987,13 @@ class Command(BaseCommand):
         )
         block_map.save()
 
-        block_paragraph_2 = reports_blocks_models.PrintBlockRichText(
-            content=r"<div><h2>Data</h2><p>We can also have long data</p><table><tr><th>Label</th><th>Value</th></tr>{% for i in '0123456789'|make_list %}<tr><td>Row {{i}}</td><td>{{'0123456789'|random}}</td></tr>{% endfor %}</table></p></div>"
-        )
-        block_paragraph_2.save()
-
         block_validation = reports_blocks_models.PrintBlockValidation()
         block_validation.save()
 
-        block_paragraph_3 = reports_blocks_models.PrintBlockRichText(
+        block_paragraph_2 = reports_blocks_models.PrintBlockRichText(
             content="<div><h2>Approval</h2><p>Thank you for your request.</p></div>"
         )
-        block_paragraph_3.save()
+        block_paragraph_2.save()
 
         # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
         background_image = open("/code/qgisserver/report-letter-paper.png", "rb")
@@ -1040,18 +1035,12 @@ class Command(BaseCommand):
                         "options": {},
                     },
                     {
-                        "id": block_paragraph_2.pk,
-                        "unique_id": "lsupu",
-                        "model_name": "PrintBlockRichText",
-                        "options": {},
-                    },
-                    {
                         "unique_id": "1sv56j",
                         "model_name": "PrintBlockPageBreak",
                         "options": {},
                     },
                     {
-                        "id": block_paragraph_3.pk,
+                        "id": block_paragraph_2.pk,
                         "unique_id": "lsupu",
                         "model_name": "PrintBlockRichText",
                         "options": {},

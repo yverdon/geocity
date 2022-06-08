@@ -1,13 +1,17 @@
 import typing
 from django import template
+from django.utils.safestring import mark_safe
+from jinja2.sandbox import SandboxedEnvironment
 
 register = template.Library()
 
 
 @register.simple_tag
-def render(template_str, data):
-    # TODO CRITICAL: rendering user data is NOT SAFE, we should use sandboxed jinja instead (or other safe alternative)
-    return template.Template(template_str).render(template.Context({"data": data}))
+def render_user_template(template_str, data):
+    """Renders a user given template in a hopefully safe way"""
+    env = SandboxedEnvironment()
+    contents = env.from_string(template_str).render({"data": data})
+    return mark_safe(contents)
 
 
 @register.filter
