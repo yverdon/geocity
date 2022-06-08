@@ -20,18 +20,13 @@ def pdf():
     url = os.environ["WEB_ROOT_URL"] + request.form['url']
     token = request.form['token']
 
-
-
+    # Custom URL fetcher that adds the authentication header for internal
     def fetcher(url):
-        print(f"FETCHING {url}", file=sys.stdout, flush=True)
         if url.startswith(os.environ["WEB_ROOT_URL"]):
-            # This is an internal call, we need to authenticate it with the token
-            print("abc", flush=True)
             req = Request(url)
             req.add_header('Authorization', f'Token {token}')
             return {"file_obj": urlopen(req)}
         return default_url_fetcher(url)
-
 
     buffer = io.BytesIO()
     wp = weasyprint.HTML(url=url, url_fetcher=fetcher)
