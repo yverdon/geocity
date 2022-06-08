@@ -275,6 +275,12 @@ class PermitRequestDetailView(View):
                     self.permit_request
                 ),
                 "prolongation_enabled": prolongation_enabled,
+                "is_document_management_enabled": services.is_document_management_enabled_for_wots(
+                    self.permit_request
+                ),
+                "is_publication_enabled": services.is_publication_enabled_for_wots(
+                    self.permit_request
+                ),
                 "inquiry_in_progress": self.permit_request.status
                 == models.PermitRequest.STATUS_INQUIRY_IN_PROGRESS,
             },
@@ -771,7 +777,7 @@ class PermitRequestDetailView(View):
 
         form.save()
 
-        success_message = _("La mise à l'enquête a bien été enregistré")
+        success_message = _("La mise en consultation publique a bien été enregistré")
         messages.success(self.request, success_message)
 
         return redirect(

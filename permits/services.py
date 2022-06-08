@@ -1967,3 +1967,26 @@ def get_services_to_notify_mailing_list(permit_request):
             ]
 
     return mailing_list
+
+
+def is_document_management_enabled_for_wots(permit_request):
+    # Document module is activated if at leat on WOT has this property enabled
+
+    return (
+        permit_request.works_object_types.filter(
+            is_document_management_enabled=True
+        ).count()
+        > 0
+    )
+
+
+def is_publication_enabled_for_wots(permit_request):
+    """ 
+        All WOT must have publication enable in order to allow publication. 
+        We don't want accidental publication. If the application instance has no 
+        geocalendar enabled, the publication is also disabled
+    """
+    return (
+        permit_request.works_object_types.filter(is_publication_enabled=True).count()
+        == permit_request.works_object_types.count()
+    ) and config.ENABLE_GEOCALENDAR
