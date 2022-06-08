@@ -177,6 +177,18 @@ input:focus {
   content: " *";
 }
 
+.required > label.custom-control-label:after {
+  content: "";
+}
+
+.required > label.custom-control-label > .asteriskField {
+  display: initial;
+}
+
+.required > label.custom-control-label > .asteriskField:before {
+  content: " ";
+}
+
 .app-list li {
   margin: 0 0 15px 0;
   list-style-type: none;
