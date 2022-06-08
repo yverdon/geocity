@@ -279,13 +279,16 @@ class Command(BaseCommand):
             content_type__app_label="permits",
             content_type__model__in=admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
         )
-
+        report_permissions = Permission.objects.filter(
+            content_type__app_label="reports",
+            content_type__model__in=admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
+        )
         other_permissions = Permission.objects.filter(
             codename__in=admin.OTHER_PERMISSIONS_CODENAMES
         )
         # set the required permissions for the integrator group
         Group.objects.get(name="Integrator Yverdon").permissions.set(
-            permits_permissions.union(other_permissions)
+            permits_permissions.union(other_permissions).union(report_permissions)
         )
         self.stdout.write("integrator-yverdon / admin")
 

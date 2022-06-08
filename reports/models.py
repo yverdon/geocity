@@ -10,7 +10,8 @@ from weasyprint import HTML, default_url_fetcher
 from .streamblocks.models import STREAMBLOCKS_MODELS
 from django.template.loader import render_to_string
 from django.conf import settings
-
+from permits import models as permits_models
+from django.contrib.auth.models import Group
 
 
 class ReportLayout(models.Model):
@@ -38,6 +39,12 @@ class ReportLayout(models.Model):
     background = models.ImageField(
         null=True, blank=True, help_text=_('Image d\'arrière plan ("papier à en-tête")')
     )
+    integrator = models.ForeignKey(
+        Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs"),
+    )
 
     def __str__(self):
         return self.name
@@ -55,6 +62,20 @@ class Report(models.Model):
     stream = StreamField(model_list=STREAMBLOCKS_MODELS)
     type = models.ForeignKey(
         "permits.ComplementaryDocumentType", on_delete=models.RESTRICT
+    )
+    work_object_types = models.ForeignKey(
+        "permits.WorksObjectType",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        verbose_name=_("Objets"),
+        related_name="available_reports",
+    )
+    integrator = models.ForeignKey(
+        Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs"),
     )
 
     def render_string(self, permit_request) -> str:

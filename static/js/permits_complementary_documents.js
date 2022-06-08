@@ -94,9 +94,11 @@ function setEventOnTemplateSelect(id){
       if (e.originalTarget.value == "") {
         document.getElementById(`id_form-${id}-document`).disabled=false;
         document.getElementById(`id_form-${id}-document_type`).disabled=false;
+        document.getElementById(`id_form-${id}-print_preview`).disabled=true;
       } else {
         document.getElementById(`id_form-${id}-document`).disabled=true;
         document.getElementById(`id_form-${id}-document_type`).disabled=true;
+        document.getElementById(`id_form-${id}-print_preview`).disabled=false;
       }
     })
 }

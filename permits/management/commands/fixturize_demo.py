@@ -283,13 +283,17 @@ class Command(BaseCommand):
             content_type__app_label="permits",
             content_type__model__in=admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
         )
+        report_permissions = Permission.objects.filter(
+            content_type__app_label="reports",
+            content_type__model__in=admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
+        )
 
         other_permissions = Permission.objects.filter(
             codename__in=admin.OTHER_PERMISSIONS_CODENAMES
         )
         # set the required permissions for the integrator group
         Group.objects.get(name="integrator").permissions.set(
-            permits_permissions.union(other_permissions)
+            permits_permissions.union(other_permissions).union(report_permissions)
         )
         self.stdout.write("integrator / demo")
 
@@ -1008,6 +1012,7 @@ class Command(BaseCommand):
             margin_right=10,
             margin_bottom=20,
             margin_left=22,
+            integrator=Group.objects.get(name="integrator"),
         )
         layout.background.save(
             "report-letter-paper.png", File(background_image), save=True
@@ -1070,7 +1075,7 @@ class Command(BaseCommand):
             ),
         )
         report.save()
-
+        # report.work_object_types.add(models.WorksObjectType.objects.all())
         # Assign to all work objects types
         for wot in models.WorksObjectType.objects.all():
             wot.reports.set([report])

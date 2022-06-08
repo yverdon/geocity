@@ -44,6 +44,8 @@ INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [
     "permitworkflowstatus",
     "permitauthor",
     "qgisproject",
+    "report",
+    "reportlayout",
 ]
 OTHER_PERMISSIONS_CODENAMES = [
     "view_user",
@@ -444,7 +446,10 @@ class GroupAdminForm(forms.ModelForm):
         permissions = self.cleaned_data["permissions"]
         integrator_permissions = Permission.objects.filter(
             (
-                Q(content_type__app_label="permits")
+                (
+                    Q(content_type__app_label="permits")
+                    | Q(content_type__app_label="reports")
+                )
                 & Q(content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS)
             )
             | Q(codename__in=OTHER_PERMISSIONS_CODENAMES)
