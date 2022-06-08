@@ -26,6 +26,9 @@ services:
             - "${DJANGO_DOCKER_PORT}:9000"
         environment:
             - DJANGO_SETTINGS_MODULE=geomapshark.settings_dev
+        networks:
+            - pdf_generation
+            - default
 
     qgisserver:
         image: opengisch/qgis-server:3.22.7
@@ -70,5 +73,11 @@ services:
     pdf:
         build:
             context: services/pdf
+        networks:
+            - pdf_generation
         environment:
             WEB_ROOT_URL: http://web:9000
+
+networks:
+    # custom network to restriction communication to between django<->pdf
+    pdf_generation:
