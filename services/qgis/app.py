@@ -63,12 +63,12 @@ def export():
         layout = project.layoutManager().layoutByName(template_name)
         atlas = layout.atlas()
 
-        # move to the requested feature (seems it does not work)
+        # move to the requested feature
         feature = atlas.coverageLayer().getFeature(permit_request_id)
         atlas.seekTo(feature)
         atlas.refreshCurrentFeature()
 
-        # move to the requested feature (workaround for above using filter)
+        # move to the requested feature (workaround using filter if the above does not work)
         # atlas.setFilterExpression(f"$id={permit_request_id}")
         # atlas.seekTo(0)
         # atlas.refreshCurrentFeature()
