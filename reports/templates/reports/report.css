@@ -1,0 +1,53 @@
+@page {
+  /* meta content (see https://www.quackit.com/css/at-rules/css_top-left-corner_at-rule.cfm) */
+  @bottom-right-corner {
+    content: counter(page);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  @top-right {
+    content: string(heading);
+  }
+}
+
+h2 {
+  string-set: heading content();
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+td, th {
+  border-bottom: solid 1px;
+}
+
+/* blocks */
+.block-page-break {
+  page-break-before: always;
+}
+
+.block-recipient {
+  padding-left: 60%;
+}
+
+/* Overrides from the layout */
+@page {
+  /* page size */
+  size: {{report.layout.width}}mm {{report.layout.height}}mm;
+  margin-top: {{report.layout.margin_top}}mm;
+  margin-right: {{report.layout.margin_right}}mm;
+  margin-bottom: {{report.layout.margin_bottom}}mm;
+  margin-left: {{report.layout.margin_left}}mm;
+
+  /* background */
+  background-image: url("{{report.layout.background.url}}");
+  background-size: {{report.layout.width}}mm {{report.layout.height}}mm;
+  background-position: -{{report.layout.margin_left}}mm -{{report.layout.margin_top}}mm;
+}
+
+body {
+  font-family: "{{report.layout.font}}";
+}

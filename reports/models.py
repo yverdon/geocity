@@ -68,11 +68,12 @@ class Report(models.Model):
         return render_to_string("reports/report.html", context)
 
     def render_pdf(self, permit_request) -> typing.IO:
+        # Note: rendering is done with weasyprint, which does not fully support modern CSS (such as grid).
+        # If this proves limiting, consider trying out another solution such as
+        # https://github.com/bedrockio/export-html
+
+        # Define a fetcher, translating URLs so they work internally
         def my_fetcher(url):
-
-            print("~" * 80)
-            print(f"FETCHING {url}")
-
             if url.startswith("http://localhost:9096/"):
                 internal_url = url.replace(
                     "http://localhost:9096/", "http://qgisserver/"
@@ -81,8 +82,6 @@ class Report(models.Model):
 
             if url.startswith("http://relative/media/"):
                 local_path = url.replace("http://relative/media", settings.MEDIA_ROOT)
-                print("~" * 80)
-                print(local_path)
                 return {"file_obj": open(local_path, "rb")}
             return default_url_fetcher(url)
 

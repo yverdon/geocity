@@ -10,8 +10,14 @@ class PrintBlockRichText(models.Model):
     content = RichTextField(
         # TODO: reverse_lazy and parametrize URL instead of hardcode
         # TODO WIP: use rich text editor
-        help_text=_(
-            'You can access the contents of the data returned by the API with placeholders like `{{data.properties.geotime_aggregated.start_date}}`. Have a look at <a href="http://localhost:9095/wfs3/collections/permits/items/1">the API</a> to see available data.'
+        help_text=(
+            _(
+                "Il est possible d'accéder aux données de l'API avec la syntaxe suivante: `{{data.properties.geotime_aggregated.start_date}}`. Consultez les résults de <a href=\"http://localhost:9095/wfs3/collections/permits/items/1\">l'API</a> pour voir les données disponibles."
+            )
+            + "\n"
+            + _(
+                "ATTENTION: l'accès à ce type de bloc doit être réservé aux utilisateurs approuvés puisque l'implémentation actuelle n'est pas sécurisée."
+            )
         )
     )
 
@@ -19,8 +25,14 @@ class PrintBlockRichText(models.Model):
 class PrintBlockCustom(models.Model):
     content = models.TextField(
         # TODO: reverse_lazy and parametrize URL instead of hardcode
-        help_text=_(
-            'You can access the contents of the data returned by the API with placeholders like `{{data.properties.geotime_aggregated.start_date}}`. Have a look at <a href="http://localhost:9095/wfs3/collections/permits/items/1">the API</a> to see available data.'
+        help_text=(
+            _(
+                "Il est possible d'accéder aux données de l'API avec la syntaxe suivante: `{{data.properties.geotime_aggregated.start_date}}`. Consultez les résults de <a href=\"http://localhost:9095/wfs3/collections/permits/items/1\">l'API</a> pour voir les données disponibles."
+            )
+            + "\n"
+            + _(
+                "ATTENTION: l'accès à ce type de bloc doit être réservé aux utilisateurs approuvés puisque l'implémentation actuelle n'est pas sécurisée."
+            )
         )
     )
 
@@ -32,7 +44,11 @@ class PrintBlockMap(models.Model):
         upload_to="qgis_templates",
     )
     qgis_print_template_name = models.CharField(
-        _("Nom du template d'impression QGIS"), max_length=150,
+        _("Nom du template d'impression QGIS"),
+        max_length=150,
+        help_text=_(
+            "ATTENTION: l'accès à ce type de bloc doit être réservé aux utilisateurs approuvés puisque l'implémentation actuelle n'est pas sécurisée."
+        ),
     )
 
 
@@ -42,6 +58,11 @@ class PrintBlockContacts(models.Model):
 
 class PrintBlockValidation(models.Model):
     content = models.TextField()
+
+
+class PrintBlockRecipient(models.Model):
+    class Meta:
+        abstract = True
 
 
 class PrintBlockRawData(models.Model):
@@ -60,6 +81,7 @@ STREAMBLOCKS_MODELS = [
     PrintBlockMap,
     PrintBlockContacts,
     PrintBlockValidation,
+    PrintBlockRecipient,
     PrintBlockRawData,
     PrintBlockPageBreak,
     PrintBlockCustom,

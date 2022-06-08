@@ -1,0 +1,10 @@
+<div class="block-recipient">
+  {% if data.properties.author.company_name %}
+    {{data.properties.author.company_name}}<br/>
+  {% endif %}
+  {% if data.properties.author.first_name or data.properties.author.last_name %}
+    {{data.properties.author.first_name}} {{data.properties.author.last_name|upper}}<br/>
+  {% endif %}
+  {{data.properties.author.address}}<br/>
+  {{data.properties.author.zipcode}} {{data.properties.author.city}}
+</div>
