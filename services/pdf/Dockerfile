@@ -1,0 +1,12 @@
+FROM python:3.10-slim-bullseye
+
+# weasyprint deps as per https://doc.courtbouillon.org/weasyprint/stable/first_steps.html
+RUN apt-get update && apt-get install -y libpango-1.0-0 libpangoft2-1.0-0
+
+ADD requirements.txt requirements.txt
+RUN pip install -r requirements.txt
+
+ADD app.py app.py
+
+ENV FLASK_APP=app
+CMD flask run --host=0.0.0.0

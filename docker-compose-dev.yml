@@ -66,3 +66,9 @@ services:
         ports:
             - 1025:1025 # smtp server
             - 8025:8025 # web ui
+
+    pdf:
+        build:
+            context: services/pdf
+        environment:
+            WEB_ROOT_URL: http://web:9000

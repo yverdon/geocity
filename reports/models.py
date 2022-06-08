@@ -2,6 +2,7 @@ from django.db import models
 
 import io
 import typing
+import requests
 import urllib
 from urllib.request import urlopen
 from django.utils.translation import gettext_lazy as _
@@ -67,32 +68,7 @@ class Report(models.Model):
         }
         return render_to_string("reports/report.html", context)
 
-    def render_pdf(self, permit_request) -> typing.IO:
-        # Note: rendering is done with weasyprint, which does not fully support modern CSS (such as grid).
-        # If this proves limiting, consider trying out another solution such as
-        # https://github.com/bedrockio/export-html
 
-        # Define a fetcher, translating URLs so they work internally
-        def my_fetcher(url):
-            if url.startswith("http://localhost:9096/"):
-                internal_url = url.replace(
-                    "http://localhost:9096/", "http://qgisserver/"
-                )
-                return {"file_obj": urlopen(internal_url)}
-
-            if url.startswith("http://relative/media/"):
-                local_path = url.replace("http://relative/media", settings.MEDIA_ROOT)
-                return {"file_obj": open(local_path, "rb")}
-            return default_url_fetcher(url)
-
-        buffer = io.BytesIO()
-        HTML(
-            string=self.render_string(permit_request),
-            url_fetcher=my_fetcher,
-            base_url="http://relative",  # seems required to get relative URLs to work
-        ).write_pdf(buffer)
-        buffer.seek(io.SEEK_SET)
-        return buffer
 
     def __str__(self):
         return self.name
