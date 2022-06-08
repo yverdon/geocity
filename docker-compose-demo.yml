@@ -8,7 +8,7 @@ volumes:
 services:
     web:
         # Runserver for live reload
-        entrypoint: /code/entrypoint_dev.sh
+        entrypoint: /code/entrypoint_demo.sh
         command: "python3 manage.py runserver 0.0.0.0:9000"
         volumes:
             # Mount code for live reload
