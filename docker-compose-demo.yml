@@ -2,6 +2,9 @@
 
 version: "3"
 
+volumes:
+    pgdata:
+
 services:
     web:
         # Runserver for live reload
