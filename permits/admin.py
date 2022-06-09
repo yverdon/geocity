@@ -43,6 +43,7 @@ INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [
     "permitworkflowstatus",
     "permitauthor",
     "qgisproject",
+    "complementarydocumenttype",
 ]
 OTHER_PERMISSIONS_CODENAMES = [
     "view_user",
@@ -311,7 +312,7 @@ class UserAdmin(BaseUserAdmin):
         return qs
 
     def save_model(self, req, obj, form, change):
-        """ Set 'is_staff=True' when the saved user is in a integrator group.
+        """Set 'is_staff=True' when the saved user is in a integrator group.
         But let is_staff=True for super users.
         """
         if req.user.is_superuser:
@@ -770,6 +771,9 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "has_geometry_point",
         "has_geometry_line",
         "has_geometry_polygon",
+        "document_enabled",
+        "publication_enabled",
+        "permanent_publication_enabled",
     ]
     list_filter = ["administrative_entities"]
     search_fields = [
@@ -801,6 +805,16 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         (
             "Planning et localisation",
             {"fields": ("geometry_types", "needs_date", "start_delay",)},
+        ),
+        (
+            "Modules complémentaires",
+            {
+                "fields": (
+                    "document_enabled",
+                    "publication_enabled",
+                    "permanent_publication_enabled",
+                )
+            },
         ),
         (
             "Prolongation",
@@ -951,8 +965,7 @@ class WorksObjectPropertyAdmin(
 
 
 class PermitAdministrativeEntityAdminForm(forms.ModelForm):
-    """ Form class to configure an administrative entity (commune, organisation)
-    """
+    """Form class to configure an administrative entity (commune, organisation)"""
 
     class Meta:
         model = models.PermitAdministrativeEntity
@@ -1325,6 +1338,42 @@ class TokenAdmin(BaseTokenAdmin):
             ]
 
 
+class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    form = permit_forms.ComplementaryDocumentTypeAdminForm
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "work_object_types":
+            if request.user.is_superuser:
+                kwargs["queryset"] = models.WorksObjectType.objects.all()
+            else:
+                kwargs["queryset"] = models.WorksObjectType.objects.filter(
+                    integrator=request.user.groups.get(
+                        permitdepartment__is_integrator_admin=True
+                    )
+                )
+        if db_field.name == "parent":
+            if request.user.is_superuser:
+                kwargs["queryset"] = models.ComplementaryDocumentType.objects.all()
+            else:
+                kwargs["queryset"] = models.ComplementaryDocumentType.objects.filter(
+                    integrator=request.user.groups.get(
+                        permitdepartment__is_integrator_admin=True
+                    )
+                )
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+class PermitRequestInquiryAdmin(admin.ModelAdmin):
+    list_display = ("id", "start_date", "end_date", "submitter", "permit_request")
+
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "name"
+    sortable_str.short_description = _("3.2 Enquêtes public")
+
+
 admin.site.unregister(TokenProxy)
 admin.site.register(TokenProxy, TokenAdmin)
 
@@ -1337,3 +1386,5 @@ admin.site.register(models.WorksObject, WorksObjectAdmin)
 admin.site.register(models.PermitRequestAmendProperty, PermitRequestAmendPropertyAdmin)
 admin.site.register(models.TemplateCustomization, TemplateCustomizationAdmin)
 admin.site.register(models.PermitRequest, PermitRequestAdmin)
+admin.site.register(models.ComplementaryDocumentType, ComplementaryDocumentTypeAdmin)
+admin.site.register(models.PermitRequestInquiry, PermitRequestInquiryAdmin)

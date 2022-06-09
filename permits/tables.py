@@ -1,6 +1,8 @@
 from datetime import datetime
 import django_tables2 as tables
 from django.template.defaultfilters import floatformat
+from django.utils.safestring import mark_safe
+from django_tables2.utils import A
 from django.utils.translation import gettext_lazy as _
 from django_tables2_column_shifter.tables import ColumnShiftTable
 from . import models
@@ -83,6 +85,32 @@ class DynamicColumnsTable(ColumnShiftTable):
         type(self).base_columns = bc
 
 
+class PermitRequestCheckboxColumn(tables.CheckBoxColumn):
+    def render(self, value, bound_column, record):
+        default = {
+            "type": "checkbox",
+            "name": "{}[]".format(bound_column.name),
+            "value": value,
+            "class": "permit-request",
+        }
+        if self.is_checked(value, record):
+            default.update({"checked": "checked"})
+
+        general = self.attrs.get("input")
+        specific = self.attrs.get("td__input")
+        attrs = tables.utils.AttributeDict(default, **(specific or general or {}))
+        return mark_safe("<input %s/>" % attrs.as_html())
+
+    @property
+    def header(self):
+        """
+        In its default implementation, the header property always returns an input
+        for the table header, as we do not want this, we override the function to do
+        nothing
+        """
+        return ""
+
+
 class GenericPermitRequestTable(ColumnShiftTable):
     status = tables.TemplateColumn(
         template_name="tables/_permit_request_status.html",
@@ -103,7 +131,13 @@ class GenericPermitRequestTable(ColumnShiftTable):
     )
 
 
-class OwnPermitRequestsHTMLTable(GenericPermitRequestTable):
+class SelectablePermitRequestTable(ColumnShiftTable):
+    check = PermitRequestCheckboxColumn(accessor="id", verbose_name="Sélectionner")
+
+
+class OwnPermitRequestsHTMLTable(
+    GenericPermitRequestTable, SelectablePermitRequestTable
+):
     works_objects_html = tables.TemplateColumn(
         verbose_name=_("Objets et types de demandes"),
         orderable=False,
@@ -118,6 +152,7 @@ class OwnPermitRequestsHTMLTable(GenericPermitRequestTable):
     class Meta:
         model = models.PermitRequest
         fields = (
+            "check",
             "id",
             "created_at",
             "status",
@@ -175,7 +210,9 @@ class GenericDepartmentPermitRequestsTable(
         }
 
 
-class DepartmentPermitRequestsHTMLTable(GenericDepartmentPermitRequestsTable):
+class DepartmentPermitRequestsHTMLTable(
+    GenericDepartmentPermitRequestsTable, SelectablePermitRequestTable
+):
     works_objects_html = tables.TemplateColumn(
         verbose_name=_("Objets et types de demandes"),
         orderable=False,
@@ -190,6 +227,7 @@ class DepartmentPermitRequestsHTMLTable(GenericDepartmentPermitRequestsTable):
     class Meta:
         model = models.PermitRequest
         fields = (
+            "check",
             "id",
             "author_fullname",
             "author_details",
@@ -200,7 +238,6 @@ class DepartmentPermitRequestsHTMLTable(GenericDepartmentPermitRequestsTable):
             "works_objects_html",
             "administrative_entity",
         )
-        template_name = "django_tables2/bootstrap.html"
 
 
 class DepartmentPermitRequestsExportTable(GenericDepartmentPermitRequestsTable):
@@ -218,5 +255,28 @@ class DepartmentPermitRequestsExportTable(GenericDepartmentPermitRequestsTable):
             "ends_at_max",
             "works_objects_str",
             "administrative_entity",
+        )
+
+
+class ArchivedPermitRequestsTable(ColumnShiftTable):
+    check = PermitRequestCheckboxColumn(
+        accessor="permit_request_id", verbose_name="Archiver"
+    )
+    permit_request_id = tables.Column(verbose_name=_("ID"), orderable=True)
+    archived_date = tables.Column(verbose_name=_("Date d'archivage"), orderable=True)
+    archivist = tables.Column(verbose_name=_("Archivé par"), orderable=True)
+    actions = tables.TemplateColumn(
+        template_name="tables/_archived_request_actions.html",
+        verbose_name=_("Actions"),
+        orderable=False,
+    )
+
+    class Meta:
+        model = models.ArchivedPermitRequest
+        fields = (
+            "check",
+            "permit_request_id",
+            "archived_date",
+            "archivist",
         )
         template_name = "django_tables2/bootstrap.html"

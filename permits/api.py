@@ -102,6 +102,9 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
                     )
                 )
                 | Q(permit_request__is_public=True)
+                | Q(
+                    permit_request__status=models.PermitRequest.STATUS_INQUIRY_IN_PROGRESS
+                )
             )
             .prefetch_related(works_object_types_prefetch)
             .select_related("permit_request__administrative_entity")

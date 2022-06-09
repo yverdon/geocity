@@ -1,3 +1,4 @@
+import datetime
 import logging
 import mimetypes
 import os
@@ -16,24 +17,28 @@ from django.core.exceptions import (
     PermissionDenied,
     SuspiciousOperation,
     ObjectDoesNotExist,
+    BadRequest,
 )
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.db.models import Prefetch, Sum, Q, CharField, Value
-from django.forms import modelformset_factory
+from django.db.models import Prefetch, Sum, Q, CharField, Value, ProtectedError
+from django.forms import modelformset_factory, formset_factory
 from django.http import (
     Http404,
     HttpResponse,
     JsonResponse,
     StreamingHttpResponse,
 )
+from django.http.response import HttpResponseNotFound, FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views import View
+from django.views.generic.edit import DeleteView, CreateView
+from django.views.generic.list import ListView
 from django_filters.views import FilterView
 from django_tables2.export.views import ExportMixin
 from django_tables2.views import SingleTableMixin, SingleTableView
@@ -46,6 +51,8 @@ import django_tables2 as tableslib
 
 from .tables import CustomPropertyValueAccessiblePermitRequest, get_custom_dynamic_table
 from constance import config
+
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -126,17 +133,14 @@ def redirect_bad_status_to_detail(func):
     return inner
 
 
-# Don't disable form if there's any amend property always amendable
-def disable_form(form, amend_property_always_amendable=[]):
-    form.disabled = True
-
+def disable_form(form, editable_fields=None):
     for field in form.fields.values():
+        if editable_fields and field.label in editable_fields:
+            continue
+        field.disabled = True
 
-        if field.label in amend_property_always_amendable:
-            field.disabled = False
-            form.disabled = False
-        else:
-            field.disabled = True
+    if not editable_fields:
+        form.disabled = True
 
 
 def progress_bar_context(request, permit_request, current_step_type):
@@ -185,29 +189,40 @@ class PermitRequestDetailView(View):
             self.permit_request
         )
 
-        forms = {action: self.get_form_for_action(action) for action in current_actions}
-        available_actions = [action for action in current_actions if forms[action]]
+        action_forms = {
+            action: self.get_form_for_action(action) for action in current_actions
+        }
+        action_formsets = {
+            action: self.get_formset_for_action(action) for action in current_actions
+        }
+        available_actions = [
+            action
+            for action in current_actions
+            if action_forms[action] or action_formsets[action]
+        ]
 
-        try:
-            active_forms = [
-                action
-                for action in available_actions
-                if not getattr(forms[action], "disabled", False)
-            ]
+        active_forms = [
+            action
+            for action in available_actions
+            if not getattr(action_forms[action], "disabled", False)
+            or not getattr(action_formsets[action], "disabled", False)
+        ]
+
+        if kwargs.get("active_form") or self.request.GET.get("prev_active_form"):
+            active_form = (
+                kwargs.get("active_form")
+                if kwargs.get("active_form")
+                else self.request.GET.get("prev_active_form")
+            )
+
             if "poke" in active_forms and "validate" in active_forms:
                 active_form = active_forms[active_forms.index("validate")]
-            else:
-                active_form = active_forms[0]
-            # This is to maintain the prolongation tab active in case of POST error
-            if "action=prolong" in str(self.request.body):
-                active_form = active_forms[active_forms.index("prolong")]
-
-        except IndexError:
-            active_form = available_actions[-1] if len(available_actions) > 0 else None
+        else:
+            active_form = active_forms[0]
 
         kwargs["has_validations"] = self.permit_request.has_validations()
 
-        if forms.get(models.ACTION_POKE):
+        if action_forms.get(models.ACTION_POKE):
             kwargs[
                 "nb_pending_validations"
             ] = self.permit_request.get_pending_validations().count()
@@ -243,7 +258,8 @@ class PermitRequestDetailView(View):
             **{
                 "permit_request": self.permit_request,
                 "history": history,
-                "forms": forms,
+                "forms": action_forms,
+                "formsets": action_formsets,
                 "active_form": active_form,
                 "has_permission_to_classify": services.has_permission_to_classify_permit_request(
                     self.request.user, self.permit_request
@@ -259,6 +275,15 @@ class PermitRequestDetailView(View):
                     self.permit_request
                 ),
                 "prolongation_enabled": prolongation_enabled,
+                "document_enabled": services.has_document_enabled_for_wots(
+                    self.permit_request
+                ),
+                "publication_enabled": self.permit_request.works_object_types.filter(
+                    publication_enabled=True
+                ).count()
+                == self.permit_request.works_object_types.count(),
+                "inquiry_in_progress": self.permit_request.status
+                == models.PermitRequest.STATUS_INQUIRY_IN_PROGRESS,
             },
         }
 
@@ -275,7 +300,15 @@ class PermitRequestDetailView(View):
         if action not in models.ACTIONS:
             return HttpResponse(status=400)
 
-        form = self.get_form_for_action(action, data=request.POST)
+        form = self.get_form_for_action(action, data=request.POST, files=request.FILES)
+        form_type = "forms"
+        # if no form was found, it might be a formset
+        if not form:
+            form = self.get_formset_for_action(
+                action, data=request.POST, files=request.FILES
+            )
+            form_type = "formsets"
+
         if not form:
             raise PermissionDenied
         elif getattr(form, "disabled", False):
@@ -285,23 +318,39 @@ class PermitRequestDetailView(View):
             return self.handle_form_submission(form, action)
 
         # Replace unbound form by bound form in the context
-        context = self.get_context_data()
-        context["forms"][action] = form
+        context = self.get_context_data(active_form=action)
+        context[form_type][action] = form
 
         return self.render_to_response(context)
 
-    def get_form_for_action(self, action, data=None):
+    def get_form_for_action(self, action, data=None, files=None):
         actions_forms = {
             models.ACTION_AMEND: self.get_amend_form,
             models.ACTION_REQUEST_VALIDATION: self.get_request_validation_form,
             models.ACTION_VALIDATE: self.get_validation_form,
             models.ACTION_POKE: self.get_poke_form,
             models.ACTION_PROLONG: self.get_prolongation_form,
+            models.ACTION_REQUEST_INQUIRY: self.get_request_inquiry_form,
         }
 
-        return actions_forms[action](data=data)
+        return (
+            actions_forms[action](data=data, files=files)
+            if action in actions_forms
+            else None
+        )
 
-    def get_amend_form(self, data=None):
+    def get_formset_for_action(self, action, data=None, files=None):
+        actions_formset = {
+            models.ACTION_COMPLEMENTARY_DOCUMENTS: self.get_complementary_documents_formset,
+        }
+
+        return (
+            actions_formset[action](data=data, files=files)
+            if action in actions_formset
+            else None
+        )
+
+    def get_amend_form(self, data=None, **kwargs):
 
         if services.has_permission_to_amend_permit_request(
             self.request.user, self.permit_request
@@ -346,7 +395,26 @@ class PermitRequestDetailView(View):
 
         return None
 
-    def get_request_validation_form(self, data=None):
+    def get_request_inquiry_form(self, data=None, **kwargs):
+        if not services.has_permission_to_amend_permit_request(
+            self.request.user, self.permit_request
+        ):
+            return None
+
+        current_inquiry = models.PermitRequestInquiry.get_current_inquiry(
+            permit_request=self.permit_request
+        )
+
+        form = forms.PermitRequestInquiryForm(
+            data=data, permit_request=self.permit_request, instance=current_inquiry,
+        )
+
+        if current_inquiry:
+            disable_form(form, editable_fields=[form.fields["documents"].label])
+
+        return form
+
+    def get_request_validation_form(self, data=None, **kwargs):
         if services.has_permission_to_amend_permit_request(
             self.request.user, self.permit_request
         ):
@@ -363,7 +431,7 @@ class PermitRequestDetailView(View):
 
         return None
 
-    def get_validation_form(self, data=None):
+    def get_validation_form(self, data=None, **kwargs):
         if not services.has_permission_to_validate_permit_request(
             self.request.user, self.permit_request
         ):
@@ -396,7 +464,7 @@ class PermitRequestDetailView(View):
 
         return form
 
-    def get_poke_form(self, data=None):
+    def get_poke_form(self, data=None, **kwargs):
         if services.has_permission_to_poke_permit_request(
             self.request.user, self.permit_request
         ):
@@ -412,7 +480,7 @@ class PermitRequestDetailView(View):
 
         return None
 
-    def get_prolongation_form(self, data=None):
+    def get_prolongation_form(self, data=None, **kwargs):
         if services.has_permission_to_poke_permit_request(
             self.request.user, self.permit_request
         ):
@@ -429,6 +497,15 @@ class PermitRequestDetailView(View):
 
         return None
 
+    def get_complementary_documents_formset(self, data=None, **kwargs):
+        ComplementaryDocumentsFormSet = formset_factory(
+            form=forms.PermitRequestComplementaryDocumentsForm, extra=1
+        )
+
+        return ComplementaryDocumentsFormSet(
+            data, kwargs["files"], form_kwargs={"permit_request": self.permit_request}
+        )
+
     def handle_form_submission(self, form, action):
         if action == models.ACTION_AMEND:
             return self.handle_amend_form_submission(form)
@@ -440,6 +517,10 @@ class PermitRequestDetailView(View):
             return self.handle_poke(form)
         elif action == models.ACTION_PROLONG:
             return self.handle_prolongation_form_submission(form)
+        elif action == models.ACTION_COMPLEMENTARY_DOCUMENTS:
+            return self.handle_complementary_documents_form_submission(form)
+        elif action == models.ACTION_REQUEST_INQUIRY:
+            return self.handle_request_inquiry_form_submission(form)
 
     def handle_amend_form_submission(self, form):
         initial_status = (
@@ -452,14 +533,12 @@ class PermitRequestDetailView(View):
         )
 
         if form.instance.status == models.PermitRequest.STATUS_AWAITING_SUPPLEMENT:
-            success_message += (
-                " "
-                + _(
-                    "Le statut de la demande a été passé à en attente de compléments. Vous devez maintenant"
-                    " contacter le requérant par email (%s) afin de lui demander de fournir les informations manquantes."
-                )
-                % self.permit_request.author.user.email
+            success_message += " " + _(
+                "Le statut de la demande a été passé à en attente de compléments."
             )
+
+        if form.cleaned_data.get("notify_author"):
+            success_message += _("Le requérant a été notifié du changement par email.")
 
         messages.success(self.request, success_message)
 
@@ -645,6 +724,262 @@ class PermitRequestDetailView(View):
             )
         else:
             return redirect("permits:permit_requests_list")
+
+    def handle_complementary_documents_form_submission(self, form):
+        for f in form:
+            f.instance.owner = self.request.user
+            f.instance.permit_request = self.permit_request
+            f.save()
+            f.save_m2m()
+
+        success_message = (
+            _("Les documents ont bien été ajoutés à la demande #%s.")
+            % self.permit_request.pk
+        )
+        messages.success(self.request, success_message)
+
+        if "save_continue" in self.request.POST:
+            target = reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": self.permit_request.pk},
+            )
+            query_string = urllib.parse.urlencode(
+                {"prev_active_form": models.ACTION_COMPLEMENTARY_DOCUMENTS}
+            )
+            return redirect(f"{target}?{query_string}")
+
+        return redirect("permits:permit_requests_list")
+
+    def handle_request_inquiry_form_submission(self, form):
+        # check if we're coming from the confirmation page
+        if not form.data.get("confirmation"):
+            non_public_documents = []
+            for document in form.cleaned_data["documents"]:
+                if not document.is_public:
+                    non_public_documents.append(document)
+
+            # check if any of the documents aren't public
+            # if so, redirect to confirmation page
+            if non_public_documents:
+                return render(
+                    self.request,
+                    "permits/permit_request_confirm_inquiry.html",
+                    {
+                        "non_public_documents": non_public_documents,
+                        "inquiry_form": form,
+                        "permit_request": self.permit_request,
+                    },
+                )
+        form.instance.submitter = self.request.user
+        form.instance.permit_request = self.permit_request
+
+        if form.cleaned_data.get("start_date") == datetime.today().date():
+            self.permit_request.start_inquiry()
+
+        form.save()
+
+        success_message = _("La mise en consultation publique a bien été enregistrée")
+        messages.success(self.request, success_message)
+
+        return redirect(
+            "permits:permit_request_detail", permit_request_id=self.permit_request.pk,
+        )
+
+
+class PermitRequestComplementaryDocumentDeleteView(DeleteView):
+    model = models.PermitRequestComplementaryDocument
+    success_message = _("Le document '%s' a été supprimé avec succès")
+    final_error_message = _("Les documents finaux ne peuvent pas être supprimés")
+    owner_error_message = _("Vous pouvez seulement supprimer vos documents")
+
+    def get(self, request, *args, **kwargs):
+        return self.post(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+
+        if not obj.owner == self.request.user and not self.request.user.is_superuser:
+            messages.add_message(request, messages.ERROR, self.owner_error_message)
+            return redirect(self.get_success_url())
+
+        # Final documents can't be deleted!
+        if obj.status == models.PermitRequestComplementaryDocument.STATUS_FINALE:
+            messages.add_message(request, messages.ERROR, self.final_error_message)
+            return redirect(self.get_success_url())
+
+        try:
+            res = super().delete(request, *args, **kwargs)
+        except ProtectedError as error:
+            messages.add_message(
+                request,
+                messages.ERROR,
+                _("%s. [%s]") % (error.args[0], error.args[1].args[1]),
+            )
+            return redirect(self.get_success_url())
+
+        messages.success(self.request, self.success_message % obj.document)
+        return res
+
+    def get_success_url(self):
+        return reverse_lazy(
+            "permits:permit_request_detail",
+            kwargs={"permit_request_id": self.get_object().permit_request_id},
+        )
+
+
+@method_decorator(login_required, name="dispatch")
+@method_decorator(permanent_user_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
+class ComplementaryDocumentDownloadView(View):
+    def get(self, request, path, *args, **kwargs):
+        return services.download_file(path)
+
+
+@method_decorator(login_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
+class ArchivedPermitRequestListView(SingleTableMixin, ListView):
+    model = models.ArchivedPermitRequest
+    template_name = "permits/archived_permit_request_list.html"
+
+    permission_error_message = _(
+        "Vous n'avez pas les permissions pour archiver cette demande"
+    )
+    archive_failed_error_message = _("Une erreur est survenue lors de l'archivage")
+
+    def post(self, request, *args, **kwargs):
+
+        if request.POST.get("action") == "archive-requests":
+            return self.archive()
+
+        return HttpResponseNotFound(_("Aucune action spécifiée"))
+
+    def get_queryset(self):
+        return services.get_archived_request_list_for_user(self.request.user).order_by(
+            "-archived_date"
+        )
+
+    def get_table_class(self):
+        return tables.ArchivedPermitRequestsTable
+
+    def archive(self):
+        permit_request_ids = self.request.POST.getlist("to_archive[]")
+
+        if not permit_request_ids:
+            return HttpResponseNotFound(_("Rien à archiver"))
+
+        department = models.PermitDepartment.objects.filter(
+            group__in=self.request.user.groups.all()
+        ).first()
+
+        if (
+            not self.request.user.is_superuser
+            and not department.is_backoffice
+            and not department.is_integrator_admin
+        ):
+            return JsonResponse(
+                data={"error": True, "message": self.permission_error_message},
+                status=403,
+            )
+        try:
+            with transaction.atomic():
+                for permit_request_id in permit_request_ids:
+                    permit_request = services.get_permit_request_for_user_or_404(
+                        self.request.user, permit_request_id
+                    )
+                    permit_request.archive(self.request.user)
+        except Exception:
+            return JsonResponse(
+                data={"message": self.archive_failed_error_message}, status=500
+            )
+
+        return JsonResponse({"message": _("Demandes archivées avec succès")})
+
+
+@method_decorator(login_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
+class ArchivedPermitRequestDeleteView(DeleteView):
+    model = models.ArchivedPermitRequest
+    success_url = reverse_lazy("permits:archived_permit_request_list")
+
+    success_message = _("L'archive #%s a été supprimé avec succès")
+    error_message = _("Vous n'avez pas les permissions pour supprimer cette archive")
+
+    def post(self, request, *args, **kwargs):
+
+        try:
+            archive = models.ArchivedPermitRequest.objects.get(pk=kwargs.get("pk"))
+
+            if not self.request.user == archive.archivist:
+                messages.error(self.request, self.error_message)
+                return redirect(self.success_url)
+
+            return super(ArchivedPermitRequestDeleteView, self).post(
+                request, *args, **kwargs
+            )
+        except models.ArchivedPermitRequest.DoesNotExist:
+            raise SuspiciousOperation
+
+    def get_success_url(self):
+        messages.success(self.request, self.success_message % self.object.pk)
+        return self.success_url
+
+
+@method_decorator(login_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
+class ArchivedPermitRequestDownloadView(View):
+    permission_error_message = _(
+        "Vous n'avez pas les permissions pour télécharger cette archive"
+    )
+    not_exist_error_message = _("L'archive demandée n'existe pas")
+
+    def get(self, request, *args, **kwargs):
+        try:
+            return services.download_archives(
+                archive_ids=[kwargs.get("pk")], user=self.request.user
+            )
+        except PermissionDenied:
+            error_message = self.permission_error_message
+        except ObjectDoesNotExist:
+            error_message = self.not_exist_error_message
+        except Exception:
+            error_message = _(
+                "Une erreur est survenue lors de la création du fichier compressé. Veuillez contacter votre administrateur"
+            )
+
+        messages.error(request, error_message)
+        return redirect(reverse_lazy("permits:archived_permit_request_list"))
+
+
+@method_decorator(login_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
+class ArchivedPermitRequestBulkDownloadView(View):
+    permission_error_message = _(
+        "Vous n'avez pas les permissions pour télécharger ces archives"
+    )
+    info_message = _("Rien à télécharger")
+    not_exist_error_message = _("Une des archives demandées n'existe pas")
+
+    def get(self, request, *args, **kwargs):
+        to_download = self.request.GET.getlist("to_download")
+        if not to_download:
+            messages.info(request, self.info_message)
+            return redirect(reverse_lazy("permits:archived_permit_request_list"))
+
+        try:
+            return services.download_archives(
+                archive_ids=to_download, user=self.request.user
+            )
+        except PermissionDenied:
+            error_message = self.permission_error_message
+        except ObjectDoesNotExist:
+            error_message = self.not_exist_error_message
+        except Exception:
+            error_message = _(
+                "Une erreur est survenue lors de la création du fichier compressé. Veuillez contacter votre administrateur"
+            )
+
+        messages.error(request, error_message)
+        return redirect(reverse_lazy("permits:archived_permit_request_list"))
 
 
 def permit_request_print(request, permit_request_id, template_id):
@@ -1392,7 +1727,7 @@ class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
         qs = (
             (
                 services.get_permit_requests_list_for_user(
-                    self.request.user, works_object_filter=works_object_filter
+                    self.request.user, works_object_filter=works_object_filter,
                 )
             )
             .prefetch_related(

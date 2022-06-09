@@ -524,6 +524,9 @@ class Command(BaseCommand):
                     works_object=works_obj_obj,
                     is_public=True,
                     notify_services=True,
+                    document_enabled=True,
+                    publication_enabled=True,
+                    permanent_publication_enabled=True,
                     services_to_notify=f"yverdon-squad+admin@liip.ch",
                     additional_information=additional_information_text,
                 )
@@ -539,6 +542,7 @@ class Command(BaseCommand):
                 works_object_type.administrative_entities.add(
                     administrative_entity_vevey
                 )
+                self.create_document_types(works_object_type)
                 for prop in props:
                     prop.works_object_types.add(works_object_type)
 
@@ -782,3 +786,28 @@ class Command(BaseCommand):
         <p>Consultez les emails générés par l'application:</p>
         => <a href="https://mailhog.geocity.ch" target="_blank">Boîte mail de demo<a/>
         """
+
+    def create_document_types(self, wot):
+        document_types = [
+            (
+                "{} Parent #1".format(wot.pk),
+                wot,
+                ["{} Child #1.{}".format(wot.pk, i) for i in range(1, 4)],
+            ),
+            (
+                "{} Parent #2".format(wot.pk),
+                wot,
+                ["{} Child #2.{}".format(wot.pk, i) for i in range(1, 5)],
+            ),
+        ]
+
+        for document_type in document_types:
+            name, work_object_type, children = document_type
+            parent = models.ComplementaryDocumentType.objects.create(
+                name=name, work_object_types=work_object_type, parent=None
+            )
+
+            for child in children:
+                models.ComplementaryDocumentType.objects.create(
+                    name=child, work_object_types=None, parent=parent
+                )

@@ -808,3 +808,11 @@ table.table thead th.desc {
 img.captcha {
   margin-bottom: 5px;
 }
+
+.badge-pill-55 {
+  font-size: 55%;
+}
+
+.display-none {
+  display: none;
+}

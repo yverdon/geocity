@@ -11,7 +11,7 @@
       {% if forms.amend %}
 
           <li class="nav-item">
-              <a class="btn btn-primary btn-action nav-link{% if active_form == "amend" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">{% trans "Traitement" %}</a>
+              <a class="btn btn-primary btn-action nav-link{% if active_form == "amend" or active_form == "request_inquiry" %} active{% endif %}" id="amend-tab" data-toggle="tab" href="#amend" role="tab" aria-controls="amend" aria-selected="{% if active_form == "amend" %}true{% else %}false{% endif %}">{% trans "Traitement" %}</a>
           </li>
 
       {% endif %}
@@ -73,9 +73,14 @@
           </li>
 
       {% endif %}
-
+      {% if formsets.complementary_documents and document_enabled %}
+          <li class="nav-item">
+            <a class="btn btn-primary btn-action nav-link{% if active_form == 'complementary_documents' %} active{% endif %}" id="documents-tab" data-toggle="tab" href="#documents" role="tab" aria-controls="documents">
+                {% trans "Documents" %}
+            </a>
+          </li>
+      {% endif %}
       </ul>
-
     </div>
   </div>
 
@@ -84,7 +89,7 @@
       <div class="pt-3 tab-content box box--default box--tabbed">
 
         {% if forms.amend %}
-            <div class="tab-pane{% if active_form == "amend" %} show active{% endif %}" id="amend" role="tabpanel" aria-labelledby="amend-tab">
+            <div class="tab-pane{% if active_form == "amend" or active_form == "request_inquiry" %} show active{% endif %}" id="amend" role="tabpanel" aria-labelledby="amend-tab">
                 <h4>{% trans "Informations générales" %}</h4>
                 <form method="post">
                     {% csrf_token %}
@@ -108,6 +113,21 @@
                         <button class="btn btn-primary" name="save_continue" {% if forms.amend.disabled %}disabled{% endif %}>{% trans "Enregistrer et continuer les modifications" %}</button>
                     </div>
                 </form>
+
+              {% if publication_enabled %}
+              <hr>
+              <h4>{% trans "Mise en consultation publique" %}</h4>
+              <form method="post">
+                {% csrf_token %}
+
+                {% bootstrap_form forms.request_inquiry layout='horizontal' %}
+                <div class="text-right">
+                    <input name="action" type="hidden" value="request_inquiry">
+                    <button class="btn btn-primary" {% if forms.request_inquiry.disabled %}disabled{% endif %}>{% trans "Envoyer" %}</button>
+                </div>
+              </form>
+              {% endif %}
+
             </div>
         {% endif %}
 
@@ -233,6 +253,32 @@
                     </div>
                 </form>
             </div>
+        {% endif %}
+
+        {% if formsets.complementary_documents and document_enabled %}
+          <div class="tab-pane{% if active_form == "complementary_documents" %} show active{% endif %}" id="documents" role="tabpanel" aria-labelledby="documents-tab">
+              <h4>{% trans "Ajout de documents à la demande" %}</h4>
+              <form method="post" enctype="multipart/form-data">
+                {{ formsets.complementary_documents.management_form }}
+                {% csrf_token %}
+                <div id="complementary-documents">
+                  {% for form in formsets.complementary_documents %}
+                    <div class="complementary-document">
+                      {% bootstrap_form form layout='horizontal' %}
+                    </div>
+                  {% endfor %}
+                </div>
+                <div class="text-center mb-4">
+                  <a href="#" id="add-document"><i class="fa fa-plus"></i> {% trans "Ajouter un autre document" %}</a>
+                  <a href="#" id="remove-document" class="text-danger" hidden><i class="fa fa-minus"></i> {% trans "Supprimer un document" %}</a>
+                </div>
+                <div class="text-right">
+                  <input name="action" type="hidden" value="complementary_documents">
+                  <button class="btn btn-primary" {% if forms.complementary_documents.disabled %}disabled{% endif %}>{% trans "Enregistrer" %}</button>
+                  <button class="btn btn-primary" name="save_continue" {% if forms.complementary_documents.disabled %}disabled{% endif %}>{% trans "Enregistrer et continuer les modifications" %}</button>
+                </div>
+              </form>
+          </div>
         {% endif %}
 
       </div>
