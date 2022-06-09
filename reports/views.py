@@ -11,7 +11,7 @@ from permits.decorators import permanent_user_required
 from rest_framework.authtoken.models import Token
 from permits.models import PermitRequest
 from .models import Report
-from django.http import FileResponse, HttpResponse
+from django.http import FileResponse, HttpResponse, HttpResponseServerError
 from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.authentication import TokenAuthentication, SessionAuthentication
 
@@ -32,13 +32,20 @@ def report_view_contents(request, permit_request_id, report_id):
 @permanent_user_required
 def report_view(request, permit_request_id, report_id):
     # Generate a token
-    # TODO CRITICAL: add expiration to token
-    token, _ = Token.objects.get_or_create(user=request.user)
+    # TODO CRITICAL: add expiration to token and/or ensure it gets deleted
+    token, token_was_created = Token.objects.get_or_create(user=request.user)
     data = {
         "url": reverse("reports:permit_request_report_contents", args = [permit_request_id, report_id]),
         "token": token.key,
     }
     pdf_response = requests.post("http://pdf:5000/", data=data)
+
+    # TODO: wrap in transaction
+    if token_was_created:
+        token.delete()
+
+    if pdf_response.status_code != 200:
+        raise RuntimeError( _("La génération du PDF a échoué."))
 
     response = FileResponse(io.BytesIO(pdf_response.content))
     response["Content-Disposition"] = 'inline; filename="report.pdf"'
