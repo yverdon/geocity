@@ -9,4 +9,6 @@ WORKDIR /app
 
 ADD app.py app.py
 
+RUN mkdir /io
+
 ENTRYPOINT ["python3" , "app.py"]

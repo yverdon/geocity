@@ -8,6 +8,7 @@ from rest_framework.authtoken.models import Token
 import requests
 import base64
 import docker
+import tempfile
 
 register = template.Library()
 
@@ -45,10 +46,9 @@ def include_qgis_map(context):
     template_name = context["block_content"].qgis_print_template_name
     permit_request_id = context["permit_request"].id
 
+
     client = docker.from_env()
 
-    print("-."*60)
-    print(client.containers.list())
 
     print("-!"*60)
     # commands = [template_name, permit_request_id, token.key, base64.b64encode(project_content).decode("ascii"),]
@@ -63,22 +63,25 @@ def include_qgis_map(context):
     # data = data.decode().strip()
     # print(str(data))
 
-    commands = [str(template_name), str(permit_request_id), str(token.key), "/io",]
-    container = client.containers.create("geocity_qgis", commands)
-
-    print("??"*60)
-    print(logs)
+    commands = [str(template_name), str(permit_request_id), str(token.key), "/io/project.qgs", "/io/output.png",]
+    container = client.containers.create("geocity_qgis", commands, network="geocity_pdf_generation")
 
     input_tar = _create_input_tar(project_file)
     container.put_archive("/io", input_tar)
 
     # Run the model
-    # container.start()
-    # container.wait(timeout=30)
+    container.start()
+    container.wait(timeout=30)
 
     logs = container.logs().decode("utf-8")
     print("-."*60)
     print(logs)
+
+    output_tar, stat = container.get_archive("/io")
+    output = _extract_output_tar(output_tar)
+
+    # Cleanup container
+    container.remove()
 
 
 
@@ -97,19 +100,19 @@ def include_qgis_map(context):
 
     # # return mark_safe(img_response.content.decode("utf-8"))
 
-    # data = base64.b64encode(img_response.content).decode('ascii')
-    return mark_safe(f"<img src=\"{data}\">")
+    data = base64.b64encode(output.read()).decode('ascii')
+    return mark_safe(f"<img src=\"data:image/png;base64,{data}\">")
 
 
 def _create_input_tar(uploaded_file):
     """
-    Packs the provided file as `input.csv` in a tar archive
+    Packs the provided file as `project.qgs` in a tar archive
     (to be used with `docker.container.put_archive(...)`)
     """
     uploaded_file.seek(0)
     tar_input_data = io.BytesIO()
     tar_input_file = tarfile.TarFile(mode="w", fileobj=tar_input_data)
-    tarinfo = tarfile.TarInfo("input.csv")
+    tarinfo = tarfile.TarInfo("project.qgs")
     tarinfo.size = uploaded_file.size
     tar_input_file.addfile(tarinfo, uploaded_file)
     tar_input_file.close()
@@ -119,7 +122,7 @@ def _create_input_tar(uploaded_file):
 
 def _extract_output_tar(output_tar):
     """
-    Extracts `output.csv` from the given tar archive
+    Extracts `output.png` from the given tar archive
     (to be used with `docker.container.get_archive(...)`)
     """
     tar_output_data = io.BytesIO()
@@ -128,4 +131,5 @@ def _extract_output_tar(output_tar):
     tar_output_data.flush()
     tar_output_data.seek(0)
     tar_output_file = tarfile.TarFile(mode="r", fileobj=tar_output_data)
-    return tar_output_file.extractfile("output/output.csv")
+    print(tar_output_file.getmembers())
+    return tar_output_file.extractfile("io/output.png")
