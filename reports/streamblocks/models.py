@@ -53,7 +53,7 @@ class PrintBlockMap(models.Model):
 
 
 class PrintBlockContacts(models.Model):
-    content = models.TextField()
+    content = models.TextField(_("Liste des contacts"))
 
 
 class PrintBlockValidation(models.Model):
@@ -75,6 +75,26 @@ class PrintBlockPageBreak(models.Model):
         abstract = True
 
 
+class PrintBlockAuthors(models.Model):
+    content = models.TextField
+    
+
+class PrintBlockDetails(models.Model):
+    content = models.TextField
+
+
+class PrintBlockPlanning(models.Model):
+    content = models.TextField
+
+# class PrintBlockFiles(models.Model):
+#     content = models.TextField
+    
+
+class PrintBlockHorizontalRule(models.Model):
+    class Meta:
+        abstract = True
+
+
 # Register blocks for StreamField as list of models
 STREAMBLOCKS_MODELS = [
     PrintBlockRichText,
@@ -85,4 +105,9 @@ STREAMBLOCKS_MODELS = [
     PrintBlockRawData,
     PrintBlockPageBreak,
     PrintBlockCustom,
+    PrintBlockAuthors,
+    PrintBlockDetails,
+    PrintBlockPlanning,
+    # PrintBlockFiles,
+    PrintBlockHorizontalRule,
 ]

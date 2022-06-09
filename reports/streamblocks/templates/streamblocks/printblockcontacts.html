@@ -1,6 +1,6 @@
 <div>
-  <h3>Contacts</h3>
-  {% if permit_request.actors.count %}}
+  <h2>Contacts</h2>
+  {% if permit_request.actors.count %}
   <ul>
     {% for actor in permit_request.actors.all %}
       <li>{{actor}}</li>
@@ -9,4 +9,4 @@
   {% else %}
   <p>Aucun contact pour cette demande</p>
   {% endif %}
-  </div>
+</div>

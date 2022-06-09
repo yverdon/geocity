@@ -1,0 +1,20 @@
+<div>
+    <h2>Auteurs</h2>
+    {% if permit_request.author %}
+    <div class="key_value_container">
+        <div class="key">Prénom</div><div class="value">{{permit_request.author.user.first_name}}</div>
+        <div class="key">Nom</div><div class="value">{{permit_request.author.user.last_name}}</div>
+        <div class="key">Adresse</div><div class="value">{{permit_request.author.address}}</div>
+        <div class="key">NPA</div><div class="value">{{permit_request.author.zipcode}}</div>
+        <div class="key">Localité</div><div class="value">{{permit_request.author.city}}</div>
+        <div class="key">Raison sociale</div><div class="value">{{permit_request.author.company_name}}</div>
+        <div class="key">Numéro TVA</div><div class="value">{{permit_request.author.vat_number}}</div>
+        <div class="key">Téléphone</div><div class="value">{{permit_request.author.phone_first}}</div>
+        <div class="key">Téléphone</div><div class="value">{{permit_request.author.phone_second}}</div>
+        <div class="key">E-mail</div><div class="value">{{permit_request.author.user.email}}</div>
+    </div>
+    {% else %}
+    <p>Aucun auteur pour cette demande</p>
+    {% endif %}
+</div>
+  
