@@ -835,7 +835,7 @@ class Command(BaseCommand):
             permit_request=permit_request7,
             starts_at=timezone.now(),
             ends_at=timezone.now(),
-            geom="GEOMETRYCOLLECTION(MULTIPOLYGON(((2538988 1181004, 2539002 1180967, 2539028 1180994, 2539009 1180988, 2538988 1181004))))",
+            geom="GEOMETRYCOLLECTION(MULTIPOLYGON(((2539078 1181121, 2539092 1181084, 2539118 1181111, 2539099 1181105, 2539078 1181121))))",
         )
 
         # Amend propertie with long text
