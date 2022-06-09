@@ -21,6 +21,9 @@ from rest_framework.authentication import TokenAuthentication, SessionAuthentica
 @login_required
 @permanent_user_required
 def report_view_contents(request, permit_request_id, report_id):
+    """This views renders a report content as a regular Django view returning HTML.
+    It is meant for internal access by the PDF generation service."""
+
     # TODO CRITICAL: ensure user has permissions on permit
     permit_request = get_object_or_404(PermitRequest, pk=permit_request_id)
     # TODO CRITICAL: ensure print setup is part of WorksObjectType
@@ -31,23 +34,13 @@ def report_view_contents(request, permit_request_id, report_id):
 @login_required
 @permanent_user_required
 def report_view(request, permit_request_id, report_id):
-    # Generate a token
-    # TODO CRITICAL: add expiration to token and/or ensure it gets deleted
-    token, token_was_created = Token.objects.get_or_create(user=request.user)
-    data = {
-        "url": reverse("reports:permit_request_report_contents", args = [permit_request_id, report_id]),
-        "token": token.key,
-    }
-    pdf_response = requests.post("http://pdf:5000/", data=data)
-
-    # TODO: wrap in transaction
-    if token_was_created:
-        token.delete()
-
-    if pdf_response.status_code != 200:
-        raise RuntimeError( _("La génération du PDF a échoué."))
-
-    response = FileResponse(io.BytesIO(pdf_response.content))
+    """This views returns a PDF."""
+    # TODO CRITICAL: ensure user has permissions on permit
+    permit_request = get_object_or_404(PermitRequest, pk=permit_request_id)
+    # TODO CRITICAL: ensure print setup is part of WorksObjectType
+    report = get_object_or_404(Report, pk=report_id)
+    pdf_content = report.render_pdf(permit_request, generated_by=request.user)
+    response = FileResponse(io.BytesIO(pdf_content))
     response["Content-Disposition"] = 'inline; filename="report.pdf"'
     response["Content-Type"] = "application/pdf"
     return response

@@ -507,7 +507,7 @@ class PermitRequestDetailView(View):
         )
 
         return ComplementaryDocumentsFormSet(
-            data, kwargs["files"], form_kwargs={"permit_request": self.permit_request}
+            data, kwargs["files"], form_kwargs={"permit_request": self.permit_request, "user": self.request.user}
         )
 
     def handle_form_submission(self, form, action):

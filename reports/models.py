@@ -13,7 +13,8 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from permits import models as permits_models
 from django.contrib.auth.models import Group
-
+from django.urls import reverse
+from rest_framework.authtoken.models import Token
 
 class ReportLayout(models.Model):
     """Page size/background/marings/fonts/etc, used by reports"""
@@ -86,6 +87,28 @@ class Report(models.Model):
         }
         return render_to_string("reports/report.html", context)
 
+    def render_pdf(self, permit_request, generated_by) -> bytes:
+        """Renders a PDF by calling the PDF generator service"""
+
+        # Generate a token
+        # TODO CRITICAL: add expiration to token and/or ensure it gets deleted
+        # (fix by using better token implementation than DRF)
+        token, token_was_created = Token.objects.get_or_create(user=generated_by)
+        data = {
+            "url": reverse("reports:permit_request_report_contents", args = [permit_request.pk, self.pk]),
+            "token": token.key,
+        }
+        pdf_response = requests.post("http://pdf:5000/", data=data)
+
+        # TODO: race condition if two PDFs are generated at the same time
+        # (fix by using better token implementation than DRF)
+        if token_was_created:
+            token.delete()
+
+        if pdf_response.status_code != 200:
+            raise RuntimeError( _("La génération du PDF a échoué."))
+
+        return pdf_response.content
 
 
     def __str__(self):

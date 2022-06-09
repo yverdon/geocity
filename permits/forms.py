@@ -1,4 +1,5 @@
 import json
+import io
 from collections import defaultdict
 from datetime import datetime, timedelta
 from itertools import groupby
@@ -1558,10 +1559,11 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             "description": forms.Textarea(attrs={"rows": 1}),
         }
 
-    def __init__(self, permit_request, *args, **kwargs):
+    def __init__(self, permit_request, user, *args, **kwargs):
         super(PermitRequestComplementaryDocumentsForm, self).__init__(*args, **kwargs)
 
         self.permit_request = permit_request
+        self.user = user
         self.fields[
             "authorised_departments"
         ].queryset = models.PermitDepartment.objects.filter(
@@ -1654,9 +1656,8 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             report = cleaned_data.get("report_preset")
             now = timezone.now()
             name = f"{report.name}_generated_{now:%Y-%m-%d}.pdf"
-            cleaned_data["document"] = File(
-                report.render_pdf(self.permit_request), name=name
-            )
+            data = io.BytesIO(report.render_pdf(self.permit_request, generated_by=self.user))
+            cleaned_data["document"] = File(data, name=name)
             cleaned_data["document_type"] = report.type
             cleaned_data[f"parent_{report.type.pk}"] = report.type
 
