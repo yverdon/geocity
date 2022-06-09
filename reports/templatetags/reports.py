@@ -8,6 +8,7 @@ from rest_framework.authtoken.models import Token
 import base64
 import docker
 import os
+from django.contrib.staticfiles import finders
 
 register = template.Library()
 
@@ -61,14 +62,19 @@ def include_qgis_map(context):
 
     # Run the container
     container.start()
-    container.wait(timeout=30)
+    r = container.wait(timeout=30)
 
     # Debug
-    # logs = container.logs().decode("utf-8")
-    # print(logs)
+    # print(container.logs().decode("utf-8"))
 
-    # Retrieve the output
-    output = _get_file(container, "/io/output.png")
+    # Check if it succeeded
+    if r['StatusCode'] == 0:
+        # Retrieve the output
+        output = _get_file(container, "/io/output.png")
+    else:
+        # Return error image
+        path = finders.find('reports/error.png')
+        output = open(path, "rb")
 
     # Cleanup container
     container.remove()
