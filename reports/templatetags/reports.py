@@ -108,5 +108,4 @@ def _get_file(container, path):
     tar_output_data.flush()
     tar_output_data.seek(0)
     tar_output_file = tarfile.TarFile(mode="r", fileobj=tar_output_data)
-    print(tar_output_file.getmembers())
     return tar_output_file.extractfile(filename)
