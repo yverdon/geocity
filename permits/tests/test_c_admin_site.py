@@ -1,10 +1,5 @@
-import re
-import urllib.parse
-import uuid
-from datetime import date
-
 from django.conf import settings
-from django.contrib.auth.models import Permission, User
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 from django_otp import DEVICE_ID_SESSION_KEY
@@ -16,6 +11,7 @@ from permits.tests.factories import SecretariatUserFactory, UserFactory
 from django.shortcuts import resolve_url
 
 from . import factories
+from permits import models
 from .utils import LoggedInIntegratorMixin, get_parser
 
 # TODO: Write update/delete/create tests for [PermitAdministrativeEntity, WorksType, WorksObject, WorksObjectType, WorksObjectProperty, PermitActorType, PermitActorType, PermitRequestAmendProperty]
@@ -36,6 +32,11 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             3
         )
         self.integrator_administrative_entity = factories.PermitAdministrativeEntityFactory(
+            integrator=self.group
+        )
+
+        self.parent_type = factories.ParentComplementaryDocumentTypeFactory()
+        self.integrator_parent_type = factories.ParentComplementaryDocumentTypeFactory(
             integrator=self.group
         )
 
@@ -192,9 +193,11 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
 
         response = self.client.get(reverse("admin:permits_workstype_changelist"))
         parser = get_parser(response.content)
-
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-sortable_str")), 16)
+        self.assertEqual(
+            len(parser.select(".field-sortable_str")),
+            models.WorksType.objects.all().count(),
+        )
 
     def test_integrator_can_only_see_own_worksobject(self):
         response = self.client.get(reverse("admin:permits_worksobject_changelist"))
@@ -211,9 +214,11 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
 
         response = self.client.get(reverse("admin:permits_worksobject_changelist"))
         parser = get_parser(response.content)
-
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-sortable_str")), 8)
+        self.assertEqual(
+            len(parser.select(".field-sortable_str")),
+            models.WorksObject.objects.all().count(),
+        )
 
     def test_integrator_can_only_see_own_worksobjecttype(self):
         response = self.client.get(reverse("admin:permits_worksobjecttype_changelist"))
@@ -230,9 +235,11 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
 
         response = self.client.get(reverse("admin:permits_worksobjecttype_changelist"))
         parser = get_parser(response.content)
-
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-sortable_str")), 4)
+        self.assertEqual(
+            len(parser.select(".field-sortable_str")),
+            models.WorksObjectType.objects.all().count(),
+        )
 
     def test_integrator_can_only_see_own_worksobjectproperty(self):
         response = self.client.get(
@@ -284,6 +291,14 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(parser.select(".grp-row")), 3)
+
+    def test_integrator_can_only_see_own_complementarydocumenttype(self):
+        response = self.client.get(
+            reverse("admin:permits_complementarydocumenttype_changelist")
+        )
+        parser = get_parser(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(parser.select(".grp-row-even")), 1)
 
     def test_admin_can_see_all_permitrequestamendproperty(self):
         user = factories.SuperUserFactory()

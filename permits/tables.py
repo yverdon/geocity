@@ -132,7 +132,7 @@ class GenericPermitRequestTable(ColumnShiftTable):
 
 
 class SelectablePermitRequestTable(ColumnShiftTable):
-    check = PermitRequestCheckboxColumn(accessor="id", verbose_name="Archiver")
+    check = PermitRequestCheckboxColumn(accessor="id", verbose_name="Sélectionner")
 
 
 class OwnPermitRequestsHTMLTable(

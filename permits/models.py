@@ -535,7 +535,7 @@ class PermitRequest(models.Model):
         (STATUS_APPROVED, _("Approuvée")),
         (STATUS_REJECTED, _("Refusée")),
         (STATUS_RECEIVED, _("Réceptionnée")),
-        (STATUS_INQUIRY_IN_PROGRESS, _("Mise à l'enquête en cours")),
+        (STATUS_INQUIRY_IN_PROGRESS, _("Consultation publique en cours")),
         (STATUS_ARCHIVED, _("Archivée")),
     )
     AMENDABLE_STATUSES = {
@@ -1073,7 +1073,15 @@ class WorksObjectType(models.Model):
     days_before_reminder = models.IntegerField(
         _("Délai de rappel (jours)"), blank=True, null=True
     )
-
+    document_enabled = models.BooleanField(
+        _("Activer la gestion des documents"), default=False
+    )
+    publication_enabled = models.BooleanField(
+        _("Activer la gestion de la publication"), default=False
+    )
+    permanent_publication_enabled = models.BooleanField(
+        _("Autoriser la mise en consultation sur une durée indéfinie"), default=False
+    )
     # All objects
     objects = models.Manager()
 
@@ -1593,6 +1601,12 @@ class ComplementaryDocumentType(models.Model):
         on_delete=models.CASCADE,
         verbose_name=_("Objets"),
     )
+    integrator = models.ForeignKey(
+        Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs"),
+    )
 
     class Meta:
         constraints = [
@@ -1602,6 +1616,8 @@ class ComplementaryDocumentType(models.Model):
                 name="Only parent types can be linked to a work object type",
             )
         ]
+        verbose_name = _("1.7 Configuration du type de document")
+        verbose_name_plural = _("1.7 Configuration des types de document")
 
     def __str__(self):
         return self.name
