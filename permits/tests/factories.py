@@ -506,6 +506,7 @@ class ComplementaryDocumentTypeFactory(factory.django.DjangoModelFactory):
 class ParentComplementaryDocumentTypeFactory(ComplementaryDocumentTypeFactory):
     work_object_types = factory.SubFactory(WorksObjectTypeFactory)
     parent = None
+    integrator = None
 
 
 class ChildComplementaryDocumentTypeFactory(ComplementaryDocumentTypeFactory):

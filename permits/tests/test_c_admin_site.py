@@ -16,6 +16,7 @@ from permits.tests.factories import SecretariatUserFactory, UserFactory
 from django.shortcuts import resolve_url
 
 from . import factories
+from permits import models
 from .utils import LoggedInIntegratorMixin, get_parser
 
 # TODO: Write update/delete/create tests for [PermitAdministrativeEntity, WorksType, WorksObject, WorksObjectType, WorksObjectProperty, PermitActorType, PermitActorType, PermitRequestAmendProperty]
@@ -36,6 +37,11 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             3
         )
         self.integrator_administrative_entity = factories.PermitAdministrativeEntityFactory(
+            integrator=self.group
+        )
+
+        self.parent_type = factories.ParentComplementaryDocumentTypeFactory()
+        self.integrator_parent_type = factories.ParentComplementaryDocumentTypeFactory(
             integrator=self.group
         )
 
@@ -284,6 +290,14 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(parser.select(".grp-row")), 3)
+
+    def test_integrator_can_only_see_own_complementarydocumenttype(self):
+        response = self.client.get(
+            reverse("admin:permits_complementarydocumenttype_changelist")
+        )
+        parser = get_parser(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(parser.select(".grp-row-even")), 1)
 
     def test_admin_can_see_all_permitrequestamendproperty(self):
         user = factories.SuperUserFactory()

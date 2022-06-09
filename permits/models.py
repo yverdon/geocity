@@ -1599,6 +1599,12 @@ class ComplementaryDocumentType(models.Model):
         on_delete=models.CASCADE,
         verbose_name=_("Objets"),
     )
+    integrator = models.ForeignKey(
+        Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs"),
+    )
 
     class Meta:
         constraints = [
@@ -1608,6 +1614,8 @@ class ComplementaryDocumentType(models.Model):
                 name="Only parent types can be linked to a work object type",
             )
         ]
+        verbose_name = _("1.7 Configuration du type de document")
+        verbose_name_plural = _("1.7 Configuration des types de document")
 
     def __str__(self):
         return self.name
