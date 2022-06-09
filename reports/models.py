@@ -16,6 +16,7 @@ from django.contrib.auth.models import Group
 from django.urls import reverse
 from rest_framework.authtoken.models import Token
 
+
 class ReportLayout(models.Model):
     """Page size/background/marings/fonts/etc, used by reports"""
 
@@ -95,7 +96,10 @@ class Report(models.Model):
         # (fix by using better token implementation than DRF)
         token, token_was_created = Token.objects.get_or_create(user=generated_by)
         data = {
-            "url": reverse("reports:permit_request_report_contents", args = [permit_request.pk, self.pk]),
+            "url": reverse(
+                "reports:permit_request_report_contents",
+                args=[permit_request.pk, self.pk],
+            ),
             "token": token.key,
         }
         pdf_response = requests.post("http://pdf:5000/", data=data)
@@ -106,10 +110,9 @@ class Report(models.Model):
             token.delete()
 
         if pdf_response.status_code != 200:
-            raise RuntimeError( _("La génération du PDF a échoué."))
+            raise RuntimeError(_("La génération du PDF a échoué."))
 
         return pdf_response.content
-
 
     def __str__(self):
         return self.name

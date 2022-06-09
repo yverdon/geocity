@@ -14,17 +14,18 @@ from weasyprint import HTML, default_url_fetcher
 
 app = Flask(__name__)
 
-@app.route("/", methods=['POST'])
+
+@app.route("/", methods=["POST"])
 def pdf():
 
-    url = os.environ["WEB_ROOT_URL"] + request.form['url']
-    token = request.form['token']
+    url = os.environ["WEB_ROOT_URL"] + request.form["url"]
+    token = request.form["token"]
 
     # Custom URL fetcher that adds the authentication header for internal
     def fetcher(url):
         if url.startswith(os.environ["WEB_ROOT_URL"]):
             req = Request(url)
-            req.add_header('Authorization', f'Token {token}')
+            req.add_header("Authorization", f"Token {token}")
             return {"file_obj": urlopen(req)}
         return default_url_fetcher(url)
 

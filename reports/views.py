@@ -16,8 +16,10 @@ from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.authentication import TokenAuthentication, SessionAuthentication
 
 
-@api_view(http_method_names=['GET'])  # enable token authentication
-@authentication_classes([TokenAuthentication, SessionAuthentication])  # enable token authentication
+@api_view(http_method_names=["GET"])  # enable token authentication
+@authentication_classes(
+    [TokenAuthentication, SessionAuthentication]
+)  # enable token authentication
 @login_required
 @permanent_user_required
 def report_view_contents(request, permit_request_id, report_id):

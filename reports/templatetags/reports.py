@@ -55,7 +55,9 @@ def include_qgis_map(context):
         str(permit_request_id),
         str(token.key),
     ]
-    container = client.containers.create("geocity_qgis", commands, network="geocity_pdf_generation")
+    container = client.containers.create(
+        "geocity_qgis", commands, network="geocity_pdf_generation"
+    )
 
     # Copy QGIS project to the container
     _put_file(container, "/io/project.qgs", project_file)
@@ -68,23 +70,23 @@ def include_qgis_map(context):
     # print(container.logs().decode("utf-8"))
 
     # Check if it succeeded
-    if r['StatusCode'] == 0:
+    if r["StatusCode"] == 0:
         # Retrieve the output
         output = _get_file(container, "/io/output.png")
     else:
         # Return error image
-        path = finders.find('reports/error.png')
+        path = finders.find("reports/error.png")
         output = open(path, "rb")
 
     # Cleanup container
     container.remove()
 
     # Prepare the dataurl
-    data = base64.b64encode(output.read()).decode('ascii')
+    data = base64.b64encode(output.read()).decode("ascii")
     data_url = f"data:image/png;base64,{data}"
 
     # Render
-    return mark_safe(f"<img src=\"{data_url}\">")
+    return mark_safe(f'<img src="{data_url}">')
 
 
 def _put_file(container, path, project_file):

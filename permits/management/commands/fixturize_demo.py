@@ -985,9 +985,7 @@ class Command(BaseCommand):
         block_paragraph_1.save()
 
         # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
-        qgis_project = (
-            open("/code/qgisserver/report-template-dev.qgs", "rb")
-        )
+        qgis_project = open("/code/qgisserver/report-template-dev.qgs", "rb")
         block_map = reports_blocks_models.PrintBlockMap(qgis_print_template_name="a4")
         block_map.qgis_project_file.save(
             "report-template-dev.qgs", File(qgis_project), save=True
