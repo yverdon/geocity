@@ -1571,7 +1571,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
 
         self.fields["report_preset"].queryset = reportmodels.Report.objects.filter(
             work_object_types__in=permit_request.works_object_types.all()
-        ).all()
+        ).distinct()
 
         parent_types = models.ComplementaryDocumentType.objects.filter(
             work_object_types__in=permit_request.works_object_types.all()
