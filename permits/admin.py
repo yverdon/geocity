@@ -770,6 +770,9 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "has_geometry_point",
         "has_geometry_line",
         "has_geometry_polygon",
+        "document_enabled",
+        "publication_enabled",
+        "permanent_publication_enabled",
     ]
     list_filter = ["administrative_entities"]
     search_fields = [
@@ -801,6 +804,16 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         (
             "Planning et localisation",
             {"fields": ("geometry_types", "needs_date", "start_delay",)},
+        ),
+        (
+            "Modules complémentaires",
+            {
+                "fields": (
+                    "document_enabled",
+                    "publication_enabled",
+                    "permanent_publication_enabled",
+                )
+            },
         ),
         (
             "Prolongation",

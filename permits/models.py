@@ -533,7 +533,7 @@ class PermitRequest(models.Model):
         (STATUS_APPROVED, _("Approuvée")),
         (STATUS_REJECTED, _("Refusée")),
         (STATUS_RECEIVED, _("Réceptionnée")),
-        (STATUS_INQUIRY_IN_PROGRESS, _("Mise à l'enquête en cours")),
+        (STATUS_INQUIRY_IN_PROGRESS, _("Consultation publique en cours")),
         (STATUS_ARCHIVED, _("Archivée")),
     )
     AMENDABLE_STATUSES = {
@@ -1071,7 +1071,15 @@ class WorksObjectType(models.Model):
     days_before_reminder = models.IntegerField(
         _("Délai de rappel (jours)"), blank=True, null=True
     )
-
+    document_enabled = models.BooleanField(
+        _("Activer la gestion des documents"), default=False
+    )
+    publication_enabled = models.BooleanField(
+        _("Activer la gestion de la publication"), default=False
+    )
+    permanent_publication_enabled = models.BooleanField(
+        _("Autoriser la mise en consultation sur une durée indéfinie"), default=False
+    )
     # All objects
     objects = models.Manager()
 
