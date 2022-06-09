@@ -23,9 +23,7 @@ beautifulsoup4==4.10.0
     #   -r requirements.txt
     #   django-bootstrap4
 black==19.10b0
-    # via
-    #   -r requirements_dev.in
-    #   ipython
+    # via ipython
 certifi==2021.10.8
     # via
     #   -r requirements.txt
@@ -34,6 +32,8 @@ cffi==1.15.0
     # via
     #   -r requirements.txt
     #   cryptography
+cfgv==3.3.1
+    # via pre-commit
 charset-normalizer==2.0.12
     # via
     #   -r requirements.txt
@@ -61,6 +61,8 @@ deprecated==1.2.13
     # via
     #   -r requirements.txt
     #   jwcrypto
+distlib==0.3.4
+    # via virtualenv
 django==3.2.13
     # via
     #   -r requirements.txt
@@ -171,6 +173,8 @@ faker==13.2.0
     # via
     #   -r requirements_dev.in
     #   factory-boy
+filelock==3.7.1
+    # via virtualenv
 filetype==1.0.10
     # via -r requirements.txt
 gdal==3.3.2
@@ -179,6 +183,8 @@ gunicorn==20.1.0
     # via -r requirements.txt
 html5lib==1.1
     # via -r requirements.txt
+identify==2.5.1
+    # via pre-commit
 idna==3.3
     # via
     #   -r requirements.txt
@@ -197,6 +203,8 @@ jwcrypto==1.0
     #   django-oauth-toolkit
 matplotlib-inline==0.1.3
     # via ipython
+nodeenv==1.6.0
+    # via pre-commit
 oauthlib==3.2.0
     # via
     #   -r requirements.txt
@@ -224,6 +232,10 @@ pillow==9.0.1
     #   django-simple-captcha
     #   pdf2image
 pip-tools==6.5.1
+    # via -r requirements_dev.in
+platformdirs==2.5.2
+    # via virtualenv
+pre-commit==2.19.0
     # via -r requirements_dev.in
 prompt-toolkit==3.0.28
     # via ipython
@@ -258,7 +270,9 @@ pytz==2021.3
     #   django
     #   djangorestframework
 pyyaml==6.0
-    # via -r requirements.txt
+    # via
+    #   -r requirements.txt
+    #   pre-commit
 qrcode==7.3.1
     # via
     #   -r requirements.txt
@@ -280,6 +294,7 @@ six==1.16.0
     #   -r requirements.txt
     #   html5lib
     #   python-dateutil
+    #   virtualenv
 soupsieve==2.3.1
     # via
     #   -r requirements.txt
@@ -297,6 +312,7 @@ toml==0.10.2
     # via
     #   black
     #   ipdb
+    #   pre-commit
 tomli==2.0.1
     # via pep517
 traitlets==5.1.1
@@ -311,6 +327,8 @@ urllib3==1.26.8
     # via
     #   -r requirements.txt
     #   requests
+virtualenv==20.14.1
+    # via pre-commit
 wcwidth==0.2.5
     # via prompt-toolkit
 webencodings==0.5.1
