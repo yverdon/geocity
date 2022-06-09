@@ -44,3 +44,4 @@ django-streamfield
 django-weasyprint
 django-ckeditor
 Jinja2
+docker

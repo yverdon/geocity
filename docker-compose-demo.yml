@@ -21,6 +21,8 @@ services:
         volumes:
             - .:/code
             - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
+            # to allow to spawn new QGIS containers
+            - /var/run/docker.sock:/var/run/docker.sock
         ports:
             - "${DJANGO_DOCKER_PORT}:9000"
         networks:
@@ -68,17 +70,20 @@ services:
             - 8025:8025 # web ui
 
     qgis:
-        restart: unless-stopped
+        image: geocity_qgis
+        # restart: unless-stopped
         build:
             context: services/qgis
         networks:
             - pdf_generation
-        environment:
-            FLASK_ENV: development
-        volumes:
-            - ./services/qgis:/app
-        ports:
-            - 5001:5000
+        # environment:
+        #     FLASK_ENV: development
+        # volumes:
+        #     - ./services/qgis:/app
+        # ports:
+        #     - 5001:5000
+        # Nothing to run on startup
+        command: "--help"
 
     pdf:
         restart: unless-stopped

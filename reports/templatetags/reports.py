@@ -1,10 +1,13 @@
 import typing
+import io
+import tarfile
 from django import template
 from django.utils.safestring import mark_safe
 from jinja2.sandbox import SandboxedEnvironment
 from rest_framework.authtoken.models import Token
 import requests
 import base64
+import docker
 
 register = template.Library()
 
@@ -35,26 +38,94 @@ def iterate_nested_dict(data):
 def include_qgis_map(context):
 
     request = context["request"]
+    token, _ = Token.objects.get_or_create(user=request.user)
 
-    project_path = context["block_content"].qgis_project_file.path
-    project_content = open(project_path, "rb").read()
+
+    project_file = context["block_content"].qgis_project_file.file
     template_name = context["block_content"].qgis_print_template_name
     permit_request_id = context["permit_request"].id
 
+    client = docker.from_env()
+
+    print("-."*60)
+    print(client.containers.list())
+
+    print("-!"*60)
+    # commands = [template_name, permit_request_id, token.key, base64.b64encode(project_content).decode("ascii"),]
+    # commands = [template_name, permit_request_id, token.key, "abcabc"]
+    # commands = [template_name, permit_request_id, token.key]
+    # commands = [template_name, permit_request_id, token.key]
+    # commands = ["echo", "1", "world", "dGVzdA=="]
+    # data = client.containers.run("geocity_qgis", commands)
+
+
+    # data = client.containers.run("alpine", ["echo", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",])
+    # data = data.decode().strip()
+    # print(str(data))
+
+    commands = [str(template_name), str(permit_request_id), str(token.key), "/io",]
+    container = client.containers.create("geocity_qgis", commands)
+
+    print("??"*60)
+    print(logs)
+
+    input_tar = _create_input_tar(project_file)
+    container.put_archive("/io", input_tar)
+
+    # Run the model
+    # container.start()
+    # container.wait(timeout=30)
+
+    logs = container.logs().decode("utf-8")
+    print("-."*60)
+    print(logs)
+
+
+
     # TODO CRITICAL: add expiration to token
-    token, _ = Token.objects.get_or_create(user=request.user)
-    data = {
-        "template_name": template_name,
-        "token": token.key,
-        "permit_request_id": permit_request_id,
-    }
-    files = {
-        "project_content": project_content,
-    }
-    img_response = requests.post("http://qgis:5000/", data=data, files=files)
+    # token, _ = Token.objects.get_or_create(user=request.user)
+    # data = {
+    #     "template_name": template_name,
+    #     "token": token.key,
+    #     "permit_request_id": permit_request_id,
+    # }
+    # files = {
+    #     "project_content": project_content,
+    # }
+    # img_response = requests.post("http://qgis:5000/", data=data, files=files)
 
 
-    # return mark_safe(img_response.content.decode("utf-8"))
+    # # return mark_safe(img_response.content.decode("utf-8"))
 
-    data = base64.b64encode(img_response.content).decode('ascii')
-    return mark_safe(f"<img src=\"data:image/png;base64,{data}\">")
+    # data = base64.b64encode(img_response.content).decode('ascii')
+    return mark_safe(f"<img src=\"{data}\">")
+
+
+def _create_input_tar(uploaded_file):
+    """
+    Packs the provided file as `input.csv` in a tar archive
+    (to be used with `docker.container.put_archive(...)`)
+    """
+    uploaded_file.seek(0)
+    tar_input_data = io.BytesIO()
+    tar_input_file = tarfile.TarFile(mode="w", fileobj=tar_input_data)
+    tarinfo = tarfile.TarInfo("input.csv")
+    tarinfo.size = uploaded_file.size
+    tar_input_file.addfile(tarinfo, uploaded_file)
+    tar_input_file.close()
+    tar_input_data.seek(0)
+    return tar_input_data
+
+
+def _extract_output_tar(output_tar):
+    """
+    Extracts `output.csv` from the given tar archive
+    (to be used with `docker.container.get_archive(...)`)
+    """
+    tar_output_data = io.BytesIO()
+    for chunk in output_tar:
+        tar_output_data.write(chunk)
+    tar_output_data.flush()
+    tar_output_data.seek(0)
+    tar_output_file = tarfile.TarFile(mode="r", fileobj=tar_output_data)
+    return tar_output_file.extractfile("output/output.csv")
