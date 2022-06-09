@@ -19,11 +19,6 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='auth.group', verbose_name='Groupe des administrateurs'),
         ),
         migrations.AddField(
-            model_name='report',
-            name='work_object_types',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='available_reports', to='permits.worksobjecttype', verbose_name='Objets'),
-        ),
-        migrations.AddField(
             model_name='reportlayout',
             name='integrator',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='auth.group', verbose_name='Groupe des administrateurs'),

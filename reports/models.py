@@ -63,14 +63,10 @@ class Report(models.Model):
     type = models.ForeignKey(
         "permits.ComplementaryDocumentType", on_delete=models.RESTRICT
     )
-    work_object_types = models.ForeignKey(
-        "permits.WorksObjectType",
-        null=True,
-        blank=True,
-        on_delete=models.CASCADE,
-        verbose_name=_("Objets"),
-        related_name="available_reports",
+    work_object_types = models.ManyToManyField(
+        "permits.WorksObjectType", related_name="reports"
     )
+
     integrator = models.ForeignKey(
         Group,
         null=True,

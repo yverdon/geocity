@@ -1073,7 +1073,6 @@ class WorksObjectType(models.Model):
     days_before_reminder = models.IntegerField(
         _("Délai de rappel (jours)"), blank=True, null=True
     )
-    reports = models.ManyToManyField("reports.Report", related_name="worksobjecttypes")
 
     # All objects
     objects = models.Manager()
