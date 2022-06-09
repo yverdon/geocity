@@ -1969,7 +1969,7 @@ def get_services_to_notify_mailing_list(permit_request):
     return mailing_list
 
 
-def has_document_for_wots(permit_request):
+def has_document_enabled_for_wots(permit_request):
     # Document module is activated if at leat on WOT has this property enabled
 
     return permit_request.works_object_types.filter(document_enabled=True).count() > 0
