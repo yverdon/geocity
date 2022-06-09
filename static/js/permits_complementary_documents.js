@@ -89,9 +89,11 @@ function hideChildrenDocumentTypes(parent) {
 
 function setEventOnTemplateSelect(id){
   let reportTemplateField = document.getElementById(`id_form-${id}-report_preset`);
-
+    document.getElementById(`id_form-${id}-document`).disabled=false;
+    document.getElementById(`id_form-${id}-document_type`).disabled=false;
+    document.getElementById(`id_form-${id}-print_preview`).disabled=true;
     reportTemplateField.addEventListener('change', (e) => {
-      if (e.originalTarget.value == "") {
+      if (e.target.value == "") {
         document.getElementById(`id_form-${id}-document`).disabled=false;
         document.getElementById(`id_form-${id}-document_type`).disabled=false;
         document.getElementById(`id_form-${id}-print_preview`).disabled=true;
