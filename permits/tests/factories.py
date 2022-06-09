@@ -192,7 +192,10 @@ class IntegratorGroupFactory(GroupFactory):
             extracted = list(
                 Permission.objects.filter(
                     (
-                        Q(content_type__app_label="permits")
+                        (
+                            Q(content_type__app_label="permits")
+                            | Q(content_type__app_label="reports")
+                        )
                         & Q(
                             content_type__model__in=admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS
                         )

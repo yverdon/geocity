@@ -34,7 +34,7 @@ from accounts.geomapfish.provider import GeomapfishProvider
 from django.utils import timezone
 
 from . import models, services, geoservices
-from reports.models import Report
+from reports import models as reportmodels
 
 input_type_mapping = {
     models.WorksObjectProperty.INPUT_TYPE_TEXT: forms.CharField,
@@ -1525,7 +1525,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         queryset=None, widget=forms.CheckboxSelectMultiple, required=False,
     )
     report_preset = forms.ModelChoiceField(
-        queryset=Report.objects.all(),
+        queryset=None,
         widget=forms.Select,
         required=False,
         label=_("Générer à partir du modèle"),
@@ -1543,7 +1543,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             "document_type",
         ]
         widgets = {
-            "description": forms.Textarea(attrs={"rows": 2}),
+            "description": forms.Textarea(attrs={"rows": 1}),
         }
 
     def __init__(self, permit_request, *args, **kwargs):
@@ -1557,8 +1557,9 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         ).all()
         self.fields["authorised_departments"].label = _("Département autorisé")
 
-        # TODO: only list available reports !!
-        # self.fields["report_preset"].queryset = Report.objects.all()
+        self.fields["report_preset"].queryset = reportmodels.Report.objects.filter(
+            work_object_types__in=permit_request.works_object_types.all()
+        ).all()
 
         parent_types = models.ComplementaryDocumentType.objects.filter(
             work_object_types__in=permit_request.works_object_types.all()

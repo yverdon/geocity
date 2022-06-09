@@ -256,8 +256,6 @@
         {% if formsets.complementary_documents %}
           <div class="tab-pane{% if active_form == "complementary_documents" %} show active{% endif %}" id="documents" role="tabpanel" aria-labelledby="documents-tab">
               <h4>{% trans "Ajout de documents à la demande" %}</h4>
-
-              <a href="{% url 'reports:permit_request_report' permit_request.pk "1" %}" target="_blank">test download</a>
               <form method="post" enctype="multipart/form-data">
                 {{ formsets.complementary_documents.management_form }}
                 {% csrf_token %}
@@ -267,19 +265,26 @@
                     <div class="complementary-document">
                         {% for field in form %}
                             {% if field.name == "document" or field.name == "report_preset"%}
-                            <div class="form-group row">
+                            {% if field.name == "report_preset" %}
+                                <div class="form-group row">
+                            {% endif %}
+                        
                                 {% if field.name == "document" %}
-                                <div class="col-sm-6">
-                                    {% bootstrap_field field layout='horizontal'%}
+                                <div class="col-sm-5">
+                                    {% bootstrap_field field layout='vertical'%}
                                 </div>
                                 {% endif %}
                                 {% if field.name == "report_preset" %}
-                                <div class="col-sm-6">
-                                    {% bootstrap_field field layout='horizontal' extra_classes='select-report-preset' %}
-                                    <button class="btn btn-primary" name="preview" >{% trans "Prévisualiser" %}</button>
+                                <div class="col-sm-5">
+                                    {% bootstrap_field field layout='vertical' %}
+                                    <button id="id_form-{{ forloop.counter0 }}-print_preview" href="{% url 'reports:permit_request_report' permit_request.pk "1" %}"  class="btn btn-primary" name="preview" disabled>{% trans "Prévisualiser" %}</button>
                                 </div>
+                                <div class="col-sm-2"></div>
                                 {% endif %}
+                            {% if field.name == "document" %}
                             </div>
+                            <br>
+                            {% endif %}
                             {% else %}
                                 {% bootstrap_field field layout='horizontal'%}
                             {% endif %}

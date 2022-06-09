@@ -1622,16 +1622,6 @@ def get_permit_request_print_templates(permit_request):
     )
 
 
-def get_permit_request_reports(permit_request):
-    reports = []
-    wots = permit_request.works_object_types.all()
-    for wot in wots:
-        for report in wot.reports.all():
-            reports.append(report)
-    return reports
-    # return Report.objects.filter(worksobjecttypes__permit_request=permit_request)
-
-
 # Validate a file, from checking the first bytes and detecting the kind of the file
 # Exemple : User puts "my_malware.exe" and rename as "file.txt"
 # kind.extension => will return "exe"

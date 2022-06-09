@@ -62,6 +62,7 @@ from .tables import CustomPropertyValueAccessiblePermitRequest, get_custom_dynam
 from constance import config
 
 from datetime import datetime
+from reports import models as reportmodels
 
 logger = logging.getLogger(__name__)
 
@@ -280,7 +281,9 @@ class PermitRequestDetailView(View):
                 "print_templates": services.get_permit_request_print_templates(
                     self.permit_request
                 ),
-                "reports": services.get_permit_request_reports(self.permit_request),
+                "reports": reportmodels.Report.objects.filter(
+                    work_object_types__in=self.permit_request.works_object_types.all()
+                ).all(),
                 "directives": services.get_permit_request_directives(
                     self.permit_request
                 ),
