@@ -472,13 +472,13 @@ OL_MAP_HEIGHT = os.getenv("OL_MAP_HEIGHT")
 GRAPPELLI_ADMIN_TITLE = "Interface d'administration Geocity"
 
 # Django REST Framework
-DRF_ALLOW_TOKENAUTHENTICATION = (
-    os.getenv("DRF_ALLOW_TOKENAUTHENTICATION", "false").lower() == "true"
-)
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
         "rest_framework.authentication.SessionAuthentication",
+        # TODO CRITICAL: include logic to only accept tokens from an internal
+        # request (I think this was supposed to be the case already, but see not logic
+        # for that)
         "rest_framework.authentication.TokenAuthentication",
     ),
     "DEFAULT_PAGINATION_CLASS": "django_wfs3.pagination.CustomPagination",
@@ -494,11 +494,6 @@ REST_FRAMEWORK = {
         "search": os.getenv("DRF_THROTTLE_RATE_SEARCH_API"),
     },
 }
-# Allow TokenAuthentication to the API.
-if DRF_ALLOW_TOKENAUTHENTICATION:
-    REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] += (
-        "rest_framework.authentication.TokenAuthentication",
-    )
 
 WFS3_TITLE = "OGC API Features - Geocity"
 WFS3_DESCRIPTION = "Point d'accès OGC API Features aux données Geocity."
