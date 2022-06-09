@@ -34,16 +34,6 @@
 
       {% endif %}
 
-      {% if has_permission_to_classify and print_templates %}
-
-        <li class="nav-item">
-        <a class="btn btn-primary btn-action nav-link" id="print-tab" data-toggle="tab" href="#print" role="tab" aria-controls="print">
-            {% trans "Impression" %}
-        </a>
-        </li>
-
-      {% endif %}
-
       {% if has_permission_to_classify and directives %}
 
         <li class="nav-item">
@@ -161,21 +151,6 @@
             </div>
         {% endif %}
 
-        {% if print_templates %}
-            <div class="tab-pane" id="print" role="tabpanel" aria-labelledby="print-tab">
-                <h4>{% trans "Impression de documents" %}</h4>
-                <form method="post">
-                    {% csrf_token %}
-
-                    {% for print_template in print_templates %}
-                        <button class="btn btn-primary mr-3" formaction="{% url 'permits:permit_request_print' permit_request_id=permit_request.pk template_id=print_template.pk %}">
-                            <i class="fa fa-print" aria-hidden="true"></i> {{ print_template.description  }}
-                        </button>
-                    {% endfor %}
-                </form>
-            </div>
-        {% endif %}
-
         {% if directives %}
             <div class="tab-pane" id="directives" role="tabpanel" aria-labelledby="directives-tab">
                 <h4>{% trans "Directives liées à la demande" %}</h4>
@@ -270,7 +245,7 @@
                             {% if field.name == "report_preset" %}
                                 <div class="form-group row">
                             {% endif %}
-                        
+
                                 {% if field.name == "document" %}
                                 <div class="col-sm-5">
                                     {% bootstrap_field field layout='vertical'%}

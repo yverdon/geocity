@@ -570,8 +570,6 @@ class PermitRequestAPITestCase(TestCase):
             response_json, {"is_logged": False,},
         )
 
-    # TODO: test also the permits:permit_request_print route
-
     def test_events_api_returns_current_inquiries(self):
         self.client.login(username=self.secretariat_user.username, password="password")
 

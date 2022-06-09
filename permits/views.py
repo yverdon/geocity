@@ -269,9 +269,6 @@ class PermitRequestDetailView(View):
                     self.request.user, self.permit_request
                 ),
                 "can_validate_permit_request": can_validate_permit_request,
-                "print_templates": services.get_permit_request_print_templates(
-                    self.permit_request
-                ),
                 "reports": reportmodels.Report.objects.filter(
                     work_object_types__in=self.permit_request.works_object_types.all()
                 ).all(),
@@ -984,56 +981,6 @@ class ArchivedPermitRequestBulkDownloadView(View):
 
         messages.error(request, error_message)
         return redirect(reverse_lazy("permits:archived_permit_request_list"))
-
-
-def permit_request_print(request, permit_request_id, template_id):
-    permit_request = services.get_permit_request_for_user_or_404(
-        request.user, permit_request_id
-    )
-    template = get_object_or_404(models.QgisProject.objects, pk=template_id)
-    generated_document, created_at = models.QgisGeneratedDocument.objects.get_or_create(
-        permit_request=permit_request, qgis_project=template
-    )
-
-    # Uses customize qgis-atlasprint plugin adapted from 3liz
-    # https://github.com/3liz/qgis-atlasprint
-    values = {
-        "SERVICE": "ATLAS",
-        "REQUEST": "GETPRINT",
-        "FORMAT": "PDF",
-        "TRANSPARENT": "true",
-        "SRS": "EPSG:2056",
-        "DPI": "150",
-        "MAP": "/io/data/report_template.qgs"
-        if template.qgis_project_file.name == "report_template.qgs"
-        else "/private_documents/" + template.qgis_project_file.name,
-        "TEMPLATE": template.qgis_print_template_name,
-        "EXP_FILTER": f"$id={permit_request_id}",
-        "PERMIT_REQUEST_ID": permit_request_id,
-    }
-
-    qgisserver_url = "http://qgisserver/ogc/?" + urllib.parse.urlencode(values)
-    qgisserver_response = requests.get(
-        qgisserver_url, headers={"Accept": "application/pdf"}, stream=True
-    )
-
-    if not qgisserver_response:
-        return HttpResponse(_("Une erreur est survenue lors de l'impression"))
-
-    file_name = f"demande_{permit_request_id}_geocity_{template_id}.pdf"
-    generated_document.printed_file.save(
-        file_name, ContentFile(qgisserver_response.content), True
-    )
-    generated_document.printed_at = timezone.now()
-    generated_document.printed_by = request.user.get_full_name()
-    generated_document.save()
-
-    response = StreamingHttpResponse(
-        qgisserver_response.iter_content(chunk_size=128), content_type="application/pdf"
-    )
-    response["Content-Disposition"] = 'attachment; filename="' + file_name + '"'
-
-    return response
 
 
 def anonymous_permit_request_sent(request):

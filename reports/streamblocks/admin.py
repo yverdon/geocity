@@ -1,7 +1,6 @@
 from django.contrib import admin
 from streamfield.admin import StreamBlocksAdmin
 
-from permits.admin import QgisProjectAdminForm
 from . import models
 
 

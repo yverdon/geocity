@@ -96,9 +96,6 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
                 Q(
                     permit_request__in=services.get_permit_requests_list_for_user(
                         self.request.user,
-                        request_comes_from_internal_qgisserver=services_authentication.check_request_comes_from_internal_qgisserver(
-                            self.request
-                        ),
                     )
                 )
                 | Q(permit_request__is_public=True)
@@ -166,10 +163,8 @@ class BlockRequesterUserPermission(BasePermission):
                 permitdepartment__is_integrator_admin=True
             ).exists()
             return is_integrator_admin or request.user.is_superuser
-        else:
-            return services_authentication.check_request_comes_from_internal_qgisserver(
-                request
-            )
+
+        return False
 
 
 class BlockRequesterUserLoggedOnToken(BasePermission):
@@ -283,7 +278,6 @@ class PermitRequestViewSet(
                 Q(
                     id__in=services.get_permit_requests_list_for_user(
                         user,
-                        request_comes_from_internal_qgisserver=request_comes_from_internal_qgisserver,
                     )
                 )
             )

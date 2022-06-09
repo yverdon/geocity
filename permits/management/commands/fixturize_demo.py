@@ -24,6 +24,7 @@ from ... import services
 from reports import models as reports_models
 from reports.streamblocks import models as reports_blocks_models
 
+from django.contrib.staticfiles import finders
 
 def strip_accents(text):
     """
@@ -984,9 +985,9 @@ class Command(BaseCommand):
         )
         block_paragraph_1.save()
 
-        # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
+        report_template_path = finders.find('reports/report-template.qgs')
         qgis_project = (
-            open("/code/qgisserver/report-template-dev.qgs", "rb")
+            open(report_template_path, "rb")
         )
         block_map = reports_blocks_models.PrintBlockMap(qgis_print_template_name="a4")
         block_map.qgis_project_file.save(
@@ -1002,8 +1003,8 @@ class Command(BaseCommand):
         )
         block_paragraph_2.save()
 
-        # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
-        background_image = open("/code/qgisserver/report-letter-paper.png", "rb")
+        report_background_path = finders.find('reports/report-letter-paper-template.png')
+        background_image = open(report_background_path, "rb")
         layout = reports_models.ReportLayout(
             name="demo_layout",
             margin_top=30,

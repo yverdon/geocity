@@ -481,14 +481,6 @@ class PermitRequestAmendPropertyValueFactory(factory.django.DjangoModelFactory):
     value = factory.Faker("word")
 
 
-class QgisProjectFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.QgisProject
-
-    works_object_type = factory.SubFactory(WorksObjectTypeFactory)
-    qgis_print_template_name = "atlas"
-
-
 class TemplateCustomizationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.TemplateCustomization

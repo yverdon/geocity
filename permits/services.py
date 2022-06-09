@@ -452,7 +452,6 @@ def get_permit_request_for_user_or_404(user, permit_request_id, statuses=None):
 
 def get_permit_requests_list_for_user(
     user,
-    request_comes_from_internal_qgisserver=False,
     works_object_filter=None,
     ignore_archived=True,
 ):
@@ -490,10 +489,10 @@ def get_permit_requests_list_for_user(
     if ignore_archived:
         qs = qs.filter(~Q(status=models.PermitRequest.STATUS_ARCHIVED))
 
-    if not user.is_authenticated and not request_comes_from_internal_qgisserver:
+    if not user.is_authenticated:
         return qs.none()
 
-    if not user.is_superuser and not request_comes_from_internal_qgisserver:
+    if not user.is_superuser:
         qs_filter = Q(author=user.permitauthor)
 
         if user.has_perm("permits.amend_permit_request"):
@@ -1617,12 +1616,6 @@ def get_permit_request_directives(permit_request):
     ]
 
 
-def get_permit_request_print_templates(permit_request):
-    return models.QgisProject.objects.filter(
-        works_object_type__in=permit_request.works_object_types.all()
-    )
-
-
 # Validate a file, from checking the first bytes and detecting the kind of the file
 # Exemple : User puts "my_malware.exe" and rename as "file.txt"
 # kind.extension => will return "exe"
@@ -1740,10 +1733,10 @@ def check_request_comes_from_internal_qgisserver(request):
     """
     Check that the request is coming from inside the docker composition AND that it is an allowed ip
     """
-
+    # TODO: deduplicate with services_authentication.check_request_comes_from_internal_qgisserver
     if (
         check_request_ip_is_allowed(request)
-        and socket.gethostbyname("qgisserver") == request.META["REMOTE_ADDR"]
+        and socket.gethostbyname("qgis") == request.META["REMOTE_ADDR"]
     ):
         return True
     return False

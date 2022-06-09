@@ -1687,35 +1687,6 @@ class ArchivedPermitRequest(models.Model):
         return super().delete(using, keep_parents)
 
 
-class QgisProject(models.Model):
-    qgis_project_file = fields.AdministrativeEntityFileField(
-        _("Projet QGIS '*.qgs'"),
-        validators=[FileExtensionValidator(allowed_extensions=["qgs"])],
-        upload_to="qgis_templates",
-    )
-    qgis_print_template_name = models.CharField(
-        _("Nom du template d'impression QGIS"), max_length=150,
-    )
-    description = models.CharField(max_length=150)
-    works_object_type = models.ForeignKey(WorksObjectType, on_delete=models.CASCADE)
-
-
-class QgisGeneratedDocument(models.Model):
-    permit_request = models.ForeignKey(
-        "PermitRequest", on_delete=models.CASCADE, related_name="qgis_permit"
-    )
-    qgis_project = models.ForeignKey(
-        "QgisProject", on_delete=models.CASCADE, related_name="qgis_project"
-    )
-    printed_at = models.DateTimeField(_("date d'impression"), null=True)
-    printed_by = models.CharField(_("imprimé par"), max_length=255, blank=True)
-    printed_file = fields.AdministrativeEntityFileField(
-        _("Permis imprimé"),
-        null=True,
-        blank=True,
-        upload_to=printed_permit_request_storage,
-    )
-
 
 class TemplateCustomization(models.Model):
 
