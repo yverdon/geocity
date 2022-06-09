@@ -43,6 +43,7 @@ INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [
     "permitworkflowstatus",
     "permitauthor",
     "qgisproject",
+    "complementarydocumenttype",
 ]
 OTHER_PERMISSIONS_CODENAMES = [
     "view_user",
@@ -1337,8 +1338,30 @@ class TokenAdmin(BaseTokenAdmin):
             ]
 
 
-class ComplementaryDocumentTypeAdmin(admin.ModelAdmin):
+class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = permit_forms.ComplementaryDocumentTypeAdminForm
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "work_object_types":
+            if request.user.is_superuser:
+                kwargs["queryset"] = models.WorksObjectType.objects.all()
+            else:
+                kwargs["queryset"] = models.WorksObjectType.objects.filter(
+                    integrator=request.user.groups.get(
+                        permitdepartment__is_integrator_admin=True
+                    )
+                )
+        if db_field.name == "parent":
+            if request.user.is_superuser:
+                kwargs["queryset"] = models.ComplementaryDocumentType.objects.all()
+            else:
+                kwargs["queryset"] = models.ComplementaryDocumentType.objects.filter(
+                    integrator=request.user.groups.get(
+                        permitdepartment__is_integrator_admin=True
+                    )
+                )
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class PermitRequestInquiryAdmin(admin.ModelAdmin):

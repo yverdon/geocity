@@ -587,3 +587,18 @@ class PermitRequestAPITestCase(TestCase):
             self.permit_request_secretary_user.current_inquiry.pk,
             request["current_inquiry"]["id"],
         )
+
+    def test_events_api_returns_current_inquiries_for_anonymous_user(self):
+
+        response = self.client.get(
+            reverse(
+                "events-detail",
+                kwargs={"pk": self.permit_request_geotime_secretary_user.pk},
+            )
+        )
+        request = response.json()["properties"]["permit_request"]
+        self.assertIn("current_inquiry", request)
+        self.assertEqual(
+            self.permit_request_secretary_user.current_inquiry.pk,
+            request["current_inquiry"]["id"],
+        )
