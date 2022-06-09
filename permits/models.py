@@ -37,8 +37,6 @@ from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 from django.apps import apps
 
-from reports.models import STREAMBLOCKS_MODELS
-
 from . import fields
 
 

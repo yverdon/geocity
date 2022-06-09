@@ -3,10 +3,7 @@ import logging
 import mimetypes
 import os
 import urllib.parse
-import subprocess
-import tempfile
-import pathlib
-from django.template.loader import render_to_string
+
 import requests
 from django.conf import settings
 from django.contrib import messages
@@ -16,7 +13,6 @@ from django.contrib.auth.decorators import (
     permission_required,
     user_passes_test,
 )
-from django.views.generic.base import TemplateView
 from django.core.exceptions import (
     PermissionDenied,
     SuspiciousOperation,
@@ -30,7 +26,6 @@ from django.forms import modelformset_factory, formset_factory
 from django.http import (
     Http404,
     HttpResponse,
-    FileResponse,
     JsonResponse,
     StreamingHttpResponse,
 )
@@ -47,10 +42,6 @@ from django.views.generic.list import ListView
 from django_filters.views import FilterView
 from django_tables2.export.views import ExportMixin
 from django_tables2.views import SingleTableMixin, SingleTableView
-from permits.serializers import PermitRequestPrintSerializer
-
-from django_weasyprint import WeasyTemplateResponseMixin
-from django_weasyprint.views import WeasyTemplateResponse, WeasyTemplateView
 
 from . import fields, filters, forms, models, services, tables
 from .decorators import check_mandatory_2FA, permanent_user_required

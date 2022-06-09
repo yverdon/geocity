@@ -15,7 +15,7 @@ done
 cd /code
 
 python3 manage.py migrate
-django-constance models
+# django-constance models
 python3 manage.py migrate database
 mkdir -p /code/geomapshark/static/
 echo yes | python3 manage.py compilemessages -l fr

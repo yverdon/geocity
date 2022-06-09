@@ -9,7 +9,6 @@ WORKDIR /code
 COPY requirements_dev.txt requirements_dev.txt
 COPY requirements.txt requirements.txt
 
-
 RUN if [ "$dev_dependencies" = "true" ] ; \
     then \
     DEBUG=True \

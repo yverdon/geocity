@@ -26,7 +26,7 @@ services:
             - default
 
     qgisserver:
-        image: opengisch/qgis-server:3.22.7
+        image: openquake/qgis-server:3.22
         restart: unless-stopped
         volumes:
             - ./qgisserver/report_template.qgs:/io/data/report_template.qgs:ro

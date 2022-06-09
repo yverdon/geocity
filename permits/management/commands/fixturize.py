@@ -8,16 +8,12 @@ from django.core import management
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from django.utils import timezone
-from django.core.files import File
 
 from geomapshark import settings
 from permits import admin, models
-from streamblocks import models as streamblock_models
-from streamfield.base import StreamObject
 import re
 import unicodedata
 from .add_default_print_config import add_default_print_config
-from ... import services
 
 
 def strip_accents(text):
@@ -112,8 +108,6 @@ class Command(BaseCommand):
             self.create_geom_layer_entity()
             self.stdout.write("Creating template customizations...")
             self.create_template_customization()
-            self.stdout.write("Creating reports...")
-            self.create_reports()
             self.stdout.write("Fixturize succeed.")
 
     def setup_site(self):
@@ -279,16 +273,13 @@ class Command(BaseCommand):
             content_type__app_label="permits",
             content_type__model__in=admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
         )
-        report_permissions = Permission.objects.filter(
-            content_type__app_label="reports",
-            content_type__model__in=admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
-        )
+
         other_permissions = Permission.objects.filter(
             codename__in=admin.OTHER_PERMISSIONS_CODENAMES
         )
         # set the required permissions for the integrator group
         Group.objects.get(name="Integrator Yverdon").permissions.set(
-            permits_permissions.union(other_permissions).union(report_permissions)
+            permits_permissions.union(other_permissions)
         )
         self.stdout.write("integrator-yverdon / admin")
 
@@ -641,57 +632,6 @@ class Command(BaseCommand):
             application_subtitle="Demandes en lignes",
             application_description="Demandes concernant l' <i>administration</i>",
         )
-
-    def create_reports(self):
-        # Create report setup
-        block_paragraph = streamblock_models.PrintBlockParagraph(
-            title="Demo report", content="This is a generic paragraph"
-        )
-        block_paragraph.save()
-
-        # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
-        qgis_project = services.alter_qgis_project_for_internal_user(
-            open("/code/qgisserver/report-template-dev.qgs", "rb")
-        )
-        block_map = streamblock_models.PrintBlockMap(qgis_print_template_name="a4")
-        block_map.qgis_project_file.save(
-            "report-template-dev.qgs", File(qgis_project), save=True
-        )
-        block_map.save()
-
-        # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
-        background_image = open("/code/qgisserver/report-letter-paper.png", "rb")
-        layout = models.ReportLayout(name="demo_layout", margin_top=40,)
-        layout.background.save(
-            "report-letter-paper.png", File(background_image), save=True
-        )
-        layout.save()
-        report = models.Report(
-            name="demo_report",
-            layout=layout,
-            stream=StreamObject(
-                model_list=streamblock_models.STREAMBLOCKS_MODELS,
-                value=[
-                    {
-                        "id": block_paragraph.pk,
-                        "unique_id": "lsupu",
-                        "model_name": "PrintBlockParagraph",
-                        "options": {},
-                    },
-                    {
-                        "id": block_map.pk,
-                        "unique_id": "vlbh7j",
-                        "model_name": "PrintBlockMap",
-                        "options": {},
-                    },
-                ],
-            ),
-        )
-        report.save()
-
-        # Assign to all work objects types
-        for wot in models.WorksObjectType.objects.all():
-            wot.reports.set([report])
 
     def create_document_types(self, wot):
         document_types = [
