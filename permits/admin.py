@@ -770,7 +770,8 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "has_geometry_point",
         "has_geometry_line",
         "has_geometry_polygon",
-        "is_document_management_enabled",
+        "document_enabled",
+        "publication_enabled",
     ]
     list_filter = ["administrative_entities"]
     search_fields = [
@@ -805,7 +806,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         ),
         (
             "Modules complémentaires",
-            {"fields": ("is_document_management_enabled", "is_publication_enabled",)},
+            {"fields": ("document_enabled", "publication_enabled",)},
         ),
         (
             "Prolongation",

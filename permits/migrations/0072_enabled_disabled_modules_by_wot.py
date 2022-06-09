@@ -12,12 +12,12 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='worksobjecttype',
-            name='is_document_management_enabled',
-            field=models.BooleanField(default=False, verbose_name='Activer la gestion des documents'),
+            name='document_enabled',
+            field=models.BooleanField(default=False, verbose_name='Activer le module gestion des documents'),
         ),
         migrations.AddField(
             model_name='worksobjecttype',
-            name='is_publication_enabled',
+            name='publication_enabled',
             field=models.BooleanField(default=False, verbose_name='Activer le module de publication'),
         ),
     ]

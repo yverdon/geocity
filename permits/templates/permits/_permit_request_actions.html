@@ -73,7 +73,7 @@
           </li>
 
       {% endif %}
-      {% if formsets.complementary_documents and is_document_management_enabled %}
+      {% if formsets.complementary_documents and document_enabled %}
           <li class="nav-item">
             <a class="btn btn-primary btn-action nav-link{% if active_form == 'complementary_documents' %} active{% endif %}" id="documents-tab" data-toggle="tab" href="#documents" role="tab" aria-controls="documents">
                 {% trans "Documents" %}
@@ -114,7 +114,7 @@
                     </div>
                 </form>
 
-              {% if is_publication_enabled %}
+              {% if publication_enabled %}
               <hr>
               <h4>{% trans "Mise en consultation publique" %}</h4>
               <form method="post">
@@ -255,7 +255,7 @@
             </div>
         {% endif %}
 
-        {% if formsets.complementary_documents and is_document_management_enabled %}
+        {% if formsets.complementary_documents and document_management_enabled %}
           <div class="tab-pane{% if active_form == "complementary_documents" %} show active{% endif %}" id="documents" role="tabpanel" aria-labelledby="documents-tab">
               <h4>{% trans "Ajout de documents à la demande" %}</h4>
               <form method="post" enctype="multipart/form-data">

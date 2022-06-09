@@ -6,7 +6,7 @@
   <h3 class="mt-2">{% trans "Mise en consultation publique" %}</h3>
     <form method="post">
       {% csrf_token %}
-      <p>{% trans "Attention, les documents suivants devienderont public une fois la mise en consultation publique démarré :" %}</p>
+      <p>{% trans "Attention, les documents suivants devienderont public une fois la mise en consultation publique démarrée :" %}</p>
       <ul>
         {% for non_public_document in non_public_documents %}
           <li>{{ non_public_document }}</li>

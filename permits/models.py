@@ -1071,11 +1071,11 @@ class WorksObjectType(models.Model):
     days_before_reminder = models.IntegerField(
         _("Délai de rappel (jours)"), blank=True, null=True
     )
-    is_document_management_enabled = models.BooleanField(
+    document_enabled = models.BooleanField(
         _("Activer la gestion des documents"), default=False
     )
-    is_publication_enabled = models.BooleanField(
-        _("Activer le module de publication"), default=False
+    publication_enabled = models.BooleanField(
+        _("Activer la gestion de la publication"), default=False
     )
     # All objects
     objects = models.Manager()

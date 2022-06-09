@@ -964,7 +964,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
             if not config.ENABLE_GEOCALENDAR:
                 self.fields["shortname"].widget = forms.HiddenInput()
 
-            if not services.is_publication_enabled_for_wots(self.instance):
+            if not services.has_publication_enabled_for_wots(self.instance):
                 self.fields["is_public"].widget = forms.HiddenInput()
 
             for works_object_type, prop in self.get_properties():

@@ -524,8 +524,8 @@ class Command(BaseCommand):
                     works_object=works_obj_obj,
                     is_public=True,
                     notify_services=True,
-                    is_document_management_enabled=True,
-                    is_publication_enabled=True,
+                    document_enabled=True,
+                    publication_enabled=True,
                     services_to_notify=f"yverdon-squad+admin@liip.ch",
                     additional_information=additional_information_text,
                 )

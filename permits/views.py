@@ -275,10 +275,10 @@ class PermitRequestDetailView(View):
                     self.permit_request
                 ),
                 "prolongation_enabled": prolongation_enabled,
-                "is_document_management_enabled": services.is_document_management_enabled_for_wots(
+                "document_enabled": services.has_document_enabled_for_wots(
                     self.permit_request
                 ),
-                "is_publication_enabled": services.is_publication_enabled_for_wots(
+                "publication_enabled": services.has_publication_enabled_for_wots(
                     self.permit_request
                 ),
                 "inquiry_in_progress": self.permit_request.status
