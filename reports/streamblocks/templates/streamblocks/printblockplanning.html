@@ -1,0 +1,13 @@
+<div>
+    <h2>Planning</h2>
+    {{data.properties}}
+    {% if data.properties.geotime_aggregated.start_date %}
+    <div class="key_value_container">
+        <div class="key">Début</div><div class="value">{{data.properties.geotime_aggregated.start_date}}</div>
+        <div class="key">Fin</div><div class="value">{{data.properties.geotime_aggregated.end_date}}</div>
+    </div>
+    {% else %}
+    <p>Aucun planning pour cette demande</p>
+    {% endif %}
+</div>
+  
