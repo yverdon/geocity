@@ -20,11 +20,11 @@ import base64
 
 def export(args):
 
+    project_path = args.project_path
+    output_path = args.output_path
     template_name = args.template_name
     permit_request_id = args.permit_request_id
     token = args.token
-    project_path = args.project_path
-    output_path = args.output_path
 
     print(f"Exporting {project_path=} {template_name=} {permit_request_id=} {token=}")
 
@@ -110,10 +110,10 @@ def export(args):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('project_path', type=str, help="path to qgis project")
+    parser.add_argument('output_path', type=str, help="path to output")
     parser.add_argument('template_name', type=str)
     parser.add_argument('permit_request_id', type=int)
     parser.add_argument('token', type=str)
-    parser.add_argument('project_path', type=str, help="path to qgis project")
-    parser.add_argument('output_path', type=str, help="path to output")
 
     export(parser.parse_args())

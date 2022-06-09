@@ -5,10 +5,9 @@ from django import template
 from django.utils.safestring import mark_safe
 from jinja2.sandbox import SandboxedEnvironment
 from rest_framework.authtoken.models import Token
-import requests
 import base64
 import docker
-import tempfile
+import os
 
 register = template.Library()
 
@@ -37,94 +36,72 @@ def iterate_nested_dict(data):
 
 @register.simple_tag(takes_context=True)
 def include_qgis_map(context):
+    """Includes a QGIS map as an image (embedded as dataurl). The image is generated in an isolated container."""
 
     request = context["request"]
+
     token, _ = Token.objects.get_or_create(user=request.user)
-
-
     project_file = context["block_content"].qgis_project_file.file
     template_name = context["block_content"].qgis_print_template_name
     permit_request_id = context["permit_request"].id
 
-
+    # Create a docker container to generate the image
     client = docker.from_env()
-
-
-    print("-!"*60)
-    # commands = [template_name, permit_request_id, token.key, base64.b64encode(project_content).decode("ascii"),]
-    # commands = [template_name, permit_request_id, token.key, "abcabc"]
-    # commands = [template_name, permit_request_id, token.key]
-    # commands = [template_name, permit_request_id, token.key]
-    # commands = ["echo", "1", "world", "dGVzdA=="]
-    # data = client.containers.run("geocity_qgis", commands)
-
-
-    # data = client.containers.run("alpine", ["echo", "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==",])
-    # data = data.decode().strip()
-    # print(str(data))
-
-    commands = [str(template_name), str(permit_request_id), str(token.key), "/io/project.qgs", "/io/output.png",]
+    commands = [
+        "/io/project.qgs",
+        "/io/output.png",
+        str(template_name),
+        str(permit_request_id),
+        str(token.key),
+    ]
     container = client.containers.create("geocity_qgis", commands, network="geocity_pdf_generation")
 
-    input_tar = _create_input_tar(project_file)
-    container.put_archive("/io", input_tar)
+    # Copy QGIS project to the container
+    _put_file(container, "/io/project.qgs", project_file)
 
-    # Run the model
+    # Run the container
     container.start()
     container.wait(timeout=30)
 
-    logs = container.logs().decode("utf-8")
-    print("-."*60)
-    print(logs)
+    # Debug
+    # logs = container.logs().decode("utf-8")
+    # print(logs)
 
-    output_tar, stat = container.get_archive("/io")
-    output = _extract_output_tar(output_tar)
+    # Retrieve the output
+    output = _get_file(container, "/io/output.png")
 
     # Cleanup container
     container.remove()
 
-
-
-    # TODO CRITICAL: add expiration to token
-    # token, _ = Token.objects.get_or_create(user=request.user)
-    # data = {
-    #     "template_name": template_name,
-    #     "token": token.key,
-    #     "permit_request_id": permit_request_id,
-    # }
-    # files = {
-    #     "project_content": project_content,
-    # }
-    # img_response = requests.post("http://qgis:5000/", data=data, files=files)
-
-
-    # # return mark_safe(img_response.content.decode("utf-8"))
-
+    # Prepare the dataurl
     data = base64.b64encode(output.read()).decode('ascii')
-    return mark_safe(f"<img src=\"data:image/png;base64,{data}\">")
+    data_url = f"data:image/png;base64,{data}"
+
+    # Render
+    return mark_safe(f"<img src=\"{data_url}\">")
 
 
-def _create_input_tar(uploaded_file):
-    """
-    Packs the provided file as `project.qgs` in a tar archive
-    (to be used with `docker.container.put_archive(...)`)
-    """
-    uploaded_file.seek(0)
+def _put_file(container, path, project_file):
+    """Copies the given file to path in the given container"""
+    # TODO: rewrite this in a more readable way
+    dirname, filename = os.path.split(path)
+    project_file.seek(0)
     tar_input_data = io.BytesIO()
     tar_input_file = tarfile.TarFile(mode="w", fileobj=tar_input_data)
-    tarinfo = tarfile.TarInfo("project.qgs")
-    tarinfo.size = uploaded_file.size
-    tar_input_file.addfile(tarinfo, uploaded_file)
+    tarinfo = tarfile.TarInfo(filename)
+    tarinfo.size = project_file.size
+    tar_input_file.addfile(tarinfo, project_file)
     tar_input_file.close()
     tar_input_data.seek(0)
-    return tar_input_data
+    input_tar = tar_input_data
+    container.put_archive(dirname, input_tar)
 
 
-def _extract_output_tar(output_tar):
-    """
-    Extracts `output.png` from the given tar archive
-    (to be used with `docker.container.get_archive(...)`)
-    """
+def _get_file(container, path):
+    """Retrieves the given file from the given container"""
+    # TODO: rewrite this in a more readable way
+    _, filename = os.path.split(path)
+    output_tar, stat = container.get_archive(path)
     tar_output_data = io.BytesIO()
     for chunk in output_tar:
         tar_output_data.write(chunk)
@@ -132,4 +109,4 @@ def _extract_output_tar(output_tar):
     tar_output_data.seek(0)
     tar_output_file = tarfile.TarFile(mode="r", fileobj=tar_output_data)
     print(tar_output_file.getmembers())
-    return tar_output_file.extractfile("io/output.png")
+    return tar_output_file.extractfile(filename)
