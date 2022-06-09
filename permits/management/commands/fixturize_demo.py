@@ -526,6 +526,7 @@ class Command(BaseCommand):
                     notify_services=True,
                     document_enabled=True,
                     publication_enabled=True,
+                    permanent_publication_enabled=True,
                     services_to_notify=f"yverdon-squad+admin@liip.ch",
                     additional_information=additional_information_text,
                 )

@@ -1077,6 +1077,9 @@ class WorksObjectType(models.Model):
     publication_enabled = models.BooleanField(
         _("Activer la gestion de la publication"), default=False
     )
+    permanent_publication_enabled = models.BooleanField(
+        _("Autoriser la mise en consultation sur une durée indéfinie"), default=False
+    )
     # All objects
     objects = models.Manager()
 

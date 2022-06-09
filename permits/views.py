@@ -278,9 +278,10 @@ class PermitRequestDetailView(View):
                 "document_enabled": services.has_document_enabled_for_wots(
                     self.permit_request
                 ),
-                "publication_enabled": services.has_publication_enabled_for_wots(
-                    self.permit_request
-                ),
+                "publication_enabled": self.permit_request.works_object_types.filter(
+                    publication_enabled=True
+                ).count()
+                == self.permit_request.works_object_types.count(),
                 "inquiry_in_progress": self.permit_request.status
                 == models.PermitRequest.STATUS_INQUIRY_IN_PROGRESS,
             },

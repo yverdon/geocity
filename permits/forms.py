@@ -911,9 +911,9 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequest
         fields = [
+            "is_public",
             "shortname",
             "status",
-            "is_public",
         ]
         widgets = {
             "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
@@ -963,8 +963,15 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
 
             if not config.ENABLE_GEOCALENDAR:
                 self.fields["shortname"].widget = forms.HiddenInput()
+                self.fields["is_public"].widget = forms.HiddenInput()
 
-            if not services.has_publication_enabled_for_wots(self.instance):
+            # Only show permanent publication button if all wots have it set to True
+            if (
+                not self.instance.works_object_types.filter(
+                    permanent_publication_enabled=True
+                ).count()
+                == self.instance.works_object_types.count()
+            ):
                 self.fields["is_public"].widget = forms.HiddenInput()
 
             for works_object_type, prop in self.get_properties():

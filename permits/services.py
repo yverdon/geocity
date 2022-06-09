@@ -1973,15 +1973,3 @@ def has_document_enabled_for_wots(permit_request):
     # Document module is activated if at leat on WOT has this property enabled
 
     return permit_request.works_object_types.filter(document_enabled=True).count() > 0
-
-
-def has_publication_enabled_for_wots(permit_request):
-    """ 
-        All WOT must have publication enable in order to allow publication. 
-        We don't want accidental publication. If the application instance has no 
-        geocalendar enabled, the publication is also disabled
-    """
-    return (
-        permit_request.works_object_types.filter(publication_enabled=True).count()
-        == permit_request.works_object_types.count()
-    ) and config.ENABLE_GEOCALENDAR
