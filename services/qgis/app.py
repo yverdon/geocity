@@ -13,15 +13,14 @@ from flask import Flask
 from flask import request
 from flask import send_file
 import tempfile
-import requests
-import io
 import os
 import sys
 from urllib.request import urlopen
-from urllib.request import Request, urlopen
-
+import logging
 
 app = Flask(__name__)
+
+app.logger.setLevel(logging.DEBUG)
 
 @app.route("/", methods=['POST', 'GET'])
 def export():
@@ -30,15 +29,6 @@ def export():
     template_name = request.form['template_name']
     permit_request_id = int(request.form['permit_request_id'])
     token = request.form['token']
-
-    # DEBUG REQUEST
-    # r = requests.get("http://web:9000/wfs3/collections/permits_poly/items", headers={
-    #     "Authorization": f"Token {token}"
-    # })
-    # print(f"DEBUG REQUEST: {r.content}", flush=True)
-
-    # token = f"{token}invalid"
-
 
     with tempfile.TemporaryDirectory() as tmpdirname:
 
@@ -63,9 +53,8 @@ def export():
         config.setConfigMap({"Authorization": f"Token {token}"} )
         qgs.authManager().storeAuthenticationConfig(config)
 
-        cfgtest = QgsAuthMethodConfig()
-        qgs.authManager().loadAuthenticationConfig("geocdev", cfgtest)
-        print(f"LOADED CONF {cfgtest.configMap()}", flush=True)
+        # load the conf once (seems to be required otherwise it's not available)
+        qgs.authManager().loadAuthenticationConfig("geocdev", QgsAuthMethodConfig())
 
         # open the project
         project = QgsProject.instance()
@@ -79,7 +68,7 @@ def export():
         atlas.setEnabled(True)
         atlas.setFilenameExpression("'export_'||@atlas_featurenumber")
 
-        # move to the requested feature
+        # move to the requested feature (does not work ?)
         # feature = layer.getFeature(permit_request_id)
         # atlas.seekTo(feature)
         # atlas.refreshCurrentFeature()
@@ -99,10 +88,10 @@ def export():
 
         # debug
         layer = atlas.coverageLayer()
-        print(f"  coverage layer: {layer.dataProvider().uri()}", flush=True)
-        print(f"  coverage feature count: {layer.featureCount()}", flush=True)
-        print(f"  coverage is valid: {layer.isValid()}", flush=True)
-        print(f"  coverage error: {layer.dataProvider().error().message()}", flush=True)
+        app.logger.info(f"coverage layer: {layer.dataProvider().uri()}")
+        app.logger.info(f"coverage feature count: {layer.featureCount()}")
+        app.logger.info(f"coverage is valid: {layer.isValid()}")
+        app.logger.info(f"coverage error: {layer.dataProvider().error().message()}")
 
         # export
         settings = QgsLayoutExporter.ImageExportSettings()
@@ -112,7 +101,7 @@ def export():
         qgs.exitQgis()
 
         # debug
-        print(f"exported {os.listdir(tmpdirname)}", flush=True)
+        app.logger.info(f"exported {os.listdir(tmpdirname)}")
 
         # return the file
         export_image_path = os.path.join(tmpdirname, 'export_1.png')
