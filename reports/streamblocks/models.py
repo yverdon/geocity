@@ -77,7 +77,7 @@ class PrintBlockPageBreak(models.Model):
 
 class PrintBlockAuthors(models.Model):
     content = models.TextField
-    
+
 
 class PrintBlockDetails(models.Model):
     content = models.TextField
@@ -86,9 +86,10 @@ class PrintBlockDetails(models.Model):
 class PrintBlockPlanning(models.Model):
     content = models.TextField
 
+
 # class PrintBlockFiles(models.Model):
 #     content = models.TextField
-    
+
 
 class PrintBlockHorizontalRule(models.Model):
     class Meta:

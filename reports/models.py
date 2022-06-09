@@ -12,7 +12,6 @@ from django.template.loader import render_to_string
 from django.conf import settings
 
 
-
 class ReportLayout(models.Model):
     """Page size/background/marings/fonts/etc, used by reports"""
 
