@@ -71,33 +71,3 @@ def include_qgis_map(context):
 
     # Render
     return mark_safe(f'<img src="{data_url}">')
-
-
-def _put_file(container, path, project_file):
-    """Copies the given file to path in the given container"""
-    # TODO: rewrite this in a more readable way
-    dirname, filename = os.path.split(path)
-    project_file.seek(0)
-    tar_input_data = io.BytesIO()
-    tar_input_file = tarfile.TarFile(mode="w", fileobj=tar_input_data)
-    tarinfo = tarfile.TarInfo(filename)
-    tarinfo.size = project_file.size
-    tar_input_file.addfile(tarinfo, project_file)
-    tar_input_file.close()
-    tar_input_data.seek(0)
-    input_tar = tar_input_data
-    container.put_archive(dirname, input_tar)
-
-
-def _get_file(container, path):
-    """Retrieves the given file from the given container"""
-    # TODO: rewrite this in a more readable way
-    _, filename = os.path.split(path)
-    output_tar, stat = container.get_archive(path)
-    tar_output_data = io.BytesIO()
-    for chunk in output_tar:
-        tar_output_data.write(chunk)
-    tar_output_data.flush()
-    tar_output_data.seek(0)
-    tar_output_file = tarfile.TarFile(mode="r", fileobj=tar_output_data)
-    return tar_output_file.extractfile(filename)
