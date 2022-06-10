@@ -12,13 +12,9 @@ from ..utils import run_docker_container, DockerRunFailedError
 
 register = template.Library()
 
-
 @register.simple_tag
-def render_user_template(template_str, data):
-    """Renders a user given template in a hopefully safe way"""
-    env = SandboxedEnvironment()
-    contents = env.from_string(template_str).render({"data": data})
-    return mark_safe(contents)
+def render_block(obj, **context):
+    return obj.render(context)
 
 
 @register.filter

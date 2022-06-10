@@ -11,7 +11,6 @@ from django.db import connection, transaction
 from django.utils import timezone
 
 from django.core.files import File
-from streamfield.base import StreamObject
 
 from geomapshark import settings
 from permits import admin, models
@@ -22,7 +21,6 @@ from constance import config
 from ... import services
 
 from reports import models as reports_models
-from reports.streamblocks import models as reports_blocks_models
 
 
 def strip_accents(text):
@@ -336,7 +334,10 @@ class Command(BaseCommand):
         )
         user.groups.set([group])
         models.PermitAuthor.objects.create(
-            user=user, address="Rue du Lac", zipcode=1400, city="Yverdon",
+            user=user,
+            address="Rue du Lac",
+            zipcode=1400,
+            city="Yverdon",
         )
         models.PermitDepartment.objects.create(
             group=group,
@@ -400,7 +401,10 @@ class Command(BaseCommand):
                 order=5,
             ),
             "date": models.WorksObjectProperty.objects.create(
-                name="Date", input_type="date", is_mandatory=False, order=6,
+                name="Date",
+                input_type="date",
+                is_mandatory=False,
+                order=6,
             ),
             "checkbox": models.WorksObjectProperty.objects.create(
                 name="Impact sur la chaussée",
@@ -529,8 +533,14 @@ class Command(BaseCommand):
             (
                 "Suvbentions (ex. de demande sans géométrie ni période temporelle)",
                 [
-                    ("Prime éco-mobilité", properties["comment"],),
-                    ("Abonnement de bus", properties["comment"],),
+                    (
+                        "Prime éco-mobilité",
+                        properties["comment"],
+                    ),
+                    (
+                        "Abonnement de bus",
+                        properties["comment"],
+                    ),
                 ],
             ),
         ]
@@ -634,11 +644,14 @@ class Command(BaseCommand):
         models.WorksObjectType.objects.filter(id=5).update(
             requires_validation_document=False
         )
-        demo_works_object_type_no_validation_document = models.WorksObjectType.objects.filter(
-            requires_validation_document=False
-        ).first()
+        demo_works_object_type_no_validation_document = (
+            models.WorksObjectType.objects.filter(
+                requires_validation_document=False
+            ).first()
+        )
         department = models.PermitDepartment.objects.filter(
-            administrative_entity=demo_administrative_entity, is_validator=True,
+            administrative_entity=demo_administrative_entity,
+            is_validator=True,
         ).first()
 
         # Basic permit request
@@ -847,19 +860,22 @@ class Command(BaseCommand):
 
         # Amend propertie with long text
         amend_property_1 = models.PermitRequestAmendProperty.objects.create(
-            name="Commentaire interne", is_visible_by_author=False,
+            name="Commentaire interne",
+            is_visible_by_author=False,
         )
         amend_property_1.works_object_types.set(
             [demo_works_object_type, demo_works_object_type_no_validation_document]
         )
         amend_property_2 = models.PermitRequestAmendProperty.objects.create(
-            name="Commentaire visible par le requérant", is_visible_by_author=True,
+            name="Commentaire visible par le requérant",
+            is_visible_by_author=True,
         )
         amend_property_2.works_object_types.set(
             [demo_works_object_type, demo_works_object_type_no_validation_document]
         )
         works_object_type_choice_1 = models.WorksObjectTypeChoice.objects.get(
-            permit_request=permit_request7, works_object_type=demo_works_object_type,
+            permit_request=permit_request7,
+            works_object_type=demo_works_object_type,
         )
         works_object_type_choice_2 = models.WorksObjectTypeChoice.objects.get(
             permit_request=permit_request7,
@@ -979,27 +995,6 @@ class Command(BaseCommand):
 
     def create_reports(self):
         # Create report setup
-        block_paragraph_1 = reports_blocks_models.PrintBlockRichText(
-            content="<div><h2>Approval</h2><p>This is an example report. It could be an approval, or any type of report related to a request.</p></div>"
-        )
-        block_paragraph_1.save()
-
-        # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
-        qgis_project = open("/code/qgisserver/report-template-dev.qgs", "rb")
-        block_map = reports_blocks_models.PrintBlockMap(qgis_print_template_name="a4")
-        block_map.qgis_project_file.save(
-            "report-template-dev.qgs", File(qgis_project), save=True
-        )
-        block_map.save()
-
-        block_validation = reports_blocks_models.PrintBlockValidation()
-        block_validation.save()
-
-        block_paragraph_2 = reports_blocks_models.PrintBlockRichText(
-            content="<div><h2>Approval</h2><p>Thank you for your request.</p></div>"
-        )
-        block_paragraph_2.save()
-
         # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
         background_image = open("/code/qgisserver/report-letter-paper.png", "rb")
         layout = reports_models.ReportLayout(
@@ -1014,57 +1009,34 @@ class Command(BaseCommand):
             "report-letter-paper.png", File(background_image), save=True
         )
         layout.save()
-        report = reports_models.Report(
+        report = reports_models.Report.objects.create(
             name="demo_report",
             layout=layout,
             # TODO: ensure this is available to the owner of the report
             type=models.ComplementaryDocumentType.objects.first(),
-            stream=StreamObject(
-                model_list=reports_models.STREAMBLOCKS_MODELS,
-                value=[
-                    {
-                        "id": block_paragraph_1.pk,
-                        "unique_id": "lsupu",
-                        "model_name": "PrintBlockRichText",
-                        "options": {},
-                    },
-                    {
-                        "id": block_map.pk,
-                        "unique_id": "vlbh7j",
-                        "model_name": "PrintBlockMap",
-                        "options": {},
-                    },
-                    {
-                        "id": block_validation.pk,
-                        "unique_id": "a5uhhm",
-                        "model_name": "PrintBlockValidation",
-                        "options": {},
-                    },
-                    {
-                        "unique_id": "1sv56j",
-                        "model_name": "PrintBlockPageBreak",
-                        "options": {},
-                    },
-                    {
-                        "id": block_paragraph_2.pk,
-                        "unique_id": "lsupu",
-                        "model_name": "PrintBlockRichText",
-                        "options": {},
-                    },
-                    {
-                        "unique_id": "ihov6j",
-                        "model_name": "PrintBlockPageBreak",
-                        "options": {},
-                    },
-                    {
-                        "unique_id": "lsadau",
-                        "model_name": "PrintBlockRawData",
-                        "options": {},
-                    },
-                ],
-            ),
         )
-        report.save()
+
+        reports_models.BlockParagraph.objects.create(
+            order=1,
+            report=report,
+            content="<div><h2>Approval</h2><p>This is an example report. It could be an approval, or any type of report related to a request.</p></div>",
+        )
+        reports_models.BlockParagraph.objects.create(
+            order=2,
+            report=report,
+            content="<div><h2>Summary</h2><p>This demand contains the following objects.</p><ul>{% for wot in data.properties.permit_request_works_object_types_names.values() %}<li>{{wot}}</li>{% endfor %}</ul></div>",
+        )
+        reports_models.BlockMap.objects.create(
+            order=3,
+            report=report,
+            # project= open("/code/qgisserver/report-template-dev.qgs", "rb").
+            layout_name="a4",
+        )
+        reports_models.BlockAuthor.objects.create(
+            order=4,
+            report=report,
+        )
+
         # report.work_object_types.add(models.WorksObjectType.objects.all())
         # Assign to all work objects types
         for wot in models.WorksObjectType.objects.all():

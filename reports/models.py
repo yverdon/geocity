@@ -3,21 +3,30 @@ from django.db import models
 import io
 import typing
 from typing import Union
+from django.shortcuts import render
 import requests
 import urllib
 from urllib.request import urlopen
 from django.utils.translation import gettext_lazy as _
-from streamfield.fields import StreamField
-from .streamblocks.models import STREAMBLOCKS_MODELS
 from django.template.loader import render_to_string
 from django.conf import settings
 from permits import models as permits_models
 from django.contrib.auth.models import Group
 from django.urls import reverse
 from rest_framework.authtoken.models import Token
-
+import typing
+import io
+import tarfile
+from django import template
+from django.utils.safestring import mark_safe
+from jinja2.sandbox import SandboxedEnvironment
+from rest_framework.authtoken.models import Token
+import base64
+import os
+from django.contrib.staticfiles import finders
 from .utils import run_docker_container, DockerRunFailedError
 
+from polymorphic.models import PolymorphicModel
 
 class ReportLayout(models.Model):
     """Page size/background/marings/fonts/etc, used by reports"""
@@ -65,7 +74,6 @@ class Report(models.Model):
 
     name = models.CharField(max_length=150)
     layout = models.ForeignKey(ReportLayout, on_delete=models.RESTRICT)
-    stream = StreamField(model_list=STREAMBLOCKS_MODELS)
     type = models.ForeignKey(
         "permits.ComplementaryDocumentType", on_delete=models.RESTRICT
     )
@@ -84,7 +92,6 @@ class Report(models.Model):
     def render_pdf(self, permit_request, generated_by, as_string=False) -> Union[bytes,str]:
         """Renders a PDF by calling the PDF generator service"""
 
-        from permits.serializers import PermitRequestPrintSerializer
 
         # Generate a token
         # TODO CRITICAL: add expiration to token and/or ensure it gets deleted
@@ -94,7 +101,6 @@ class Report(models.Model):
         context = {
             "report": self,
             "permit_request": permit_request,
-            "permit_request_data": PermitRequestPrintSerializer(permit_request).data,
             "token": token.key,
         }
         html_string = render_to_string("reports/report.html", context)
@@ -123,5 +129,58 @@ class Report(models.Model):
 
         return output
 
+
     def __str__(self):
         return self.name
+
+
+class Block(PolymorphicModel):
+    class Meta:
+        ordering = ['order',]
+
+    report = models.ForeignKey(Report, on_delete=models.CASCADE, related_name="blocks")
+    order = models.PositiveIntegerField(null=True, blank=True)
+
+    def get_template(self):
+        class_name = self.__class__.__name__.lower()
+        return f"reports/blocks/{class_name}.html"
+
+    def get_context(self, context):
+        return {
+            **context,
+            "block": self,
+            "permit_request": context["permit_request"],
+        }
+
+    def render(self, report_context):
+        template = self.get_template()
+        block_context = self.get_context(report_context)
+        return render_to_string(template, block_context)
+
+    def __str__(self):
+        return self.__class__.__name__
+
+class BlockMap(Block):
+    layout_name = models.CharField(max_length=30)
+
+class BlockParagraph(Block):
+    content = models.TextField(
+        help_text=(
+            _(
+                "Il est possible d'accéder aux données de l'API avec la syntaxe suivante: `{{data.properties.geotime_aggregated.start_date}}`. Consultez les résults de <a href=\"http://localhost:9095/wfs3/collections/permits/items/1\">l'API</a> pour voir les données disponibles."
+            )
+        )
+    )
+
+    def get_context(self, context):
+        from permits.serializers import PermitRequestPrintSerializer
+        env = SandboxedEnvironment()
+        data = PermitRequestPrintSerializer(context["permit_request"]).data
+        rendered_content = env.from_string(self.content).render({"data": data})
+        return {
+            **super().get_context(context),
+            "rendered_content": mark_safe(rendered_content),
+        }
+
+class BlockAuthor(Block):
+    pass

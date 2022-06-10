@@ -104,9 +104,9 @@ LOCATIONS_SEARCH_API_DETAILS = os.getenv("LOCATIONS_SEARCH_API_DETAILS")
 
 # Application definition
 INSTALLED_APPS = [
+    "polymorphic",
     "adminsortable2",
     "grappelli",
-    "streamfield",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -153,7 +153,6 @@ if ENABLE_2FA:
 # project applications
 INSTALLED_APPS += [
     "permits",
-    "reports.streamblocks",
     "reports",
 ]
 

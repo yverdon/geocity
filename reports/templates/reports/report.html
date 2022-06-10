@@ -1,4 +1,4 @@
-{% load streamfield_tags %}
+{% load reports %}
 
 <html>
   <head>
@@ -18,7 +18,9 @@
   </head>
 
   <body>
-    {% stream_render report.stream permit_request=permit_request data=permit_request_data token=token %}
+    {% for block_ in report.blocks.all %}
+      {% render_block block_ permit_request=permit_request token=token %}
+    {% endfor %}
   </body>
 </html>
 
