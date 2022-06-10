@@ -42,12 +42,15 @@ td, th {
 }
 
 .key {
-  width: 30%;
+  width: 29%;
   font-weight: bold;
+  margin-right: 1%;
+  margin-bottom: 14px;
 }
 
 .value {
   width: 70%;
+  margin-bottom: 14px;
 }
 
 

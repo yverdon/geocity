@@ -1,13 +1,15 @@
 <div>
-    <h2>Détails</h2>
-    {% if permit_request.works_object_types.count %}
-    <ul>
-      {% for wot in permit_request.works_object_types.all %}
-        <li>{{wot.is_public}}</li>
-      {% endfor %}
-    </ul>
-    {% else %}
-    <p>Aucun contact pour cette demande</p>
-    {% endif %}
-  </div>
-  
+  <h2>Détails</h2>
+  {% if data.properties.permit_request_works_object_types_names %}
+    {% for wot, props in data.properties.request_properties.items %}
+      <div class="key_value_container">
+        <h3>{{wot}}</h3>
+        {% for key, prop in props.items %}
+          <div class="key">{{key}}</div><div class="value">{{prop}}</div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>Aucun detail pour cette demande</p>
+  {% endif %}
+</div>
