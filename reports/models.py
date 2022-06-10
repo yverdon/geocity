@@ -165,6 +165,7 @@ class SectionMap(Section):
     layout_name = models.CharField(max_length=30)
 
 class SectionParagraph(Section):
+    title = models.CharField(default="", blank=True, max_length=2000)
     content = models.TextField(
         help_text=(
             _(

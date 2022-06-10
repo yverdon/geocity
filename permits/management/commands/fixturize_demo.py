@@ -1019,12 +1019,14 @@ class Command(BaseCommand):
         reports_models.SectionParagraph.objects.create(
             order=1,
             report=report,
-            content="<div><h2>Approval</h2><p>This is an example report. It could be an approval, or any type of report related to a request.</p></div>",
+            title="Example report",
+            content="<p>This is an example report. It could be an approval, or any type of report related to a request.</p>",
         )
         reports_models.SectionParagraph.objects.create(
             order=2,
             report=report,
-            content="<div><h2>Summary</h2><p>This demand contains the following objects.</p><ul>{% for wot in data.properties.permit_request_works_object_types_names.values() %}<li>{{wot}}</li>{% endfor %}</ul></div>",
+            title="Demand summary",
+            content="<p>This demand contains the following objects.</p><ul>{% for wot in data.properties.permit_request_works_object_types_names.values() %}<li>{{wot}}</li>{% endfor %}</ul>",
         )
         reports_models.SectionMap.objects.create(
             order=3,
