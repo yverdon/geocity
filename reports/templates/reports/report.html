@@ -18,8 +18,8 @@
   </head>
 
   <body>
-    {% for block_ in report.blocks.all %}
-      {% render_block block_ permit_request=permit_request token=token %}
+    {% for section in report.sections.all %}
+      {% render_section section permit_request=permit_request token=token %}
     {% endfor %}
   </body>
 </html>

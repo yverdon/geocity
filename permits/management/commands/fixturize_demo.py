@@ -1016,23 +1016,23 @@ class Command(BaseCommand):
             type=models.ComplementaryDocumentType.objects.first(),
         )
 
-        reports_models.BlockParagraph.objects.create(
+        reports_models.SectionParagraph.objects.create(
             order=1,
             report=report,
             content="<div><h2>Approval</h2><p>This is an example report. It could be an approval, or any type of report related to a request.</p></div>",
         )
-        reports_models.BlockParagraph.objects.create(
+        reports_models.SectionParagraph.objects.create(
             order=2,
             report=report,
             content="<div><h2>Summary</h2><p>This demand contains the following objects.</p><ul>{% for wot in data.properties.permit_request_works_object_types_names.values() %}<li>{{wot}}</li>{% endfor %}</ul></div>",
         )
-        reports_models.BlockMap.objects.create(
+        reports_models.SectionMap.objects.create(
             order=3,
             report=report,
             # project= open("/code/qgisserver/report-template-dev.qgs", "rb").
             layout_name="a4",
         )
-        reports_models.BlockAuthor.objects.create(
+        reports_models.SectionAuthor.objects.create(
             order=4,
             report=report,
         )

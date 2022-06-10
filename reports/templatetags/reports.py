@@ -13,7 +13,7 @@ from ..utils import run_docker_container, DockerRunFailedError
 register = template.Library()
 
 @register.simple_tag
-def render_block(obj, **context):
+def render_section(obj, **context):
     return obj.render(context)
 
 

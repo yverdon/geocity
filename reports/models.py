@@ -134,36 +134,37 @@ class Report(models.Model):
         return self.name
 
 
-class Block(PolymorphicModel):
+class Section(PolymorphicModel):
     class Meta:
+
         ordering = ['order',]
 
-    report = models.ForeignKey(Report, on_delete=models.CASCADE, related_name="blocks")
+    report = models.ForeignKey(Report, on_delete=models.CASCADE, related_name="sections")
     order = models.PositiveIntegerField(null=True, blank=True)
 
     def get_template(self):
         class_name = self.__class__.__name__.lower()
-        return f"reports/blocks/{class_name}.html"
+        return f"reports/sections/{class_name}.html"
 
     def get_context(self, context):
         return {
             **context,
-            "block": self,
+            "section": self,
             "permit_request": context["permit_request"],
         }
 
     def render(self, report_context):
         template = self.get_template()
-        block_context = self.get_context(report_context)
-        return render_to_string(template, block_context)
+        section_context = self.get_context(report_context)
+        return render_to_string(template, section_context)
 
     def __str__(self):
-        return self.__class__.__name__
+        return self._meta.verbose_name
 
-class BlockMap(Block):
+class SectionMap(Section):
     layout_name = models.CharField(max_length=30)
 
-class BlockParagraph(Block):
+class SectionParagraph(Section):
     content = models.TextField(
         help_text=(
             _(
@@ -182,5 +183,5 @@ class BlockParagraph(Block):
             "rendered_content": mark_safe(rendered_content),
         }
 
-class BlockAuthor(Block):
+class SectionAuthor(Section):
     pass
