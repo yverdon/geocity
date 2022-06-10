@@ -2,6 +2,7 @@ from django.db import models
 
 import io
 import typing
+from typing import Union
 import requests
 import urllib
 from urllib.request import urlopen
@@ -15,6 +16,8 @@ from permits import models as permits_models
 from django.contrib.auth.models import Group
 from django.urls import reverse
 from rest_framework.authtoken.models import Token
+
+from .utils import run_docker_container, DockerRunFailedError
 
 
 class ReportLayout(models.Model):
@@ -39,6 +42,7 @@ class ReportLayout(models.Model):
             'La liste des polices disponbiles est visible sur <a href="https://fonts.google.com/" target="_blank">Goole Fonts</a>'
         ),
     )
+    # TODO: move these to private storage
     background = models.ImageField(
         null=True, blank=True, help_text=_('Image d\'arrière plan ("papier à en-tête")')
     )
@@ -77,42 +81,48 @@ class Report(models.Model):
         verbose_name=_("Groupe des administrateurs"),
     )
 
-    def render_string(self, permit_request, request) -> str:
-        from permits.serializers import PermitRequestPrintSerializer
 
-        context = {
-            "report": self,
-            "permit_request": permit_request,
-            "permit_request_data": PermitRequestPrintSerializer(permit_request).data,
-            "request": request,
-        }
-        return render_to_string("reports/report.html", context)
-
-    def render_pdf(self, permit_request, generated_by) -> bytes:
+    def render_pdf(self, permit_request, generated_by, as_string=False) -> Union[bytes,str]:
         """Renders a PDF by calling the PDF generator service"""
+
+        from permits.serializers import PermitRequestPrintSerializer
 
         # Generate a token
         # TODO CRITICAL: add expiration to token and/or ensure it gets deleted
         # (fix by using better token implementation than DRF)
         token, token_was_created = Token.objects.get_or_create(user=generated_by)
-        data = {
-            "url": reverse(
-                "reports:permit_request_report_contents",
-                args=[permit_request.pk, self.pk],
-            ),
+
+        context = {
+            "report": self,
+            "permit_request": permit_request,
+            "permit_request_data": PermitRequestPrintSerializer(permit_request).data,
             "token": token.key,
         }
-        pdf_response = requests.post("http://pdf:5000/", data=data)
+        html_string = render_to_string("reports/report.html", context)
 
-        # TODO: race condition if two PDFs are generated at the same time
-        # (fix by using better token implementation than DRF)
-        if token_was_created:
-            token.delete()
+        if as_string:
+            return html_string
 
-        if pdf_response.status_code != 200:
-            raise RuntimeError(_("La génération du PDF a échoué."))
+        commands = [
+            "/io/input.html",
+            "/io/output.pdf",
+            token.key,
+        ]
 
-        return pdf_response.content
+        try:
+            output = run_docker_container(
+                "geocity_pdf",
+                commands,
+                file_input=("/io/input.html", io.BytesIO(html_string.encode("utf-8"))),
+                file_output="/io/output.pdf",
+            )
+        finally:
+            # TODO: race condition if two PDFs are generated at the same time
+            # (fix by using better token implementation than DRF)
+            if token_was_created:
+                token.delete()
+
+        return output
 
     def __str__(self):
         return self.name

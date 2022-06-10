@@ -44,17 +44,11 @@ services:
         restart: unless-stopped
         build:
             context: services/qgis
-        networks:
-            - pdf_generation
 
     pdf:
         restart: unless-stopped
         build:
             context: services/pdf
-        networks:
-            - pdf_generation
-        environment:
-            WEB_ROOT_URL: http://web:9000
 
 networks:
     # custom network to restriction communication to between django<->pdf

@@ -6,9 +6,9 @@ from django.utils.safestring import mark_safe
 from jinja2.sandbox import SandboxedEnvironment
 from rest_framework.authtoken.models import Token
 import base64
-import docker
 import os
 from django.contrib.staticfiles import finders
+from ..utils import run_docker_container, DockerRunFailedError
 
 register = template.Library()
 
@@ -39,47 +39,31 @@ def iterate_nested_dict(data):
 def include_qgis_map(context):
     """Includes a QGIS map as an image (embedded as dataurl). The image is generated in an isolated container."""
 
-    request = context["request"]
-
-    token, _ = Token.objects.get_or_create(user=request.user)
     project_file = context["block_content"].qgis_project_file.file
     template_name = context["block_content"].qgis_print_template_name
     permit_request_id = context["permit_request"].id
+    token = context["token"]
 
     # Create a docker container to generate the image
-    client = docker.from_env()
     commands = [
         "/io/project.qgs",
         "/io/output.png",
         str(template_name),
         str(permit_request_id),
-        str(token.key),
+        str(token),
     ]
-    container = client.containers.create(
-        "geocity_qgis", commands, network="geocity_pdf_generation"
-    )
 
-    # Copy QGIS project to the container
-    _put_file(container, "/io/project.qgs", project_file)
-
-    # Run the container
-    container.start()
-    r = container.wait(timeout=30)
-
-    # Debug
-    # print(container.logs().decode("utf-8"))
-
-    # Check if it succeeded
-    if r["StatusCode"] == 0:
-        # Retrieve the output
-        output = _get_file(container, "/io/output.png")
-    else:
+    try:
+        output = run_docker_container(
+            "geocity_qgis",
+            commands,
+            file_input=("/io/project.qgs", project_file),
+            file_output="/io/output.png",
+        )
+    except DockerRunFailedError:
         # Return error image
         path = finders.find("reports/error.png")
         output = open(path, "rb")
-
-    # Cleanup container
-    container.remove()
 
     # Prepare the dataurl
     data = base64.b64encode(output.read()).decode("ascii")

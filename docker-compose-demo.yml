@@ -71,33 +71,13 @@ services:
 
     qgis:
         image: geocity_qgis
-        # restart: unless-stopped
         build:
             context: services/qgis
-        networks:
-            - pdf_generation
-        # environment:
-        #     FLASK_ENV: development
-        # volumes:
-        #     - ./services/qgis:/app
-        # ports:
-        #     - 5001:5000
-        # Nothing to run on startup
-        command: "--help"
 
     pdf:
-        restart: unless-stopped
+        image: geocity_pdf
         build:
             context: services/pdf
-        networks:
-            - pdf_generation
-        environment:
-            WEB_ROOT_URL: http://web:9000
-            FLASK_ENV: development
-        volumes:
-            - ./services/pdf:/app
-        ports:
-            - 5000:5000
 
 
 
