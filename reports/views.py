@@ -3,7 +3,6 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from permits.serializers import PermitRequestPrintSerializer
 from django.shortcuts import get_object_or_404
-from django_weasyprint.views import WeasyTemplateView
 from django.urls import reverse
 import requests
 import io

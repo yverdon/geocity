@@ -8,7 +8,6 @@ import urllib
 from urllib.request import urlopen
 from django.utils.translation import gettext_lazy as _
 from streamfield.fields import StreamField
-from weasyprint import HTML, default_url_fetcher
 from .streamblocks.models import STREAMBLOCKS_MODELS
 from django.template.loader import render_to_string
 from django.conf import settings
