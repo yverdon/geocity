@@ -965,11 +965,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
             self.fields["status"].choices = tuple(filter2)
 
             # A permit that is approved, rejected or archived cannot have its status changed and author cannot be notified anymore
-            if self.instance.status in [
-                models.PermitRequest.STATUS_APPROVED,
-                models.PermitRequest.STATUS_ARCHIVED,
-                models.PermitRequest.STATUS_REJECTED,
-            ]:
+            if self.instance.status not in models.PermitRequest.EDITABLE_STATUSES:
                 self.fields["status"].disabled = True
                 self.fields["notify_author"].disabled = True
 
