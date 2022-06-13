@@ -919,9 +919,8 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
             "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, user, *args, **kwargs):
         self.instance = kwargs.get("instance", None)
-
         initial = {}
         for prop_value in self.get_values():
             initial[
@@ -931,7 +930,6 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                 )
             ] = prop_value.value
         kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
-
         super().__init__(*args, **kwargs)
 
         if self.instance:
@@ -940,8 +938,11 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                     self.instance.administrative_entity
                 )
             )
-            # If an amend property in the permit request can always be amended, STATUS_APPROVED is added to the list
-            if self.instance.get_amend_property_list_always_amendable():
+            # If an amend property in the permit request can always be amended or permit request backoffice fields can always be updated,
+            # STATUS_APPROVED is added to the list
+            if self.instance.get_amend_property_list_always_amendable() or self.instance.can_always_be_updated(
+                user
+            ):
                 filter1 = [
                     tup
                     for tup in models.PermitRequest.STATUS_CHOICES
@@ -954,12 +955,19 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                     for tup in models.PermitRequest.STATUS_CHOICES
                     if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)
                 ]
+
             filter2 = [
                 el
                 for el in filter1
                 if any(i in el for i in available_statuses_for_administrative_entity)
             ]
+
             self.fields["status"].choices = tuple(filter2)
+
+            # A permit that is approved, rejected or archived cannot have its status changed and author cannot be notified anymore
+            if self.instance.status not in models.PermitRequest.EDITABLE_STATUSES:
+                self.fields["status"].disabled = True
+                self.fields["notify_author"].disabled = True
 
             if not config.ENABLE_GEOCALENDAR:
                 self.fields["shortname"].widget = forms.HiddenInput()
