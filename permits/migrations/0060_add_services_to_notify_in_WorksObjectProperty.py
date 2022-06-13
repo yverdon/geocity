@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0059_add_order_field_to_works_object'),
+        ("permits", "0059_add_order_field_to_works_object"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='worksobjectproperty',
-            name='services_to_notify',
-            field=models.TextField(blank=True, help_text='Veuillez séparer les emails par une virgule ","', verbose_name='Emails des services à notifier'),
+            model_name="worksobjectproperty",
+            name="services_to_notify",
+            field=models.TextField(
+                blank=True,
+                help_text='Veuillez séparer les emails par une virgule ","',
+                verbose_name="Emails des services à notifier",
+            ),
         ),
     ]

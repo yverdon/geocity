@@ -6,18 +6,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0031_add_mandatory_2fa_to_permitdepartment'),
+        ("permits", "0031_add_mandatory_2fa_to_permitdepartment"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='worksobjecttype',
-            name='notify_services',
-            field=models.BooleanField(default=False, verbose_name='Notifier les services'),
+            model_name="worksobjecttype",
+            name="notify_services",
+            field=models.BooleanField(
+                default=False, verbose_name="Notifier les services"
+            ),
         ),
         migrations.AddField(
-            model_name='worksobjecttype',
-            name='services_to_notify',
-            field=models.TextField(blank=True, help_text='Veuillez séparer les emails par une virgule ","', verbose_name='Emails des services à notifier'),
+            model_name="worksobjecttype",
+            name="services_to_notify",
+            field=models.TextField(
+                blank=True,
+                help_text='Veuillez séparer les emails par une virgule ","',
+                verbose_name="Emails des services à notifier",
+            ),
         ),
     ]

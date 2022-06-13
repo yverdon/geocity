@@ -6,53 +6,76 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0048_alter_permitadministrativeentity_expeditor_email'),
+        ("permits", "0048_alter_permitadministrativeentity_expeditor_email"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='historicalpermitrequest',
-            name='prolongation_comment',
-            field=models.TextField(blank=True, verbose_name='Commentaire'),
+            model_name="historicalpermitrequest",
+            name="prolongation_comment",
+            field=models.TextField(blank=True, verbose_name="Commentaire"),
         ),
         migrations.AddField(
-            model_name='historicalpermitrequest',
-            name='prolongation_date',
-            field=models.DateTimeField(blank=True, null=True, verbose_name='Nouvelle date de fin'),
+            model_name="historicalpermitrequest",
+            name="prolongation_date",
+            field=models.DateTimeField(
+                blank=True, null=True, verbose_name="Nouvelle date de fin"
+            ),
         ),
         migrations.AddField(
-            model_name='historicalpermitrequest',
-            name='prolongation_status',
-            field=models.PositiveSmallIntegerField(blank=True, choices=[(0, 'En attente'), (1, 'Approuvée'), (2, 'Refusée')], null=True, verbose_name='Décision'),
+            model_name="historicalpermitrequest",
+            name="prolongation_status",
+            field=models.PositiveSmallIntegerField(
+                blank=True,
+                choices=[(0, "En attente"), (1, "Approuvée"), (2, "Refusée")],
+                null=True,
+                verbose_name="Décision",
+            ),
         ),
         migrations.AddField(
-            model_name='permitrequest',
-            name='prolongation_comment',
-            field=models.TextField(blank=True, verbose_name='Commentaire'),
+            model_name="permitrequest",
+            name="prolongation_comment",
+            field=models.TextField(blank=True, verbose_name="Commentaire"),
         ),
         migrations.AddField(
-            model_name='permitrequest',
-            name='prolongation_date',
-            field=models.DateTimeField(blank=True, null=True, verbose_name='Nouvelle date de fin'),
+            model_name="permitrequest",
+            name="prolongation_date",
+            field=models.DateTimeField(
+                blank=True, null=True, verbose_name="Nouvelle date de fin"
+            ),
         ),
         migrations.AddField(
-            model_name='permitrequest',
-            name='prolongation_status',
-            field=models.PositiveSmallIntegerField(blank=True, choices=[(0, 'En attente'), (1, 'Approuvée'), (2, 'Refusée')], null=True, verbose_name='Décision'),
+            model_name="permitrequest",
+            name="prolongation_status",
+            field=models.PositiveSmallIntegerField(
+                blank=True,
+                choices=[(0, "En attente"), (1, "Approuvée"), (2, "Refusée")],
+                null=True,
+                verbose_name="Décision",
+            ),
         ),
         migrations.AddField(
-            model_name='worksobjecttype',
-            name='days_before_reminder',
-            field=models.IntegerField(blank=True, null=True, verbose_name='Délai de rappel (jours)'),
+            model_name="worksobjecttype",
+            name="days_before_reminder",
+            field=models.IntegerField(
+                blank=True, null=True, verbose_name="Délai de rappel (jours)"
+            ),
         ),
         migrations.AddField(
-            model_name='worksobjecttype',
-            name='expiration_reminder',
-            field=models.BooleanField(default=False, verbose_name='Activer la fonction de rappel'),
+            model_name="worksobjecttype",
+            name="expiration_reminder",
+            field=models.BooleanField(
+                default=False, verbose_name="Activer la fonction de rappel"
+            ),
         ),
         migrations.AddField(
-            model_name='worksobjecttype',
-            name='permit_duration',
-            field=models.IntegerField(blank=True, help_text="Le permis pour l'objet sera prolongeable uniquement si cette valeur est fournie.", null=True, verbose_name='Durée de validité de la demande (jours)'),
+            model_name="worksobjecttype",
+            name="permit_duration",
+            field=models.IntegerField(
+                blank=True,
+                help_text="Le permis pour l'objet sera prolongeable uniquement si cette valeur est fournie.",
+                null=True,
+                verbose_name="Durée de validité de la demande (jours)",
+            ),
         ),
     ]

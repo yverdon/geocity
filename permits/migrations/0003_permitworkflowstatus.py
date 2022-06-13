@@ -7,21 +7,51 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0002_auto_20200928_1828'),
+        ("permits", "0002_auto_20200928_1828"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='PermitWorkflowStatus',
+            name="PermitWorkflowStatus",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('status', models.PositiveSmallIntegerField(choices=[(0, 'Brouillon'), (1, 'Envoyée, en attente de traitement'), (4, 'Demande de compléments'), (3, 'En traitement'), (5, 'En validation'), (2, 'Approuvée'), (6, 'Refusée'), (7, 'Annonce réceptionnée')], verbose_name='statut')),
-                ('administrative_entity', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='enabled_statuses', to='permits.PermitAdministrativeEntity')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "status",
+                    models.PositiveSmallIntegerField(
+                        choices=[
+                            (0, "Brouillon"),
+                            (1, "Envoyée, en attente de traitement"),
+                            (4, "Demande de compléments"),
+                            (3, "En traitement"),
+                            (5, "En validation"),
+                            (2, "Approuvée"),
+                            (6, "Refusée"),
+                            (7, "Annonce réceptionnée"),
+                        ],
+                        verbose_name="statut",
+                    ),
+                ),
+                (
+                    "administrative_entity",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="enabled_statuses",
+                        to="permits.PermitAdministrativeEntity",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': "Status disponible pour l'entité administrative",
-                'verbose_name_plural': "Status disponibles pour l'entité administratives",
-                'unique_together': {('status', 'administrative_entity')},
+                "verbose_name": "Status disponible pour l'entité administrative",
+                "verbose_name_plural": "Status disponibles pour l'entité administratives",
+                "unique_together": {("status", "administrative_entity")},
             },
         ),
     ]

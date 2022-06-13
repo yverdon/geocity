@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     additionalSearchtextForAddressFieldElement.removeAttribute('required');
     additionalSearchtextForAddressFieldRowElement.classList.add(hiddenClass);
-    
+
     storeGeometryForAddressFieldElement.removeAttribute('required');
     storeGeometryForAddressFieldRowElement.classList.add(hiddenClass);
 

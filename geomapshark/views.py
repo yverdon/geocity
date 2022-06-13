@@ -2,10 +2,9 @@ from urllib.parse import urlparse
 
 from allauth.socialaccount.models import SocialApp
 from constance import config
-
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login, logout
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
@@ -14,7 +13,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_text
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
 from django.views import View
 
@@ -23,12 +22,13 @@ if settings.ENABLE_2FA:
 else:
     from django.contrib.auth.views import LoginView
 
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from permits import forms, models
 from permits import services as permits_services
+
 from . import services
 
 
@@ -55,7 +55,10 @@ def logout_view(request):
 
 # User has tried to many login attemps
 def lockout_view(request):
-    return render(request, "account/lockout.html",)
+    return render(
+        request,
+        "account/lockout.html",
+    )
 
 
 class CustomPasswordResetView(PasswordResetView):

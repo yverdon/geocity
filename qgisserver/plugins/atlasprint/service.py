@@ -18,7 +18,6 @@
 
 import json
 import traceback
-
 from pathlib import Path
 from typing import Dict
 
@@ -30,7 +29,6 @@ from .core import AtlasPrintException, parse_output_format, print_layout
 from .logger import Logger
 from .oapifrefresher import OAPIFRefresher
 
-
 __copyright__ = "Copyright 2021, 3Liz"
 __license__ = "GPL version 3"
 __email__ = "info@3liz.org"
@@ -39,8 +37,7 @@ __email__ = "info@3liz.org"
 def write_json_response(
     data: Dict[str, str], response: QgsServerResponse, code: int = 200
 ) -> None:
-    """ Write data as json response
-    """
+    """Write data as json response"""
     response.setStatusCode(code)
     response.setHeader("Content-Type", "application/json")
     response.write(json.dumps(data))
@@ -54,8 +51,7 @@ class AtlasPrintError(Exception):
         Logger().critical("Atlas print request error {}: {}".format(code, msg))
 
     def formatResponse(self, response: QgsServerResponse) -> None:
-        """ Format error response
-        """
+        """Format error response"""
         body = {"status": "fail", "message": self.msg}
         response.clear()
         write_json_response(body, response, self.code)
@@ -70,19 +66,16 @@ class AtlasPrintService(QgsService):
     # QgsService inherited
 
     def name(self) -> str:
-        """ Service name
-        """
+        """Service name"""
         return "ATLAS"
 
     def version(self) -> str:
-        """ Service version
-        """
+        """Service version"""
         return "1.0.0"
 
     # noinspection PyMethodMayBeStatic
     def allowMethod(self, method: QgsServerRequest.Method) -> bool:
-        """ Check supported HTTP methods
-        """
+        """Check supported HTTP methods"""
         return method in (QgsServerRequest.GetMethod, QgsServerRequest.PostMethod)
 
     def executeRequest(
@@ -91,8 +84,7 @@ class AtlasPrintService(QgsService):
         response: QgsServerResponse,
         project: QgsProject,
     ) -> None:
-        """ Execute a 'ATLAS' request
-        """
+        """Execute a 'ATLAS' request"""
 
         params = request.parameters()
 
@@ -125,8 +117,7 @@ class AtlasPrintService(QgsService):
     def get_capabilities(
         params: Dict[str, str], response: QgsServerResponse, project: QgsProject
     ) -> None:
-        """ Get atlas capabilities based on metadata file
-        """
+        """Get atlas capabilities based on metadata file"""
         _ = params, project
         plugin_name = "atlasprint"
         body = {
@@ -142,8 +133,7 @@ class AtlasPrintService(QgsService):
     def get_print(
         self, params: Dict[str, str], response: QgsServerResponse, project: QgsProject
     ) -> None:
-        """ Get print document
-        """
+        """Get print document"""
 
         template = params.get("TEMPLATE")
         feature_filter = params.get("EXP_FILTER", None)

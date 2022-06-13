@@ -1,6 +1,6 @@
-from permits import models
-from django.core import management
 from django.core.management.base import BaseCommand
+
+from permits import models
 
 
 def add_default_print_config():

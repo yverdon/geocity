@@ -159,7 +159,7 @@
                 <xs:element name="Histograms" type="HistogramsType"/>
 
                 <!-- for a VRTSourcedRasterBand. Each element may be repeated -->
-                <xs:element name="SimpleSource" type="SimpleSourceType"/> 
+                <xs:element name="SimpleSource" type="SimpleSourceType"/>
                 <xs:element name="ComplexSource" type="ComplexSourceType"/>
                 <xs:element name="AveragedSource" type="SimpleSourceType"/>
                 <xs:element name="KernelFilteredSource" type="KernelFilteredSourceType"/>

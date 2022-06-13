@@ -7,27 +7,75 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0033_alter_permitrequest_works_object_types'),
+        ("permits", "0033_alter_permitrequest_works_object_types"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TemplateCustomization',
+            name="TemplateCustomization",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('templatename', models.CharField(blank=True, max_length=64, validators=[django.core.validators.RegexValidator(message='Seuls les caractères sans accents et les chiffres sont autorisés. Les espaces et autres caractères spéciaux ne sont pas autorisés', regex='^[a-zA-Z0-9_]*$')], verbose_name='Identifiant')),
-                ('application_title', models.CharField(blank=True, max_length=255, verbose_name='Titre')),
-                ('application_subtitle', models.CharField(blank=True, max_length=255, verbose_name='Sous-titre')),
-                ('application_description', models.TextField(blank=True, max_length=2048, verbose_name='Description')),
-                ('background_image', models.ImageField(blank=True, upload_to='background_images/', validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['svg', 'png', 'jpg', 'jpeg'])], verbose_name='Image de fond')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "templatename",
+                    models.CharField(
+                        blank=True,
+                        max_length=64,
+                        validators=[
+                            django.core.validators.RegexValidator(
+                                message="Seuls les caractères sans accents et les chiffres sont autorisés. Les espaces et autres caractères spéciaux ne sont pas autorisés",
+                                regex="^[a-zA-Z0-9_]*$",
+                            )
+                        ],
+                        verbose_name="Identifiant",
+                    ),
+                ),
+                (
+                    "application_title",
+                    models.CharField(blank=True, max_length=255, verbose_name="Titre"),
+                ),
+                (
+                    "application_subtitle",
+                    models.CharField(
+                        blank=True, max_length=255, verbose_name="Sous-titre"
+                    ),
+                ),
+                (
+                    "application_description",
+                    models.TextField(
+                        blank=True, max_length=2048, verbose_name="Description"
+                    ),
+                ),
+                (
+                    "background_image",
+                    models.ImageField(
+                        blank=True,
+                        upload_to="background_images/",
+                        validators=[
+                            django.core.validators.FileExtensionValidator(
+                                allowed_extensions=["svg", "png", "jpg", "jpeg"]
+                            )
+                        ],
+                        verbose_name="Image de fond",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': '4.1 Configuration de la page de login',
-                'verbose_name_plural': '4.1 Configuration des pages de login',
+                "verbose_name": "4.1 Configuration de la page de login",
+                "verbose_name_plural": "4.1 Configuration des pages de login",
             },
         ),
         migrations.AddConstraint(
-            model_name='templatecustomization',
-            constraint=models.UniqueConstraint(fields=('templatename',), name='unique_templatename'),
+            model_name="templatecustomization",
+            constraint=models.UniqueConstraint(
+                fields=("templatename",), name="unique_templatename"
+            ),
         ),
     ]

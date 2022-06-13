@@ -6,16 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0026_rename_status_received'),
+        ("permits", "0026_rename_status_received"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='permitadministrativeentity',
-            name='image_signature_1',
+            model_name="permitadministrativeentity",
+            name="image_signature_1",
         ),
         migrations.RemoveField(
-            model_name='permitadministrativeentity',
-            name='image_signature_2',
+            model_name="permitadministrativeentity",
+            name="image_signature_2",
         ),
     ]

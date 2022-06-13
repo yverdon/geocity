@@ -456,7 +456,7 @@
               <xs:element name="MaxFileSize" minOccurs="0">
                 <xs:annotation>
                   <xs:documentation>
-                    Maximum file size allowed. 
+                    Maximum file size allowed.
                     Default: 1 MB.
                   </xs:documentation>
                 </xs:annotation>

@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0006_auto_20201109_0743'),
+        ("permits", "0006_auto_20201109_0743"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='worksobject',
-            name='wms_layers',
-            field=models.URLField(blank=True, max_length=1024, verbose_name='Couche(s) WMS'),
+            model_name="worksobject",
+            name="wms_layers",
+            field=models.URLField(
+                blank=True, max_length=1024, verbose_name="Couche(s) WMS"
+            ),
         ),
     ]

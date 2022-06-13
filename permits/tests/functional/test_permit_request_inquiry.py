@@ -1,8 +1,11 @@
-from ..geocity_test_case import GeocityTestCase
-from .. import factories
-from permits import models
-from django.urls import reverse
 from datetime import datetime, timedelta
+
+from django.urls import reverse
+
+from permits import models
+
+from .. import factories
+from ..geocity_test_case import GeocityTestCase
 
 
 class TestPermitRequestInquiry(GeocityTestCase):
@@ -80,7 +83,12 @@ class TestPermitRequestInquiry(GeocityTestCase):
         )
 
         detail = self.execute_permit_request_action(
-            data={**self.data, **{"documents": document.pk,}}
+            data={
+                **self.data,
+                **{
+                    "documents": document.pk,
+                },
+            }
         )
         inquiry = detail.context["forms"][self.action].instance
 
@@ -106,7 +114,12 @@ class TestPermitRequestInquiry(GeocityTestCase):
                 "permits:permit_request_detail",
                 kwargs={"permit_request_id": self.permit_request.pk},
             ),
-            data={**self.data, **{"documents": document.pk,}},
+            data={
+                **self.data,
+                **{
+                    "documents": document.pk,
+                },
+            },
         )
 
         expected = '<input name="confirmation" type="hidden" value="confirmed">'
@@ -121,7 +134,10 @@ class TestPermitRequestInquiry(GeocityTestCase):
         detail = self.execute_permit_request_action(
             data={
                 **self.data,
-                **{"documents": document.pk, "confirmation": "confirmed",},
+                **{
+                    "documents": document.pk,
+                    "confirmation": "confirmed",
+                },
             }
         )
         inquiry = detail.context["forms"][self.action].instance

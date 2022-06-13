@@ -6,22 +6,29 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0037_change_filters_help_texts'),
+        ("permits", "0037_change_filters_help_texts"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='permitdepartment',
-            name='is_archeologist',
+            model_name="permitdepartment",
+            name="is_archeologist",
         ),
         migrations.AddField(
-            model_name='permitdepartment',
-            name='is_backoffice',
-            field=models.BooleanField(default=False, help_text='Cocher si les membres font partie du secrétariat. Ils seront notifiés des évolutions de la demande', verbose_name='secrétariat'),
+            model_name="permitdepartment",
+            name="is_backoffice",
+            field=models.BooleanField(
+                default=False,
+                help_text="Cocher si les membres font partie du secrétariat. Ils seront notifiés des évolutions de la demande",
+                verbose_name="secrétariat",
+            ),
         ),
         migrations.AlterField(
-            model_name='permitdepartment',
-            name='is_validator',
-            field=models.BooleanField(help_text='Cocher si les membres doivent apparaître dans la liste des services consultables pour la validation', verbose_name='validateur'),
+            model_name="permitdepartment",
+            name="is_validator",
+            field=models.BooleanField(
+                help_text="Cocher si les membres doivent apparaître dans la liste des services consultables pour la validation",
+                verbose_name="validateur",
+            ),
         ),
     ]

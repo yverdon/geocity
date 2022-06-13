@@ -91,9 +91,11 @@ def _get_works_objects_queryset_for_current_user(request):
 
 
 class DepartmentPermitRequestFilterSet(BasePermitRequestFilterSet):
-    works_object_types__administrative_entities = django_filters.filters.ModelChoiceFilter(
-        queryset=_get_administrative_entities_queryset_for_current_user,
-        label=_("Entité administrative"),
+    works_object_types__administrative_entities = (
+        django_filters.filters.ModelChoiceFilter(
+            queryset=_get_administrative_entities_queryset_for_current_user,
+            label=_("Entité administrative"),
+        )
     )
     works_object_types__works_type = django_filters.filters.ModelChoiceFilter(
         queryset=_get_works_types_queryset_for_current_user, label=_("Type de demande")
@@ -103,7 +105,8 @@ class DepartmentPermitRequestFilterSet(BasePermitRequestFilterSet):
         label=_("Objet de la demande"),
     )
     author__user__last_name = django_filters.filters.CharFilter(
-        lookup_expr="icontains", label=_("Auteur de la demande"),
+        lookup_expr="icontains",
+        label=_("Auteur de la demande"),
     )
 
     class Meta:

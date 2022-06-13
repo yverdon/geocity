@@ -2,11 +2,12 @@ import requests
 from allauth.socialaccount.models import SocialLogin
 from allauth.socialaccount.providers.oauth2.views import (
     OAuth2Adapter,
-    OAuth2LoginView,
     OAuth2CallbackView,
+    OAuth2LoginView,
 )
-from .provider import GeomapfishProvider
 from django.conf import settings
+
+from .provider import GeomapfishProvider
 
 
 class GeomapfishAdapter(OAuth2Adapter):

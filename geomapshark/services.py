@@ -1,7 +1,9 @@
-from constance import config
 from urllib import parse
-from permits import models
+
+from constance import config
 from django.conf import settings
+
+from permits import models
 
 
 def get_context_data(context, request):

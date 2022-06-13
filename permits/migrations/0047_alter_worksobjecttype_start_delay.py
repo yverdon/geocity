@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0046_worksobjectproperty_types_order_helptext'),
+        ("permits", "0046_worksobjectproperty_types_order_helptext"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='worksobjecttype',
-            name='start_delay',
-            field=models.IntegerField(blank=True, help_text='Délai minimum en jours avant la date de début (nombre entier positif ou négatif).', null=True, verbose_name='délai de commencement'),
+            model_name="worksobjecttype",
+            name="start_delay",
+            field=models.IntegerField(
+                blank=True,
+                help_text="Délai minimum en jours avant la date de début (nombre entier positif ou négatif).",
+                null=True,
+                verbose_name="délai de commencement",
+            ),
         ),
     ]

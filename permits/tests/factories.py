@@ -6,12 +6,12 @@ import faker
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.gis.geos import GeometryCollection, MultiPolygon, Polygon, Point
+from django.contrib.gis.geos import GeometryCollection, MultiPolygon, Point, Polygon
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.utils.text import Truncator
-from permits import models, admin
 from django.db.models import Q
-from taggit.managers import TaggableManager
+from django.utils.text import Truncator
+
+from permits import admin, models
 
 
 class PermitAuthorFactory(factory.django.DjangoModelFactory):
@@ -76,7 +76,8 @@ class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
         extracted = extracted or [v[0] for v in models.PermitRequest.STATUS_CHOICES]
         for status in extracted:
             models.PermitWorkflowStatus.objects.create(
-                status=status, administrative_entity=self,
+                status=status,
+                administrative_entity=self,
             )
 
     @factory.post_generation
