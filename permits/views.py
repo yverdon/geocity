@@ -377,12 +377,16 @@ class PermitRequestDetailView(View):
             )
 
             form = forms.PermitRequestAdditionalInformationForm(
-                instance=self.permit_request, initial=initial, data=data
+                instance=self.permit_request,
+                initial=initial,
+                data=data,
+                user=self.request.user,
             )
 
             if not services.can_amend_permit_request(
                 self.request.user, self.permit_request
-            ):
+            ) and not self.permit_request.can_always_be_updated(self.request.user):
+
                 disable_form(
                     form, self.permit_request.get_amend_property_list_always_amendable()
                 )

@@ -15,6 +15,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from permits import models, services
+from permits.templatetags.permits_extras import can_always_be_updated
 
 from ..forms import PermitRequestGeoTimeForm
 from ..management.commands import create_anonymous_users
@@ -2875,9 +2876,59 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             new_properties_values_qs,
         )
 
-    def test_author_cannot_see_private_secretariat_amend_property(
+    def test_secretariat_cannot_amend_permit_request_fields_if_can_always_be_updated(
         self,
     ):
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_APPROVED,
+            administrative_entity=self.administrative_entity,
+        )
+        work_object_type = factories.WorksObjectTypeFactory()
+        permit_request.works_object_types.set([work_object_type])
+        test_shortname_value = "my permitrequest shortname"
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data={
+                f"shortname": test_shortname_value,
+                "action": models.ACTION_AMEND,
+                "status": models.PermitRequest.STATUS_PROCESSING,
+            },
+        )
+
+        parser = get_parser(response.content)
+        element = "disabled" in str(parser.select('input[id="id_shortname"]'))
+        self.assertTrue(element)
+
+    def test_secretariat_can_amend_permit_request_fields_if_can_always_be_updated(
+        self,
+    ):
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_APPROVED,
+            administrative_entity=self.administrative_entity,
+        )
+        work_object_type = factories.WorksObjectTypeFactory(can_always_update=True)
+        permit_request.works_object_types.set([work_object_type])
+        test_shortname_value = "my permitrequest shortname"
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data={
+                f"shortname": test_shortname_value,
+                "action": models.ACTION_AMEND,
+                "status": models.PermitRequest.STATUS_PROCESSING,
+            },
+        )
+
+        parser = get_parser(response.content)
+        element = "disabled" in str(parser.select('input[id="id_shortname"]'))
+        self.assertTrue(element)
+
+    def test_author_cannot_see_private_secretariat_amend_property(self,):
 
         props_quantity = 3
         permit_request = factories.PermitRequestFactory(
