@@ -1,5 +1,5 @@
 -r requirements.txt
-black==19.10b0
+pre-commit
 coverage
 django-debug-toolbar
 django-extensions
@@ -7,4 +7,4 @@ factory_boy
 Faker
 ipdb
 pip-tools
-
+babel

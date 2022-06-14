@@ -6,20 +6,20 @@
     <SRSName>urn:ogc:def:crs:EPSG::5514</SRSName>
     <!-- Geometrie definičního bodu obce -->
     <GeomPropertyDefn>
-      <Name>DefinicniBod</Name> 
-      <ElementPath>Geometrie|DefinicniBod</ElementPath> 
+      <Name>DefinicniBod</Name>
+      <ElementPath>Geometrie|DefinicniBod</ElementPath>
       <Type>MultiPoint</Type>
     </GeomPropertyDefn>
     <!-- Originální geometrie hranice obce -->
     <GeomPropertyDefn>
-      <Name>OriginalniHranice</Name> 
-      <ElementPath>Geometrie|OriginalniHranice</ElementPath> 
+      <Name>OriginalniHranice</Name>
+      <ElementPath>Geometrie|OriginalniHranice</ElementPath>
       <Type>MultiPolygon</Type>
     </GeomPropertyDefn>
     <!-- Generalizovaná geometrie hranice obce (stupeň generalizace 3) -->
     <GeomPropertyDefn>
-      <Name>GeneralizovaneHranice</Name> 
-      <ElementPath>Geometrie|GeneralizovaneHranice3</ElementPath> 
+      <Name>GeneralizovaneHranice</Name>
+      <ElementPath>Geometrie|GeneralizovaneHranice3</ElementPath>
       <Type>MultiPolygon</Type>
     </GeomPropertyDefn>
     <!-- Kód obce -->
@@ -179,14 +179,14 @@
     <SRSName>urn:ogc:def:crs:EPSG::5514</SRSName>
     <!-- Geometrie definičního bodu správního obvodu-->
     <GeomPropertyDefn>
-      <Name>DefinicniBod</Name> 
-      <ElementPath>Geometrie|DefinicniBod</ElementPath> 
+      <Name>DefinicniBod</Name>
+      <ElementPath>Geometrie|DefinicniBod</ElementPath>
       <Type>Point</Type>
     </GeomPropertyDefn>
     <!-- Originální geometrie hranice správního obvodu -->
     <GeomPropertyDefn>
-      <Name>OriginalniHranice</Name> 
-      <ElementPath>Geometrie|OriginalniHranice</ElementPath> 
+      <Name>OriginalniHranice</Name>
+      <ElementPath>Geometrie|OriginalniHranice</ElementPath>
       <Type>MultiPolygon</Type>
     </GeomPropertyDefn>
     <!-- Kód správního obvodu -->
@@ -264,14 +264,14 @@
     <SRSName>urn:ogc:def:crs:EPSG::5514</SRSName>
     <!-- Geometrie definičního bodu MOP -->
     <GeomPropertyDefn>
-      <Name>DefinicniBod</Name> 
-      <ElementPath>Geometrie|DefinicniBod</ElementPath> 
+      <Name>DefinicniBod</Name>
+      <ElementPath>Geometrie|DefinicniBod</ElementPath>
       <Type>Point</Type>
     </GeomPropertyDefn>
     <!-- Originální geometrie hranice MOP -->
     <GeomPropertyDefn>
-      <Name>OriginalniHranice</Name> 
-      <ElementPath>Geometrie|OriginalniHranice</ElementPath> 
+      <Name>OriginalniHranice</Name>
+      <ElementPath>Geometrie|OriginalniHranice</ElementPath>
       <Type>MultiPolygon</Type>
     </GeomPropertyDefn>
     <!-- Kód MOP -->
@@ -343,14 +343,14 @@
     <SRSName>urn:ogc:def:crs:EPSG::5514</SRSName>
     <!-- Geometrie definičního bodu MOMC -->
     <GeomPropertyDefn>
-      <Name>DefinicniBod</Name> 
-      <ElementPath>Geometrie|DefinicniBod</ElementPath> 
+      <Name>DefinicniBod</Name>
+      <ElementPath>Geometrie|DefinicniBod</ElementPath>
       <Type>Point</Type>
     </GeomPropertyDefn>
     <!-- Originální geometrie hranice MOMC -->
     <GeomPropertyDefn>
-      <Name>OriginalniHranice</Name> 
-      <ElementPath>Geometrie|OriginalniHranice</ElementPath> 
+      <Name>OriginalniHranice</Name>
+      <ElementPath>Geometrie|OriginalniHranice</ElementPath>
       <Type>MultiPolygon</Type>
     </GeomPropertyDefn>
     <!-- Kód MOMC -->
@@ -491,8 +491,8 @@
     <SRSName>urn:ogc:def:crs:EPSG::5514</SRSName>
     <!-- Geometrie definičního bodu části obce -->
     <GeomPropertyDefn>
-      <Name>DefinicniBod</Name> 
-      <ElementPath>Geometrie|DefinicniBod</ElementPath> 
+      <Name>DefinicniBod</Name>
+      <ElementPath>Geometrie|DefinicniBod</ElementPath>
       <Type>Point</Type>
     </GeomPropertyDefn>
     <!-- Kód části obce -->
@@ -595,20 +595,20 @@
     <SRSName>urn:ogc:def:crs:EPSG::5514</SRSName>
     <!-- Geometrie definičního bodu katastrálního území -->
     <GeomPropertyDefn>
-      <Name>DefinicniBod</Name> 
-      <ElementPath>Geometrie|DefinicniBod</ElementPath> 
+      <Name>DefinicniBod</Name>
+      <ElementPath>Geometrie|DefinicniBod</ElementPath>
       <Type>MultiPoint</Type>
     </GeomPropertyDefn>
     <!-- Originální geometrie hranice katastrálního území -->
     <GeomPropertyDefn>
-      <Name>OriginalniHranice</Name> 
-      <ElementPath>Geometrie|OriginalniHranice</ElementPath> 
+      <Name>OriginalniHranice</Name>
+      <ElementPath>Geometrie|OriginalniHranice</ElementPath>
       <Type>MultiPolygon</Type>
     </GeomPropertyDefn>
     <!-- Generalizovaná geometrie hranice katastrálního území (stupeň generalizace 2) -->
     <GeomPropertyDefn>
-      <Name>GeneralizovaneHranice</Name> 
-      <ElementPath>Geometrie|GeneralizovaneHranice2</ElementPath> 
+      <Name>GeneralizovaneHranice</Name>
+      <ElementPath>Geometrie|GeneralizovaneHranice2</ElementPath>
       <Type>MultiPolygon</Type>
     </GeomPropertyDefn>
     <!-- Kód katastrálního území -->
@@ -725,14 +725,14 @@
     <SRSName>urn:ogc:def:crs:EPSG::5514</SRSName>
     <!-- Geometrie definičního bodu ZSJ -->
     <GeomPropertyDefn>
-      <Name>DefinicniBod</Name> 
-      <ElementPath>Geometrie|DefinicniBod</ElementPath> 
+      <Name>DefinicniBod</Name>
+      <ElementPath>Geometrie|DefinicniBod</ElementPath>
       <Type>MultiPoint</Type>
     </GeomPropertyDefn>
     <!-- Originální geometrie hranice ZSJ -->
     <GeomPropertyDefn>
-      <Name>OriginalniHranice</Name> 
-      <ElementPath>Geometrie|OriginalniHranice</ElementPath> 
+      <Name>OriginalniHranice</Name>
+      <ElementPath>Geometrie|OriginalniHranice</ElementPath>
       <Type>MultiPolygon</Type>
     </GeomPropertyDefn>
     <!-- Kód ZSJ -->
@@ -848,8 +848,8 @@
     <SRSName>urn:ogc:def:crs:EPSG::5514</SRSName>
     <!-- Geometrie definiční čáry ulice -->
     <GeomPropertyDefn>
-      <Name>DefinicniCara</Name> 
-      <ElementPath>Geometrie|DefinicniCara</ElementPath> 
+      <Name>DefinicniCara</Name>
+      <ElementPath>Geometrie|DefinicniCara</ElementPath>
       <Type>MultiLineString</Type>
     </GeomPropertyDefn>
     <!-- Kód ulice -->
@@ -914,14 +914,14 @@
     <SRSName>urn:ogc:def:crs:EPSG::5514</SRSName>
     <!-- Geometrie definičního bodu parcely -->
     <GeomPropertyDefn>
-      <Name>DefinicniBod</Name> 
-      <ElementPath>Geometrie|DefinicniBod</ElementPath> 
+      <Name>DefinicniBod</Name>
+      <ElementPath>Geometrie|DefinicniBod</ElementPath>
       <Type>Point</Type>
     </GeomPropertyDefn>
     <!-- Originální geometrie hranice parcely -->
     <GeomPropertyDefn>
-      <Name>OriginalniHranice</Name> 
-      <ElementPath>Geometrie|OriginalniHranice</ElementPath> 
+      <Name>OriginalniHranice</Name>
+      <ElementPath>Geometrie|OriginalniHranice</ElementPath>
       <Type>Polygon</Type>
     </GeomPropertyDefn>
     <!-- Originální geometrie hranice parcely (Ompv) -->
@@ -1074,14 +1074,14 @@
     <SRSName>urn:ogc:def:crs:EPSG::5514</SRSName>
     <!-- Geometrie definičního bodu stavebního objektu -->
     <GeomPropertyDefn>
-      <Name>DefinicniBod</Name> 
-      <ElementPath>Geometrie|DefinicniBod</ElementPath> 
+      <Name>DefinicniBod</Name>
+      <ElementPath>Geometrie|DefinicniBod</ElementPath>
       <Type>Point</Type>
     </GeomPropertyDefn>
     <!-- Originální geometrie hranice stavebního objektu -->
     <GeomPropertyDefn>
-      <Name>OriginalniHranice</Name> 
-      <ElementPath>Geometrie|OriginalniHranice</ElementPath> 
+      <Name>OriginalniHranice</Name>
+      <ElementPath>Geometrie|OriginalniHranice</ElementPath>
       <Type>MultiPolygon</Type>
     </GeomPropertyDefn>
     <!-- Originální geometrie hranice stavebního objektu (Ompv) -->

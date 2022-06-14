@@ -30,6 +30,7 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AlterUniqueTogether(
-            name="permitactortype", unique_together={("type", "works_type")},
+            name="permitactortype",
+            unique_together={("type", "works_type")},
         ),
     ]

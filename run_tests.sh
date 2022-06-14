@@ -16,7 +16,8 @@ sed -i -e 's/ENABLE_2FA\=true/ENABLE_2FA\=false/g' .env
 coverage run --source='.' ./manage.py test --settings=geomapshark.settings_test
 coverage report -m
 
-black . --check
+# test formatting (disabled, this is treated in CI with pre-commit)
+# black . --check
 
 # Restore env variables
 # FIXME: Not restoring on test failure !

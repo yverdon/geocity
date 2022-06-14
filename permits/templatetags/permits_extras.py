@@ -1,14 +1,15 @@
 import json
 import os.path
+from datetime import datetime, timezone
 
 from django import template
 from django.forms import modelformset_factory
-from django.template.loader import render_to_string
 from django.template.defaultfilters import floatformat
-from django.utils.translation import gettext as _
-from permits import forms, models, services
-from datetime import datetime, timedelta, timezone
+from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext as _
+
+from permits import forms, models, services
 
 register = template.Library()
 
@@ -18,7 +19,10 @@ def permit_progressbar(context, steps, active_step):
     return (
         {}
         if context["user"].permitauthor.is_temporary
-        else {"steps": steps, "active_step": active_step,}
+        else {
+            "steps": steps,
+            "active_step": active_step,
+        }
     )
 
 
@@ -33,9 +37,14 @@ def permit_request_summary(context, permit_request):
     objects_infos = services.get_permit_objects(permit_request)
     contacts = services.get_contacts_summary(permit_request)
     requires_payment = services.permit_requests_has_paid_wot(permit_request)
+    documents = services.get_permit_complementary_documents(
+        permit_request, user=context.request.user
+    )
 
     PermitRequestGeoTimeFormSet = modelformset_factory(
-        models.PermitRequestGeoTime, form=forms.PermitRequestGeoTimeForm, extra=0,
+        models.PermitRequestGeoTime,
+        form=forms.PermitRequestGeoTimeForm,
+        extra=0,
     )
 
     geo_time_formset = PermitRequestGeoTimeFormSet(
@@ -57,9 +66,11 @@ def permit_request_summary(context, permit_request):
             )
 
     return {
+        "user": context.request.user,
         "creditor": creditor,
         "contacts": contacts,
         "objects_infos": objects_infos,
+        "documents": documents,
         "geo_time_formset": geo_time_formset,
         "intersected_geometries": permit_request.intersected_geometries
         if permit_request.intersected_geometries != ""
@@ -117,3 +128,19 @@ def is_expired(context):
 def can_always_be_updated(context):
     if context["record"] is not None:
         return context["record"].can_always_be_updated(context["request"].user)
+
+
+@register.simple_tag(takes_context=True)
+def can_download_archive(context):
+    return services.can_download_archive(context["user"], context["record"].archivist)
+
+
+@register.simple_tag(takes_context=True)
+def can_archive(context):
+    department = models.PermitDepartment.objects.filter(
+        group__in=context["user"].groups.all()
+    ).first()
+    return context["user"].is_superuser or (
+        department is not None
+        and (department.is_backoffice or department.is_integrator_admin)
+    )

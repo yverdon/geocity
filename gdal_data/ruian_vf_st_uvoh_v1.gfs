@@ -6,14 +6,14 @@
     <SRSName>urn:ogc:def:crs:EPSG::5514</SRSName>
     <!-- Geometrie definičního bodu volebního okrsku -->
     <GeomPropertyDefn>
-      <Name>DefinicniBod</Name> 
-      <ElementPath>Geometrie|DefinicniBod</ElementPath> 
+      <Name>DefinicniBod</Name>
+      <ElementPath>Geometrie|DefinicniBod</ElementPath>
       <Type>Point</Type>
     </GeomPropertyDefn>
     <!-- Originální geometrie hranice volebního okrsku -->
     <GeomPropertyDefn>
-      <Name>OriginalniHranice</Name> 
-      <ElementPath>Geometrie|OriginalniHranice</ElementPath> 
+      <Name>OriginalniHranice</Name>
+      <ElementPath>Geometrie|OriginalniHranice</ElementPath>
       <Type>MultiPolygon</Type>
     </GeomPropertyDefn>
     <!-- Kód volebního okrsku -->

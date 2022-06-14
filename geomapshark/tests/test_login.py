@@ -1,11 +1,14 @@
+from unittest import mock
+
+from bs4 import BeautifulSoup
+from constance import config
 from django.conf import settings
 from django.shortcuts import resolve_url
 from django.test import TestCase
 from django.urls import reverse
+from django_otp.util import random_hex
 
 from permits.tests import factories
-from constance import config
-from bs4 import BeautifulSoup
 
 
 def get_parser(content):
@@ -17,6 +20,9 @@ class TestLoginMixin:
         response = self.client.get(reverse("account_login"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Connexion")
+
+    def enable_otp(self, user):
+        return user.totpdevice_set.create(name="default")
 
 
 if not settings.ENABLE_2FA:
@@ -31,7 +37,10 @@ if not settings.ENABLE_2FA:
             )
             self.assertEqual(response.status_code, 200)
             self.assertTrue(response.context["user"].is_authenticated)
-            self.assertRedirects(response, resolve_url(settings.LOGIN_REDIRECT_URL))
+            self.assertRedirects(
+                response,
+                resolve_url("permits:permit_request_select_administrative_entity"),
+            )
 
         def test_post_login_view_fail(self):
             response = self.client.post(reverse("account_login"), {}, follow=True)
@@ -45,21 +54,43 @@ if not settings.ENABLE_2FA:
 if settings.ENABLE_2FA:
 
     class TestLoginView2FA(TestCase, TestLoginMixin):
-        def test_post_login_view(self):
-            user = factories.UserFactory()
-            response = self.client.post(
+        def login(self, data):
+            return self.client.post(
                 reverse("account_login"),
-                {
+                data,
+                follow=True,
+            )
+
+        def test_post_login_view_2FA_inactive(self):
+            user = factories.UserFactory()
+            response = self.login(
+                data={
                     "auth-username": user.username,
                     "auth-password": "password",
                     "custom_login_view-current_step": "auth",
-                },
-                follow=True,
+                }
             )
 
             self.assertEqual(response.status_code, 200)
             self.assertTrue(response.context["user"].is_authenticated)
-            self.assertRedirects(response, resolve_url(settings.LOGIN_REDIRECT_URL))
+            self.assertRedirects(response, resolve_url("two_factor:profile"))
+
+        @mock.patch("two_factor.views.core.time")
+        def test_post_login_view_2FA_active(self, mock_time):
+            mock_time.time.return_value = 12345.12
+            user = factories.UserFactory()
+            user.totpdevice_set.create(name="default", key=random_hex())
+            response = self.login(
+                data={
+                    "auth-username": user.username,
+                    "auth-password": "password",
+                    "custom_login_view-current_step": "auth",
+                }
+            )
+
+            self.assertContains(response, "Jeton")
+            self.assertEqual(response.status_code, 200)
+            self.assertFalse(response.context["user"].is_authenticated)
 
         def test_post_login_view_fail(self):
             response = self.client.post(reverse("account_login"), {}, follow=True)
@@ -103,7 +134,9 @@ class TestLoginPage(TestCase):
 
     def test_get_standard_login_view(self):
 
-        response = self.client.get(reverse("account_login"),)
+        response = self.client.get(
+            reverse("account_login"),
+        )
         content = response.content.decode()
 
         expected_title = "<h3>" + config.APPLICATION_TITLE + "</h3>"

@@ -1,7 +1,5 @@
-from rest_framework.response import Response
-from rest_framework.decorators import action
-
 from django.contrib.gis.db.models import Extent
+from rest_framework.response import Response
 
 from django_wfs3.urls import wfs3_router
 

@@ -6,16 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0050_fix_regex_for_administrative_entity_email'),
+        ("permits", "0050_fix_regex_for_administrative_entity_email"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='qgisproject',
-            name='qgis_atlas_coverage_layer',
+            model_name="qgisproject",
+            name="qgis_atlas_coverage_layer",
         ),
         migrations.RemoveField(
-            model_name='qgisproject',
-            name='qgis_layers',
+            model_name="qgisproject",
+            name="qgis_layers",
         ),
     ]

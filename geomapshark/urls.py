@@ -8,12 +8,12 @@ from django.contrib.auth import views as auth_views
 from django.urls import include, path
 from rest_framework import routers
 
-from accounts.geomapfish.provider import GeomapfishProvider
 from accounts.dootix.provider import DootixProvider
+from accounts.geomapfish.provider import GeomapfishProvider
+from django_wfs3.urls import wfs3_router
 from permits import api
 from permits import views as permits_views
 from permits.admin import PermitsAdminSite
-from django_wfs3.urls import wfs3_router
 
 from . import views
 
@@ -49,7 +49,7 @@ urlpatterns = [
 
 if settings.ENABLE_2FA:
     from two_factor.urls import urlpatterns as tf_urls
-    from two_factor.views import LoginView, ProfileView, SetupCompleteView
+    from two_factor.views import ProfileView, SetupCompleteView
 
     logger.info("2 factors authentification is enabled")
     urlpatterns += [
@@ -81,14 +81,24 @@ else:
     ]
 
 urlpatterns += (
-    [path("accounts/social/", include("allauth.socialaccount.urls")),]
+    [
+        path("accounts/social/", include("allauth.socialaccount.urls")),
+    ]
     + default_urlpatterns(GeomapfishProvider)
     + default_urlpatterns(DootixProvider)
 )
 
 urlpatterns += [
-    path("account/logout/", views.logout_view, name="logout",),
-    path("account/lockout/", views.lockout_view, name="lockout",),
+    path(
+        "account/logout/",
+        views.logout_view,
+        name="logout",
+    ),
+    path(
+        "account/lockout/",
+        views.lockout_view,
+        name="lockout",
+    ),
     path(
         "account/password_reset/",
         views.CustomPasswordResetView.as_view(
@@ -117,6 +127,11 @@ urlpatterns += [
         "account/password_change/",
         auth_views.PasswordChangeView.as_view(),
         name="password_change",
+    ),
+    path(
+        "account/activate/<uid>/<token>/",
+        views.ActivateAccountView.as_view(),
+        name="activate_account",
     ),
     path(
         "permitauthorcreate/", views.permit_author_create, name="permit_author_create"

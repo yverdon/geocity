@@ -1,13 +1,11 @@
-from rest_framework import routers
-
-from django.urls import path
 from django.conf import settings
-
-from rest_framework.schemas import SchemaGenerator
+from django.urls import path
+from rest_framework import routers
+from rest_framework.schemas import SchemaGenerator, get_schema_view
 from rest_framework.schemas.views import SchemaView
 from rest_framework.urlpatterns import format_suffix_patterns
-from rest_framework.schemas import get_schema_view
-from .views import RootView, CollectionsView
+
+from .views import CollectionsView, RootView
 
 
 class WFS3Router(routers.SimpleRouter):
@@ -56,7 +54,9 @@ class WFS3Router(routers.SimpleRouter):
         # Describe route.
         routers.Route(
             url=r"^collections/{prefix}{trailing_slash}$",
-            mapping={"get": "describe",},
+            mapping={
+                "get": "describe",
+            },
             name="{basename}-describe",
             detail=False,
             initkwargs={"suffix": "List"},
@@ -79,13 +79,19 @@ class WFS3Router(routers.SimpleRouter):
         description = getattr(settings, "WFS3_DESCRIPTION", "No description")
 
         # Root URL
-        root_view = RootView.as_view(title=title, description=description,)
+        root_view = RootView.as_view(
+            title=title,
+            description=description,
+        )
         root_url = path("", root_view, name="capabilities")
         urls.append(root_url)
 
         # Schema
         schema_view = get_schema_view(
-            title=title, description=description, version="1.0.0", urlconf=self,
+            title=title,
+            description=description,
+            version="1.0.0",
+            urlconf=self,
         )
         schema_url = path("api", schema_view, name="service-desc")
         urls.append(schema_url)

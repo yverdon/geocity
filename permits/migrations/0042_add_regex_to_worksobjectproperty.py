@@ -6,22 +6,46 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0041_permit_request_indexes'),
+        ("permits", "0041_permit_request_indexes"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='worksobjectproperty',
-            name='regex_pattern',
-            field=models.CharField(blank=True, help_text='Exemple: ^[0-9]{4}$', max_length=255, verbose_name='regex pattern'),
+            model_name="worksobjectproperty",
+            name="regex_pattern",
+            field=models.CharField(
+                blank=True,
+                help_text="Exemple: ^[0-9]{4}$",
+                max_length=255,
+                verbose_name="regex pattern",
+            ),
         ),
         migrations.AlterField(
-            model_name='worksobjectproperty',
-            name='input_type',
-            field=models.CharField(choices=[('text', 'Texte'), ('checkbox', 'Case à cocher'), ('number', 'Nombre'), ('file', 'Fichier'), ('address', 'Adresse'), ('date', 'Date'), ('regex', 'Texte (regex)'), ('list_single', 'Choix simple'), ('list_multiple', 'Choix multiple')], max_length=30, verbose_name='type de caractéristique'),
+            model_name="worksobjectproperty",
+            name="input_type",
+            field=models.CharField(
+                choices=[
+                    ("text", "Texte"),
+                    ("checkbox", "Case à cocher"),
+                    ("number", "Nombre"),
+                    ("file", "Fichier"),
+                    ("address", "Adresse"),
+                    ("date", "Date"),
+                    ("regex", "Texte (regex)"),
+                    ("list_single", "Choix simple"),
+                    ("list_multiple", "Choix multiple"),
+                ],
+                max_length=30,
+                verbose_name="type de caractéristique",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='worksobjectproperty',
-            constraint=models.CheckConstraint(check=models.Q(('input_type', 'regex'), ('regex_pattern', ''), _negated=True), name='pattern_not_empty_for_regex'),
+            model_name="worksobjectproperty",
+            constraint=models.CheckConstraint(
+                check=models.Q(
+                    ("input_type", "regex"), ("regex_pattern", ""), _negated=True
+                ),
+                name="pattern_not_empty_for_regex",
+            ),
         ),
     ]

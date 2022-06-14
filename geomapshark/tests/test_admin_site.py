@@ -3,11 +3,9 @@ from django.shortcuts import resolve_url
 from django.test import TestCase
 from django.urls import reverse
 from django_otp import DEVICE_ID_SESSION_KEY
-from django.contrib.auth import get_user_model
 from two_factor.utils import default_device
 
 from permits.tests.factories import SuperUserFactory
-
 
 # Make sure we don't patch the admin site by mistake
 if not settings.ENABLE_2FA:

@@ -7,33 +7,61 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0065_add_geocoding_option_for_adsress_fields_and_adress_search_param'),
+        (
+            "permits",
+            "0065_add_geocoding_option_for_adsress_fields_and_adress_search_param",
+        ),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='templatecustomization',
-            name='templatename',
-            field=models.CharField(blank=True, help_text="Permettant d'afficher la page de login par l'url: https://geocity.ch/?template=vevey", max_length=64, validators=[django.core.validators.RegexValidator(message='Seuls les caractères sans accents et les chiffres sont autorisés. Les espaces et autres caractères spéciaux ne sont pas autorisés', regex='^[a-zA-Z0-9_]*$')], verbose_name='Identifiant'),
+            model_name="templatecustomization",
+            name="templatename",
+            field=models.CharField(
+                blank=True,
+                help_text="Permettant d'afficher la page de login par l'url: https://geocity.ch/?template=vevey",
+                max_length=64,
+                validators=[
+                    django.core.validators.RegexValidator(
+                        message="Seuls les caractères sans accents et les chiffres sont autorisés. Les espaces et autres caractères spéciaux ne sont pas autorisés",
+                        regex="^[a-zA-Z0-9_]*$",
+                    )
+                ],
+                verbose_name="Identifiant",
+            ),
         ),
         migrations.AlterField(
-            model_name='permitdepartment',
-            name='integrator',
-            field=models.IntegerField(default=0, verbose_name='Groupe des administrateurs'),
+            model_name="permitdepartment",
+            name="integrator",
+            field=models.IntegerField(
+                default=0, verbose_name="Groupe des administrateurs"
+            ),
         ),
         migrations.AlterField(
-            model_name='permitdepartment',
-            name='integrator',
-            field=models.IntegerField(default=0, help_text='Identifiant du groupe', verbose_name='Groupe des administrateurs'),
+            model_name="permitdepartment",
+            name="integrator",
+            field=models.IntegerField(
+                default=0,
+                help_text="Identifiant du groupe",
+                verbose_name="Groupe des administrateurs",
+            ),
         ),
         migrations.AlterField(
-            model_name='permitdepartment',
-            name='is_integrator_admin',
-            field=models.BooleanField(default=False, help_text="Cocher si les membres peuvent accéder à l'admin de Django", verbose_name='Intégrateur'),
+            model_name="permitdepartment",
+            name="is_integrator_admin",
+            field=models.BooleanField(
+                default=False,
+                help_text="Cocher si les membres peuvent accéder à l'admin de Django",
+                verbose_name="Intégrateur",
+            ),
         ),
         migrations.AlterField(
-            model_name='permitdepartment',
-            name='mandatory_2fa',
-            field=models.BooleanField(default=False, help_text='Cocher si les membres doivent obligatoirement utiliser la double authentification', verbose_name='2FA obligatoire'),
+            model_name="permitdepartment",
+            name="mandatory_2fa",
+            field=models.BooleanField(
+                default=False,
+                help_text="Cocher si les membres doivent obligatoirement utiliser la double authentification",
+                verbose_name="2FA obligatoire",
+            ),
         ),
     ]

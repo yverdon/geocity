@@ -1,0 +1,26 @@
+{% load i18n %}
+{% load permits_extras %}
+
+<ul class="list-inline text-right">
+  <li>
+    <a title="{% trans "Voir" %}" href="{% url 'permits:permit_request_detail' record.pk %}">
+      <i class="fa fa-eye fa-lg"></i>
+    </a>
+  </li>
+
+  {% can_download_archive as can_download %}
+  {% if can_download %}
+    <li>
+      <a title="{% trans "Télécharger la demande" %}" href="{% url 'permits:archived_permit_request_download' record.pk %}">
+        <i class="fa fa-download fa-lg"></i>
+      </a>
+    </li>
+  {% endif %}
+  {% if record.archivist == request.user or request.user.is_superuser %}
+    <li>
+      <a title="{% trans "Supprimer la demande" %}" href="{% url 'permits:archived_permit_request_delete' record.pk %}">
+        <i class="fa fa-trash fa-lg"></i>
+      </a>
+    </li>
+  {% endif %}
+</ul>

@@ -2,15 +2,15 @@ import requests
 from allauth.socialaccount.models import SocialLogin
 from allauth.socialaccount.providers.oauth2.views import (
     OAuth2Adapter,
+    OAuth2CallbackView,
     OAuth2Client,
     OAuth2LoginView,
-    OAuth2CallbackView,
 )
 from allauth.utils import build_absolute_uri
+from django.conf import settings
 from django.urls import reverse
 
 from .provider import DootixProvider
-from django.conf import settings
 
 
 class DootixAdapter(OAuth2Adapter):

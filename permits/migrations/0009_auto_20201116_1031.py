@@ -6,18 +6,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0008_worksobject_wms_layers_order'),
+        ("permits", "0008_worksobject_wms_layers_order"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='historicalpermitrequest',
-            name='intersected_geometries',
-            field=models.TextField(max_length=1024, null=True, verbose_name='Entités géométriques concernées'),
+            model_name="historicalpermitrequest",
+            name="intersected_geometries",
+            field=models.TextField(
+                max_length=1024,
+                null=True,
+                verbose_name="Entités géométriques concernées",
+            ),
         ),
         migrations.AlterField(
-            model_name='permitrequest',
-            name='intersected_geometries',
-            field=models.TextField(max_length=1024, null=True, verbose_name='Entités géométriques concernées'),
+            model_name="permitrequest",
+            name="intersected_geometries",
+            field=models.TextField(
+                max_length=1024,
+                null=True,
+                verbose_name="Entités géométriques concernées",
+            ),
         ),
     ]

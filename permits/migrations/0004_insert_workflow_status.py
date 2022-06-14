@@ -2,7 +2,6 @@
 
 from django.db import migrations
 
-
 STATUS_DRAFT = 0
 STATUS_SUBMITTED_FOR_VALIDATION = 1
 STATUS_APPROVED = 2
@@ -36,14 +35,14 @@ def insert_workflow_status(apps, schema_editor):
 
         for entity in AdministrativeEntity.objects.all():
             PermitWorkflowStatus.objects.get_or_create(
-                status=status_value[0],
-                administrative_entity=entity)
+                status=status_value[0], administrative_entity=entity
+            )
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0003_permitworkflowstatus'),
+        ("permits", "0003_permitworkflowstatus"),
     ]
 
     operations = [

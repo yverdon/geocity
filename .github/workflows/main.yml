@@ -9,6 +9,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: "Lint Code"
+      uses: pre-commit/action@v3.0.0
     - name: Build/Pull Containers
       run: cp env.demo .env && docker-compose build
     - name: Run Containers

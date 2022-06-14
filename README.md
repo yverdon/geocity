@@ -1,6 +1,6 @@
 # Geocity - a (geo)cyberadministration tool for public administrations ![Geocity CI](https://github.com/yverdon/geocity/workflows/Geocity%20CI/badge.svg?branch=main)
 
-Discover geocity features and usage [here](https://project.mapnv.ch/projects/geocity-wiki/wiki/geocity)
+Discover geocity features and usage [here](https://github.com/yverdon/geocity/wiki)
 
 ## Getting started with the full Docker demo version
 
@@ -51,27 +51,10 @@ to form configuration and user tast using QGIS 3.22
 
 ### Run the tests from within the docker container
 
-List running containers:
-
-```bash
-$ docker ps -a
-
-CONTAINER ID        IMAGE                         COMMAND                  CREATED             STATUS              PORTS                    NAMES
-de8f58bf2e2c        gms_web                       "/code/entrypoint_de…"   16 hours ago        Up 16 hours         0.0.0.0:9095->9000/tcp   geocity_web_1
-ab542f438d62        camptocamp/qgis-server:3.10   "/usr/local/bin/star…"   16 hours ago        Up 16 hours         0.0.0.0:9096->80/tcp     geocity_qgisserver_1
-ffaa9f6c1b21        camptocamp/postgres:11        "docker-entrypoint.s…"   16 hours ago        Up 16 hours         0.0.0.0:9097->5432/tcp   geocity_postgres_1
-```
-
-Enter the container:
-
-```bash
-$ docker exec -it de8f58bf2e2c bash
-```
-
 Run the tests:
 
 ```
-root@de8f58bf2e2c:/code# ./run_tests.sh
+./run_tests.sh
 ```
 
 Example to run a single test in container
@@ -82,10 +65,17 @@ coverage run --source='.' ./manage.py test --settings=geomapshark.settings_test 
 
 ## Linting
 
-We use [Black](https://github.com/psf/black) as code formatter. Just use the following command to automatically format your code:
+We use [pre-commit](https://pre-commit.com/) as code formatter. Just use the following command to automatically format your code when you commit:
 
 ```
-$ docker-compose exec web black .
+$ pip install pre-commit
+$ pre-commit install
+```
+
+If you wish to run it on all files:
+
+```
+$ pre-commit run --all-files
 ```
 
 ## Show urls
@@ -117,22 +107,13 @@ EMAIL_TO_CONSOLE=false
 
 1. Create a geocity user
 2. Create a geocity schema owned by geocity user
-3. Edit DB connexion in .env file
-4. Create and edit pg_service.conf file in qgisserver directory
+3. Edit DB connection in .env file
 5. Install pg_trgm & unaccent extension (`create extension pg_trgm;` & `create extension unaccent;`)
 
 ### Setup your Environment file
 
 Edit the variables in `.env` according to your environment.
 Set the global environment switcher to `ENV=DEV` in the `.env` file.
-
-Keep in mind that you are in a Docker environment. Thus you might need to set, on Linux environment something like:
-
-```
-PGHOST="172.17.0.1"
-```
-
-So that the Django container can reach your `postgres` user on the host machine.
 
 ## Production containers administrations
 
@@ -145,24 +126,8 @@ docker-compose down --remove-orphans && docker-compose up
 
 #### Open the application to the world
 
-Use your favorite webserver to proxypass localhost:9095 to the outside world
+Use your favorite webserver to proxypass localhost:<port> to the outside world
 
-#### Demo accounts
-
-Standard user role:
-_user:admin_
-
-Administrator role (Django superuser):
-_admin:admin_
-
-Backoffice role:
-_secretariat-yverdon:admin_
-
-Validatation role A:
-_validator-yverdon:admin_
-
-Validatation role B:
-_eaux-yverdon:admin_
 
 ## Permissions
 
@@ -281,7 +246,7 @@ Used `_` instead of `:` for `Define the category separator` because the characte
 
 ## OAuth2
 
-### Geocity as a OAuth2 server
+### Geocity as a OAuth2 provider
 * [Access to a ressources with QGIS](docs/OAuth2_Qgis.md)
 * [Access to a ressources with a bearer token](docs/OAuth2_access_api.md)
 

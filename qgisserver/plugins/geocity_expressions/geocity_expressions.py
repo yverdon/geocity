@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
+import json
+
 from qgis.core import *
 from qgis.utils import qgsfunction
-from datetime import datetime
-import json
 
 
 @qgsfunction(args="auto", group="Geocity")
@@ -120,7 +120,7 @@ def get_permit_contacts(pos, feature, parent):
     """
     Function to get an HTML string output from the properties.permit_request_actor
     element of the GeoJSON object send by the GeoCity REST API.
-    
+
     Parameters
     ----------
     pos : int or list in case where args=-1 in decorator
