@@ -15,7 +15,6 @@ from django.urls import reverse
 from django.utils import timezone
 
 from permits import models, services
-from permits.templatetags.permits_extras import can_always_be_updated
 
 from ..forms import PermitRequestGeoTimeForm
 from ..management.commands import create_anonymous_users
@@ -2928,7 +2927,9 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         element = "disabled" in str(parser.select('input[id="id_shortname"]'))
         self.assertTrue(element)
 
-    def test_author_cannot_see_private_secretariat_amend_property(self,):
+    def test_author_cannot_see_private_secretariat_amend_property(
+        self,
+    ):
 
         props_quantity = 3
         permit_request = factories.PermitRequestFactory(
