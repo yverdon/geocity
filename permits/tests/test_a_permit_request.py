@@ -2974,7 +2974,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         )
 
         parser = get_parser(response.content)
-        # check that 3 fields are visible by author and 3 are hidden
+        # check that the 3 fields are visible by author and 3 are hidden
         self.assertEqual(len(parser.select(".amend-property")), 3)
 
     def test_secretariat_can_see_submitted_requests(self):
