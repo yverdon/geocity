@@ -26,13 +26,13 @@ Implementation of this driver was supported by the United States Geological Surv
 Due to ambiguities in the PDS specification, the georeferencing of
 some products is subtly or grossly incorrect.  There are configuration
 variables which may be set for these products to correct the interpretation
-of the georeferencing.  Some details are available in <a href="http://trac.osgeo.org/gdal/ticket/5941">ticket #5941</a> and <a href="http://trac.osgeo.org/gdal/ticket/3940">ticket #3940</a>. 
+of the georeferencing.  Some details are available in <a href="http://trac.osgeo.org/gdal/ticket/5941">ticket #5941</a> and <a href="http://trac.osgeo.org/gdal/ticket/3940">ticket #3940</a>.
 Due to corrections made in <a href="http://trac.osgeo.org/gdal/ticket/5941">ticket #5941</a> it is recommended to GDAL 1.11.4 or higher.
 
 <p>
 
 As a test (for GDAL versions 1.11.4 and higher), download both the label and image for the lunar <a href="http://pds-geosciences.wustl.edu/missions/lro/lola.htm">LOLA DEM</a> (digital elevation file)
-<a href="http://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/ldem_4.lbl">LOLA PDS label</a> and 
+<a href="http://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/ldem_4.lbl">LOLA PDS label</a> and
 <a href="http://pds-geosciences.wustl.edu/lro/lro-l-lola-3-rdr-v1/lrolol_1xxx/data/lola_gdr/cylindrical/img/ldem_4.img">LOLA PDS v3 image</a>.
   Using gdalinfo, the reported centered should be perfectly at 0.0, 0.0 meters in Cartesian space without any configuration options.<p>
 $ gdalinfo  ldem_4.lbl
@@ -45,7 +45,7 @@ $ gdal_translate -ot Float32 -unscale  ldem_4.lbl out_LOLA_32bit.tif
 <p>
 <hr>
 To show an example to correct an offset issue we can use the <a href="http://pds-geosciences.wustl.edu/missions/mgs/megdr.html">MOLA DEM</a> from the PDS. Download both the
-<a href="http://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg004/megt90n000cb.lbl">MOLA PDS label</a> and 
+<a href="http://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg004/megt90n000cb.lbl">MOLA PDS label</a> and
 <a href="http://pds-geosciences.wustl.edu/mgs/mgs-m-mola-5-megdr-l3-v1/mgsl_300x/meg004/megt90n000cb.img">MOLA PDS v3 image</a>.
 The MOLA labels currently contain a one pixel offset. To read this file in correctly using GDAL (versions 1.11.4 and higher) set these options.
 <p>

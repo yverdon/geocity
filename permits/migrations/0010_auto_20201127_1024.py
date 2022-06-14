@@ -6,28 +6,86 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0009_auto_20201116_1031'),
+        ("permits", "0009_auto_20201116_1031"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='historicalpermitrequest',
-            name='creditor_type',
-            field=models.PositiveSmallIntegerField(blank=True, choices=[(0, 'Autres'), (2, 'Propriétaire'), (3, 'Entreprise'), (4, "Maître d'ouvrage"), (1, "Requérant si différent de l'auteur de la demande"), (5, 'Sécurité'), (6, 'Association'), (7, 'Architecte/Ingénieur'), (8, 'Direction des travaux')], null=True, verbose_name='Destinaire de la facture'),
+            model_name="historicalpermitrequest",
+            name="creditor_type",
+            field=models.PositiveSmallIntegerField(
+                blank=True,
+                choices=[
+                    (0, "Autres"),
+                    (2, "Propriétaire"),
+                    (3, "Entreprise"),
+                    (4, "Maître d'ouvrage"),
+                    (1, "Requérant si différent de l'auteur de la demande"),
+                    (5, "Sécurité"),
+                    (6, "Association"),
+                    (7, "Architecte/Ingénieur"),
+                    (8, "Direction des travaux"),
+                ],
+                null=True,
+                verbose_name="Destinaire de la facture",
+            ),
         ),
         migrations.AlterField(
-            model_name='permitactortype',
-            name='type',
-            field=models.PositiveSmallIntegerField(choices=[(0, 'Autres'), (2, 'Propriétaire'), (3, 'Entreprise'), (4, "Maître d'ouvrage"), (1, "Requérant si différent de l'auteur de la demande"), (5, 'Sécurité'), (6, 'Association'), (7, 'Architecte/Ingénieur'), (8, 'Direction des travaux')], default=0, verbose_name='type de contact'),
+            model_name="permitactortype",
+            name="type",
+            field=models.PositiveSmallIntegerField(
+                choices=[
+                    (0, "Autres"),
+                    (2, "Propriétaire"),
+                    (3, "Entreprise"),
+                    (4, "Maître d'ouvrage"),
+                    (1, "Requérant si différent de l'auteur de la demande"),
+                    (5, "Sécurité"),
+                    (6, "Association"),
+                    (7, "Architecte/Ingénieur"),
+                    (8, "Direction des travaux"),
+                ],
+                default=0,
+                verbose_name="type de contact",
+            ),
         ),
         migrations.AlterField(
-            model_name='permitrequest',
-            name='creditor_type',
-            field=models.PositiveSmallIntegerField(blank=True, choices=[(0, 'Autres'), (2, 'Propriétaire'), (3, 'Entreprise'), (4, "Maître d'ouvrage"), (1, "Requérant si différent de l'auteur de la demande"), (5, 'Sécurité'), (6, 'Association'), (7, 'Architecte/Ingénieur'), (8, 'Direction des travaux')], null=True, verbose_name='Destinaire de la facture'),
+            model_name="permitrequest",
+            name="creditor_type",
+            field=models.PositiveSmallIntegerField(
+                blank=True,
+                choices=[
+                    (0, "Autres"),
+                    (2, "Propriétaire"),
+                    (3, "Entreprise"),
+                    (4, "Maître d'ouvrage"),
+                    (1, "Requérant si différent de l'auteur de la demande"),
+                    (5, "Sécurité"),
+                    (6, "Association"),
+                    (7, "Architecte/Ingénieur"),
+                    (8, "Direction des travaux"),
+                ],
+                null=True,
+                verbose_name="Destinaire de la facture",
+            ),
         ),
         migrations.AlterField(
-            model_name='permitrequestactor',
-            name='actor_type',
-            field=models.PositiveSmallIntegerField(choices=[(0, 'Autres'), (2, 'Propriétaire'), (3, 'Entreprise'), (4, "Maître d'ouvrage"), (1, "Requérant si différent de l'auteur de la demande"), (5, 'Sécurité'), (6, 'Association'), (7, 'Architecte/Ingénieur'), (8, 'Direction des travaux')], default=0, verbose_name='type de contact'),
+            model_name="permitrequestactor",
+            name="actor_type",
+            field=models.PositiveSmallIntegerField(
+                choices=[
+                    (0, "Autres"),
+                    (2, "Propriétaire"),
+                    (3, "Entreprise"),
+                    (4, "Maître d'ouvrage"),
+                    (1, "Requérant si différent de l'auteur de la demande"),
+                    (5, "Sécurité"),
+                    (6, "Association"),
+                    (7, "Architecte/Ingénieur"),
+                    (8, "Direction des travaux"),
+                ],
+                default=0,
+                verbose_name="type de contact",
+            ),
         ),
     ]

@@ -1,19 +1,16 @@
 import json
-
 from collections import OrderedDict
+from datetime import timedelta
+
 from django.contrib.gis.geos import GEOSGeometry
-from django.contrib.gis.db.models.functions import AsGeoJSON, Centroid
 from django.db.models import Max, Min
-from django.utils.text import slugify
 from django.utils.translation import gettext as _
-from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
-from datetime import timedelta
+
 from geomapshark import settings
 
-from . import geoservices, models, search
-from . import geoservices, models, services, search
+from . import geoservices, models, search, services
 
 
 class PermitAdministrativeEntitySerializer(serializers.ModelSerializer):
@@ -367,7 +364,8 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
     )
     permit_request_actor = PermitRequestActorSerializer(source="*", read_only=True)
     geo_envelop = PermitRequestGeoTimeGeoJSONSerializer(
-        source="geo_time", read_only=True,
+        source="geo_time",
+        read_only=True,
     )
 
     creditor_type = serializers.SerializerMethodField()

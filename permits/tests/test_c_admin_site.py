@@ -5,13 +5,10 @@ from django.urls import reverse
 from django_otp import DEVICE_ID_SESSION_KEY
 from two_factor.utils import default_device
 
-from permits import admin
+from permits import admin, models
 from permits.tests.factories import SecretariatUserFactory, UserFactory
 
-from django.shortcuts import resolve_url
-
 from . import factories
-from permits import models
 from .utils import LoggedInIntegratorMixin, get_parser
 
 # TODO: Write update/delete/create tests for [PermitAdministrativeEntity, WorksType, WorksObject, WorksObjectType, WorksObjectProperty, PermitActorType, PermitActorType, PermitRequestAmendProperty]
@@ -28,11 +25,11 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
 
     def setUp(self):
         super().setUp()
-        self.administrative_entity = factories.PermitAdministrativeEntityFactory.create_batch(
-            3
+        self.administrative_entity = (
+            factories.PermitAdministrativeEntityFactory.create_batch(3)
         )
-        self.integrator_administrative_entity = factories.PermitAdministrativeEntityFactory(
-            integrator=self.group
+        self.integrator_administrative_entity = (
+            factories.PermitAdministrativeEntityFactory(integrator=self.group)
         )
 
         self.parent_type = factories.ParentComplementaryDocumentTypeFactory()
@@ -70,11 +67,11 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             integrator=self.group
         )
 
-        self.permit_request_amend_property = factories.PermitRequestAmendPropertyFactory.create_batch(
-            3
+        self.permit_request_amend_property = (
+            factories.PermitRequestAmendPropertyFactory.create_batch(3)
         )
-        self.integrator_permit_request_amend_property = factories.PermitRequestAmendPropertyFactory(
-            integrator=self.group
+        self.integrator_permit_request_amend_property = (
+            factories.PermitRequestAmendPropertyFactory(integrator=self.group)
         )
 
         if settings.ENABLE_2FA:
@@ -338,7 +335,10 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         }
 
         response = self.client.post(
-            reverse("admin:auth_group_change", kwargs={"object_id": group.id},),
+            reverse(
+                "admin:auth_group_change",
+                kwargs={"object_id": group.id},
+            ),
             data=data,
         )
         content = response.content.decode()
@@ -365,7 +365,10 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         }
 
         response = self.client.post(
-            reverse("admin:auth_user_change", kwargs={"object_id": self.user.id},),
+            reverse(
+                "admin:auth_user_change",
+                kwargs={"object_id": self.user.id},
+            ),
             data=data,
         )
         content = response.content.decode()
@@ -399,7 +402,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             self.client.login(username=user.username, password="password")
 
             response = self.client.get(
-                reverse(settings.LOGIN_REDIRECT_URL), follow=True,
+                reverse(settings.LOGIN_REDIRECT_URL),
+                follow=True,
             )
 
             self.assertEqual(response.status_code, 200)
@@ -413,7 +417,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             user.groups.set([self.group2fa])
             self.enable_otp_session(user)
             response = self.client.get(
-                reverse(settings.LOGIN_REDIRECT_URL), follow=True,
+                reverse(settings.LOGIN_REDIRECT_URL),
+                follow=True,
             )
             self.assertEqual(response.status_code, 200)
             self.assertContains(response, "Vue d'ensemble de vos demandes")
@@ -424,7 +429,10 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             user = UserFactory()
             user.groups.set([self.group2fa])
             self.client.login(username=user.username, password="password")
-            response = self.client.get(reverse("password_change"), follow=True,)
+            response = self.client.get(
+                reverse("password_change"),
+                follow=True,
+            )
             self.assertEqual(response.status_code, 200)
             self.assertContains(response, "Confirmation du nouveau mot de passe")
 
@@ -436,7 +444,10 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             factories.PermitDepartmentFactory(group=group, mandatory_2fa=True)
             user.groups.set([self.group2fa])
             self.client.login(username=user.username, password="password")
-            response = self.client.get(reverse("permit_author_edit"), follow=True,)
+            response = self.client.get(
+                reverse("permit_author_edit"),
+                follow=True,
+            )
             self.assertEqual(response.status_code, 200)
             self.assertContains(response, "Mon compte")
 
@@ -448,6 +459,9 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             factories.PermitDepartmentFactory(group=group, mandatory_2fa=True)
             user.groups.set([self.group2fa])
             self.client.login(username=user.username, password="password")
-            response = self.client.get(reverse("profile"), follow=True,)
+            response = self.client.get(
+                reverse("profile"),
+                follow=True,
+            )
             self.assertEqual(response.status_code, 200)
             self.assertContains(response, "Sécurité du compte")

@@ -3,8 +3,11 @@ import logging
 import mimetypes
 import os
 import urllib.parse
+from datetime import datetime
 
+import django_tables2 as tableslib
 import requests
+from constance import config
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout
@@ -14,22 +17,16 @@ from django.contrib.auth.decorators import (
     user_passes_test,
 )
 from django.core.exceptions import (
+    ObjectDoesNotExist,
     PermissionDenied,
     SuspiciousOperation,
-    ObjectDoesNotExist,
-    BadRequest,
 )
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.db.models import Prefetch, Sum, Q, CharField, Value, ProtectedError
-from django.forms import modelformset_factory, formset_factory
-from django.http import (
-    Http404,
-    HttpResponse,
-    JsonResponse,
-    StreamingHttpResponse,
-)
-from django.http.response import HttpResponseNotFound, FileResponse
+from django.db.models import Prefetch, ProtectedError, Q, Sum
+from django.forms import formset_factory, modelformset_factory
+from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
+from django.http.response import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -37,22 +34,17 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views import View
-from django.views.generic.edit import DeleteView, CreateView
+from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
 from django_filters.views import FilterView
 from django_tables2.export.views import ExportMixin
-from django_tables2.views import SingleTableMixin, SingleTableView
+from django_tables2.views import SingleTableMixin
 
 from . import fields, filters, forms, models, services, tables
 from .decorators import check_mandatory_2FA, permanent_user_required
 from .exceptions import BadPermitRequestStatus, NonProlongablePermitRequest
 from .search import search_permit_requests, search_result_to_json
-import django_tables2 as tableslib
-
 from .tables import CustomPropertyValueAccessiblePermitRequest, get_custom_dynamic_table
-from constance import config
-
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +79,9 @@ def get_permit_request_for_edition(user, permit_request_id):
         }
 
     permit_request = services.get_permit_request_for_user_or_404(
-        user, permit_request_id, statuses=allowed_statuses,
+        user,
+        permit_request_id,
+        statuses=allowed_statuses,
     )
 
     can_pilot_edit_permit_request = services.can_edit_permit_request(
@@ -113,7 +107,9 @@ def get_permit_request_for_prolongation(user, permit_request_id):
     allowed_statuses = models.PermitRequest.PROLONGABLE_STATUSES
 
     permit_request = services.get_permit_request_for_user_or_404(
-        user, permit_request_id, statuses=allowed_statuses,
+        user,
+        permit_request_id,
+        statuses=allowed_statuses,
     )
 
     if not permit_request.works_object_types.filter(permit_duration__gte=0).exists():
@@ -410,7 +406,9 @@ class PermitRequestDetailView(View):
         )
 
         form = forms.PermitRequestInquiryForm(
-            data=data, permit_request=self.permit_request, instance=current_inquiry,
+            data=data,
+            permit_request=self.permit_request,
+            instance=current_inquiry,
         )
 
         if current_inquiry:
@@ -786,7 +784,8 @@ class PermitRequestDetailView(View):
         messages.success(self.request, success_message)
 
         return redirect(
-            "permits:permit_request_detail", permit_request_id=self.permit_request.pk,
+            "permits:permit_request_detail",
+            permit_request_id=self.permit_request.pk,
         )
 
 
@@ -1037,7 +1036,11 @@ def permit_request_print(request, permit_request_id, template_id):
 
 
 def anonymous_permit_request_sent(request):
-    return render(request, "permits/permit_request_anonymous_sent.html", {},)
+    return render(
+        request,
+        "permits/permit_request_anonymous_sent.html",
+        {},
+    )
 
 
 def anonymous_permit_request(request):
@@ -1110,7 +1113,8 @@ def anonymous_permit_request(request):
 
     # Validate available work objects types
     works_object_types = models.WorksObjectType.anonymous_objects.filter(
-        administrative_entities=entity, works_type=work_type,
+        administrative_entities=entity,
+        works_type=work_type,
     )
 
     if not works_object_types:
@@ -1120,7 +1124,8 @@ def anonymous_permit_request(request):
 
     # Never create a second permit request for the same temp_author
     permit_request, _ = models.PermitRequest.objects.get_or_create(
-        administrative_entity=entity, author=request.user.permitauthor,
+        administrative_entity=entity,
+        author=request.user.permitauthor,
     )
 
     # If filter combinations return only one works_object_types object,
@@ -1162,8 +1167,10 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
         ).filter_by_tags(entityfilter)
         # If entityfilter returns only one entity, permit_request oject can alread be created
         if len(entities_by_tag) == 1 and not permit_request:
-            administrative_entity_instance = models.PermitAdministrativeEntity.objects.get(
-                pk=entities_by_tag.first().pk
+            administrative_entity_instance = (
+                models.PermitAdministrativeEntity.objects.get(
+                    pk=entities_by_tag.first().pk
+                )
             )
             permit_request = models.PermitRequest.objects.create(
                 administrative_entity=administrative_entity_instance,
@@ -1232,7 +1239,9 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
             )
     else:
         administrative_entity_form = forms.AdministrativeEntityForm(
-            instance=permit_request, user=request.user, session=request.session,
+            instance=permit_request,
+            user=request.user,
+            session=request.session,
         )
     return render(
         request,
@@ -1300,7 +1309,10 @@ def permit_request_select_types(request, permit_request_id):
             return redirect(
                 reverse("permits:permit_request_select_objects", kwargs=redirect_kwargs)
                 + "?"
-                + urllib.parse.urlencode({"types": selected_works_types}, doseq=True,)
+                + urllib.parse.urlencode(
+                    {"types": selected_works_types},
+                    doseq=True,
+                )
             )
     else:
         works_types_form = forms.WorksTypesForm(
@@ -1528,7 +1540,10 @@ def permit_request_prolongation(request, permit_request_id):
     return render(
         request,
         "permits/permit_request_prolongation.html",
-        {"permit_request": permit_request, "permit_request_prolongation_form": form,},
+        {
+            "permit_request": permit_request,
+            "permit_request_prolongation_form": form,
+        },
     )
 
 
@@ -1565,7 +1580,8 @@ def permit_request_appendices(request, permit_request_id):
                 )
             except:
                 messages.error(
-                    request, _("Une erreur est survenue lors de l'upload de fichier."),
+                    request,
+                    _("Une erreur est survenue lors de l'upload de fichier."),
                 )
     else:
         form = forms.WorksObjectsAppendicesForm(
@@ -1731,7 +1747,8 @@ class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
         qs = (
             (
                 services.get_permit_requests_list_for_user(
-                    self.request.user, works_object_filter=works_object_filter,
+                    self.request.user,
+                    works_object_filter=works_object_filter,
                 )
             )
             .prefetch_related(

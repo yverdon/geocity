@@ -3,14 +3,13 @@ __license__ = "GPL version 3"
 __email__ = "info@3liz.org"
 
 import configparser
-
 from pathlib import Path
 
 from qgis.core import Qgis, QgsMessageLog
 
 
 def version() -> str:
-    """ Returns the Lizmap current version. """
+    """Returns the Lizmap current version."""
     file_path = Path(__file__).parent.joinpath("metadata.txt")
     config = configparser.ConfigParser()
     try:

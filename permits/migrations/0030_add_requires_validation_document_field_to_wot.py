@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0029_visibility_of_secreatariat_fields'),
+        ("permits", "0029_visibility_of_secreatariat_fields"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='worksobjecttype',
-            name='requires_validation_document',
-            field=models.BooleanField(default=True, verbose_name='Document de validation obligatoire'),
+            model_name="worksobjecttype",
+            name="requires_validation_document",
+            field=models.BooleanField(
+                default=True, verbose_name="Document de validation obligatoire"
+            ),
         ),
     ]

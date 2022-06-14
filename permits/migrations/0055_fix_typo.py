@@ -6,18 +6,48 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0054_add_help_texts_and_sort_contacts_and_remove_term_travaux'),
+        ("permits", "0054_add_help_texts_and_sort_contacts_and_remove_term_travaux"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='historicalpermitrequest',
-            name='creditor_type',
-            field=models.PositiveSmallIntegerField(blank=True, choices=[(7, 'Architecte/Ingénieur'), (6, 'Association'), (0, 'Autres'), (8, 'Direction des travaux'), (3, 'Entreprise'), (4, "Maître d'ouvrage"), (2, 'Propriétaire'), (1, "Requérant (si différent de l'auteur de la demande)"), (5, 'Sécurité')], null=True, verbose_name='Destinataire de la facture'),
+            model_name="historicalpermitrequest",
+            name="creditor_type",
+            field=models.PositiveSmallIntegerField(
+                blank=True,
+                choices=[
+                    (7, "Architecte/Ingénieur"),
+                    (6, "Association"),
+                    (0, "Autres"),
+                    (8, "Direction des travaux"),
+                    (3, "Entreprise"),
+                    (4, "Maître d'ouvrage"),
+                    (2, "Propriétaire"),
+                    (1, "Requérant (si différent de l'auteur de la demande)"),
+                    (5, "Sécurité"),
+                ],
+                null=True,
+                verbose_name="Destinataire de la facture",
+            ),
         ),
         migrations.AlterField(
-            model_name='permitrequest',
-            name='creditor_type',
-            field=models.PositiveSmallIntegerField(blank=True, choices=[(7, 'Architecte/Ingénieur'), (6, 'Association'), (0, 'Autres'), (8, 'Direction des travaux'), (3, 'Entreprise'), (4, "Maître d'ouvrage"), (2, 'Propriétaire'), (1, "Requérant (si différent de l'auteur de la demande)"), (5, 'Sécurité')], null=True, verbose_name='Destinataire de la facture'),
+            model_name="permitrequest",
+            name="creditor_type",
+            field=models.PositiveSmallIntegerField(
+                blank=True,
+                choices=[
+                    (7, "Architecte/Ingénieur"),
+                    (6, "Association"),
+                    (0, "Autres"),
+                    (8, "Direction des travaux"),
+                    (3, "Entreprise"),
+                    (4, "Maître d'ouvrage"),
+                    (2, "Propriétaire"),
+                    (1, "Requérant (si différent de l'auteur de la demande)"),
+                    (5, "Sécurité"),
+                ],
+                null=True,
+                verbose_name="Destinataire de la facture",
+            ),
         ),
     ]

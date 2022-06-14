@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0030_add_requires_validation_document_field_to_wot'),
+        ("permits", "0030_add_requires_validation_document_field_to_wot"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='permitdepartment',
-            name='mandatory_2fa',
-            field=models.BooleanField(default=False, verbose_name='2FA obligatoire'),
+            model_name="permitdepartment",
+            name="mandatory_2fa",
+            field=models.BooleanField(default=False, verbose_name="2FA obligatoire"),
         ),
     ]

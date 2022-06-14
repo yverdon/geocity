@@ -1,3 +1,5 @@
+import re
+import unicodedata
 from io import StringIO
 
 from django.contrib.auth import get_user_model
@@ -11,9 +13,6 @@ from django.utils import timezone
 
 from geomapshark import settings
 from permits import admin, models
-import re
-import unicodedata
-from .add_default_print_config import add_default_print_config
 
 
 def strip_accents(text):
@@ -317,7 +316,10 @@ class Command(BaseCommand):
         )
         user.groups.set([group])
         models.PermitAuthor.objects.create(
-            user=user, address="Rue du Lac", zipcode=1234, city="Ville",
+            user=user,
+            address="Rue du Lac",
+            zipcode=1234,
+            city="Ville",
         )
         models.PermitDepartment.objects.create(
             group=group,
@@ -400,7 +402,8 @@ class Command(BaseCommand):
             works_type_obj = models.WorksType.objects.create(name=works_type)
             works_type_obj.tags.add(unaccent(works_type))
             models.PermitActorType.objects.create(
-                type=models.ACTOR_TYPE_OTHER, works_type=works_type_obj,
+                type=models.ACTOR_TYPE_OTHER,
+                works_type=works_type_obj,
             )
 
             for works_obj, *props in objs:
@@ -439,11 +442,14 @@ class Command(BaseCommand):
         models.WorksObjectType.objects.filter(id=5).update(
             requires_validation_document=False
         )
-        demo_works_object_type_no_validation_document = models.WorksObjectType.objects.filter(
-            requires_validation_document=False
-        ).first()
+        demo_works_object_type_no_validation_document = (
+            models.WorksObjectType.objects.filter(
+                requires_validation_document=False
+            ).first()
+        )
         department = models.PermitDepartment.objects.filter(
-            administrative_entity=demo_administrative_entity, is_validator=True,
+            administrative_entity=demo_administrative_entity,
+            is_validator=True,
         ).first()
 
         # Basic permit request

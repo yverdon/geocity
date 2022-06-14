@@ -1,5 +1,8 @@
+import re
+import unicodedata
 from io import StringIO
 
+from constance import config
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
@@ -11,10 +14,8 @@ from django.utils import timezone
 
 from geomapshark import settings
 from permits import admin, models
-import re
-import unicodedata
+
 from .add_default_print_config import add_default_print_config
-from constance import config
 
 
 def strip_accents(text):
@@ -320,7 +321,10 @@ class Command(BaseCommand):
         )
         user.groups.set([group])
         models.PermitAuthor.objects.create(
-            user=user, address="Rue du Lac", zipcode=1400, city="Yverdon",
+            user=user,
+            address="Rue du Lac",
+            zipcode=1400,
+            city="Yverdon",
         )
         models.PermitDepartment.objects.create(
             group=group,
@@ -384,7 +388,10 @@ class Command(BaseCommand):
                 order=5,
             ),
             "date": models.WorksObjectProperty.objects.create(
-                name="Date", input_type="date", is_mandatory=False, order=6,
+                name="Date",
+                input_type="date",
+                is_mandatory=False,
+                order=6,
             ),
             "checkbox": models.WorksObjectProperty.objects.create(
                 name="Impact sur la chaussée",
@@ -411,7 +418,11 @@ class Command(BaseCommand):
             (
                 "Stationnement (ex. de demande devant être prolongée)",
                 [
-                    ("Demande de macaron", properties["comment"], properties["date"],),
+                    (
+                        "Demande de macaron",
+                        properties["comment"],
+                        properties["date"],
+                    ),
                     (
                         "Accès au centre-ville historique",
                         properties["comment"],
@@ -478,8 +489,14 @@ class Command(BaseCommand):
             (
                 "Suvbentions (ex. de demande sans géométrie ni période temporelle)",
                 [
-                    ("Prime éco-mobilité", properties["comment"],),
-                    ("Abonnement de bus", properties["comment"],),
+                    (
+                        "Prime éco-mobilité",
+                        properties["comment"],
+                    ),
+                    (
+                        "Abonnement de bus",
+                        properties["comment"],
+                    ),
                 ],
             ),
         ]
@@ -583,11 +600,14 @@ class Command(BaseCommand):
         models.WorksObjectType.objects.filter(id=5).update(
             requires_validation_document=False
         )
-        demo_works_object_type_no_validation_document = models.WorksObjectType.objects.filter(
-            requires_validation_document=False
-        ).first()
+        demo_works_object_type_no_validation_document = (
+            models.WorksObjectType.objects.filter(
+                requires_validation_document=False
+            ).first()
+        )
         department = models.PermitDepartment.objects.filter(
-            administrative_entity=demo_administrative_entity, is_validator=True,
+            administrative_entity=demo_administrative_entity,
+            is_validator=True,
         ).first()
 
         # Basic permit request
@@ -723,7 +743,8 @@ class Command(BaseCommand):
         )
 
         models.PermitRequestValidation.objects.get_or_create(
-            permit_request=permit_request6, department=department,
+            permit_request=permit_request6,
+            department=department,
         )
 
         models.WorksObjectTypeChoice.objects.create(

@@ -1,8 +1,11 @@
-from ..geocity_test_case import GeocityTestCase
-from .. import factories
-from permits import models, views
-from django.urls import reverse
 from datetime import datetime
+
+from django.urls import reverse
+
+from permits import models
+
+from .. import factories
+from ..geocity_test_case import GeocityTestCase
 
 
 class TestPermitRequestArchiving(GeocityTestCase):
@@ -69,7 +72,9 @@ class TestPermitRequestArchiving(GeocityTestCase):
         file_response = self.client.get(
             reverse(
                 "permits:archived_permit_request_download",
-                kwargs={"pk": self.permit_request.pk,},
+                kwargs={
+                    "pk": self.permit_request.pk,
+                },
             ),
         )
 
@@ -86,7 +91,9 @@ class TestPermitRequestArchiving(GeocityTestCase):
             permit_request=self.permit_request
         ).first()
         file_response = self.client.get(
-            reverse("permits:archived_permit_request_bulk_download",),
+            reverse(
+                "permits:archived_permit_request_bulk_download",
+            ),
             data={"to_download": self.permit_request.pk},
         )
 
@@ -106,7 +113,9 @@ class TestPermitRequestArchiving(GeocityTestCase):
         response = self.client.get(
             reverse(
                 "permits:archived_permit_request_download",
-                kwargs={"pk": archive.permit_request.pk,},
+                kwargs={
+                    "pk": archive.permit_request.pk,
+                },
             ),
             follow=True,
         )
@@ -124,7 +133,9 @@ class TestPermitRequestArchiving(GeocityTestCase):
         ).first()
         self.login(email="validator@test.com", group=self.VALIDATOR)
         response = self.client.get(
-            reverse("permits:archived_permit_request_bulk_download",),
+            reverse(
+                "permits:archived_permit_request_bulk_download",
+            ),
             data={"to_download": archive.permit_request.pk},
             follow=True,
         )

@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0007_worksobject_wms_layers'),
+        ("permits", "0007_worksobject_wms_layers"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='worksobject',
-            name='wms_layers_order',
-            field=models.PositiveIntegerField(default=1, verbose_name='Ordre de(s) couche(s)'),
+            model_name="worksobject",
+            name="wms_layers_order",
+            field=models.PositiveIntegerField(
+                default=1, verbose_name="Ordre de(s) couche(s)"
+            ),
         ),
     ]

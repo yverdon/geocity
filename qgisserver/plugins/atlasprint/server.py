@@ -18,12 +18,11 @@
  ***************************************************************************/
 """
 
-from qgis.server import QgsServerInterface
-
 from atlasprint.filter import AtlasPrintFilter
 from atlasprint.logger import Logger
 from atlasprint.service import AtlasPrintService
 from atlasprint.tools import version
+from qgis.server import QgsServerInterface
 
 __copyright__ = "Copyright 2021, 3Liz"
 __license__ = "GPL version 3"

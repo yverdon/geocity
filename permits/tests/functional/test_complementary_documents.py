@@ -1,8 +1,10 @@
-from .. import factories
-from permits import models, views
-from ..geocity_test_case import GeocityTestCase
-from django.urls import reverse
 from django.contrib import messages
+from django.urls import reverse
+
+from permits import models, views
+
+from .. import factories
+from ..geocity_test_case import GeocityTestCase
 
 
 class TestComplementaryDocuments(GeocityTestCase):
@@ -152,7 +154,8 @@ class TestComplementaryDocuments(GeocityTestCase):
 
         response = self.client.get(
             reverse(
-                "permits:complementary_documents_delete", kwargs={"pk": document.pk},
+                "permits:complementary_documents_delete",
+                kwargs={"pk": document.pk},
             ),
             follow=True,
         )
@@ -161,7 +164,11 @@ class TestComplementaryDocuments(GeocityTestCase):
 
     def test_document_owner_can_delete_file(self):
         self.login(email="pilot@test.com", group=self.SECRETARIAT)
-        document, _ = self.prepare_document_test(document_args={"owner": self.user,})
+        document, _ = self.prepare_document_test(
+            document_args={
+                "owner": self.user,
+            }
+        )
 
         self.assertFalse(
             models.PermitRequestComplementaryDocument.objects.filter(

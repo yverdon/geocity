@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0042_add_regex_to_worksobjectproperty'),
+        ("permits", "0042_add_regex_to_worksobjectproperty"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='worksobjecttype',
-            name='start_delay',
-            field=models.IntegerField(blank=True, help_text='saisissez un nombre entier, positif ou négatif.', null=True, verbose_name='délai de commencement'),
+            model_name="worksobjecttype",
+            name="start_delay",
+            field=models.IntegerField(
+                blank=True,
+                help_text="saisissez un nombre entier, positif ou négatif.",
+                null=True,
+                verbose_name="délai de commencement",
+            ),
         ),
     ]

@@ -1368,5 +1368,3 @@ msgstr ""
 
 msgid "Visible columns"
 msgstr "Colonnes visibles"
-
-

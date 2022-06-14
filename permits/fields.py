@@ -21,7 +21,8 @@ class PermitRequestFieldFile(FieldFile):
     @property
     def url(self):
         return reverse(
-            "permits:permit_request_file_download", kwargs={"path": self.name},
+            "permits:permit_request_file_download",
+            kwargs={"path": self.name},
         )
 
 
@@ -62,7 +63,8 @@ class AdministrativeEntityFieldFile(FieldFile):
     @property
     def url(self):
         return reverse(
-            "permits:administrative_entity_file_download", kwargs={"path": self.name},
+            "permits:administrative_entity_file_download",
+            kwargs={"path": self.name},
         )
 
 
@@ -82,7 +84,8 @@ class WorkObjectTypeFieldFile(FieldFile):
     @property
     def url(self):
         return reverse(
-            "permits:works_object_property_file_download", kwargs={"path": self.name},
+            "permits:works_object_property_file_download",
+            kwargs={"path": self.name},
         )
 
 
@@ -102,7 +105,8 @@ class ComplementaryDocumentFieldFile(FieldFile):
     @property
     def url(self):
         return reverse(
-            "permits:complementary_documents_download", kwargs={"path": self.name},
+            "permits:complementary_documents_download",
+            kwargs={"path": self.name},
         )
 
 
