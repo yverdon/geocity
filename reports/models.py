@@ -3,6 +3,7 @@ import io
 import re
 from typing import Union
 
+from ckeditor.fields import RichTextField
 from django.contrib.auth.models import Group
 from django.contrib.staticfiles import finders
 from django.core.validators import FileExtensionValidator
@@ -208,7 +209,8 @@ class SectionMap(Section):
 
 class SectionParagraph(Section):
     title = models.CharField(default="", blank=True, max_length=2000)
-    content = models.TextField(
+    content = RichTextField(
+        # TODO: reverse_lazy and parametrize URL instead of hardcode
         help_text=(
             _(
                 "Il est possible d'accéder aux données de l'API avec la syntaxe suivante: `{{data.properties.geotime_aggregated.start_date}}`. Consultez les résults de <a href=\"http://localhost:9095/wfs3/collections/permits/items/1\">l'API</a> pour voir les données disponibles."
