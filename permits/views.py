@@ -501,7 +501,7 @@ class PermitRequestDetailView(View):
         return None
 
     def get_complementary_documents_formset(self, data=None, **kwargs):
-        ComplementaryDocumentsFormSet = formset_factory(
+        ComplementaryDocumentsFormSet = modelformset_factory(
             form=forms.PermitRequestComplementaryDocumentsForm, extra=1
         )
 
