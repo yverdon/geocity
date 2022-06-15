@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("auth", "0012_alter_user_first_name_max_length"),
-        ("permits", "0071_add_complementary_documents_inquiry_and_archived_requests"),
+        ("permits", "0072_add_complementary_documents_inquiry_and_archived_requests"),
     ]
 
     operations = [

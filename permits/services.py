@@ -15,6 +15,7 @@ import PIL
 from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import (
     ObjectDoesNotExist,
     PermissionDenied,
@@ -252,7 +253,7 @@ def get_works_types(administrative_entity, user):
     return queryset
 
 
-def get_administrative_entities(user):
+def get_administrative_entities(user, site=None):
     # Default queryset, with all administrative entities
     queryset = (
         models.PermitAdministrativeEntity.objects.filter(
@@ -264,6 +265,8 @@ def get_administrative_entities(user):
         .order_by("ofs_id", "-name")
         .distinct()
     )
+    if site:
+        queryset = queryset.filter(sites=site)
 
     if not user.has_perm("permits.see_private_requests"):
         queryset = queryset.filter(works_object_types__is_public=True)
@@ -992,12 +995,24 @@ def get_progress_bar_steps(request, permit_request):
     entityfilter = (
         request.session["entityfilter"] if "entityfilter" in request.session else []
     )
+    single_entity_for_site = False
     entities_by_tag = None
-    if entityfilter:
-        entities_by_tag = get_administrative_entities(request.user).filter_by_tags(
-            entityfilter
+    current_site = get_current_site(request)
+    entities_for_site = get_administrative_entities(
+        request.user, get_current_site(request)
+    )
+    single_entity_for_site = len(entities_for_site) == 1
+
+    # Don't care about filter if there is only one entity for the current site
+    if entityfilter and not single_entity_for_site:
+        entities_by_tag = get_administrative_entities(
+            request.user, get_current_site(request)
+        ).filter_by_tags(
+            entityfilter,
         )
 
+    # Get work objects types if there is only one entity filtered
+    # Skipped if only one entity for site
     if entities_by_tag:
         if (
             not selected_works_types
@@ -1011,6 +1026,15 @@ def get_progress_bar_steps(request, permit_request):
             )
             if len(works_types_by_tag) == 1:
                 selected_works_types = [str(works_types_by_tag[0])]
+
+    # Get work objects types if there is only one entity filtered
+    if single_entity_for_site and not selected_works_types:
+
+        works_types_for_single_entity = models.WorksType.objects.filter(
+            works_object_types__administrative_entities__in=entities_for_site
+        ).values_list("pk", flat=True)
+        if len(works_types_for_single_entity) == 1:
+            selected_works_types = [str(works_types_for_single_entity[0])]
 
     all_steps = {
         models.StepType.ADMINISTRATIVE_ENTITY: get_administrative_entity_step(

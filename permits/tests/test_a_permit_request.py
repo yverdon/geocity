@@ -1175,7 +1175,6 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         new_permit_request = models.PermitRequest.objects.last()
 
-        parser = get_parser(response.content)
         content = response.content.decode()
         self.assertInHTML("Sélectionnez le ou les type(s)", content)
         self.assertRedirects(
@@ -4285,22 +4284,28 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         works_types = factories.WorksTypeFactory.create_batch(2)
         works_objects = factories.WorksObjectFactory.create_batch(2)
 
-        administrative_entity = factories.PermitAdministrativeEntityFactory(
-            name="privateEntity"
+        administrative_entity_1 = factories.PermitAdministrativeEntityFactory(
+            name="privateEntity1"
+        )
+        administrative_entity_2 = factories.PermitAdministrativeEntityFactory(
+            name="privateEntity2"
         )
         private_works_object_type = models.WorksObjectType.objects.create(
             works_type=works_types[0],
             works_object=works_objects[0],
-            is_public=False,
+            is_public=True,
         )
-        private_works_object_type.administrative_entities.set([administrative_entity])
+        private_works_object_type.administrative_entities.set(
+            [administrative_entity_1, administrative_entity_2]
+        )
         response = self.client.get(
             reverse(
                 "permits:permit_request_select_administrative_entity",
             ),
         )
 
-        self.assertContains(response, "privateEntity")
+        self.assertContains(response, "privateEntity1")
+        self.assertContains(response, "privateEntity2")
 
     def test_work_type_step_only_show_public_requests_to_standard_user(
         self,

@@ -16,6 +16,7 @@ from django.contrib.auth.decorators import (
     permission_required,
     user_passes_test,
 )
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import (
     ObjectDoesNotExist,
     PermissionDenied,
@@ -23,7 +24,7 @@ from django.core.exceptions import (
 )
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.db.models import Prefetch, ProtectedError, Q, Sum
+from django.db.models import Prefetch, Q, Sum
 from django.forms import formset_factory, modelformset_factory
 from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.http.response import HttpResponseNotFound
@@ -501,7 +502,8 @@ class PermitRequestDetailView(View):
 
     def get_complementary_documents_formset(self, data=None, **kwargs):
         ComplementaryDocumentsFormSet = formset_factory(
-            form=forms.PermitRequestComplementaryDocumentsForm, extra=1
+            form=forms.PermitRequestComplementaryDocumentsForm,
+            extra=1,
         )
 
         return ComplementaryDocumentsFormSet(
@@ -1150,56 +1152,65 @@ def anonymous_permit_request(request):
 def permit_request_select_administrative_entity(request, permit_request_id=None):
 
     services.store_tags_in_session(request)
+    current_site = get_current_site(request)
 
     if permit_request_id:
         permit_request = get_permit_request_for_edition(request.user, permit_request_id)
     else:
         permit_request = None
 
-    # Prevent unecessary queries to DB if no tag filter is applied anyway
-    if request.session["entityfilter"]:
-        # Handle single tag filters combinations
-        entityfilter = (
-            request.session["entityfilter"] if "entityfilter" in request.session else []
+    # Manage redirect to type step when only 1 item is shown
+    # Handle single tag filters combinations
+    entityfilter = (
+        request.session["entityfilter"] if "entityfilter" in request.session else []
+    )
+
+    entities = services.get_administrative_entities(request.user, current_site)
+
+    # Manage entities by tag and by site. If site has already 1 result, dont check the tag
+    entities_after_filter = (
+        entities.filter_by_tags(entityfilter)
+        if entityfilter and len(entities) != 1
+        else entities
+    )
+
+    # If entityfilter returns only one entity, permit_request oject can already be created
+    if len(entities_after_filter) == 1 and not permit_request:
+        administrative_entity_instance = models.PermitAdministrativeEntity.objects.get(
+            pk=entities_after_filter.first().pk
         )
-        entities_by_tag = services.get_administrative_entities(
-            request.user
-        ).filter_by_tags(entityfilter)
-        # If entityfilter returns only one entity, permit_request oject can alread be created
-        if len(entities_by_tag) == 1 and not permit_request:
-            administrative_entity_instance = (
-                models.PermitAdministrativeEntity.objects.get(
-                    pk=entities_by_tag.first().pk
-                )
-            )
-            permit_request = models.PermitRequest.objects.create(
-                administrative_entity=administrative_entity_instance,
-                author=request.user.permitauthor,
-            )
-            candidate_works_object_types = None
-            if request.session["typefilter"] == []:
-                candidate_works_object_types = models.WorksObjectType.objects.filter(
-                    administrative_entities__in=entities_by_tag,
-                )
-            else:
-                works_types_by_tag = models.WorksType.objects.filter_by_tags(
-                    request.session["typefilter"]
-                ).values_list("pk", flat=True)
 
-                candidate_works_object_types = models.WorksObjectType.objects.filter(
-                    administrative_entities__in=entities_by_tag,
-                    works_type__in=works_types_by_tag,
-                )
-            # If filter combinations return only one works_object_types object, this combination must be set on permitrequest object
-            if len(candidate_works_object_types) == 1:
-                permit_request.works_object_types.set(candidate_works_object_types)
+        permit_request = models.PermitRequest.objects.create(
+            administrative_entity=administrative_entity_instance,
+            author=request.user.permitauthor,
+        )
 
-            steps = services.get_progress_bar_steps(
-                request=request, permit_request=permit_request
+        candidate_works_object_types = None
+
+        if request.session["typefilter"] == []:
+            candidate_works_object_types = models.WorksObjectType.objects.filter(
+                administrative_entities__in=entities_after_filter,
             )
-            return redirect(
-                services.get_next_step(steps, models.StepType.ADMINISTRATIVE_ENTITY).url
+        else:
+            works_types_by_tag = models.WorksType.objects.filter_by_tags(
+                request.session["typefilter"]
+            ).values_list("pk", flat=True)
+
+            candidate_works_object_types = models.WorksObjectType.objects.filter(
+                administrative_entities__in=entities_after_filter,
+                works_type__in=works_types_by_tag,
             )
+
+        # If filter combinations return only one works_object_types object, this combination must be set on permitrequest object
+        if len(candidate_works_object_types) == 1:
+            permit_request.works_object_types.set(candidate_works_object_types)
+
+        steps = services.get_progress_bar_steps(
+            request=request, permit_request=permit_request
+        )
+        return redirect(
+            services.get_next_step(steps, models.StepType.ADMINISTRATIVE_ENTITY).url
+        )
 
     steps_context = progress_bar_context(
         request=request,
@@ -1242,6 +1253,7 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
             instance=permit_request,
             user=request.user,
             session=request.session,
+            site=current_site,
         )
     return render(
         request,

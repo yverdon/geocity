@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("permits", "0069_rename_short_name_and_is_public_field"),
+        ("permits", "0070_add_sites_m2m_relations_for_administrative_entities"),
     ]
 
     operations = [

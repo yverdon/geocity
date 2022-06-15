@@ -13,6 +13,8 @@ DRF_ALLOW_TOKENAUTHENTICATION = True
 REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] += (
     "rest_framework.authentication.TokenAuthentication",
 )
+SITE_ID = 1
+SITE_DOMAIN = "localhost"
 
 ARCHIVE_ROOT = os.environ.get(
     "ARCHIVE_ROOT", os.path.join(BASE_DIR, "permits/tests/files/archive")
