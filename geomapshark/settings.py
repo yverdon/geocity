@@ -133,7 +133,7 @@ INSTALLED_APPS = [
     "django_filters",
     "rest_framework",
     "rest_framework_gis",
-    "rest_framework.authtoken",
+    "knox",
     "bootstrap4",
     "bootstrap_datepicker_plus",
     "django_tables2",
@@ -536,7 +536,7 @@ REST_FRAMEWORK = {
 # Allow TokenAuthentication to the API.
 if DRF_ALLOW_TOKENAUTHENTICATION:
     REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] += (
-        "rest_framework.authentication.TokenAuthentication",
+        "knox.auth.TokenAuthentication",
     )
 
 WFS3_TITLE = "OGC API Features - Geocity"

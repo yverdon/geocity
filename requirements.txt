@@ -18,6 +18,7 @@ charset-normalizer==2.0.12
     # via requests
 cryptography==36.0.1
     # via
+    #   django-rest-knox
     #   jwcrypto
     #   pyjwt
 defusedxml==0.7.1
@@ -42,6 +43,7 @@ django==3.2.13
     #   django-phonenumber-field
     #   django-picklefield
     #   django-ranged-response
+    #   django-rest-knox
     #   django-simple-captcha
     #   django-tables2
     #   django-tables2-column-shifter
@@ -86,6 +88,8 @@ django-picklefield==3.0.1
     # via django-constance
 django-ranged-response==0.2.0
     # via django-simple-captcha
+django-rest-knox==4.2.0
+    # via -r requirements.in
 django-simple-captcha==0.5.17
     # via -r requirements.in
 django-simple-history==3.0.0
@@ -103,6 +107,7 @@ django-two-factor-auth[phonenumbers]==1.13.2
 djangorestframework==3.13.1
     # via
     #   -r requirements.in
+    #   django-rest-knox
     #   djangorestframework-gis
 djangorestframework-gis==0.18
     # via -r requirements.in

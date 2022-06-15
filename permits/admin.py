@@ -20,8 +20,6 @@ from django.urls import re_path, reverse
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
-from rest_framework.authtoken.admin import TokenAdmin as BaseTokenAdmin
-from rest_framework.authtoken.models import TokenProxy
 
 from geomapshark import settings
 
@@ -52,10 +50,6 @@ OTHER_PERMISSIONS_CODENAMES = [
     "delete_group",
     "see_private_requests",
     # DRF Token authentication
-    "view_tokenproxy",
-    "add_tokenproxy",
-    "change_tokenproxy",
-    "delete_tokenproxy",
 ]
 
 if not settings.ALLOW_REMOTE_USER_AUTH:
@@ -1335,45 +1329,6 @@ class TemplateCustomizationAdmin(admin.ModelAdmin):
     has_background_image.short_description = "Image de fond"
 
 
-# AuthToken admin
-
-
-class TokenAdmin(BaseTokenAdmin):
-    list_display = [
-        "__str__",
-        "user",
-        "created",
-    ]
-    list_filter = [
-        "user",
-        "created",
-    ]
-    search_fields = [
-        "user",
-    ]
-
-    def get_queryset(self, request):
-        if request.user.is_superuser:
-            return TokenProxy.objects.all()
-        else:
-            return TokenProxy.objects.filter(user=request.user)
-
-    def has_add_permission(self, request):
-        if request.user.is_superuser:
-            return True
-        return False
-
-    def get_readonly_fields(self, request, obj=None):
-        if request.user.is_superuser:
-            return []
-        else:
-            return [
-                "user",
-                "key",
-                "created",
-            ]
-
-
 class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = permit_forms.ComplementaryDocumentTypeAdminForm
 
@@ -1409,9 +1364,6 @@ class PermitRequestInquiryAdmin(admin.ModelAdmin):
     sortable_str.admin_order_field = "name"
     sortable_str.short_description = _("3.2 Enquêtes public")
 
-
-admin.site.unregister(TokenProxy)
-admin.site.register(TokenProxy, TokenAdmin)
 
 admin.site.register(models.PermitActorType, PermitActorTypeAdmin)
 admin.site.register(models.WorksType, WorksTypeAdmin)
