@@ -10,9 +10,7 @@ PASSWORD_HASHERS = [
 ]
 # For tests, Token authentication is set to True
 DRF_ALLOW_TOKENAUTHENTICATION = True
-REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] += (
-    "rest_framework.authentication.TokenAuthentication",
-)
+REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] += ("knox.auth.TokenAuthentication",)
 SITE_ID = 1
 SITE_DOMAIN = "localhost"
 
