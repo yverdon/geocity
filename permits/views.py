@@ -1166,7 +1166,7 @@ def permit_request_select_administrative_entity(request, permit_request_id=None)
 
     entities = services.get_administrative_entities(request.user, current_site)
 
-    # Manage enteties by tag and by site. If site has already 1 result, dont check the tag
+    # Manage entities by tag and by site. If site has already 1 result, dont check the tag
     entities_after_filter = (
         entities.filter_by_tags(entityfilter)
         if entityfilter and len(entities) != 1
