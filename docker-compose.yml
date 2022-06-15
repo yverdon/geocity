@@ -21,9 +21,6 @@ services:
             - qgis_projects:/qgis_projects
         ports:
             - "${DJANGO_DOCKER_PORT}:9000"
-        networks:
-            - pdf_generation
-            - default
 
     qgisserver:
         image: openquake/qgis-server:3.22
@@ -41,15 +38,11 @@ services:
             - PREFIX_URL
 
     qgis:
-        restart: unless-stopped
+        image: geocity_qgis
         build:
             context: services/qgis
 
     pdf:
-        restart: unless-stopped
+        image: geocity_pdf
         build:
             context: services/pdf
-
-networks:
-    # custom network to restriction communication to between django<->pdf
-    pdf_generation:
