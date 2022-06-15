@@ -502,7 +502,9 @@ class PermitRequestDetailView(View):
 
     def get_complementary_documents_formset(self, data=None, **kwargs):
         ComplementaryDocumentsFormSet = modelformset_factory(
-            form=forms.PermitRequestComplementaryDocumentsForm, extra=1
+            models.PermitRequestGeoTime,
+            form=forms.PermitRequestComplementaryDocumentsForm,
+            extra=1,
         )
 
         return ComplementaryDocumentsFormSet(
