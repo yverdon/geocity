@@ -25,7 +25,7 @@ from django.core.exceptions import (
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.db.models import Prefetch, Q, Sum
-from django.forms import modelformset_factory
+from django.forms import formset_factory, modelformset_factory
 from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.http.response import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
@@ -501,8 +501,7 @@ class PermitRequestDetailView(View):
         return None
 
     def get_complementary_documents_formset(self, data=None, **kwargs):
-        ComplementaryDocumentsFormSet = modelformset_factory(
-            models.PermitRequestGeoTime,
+        ComplementaryDocumentsFormSet = formset_factory(
             form=forms.PermitRequestComplementaryDocumentsForm,
             extra=1,
         )
