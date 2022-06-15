@@ -1,9 +1,9 @@
 import ipaddress
-import socket
 
 from constance import config
 
 
+# TODO: move this to geomapshark.auth
 def get_client_ip(request):
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
     if x_forwarded_for:
@@ -13,6 +13,7 @@ def get_client_ip(request):
     return ip
 
 
+# TODO: move this to geomapshark.auth
 def check_request_ip_is_allowed(request):
     """
     Check that the request is coming from allowed ip
@@ -31,17 +32,4 @@ def check_request_ip_is_allowed(request):
             if ip_address in ip_network:
                 return True
 
-    return False
-
-
-def check_request_comes_from_internal_qgisserver(request):
-    """
-    Check that the request is coming from inside the docker composition AND that it is an allowed ip
-    """
-
-    if (
-        check_request_ip_is_allowed(request)
-        and socket.gethostbyname("qgisserver") == request.META["REMOTE_ADDR"]
-    ):
-        return True
     return False

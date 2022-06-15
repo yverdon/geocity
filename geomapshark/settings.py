@@ -188,7 +188,6 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "APPLICATION_DESCRIPTION",
         "ALLOWED_FILE_EXTENSIONS",
         "MAX_FILE_UPLOAD_SIZE",
-        "MAX_FEATURE_NUMBER_FOR_QGISSERVER",
         "GEOCALENDAR_URL",
         "ENABLE_GEOCALENDAR",
         "ANONYMOUS_REQUEST_SENT_TITLE",
@@ -247,11 +246,6 @@ CONSTANCE_CONFIG = {
     "MAX_FILE_UPLOAD_SIZE": (
         10485760,
         "Taille maximum des fichiers uploadés",
-        int,
-    ),
-    "MAX_FEATURE_NUMBER_FOR_QGISSERVER": (
-        10,
-        "Nombre maximum d'entités disponible pour QGISSERVER, un nombre trop élevé impactera négativement les performances de l'impression",
         int,
     ),
     "GEOCALENDAR_URL": (
@@ -536,7 +530,7 @@ REST_FRAMEWORK = {
 # Allow TokenAuthentication to the API.
 if DRF_ALLOW_TOKENAUTHENTICATION:
     REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] += (
-        "knox.auth.TokenAuthentication",
+        "geomapshark.auth.InternalTokenAuthentication",
     )
 
 WFS3_TITLE = "OGC API Features - Geocity"

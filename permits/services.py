@@ -4,7 +4,6 @@ import itertools
 import os
 import pathlib
 import shutil
-import socket
 import urllib
 from collections import defaultdict
 from datetime import datetime
@@ -455,7 +454,6 @@ def get_permit_request_for_user_or_404(user, permit_request_id, statuses=None):
 
 def get_permit_requests_list_for_user(
     user,
-    request_comes_from_internal_qgisserver=False,
     works_object_filter=None,
     ignore_archived=True,
 ):
@@ -495,10 +493,10 @@ def get_permit_requests_list_for_user(
     if ignore_archived:
         qs = qs.filter(~Q(status=models.PermitRequest.STATUS_ARCHIVED))
 
-    if not user.is_authenticated and not request_comes_from_internal_qgisserver:
+    if not user.is_authenticated:
         return qs.none()
 
-    if not user.is_superuser and not request_comes_from_internal_qgisserver:
+    if not user.is_superuser:
         qs_filter = Q(author=user.permitauthor)
 
         if user.has_perm("permits.amend_permit_request"):
@@ -1781,19 +1779,6 @@ def check_request_ip_is_allowed(request):
             if ip_address in ip_network:
                 return True
 
-    return False
-
-
-def check_request_comes_from_internal_qgisserver(request):
-    """
-    Check that the request is coming from inside the docker composition AND that it is an allowed ip
-    """
-
-    if (
-        check_request_ip_is_allowed(request)
-        and socket.gethostbyname("qgisserver") == request.META["REMOTE_ADDR"]
-    ):
-        return True
     return False
 
 
