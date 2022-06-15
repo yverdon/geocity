@@ -15,7 +15,13 @@ from django.utils import timezone
 
 from geomapshark import settings
 from permits import admin, models
-from reports import models as reports_models
+from reports.models import (
+    Report,
+    ReportLayout,
+    SectionAuthor,
+    SectionMap,
+    SectionParagraph,
+)
 
 from .add_default_print_config import add_default_print_config
 
@@ -984,9 +990,7 @@ class Command(BaseCommand):
 
     def create_reports(self):
         # Create report setup
-        # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
-        background_image = open("/code/qgisserver/report-letter-paper.png", "rb")
-        layout = reports_models.ReportLayout(
+        layout = ReportLayout(
             name="demo_layout",
             margin_top=30,
             margin_right=10,
@@ -994,39 +998,54 @@ class Command(BaseCommand):
             margin_left=22,
             integrator=Group.objects.get(name="integrator"),
         )
+        # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
+        background_image = open("/code/qgisserver/report-letter-paper.png", "rb")
         layout.background.save(
             "report-letter-paper.png", File(background_image), save=True
         )
         layout.save()
-        report = reports_models.Report.objects.create(
+
+        report = Report(
             name="demo_report",
             layout=layout,
             # TODO: ensure this is available to the owner of the report
             type=models.ComplementaryDocumentType.objects.first(),
         )
+        report.save()
 
-        reports_models.SectionParagraph.objects.create(
+        section_paragraph_1 = SectionParagraph(
             order=1,
             report=report,
             title="Example report",
             content="<p>This is an example report. It could be an approval, or any type of report related to a request.</p>",
         )
-        reports_models.SectionParagraph.objects.create(
+        section_paragraph_1.save()
+
+        section_paragraph_2 = SectionParagraph(
             order=2,
             report=report,
             title="Demand summary",
             content="<p>This demand contains the following objects.</p><ul>{% for wot in data.properties.permit_request_works_object_types_names.values() %}<li>{{wot}}</li>{% endfor %}</ul>",
         )
-        reports_models.SectionMap.objects.create(
+        section_paragraph_2.save()
+
+        section_map = SectionMap(
             order=3,
             report=report,
-            # project= open("/code/qgisserver/report-template-dev.qgs", "rb").
-            layout_name="a4",
+            qgis_project_file="invalid",  # set few lines below
+            qgis_print_template_name="a4",
         )
-        reports_models.SectionAuthor.objects.create(
+        # FIXME: this will fail without docker-compose-dev (as /code needs to be mounted)
+        qgis_template_project = open("/code/qgisserver/report-template-dev.qgs", "rb")
+        section_map.qgis_project_file.save(
+            "report-template-dev.qgs", File(qgis_template_project), save=True
+        )
+
+        section_author = SectionAuthor(
             order=4,
             report=report,
         )
+        section_author.save()
 
         # report.work_object_types.add(models.WorksObjectType.objects.all())
         # Assign to all work objects types
