@@ -9,12 +9,6 @@ WORKDIR /code
 COPY requirements_dev.txt requirements_dev.txt
 COPY requirements.txt requirements.txt
 
-COPY entrypoint_demo.sh entrypoint_demo.sh
-COPY entrypoint.sh entrypoint.sh
-
-RUN chmod -R 777 entrypoint_demo.sh
-RUN chmod -R 777 entrypoint.sh
-
 RUN if [ "$dev_dependencies" = "true" ] ; \
     then \
     DEBUG=True \
