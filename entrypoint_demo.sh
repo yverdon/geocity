@@ -29,7 +29,7 @@ services:
             - ./private_documents:/private_documents #used to access to the private documents via a volume (check env.demo) search(ctrl+f) -> #access_to_private_document_local
         environment:
             - QGIS_SERVER_LOG_LEVEL=0
-a
+
     postgres:
         image: postgis/postgis:13-3.2
         restart: unless-stopped
