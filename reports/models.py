@@ -1,7 +1,11 @@
+import base64
 import io
+import re
 from typing import Union
 
 from django.contrib.auth.models import Group
+from django.contrib.staticfiles import finders
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
@@ -10,7 +14,9 @@ from jinja2.sandbox import SandboxedEnvironment
 from polymorphic.models import PolymorphicModel
 from rest_framework.authtoken.models import Token
 
-from .utils import run_docker_container
+from permits.fields import AdministrativeEntityFileField
+
+from .utils import DockerRunFailedError, run_docker_container
 
 
 class ReportLayout(models.Model):
@@ -119,16 +125,17 @@ class Report(models.Model):
         return self.name
 
 
+# https://github.com/django-polymorphic/django-polymorphic/issues/229#issuecomment-398434412
+def NON_POLYMORPHIC_CASCADE(collector, field, sub_objs, using):
+    return models.CASCADE(collector, field, sub_objs.non_polymorphic(), using)
+
+
 class Section(PolymorphicModel):
     class Meta:
 
         ordering = [
             "order",
         ]
-
-    # https://github.com/django-polymorphic/django-polymorphic/issues/229#issuecomment-398434412
-    def NON_POLYMORPHIC_CASCADE(collector, field, sub_objs, using):
-        return models.CASCADE(collector, field, sub_objs.non_polymorphic(), using)
 
     report = models.ForeignKey(
         Report, on_delete=NON_POLYMORPHIC_CASCADE, related_name="sections"
@@ -151,12 +158,52 @@ class Section(PolymorphicModel):
         section_context = self.get_context(report_context)
         return render_to_string(template, section_context)
 
+    @property
+    def css_class(self):
+        return re.sub("^Section", "section-", self.__class__.__name__).lower()
+
     def __str__(self):
         return self._meta.verbose_name
 
 
 class SectionMap(Section):
-    layout_name = models.CharField(max_length=30)
+    qgis_project_file = AdministrativeEntityFileField(
+        _("Projet QGIS '*.qgs'"),
+        validators=[FileExtensionValidator(allowed_extensions=["qgs"])],
+        upload_to="qgis_templates",
+    )
+    qgis_print_template_name = models.CharField(max_length=30)
+
+    def get_context(self, context):
+        context = super().get_context(context)
+
+        # Create a docker container to generate the image
+        commands = [
+            "/io/project.qgs",
+            "/io/output.png",
+            self.qgis_print_template_name,
+            str(context["permit_request"].id),
+            str(context["token"]),
+        ]
+
+        try:
+            output = run_docker_container(
+                "geocity_qgis",
+                commands,
+                file_input=("/io/project.qgs", self.qgis_project_file.file),
+                file_output="/io/output.png",
+            )
+        except DockerRunFailedError:
+            # Return error image
+            path = finders.find("reports/error.png")
+            output = open(path, "rb")
+
+        # Prepare the dataurl
+        data = base64.b64encode(output.read()).decode("ascii")
+        data_url = f"data:image/png;base64,{data}"
+
+        # Return updated context
+        return {**context, "map": mark_safe(f'<img src="{data_url}">')}
 
 
 class SectionParagraph(Section):

@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("reports", "0002_sectionparagraph_title"),
+        ("reports", "0001_initial"),
         ("permits", "0072_filter_documenttype_for_integrator"),
     ]
 
