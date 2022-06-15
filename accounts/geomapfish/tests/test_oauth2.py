@@ -1,12 +1,11 @@
 import json
 
+from allauth.socialaccount.tests import OAuth2TestsMixin
+from allauth.tests import MockedResponse, TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
 from ..provider import GeomapfishProvider
-from allauth.socialaccount.tests import OAuth2TestsMixin
-from allauth.tests import MockedResponse, TestCase
-
 
 User = get_user_model()
 
@@ -55,7 +54,10 @@ class GeomapfishOAuth2Tests(OAuth2TestsMixin, TestCase):
 
     def get_mocked_response(self, email="foo@bar.ch", username="test"):
         profile_response_mock.update(
-            {"email": email, "username": username,}
+            {
+                "email": email,
+                "username": username,
+            }
         )
         return MockedResponse(200, json.dumps(profile_response_mock))
 

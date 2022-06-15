@@ -1,5 +1,4 @@
 import json
-import io
 from collections import defaultdict
 from datetime import datetime, timedelta
 from itertools import groupby
@@ -18,24 +17,23 @@ from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis import forms as geoforms
 from django.core.exceptions import ValidationError
+from django.core.files import File
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import transaction
-from django.db.models import Q, Max
+from django.db.models import Max, Q
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
-from captcha.fields import CaptchaField
-from django.core.files import File
+
 from accounts.dootix.adapter import DootixSocialAccountAdapter
 from accounts.dootix.provider import DootixProvider
 from accounts.geomapfish.adapter import GeomapfishSocialAccountAdapter
 from accounts.geomapfish.provider import GeomapfishProvider
-from django.utils import timezone
-
-from . import models, services, geoservices
 from reports import models as reportmodels
+
+from . import geoservices, models, services
 
 input_type_mapping = {
     models.WorksObjectProperty.INPUT_TYPE_TEXT: forms.CharField,
@@ -171,7 +169,8 @@ class AdministrativeEntityForm(forms.Form):
 
         if not self.instance:
             return models.PermitRequest.objects.create(
-                administrative_entity=administrative_entity_instance, author=author,
+                administrative_entity=administrative_entity_instance,
+                author=author,
             )
         else:
             services.set_administrative_entity(
@@ -452,7 +451,10 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
                 },
             ),
             "validators": [
-                RegexValidator(regex=prop.regex_pattern, message=error_message,)
+                RegexValidator(
+                    regex=prop.regex_pattern,
+                    message=error_message,
+                )
             ],
         }
 
@@ -460,7 +462,9 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         return {
             **default_kwargs,
             "widget": AddressWidget(
-                autocomplete_options={"single_address_field": True,},
+                autocomplete_options={
+                    "single_address_field": True,
+                },
                 attrs={
                     "placeholder": ("ex: " + prop.placeholder)
                     if prop.placeholder != ""
@@ -590,9 +594,18 @@ def check_existing_email(email, user):
 
 
 class NewDjangoAuthUserForm(UserCreationForm):
-    first_name = forms.CharField(label=_("Prénom"), max_length=30,)
-    last_name = forms.CharField(label=_("Nom"), max_length=150,)
-    email = forms.EmailField(label=_("Email"), max_length=254,)
+    first_name = forms.CharField(
+        label=_("Prénom"),
+        max_length=30,
+    )
+    last_name = forms.CharField(
+        label=_("Nom"),
+        max_length=150,
+    )
+    email = forms.EmailField(
+        label=_("Email"),
+        max_length=254,
+    )
     required_css_class = "required"
 
     def clean_email(self):
@@ -780,18 +793,30 @@ class PermitRequestActorForm(forms.ModelForm):
     first_name = forms.CharField(
         max_length=150,
         label=_("Prénom"),
-        widget=forms.TextInput(attrs={"placeholder": "ex: Marcel",}),
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": "ex: Marcel",
+            }
+        ),
     )
     last_name = forms.CharField(
         max_length=100,
         label=_("Nom"),
-        widget=forms.TextInput(attrs={"placeholder": "ex: Dupond",}),
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": "ex: Dupond",
+            }
+        ),
     )
     phone = forms.CharField(
         min_length=10,
         max_length=16,
         label=_("Téléphone"),
-        widget=forms.TextInput(attrs={"placeholder": "ex: 024 111 22 22",}),
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": "ex: 024 111 22 22",
+            }
+        ),
         validators=[
             RegexValidator(
                 regex=r"^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
@@ -804,7 +829,11 @@ class PermitRequestActorForm(forms.ModelForm):
     email = forms.EmailField(
         max_length=100,
         label=_("Email"),
-        widget=forms.TextInput(attrs={"placeholder": "ex: exemple@exemple.com",}),
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": "ex: exemple@exemple.com",
+            }
+        ),
     )
     address = forms.CharField(
         max_length=100,
@@ -825,7 +854,11 @@ class PermitRequestActorForm(forms.ModelForm):
     city = forms.CharField(
         max_length=100,
         label=_("Ville"),
-        widget=forms.TextInput(attrs={"placeholder": "ex: Yverdon",}),
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": "ex: Yverdon",
+            }
+        ),
     )
     company_name = forms.CharField(
         required=False,
@@ -902,7 +935,8 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
     required_css_class = "required"
 
     notify_author = forms.BooleanField(
-        label=_("Notifier l'auteur de la demande"), required=False,
+        label=_("Notifier l'auteur de la demande"),
+        required=False,
     )
     reason = forms.CharField(
         label=_("Raison"),
@@ -919,12 +953,13 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
             "status",
         ]
         widgets = {
-            "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
+            "is_public": forms.RadioSelect(
+                choices=models.PUBLIC_TYPE_CHOICES,
+            ),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, user, *args, **kwargs):
         self.instance = kwargs.get("instance", None)
-
         initial = {}
         for prop_value in self.get_values():
             initial[
@@ -934,7 +969,6 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                 )
             ] = prop_value.value
         kwargs["initial"] = {**initial, **kwargs.get("initial", {})}
-
         super().__init__(*args, **kwargs)
 
         if self.instance:
@@ -943,8 +977,12 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                     self.instance.administrative_entity
                 )
             )
-            # If an amend property in the permit request can always be amended, STATUS_APPROVED is added to the list
-            if self.instance.get_amend_property_list_always_amendable():
+            # If an amend property in the permit request can always be amended or permit request backoffice fields can always be updated,
+            # STATUS_APPROVED is added to the list
+            if (
+                self.instance.get_amend_property_list_always_amendable()
+                or self.instance.can_always_be_updated(user)
+            ):
                 filter1 = [
                     tup
                     for tup in models.PermitRequest.STATUS_CHOICES
@@ -957,12 +995,19 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                     for tup in models.PermitRequest.STATUS_CHOICES
                     if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)
                 ]
+
             filter2 = [
                 el
                 for el in filter1
                 if any(i in el for i in available_statuses_for_administrative_entity)
             ]
+
             self.fields["status"].choices = tuple(filter2)
+
+            # A permit that is approved, rejected or archived cannot have its status changed and author cannot be notified anymore
+            if self.instance.status not in models.PermitRequest.EDITABLE_STATUSES:
+                self.fields["status"].disabled = True
+                self.fields["notify_author"].disabled = True
 
             if not config.ENABLE_GEOCALENDAR:
                 self.fields["shortname"].widget = forms.HiddenInput()
@@ -1426,7 +1471,11 @@ class PermitRequestValidationForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields["validation_status"].choices = [
-            (value, label,) for value, label in self.fields["validation_status"].choices
+            (
+                value,
+                label,
+            )
+            for value, label in self.fields["validation_status"].choices
         ]
 
 
@@ -1535,7 +1584,9 @@ class PermitRequestClassifyForm(forms.ModelForm):
 
 class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
     authorised_departments = forms.ModelMultipleChoiceField(
-        queryset=None, widget=forms.CheckboxSelectMultiple, required=False,
+        queryset=None,
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
     )
     report_preset = forms.ModelChoiceField(
         queryset=None,
@@ -1656,7 +1707,9 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             report = cleaned_data.get("report_preset")
             now = timezone.now()
             name = f"{report.name}_generated_{now:%Y-%m-%d}.pdf"
-            data = io.BytesIO(report.render_pdf(self.permit_request, generated_by=self.user))
+            data = report.render_pdf(
+                self.permit_request, generated_by=self.user, as_string=False
+            )
             cleaned_data["document"] = File(data, name=name)
             cleaned_data["document_type"] = report.type
             cleaned_data[f"parent_{report.type.pk}"] = report.type
@@ -1774,14 +1827,22 @@ class PermitRequestInquiryForm(forms.ModelForm):
         label=_("Date planifiée de début"),
         input_formats=[settings.DATE_INPUT_FORMAT],
         widget=DatePickerInput(
-            options={"format": "DD.MM.YYYY", "locale": "fr-CH", "useCurrent": False,}
+            options={
+                "format": "DD.MM.YYYY",
+                "locale": "fr-CH",
+                "useCurrent": False,
+            }
         ),
     )
     end_date = forms.DateField(
         label=_("Date planifiée de fin"),
         input_formats=[settings.DATE_INPUT_FORMAT],
         widget=DatePickerInput(
-            options={"format": "DD.MM.YYYY", "locale": "fr-CH", "useCurrent": False,}
+            options={
+                "format": "DD.MM.YYYY",
+                "locale": "fr-CH",
+                "useCurrent": False,
+            }
         ),
     )
 

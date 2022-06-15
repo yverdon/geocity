@@ -1,10 +1,11 @@
-# Geocity - a (geo)cyberadministration tool for public administrations ![Geocity CI](https://github.com/yverdon/geocity/workflows/Geocity%20CI/badge.svg?branch=main)
+# Geocity - build your (geo)-forms easily! ![Geocity CI](https://github.com/yverdon/geocity/workflows/Geocity%20CI/badge.svg?branch=main)
 
-Discover geocity features and usage [here](https://github.com/yverdon/geocity/wiki)
+**[What is Geocity ?](https://geocity.ch/about)**
 
-## Getting started with the full Docker demo version
+**[Features and user guide](https://github.com/yverdon/geocity/wiki)**
 
-### Step by step guide to the working full docker non persistent DEV instance
+
+## Setting up full Docker non persistent demo
 
 This will bring up a demo instance with preset fixtures served by the
 Django developpment server in reload mode.
@@ -12,35 +13,47 @@ Django developpment server in reload mode.
 ```bash
 git clone git@github.com:yverdon/geocity.git && cd geocity
 cp -n env.demo .env
-docker-compose -f docker-compose-dev.yml build
-docker-compose -f docker-compose-dev.yml down --remove-orphans && docker-compose -f docker-compose-dev.yml up
+docker-compose build
+docker-compose down --remove-orphans && docker-compose up
 ```
 
-Copy `docker-compose-dev.yml` to a `docker-compose-override.yml`, adapt it to your needs, then run :
+## Setting up production instance
+### Database
 
-```
-docker-compose up
-```
+1. Create a  postgres database
+2. Install required extensions: postgis, pg_trgm, unaccent extension
+3. Edit DB connection in .env file
 
-This process will create the .env file only if it does not already exist
+### Environment variables
 
-The demo application is now running on _localhost:9095_
+:warning: :warning: :warning:
 
-To debug and view the resulting `docker-compose-dev.yml` file use (uses the `.env` file for variables substitution):
-
-```bash
-docker-compose -f docker-compose-dev.yml config
-```
-
-
-## Alternative demo setup
-
-Following command will setup a demo DB with more exhaustive configuration
-
-```bash
-docker-compose -f docker-compose-demo.yml down --remove-orphans && docker-compose -f docker-compose-demo.yml up
+Set following variables as follow
+```ini
+COMPOSE_FILE=
+ENV=PROD
+DEBUG=False
+DEV_DEPENDENCIES=false
 ```
 
+And review all other variables in order to fine tune your instance
+
+---
+## Developpment tools
+
+
+### Setup your Environment file
+
+Following variable setup in your .env file will setup the developpment environment for you
+
+```ini
+COMPOSE_FILE=docker-compose.yml:docker-compose-demo.yml
+COMPOSE_PATH_SEPARATOR=:
+ENV=DEV
+DEBUG=True
+DEV_DEPENDENCIES=true
+CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE=true
+```
 
 ### Run the tests from within the docker container
 
@@ -56,28 +69,35 @@ Example to run a single test in container
 coverage run --source='.' ./manage.py test --settings=geomapshark.settings_test permits.tests.test_a_permit_request.PermitRequestTestCase.test_administrative_entity_is_filtered_by_tag
 ```
 
-## Linting
+### Linting
 
-We use [Black](https://github.com/psf/black) as code formatter. Just use the following command to automatically format your code:
+We use [pre-commit](https://pre-commit.com/) as code formatter. Just use the following command to automatically format your code when you commit:
 
 ```
-$ docker-compose exec web black .
+$ pip install pre-commit
+$ pre-commit install
 ```
 
-## Show urls
+If you wish to run it on all files:
+
+```
+$ pre-commit run --all-files
+```
+
+### Show urls
 
 We use [django-extensions](https://django-extensions.readthedocs.io/en/latest/command_extensions.html?highlight=show_urls#command-extensions) to show urls. Can be used to export models to a file (as text or picture), to display them in terminal and much more things
 
 ```
-$ ./manage.py show_urls
+./manage.py show_urls
 ```
 
-## Testing emails
+### Testing emails
 
 A Mailhog container is working on the dev environment, you can access it by going to localhost:8025.
 Just ensure to setup the following entries in your .env file:
 
-```
+```ini
 EMAIL_HOST=mailhog
 EMAIL_PORT=1025
 EMAIL_HOST_USER=null
@@ -87,67 +107,7 @@ EMAIL_USE_TLS=false
 EMAIL_TO_CONSOLE=false
 ```
 
-## Setup for full Docker persistent instance served by gunicorn webserver
-
-#### Create new PostGIS DB
-
-1. Create a geocity user
-2. Create a geocity schema owned by geocity user
-3. Edit DB connection in .env file
-5. Install pg_trgm & unaccent extension (`create extension pg_trgm;` & `create extension unaccent;`)
-
-### Setup your Environment file
-
-Edit the variables in `.env` according to your environment.
-Set the global environment switcher to `ENV=DEV` in the `.env` file.
-
-## Production containers administrations
-
-```
-git clone git@github.com:yverdon/geocity.git && cd geocity
-cp -n env.demo .env
-docker-compose build
-docker-compose down --remove-orphans && docker-compose up
-```
-
-#### Open the application to the world
-
-Use your favorite webserver to proxypass localhost:<port> to the outside world
-
-
-## Permissions
-
-The user belonging to backoffice group can be granted specific permissions:
-- `see_private_requests`, "Voir les demandes restreintes": allows the user to make requests that are not visible by standard user. Typically during the setup stage of a new form configuration
-- `amend_permit_request`,"Traiter les demandes de permis": allow the user the process (amend) the requests (fill the backoffice fields), require validation for other departments and print the documents
-- `validate_permit_request`,"Valider les demandes de permis": allow the user to fill the validation form
-- `classify_permit_request`,"Classer les demandes de permis" allow the user to accept/reject the requests if validations services have all accepted it.
-- `edit_permit_request`, "Éditer les demandes de permis": allow the user to edit de requests filled by another person
-
-
-## Two factor authentification
-
-You can enable 2FA by setting the variable `ENABLE_2FA` to `true`. Defaults to `false`.
-
-### Access to admin views under 2FA
-
-Super users require to enable 2FA to have access to the admin app.
-
-Follow the following steps:
-
-1. Go to the `/account/login/` and sign in with your super user credentials.
-2. Follow the steps to activate 2FA
-3. Open `/admin/`
-
-Next time you sign in, you will be asked for a token.
-Once you provided your token go to `/admin/` to access the admin app.
-
-## Locked failed logins
-
-Django-axes is used to limite login attemps from users.
-Please read https://django-axes.readthedocs.io/en/latest/index.html to learn how to use it.
-
-## Dependency management
+### Dependency management
 
 Dependencies are managed with [`pip-tools`](https://github.com/jazzband/pip-tools).
 
@@ -183,50 +143,40 @@ it's compatible with other packages listed in the `requirements.in` file:
 docker-compose exec web pip-compile -P django requirements.in
 docker-compose exec web pip install -r requirements.txt
 ```
+---
+## Permissions and authentication
 
-## Migrations
+### Permissions
 
-To run a migration, for example when the model has changed, execute
-`manage.py makemigrations` from inside the docker service of the web app.
-Then execute `manage.py migrate`.
+The user belonging to backoffice group can be granted specific permissions:
+- `see_private_requests`, "Voir les demandes restreintes": allows the user to make requests that are not visible by standard user. Typically during the setup stage of a new form configuration
+- `amend_permit_request`,"Traiter les demandes de permis": allow the user the process (amend) the requests (fill the backoffice fields), require validation for other departments and print the documents
+- `validate_permit_request`,"Valider les demandes de permis": allow the user to fill the validation form
+- `classify_permit_request`,"Classer les demandes de permis" allow the user to accept/reject the requests if validations services have all accepted it.
+- `edit_permit_request`, "Éditer les demandes de permis": allow the user to edit de requests filled by another person
 
-```
-docker-compose exec web python3 manage.py makemigrations <app_label>
-docker-compose exec web python3 manage.py migrate <app_label> <migration_name>
-```
 
-For more information about django's migrations, help is available at:
+### Two factor authentification
 
-```
-docker-compose exec web python3 manage.py makemigrations --help
-docker-compose exec web python3 manage.py migrate --help
-```
+You can enable 2FA by setting the variable `ENABLE_2FA` to `true`. Defaults to `false`.
 
-### Practical example
-Note: prepend `docker-compose exec web ` to the following python calls if your app is containerized.
+### Access to admin views under 2FA
 
-`<app_label>`: this is set automatically depending on which model file is modified. In Geocity, it will always be "permits" => so there is nothing to specify.
+Super users require to enable 2FA to have access to the admin app.
 
-`<migration_name>`: we try to name it with something meaningful, but there is no convention, for example, this command: `python manage.py makemigrations -n my_changes_to_the_user_model` will automatically create the following migration file for the "permits" app_label: `0056_my_changes_to_the_user_model.py`
+Follow the following steps:
 
-Finally, you can apply it using:
-`python manage.py migrate permits 0056_my_changes_to_the_user_model`
+1. Go to the `/account/login/` and sign in with your super user credentials.
+2. Follow the steps to activate 2FA
+3. Open `/admin/`
 
-## Wiki
+Next time you sign in, you will be asked for a token.
+Once you provided your token go to `/admin/` to access the admin app.
 
-Sidebar of wiki to show the new pages is managed by : [github-wiki-sidebar](https://www.npmjs.com/package/github-wiki-sidebar).
+### Locked failed logins
 
-Used `_` instead of `:` for `Define the category separator` because the character was not allowed, the other params juste press enter and keep it has default.
-
-```bash
-? Define the category separator for multi-level menu: _
-? Define the format of the page links: ./%s
-? Define the _Sidebar.md content template: %s
-? Select the items to be excluded from menu: (Press <space> to select, <a> to toggle all, <i> to invert selection)
-? Change the priority/order of the items in menu <space separated list of ids - ex: 0 2 3>
-```
-
-## OAuth2
+Django-axes is used to limite login attemps from users.
+Please read https://django-axes.readthedocs.io/en/latest/index.html to learn how to use it.
 
 ### Geocity as a OAuth2 provider
 * [Access to a ressources with QGIS](docs/OAuth2_Qgis.md)
@@ -263,6 +213,52 @@ This will override the data of any SocialApp with provider geomapfish.
 
 Geomapfish login process will raise an error if no APP settings and no SocialApp
 object are present.
+
+---
+## Migrations
+
+To run a migration, for example when the model has changed, execute
+`manage.py makemigrations` from inside the docker service of the web app.
+Then execute `manage.py migrate`.
+
+```
+docker-compose exec web python3 manage.py makemigrations <app_label>
+docker-compose exec web python3 manage.py migrate <app_label> <migration_name>
+```
+
+For more information about django's migrations, help is available at:
+
+```
+docker-compose exec web python3 manage.py makemigrations --help
+docker-compose exec web python3 manage.py migrate --help
+```
+
+### Practical example
+Note: prepend `docker-compose exec web ` to the following python calls if your app is containerized.
+
+`<app_label>`: this is set automatically depending on which model file is modified. In Geocity, it will always be "permits" => so there is nothing to specify.
+
+`<migration_name>`: we try to name it with something meaningful, but there is no convention, for example, this command: `python manage.py makemigrations -n my_changes_to_the_user_model` will automatically create the following migration file for the "permits" app_label: `0056_my_changes_to_the_user_model.py`
+
+Finally, you can apply it using:
+`python manage.py migrate permits 0056_my_changes_to_the_user_model`
+
+---
+## Wiki
+
+Sidebar of wiki to show the new pages is managed by : [github-wiki-sidebar](https://www.npmjs.com/package/github-wiki-sidebar).
+
+Used `_` instead of `:` for `Define the category separator` because the character was not allowed, the other params juste press enter and keep it has default.
+
+```bash
+? Define the category separator for multi-level menu: _
+? Define the format of the page links: ./%s
+? Define the _Sidebar.md content template: %s
+? Select the items to be excluded from menu: (Press <space> to select, <a> to toggle all, <i> to invert selection)
+? Change the priority/order of the items in menu <space separated list of ids - ex: 0 2 3>
+```
+
+
 
 ## Cronjobs
 

@@ -1,8 +1,10 @@
 from django.contrib import admin
+from polymorphic.admin import PolymorphicInlineSupportMixin, StackedPolymorphicInline
 
-from .models import Report, ReportLayout
-from permits.admin import IntegratorFilterMixin
 from permits import models as permits_models
+from permits.admin import IntegratorFilterMixin
+
+from .models import Report, ReportLayout, Section
 
 
 @admin.register(ReportLayout)
@@ -19,9 +21,26 @@ class ReportLayoutAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     ]
 
 
-@admin.register(Report)
-class ReportAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+class SectionInline(StackedPolymorphicInline):
+    model = Section
+    # Automatic registration of child inlines
+    # see https://django-polymorphic.readthedocs.io/en/stable/admin.html#inline-models
+    child_inlines = [
+        type(
+            f"{child_model.__class__}Inline",
+            (StackedPolymorphicInline.Child,),
+            {"model": child_model},
+        )
+        for child_model in Section.__subclasses__()
+    ]
+    classes = ["grp-module"]
 
+
+@admin.register(Report)
+class ReportAdmin(
+    PolymorphicInlineSupportMixin, IntegratorFilterMixin, admin.ModelAdmin
+):
+    inlines = (SectionInline,)
     filter_horizontal = ("work_object_types",)
     list_display = [
         "name",
@@ -46,3 +65,10 @@ class ReportAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     )
                 )
         return super().formfield_for_manytomany(db_field, request, **kwargs)
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        sections = form.instance.sections.order_by("order").all()
+        for i, section in enumerate(sections):
+            section.order = (i + 1) * 10
+            section.save()

@@ -1,23 +1,14 @@
 import collections
 import dataclasses
 import enum
+import os
+import shutil
 from datetime import date, datetime, timedelta
 
-import os
-
-import shutil
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
-from django.db.models import (
-    JSONField,
-    UniqueConstraint,
-    F,
-    ExpressionWrapper,
-    BooleanField,
-    ProtectedError,
-)
-from django.core.exceptions import ValidationError, SuspiciousOperation
+from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.core.validators import (
     FileExtensionValidator,
     MaxValueValidator,
@@ -25,7 +16,16 @@ from django.core.validators import (
     RegexValidator,
 )
 from django.db import models
-from django.db.models import Q, Max, Min
+from django.db.models import (
+    BooleanField,
+    ExpressionWrapper,
+    JSONField,
+    Max,
+    Min,
+    ProtectedError,
+    Q,
+    UniqueConstraint,
+)
 from django.template.defaultfilters import slugify
 from django.urls import reverse
 from django.utils import timezone
@@ -35,10 +35,8 @@ from django.utils.translation import gettext_lazy as _
 from django_tables2.export import TableExport
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
-from django.apps import apps
 
 from . import fields
-
 
 # public types: for public/restricted features
 PUBLIC_TYPE_CHOICES = (
@@ -220,7 +218,9 @@ class PermitAdministrativeEntity(models.Model):
     link = models.URLField(_("Lien"), max_length=200, blank=True)
     archive_link = models.URLField(_("Archives externes"), max_length=1024, blank=True)
     general_informations = models.CharField(
-        _("Informations"), blank=True, max_length=1024,
+        _("Informations"),
+        blank=True,
+        max_length=1024,
     )
     custom_signature = models.TextField(
         _("Signature des emails"),
@@ -307,7 +307,10 @@ class PermitAuthorManager(models.Manager):
             username, email, password=None, first_name="Temporaire", last_name="Anonyme"
         )
 
-        new_temp_author = super().create(user=temp_user, zipcode=zipcode,)
+        new_temp_author = super().create(
+            user=temp_user,
+            zipcode=zipcode,
+        )
 
         return new_temp_author
 
@@ -343,11 +346,18 @@ class PermitAuthor(models.Model):
             )
         ],
     )
-    address = models.CharField(_("Rue"), max_length=100,)
-    zipcode = models.PositiveIntegerField(
-        _("NPA"), validators=[MinValueValidator(1000), MaxValueValidator(9999)],
+    address = models.CharField(
+        _("Rue"),
+        max_length=100,
     )
-    city = models.CharField(_("Ville"), max_length=100,)
+    zipcode = models.PositiveIntegerField(
+        _("NPA"),
+        validators=[MinValueValidator(1000), MaxValueValidator(9999)],
+    )
+    city = models.CharField(
+        _("Ville"),
+        max_length=100,
+    )
     phone_first = models.CharField(
         _("Téléphone principal"),
         max_length=20,
@@ -436,15 +446,34 @@ class PermitAuthor(models.Model):
 class PermitActor(models.Model):
     """Contacts"""
 
-    first_name = models.CharField(_("Prénom"), max_length=150,)
-    last_name = models.CharField(_("Nom"), max_length=100,)
+    first_name = models.CharField(
+        _("Prénom"),
+        max_length=150,
+    )
+    last_name = models.CharField(
+        _("Nom"),
+        max_length=100,
+    )
     company_name = models.CharField(_("Entreprise"), max_length=100, blank=True)
     vat_number = models.CharField(_("Numéro TVA"), max_length=19, blank=True)
-    address = models.CharField(_("Adresse"), max_length=100,)
-    zipcode = models.PositiveIntegerField(_("NPA"),)
-    city = models.CharField(_("Ville"), max_length=100,)
-    phone = models.CharField(_("Téléphone"), max_length=20,)
-    email = models.EmailField(_("Email"),)
+    address = models.CharField(
+        _("Adresse"),
+        max_length=100,
+    )
+    zipcode = models.PositiveIntegerField(
+        _("NPA"),
+    )
+    city = models.CharField(
+        _("Ville"),
+        max_length=100,
+    )
+    phone = models.CharField(
+        _("Téléphone"),
+        max_length=20,
+    )
+    email = models.EmailField(
+        _("Email"),
+    )
     history = HistoricalRecords()
 
     class Meta:
@@ -623,7 +652,10 @@ class PermitRequest(models.Model):
     )
     prolongation_comment = models.TextField(_("Commentaire"), blank=True)
     prolongation_status = models.PositiveSmallIntegerField(
-        _("Décision"), choices=PROLONGATION_STATUS_CHOICES, null=True, blank=True,
+        _("Décision"),
+        choices=PROLONGATION_STATUS_CHOICES,
+        null=True,
+        blank=True,
     )
     additional_decision_information = models.TextField(
         _("Information complémentaire"),
@@ -888,11 +920,14 @@ class PermitRequest(models.Model):
 
     def archive(self, archivist):
         # make sure the request wasn't already archived
-        if ArchivedPermitRequest.objects.filter(permit_request=self,).first():
+        if ArchivedPermitRequest.objects.filter(
+            permit_request=self,
+        ).first():
             raise SuspiciousOperation(_("La demande a déjà été archivée"))
 
         archive = ArchivedPermitRequest.objects.create(
-            permit_request=self, archivist=archivist,
+            permit_request=self,
+            archivist=archivist,
         )
 
         try:
@@ -1049,7 +1084,8 @@ class WorksObjectType(models.Model):
     )
     is_public = models.BooleanField(_("Visibilité "), default=False)
     is_anonymous = models.BooleanField(
-        _("Demandes anonymes uniquement"), default=False,
+        _("Demandes anonymes uniquement"),
+        default=False,
     )
     notify_services = models.BooleanField(_("Notifier les services"), default=False)
     services_to_notify = models.TextField(
@@ -1066,7 +1102,8 @@ class WorksObjectType(models.Model):
         ),
     )
     expiration_reminder = models.BooleanField(
-        _("Activer la fonction de rappel"), default=False,
+        _("Activer la fonction de rappel"),
+        default=False,
     )
     days_before_reminder = models.IntegerField(
         _("Délai de rappel (jours)"), blank=True, null=True
@@ -1080,6 +1117,14 @@ class WorksObjectType(models.Model):
     permanent_publication_enabled = models.BooleanField(
         _("Autoriser la mise en consultation sur une durée indéfinie"), default=False
     )
+    # reverse relationship is manually defined on reports.Report so it shows up on both sides in admin
+    reports = models.ManyToManyField(
+        "reports.Report",
+        blank=True,
+        through="reports.report_work_object_types",
+        related_name="+",
+    )
+
     # All objects
     objects = models.Manager()
 
@@ -1444,7 +1489,8 @@ class PermitWorkflowStatus(models.Model):
     """
 
     status = models.PositiveSmallIntegerField(
-        _("statut"), choices=PermitRequest.STATUS_CHOICES,
+        _("statut"),
+        choices=PermitRequest.STATUS_CHOICES,
     )
     administrative_entity = models.ForeignKey(
         "PermitAdministrativeEntity",
@@ -1471,7 +1517,9 @@ class PermitRequestAmendProperty(models.Model):
         _("Editable même après classement de la demande"), default=False
     )
     works_object_types = models.ManyToManyField(
-        WorksObjectType, verbose_name=_("objets"), related_name="amend_properties",
+        WorksObjectType,
+        verbose_name=_("objets"),
+        related_name="amend_properties",
     )
     integrator = models.ForeignKey(
         Group,
@@ -1528,7 +1576,10 @@ class PermitRequestComplementaryDocument(models.Model):
     )
 
     document = fields.ComplementaryDocumentFileField(_("Document"))
-    description = models.TextField(_("Description du document"), blank=True,)
+    description = models.TextField(
+        _("Description du document"),
+        blank=True,
+    )
     owner = models.ForeignKey(
         User,
         null=True,
@@ -1542,7 +1593,8 @@ class PermitRequestComplementaryDocument(models.Model):
         verbose_name=_("Demande de permis"),
     )
     status = models.PositiveSmallIntegerField(
-        _("Statut du document"), choices=STATUS_CHOICES,
+        _("Statut du document"),
+        choices=STATUS_CHOICES,
     )
     authorised_departments = models.ManyToManyField(
         PermitDepartment,
@@ -1665,7 +1717,9 @@ class ArchivedPermitRequest(models.Model):
         verbose_name=_("Personne ayant archivé la demande"),
     )
     permit_request = models.OneToOneField(
-        PermitRequest, on_delete=models.CASCADE, primary_key=True,
+        PermitRequest,
+        on_delete=models.CASCADE,
+        primary_key=True,
     )
 
     @property
@@ -1685,7 +1739,6 @@ class ArchivedPermitRequest(models.Model):
         self.permit_request.delete()
 
         return super().delete(using, keep_parents)
-
 
 
 class TemplateCustomization(models.Model):

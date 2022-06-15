@@ -6,24 +6,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0040_trigram_unaccent'),
+        ("permits", "0040_trigram_unaccent"),
     ]
 
     operations = [
         migrations.AddIndex(
-            model_name='permitrequest',
-            index=models.Index(fields=['created_at'], name='permits_per_created_87fcf8_idx'),
+            model_name="permitrequest",
+            index=models.Index(
+                fields=["created_at"], name="permits_per_created_87fcf8_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='permitrequestgeotime',
-            index=models.Index(fields=['starts_at'], name='permits_per_starts__f89c57_idx'),
+            model_name="permitrequestgeotime",
+            index=models.Index(
+                fields=["starts_at"], name="permits_per_starts__f89c57_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='permitrequestgeotime',
-            index=models.Index(fields=['ends_at'], name='permits_per_ends_at_e01d39_idx'),
+            model_name="permitrequestgeotime",
+            index=models.Index(
+                fields=["ends_at"], name="permits_per_ends_at_e01d39_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='worksobjectproperty',
-            index=models.Index(fields=['input_type'], name='permits_wor_input_t_ab30cd_idx'),
+            model_name="worksobjectproperty",
+            index=models.Index(
+                fields=["input_type"], name="permits_wor_input_t_ab30cd_idx"
+            ),
         ),
     ]

@@ -6,13 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0061_add_works_object_property_file_download'),
+        ("permits", "0061_add_works_object_property_file_download"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='permitrequestamendproperty',
-            name='can_always_update',
-            field=models.BooleanField(default=False, verbose_name='Editable même après classement de la demande'),
+            model_name="permitrequestamendproperty",
+            name="can_always_update",
+            field=models.BooleanField(
+                default=False,
+                verbose_name="Editable même après classement de la demande",
+            ),
         ),
     ]

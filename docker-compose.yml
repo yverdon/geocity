@@ -17,9 +17,6 @@ services:
             - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
         ports:
             - "${DJANGO_DOCKER_PORT}:9000"
-        networks:
-            - pdf_generation
-            - default
 
     # Builder for the geocity_qgis image.
     # Containers will be started on demand by Django, meaning that runtime config
@@ -29,15 +26,10 @@ services:
         build:
             context: services/qgis
 
+    # Builder for the geocity_pdf image.
+    # Containers will be started on demand by Django, meaning that runtime config
+    # will be ignored
     pdf:
-        restart: unless-stopped
+        image: geocity_pdf
         build:
             context: services/pdf
-        networks:
-            - pdf_generation
-        environment:
-            WEB_ROOT_URL: http://web:9000
-
-networks:
-    # custom network to restriction communication to between django<->pdf
-    pdf_generation:

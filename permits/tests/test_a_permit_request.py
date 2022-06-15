@@ -13,12 +13,13 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+
 from permits import models, services
 
-from . import factories
-from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_parser
 from ..forms import PermitRequestGeoTimeForm
 from ..management.commands import create_anonymous_users
+from . import factories
+from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_parser
 
 
 def to_works_objects_dict(works_object_types):
@@ -459,7 +460,8 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
         works_object_type = factories.WorksObjectTypeFactory(can_always_update=True)
         factories.WorksObjectTypeChoiceFactory(
-            permit_request=permit_request, works_object_type=works_object_type,
+            permit_request=permit_request,
+            works_object_type=works_object_type,
         )
         permit_request.administrative_entity.works_object_types.set(
             permit_request.works_object_types.all()
@@ -495,7 +497,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         works_type = factories.WorksTypeFactory(name="Foo type")
         works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeWithoutGeometryFactory(
-            works_type=works_type, works_object=works_object, needs_date=False,
+            works_type=works_type,
+            works_object=works_object,
+            needs_date=False,
         )
         permit_request.works_object_types.set([wot])
         self.client.post(
@@ -536,7 +540,8 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         works_type = factories.WorksTypeFactory(name="Foo type")
         works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeFactory(
-            works_type=works_type, works_object=works_object,
+            works_type=works_type,
+            works_object=works_object,
         )
         permit_request.works_object_types.set([wot])
 
@@ -556,7 +561,8 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
     ):
         permit_request = factories.PermitRequestGeoTimeFactory(
             permit_request=factories.PermitRequestFactory(
-                author=self.user.permitauthor, status=models.PermitRequest.STATUS_DRAFT,
+                author=self.user.permitauthor,
+                status=models.PermitRequest.STATUS_DRAFT,
             )
         ).permit_request
 
@@ -627,9 +633,11 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         permit_request.administrative_entity.works_object_types.set(
             factories.WorksObjectTypeFactory.create_batch(2, works_object=works_object)
         )
-        works_type_id = permit_request.administrative_entity.works_object_types.values_list(
-            "works_type_id", flat=True
-        ).first()
+        works_type_id = (
+            permit_request.administrative_entity.works_object_types.values_list(
+                "works_type_id", flat=True
+            ).first()
+        )
 
         self.client.post(
             reverse(
@@ -658,7 +666,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
 
         response = self.client.post(
-            reverse("permits:permit_request_select_administrative_entity",),
+            reverse(
+                "permits:permit_request_select_administrative_entity",
+            ),
             data={"administrative_entity": administrative_entity.pk},
         )
 
@@ -690,12 +700,14 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            len(parser.select('input[name="form-0-starts_at"]')), 1,
+            len(parser.select('input[name="form-0-starts_at"]')),
+            1,
         )
         self.assertEqual(len(parser.select('input[name="form-0-ends_at"]')), 1)
 
         self.assertEqual(
-            len(parser.select('textarea[name="form-0-geom"]')), 0,
+            len(parser.select('textarea[name="form-0-geom"]')),
+            0,
         )
 
     def test_geotime_step_date_fields_cannot_be_empty_when_date_is_required(self):
@@ -717,10 +729,18 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertFormsetError(
-            response, "formset", 0, "starts_at", "Ce champ est obligatoire.",
+            response,
+            "formset",
+            0,
+            "starts_at",
+            "Ce champ est obligatoire.",
         )
         self.assertFormsetError(
-            response, "formset", 0, "ends_at", "Ce champ est obligatoire.",
+            response,
+            "formset",
+            0,
+            "ends_at",
+            "Ce champ est obligatoire.",
         )
 
     def test_geotime_step_date_fields_ends_at_must_not_be_before_starts_at(self):
@@ -777,11 +797,13 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            len(parser.select('textarea[name="form-0-geom"]')), 1,
+            len(parser.select('textarea[name="form-0-geom"]')),
+            1,
         )
 
         self.assertEqual(
-            len(parser.select('input[name="form-0-starts_at"]')), 0,
+            len(parser.select('input[name="form-0-starts_at"]')),
+            0,
         )
         self.assertEqual(len(parser.select('input[name="form-0-ends_at"]')), 0)
 
@@ -805,11 +827,13 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            len(parser.select('input[name="form-0-starts_at"]')), 1,
+            len(parser.select('input[name="form-0-starts_at"]')),
+            1,
         )
         self.assertEqual(len(parser.select('input[name="form-0-ends_at"]')), 1)
         self.assertEqual(
-            len(parser.select('textarea[name="form-0-geom"]')), 1,
+            len(parser.select('textarea[name="form-0-geom"]')),
+            1,
         )
 
     def test_geotime_step_only_point_geom_field_appear_when_only_point_geom_type_is_required(
@@ -1002,8 +1026,12 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
     def test_start_date_is_limited_by_work_object_types_with_biggest_start_delay(self):
         group = factories.SecretariatGroupFactory()
-        work_object_type_1 = factories.WorksObjectTypeFactory(start_delay=3,)
-        work_object_type_2 = factories.WorksObjectTypeFactory(start_delay=1,)
+        work_object_type_1 = factories.WorksObjectTypeFactory(
+            start_delay=3,
+        )
+        work_object_type_2 = factories.WorksObjectTypeFactory(
+            start_delay=1,
+        )
 
         permit_request = factories.PermitRequestGeoTimeFactory(
             permit_request=factories.PermitRequestFactory(
@@ -1043,7 +1071,8 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
     def test_start_date_cant_be_of_limit(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
         works_object_type = factories.WorksObjectTypeWithoutGeometryFactory(
-            needs_date=True, start_delay=3,
+            needs_date=True,
+            start_delay=3,
         )
         permit_request.works_object_types.set([works_object_type])
         today = date.today()
@@ -1114,15 +1143,18 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         parser = get_parser(response.content)
 
         self.assertEqual(
-            len(parser.select("#legal-infos span.directive_description")), 2,
+            len(parser.select("#legal-infos span.directive_description")),
+            2,
         )
 
         self.assertEqual(
-            len(parser.select("#legal-infos a.directive_file")), 2,
+            len(parser.select("#legal-infos a.directive_file")),
+            2,
         )
 
         self.assertEqual(
-            len(parser.select("#legal-infos span.additional_information")), 2,
+            len(parser.select("#legal-infos span.additional_information")),
+            2,
         )
 
     def test_administrative_entity_is_filtered_by_tag(self):
@@ -1452,10 +1484,12 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         self.wot_normal = factories.WorksObjectTypeFactory()
         self.wot_normal_no_date = factories.WorksObjectTypeFactory(needs_date=False)
         self.wot_prolongable_no_date = factories.WorksObjectTypeFactory(
-            needs_date=False, permit_duration=30,
+            needs_date=False,
+            permit_duration=30,
         )
         self.wot_prolongable_with_date = factories.WorksObjectTypeFactory(
-            needs_date=True, permit_duration=60,
+            needs_date=True,
+            permit_duration=60,
         )
         self.wot_prolongable_no_date_with_reminder = factories.WorksObjectTypeFactory(
             needs_date=False,
@@ -1482,13 +1516,18 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         self,
     ):
         permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED,
+            author=self.user.permitauthor,
+            status=models.PermitRequest.STATUS_APPROVED,
         )
         permit_request.works_object_types.set([self.wot_normal])
         factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
 
         # Permit list
-        response = self.client.get(reverse("permits:permit_requests_list",))
+        response = self.client.get(
+            reverse(
+                "permits:permit_requests_list",
+            )
+        )
         parser = get_parser(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Demander une prolongation")
@@ -1539,7 +1578,9 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(1, len(alert))
         self.assertNotContains(response, "Demander une prolongation")
 
-    def test_user_cannot_request_permit_prolongation_if_it_has_been_rejected(self,):
+    def test_user_cannot_request_permit_prolongation_if_it_has_been_rejected(
+        self,
+    ):
         permit_request = factories.PermitRequestFactory(
             author=self.user.permitauthor,
             status=models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
@@ -1602,7 +1643,9 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(1, len(alert))
         self.assertNotContains(response, "Demander une prolongation")
 
-    def test_user_can_request_permit_prolongation(self,):
+    def test_user_can_request_permit_prolongation(
+        self,
+    ):
         permit_request = factories.PermitRequestFactory(
             author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED
         )
@@ -1663,7 +1706,9 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         self.assertRegex(mail.outbox[0].subject, expected_subject_regex)
         self.assertRegex(mail.outbox[0].message().as_string(), expected_subject_regex)
 
-    def test_permit_prolongation_request_must_be_after_original_end_date(self,):
+    def test_permit_prolongation_request_must_be_after_original_end_date(
+        self,
+    ):
         permit_request = factories.PermitRequestFactory(
             author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED
         )
@@ -1694,9 +1739,12 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         )
 
     # TESTS FOR THE SECRETARIAT
-    def test_secretariat_can_prolonge_or_permit_request_without_user_asking(self,):
+    def test_secretariat_can_prolonge_or_permit_request_without_user_asking(
+        self,
+    ):
         permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED,
+            author=self.user.permitauthor,
+            status=models.PermitRequest.STATUS_APPROVED,
         )
         permit_request.works_object_types.set([self.wot_prolongable_with_date])
         factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
@@ -1768,9 +1816,12 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             mail.outbox[0].message().as_string(),
         )
 
-    def test_secretariat_can_reject_permit_request(self,):
+    def test_secretariat_can_reject_permit_request(
+        self,
+    ):
         permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED,
+            author=self.user.permitauthor,
+            status=models.PermitRequest.STATUS_APPROVED,
         )
         permit_request.works_object_types.set([self.wot_prolongable_with_date])
         factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
@@ -1823,9 +1874,12 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             mail.outbox[0].message().as_string(),
         )
 
-    def test_secretariat_prolonge_form_is_disabled_on_bad_permit_request_status(self,):
+    def test_secretariat_prolonge_form_is_disabled_on_bad_permit_request_status(
+        self,
+    ):
         permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor, status=models.PermitRequest.STATUS_RECEIVED,
+            author=self.user.permitauthor,
+            status=models.PermitRequest.STATUS_RECEIVED,
         )
         permit_request.works_object_types.set([self.wot_prolongable_with_date])
         factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
@@ -1863,7 +1917,11 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             starts_at=timezone.now() - datetime.timedelta(days=30),
             ends_at=ends_at_draft,
         )
-        response = self.client.get(reverse("permits:permit_requests_list",))
+        response = self.client.get(
+            reverse(
+                "permits:permit_requests_list",
+            )
+        )
         parser = get_parser(response.content)
 
         info_expired_permits = parser.findAll("i", title="Demande échue")
@@ -1883,7 +1941,9 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(0, len(action_prolongation_requested))
         self.assertEqual(0, len(action_prolongation_rejected))
 
-    def test_user_can_see_prolongation_icons_if_permit_is_about_to_expire(self,):
+    def test_user_can_see_prolongation_icons_if_permit_is_about_to_expire(
+        self,
+    ):
         # Expired within delay of reminder  - Action icon - No expired/renew icons
         permit_request_expired = factories.PermitRequestFactory(
             validated_at=timezone.now(),
@@ -1900,7 +1960,11 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             ends_at=ends_at_expired,
         )
 
-        response = self.client.get(reverse("permits:permit_requests_list",))
+        response = self.client.get(
+            reverse(
+                "permits:permit_requests_list",
+            )
+        )
         parser = get_parser(response.content)
 
         info_expired_permits = parser.findAll("i", title="Demande échue")
@@ -1920,7 +1984,9 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(0, len(action_prolongation_requested))
         self.assertEqual(0, len(action_prolongation_rejected))
 
-    def test_user_can_see_prolongation_info_icons_if_permit_is_prolonged(self,):
+    def test_user_can_see_prolongation_info_icons_if_permit_is_prolonged(
+        self,
+    ):
         # Prolonged  - No action icons - Renew icons - Date fin = prolongation_date
         prolongation_date_prolonged = timezone.now() + datetime.timedelta(days=365)
         permit_request_prolonged = factories.PermitRequestFactory(
@@ -1940,7 +2006,11 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             ends_at=ends_at_prolonged,
         )
 
-        response = self.client.get(reverse("permits:permit_requests_list",))
+        response = self.client.get(
+            reverse(
+                "permits:permit_requests_list",
+            )
+        )
         parser = get_parser(response.content)
 
         info_expired_permits = parser.findAll("i", title="Demande échue")
@@ -1983,7 +2053,11 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             ends_at=ends_at_requested,
         )
 
-        response = self.client.get(reverse("permits:permit_requests_list",))
+        response = self.client.get(
+            reverse(
+                "permits:permit_requests_list",
+            )
+        )
         parser = get_parser(response.content)
 
         info_expired_permits = parser.findAll("i", title="Demande échue")
@@ -2026,7 +2100,11 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             ends_at=ends_at_rejected,
         )
 
-        response = self.client.get(reverse("permits:permit_requests_list",))
+        response = self.client.get(
+            reverse(
+                "permits:permit_requests_list",
+            )
+        )
         parser = get_parser(response.content)
 
         info_expired_permits = parser.findAll("i", title="Demande échue")
@@ -2067,7 +2145,8 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            len(parser.select(".tab-pane#prolong button")), 2,
+            len(parser.select(".tab-pane#prolong button")),
+            2,
         )
 
     def test_secretariat_can_see_prolongation_buttons_if_at_least_one_wot_has_prolongation_enabled(
@@ -2093,7 +2172,8 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            len(parser.select(".tab-pane#prolong button")), 2,
+            len(parser.select(".tab-pane#prolong button")),
+            2,
         )
 
     def test_secretariat_cannot_see_prolongation_buttons_if_wot_has_not_prolongation_enabled(
@@ -2117,7 +2197,8 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            len(parser.select(".tab-pane#prolong button")), 0,
+            len(parser.select(".tab-pane#prolong button")),
+            0,
         )
 
 
@@ -2525,10 +2606,12 @@ class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
             property__name="datum"
         )
         self.assertEqual(
-            prop_val.value, {"val": today.isoformat()},
+            prop_val.value,
+            {"val": today.isoformat()},
         )
         self.assertEqual(
-            prop_val.property.input_type, models.WorksObjectProperty.INPUT_TYPE_DATE,
+            prop_val.property.input_type,
+            models.WorksObjectProperty.INPUT_TYPE_DATE,
         )
 
 
@@ -2763,7 +2846,8 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         for prop in props:
             prop.works_object_types.set(permit_request.works_object_types.all())
             factories.PermitRequestAmendPropertyValueFactory(
-                property=prop, works_object_type_choice=works_object_type_choice,
+                property=prop,
+                works_object_type_choice=works_object_type_choice,
             )
             data[
                 f"{works_object_types_pk}_{prop.pk}"
@@ -2780,15 +2864,72 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             data=data,
         )
 
-        new_properties_values_qs = models.PermitRequestAmendPropertyValue.objects.values_list(
-            "value", flat=True
+        new_properties_values_qs = (
+            models.PermitRequestAmendPropertyValue.objects.values_list(
+                "value", flat=True
+            )
         )
         self.assertEqual(len(new_properties_values_qs), props_quantity - 1)
         self.assertIn(
-            "I am a new property value, I am alive!", new_properties_values_qs,
+            "I am a new property value, I am alive!",
+            new_properties_values_qs,
         )
 
-    def test_author_cannot_see_private_secretariat_amend_property(self,):
+    def test_secretariat_cannot_amend_permit_request_fields_if_can_always_be_updated(
+        self,
+    ):
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_APPROVED,
+            administrative_entity=self.administrative_entity,
+        )
+        work_object_type = factories.WorksObjectTypeFactory()
+        permit_request.works_object_types.set([work_object_type])
+        test_shortname_value = "my permitrequest shortname"
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data={
+                f"shortname": test_shortname_value,
+                "action": models.ACTION_AMEND,
+                "status": models.PermitRequest.STATUS_PROCESSING,
+            },
+        )
+
+        parser = get_parser(response.content)
+        element = "disabled" in str(parser.select('input[id="id_shortname"]'))
+        self.assertTrue(element)
+
+    def test_secretariat_can_amend_permit_request_fields_if_can_always_be_updated(
+        self,
+    ):
+        permit_request = factories.PermitRequestFactory(
+            status=models.PermitRequest.STATUS_APPROVED,
+            administrative_entity=self.administrative_entity,
+        )
+        work_object_type = factories.WorksObjectTypeFactory(can_always_update=True)
+        permit_request.works_object_types.set([work_object_type])
+        test_shortname_value = "my permitrequest shortname"
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+            data={
+                f"shortname": test_shortname_value,
+                "action": models.ACTION_AMEND,
+                "status": models.PermitRequest.STATUS_PROCESSING,
+            },
+        )
+
+        parser = get_parser(response.content)
+        element = "disabled" in str(parser.select('input[id="id_shortname"]'))
+        self.assertTrue(element)
+
+    def test_author_cannot_see_private_secretariat_amend_property(
+        self,
+    ):
 
         props_quantity = 3
         permit_request = factories.PermitRequestFactory(
@@ -2819,7 +2960,8 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         for prop in props:
             prop.works_object_types.set(permit_request.works_object_types.all())
             factories.PermitRequestAmendPropertyValueFactory(
-                property=prop, works_object_type_choice=works_object_type_choice,
+                property=prop,
+                works_object_type_choice=works_object_type_choice,
             )
             data[
                 f"{works_object_types_pk}_{prop.pk}"
@@ -2833,7 +2975,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         )
 
         parser = get_parser(response.content)
-        # check that 3 fields are visible by author and 3 are hidden
+        # check that the 3 fields are visible by author and 3 are hidden
         self.assertEqual(len(parser.select(".amend-property")), 3)
 
     def test_secretariat_can_see_submitted_requests(self):
@@ -2927,10 +3069,13 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            len(parser.select(".tab-pane#print button")), 2,
+            len(parser.select(".tab-pane#print button")),
+            2,
         )
 
-    def test_secretariat_cannot_see_print_buttons_if_not_configured(self,):
+    def test_secretariat_cannot_see_print_buttons_if_not_configured(
+        self,
+    ):
         works_object_types = factories.WorksObjectTypeFactory.create_batch(2)
 
         permit_request = factories.PermitRequestFactory(
@@ -2950,7 +3095,8 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         parser = get_parser(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            len(parser.select(".tab-pane#print button")), 0,
+            len(parser.select(".tab-pane#print button")),
+            0,
         )
 
     def test_secretariat_can_see_directives(self):
@@ -2985,10 +3131,13 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            len(parser.select(".tab-pane#directives span.directive_description")), 2,
+            len(parser.select(".tab-pane#directives span.directive_description")),
+            2,
         )
 
-    def test_secretariat_cannot_see_directives_if_not_configured(self,):
+    def test_secretariat_cannot_see_directives_if_not_configured(
+        self,
+    ):
         works_object_types = factories.WorksObjectTypeFactory.create_batch(2)
 
         permit_request = factories.PermitRequestFactory(
@@ -3008,7 +3157,8 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         parser = get_parser(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            len(parser.select(".tab-pane#directives span.directive_description")), 0,
+            len(parser.select(".tab-pane#directives span.directive_description")),
+            0,
         )
 
     def test_email_to_author_is_sent_when_secretariat_acknowledges_reception(self):
@@ -3021,7 +3171,8 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         works_type = factories.WorksTypeFactory(name="Foo type")
         works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeFactory(
-            works_type=works_type, works_object=works_object,
+            works_type=works_type,
+            works_object=works_object,
         )
         permit_request.works_object_types.set([wot])
         factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
@@ -3093,12 +3244,14 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
 
         self.assertTrue(mail.outbox[1].to[0] in valid_services_emails)
         self.assertIn(
-            services_message_subject, mail.outbox[1].subject,
+            services_message_subject,
+            mail.outbox[1].subject,
         )
         self.assertIn(services_message_content, mail.outbox[1].message().as_string())
         self.assertTrue(mail.outbox[2].to[0] in valid_services_emails)
         self.assertIn(
-            services_message_subject, mail.outbox[2].subject,
+            services_message_subject,
+            mail.outbox[2].subject,
         )
         self.assertIn(services_message_content, mail.outbox[2].message().as_string())
 
@@ -3132,7 +3285,8 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         for prop in props:
             prop.works_object_types.set(permit_request.works_object_types.all())
             factories.PermitRequestAmendPropertyValueFactory(
-                property=prop, works_object_type_choice=works_object_type_choice,
+                property=prop,
+                works_object_type_choice=works_object_type_choice,
             )
             data[
                 f"{works_object_types_pk}_{prop.pk}"
@@ -3147,12 +3301,15 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             follow=True,
         )
 
-        new_properties_values_qs = models.PermitRequestAmendPropertyValue.objects.values_list(
-            "value", flat=True
+        new_properties_values_qs = (
+            models.PermitRequestAmendPropertyValue.objects.values_list(
+                "value", flat=True
+            )
         )
 
         self.assertIn(
-            "I am a new property value, I am alive!", new_properties_values_qs,
+            "I am a new property value, I am alive!",
+            new_properties_values_qs,
         )
 
         self.assertEqual(response.status_code, 200)
@@ -3211,11 +3368,13 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(response.status_code, 200)
 
         self.assertEqual(
-            len(parser.select("#amend .form-group textarea")), 3,
+            len(parser.select("#amend .form-group textarea")),
+            3,
         )
 
         self.assertEqual(
-            len(parser.select("#amend .form-group textarea[disabled]")), 2,
+            len(parser.select("#amend .form-group textarea[disabled]")),
+            2,
         )
 
         # Send form edit
@@ -3228,12 +3387,15 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             follow=True,
         )
 
-        new_properties_values_qs = models.PermitRequestAmendPropertyValue.objects.values_list(
-            "value", flat=True
+        new_properties_values_qs = (
+            models.PermitRequestAmendPropertyValue.objects.values_list(
+                "value", flat=True
+            )
         )
 
         self.assertIn(
-            "I have been edited!", new_properties_values_qs,
+            "I have been edited!",
+            new_properties_values_qs,
         )
         self.assertEqual(response2.status_code, 200)
 
@@ -3271,17 +3433,22 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             f"Votre demande {permit_request.works_objects_str()} a changé",
         )
         self.assertIn(
-            "Votre demande a changé.", mail.outbox[0].message().as_string(),
+            "Votre demande a changé.",
+            mail.outbox[0].message().as_string(),
         )
         self.assertIn(
-            "Nouveau status:", mail.outbox[0].message().as_string(),
+            "Nouveau status:",
+            mail.outbox[0].message().as_string(),
         )
         self.assertIn(
-            "Raison du changement:", mail.outbox[0].message().as_string(),
+            "Raison du changement:",
+            mail.outbox[0].message().as_string(),
         )
 
     # def test_permit_request_status_cannot_change_to_awaiting_supplement_if_no_reason_is_given(
-    def test_awaiting_supplement_requires_to_notify_author(self,):
+    def test_awaiting_supplement_requires_to_notify_author(
+        self,
+    ):
         permit_request = factories.PermitRequestFactory(
             status=models.PermitRequest.STATUS_PROCESSING,
             administrative_entity=self.administrative_entity,
@@ -3309,8 +3476,11 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
 class AdministrativeEntitySecretaryEmailTestcase(TestCase):
     def setUp(self):
         self.user = factories.UserFactory(email="user@geocity.com")
-        self.administrative_entity_expeditor = factories.PermitAdministrativeEntityFactory(
-            expeditor_email="geocity_rocks@geocity.ch", expeditor_name="Geocity Rocks"
+        self.administrative_entity_expeditor = (
+            factories.PermitAdministrativeEntityFactory(
+                expeditor_email="geocity_rocks@geocity.ch",
+                expeditor_name="Geocity Rocks",
+            )
         )
         self.group = factories.SecretariatGroupFactory(
             department__administrative_entity=self.administrative_entity_expeditor
@@ -3328,7 +3498,8 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         works_type = factories.WorksTypeFactory(name="Foo type")
         works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeFactory(
-            works_type=works_type, works_object=works_object,
+            works_type=works_type,
+            works_object=works_object,
         )
         self.permit_request.works_object_types.set([wot])
 
@@ -3362,7 +3533,8 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         works_type = factories.WorksTypeFactory(name="Foo type")
         works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeFactory(
-            works_type=works_type, works_object=works_object,
+            works_type=works_type,
+            works_object=works_object,
         )
         self.permit_request.works_object_types.set([wot])
         self.administrative_entity_expeditor = (
@@ -3403,7 +3575,8 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         works_type = factories.WorksTypeFactory(name="Foo type")
         works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeFactory(
-            works_type=works_type, works_object=works_object,
+            works_type=works_type,
+            works_object=works_object,
         )
         self.permit_request.works_object_types.set([wot])
         self.administrative_entity_expeditor = (
@@ -3645,7 +3818,9 @@ class PermitRequestValidationTestcase(TestCase):
                 "permits:permit_request_detail",
                 kwargs={"permit_request_id": validation.permit_request.pk},
             ),
-            data={"action": models.ACTION_POKE,},
+            data={
+                "action": models.ACTION_POKE,
+            },
         )
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, [validator.permitauthor.user.email])
@@ -3663,7 +3838,8 @@ class PermitRequestValidationTestcase(TestCase):
         works_type = factories.WorksTypeFactory(name="Foo type")
         works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeFactory(
-            works_type=works_type, works_object=works_object,
+            works_type=works_type,
+            works_object=works_object,
         )
         validation.permit_request.works_object_types.set([wot])
 
@@ -3731,7 +3907,8 @@ class PermitRequestClassifyTestCase(TestCase):
         works_type = factories.WorksTypeFactory(name="Foo type")
         works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeFactory(
-            works_type=works_type, works_object=works_object,
+            works_type=works_type,
+            works_object=works_object,
         )
         validation.permit_request.works_object_types.set([wot])
 
@@ -3759,14 +3936,16 @@ class PermitRequestClassifyTestCase(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
         self.assertEqual(
-            mail.outbox[0].subject, "Votre demande a été traitée et classée (Foo type)",
+            mail.outbox[0].subject,
+            "Votre demande a été traitée et classée (Foo type)",
         )
         self.assertIn(
             "Nous vous informons que votre demande a été traitée et classée.",
             mail.outbox[0].message().as_string(),
         )
         self.assertIn(
-            "a custom signature for email", mail.outbox[0].message().as_string(),
+            "a custom signature for email",
+            mail.outbox[0].message().as_string(),
         )
 
     def test_secretariat_can_reject_permit_request_and_email_to_author_is_sent(self):
@@ -3780,7 +3959,8 @@ class PermitRequestClassifyTestCase(TestCase):
         works_type = factories.WorksTypeFactory(name="Foo type")
         works_object = factories.WorksObjectFactory()
         wot = factories.WorksObjectTypeFactory(
-            works_type=works_type, works_object=works_object,
+            works_type=works_type,
+            works_object=works_object,
         )
         validation.permit_request.works_object_types.set([wot])
 
@@ -3808,14 +3988,16 @@ class PermitRequestClassifyTestCase(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
         self.assertEqual(
-            mail.outbox[0].subject, "Votre demande a été traitée et classée (Foo type)",
+            mail.outbox[0].subject,
+            "Votre demande a été traitée et classée (Foo type)",
         )
         self.assertIn(
             "Nous vous informons que votre demande a été traitée et classée.",
             mail.outbox[0].message().as_string(),
         )
         self.assertIn(
-            "a custom signature for email", mail.outbox[0].message().as_string(),
+            "a custom signature for email",
+            mail.outbox[0].message().as_string(),
         )
 
     def test_secretariat_cannot_classify_permit_request_with_pending_validations(self):
@@ -3974,15 +4156,18 @@ class PermitRequestClassifyTestCase(TestCase):
         self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
 
         self.assertIn(
-            "Votre demande a été traitée et classée", mail.outbox[0].subject,
+            "Votre demande a été traitée et classée",
+            mail.outbox[0].subject,
         )
 
         self.assertIn(
-            "Bar type", mail.outbox[0].subject,
+            "Bar type",
+            mail.outbox[0].subject,
         )
 
         self.assertIn(
-            "Foo type", mail.outbox[0].subject,
+            "Foo type",
+            mail.outbox[0].subject,
         )
 
         self.assertIn(
@@ -3997,7 +4182,8 @@ class PermitRequestClassifyTestCase(TestCase):
             "test-send-1@geocity.ch",
         ]
         self.assertIn(
-            "a custom signature for email", mail.outbox[0].message().as_string(),
+            "a custom signature for email",
+            mail.outbox[0].message().as_string(),
         )
         self.assertTrue(mail.outbox[1].to[0] in valid_services_emails)
         self.assertIn(services_message_content, mail.outbox[1].message().as_string())
@@ -4076,11 +4262,15 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             name="privateEntity"
         )
         private_works_object_type = models.WorksObjectType.objects.create(
-            works_type=works_types[0], works_object=works_objects[0], is_public=False,
+            works_type=works_types[0],
+            works_object=works_objects[0],
+            is_public=False,
         )
         private_works_object_type.administrative_entities.set([administrative_entity])
         response = self.client.get(
-            reverse("permits:permit_request_select_administrative_entity",),
+            reverse(
+                "permits:permit_request_select_administrative_entity",
+            ),
         )
         self.assertNotContains(response, "privateEntity")
 
@@ -4099,16 +4289,22 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             name="privateEntity"
         )
         private_works_object_type = models.WorksObjectType.objects.create(
-            works_type=works_types[0], works_object=works_objects[0], is_public=False,
+            works_type=works_types[0],
+            works_object=works_objects[0],
+            is_public=False,
         )
         private_works_object_type.administrative_entities.set([administrative_entity])
         response = self.client.get(
-            reverse("permits:permit_request_select_administrative_entity",),
+            reverse(
+                "permits:permit_request_select_administrative_entity",
+            ),
         )
 
         self.assertContains(response, "privateEntity")
 
-    def test_work_type_step_only_show_public_requests_to_standard_user(self,):
+    def test_work_type_step_only_show_public_requests_to_standard_user(
+        self,
+    ):
 
         public_works_object_types = factories.WorksObjectTypeFactory.create_batch(
             2, is_public=True
@@ -4165,7 +4361,9 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             len(get_parser(response.content).select(".form-check-label")), 3
         )
 
-    def test_work_type_step_show_public_requests_to_standard_user(self,):
+    def test_work_type_step_show_public_requests_to_standard_user(
+        self,
+    ):
         public_works_object_types = factories.WorksObjectTypeFactory.create_batch(
             2, is_public=True
         )
@@ -4268,7 +4466,8 @@ class PermitRequestFilteredWorksObjectListTestCase(LoggedInSecretariatMixin, Tes
         super().setUp()
         self.wot_normal = factories.WorksObjectTypeFactory()
         self.permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED,
+            author=self.user.permitauthor,
+            status=models.PermitRequest.STATUS_APPROVED,
         )
         self.permit_request.works_object_types.set([self.wot_normal])
         factories.PermitRequestGeoTimeFactory(permit_request=self.permit_request)
@@ -4280,20 +4479,28 @@ class PermitRequestFilteredWorksObjectListTestCase(LoggedInSecretariatMixin, Tes
             works_object_type_choice=works_object_type_choice, property=prop
         )
 
-    def test_secretariat_user_can_see_filtered_permits_details(self,):
+    def test_secretariat_user_can_see_filtered_permits_details(
+        self,
+    ):
         response = self.client.get(
             "{}?works_object_types__works_object={}".format(
-                reverse("permits:permit_requests_list",),
+                reverse(
+                    "permits:permit_requests_list",
+                ),
                 self.permit_request.works_object_types.first().works_object.id,
             )
         )
 
         self.assertInHTML(self.prop_value.value["val"], response.content.decode())
 
-    def test_secretariat_user_can_see_filtered_permits_details_in_csv(self,):
+    def test_secretariat_user_can_see_filtered_permits_details_in_csv(
+        self,
+    ):
         response = self.client.get(
             "{}?works_object_types__works_object={}&_export=csv".format(
-                reverse("permits:permit_requests_list",),
+                reverse(
+                    "permits:permit_requests_list",
+                ),
                 self.permit_request.works_object_types.first().works_object.id,
             )
         )
@@ -4370,7 +4577,9 @@ class PermitRequestAnonymousTestCase(TestCase):
 
         type = factories.WorksTypeFactory(tags=["a"])
         factories.WorksObjectTypeFactory(
-            is_anonymous=True, works_type=type, administrative_entities=[entity],
+            is_anonymous=True,
+            works_type=type,
+            administrative_entities=[entity],
         )
 
         response = self.client.get(
@@ -4413,7 +4622,8 @@ class PermitRequestAnonymousTestCase(TestCase):
             administrative_entity=entity,
         )
         work_object_type_choice = factories.WorksObjectTypeChoiceFactory(
-            permit_request=permit_request, works_object_type=wot,
+            permit_request=permit_request,
+            works_object_type=wot,
         )
         prop = factories.WorksObjectPropertyFactory()
         prop.works_object_types.set([wot])
@@ -4438,5 +4648,6 @@ class PermitRequestAnonymousTestCase(TestCase):
         self.assertEqual(permit_request.author, entity.anonymous_user)
 
         self.assertEqual(
-            get_user_model().objects.get().pk, permit_request.author.user_id,
+            get_user_model().objects.get().pk,
+            permit_request.author.user_id,
         )

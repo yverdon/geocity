@@ -4,7 +4,6 @@ from django_wfs3.urls import wfs3_router
 
 from . import api, geoviews, views
 
-
 wfs3_router.register(r"permits", api.PermitRequestViewSet, "permits")
 wfs3_router.register(r"permits_point", api.PermitRequestPointViewSet, "permits_point")
 wfs3_router.register(r"permits_line", api.PermitRequestLineViewSet, "permits_line")
@@ -22,7 +21,9 @@ permit_request_urlpatterns = [
 
 anonymous_permit_request_urlpatterns = [
     path(
-        "anonymous/", views.anonymous_permit_request, name="anonymous_permit_request",
+        "anonymous/",
+        views.anonymous_permit_request,
+        name="anonymous_permit_request",
     ),
     path(
         "anonymous/sent",

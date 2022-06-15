@@ -1,32 +1,29 @@
+# Overrides for development
+
 version: "3"
 
 volumes:
-    gmsdata:
     pgdata:
 
 services:
     web:
-        image: gms_web
-        restart: unless-stopped
-        depends_on:
-            - "postgres"
-        build:
-            context: ./
-            args:
-                dev_dependencies: "${DEV_DEPENDENCIES}"
+        # Runserver for live reload
         entrypoint: /code/entrypoint_demo.sh
-        # command: "gunicorn geomapshark.wsgi -b :9000 --error-logfile gunicorn_log.log --workers=2 --threads=4 --worker-class=gthread"
         command: "python3 manage.py runserver 0.0.0.0:9000"
         volumes:
+            # Mount code for live reload
             - .:/code
-            - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
+            # Local mount to debug QGIS projects
+            - ./private_documents:/private_documents
             # to allow to spawn new QGIS containers
             - /var/run/docker.sock:/var/run/docker.sock
+        depends_on:
+            - "postgres"
         ports:
             - "${DJANGO_DOCKER_PORT}:9000"
-        networks:
-            - pdf_generation
-            - default
+        environment:
+            # Debug settings
+            - DJANGO_SETTINGS_MODULE=geomapshark.settings_dev
 
     postgres:
         image: postgis/postgis:13-3.2
@@ -49,31 +46,3 @@ services:
         ports:
             - 1025:1025 # smtp server
             - 8025:8025 # web ui
-
-    # Builder for the geocity_qgis image.
-    # Containers will be started on demand by Django, meaning that runtime config
-    # will be ignored
-    qgis:
-        image: geocity_qgis
-        build:
-            context: services/qgis
-
-    pdf:
-        restart: unless-stopped
-        build:
-            context: services/pdf
-        networks:
-            - pdf_generation
-        environment:
-            WEB_ROOT_URL: http://web:9000
-            FLASK_ENV: development
-        volumes:
-            - ./services/pdf:/app
-        ports:
-            - 5000:5000
-
-
-
-networks:
-    # custom network to restriction communication to between django<->pdf
-    pdf_generation:

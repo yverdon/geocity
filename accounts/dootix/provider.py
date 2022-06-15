@@ -1,7 +1,5 @@
-from allauth.socialaccount import providers
 from allauth.socialaccount.providers.base import ProviderAccount
 from allauth.socialaccount.providers.oauth2.provider import OAuth2Provider
-from django.conf import settings
 
 
 class DootixAccount(ProviderAccount):
@@ -22,7 +20,10 @@ class DootixProvider(OAuth2Provider):
         Extract available/matching fields to populate the User instance.
         """
         # permitauthor
-        return dict(name=data["name"], email=data["email"],)
+        return dict(
+            name=data["name"],
+            email=data["email"],
+        )
 
     def get_default_scope(self):
         return []

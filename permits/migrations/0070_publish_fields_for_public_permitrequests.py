@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0069_rename_short_name_and_is_public_field'),
+        ("permits", "0069_rename_short_name_and_is_public_field"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='worksobjectproperty',
-            name='is_public_when_permitrequest_is_public',
-            field=models.BooleanField(default=False, help_text="Ce champs sera visible sur l'application géocalendrier si la demande est publique", verbose_name='Afficher ce champs au grand public si la demande est publique'),
+            model_name="worksobjectproperty",
+            name="is_public_when_permitrequest_is_public",
+            field=models.BooleanField(
+                default=False,
+                help_text="Ce champs sera visible sur l'application géocalendrier si la demande est publique",
+                verbose_name="Afficher ce champs au grand public si la demande est publique",
+            ),
         ),
     ]

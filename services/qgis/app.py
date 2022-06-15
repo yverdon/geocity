@@ -1,21 +1,8 @@
-import sys
-from qgis.core import (
-     QgsApplication,
-     QgsProcessingFeedback,
-     QgsVectorLayer,
-     QgsApplication,
-     QgsProject,
-     QgsLayoutExporter,
-     QgsAuthMethodConfig,
-)
-
-import tempfile
-import os
-import sys
-from urllib.request import urlopen
-import logging
 import argparse
-import base64
+import os
+import tempfile
+
+from qgis.core import QgsApplication, QgsAuthMethodConfig, QgsLayoutExporter, QgsProject
 
 
 def export(args):
@@ -34,7 +21,7 @@ def export(args):
         contents = open(project_path, "rb").read()
         contents = contents.replace(b"http://localhost:9095", b"http://web:9000")
         contents = contents.replace(b"http://127.0.0.1:9095", b"http://web:9000")
-        input_path =  os.path.join(tmpdirname, "project.qgs")
+        input_path = os.path.join(tmpdirname, "project.qgs")
         open(input_path, "wb").write(contents)
 
         # start QGIS
@@ -47,7 +34,7 @@ def export(args):
         config.setId("geocdev")
         config.setName("geocdev")
         config.setMethod("APIHeader")
-        config.setConfigMap({"Authorization": f"Token {token}"} )
+        config.setConfigMap({"Authorization": f"Token {token}"})
         qgs.authManager().storeAuthenticationConfig(config)
 
         # load the conf once (seems to be required otherwise it's not available)
@@ -92,7 +79,9 @@ def export(args):
 
         # export
         settings = QgsLayoutExporter.ImageExportSettings()
-        QgsLayoutExporter.exportToImage(layout.atlas(), os.path.join(tmpdirname, "export.png"), 'png', settings)
+        QgsLayoutExporter.exportToImage(
+            layout.atlas(), os.path.join(tmpdirname, "export.png"), "png", settings
+        )
 
         # exit QGIS
         qgs.exitQgis()
@@ -101,19 +90,20 @@ def export(args):
         print(f"exported {os.listdir(tmpdirname)}")
 
         # return the file
-        export_image_path = os.path.join(tmpdirname, 'export_1.png')
+        export_image_path = os.path.join(tmpdirname, "export_1.png")
         os.rename(export_image_path, output_path)
 
         print(f"saved file to {output_path}")
         exit(0)
 
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('project_path', type=str, help="path to qgis project")
-    parser.add_argument('output_path', type=str, help="path to output")
-    parser.add_argument('template_name', type=str)
-    parser.add_argument('permit_request_id', type=int)
-    parser.add_argument('token', type=str)
+    parser.add_argument("project_path", type=str, help="path to qgis project")
+    parser.add_argument("output_path", type=str, help="path to output")
+    parser.add_argument("template_name", type=str)
+    parser.add_argument("permit_request_id", type=int)
+    parser.add_argument("token", type=str)
 
     export(parser.parse_args())

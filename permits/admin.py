@@ -1,33 +1,26 @@
 import django.db.models
-import re
-import os
-
 from adminsortable2.admin import SortableAdminMixin
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.admin import AdminSite, site
 from django.contrib.admin.views.decorators import staff_member_required
-from django.core.management import call_command, CommandError
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.forms import UserChangeForm
+from django.contrib.auth.models import Group, Permission, User
+from django.core.management import CommandError, call_command
+from django.db.models import Q, Value
+from django.db.models.functions import StrIndex, Substr
 from django.http import Http404
 from django.shortcuts import redirect
 from django.urls import re_path, reverse
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
+from rest_framework.authtoken.admin import TokenAdmin as BaseTokenAdmin
+from rest_framework.authtoken.models import TokenProxy
 
 from geomapshark import settings
-from django.db.models import Q, Value
-from django.contrib.auth.models import Group, User, Permission
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib import messages
-from django.contrib.auth.forms import UserChangeForm
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from io import BytesIO
-from django.db.models.functions import StrIndex, Substr
-from rest_framework.authtoken.models import TokenProxy
-from rest_framework.authtoken.admin import TokenAdmin as BaseTokenAdmin
 
-from . import services
 from . import forms as permit_forms
 from . import models
 
@@ -194,10 +187,20 @@ class UserAdminForm(UserChangeForm):
 class UserAdmin(BaseUserAdmin):
     form = UserAdminForm
     fieldsets = (
-        (None, {"fields": ("username",)},),
+        (
+            None,
+            {"fields": ("username",)},
+        ),
         (
             "Informations personnelles",
-            {"fields": ("first_name", "last_name", "email", "is_sociallogin",)},
+            {
+                "fields": (
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "is_sociallogin",
+                )
+            },
         ),
         (
             "Permissions",
@@ -211,7 +214,15 @@ class UserAdmin(BaseUserAdmin):
                 )
             },
         ),
-        ("Dates importantes", {"fields": ("last_login", "date_joined",)},),
+        (
+            "Dates importantes",
+            {
+                "fields": (
+                    "last_login",
+                    "date_joined",
+                )
+            },
+        ),
     )
 
     list_display = (
@@ -598,7 +609,6 @@ works_object_type_administrative_entities.short_description = _(
 )
 
 
-
 class WorksObjectTypeAdminForm(forms.ModelForm):
     class GeometryTypes(django.db.models.TextChoices):
         POINT = "has_geometry_point", _("Point")
@@ -616,7 +626,9 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
         model = models.WorksObjectType
         fields = "__all__"
         widgets = {
-            "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
+            "is_public": forms.RadioSelect(
+                choices=models.PUBLIC_TYPE_CHOICES,
+            ),
         }
 
     class Media:
@@ -712,7 +724,13 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         ),
         (
             "Planning et localisation",
-            {"fields": ("geometry_types", "needs_date", "start_delay",)},
+            {
+                "fields": (
+                    "geometry_types",
+                    "needs_date",
+                    "start_delay",
+                )
+            },
         ),
         (
             "Modules complémentaires",
@@ -744,7 +762,10 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 )
             },
         ),
-        ("Impression", {"fields": ("reports",)},),
+        (
+            "Impression",
+            {"fields": ("reports",)},
+        ),
     )
 
     def sortable_str(self, obj):
@@ -915,7 +936,9 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
                     },
                 }
             ),
-            "is_public": forms.RadioSelect(choices=models.PUBLIC_TYPE_CHOICES,),
+            "is_public": forms.RadioSelect(
+                choices=models.PUBLIC_TYPE_CHOICES,
+            ),
         }
 
     class Media:
@@ -1034,7 +1057,8 @@ class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         if not has_workflow_status:
             for key, value in models.PermitRequest.STATUS_CHOICES:
                 models.PermitWorkflowStatus.objects.create(
-                    status=key, administrative_entity=obj,
+                    status=key,
+                    administrative_entity=obj,
                 )
 
 

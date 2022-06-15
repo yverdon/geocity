@@ -23,4 +23,3 @@ if (parseInt(statusChange.value) === COMPLEMENTARY_INFO) {
 function changeReasonDisplay(display = false) {
   reason.closest('.form-group').style.display = display ? 'flex' : 'none'
 }
-

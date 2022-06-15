@@ -24,16 +24,8 @@ td, th {
   border-bottom: solid 1px;
 }
 
-/* blocks */
-.block-page-break {
-  page-break-before: always;
-}
-
-.block-recipient {
-  padding-left: 60%;
-}
-
-.block-map img {
+/* sections */
+.section-map img {
   max-width: 100%;
 }
 

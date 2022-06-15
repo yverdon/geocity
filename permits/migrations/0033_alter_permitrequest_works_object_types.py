@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0032_add_notification_for_services_in_wot'),
+        ("permits", "0032_add_notification_for_services_in_wot"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='permitrequest',
-            name='works_object_types',
-            field=models.ManyToManyField(related_name='permit_requests', through='permits.WorksObjectTypeChoice', to='permits.WorksObjectType', verbose_name='Objets et types de travaux'),
+            model_name="permitrequest",
+            name="works_object_types",
+            field=models.ManyToManyField(
+                related_name="permit_requests",
+                through="permits.WorksObjectTypeChoice",
+                to="permits.WorksObjectType",
+                verbose_name="Objets et types de travaux",
+            ),
         ),
     ]

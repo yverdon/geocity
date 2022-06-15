@@ -1,18 +1,7 @@
-from rest_framework import routers
-import itertools
-from collections import OrderedDict, namedtuple
-
-from django.core.exceptions import ImproperlyConfigured
-from django.contrib.gis.db.models import Extent
-from django.urls import NoReverseMatch, re_path
-
-from rest_framework import views
+from django.urls import NoReverseMatch
+from rest_framework import routers, views
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-from rest_framework.schemas import SchemaGenerator
-from rest_framework.schemas.views import SchemaView
-from rest_framework.settings import api_settings
-from rest_framework.urlpatterns import format_suffix_patterns
 
 
 class RootView(views.APIView):

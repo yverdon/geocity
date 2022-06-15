@@ -9,17 +9,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: "Lint Code"
+      uses: pre-commit/action@v3.0.0
     - name: Build/Pull Containers
-      run: cp env.demo .env && docker-compose -f docker-compose-dev.yml build
+      run: cp env.demo .env && docker-compose build
     - name: Run Containers
-      run: docker-compose -f docker-compose-dev.yml down --remove-orphans && docker-compose -f docker-compose-dev.yml up -d
+      run: docker-compose down --remove-orphans && docker-compose up -d
     - name: Sanity Checks
       run: |
         WEB_OK=$(docker ps -aq --filter status="running" --filter name="geocity_web_1") && if [ -z "$WEB_OK" ]; then exit 1; fi
         POSTGRES_OK=$(docker ps -aq --filter status="running" --filter name="geocity_postgres_1") && if [ -z "$POSTGRES_OK" ]; then exit 1; fi
-    - name: "Lint Code"
-      run: docker-compose -f docker-compose-dev.yml exec -T web black . --check
+        QGISSERVER_OK=$(docker ps -aq --filter status="running" --filter name="geocity_qgisserver_1") && if [ -z "$QGISSERVER_OK" ]; then exit 1; fi
+    - name: "Wait for Postgres"
+      run: docker-compose exec -T postgres pg_isready --timeout=10
     - name: "Test Code"
-      run: docker-compose -f docker-compose-dev.yml exec -T web ./run_tests.sh
+      run: docker-compose exec -T web ./run_tests.sh
     - name: Stop Containers
-      run: docker-compose -f docker-compose-dev.yml down --remove-orphans
+      run: docker-compose down --remove-orphans

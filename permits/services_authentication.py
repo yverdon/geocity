@@ -1,5 +1,5 @@
-import socket
 import ipaddress
+import socket
 
 from constance import config
 

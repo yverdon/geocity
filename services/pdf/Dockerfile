@@ -10,5 +10,6 @@ WORKDIR /app
 
 ADD app.py app.py
 
-ENV FLASK_APP=app
-CMD flask run --host=0.0.0.0
+RUN mkdir /io
+
+ENTRYPOINT ["python3" , "app.py"]

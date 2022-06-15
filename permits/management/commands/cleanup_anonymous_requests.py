@@ -2,7 +2,7 @@ import datetime
 
 from django.conf import settings
 from django.core.management import BaseCommand, CommandError
-from django.db import transaction, IntegrityError
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 from django.utils.translation import gettext
 

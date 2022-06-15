@@ -1,7 +1,9 @@
-from ..geocity_test_case import GeocityTestCase
-from .. import factories
-from permits import forms, models
 from datetime import datetime, timedelta
+
+from permits import forms, models
+
+from .. import factories
+from ..geocity_test_case import GeocityTestCase
 
 
 class TestPermitRequestInquiry(GeocityTestCase):

@@ -1,15 +1,9 @@
 import json
-from unittest import skip
-
-from allauth.account.models import EmailAddress
-from allauth.account.utils import user_email, user_username
-from allauth.socialaccount import app_settings
-from allauth.socialaccount.models import SocialAccount
-from django.contrib.auth import get_user_model
-from django.urls import reverse
 
 from allauth.socialaccount.tests import OAuth2TestsMixin
 from allauth.tests import MockedResponse, TestCase
+from django.contrib.auth import get_user_model
+from django.urls import reverse
 
 from accounts.dootix.provider import DootixProvider
 
@@ -39,7 +33,9 @@ class DootixOAuth2Tests(OAuth2TestsMixin, TestCase):
 
     def get_mocked_response(self, email="foo@bar.ch"):
         profile_response_mock.update(
-            {"email": email,}
+            {
+                "email": email,
+            }
         )
         return MockedResponse(200, json.dumps(profile_response_mock))
 
@@ -49,6 +45,8 @@ class DootixOAuth2Tests(OAuth2TestsMixin, TestCase):
         self.assertRedirects(response, expected_url=reverse("socialaccount_signup"))
 
     def test_social_signup_form_display_socialaccount_data(self):
-        sociallogin_redirect = self.login(self.get_mocked_response("example@test.org"),)
+        sociallogin_redirect = self.login(
+            self.get_mocked_response("example@test.org"),
+        )
         signup_response = self.client.get(sociallogin_redirect.url)
         self.assertContains(signup_response, "example@test.org")

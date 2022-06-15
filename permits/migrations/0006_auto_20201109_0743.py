@@ -6,12 +6,24 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0005_historicalpermitactor_historicalpermitauthor_historicalpermitrequest_historicalpermitrequestgeotime_'),
+        (
+            "permits",
+            "0005_historicalpermitactor_historicalpermitauthor_historicalpermitrequest_historicalpermitrequestgeotime_",
+        ),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='permitrequest',
-            options={'permissions': [('amend_permit_request', 'Traiter les demandes de permis'), ('validate_permit_request', 'Valider les demandes de permis'), ('classify_permit_request', 'Classer les demandes de permis'), ('edit_permit_request', 'Éditer les demandes de permis')], 'verbose_name': '3.1 Consultation de la demande', 'verbose_name_plural': '3.1 Consultation des demandes'},
+            name="permitrequest",
+            options={
+                "permissions": [
+                    ("amend_permit_request", "Traiter les demandes de permis"),
+                    ("validate_permit_request", "Valider les demandes de permis"),
+                    ("classify_permit_request", "Classer les demandes de permis"),
+                    ("edit_permit_request", "Éditer les demandes de permis"),
+                ],
+                "verbose_name": "3.1 Consultation de la demande",
+                "verbose_name_plural": "3.1 Consultation des demandes",
+            },
         ),
     ]

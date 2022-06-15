@@ -40,8 +40,7 @@ django-cron
 django-axes
 pdf2image
 django-simple-captcha
-django-streamfield
-django-weasyprint
 django-ckeditor
 Jinja2
 docker
+django-polymorphic

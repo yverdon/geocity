@@ -1,12 +1,12 @@
 NAME,EPSG_DATUM_CODE,ELLIPSOID_CODE,DELTAX,DELTAY,DELTAZ
 #
-# Note : We have permission from Des Newman on behalf of OziExplorer to use this list. 
+# Note : We have permission from Des Newman on behalf of OziExplorer to use this list.
 #        See : http://trac.osgeo.org/gdal/ticket/3929#comment:2
 # Note 2: EPSG_DATUM_CODE is used in priority to retrieve ellipsoid and datum shift values
 #         from the CSV files imported from EPSG database, that are more up-to-date. It
 #         overrides the values found in this file and from ozi_ellips.csv. See #3929 for more details.
 #
-Adindan,4201,5,-162,-12,206			# Africa - Eritrea, Ethiopia and Sudan 
+Adindan,4201,5,-162,-12,206			# Africa - Eritrea, Ethiopia and Sudan
 Afgooye,4205,15,-43,-163,45			# Somalia
 Ain el Abd 1970,4204,14,-150,-251,-2		# Asia - Middle East - Bahrain, Kuwait and Saudi Arabia
 Anna 1 Astro 1965,4708,2,-491,-22,435		# Cocos (Keeling) Islands

@@ -1,14 +1,13 @@
-from django.conf import settings
+from captcha.models import CaptchaStore
+from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.core import mail
 from django.shortcuts import resolve_url
 from django.test import TestCase
 from django.urls import reverse
-from captcha.models import CaptchaStore
-from django.contrib.auth import logout
-from django.core import mail
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.models import User
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+
 from permits.tests import factories
 
 
@@ -60,7 +59,10 @@ class TestRegisterView(TestCase, TestRegisterMixin):
         captcha = self.generate_captcha()
         return self.client.post(
             reverse("permit_author_create"),
-            {**data, **{"captcha_0": captcha.hashkey, "captcha_1": captcha.response},},
+            {
+                **data,
+                **{"captcha_0": captcha.hashkey, "captcha_1": captcha.response},
+            },
             follow=True,
         )
 
