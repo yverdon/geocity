@@ -126,8 +126,12 @@ class Section(PolymorphicModel):
             "order",
         ]
 
+    # https://github.com/django-polymorphic/django-polymorphic/issues/229#issuecomment-398434412
+    def NON_POLYMORPHIC_CASCADE(collector, field, sub_objs, using):
+        return models.CASCADE(collector, field, sub_objs.non_polymorphic(), using)
+
     report = models.ForeignKey(
-        Report, on_delete=models.CASCADE, related_name="sections"
+        Report, on_delete=NON_POLYMORPHIC_CASCADE, related_name="sections"
     )
     order = models.PositiveIntegerField(null=True, blank=True)
 
