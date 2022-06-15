@@ -9,6 +9,7 @@
     {% load static %}
     {% load i18n %}
     {% load bootstrap4 %}
+    {% load permits_extras %}
     {% bootstrap_css %}
     {% bootstrap_javascript jquery='full' %}
     {% block script %}
@@ -59,8 +60,15 @@
                       {% trans "Mes demandes" %}
                     </a>
                 </li>
-
-
+                {% can_archive as can_archive %}
+                {% if can_archive %}
+                  <li class="nav-item d-flex align-items-center">
+                      <a href="{% url 'permits:archived_permit_request_list' %}" role="button">
+                        <i class="fa fa-archive" aria-hidden="true"></i>
+                        {% trans "Demandes archivées" %}
+                      </a>
+                  </li>
+                {% endif %}
                   {% if config.ENABLE_GEOCALENDAR %}
                     <li class="nav-item d-flex align-items-center">
                       <a href="{{ config.GEOCALENDAR_URL }}" target="_blank" rel="noreferrer" role="button">
@@ -163,6 +171,8 @@
               alert-danger
               {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
               alert-success
+              {% elif message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+              alert-info
               {% endif %}
               ">{{ message }}</div>
           {% endfor %}

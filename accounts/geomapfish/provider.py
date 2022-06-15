@@ -1,7 +1,5 @@
-from allauth.socialaccount import providers
 from allauth.socialaccount.providers.base import ProviderAccount
 from allauth.socialaccount.providers.oauth2.provider import OAuth2Provider
-from django.conf import settings
 
 
 class GeomapfishAccount(ProviderAccount):
@@ -26,7 +24,9 @@ class GeomapfishProvider(OAuth2Provider):
         """
         # permitauthor
         return dict(
-            username=data["username"], email=data["email"], roles=data["roles"],
+            username=data["username"],
+            email=data["email"],
+            roles=data["roles"],
         )
 
     def get_default_scope(self):

@@ -1,20 +1,15 @@
 import collections
 import dataclasses
 import enum
+import os
+import shutil
 from datetime import date, datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import Group, User
-from django.contrib.sites.models import Site
 from django.contrib.gis.db import models as geomodels
-from django.db.models import (
-    JSONField,
-    UniqueConstraint,
-    F,
-    ExpressionWrapper,
-    BooleanField,
-)
-from django.core.exceptions import ValidationError
+from django.contrib.sites.models import Site
+from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.core.validators import (
     FileExtensionValidator,
     MaxValueValidator,
@@ -22,12 +17,23 @@ from django.core.validators import (
     RegexValidator,
 )
 from django.db import models
-from django.db.models import Q, Max, Min
+from django.db.models import (
+    BooleanField,
+    ExpressionWrapper,
+    JSONField,
+    Max,
+    Min,
+    ProtectedError,
+    Q,
+    UniqueConstraint,
+)
+from django.template.defaultfilters import slugify
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
+from django_tables2.export import TableExport
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 
@@ -80,6 +86,8 @@ ACTION_REQUEST_VALIDATION = "request_validation"
 ACTION_VALIDATE = "validate"
 ACTION_POKE = "poke"
 ACTION_PROLONG = "prolong"
+ACTION_COMPLEMENTARY_DOCUMENTS = "complementary_documents"
+ACTION_REQUEST_INQUIRY = "request_inquiry"
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
 ACTIONS = [
@@ -88,6 +96,8 @@ ACTIONS = [
     ACTION_VALIDATE,
     ACTION_POKE,
     ACTION_PROLONG,
+    ACTION_COMPLEMENTARY_DOCUMENTS,
+    ACTION_REQUEST_INQUIRY,
 ]
 
 
@@ -209,7 +219,9 @@ class PermitAdministrativeEntity(models.Model):
     link = models.URLField(_("Lien"), max_length=200, blank=True)
     archive_link = models.URLField(_("Archives externes"), max_length=1024, blank=True)
     general_informations = models.CharField(
-        _("Informations"), blank=True, max_length=1024,
+        _("Informations"),
+        blank=True,
+        max_length=1024,
     )
     custom_signature = models.TextField(
         _("Signature des emails"),
@@ -297,7 +309,10 @@ class PermitAuthorManager(models.Manager):
             username, email, password=None, first_name="Temporaire", last_name="Anonyme"
         )
 
-        new_temp_author = super().create(user=temp_user, zipcode=zipcode,)
+        new_temp_author = super().create(
+            user=temp_user,
+            zipcode=zipcode,
+        )
 
         return new_temp_author
 
@@ -333,11 +348,18 @@ class PermitAuthor(models.Model):
             )
         ],
     )
-    address = models.CharField(_("Rue"), max_length=100,)
-    zipcode = models.PositiveIntegerField(
-        _("NPA"), validators=[MinValueValidator(1000), MaxValueValidator(9999)],
+    address = models.CharField(
+        _("Rue"),
+        max_length=100,
     )
-    city = models.CharField(_("Ville"), max_length=100,)
+    zipcode = models.PositiveIntegerField(
+        _("NPA"),
+        validators=[MinValueValidator(1000), MaxValueValidator(9999)],
+    )
+    city = models.CharField(
+        _("Ville"),
+        max_length=100,
+    )
     phone_first = models.CharField(
         _("Téléphone principal"),
         max_length=20,
@@ -426,15 +448,34 @@ class PermitAuthor(models.Model):
 class PermitActor(models.Model):
     """Contacts"""
 
-    first_name = models.CharField(_("Prénom"), max_length=150,)
-    last_name = models.CharField(_("Nom"), max_length=100,)
+    first_name = models.CharField(
+        _("Prénom"),
+        max_length=150,
+    )
+    last_name = models.CharField(
+        _("Nom"),
+        max_length=100,
+    )
     company_name = models.CharField(_("Entreprise"), max_length=100, blank=True)
     vat_number = models.CharField(_("Numéro TVA"), max_length=19, blank=True)
-    address = models.CharField(_("Adresse"), max_length=100,)
-    zipcode = models.PositiveIntegerField(_("NPA"),)
-    city = models.CharField(_("Ville"), max_length=100,)
-    phone = models.CharField(_("Téléphone"), max_length=20,)
-    email = models.EmailField(_("Email"),)
+    address = models.CharField(
+        _("Adresse"),
+        max_length=100,
+    )
+    zipcode = models.PositiveIntegerField(
+        _("NPA"),
+    )
+    city = models.CharField(
+        _("Ville"),
+        max_length=100,
+    )
+    phone = models.CharField(
+        _("Téléphone"),
+        max_length=20,
+    )
+    email = models.EmailField(
+        _("Email"),
+    )
     history = HistoricalRecords()
 
     class Meta:
@@ -511,6 +552,8 @@ class PermitRequest(models.Model):
     STATUS_AWAITING_VALIDATION = 5
     STATUS_REJECTED = 6
     STATUS_RECEIVED = 7
+    STATUS_INQUIRY_IN_PROGRESS = 8
+    STATUS_ARCHIVED = 9
 
     STATUS_CHOICES = (
         (STATUS_DRAFT, _("Brouillon")),
@@ -521,12 +564,15 @@ class PermitRequest(models.Model):
         (STATUS_APPROVED, _("Approuvée")),
         (STATUS_REJECTED, _("Refusée")),
         (STATUS_RECEIVED, _("Réceptionnée")),
+        (STATUS_INQUIRY_IN_PROGRESS, _("Consultation publique en cours")),
+        (STATUS_ARCHIVED, _("Archivée")),
     )
     AMENDABLE_STATUSES = {
         STATUS_SUBMITTED_FOR_VALIDATION,
         STATUS_PROCESSING,
         STATUS_AWAITING_SUPPLEMENT,
         STATUS_RECEIVED,
+        STATUS_INQUIRY_IN_PROGRESS,
     }
 
     # Statuses that can be edited by pilot service if granted permission "edit_permit_request"
@@ -608,7 +654,10 @@ class PermitRequest(models.Model):
     )
     prolongation_comment = models.TextField(_("Commentaire"), blank=True)
     prolongation_status = models.PositiveSmallIntegerField(
-        _("Décision"), choices=PROLONGATION_STATUS_CHOICES, null=True, blank=True,
+        _("Décision"),
+        choices=PROLONGATION_STATUS_CHOICES,
+        null=True,
+        blank=True,
     )
     additional_decision_information = models.TextField(
         _("Information complémentaire"),
@@ -848,6 +897,79 @@ class PermitRequest(models.Model):
         )
         return f"{protocol}://{settings.SITE_DOMAIN}{port}{relative_url}"
 
+    def start_inquiry(self):
+        if self.status == self.STATUS_INQUIRY_IN_PROGRESS:
+            return
+        self.status = self.STATUS_INQUIRY_IN_PROGRESS
+        self.save()
+
+    @property
+    def current_inquiry(self):
+        today = datetime.today()
+        return PermitRequestInquiry.objects.filter(
+            permit_request=self, start_date__lte=today, end_date__gte=today
+        ).first()
+
+    def get_works_type_names_list(self):
+
+        return ", ".join(
+            list(
+                self.works_object_types.all()
+                .values_list("works_type__name", flat=True)
+                .distinct()
+            )
+        )
+
+    def archive(self, archivist):
+        # make sure the request wasn't already archived
+        if ArchivedPermitRequest.objects.filter(
+            permit_request=self,
+        ).first():
+            raise SuspiciousOperation(_("La demande a déjà été archivée"))
+
+        archive = ArchivedPermitRequest.objects.create(
+            permit_request=self,
+            archivist=archivist,
+        )
+
+        try:
+            os.mkdir(archive.path)
+
+            for document in self.complementary_documents:
+                shutil.copy2(src=document.path, dst=archive.path)
+
+            with open(os.path.join(archive.path, "permit_request.csv"), "w") as f:
+                f.write(self.to_csv())
+        except OSError as e:
+            raise Exception(_("La demande n'a pas pu être archivée"), e)
+
+        self.status = self.STATUS_ARCHIVED
+        self.save()
+
+    @property
+    def is_archived(self):
+        return self.status == self.STATUS_ARCHIVED
+
+    @property
+    def complementary_documents(self):
+        return PermitRequestComplementaryDocument.objects.filter(
+            permit_request=self
+        ).all()
+
+    def to_csv(self):
+        from .tables import OwnPermitRequestsExportTable
+
+        table = OwnPermitRequestsExportTable(
+            data=PermitRequest.objects.filter(id=self.id)
+        )
+
+        exporter = TableExport(export_format=TableExport.CSV, table=table)
+
+        return exporter.export()
+
+    def __str__(self):
+        return self.shortname
+
 
 class WorksTypeQuerySet(models.QuerySet):
     def filter_by_tags(self, tags):
@@ -964,7 +1086,8 @@ class WorksObjectType(models.Model):
     )
     is_public = models.BooleanField(_("Visibilité "), default=False)
     is_anonymous = models.BooleanField(
-        _("Demandes anonymes uniquement"), default=False,
+        _("Demandes anonymes uniquement"),
+        default=False,
     )
     notify_services = models.BooleanField(_("Notifier les services"), default=False)
     services_to_notify = models.TextField(
@@ -981,12 +1104,21 @@ class WorksObjectType(models.Model):
         ),
     )
     expiration_reminder = models.BooleanField(
-        _("Activer la fonction de rappel"), default=False,
+        _("Activer la fonction de rappel"),
+        default=False,
     )
     days_before_reminder = models.IntegerField(
         _("Délai de rappel (jours)"), blank=True, null=True
     )
-
+    document_enabled = models.BooleanField(
+        _("Activer la gestion des documents"), default=False
+    )
+    publication_enabled = models.BooleanField(
+        _("Activer la gestion de la publication"), default=False
+    )
+    permanent_publication_enabled = models.BooleanField(
+        _("Autoriser la mise en consultation sur une durée indéfinie"), default=False
+    )
     # All objects
     objects = models.Manager()
 
@@ -1144,6 +1276,13 @@ class WorksObjectProperty(models.Model):
         default=False,
         help_text=_(
             "L'API Geoadmin est utilisée afin de trouver un point correspondant à l'adresse. En cas d'échec, le centroïde de l'entité administrative est utilisée <a href=\"https://api3.geo.admin.ch/services/sdiservices.html#search\" target=\"_blank\">Plus d'informations</a>"
+        ),
+    )
+    is_public_when_permitrequest_is_public = models.BooleanField(
+        _("Afficher ce champs au grand public si la demande est publique"),
+        default=False,
+        help_text=_(
+            "Ce champs sera visible sur l'application géocalendrier si la demande est publique"
         ),
     )
 
@@ -1344,7 +1483,8 @@ class PermitWorkflowStatus(models.Model):
     """
 
     status = models.PositiveSmallIntegerField(
-        _("statut"), choices=PermitRequest.STATUS_CHOICES,
+        _("statut"),
+        choices=PermitRequest.STATUS_CHOICES,
     )
     administrative_entity = models.ForeignKey(
         "PermitAdministrativeEntity",
@@ -1371,7 +1511,9 @@ class PermitRequestAmendProperty(models.Model):
         _("Editable même après classement de la demande"), default=False
     )
     works_object_types = models.ManyToManyField(
-        WorksObjectType, verbose_name=_("objets"), related_name="amend_properties",
+        WorksObjectType,
+        verbose_name=_("objets"),
+        related_name="amend_properties",
     )
     integrator = models.ForeignKey(
         Group,
@@ -1414,6 +1556,185 @@ class PermitRequestAmendPropertyValue(models.Model):
         unique_together = [("property", "works_object_type_choice")]
 
 
+class PermitRequestComplementaryDocument(models.Model):
+    STATUS_TEMP = 0
+    STATUS_FINALE = 1
+    STATUS_OTHER = 2
+    STATUS_CANCELED = 3
+
+    STATUS_CHOICES = (
+        (STATUS_TEMP, _("Provisoire")),
+        (STATUS_FINALE, _("Final")),
+        (STATUS_OTHER, _("Autre")),
+        (STATUS_CANCELED, _("Annulé")),
+    )
+
+    document = fields.ComplementaryDocumentFileField(_("Document"))
+    description = models.TextField(
+        _("Description du document"),
+        blank=True,
+    )
+    owner = models.ForeignKey(
+        User,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Propriétaire du document"),
+    )
+    permit_request = models.ForeignKey(
+        PermitRequest,
+        null=False,
+        on_delete=models.CASCADE,
+        verbose_name=_("Demande de permis"),
+    )
+    status = models.PositiveSmallIntegerField(
+        _("Statut du document"),
+        choices=STATUS_CHOICES,
+    )
+    authorised_departments = models.ManyToManyField(
+        PermitDepartment,
+        verbose_name=_("Département autorisé à visualiser le document"),
+        db_table=_("permits_authorised_departments"),
+    )
+    is_public = models.BooleanField(default=False, verbose_name=_("Public"))
+    document_type = models.ForeignKey(
+        "ComplementaryDocumentType",
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Type du document"),
+    )
+
+    @property
+    def uri(self):
+        return self.document.url
+
+    @property
+    def name(self):
+        return self.document.name
+
+    @property
+    def path(self):
+        return os.path.join(settings.MEDIA_ROOT, self.document.name)
+
+    def delete(self, using=None, keep_parents=False):
+        # delete the uploaded file
+        try:
+            os.remove(self.document.path)
+            return super().delete(using, keep_parents)
+        except OSError as e:
+            raise ProtectedError(
+                _("Le document {} n'a pas pu être supprimé".format(self)), e
+            )
+
+    def __str__(self):
+        return self.document.name
+
+
+class ComplementaryDocumentType(models.Model):
+    name = models.CharField(_("nom"), max_length=255)
+    parent = models.ForeignKey(
+        "ComplementaryDocumentType",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        verbose_name=_("Type parent"),
+    )
+    work_object_types = models.ForeignKey(
+        WorksObjectType,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        verbose_name=_("Objets"),
+    )
+    integrator = models.ForeignKey(
+        Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs"),
+    )
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=(Q(parent__isnull=False) & Q(work_object_types__isnull=True))
+                | (Q(parent__isnull=True) & Q(work_object_types__isnull=False)),
+                name="Only parent types can be linked to a work object type",
+            )
+        ]
+        verbose_name = _("1.7 Configuration du type de document")
+        verbose_name_plural = _("1.7 Configuration des types de document")
+
+    def __str__(self):
+        return self.name
+
+
+class PermitRequestInquiry(models.Model):
+    start_date = models.DateField()
+    end_date = models.DateField()
+    documents = models.ManyToManyField(
+        PermitRequestComplementaryDocument,
+        verbose_name=_("Documents complémentaire"),
+        blank=True,
+    )
+    permit_request = models.ForeignKey(
+        PermitRequest,
+        null=False,
+        on_delete=models.CASCADE,
+        verbose_name=_("Demande de permis"),
+    )
+    submitter = models.ForeignKey(
+        User,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Demandeur de l'enquête"),
+    )
+
+    class Meta:
+        verbose_name = _("3.2 Enquête public")
+        verbose_name_plural = _("3.2 Enquêtes publics")
+
+    @classmethod
+    def get_current_inquiry(cls, permit_request):
+        today = datetime.today().strftime("%Y-%m-%d")
+        return cls.objects.filter(
+            Q(permit_request=permit_request)
+            & Q(start_date__lte=today)
+            & Q(end_date__gte=today)
+        ).first()
+
+
+class ArchivedPermitRequest(models.Model):
+    archived_date = models.DateTimeField(auto_now_add=True)
+    archivist = models.ForeignKey(
+        User,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Personne ayant archivé la demande"),
+    )
+    permit_request = models.OneToOneField(
+        PermitRequest,
+        on_delete=models.CASCADE,
+        primary_key=True,
+    )
+
+    @property
+    def dirname(self):
+        archived_date = self.archived_date.strftime("%d.%m.%Y.%H.%M.%S")
+        return f"{self.permit_request.id:02d}_{archived_date}-{slugify(self.permit_request.get_works_type_names_list())}"
+
+    @property
+    def path(self):
+        return os.path.join(settings.ARCHIVE_ROOT, self.dirname)
+
+    def delete(self, using=None, keep_parents=False):
+        # delete the archive
+        shutil.rmtree(self.path)
+
+        # delete the permit request linked to the archive
+        self.permit_request.delete()
+
+        return super().delete(using, keep_parents)
+
+
 class QgisProject(models.Model):
     qgis_project_file = fields.AdministrativeEntityFileField(
         _("Projet QGIS '*.qgs'"),
@@ -1421,7 +1742,8 @@ class QgisProject(models.Model):
         upload_to="qgis_templates",
     )
     qgis_print_template_name = models.CharField(
-        _("Nom du template d'impression QGIS"), max_length=150,
+        _("Nom du template d'impression QGIS"),
+        max_length=150,
     )
     description = models.CharField(max_length=150)
     works_object_type = models.ForeignKey(WorksObjectType, on_delete=models.CASCADE)

@@ -1,16 +1,17 @@
 from datetime import timezone
 
 import factory
+import factory.fuzzy
 import faker
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.gis.geos import GeometryCollection, MultiPolygon, Polygon, Point
+from django.contrib.gis.geos import GeometryCollection, MultiPolygon, Point, Polygon
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.utils.text import Truncator
-from permits import models, admin
 from django.db.models import Q
-from taggit.managers import TaggableManager
+from django.utils.text import Truncator
+
+from permits import admin, models
 
 
 class PermitAuthorFactory(factory.django.DjangoModelFactory):
@@ -75,7 +76,8 @@ class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
         extracted = extracted or [v[0] for v in models.PermitRequest.STATUS_CHOICES]
         for status in extracted:
             models.PermitWorkflowStatus.objects.create(
-                status=status, administrative_entity=self,
+                status=status,
+                administrative_entity=self,
             )
 
     @factory.post_generation
@@ -511,3 +513,67 @@ class TemplateCustomizationFactory(factory.django.DjangoModelFactory):
     application_title = "mycustomtitle"
     application_subtitle = "mycustomsubtitle"
     application_description = "mycustomdescription"
+
+
+class ComplementaryDocumentTypeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.ComplementaryDocumentType
+
+    name = factory.Faker("name")
+
+
+class ParentComplementaryDocumentTypeFactory(ComplementaryDocumentTypeFactory):
+    work_object_types = factory.SubFactory(WorksObjectTypeFactory)
+    parent = None
+    integrator = None
+
+
+class ChildComplementaryDocumentTypeFactory(ComplementaryDocumentTypeFactory):
+    work_object_types = None
+    parent = factory.SubFactory(ParentComplementaryDocumentTypeFactory)
+
+
+class ComplementaryDocumentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitRequestComplementaryDocument
+
+    document = factory.django.FileField(filename="awesome_file.pdf")
+    description = factory.Faker("sentence")
+    # the "models.PermitRequestComplementaryDocument.STATUS_CANCELED" status
+    # has extra logic, so to avoid any weird issues, it isn't among the choices
+    status = factory.fuzzy.FuzzyChoice(
+        choices=[
+            models.PermitRequestComplementaryDocument.STATUS_OTHER,
+            models.PermitRequestComplementaryDocument.STATUS_TEMP,
+            models.PermitRequestComplementaryDocument.STATUS_CANCELED,
+        ]
+    )
+    owner = factory.SubFactory(UserFactory)
+    permit_request = factory.SubFactory(PermitRequestFactory)
+    document_type = factory.SubFactory(ChildComplementaryDocumentTypeFactory)
+    is_public = False
+
+    @factory.post_generation
+    def authorised_departments(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        self.authorised_departments.add(*extracted)
+
+
+class PermitRequestInquiryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitRequestInquiry
+
+    submitter = factory.SubFactory(UserFactory)
+    permit_request = factory.SubFactory(PermitRequestFactory)
+    start_date = factory.Faker("date")
+    end_date = factory.Faker("date")
+
+
+class ArchivedPermitRequestFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.ArchivedPermitRequest
+
+    permit_request = factory.SubFactory(PermitRequestFactory)
+    archivist = factory.SubFactory(UserFactory)

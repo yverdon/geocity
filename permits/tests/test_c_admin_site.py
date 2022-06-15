@@ -1,19 +1,12 @@
-import re
-import urllib.parse
-import uuid
-from datetime import date
-
 from django.conf import settings
-from django.contrib.auth.models import Permission, User
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 from django_otp import DEVICE_ID_SESSION_KEY
 from two_factor.utils import default_device
 
-from permits import admin
+from permits import admin, models
 from permits.tests.factories import SecretariatUserFactory, UserFactory
-
-from django.shortcuts import resolve_url
 
 from . import factories
 from .utils import LoggedInIntegratorMixin, get_parser
@@ -32,10 +25,15 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
 
     def setUp(self):
         super().setUp()
-        self.administrative_entity = factories.PermitAdministrativeEntityFactory.create_batch(
-            3
+        self.administrative_entity = (
+            factories.PermitAdministrativeEntityFactory.create_batch(3)
         )
-        self.integrator_administrative_entity = factories.PermitAdministrativeEntityFactory(
+        self.integrator_administrative_entity = (
+            factories.PermitAdministrativeEntityFactory(integrator=self.group)
+        )
+
+        self.parent_type = factories.ParentComplementaryDocumentTypeFactory()
+        self.integrator_parent_type = factories.ParentComplementaryDocumentTypeFactory(
             integrator=self.group
         )
 
@@ -69,11 +67,11 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             integrator=self.group
         )
 
-        self.permit_request_amend_property = factories.PermitRequestAmendPropertyFactory.create_batch(
-            3
+        self.permit_request_amend_property = (
+            factories.PermitRequestAmendPropertyFactory.create_batch(3)
         )
-        self.integrator_permit_request_amend_property = factories.PermitRequestAmendPropertyFactory(
-            integrator=self.group
+        self.integrator_permit_request_amend_property = (
+            factories.PermitRequestAmendPropertyFactory(integrator=self.group)
         )
 
         if settings.ENABLE_2FA:
@@ -192,9 +190,11 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
 
         response = self.client.get(reverse("admin:permits_workstype_changelist"))
         parser = get_parser(response.content)
-
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-sortable_str")), 16)
+        self.assertEqual(
+            len(parser.select(".field-sortable_str")),
+            models.WorksType.objects.all().count(),
+        )
 
     def test_integrator_can_only_see_own_worksobject(self):
         response = self.client.get(reverse("admin:permits_worksobject_changelist"))
@@ -211,9 +211,11 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
 
         response = self.client.get(reverse("admin:permits_worksobject_changelist"))
         parser = get_parser(response.content)
-
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-sortable_str")), 8)
+        self.assertEqual(
+            len(parser.select(".field-sortable_str")),
+            models.WorksObject.objects.all().count(),
+        )
 
     def test_integrator_can_only_see_own_worksobjecttype(self):
         response = self.client.get(reverse("admin:permits_worksobjecttype_changelist"))
@@ -230,9 +232,11 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
 
         response = self.client.get(reverse("admin:permits_worksobjecttype_changelist"))
         parser = get_parser(response.content)
-
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-sortable_str")), 4)
+        self.assertEqual(
+            len(parser.select(".field-sortable_str")),
+            models.WorksObjectType.objects.all().count(),
+        )
 
     def test_integrator_can_only_see_own_worksobjectproperty(self):
         response = self.client.get(
@@ -285,6 +289,14 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(parser.select(".grp-row")), 3)
 
+    def test_integrator_can_only_see_own_complementarydocumenttype(self):
+        response = self.client.get(
+            reverse("admin:permits_complementarydocumenttype_changelist")
+        )
+        parser = get_parser(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(parser.select(".grp-row-even")), 1)
+
     def test_admin_can_see_all_permitrequestamendproperty(self):
         user = factories.SuperUserFactory()
         self.client.login(username=user.username, password="password")
@@ -323,7 +335,10 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         }
 
         response = self.client.post(
-            reverse("admin:auth_group_change", kwargs={"object_id": group.id},),
+            reverse(
+                "admin:auth_group_change",
+                kwargs={"object_id": group.id},
+            ),
             data=data,
         )
         content = response.content.decode()
@@ -350,7 +365,10 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         }
 
         response = self.client.post(
-            reverse("admin:auth_user_change", kwargs={"object_id": self.user.id},),
+            reverse(
+                "admin:auth_user_change",
+                kwargs={"object_id": self.user.id},
+            ),
             data=data,
         )
         content = response.content.decode()
@@ -384,7 +402,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             self.client.login(username=user.username, password="password")
 
             response = self.client.get(
-                reverse(settings.LOGIN_REDIRECT_URL), follow=True,
+                reverse(settings.LOGIN_REDIRECT_URL),
+                follow=True,
             )
 
             self.assertEqual(response.status_code, 200)
@@ -398,7 +417,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             user.groups.set([self.group2fa])
             self.enable_otp_session(user)
             response = self.client.get(
-                reverse(settings.LOGIN_REDIRECT_URL), follow=True,
+                reverse(settings.LOGIN_REDIRECT_URL),
+                follow=True,
             )
             self.assertEqual(response.status_code, 200)
             self.assertContains(response, "Vue d'ensemble de vos demandes")
@@ -409,7 +429,10 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             user = UserFactory()
             user.groups.set([self.group2fa])
             self.client.login(username=user.username, password="password")
-            response = self.client.get(reverse("password_change"), follow=True,)
+            response = self.client.get(
+                reverse("password_change"),
+                follow=True,
+            )
             self.assertEqual(response.status_code, 200)
             self.assertContains(response, "Confirmation du nouveau mot de passe")
 
@@ -421,7 +444,10 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             factories.PermitDepartmentFactory(group=group, mandatory_2fa=True)
             user.groups.set([self.group2fa])
             self.client.login(username=user.username, password="password")
-            response = self.client.get(reverse("permit_author_edit"), follow=True,)
+            response = self.client.get(
+                reverse("permit_author_edit"),
+                follow=True,
+            )
             self.assertEqual(response.status_code, 200)
             self.assertContains(response, "Mon compte")
 
@@ -433,6 +459,9 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             factories.PermitDepartmentFactory(group=group, mandatory_2fa=True)
             user.groups.set([self.group2fa])
             self.client.login(username=user.username, password="password")
-            response = self.client.get(reverse("profile"), follow=True,)
+            response = self.client.get(
+                reverse("profile"),
+                follow=True,
+            )
             self.assertEqual(response.status_code, 200)
             self.assertContains(response, "Sécurité du compte")

@@ -1,36 +1,24 @@
-from django.contrib.auth.decorators import (
-    login_required,
-    permission_required,
-    user_passes_test,
-)
-from django.conf import settings
-from django.contrib.auth.models import User, AnonymousUser
-from django.contrib.gis.geos.collections import (
-    GeometryCollection,
-    MultiLineString,
-    MultiPoint,
-    MultiPolygon,
-)
-from django.db.models import CharField, F, Prefetch, Q
+import datetime
+
+from constance import config
+from django.contrib.auth.models import AnonymousUser, User
+from django.db.models import F, Prefetch, Q
 from rest_framework import viewsets
 from rest_framework.generics import RetrieveAPIView
+from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
-from rest_framework.permissions import BasePermission, IsAuthenticated
-from rest_framework_gis.fields import GeometrySerializerMethodField
 from rest_framework.throttling import ScopedRateThrottle
+
 from django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 
 from . import (
     geoservices,
     models,
+    search,
     serializers,
     services,
     services_authentication,
-    search,
 )
-from constance import config
-import datetime
-
 
 # ///////////////////////////////////
 # DJANGO REST API
@@ -42,8 +30,8 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
     Events request endpoint Usage:
         1.- /rest/permits/?show_only_future=true (past events get filtered out)
         2.- /rest/permits/?starts_at=2022-01-01
-        2.- /rest/permits/?ends_at=2020-01-01
-        3.- /rest/permits/?adminentities=1,2,3
+        3.- /rest/permits/?ends_at=2020-01-01
+        4.- /rest/permits/?adminentities=1,2,3
 
     """
 
@@ -102,6 +90,9 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
                     )
                 )
                 | Q(permit_request__is_public=True)
+                | Q(
+                    permit_request__status=models.PermitRequest.STATUS_INQUIRY_IN_PROGRESS
+                )
             )
             .prefetch_related(works_object_types_prefetch)
             .select_related("permit_request__administrative_entity")
@@ -254,7 +245,11 @@ class PermitRequestViewSet(
         geom_qs = models.PermitRequestGeoTime.objects.all()
         # filter item which have the geom_type in their geometry column
         if geom_type:
-            geom_qs = geom_qs.annotate(geom_type=geoservices.GeomStAsText(F("geom"),))
+            geom_qs = geom_qs.annotate(
+                geom_type=geoservices.GeomStAsText(
+                    F("geom"),
+                )
+            )
             if geom_type == "lines":
                 geom_qs = geom_qs.filter(geom_type__contains="LINE")
             if geom_type == "points":
@@ -270,8 +265,10 @@ class PermitRequestViewSet(
             "works_object_types",
             queryset=models.WorksObjectType.objects.select_related("works_type"),
         )
-        request_comes_from_internal_qgisserver = services_authentication.check_request_comes_from_internal_qgisserver(
-            self.request
+        request_comes_from_internal_qgisserver = (
+            services_authentication.check_request_comes_from_internal_qgisserver(
+                self.request
+            )
         )
 
         qs = (
@@ -317,14 +314,20 @@ class PermitRequestDetailsViewSet(
 
     throttle_scope = "permits_details"
     serializer_class = serializers.PermitRequestDetailsSerializer
-    permission_classes = [BlockRequesterUserLoggedOnToken]
 
     def get_queryset(self, geom_type=None):
         """
         This view should return a list of permits for which the logged user has
         view permissions
         """
-        user = self.request.user
+        # Only take user with session authentication
+        user = (
+            self.request.user
+            if self.request.user.is_authenticated
+            and self.request.session._SessionBase__session_key
+            else None
+        )
+
         filters_serializer = serializers.PermitRequestFiltersSerializer(
             data={
                 "permit_request_id": self.request.query_params.get("permit_request_id"),
@@ -338,18 +341,25 @@ class PermitRequestDetailsViewSet(
         if filters["permit_request_id"]:
             base_filter &= Q(pk=filters["permit_request_id"])
 
-        request_comes_from_internal_qgisserver = services.check_request_comes_from_internal_qgisserver(
-            self.request
+        request_comes_from_internal_qgisserver = (
+            services.check_request_comes_from_internal_qgisserver(self.request)
         )
 
-        qs = models.PermitRequest.objects.filter(base_filter).filter(
-            Q(
-                id__in=services.get_permit_requests_list_for_user(
-                    user,
-                    request_comes_from_internal_qgisserver=request_comes_from_internal_qgisserver,
+        if user:
+            qs = models.PermitRequest.objects.filter(base_filter).filter(
+                Q(
+                    id__in=services.get_permit_requests_list_for_user(
+                        user,
+                        request_comes_from_internal_qgisserver=request_comes_from_internal_qgisserver,
+                    )
                 )
+                | Q(is_public=True)
             )
-        )
+        else:
+            qs = models.PermitRequest.objects.filter(base_filter).filter(
+                Q(is_public=True)
+            )
+
         if request_comes_from_internal_qgisserver:
             qs = qs[: config.MAX_FEATURE_NUMBER_FOR_QGISSERVER]
 
@@ -377,7 +387,9 @@ def permitRequestViewSetSubsetFactory(geom_type_name):
 
     class Serializer(serializers.PermitRequestPrintSerializer):
         geo_envelop = serializers.PermitRequestGeoTimeGeoJSONSerializer(
-            source="geo_time", read_only=True, extract_geom=geom_serializer,
+            source="geo_time",
+            read_only=True,
+            extract_geom=geom_serializer,
         )
 
     # DRF want's the serializer to have a specific class name

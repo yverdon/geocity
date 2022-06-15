@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0019_add_field_placeholder'),
+        ("permits", "0019_add_field_placeholder"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='worksobjectproperty',
-            name='help_text',
-            field=models.CharField(blank=True, max_length=255, verbose_name='information complémentaire'),
+            model_name="worksobjectproperty",
+            name="help_text",
+            field=models.CharField(
+                blank=True, max_length=255, verbose_name="information complémentaire"
+            ),
         ),
     ]

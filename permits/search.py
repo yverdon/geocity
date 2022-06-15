@@ -23,8 +23,8 @@ from django.db.models import (
 )
 from django.db.models.functions import Cast, Concat, Greatest
 from django.db.models.lookups import PostgresOperatorLookup
-from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse
+from django.utils.translation import ugettext_lazy as _
 
 from . import models
 
@@ -124,7 +124,10 @@ def add_score(qs, fields, search_str):
         for field_name, score_field_name in field_names
     }
     score_case = [
-        When(**{score_field_name: F("score")}, then=Value(field_name),)
+        When(
+            **{score_field_name: F("score")},
+            then=Value(field_name),
+        )
         for field_name, score_field_name in field_names
     ]
 
@@ -148,7 +151,9 @@ def add_score(qs, fields, search_str):
             if len(fields) > 1
             else F(field_names[0][1]),
             scored_field=Case(
-                *score_case, default=Value(""), output_field=CharField(),
+                *score_case,
+                default=Value(""),
+                output_field=CharField(),
             ),
         )
         # Filtering using Postgresql’s similarity lookups seems to be faster than
@@ -184,7 +189,11 @@ def search_actors(search_str, permit_requests_qs, limit=None):
     )
 
     qs = (
-        add_score(qs, actor_search_fields, search_str,)
+        add_score(
+            qs,
+            actor_search_fields,
+            search_str,
+        )
         .values(
             *actor_search_fields,
             "author_full_name",
@@ -280,12 +289,20 @@ def search_properties(search_str, permit_requests_qs, limit=None):
 def search_authors(search_str, permit_requests_qs, limit=None):
     qs = permit_requests_qs.annotate(
         author_full_name=Concat(
-            "author__user__first_name", Value(" "), "author__user__last_name",
+            "author__user__first_name",
+            Value(" "),
+            "author__user__last_name",
         ),
     )
 
     qs = (
-        add_score(qs, ["author_full_name",], search_str,)
+        add_score(
+            qs,
+            [
+                "author_full_name",
+            ],
+            search_str,
+        )
         .values("id", "status", "score", "author_full_name", "created_at")
         .order_by("-score", "-created_at")
     )
@@ -315,7 +332,9 @@ def search_permit_request_created_at(
         permit_requests_qs.filter(**date_to_filters("created_at", date_or_partial_date))
         .annotate(
             author_full_name=Concat(
-                "author__user__first_name", Value(" "), "author__user__last_name",
+                "author__user__first_name",
+                Value(" "),
+                "author__user__last_name",
             ),
         )
         .values("id", "status", "author_full_name", "created_at")
@@ -359,12 +378,18 @@ def search_geo_times(date_or_partial_date, permit_requests_qs, limit=None):
         )
         .annotate(
             matching_date=Case(
-                When(**start_date_filter, then=F("starts_at__date"),),
+                When(
+                    **start_date_filter,
+                    then=F("starts_at__date"),
+                ),
                 default=F("ends_at__date"),
                 output_field=DateField(),
             ),
             matching_date_field=Case(
-                When(**start_date_filter, then=Value("starts_at"),),
+                When(
+                    **start_date_filter,
+                    then=Value("starts_at"),
+                ),
                 default=Value("ends_at"),
                 output_field=CharField(),
             ),
@@ -449,7 +474,9 @@ def search_result_to_json(result):
             "id": result.permit_request_id,
             "url": reverse(
                 "permits:permit_request_detail",
-                kwargs={"permit_request_id": result.permit_request_id,},
+                kwargs={
+                    "permit_request_id": result.permit_request_id,
+                },
             ),
             "author": result.author_name,
             "status": result.permit_request_status,

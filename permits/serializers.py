@@ -1,19 +1,16 @@
 import json
-
 from collections import OrderedDict
+from datetime import timedelta
+
 from django.contrib.gis.geos import GEOSGeometry
-from django.contrib.gis.db.models.functions import AsGeoJSON, Centroid
 from django.db.models import Max, Min
-from django.utils.text import slugify
 from django.utils.translation import gettext as _
-from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
-from datetime import timedelta
+
 from geomapshark import settings
 
-from . import geoservices, models, search
-from . import geoservices, models, services, search
+from . import geoservices, models, search, services
 
 
 class PermitAdministrativeEntitySerializer(serializers.ModelSerializer):
@@ -42,6 +39,35 @@ class WorksObjectTypesNames(serializers.RelatedField):
         return wot_names
 
 
+class PermitRequestComplementaryDocumentSerializer(serializers.ModelSerializer):
+    uri = serializers.SerializerMethodField()
+
+    def get_uri(self, document):
+        request = self.context.get("request")
+        return request.build_absolute_uri(document.uri)
+
+    class Meta:
+        model = models.PermitRequestComplementaryDocument
+
+        fields = (
+            "name",
+            "uri",
+        )
+
+
+class PermitRequestInquirySerializer(serializers.ModelSerializer):
+    documents = PermitRequestComplementaryDocumentSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = models.PermitRequestInquiry
+        fields = (
+            "id",
+            "start_date",
+            "end_date",
+            "documents",
+        )
+
+
 class PermitRequestSerializer(serializers.ModelSerializer):
     administrative_entity = PermitAdministrativeEntitySerializer(read_only=True)
     meta_types = MetaTypesField(source="works_object_types", read_only=True)
@@ -49,6 +75,7 @@ class PermitRequestSerializer(serializers.ModelSerializer):
         source="works_object_types", read_only=True
     )
     intersected_geometries = serializers.SerializerMethodField()
+    current_inquiry = PermitRequestInquirySerializer(read_only=True)
 
     def get_intersected_geometries(self, obj):
         return obj.intersected_geometries if obj.intersected_geometries else ""
@@ -64,12 +91,25 @@ class PermitRequestSerializer(serializers.ModelSerializer):
             "meta_types",
             "intersected_geometries",
             "works_object_types_names",
+            "current_inquiry",
         )
 
 
 class WotPropertiesValuesSerializer(serializers.RelatedField):
     def to_representation(self, value):
-        wot_properties = services.get_wot_properties(value, value_with_type=True)
+        current_user = None
+        request = self.context.get("request", None)
+        if request:
+            current_user = request.user
+            session_authentication = request.session._SessionBase__session_key
+
+        # User is logged by session_authentication
+        user_is_authenticated = (
+            True if current_user.is_authenticated and session_authentication else False
+        )
+        wot_properties = services.get_wot_properties(
+            value, user_is_authenticated, value_with_type=True
+        )
         return wot_properties
 
 
@@ -324,7 +364,8 @@ class PermitRequestPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
     )
     permit_request_actor = PermitRequestActorSerializer(source="*", read_only=True)
     geo_envelop = PermitRequestGeoTimeGeoJSONSerializer(
-        source="geo_time", read_only=True,
+        source="geo_time",
+        read_only=True,
     )
 
     creditor_type = serializers.SerializerMethodField()

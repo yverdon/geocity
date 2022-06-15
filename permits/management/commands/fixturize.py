@@ -1,3 +1,5 @@
+import re
+import unicodedata
 from io import StringIO
 
 from django.contrib.auth import get_user_model
@@ -9,12 +11,8 @@ from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from django.utils import timezone
 
-from constance import config
 from geomapshark import settings
 from permits import admin, models
-import re
-import unicodedata
-from .add_default_print_config import add_default_print_config
 
 
 def strip_accents(text):
@@ -333,7 +331,10 @@ class Command(BaseCommand):
         )
         user.groups.set([group])
         models.PermitAuthor.objects.create(
-            user=user, address="Rue du Lac", zipcode=1234, city="Ville",
+            user=user,
+            address="Rue du Lac",
+            zipcode=1234,
+            city="Ville",
         )
         models.PermitDepartment.objects.create(
             group=group,
@@ -416,7 +417,8 @@ class Command(BaseCommand):
             works_type_obj = models.WorksType.objects.create(name=works_type)
             works_type_obj.tags.add(unaccent(works_type))
             models.PermitActorType.objects.create(
-                type=models.ACTOR_TYPE_OTHER, works_type=works_type_obj,
+                type=models.ACTOR_TYPE_OTHER,
+                works_type=works_type_obj,
             )
 
             for works_obj, *props in objs:
@@ -440,6 +442,7 @@ class Command(BaseCommand):
                 works_object_type.administrative_entities.add(
                     administrative_entity_vevey
                 )
+                self.create_document_types(works_object_type)
                 for prop in props:
                     prop.works_object_types.add(works_object_type)
 
@@ -454,11 +457,14 @@ class Command(BaseCommand):
         models.WorksObjectType.objects.filter(id=5).update(
             requires_validation_document=False
         )
-        demo_works_object_type_no_validation_document = models.WorksObjectType.objects.filter(
-            requires_validation_document=False
-        ).first()
+        demo_works_object_type_no_validation_document = (
+            models.WorksObjectType.objects.filter(
+                requires_validation_document=False
+            ).first()
+        )
         department = models.PermitDepartment.objects.filter(
-            administrative_entity=demo_administrative_entity, is_validator=True,
+            administrative_entity=demo_administrative_entity,
+            is_validator=True,
         ).first()
 
         # Basic permit request
@@ -648,23 +654,27 @@ class Command(BaseCommand):
             application_description="Demandes concernant l' <i>administration</i>",
         )
 
-    def setup_homepage(self):
-        config.APPLICATION_TITLE = "DEV Geocity"
-        config.APPLICATION_SUBTITLE = "Simplifiez votre administration"
-        config.APPLICATION_DESCRIPTION = """<p><b>utilisateur / mot de passe:</b></p>
-        <p>Utilisateur standard: user / admin</p>
-        <p>Pilote (secréatariat): secretariat-yverdon / admin</p>
-        <p>Pilote (secréatariat): secretariat-grandson / admin</p>
-        <p>Validateur: validator-yverdon / admin</p>
-        <p>Validateur 2: eaux-yverdon / admin</p>
-        <p>Intégrateur 2: integrator-yverdon / admin</p>
-        <p>Utilisateur: admin / admin</p>
-        <p>Consultez les emails générés par l'application:</p>
-        => <a href="https://mailhog.geocity.ch" target="_blank">Boîte mail de demo<a/>
-        <hr>
-        <p>Exemples de filtres par sous-domaines:</p>
-        <p><a href="yverdon.localhost:9095">yverdon</a></p>
-        <p><a href="grandson.localhost:9095">grandson</a></p>
-        <p><a href="vevey.localhost:9095">vevey</a></p>
-        <p><a href="lausanne.localhost:9095">lausanne</a></p>
-        """
+    def create_document_types(self, wot):
+        document_types = [
+            (
+                "{} Parent #1".format(wot.pk),
+                wot,
+                ["{} Child #1.{}".format(wot.pk, i) for i in range(1, 4)],
+            ),
+            (
+                "{} Parent #2".format(wot.pk),
+                wot,
+                ["{} Child #2.{}".format(wot.pk, i) for i in range(1, 5)],
+            ),
+        ]
+
+        for document_type in document_types:
+            name, work_object_type, children = document_type
+            parent = models.ComplementaryDocumentType.objects.create(
+                name=name, work_object_types=work_object_type, parent=None
+            )
+
+            for child in children:
+                models.ComplementaryDocumentType.objects.create(
+                    name=child, work_object_types=None, parent=parent
+                )

@@ -1,39 +1,46 @@
 import enum
+import ipaddress
 import itertools
-import mimetypes
 import os
+import pathlib
+import shutil
+import socket
 import urllib
 from collections import defaultdict
-import socket
-import ipaddress
-import PIL
+from datetime import datetime
+from zipfile import ZipFile
 
 import filetype
+import PIL
 from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
-from django.core.exceptions import SuspiciousOperation, ValidationError
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.exceptions import (
+    ObjectDoesNotExist,
+    PermissionDenied,
+    SuspiciousOperation,
+    ValidationError,
+)
 from django.core.mail import send_mass_mail
 from django.core.validators import EmailValidator
-from django.contrib.sites.shortcuts import get_current_site
 from django.db import transaction
 from django.db.models import CharField, Count, F, Max, Min, Q, Value
 from django.db.models.functions import Concat
 from django.forms import modelformset_factory
-from django.http import StreamingHttpResponse
+from django.http.response import FileResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext_lazy as _
+from pdf2image import convert_from_path
+from PIL import Image
 
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
-from .models import PermitRequest, WorksObjectType
+from .models import WorksObjectType
 from .utils import reverse_permit_request_url
-from PIL import Image
-from pdf2image import convert_from_path
-from django.contrib.sites.models import Site
 
 
 class GeoTimeInfo(enum.Enum):
@@ -309,7 +316,10 @@ def get_properties(permit_request, additional_type_exclusions=None):
     return _get_properties_filtered(
         permit_request,
         lambda qs: qs.exclude(
-            input_type__in=[models.WorksObjectProperty.INPUT_TYPE_FILE,] + exclusions
+            input_type__in=[
+                models.WorksObjectProperty.INPUT_TYPE_FILE,
+            ]
+            + exclusions
         ),
     )
 
@@ -444,7 +454,10 @@ def get_permit_request_for_user_or_404(user, permit_request_id, statuses=None):
 
 
 def get_permit_requests_list_for_user(
-    user, request_comes_from_internal_qgisserver=False, works_object_filter=None
+    user,
+    request_comes_from_internal_qgisserver=False,
+    works_object_filter=None,
+    ignore_archived=True,
 ):
     """
     Return the list of permit requests this user has access to.
@@ -462,7 +475,9 @@ def get_permit_requests_list_for_user(
         ),
         required_validations=Count("validations"),
         author_fullname=Concat(
-            F("author__user__first_name"), Value(" "), F("author__user__last_name"),
+            F("author__user__first_name"),
+            Value(" "),
+            F("author__user__last_name"),
         ),
         author_details=Concat(
             F("author__user__email"),
@@ -476,6 +491,9 @@ def get_permit_requests_list_for_user(
         annotate_with.update({"works_object_filter": Value(works_object_filter)})
 
     qs = models.PermitRequest.objects.annotate(**annotate_with)
+
+    if ignore_archived:
+        qs = qs.filter(~Q(status=models.PermitRequest.STATUS_ARCHIVED))
 
     if not user.is_authenticated and not request_comes_from_internal_qgisserver:
         return qs.none()
@@ -499,14 +517,37 @@ def get_permit_requests_list_for_user(
     return qs
 
 
+def get_archived_request_list_for_user(user):
+    """
+    Return the list of archived requests this user has access to.
+    """
+    qs = models.ArchivedPermitRequest.objects.all()
+    if not user.is_authenticated:
+        return qs.none()
+
+    if user.is_superuser:
+        return qs
+
+    qs_filter = Q(archivist=user)
+    qs_filter |= Q(
+        permit_request__administrative_entity__in=get_user_administrative_entities(user)
+    )
+
+    return qs.filter(qs_filter)
+
+
 def get_actors_types(permit_request):
     """
     Get actors type defined for each work type defined for the permit_request
     """
 
-    return models.PermitActorType.objects.filter(
-        works_type__in=get_permit_request_works_types(permit_request)
-    ).values_list("type", "is_mandatory")
+    return (
+        models.PermitActorType.objects.filter(
+            works_type__in=get_permit_request_works_types(permit_request)
+        )
+        .values_list("type", "is_mandatory")
+        .order_by("-is_mandatory")
+    )
 
 
 def filter_only_missing_actor_types(actor_types, permit_request):
@@ -688,9 +729,11 @@ def get_works_objects_step(permit_request, enabled, works_types, user, typefilte
     # return None
     if permit_request and not works_types:
         if user.has_perm("permits.see_private_requests"):
-            administrative_entity_works_types = permit_request.administrative_entity.works_object_types.values_list(
-                "works_type", flat=True
-            ).distinct()
+            administrative_entity_works_types = (
+                permit_request.administrative_entity.works_object_types.values_list(
+                    "works_type", flat=True
+                ).distinct()
+            )
         else:
             administrative_entity_works_types = (
                 permit_request.administrative_entity.works_object_types.filter(
@@ -714,7 +757,10 @@ def get_works_objects_step(permit_request, enabled, works_types, user, typefilte
                 works_types = filtered_works_type
 
     works_types_qs = (
-        urllib.parse.urlencode({"types": works_types}, doseq=True,)
+        urllib.parse.urlencode(
+            {"types": works_types},
+            doseq=True,
+        )
         if works_types
         else ""
     )
@@ -961,7 +1007,9 @@ def get_progress_bar_steps(request, permit_request):
     if entityfilter and not single_entity_for_site:
         entities_by_tag = get_administrative_entities(
             request.user, get_current_site(request)
-        ).filter_by_tags(entityfilter,)
+        ).filter_by_tags(
+            entityfilter,
+        )
 
     # Get work objects types if there is only one entity filtered
     # Skipped if only one entity for site
@@ -1094,7 +1142,9 @@ def submit_permit_request(permit_request, request):
                     groups__permitdepartment__is_integrator_admin=False,
                 ),
                 Q(
-                    Q(groups__permitdepartment__is_validator=False,)
+                    Q(
+                        groups__permitdepartment__is_validator=False,
+                    )
                     | Q(
                         groups__permitdepartment__is_validator=True,
                         groups__permitdepartment__is_backoffice=True,
@@ -1219,24 +1269,45 @@ def _parse_email_content(template, permit_request, absolute_uri_func):
 
 
 def send_email_notification(data):
-    email_contents = _parse_email_content(
-        data["template"], data["permit_request"], data["absolute_uri_func"]
-    )
-
     from_email_name = (
         f'{data["permit_request"].administrative_entity.expeditor_name} '
         if data["permit_request"].administrative_entity.expeditor_name
         else ""
     )
-    from_email = (
+    sender = (
         f'{from_email_name}<{data["permit_request"].administrative_entity.expeditor_email}>'
         if data["permit_request"].administrative_entity.expeditor_email
         else settings.DEFAULT_FROM_EMAIL
     )
+    send_email(
+        template=data["template"],
+        sender=sender,
+        receivers=data["users_to_notify"],
+        subject=data["subject"],
+        context={
+            "permit_request_url": data["permit_request"].get_absolute_url(
+                reverse(
+                    "permits:permit_request_detail",
+                    kwargs={"permit_request_id": data["permit_request"].pk},
+                )
+            ),
+            "administrative_entity": data["permit_request"].administrative_entity,
+            "name": data["permit_request"].author.user.get_full_name(),
+            "permit_request": data["permit_request"],
+        },
+    )
 
+
+def send_email(template, sender, receivers, subject, context):
+    email_content = render_to_string(f"permits/emails/{template}", context)
     emails = [
-        (data["subject"], email_contents, from_email, [email_address],)
-        for email_address in data["users_to_notify"]
+        (
+            subject,
+            email_content,
+            sender,
+            [email_address],
+        )
+        for email_address in receivers
         if validate_email(email_address)
     ]
 
@@ -1274,8 +1345,9 @@ def can_prolonge_permit_request(user, permit_request):
 
 
 def can_request_permit_validation(user, permit_request):
-    return permit_request.can_be_sent_for_validation() and has_permission_to_amend_permit_request(
-        user, permit_request
+    return (
+        permit_request.can_be_sent_for_validation()
+        and has_permission_to_amend_permit_request(user, permit_request)
     )
 
 
@@ -1289,8 +1361,9 @@ def has_permission_to_validate_permit_request(user, permit_request):
 
 
 def can_validate_permit_request(user, permit_request):
-    return permit_request.can_be_validated() and has_permission_to_validate_permit_request(
-        user, permit_request
+    return (
+        permit_request.can_be_validated()
+        and has_permission_to_validate_permit_request(user, permit_request)
     )
 
 
@@ -1315,8 +1388,10 @@ def has_permission_to_classify_permit_request(user, permit_request):
 
 def can_classify_permit_request(user, permit_request):
 
-    status_choices_for_administrative_entity = get_status_choices_for_administrative_entity(
-        permit_request.administrative_entity
+    status_choices_for_administrative_entity = (
+        get_status_choices_for_administrative_entity(
+            permit_request.administrative_entity
+        )
     )
     no_validation_process = (
         models.PermitRequest.STATUS_AWAITING_VALIDATION
@@ -1377,6 +1452,26 @@ def get_contacts_summary(permit_request):
     return contacts
 
 
+def get_permit_complementary_documents(permit_request, user):
+    qs = models.PermitRequestComplementaryDocument.objects.filter(
+        Q(permit_request=permit_request)
+    )
+
+    if user.is_superuser:
+        return qs.order_by("pk").all().distinct()
+
+    return (
+        qs.filter(
+            Q(is_public=True)
+            | Q(owner=user)
+            | Q(authorised_departments__group__in=user.groups.all()),
+        )
+        .order_by("pk")
+        .all()
+        .distinct()
+    )
+
+
 def get_permit_objects(permit_request):
 
     properties_form = forms.WorksObjectsPropertiesForm(instance=permit_request)
@@ -1429,10 +1524,17 @@ def get_actions_for_administrative_entity(permit_request):
             models.PermitRequest.STATUS_PROCESSING,
         ],
         "prolong": list(models.PermitRequest.PROLONGABLE_STATUSES),
+        "complementary_documents": [
+            models.PermitRequest.STATUS_AWAITING_VALIDATION,
+            models.PermitRequest.STATUS_PROCESSING,
+        ],
+        "request_inquiry": list(models.PermitRequest.AMENDABLE_STATUSES),
     }
 
-    available_statuses_for_administrative_entity = get_status_choices_for_administrative_entity(
-        permit_request.administrative_entity
+    available_statuses_for_administrative_entity = (
+        get_status_choices_for_administrative_entity(
+            permit_request.administrative_entity
+        )
     )
     available_actions = []
     for action in required_statuses_for_actions.keys():
@@ -1468,7 +1570,9 @@ def get_permit_request_amend_custom_properties_by_object_type(permit_request):
 
 
 def get_default_works_object_types(
-    administrative_entity, user, works_types=None,
+    administrative_entity,
+    user,
+    works_types=None,
 ):
     """
     Return the `WorksObjectType` that should be automatically selected for the given
@@ -1575,11 +1679,13 @@ def validate_file(file):
         extensions = config.ALLOWED_FILE_EXTENSIONS.replace(" ", "").split(",")
         if kind.extension not in extensions:
             raise ValidationError(
-                _("%(file)s n'est pas du bon type"), params={"file": file},
+                _("%(file)s n'est pas du bon type"),
+                params={"file": file},
             )
         elif file.size > config.MAX_FILE_UPLOAD_SIZE:
             raise ValidationError(
-                _("%(file)s est trop volumineux"), params={"file": file},
+                _("%(file)s est trop volumineux"),
+                params={"file": file},
             )
         # Check that image file is not corrupted
         if kind.extension != "pdf":
@@ -1691,7 +1797,7 @@ def check_request_comes_from_internal_qgisserver(request):
     return False
 
 
-def get_wot_properties(value, value_with_type=False):
+def get_wot_properties(value, user_is_authenticated=None, value_with_type=False):
     """
     Return wot properties in a list for the api, in a dict for backend
     """
@@ -1704,6 +1810,7 @@ def get_wot_properties(value, value_with_type=False):
         "id",
         "works_object_type__works_object__name",
         "works_object_type__works_type__name",
+        "properties__property__is_public_when_permitrequest_is_public",
     )
 
     wot_properties = dict()
@@ -1716,24 +1823,37 @@ def get_wot_properties(value, value_with_type=False):
             wot_properties = list()
             for prop in wot_props:
                 wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
-                # List of a lost, to split wot in objects. Check if last wot changed or never assigned, means first iteration
+
+                # List of a list, to split wot in objects. Check if last wot changed or never assigned. Means it's first iteration
                 if property and wot != last_wot:
                     wot_properties.append(property)
                     property = []
-
                     # WOT
                     property.append(
-                        {"key": "work_object_type", "value": wot, "type": "text",}
+                        {
+                            "key": "work_object_type",
+                            "value": wot,
+                            "type": "text",
+                        }
                     )
 
                 if not last_wot:
                     property.append(
-                        {"key": "work_object_type", "value": wot, "type": "text",}
+                        {
+                            "key": "work_object_type",
+                            "value": wot,
+                            "type": "text",
+                        }
                     )
 
                 last_wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
 
-                if prop["properties__property__input_type"] == "file":
+                if prop["properties__property__input_type"] == "file" and (
+                    user_is_authenticated
+                    or prop[
+                        "properties__property__is_public_when_permitrequest_is_public"
+                    ]
+                ):
                     # get_property_value return None if file does not exist
                     file = get_property_value_based_on_property(prop)
                     # Check if file exist
@@ -1746,7 +1866,12 @@ def get_wot_properties(value, value_with_type=False):
                                 "type": prop["properties__property__input_type"],
                             }
                         )
-                elif prop["properties__value__val"]:
+                elif prop["properties__value__val"] and (
+                    user_is_authenticated
+                    or prop[
+                        "properties__property__is_public_when_permitrequest_is_public"
+                    ]
+                ):
                     # Properties of WOT
                     property.append(
                         {
@@ -1822,22 +1947,61 @@ def login_for_anonymous_request(request, entity):
 
 
 def download_file(path):
-    mime_type, encoding = mimetypes.guess_type(path)
     storage = fields.PrivateFileSystemStorage()
-    file = storage.open(path)
-    response = StreamingHttpResponse(file, content_type=mime_type)
-    response["Content-Disposition"] = 'attachment; filename="' + file.name + '"'
-    return response
+    # for some strange reason, firefox refuses to download the file.
+    # so we need to set the `Content-Type` to `application/octet-stream` so
+    # firefox will download it. For the time being, this "dirty" hack works
+    return FileResponse(storage.open(path), content_type="application/octet-stream")
 
 
 def get_works_type_names_list(permit_request):
+    return permit_request.get_works_type_names_list()
 
-    return ", ".join(
-        list(
-            permit_request.works_object_types.all()
-            .values_list("works_type__name", flat=True)
-            .distinct()
+
+def download_archives(archive_ids, user):
+    archives = []
+    for archive_id in archive_ids:
+        archive = models.ArchivedPermitRequest.objects.filter(
+            permit_request=archive_id
+        ).first()
+
+        if not archive:
+            raise ObjectDoesNotExist
+
+        if not can_download_archive(user, archive.archivist):
+            raise PermissionDenied
+
+        archives.append(archive)
+
+    parent_name = f"Archive_{datetime.today().strftime('%d.%m.%Y.%H.%M.%S')}"
+    parent_path = os.path.join(settings.ARCHIVE_ROOT, parent_name)
+
+    os.mkdir(parent_path)
+    for archive in archives:
+        shutil.copytree(
+            src=archive.path, dst=os.path.join(parent_path, archive.dirname)
         )
+    zippath = compress_directory(parent_path)
+    response = FileResponse(open(zippath, "rb"))
+    shutil.rmtree(parent_path)
+    os.remove(zippath)
+    return response
+
+
+def compress_directory(dir_path):
+    directory = pathlib.Path(dir_path)
+    archive_name = "{}.zip".format(dir_path)
+    with ZipFile(archive_name, "w") as archive:
+        for filepath in directory.rglob("*"):
+            archive.write(filepath, arcname=filepath.relative_to(directory))
+    return archive_name
+
+
+def can_download_archive(user, archivist):
+    return (
+        user == archivist
+        or user.is_superuser
+        or (user.groups.all() & archivist.groups.all()).exists()
     )
 
 
@@ -1859,3 +2023,9 @@ def get_services_to_notify_mailing_list(permit_request):
             ]
 
     return mailing_list
+
+
+def has_document_enabled_for_wots(permit_request):
+    # Document module is activated if at leat on WOT has this property enabled
+
+    return permit_request.works_object_types.filter(document_enabled=True).count() > 0

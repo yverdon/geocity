@@ -7,18 +7,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0044_alter_worksobjectproperty_input_type'),
+        ("permits", "0044_alter_worksobjectproperty_input_type"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='permitadministrativeentity',
-            name='expeditor_email',
-            field=models.CharField(blank=True, max_length=255, validators=[django.core.validators.RegexValidator(message="Le format de l'adresse émail n'est pas valable.", regex='^[a-z0-9]+[\\._]?[a-z0-9]+[@]\\w+[.]\\w{2,3}$')], verbose_name="Adresse émail de l'expéditeur des notifications"),
+            model_name="permitadministrativeentity",
+            name="expeditor_email",
+            field=models.CharField(
+                blank=True,
+                max_length=255,
+                validators=[
+                    django.core.validators.RegexValidator(
+                        message="Le format de l'adresse émail n'est pas valable.",
+                        regex="^[a-z0-9]+[\\._]?[a-z0-9]+[@]\\w+[.]\\w{2,3}$",
+                    )
+                ],
+                verbose_name="Adresse émail de l'expéditeur des notifications",
+            ),
         ),
         migrations.AddField(
-            model_name='permitadministrativeentity',
-            name='expeditor_name',
-            field=models.CharField(blank=True, max_length=255, verbose_name="Nom de l'expéditeur des notifications"),
+            model_name="permitadministrativeentity",
+            name="expeditor_name",
+            field=models.CharField(
+                blank=True,
+                max_length=255,
+                verbose_name="Nom de l'expéditeur des notifications",
+            ),
         ),
     ]

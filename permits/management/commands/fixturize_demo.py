@@ -1,5 +1,8 @@
+import re
+import unicodedata
 from io import StringIO
 
+from constance import config
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
@@ -11,10 +14,8 @@ from django.utils import timezone
 
 from geomapshark import settings
 from permits import admin, models
-import re
-import unicodedata
+
 from .add_default_print_config import add_default_print_config
-from constance import config
 
 
 def strip_accents(text):
@@ -333,7 +334,10 @@ class Command(BaseCommand):
         )
         user.groups.set([group])
         models.PermitAuthor.objects.create(
-            user=user, address="Rue du Lac", zipcode=1400, city="Yverdon",
+            user=user,
+            address="Rue du Lac",
+            zipcode=1400,
+            city="Yverdon",
         )
         models.PermitDepartment.objects.create(
             group=group,
@@ -397,7 +401,10 @@ class Command(BaseCommand):
                 order=5,
             ),
             "date": models.WorksObjectProperty.objects.create(
-                name="Date", input_type="date", is_mandatory=False, order=6,
+                name="Date",
+                input_type="date",
+                is_mandatory=False,
+                order=6,
             ),
             "checkbox": models.WorksObjectProperty.objects.create(
                 name="Impact sur la chaussée",
@@ -424,7 +431,11 @@ class Command(BaseCommand):
             (
                 "Stationnement (ex. de demande devant être prolongée)",
                 [
-                    ("Demande de macaron", properties["comment"], properties["date"],),
+                    (
+                        "Demande de macaron",
+                        properties["comment"],
+                        properties["date"],
+                    ),
                     (
                         "Accès au centre-ville historique",
                         properties["comment"],
@@ -491,8 +502,14 @@ class Command(BaseCommand):
             (
                 "Suvbentions (ex. de demande sans géométrie ni période temporelle)",
                 [
-                    ("Prime éco-mobilité", properties["comment"],),
-                    ("Abonnement de bus", properties["comment"],),
+                    (
+                        "Prime éco-mobilité",
+                        properties["comment"],
+                    ),
+                    (
+                        "Abonnement de bus",
+                        properties["comment"],
+                    ),
                 ],
             ),
         ]
@@ -537,6 +554,9 @@ class Command(BaseCommand):
                     works_object=works_obj_obj,
                     is_public=True,
                     notify_services=True,
+                    document_enabled=True,
+                    publication_enabled=True,
+                    permanent_publication_enabled=True,
                     services_to_notify=f"yverdon-squad+admin@liip.ch",
                     additional_information=additional_information_text,
                 )
@@ -552,6 +572,7 @@ class Command(BaseCommand):
                 works_object_type.administrative_entities.add(
                     administrative_entity_vevey
                 )
+                self.create_document_types(works_object_type)
                 for prop in props:
                     prop.works_object_types.add(works_object_type)
 
@@ -592,11 +613,14 @@ class Command(BaseCommand):
         models.WorksObjectType.objects.filter(id=5).update(
             requires_validation_document=False
         )
-        demo_works_object_type_no_validation_document = models.WorksObjectType.objects.filter(
-            requires_validation_document=False
-        ).first()
+        demo_works_object_type_no_validation_document = (
+            models.WorksObjectType.objects.filter(
+                requires_validation_document=False
+            ).first()
+        )
         department = models.PermitDepartment.objects.filter(
-            administrative_entity=demo_administrative_entity, is_validator=True,
+            administrative_entity=demo_administrative_entity,
+            is_validator=True,
         ).first()
 
         # Basic permit request
@@ -732,7 +756,8 @@ class Command(BaseCommand):
         )
 
         models.PermitRequestValidation.objects.get_or_create(
-            permit_request=permit_request6, department=department,
+            permit_request=permit_request6,
+            department=department,
         )
 
         models.WorksObjectTypeChoice.objects.create(
@@ -795,3 +820,28 @@ class Command(BaseCommand):
         <p>Consultez les emails générés par l'application:</p>
         => <a href="https://mailhog.geocity.ch" target="_blank">Boîte mail de demo<a/>
         """
+
+    def create_document_types(self, wot):
+        document_types = [
+            (
+                "{} Parent #1".format(wot.pk),
+                wot,
+                ["{} Child #1.{}".format(wot.pk, i) for i in range(1, 4)],
+            ),
+            (
+                "{} Parent #2".format(wot.pk),
+                wot,
+                ["{} Child #2.{}".format(wot.pk, i) for i in range(1, 5)],
+            ),
+        ]
+
+        for document_type in document_types:
+            name, work_object_type, children = document_type
+            parent = models.ComplementaryDocumentType.objects.create(
+                name=name, work_object_types=work_object_type, parent=None
+            )
+
+            for child in children:
+                models.ComplementaryDocumentType.objects.create(
+                    name=child, work_object_types=None, parent=parent
+                )
