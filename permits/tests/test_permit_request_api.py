@@ -1,5 +1,6 @@
 import urllib.parse
 from datetime import datetime, timedelta
+from unittest import skip
 
 import requests
 from constance import config
@@ -388,6 +389,7 @@ class PermitRequestAPITestCase(TestCase):
             self.assertEqual(feature["geometry"]["type"], "Polygon")
             self.assertNotEqual(feature["geometry"]["coordinates"], [])
 
+    @skip("obsolete")  # TODO: replace by equivalent test in reports/tests.py
     def test_qgisserver_is_up_and_atlas_plugin_is_working(self):
         values = {
             "SERVICE": "ATLAS",
@@ -402,6 +404,7 @@ class PermitRequestAPITestCase(TestCase):
         self.assertEqual(qgisserver_response.status_code, 200)
         self.assertEqual(qgisserver_response.json()["status"], "success")
 
+    @skip("obsolete")  # TODO: replace by equivalent test in reports/tests.py
     def test_print_service_is_working_with_default_template(self):
 
         values = {
