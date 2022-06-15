@@ -110,6 +110,7 @@ LOCATIONS_SEARCH_API_DETAILS = os.getenv("LOCATIONS_SEARCH_API_DETAILS")
 
 # Application definition
 INSTALLED_APPS = [
+    "polymorphic",
     "adminsortable2",
     "grappelli",
     "django.contrib.admin",
@@ -144,6 +145,7 @@ INSTALLED_APPS = [
     "django_cron",
     "axes",
     "captcha",
+    "ckeditor",
 ]
 
 if ENABLE_2FA:
@@ -155,7 +157,10 @@ if ENABLE_2FA:
     ]
 
 # project applications
-INSTALLED_APPS += ["permits"]
+INSTALLED_APPS += [
+    "permits",
+    "reports",
+]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -504,13 +509,11 @@ OL_MAP_HEIGHT = os.getenv("OL_MAP_HEIGHT")
 GRAPPELLI_ADMIN_TITLE = "Interface d'administration Geocity"
 
 # Django REST Framework
-DRF_ALLOW_TOKENAUTHENTICATION = (
-    os.getenv("DRF_ALLOW_TOKENAUTHENTICATION", "false").lower() == "true"
-)
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
         "rest_framework.authentication.SessionAuthentication",
+        "geomapshark.auth.InternalTokenAuthentication",
     ),
     "DEFAULT_PAGINATION_CLASS": "django_wfs3.pagination.CustomPagination",
     "DEFAULT_THROTTLE_CLASSES": [
@@ -527,11 +530,6 @@ REST_FRAMEWORK = {
         "search": os.getenv("DRF_THROTTLE_RATE_SEARCH_API"),
     },
 }
-# Allow TokenAuthentication to the API.
-if DRF_ALLOW_TOKENAUTHENTICATION:
-    REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] += (
-        "geomapshark.auth.InternalTokenAuthentication",
-    )
 
 WFS3_TITLE = "OGC API Features - Geocity"
 WFS3_DESCRIPTION = "Point d'accès OGC API Features aux données Geocity."
@@ -566,3 +564,26 @@ if ALLOW_REMOTE_USER_AUTH:
         "django.contrib.auth.backends.RemoteUserBackend",
         "django.contrib.auth.backends.ModelBackend",
     ]
+
+CKEDITOR_CONFIGS = {
+    "default": {
+        # TODO: find a way to customize style and format dropdowns
+        "toolbar": "custom",
+        "toolbar_custom": [
+            ["Undo", "Redo"],
+            ["Image", "Table", "HorizontalRule", "SpecialChar"],
+            ["Bold", "Italic", "Strike", "-", "RemoveFormat"],
+            [
+                "NumberedList",
+                "BulletedList",
+                "-",
+                "Outdent",
+                "Indent",
+                "-",
+                "Blockquote",
+            ],
+            ["Styles", "Format"],
+            ["Source"],
+        ],
+    },
+}

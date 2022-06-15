@@ -1,5 +1,6 @@
 import urllib.parse
 from datetime import datetime, timedelta
+from unittest import skip
 
 import requests
 from constance import config
@@ -388,6 +389,7 @@ class PermitRequestAPITestCase(TestCase):
             self.assertEqual(feature["geometry"]["type"], "Polygon")
             self.assertNotEqual(feature["geometry"]["coordinates"], [])
 
+    @skip("obsolete")  # TODO: replace by equivalent test in reports/tests.py
     def test_qgisserver_is_up_and_atlas_plugin_is_working(self):
         values = {
             "SERVICE": "ATLAS",
@@ -565,8 +567,6 @@ class PermitRequestAPITestCase(TestCase):
                 "is_logged": False,
             },
         )
-
-    # TODO: test also the permits:permit_request_print route
 
     def test_events_api_returns_current_inquiries(self):
         self.client.login(username=self.secretariat_user.username, password="password")

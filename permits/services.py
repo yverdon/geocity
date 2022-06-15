@@ -1661,12 +1661,6 @@ def get_permit_request_directives(permit_request):
     ]
 
 
-def get_permit_request_print_templates(permit_request):
-    return models.QgisProject.objects.filter(
-        works_object_type__in=permit_request.works_object_types.all()
-    )
-
-
 # Validate a file, from checking the first bytes and detecting the kind of the file
 # Exemple : User puts "my_malware.exe" and rename as "file.txt"
 # kind.extension => will return "exe"

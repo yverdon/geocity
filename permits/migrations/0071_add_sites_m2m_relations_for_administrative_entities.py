@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("sites", "0002_alter_domain_unique"),
-        ("permits", "0069_rename_short_name_and_is_public_field"),
+        ("permits", "0070_publish_fields_for_public_permitrequests"),
     ]
 
     operations = [

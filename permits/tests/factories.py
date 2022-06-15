@@ -211,7 +211,10 @@ class IntegratorGroupFactory(GroupFactory):
             extracted = list(
                 Permission.objects.filter(
                     (
-                        Q(content_type__app_label="permits")
+                        (
+                            Q(content_type__app_label="permits")
+                            | Q(content_type__app_label="reports")
+                        )
                         & Q(
                             content_type__model__in=admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS
                         )
@@ -495,14 +498,6 @@ class PermitRequestAmendPropertyValueFactory(factory.django.DjangoModelFactory):
     property = factory.SubFactory(PermitRequestAmendPropertyFactory)
     works_object_type_choice = factory.SubFactory(WorksObjectTypeChoiceFactory)
     value = factory.Faker("word")
-
-
-class QgisProjectFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.QgisProject
-
-    works_object_type = factory.SubFactory(WorksObjectTypeFactory)
-    qgis_print_template_name = "atlas"
 
 
 class TemplateCustomizationFactory(factory.django.DjangoModelFactory):

@@ -7,13 +7,22 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
+from django.contrib.staticfiles import finders
 from django.core import management
+from django.core.files import File
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from django.utils import timezone
 
 from geomapshark import settings
 from permits import admin, models
+from reports.models import (
+    Report,
+    ReportLayout,
+    SectionAuthor,
+    SectionMap,
+    SectionParagraph,
+)
 
 from .add_default_print_config import add_default_print_config
 
@@ -114,6 +123,8 @@ class Command(BaseCommand):
             self.setup_homepage()
             self.stdout.write("Creating default print templates...")
             add_default_print_config()
+            self.stdout.write("Creating reports...")
+            self.create_reports()
             self.stdout.write("Fixturize succeed!")
 
     def setup_site(self):
@@ -239,9 +250,6 @@ class Command(BaseCommand):
         self.stdout.write("pilot-2 / demo")
 
         secretary_groups = Group.objects.filter(name__in=["pilot", "pilot-2"])
-        department = models.PermitDepartment.objects.filter(
-            group__in=secretary_groups
-        ).update(is_backoffice=True)
 
         user = self.create_user(
             "validator",
@@ -290,13 +298,17 @@ class Command(BaseCommand):
             content_type__app_label="permits",
             content_type__model__in=admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
         )
+        report_permissions = Permission.objects.filter(
+            content_type__app_label="reports",
+            content_type__model__in=admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
+        )
 
         other_permissions = Permission.objects.filter(
             codename__in=admin.OTHER_PERMISSIONS_CODENAMES
         )
         # set the required permissions for the integrator group
         Group.objects.get(name="integrator").permissions.set(
-            permits_permissions.union(other_permissions)
+            permits_permissions.union(other_permissions).union(report_permissions)
         )
         self.stdout.write("integrator / demo")
 
@@ -311,6 +323,11 @@ class Command(BaseCommand):
                 models.PermitWorkflowStatus.objects.get_or_create(
                     status=status_value[0], administrative_entity=entity
                 )
+        # Add admin user in all groups
+        groups = Group.objects.all()
+        user_admin = User.objects.get(username="admin")
+        for group in groups:
+            user_admin.groups.add(group)
 
     def create_user(
         self,
@@ -438,9 +455,14 @@ class Command(BaseCommand):
                     ),
                     (
                         "Accès au centre-ville historique",
+                        properties["plan"],
+                        properties["width"],
                         properties["comment"],
                         properties["title"],
                         properties["date"],
+                        properties["checkbox"],
+                        properties["adresse"],
+                        properties["list_multiple"],
                     ),
                 ],
             ),
@@ -449,26 +471,46 @@ class Command(BaseCommand):
                 [
                     (
                         "Événement sportif",
+                        properties["plan"],
+                        properties["width"],
                         properties["comment"],
                         properties["title"],
+                        properties["date"],
+                        properties["checkbox"],
+                        properties["adresse"],
                         properties["list_multiple"],
                     ),
                     (
                         "Événement culturel",
+                        properties["plan"],
+                        properties["width"],
                         properties["comment"],
                         properties["title"],
+                        properties["date"],
+                        properties["checkbox"],
+                        properties["adresse"],
                         properties["list_multiple"],
                     ),
                     (
                         "Événement politique",
+                        properties["plan"],
+                        properties["width"],
                         properties["comment"],
                         properties["title"],
+                        properties["date"],
+                        properties["checkbox"],
+                        properties["adresse"],
                         properties["list_multiple"],
                     ),
                     (
                         "Événement commercial",
+                        properties["plan"],
+                        properties["width"],
                         properties["comment"],
                         properties["title"],
+                        properties["date"],
+                        properties["checkbox"],
+                        properties["adresse"],
                         properties["list_multiple"],
                     ),
                 ],
@@ -653,6 +695,9 @@ class Command(BaseCommand):
             permit_request=permit_request2,
             department=department,
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+            comment_before="Ce projet n'est pas admissible, veuillez l'améliorer.",
+            comment_during="Les améliorations ont été prise en compte.",
+            comment_after="Excellent projet qui bénéficiera à la communauté.",
         )
 
         models.WorksObjectTypeChoice.objects.create(
@@ -679,6 +724,9 @@ class Command(BaseCommand):
             permit_request=permit_request3,
             department=department,
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+            comment_before="Ce projet n'est pas admissible, veuillez l'améliorer.",
+            comment_during="Les améliorations ont été prise en compte.",
+            comment_after="Excellent projet qui bénéficiera à la communauté.",
         )
 
         models.WorksObjectTypeChoice.objects.create(
@@ -709,6 +757,9 @@ class Command(BaseCommand):
             permit_request=permit_request4,
             department=department,
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+            comment_before="Ce projet n'est pas admissible, veuillez l'améliorer.",
+            comment_during="Les améliorations ont été prise en compte.",
+            comment_after="Excellent projet qui bénéficiera à la communauté.",
         )
         models.WorksObjectTypeChoice.objects.create(
             permit_request=permit_request4, works_object_type=demo_works_object_type
@@ -732,6 +783,9 @@ class Command(BaseCommand):
             permit_request=permit_request5,
             department=department,
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+            comment_before="Ce projet n'est pas admissible, veuillez l'améliorer.",
+            comment_during="Les améliorations ont été prise en compte.",
+            comment_after="Excellent projet qui bénéficiera à la communauté.",
         )
 
         models.WorksObjectTypeChoice.objects.create(
@@ -772,6 +826,147 @@ class Command(BaseCommand):
             geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
         )
 
+        # Permit Request to Classify with mixed objects with lots of text for print demo
+        permit_request7 = models.PermitRequest.objects.create(
+            status=models.PermitRequest.STATUS_PROCESSING,
+            administrative_entity=demo_administrative_entity,
+            author=demo_author,
+            is_public=True,
+        )
+        # Validations with long text
+        models.PermitRequestValidation.objects.get_or_create(
+            permit_request=permit_request7,
+            department=department,
+            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+            comment_before=demo_long_text,
+            comment_during=demo_long_text,
+            comment_after=demo_long_text,
+        )
+        models.PermitRequestValidation.objects.get_or_create(
+            permit_request=permit_request7,
+            department=models.PermitDepartment.objects.get(group__name="validator-2"),
+            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+            comment_before=demo_long_text,
+            comment_during=demo_long_text,
+            comment_after=demo_long_text,
+        )
+
+        models.WorksObjectTypeChoice.objects.create(
+            permit_request=permit_request7, works_object_type=demo_works_object_type
+        )
+
+        models.WorksObjectTypeChoice.objects.create(
+            permit_request=permit_request7,
+            works_object_type=demo_works_object_type_no_validation_document,
+        )
+
+        models.PermitRequestGeoTime.objects.create(
+            permit_request=permit_request7,
+            starts_at=timezone.now(),
+            ends_at=timezone.now(),
+            geom="GEOMETRYCOLLECTION(MULTIPOLYGON(((2539078 1181121, 2539092 1181084, 2539118 1181111, 2539099 1181105, 2539078 1181121))))",
+        )
+
+        # Amend propertie with long text
+        amend_property_1 = models.PermitRequestAmendProperty.objects.create(
+            name="Commentaire interne",
+            is_visible_by_author=False,
+        )
+        amend_property_1.works_object_types.set(
+            [demo_works_object_type, demo_works_object_type_no_validation_document]
+        )
+        amend_property_2 = models.PermitRequestAmendProperty.objects.create(
+            name="Commentaire visible par le requérant",
+            is_visible_by_author=True,
+        )
+        amend_property_2.works_object_types.set(
+            [demo_works_object_type, demo_works_object_type_no_validation_document]
+        )
+        works_object_type_choice_1 = models.WorksObjectTypeChoice.objects.get(
+            permit_request=permit_request7,
+            works_object_type=demo_works_object_type,
+        )
+        works_object_type_choice_2 = models.WorksObjectTypeChoice.objects.get(
+            permit_request=permit_request7,
+            works_object_type=demo_works_object_type_no_validation_document,
+        )
+        models.PermitRequestAmendPropertyValue.objects.create(
+            property=amend_property_1,
+            works_object_type_choice=works_object_type_choice_1,
+            value=demo_long_text,
+        )
+        models.PermitRequestAmendPropertyValue.objects.create(
+            property=amend_property_1,
+            works_object_type_choice=works_object_type_choice_2,
+            value=demo_long_text,
+        )
+        models.PermitRequestAmendPropertyValue.objects.create(
+            property=amend_property_2,
+            works_object_type_choice=works_object_type_choice_1,
+            value=demo_long_text,
+        )
+        models.PermitRequestAmendPropertyValue.objects.create(
+            property=amend_property_2,
+            works_object_type_choice=works_object_type_choice_2,
+            value=demo_long_text,
+        )
+
+        # Set default values for properties
+        for prop in models.WorksObjectProperty.objects.all():
+            for works_object_type_choice in [
+                works_object_type_choice_1,
+                works_object_type_choice_2,
+            ]:
+                if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_DATE:
+                    models.WorksObjectPropertyValue.objects.create(
+                        property=prop,
+                        works_object_type_choice=works_object_type_choice,
+                        value={"val": "01.01.2021"},
+                    )
+                if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_ADDRESS:
+                    models.WorksObjectPropertyValue.objects.create(
+                        property=prop,
+                        works_object_type_choice=works_object_type_choice,
+                        value={"val": "Place pestalozzi 2, 1400 Yverdon-les-Bains"},
+                    )
+                if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_CHECKBOX:
+                    models.WorksObjectPropertyValue.objects.create(
+                        property=prop,
+                        works_object_type_choice=works_object_type_choice,
+                        value={"val": True},
+                    )
+                if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_NUMBER:
+                    models.WorksObjectPropertyValue.objects.create(
+                        property=prop,
+                        works_object_type_choice=works_object_type_choice,
+                        value={"val": 42},
+                    )
+                if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE:
+                    models.WorksObjectPropertyValue.objects.create(
+                        property=prop,
+                        works_object_type_choice=works_object_type_choice,
+                        value={"val": "Oui"},
+                    )
+                if (
+                    prop.input_type
+                    == models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE
+                ):
+                    models.WorksObjectPropertyValue.objects.create(
+                        property=prop,
+                        works_object_type_choice=works_object_type_choice,
+                        value={"val": "Le bon choix"},
+                    )
+                if (
+                    prop.input_type == models.WorksObjectProperty.INPUT_TYPE_TEXT
+                    or prop.input_type == models.WorksObjectProperty.INPUT_TYPE_REGEX
+                    or prop.input_type == models.WorksObjectProperty.INPUT_TYPE_TITLE
+                ):
+                    models.WorksObjectPropertyValue.objects.create(
+                        property=prop,
+                        works_object_type_choice=works_object_type_choice,
+                        value={"val": demo_medium_text},
+                    )
+
     def create_geom_layer_entity(self):
 
         models.GeomLayer.objects.create(
@@ -806,6 +1001,72 @@ class Command(BaseCommand):
             application_subtitle="Demandes en lignes",
             application_description="Demandes concernant l' <i>administration</i>",
         )
+
+    def create_reports(self):
+        # Create report setup
+        layout = ReportLayout(
+            name="demo_layout",
+            margin_top=30,
+            margin_right=10,
+            margin_bottom=20,
+            margin_left=22,
+            integrator=Group.objects.get(name="integrator"),
+        )
+        report_background_path = finders.find(
+            "reports/report-letter-paper-template.png"
+        )
+        background_image = open(report_background_path, "rb")
+        layout.background.save(
+            "report-letter-paper.png", File(background_image), save=True
+        )
+        layout.save()
+
+        report = Report(
+            name="demo_report",
+            layout=layout,
+            # TODO: ensure this is available to the owner of the report
+            type=models.ComplementaryDocumentType.objects.first(),
+        )
+        report.save()
+
+        section_paragraph_1 = SectionParagraph(
+            order=1,
+            report=report,
+            title="Example report",
+            content="<p>This is an example report. It could be an approval, or any type of report related to a request.</p>",
+        )
+        section_paragraph_1.save()
+
+        section_paragraph_2 = SectionParagraph(
+            order=2,
+            report=report,
+            title="Demand summary",
+            content="<p>This demand contains the following objects.</p><ul>{% for wot in data.properties.permit_request_works_object_types_names.values() %}<li>{{wot}}</li>{% endfor %}</ul>",
+        )
+        section_paragraph_2.save()
+
+        section_map = SectionMap(
+            order=3,
+            report=report,
+            qgis_project_file="invalid",  # set few lines below
+            qgis_print_template_name="a4",
+        )
+        qgis_template_project_path = finders.find("reports/report-template-dev.qgs")
+        qgis_template_project = open(qgis_template_project_path, "rb")
+        section_map.qgis_project_file.save(
+            "report-template-dev.qgs", File(qgis_template_project), save=True
+        )
+
+        section_author = SectionAuthor(
+            order=4,
+            report=report,
+        )
+        section_author.save()
+
+        # report.work_object_types.add(models.WorksObjectType.objects.all())
+        # Assign to all work objects types
+        for wot in models.WorksObjectType.objects.all():
+            wot.reports.set([report])
 
     def setup_homepage(self):
         config.APPLICATION_TITLE = "Démo Geocity"
@@ -845,3 +1106,58 @@ class Command(BaseCommand):
                 models.ComplementaryDocumentType.objects.create(
                     name=child, work_object_types=None, parent=parent
                 )
+
+
+demo_long_text = """
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor
+in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+sunt in culpa qui officia deserunt mollit anim id est laborum.
+Section 1.10.32 of de Finibus Bonorum et Malorum, written by Cicero in 45 BC
+
+Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa
+quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas
+sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.
+Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi
+tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem
+ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea
+voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?
+1914 translation by H. Rackham
+
+But I must explain to you how all this mistaken idea of denouncing pleasure and praising pain was born and I will give you a
+complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness.
+No one rejects, dislikes, or avoids pleasure itself, because it is pleasure, but because those who do not know how to pursue pleasure rationally
+encounter consequences that are extremely painful. Nor again is there anyone who loves or pursues or desires to obtain pain of itself, because it
+is pain, but because occasionally circumstances occur in which toil and pain can procure him some great pleasure. To take a trivial example,
+which of us ever undertakes laborious physical exercise, except to obtain some advantage from it? But who has any right to find fault with a
+man who chooses to enjoy a pleasure that has no annoying consequences, or one who avoids a pain that produces no resultant pleasure?
+Section 1.10.33 of de Finibus Bonorum et Malorum, written by Cicero in 45 BC
+
+At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos
+dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt
+mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore,
+cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est,
+omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae
+sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur
+aut perferendis doloribus asperiores repellat.
+1914 translation by H. Rackham
+
+On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by the charms of pleasure
+of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are bound to ensue; and equal blame belongs to
+those who fail in their duty through weakness of will, which is the same as saying through shrinking from toil and pain. These cases
+are perfectly simple and easy to distinguish. In a free hour, when our power of choice is untrammelled and when nothing prevents our being
+able to do what we like best, every pleasure is to be welcomed and every pain avoided. But in certain circumstances and owing to the claims
+of duty or the obligations of business it will frequently occur that pleasures have to be repudiated and annoyances accepted.
+The wise man therefore always holds in these matters to this principle of selection: he rejects pleasures to secure other greater pleasures,
+or else he endures pains to avoid worse pains.
+"""
+
+demo_medium_text = """
+On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by the charms of pleasure
+of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are bound to ensue; and equal blame belongs to
+those who fail in their duty through weakness of will, which is the same as saying through shrinking from toil and pain. These cases
+are perfectly simple and easy to distinguish. In a free hour, when our power of choice is untrammelled and when nothing prevents our being
+able to do what we like best, every pleasure is to be welcomed and every pain avoided. But in certain circumstances and owing to the claims
+of duty or the obligations of business it will frequently occur that pleasures have to be repudiated and annoyances accepted.
+The wise man therefore always holds in these matters to this principle of selection: he rejects pleasures to secure other greater pleasures,
+or else he endures pains to avoid worse pains"""

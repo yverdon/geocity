@@ -44,6 +44,7 @@ router.register(r"permits_details", api.PermitRequestDetailsViewSet, "permits_de
 urlpatterns = [
     path("", permits_views.permit_request_select_administrative_entity),
     path("permit-requests/", include("permits.urls")),
+    path("reports/", include("reports.urls")),
     path("grappelli/", include("grappelli.urls")),  # grappelli URLS
 ]
 

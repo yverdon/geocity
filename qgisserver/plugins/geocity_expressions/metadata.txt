@@ -1,9 +1,0 @@
-[general]
-name=Geocity rendering expressions for QGIS Server
-qgisMinimumVersion=3.16
-description=Custom expressions to format Geocity API data
-version=version 1.0
-author=SIT Yverdon
-email=sit@ylb.ch
-server=True
-changelog=

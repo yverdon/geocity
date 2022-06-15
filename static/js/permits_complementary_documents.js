@@ -30,6 +30,8 @@ document.getElementById('add-document').addEventListener('click', (e) => {
   container.appendChild(clone)
 
   displayChildSelect(clone)
+
+  setEventOnTemplateSelect(nbDocuments-1)
 })
 
 document.getElementById('remove-document').addEventListener('click', (e) => {
@@ -84,3 +86,32 @@ function hideChildrenDocumentTypes(parent) {
     child.closest('.form-group').style.display = 'none'
   }
 }
+
+function setEventOnTemplateSelect(id){
+  let reportInput  = document.getElementById(`id_form-${id}-report_preset`);
+  let docInput = document.getElementById(`id_form-${id}-document`);
+  let docTypeInput = document.getElementById(`id_form-${id}-document_type`);
+  let previewBtn = document.getElementById(`id_form-${id}-print_preview`);
+
+  docInput.disabled=false;
+  docTypeInput.disabled=false;
+  previewBtn.disabled=true;
+  reportInput.addEventListener('change', (e) => {
+    if (e.target.value == "") {
+      docInput.disabled=false;
+      docTypeInput.disabled=false;
+      previewBtn.disabled=true;
+    } else {
+      docInput.disabled=true;
+      docTypeInput.disabled=true;
+      previewBtn.disabled=false;
+      previewBtn.onclick = (event) => {
+        let url = previewBtn.dataset.linkTpl.replace("999999999", reportInput.value);
+        window.open(url, "_blank");
+        return false;
+      };
+    }
+  })
+}
+
+setEventOnTemplateSelect(0)

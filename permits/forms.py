@@ -17,6 +17,7 @@ from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis import forms as geoforms
 from django.core.exceptions import ValidationError
+from django.core.files import File
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import transaction
 from django.db.models import Max, Q
@@ -30,6 +31,7 @@ from accounts.dootix.adapter import DootixSocialAccountAdapter
 from accounts.dootix.provider import DootixProvider
 from accounts.geomapfish.adapter import GeomapfishSocialAccountAdapter
 from accounts.geomapfish.provider import GeomapfishProvider
+from reports import models as reportmodels
 
 from . import geoservices, models, services
 
@@ -1589,10 +1591,17 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         widget=forms.CheckboxSelectMultiple,
         required=False,
     )
+    report_preset = forms.ModelChoiceField(
+        queryset=None,
+        widget=forms.Select,
+        required=False,
+        label=_("Générer à partir du modèle"),
+    )
 
     class Meta:
         model = models.PermitRequestComplementaryDocument
         fields = [
+            "report_preset",
             "document",
             "description",
             "status",
@@ -1601,12 +1610,14 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             "document_type",
         ]
         widgets = {
-            "description": forms.Textarea(attrs={"rows": 2}),
+            "description": forms.Textarea(attrs={"rows": 1}),
         }
 
-    def __init__(self, permit_request, *args, **kwargs):
+    def __init__(self, permit_request, user, *args, **kwargs):
         super(PermitRequestComplementaryDocumentsForm, self).__init__(*args, **kwargs)
 
+        self.permit_request = permit_request
+        self.user = user
         self.fields[
             "authorised_departments"
         ].queryset = models.PermitDepartment.objects.filter(
@@ -1614,12 +1625,19 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         ).all()
         self.fields["authorised_departments"].label = _("Département autorisé")
 
+        self.fields["report_preset"].queryset = reportmodels.Report.objects.filter(
+            work_object_types__in=permit_request.works_object_types.all()
+        ).distinct()
+
         parent_types = models.ComplementaryDocumentType.objects.filter(
             work_object_types__in=permit_request.works_object_types.all()
         ).all()
 
         self.fields["document_type"].queryset = parent_types
-        self.fields["document_type"].required = True
+
+        # Document, document type are not required, as user can also use a generated report
+        self.fields["document_type"].required = False
+        self.fields["document"].required = False
 
         for parent in parent_types:
             name = "parent_{}".format(parent.pk)
@@ -1653,7 +1671,9 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
     def clean_document(self):
         document = self.cleaned_data.get("document")
 
-        services.validate_file(document)
+        # Document is not required, as user can also use a generated report
+        if document:
+            services.validate_file(document)
 
         return document
 
@@ -1668,6 +1688,34 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
                     "Un département doit être renseigner ou le document doit être publique"
                 )
             )
+
+        if self.cleaned_data.get("document") and self.cleaned_data.get("report_preset"):
+            raise ValidationError(
+                _(
+                    "Vous pouvez soit uploader un fichier, soit générer un document à partir d'un modèle, mais pas les deux."
+                )
+            )
+
+        if not self.cleaned_data.get("document") and not self.cleaned_data.get(
+            "report_preset"
+        ):
+            raise ValidationError(
+                _(
+                    "Vous devez soit uploader un fichier, soit générer un document à partir d'un modèle."
+                )
+            )
+
+        # If document is null, it must be because we use a preset
+        if not cleaned_data.get("document"):
+            report = cleaned_data.get("report_preset")
+            now = timezone.now()
+            name = f"{report.name}_generated_{now:%Y-%m-%d}.pdf"
+            data = report.render_pdf(
+                self.permit_request, generated_by=self.user, as_string=False
+            )
+            cleaned_data["document"] = File(data, name=name)
+            cleaned_data["document_type"] = report.type
+            cleaned_data[f"parent_{report.type.pk}"] = report.type
 
         if not self.cleaned_data.get("document_type"):
             return cleaned_data

@@ -1,6 +1,3 @@
-import re
-from io import BytesIO
-
 import django.db.models
 from adminsortable2.admin import SortableAdminMixin
 from django import forms
@@ -10,7 +7,6 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.models import Group, Permission, User
-from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.management import CommandError, call_command
 from django.db.models import Q, Value
 from django.db.models.functions import StrIndex, Substr
@@ -38,8 +34,10 @@ INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [
     "permitdepartment",
     "permitworkflowstatus",
     "permitauthor",
-    "qgisproject",
     "complementarydocumenttype",
+    # TODO: move to reports app
+    "report",
+    "reportlayout",
 ]
 OTHER_PERMISSIONS_CODENAMES = [
     "view_user",
@@ -454,7 +452,10 @@ class GroupAdminForm(forms.ModelForm):
         permissions = self.cleaned_data["permissions"]
         integrator_permissions = Permission.objects.filter(
             (
-                Q(content_type__app_label="permits")
+                (
+                    Q(content_type__app_label="permits")
+                    | Q(content_type__app_label="reports")
+                )
                 & Q(content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS)
             )
             | Q(codename__in=OTHER_PERMISSIONS_CODENAMES)
@@ -602,104 +603,6 @@ works_object_type_administrative_entities.short_description = _(
 )
 
 
-class QgisProjectAdminForm(forms.ModelForm):
-
-    # Replaces the url to the ressource, cause server will pass by docker web:9000, remove access_token in url and delete the unwanted content
-    def clean_qgis_project_file(self):
-        # Retrieve the cleaned_data for the uploaded file
-        qgis_project_file = self.cleaned_data["qgis_project_file"]
-
-        # If no new file was uploaded, the object in an instance of custom FileField,
-        # thus, we do nothing
-        if qgis_project_file.__class__.__name__ == "AdministrativeEntityFieldFile":
-            return
-
-        encoder = "utf-8"
-
-        # Content of uploaded file in bytes
-        data = qgis_project_file.read()
-        # List of strings to replace
-        protocols = ["http", "https"]
-        hosts = ["localhost", "127.0.0.1"]
-        sites = settings.ALLOWED_HOSTS
-
-        # The final url. Docker communicate between layers
-        web_url = bytes("http://web:9000", encoder)
-
-        # Strings to complete the url
-        protocol_suffix = "://"
-        port_prefix = ":"
-        # Replace the url strings from the user
-        for protocol in protocols:
-            for host in hosts:
-                url = bytes(
-                    protocol
-                    + protocol_suffix
-                    + host
-                    + port_prefix
-                    + settings.DJANGO_DOCKER_PORT,
-                    encoder,
-                )
-                if not "web" in host:
-                    data = data.replace(url, web_url)
-            for site in sites:
-                url = bytes(protocol + protocol_suffix + site, encoder)
-                if not "web" in site:
-                    data = data.replace(url, web_url)
-
-        # Get characters between | and " or < without spaces, to prevent to take multiple lines
-        regex_url = bytes('\|[\S+]+"', encoder)
-        regex_element = bytes("\|[\S+]+<", encoder)
-
-        # Get characters between /?access_token and & or " without spaces
-        regex_authcfg_string = bytes("authcfg=\S+", encoder)
-        regex_user_string = bytes("user=\S+", encoder)
-        regex_password_string = bytes("password=\S+", encoder)
-        source_string = bytes('source=""', encoder)
-        coverage_source_string = bytes('coverageLayerSource=""', encoder)
-
-        # The regex will take the first to the last character, so we need to add it back
-        empty_bytes_string = bytes('"', encoder)
-        empty_bytes_balise = bytes("<", encoder)
-        empty_bytes_params = bytes("", encoder)
-        empty_source_params = bytes('source="', encoder)
-        empty_coverage_source_params = bytes('coverageLayerSource="', encoder)
-
-        # Replace characters using regex
-        data = re.sub(regex_url, empty_bytes_string, data)
-        data = re.sub(regex_element, empty_bytes_balise, data)
-
-        # Remove access_token without removing other params
-        data = re.sub(regex_authcfg_string, empty_bytes_string, data)
-        data = re.sub(regex_user_string, empty_bytes_string, data)
-        data = re.sub(regex_password_string, empty_bytes_string, data)
-        data = re.sub(source_string, empty_source_params, data)
-        data = re.sub(coverage_source_string, empty_coverage_source_params, data)
-
-        # Write the data in bytes in a new file
-        file = BytesIO()
-        file.write(data)
-
-        # Use the constructor of InMemoryUploadedFile to be able to set the value of self.cleaned_data['qgis_project_file']
-
-        qgis_project_file = InMemoryUploadedFile(
-            file,
-            qgis_project_file.field_name,
-            qgis_project_file._name,
-            qgis_project_file.content_type,
-            len(data),
-            qgis_project_file.charset,
-            qgis_project_file.content_type_extra,
-        )
-
-        return qgis_project_file
-
-
-class QgisProjectInline(admin.TabularInline):
-    model = models.QgisProject
-    form = QgisProjectAdminForm
-
-
 class WorksObjectTypeAdminForm(forms.ModelForm):
     class GeometryTypes(django.db.models.TextChoices):
         POINT = "has_geometry_point", _("Point")
@@ -766,7 +669,6 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
 
 class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = WorksObjectTypeAdminForm
-    inlines = [QgisProjectInline]
     list_display = [
         "sortable_str",
         works_object_type_administrative_entities,
@@ -853,6 +755,10 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     "additional_information",
                 )
             },
+        ),
+        (
+            "Impression",
+            {"fields": ("reports",)},
         ),
     )
 
