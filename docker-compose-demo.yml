@@ -17,6 +17,10 @@ services:
             - ./private_documents:/private_documents
             # to allow to spawn new QGIS containers
             - /var/run/docker.sock:/var/run/docker.sock
+        depends_on:
+            - "postgres"
+        ports:
+            - "${DJANGO_DOCKER_PORT}:9000"
         environment:
             # Debug settings
             - DJANGO_SETTINGS_MODULE=geomapshark.settings_dev

@@ -21,7 +21,6 @@ services:
             - qgis_projects:/qgis_projects
         ports:
             - "${DJANGO_DOCKER_PORT}:9000"
-
     qgisserver:
         image: openquake/qgis-server:3.22
         restart: unless-stopped
