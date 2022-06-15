@@ -430,14 +430,8 @@ class Command(BaseCommand):
                 [
                     (
                         "Demande de macaron",
-                        properties["plan"],
-                        properties["width"],
                         properties["comment"],
-                        properties["title"],
                         properties["date"],
-                        properties["checkbox"],
-                        properties["adresse"],
-                        properties["list_multiple"],
                     ),
                     (
                         "Accès au centre-ville historique",
@@ -798,8 +792,6 @@ class Command(BaseCommand):
         models.PermitRequestValidation.objects.get_or_create(
             permit_request=permit_request6,
             department=department,
-            comment_before="Ce projet n'est pas admissible, veuillez l'améliorer.",
-            comment_during="Les améliorations ont été prise en compte.",
         )
 
         models.WorksObjectTypeChoice.objects.create(

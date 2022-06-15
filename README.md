@@ -81,10 +81,17 @@ coverage run --source='.' ./manage.py test --settings=geomapshark.settings_test 
 
 ## Linting
 
-We use [Black](https://github.com/psf/black) as code formatter. Just use the following command to automatically format your code:
+We use [pre-commit](https://pre-commit.com/) as code formatter. Just use the following command to automatically format your code when you commit:
 
 ```
-$ docker-compose exec web black .
+$ pip install pre-commit
+$ pre-commit install
+```
+
+If you wish to run it on all files:
+
+```
+$ pre-commit run --all-files
 ```
 
 ## Show urls

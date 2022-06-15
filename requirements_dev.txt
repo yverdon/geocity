@@ -4,16 +4,12 @@
 #
 #    pip-compile requirements_dev.in
 #
-appdirs==1.4.4
-    # via black
 asgiref==3.5.0
     # via
     #   -r requirements.txt
     #   django
 asttokens==2.0.5
     # via stack-data
-attrs==21.4.0
-    # via black
 babel==2.10.1
     # via -r requirements_dev.in
 backcall==0.2.0
@@ -22,10 +18,6 @@ beautifulsoup4==4.10.0
     # via
     #   -r requirements.txt
     #   django-bootstrap4
-black==19.10b0
-    # via
-    #   -r requirements_dev.in
-    #   ipython
 certifi==2021.10.8
     # via
     #   -r requirements.txt
@@ -34,15 +26,15 @@ cffi==1.15.0
     # via
     #   -r requirements.txt
     #   cryptography
+cfgv==3.3.1
+    # via pre-commit
 charset-normalizer==2.0.12
     # via
     #   -r requirements.txt
     #   requests
-click==8.0.4
-    # via
-    #   black
-    #   pip-tools
-coverage==6.3.2
+click==8.1.3
+    # via pip-tools
+coverage==6.4.1
     # via -r requirements_dev.in
 cryptography==36.0.1
     # via
@@ -61,6 +53,8 @@ deprecated==1.2.13
     # via
     #   -r requirements.txt
     #   jwcrypto
+distlib==0.3.4
+    # via virtualenv
 django==3.2.13
     # via
     #   -r requirements.txt
@@ -114,7 +108,7 @@ django-crispy-forms==1.14.0
     # via -r requirements.txt
 django-cron==0.5.1
     # via -r requirements.txt
-django-debug-toolbar==3.2.4
+django-debug-toolbar==3.4.0
     # via -r requirements_dev.in
 django-extensions==3.1.5
     # via -r requirements_dev.in
@@ -176,14 +170,16 @@ djangorestframework-gis==0.18
     # via -r requirements.txt
 docker==5.0.3
     # via -r requirements.txt
-executing==0.8.2
+executing==0.8.3
     # via stack-data
 factory-boy==3.2.1
     # via -r requirements_dev.in
-faker==13.2.0
+faker==13.13.0
     # via
     #   -r requirements_dev.in
     #   factory-boy
+filelock==3.7.1
+    # via virtualenv
 filetype==1.0.10
     # via -r requirements.txt
 gdal==3.3.2
@@ -192,13 +188,15 @@ gunicorn==20.1.0
     # via -r requirements.txt
 html5lib==1.1
     # via -r requirements.txt
+identify==2.5.1
+    # via pre-commit
 idna==3.3
     # via
     #   -r requirements.txt
     #   requests
 ipdb==0.13.9
     # via -r requirements_dev.in
-ipython==8.0.1
+ipython==8.4.0
     # via ipdb
 jdcal==1.4.1
     # via -r requirements.txt
@@ -216,6 +214,8 @@ markupsafe==2.1.1
     #   jinja2
 matplotlib-inline==0.1.3
     # via ipython
+nodeenv==1.6.0
+    # via pre-commit
 oauthlib==3.2.0
     # via
     #   -r requirements.txt
@@ -223,8 +223,6 @@ oauthlib==3.2.0
     #   requests-oauthlib
 parso==0.8.3
     # via jedi
-pathspec==0.9.0
-    # via black
 pdf2image==1.16.0
     # via -r requirements.txt
 pep517==0.12.0
@@ -242,9 +240,13 @@ pillow==9.0.1
     #   -r requirements.txt
     #   django-simple-captcha
     #   pdf2image
-pip-tools==6.5.1
+pip-tools==6.6.2
     # via -r requirements_dev.in
-prompt-toolkit==3.0.28
+platformdirs==2.5.2
+    # via virtualenv
+pre-commit==2.19.0
+    # via -r requirements_dev.in
+prompt-toolkit==3.0.29
     # via ipython
 psycopg2-binary==2.9.3
     # via -r requirements.txt
@@ -256,7 +258,7 @@ pycparser==2.21
     # via
     #   -r requirements.txt
     #   cffi
-pygments==2.11.2
+pygments==2.12.0
     # via ipython
 pyjwt[crypto]==2.3.0
     # via
@@ -277,13 +279,13 @@ pytz==2021.3
     #   django
     #   djangorestframework
 pyyaml==6.0
-    # via -r requirements.txt
+    # via
+    #   -r requirements.txt
+    #   pre-commit
 qrcode==7.3.1
     # via
     #   -r requirements.txt
     #   django-two-factor-auth
-regex==2022.1.18
-    # via black
 requests==2.27.1
     # via
     #   -r requirements.txt
@@ -300,6 +302,7 @@ six==1.16.0
     #   -r requirements.txt
     #   html5lib
     #   python-dateutil
+    #   virtualenv
 soupsieve==2.3.1
     # via
     #   -r requirements.txt
@@ -315,22 +318,22 @@ tablib==3.2.0
     # via -r requirements.txt
 toml==0.10.2
     # via
-    #   black
     #   ipdb
+    #   pre-commit
 tomli==2.0.1
     # via pep517
-traitlets==5.1.1
+traitlets==5.2.2.post1
     # via
     #   ipython
     #   matplotlib-inline
-typed-ast==1.5.2
-    # via black
 uritemplate==4.1.1
     # via -r requirements.txt
 urllib3==1.26.8
     # via
     #   -r requirements.txt
     #   requests
+virtualenv==20.14.1
+    # via pre-commit
 wcwidth==0.2.5
     # via prompt-toolkit
 webencodings==0.5.1
