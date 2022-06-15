@@ -62,8 +62,9 @@ class Report(models.Model):
     type = models.ForeignKey(
         "permits.ComplementaryDocumentType", on_delete=models.RESTRICT
     )
+    # reverse relationship is manually defined on permits.WorksObjectType so it shows up on both sides in admin
     work_object_types = models.ManyToManyField(
-        "permits.WorksObjectType", related_name="reports"
+        "permits.WorksObjectType", blank=True, related_name="+"
     )
 
     integrator = models.ForeignKey(

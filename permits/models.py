@@ -1117,6 +1117,14 @@ class WorksObjectType(models.Model):
     permanent_publication_enabled = models.BooleanField(
         _("Autoriser la mise en consultation sur une durée indéfinie"), default=False
     )
+    # reverse relationship is manually defined on reports.Report so it shows up on both sides in admin
+    reports = models.ManyToManyField(
+        "reports.Report",
+        blank=True,
+        through="reports.report_work_object_types",
+        related_name="+",
+    )
+
     # All objects
     objects = models.Manager()
 
