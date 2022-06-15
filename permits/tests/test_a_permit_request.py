@@ -58,11 +58,6 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             "form-INITIAL_FORMS": ["0"],
             "form-MIN_NUM_FORMS": ["0"],
         }
-        Site.objects.create(domain="yverdon.localhost", name="yverdon")
-        Site.objects.create(domain="grandson.localhost", name="grandson")
-        Site.objects.create(domain="vevey.localhost", name="vevey")
-        Site.objects.create(domain="lausanne.localhost", name="lausanne")
-        self.sites = Site.objects.all()
 
     def test_types_step_submit_redirects_to_objects_with_types_qs(self):
         permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
@@ -1131,107 +1126,103 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             len(parser.select("#legal-infos span.additional_information")), 2,
         )
 
-    # FIXME
-    # def test_administrative_entity_is_filtered_by_tag(self):
-    #     administrative_entities = [
-    #         factories.PermitAdministrativeEntityFactory(tags=[tag], sites=self.sites)
-    #         for tag in ["first", "second", "third"]
-    #     ]
-    #     works_object_types = models.WorksObjectType.objects.all()
-    #
-    #     for administrative_entity in administrative_entities:
-    #         administrative_entity.works_object_types.set(works_object_types)
-    #
-    #     response = self.client.get(
-    #         reverse("permits:permit_request_select_administrative_entity"),
-    #         {"entityfilter": "first"},
-    #         follow=True,
-    #     )
-    #
-    #     new_permit_request = models.PermitRequest.objects.last()
-    #
-    #     parser = get_parser(response.content)
-    #     content = response.content.decode()
-    #     self.assertInHTML("Sélectionnez le ou les type(s)", content)
-    #     self.assertRedirects(
-    #         response,
-    #         reverse(
-    #             "permits:permit_request_select_types",
-    #             kwargs={"permit_request_id": new_permit_request.id},
-    #         ),
-    #     )
-    #
-    #     response2 = self.client.get(
-    #         reverse(
-    #             "permits:permit_request_select_administrative_entity",
-    #             kwargs={"permit_request_id": new_permit_request.id},
-    #         ),
-    #         {"entityfilter": "first"},
-    #         follow=True,
-    #     )
-    #     parser2 = get_parser(response2.content)
-    #     content2 = response2.content.decode()
-    #     element_parsed = parser2.select(".form-check-label")
-    #
-    #     # Check that selected item is there
-    #     self.assertEqual(1, len(element_parsed))
-    #     # Check that filtered items are NOT there
-    #     self.assertNotContains(response, administrative_entities[1].name)
-    #     self.assertNotContains(response, administrative_entities[2].name)
-    #     self.assertInHTML(administrative_entities[0].name, content2)
+    def test_administrative_entity_is_filtered_by_tag(self):
+        administrative_entities = [
+            factories.PermitAdministrativeEntityFactory(tags=[tag])
+            for tag in ["first", "second", "third"]
+        ]
+        works_object_types = models.WorksObjectType.objects.all()
 
-    # FIXME
-    # def test_wrong_administrative_entity_tag_return_all_administratives_entities(self):
-    #     administrative_entities = [
-    #         factories.PermitAdministrativeEntityFactory(tags=[tag])
-    #         for tag in ["first", "second", "third"]
-    #     ]
-    #     works_object_types = models.WorksObjectType.objects.all()
-    #
-    #     for administrative_entity in administrative_entities:
-    #         administrative_entity.works_object_types.set(works_object_types)
-    #
-    #     response = self.client.get(
-    #         reverse("permits:permit_request_select_administrative_entity"),
-    #         {"entityfilter": "wrongtag"},
-    #     )
-    #
-    #     parser = get_parser(response.content)
-    #     element_parsed = parser.select(".form-check-label")
-    #
-    #     content = response.content.decode()
-    #
-    #     self.assertEqual(3, len(element_parsed))
-    #     self.assertInHTML(administrative_entities[0].name, content)
-    #     self.assertInHTML(administrative_entities[1].name, content)
-    #     self.assertInHTML(administrative_entities[2].name, content)
+        for administrative_entity in administrative_entities:
+            administrative_entity.works_object_types.set(works_object_types)
 
-    # FIXME
-    # def test_multiple_administrative_entity_tags_return_multiple_administratives_entities(
-    #     self,
-    # ):
-    #     administrative_entities = [
-    #         factories.PermitAdministrativeEntityFactory(tags=[tag])
-    #         for tag in ["first", "second", "third"]
-    #     ]
-    #     works_object_types = models.WorksObjectType.objects.all()
-    #
-    #     for administrative_entity in administrative_entities:
-    #         administrative_entity.works_object_types.set(works_object_types)
-    #
-    #     response = self.client.get(
-    #         reverse("permits:permit_request_select_administrative_entity"),
-    #         {"entityfilter": ["first", "second"]},
-    #     )
-    #
-    #     parser = get_parser(response.content)
-    #     element_parsed = parser.select(".form-check-label")
-    #
-    #     content = response.content.decode()
-    #
-    #     self.assertEqual(2, len(element_parsed))
-    #     self.assertInHTML(administrative_entities[0].name, content)
-    #     self.assertInHTML(administrative_entities[1].name, content)
+        response = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity"),
+            {"entityfilter": "first"},
+            follow=True,
+        )
+
+        new_permit_request = models.PermitRequest.objects.last()
+
+        content = response.content.decode()
+        self.assertInHTML("Sélectionnez le ou les type(s)", content)
+        self.assertRedirects(
+            response,
+            reverse(
+                "permits:permit_request_select_types",
+                kwargs={"permit_request_id": new_permit_request.id},
+            ),
+        )
+
+        response2 = self.client.get(
+            reverse(
+                "permits:permit_request_select_administrative_entity",
+                kwargs={"permit_request_id": new_permit_request.id},
+            ),
+            {"entityfilter": "first"},
+            follow=True,
+        )
+        parser2 = get_parser(response2.content)
+        content2 = response2.content.decode()
+        element_parsed = parser2.select(".form-check-label")
+
+        # Check that selected item is there
+        self.assertEqual(1, len(element_parsed))
+        # Check that filtered items are NOT there
+        self.assertNotContains(response, administrative_entities[1].name)
+        self.assertNotContains(response, administrative_entities[2].name)
+        self.assertInHTML(administrative_entities[0].name, content2)
+
+    def test_wrong_administrative_entity_tag_return_all_administratives_entities(self):
+        administrative_entities = [
+            factories.PermitAdministrativeEntityFactory(tags=[tag])
+            for tag in ["first", "second", "third"]
+        ]
+        works_object_types = models.WorksObjectType.objects.all()
+
+        for administrative_entity in administrative_entities:
+            administrative_entity.works_object_types.set(works_object_types)
+
+        response = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity"),
+            {"entityfilter": "wrongtag"},
+        )
+
+        parser = get_parser(response.content)
+        element_parsed = parser.select(".form-check-label")
+
+        content = response.content.decode()
+
+        self.assertEqual(3, len(element_parsed))
+        self.assertInHTML(administrative_entities[0].name, content)
+        self.assertInHTML(administrative_entities[1].name, content)
+        self.assertInHTML(administrative_entities[2].name, content)
+
+    def test_multiple_administrative_entity_tags_return_multiple_administratives_entities(
+        self,
+    ):
+        administrative_entities = [
+            factories.PermitAdministrativeEntityFactory(tags=[tag])
+            for tag in ["first", "second", "third"]
+        ]
+        works_object_types = models.WorksObjectType.objects.all()
+
+        for administrative_entity in administrative_entities:
+            administrative_entity.works_object_types.set(works_object_types)
+
+        response = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity"),
+            {"entityfilter": ["first", "second"]},
+        )
+
+        parser = get_parser(response.content)
+        element_parsed = parser.select(".form-check-label")
+
+        content = response.content.decode()
+
+        self.assertEqual(2, len(element_parsed))
+        self.assertInHTML(administrative_entities[0].name, content)
+        self.assertInHTML(administrative_entities[1].name, content)
 
     def test_work_type_is_filtered_by_tag(self):
         additional_works_type = factories.WorksTypeFactory()
@@ -4023,30 +4014,35 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         )
         self.assertNotContains(response, "privateEntity")
 
-    # FIXME
-    # def test_administrative_entity_step_without_public_requests_is_visible_to_user_with_specific_permission(
-    #     self,
-    # ):
-    #
-    #     see_private_requests_permission = Permission.objects.get(
-    #         codename="see_private_requests"
-    #     )
-    #     self.user.user_permissions.add(see_private_requests_permission)
-    #     works_types = factories.WorksTypeFactory.create_batch(2)
-    #     works_objects = factories.WorksObjectFactory.create_batch(2)
-    #
-    #     administrative_entity = factories.PermitAdministrativeEntityFactory(
-    #         name="privateEntity"
-    #     )
-    #     private_works_object_type = models.WorksObjectType.objects.create(
-    #         works_type=works_types[0], works_object=works_objects[0], is_public=True,
-    #     )
-    #     private_works_object_type.administrative_entities.set([administrative_entity])
-    #     response = self.client.get(
-    #         reverse("permits:permit_request_select_administrative_entity",),
-    #     )
-    #
-    #     self.assertContains(response, "privateEntity")
+    def test_administrative_entity_step_without_public_requests_is_visible_to_user_with_specific_permission(
+        self,
+    ):
+
+        see_private_requests_permission = Permission.objects.get(
+            codename="see_private_requests"
+        )
+        self.user.user_permissions.add(see_private_requests_permission)
+        works_types = factories.WorksTypeFactory.create_batch(2)
+        works_objects = factories.WorksObjectFactory.create_batch(2)
+
+        administrative_entity_1 = factories.PermitAdministrativeEntityFactory(
+            name="privateEntity1"
+        )
+        administrative_entity_2 = factories.PermitAdministrativeEntityFactory(
+            name="privateEntity2"
+        )
+        private_works_object_type = models.WorksObjectType.objects.create(
+            works_type=works_types[0], works_object=works_objects[0], is_public=True,
+        )
+        private_works_object_type.administrative_entities.set(
+            [administrative_entity_1, administrative_entity_2]
+        )
+        response = self.client.get(
+            reverse("permits:permit_request_select_administrative_entity",),
+        )
+
+        self.assertContains(response, "privateEntity1")
+        self.assertContains(response, "privateEntity2")
 
     def test_work_type_step_only_show_public_requests_to_standard_user(self,):
 

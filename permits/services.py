@@ -253,12 +253,13 @@ def get_administrative_entities(user, site=None):
             pk__in=models.WorksObjectType.objects.values_list(
                 "administrative_entities", flat=True
             ),
-            sites=site,
             works_object_types__is_anonymous=False,
         )
         .order_by("ofs_id", "-name")
         .distinct()
     )
+    if site:
+        queryset = queryset.filter(sites=site)
 
     if not user.has_perm("permits.see_private_requests"):
         queryset = queryset.filter(works_object_types__is_public=True)

@@ -95,6 +95,17 @@ class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
     @factory.post_generation
     def sites(self, create, extracted, **kwargs):
         if not create or not extracted:
+            models.Site.objects.get_or_create(
+                domain="yverdon.localhost", name="yverdon"
+            )
+            models.Site.objects.get_or_create(
+                domain="grandson.localhost", name="grandson"
+            )
+            models.Site.objects.get_or_create(domain="vevey.localhost", name="vevey")
+            models.Site.objects.get_or_create(
+                domain="lausanne.localhost", name="lausanne"
+            )
+            self.sites.set(models.Site.objects.all())
             return
 
         self.sites.set(extracted)
