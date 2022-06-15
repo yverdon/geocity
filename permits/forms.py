@@ -1,4 +1,3 @@
-import io
 import json
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -1708,8 +1707,8 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             report = cleaned_data.get("report_preset")
             now = timezone.now()
             name = f"{report.name}_generated_{now:%Y-%m-%d}.pdf"
-            data = io.BytesIO(
-                report.render_pdf(self.permit_request, generated_by=self.user)
+            data = report.render_pdf(
+                self.permit_request, generated_by=self.user, as_string=False
             )
             cleaned_data["document"] = File(data, name=name)
             cleaned_data["document_type"] = report.type
