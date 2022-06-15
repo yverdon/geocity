@@ -1,32 +1,17 @@
-from django.db import models
-
 import io
-import typing
 from typing import Union
-from django.shortcuts import render
-import requests
-import urllib
-from urllib.request import urlopen
-from django.utils.translation import gettext_lazy as _
-from django.template.loader import render_to_string
-from django.conf import settings
-from permits import models as permits_models
-from django.contrib.auth.models import Group
-from django.urls import reverse
-from rest_framework.authtoken.models import Token
-import typing
-import io
-import tarfile
-from django import template
-from django.utils.safestring import mark_safe
-from jinja2.sandbox import SandboxedEnvironment
-from rest_framework.authtoken.models import Token
-import base64
-import os
-from django.contrib.staticfiles import finders
-from .utils import run_docker_container, DockerRunFailedError
 
+from django.contrib.auth.models import Group
+from django.db import models
+from django.template.loader import render_to_string
+from django.utils.safestring import mark_safe
+from django.utils.translation import gettext_lazy as _
+from jinja2.sandbox import SandboxedEnvironment
 from polymorphic.models import PolymorphicModel
+from rest_framework.authtoken.models import Token
+
+from .utils import run_docker_container
+
 
 class ReportLayout(models.Model):
     """Page size/background/marings/fonts/etc, used by reports"""
@@ -88,10 +73,10 @@ class Report(models.Model):
         verbose_name=_("Groupe des administrateurs"),
     )
 
-
-    def render_pdf(self, permit_request, generated_by, as_string=False) -> Union[bytes,str]:
+    def render_pdf(
+        self, permit_request, generated_by, as_string=False
+    ) -> Union[bytes, str]:
         """Renders a PDF by calling the PDF generator service"""
-
 
         # Generate a token
         # TODO CRITICAL: add expiration to token and/or ensure it gets deleted
@@ -129,7 +114,6 @@ class Report(models.Model):
 
         return output
 
-
     def __str__(self):
         return self.name
 
@@ -137,9 +121,13 @@ class Report(models.Model):
 class Section(PolymorphicModel):
     class Meta:
 
-        ordering = ['order',]
+        ordering = [
+            "order",
+        ]
 
-    report = models.ForeignKey(Report, on_delete=models.CASCADE, related_name="sections")
+    report = models.ForeignKey(
+        Report, on_delete=models.CASCADE, related_name="sections"
+    )
     order = models.PositiveIntegerField(null=True, blank=True)
 
     def get_template(self):
@@ -161,8 +149,10 @@ class Section(PolymorphicModel):
     def __str__(self):
         return self._meta.verbose_name
 
+
 class SectionMap(Section):
     layout_name = models.CharField(max_length=30)
+
 
 class SectionParagraph(Section):
     title = models.CharField(default="", blank=True, max_length=2000)
@@ -176,6 +166,7 @@ class SectionParagraph(Section):
 
     def get_context(self, context):
         from permits.serializers import PermitRequestPrintSerializer
+
         env = SandboxedEnvironment()
         data = PermitRequestPrintSerializer(context["permit_request"]).data
         rendered_content = env.from_string(self.content).render({"data": data})
@@ -183,6 +174,7 @@ class SectionParagraph(Section):
             **super().get_context(context),
             "rendered_content": mark_safe(rendered_content),
         }
+
 
 class SectionAuthor(Section):
     pass

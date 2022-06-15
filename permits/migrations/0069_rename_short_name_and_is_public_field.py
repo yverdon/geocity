@@ -6,33 +6,50 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0068_additional_searchtext_for_address_field_for_administrative_entity'),
+        (
+            "permits",
+            "0068_additional_searchtext_for_address_field_for_administrative_entity",
+        ),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='historicalpermitrequest',
-            name='is_public',
-            field=models.BooleanField(default=False, verbose_name='Publication calendrier'),
+            model_name="historicalpermitrequest",
+            name="is_public",
+            field=models.BooleanField(
+                default=False, verbose_name="Publication calendrier"
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalpermitrequest',
-            name='shortname',
-            field=models.CharField(blank=True, help_text='Sera affiché dans le calendrier si la demande est rendue tout publique, ex: Brandons (max. 32 caractères)', max_length=32, verbose_name='nom court'),
+            model_name="historicalpermitrequest",
+            name="shortname",
+            field=models.CharField(
+                blank=True,
+                help_text="Sera affiché dans le calendrier si la demande est rendue tout publique, ex: Brandons (max. 32 caractères)",
+                max_length=32,
+                verbose_name="nom court",
+            ),
         ),
         migrations.AlterField(
-            model_name='permitrequest',
-            name='is_public',
-            field=models.BooleanField(default=False, verbose_name='Publication calendrier'),
+            model_name="permitrequest",
+            name="is_public",
+            field=models.BooleanField(
+                default=False, verbose_name="Publication calendrier"
+            ),
         ),
         migrations.AlterField(
-            model_name='permitrequest',
-            name='shortname',
-            field=models.CharField(blank=True, help_text='Sera affiché dans le calendrier si la demande est rendue tout publique, ex: Brandons (max. 32 caractères)', max_length=32, verbose_name='nom court'),
+            model_name="permitrequest",
+            name="shortname",
+            field=models.CharField(
+                blank=True,
+                help_text="Sera affiché dans le calendrier si la demande est rendue tout publique, ex: Brandons (max. 32 caractères)",
+                max_length=32,
+                verbose_name="nom court",
+            ),
         ),
         migrations.AlterField(
-            model_name='worksobjecttype',
-            name='is_public',
-            field=models.BooleanField(default=False, verbose_name='Visibilité '),
+            model_name="worksobjecttype",
+            name="is_public",
+            field=models.BooleanField(default=False, verbose_name="Visibilité "),
         ),
     ]

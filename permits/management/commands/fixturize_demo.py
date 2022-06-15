@@ -1,26 +1,23 @@
-from cgitb import text
+import re
+import unicodedata
 from io import StringIO
-import random
+
+from constance import config
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.core import management
+from django.core.files import File
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from django.utils import timezone
 
-from django.core.files import File
-
 from geomapshark import settings
 from permits import admin, models
-import re
-import unicodedata
-from .add_default_print_config import add_default_print_config
-from constance import config
-from ... import services
-
 from reports import models as reports_models
+
+from .add_default_print_config import add_default_print_config
 
 
 def strip_accents(text):

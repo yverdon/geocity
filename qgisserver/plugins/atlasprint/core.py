@@ -2,7 +2,6 @@
 
 import tempfile
 import unicodedata
-
 from enum import Enum
 from pathlib import Path
 from typing import Union
@@ -37,8 +36,6 @@ class OutputFormat(Enum):
 
 class AtlasPrintException(Exception):
     """A wrong input from the user."""
-
-    pass
 
 
 def global_scales():
@@ -255,7 +252,7 @@ def print_layout(
 
 
 def result_message(error) -> str:
-    """ Error message according to the enumeration. """
+    """Error message according to the enumeration."""
     if error == QgsLayoutExporter.Success:
         return "Success"
     elif error == QgsLayoutExporter.Canceled:
@@ -279,7 +276,7 @@ def result_message(error) -> str:
 
 
 def clean_string(input_string) -> str:
-    """ Clean a string to be used as a file name """
+    """Clean a string to be used as a file name"""
     input_string = "".join(
         [c for c in input_string if c.isalpha() or c.isdigit() or c == " "]
     ).rstrip()
@@ -291,7 +288,7 @@ def clean_string(input_string) -> str:
 
 
 def parse_output_format(output: Union[str, None]) -> OutputFormat:
-    """ Read the MIME type as string to return the correct format. """
+    """Read the MIME type as string to return the correct format."""
     # The list is from QGIS server documentation :
     # https://docs.qgis.org/3.16/en/docs/server_manual/services.html#wms-getprint-format
     if output is None:

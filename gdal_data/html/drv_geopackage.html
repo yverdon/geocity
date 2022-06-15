@@ -227,7 +227,7 @@ INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, 
 Simple translation of a single shapefile into GeoPackage.  The table 'abc' will
 be created with the features from abc.shp and attributes from abc.dbf.
 The file <code>filename.gpkg</code> must <strong>not</strong> already exist,
-as it will be created. For adding new layers into existing geopackage run 
+as it will be created. For adding new layers into existing geopackage run
 ogr2ogr with <strong>-update</strong>.
 <pre>
 % ogr2ogr -f GPKG filename.gpkg abc.shp

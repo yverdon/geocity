@@ -106,4 +106,3 @@ function setEventOnTemplateSelect(id){
 }
 
 setEventOnTemplateSelect(0)
-

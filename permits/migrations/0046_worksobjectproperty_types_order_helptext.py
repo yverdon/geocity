@@ -6,18 +6,38 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0045_add_email_sender_to_administrative_entity'),
+        ("permits", "0045_add_email_sender_to_administrative_entity"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='worksobjectproperty',
-            name='input_type',
-            field=models.CharField(choices=[('address', 'Adresse'), ('checkbox', 'Case à cocher'), ('list_multiple', 'Choix multiple'), ('list_single', 'Choix simple'), ('date', 'Date'), ('file', 'Fichier'), ('number', 'Nombre'), ('text', 'Texte'), ('regex', 'Texte (regex)'), ('title', 'Titre')], max_length=30, verbose_name='type de caractéristique'),
+            model_name="worksobjectproperty",
+            name="input_type",
+            field=models.CharField(
+                choices=[
+                    ("address", "Adresse"),
+                    ("checkbox", "Case à cocher"),
+                    ("list_multiple", "Choix multiple"),
+                    ("list_single", "Choix simple"),
+                    ("date", "Date"),
+                    ("file", "Fichier"),
+                    ("number", "Nombre"),
+                    ("text", "Texte"),
+                    ("regex", "Texte (regex)"),
+                    ("title", "Titre"),
+                ],
+                max_length=30,
+                verbose_name="type de caractéristique",
+            ),
         ),
         migrations.AlterField(
-            model_name='worksobjecttype',
-            name='start_delay',
-            field=models.IntegerField(blank=True, help_text='délai minimum en jours avant la date de début (nombre entier positif ou négatif).', null=True, verbose_name='délai de commencement'),
+            model_name="worksobjecttype",
+            name="start_delay",
+            field=models.IntegerField(
+                blank=True,
+                help_text="délai minimum en jours avant la date de début (nombre entier positif ou négatif).",
+                null=True,
+                verbose_name="délai de commencement",
+            ),
         ),
     ]

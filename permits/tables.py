@@ -1,10 +1,11 @@
 from datetime import datetime
+
 import django_tables2 as tables
 from django.template.defaultfilters import floatformat
 from django.utils.safestring import mark_safe
-from django_tables2.utils import A
 from django.utils.translation import gettext_lazy as _
 from django_tables2_column_shifter.tables import ColumnShiftTable
+
 from . import models
 
 ATTRIBUTES = {
@@ -127,7 +128,8 @@ class GenericPermitRequestTable(ColumnShiftTable):
         orderable=True,
     )
     administrative_entity = tables.Column(
-        verbose_name=_("Entité administrative"), orderable=False,
+        verbose_name=_("Entité administrative"),
+        orderable=False,
     )
 
 
@@ -185,7 +187,8 @@ class GenericDepartmentPermitRequestsTable(
     DynamicColumnsTable, GenericPermitRequestTable
 ):
     administrative_entity = tables.Column(
-        verbose_name=_("Entité administrative"), orderable=False,
+        verbose_name=_("Entité administrative"),
+        orderable=False,
     )
     author_fullname = tables.TemplateColumn(
         verbose_name=_("Auteur de la demande"),

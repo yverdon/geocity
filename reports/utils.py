@@ -1,21 +1,18 @@
-from typing import Tuple, IO
 import io
-import tarfile
-from django import template
-from django.utils.safestring import mark_safe
-from jinja2.sandbox import SandboxedEnvironment
-from rest_framework.authtoken.models import Token
-import base64
-import docker
 import os
-from django.contrib.staticfiles import finders
+import tarfile
+from typing import IO, Tuple
+
+import docker
+
 
 class DockerRunFailedError(Exception):
     def __init__(self, exit_code, logs):
         self.exit_code = exit_code
         self.logs = logs
 
-def run_docker_container(image, commands, file_input : Tuple[str, IO], file_output):
+
+def run_docker_container(image, commands, file_input: Tuple[str, IO], file_output):
 
     # Create a docker container to generate the image
     client = docker.from_env()
@@ -77,6 +74,7 @@ def _get_file(container, path):
     tar_output_data.seek(0)
     tar_output_file = tarfile.TarFile(mode="r", fileobj=tar_output_data)
     return tar_output_file.extractfile(filename)
+
 
 def _file_size(file):
     _pos = file.tell()

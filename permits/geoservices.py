@@ -1,14 +1,10 @@
-import enum
-
-from django.contrib.gis.db.models.functions import GeomOutputGeoFunc
-from django.db.models import Aggregate, CharField
-from django.utils.translation import gettext_lazy as _
-from rest_framework.exceptions import APIException
-from .models import PermitRequestGeoTime
 import urllib
+
 import requests
 from django.conf import settings
-from django.contrib.gis.geos import Point, MultiPoint, GeometryCollection
+from django.contrib.gis.db.models.functions import GeomOutputGeoFunc
+from django.contrib.gis.geos import GeometryCollection, MultiPoint, Point
+from django.db.models import Aggregate, CharField
 
 from . import models
 

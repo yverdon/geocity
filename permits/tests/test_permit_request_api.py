@@ -1,24 +1,24 @@
+import urllib.parse
+from datetime import datetime, timedelta
+
+import requests
+from constance import config
 from django.contrib.gis.geos import (
     GeometryCollection,
     LineString,
     MultiLineString,
     MultiPoint,
-    MultiPolygon,
     Point,
 )
 from django.test import TestCase
+from rest_framework.authtoken.models import Token
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
-from datetime import datetime, timedelta
-from geomapshark import settings
 
+from geomapshark import settings
 from permits import models
 
 from . import factories
-import urllib.parse
-import requests
-from constance import config
-from rest_framework.authtoken.models import Token
 
 
 class PermitRequestAPITestCase(TestCase):
@@ -89,20 +89,22 @@ class PermitRequestAPITestCase(TestCase):
         factories.WorksObjectPropertyValueFactory(
             works_object_type_choice=works_object_type_choice
         )
-        self.permit_request_geotime_secretary_user = factories.PermitRequestGeoTimeFactory(
-            permit_request=self.permit_request_secretary_user,
-            geom=GeometryCollection(
-                MultiLineString(
-                    LineString(
-                        (2539096.09997796, 1181119.41274907),
-                        (2539094.37477054, 1181134.07701214),
-                    ),
-                    LineString(
-                        (2539196.09997796, 1181219.41274907),
-                        (2539294.37477054, 1181134.07701214),
-                    ),
-                )
-            ),
+        self.permit_request_geotime_secretary_user = (
+            factories.PermitRequestGeoTimeFactory(
+                permit_request=self.permit_request_secretary_user,
+                geom=GeometryCollection(
+                    MultiLineString(
+                        LineString(
+                            (2539096.09997796, 1181119.41274907),
+                            (2539094.37477054, 1181134.07701214),
+                        ),
+                        LineString(
+                            (2539196.09997796, 1181219.41274907),
+                            (2539294.37477054, 1181134.07701214),
+                        ),
+                    )
+                ),
+            )
         )
         start_date = datetime.today()
         end_date = start_date + timedelta(days=10)
@@ -205,7 +207,8 @@ class PermitRequestAPITestCase(TestCase):
     def test_api_filtering_by_status(self):
         self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(
-            reverse("permits-list"), {"status": models.PermitRequest.STATUS_APPROVED},
+            reverse("permits-list"),
+            {"status": models.PermitRequest.STATUS_APPROVED},
         )
         response_json = response.json()
         permit_requests_all = models.PermitRequest.objects.all().only("id")
@@ -233,7 +236,8 @@ class PermitRequestAPITestCase(TestCase):
         permit_requests_all_ids = [perm.id for perm in permit_requests_all]
         permit_requests = permit_requests_all.filter(id=permit_requests_all_ids[0])
         response = self.client.get(
-            reverse("permits-list"), {"permit_request_id": permit_requests_all_ids[0]},
+            reverse("permits-list"),
+            {"permit_request_id": permit_requests_all_ids[0]},
         )
         response_json = response.json()
         self.assertEqual(response.status_code, 200)
@@ -312,7 +316,8 @@ class PermitRequestAPITestCase(TestCase):
         response = self.client.get(reverse("permits-list"), {"status": 25})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.json()["status"], ["«\xa025\xa0» n'est pas un choix valide."],
+            response.json()["status"],
+            ["«\xa025\xa0» n'est pas un choix valide."],
         )
 
     def test_non_authenticated_user_raises_exception(self):
@@ -344,7 +349,9 @@ class PermitRequestAPITestCase(TestCase):
 
     def test_api_permits_point_returns_only_points(self):
         self.client.login(username=self.admin_user.username, password="password")
-        response = self.client.get(reverse("permits_point-list"),)
+        response = self.client.get(
+            reverse("permits_point-list"),
+        )
         response_json = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("multilinestring", str(response_json).lower())
@@ -352,7 +359,9 @@ class PermitRequestAPITestCase(TestCase):
 
     def test_api_permits_line_returns_only_lines(self):
         self.client.login(username=self.admin_user.username, password="password")
-        response = self.client.get(reverse("permits_line-list"),)
+        response = self.client.get(
+            reverse("permits_line-list"),
+        )
         response_json = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("multipoint", str(response_json).lower())
@@ -360,7 +369,9 @@ class PermitRequestAPITestCase(TestCase):
 
     def test_api_permits_poly_returns_only_polygons(self):
         self.client.login(username=self.admin_user.username, password="password")
-        response = self.client.get(reverse("permits_poly-list"),)
+        response = self.client.get(
+            reverse("permits_poly-list"),
+        )
         response_json = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("multipoint", str(response_json).lower())
@@ -368,7 +379,9 @@ class PermitRequestAPITestCase(TestCase):
 
     def test_api_permits_does_not_contain_empty_geometry(self):
         self.client.login(username=self.admin_user.username, password="password")
-        response = self.client.get(reverse("permits-list"),)
+        response = self.client.get(
+            reverse("permits-list"),
+        )
         response_json = response.json()
         self.assertEqual(response.status_code, 200)
         for feature in response_json["features"]:
@@ -431,7 +444,9 @@ class PermitRequestAPITestCase(TestCase):
     def test_api_permits_details_is_accessible_with_credentials(self):
         # Need PermitRequest to create absolut_url in api for file type
         self.client.login(username=self.admin_user.username, password="password")
-        response = self.client.get(reverse("permits_details-list"),)
+        response = self.client.get(
+            reverse("permits_details-list"),
+        )
         self.assertEqual(response.status_code, 200)
 
     def test_non_authorized_ip_raises_exception(self):
@@ -567,7 +582,10 @@ class PermitRequestAPITestCase(TestCase):
         response_json = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            response_json, {"is_logged": False,},
+            response_json,
+            {
+                "is_logged": False,
+            },
         )
 
     # TODO: test also the permits:permit_request_print route

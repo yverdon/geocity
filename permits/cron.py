@@ -1,11 +1,12 @@
 import logging
-
-from django.core.management import call_command, CommandError
-from django_cron import CronJobBase, Schedule
 from datetime import date, datetime, timedelta
-from .models import PermitRequest, PermitRequestInquiry
-from django.db.models import Max, Min
+
+from django.core.management import CommandError, call_command
+from django.db.models import Max
 from django.utils.translation import gettext_lazy as _
+from django_cron import CronJobBase, Schedule
+
+from .models import PermitRequest, PermitRequestInquiry
 from .services import send_email_notification
 
 logger = logging.getLogger(__name__)

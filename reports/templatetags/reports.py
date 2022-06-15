@@ -1,16 +1,13 @@
-import typing
-import io
-import tarfile
-from django import template
-from django.utils.safestring import mark_safe
-from jinja2.sandbox import SandboxedEnvironment
-from rest_framework.authtoken.models import Token
 import base64
-import os
+
+from django import template
 from django.contrib.staticfiles import finders
-from ..utils import run_docker_container, DockerRunFailedError
+from django.utils.safestring import mark_safe
+
+from ..utils import DockerRunFailedError, run_docker_container
 
 register = template.Library()
+
 
 @register.simple_tag
 def render_section(obj, **context):

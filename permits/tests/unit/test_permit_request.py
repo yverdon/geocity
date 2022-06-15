@@ -1,8 +1,10 @@
-from ..geocity_test_case import GeocityTestCase
-from .. import factories
-from permits import models
 from babel.dates import format_datetime
 from pytz import timezone
+
+from permits import models
+
+from .. import factories
+from ..geocity_test_case import GeocityTestCase
 
 
 class PermitRequestTest(GeocityTestCase):

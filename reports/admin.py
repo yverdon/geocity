@@ -1,11 +1,10 @@
 from django.contrib import admin
-
-from .models import SectionAuthor, Report, ReportLayout, SectionMap, SectionParagraph, Section
-from permits.admin import IntegratorFilterMixin
-from permits import models as permits_models
-from django.contrib import admin
-
 from polymorphic.admin import PolymorphicInlineSupportMixin, StackedPolymorphicInline
+
+from permits import models as permits_models
+from permits.admin import IntegratorFilterMixin
+
+from .models import Report, ReportLayout, Section
 
 
 @admin.register(ReportLayout)

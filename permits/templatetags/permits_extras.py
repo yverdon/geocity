@@ -1,14 +1,15 @@
 import json
 import os.path
+from datetime import datetime, timezone
 
 from django import template
 from django.forms import modelformset_factory
-from django.template.loader import render_to_string
 from django.template.defaultfilters import floatformat
-from django.utils.translation import gettext as _
-from permits import forms, models, services
-from datetime import datetime, timedelta, timezone
+from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext as _
+
+from permits import forms, models, services
 
 register = template.Library()
 
@@ -18,7 +19,10 @@ def permit_progressbar(context, steps, active_step):
     return (
         {}
         if context["user"].permitauthor.is_temporary
-        else {"steps": steps, "active_step": active_step,}
+        else {
+            "steps": steps,
+            "active_step": active_step,
+        }
     )
 
 
@@ -38,7 +42,9 @@ def permit_request_summary(context, permit_request):
     )
 
     PermitRequestGeoTimeFormSet = modelformset_factory(
-        models.PermitRequestGeoTime, form=forms.PermitRequestGeoTimeForm, extra=0,
+        models.PermitRequestGeoTime,
+        form=forms.PermitRequestGeoTimeForm,
+        extra=0,
     )
 
     geo_time_formset = PermitRequestGeoTimeFormSet(

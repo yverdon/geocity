@@ -1,6 +1,5 @@
-from ast import arguments
-from django.urls import path
 from django.conf import settings
+from django.urls import path
 
 from . import views
 
@@ -19,6 +18,6 @@ if settings.DEBUG:
         path(
             "report/<int:permit_request_id>/<int:report_id>.html",
             views.report_view,
-            {"as_string":True},
+            {"as_string": True},
         ),
     ]

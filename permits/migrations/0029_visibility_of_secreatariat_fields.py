@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0028_use_custom_file_field'),
+        ("permits", "0028_use_custom_file_field"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='permitrequestamendproperty',
-            name='is_visible_by_author',
-            field=models.BooleanField(default=True, verbose_name="Visible par l'auteur de la demande"),
+            model_name="permitrequestamendproperty",
+            name="is_visible_by_author",
+            field=models.BooleanField(
+                default=True, verbose_name="Visible par l'auteur de la demande"
+            ),
         ),
     ]

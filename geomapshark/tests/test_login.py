@@ -1,13 +1,14 @@
+from unittest import mock
+
+from bs4 import BeautifulSoup
+from constance import config
 from django.conf import settings
 from django.shortcuts import resolve_url
 from django.test import TestCase
 from django.urls import reverse
+from django_otp.util import random_hex
 
 from permits.tests import factories
-from constance import config
-from bs4 import BeautifulSoup
-from django_otp.util import random_hex
-from unittest import mock
 
 
 def get_parser(content):
@@ -54,7 +55,11 @@ if settings.ENABLE_2FA:
 
     class TestLoginView2FA(TestCase, TestLoginMixin):
         def login(self, data):
-            return self.client.post(reverse("account_login"), data, follow=True,)
+            return self.client.post(
+                reverse("account_login"),
+                data,
+                follow=True,
+            )
 
         def test_post_login_view_2FA_inactive(self):
             user = factories.UserFactory()
@@ -129,7 +134,9 @@ class TestLoginPage(TestCase):
 
     def test_get_standard_login_view(self):
 
-        response = self.client.get(reverse("account_login"),)
+        response = self.client.get(
+            reverse("account_login"),
+        )
         content = response.content.decode()
 
         expected_title = "<h3>" + config.APPLICATION_TITLE + "</h3>"

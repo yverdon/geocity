@@ -1,14 +1,8 @@
-import weasyprint
-import requests
 import argparse
-import io
-import textwrap
-import os
-import sys
-from urllib.request import urlopen
 from urllib.request import Request, urlopen
 
-from weasyprint import HTML, default_url_fetcher
+import weasyprint
+from weasyprint import default_url_fetcher
 
 INTERNAL_WEB_ROOT_URL = "http://web:9000"
 

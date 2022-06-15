@@ -1,4 +1,5 @@
 import json
+
 from django.contrib.auth.decorators import login_required
 from django.core.serializers import serialize
 from django.http import JsonResponse
@@ -19,7 +20,10 @@ def administrative_entities_geojson(request, administrative_entity_id):
             administrative_entity,
             geometry_field="geom",
             srid=2056,
-            fields=("id", "name",),
+            fields=(
+                "id",
+                "name",
+            ),
         )
     )
 

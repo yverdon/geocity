@@ -1,25 +1,25 @@
 import enum
+import ipaddress
 import itertools
-import mimetypes
 import os
+import pathlib
 import shutil
+import socket
 import urllib
 from collections import defaultdict
-import socket
-import ipaddress
 from datetime import datetime
-import PIL
+from zipfile import ZipFile
 
 import filetype
-import pathlib
+import PIL
 from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
 from django.core.exceptions import (
-    SuspiciousOperation,
-    ValidationError,
     ObjectDoesNotExist,
     PermissionDenied,
+    SuspiciousOperation,
+    ValidationError,
 )
 from django.core.mail import send_mass_mail
 from django.core.validators import EmailValidator
@@ -27,22 +27,19 @@ from django.db import transaction
 from django.db.models import CharField, Count, F, Max, Min, Q, Value
 from django.db.models.functions import Concat
 from django.forms import modelformset_factory
-from django.http import StreamingHttpResponse
 from django.http.response import FileResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.dateparse import parse_date
 from django.utils.translation import gettext_lazy as _
-from django.template.defaultfilters import slugify
-from zipfile import ZipFile
+from pdf2image import convert_from_path
+from PIL import Image
 
 from . import fields, forms, geoservices, models
 from .exceptions import BadPermitRequestStatus
-from .models import PermitRequest, WorksObjectType
+from .models import WorksObjectType
 from .utils import reverse_permit_request_url
-from PIL import Image
-from pdf2image import convert_from_path
 
 
 class GeoTimeInfo(enum.Enum):
@@ -316,7 +313,10 @@ def get_properties(permit_request, additional_type_exclusions=None):
     return _get_properties_filtered(
         permit_request,
         lambda qs: qs.exclude(
-            input_type__in=[models.WorksObjectProperty.INPUT_TYPE_FILE,] + exclusions
+            input_type__in=[
+                models.WorksObjectProperty.INPUT_TYPE_FILE,
+            ]
+            + exclusions
         ),
     )
 
@@ -472,7 +472,9 @@ def get_permit_requests_list_for_user(
         ),
         required_validations=Count("validations"),
         author_fullname=Concat(
-            F("author__user__first_name"), Value(" "), F("author__user__last_name"),
+            F("author__user__first_name"),
+            Value(" "),
+            F("author__user__last_name"),
         ),
         author_details=Concat(
             F("author__user__email"),
@@ -724,9 +726,11 @@ def get_works_objects_step(permit_request, enabled, works_types, user, typefilte
     # return None
     if permit_request and not works_types:
         if user.has_perm("permits.see_private_requests"):
-            administrative_entity_works_types = permit_request.administrative_entity.works_object_types.values_list(
-                "works_type", flat=True
-            ).distinct()
+            administrative_entity_works_types = (
+                permit_request.administrative_entity.works_object_types.values_list(
+                    "works_type", flat=True
+                ).distinct()
+            )
         else:
             administrative_entity_works_types = (
                 permit_request.administrative_entity.works_object_types.filter(
@@ -750,7 +754,10 @@ def get_works_objects_step(permit_request, enabled, works_types, user, typefilte
                 works_types = filtered_works_type
 
     works_types_qs = (
-        urllib.parse.urlencode({"types": works_types}, doseq=True,)
+        urllib.parse.urlencode(
+            {"types": works_types},
+            doseq=True,
+        )
         if works_types
         else ""
     )
@@ -1111,7 +1118,9 @@ def submit_permit_request(permit_request, request):
                     groups__permitdepartment__is_integrator_admin=False,
                 ),
                 Q(
-                    Q(groups__permitdepartment__is_validator=False,)
+                    Q(
+                        groups__permitdepartment__is_validator=False,
+                    )
                     | Q(
                         groups__permitdepartment__is_validator=True,
                         groups__permitdepartment__is_backoffice=True,
@@ -1268,7 +1277,12 @@ def send_email_notification(data):
 def send_email(template, sender, receivers, subject, context):
     email_content = render_to_string(f"permits/emails/{template}", context)
     emails = [
-        (subject, email_content, sender, [email_address],)
+        (
+            subject,
+            email_content,
+            sender,
+            [email_address],
+        )
         for email_address in receivers
         if validate_email(email_address)
     ]
@@ -1307,8 +1321,9 @@ def can_prolonge_permit_request(user, permit_request):
 
 
 def can_request_permit_validation(user, permit_request):
-    return permit_request.can_be_sent_for_validation() and has_permission_to_amend_permit_request(
-        user, permit_request
+    return (
+        permit_request.can_be_sent_for_validation()
+        and has_permission_to_amend_permit_request(user, permit_request)
     )
 
 
@@ -1322,8 +1337,9 @@ def has_permission_to_validate_permit_request(user, permit_request):
 
 
 def can_validate_permit_request(user, permit_request):
-    return permit_request.can_be_validated() and has_permission_to_validate_permit_request(
-        user, permit_request
+    return (
+        permit_request.can_be_validated()
+        and has_permission_to_validate_permit_request(user, permit_request)
     )
 
 
@@ -1348,8 +1364,10 @@ def has_permission_to_classify_permit_request(user, permit_request):
 
 def can_classify_permit_request(user, permit_request):
 
-    status_choices_for_administrative_entity = get_status_choices_for_administrative_entity(
-        permit_request.administrative_entity
+    status_choices_for_administrative_entity = (
+        get_status_choices_for_administrative_entity(
+            permit_request.administrative_entity
+        )
     )
     no_validation_process = (
         models.PermitRequest.STATUS_AWAITING_VALIDATION
@@ -1489,8 +1507,10 @@ def get_actions_for_administrative_entity(permit_request):
         "request_inquiry": list(models.PermitRequest.AMENDABLE_STATUSES),
     }
 
-    available_statuses_for_administrative_entity = get_status_choices_for_administrative_entity(
-        permit_request.administrative_entity
+    available_statuses_for_administrative_entity = (
+        get_status_choices_for_administrative_entity(
+            permit_request.administrative_entity
+        )
     )
     available_actions = []
     for action in required_statuses_for_actions.keys():
@@ -1526,7 +1546,9 @@ def get_permit_request_amend_custom_properties_by_object_type(permit_request):
 
 
 def get_default_works_object_types(
-    administrative_entity, user, works_types=None,
+    administrative_entity,
+    user,
+    works_types=None,
 ):
     """
     Return the `WorksObjectType` that should be automatically selected for the given
@@ -1633,11 +1655,13 @@ def validate_file(file):
         extensions = config.ALLOWED_FILE_EXTENSIONS.replace(" ", "").split(",")
         if kind.extension not in extensions:
             raise ValidationError(
-                _("%(file)s n'est pas du bon type"), params={"file": file},
+                _("%(file)s n'est pas du bon type"),
+                params={"file": file},
             )
         elif file.size > config.MAX_FILE_UPLOAD_SIZE:
             raise ValidationError(
-                _("%(file)s est trop volumineux"), params={"file": file},
+                _("%(file)s est trop volumineux"),
+                params={"file": file},
             )
         # Check that image file is not corrupted
         if kind.extension != "pdf":
@@ -1782,12 +1806,20 @@ def get_wot_properties(value, user_is_authenticated=None, value_with_type=False)
                     property = []
                     # WOT
                     property.append(
-                        {"key": "work_object_type", "value": wot, "type": "text",}
+                        {
+                            "key": "work_object_type",
+                            "value": wot,
+                            "type": "text",
+                        }
                     )
 
                 if not last_wot:
                     property.append(
-                        {"key": "work_object_type", "value": wot, "type": "text",}
+                        {
+                            "key": "work_object_type",
+                            "value": wot,
+                            "type": "text",
+                        }
                     )
 
                 last_wot = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'

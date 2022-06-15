@@ -1,21 +1,8 @@
-import sys
-from qgis.core import (
-    QgsApplication,
-    QgsProcessingFeedback,
-    QgsVectorLayer,
-    QgsApplication,
-    QgsProject,
-    QgsLayoutExporter,
-    QgsAuthMethodConfig,
-)
-
-import tempfile
-import os
-import sys
-from urllib.request import urlopen
-import logging
 import argparse
-import base64
+import os
+import tempfile
+
+from qgis.core import QgsApplication, QgsAuthMethodConfig, QgsLayoutExporter, QgsProject
 
 
 def export(args):

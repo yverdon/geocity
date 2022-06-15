@@ -243,7 +243,11 @@ CONSTANCE_CONFIG = {
         "Extensions autorisées lors de l'upload de document, seuls des types images PIL et PDF sont supportés",
         str,
     ),
-    "MAX_FILE_UPLOAD_SIZE": (10485760, "Taille maximum des fichiers uploadés", int,),
+    "MAX_FILE_UPLOAD_SIZE": (
+        10485760,
+        "Taille maximum des fichiers uploadés",
+        int,
+    ),
     "MAX_FEATURE_NUMBER_FOR_QGISSERVER": (
         10,
         "Nombre maximum d'entités disponible pour QGISSERVER, un nombre trop élevé impactera négativement les performances de l'impression",
@@ -295,13 +299,41 @@ CONSTANCE_CONFIG = {
         "Description de la page de login",
         str,
     ),
-    "BACKGROUND_COLOR": ("#FFFFFF", "Couleur unie du fond", str,),
-    "LOGIN_BACKGROUND_COLOR": ("#FFFFFF", "Couleur unie du fond login", str,),
-    "PRIMARY_COLOR": ("#008c6f", "Couleur de thème principale", str,),
-    "SECONDARY_COLOR": ("#01755d", "Couleur de thème secondaire", str,),
-    "TEXT_COLOR": ("#000000", "Couleur du texte", str,),
-    "TITLE_COLOR": ("#000000", "Couleur du titre", str,),
-    "TABLE_COLOR": ("#212529", "Couleur du texte dans les tableaux", str,),
+    "BACKGROUND_COLOR": (
+        "#FFFFFF",
+        "Couleur unie du fond",
+        str,
+    ),
+    "LOGIN_BACKGROUND_COLOR": (
+        "#FFFFFF",
+        "Couleur unie du fond login",
+        str,
+    ),
+    "PRIMARY_COLOR": (
+        "#008c6f",
+        "Couleur de thème principale",
+        str,
+    ),
+    "SECONDARY_COLOR": (
+        "#01755d",
+        "Couleur de thème secondaire",
+        str,
+    ),
+    "TEXT_COLOR": (
+        "#000000",
+        "Couleur du texte",
+        str,
+    ),
+    "TITLE_COLOR": (
+        "#000000",
+        "Couleur du titre",
+        str,
+    ),
+    "TABLE_COLOR": (
+        "#212529",
+        "Couleur du texte dans les tableaux",
+        str,
+    ),
     "IP_WHITELIST": (
         "172.16.0.1,172.17.0.1,127.0.0.1,localhost",
         "IP autorisées pour l'utilisation de l'API complète (/rest/permits), séparées par des ','",
@@ -416,9 +448,15 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",},
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
 ]
 
 CORS_ALLOWED_ORIGINS = [] + os.getenv("ALLOWED_CORS").split(",")
@@ -481,7 +519,9 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
     ),
     "DEFAULT_PAGINATION_CLASS": "django_wfs3.pagination.CustomPagination",
-    "DEFAULT_THROTTLE_CLASSES": ["rest_framework.throttling.ScopedRateThrottle",],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
     "DEFAULT_THROTTLE_RATES": {
         # Full API for permits
         "permits": os.getenv("DRF_THROTTLE_RATE_PERMITS_API"),

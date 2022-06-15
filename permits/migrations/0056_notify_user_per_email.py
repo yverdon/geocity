@@ -6,18 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('permits', '0055_fix_typo'),
+        ("permits", "0055_fix_typo"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='historicalpermitauthor',
-            name='notify_per_email',
-            field=models.BooleanField(default=True, verbose_name='Me notifier par e-mail'),
+            model_name="historicalpermitauthor",
+            name="notify_per_email",
+            field=models.BooleanField(
+                default=True, verbose_name="Me notifier par e-mail"
+            ),
         ),
         migrations.AddField(
-            model_name='permitauthor',
-            name='notify_per_email',
-            field=models.BooleanField(default=True, verbose_name='Me notifier par e-mail'),
+            model_name="permitauthor",
+            name="notify_per_email",
+            field=models.BooleanField(
+                default=True, verbose_name="Me notifier par e-mail"
+            ),
         ),
     ]

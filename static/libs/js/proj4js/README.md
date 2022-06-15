@@ -89,7 +89,7 @@ proj4.defs([
 ]);
 ```
 
-you can then do 
+you can then do
 
 ```js
 proj4('EPSG:4326');
@@ -112,7 +112,7 @@ proj4.defs can also be used to define a named alias:
 
 ```javascript
 proj4.defs('urn:x-ogc:def:crs:EPSG:4326', proj4.defs('EPSG:4326'));
-``` 
+```
 
 ##Developing
 to set up build tools make sure you have node and grunt-cli installed and then run `npm install`
@@ -135,7 +135,7 @@ to run node tests with coverage run
 node test --coverage
 ```
 
-to create a build with only default projections (latlon and Mercator) run 
+to create a build with only default projections (latlon and Mercator) run
 
 ```bash
 grunt build
