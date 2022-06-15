@@ -903,6 +903,7 @@ class PermitAdministrativeEntityAdminForm(forms.ModelForm):
             "name",
             "tags",
             "ofs_id",
+            "sites",
             "expeditor_email",
             "expeditor_name",
             "custom_signature",
@@ -1021,7 +1022,8 @@ class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "expeditor_name",
         "expeditor_email",
         "ofs_id",
-        "get__tags",
+        "get_tags",
+        "get_sites",
     ]
 
     def sortable_str(self, obj):
@@ -1032,10 +1034,17 @@ class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "1.1 Configuration de l'entité administrative (commune, organisation)"
     )
 
-    def get__tags(self, obj):
-        return list(obj.tags.all())
+    def get_sites(self, obj):
+        return [site["name"] for site in obj.sites.all().values("name")]
 
-    get__tags.short_description = _("Mots-clés")
+    get_sites.short_description = _("Sites")
+    get_sites.admin_order_field = "sites__name"
+
+    def get_tags(self, obj):
+        return [tag["name"] for tag in obj.tags.all().values("name")]
+
+    get_tags.short_description = _("Mots-clés")
+    get_tags.admin_order_field = "tags__name"
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "integrator":

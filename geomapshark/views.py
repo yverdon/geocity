@@ -53,12 +53,20 @@ def logout_view(request):
     )
 
 
-# User has tried to many login attemps
+# User has tried to many login attempts
 def lockout_view(request):
     return render(
         request,
         "account/lockout.html",
     )
+
+
+class SetCurrentSiteMixin:
+    def __init__(self, *args, **kwargs):
+        super.__init__(*args, **kwargs)
+        current_site = get_current_site(self.request)
+        settings.SITE_ID = current_site.id
+        settings.SITE_DOMAIN = current_site.domain
 
 
 class CustomPasswordResetView(PasswordResetView):
@@ -77,7 +85,7 @@ class CustomPasswordResetView(PasswordResetView):
         return context
 
 
-class CustomLoginView(LoginView):
+class CustomLoginView(LoginView, SetCurrentSiteMixin):
     def get(self, request, *args, **kwargs):
         successful = request.GET.get("success")
         # check if we need to display an activation message

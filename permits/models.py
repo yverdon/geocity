@@ -8,6 +8,7 @@ from datetime import date, datetime, timedelta
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
+from django.contrib.sites.models import Site
 from django.core.exceptions import SuspiciousOperation, ValidationError
 from django.core.validators import (
     FileExtensionValidator,
@@ -256,7 +257,7 @@ class PermitAdministrativeEntity(models.Model):
     geom = geomodels.MultiPolygonField(_("geom"), null=True, srid=2056)
     tags = TaggableManager(
         blank=True,
-        verbose_name="Mots-clés",
+        verbose_name=_("Mots-clés"),
         help_text="Mots clefs sans espaces, séparés par des virgules permettant de filtrer les entités par l'url: https://geocity.ch/?entityfilter=yverdon",
     )
     objects = PermitAdministrativeEntityManager()
@@ -274,6 +275,7 @@ class PermitAdministrativeEntity(models.Model):
             )
         ],
     )
+    sites = models.ManyToManyField(Site)
 
     class Meta:
         verbose_name = _(

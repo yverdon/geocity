@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("permits", "0070_publish_fields_for_public_permitrequests"),
+        ("permits", "0071_add_sites_m2m_relations_for_administrative_entities"),
     ]
 
     operations = [

@@ -404,29 +404,6 @@ class PermitRequestAPITestCase(TestCase):
         self.assertEqual(qgisserver_response.status_code, 200)
         self.assertEqual(qgisserver_response.json()["status"], "success")
 
-    @skip("obsolete")  # TODO: replace by equivalent test in reports/tests.py
-    def test_print_service_is_working_with_default_template(self):
-
-        values = {
-            "SERVICE": "ATLAS",
-            "REQUEST": "GETPRINT",
-            "FORMAT": "PDF",
-            "TRANSPARENT": "true",
-            "SRS": "EPSG:2056",
-            "DPI": "150",
-            "MAP": "/io/data/report_template.qgs",
-            "TEMPLATE": "print_template",
-            "LAYERS": "background,permits,permits_point,permits_line,permits_poly",
-            "EXP_FILTER": "permit_request_id in(1)",
-            "PERMIT_REQUEST_ID": 1,
-        }
-
-        qgisserver_url = "http://qgisserver/ogc/?" + urllib.parse.urlencode(values)
-        qgisserver_response = requests.get(
-            qgisserver_url, headers={"Accept": "application/pdf"}, stream=True
-        )
-        self.assertEqual(qgisserver_response.status_code, 200)
-
     def test_api_is_accessible_with_token_authentication(self):
         # Create token
         token = Token.objects.create(user=self.admin_user)
