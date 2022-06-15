@@ -88,21 +88,30 @@ function hideChildrenDocumentTypes(parent) {
 }
 
 function setEventOnTemplateSelect(id){
-  let reportTemplateField = document.getElementById(`id_form-${id}-report_preset`);
-    document.getElementById(`id_form-${id}-document`).disabled=false;
-    document.getElementById(`id_form-${id}-document_type`).disabled=false;
-    document.getElementById(`id_form-${id}-print_preview`).disabled=true;
-    reportTemplateField.addEventListener('change', (e) => {
-      if (e.target.value == "") {
-        document.getElementById(`id_form-${id}-document`).disabled=false;
-        document.getElementById(`id_form-${id}-document_type`).disabled=false;
-        document.getElementById(`id_form-${id}-print_preview`).disabled=true;
-      } else {
-        document.getElementById(`id_form-${id}-document`).disabled=true;
-        document.getElementById(`id_form-${id}-document_type`).disabled=true;
-        document.getElementById(`id_form-${id}-print_preview`).disabled=false;
-      }
-    })
+  let reportInput  = document.getElementById(`id_form-${id}-report_preset`);
+  let docInput = document.getElementById(`id_form-${id}-document`);
+  let docTypeInput = document.getElementById(`id_form-${id}-document_type`);
+  let previewBtn = document.getElementById(`id_form-${id}-print_preview`);
+
+  docInput.disabled=false;
+  docTypeInput.disabled=false;
+  previewBtn.disabled=true;
+  reportInput.addEventListener('change', (e) => {
+    if (e.target.value == "") {
+      docInput.disabled=false;
+      docTypeInput.disabled=false;
+      previewBtn.disabled=true;
+    } else {
+      docInput.disabled=true;
+      docTypeInput.disabled=true;
+      previewBtn.disabled=false;
+      previewBtn.onclick = (event) => {
+        let url = previewBtn.dataset.linkTpl.replace("999999999", reportInput.value);
+        window.open(url, "_blank");
+        return false;
+      };
+    }
+  })
 }
 
 setEventOnTemplateSelect(0)

@@ -279,7 +279,12 @@
                                 {% if field.name == "report_preset" %}
                                 <div class="col-sm-5">
                                     {% bootstrap_field field layout='vertical' %}
-                                    <button id="id_form-{{ forloop.counter0 }}-print_preview" href="{% url 'reports:permit_request_report' permit_request.pk "1" %}"  class="btn btn-primary" name="preview" disabled>{% trans "Prévisualiser" %}</button>
+                                    <button id="id_form-{{ forloop.counter0 }}-print_preview"
+                                            data-link-tpl="{% url 'reports:permit_request_report' permit_request.pk "999999999" %}"
+                                            class="btn btn-primary"
+                                            name="preview" disabled>
+                                      {% trans "Prévisualiser" %}
+                                    </button>
                                 </div>
                                 <div class="col-sm-2"></div>
                                 {% endif %}
