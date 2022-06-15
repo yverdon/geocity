@@ -6,14 +6,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('sites', '0002_alter_domain_unique'),
-        ('permits', '0069_rename_short_name_and_is_public_field'),
+        ("sites", "0002_alter_domain_unique"),
+        ("permits", "0069_rename_short_name_and_is_public_field"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='permitadministrativeentity',
-            name='sites',
-            field=models.ManyToManyField(to='sites.Site'),
+            model_name="permitadministrativeentity",
+            name="sites",
+            field=models.ManyToManyField(to="sites.Site"),
         ),
     ]
