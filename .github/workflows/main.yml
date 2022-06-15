@@ -20,8 +20,6 @@ jobs:
         WEB_OK=$(docker ps -aq --filter status="running" --filter name="geocity_web_1") && if [ -z "$WEB_OK" ]; then exit 1; fi
         POSTGRES_OK=$(docker ps -aq --filter status="running" --filter name="geocity_postgres_1") && if [ -z "$POSTGRES_OK" ]; then exit 1; fi
         QGISSERVER_OK=$(docker ps -aq --filter status="running" --filter name="geocity_qgisserver_1") && if [ -z "$QGISSERVER_OK" ]; then exit 1; fi
-    - name: "Lint Code"
-      run: docker-compose exec -T web black . --check
     - name: "Test Code"
       run: docker-compose exec -T web ./run_tests.sh
     - name: Stop Containers
