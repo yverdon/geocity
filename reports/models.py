@@ -213,7 +213,7 @@ class SectionParagraph(Section):
         # TODO: reverse_lazy and parametrize URL instead of hardcode
         help_text=(
             _(
-                "Il est possible d'accéder aux données de l'API avec la syntaxe suivante: `{{data.properties.geotime_aggregated.start_date}}`. Consultez les résults de <a href=\"http://localhost:9095/wfs3/collections/permits/items/1\">l'API</a> pour voir les données disponibles."
+                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Vous pouvez afficher les variables diponibles avec la balise `{{data}}`'
             )
         )
     )
