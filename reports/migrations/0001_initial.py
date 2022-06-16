@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ("contenttypes", "0002_remove_content_type_name"),
         ("auth", "0012_alter_user_first_name_max_length"),
-        ("permits", "0072_filter_documenttype_for_integrator"),
+        ("permits", "0073_filter_documenttype_for_integrator"),
     ]
 
     operations = [
