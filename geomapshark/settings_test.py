@@ -8,11 +8,7 @@ AXES_ENABLED = False
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.MD5PasswordHasher",
 ]
-# For tests, Token authentication is set to True
-DRF_ALLOW_TOKENAUTHENTICATION = True
-REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] += (
-    "geomapshark.auth.InternalTokenAuthentication",
-)
+
 SITE_ID = 1
 SITE_DOMAIN = "localhost"
 
