@@ -119,9 +119,8 @@ class Command(BaseCommand):
             self.create_template_customization()
             self.stdout.write("Configurating template customizations...")
             self.setup_homepage()
-            self.stdout.write("Creating default print templates...")
-            # self.stdout.write("Creating reports...")
-            # self.create_reports()
+            self.stdout.write("Creating reports...")
+            self.create_reports()
             self.stdout.write("Fixturize succeed!")
 
     def setup_site(self):
@@ -1048,7 +1047,7 @@ class Command(BaseCommand):
             qgis_project_file="invalid",  # set few lines below
             qgis_print_template_name="a4",
         )
-        qgis_template_project_path = finders.find("reports/report-template-dev.qgs")
+        qgis_template_project_path = finders.find("reports/report-template.qgs")
         qgis_template_project = open(qgis_template_project_path, "rb")
         section_map.qgis_project_file.save(
             "report-template-dev.qgs", File(qgis_template_project), save=True
