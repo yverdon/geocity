@@ -429,63 +429,67 @@ class PermitRequestAPITestCase(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-    def test_non_authorized_ip_raises_exception(self):
-        # login as admin
-        self.client.login(username=self.admin_user.username, password="password")
+    def test_non_authorized_ip_raises_exception_with_tokenauth(self):
+        # login as admin with token
+        authtoken, token = AuthToken.objects.create(user=self.admin_user)
+        META = {"HTTP_AUTHORIZATION": f"Token {token}"}
         # check that login admin user is allowed to get data
-        response = self.client.get(reverse("permits-list"), {})
+        response = self.client.get(reverse("permits-list"), {}, **META)
         self.assertEqual(response.status_code, 200)
         # Set only localhost allowed in constance settings
         config.IP_WHITELIST = "127.0.0.1"
         config.NETWORK_WHITELIST = ""
         # Fake the client ip to something not allowed
         response = self.client.get(
-            reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0"
+            reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0", **META
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
-    def test_authorized_ip_does_not_raise_exception(self):
-        # login as admin
-        self.client.login(username=self.admin_user.username, password="password")
+    def test_authorized_ip_does_not_raise_exception_with_tokenauth(self):
+        # login as admin with token
+        authtoken, token = AuthToken.objects.create(user=self.admin_user)
+        META = {"HTTP_AUTHORIZATION": f"Token {token}"}
         # check that login admin user is allowed to get data
-        response = self.client.get(reverse("permits-list"), {})
+        response = self.client.get(reverse("permits-list"), {}, **META)
         self.assertEqual(response.status_code, 200)
         # Set only localhost allowed in constance settings
         config.IP_WHITELIST = "112.144.0.0"
         config.NETWORK_WHITELIST = ""
         # Fake the client ip to something not allowed
         response = self.client.get(
-            reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0"
+            reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0", **META
         )
         self.assertEqual(response.status_code, 200)
 
-    def test_non_authorized_network_raises_exception(self):
-        # login as admin
-        self.client.login(username=self.admin_user.username, password="password")
+    def test_non_authorized_network_raises_exception_with_tokenauth(self):
+        # login as admin with token
+        authtoken, token = AuthToken.objects.create(user=self.admin_user)
+        META = {"HTTP_AUTHORIZATION": f"Token {token}"}
         # check that login admin user is allowed to get data
-        response = self.client.get(reverse("permits-list"), {})
+        response = self.client.get(reverse("permits-list"), {}, **META)
         self.assertEqual(response.status_code, 200)
         # Set only localhost allowed in constance settings
         config.IP_WHITELIST = ""
         config.NETWORK_WHITELIST = "172.16.0.0/12,192.168.0.0/16"
         # Fake the client ip to something not allowed
         response = self.client.get(
-            reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0"
+            reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0", **META
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
-    def test_authorized_network_does_not_raise_exception(self):
-        # login as admin
-        self.client.login(username=self.admin_user.username, password="password")
+    def test_authorized_network_does_not_raise_exception_with_tokenauth(self):
+        # login as admin with token
+        authtoken, token = AuthToken.objects.create(user=self.admin_user)
+        META = {"HTTP_AUTHORIZATION": f"Token {token}"}
         # check that login admin user is allowed to get data
-        response = self.client.get(reverse("permits-list"), {})
+        response = self.client.get(reverse("permits-list"), {}, **META)
         self.assertEqual(response.status_code, 200)
         # Set only localhost allowed in constance settings
         config.IP_WHITELIST = ""
         config.NETWORK_WHITELIST = "172.16.0.0/12,192.168.0.0/16"
         # Fake the client ip to something not allowed
         response = self.client.get(
-            reverse("permits-list"), {}, REMOTE_ADDR="172.19.0.0"
+            reverse("permits-list"), {}, REMOTE_ADDR="172.19.0.0", **META
         )
         self.assertEqual(response.status_code, 200)
 
