@@ -19,7 +19,7 @@ def run_docker_container(image, commands, file_input: Tuple[str, IO], file_outpu
     container = client.containers.create(
         image,
         commands,
-        network="geocity_pdf_generation",
+        network="geocity_isolated",
     )
 
     # Copy QGIS project to the container
