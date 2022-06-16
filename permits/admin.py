@@ -10,6 +10,8 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.models import Group, Permission, User
+from django.contrib.sites.admin import SiteAdmin
+from django.contrib.sites.models import Site
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.management import CommandError, call_command
 from django.db.models import Q, Value
@@ -42,6 +44,7 @@ INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [
     "permitauthor",
     "qgisproject",
     "complementarydocumenttype",
+    "site",
 ]
 OTHER_PERMISSIONS_CODENAMES = [
     "view_user",
@@ -988,8 +991,36 @@ class WorksObjectPropertyAdmin(
         return RequestForm
 
 
+class SiteWithAdministrativeEntitiesField(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+        return f"{obj.name} ({obj.domain})"
+
+
+def get_sites_field(user):
+
+    qs = models.Site.objects.all()
+
+    if not user.is_superuser:
+        qs = qs.filter(
+            integrator__in=user.groups.filter(
+                permitdepartment__is_integrator_admin=True
+            )
+        )
+
+    return SiteWithAdministrativeEntitiesField(
+        queryset=qs,
+        widget=forms.CheckboxSelectMultiple,
+        label=_("Sites").capitalize(),
+    )
+
+
 class PermitAdministrativeEntityAdminForm(forms.ModelForm):
     """Form class to configure an administrative entity (commune, organisation)"""
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user")
+        super().__init__(*args, **kwargs)
+        self.fields["sites"] = get_sites_field(user)
 
     class Meta:
         model = models.PermitAdministrativeEntity
@@ -1100,6 +1131,20 @@ class WorksObjectAdmin(IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdm
 
 
 class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+
+    # Pass the request from ModelAdmin to ModelForm
+    def get_form(self, request, obj=None, **kwargs):
+        Form = super(PermitAdministrativeEntityAdmin, self).get_form(
+            request, obj, **kwargs
+        )
+
+        class RequestForm(Form):
+            def __new__(cls, *args, **kwargs):
+                kwargs["user"] = request.user
+                return Form(*args, **kwargs)
+
+        return RequestForm
+
     change_form_template = "permits/admin/permit_administrative_entity_change.html"
     form = PermitAdministrativeEntityAdminForm
     inlines = [
@@ -1141,6 +1186,7 @@ class PermitAdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     get_tags.admin_order_field = "tags__name"
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
+
         if db_field.name == "integrator":
             kwargs["queryset"] = Group.objects.filter(
                 permitdepartment__is_integrator_admin=True,
@@ -1412,6 +1458,21 @@ class PermitRequestInquiryAdmin(admin.ModelAdmin):
 
 admin.site.unregister(TokenProxy)
 admin.site.register(TokenProxy, TokenAdmin)
+
+
+class SiteAdmin(IntegratorFilterMixin, SiteAdmin):
+    class Meta:
+        model = models.Site
+        fields = [
+            "domains",
+            "names" "integrator",
+        ]
+
+    list_display = ("name", "domain", "integrator")
+
+
+admin.site.unregister(Site)
+admin.site.register(models.Site, SiteAdmin)
 
 admin.site.register(models.PermitActorType, PermitActorTypeAdmin)
 admin.site.register(models.WorksType, WorksTypeAdmin)
