@@ -1,6 +1,7 @@
 import base64
 import io
 import re
+from datetime import timedelta
 from typing import Union
 
 from ckeditor.fields import RichTextField
@@ -12,8 +13,8 @@ from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from jinja2.sandbox import SandboxedEnvironment
+from knox.models import AuthToken
 from polymorphic.models import PolymorphicModel
-from rest_framework.authtoken.models import Token
 
 from permits.fields import AdministrativeEntityFileField
 
@@ -89,12 +90,14 @@ class Report(models.Model):
         # Generate a token
         # TODO CRITICAL: add expiration to token and/or ensure it gets deleted
         # (fix by using better token implementation than DRF)
-        token, token_was_created = Token.objects.get_or_create(user=generated_by)
+        authtoken, token = AuthToken.objects.create(
+            generated_by, expiry=timedelta(minutes=5)
+        )
 
         context = {
             "report": self,
             "permit_request": permit_request,
-            "token": token.key,
+            "token": token,
         }
         html_string = render_to_string("reports/report.html", context)
 
@@ -104,21 +107,17 @@ class Report(models.Model):
         commands = [
             "/io/input.html",
             "/io/output.pdf",
-            token.key,
+            token,
         ]
 
-        try:
-            output = run_docker_container(
-                "geocity_pdf",
-                commands,
-                file_input=("/io/input.html", io.BytesIO(html_string.encode("utf-8"))),
-                file_output="/io/output.pdf",
-            )
-        finally:
-            # TODO: race condition if two PDFs are generated at the same time
-            # (fix by using better token implementation than DRF)
-            if token_was_created:
-                token.delete()
+        output = run_docker_container(
+            "geocity_pdf",
+            commands,
+            file_input=("/io/input.html", io.BytesIO(html_string.encode("utf-8"))),
+            file_output="/io/output.pdf",
+        )
+
+        authtoken.delete()
 
         return output
 
