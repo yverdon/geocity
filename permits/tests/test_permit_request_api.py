@@ -12,7 +12,7 @@ from django.contrib.gis.geos import (
     Point,
 )
 from django.test import TestCase
-from rest_framework.authtoken.models import Token
+from knox.models import AuthToken
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 
@@ -406,9 +406,9 @@ class PermitRequestAPITestCase(TestCase):
 
     def test_api_is_accessible_with_token_authentication(self):
         # Create token
-        token = Token.objects.create(user=self.admin_user)
+        auth_token, token = AuthToken.objects.create(user=self.admin_user)
         # Set token in header
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + token.key)
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + token)
         response = self.client.get(reverse("permits-list"), {})
         response_json = response.json()
         permit_requests = models.PermitRequest.objects.all().only("id")

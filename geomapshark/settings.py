@@ -134,7 +134,7 @@ INSTALLED_APPS = [
     "django_filters",
     "rest_framework",
     "rest_framework_gis",
-    "rest_framework.authtoken",
+    "knox",
     "bootstrap4",
     "bootstrap_datepicker_plus",
     "django_tables2",
@@ -193,7 +193,6 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "APPLICATION_DESCRIPTION",
         "ALLOWED_FILE_EXTENSIONS",
         "MAX_FILE_UPLOAD_SIZE",
-        "MAX_FEATURE_NUMBER_FOR_QGISSERVER",
         "GEOCALENDAR_URL",
         "ENABLE_GEOCALENDAR",
         "ANONYMOUS_REQUEST_SENT_TITLE",
@@ -252,11 +251,6 @@ CONSTANCE_CONFIG = {
     "MAX_FILE_UPLOAD_SIZE": (
         10485760,
         "Taille maximum des fichiers uploadés",
-        int,
-    ),
-    "MAX_FEATURE_NUMBER_FOR_QGISSERVER": (
-        10,
-        "Nombre maximum d'entités disponible pour QGISSERVER, un nombre trop élevé impactera négativement les performances de l'impression",
         int,
     ),
     "GEOCALENDAR_URL": (
@@ -519,10 +513,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
         "rest_framework.authentication.SessionAuthentication",
-        # TODO CRITICAL: include logic to only accept tokens from an internal
-        # request (I think this was supposed to be the case already, but see not logic
-        # for that)
-        "rest_framework.authentication.TokenAuthentication",
+        "geomapshark.auth.InternalTokenAuthentication",
     ),
     "DEFAULT_PAGINATION_CLASS": "django_wfs3.pagination.CustomPagination",
     "DEFAULT_THROTTLE_CLASSES": [

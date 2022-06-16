@@ -4,7 +4,6 @@ import itertools
 import os
 import pathlib
 import shutil
-import socket
 import urllib
 from collections import defaultdict
 from datetime import datetime
@@ -1774,19 +1773,6 @@ def check_request_ip_is_allowed(request):
             if ip_address in ip_network:
                 return True
 
-    return False
-
-
-def check_request_comes_from_internal_qgisserver(request):
-    """
-    Check that the request is coming from inside the docker composition AND that it is an allowed ip
-    """
-    # TODO: deduplicate with services_authentication.check_request_comes_from_internal_qgisserver
-    if (
-        check_request_ip_is_allowed(request)
-        and socket.gethostbyname("qgis") == request.META["REMOTE_ADDR"]
-    ):
-        return True
     return False
 
 
