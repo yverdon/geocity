@@ -999,6 +999,9 @@ class Command(BaseCommand):
         )
 
     def create_reports(self):
+        # TODO: we shouldn't need this ! We need a way to forward the site for internal calls
+        Site.objects.create(domain="web", name="web (internal calls)")
+
         # Create report setup
         layout = ReportLayout(
             name="demo_layout",
