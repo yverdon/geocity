@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("reports", "0001_initial"),
-        ("permits", "0072_filter_documenttype_for_integrator"),
+        ("permits", "0073_filter_documenttype_for_integrator"),
     ]
 
     operations = [

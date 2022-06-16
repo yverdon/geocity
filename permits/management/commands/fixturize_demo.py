@@ -24,8 +24,6 @@ from reports.models import (
     SectionParagraph,
 )
 
-from .add_default_print_config import add_default_print_config
-
 
 def strip_accents(text):
     """
@@ -122,9 +120,8 @@ class Command(BaseCommand):
             self.stdout.write("Configurating template customizations...")
             self.setup_homepage()
             self.stdout.write("Creating default print templates...")
-            add_default_print_config()
-            self.stdout.write("Creating reports...")
-            self.create_reports()
+            # self.stdout.write("Creating reports...")
+            # self.create_reports()
             self.stdout.write("Fixturize succeed!")
 
     def setup_site(self):
