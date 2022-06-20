@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import GeometryCollection, MultiPolygon, Point, Polygon
+from django.contrib.sites.models import Site
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import Q
 from django.utils.text import Truncator
@@ -97,17 +98,11 @@ class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
     @factory.post_generation
     def sites(self, create, extracted, **kwargs):
         if not create or not extracted:
-            models.Site.objects.get_or_create(
-                domain="yverdon.localhost", name="yverdon"
-            )
-            models.Site.objects.get_or_create(
-                domain="grandson.localhost", name="grandson"
-            )
-            models.Site.objects.get_or_create(domain="vevey.localhost", name="vevey")
-            models.Site.objects.get_or_create(
-                domain="lausanne.localhost", name="lausanne"
-            )
-            self.sites.set(models.Site.objects.all())
+            Site.objects.get_or_create(domain="yverdon.localhost", name="yverdon")
+            Site.objects.get_or_create(domain="grandson.localhost", name="grandson")
+            Site.objects.get_or_create(domain="vevey.localhost", name="vevey")
+            Site.objects.get_or_create(domain="lausanne.localhost", name="lausanne")
+            self.sites.set(Site.objects.all())
             return
 
         self.sites.set(extracted)
