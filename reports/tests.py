@@ -6,7 +6,7 @@ from permits.models import PermitRequest
 from permits.tests import factories
 from reports.models import Report, ReportLayout
 
-from .models import Report, ReportLayout
+from .models import Report, ReportLayout, SectionMap, SectionParagraph
 
 
 # TODO: expand this
@@ -45,7 +45,23 @@ class ReportsIntegrationTests(TestCase):
             layout=layout,
             type=doc_type,
         )
-        # TODO: include some map blocks here to ensure it works
+        SectionParagraph.objects.create(
+            title="title",
+            content="content",
+            report=report,
+        )
+        section_map = SectionMap.objects.create(
+            qgis_project_file="invalid",
+            qgis_print_template_name="a4",
+            report=report,
+        )
+        qgis_template_project_path = os.path.join(
+            os.path.dirname(__file__), "static", "reports", "report-template.qgs"
+        )
+        qgis_template_project = open(qgis_template_project_path, "rb")
+        section_map.qgis_project_file.save(
+            "report-template.qgs", File(qgis_template_project), save=True
+        )
 
         response = self.client.get(
             reverse(
