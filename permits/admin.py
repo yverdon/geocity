@@ -1473,7 +1473,6 @@ class SiteAdmin(IntegratorFilterMixin, SiteAdmin):
 
 admin.site.unregister(Site)
 admin.site.register(models.Site, SiteAdmin)
-
 admin.site.register(models.PermitActorType, PermitActorTypeAdmin)
 admin.site.register(models.WorksType, WorksTypeAdmin)
 admin.site.register(models.WorksObjectType, WorksObjectTypeAdmin)
