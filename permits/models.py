@@ -1803,3 +1803,17 @@ class TemplateCustomization(models.Model):
 
     def __str__(self):
         return self.templatename
+
+
+class Site(Site):
+    integrator = models.ForeignKey(
+        Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs"),
+    )
+
+    class Meta:
+
+        verbose_name = _("1.0 Configuration du sous-domaine")
+        verbose_name_plural = _("1.0 Configuration des sous-domaines")
