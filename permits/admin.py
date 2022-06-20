@@ -280,14 +280,16 @@ class UserAdmin(BaseUserAdmin):
             if request.user.is_superuser:
                 kwargs["queryset"] = Group.objects.all()
             else:
-                kwargs["queryset"] = (
-                    Group.objects.filter(
-                        permitdepartment__integrator=request.user.groups.get(
-                            permitdepartment__is_integrator_admin=True
-                        ).pk,
-                    )
-                    | integrator_group_for_user_being_updated
+                kwargs["queryset"] = Group.objects.filter(
+                    permitdepartment__integrator=request.user.groups.get(
+                        permitdepartment__is_integrator_admin=True
+                    ).pk,
                 )
+
+                if integrator_group_for_user_being_updated:
+                    kwargs["queryset"] = (
+                        kwargs["queryset"] | integrator_group_for_user_being_updated
+                    ).distinct()
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
