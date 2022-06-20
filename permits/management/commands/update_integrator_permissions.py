@@ -9,7 +9,7 @@ class Command(BaseCommand):
 
     help = gettext(
         "Update the permissions for Groups that have is_integrator_admin = True set in the admin."
-        "This command is usefule when new models are added to INTEGRATOR_PERMITS_MODELS_PERMISSIONS in admin.py"
+        "This command is useful when new models are added to INTEGRATOR_PERMITS_MODELS_PERMISSIONS in admin.py"
     )
 
     def handle(self, *args, **options):
@@ -35,6 +35,6 @@ class Command(BaseCommand):
                 integrator_group.permissions.set(
                     permits_permissions.union(other_permissions)
                 )
-            self.stdout.write("Update of intergrator permissions sucessful.")
+            self.stdout.write("Update of integrator permissions sucessful.")
         except CommandError:
-            self.stdout.write("ERROR: Error while updating intergrator permissions!")
+            self.stdout.write("ERROR: Error while updating integrator permissions!")
