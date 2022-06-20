@@ -29,7 +29,7 @@ def run_docker_container(image, commands, file_input: Tuple[str, IO], file_outpu
 
     # Run the container
     container.start()
-    r = container.wait(timeout=30)
+    r = container.wait(timeout=60)
 
     logs = container.logs().decode("utf-8")
     print(logs)
