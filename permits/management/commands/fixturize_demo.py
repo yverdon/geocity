@@ -98,7 +98,7 @@ class Command(BaseCommand):
         self.stdout.write("Resetting database...")
         reset_db()
         with transaction.atomic():
-            self.stdout.write("Setup base Site object...")
+            self.stdout.write("Setup Site objects...")
             self.setup_site()
             self.stdout.write("Creating users...")
             self.create_users()
@@ -114,6 +114,8 @@ class Command(BaseCommand):
             self.setup_homepage()
             self.stdout.write("Creating default print templates...")
             add_default_print_config()
+            self.stdout.write("Setting integrator for selected confgurations...")
+            self.setup_integrator()
             self.stdout.write("Fixturize succeed!")
 
     def setup_site(self):
@@ -122,11 +124,21 @@ class Command(BaseCommand):
         site.name = "localhost"
         site.domain = "localhost"
         site.save()
-        # New site to demonstrate administrative entity filtering by subdomain filter
-        Site.objects.create(domain="yverdon.localhost", name="yverdon")
-        Site.objects.create(domain="grandson.localhost", name="grandson")
-        Site.objects.create(domain="vevey.localhost", name="vevey")
-        Site.objects.create(domain="lausanne.localhost", name="lausanne")
+        models.Site.objects.create(domain="yverdon.localhost", name="yverdon")
+        models.Site.objects.create(domain="grandson.localhost", name="grandson")
+        models.Site.objects.create(domain="vevey.localhost", name="vevey")
+        models.Site.objects.create(domain="lausanne.localhost", name="lausanne")
+
+    def setup_integrator(self):
+        integrator = Group.objects.get(name="integrator")
+        models.Site.objects.filter(name="yverdon").update(integrator=integrator)
+        models.PermitAdministrativeEntity.objects.update(integrator=integrator)
+        models.WorksType.objects.update(integrator=integrator)
+        models.WorksObject.objects.update(integrator=integrator)
+        models.WorksObjectType.objects.update(integrator=integrator)
+        models.PermitActorType.objects.update(integrator=integrator)
+        models.ComplementaryDocumentType.objects.update(integrator=integrator)
+        models.PermitRequestAmendProperty.objects.update(integrator=integrator)
 
     def create_users(self):
 
