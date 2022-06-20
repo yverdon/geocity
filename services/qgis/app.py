@@ -2,6 +2,7 @@ import argparse
 import os
 import tempfile
 
+import requests
 from qgis.core import QgsApplication, QgsAuthMethodConfig, QgsLayoutExporter, QgsProject
 
 
@@ -19,6 +20,7 @@ def export(args):
 
         # write the project to a file
         contents = open(project_path, "rb").read()
+        # TODO: replace remote URL by web_root
         contents = contents.replace(b"http://localhost:9095", b"http://web:9000")
         contents = contents.replace(b"http://127.0.0.1:9095", b"http://web:9000")
         input_path = os.path.join(tmpdirname, "project.qgs")
@@ -72,10 +74,19 @@ def export(args):
 
         # debug
         layer = atlas.coverageLayer()
-        print(f"coverage layer: {layer.dataProvider().uri()}")
-        print(f"coverage feature count: {layer.featureCount()}")
-        print(f"coverage is valid: {layer.isValid()}")
-        print(f"coverage error: {layer.dataProvider().error().message()}")
+        if not layer.isValid():
+            print("The layer is not valid")
+            # print debug information
+            print(f"coverage layer: {layer.dataProvider().uri()}")
+            print(f"coverage feature count: {layer.featureCount()}")
+            print(f"coverage is valid: {layer.isValid()}")
+            print(f"coverage error: {layer.dataProvider().error().message()}")
+            # run a basic request to get better error reporting than QGIS
+            r = requests.get(
+                f"http://web:9000/wfs3/collections/permits/items/{permit_request_id}",
+                headers={"Authorization": f"Token {token}"},
+            )
+            r.raise_for_status()
 
         # export
         settings = QgsLayoutExporter.ImageExportSettings()
