@@ -50,7 +50,7 @@ class PermitRequestExpirationReminder(CronJobBase):
                         "permit_request": permit_request,
                         "absolute_uri_func": PermitRequest.get_absolute_url,
                     }
-                    send_email_notification(data)
+                    send_email_notification(data, request)
 
         logger.info("The permit expiration reminder Cronjob finished successfully")
 
@@ -105,7 +105,8 @@ class PermitRequestInquiryClosing(CronJobBase):
                 "absolute_uri_func": inquiry.permit_request.get_absolute_url,
                 "template": "permit_request_inquiry_closing.txt",
             }
-            send_email_notification(data)
+            # TODO: pass a request object
+            send_email_notification(data, None)
 
         logger.info("The permit inquiry closing Cronjob finished")
 

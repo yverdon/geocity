@@ -1125,7 +1125,7 @@ def submit_permit_request(permit_request, request):
             "permit_request": permit_request,
             "absolute_uri_func": request.build_absolute_uri,
         }
-        send_email_notification(data)
+        send_email_notification(data, request)
 
     else:
         # Here we create a new Permit Request, therefore if it contains one or more
@@ -1164,7 +1164,7 @@ def submit_permit_request(permit_request, request):
             "permit_request": permit_request,
             "absolute_uri_func": request.build_absolute_uri,
         }
-        send_email_notification(data)
+        send_email_notification(data, request)
 
         if permit_request.author.notify_per_email:
             data["subject"] = "{} ({})".format(
@@ -1172,7 +1172,7 @@ def submit_permit_request(permit_request, request):
             )
             data["users_to_notify"] = [permit_request.author.user.email]
             data["template"] = "permit_request_acknowledgment.txt"
-            send_email_notification(data)
+            send_email_notification(data, request)
 
     permit_request.status = models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
     if GeoTimeInfo.GEOMETRY in get_geotime_required_info(permit_request):
@@ -1184,7 +1184,9 @@ def submit_permit_request(permit_request, request):
 
 
 @transaction.atomic
-def request_permit_request_validation(permit_request, departments, absolute_uri_func):
+def request_permit_request_validation(
+    permit_request, departments, absolute_uri_func, request
+):
     permit_request.status = models.PermitRequest.STATUS_AWAITING_VALIDATION
     permit_request.save()
 
@@ -1214,7 +1216,7 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
         "permit_request": permit_request,
         "absolute_uri_func": absolute_uri_func,
     }
-    send_email_notification(data)
+    send_email_notification(data, request)
 
 
 def send_validation_reminder(permit_request, absolute_uri_func):
@@ -1252,6 +1254,7 @@ def send_validation_reminder(permit_request, absolute_uri_func):
 
 
 def _parse_email_content(template, permit_request, absolute_uri_func):
+
     return render_to_string(
         f"permits/emails/{template}",
         {
@@ -1268,7 +1271,7 @@ def _parse_email_content(template, permit_request, absolute_uri_func):
     )
 
 
-def send_email_notification(data):
+def send_email_notification(data, request=None):
     from_email_name = (
         f'{data["permit_request"].administrative_entity.expeditor_name} '
         if data["permit_request"].administrative_entity.expeditor_name
@@ -1279,18 +1282,23 @@ def send_email_notification(data):
         if data["permit_request"].administrative_entity.expeditor_email
         else settings.DEFAULT_FROM_EMAIL
     )
+
+    url = reverse(
+        "permits:permit_request_detail",
+        kwargs={"permit_request_id": data["permit_request"].pk},
+    )
+
+    domain = get_current_site(request).domain
+
+    permit_request_url = f"https://{domain}{url}"
+
     send_email(
         template=data["template"],
         sender=sender,
         receivers=data["users_to_notify"],
         subject=data["subject"],
         context={
-            "permit_request_url": data["permit_request"].get_absolute_url(
-                reverse(
-                    "permits:permit_request_detail",
-                    kwargs={"permit_request_id": data["permit_request"].pk},
-                )
-            ),
+            "permit_request_url": permit_request_url,
             "administrative_entity": data["permit_request"].administrative_entity,
             "name": data["permit_request"].author.user.get_full_name(),
             "permit_request": data["permit_request"],
