@@ -1432,13 +1432,6 @@ def permit_requests_has_paid_wot(permit_request):
     ]
 
 
-def permit_requests_can_have_multiple_ranges(permit_request):
-    return True in [
-        permit.can_have_multiple_ranges
-        for permit in permit_request.works_object_types.all()
-    ]
-
-
 def get_contacts_summary(permit_request):
 
     actor_types = dict(models.ACTOR_TYPE_CHOICES)
