@@ -13,8 +13,8 @@ services:
         volumes:
             # Mount code for live reload
             - .:/code
-            # Local mount to debug QGIS projects
             - ./private_documents:/private_documents
+            - ${ARCHIVE_DIR}:/archive
         depends_on:
             - "postgres"
         ports:
