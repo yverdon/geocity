@@ -44,7 +44,6 @@ INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [
     "permitauthor",
     "qgisproject",
     "complementarydocumenttype",
-    "site",
 ]
 OTHER_PERMISSIONS_CODENAMES = [
     "view_user",
