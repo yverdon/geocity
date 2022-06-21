@@ -15,6 +15,7 @@ import PIL
 from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
+from django.contrib.sites.models import Site
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import (
     ObjectDoesNotExist,
@@ -1219,7 +1220,7 @@ def request_permit_request_validation(
     send_email_notification(data, request)
 
 
-def send_validation_reminder(permit_request, absolute_uri_func):
+def send_validation_reminder(permit_request, request, absolute_uri_func):
     """
     Send a reminder to departments that have not yet processed the given `permit_request` and return the list of pending
     validations.
@@ -1249,7 +1250,7 @@ def send_validation_reminder(permit_request, absolute_uri_func):
         "permit_request": permit_request,
         "absolute_uri_func": absolute_uri_func,
     }
-    send_email_notification(data)
+    send_email_notification(data, request)
     return pending_validations
 
 
@@ -1287,8 +1288,14 @@ def send_email_notification(data, request=None):
         "permits:permit_request_detail",
         kwargs={"permit_request_id": data["permit_request"].pk},
     )
-
-    domain = get_current_site(request).domain
+    print(Site.objects.first().domain)
+    if request:
+        domain = get_current_site(request).domain
+    else:
+        # PermitRequest are not associated with a specific SITE object
+        # Administrative entitees can be associated with many SITE objects
+        # The first SITE object is considered to be the default SITE
+        domain = Site.objects.first().domain
 
     permit_request_url = f"https://{domain}{url}"
 

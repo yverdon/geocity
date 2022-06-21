@@ -1501,7 +1501,9 @@ class PermitRequestValidationPokeForm(forms.Form):
 
     def save(self):
         return services.send_validation_reminder(
-            self.permit_request, absolute_uri_func=self.request.build_absolute_uri
+            self.permit_request,
+            self.request,
+            absolute_uri_func=self.request.build_absolute_uri,
         )
 
 

@@ -38,7 +38,19 @@ DEV_DEPENDENCIES=false
 
 And review all other variables in order to fine tune your instance
 
----
+
+### Site (subdomain) setting
+
+:warning A minimum of one SITE object is required :warning
+
+In order to use subdomains, you'll need a wildcard certificate and to list the domain in
+
+```ini
+ALLOWED_HOSTS
+```
+
+Please [read the Django doc](https://docs.djangoproject.com/en/4.0/ref/contrib/sites/)
+
 ## Developpment tools
 
 

@@ -512,23 +512,21 @@ class PermitRequestDetailView(View):
 
     def handle_form_submission(self, form, action):
         if action == models.ACTION_AMEND:
-            return self.handle_amend_form_submission(form, self.request)
+            return self.handle_amend_form_submission(form)
         elif action == models.ACTION_REQUEST_VALIDATION:
-            return self.handle_request_validation_form_submission(form, self.request)
+            return self.handle_request_validation_form_submission(form)
         elif action == models.ACTION_VALIDATE:
-            return self.handle_validation_form_submission(form, self.request)
+            return self.handle_validation_form_submission(form)
         elif action == models.ACTION_POKE:
             return self.handle_poke(form)
         elif action == models.ACTION_PROLONG:
-            return self.handle_prolongation_form_submission(form, self.request)
+            return self.handle_prolongation_form_submission(form)
         elif action == models.ACTION_COMPLEMENTARY_DOCUMENTS:
-            return self.handle_complementary_documents_form_submission(
-                form, self.request
-            )
+            return self.handle_complementary_documents_form_submission(form)
         elif action == models.ACTION_REQUEST_INQUIRY:
-            return self.handle_request_inquiry_form_submission(form, self.request)
+            return self.handle_request_inquiry_form_submission(form)
 
-    def handle_amend_form_submission(self, form, request):
+    def handle_amend_form_submission(self, form):
         initial_status = (
             models.PermitRequest.objects.filter(id=form.instance.id).first().status
         )
@@ -583,7 +581,7 @@ class PermitRequestDetailView(View):
                     "permit_request": permit_request,
                     "absolute_uri_func": self.request.build_absolute_uri,
                 }
-                services.send_email_notification(data, request)
+                services.send_email_notification(data, self.request)
 
         if "save_continue" in self.request.POST:
 
@@ -594,12 +592,12 @@ class PermitRequestDetailView(View):
         else:
             return redirect("permits:permit_requests_list")
 
-    def handle_request_validation_form_submission(self, form, request):
+    def handle_request_validation_form_submission(self, form):
         services.request_permit_request_validation(
             self.permit_request,
             form.cleaned_data["departments"],
             self.request.build_absolute_uri,
-            request,
+            self.request,
         )
         messages.success(
             self.request,
@@ -608,7 +606,7 @@ class PermitRequestDetailView(View):
         )
         return redirect("permits:permit_requests_list")
 
-    def handle_validation_form_submission(self, form, request):
+    def handle_validation_form_submission(self, form):
         validation_object = models.PermitRequestValidation.objects.filter(
             permit_request_id=self.permit_request.id,
             validated_by_id=self.request.user.id,
@@ -667,7 +665,7 @@ class PermitRequestDetailView(View):
                         "permit_request": self.permit_request,
                         "absolute_uri_func": self.request.build_absolute_uri,
                     }
-                    services.send_email_notification(data, request)
+                    services.send_email_notification(data, self.request)
             else:
                 self.permit_request.status = (
                     models.PermitRequest.STATUS_AWAITING_VALIDATION
