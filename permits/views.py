@@ -155,6 +155,13 @@ def progress_bar_context(request, permit_request, current_step_type):
     return {"steps": steps, "previous_step": previous_step}
 
 
+def permit_requests_can_have_multiple_ranges(permit_request):
+    return True in [
+        permit.can_have_multiple_ranges
+        for permit in permit_request.works_object_types.all()
+    ]
+
+
 @method_decorator(login_required, name="dispatch")
 @method_decorator(permanent_user_required, name="dispatch")
 @method_decorator(check_mandatory_2FA, name="dispatch")
@@ -1674,13 +1681,14 @@ def permit_request_geo_time(request, permit_request_id):
         permit_request=permit_request,
         current_step_type=models.StepType.GEO_TIME,
     )
+    can_have_multiple_ranges = permit_requests_can_have_multiple_ranges(permit_request)
 
     PermitRequestGeoTimeFormSet = modelformset_factory(
         models.PermitRequestGeoTime,
         form=forms.PermitRequestGeoTimeForm,
         extra=0,
         min_num=1,
-        can_delete=True,
+        can_delete=can_have_multiple_ranges,
     )
     formset = PermitRequestGeoTimeFormSet(
         request.POST if request.method == "POST" else None,
@@ -1714,6 +1722,7 @@ def permit_request_geo_time(request, permit_request_id):
         {
             "formset": formset,
             "permit_request": permit_request,
+            "can_have_multiple_ranges": can_have_multiple_ranges,
             "geo_title": title_step["title"],
             "geo_step": title_step["step_name"],
             **steps_context,

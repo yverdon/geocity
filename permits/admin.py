@@ -828,6 +828,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             "Planning et localisation",
             {
                 "fields": (
+                    "can_have_multiple_ranges",
                     "geometry_types",
                     "needs_date",
                     "start_delay",
