@@ -1285,7 +1285,7 @@ def send_email_notification(data):
         receivers=data["users_to_notify"],
         subject=data["subject"],
         context={
-            "permit_request_url": data["permit_request"].get_absolute_url(
+            "permit_request_url": data["absolute_uri_func"](
                 reverse(
                     "permits:permit_request_detail",
                     kwargs={"permit_request_id": data["permit_request"].pk},
