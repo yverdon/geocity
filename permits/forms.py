@@ -973,21 +973,24 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         if self.instance:
-
             available_statuses_for_administrative_entity = list(
                 services.get_status_choices_for_administrative_entity(
                     self.instance.administrative_entity
                 )
             )
-
             # If an amend property in the permit request can always be amended or permit request backoffice fields can always be updated,
             # STATUS_APPROVED is added to the list
-            if self.instance.get_amend_property_list_always_amendable():
+            if (
+                self.instance.get_amend_property_list_always_amendable()
+                or self.instance.can_always_be_updated(user)
+            ):
                 filter1 = [
                     tup
                     for tup in models.PermitRequest.STATUS_CHOICES
                     if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)
                     or models.PermitRequest.STATUS_APPROVED in tup
+                    or models.PermitRequest.STATUS_REJECTED in tup
+                    or models.PermitRequest.STATUS_INQUIRY_IN_PROGRESS in tup
                 ]
             else:
                 filter1 = [
