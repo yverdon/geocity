@@ -973,17 +973,16 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         if self.instance:
+
             available_statuses_for_administrative_entity = list(
                 services.get_status_choices_for_administrative_entity(
                     self.instance.administrative_entity
                 )
             )
+
             # If an amend property in the permit request can always be amended or permit request backoffice fields can always be updated,
             # STATUS_APPROVED is added to the list
-            if (
-                self.instance.get_amend_property_list_always_amendable()
-                or self.instance.can_always_be_updated(user)
-            ):
+            if self.instance.get_amend_property_list_always_amendable():
                 filter1 = [
                     tup
                     for tup in models.PermitRequest.STATUS_CHOICES
@@ -1009,6 +1008,10 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
             if self.instance.status not in models.PermitRequest.EDITABLE_STATUSES:
                 self.fields["status"].disabled = True
                 self.fields["notify_author"].disabled = True
+                if self.instance.can_always_be_updated(user):
+                    self.fields[
+                        "status"
+                    ].choices = available_statuses_for_administrative_entity
 
             if not config.ENABLE_GEOCALENDAR:
                 self.fields["shortname"].widget = forms.HiddenInput()
