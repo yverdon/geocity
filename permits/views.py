@@ -39,8 +39,6 @@ from django_filters.views import FilterView
 from django_tables2.export.views import ExportMixin
 from django_tables2.views import SingleTableMixin
 
-from reports import models as reportmodels
-
 from . import fields, filters, forms, models, services, tables
 from .decorators import check_mandatory_2FA, permanent_user_required
 from .exceptions import BadPermitRequestStatus, NonProlongablePermitRequest
@@ -265,9 +263,6 @@ class PermitRequestDetailView(View):
                     self.request.user, self.permit_request
                 ),
                 "can_validate_permit_request": can_validate_permit_request,
-                "reports": reportmodels.Report.objects.filter(
-                    work_object_types__in=self.permit_request.works_object_types.all()
-                ).all(),
                 "directives": services.get_permit_request_directives(
                     self.permit_request
                 ),
