@@ -18,6 +18,7 @@ services:
         command: "gunicorn geomapshark.wsgi -b :9000 --error-logfile gunicorn_log.log --workers=2 --threads=4 --worker-class=gthread"
         volumes:
             - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
+            - ${ARCHIVE_DIR}:/archive
             - qgis_projects:/qgis_projects
         ports:
             - "${DJANGO_DOCKER_PORT}:9000"

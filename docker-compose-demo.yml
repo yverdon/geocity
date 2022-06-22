@@ -13,8 +13,9 @@ services:
         volumes:
             # Mount code for live reload
             - .:/code
-            # Local mount to debug QGIS projects
             - ./private_documents:/private_documents
+            # For dev, set the temp folder in the main code directory, for convenience
+            - ./archive:/archive
         depends_on:
             - "postgres"
         ports:
