@@ -358,6 +358,7 @@ class PermitRequestDetailsViewSet(
         else:
             qs = models.PermitRequest.objects.filter(base_filter).filter(
                 Q(is_public=True)
+                | Q(status=models.PermitRequest.STATUS_INQUIRY_IN_PROGRESS)
             )
 
         if request_comes_from_internal_qgisserver:
