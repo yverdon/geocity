@@ -14,7 +14,8 @@ services:
             # Mount code for live reload
             - .:/code
             - ./private_documents:/private_documents
-            - ${ARCHIVE_DIR}:/archive
+            # For dev, set the temp folder in the main code directory, for convenience
+            - ./archive:/archive
         depends_on:
             - "postgres"
         ports:
