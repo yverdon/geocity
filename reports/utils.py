@@ -41,6 +41,7 @@ def run_docker_container(image, commands, file_input: Tuple[str, IO], file_outpu
             # Retrieve the output
             return _get_file(container, file_output)
     finally:
+        # TODO: not sure this always runs, seems sometimes there are containers left
         container.remove()
 
     raise DockerRunFailedError(exit_code, logs)
