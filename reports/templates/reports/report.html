@@ -18,8 +18,10 @@
   </head>
 
   <body>
-    {% for section in report.sections.all %}
-      {% render_section section permit_request=permit_request token=token %}
-    {% endfor %}
+    <div class="flex_container">
+      {% for section in report.sections.all %}
+        {% render_section section permit_request=permit_request token=token %}
+      {% endfor %}
+    </div>
   </body>
 </html>

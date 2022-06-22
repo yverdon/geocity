@@ -1,0 +1,25 @@
+{% extends "reports/sections/_section.html" %}
+
+{% block content %}
+    <h2>Planning</h2>
+    {% if data.properties.geotime_aggregated %}
+        <span class="bold">Date de début : </span>{{data.properties.geotime_aggregated.start_date}}<br>
+        <span class="bold">Date de fin : </span>{{data.properties.geotime_aggregated.end_date}}<br>
+        {% if data.properties.geotime_aggregated.comments %}
+            <span class="bold">Commentaire·s : </span><ul>
+                {% for comment in data.properties.geotime_aggregated.comments %}
+                    <li>{{comment}}</li>
+                {% endfor %}
+            </ul><br>
+        {% endif %}
+        {% if data.properties.geotime_aggregated.external_links %}
+            <span class="bold">Lien·s externe·s : </span><ul>
+                {% for link in data.properties.geotime_aggregated.external_links %}
+                    <li><a href="{{link}}">{{link}}</a></li>
+                {% endfor %}
+            </ul><br>
+        {% endif %}
+    {% else %}
+        <p>Aucun planning pour cette demande</p>
+    {% endif %}
+{% endblock %}

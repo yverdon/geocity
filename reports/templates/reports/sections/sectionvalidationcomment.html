@@ -1,0 +1,16 @@
+{% extends "reports/sections/_section.html" %}
+
+{% block content %}
+    <h2>Commentaire·s des services</h2>
+    {% if data.properties.validations %}
+        {% for service, validation in data.properties.validations.items %}
+            <h3>Validation: {{service}}</h3>
+            <span class="bold">Statut : </span>{{validation.validation_status}}<br>
+            <span class="bold">Commentaire (avant) : </span>{{validation.comment_before}}<br>
+            <span class="bold">Commentaire (pendant) : </span>{{validation.comment_during}}<br>
+            <span class="bold">Commentaire (après) : </span>{{validation.comment_after}}<br>
+        {% endfor %}
+    {% else %}
+        <p>Aucune propriété pour cette demande</p>
+    {% endif %}
+{% endblock %}
