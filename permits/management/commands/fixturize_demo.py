@@ -1085,14 +1085,14 @@ class Command(BaseCommand):
     def create_document_types(self, wot):
         document_types = [
             (
-                "{} Parent #1".format(wot.pk),
+                f"Document type A {wot}",
                 wot,
-                ["{} Child #1.{}".format(wot.pk, i) for i in range(1, 4)],
+                [f"Document subtype A.{i} for {wot}" for i in range(1, 2)],
             ),
             (
-                "{} Parent #2".format(wot.pk),
+                f"Document type B {wot}",
                 wot,
-                ["{} Child #2.{}".format(wot.pk, i) for i in range(1, 5)],
+                [f"Document subtype B.{i} for {wot}" for i in range(1, 3)],
             ),
         ]
 
