@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.utils.html import format_html_join
+from django.utils.safestring import mark_safe
 from polymorphic.admin import PolymorphicInlineSupportMixin, StackedPolymorphicInline
 
 from permits import models as permits_models
@@ -41,12 +43,12 @@ class ReportAdmin(
     PolymorphicInlineSupportMixin, IntegratorFilterMixin, admin.ModelAdmin
 ):
     inlines = (SectionInline,)
-    filter_horizontal = ("work_object_types",)
+    filter_horizontal = ("document_types",)
     list_display = [
         "name",
         "layout",
-        "type",
         "integrator",
+        "types_",
     ]
     list_filter = ["name"]
     search_fields = [
@@ -54,12 +56,23 @@ class ReportAdmin(
         "layout",
     ]
 
+    def types_(self, obj):
+        list_content = format_html_join(
+            "",
+            "<li>{}</li>",
+            [[d.name] for d in obj.document_types.all()],
+        )
+        return mark_safe(f"<ul>{list_content}</ul>")
+
     def formfield_for_manytomany(self, db_field, request, **kwargs):
-        if db_field.name == "work_object_types":
+        if db_field.name == "document_types":
+            qs = permits_models.ComplementaryDocumentType.objects.filter(
+                parent__isnull=False
+            )
             if request.user.is_superuser:
-                kwargs["queryset"] = permits_models.WorksObjectType.objects.all()
+                kwargs["queryset"] = qs.all()
             else:
-                kwargs["queryset"] = permits_models.WorksObjectType.objects.filter(
+                kwargs["queryset"] = qs.filter(
                     integrator=request.user.groups.get(
                         permitdepartment__is_integrator_admin=True
                     )

@@ -15,6 +15,10 @@ h2 {
   string-set: heading content();
 }
 
+pre {
+  white-space: pre-wrap;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;

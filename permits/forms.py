@@ -1591,9 +1591,9 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         widget=forms.CheckboxSelectMultiple,
         required=False,
     )
-    report_preset = forms.ModelChoiceField(
-        queryset=None,
-        widget=forms.Select,
+    generate_from_model = forms.ChoiceField(
+        # choices=[], # populated below
+        # widget=forms.Select,
         required=False,
         label=_("Générer à partir du modèle"),
     )
@@ -1601,7 +1601,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
     class Meta:
         model = models.PermitRequestComplementaryDocument
         fields = [
-            "report_preset",
+            "generate_from_model",
             "document",
             "description",
             "status",
@@ -1625,9 +1625,23 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         ).all()
         self.fields["authorised_departments"].label = _("Département autorisé")
 
-        self.fields["report_preset"].queryset = reportmodels.Report.objects.filter(
-            work_object_types__in=permit_request.works_object_types.all()
-        ).distinct()
+        # TODO: prefetch (to optimize reduce requests count)
+        choices = []
+        for wot in self.permit_request.works_object_types.all():
+            parent_doc_types = wot.document_types.all()
+            for parent_doc_type in parent_doc_types:
+                doc_types = parent_doc_type.children.all()
+                for doc_type in doc_types:
+                    for report in doc_type.reports.all():
+                        choices.append(
+                            (
+                                f"{wot.pk}/{report.pk}/{doc_type.pk}",
+                                f"{wot} / {report} / {doc_type}",
+                            )
+                        )
+        self.fields["generate_from_model"].choices = choices
+        print("*" * 80)
+        print(f"{choices=}")
 
         parent_types = models.ComplementaryDocumentType.objects.filter(
             work_object_types__in=permit_request.works_object_types.all()
@@ -1680,6 +1694,8 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super(PermitRequestComplementaryDocumentsForm, self).clean()
 
+        # TODO: validation errors raise here don't appear in the template
+
         if not self.cleaned_data.get(
             "authorised_departments"
         ) and not self.cleaned_data.get("is_public"):
@@ -1689,7 +1705,9 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
                 )
             )
 
-        if self.cleaned_data.get("document") and self.cleaned_data.get("report_preset"):
+        if self.cleaned_data.get("document") and self.cleaned_data.get(
+            "generate_from_model"
+        ):
             raise ValidationError(
                 _(
                     "Vous pouvez soit uploader un fichier, soit générer un document à partir d'un modèle, mais pas les deux."
@@ -1697,7 +1715,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             )
 
         if not self.cleaned_data.get("document") and not self.cleaned_data.get(
-            "report_preset"
+            "generate_from_model"
         ):
             raise ValidationError(
                 _(
@@ -1707,15 +1725,31 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
 
         # If document is null, it must be because we use a preset
         if not cleaned_data.get("document"):
-            report = cleaned_data.get("report_preset")
+            generate_from_model = cleaned_data.get("generate_from_model")
+            try:
+                wot_pk, report_pk, child_doc_type_pk = generate_from_model.split("/")
+            except ValueError:
+                raise ValidationError(
+                    _("Selection invalide pour génération à partir du modèle !")
+                )
+
+            # TODO CRITICAL: ensure user has access to these objects
+            report = reportmodels.Report.objects.get(pk=report_pk)
+            # TODO CRITICAL: ensure user has access to these objects
+            child_doc_type = models.ComplementaryDocumentType.objects.get(
+                pk=child_doc_type_pk
+            )
+            # TODO CRITICAL: ensure user has access to these objects
+            wot = models.WorksObjectType.objects.get(pk=wot_pk)
+
             now = timezone.now()
             name = f"{report.name}_generated_{now:%Y-%m-%d}.pdf"
             data = report.render_pdf(
-                self.permit_request, generated_by=self.user, as_string=False
+                self.permit_request, wot, generated_by=self.user, as_string=False
             )
             cleaned_data["document"] = File(data, name=name)
-            cleaned_data["document_type"] = report.type
-            cleaned_data[f"parent_{report.type.pk}"] = report.type
+            cleaned_data["document_type"] = child_doc_type
+            cleaned_data[f"parent_{child_doc_type.pk}"] = child_doc_type.parent
 
         if not self.cleaned_data.get("document_type"):
             return cleaned_data

@@ -67,12 +67,9 @@ class Report(models.Model):
 
     name = models.CharField(max_length=150)
     layout = models.ForeignKey(ReportLayout, on_delete=models.RESTRICT)
-    type = models.ForeignKey(
-        "permits.ComplementaryDocumentType", on_delete=models.RESTRICT
-    )
-    # reverse relationship is manually defined on permits.WorksObjectType so it shows up on both sides in admin
-    work_object_types = models.ManyToManyField(
-        "permits.WorksObjectType", blank=True, related_name="+"
+    # reverse relationship is manually defined on permits.ComplementaryDocumentType so it shows up on both sides in admin
+    document_types = models.ManyToManyField(
+        "permits.ComplementaryDocumentType", blank=True, related_name="+"
     )
 
     integrator = models.ForeignKey(
@@ -83,7 +80,7 @@ class Report(models.Model):
     )
 
     def render_pdf(
-        self, permit_request, generated_by, as_string=False
+        self, permit_request, work_object_type, generated_by, as_string=False
     ) -> Union[bytes, str]:
         """Renders a PDF by calling the PDF generator service"""
 
@@ -95,6 +92,7 @@ class Report(models.Model):
         context = {
             "report": self,
             "permit_request": permit_request,
+            "work_object_type": work_object_type,
             "token": token,
         }
         html_string = render_to_string("reports/report.html", context)
@@ -149,6 +147,7 @@ class Section(PolymorphicModel):
             **context,
             "section": self,
             "permit_request": context["permit_request"],
+            "work_object_type": context["work_object_type"],
         }
 
     def render(self, report_context):
@@ -219,8 +218,24 @@ class SectionParagraph(Section):
         from permits.serializers import PermitRequestPrintSerializer
 
         env = SandboxedEnvironment()
-        data = PermitRequestPrintSerializer(context["permit_request"]).data
-        rendered_content = env.from_string(self.content).render({"data": data})
+        request_data = PermitRequestPrintSerializer(context["permit_request"]).data
+
+        wot = context["work_object_type"]
+        wot_key = (
+            f"{wot.works_object.name} ({wot.works_type.name})"  # defined by serializer
+        )
+        request_props = request_data["properties"]["request_properties"][wot_key]
+        amend_props = request_data["properties"]["amend_properties"][wot_key]
+
+        inner_context = {
+            "request_data": request_data,
+            "wot_data": {
+                "request_properties": request_props,
+                "amend_properties": amend_props,
+            },
+        }
+        rendered_content = env.from_string(self.content).render(inner_context)
+
         return {
             **super().get_context(context),
             "rendered_content": mark_safe(rendered_content),

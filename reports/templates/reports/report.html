@@ -19,7 +19,7 @@
 
   <body>
     {% for section in report.sections.all %}
-      {% render_section section permit_request=permit_request token=token %}
+      {% render_section section permit_request=permit_request work_object_type=work_object_type token=token %}
     {% endfor %}
   </body>
 </html>

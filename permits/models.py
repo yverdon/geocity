@@ -1119,13 +1119,6 @@ class WorksObjectType(models.Model):
     permanent_publication_enabled = models.BooleanField(
         _("Autoriser la mise en consultation sur une durée indéfinie"), default=False
     )
-    # reverse relationship is manually defined on reports.Report so it shows up on both sides in admin
-    reports = models.ManyToManyField(
-        "reports.Report",
-        blank=True,
-        through="reports.report_work_object_types",
-        related_name="+",
-    )
 
     # All objects
     objects = models.Manager()
@@ -1645,6 +1638,7 @@ class ComplementaryDocumentType(models.Model):
         blank=True,
         on_delete=models.CASCADE,
         verbose_name=_("Type parent"),
+        related_name="children",
     )
     work_object_types = models.ForeignKey(
         WorksObjectType,
@@ -1652,12 +1646,24 @@ class ComplementaryDocumentType(models.Model):
         blank=True,
         on_delete=models.CASCADE,
         verbose_name=_("Objets"),
+        related_name="document_types",
     )
     integrator = models.ForeignKey(
         Group,
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+    )
+
+    # reverse relationship is manually defined on reports.Report so it shows up on both sides in admin
+    # Note: theoretically, this should only be allowed on "child" ComplementaryDocumentType, but this will
+    # be solved by a future refactoring
+    # see https://github.com/yverdon/geocity/issues/526
+    reports = models.ManyToManyField(
+        "reports.Report",
+        blank=True,
+        through="reports.report_document_types",
+        related_name="+",
     )
 
     class Meta:

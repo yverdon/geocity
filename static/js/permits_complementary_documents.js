@@ -88,7 +88,7 @@ function hideChildrenDocumentTypes(parent) {
 }
 
 function setEventOnTemplateSelect(id){
-  let reportInput  = document.getElementById(`id_form-${id}-report_preset`);
+  let reportInput  = document.getElementById(`id_form-${id}-generate_from_model`);
   let docInput = document.getElementById(`id_form-${id}-document`);
   let docTypeInput = document.getElementById(`id_form-${id}-document_type`);
   let previewBtn = document.getElementById(`id_form-${id}-print_preview`);
@@ -106,7 +106,9 @@ function setEventOnTemplateSelect(id){
       docTypeInput.disabled=true;
       previewBtn.disabled=false;
       previewBtn.onclick = (event) => {
-        let url = previewBtn.dataset.linkTpl.replace("999999999", reportInput.value);
+        let [wot_pk, report_pk, doc_type_pk] = reportInput.value.split("/");
+        let url = previewBtn.dataset.linkTpl.replace("888888888", wot_pk)
+                                            .replace("999999999", report_pk);
         window.open(url, "_blank");
         return false;
       };

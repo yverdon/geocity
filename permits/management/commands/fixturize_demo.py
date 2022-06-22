@@ -1024,8 +1024,6 @@ class Command(BaseCommand):
         report = Report(
             name="demo_report",
             layout=layout,
-            # TODO: ensure this is available to the owner of the report
-            type=models.ComplementaryDocumentType.objects.first(),
         )
         report.save()
 
@@ -1041,12 +1039,28 @@ class Command(BaseCommand):
             order=2,
             report=report,
             title="Demand summary",
-            content="<p>This demand contains the following objects.</p><ul>{% for wot in data.properties.permit_request_works_object_types_names.values() %}<li>{{wot}}</li>{% endfor %}</ul>",
+            content="<p>This demand contains the following objects.</p><ul>{% for wot in request_data.properties.permit_request_works_object_types_names.values() %}<li>{{wot}}</li>{% endfor %}</ul>",
         )
         section_paragraph_2.save()
 
-        section_map = SectionMap(
+        section_paragraph_3 = SectionParagraph(
             order=3,
+            report=report,
+            title="Raw request data",
+            content="<pre>{{request_data}}</pre>",
+        )
+        section_paragraph_3.save()
+
+        section_paragraph_4 = SectionParagraph(
+            order=4,
+            report=report,
+            title="Raw wot data",
+            content="<pre>{{wot_data}}</pre>",
+        )
+        section_paragraph_4.save()
+
+        section_map = SectionMap(
+            order=5,
             report=report,
             qgis_project_file="invalid",  # set few lines below
             qgis_print_template_name="a4",
@@ -1063,10 +1077,11 @@ class Command(BaseCommand):
         )
         section_author.save()
 
-        # report.work_object_types.add(models.WorksObjectType.objects.all())
-        # Assign to all work objects types
-        for wot in models.WorksObjectType.objects.all():
-            wot.reports.set([report])
+        # Assign the report to each document type (just once per wot)
+        for dt in models.ComplementaryDocumentType.objects.filter(
+            parent__isnull=False
+        ).distinct("parent__work_object_types"):
+            dt.reports.set([report])
 
     def setup_homepage(self):
         config.APPLICATION_TITLE = "Démo Geocity"

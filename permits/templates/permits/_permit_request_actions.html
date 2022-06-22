@@ -241,8 +241,8 @@
                   {% for form in formsets.complementary_documents %}
                     <div class="complementary-document">
                         {% for field in form %}
-                            {% if field.name == "document" or field.name == "report_preset"%}
-                            {% if field.name == "report_preset" %}
+                            {% if field.name == "document" or field.name == "generate_from_model"%}
+                            {% if field.name == "generate_from_model" %}
                                 <div class="form-group row">
                             {% endif %}
 
@@ -251,11 +251,11 @@
                                     {% bootstrap_field field layout='vertical'%}
                                 </div>
                                 {% endif %}
-                                {% if field.name == "report_preset" %}
+                                {% if field.name == "generate_from_model" %}
                                 <div class="col-sm-5">
                                     {% bootstrap_field field layout='vertical' %}
                                     <button id="id_form-{{ forloop.counter0 }}-print_preview"
-                                            data-link-tpl="{% url 'reports:permit_request_report' permit_request.pk "999999999" %}"
+                                            data-link-tpl="{% url 'reports:permit_request_report' permit_request.pk "888888888" "999999999" %}"
                                             class="btn btn-primary"
                                             name="preview" disabled>
                                       {% trans "Prévisualiser" %}
