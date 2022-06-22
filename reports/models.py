@@ -88,8 +88,6 @@ class Report(models.Model):
         """Renders a PDF by calling the PDF generator service"""
 
         # Generate a token
-        # TODO CRITICAL: add expiration to token and/or ensure it gets deleted
-        # (fix by using better token implementation than DRF)
         authtoken, token = AuthToken.objects.create(
             generated_by, expiry=timedelta(minutes=5)
         )
