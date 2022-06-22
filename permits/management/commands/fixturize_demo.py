@@ -1000,6 +1000,7 @@ class Command(BaseCommand):
 
     def create_reports(self):
         # TODO: we shouldn't need this ! We need a way to forward the site for internal calls
+        # see https://github.com/yverdon/geocity/issues/525
         Site.objects.create(domain="web", name="web (internal calls)")
 
         # Create report setup
