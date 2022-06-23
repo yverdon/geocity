@@ -80,6 +80,8 @@ class Report(models.Model):
         verbose_name=_("Groupe des administrateurs"),
     )
 
+    # TODO: instead of taking PermitRequest and WorksObjectType arguments, we should take
+    # in WorksObjectTypeChoice, which already joins both, so they are consistent.
     def render_pdf(
         self, permit_request, work_object_type, generated_by, as_string=False
     ) -> Union[bytes, str]:
