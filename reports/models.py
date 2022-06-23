@@ -17,6 +17,7 @@ from knox.models import AuthToken
 from polymorphic.models import PolymorphicModel
 
 from permits.fields import AdministrativeEntityFileField
+from permits.serializers import PermitRequestPrintSerializer
 
 from .utils import DockerRunFailedError, run_docker_container
 
@@ -143,11 +144,14 @@ class Section(PolymorphicModel):
         return f"reports/sections/{class_name}.html"
 
     def get_context(self, context):
+        data = PermitRequestPrintSerializer(context["permit_request"]).data
         return {
             **context,
             "section": self,
             "permit_request": context["permit_request"],
             "work_object_type": context["work_object_type"],
+            # TODO: move implemenetion from SectionParagraph to here
+            "data": data,
         }
 
     def render(self, report_context):
@@ -215,8 +219,6 @@ class SectionParagraph(Section):
     )
 
     def get_context(self, context):
-        from permits.serializers import PermitRequestPrintSerializer
-
         env = SandboxedEnvironment()
         request_data = PermitRequestPrintSerializer(context["permit_request"]).data
 
@@ -242,5 +244,37 @@ class SectionParagraph(Section):
         }
 
 
+class SectionContact(Section):
+    pass
+
+
 class SectionAuthor(Section):
+    pass
+
+
+class SectionDetail(Section):
+    pass
+
+
+class SectionPlanning(Section):
+    pass
+
+
+class SectionFiles(Section):
+    pass
+
+
+class SectionHorizontalRule(Section):
+    pass
+
+
+class SectionValidationComment(Section):
+    pass
+
+
+class SectionAmendPropertyComment(Section):
+    pass
+
+
+class SectionStatus(Section):
     pass

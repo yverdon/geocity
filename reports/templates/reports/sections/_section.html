@@ -1,5 +1,8 @@
+{% comment %} {% if section.css_class == "section-detail" %}
+  <div class="block-page-break" />
+{% endif %} {% endcomment %}
 <div class="section {{section.css_class}}">
-  <h2>{% block title %}{{section|title}}{% endblock title %}</h2>
+  {% comment %} <h2>{% block title %}{{section|title}}{% endblock title %}</h2> {% endcomment %}
   {% block content %}
   {% endblock content %}
 </div>

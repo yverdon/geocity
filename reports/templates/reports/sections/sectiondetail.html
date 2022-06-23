@@ -1,0 +1,19 @@
+{% extends "reports/sections/_section.html" %}
+
+{% block content %}
+    <h2>Propriété·s de la demande</h2>
+    {% if data.properties.request_properties %}
+        <div class="flex_container">
+            <div class="flex_item-100">
+                {% for wot, props in data.properties.request_properties.items %}
+                    <h3>{{wot}}</h3>
+                    {% for key, prop in props.items %}
+                        <span class="bold">{{key}} : </span>{{prop}}<br>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <p>Aucune propriété pour cette demande</p>
+    {% endif %}
+{% endblock %}
