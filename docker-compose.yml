@@ -16,6 +16,8 @@ services:
         volumes:
             - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
             - ${ARCHIVE_DIR}:/archive
+            # to allow to spawn new QGIS containers
+            - /var/run/docker.sock:/var/run/docker.sock
         ports:
             - "${DJANGO_DOCKER_PORT}:9000"
         networks:
