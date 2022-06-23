@@ -5,7 +5,7 @@
   {{ block.super }}
   {% if original.anonymous_user %}
     <li>
-      <a href="{% url "admin:auth_user_change" object_id=original.anonymous_user.id %}">
+      <a href="{% url "admin:auth_user_change" object_id=original.anonymous_user.user_id %}">
         {% translate "Voir le user anonyme" %}
       </a>
     </li>
