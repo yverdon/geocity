@@ -8,7 +8,7 @@
     justify-content: center;
   }
   @top-center {
-    content: "permis n°{{permit_request.id}}";
+    content: "Permis n°{{permit_request.id}}";
   }
 }
 
