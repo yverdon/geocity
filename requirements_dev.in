@@ -8,3 +8,4 @@ Faker
 ipdb
 pip-tools
 babel
+pdf2image
