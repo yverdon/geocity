@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("reports", "0002_create_sections"),
+        ("reports", "0003_create_sections"),
     ]
 
     operations = [

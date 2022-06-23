@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("reports", "0001_initial"),
+        ("reports", "0002_create_default_reports"),
     ]
 
     operations = [
