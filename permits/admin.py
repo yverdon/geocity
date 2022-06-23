@@ -43,7 +43,6 @@ INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [
     "permitworkflowstatus",
     "permitauthor",
     "qgisproject",
-    "complementarydocumenttype",
 ]
 OTHER_PERMISSIONS_CODENAMES = [
     "view_user",
@@ -866,6 +865,15 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             },
         ),
     )
+
+    def get_readonly_fields(self, request, obj=None):
+        if request.user.is_superuser:
+            return []
+        else:
+            return [
+                "document_enabled",
+                "publication_enabled",
+            ]
 
     def sortable_str(self, obj):
         return obj.__str__()
