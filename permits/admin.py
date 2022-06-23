@@ -761,10 +761,6 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 )
             },
         ),
-        (
-            "Impression",
-            {"fields": ("reports",)},
-        ),
     )
 
     def get_readonly_fields(self, request, obj=None):

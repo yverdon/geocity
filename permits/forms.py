@@ -1604,8 +1604,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         required=False,
     )
     generate_from_model = forms.ChoiceField(
-        # choices=[], # populated below
-        # widget=forms.Select,
+        # choices=[], # dynamically populated in __init__
         required=False,
         label=_("Générer à partir du modèle"),
     )
@@ -1622,7 +1621,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             "document_type",
         ]
         widgets = {
-            "description": forms.Textarea(attrs={"rows": 1}),
+            "description": forms.Textarea(attrs={"rows": 2}),
         }
 
     def __init__(self, permit_request, user, *args, **kwargs):
@@ -1643,10 +1642,8 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             subchoices = []
             parent_doc_types = wot.document_types.all()
             for parent_doc_type in parent_doc_types:
-                # choices.append(("", f"---- {parent_doc_type}"))
                 doc_types = parent_doc_type.children.all()
                 for doc_type in doc_types:
-                    # choices.append(("", f"------ {doc_type}"))
                     for report in doc_type.reports.all():
                         subchoices.append(
                             (
@@ -1657,8 +1654,6 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             if subchoices:
                 choices.append((f"{wot}", subchoices))
         self.fields["generate_from_model"].choices = choices
-        print("*" * 80)
-        print(f"{choices=}")
 
         parent_types = models.ComplementaryDocumentType.objects.filter(
             work_object_types__in=permit_request.works_object_types.all()
