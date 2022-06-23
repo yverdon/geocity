@@ -240,37 +240,43 @@
 
                   {% for form in formsets.complementary_documents %}
                     <div class="complementary-document">
-                        {% for field in form %}
-                            {% if field.name == "document" or field.name == "generate_from_model"%}
-                            {% if field.name == "generate_from_model" %}
-                                <div class="form-group row">
-                            {% endif %}
 
-                                {% if field.name == "document" %}
-                                <div class="col-sm-5">
-                                    {% bootstrap_field field layout='vertical'%}
-                                </div>
-                                {% endif %}
-                                {% if field.name == "generate_from_model" %}
-                                <div class="col-sm-5">
-                                    {% bootstrap_field field layout='vertical' %}
-                                    <button id="id_form-{{ forloop.counter0 }}-print_preview"
-                                            data-link-tpl="{% url 'reports:permit_request_report' permit_request.pk "888888888" "999999999" %}"
-                                            class="btn btn-primary"
-                                            name="preview" disabled>
-                                      {% trans "Prévisualiser" %}
-                                    </button>
-                                </div>
-                                <div class="col-sm-2"></div>
-                                {% endif %}
-                            {% if field.name == "document" %}
-                            </div>
-                            <br>
+                      {# Main document fields (either select report or upload) #}
+                      <div class="form-group row">
+                        <div class="col-sm-5">
+                          {% bootstrap_field form.generate_from_model layout='vertical'%}
+                          <button id="id_form-{{ forloop.counter0 }}-print_preview"
+                                  data-link-tpl="{% url 'reports:permit_request_report' permit_request.pk "888888888" "999999999" %}"
+                                  class="btn btn-primary"
+                                  name="preview" disabled>
+                            {% trans "Prévisualiser" %}
+                          </button>
+                        </div>
+                        <div class="col-sm-2">
+                          <div class="vertical-divider">
+                            <div class="center-element">{% translate 'ou' %}</div>
+                          </div>
+                        </div>
+                        <div class="col-sm-5">
+                          {% bootstrap_field form.document layout='vertical'%}
+                          {% bootstrap_field form.document_type layout='vertical'%}
+
+                          {# Parent fields #}
+                          {% for field in form %}
+                            {% if field.name|slice:":7" == "parent_" %}
+                              {% bootstrap_field field layout='vertical'%}
                             {% endif %}
-                            {% else %}
-                                {% bootstrap_field field layout='horizontal'%}
-                            {% endif %}
-                        {% endfor %}
+                          {% endfor %}
+
+                        </div>
+                      </div>
+
+                      {# All other fields #}
+                      {% for field in form %}
+                        {% if field.name != "generate_from_model" and field.name != "document" and field.name != "document_type" and field.name != "document_type" and field.name|slice:":7" != "parent_" %}
+                          {% bootstrap_field field layout='horizontal'%}
+                        {% endif %}
+                      {% endfor %}
                     </div>
                   {% endfor %}
                 </div>

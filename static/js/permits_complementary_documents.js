@@ -91,20 +91,26 @@ function setEventOnTemplateSelect(id){
   let reportInput  = document.getElementById(`id_form-${id}-generate_from_model`);
   let docInput = document.getElementById(`id_form-${id}-document`);
   let docTypeInput = document.getElementById(`id_form-${id}-document_type`);
+  let childDocTypeInputs = document.querySelectorAll(`[id^="id_form-${id}-parent_"]`);
   let previewBtn = document.getElementById(`id_form-${id}-print_preview`);
 
   docInput.disabled=false;
   docTypeInput.disabled=false;
   previewBtn.disabled=true;
+
   reportInput.addEventListener('change', (e) => {
     if (e.target.value == "") {
       docInput.disabled=false;
-      docTypeInput.disabled=false;
       previewBtn.disabled=true;
+      docTypeInput.disabled=false;
+      for(let childDocTypeInput of childDocTypeInputs)
+        childDocTypeInput.disabled=false;
     } else {
       docInput.disabled=true;
-      docTypeInput.disabled=true;
       previewBtn.disabled=false;
+      docTypeInput.disabled=true;
+      for(let childDocTypeInput of childDocTypeInputs)
+        childDocTypeInput.disabled=true;
       previewBtn.onclick = (event) => {
         let [wot_pk, report_pk, doc_type_pk] = reportInput.value.split("/");
         let url = previewBtn.dataset.linkTpl.replace("888888888", wot_pk)
@@ -113,7 +119,15 @@ function setEventOnTemplateSelect(id){
         return false;
       };
     }
-  })
+  });
+
+  docInput.addEventListener('change', (e) => {
+    if (e.target.value == "") {
+      reportInput.disabled=false;
+    } else {
+      reportInput.disabled=true;
+    }
+  });
 }
 
 setEventOnTemplateSelect(0)
