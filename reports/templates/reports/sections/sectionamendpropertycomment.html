@@ -1,15 +1,17 @@
 {% extends "reports/sections/_section.html" %}
 
 {% block content %}
-    <h2>Commentaire·s du secrétariat</h2>
-    {% if data.properties.amend_properties %}
-        {% for wot, commentaires in data.properties.amend_properties.items %}
-            <h3>{{wot}}</h3>
-            {% for key, commentaire in commentaires.items %}
-                <span class="bold">{{key}} : </span>{{commentaire}}<br>
+    <div class="inline_container">
+        <h2>Commentaire·s du secrétariat</h2>
+        {% if data.properties.amend_properties %}
+            {% for wot, commentaires in data.properties.amend_properties.items %}
+                <h3>{{wot}}</h3>
+                {% for key, commentaire in commentaires.items %}
+                    <span class="bold">{{key}} : </span>{{commentaire}}<br>
+                {% endfor %}
             {% endfor %}
-        {% endfor %}
-    {% else %}
-        <p>Aucun contact pour cette demande</p>
-    {% endif %}
+        {% else %}
+            <p>Aucun contact pour cette demande</p>
+        {% endif %}
+    </div>
 {% endblock %}

@@ -834,17 +834,17 @@ class Command(BaseCommand):
             permit_request=permit_request7,
             department=department,
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
-            comment_before=demo_long_text,
-            comment_during=demo_long_text,
-            comment_after=demo_long_text,
+            comment_before=demo_small_text,
+            comment_during=demo_small_text,
+            comment_after=demo_small_text,
         )
         models.PermitRequestValidation.objects.get_or_create(
             permit_request=permit_request7,
             department=models.PermitDepartment.objects.get(group__name="validator-2"),
             validation_status=models.PermitRequestValidation.STATUS_APPROVED,
-            comment_before=demo_long_text,
-            comment_during=demo_long_text,
-            comment_after=demo_long_text,
+            comment_before=demo_small_text,
+            comment_during=demo_small_text,
+            comment_after=demo_small_text,
         )
 
         models.WorksObjectTypeChoice.objects.create(
@@ -889,22 +889,22 @@ class Command(BaseCommand):
         models.PermitRequestAmendPropertyValue.objects.create(
             property=amend_property_1,
             works_object_type_choice=works_object_type_choice_1,
-            value=demo_long_text,
+            value=demo_small_text,
         )
         models.PermitRequestAmendPropertyValue.objects.create(
             property=amend_property_1,
             works_object_type_choice=works_object_type_choice_2,
-            value=demo_long_text,
+            value=demo_small_text,
         )
         models.PermitRequestAmendPropertyValue.objects.create(
             property=amend_property_2,
             works_object_type_choice=works_object_type_choice_1,
-            value=demo_long_text,
+            value=demo_small_text,
         )
         models.PermitRequestAmendPropertyValue.objects.create(
             property=amend_property_2,
             works_object_type_choice=works_object_type_choice_2,
-            value=demo_long_text,
+            value=demo_small_text,
         )
 
         # Set default values for properties
@@ -960,7 +960,7 @@ class Command(BaseCommand):
                     models.WorksObjectPropertyValue.objects.create(
                         property=prop,
                         works_object_type_choice=works_object_type_choice,
-                        value={"val": demo_medium_text},
+                        value={"val": demo_small_text},
                     )
 
     def create_geom_layer_entity(self):
@@ -1160,3 +1160,9 @@ able to do what we like best, every pleasure is to be welcomed and every pain av
 of duty or the obligations of business it will frequently occur that pleasures have to be repudiated and annoyances accepted.
 The wise man therefore always holds in these matters to this principle of selection: he rejects pleasures to secure other greater pleasures,
 or else he endures pains to avoid worse pains"""
+
+demo_small_text = """
+On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by the charms of pleasure
+of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are bound to ensue; and equal blame belongs to
+those who fail in their duty through weakness of will, which is the same as saying through shrinking from toil and pain. These cases
+are perfectly simple and easy to distinguish."""

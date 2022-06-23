@@ -260,3 +260,7 @@ class SectionValidationComment(Section):
 
 class SectionAmendPropertyComment(Section):
     pass
+
+
+class SectionStatus(Section):
+    pass
