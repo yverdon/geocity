@@ -1,8 +1,5 @@
-import urllib.parse
 from datetime import datetime, timedelta
-from unittest import skip
 
-import requests
 from constance import config
 from django.contrib.gis.geos import (
     GeometryCollection,
@@ -388,21 +385,6 @@ class PermitRequestAPITestCase(TestCase):
         for feature in response_json["features"]:
             self.assertEqual(feature["geometry"]["type"], "Polygon")
             self.assertNotEqual(feature["geometry"]["coordinates"], [])
-
-    @skip("obsolete")  # TODO: replace by equivalent test in reports/tests.py
-    def test_qgisserver_is_up_and_atlas_plugin_is_working(self):
-        values = {
-            "SERVICE": "ATLAS",
-            "REQUEST": "GETCAPABILITIES",
-            "MAP": "/io/data/report_template.qgs",
-        }
-
-        qgisserver_url = "http://qgisserver/ogc/?" + urllib.parse.urlencode(values)
-        qgisserver_response = requests.get(
-            qgisserver_url, headers={"Accept": "application/pdf"}, stream=True
-        )
-        self.assertEqual(qgisserver_response.status_code, 200)
-        self.assertEqual(qgisserver_response.json()["status"], "success")
 
     def test_api_is_accessible_with_token_authentication(self):
         # Create token
