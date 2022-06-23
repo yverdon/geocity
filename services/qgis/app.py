@@ -33,14 +33,14 @@ def export(args):
         # prepare auth configuration
         qgs.authManager().setMasterPassword("master", verify=True)
         config = QgsAuthMethodConfig()
-        config.setId("geocdev")
-        config.setName("geocdev")
+        config.setId("geocity")
+        config.setName("geocity")
         config.setMethod("APIHeader")
         config.setConfigMap({"Authorization": f"Token {token}"})
         qgs.authManager().storeAuthenticationConfig(config)
 
         # load the conf once (seems to be required otherwise it's not available)
-        qgs.authManager().loadAuthenticationConfig("geocdev", QgsAuthMethodConfig())
+        qgs.authManager().loadAuthenticationConfig("geocity", QgsAuthMethodConfig())
 
         # open the project
         project = QgsProject.instance()

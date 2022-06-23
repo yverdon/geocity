@@ -21,22 +21,22 @@
     <customproperties>
       <Option></Option>
     </customproperties>
-    <layer-tree-layer checked="Qt::Checked" expanded="1" id="permits_line_f5de345b_6a98_428e_b2a4_908c0652f378" legend_exp="" legend_split_behavior="0" name="permits_line" patch_size="-1,-1" providerKey="OAPIF" source="authcfg=geocdev pagingEnabled='true' preferCoordinatesForWfsT11='false' srsname='EPSG:2056' typename='permits_line' url='http://127.0.0.1:9095/wfs3/' version='auto'">
+    <layer-tree-layer checked="Qt::Checked" expanded="1" id="permits_line_f5de345b_6a98_428e_b2a4_908c0652f378" legend_exp="" legend_split_behavior="0" name="permits_line" patch_size="-1,-1" providerKey="OAPIF" source="authcfg=geocity pagingEnabled='true' preferCoordinatesForWfsT11='false' srsname='EPSG:2056' typename='permits_line' url='http://127.0.0.1:9095/wfs3/' version='auto'">
       <customproperties>
         <Option></Option>
       </customproperties>
     </layer-tree-layer>
-    <layer-tree-layer checked="Qt::Checked" expanded="1" id="permits_point_b6ab2d83_82d0_4bfc_bc82_f9a6a84737e8" legend_exp="" legend_split_behavior="0" name="permits_point" patch_size="-1,-1" providerKey="OAPIF" source="authcfg=geocdev pagingEnabled='true' preferCoordinatesForWfsT11='false' srsname='EPSG:2056' typename='permits_point' url='http://127.0.0.1:9095/wfs3/' version='auto'">
+    <layer-tree-layer checked="Qt::Checked" expanded="1" id="permits_point_b6ab2d83_82d0_4bfc_bc82_f9a6a84737e8" legend_exp="" legend_split_behavior="0" name="permits_point" patch_size="-1,-1" providerKey="OAPIF" source="authcfg=geocity pagingEnabled='true' preferCoordinatesForWfsT11='false' srsname='EPSG:2056' typename='permits_point' url='http://127.0.0.1:9095/wfs3/' version='auto'">
       <customproperties>
         <Option></Option>
       </customproperties>
     </layer-tree-layer>
-    <layer-tree-layer checked="Qt::Checked" expanded="1" id="permits_poly_87b4e3a5_29df_42c2_8d9b_60acfbe980c0" legend_exp="" legend_split_behavior="0" name="permits_poly" patch_size="-1,-1" providerKey="OAPIF" source="authcfg=geocdev pagingEnabled='true' preferCoordinatesForWfsT11='false' srsname='EPSG:2056' typename='permits_poly' url='http://127.0.0.1:9095/wfs3/' version='auto'">
+    <layer-tree-layer checked="Qt::Checked" expanded="1" id="permits_poly_87b4e3a5_29df_42c2_8d9b_60acfbe980c0" legend_exp="" legend_split_behavior="0" name="permits_poly" patch_size="-1,-1" providerKey="OAPIF" source="authcfg=geocity pagingEnabled='true' preferCoordinatesForWfsT11='false' srsname='EPSG:2056' typename='permits_poly' url='http://127.0.0.1:9095/wfs3/' version='auto'">
       <customproperties>
         <Option></Option>
       </customproperties>
     </layer-tree-layer>
-    <layer-tree-layer checked="Qt::Checked" expanded="1" id="permits_5000aa2e_4ed7_4d98_b2f3_4a4258201ad5" legend_exp="" legend_split_behavior="0" name="permits" patch_size="-1,-1" providerKey="OAPIF" source="authcfg=geocdev pagingEnabled='true' preferCoordinatesForWfsT11='false' srsname='EPSG:2056' typename='permits' url='http://127.0.0.1:9095/wfs3/' version='auto'">
+    <layer-tree-layer checked="Qt::Checked" expanded="1" id="permits_5000aa2e_4ed7_4d98_b2f3_4a4258201ad5" legend_exp="" legend_split_behavior="0" name="permits" patch_size="-1,-1" providerKey="OAPIF" source="authcfg=geocity pagingEnabled='true' preferCoordinatesForWfsT11='false' srsname='EPSG:2056' typename='permits' url='http://127.0.0.1:9095/wfs3/' version='auto'">
       <customproperties>
         <Option></Option>
       </customproperties>
@@ -699,7 +699,7 @@
         <ymax>46.77865075210306856</ymax>
       </wgs84extent>
       <id>permits_5000aa2e_4ed7_4d98_b2f3_4a4258201ad5</id>
-      <datasource>authcfg=geocdev pagingEnabled='true' preferCoordinatesForWfsT11='false' srsname='EPSG:2056' typename='permits' url='http://127.0.0.1:9095/wfs3/' version='auto'</datasource>
+      <datasource>authcfg=geocity pagingEnabled='true' preferCoordinatesForWfsT11='false' srsname='EPSG:2056' typename='permits' url='http://127.0.0.1:9095/wfs3/' version='auto'</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -1080,7 +1080,7 @@
         <ymax>46.77858534634850685</ymax>
       </wgs84extent>
       <id>permits_line_f5de345b_6a98_428e_b2a4_908c0652f378</id>
-      <datasource>authcfg=geocdev pagingEnabled='true' preferCoordinatesForWfsT11='false' srsname='EPSG:2056' typename='permits_line' url='http://127.0.0.1:9095/wfs3/' version='auto'</datasource>
+      <datasource>authcfg=geocity pagingEnabled='true' preferCoordinatesForWfsT11='false' srsname='EPSG:2056' typename='permits_line' url='http://127.0.0.1:9095/wfs3/' version='auto'</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -1493,7 +1493,7 @@
         <ymax>46.77853313422247794</ymax>
       </wgs84extent>
       <id>permits_point_b6ab2d83_82d0_4bfc_bc82_f9a6a84737e8</id>
-      <datasource>authcfg=geocdev pagingEnabled='true' preferCoordinatesForWfsT11='false' srsname='EPSG:2056' typename='permits_point' url='http://127.0.0.1:9095/wfs3/' version='auto'</datasource>
+      <datasource>authcfg=geocity pagingEnabled='true' preferCoordinatesForWfsT11='false' srsname='EPSG:2056' typename='permits_point' url='http://127.0.0.1:9095/wfs3/' version='auto'</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -1890,7 +1890,7 @@
         <ymax>46.77864166559507453</ymax>
       </wgs84extent>
       <id>permits_poly_87b4e3a5_29df_42c2_8d9b_60acfbe980c0</id>
-      <datasource>authcfg=geocdev pagingEnabled='true' preferCoordinatesForWfsT11='false' srsname='EPSG:2056' typename='permits_poly' url='http://127.0.0.1:9095/wfs3/' version='auto'</datasource>
+      <datasource>authcfg=geocity pagingEnabled='true' preferCoordinatesForWfsT11='false' srsname='EPSG:2056' typename='permits_poly' url='http://127.0.0.1:9095/wfs3/' version='auto'</datasource>
       <keywordList>
         <value></value>
       </keywordList>
@@ -2723,7 +2723,7 @@
           <Option name="singleFile" type="bool" value="true"></Option>
         </Option>
       </customproperties>
-      <Atlas coverageLayer="permits_5000aa2e_4ed7_4d98_b2f3_4a4258201ad5" coverageLayerName="permits" coverageLayerProvider="OAPIF" coverageLayerSource="authcfg=geocdev pagingEnabled='true' preferCoordinatesForWfsT11='false' srsname='EPSG:2056' typename='permits' url='http://127.0.0.1:9095/wfs3/' version='auto'" enabled="1" filenamePattern="'output_'||@atlas_featurenumber" filterFeatures="0" hideCoverage="1" pageNameExpression="&quot;permit_request_shortname&quot;" sortFeatures="0"></Atlas>
+      <Atlas coverageLayer="permits_5000aa2e_4ed7_4d98_b2f3_4a4258201ad5" coverageLayerName="permits" coverageLayerProvider="OAPIF" coverageLayerSource="authcfg=geocity pagingEnabled='true' preferCoordinatesForWfsT11='false' srsname='EPSG:2056' typename='permits' url='http://127.0.0.1:9095/wfs3/' version='auto'" enabled="1" filenamePattern="'output_'||@atlas_featurenumber" filterFeatures="0" hideCoverage="1" pageNameExpression="&quot;permit_request_shortname&quot;" sortFeatures="0"></Atlas>
     </Layout>
   </Layouts>
   <mapViewDocks3D></mapViewDocks3D>
