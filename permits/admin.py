@@ -867,6 +867,15 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         ),
     )
 
+    def get_readonly_fields(self, request, obj=None):
+        if request.user.is_superuser:
+            return []
+        else:
+            return [
+                "document_enabled",
+                "publication_enabled",
+            ]
+
     def sortable_str(self, obj):
         return obj.__str__()
 
@@ -1446,6 +1455,25 @@ class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 )
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    # Until further notice, disable this feature for integrators
+    def has_add_permission(self, request):
+        if request.user.is_superuser:
+            return True
+        else:
+            return False
+
+    def has_delete_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        else:
+            return False
+
+    def has_change_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        else:
+            return False
 
 
 class PermitRequestInquiryAdmin(admin.ModelAdmin):
