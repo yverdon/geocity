@@ -215,7 +215,7 @@ class SectionParagraph(Section):
         # TODO: reverse_lazy and parametrize URL instead of hardcode
         help_text=(
             _(
-                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Vous pouvez afficher les variables diponibles avec la balise `{{data}}`'
+                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}` et clles du work object type dans `{{wot_data}}`.'
             )
         )
     )
