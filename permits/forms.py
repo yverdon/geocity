@@ -991,6 +991,8 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                     for tup in models.PermitRequest.STATUS_CHOICES
                     if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)
                     or models.PermitRequest.STATUS_APPROVED in tup
+                    or models.PermitRequest.STATUS_REJECTED in tup
+                    or models.PermitRequest.STATUS_INQUIRY_IN_PROGRESS in tup
                 ]
             else:
                 filter1 = [
@@ -1006,11 +1008,21 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
             ]
 
             self.fields["status"].choices = tuple(filter2)
-
             # A permit that is approved, rejected or archived cannot have its status changed and author cannot be notified anymore
             if self.instance.status not in models.PermitRequest.EDITABLE_STATUSES:
                 self.fields["status"].disabled = True
                 self.fields["notify_author"].disabled = True
+                if self.instance.can_always_be_updated(user):
+                    all_statuses_tuple = [
+                        tup
+                        for tup in models.PermitRequest.STATUS_CHOICES
+                        if any(
+                            i in tup
+                            for i in available_statuses_for_administrative_entity
+                        )
+                    ]
+
+                    self.fields["status"].choices = tuple(all_statuses_tuple)
 
             if not config.ENABLE_GEOCALENDAR:
                 self.fields["shortname"].widget = forms.HiddenInput()

@@ -17,6 +17,8 @@ services:
             - ./private_documents:/private_documents
             # to allow to spawn new QGIS containers
             - /var/run/docker.sock:/var/run/docker.sock
+            # For dev, set the temp folder in the main code directory, for convenience
+            - ./archive:/archive
         depends_on:
             - "postgres"
         ports:

@@ -97,6 +97,9 @@ ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 #  It also ensures get_current_site will get the right Site, which includes a subdomain.
 #  Note: Every subdomain is treated as a different Site, they require to login separately
 #  See: geomapshark.views.SetCurrentSiteMixin(), also: settings_test.py
+# FIXME: Need a default for emails sent by Crons (Cf. PermitRequestInquiryClosing)
+#  Or we need to add an attribute in the PermitRequest to save the site where it has
+#  been initiated.
 SITE_ID = None
 SITE_DOMAIN = None
 
@@ -497,7 +500,7 @@ MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
 MEDIA_ROOT = os.environ.get("MEDIA_ROOT", os.path.join(BASE_DIR, "media"))
 
 ARCHIVE_URL = os.environ.get("ARCHIVE_URL", "/archive/")
-ARCHIVE_ROOT = os.environ.get("ARCHIVE_ROOT", os.path.join(BASE_DIR, "archive"))
+ARCHIVE_ROOT = os.environ.get("ARCHIVE_ROOT", "/archive")
 
 MIN_START_DELAY = os.getenv("MIN_START_DELAY")
 WMTS_GETCAP = os.getenv("WMTS_GETCAP")
