@@ -1,23 +1,25 @@
 {% extends "reports/sections/_section.html" %}
 
 {% block content %}
-    <div class="inline_container">
-        <h2>Contact·s</h2>
-        {% if data.properties.permit_request_actor %}
+    <h2>Contact·s</h2>
+    {% if data.properties.permit_request_actor %}
+        <div class="flex_container">
             {% for type, actor in data.properties.permit_request_actor.items %}
-                <span class="bold">Type : </span>{{actor.actor_type_display}}<br>
-                <span class="bold">Prénom : </span>{{actor.first_name}}<br>
-                <span class="bold">Nom : </span>{{actor.last_name}}<br>
-                <span class="bold">Adresse : </span>{{actor.address}}<br>
-                <span class="bold">NPA : </span>{{actor.zipcode}}<br>
-                <span class="bold">Localité : </span>{{actor.city}}<br>
-                <span class="bold">Raison sociale : </span>{{actor.company_name}}<br>
-                <span class="bold">Numéro TVA : </span>{{actor.vat_number}}<br>
-                <span class="bold">Téléphone : </span>{{actor.phone}}<br>
-                <span class="bold">E-mail : </span>{{actor.email}}<br>
+                <div class="flex_item-50">
+                    <span class="bold">Type : </span>{{actor.actor_type_display}}<br>
+                    <span class="bold">Prénom : </span>{{actor.first_name}}<br>
+                    <span class="bold">Nom : </span>{{actor.last_name}}<br>
+                    <span class="bold">Adresse : </span>{{actor.address}}<br>
+                    <span class="bold">NPA : </span>{{actor.zipcode}}<br>
+                    <span class="bold">Localité : </span>{{actor.city}}<br>
+                    <span class="bold">Raison sociale : </span>{{actor.company_name}}<br>
+                    <span class="bold">Numéro TVA : </span>{{actor.vat_number}}<br>
+                    <span class="bold">Téléphone : </span>{{actor.phone}}<br>
+                    <span class="bold">E-mail : </span>{{actor.email}}<br>
+                </div>
             {% endfor %}
-        {% else %}
-            <p>Aucun contact pour cette demande</p>
-        {% endif %}
-    </div>
+        </div>
+    {% else %}
+        <p>Aucun contact pour cette demande</p>
+    {% endif %}
 {% endblock %}

@@ -1,7 +1,9 @@
 {% extends "reports/sections/_section.html" %}
 
 {% block content %}
-    <div class="inline_container">
-        <span class="bold">Statut : {{data.properties.status_display}}</span>
+    <div class="flex_container">
+        <div class="flex_item-100">
+            <span class="bold">Statut : {{data.properties.status_display}}</span>
+        </div>
     </div>
 {% endblock %}
