@@ -7,22 +7,13 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
-from django.contrib.staticfiles import finders
 from django.core import management
-from django.core.files import File
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from django.utils import timezone
 
 from geomapshark import settings
 from permits import admin, models
-from reports.models import (
-    Report,
-    ReportLayout,
-    SectionAuthor,
-    SectionMap,
-    SectionParagraph,
-)
 
 
 def strip_accents(text):
@@ -119,8 +110,6 @@ class Command(BaseCommand):
             self.create_template_customization()
             self.stdout.write("Configurating template customizations...")
             self.setup_homepage()
-            self.stdout.write("Creating reports...")
-            self.create_reports()
             self.stdout.write("Setting integrator for selected confgurations...")
             self.setup_integrator()
             self.stdout.write("Fixturize succeed!")
@@ -1013,88 +1002,6 @@ class Command(BaseCommand):
             application_subtitle="Demandes en lignes",
             application_description="Demandes concernant l' <i>administration</i>",
         )
-
-    def create_reports(self):
-
-        # Create report setup
-        layout = ReportLayout(
-            name="demo_layout",
-            margin_top=30,
-            margin_right=10,
-            margin_bottom=20,
-            margin_left=22,
-            integrator=Group.objects.get(name="integrator"),
-        )
-        report_background_path = finders.find(
-            "reports/report-letter-paper-template.png"
-        )
-        background_image = open(report_background_path, "rb")
-        layout.background.save(
-            "report-letter-paper.png", File(background_image), save=True
-        )
-        layout.save()
-
-        report = Report(
-            name="demo_report",
-            layout=layout,
-        )
-        report.save()
-
-        section_paragraph_1 = SectionParagraph(
-            order=1,
-            report=report,
-            title="Example report",
-            content="<p>This is an example report. It could be an approval, or any type of report related to a request.</p>",
-        )
-        section_paragraph_1.save()
-
-        section_paragraph_2 = SectionParagraph(
-            order=2,
-            report=report,
-            title="Demand summary",
-            content="<p>This demand contains the following objects.</p><ul>{% for wot in request_data.properties.permit_request_works_object_types_names.values() %}<li>{{wot}}</li>{% endfor %}</ul>",
-        )
-        section_paragraph_2.save()
-
-        section_paragraph_3 = SectionParagraph(
-            order=3,
-            report=report,
-            title="Raw request data",
-            content="<pre>{{request_data}}</pre>",
-        )
-        section_paragraph_3.save()
-
-        section_paragraph_4 = SectionParagraph(
-            order=4,
-            report=report,
-            title="Raw wot data",
-            content="<pre>{{wot_data}}</pre>",
-        )
-        section_paragraph_4.save()
-
-        section_map = SectionMap(
-            order=5,
-            report=report,
-            qgis_project_file="invalid",  # set few lines below
-            qgis_print_template_name="a4",
-        )
-        qgis_template_project_path = finders.find("reports/report-template.qgs")
-        qgis_template_project = open(qgis_template_project_path, "rb")
-        section_map.qgis_project_file.save(
-            "report-template-dev.qgs", File(qgis_template_project), save=True
-        )
-
-        section_author = SectionAuthor(
-            order=4,
-            report=report,
-        )
-        section_author.save()
-
-        # Assign the report to each document type (just once per wot)
-        for dt in models.ComplementaryDocumentType.objects.filter(
-            parent__isnull=False
-        ).distinct("parent__work_object_types"):
-            dt.reports.set([report])
 
     def setup_homepage(self):
         config.APPLICATION_TITLE = "Démo Geocity"

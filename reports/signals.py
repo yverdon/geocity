@@ -1,0 +1,96 @@
+"""This file is loaded from apps.py"""
+
+from django.contrib.auth.models import Group
+from django.contrib.staticfiles import finders
+from django.core.files import File
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+from permits.models import ComplementaryDocumentType, Group
+
+from .models import Report, ReportLayout, SectionAuthor, SectionMap, SectionParagraph
+
+
+@receiver(post_save, sender=Group)
+def create_default_report_for_integrator(sender, instance, created, **kwargs):
+    if not created:
+        return
+
+    integrator = instance
+
+    print(f"Creating a default report for integrator {integrator}")
+
+    # Create report setup
+    layout = ReportLayout(
+        name="demo_layout",
+        margin_top=30,
+        margin_right=10,
+        margin_bottom=20,
+        margin_left=22,
+        integrator=integrator,
+    )
+    _bg_path = finders.find("reports/report-letter-paper-template.png")
+    background_image = open(_bg_path, "rb")
+    layout.background.save("report-letter-paper.png", File(background_image), save=True)
+    layout.save()
+
+    report = Report(
+        name="demo_report",
+        layout=layout,
+        integrator=integrator,
+    )
+    report.save()
+
+    section_paragraph_1 = SectionParagraph(
+        order=1,
+        report=report,
+        title="Example report",
+        content="<p>This is an example report. It could be an approval, or any type of report related to a request.</p>",
+    )
+    section_paragraph_1.save()
+
+    section_paragraph_2 = SectionParagraph(
+        order=2,
+        report=report,
+        title="Demand summary",
+        content="<p>This demand contains the following objects.</p><ul>{% for wot in request_data.properties.permit_request_works_object_types_names.values() %}<li>{{wot}}</li>{% endfor %}</ul>",
+    )
+    section_paragraph_2.save()
+
+    section_paragraph_3 = SectionParagraph(
+        order=3,
+        report=report,
+        title="Raw request data",
+        content="<pre>{{request_data}}</pre>",
+    )
+    section_paragraph_3.save()
+
+    section_paragraph_4 = SectionParagraph(
+        order=4,
+        report=report,
+        title="Raw wot data",
+        content="<pre>{{wot_data}}</pre>",
+    )
+    section_paragraph_4.save()
+
+    section_map = SectionMap(
+        order=5,
+        report=report,
+        qgis_project_file="invalid",  # set few lines below
+        qgis_print_template_name="a4",
+    )
+    _qgis_path = finders.find("reports/report-template.qgs")
+    qgis_template_project = open(_qgis_path, "rb")
+    section_map.qgis_project_file.save(
+        "report-template-dev.qgs", File(qgis_template_project), save=True
+    )
+
+    section_author = SectionAuthor(
+        order=4,
+        report=report,
+    )
+    section_author.save()
+
+    # Assign the report to each document type
+    for dt in ComplementaryDocumentType.objects.filter(parent__isnull=False):
+        dt.reports.add(report)

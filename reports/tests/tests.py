@@ -1,7 +1,4 @@
-import os
-
 from django.contrib.auth.models import Group, User
-from django.core.files import File
 from django.test import TestCase
 from django.urls import reverse
 
@@ -21,7 +18,7 @@ from permits.models import (
     WorksType,
 )
 
-from ..models import Report, ReportLayout, SectionMap, SectionParagraph
+from ..models import Report
 
 
 # TODO: these tests cannot fully work as expected with the current infra, because
@@ -116,39 +113,9 @@ class ReportsTests(TestCase):
             parent=parent_doc_type,
         )
 
-        # Create a report
-        layout = ReportLayout.objects.create(
-            name="test",
-        )
-        report = Report.objects.create(
-            name="test",
-            layout=layout,
-        )
+        # Assign the report (normally, one should have been created automatically)
+        report = Report.objects.filter(integrator=group).first()
         report.document_types.set([doc_type])
-
-        # Add blocks to the report
-        SectionParagraph.objects.create(
-            title="request data",
-            content="request data: {{request_data}}",
-            report=report,
-        )
-        SectionParagraph.objects.create(
-            title="wot data",
-            content="wot data: {{wot_data}}",
-            report=report,
-        )
-        section_map = SectionMap.objects.create(
-            qgis_project_file="invalid",
-            qgis_print_template_name="a4",
-            report=report,
-        )
-        qgis_template_project_path = os.path.join(
-            os.path.dirname(__file__), "..", "static", "reports", "report-template.qgs"
-        )
-        qgis_template_project = open(qgis_template_project_path, "rb")
-        section_map.qgis_project_file.save(
-            "report-template.qgs", File(qgis_template_project), save=True
-        )
 
         # Make fixtures available to testcase
         self.permit_request = permit_request
@@ -176,6 +143,7 @@ class ReportsTests(TestCase):
 
         # Uncomment to save the PDF to expected images
         # pdf_bytes = b"".join(response.streaming_content)
+        # from pdf2image import convert_from_bytes
         # pages = convert_from_bytes(pdf_bytes, 500)
         # for i, page in enumerate(pages):
         #     basepath = os.path.join(
