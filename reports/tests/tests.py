@@ -1,9 +1,24 @@
 from django.urls import reverse
 
+from reports.models import (
+    SectionAmendPropertyComment,
+    SectionAuthor,
+    SectionContact,
+    SectionDetail,
+    SectionHorizontalRule,
+    SectionMap,
+    SectionParagraph,
+    SectionPlanning,
+    SectionStatus,
+    SectionValidationComment,
+)
+
 from .base import ReportsTestsBase
 
 
 class ReportsTests(ReportsTestsBase):
+    """Test report workflows"""
+
     def test_pdf_preview(self):
         """Test PDF generation through the reports:permit_request_report view"""
 
@@ -67,3 +82,55 @@ class ReportsTests(ReportsTestsBase):
         self.assertEqual(
             self.permit_request.permitrequestcomplementarydocument_set.count(), 1
         )
+
+
+class RenderingTests(ReportsTestsBase):
+    """Test report rendering"""
+
+    def test_block_gallery(self):
+        """Test rendering for all blocks"""
+
+        # Clean all blocks
+        self.report.sections.all().delete()
+
+        # Add one block of each type
+        sections_config = {
+            SectionHorizontalRule: {},
+            SectionMap: {
+                "qgis_project_file": "invalid",
+                "qgis_print_template_name": "invalid",
+            },
+            SectionParagraph: {
+                "title": "A title",
+                "content": "A paragraph",
+            },
+            SectionContact: {},
+            SectionAuthor: {},
+            SectionDetail: {},
+            SectionPlanning: {},
+            # SectionFiles: {}, # FIXME: TemplateDoesNotExist: sectionfiles.html
+            SectionValidationComment: {},
+            SectionAmendPropertyComment: {},
+            SectionStatus: {},
+        }
+        for i, (SectionKlass, kwargs) in enumerate(sections_config.items()):
+            SectionKlass.objects.create(
+                **{
+                    "order": i * 10,
+                    "report": self.report,
+                    **kwargs,
+                }
+            )
+            SectionHorizontalRule.objects.create(
+                **{
+                    "order": i * 10 + 1,
+                    "report": self.report,
+                }
+            )
+
+        # Get the PDF
+        pdf_file = self.report.render_pdf(
+            self.permit_request, self.works_object_type, self.user
+        )
+        pdf_bytes = pdf_file.read()
+        self.assert_pdf_is_as_expected(pdf_bytes)
