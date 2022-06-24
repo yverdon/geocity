@@ -75,7 +75,7 @@ def export(args):
 
         # move to the requested feature (workaround using filter if the above does not work)
         atlas.setFilterFeatures(True)
-        atlas.setFilterExpression(f"$permit_request_id={permit_request_id}")
+        atlas.setFilterExpression(f"permit_request_id={permit_request_id}")
         atlas.seekTo(0)
         atlas.refreshCurrentFeature()
 
