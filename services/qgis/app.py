@@ -57,13 +57,6 @@ def export(args):
                 print(f"  {layer.dataProvider().uri()=}")
                 print(f"  {layer.featureCount()=}")
                 print(f"  {layer.dataProvider().error().message()=}")
-                # show contents of the response
-                r = requests.get(
-                    f"http://web:9000/wfs3/collections/permits/items/{permit_request_id}",
-                    headers={"Authorization": f"Token {token}"},
-                )
-                print(f"response code: {r.status_code}")
-                print(f"response content: {r.content}")
 
         # get the atlas
         layout = project.layoutManager().layoutByName(template_name)
