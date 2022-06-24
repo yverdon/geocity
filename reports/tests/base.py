@@ -105,7 +105,7 @@ class ReportsTestsBase(LiveServerTestCase):
         admin_entity = PermitAdministrativeEntity.objects.create(
             name="entity",
             ofs_id=1,
-            geom="SRID=2056;MultiPolygon (((2500000 1000000, 2500100 1000000, 2500100 1000100, 2500000 1000100, 2500000 1000000)))",
+            geom="SRID=2056;MultiPolygon (((2538512 1181638, 2538447 1180620, 2539787 1180606, 2539784 1181553, 2538512 1181638)))",
         )
 
         # Create the user
@@ -165,7 +165,7 @@ class ReportsTestsBase(LiveServerTestCase):
 
         PermitRequestGeoTime.objects.create(
             permit_request=permit_request,
-            geom="SRID=2056;GEOMETRYCOLLECTION (MultiPolygon (((2500025 1000025, 2500075 1000025, 2500060 1000075, 2500025 1000075, 2500025 1000025))))",
+            geom="SRID=2056;GEOMETRYCOLLECTION (MultiPolygon (((2539069 1181160, 2539052 1181120, 2539099 1181110, 2539118 1181147, 2539069 1181160))))",
         )
         PermitRequestAmendPropertyValue.objects.create(
             property=prop,
