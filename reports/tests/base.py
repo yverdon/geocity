@@ -5,6 +5,7 @@ import diffimg
 import pdf2image
 from django.contrib.auth.models import Group, User
 from django.test import TestCase
+from freezegun import freeze_time
 
 from permits.models import (
     ComplementaryDocumentType,
@@ -34,6 +35,7 @@ UPDATE_EXPECTED_IMAGES = strtobool(os.getenv("TEST_UPDATED_EXPECTED_IMAGES", "fa
 # instead of `exec`.
 # Currently, the test passes but the QGIS map is not correctly rendered, and they can
 # easily fail if there are some changes on the server running in the web container.
+@freeze_time("1985-07-04")
 class ReportsTestsBase(TestCase):
     """Base class for testing reports. This sets up some fixtures and includes methods to test PDFS."""
 
