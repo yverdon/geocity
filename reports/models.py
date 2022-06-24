@@ -1,7 +1,7 @@
 import base64
 import io
 import re
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Union
 
 from ckeditor.fields import RichTextField
@@ -97,6 +97,7 @@ class Report(models.Model):
             "permit_request": permit_request,
             "work_object_type": work_object_type,
             "token": token,
+            "actual_date": datetime.now(),
         }
         html_string = render_to_string("reports/report.html", context)
 

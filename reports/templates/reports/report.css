@@ -10,6 +10,10 @@
   @top-center {
     content: "Permis n°{{permit_request.id}}";
   }
+
+  @bottom-center {
+    content: "{{actual_date}} ";
+  }
 }
 
 .block-page-break {
