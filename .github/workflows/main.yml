@@ -42,3 +42,10 @@ jobs:
 
     - name: Coverage report (without 2FA)
       run: docker-compose run --rm --entrypoint="" web coverage report -m
+
+    - name: Upload test output images
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-output-images
+        path: ./reports/tests/data
