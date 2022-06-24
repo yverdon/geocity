@@ -215,15 +215,16 @@ class SectionMap(Section):
         return {**context, "map": mark_safe(f'<img src="{data_url}">')}
 
     def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
         # Upload a default project if none is provided
         if not self.qgis_project_file:
+            # Open an existing file using Python's built-in open()
             _qgis_path = finders.find("reports/report-template.qgs")
-            qgis_template_project = open(_qgis_path, "rb")
+            qgis_template_project = File(open(_qgis_path, "rb"))
             self.qgis_project_file.save(
-                "report-template-dev.qgs", File(qgis_template_project), save=True
+                "report-template-dev.qgs", File(qgis_template_project)
             )
-
-        super().save(*args, **kwargs)
 
 
 class SectionParagraph(Section):
