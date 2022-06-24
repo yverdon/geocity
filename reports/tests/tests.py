@@ -91,7 +91,8 @@ class RenderingTests(ReportsTestsBase):
         """Test rendering for all blocks"""
 
         # Clean all blocks
-        self.report.sections.all().delete()
+        for section in self.report.sections.all():
+            section.delete()
 
         # Add one block of each type
         sections_config = {
