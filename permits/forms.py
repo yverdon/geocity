@@ -1,3 +1,4 @@
+import io
 import json
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -31,7 +32,6 @@ from accounts.dootix.adapter import DootixSocialAccountAdapter
 from accounts.dootix.provider import DootixProvider
 from accounts.geomapfish.adapter import GeomapfishSocialAccountAdapter
 from accounts.geomapfish.provider import GeomapfishProvider
-from reports import models as reportmodels
 
 from . import geoservices, models, services
 
@@ -1624,11 +1624,11 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             "description": forms.Textarea(attrs={"rows": 2}),
         }
 
-    def __init__(self, permit_request, user, *args, **kwargs):
+    def __init__(self, request, permit_request, *args, **kwargs):
         super(PermitRequestComplementaryDocumentsForm, self).__init__(*args, **kwargs)
 
+        self.request = request
         self.permit_request = permit_request
-        self.user = user
         self.fields[
             "authorised_departments"
         ].queryset = models.PermitDepartment.objects.filter(
@@ -1745,21 +1745,22 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
                     _("Selection invalide pour génération à partir du modèle !")
                 )
 
-            # TODO CRITICAL: ensure user has access to these objects
-            report = reportmodels.Report.objects.get(pk=report_pk)
+            from reports.views import report_pdf
+
+            report_response = report_pdf(
+                self.request,
+                self.permit_request.pk,
+                work_object_type_id=wot_pk,
+                report_id=report_pk,
+            )
+            cleaned_data["document"] = File(
+                io.BytesIO(b"".join(report_response.streaming_content)),
+                name=report_response.filename,
+            )
             # TODO CRITICAL: ensure user has access to these objects
             child_doc_type = models.ComplementaryDocumentType.objects.get(
                 pk=child_doc_type_pk
             )
-            # TODO CRITICAL: ensure user has access to these objects
-            wot = models.WorksObjectType.objects.get(pk=wot_pk)
-
-            now = timezone.now()
-            name = f"{report.name}_generated_{now:%Y-%m-%d}.pdf"
-            data = report.render_pdf(
-                self.permit_request, wot, generated_by=self.user, as_string=False
-            )
-            cleaned_data["document"] = File(data, name=name)
             cleaned_data["document_type"] = child_doc_type
             cleaned_data[f"parent_{child_doc_type.pk}"] = child_doc_type.parent
 

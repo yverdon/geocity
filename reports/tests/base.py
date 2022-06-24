@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from distutils.util import strtobool
 
 import diffimg
@@ -8,6 +9,7 @@ from django.contrib.auth.models import Group, User
 from django.db import connections, transaction
 from django.test import LiveServerTestCase
 from django.test.testcases import LiveServerTestCase
+from django.utils.timezone import get_default_timezone, make_aware
 from freezegun import freeze_time
 
 from permits.models import (
@@ -31,7 +33,7 @@ from ..models import Report
 UPDATE_EXPECTED_IMAGES = strtobool(os.getenv("TEST_UPDATED_EXPECTED_IMAGES", "false"))
 
 
-@freeze_time("1985-07-04")
+@freeze_time(make_aware(datetime(1985, 7, 4), get_default_timezone()))
 class ReportsTestsBase(LiveServerTestCase):
     """Base tests class for testing reports. It runs a live server to allow other containers (QGIS and PDF)
     to communicate with it, provides test fixtures and methods to compare PDFs.

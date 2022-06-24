@@ -12,7 +12,9 @@ class DockerRunFailedError(Exception):
         self.logs = logs
 
 
-def run_docker_container(image, commands, file_input: Tuple[str, IO], file_output):
+def run_docker_container(
+    image, commands, file_input: Tuple[str, IO] = None, file_output=None
+):
 
     # Create a docker container to generate the image
     client = docker.from_env()
@@ -39,7 +41,7 @@ def run_docker_container(image, commands, file_input: Tuple[str, IO], file_outpu
     try:
         if exit_code == 0:
             # Retrieve the output
-            return _get_file(container, file_output)
+            return _get_file(container, file_output) if file_output else None
     finally:
         # TODO: not sure this always runs, seems sometimes there are containers left
         container.remove()

@@ -1,10 +1,11 @@
+from distutils.util import strtobool
+
 from .settings import *
 
 
 def show_toolbar(request):
-    from django.conf import settings
-
-    return settings.DEBUG
+    """Shows the debug toolbar when `?DEBUG=true` is your URL and DEBUG is enabled."""
+    return DEBUG and strtobool(request.GET.get("DEBUG", "false"))
 
 
 INSTALLED_APPS += [

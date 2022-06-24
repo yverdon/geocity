@@ -1,5 +1,3 @@
-{% load reports %}
-
 <html>
   <head>
     <meta charset="utf-8">
@@ -18,8 +16,8 @@
   </head>
 
   <body>
-    {% for section in report.sections.all %}
-      {% render_section section permit_request=permit_request work_object_type=work_object_type token=token %}
+    {% for rendered_section in rendered_sections %}
+      {{rendered_section}}
     {% endfor %}
   </body>
 </html>

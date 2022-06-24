@@ -2,9 +2,9 @@
 
 {% block content %}
     <h2>Contact·s</h2>
-    {% if data.properties.permit_request_actor %}
+    {% if request_data.properties.permit_request_actor %}
         <div class="flex_container">
-            {% for type, actor in data.properties.permit_request_actor.items %}
+            {% for type, actor in request_data.properties.permit_request_actor.items %}
                 <div class="flex_item-50">
                     <span class="bold">Type : </span>{{actor.actor_type_display}}<br>
                     <span class="bold">Prénom : </span>{{actor.first_name}}<br>

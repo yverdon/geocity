@@ -1,8 +1,6 @@
 import base64
-import io
 import re
-from datetime import datetime, timedelta
-from typing import Union
+from datetime import timedelta
 
 from ckeditor.fields import RichTextField
 from django.conf import settings
@@ -11,7 +9,6 @@ from django.contrib.staticfiles import finders
 from django.core.files import File
 from django.core.validators import FileExtensionValidator
 from django.db import models
-from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from jinja2.sandbox import SandboxedEnvironment
@@ -19,7 +16,6 @@ from knox.models import AuthToken
 from polymorphic.models import PolymorphicModel
 
 from permits.fields import AdministrativeEntityFileField
-from permits.serializers import PermitRequestPrintSerializer
 
 from .utils import DockerRunFailedError, run_docker_container
 
@@ -82,47 +78,6 @@ class Report(models.Model):
         verbose_name=_("Groupe des administrateurs"),
     )
 
-    # TODO: instead of taking PermitRequest and WorksObjectType arguments, we should take
-    # in WorksObjectTypeChoice, which already joins both, so they are consistent.
-    def render_pdf(
-        self, permit_request, work_object_type, generated_by, as_string=False
-    ) -> Union[bytes, str]:
-        """Renders a PDF by calling the PDF generator service"""
-
-        # Generate a token
-        authtoken, token = AuthToken.objects.create(
-            generated_by, expiry=timedelta(minutes=5)
-        )
-
-        context = {
-            "report": self,
-            "permit_request": permit_request,
-            "work_object_type": work_object_type,
-            "token": token,
-            "actual_date": datetime.now(),
-        }
-        html_string = render_to_string("reports/report.html", context)
-
-        if as_string:
-            return html_string
-
-        commands = [
-            "/io/input.html",
-            "/io/output.pdf",
-            token,
-        ]
-
-        output = run_docker_container(
-            "geocity_pdf",
-            commands,
-            file_input=("/io/input.html", io.BytesIO(html_string.encode("utf-8"))),
-            file_output="/io/output.pdf",
-        )
-
-        authtoken.delete()
-
-        return output
-
     def __str__(self):
         return self.name
 
@@ -134,35 +89,19 @@ def NON_POLYMORPHIC_CASCADE(collector, field, sub_objs, using):
 
 class Section(PolymorphicModel):
     class Meta:
-
-        ordering = [
-            "order",
-        ]
+        ordering = ["order"]
 
     report = models.ForeignKey(
         Report, on_delete=NON_POLYMORPHIC_CASCADE, related_name="sections"
     )
     order = models.PositiveIntegerField(null=True, blank=True)
 
-    def get_template(self):
-        class_name = self.__class__.__name__.lower()
-        return f"reports/sections/{class_name}.html"
-
-    def get_context(self, context):
-        data = PermitRequestPrintSerializer(context["permit_request"]).data
+    def prepare_context(self, request, base_context):
+        """Subclass this to add elements to the context (make sure to return a copy if you change it)"""
         return {
-            **context,
+            **base_context,
             "section": self,
-            "permit_request": context["permit_request"],
-            "work_object_type": context["work_object_type"],
-            # TODO: move implemenetion from SectionParagraph to here
-            "data": data,
         }
-
-    def render(self, report_context):
-        template = self.get_template()
-        section_context = self.get_context(report_context)
-        return render_to_string(template, section_context)
 
     @property
     def css_class(self):
@@ -185,16 +124,20 @@ class SectionMap(Section):
         default="a4",
     )
 
-    def get_context(self, context):
-        context = super().get_context(context)
+    def _generate_image(self, request, base_context):
+
+        # Generate a token
+        authtoken, token = AuthToken.objects.create(
+            request.user, expiry=timedelta(minutes=5)
+        )
 
         # Create a docker container to generate the image
         commands = [
             "/io/project.qgs",
             "/io/output.png",
             self.qgis_print_template_name,
-            str(context["permit_request"].id),
-            str(context["token"]),
+            str(base_context["permit_request"].id),
+            str(token),
             ",".join(settings.ALLOWED_HOSTS),
         ]
 
@@ -210,12 +153,18 @@ class SectionMap(Section):
             path = finders.find("reports/error.png")
             output = open(path, "rb")
 
+        authtoken.delete()
+
         # Prepare the dataurl
         data = base64.b64encode(output.read()).decode("ascii")
-        data_url = f"data:image/png;base64,{data}"
+        return f"data:image/png;base64,{data}"
 
+    def prepare_context(self, request, base_context):
         # Return updated context
-        return {**context, "map": mark_safe(f'<img src="{data_url}">')}
+        return {
+            **super().prepare_context(request, base_context),
+            "map_data_url": self._generate_image(request, base_context),
+        }
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -241,29 +190,21 @@ class SectionParagraph(Section):
         )
     )
 
-    def get_context(self, context):
-        env = SandboxedEnvironment()
-        request_data = PermitRequestPrintSerializer(context["permit_request"]).data
-
-        wot = context["work_object_type"]
-        wot_key = (
-            f"{wot.works_object.name} ({wot.works_type.name})"  # defined by serializer
-        )
-        request_props = request_data["properties"]["request_properties"][wot_key]
-        amend_props = request_data["properties"]["amend_properties"][wot_key]
-
+    def _render_user_template(self, base_context):
+        # User template have only access to pure json elements for security reasons
         inner_context = {
-            "request_data": request_data,
-            "wot_data": {
-                "request_properties": request_props,
-                "amend_properties": amend_props,
-            },
+            "request_data": base_context["request_data"],
+            "wot_data": base_context["wot_data"],
         }
-        rendered_content = env.from_string(self.content).render(inner_context)
+        env = SandboxedEnvironment()
+        rendered_html = env.from_string(self.content).render(inner_context)
+        return mark_safe(rendered_html)
 
+    def prepare_context(self, request, base_context):
+        # Return updated context
         return {
-            **super().get_context(context),
-            "rendered_content": mark_safe(rendered_content),
+            **super().prepare_context(request, base_context),
+            "rendered_content": self._render_user_template(base_context),
         }
 
 

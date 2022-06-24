@@ -26,7 +26,7 @@ class ReportsTests(ReportsTestsBase):
         self.client.force_login(self.user)
         response = self.client.get(
             reverse(
-                "reports:permit_request_report",
+                "reports:permit_request_report_pdf",
                 kwargs={
                     "permit_request_id": self.permit_request.pk,
                     "work_object_type_id": self.works_object_type.pk,
@@ -83,10 +83,6 @@ class ReportsTests(ReportsTestsBase):
             self.permit_request.permitrequestcomplementarydocument_set.count(), 1
         )
 
-
-class RenderingTests(ReportsTestsBase):
-    """Test report rendering"""
-
     def test_block_gallery(self):
         """Test rendering for all blocks"""
 
@@ -123,8 +119,16 @@ class RenderingTests(ReportsTestsBase):
             )
 
         # Get the PDF
-        pdf_file = self.report.render_pdf(
-            self.permit_request, self.works_object_type, self.user
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse(
+                "reports:permit_request_report_pdf",
+                kwargs={
+                    "permit_request_id": self.permit_request.pk,
+                    "work_object_type_id": self.works_object_type.pk,
+                    "report_id": self.report.pk,
+                },
+            )
         )
-        pdf_bytes = pdf_file.read()
+        pdf_bytes = b"".join(response.streaming_content)
         self.assert_pdf_is_as_expected(pdf_bytes)
