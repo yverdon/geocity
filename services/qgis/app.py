@@ -46,47 +46,53 @@ def export(args):
         project = QgsProject.instance()
         project.read(input_path)
 
+        # test the layers (for debugging)
+        for layer in QgsProject.instance().mapLayers().values():
+            print(f"checking layer {layer.name()}... ", end="")
+            if layer.isValid():
+                print("ok")
+            else:
+                print("invalid !")
+                # print layer information
+                print(f"  {layer.dataProvider().uri()=}")
+                print(f"  {layer.featureCount()=}")
+                print(f"  {layer.dataProvider().error().message()=}")
+                # show contents of the response
+                r = requests.get(
+                    f"http://web:9000/wfs3/collections/permits/items/{permit_request_id}",
+                    headers={"Authorization": f"Token {token}"},
+                )
+                print(f"response code: {r.status_code}")
+                print(f"response content: {r.content}")
+
         # get the atlas
         layout = project.layoutManager().layoutByName(template_name)
         atlas = layout.atlas()
 
-        # Configure the atlas
+        # configure the atlas
         atlas.setEnabled(True)
         atlas.setFilenameExpression("'export_'||@atlas_featurenumber")
 
-        # move to the requested feature (does not work ?)
-        # feature = layer.getFeature(permit_request_id)
-        # atlas.seekTo(feature)
-        # atlas.refreshCurrentFeature()
-
         # move to the requested feature (workaround using filter if the above does not work)
         atlas.setFilterFeatures(True)
-        atlas.setFilterExpression(f"$id={permit_request_id}")
+        atlas.setFilterExpression(f"$permit_request_id={permit_request_id}")
         atlas.seekTo(0)
         atlas.refreshCurrentFeature()
 
-        # refresh the layer (not required)
-        # layer.dataProvider().reloadData()
-        # layer.updateFields()
-        # layer.dataProvider().updateExtents()
-        # layer.triggerRepaint()
-        # atlas.layout().refresh()
-
-        # debug
-        layer = atlas.coverageLayer()
-        if not layer.isValid():
-            print("The layer is not valid")
-            # print debug information
-            print(f"coverage layer: {layer.dataProvider().uri()}")
-            print(f"coverage feature count: {layer.featureCount()}")
-            print(f"coverage is valid: {layer.isValid()}")
-            print(f"coverage error: {layer.dataProvider().error().message()}")
-            # run a basic request to get better error reporting than QGIS
+        # show the coverage layer (for debugging)
+        coverage_layer = atlas.coverageLayer()
+        print(f"coverage layer {coverage_layer.name()}...", end="")
+        if coverage_layer.isValid():
+            print(" ok")
+        else:
+            print(" invalid !")
+            # show contents of the response
             r = requests.get(
                 f"http://web:9000/wfs3/collections/permits/items/{permit_request_id}",
                 headers={"Authorization": f"Token {token}"},
             )
-            r.raise_for_status()
+            print(f"response code: {r.status_code}")
+            print(f"response content: {r.content}")
 
         # export
         settings = QgsLayoutExporter.ImageExportSettings()
@@ -97,7 +103,7 @@ def export(args):
         # exit QGIS
         qgs.exitQgis()
 
-        # debug
+        # show exported files (for debugging)
         print(f"exported {os.listdir(tmpdirname)}")
 
         # return the file
