@@ -77,6 +77,10 @@ docker-compose run --service-ports --name=web --rm --entrypoint="" web python ma
 
 These tests compare generated PDFs to expected PDFs. To regenerated the expected images, you need to provide the following env var to the docker-compose run command `-e TEST_UPDATED_EXPECTED_IMAGES=TRUE`. By definition, when doing so, tests will succeed, so don't forget to manually review the changes to the files.
 
+```bash
+docker-compose run --service-ports --name=web --rm --entrypoint="" -e TEST_UPDATED_EXPECTED_IMAGES=TRUE web python manage.py test --settings=geomapshark.settings_test --keepdb reports
+```
+
 ### Linting
 
 We use [pre-commit](https://pre-commit.com/) as code formatter. Just use the following command to automatically format your code when you commit:
