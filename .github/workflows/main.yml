@@ -25,3 +25,9 @@ jobs:
       run: docker-compose exec -T web ./run_tests.sh
     - name: Stop Containers
       run: docker-compose down --remove-orphans
+    - name: Upload test output images
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-output-images
+        path: ./reports/tests/data
