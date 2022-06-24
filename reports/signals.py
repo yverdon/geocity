@@ -76,17 +76,11 @@ def create_default_report_for_integrator(sender, instance, created, **kwargs):
     section_map = SectionMap(
         order=5,
         report=report,
-        qgis_project_file="invalid",  # set few lines below
-        qgis_print_template_name="a4",
     )
-    _qgis_path = finders.find("reports/report-template.qgs")
-    qgis_template_project = open(_qgis_path, "rb")
-    section_map.qgis_project_file.save(
-        "report-template-dev.qgs", File(qgis_template_project), save=True
-    )
+    section_map.save()
 
     section_author = SectionAuthor(
-        order=4,
+        order=6,
         report=report,
     )
     section_author.save()

@@ -97,10 +97,7 @@ class RenderingTests(ReportsTestsBase):
         # Add one block of each type
         sections_config = {
             SectionHorizontalRule: {},
-            SectionMap: {
-                "qgis_project_file": "invalid",
-                "qgis_print_template_name": "invalid",
-            },
+            SectionMap: {},
             SectionParagraph: {
                 "title": "A title",
                 "content": "A paragraph",

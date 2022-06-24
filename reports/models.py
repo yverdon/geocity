@@ -7,6 +7,7 @@ from typing import Union
 from ckeditor.fields import RichTextField
 from django.contrib.auth.models import Group
 from django.contrib.staticfiles import finders
+from django.core.files import File
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.template.loader import render_to_string
@@ -174,8 +175,13 @@ class SectionMap(Section):
         _("Projet QGIS '*.qgs'"),
         validators=[FileExtensionValidator(allowed_extensions=["qgs"])],
         upload_to="qgis_templates",
+        blank=True,
     )
-    qgis_print_template_name = models.CharField(max_length=30)
+    qgis_print_template_name = models.CharField(
+        max_length=30,
+        blank=True,
+        default="a4",
+    )
 
     def get_context(self, context):
         context = super().get_context(context)
@@ -207,6 +213,17 @@ class SectionMap(Section):
 
         # Return updated context
         return {**context, "map": mark_safe(f'<img src="{data_url}">')}
+
+    def save(self, *args, **kwargs):
+        # Upload a default project if none is provided
+        if not self.qgis_project_file:
+            _qgis_path = finders.find("reports/report-template.qgs")
+            qgis_template_project = open(_qgis_path, "rb")
+            self.qgis_project_file.save(
+                "report-template-dev.qgs", File(qgis_template_project), save=True
+            )
+
+        super().save(*args, **kwargs)
 
 
 class SectionParagraph(Section):
