@@ -96,11 +96,10 @@ class RenderingTests(ReportsTestsBase):
 
         # Add one block of each type
         sections_config = {
-            SectionHorizontalRule: {},
             SectionMap: {},
             SectionParagraph: {
-                "title": "A title",
-                "content": "A paragraph",
+                "title": "A basic paragraph",
+                "content": "<p>A paragraph <u>with</u> <b style='color: red;'>basic</b> <i>styling</i></p>",
             },
             SectionContact: {},
             SectionAuthor: {},
@@ -111,19 +110,16 @@ class RenderingTests(ReportsTestsBase):
             SectionAmendPropertyComment: {},
             SectionStatus: {},
         }
+
         for i, (SectionKlass, kwargs) in enumerate(sections_config.items()):
             SectionKlass.objects.create(
-                **{
-                    "order": i * 10,
-                    "report": self.report,
-                    **kwargs,
-                }
+                order=i * 10,
+                report=self.report,
+                **kwargs,
             )
             SectionHorizontalRule.objects.create(
-                **{
-                    "order": i * 10 + 1,
-                    "report": self.report,
-                }
+                order=i * 10 + 1,
+                report=self.report,
             )
 
         # Get the PDF
