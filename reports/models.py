@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from typing import Union
 
 from ckeditor.fields import RichTextField
+from django.conf import settings
 from django.contrib.auth.models import Group
 from django.contrib.staticfiles import finders
 from django.core.files import File
@@ -194,6 +195,7 @@ class SectionMap(Section):
             self.qgis_print_template_name,
             str(context["permit_request"].id),
             str(context["token"]),
+            ",".join(settings.ALLOWED_HOSTS),
         ]
 
         try:
