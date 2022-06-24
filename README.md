@@ -69,6 +69,11 @@ Example to run a single test in container
 coverage run --source='.' ./manage.py test --settings=geomapshark.settings_test permits.tests.test_a_permit_request.PermitRequestTestCase.test_administrative_entity_is_filtered_by_tag
 ```
 
+Some tests compare images. To regenerated expected images, run this (by definition, tests will succeed when updating image, you need to manually review the changes in the generated images to ensure it looks as expected)
+```
+docker-compose exec -e TEST_UPDATED_EXPECTED_IMAGES=TRUE web python manage.py test reports.tests.tests.ReportsTests.test_pdf_preview --settings=geomapshark.settings_test --keepdb
+```
+
 ### Linting
 
 We use [pre-commit](https://pre-commit.com/) as code formatter. Just use the following command to automatically format your code when you commit:

@@ -54,6 +54,8 @@ deprecated==1.2.13
     # via
     #   -r requirements.txt
     #   jwcrypto
+diffimg==0.3.0
+    # via -r requirements_dev.in
 distlib==0.3.4
     # via virtualenv
 django==3.2.13
@@ -245,6 +247,7 @@ pickleshare==0.7.5
 pillow==9.0.1
     # via
     #   -r requirements.txt
+    #   diffimg
     #   django-simple-captcha
     #   pdf2image
 pip-tools==6.6.2

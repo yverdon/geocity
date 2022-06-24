@@ -1,3 +1,8 @@
+import os
+from distutils.util import strtobool
+
+import diffimg
+import pdf2image
 from django.contrib.auth.models import Group, User
 from django.test import TestCase
 from django.urls import reverse
@@ -20,6 +25,7 @@ from permits.models import (
 
 from ..models import Report
 
+UPDATE_EXPECTED_IMAGES = strtobool(os.getenv("TEST_UPDATED_EXPECTED_IMAGES", "false"))
 
 # TODO: these tests cannot fully work as expected with the current infra, because
 # the pdf/qgis container call the regular webserver running in the web container
@@ -125,6 +131,11 @@ class ReportsTests(TestCase):
         self.user = user
         self.dept = dept
 
+    @property
+    def data_dir(self):
+        """Where to find/store expected/generated images"""
+        return os.path.join(os.path.dirname(__file__), "data", self._testMethodName)
+
     def test_pdf_preview(self):
         """Test PDF generation through the reports:permit_request_report view"""
 
@@ -140,20 +151,42 @@ class ReportsTests(TestCase):
                 },
             )
         )
-
-        # Uncomment to save the PDF to expected images
-        # pdf_bytes = b"".join(response.streaming_content)
-        # from pdf2image import convert_from_bytes
-        # pages = convert_from_bytes(pdf_bytes, 500)
-        # for i, page in enumerate(pages):
-        #     basepath = os.path.join(
-        #         os.path.dirname(__file__), "expected", self.__class__.__name__
-        #     )
-        #     os.makedirs(basepath, exist_ok=True)
-        #     page.save(os.path.join(basepath, f"{i}.png"), "PNG")
-
-        # TODO: compare with expected image
         self.assertEqual(response.status_code, 200)
+
+        # Compare the generated PDF against the expected images
+        if UPDATE_EXPECTED_IMAGES:
+            os.makedirs(self.data_dir, exist_ok=True)
+        diff_ratios = {}
+        pdf_bytes = b"".join(response.streaming_content)
+        pages = pdf2image.convert_from_bytes(pdf_bytes, 200)
+        for i, page in enumerate(pages):
+            page_name = f"page-{i:0>3}"
+            expected_path = os.path.join(self.data_dir, f"{page_name}.expected.png")
+            generated_path = os.path.join(self.data_dir, f"{page_name}.generated.png")
+            diff_path = os.path.join(self.data_dir, f"{page_name}.result.png")
+
+            if UPDATE_EXPECTED_IMAGES:
+                page.save(expected_path, "PNG")
+            page.save(generated_path, "PNG")
+
+            diff_ratios[page_name] = diffimg.diff(
+                generated_path,
+                expected_path,
+                diff_img_file=diff_path,
+            )
+
+        # We do not tolerate the slighest rendering difference. At some point we may need to implement
+        # support for masks (areas that are not compared) to allow negligible rendering differences,
+        # e.g. for QGIS updates.
+        differences = []
+        for name, ratio in diff_ratios.items():
+            if ratio:
+                differences.append(f"{name}: {ratio*100:.2f}%")
+        if differences:
+            differences_txt = "\n".join(differences)
+            raise AssertionError(
+                f"The following rendering differences were detected:\n{differences_txt}"
+            )
 
     def test_attach_pdf(self):
         """Test attachment of PDF to permit request through the form"""
