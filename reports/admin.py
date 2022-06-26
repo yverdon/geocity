@@ -23,7 +23,6 @@ class ReportLayoutAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     ]
 
 
-# TODO CRITICAL: add IntegratorFilterMixin once model issue is solved
 class SectionInline(StackedPolymorphicInline):
     model = Section
     # Automatic registration of child inlines

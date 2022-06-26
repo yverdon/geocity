@@ -99,18 +99,6 @@ class Section(PolymorphicModel):
     )
     order = models.PositiveIntegerField(null=True, blank=True)
 
-    # TODO CRITICAL: add relation to integrator
-    # Currently causes error:  django.db.utils.IntegrityError:
-    # insert or update on table "reports_section" violates foreign key constraint "reports_section_polymorphic_ctype_id_7252ff48_fk_django_co"
-    # web_1       | DETAIL:  Key (polymorphic_ctype_id)=(1) is not present in table "django_content_type".
-
-    # integrator = models.ForeignKey(
-    #     Group,
-    #     null=True,
-    #     on_delete=models.SET_NULL,
-    #     verbose_name=_("Groupe des administrateurs"),
-    # )
-
     def prepare_context(self, request, base_context):
         """Subclass this to add elements to the context (make sure to return a copy if you change it)"""
         return {
