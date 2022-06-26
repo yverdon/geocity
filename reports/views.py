@@ -9,8 +9,9 @@ from django.utils import timezone
 from knox.models import AuthToken
 from rest_framework.decorators import api_view
 
+from permits import services
 from permits.decorators import permanent_user_required
-from permits.models import PermitRequest, WorksObjectType
+from permits.models import WorksObjectType
 from permits.serializers import PermitRequestPrintSerializer
 
 from .models import Report
@@ -28,8 +29,10 @@ def report_content(request, permit_request_id, work_object_type_id, report_id):
     """This views returns the content of a report in HTML. It is mainly meant to be rendered
     to PDF (but could also work as a PDF)"""
 
-    # TODO CRITICAL: ensure user has permissions on thse objects
-    permit_request = get_object_or_404(PermitRequest, pk=permit_request_id)
+    permit_request = get_object_or_404(
+        services.get_permit_requests_list_for_user(request.user), pk=permit_request_id
+    )
+
     work_object_type = get_object_or_404(WorksObjectType, pk=work_object_type_id)
     report = get_object_or_404(Report, pk=report_id)
 

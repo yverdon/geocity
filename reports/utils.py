@@ -34,7 +34,6 @@ def run_docker_container(
     r = container.wait(timeout=180)
 
     logs = container.logs().decode("utf-8")
-    print(logs)
 
     # Check if it succeeded
     exit_code = r["StatusCode"]

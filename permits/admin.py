@@ -40,6 +40,7 @@ INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [
     # TODO: move to reports app
     "report",
     "reportlayout",
+    "section",
 ]
 OTHER_PERMISSIONS_CODENAMES = [
     "view_user",
@@ -1312,25 +1313,6 @@ class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 )
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
-    # Until further notice, disable this feature for integrators
-    def has_add_permission(self, request):
-        if request.user.is_superuser:
-            return True
-        else:
-            return False
-
-    def has_delete_permission(self, request, obj=None):
-        if request.user.is_superuser:
-            return True
-        else:
-            return False
-
-    def has_change_permission(self, request, obj=None):
-        if request.user.is_superuser:
-            return True
-        else:
-            return False
 
 
 class PermitRequestInquiryAdmin(admin.ModelAdmin):
