@@ -1292,6 +1292,8 @@ class TemplateCustomizationAdmin(admin.ModelAdmin):
 class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = permit_forms.ComplementaryDocumentTypeAdminForm
 
+    fields = ["name", "parent", "work_object_types", "integrator"]
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "work_object_types":
             if request.user.is_superuser:
