@@ -12,7 +12,7 @@ from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ugettext as _
 from jinja2.sandbox import SandboxedEnvironment
 from knox.models import AuthToken
 from polymorphic.models import PolymorphicModel
@@ -184,6 +184,9 @@ class SectionMap(Section):
         default="a4",
     )
 
+    class Meta:
+        verbose_name = _("Carte")
+
     def get_context(self, context):
         context = super().get_context(context)
 
@@ -239,6 +242,9 @@ class SectionParagraph(Section):
         )
     )
 
+    class Meta:
+        verbose_name = _("Paragraphe libre")
+
     def get_context(self, context):
         env = SandboxedEnvironment()
         request_data = PermitRequestPrintSerializer(context["permit_request"]).data
@@ -266,36 +272,40 @@ class SectionParagraph(Section):
 
 
 class SectionContact(Section):
-    pass
+    class Meta:
+        verbose_name = _("Contact·s")
 
 
 class SectionAuthor(Section):
-    pass
+    class Meta:
+        verbose_name = _("Auteur")
 
 
 class SectionDetail(Section):
-    pass
+    class Meta:
+        verbose_name = _("Détail·s")
 
 
 class SectionPlanning(Section):
-    pass
-
-
-class SectionFiles(Section):
-    pass
+    class Meta:
+        verbose_name = _("Planning")
 
 
 class SectionHorizontalRule(Section):
-    pass
+    class Meta:
+        verbose_name = _("Ligne horizontale")
 
 
 class SectionValidationComment(Section):
-    pass
+    class Meta:
+        verbose_name = _("Commentaire·s du secrétariat")
 
 
 class SectionAmendPropertyComment(Section):
-    pass
+    class Meta:
+        verbose_name = _("Commentaire·s des services")
 
 
 class SectionStatus(Section):
-    pass
+    class Meta:
+        verbose_name = _("Statut")
