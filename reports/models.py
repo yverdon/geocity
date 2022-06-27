@@ -129,7 +129,7 @@ class SectionMap(Section):
 
     def get_context(self, context):
         context = super().get_context(context)
-        
+
     def _generate_image(self, request, base_context):
 
         # Generate a token
@@ -195,8 +195,7 @@ class SectionParagraph(Section):
             )
         )
     )
-    
-    
+
     class Meta:
         verbose_name = _("Paragraphe libre")
 
