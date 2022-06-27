@@ -1,5 +1,6 @@
 import argparse
 import os
+import re
 import tempfile
 
 import requests
@@ -12,19 +13,26 @@ def export(args):
     output_path = args.output_path
     template_name = args.template_name
     permit_request_id = args.permit_request_id
+    allowed_hosts = args.allowed_hosts
     token = args.token
 
-    print(f"Exporting {project_path=} {template_name=} {permit_request_id=} {token=}")
+    print(
+        f"Exporting {project_path=} {template_name=} {permit_request_id=} {allowed_hosts=} {token=}"
+    )
 
     with tempfile.TemporaryDirectory() as tmpdirname:
 
         # write the project to a file
-        contents = open(project_path, "rb").read()
-        # TODO: replace remote URL by web_root
-        contents = contents.replace(b"http://localhost:9095", b"http://web:9000")
-        contents = contents.replace(b"http://127.0.0.1:9095", b"http://web:9000")
+        contents = open(project_path, "r").read()
+
+        # replace URLs to Django by internal calls
+        for allowed_host in allowed_hosts.split(","):
+            pattern = rf"http(s)?://{allowed_host}(:[0-9]+)?/"
+            replacement = f"http://web:9000/"
+            contents = re.sub(pattern, replacement, contents)
+
         input_path = os.path.join(tmpdirname, "project.qgs")
-        open(input_path, "wb").write(contents)
+        open(input_path, "w").write(contents)
 
         # start QGIS
         qgs = QgsApplication([], False)
@@ -57,13 +65,6 @@ def export(args):
                 print(f"  {layer.dataProvider().uri()=}")
                 print(f"  {layer.featureCount()=}")
                 print(f"  {layer.dataProvider().error().message()=}")
-                # show contents of the response
-                r = requests.get(
-                    f"http://web:9000/wfs3/collections/permits/items/{permit_request_id}",
-                    headers={"Authorization": f"Token {token}"},
-                )
-                print(f"response code: {r.status_code}")
-                print(f"response content: {r.content}")
 
         # get the atlas
         layout = project.layoutManager().layoutByName(template_name)
@@ -122,5 +123,6 @@ if __name__ == "__main__":
     parser.add_argument("template_name", type=str)
     parser.add_argument("permit_request_id", type=int)
     parser.add_argument("token", type=str)
+    parser.add_argument("allowed_hosts", type=str)
 
     export(parser.parse_args())

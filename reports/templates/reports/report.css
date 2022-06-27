@@ -12,7 +12,7 @@
   }
 
   @bottom-center {
-    content: "{{actual_date}} ";
+    content: "{% now "DATETIME_FORMAT" %}";
   }
 }
 

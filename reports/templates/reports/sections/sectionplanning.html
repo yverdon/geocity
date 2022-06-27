@@ -2,21 +2,21 @@
 
 {% block content %}
     <h2>Planning</h2>
-    {% if data.properties.geotime_aggregated %}
+    {% if request_data.properties.geotime_aggregated %}
         <div class="flex_container">
             <div class="flex_item-100">
-                <span class="bold">Date de début : </span>{{data.properties.geotime_aggregated.start_date}}<br>
-                <span class="bold">Date de fin : </span>{{data.properties.geotime_aggregated.end_date}}<br>
-                {% if data.properties.geotime_aggregated.comments %}
+                <span class="bold">Date de début : </span>{{request_data.properties.geotime_aggregated.start_date}}<br>
+                <span class="bold">Date de fin : </span>{{request_data.properties.geotime_aggregated.end_date}}<br>
+                {% if request_data.properties.geotime_aggregated.comments %}
                     <span class="bold">Commentaire·s : </span><ul>
-                        {% for comment in data.properties.geotime_aggregated.comments %}
+                        {% for comment in request_data.properties.geotime_aggregated.comments %}
                             <li>{{comment}}</li>
                         {% endfor %}
                     </ul><br>
                 {% endif %}
-                {% if data.properties.geotime_aggregated.external_links %}
+                {% if request_data.properties.geotime_aggregated.external_links %}
                     <span span class="bold">Lien·s externe·s : </span><ul>
-                        {% for link in data.properties.geotime_aggregated.external_links %}
+                        {% for link in request_data.properties.geotime_aggregated.external_links %}
                             <li><a href="{{link}}">{{link}}</a></li>
                         {% endfor %}
                     </ul><br>
