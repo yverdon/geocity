@@ -113,6 +113,11 @@ class PermitsAdminSite(AdminSite):
                 self.create_anonymous_user,
                 name="create_anonymous_user",
             ),
+            re_path(
+                r"^create-knox-token/$",
+                self.create_knox_token,
+                name="create_knox_token",
+            ),
         ]
         return custom_urls + urls
 
@@ -148,6 +153,39 @@ class PermitsAdminSite(AdminSite):
             reverse(
                 "admin:permits_permitadministrativeentity_change",
                 kwargs={"object_id": entity_id},
+            )
+        )
+
+    @method_decorator(staff_member_required)
+    @method_decorator(require_POST)
+    def create_knox_token(self, request):
+        """
+        Admin custom view to create the knox token for the given User
+        """
+        user_id = int(request.POST.get("user"))
+        try:
+            token = call_command("create_knox_token", user_id)
+        except CommandError:
+            # Display error
+            messages.add_message(
+                request,
+                messages.ERROR,
+                _("Echec de la création du knox token."),
+            )
+        else:
+            messages.add_message(
+                request,
+                messages.SUCCESS,
+                _(
+                    "Knox token créé avec succès. Veuillez le copier, il ne sera visible qu'une seule fois."
+                ),
+            )
+            messages.add_message(request, messages.INFO, _(token))
+
+        return redirect(
+            reverse(
+                "admin:auth_user_change",
+                kwargs={"object_id": user_id},
             )
         )
 
@@ -244,6 +282,8 @@ class UserAdmin(BaseUserAdmin):
 
     is_sociallogin.admin_order_field = "socialaccount"
     is_sociallogin.short_description = "Social"
+
+    change_form_template = "permits/admin/user_change.html"
 
     def get_readonly_fields(self, request, obj=None):
         # limit editable fields to protect user data, superuser creation must be done using django shell
