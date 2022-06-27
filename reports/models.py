@@ -10,7 +10,7 @@ from django.core.files import File
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils.safestring import mark_safe
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ugettext as _
 from jinja2.sandbox import SandboxedEnvironment
 from knox.models import AuthToken
 from polymorphic.models import PolymorphicModel
@@ -127,6 +127,12 @@ class SectionMap(Section):
         default="a4",
     )
 
+    class Meta:
+        verbose_name = _("Carte")
+
+    def get_context(self, context):
+        context = super().get_context(context)
+
     def _generate_image(self, request, base_context):
 
         # Generate a token
@@ -193,6 +199,20 @@ class SectionParagraph(Section):
         )
     )
 
+    class Meta:
+        verbose_name = _("Paragraphe libre")
+
+    def get_context(self, context):
+        env = SandboxedEnvironment()
+        request_data = PermitRequestPrintSerializer(context["permit_request"]).data
+
+        wot = context["work_object_type"]
+        wot_key = (
+            f"{wot.works_object.name} ({wot.works_type.name})"  # defined by serializer
+        )
+        request_props = request_data["properties"]["request_properties"][wot_key]
+        amend_props = request_data["properties"]["amend_properties"][wot_key]
+
     def _render_user_template(self, base_context):
         # User template have only access to pure json elements for security reasons
         inner_context = {
@@ -212,36 +232,40 @@ class SectionParagraph(Section):
 
 
 class SectionContact(Section):
-    pass
+    class Meta:
+        verbose_name = _("Contact·s")
 
 
 class SectionAuthor(Section):
-    pass
+    class Meta:
+        verbose_name = _("Auteur")
 
 
 class SectionDetail(Section):
-    pass
+    class Meta:
+        verbose_name = _("Détail·s")
 
 
 class SectionPlanning(Section):
-    pass
-
-
-class SectionFiles(Section):
-    pass
+    class Meta:
+        verbose_name = _("Planning")
 
 
 class SectionHorizontalRule(Section):
-    pass
+    class Meta:
+        verbose_name = _("Ligne horizontale")
 
 
-class SectionValidationComment(Section):
-    pass
+class SectionValidation(Section):
+    class Meta:
+        verbose_name = _("Commentaire·s du secrétariat")
 
 
-class SectionAmendPropertyComment(Section):
-    pass
+class SectionAmendProperty(Section):
+    class Meta:
+        verbose_name = _("Commentaire·s des services")
 
 
 class SectionStatus(Section):
-    pass
+    class Meta:
+        verbose_name = _("Statut")
