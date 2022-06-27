@@ -9,7 +9,7 @@ import permits.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("reports", "0003_create_reports"),
+        ("reports", "0002_create_reports"),
     ]
 
     operations = [
