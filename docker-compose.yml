@@ -4,7 +4,7 @@ volumes:
     gmsdata:
 
 services:
-    web:
+    web: # Name of this container should not be changed
         image: gms_web
         restart: unless-stopped
         build:

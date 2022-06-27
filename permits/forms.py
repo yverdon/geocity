@@ -1681,6 +1681,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         document = super(PermitRequestComplementaryDocumentsForm, self).save(
             commit=False
         )
+        # TODO: move logic to model
         # Backoffice uploads are stored together in dedicated structure and regrouped by permit_request ID
         document.document.field.upload_to = (
             f"backoffice_uploads/{document.permit_request_id}"
