@@ -153,6 +153,19 @@ class BlockRequesterUserLoggedOnToken(BasePermission):
             return False
 
 
+class BlockRequesterUserWithoutGroup(BasePermission):
+    """
+    Block access to any user not in a group
+    """
+
+    def has_permission(self, request, view):
+        print(request.user.groups.count())
+        if request.user.groups.count():
+            return True
+        else:
+            return False
+
+
 class PermitRequestViewSet(
     WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelViewSet
 ):
@@ -178,7 +191,7 @@ class PermitRequestViewSet(
 
     throttle_scope = "permits"
     serializer_class = serializers.PermitRequestPrintSerializer
-    permission_classes = [BlockRequesterUserPermission]
+    permission_classes = [BlockRequesterUserWithoutGroup]
 
     wfs3_title = "Demandes"
     wfs3_description = "Toutes les demandes"
