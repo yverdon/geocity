@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
@@ -23,6 +24,17 @@ class ReportLayoutAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     ]
 
 
+# Make sure the inline is always considered changed, even when no input is entered
+# (fixes issue where inlines are not saved unless position is defined)
+class AlwaysChangedStackedPolymorphicInlineChild(StackedPolymorphicInline.Child):
+    # see https://stackoverflow.com/a/3734700
+    class AlwaysChangedModelForm(forms.ModelForm):
+        def has_changed(self):
+            return True
+
+    form = AlwaysChangedModelForm
+
+
 class SectionInline(StackedPolymorphicInline):
     model = Section
     # Automatic registration of child inlines
@@ -30,7 +42,7 @@ class SectionInline(StackedPolymorphicInline):
     child_inlines = [
         type(
             f"{child_model.__class__}Inline",
-            (StackedPolymorphicInline.Child,),
+            (AlwaysChangedStackedPolymorphicInlineChild,),
             {"model": child_model},
         )
         for child_model in Section.__subclasses__()
