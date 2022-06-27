@@ -50,6 +50,7 @@ OTHER_PERMISSIONS_CODENAMES = [
     "delete_group",
     "see_private_requests",
     # DRF Token authentication
+    # TODO: we probably want to add knox tokens auth here ?
 ]
 
 if not settings.ALLOW_REMOTE_USER_AUTH:
