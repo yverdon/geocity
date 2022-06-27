@@ -296,12 +296,12 @@ class SectionHorizontalRule(Section):
         verbose_name = _("Ligne horizontale")
 
 
-class SectionValidationComment(Section):
+class SectionValidation(Section):
     class Meta:
         verbose_name = _("Commentaire·s du secrétariat")
 
 
-class SectionAmendPropertyComment(Section):
+class SectionAmendProperty(Section):
     class Meta:
         verbose_name = _("Commentaire·s des services")
 
