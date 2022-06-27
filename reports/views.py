@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from django.contrib.auth.decorators import login_required
-from django.http import FileResponse
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -73,7 +73,19 @@ def report_content(request, permit_request_id, work_object_type_id, report_id):
 @login_required
 @permanent_user_required
 def report_pdf(request, permit_request_id, work_object_type_id, report_id):
+
+    # Check that user is trusted, as standard user is not alowed to generate documents
+    if not request.user.permitauthor.is_trusted(request.user):
+        raise Http404
+
+    # Prevent unauthorize user to call this view, return a 404 instead of the error from container
+    # This way, we avoid creating a container for nothing
+    get_object_or_404(
+        services.get_permit_requests_list_for_user(request.user), pk=permit_request_id
+    )
+
     # Generate a token
+
     authtoken, token = AuthToken.objects.create(
         request.user, expiry=timedelta(minutes=5)
     )

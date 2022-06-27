@@ -407,6 +407,27 @@ class PermitAuthor(models.Model):
             )
 
     @cached_property
+    def is_trusted(self, user):
+        """
+        PermitAuthor is either superadmin, integrator, backoffice or validator
+        """
+        user_is_integrator_admin = user.groups.filter(
+            permitdepartment__is_integrator_admin=True
+        ).exists()
+        user_is_backoffice = user_is_integrator_admin = user.groups.filter(
+            permitdepartment__is_backoffice=True
+        ).exists()
+        user_is_validator = user_is_integrator_admin = user.groups.filter(
+            permitdepartment__is_validator=True
+        ).exists()
+        return (
+            user.is_superuser
+            or user_is_integrator_admin
+            or user_is_backoffice
+            or user_is_validator
+        )
+
+    @cached_property
     def is_anonymous(self):
         """
         PermitAuthor unique per AdministrativeEntity.
