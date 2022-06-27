@@ -797,6 +797,11 @@ table.table thead th.desc {
   top: 0px;
 }
 
+.badge-beta {
+  background-color: #000;
+  font-weight: bold;
+}
+
 
 .badge-pill {
   font-size: 32%;

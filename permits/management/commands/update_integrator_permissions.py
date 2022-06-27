@@ -37,7 +37,9 @@ class Command(BaseCommand):
             for integrator_group in integrator_groups:
                 # set the required permissions for the integrator group
                 integrator_group.permissions.set(
-                    permits_permissions.union(other_permissions).union(report_permissions)
+                    permits_permissions.union(other_permissions).union(
+                        report_permissions
+                    )
                 )
             self.stdout.write("Update of integrator permissions sucessful.")
         except CommandError:
