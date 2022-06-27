@@ -9,11 +9,11 @@ INTERNAL_WEB_ROOT_URL = "http://web:9000"
 
 def export(args):
 
-    input_path = args.input_path
+    url = args.url
     output_path = args.output_path
     token = args.token
 
-    print(f"Exporting {input_path=} {output_path=} {token=}")
+    print(f"Exporting {url=} {output_path=} {token=}")
 
     # Custom URL fetcher that adds the authentication header for internal
     def fetcher(url):
@@ -25,7 +25,7 @@ def export(args):
         return default_url_fetcher(url)
 
     wp = weasyprint.HTML(
-        filename=input_path,
+        url=url,
         base_url=INTERNAL_WEB_ROOT_URL,
         url_fetcher=fetcher,
     )
@@ -35,7 +35,7 @@ def export(args):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("input_path", type=str, help="path to html input file")
+    parser.add_argument("url", type=str, help="url to transform to PDF")
     parser.add_argument("output_path", type=str, help="path to output")
     parser.add_argument("token", type=str)
 

@@ -1,10 +1,16 @@
 import os
+from datetime import datetime
 from distutils.util import strtobool
 
 import diffimg
 import pdf2image
+from django.conf import settings
 from django.contrib.auth.models import Group, User
-from django.test import TestCase
+from django.db import connections, transaction
+from django.test import LiveServerTestCase
+from django.test.testcases import LiveServerTestCase
+from django.utils.timezone import get_default_timezone, make_aware
+from freezegun import freeze_time
 
 from permits.models import (
     ComplementaryDocumentType,
@@ -26,28 +32,82 @@ from ..models import Report
 
 UPDATE_EXPECTED_IMAGES = strtobool(os.getenv("TEST_UPDATED_EXPECTED_IMAGES", "false"))
 
-# TODO: these tests cannot fully work as expected with the current infra, because
-# the pdf/qgis container call the regular webserver running in the web container
-# instead of the test server, meaning it has no access to database changes because
-# they are on the test database (plus also in a transaction).
-# We probably need to use LiveServerTestCase instead, and run tests with `run`
-# instead of `exec`.
-# Currently, the test passes but the QGIS map is not correctly rendered, and they can
-# easily fail if there are some changes on the server running in the web container.
-class ReportsTestsBase(TestCase):
-    """Base class for testing reports. This sets up some fixtures and includes methods to test PDFS."""
+
+@freeze_time(make_aware(datetime(1985, 7, 4), get_default_timezone()))
+class ReportsTestsBase(LiveServerTestCase):
+    """Base tests class for testing reports. It runs a live server to allow other containers (QGIS and PDF)
+    to communicate with it, provides test fixtures and methods to compare PDFs.
+
+    For this to work, it must run with exposed ports (which means you cannot run the regular web container)"""
+
+    host = "0.0.0.0"
+    port = 9000
+
+    # We need to set available_apps for LiveServerTestCase to
+    # correctly flush polymorphic models
+    available_apps = settings.INSTALLED_APPS
+
+    # Sequences must be reset since IDs appear on the PDF, otherwise rendering
+    # will change between successive calls
+    reset_sequences = True
+
+    def _reset_sequences(self, db_name):
+        # Overriding LiveServerTestCase's implementation because it
+        # does not play nice with polymorphic... (throws
+        # psycopg2.ProgrammingError: can't adapt type '__proxy__')
+        # Here we manually reset the sequences for all tables
+        conn = connections[db_name]
+        with transaction.atomic(using=db_name):
+            with conn.cursor() as cursor:
+                # Get tablename, pk_column for all tables in public
+                cursor.execute(
+                    """
+                    select
+                        kcu.table_name,
+                        kcu.column_name as pk_column
+                    from
+                        information_schema.table_constraints tco
+                    join information_schema.key_column_usage kcu on
+                        kcu.constraint_name = tco.constraint_name
+                        and kcu.constraint_schema = tco.constraint_schema
+                        and kcu.constraint_name = tco.constraint_name
+                    where
+                        tco.constraint_type = 'PRIMARY KEY'
+                        and kcu.table_schema = 'public'
+                    """
+                )
+                for table_name, pk_name in cursor.fetchall():
+                    # hacky used to skip knox digest pk which is a varchar
+                    if not pk_name.endswith("id"):
+                        continue
+                    query = f"SELECT setval(pg_get_serial_sequence('{table_name}', '{pk_name}'), coalesce(max({pk_name}),0) + 1, false) FROM {table_name}"
+                    cursor.execute(query)
+
+    # This seems not necessary, wrote it because at some point I had strange issues
+    # where fixtures did not seem to properly delete... Keeping it in case it
+    # def _fixture_teardown(self):
+    #     # Overriding LiveServerTestCase's implementation because it
+    #     # does not play nice with polymorphic...
+    #     # We manually call TRUNCATE on all tables.
+    #     for db_name in self._databases_names(include_mirrors=False):
+    #         conn = connections[db_name]
+    #         with transaction.atomic(using=db_name):
+    #             with conn.cursor() as cursor:
+    #                 cursor.execute(
+    #                     "SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema = 'public'"
+    #                 )
+    #                 tables = [row[0] for row in cursor.fetchall()]
+    #                 tables_list = ','.join(tables)
+    #                 query = f"TRUNCATE {tables_list}"
+    #                 cursor.execute(query)
 
     def setUp(self):
-        super().setUp()
-        self._create_test_fixtures()
-
-    def _create_test_fixtures(self):
 
         # Create the admin entity
         admin_entity = PermitAdministrativeEntity.objects.create(
             name="entity",
             ofs_id=1,
-            geom="SRID=2056;MultiPolygon (((2500000 1000000, 2500100 1000000, 2500100 1000100, 2500000 1000100, 2500000 1000000)))",
+            geom="SRID=2056;MultiPolygon (((2538512 1181638, 2538447 1180620, 2539787 1180606, 2539784 1181553, 2538512 1181638)))",
         )
 
         # Create the user
@@ -107,7 +167,7 @@ class ReportsTestsBase(TestCase):
 
         PermitRequestGeoTime.objects.create(
             permit_request=permit_request,
-            geom="SRID=2056;GEOMETRYCOLLECTION (MultiPolygon (((2500025 1000025, 2500075 1000025, 2500075 1000075, 2500025 1000075, 2500025 1000025))))",
+            geom="SRID=2056;GEOMETRYCOLLECTION (MultiPolygon (((2539069 1181160, 2539052 1181120, 2539099 1181110, 2539118 1181147, 2539069 1181160))))",
         )
         PermitRequestAmendPropertyValue.objects.create(
             property=prop,

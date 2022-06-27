@@ -512,8 +512,8 @@ class PermitRequestDetailView(View):
             data,
             kwargs["files"],
             form_kwargs={
+                "request": self.request,
                 "permit_request": self.permit_request,
-                "user": self.request.user,
             },
         )
 

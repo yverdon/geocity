@@ -10,3 +10,4 @@ pip-tools
 babel
 pdf2image
 diffimg
+freezegun
