@@ -1710,7 +1710,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super(PermitRequestComplementaryDocumentsForm, self).clean()
 
-        # TODO: validation errors raise here don't appear in the template
+        # TODO: validation errors raised here don't appear in the template
 
         if not self.cleaned_data.get(
             "authorised_departments"

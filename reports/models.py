@@ -44,7 +44,7 @@ class ReportLayout(models.Model):
     )
     background = AdministrativeEntityFileField(
         _('Image d\'arrière plan ("papier à en-tête")'),
-        validators=[FileExtensionValidator(allowed_extensions=["png"])],
+        validators=[FileExtensionValidator(allowed_extensions=["png", "jpg"])],
         upload_to="report_layout_backgrounds",
         null=True,
         blank=True,
@@ -200,17 +200,6 @@ class SectionParagraph(Section):
 
     class Meta:
         verbose_name = _("Paragraphe libre")
-
-    def get_context(self, context):
-        env = SandboxedEnvironment()
-        request_data = PermitRequestPrintSerializer(context["permit_request"]).data
-
-        wot = context["work_object_type"]
-        wot_key = (
-            f"{wot.works_object.name} ({wot.works_type.name})"  # defined by serializer
-        )
-        request_props = request_data["properties"]["request_properties"][wot_key]
-        amend_props = request_data["properties"]["amend_properties"][wot_key]
 
     def _render_user_template(self, base_context):
         # User template have only access to pure json elements for security reasons

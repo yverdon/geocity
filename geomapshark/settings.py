@@ -570,7 +570,7 @@ if ALLOW_REMOTE_USER_AUTH:
 
 CKEDITOR_CONFIGS = {
     "default": {
-        # TODO: find a way to customize style and format dropdowns
+        # TODO: customize style and format dropdowns
         "toolbar": "custom",
         "toolbar_custom": [
             ["Undo", "Redo"],
