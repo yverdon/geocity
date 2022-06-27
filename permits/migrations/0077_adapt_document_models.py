@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("permits", "0076_auto_20220623_1538"),
+        ("permits", "0076_remove_print_v1_models"),
         ("reports", "0001_initial"),
     ]
 
