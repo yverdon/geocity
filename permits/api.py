@@ -159,7 +159,6 @@ class BlockRequesterUserWithoutGroup(BasePermission):
     """
 
     def has_permission(self, request, view):
-        print(request.user.groups.count())
         if request.user.groups.count():
             return True
         else:

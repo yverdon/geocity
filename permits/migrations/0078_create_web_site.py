@@ -2,7 +2,7 @@ from django.db import migrations
 
 
 def create_web_site(apps, schema_editor):
-    
+
     Site = apps.get_model("sites", "Site")
 
     Site.objects.update_or_create(domain="web", name="web (internal calls)")
