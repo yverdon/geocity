@@ -11,7 +11,7 @@ import permits.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("reports", "0002_create_default_reports"),
+        ("reports", "0001_initial"),
     ]
 
     operations = [
