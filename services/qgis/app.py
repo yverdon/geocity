@@ -2,6 +2,7 @@ import argparse
 import os
 import re
 import tempfile
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 import requests
 from qgis.core import QgsApplication, QgsAuthMethodConfig, QgsLayoutExporter, QgsProject
@@ -54,9 +55,30 @@ def export(args):
         project = QgsProject.instance()
         project.read(input_path)
 
-        # test the layers (for debugging)
+        # iterate over all layers
         for layer in QgsProject.instance().mapLayers().values():
             print(f"checking layer {layer.name()}... ", end="")
+
+            # rewrite the permits layer url to only show the current feature
+            # TODO: In principle, filtering should not be necessary if the wfs3 endpoint performance was
+            # good enough for QGIS to load the whole layer. Filtering should be done only if desired
+            # (e.g. if a filter is set on the QGIS layer, somehow using the atlas id if needed)
+            permits_typenames = [
+                "permits",
+                "permits_poly",
+                "permits_point",
+                "permits_line",
+            ]
+            if layer.dataProvider().uri().param("typename") in permits_typenames:
+                old_url = layer.dataProvider().uri().param("url")
+                parsed_url = urlparse(old_url)
+                url_dict = {
+                    **dict(parse_qsl(parsed_url.query)),
+                    "permit_request_id": permit_request_id,
+                }
+                new_url = urlunparse(parsed_url._replace(query=urlencode(url_dict)))
+                print(f"rewrite layer url from {old_url} to {new_url}")
+                layer.dataProvider().uri().setParam("url", new_url)
             if layer.isValid():
                 print("ok")
             else:
