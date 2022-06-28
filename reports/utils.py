@@ -43,6 +43,7 @@ def run_docker_container(
             return _get_file(container, file_output) if file_output else None
     finally:
         # TODO: not sure this always runs, seems sometimes there are containers left
+        # but so far couldn't find a way to set remove=True using the python docker sdk
         container.remove()
 
     raise DockerRunFailedError(exit_code, logs)
