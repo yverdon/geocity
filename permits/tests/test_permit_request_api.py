@@ -189,12 +189,20 @@ class PermitRequestAPITestCase(TestCase):
         validator_user = factories.ValidatorUserFactory(
             groups=[validation.department.group, factories.ValidatorGroupFactory()]
         )
+        validator_group = factories.ValidatorGroupFactory()
+        validator_group.user_set.add(validator_user)
         self.client.login(username=validator_user.username, password="password")
         response = self.client.get(reverse("permits-list"), {})
         response_json = response.json()
         permit_requests = models.PermitRequest.objects.all().only("id")
         permit_requests_ids = [perm.id for perm in permit_requests]
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response_json["features"]), permit_requests.count())
+        for i, perm in enumerate(permit_requests):
+            self.assertIn(
+                response_json["features"][i]["properties"]["permit_request_id"],
+                permit_requests_ids,
+            )
 
     def test_api_secretariat_user(self):
         self.client.login(username=self.secretariat_user.username, password="password")
