@@ -2,7 +2,7 @@ from django.contrib.auth.models import Group, Permission
 from django.core.management import BaseCommand, CommandError
 from django.utils.translation import gettext
 
-from permits import permissions_groups
+from geomapshark import permissions_groups
 
 
 class Command(BaseCommand):
