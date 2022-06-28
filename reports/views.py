@@ -33,7 +33,6 @@ def user_is_allowed_to_generate_report(
         services.get_permit_requests_list_for_user(request.user), pk=permit_request_id
     )
 
-    
     # Check the current work_object_type_id is allowed for user
     # The wot list is associated to a permitrequest, thus a user that have
     # access to the permitrequest, also has access to all wots associated with it
@@ -44,19 +43,21 @@ def user_is_allowed_to_generate_report(
         raise Http404
 
     work_object_type = get_object_or_404(WorksObjectType, pk=work_object_type_id)
-    # TODO: CRITICAL: ensure user is allowed to print the current Report
 
-    # Check the user is allowed to user this report template
-    # document_types_list_for_wot = ComplementaryDocumentType.objects.filter(
-    #     work_object_types__pk__in=[work_object_type.pk],
-    # ).values_list("pk")
+    # Check the user is allowed to use this report template
 
-    report = get_object_or_404(Report, pk=report_id)
+    # List parents documents for a given WOT
+    document_parent_list = ComplementaryDocumentType.objects.filter(
+        work_object_types__pk=work_object_type_id, parent__isnull=True
+    )
 
-    # document_types_list_for_report = [d.parent.pk for d in report.document_types.distinct().all()]
-    # for child in report.document_types.all():
-        
-    #     raise Http404
+    # Check if there's a children document with the same report id as the request
+    children_document_exists = ComplementaryDocumentType.objects.filter(
+        parent__in=document_parent_list, reports__id=report_id
+    ).exists()
+
+    if not children_document_exists:
+        raise Http404
 
     return permit_request, work_object_type
 
