@@ -143,7 +143,7 @@ class BlockRequesterUserPermission(BasePermission):
 class BlockRequesterUserLoggedOnToken(BasePermission):
     """
     Block access to any user using a token instead of credentials
-    If 2FA is mandatory for one of user's group, it will be mandatory 
+    If 2FA is mandatory for one of user's group, it will be mandatory
     for access to this endpoint
     """
 

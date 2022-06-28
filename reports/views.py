@@ -11,17 +11,58 @@ from rest_framework.decorators import api_view
 
 from permits import services
 from permits.decorators import permanent_user_required
-from permits.models import WorksObjectType
+from permits.models import ComplementaryDocumentType, WorksObjectType
 from permits.serializers import PermitRequestPrintSerializer
 
 from .models import Report
 from .utils import run_docker_container
 
 
+def user_is_allowed_to_generate_report(
+    request, permit_request_id, work_object_type_id, report_id
+):
+
+    # Check that user has permission to generate pdf
+    if not (
+        request.user.has_perm("reports.can_generate_pdf") or request.user.is_superuser
+    ):
+        raise Http404
+
+    # Check that user is allowed to see the current permit_request
+    permit_request = get_object_or_404(
+        services.get_permit_requests_list_for_user(request.user), pk=permit_request_id
+    )
+
+    
+    # Check the current work_object_type_id is allowed for user
+    # The wot list is associated to a permitrequest, thus a user that have
+    # access to the permitrequest, also has access to all wots associated with it
+    if (
+        not work_object_type_id in permit_request.works_objects_list()
+        and not request.user.is_superuser
+    ):
+        raise Http404
+
+    work_object_type = get_object_or_404(WorksObjectType, pk=work_object_type_id)
+    # TODO: CRITICAL: ensure user is allowed to print the current Report
+
+    # Check the user is allowed to user this report template
+    # document_types_list_for_wot = ComplementaryDocumentType.objects.filter(
+    #     work_object_types__pk__in=[work_object_type.pk],
+    # ).values_list("pk")
+
+    report = get_object_or_404(Report, pk=report_id)
+
+    # document_types_list_for_report = [d.parent.pk for d in report.document_types.distinct().all()]
+    # for child in report.document_types.all():
+        
+    #     raise Http404
+
+    return permit_request, work_object_type
+
+
 # TODO: instead of taking PermitRequest and WorksObjectType arguments, we should take
 # in WorksObjectTypeChoice, which already joins both, so they are consistent.
-# TODO CRITICAL: ensure this mess of decorators does what we expect (accept token auth,
-# otherwise behave as a regular view)
 @api_view(["GET"])  # pretend it's a DRF view, so we get token auth
 @login_required
 @permanent_user_required
@@ -29,15 +70,11 @@ def report_content(request, permit_request_id, work_object_type_id, report_id):
     """This views returns the content of a report in HTML. It is mainly meant to be rendered
     to PDF (but could also work as a PDF)"""
 
-    # Check that user is trusted, as standard user is not alowed to generate documents
-    if not request.user.permitauthor.is_trusted:
-        raise Http404
-
-    permit_request = get_object_or_404(
-        services.get_permit_requests_list_for_user(request.user), pk=permit_request_id
+    # Ensure user is allowed to generate pdf
+    permit_request, work_object_type = user_is_allowed_to_generate_report(
+        request, permit_request_id, work_object_type_id, report_id
     )
 
-    work_object_type = get_object_or_404(WorksObjectType, pk=work_object_type_id)
     report = get_object_or_404(Report, pk=report_id)
 
     # Prepare the base context for rendering sections
@@ -78,17 +115,10 @@ def report_content(request, permit_request_id, work_object_type_id, report_id):
 @permanent_user_required
 def report_pdf(request, permit_request_id, work_object_type_id, report_id):
 
-    # Check that user is trusted, as standard user is not alowed to generate documents
-    if not request.user.permitauthor.is_trusted:
-        raise Http404
-
-    # Prevent unauthorize user to call this view, return a 404 instead of the error from container
-    # This way, we avoid creating a container for nothing
-    get_object_or_404(
-        services.get_permit_requests_list_for_user(request.user), pk=permit_request_id
+    # Ensure user is allowed to generate pdf
+    user_is_allowed_to_generate_report(
+        request, permit_request_id, work_object_type_id, report_id
     )
-
-    # Generate a token
 
     authtoken, token = AuthToken.objects.create(
         request.user, expiry=timedelta(minutes=5)

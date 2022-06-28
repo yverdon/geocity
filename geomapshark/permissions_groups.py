@@ -45,6 +45,7 @@ AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
     "classify_permit_request",
     "edit_permit_request",
     "see_private_requests",
+    "can_generate_pdf",
 ]
 
 

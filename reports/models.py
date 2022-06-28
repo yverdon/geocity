@@ -66,6 +66,9 @@ class Report(models.Model):
     class Meta:
         verbose_name = _("5.2 Configuration du rapport")
         verbose_name_plural = _("5.2 Configuration des rapports")
+        permissions = [
+            ("can_generate_pdf", _("Générer des documents pdf")),
+        ]
 
     name = models.CharField(max_length=150)
     layout = models.ForeignKey(ReportLayout, on_delete=models.RESTRICT)
@@ -73,7 +76,6 @@ class Report(models.Model):
     document_types = models.ManyToManyField(
         "permits.ComplementaryDocumentType", blank=True, related_name="+"
     )
-
     integrator = models.ForeignKey(
         Group,
         null=True,

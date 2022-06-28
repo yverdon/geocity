@@ -555,7 +555,7 @@ class GroupAdmin(admin.ModelAdmin):
                 ).pk
             ):
                 integrator_permissions = Permission.objects.filter(
-                    codename__in=AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
+                    codename__in=permissions_groups.AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
                 )
                 kwargs["queryset"] = integrator_permissions
 

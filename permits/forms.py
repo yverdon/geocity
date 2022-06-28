@@ -1762,6 +1762,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
                 name=report_response.filename,
             )
             # TODO CRITICAL: ensure user has access to these objects
+            # •To be filtered by user
             child_doc_type = models.ComplementaryDocumentType.objects.get(
                 pk=child_doc_type_pk
             )
