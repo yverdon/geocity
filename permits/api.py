@@ -20,10 +20,10 @@ from . import geoservices, models, search, serializers, services
 class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Events request endpoint Usage:
-        1.- /rest/permits/?show_only_future=true (past events get filtered out)
-        2.- /rest/permits/?starts_at=2022-01-01
-        3.- /rest/permits/?ends_at=2020-01-01
-        4.- /rest/permits/?adminentities=1,2,3
+        1.- /rest/events/?show_only_future=true (past events get filtered out)
+        2.- /rest/events/?starts_at=2022-01-01
+        3.- /rest/events/?ends_at=2020-01-01
+        4.- /rest/events/?adminentities=1,2,3
 
     """
 
@@ -143,7 +143,8 @@ class BlockRequesterUserPermission(BasePermission):
 class BlockRequesterUserLoggedOnToken(BasePermission):
     """
     Block access to any user using a token instead of credentials
-    If 2FA is mandatory for one of user's group, it will be mandatory
+    If 2FA is mandatory for one of user's group, it will be mandatory 
+    for access to this endpoint
     """
 
     def has_permission(self, request, view):
@@ -155,7 +156,7 @@ class BlockRequesterUserLoggedOnToken(BasePermission):
 
 class BlockRequesterUserWithoutGroup(BasePermission):
     """
-    Block access to any user not in a group
+    Block untrusted user. User must belong to a group in order to access this endpoint
     """
 
     def has_permission(self, request, view):
