@@ -35,7 +35,7 @@ def user_is_allowed_to_generate_report(
     # Check the current work_object_type_id is allowed for user
     # The wot list is associated to a permitrequest, thus a user that have
     # access to the permitrequest, also has access to all wots associated with it
-    if not work_object_type_id in permit_request.works_objects_id_list():
+    if not work_object_type_id in permit_request.works_objects_id_list() or not request.user.is_superuser:
         raise Http404
 
     work_object_type = get_object_or_404(WorksObjectType, pk=work_object_type_id)
