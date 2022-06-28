@@ -2,7 +2,7 @@
 
 from django.db import migrations
 
-from permits import admin
+from geomapshark import permissions_groups
 
 
 def set_default_integrator_on_existing_objects(apps, schema_editor):
@@ -49,11 +49,11 @@ def set_default_integrator_on_existing_objects(apps, schema_editor):
 
     permits_permissions = Permission.objects.filter(
         content_type__app_label="permits",
-        content_type__model__in=admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
+        content_type__model__in=permissions_groups.INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
     )
 
     other_permissions = Permission.objects.filter(
-        codename__in=admin.OTHER_PERMISSIONS_CODENAMES
+        codename__in=permissions_groups.OTHER_PERMISSIONS_CODENAMES
     )
 
     integrator_group.permissions.set(permits_permissions.union(other_permissions))

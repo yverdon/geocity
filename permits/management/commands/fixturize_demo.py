@@ -12,8 +12,8 @@ from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from django.utils import timezone
 
-from geomapshark import settings
-from permits import admin, models
+from geomapshark import permissions_groups, settings
+from permits import models
 
 
 def strip_accents(text):
@@ -301,15 +301,15 @@ class Command(BaseCommand):
 
         permits_permissions = Permission.objects.filter(
             content_type__app_label="permits",
-            content_type__model__in=admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
+            content_type__model__in=permissions_groups.INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
         )
         report_permissions = Permission.objects.filter(
             content_type__app_label="reports",
-            content_type__model__in=admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
+            content_type__model__in=permissions_groups.INTEGRATOR_REPORTS_MODELS_PERMISSIONS,
         )
 
         other_permissions = Permission.objects.filter(
-            codename__in=admin.OTHER_PERMISSIONS_CODENAMES
+            codename__in=permissions_groups.OTHER_PERMISSIONS_CODENAMES
         )
         # set the required permissions for the integrator group
         Group.objects.get(name="integrator").permissions.set(

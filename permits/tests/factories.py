@@ -12,7 +12,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import Q
 from django.utils.text import Truncator
 
-from permits import admin, models
+from geomapshark import permissions_groups
+from permits import models
 
 
 class PermitAuthorFactory(factory.django.DjangoModelFactory):
@@ -211,10 +212,10 @@ class IntegratorGroupFactory(GroupFactory):
                             | Q(content_type__app_label="reports")
                         )
                         & Q(
-                            content_type__model__in=admin.INTEGRATOR_PERMITS_MODELS_PERMISSIONS
+                            content_type__model__in=permissions_groups.INTEGRATOR_PERMITS_MODELS_PERMISSIONS+permissions_groups.INTEGRATOR_REPORTS_MODELS_PERMISSIONS
                         )
                     )
-                    | Q(codename__in=admin.OTHER_PERMISSIONS_CODENAMES)
+                    | Q(codename__in=permissions_groups.OTHER_PERMISSIONS_CODENAMES)
                 )
             )
 

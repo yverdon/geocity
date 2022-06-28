@@ -19,60 +19,11 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
 
-from geomapshark import settings
+from geomapshark import permissions_groups, settings
 
 from . import forms as permit_forms
 from . import models
 
-# define permissions required by integrator role
-INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [
-    "permitadministrativeentity",
-    "workstype",
-    "worksobject",
-    "worksobjecttype",
-    "worksobjectproperty",
-    "permitactortype",
-    "permitrequestamendproperty",
-    "permitdepartment",
-    "permitworkflowstatus",
-    "permitauthor",
-    "complementarydocumenttype",
-    # TODO: move to reports app
-    "report",
-    "reportlayout",
-    "section",
-]
-OTHER_PERMISSIONS_CODENAMES = [
-    "view_user",
-    "change_user",
-    "view_group",
-    "add_group",
-    "change_group",
-    "delete_group",
-    "see_private_requests",
-]
-
-if not settings.ALLOW_REMOTE_USER_AUTH:
-    # Django axes
-    OTHER_PERMISSIONS_CODENAMES += [
-        "add_accessattempt",
-        "change_accessattempt",
-        "delete_accessattempt",
-        "view_accessattempt",
-        "add_accesslog",
-        "change_accesslog",
-        "delete_accesslog",
-        "view_accesslog",
-    ]
-
-
-AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
-    "amend_permit_request",
-    "validate_permit_request",
-    "classify_permit_request",
-    "edit_permit_request",
-    "see_private_requests",
-]
 
 MULTIPLE_INTEGRATOR_ERROR_MESSAGE = "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur'"
 
@@ -500,9 +451,9 @@ class GroupAdminForm(forms.ModelForm):
                     Q(content_type__app_label="permits")
                     | Q(content_type__app_label="reports")
                 )
-                & Q(content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS)
+                & Q(content_type__model__in=permissions_groups.INTEGRATOR_PERMITS_MODELS_PERMISSIONS+permissions_groups.INTEGRATOR_REPORTS_MODELS_PERMISSIONS)
             )
-            | Q(codename__in=OTHER_PERMISSIONS_CODENAMES)
+            | Q(codename__in=permissions_groups.OTHER_PERMISSIONS_CODENAMES)
         )
 
         if "permitdepartment-0-is_integrator_admin" in self.data.keys():
@@ -510,7 +461,7 @@ class GroupAdminForm(forms.ModelForm):
         else:
             permissions = permissions.difference(
                 integrator_permissions.exclude(
-                    codename__in=AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
+                    codename__in=permissions_groups.AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
                 )
             )
         return permissions
