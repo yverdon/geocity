@@ -12,6 +12,6 @@ echo yes | python3 manage.py collectstatic
 
 # update integrator permissions
 python3 manage.py update_integrator_permissions
- 
+
 
 exec $@
