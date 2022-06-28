@@ -32,14 +32,10 @@ def user_is_allowed_to_generate_report(
     permit_request = get_object_or_404(
         services.get_permit_requests_list_for_user(request.user), pk=permit_request_id
     )
-
     # Check the current work_object_type_id is allowed for user
     # The wot list is associated to a permitrequest, thus a user that have
     # access to the permitrequest, also has access to all wots associated with it
-    if (
-        not work_object_type_id in permit_request.works_objects_list()
-        and not request.user.is_superuser
-    ):
+    if not work_object_type_id in permit_request.works_objects_id_list():
         raise Http404
 
     work_object_type = get_object_or_404(WorksObjectType, pk=work_object_type_id)
@@ -55,7 +51,6 @@ def user_is_allowed_to_generate_report(
     children_document_exists = ComplementaryDocumentType.objects.filter(
         parent__in=document_parent_list, reports__id=report_id
     ).exists()
-
     if not children_document_exists:
         raise Http404
 

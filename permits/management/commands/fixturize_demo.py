@@ -14,6 +14,7 @@ from django.utils import timezone
 
 from geomapshark import permissions_groups, settings
 from permits import models
+from reports.models import Report
 
 
 def strip_accents(text):
@@ -230,8 +231,19 @@ class Command(BaseCommand):
 
         permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
         secretariat_permissions = Permission.objects.filter(
-            codename__in=["amend_permit_request", "classify_permit_request"],
+            codename__in=[
+                "amend_permit_request",
+                "classify_permit_request",
+            ],
             content_type=permit_request_ct,
+        )
+
+        reports_request_ct = ContentType.objects.get_for_model(Report)
+        secretariat_permissions_reports = Permission.objects.filter(
+            codename__in=[
+                "can_generate_pdf",
+            ],
+            content_type=reports_request_ct,
         )
         user = self.create_user(
             "pilot",
@@ -239,7 +251,9 @@ class Command(BaseCommand):
             administrative_entity_yverdon,
             email="yverdon-squad+pilot@liip.ch",
         )
-        user.user_permissions.set(secretariat_permissions)
+        user.user_permissions.set(
+            secretariat_permissions.union(secretariat_permissions_reports)
+        )
         self.stdout.write("pilot / demo")
 
         user = self.create_user(

@@ -748,6 +748,9 @@ class PermitRequest(models.Model):
             for item in self.works_object_types.all()
         ]
 
+    def works_objects_id_list(self):
+        return [item.works_type.pk for item in self.works_object_types.all()]
+
     def works_objects_html(self):
         """
         Return the works objects as a string, separated by <br> characters.
