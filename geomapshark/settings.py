@@ -13,6 +13,9 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "permits:permit_requests_list"
 LOGOUT_REDIRECT_URL = LOGIN_URL
 
+# Name of isolated docker network used for print and pdf services. Must be unique for hosting multi
+ISOLATED_NETWORK_NAME = os.getenv("ISOLATED_NETWORK_NAME")
+
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE = os.getenv("CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE")

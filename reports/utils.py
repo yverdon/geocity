@@ -4,6 +4,7 @@ import tarfile
 from typing import IO, Tuple
 
 import docker
+from django.conf import settings
 
 
 class DockerRunFailedError(Exception):
@@ -21,7 +22,7 @@ def run_docker_container(
     container = client.containers.create(
         image,
         commands,
-        network="geocity_isolated",
+        network=settings.ISOLATED_NETWORK_NAME,
     )
 
     # Copy QGIS project to the container

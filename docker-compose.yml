@@ -47,4 +47,4 @@ services:
 networks:
     # Use this for containers that should only be able to communicate with Django
     isolated:
-        name: geocity_isolated
+        name: ${ISOLATED_NETWORK_NAME}
