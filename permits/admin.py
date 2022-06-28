@@ -24,7 +24,6 @@ from geomapshark import permissions_groups, settings
 from . import forms as permit_forms
 from . import models
 
-
 MULTIPLE_INTEGRATOR_ERROR_MESSAGE = "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur'"
 
 PERMIT_DURATION_ERROR_MESSAGE = "Veuillez saisir une valeur > 0"
@@ -451,7 +450,10 @@ class GroupAdminForm(forms.ModelForm):
                     Q(content_type__app_label="permits")
                     | Q(content_type__app_label="reports")
                 )
-                & Q(content_type__model__in=permissions_groups.INTEGRATOR_PERMITS_MODELS_PERMISSIONS+permissions_groups.INTEGRATOR_REPORTS_MODELS_PERMISSIONS)
+                & Q(
+                    content_type__model__in=permissions_groups.INTEGRATOR_PERMITS_MODELS_PERMISSIONS
+                    + permissions_groups.INTEGRATOR_REPORTS_MODELS_PERMISSIONS
+                )
             )
             | Q(codename__in=permissions_groups.OTHER_PERMISSIONS_CODENAMES)
         )

@@ -1,4 +1,4 @@
-from django.core.management import BaseCommand, CommandError
+from django.core.management import BaseCommand
 from django.db import transaction
 from django.utils.translation import gettext
 
@@ -20,4 +20,3 @@ class Command(BaseCommand):
         with transaction.atomic():
             for integrator in Group.objects.all():
                 create_default_report_for_integrator(Group, integrator, True)
-
