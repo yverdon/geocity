@@ -29,8 +29,14 @@ class PermitRequestAPITestCase(TestCase):
 
         # Users and Permissions
         self.normal_user = factories.UserFactory()
+
         self.secretariat_user = factories.SecretariatUserFactory(groups=[self.group])
+        self.secretariat_group = factories.SecretariatGroupFactory()
+        self.secretariat_group.user_set.add(self.secretariat_user)
+
         self.admin_user = factories.UserFactory(is_staff=True, is_superuser=True)
+        self.admin_group = factories.IntegratorGroupFactory()
+        self.admin_group.user_set.add(self.admin_user)
 
         # Works object Types
         self.works_object_types = factories.WorksObjectTypeFactory.create_batch(
@@ -185,22 +191,21 @@ class PermitRequestAPITestCase(TestCase):
         )
         self.client.login(username=validator_user.username, password="password")
         response = self.client.get(reverse("permits-list"), {})
-        response_json = response.json()
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            response_json["detail"],
-            "Vous n'avez pas la permission d'effectuer cette action.",
-        )
+        self.assertEqual(response.status_code, 200)
 
     def test_api_secretariat_user(self):
         self.client.login(username=self.secretariat_user.username, password="password")
         response = self.client.get(reverse("permits-list"), {})
         response_json = response.json()
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            response_json["detail"],
-            "Vous n'avez pas la permission d'effectuer cette action.",
-        )
+        permit_requests = models.PermitRequest.objects.all().only("id")
+        permit_requests_ids = [perm.id for perm in permit_requests]
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response_json["features"]), permit_requests.count())
+        for i, perm in enumerate(permit_requests):
+            self.assertIn(
+                response_json["features"][i]["properties"]["permit_request_id"],
+                permit_requests_ids,
+            )
 
     def test_api_filtering_by_status(self):
         self.client.login(username=self.admin_user.username, password="password")

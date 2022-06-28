@@ -140,30 +140,13 @@ class BlockRequesterUserPermission(BasePermission):
         return is_integrator_admin or request.user.is_superuser
 
 
-class BlockRequesterUserLoggedOnToken(BasePermission):
-    """
-    Block access to any user using a token instead of credentials
-    If 2FA is mandatory for one of user's group, it will be mandatory
-    for access to this endpoint
-    """
-
-    def has_permission(self, request, view):
-        if request.session._SessionBase__session_key and request.user.is_authenticated:
-            return True
-        else:
-            return False
-
-
 class BlockRequesterUserWithoutGroup(BasePermission):
     """
     Block untrusted user. User must belong to a group in order to access this endpoint
     """
 
     def has_permission(self, request, view):
-        if request.user.groups.count():
-            return True
-        else:
-            return False
+        return request.user.groups.exists()
 
 
 class PermitRequestViewSet(
@@ -294,6 +277,7 @@ class PermitRequestDetailsViewSet(
 
     throttle_scope = "permits_details"
     serializer_class = serializers.PermitRequestDetailsSerializer
+    permission_classes = [BlockRequesterUserWithoutGroup]
 
     def get_queryset(self, geom_type=None):
         """
@@ -377,9 +361,11 @@ def permitRequestViewSetSubsetFactory(geom_type_name):
         """
 
         throttle_scope = "permits"
+        serializer_class = Serializer
+        permission_classes = [BlockRequesterUserWithoutGroup]
+
         wfs3_title = f"{PermitRequestViewSet.wfs3_title} ({geom_type_name})"
         wfs3_description = f"{PermitRequestViewSet.wfs3_description} (géométries de type {geom_type_name})"
-        serializer_class = Serializer
 
         def get_throttles(self):
             throttle_classes = [ScopedRateThrottle]
