@@ -31,6 +31,18 @@ def export(args):
             replacement = f"http://web:9000/"
             contents = re.sub(pattern, replacement, contents)
 
+        # rewrite the permits layer url to only show the current feature
+        # TODO: In principle, filtering should not be necessary if the wfs3 endpoint performance was
+        # good enough for QGIS to load the whole layer. Filtering should be done only if desired
+        # (e.g. if a filter is set on the QGIS layer, somehow using the atlas id if needed).
+        # Also in theory, this should be set as a layer filter rather than on the provider URL,
+        # but this seems not supported by QGIS 3.24 (!!).
+        pattern = r"url='http://web:9000/wfs3/'"
+        replacement = (
+            rf"url='http://web:9000/wfs3/?permit_request_id={permit_request_id}'"
+        )
+        contents = contents.replace(pattern, replacement)
+
         input_path = os.path.join(tmpdirname, "project.qgs")
         open(input_path, "w").write(contents)
 
@@ -54,7 +66,7 @@ def export(args):
         project = QgsProject.instance()
         project.read(input_path)
 
-        # test the layers (for debugging)
+        # iterate over all layers
         for layer in QgsProject.instance().mapLayers().values():
             print(f"checking layer {layer.name()}... ", end="")
             if layer.isValid():
