@@ -29,8 +29,16 @@ class PermitRequestAPITestCase(TestCase):
 
         # Users and Permissions
         self.normal_user = factories.UserFactory()
+        self.user_group = factories.GroupFactory()
+        self.user_group.user_set.add(self.normal_user)
+
         self.secretariat_user = factories.SecretariatUserFactory(groups=[self.group])
+        self.secretariat_group = factories.SecretariatGroupFactory()
+        self.secretariat_group.user_set.add(self.secretariat_user)
+
         self.admin_user = factories.UserFactory(is_staff=True, is_superuser=True)
+        self.admin_group = factories.IntegratorGroupFactory()
+        self.admin_group.user_set.add(self.admin_user)
 
         # Works object Types
         self.works_object_types = factories.WorksObjectTypeFactory.create_batch(
