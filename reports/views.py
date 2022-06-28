@@ -29,6 +29,10 @@ def report_content(request, permit_request_id, work_object_type_id, report_id):
     """This views returns the content of a report in HTML. It is mainly meant to be rendered
     to PDF (but could also work as a PDF)"""
 
+    # Check that user is trusted, as standard user is not alowed to generate documents
+    if not request.user.permitauthor.is_trusted:
+        raise Http404
+
     permit_request = get_object_or_404(
         services.get_permit_requests_list_for_user(request.user), pk=permit_request_id
     )
@@ -75,7 +79,7 @@ def report_content(request, permit_request_id, work_object_type_id, report_id):
 def report_pdf(request, permit_request_id, work_object_type_id, report_id):
 
     # Check that user is trusted, as standard user is not alowed to generate documents
-    if not request.user.permitauthor.is_trusted(request.user):
+    if not request.user.permitauthor.is_trusted:
         raise Http404
 
     # Prevent unauthorize user to call this view, return a 404 instead of the error from container

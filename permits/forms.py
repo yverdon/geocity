@@ -1637,7 +1637,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         self.fields["authorised_departments"].label = _("Département autorisé")
 
         # TODO: prefetch (to optimize reduce requests count)
-        choices = [("", _("Aucune séléction"))]
+        choices = [("", _("Aucune sélection"))]
         for wot in self.permit_request.works_object_types.all():
             subchoices = []
             parent_doc_types = wot.document_types.all()
