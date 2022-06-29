@@ -1056,13 +1056,6 @@ class Command(BaseCommand):
         <p>Consultez les emails générés par l'application:</p>
         => <a href="https://mailhog.geocity.ch" target="_blank">Boîte mail de demo<a/>
         """
-        config.BACKGROUND_COLOR = "#FFFFFF"
-        config.LOGIN_BACKGROUND_COLOR = "#FFFFFF"
-        config.PRIMARY_COLOR = "#008c6f"
-        config.SECONDARY_COLOR = "#01755d"
-        config.TEXT_COLOR = "#000000"
-        config.TITLE_COLOR = "#000000"
-        config.TABLE_COLOR = "#212529"
 
     def create_document_types(self, wot):
         document_types = [

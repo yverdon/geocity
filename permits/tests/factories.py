@@ -517,13 +517,13 @@ class PermitSiteFactory(factory.django.DjangoModelFactory):
     application_title = "mycustomtitle"
     application_subtitle = "mycustomsubtitle"
     application_description = "mycustomdescription"
-    background_color = "mycustombackgroundcolor"
-    login_background_color = "mycustomloginbackgroundcolor"
-    primary_color = "mycustomprimarycolor"
-    secondary_color = "mycustomsecondarycolor"
-    text_color = "mycustomtextcolor"
-    title_color = "mycustomtitlecolor"
-    table_color = "mycustomtablecolor"
+    background_color = "#000000"
+    login_background_color = "#000000"
+    primary_color = "#000000"
+    secondary_color = "#000000"
+    text_color = "#000000"
+    title_color = "#000000"
+    table_color = "#000000"
 
 
 class ComplementaryDocumentTypeFactory(factory.django.DjangoModelFactory):

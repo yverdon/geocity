@@ -208,15 +208,6 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "PRIVACY_POLICY_URL",
         "GENERAL_CONDITIONS_URL",
     ),
-    "Theme Options": (
-        "BACKGROUND_COLOR",
-        "LOGIN_BACKGROUND_COLOR",
-        "PRIMARY_COLOR",
-        "SECONDARY_COLOR",
-        "TEXT_COLOR",
-        "TITLE_COLOR",
-        "TABLE_COLOR",
-    ),
     "Step Options": (
         "ANONYMOUS_CAPTCHA_STEP",
         "LOCATION_STEP",
@@ -317,41 +308,6 @@ CONSTANCE_CONFIG = {
     "APPLICATION_DESCRIPTION": (
         "Une application du Système d'Information du Territoire de la Ville d'Yverdon-les-Bains - mapnv.ch",
         "Description de la page de login",
-        str,
-    ),
-    "BACKGROUND_COLOR": (
-        "#FFFFFF",
-        "Couleur unie du fond",
-        str,
-    ),
-    "LOGIN_BACKGROUND_COLOR": (
-        "#FFFFFF",
-        "Couleur unie du fond login",
-        str,
-    ),
-    "PRIMARY_COLOR": (
-        "#008c6f",
-        "Couleur de thème principale",
-        str,
-    ),
-    "SECONDARY_COLOR": (
-        "#01755d",
-        "Couleur de thème secondaire",
-        str,
-    ),
-    "TEXT_COLOR": (
-        "#000000",
-        "Couleur du texte",
-        str,
-    ),
-    "TITLE_COLOR": (
-        "#000000",
-        "Couleur du titre",
-        str,
-    ),
-    "TABLE_COLOR": (
-        "#212529",
-        "Couleur du texte dans les tableaux",
         str,
     ),
     "IP_WHITELIST": (
