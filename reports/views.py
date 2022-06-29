@@ -155,14 +155,6 @@ def report_pdf(request, permit_request_id, work_object_type_id, report_id):
     return response
 
 
-# @api_view(["GET"])  # pretend it's a DRF view, so we get token auth
-# @login_required
-# @permanent_user_required
-# class BackgroundDownloadView(View):
-#     def get(self, request, path, *args, **kwargs):
-#         return services.download_file(path)
-
-
 @api_view(["GET"])  # pretend it's a DRF view, so we get token auth
 @login_required
 @permanent_user_required
