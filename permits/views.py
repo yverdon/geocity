@@ -2093,7 +2093,6 @@ def administrative_entity_file_download(request, path):
 
     mime_type, encoding = mimetypes.guess_type(path)
     storage = fields.PrivateFileSystemStorage()
-
     return StreamingHttpResponse(storage.open(path), content_type=mime_type)
 
 

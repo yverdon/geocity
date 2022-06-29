@@ -42,12 +42,14 @@ class ReportLayout(models.Model):
             'La liste des polices disponbiles est visible sur <a href="https://fonts.google.com/" target="_blank">Goole Fonts</a>'
         ),
     )
-    background = AdministrativeEntityFileField(
-        _('Image d\'arrière plan ("papier à en-tête")'),
-        validators=[FileExtensionValidator(allowed_extensions=["png", "jpg"])],
-        upload_to="report_layout_backgrounds",
+    # TODO: secure this field => private media
+    background = models.ImageField(
         null=True,
         blank=True,
+        upload_to="backgound_paper",
+        help_text=_(
+            'Image d\'arrière plan ("papier à en-tête"). Attention, ces documents ne sont PAS sécurisés'
+        ),
     )
     integrator = models.ForeignKey(
         Group,
@@ -122,11 +124,15 @@ class SectionMap(Section):
         validators=[FileExtensionValidator(allowed_extensions=["qgs"])],
         upload_to="qgis_templates",
         blank=True,
+        help_text=(
+            _("Si aucun projet n'est ajouté, le projet par défaut sera utilisé.")
+        ),
     )
     qgis_print_template_name = models.CharField(
         max_length=30,
         blank=True,
         default="a4",
+        help_text=(_("Modèles du projet par défaut: a4")),
     )
 
     class Meta:
@@ -179,7 +185,6 @@ class SectionMap(Section):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-
         # Upload a default project if none is provided
         if not self.qgis_project_file:
             # Open an existing file using Python's built-in open()
@@ -248,12 +253,12 @@ class SectionHorizontalRule(Section):
 
 class SectionValidation(Section):
     class Meta:
-        verbose_name = _("Commentaire·s du secrétariat")
+        verbose_name = _("Commentaire·s des services")
 
 
 class SectionAmendProperty(Section):
     class Meta:
-        verbose_name = _("Commentaire·s des services")
+        verbose_name = _("Commentaire·s du secrétariat")
 
 
 class SectionStatus(Section):

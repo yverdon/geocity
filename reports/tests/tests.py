@@ -1,7 +1,7 @@
 from django.urls import reverse
 
 from reports.models import (
-    SectionAmendPropertyComment,
+    SectionAmendProperty,
     SectionAuthor,
     SectionContact,
     SectionDetail,
@@ -10,7 +10,7 @@ from reports.models import (
     SectionParagraph,
     SectionPlanning,
     SectionStatus,
-    SectionValidationComment,
+    SectionValidation,
 )
 
 from .base import ReportsTestsBase
@@ -102,8 +102,8 @@ class ReportsTests(ReportsTestsBase):
             SectionDetail: {},
             SectionPlanning: {},
             # SectionFiles: {}, # FIXME: TemplateDoesNotExist: sectionfiles.html
-            SectionValidationComment: {},
-            SectionAmendPropertyComment: {},
+            SectionValidation: {},
+            SectionAmendProperty: {},
             SectionStatus: {},
         }
 
