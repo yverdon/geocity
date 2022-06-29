@@ -130,7 +130,7 @@ class PermitsAdminSite(AdminSite):
                     "Knox token créé avec succès. Veuillez le copier, il ne sera visible qu'une seule fois."
                 ),
             )
-            messages.add_message(request, messages.INFO, _(token))
+            messages.add_message(request, messages.INFO, token)
 
         return redirect(
             reverse(
