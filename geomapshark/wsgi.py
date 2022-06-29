@@ -16,3 +16,4 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "geomapshark.settings")
 
 application = get_wsgi_application()
 application = WhiteNoise(application, root=os.environ["STATIC_FILES_ABSOLUTE_PATH"])
+application.add_files("/code/media", prefix="media/")

@@ -46,7 +46,7 @@ class ReportLayout(models.Model):
     background = models.ImageField(
         null=True,
         blank=True,
-        upload_to="backgound_paper",
+        upload_to="background_paper",
         help_text=_(
             'Image d\'arrière plan ("papier à en-tête"). Attention, ces documents ne sont PAS sécurisés'
         ),

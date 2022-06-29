@@ -15,6 +15,7 @@ services:
         command: "gunicorn geomapshark.wsgi -b :9000 --error-logfile gunicorn_log.log --workers=2 --threads=4 --worker-class=gthread"
         volumes:
             - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
+            - ${PUBLIC_DOCUMENTS_DIR}:/code/media
             - ${ARCHIVE_DIR}:/archive
             # to allow to spawn new QGIS containers
             - /var/run/docker.sock:/var/run/docker.sock
