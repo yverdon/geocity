@@ -112,8 +112,9 @@ class PermitsAdminSite(AdminSite):
         Admin custom view to create the knox token for the given User
         """
         user_id = int(request.POST.get("user"))
+        request_user_id = request.user.id
         try:
-            token = call_command("create_knox_token", user_id)
+            token = call_command("create_knox_token", user_id, request_user_id)
         except CommandError:
             # Display error
             messages.add_message(

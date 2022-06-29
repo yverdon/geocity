@@ -19,8 +19,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write("Create a knox token for the current User...")
 
-        if options["user_id"]:
-            user = User.objects.get(id=options["user_id"][0])
+        user_id = options["user_id"][0]
+        request_user_id = options["user_id"][1]
+
+        # Prevent the creation of the knox token on another user than himself
+        if user_id and user_id == request_user_id:
+            user = User.objects.get(id=user_id)
         else:
             raise CommandError
 
