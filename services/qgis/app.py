@@ -42,7 +42,7 @@ def export(args):
             rf"url='http://web:9000/wfs3/?permit_request_id={permit_request_id}'"
         )
         contents = contents.replace(pattern, replacement)
-        
+
         input_path = os.path.join(tmpdirname, "project.qgs")
         open(input_path, "w").write(contents)
 
@@ -80,7 +80,7 @@ def export(args):
 
         # get the atlas
         layout = project.layoutManager().layoutByName(template_name)
-        #TODO: Print when atlas name is wrong. Make easier to find configuration mistakes
+        # TODO: Print when atlas name is wrong. Make easier to find configuration mistakes
         atlas = layout.atlas()
 
         # configure the atlas
