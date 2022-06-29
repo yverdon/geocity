@@ -15,6 +15,13 @@ def get_context_data(context, request):
         "general_conditions_url": config.GENERAL_CONDITIONS_URL,
         "privacy_policy_url": config.PRIVACY_POLICY_URL,
         "background_image": None,
+        "background_color": config.BACKGROUND_COLOR,
+        "login_background_color": config.LOGIN_BACKGROUND_COLOR,
+        "primary_color": config.PRIMARY_COLOR,
+        "secondary_color": config.SECONDARY_COLOR,
+        "text_color": config.TEXT_COLOR,
+        "title_color": config.TITLE_COLOR,
+        "table_color": config.TABLE_COLOR,
     }
     uri = parse.unquote(request.build_absolute_uri()).replace("next=/", "")
 
@@ -27,9 +34,7 @@ def get_context_data(context, request):
 
     if "template" in parse.parse_qs(params_str).keys():
         template_value = parse.parse_qs(params_str)["template"][0]
-        template = models.TemplateCustomization.objects.filter(
-            templatename=template_value
-        ).first()
+        template = models.PermitSite.objects.filter(templatename=template_value).first()
         if template:
             customization = {
                 "application_title": template.application_title
@@ -44,6 +49,27 @@ def get_context_data(context, request):
                 "background_image": template.background_image
                 if template.background_image
                 else None,
+                "background_color": template.background_color
+                if template.background_color
+                else config.BACKGROUND_COLOR,
+                "login_background_color": template.login_background_color
+                if template.login_background_color
+                else config.LOGIN_BACKGROUND_COLOR,
+                "primary_color": template.primary_color
+                if template.primary_color
+                else config.PRIMARY_COLOR,
+                "secondary_color": template.secondary_color
+                if template.secondary_color
+                else config.SECONDARY_COLOR,
+                "text_color": template.text_color
+                if template.text_color
+                else config.TEXT_COLOR,
+                "title_color": template.title_color
+                if template.title_color
+                else config.TITLE_COLOR,
+                "table_color": template.table_color
+                if template.table_color
+                else config.TABLE_COLOR,
             }
             request.session["templatename"] = template.templatename
             url_qs = "&template=" + template.templatename

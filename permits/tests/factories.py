@@ -501,14 +501,29 @@ class PermitRequestAmendPropertyValueFactory(factory.django.DjangoModelFactory):
     value = factory.Faker("word")
 
 
-class TemplateCustomizationFactory(factory.django.DjangoModelFactory):
+class QgisProjectFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.TemplateCustomization
+        model = models.QgisProject
+
+    works_object_type = factory.SubFactory(WorksObjectTypeFactory)
+    qgis_print_template_name = "atlas"
+
+
+class PermitSiteFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.PermitSite
 
     templatename = "mycustompage"
     application_title = "mycustomtitle"
     application_subtitle = "mycustomsubtitle"
     application_description = "mycustomdescription"
+    background_color = "mycustombackgroundcolor"
+    login_background_color = "mycustomloginbackgroundcolor"
+    primary_color = "mycustomprimarycolor"
+    secondary_color = "mycustomsecondarycolor"
+    text_color = "mycustomtextcolor"
+    title_color = "mycustomtitlecolor"
+    table_color = "mycustomtablecolor"
 
 
 class ComplementaryDocumentTypeFactory(factory.django.DjangoModelFactory):

@@ -26,13 +26,13 @@
     <link rel="icon" href="{% static 'images/favicon.ico'%}" type="image/svg" sizes="16x16">
     <style>
       :root {
-      --background-color: {{ config.BACKGROUND_COLOR }};
-      --primary-color: {{ config.PRIMARY_COLOR }};
-      --secondary-color: {{ config.SECONDARY_COLOR }};
-      --text-color: {{ config.TEXT_COLOR }};
-      --title-color: {{ config.TITLE_COLOR }};
-      --table-color: {{ config.TABLE_COLOR }};
-      --login-background-color:{{ config.LOGIN_BACKGROUND_COLOR }};
+      --background-color: {{ customization.background_color|safe }};
+      --primary-color: {{ customization.primary_color|safe }};
+      --secondary-color: {{ customization.secondary_color|safe }};
+      --text-color: {{ customization.text_color|safe }};
+      --title-color: {{ customization.title_color|safe }};
+      --table-color: {{ customization.table_color|safe }};
+      --login-background-color: {{ customization.login_background_color|safe }};
       }
     </style>
   </head>

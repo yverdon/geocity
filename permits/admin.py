@@ -1251,13 +1251,20 @@ class PermitRequestAdmin(admin.ModelAdmin):
     get_works_object_types.short_description = "Objets et types de demandes"
 
 
-class TemplateCustomizationAdmin(admin.ModelAdmin):
+class PermitSiteAdmin(admin.ModelAdmin):
     list_display = [
         "__str__",
         "templatename",
         "application_title",
         "application_subtitle",
         "has_background_image",
+        "background_color",
+        "login_background_color",
+        "primary_color",
+        "secondary_color",
+        "text_color",
+        "title_color",
+        "table_color",
     ]
     list_filter = [
         "templatename",
@@ -1336,7 +1343,7 @@ admin.site.register(models.WorksObjectProperty, WorksObjectPropertyAdmin)
 admin.site.register(models.PermitAdministrativeEntity, PermitAdministrativeEntityAdmin)
 admin.site.register(models.WorksObject, WorksObjectAdmin)
 admin.site.register(models.PermitRequestAmendProperty, PermitRequestAmendPropertyAdmin)
-admin.site.register(models.TemplateCustomization, TemplateCustomizationAdmin)
+admin.site.register(models.PermitSite, PermitSiteAdmin)
 admin.site.register(models.PermitRequest, PermitRequestAdmin)
 admin.site.register(models.ComplementaryDocumentType, ComplementaryDocumentTypeAdmin)
 admin.site.register(models.PermitRequestInquiry, PermitRequestInquiryAdmin)

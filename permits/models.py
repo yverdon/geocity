@@ -1752,8 +1752,38 @@ class ArchivedPermitRequest(models.Model):
         return super().delete(using, keep_parents)
 
 
-class TemplateCustomization(models.Model):
+class QgisProject(models.Model):
+    qgis_project_file = fields.AdministrativeEntityFileField(
+        _("Projet QGIS '*.qgs'"),
+        validators=[FileExtensionValidator(allowed_extensions=["qgs"])],
+        upload_to="qgis_templates",
+    )
+    qgis_print_template_name = models.CharField(
+        _("Nom du template d'impression QGIS"),
+        max_length=150,
+    )
+    description = models.CharField(max_length=150)
+    works_object_type = models.ForeignKey(WorksObjectType, on_delete=models.CASCADE)
 
+
+class QgisGeneratedDocument(models.Model):
+    permit_request = models.ForeignKey(
+        "PermitRequest", on_delete=models.CASCADE, related_name="qgis_permit"
+    )
+    qgis_project = models.ForeignKey(
+        "QgisProject", on_delete=models.CASCADE, related_name="qgis_project"
+    )
+    printed_at = models.DateTimeField(_("date d'impression"), null=True)
+    printed_by = models.CharField(_("imprimé par"), max_length=255, blank=True)
+    printed_file = fields.AdministrativeEntityFileField(
+        _("Permis imprimé"),
+        null=True,
+        blank=True,
+        upload_to=printed_permit_request_storage,
+    )
+
+
+class PermitSite(models.Model):
     templatename = models.CharField(
         _("Identifiant"),
         max_length=64,
@@ -1778,6 +1808,23 @@ class TemplateCustomization(models.Model):
         validators=[
             FileExtensionValidator(allowed_extensions=["svg", "png", "jpg", "jpeg"])
         ],
+    )
+    background_color = models.CharField(
+        _("Couleur unie du fond"), max_length=10, blank=True
+    )
+    login_background_color = models.CharField(
+        _("Couleur unie du fond login"), max_length=10, blank=True
+    )
+    primary_color = models.CharField(
+        _("Couleur de thème principale"), max_length=10, blank=True
+    )
+    secondary_color = models.CharField(
+        _("Couleur de thème secondaire"), max_length=10, blank=True
+    )
+    text_color = models.CharField(_("Couleur du texte"), max_length=10, blank=True)
+    title_color = models.CharField(_("Couleur du titre"), max_length=10, blank=True)
+    table_color = models.CharField(
+        _("Couleur du texte dans les tableaux"), max_length=10, blank=True
     )
 
     class Meta:

@@ -108,7 +108,7 @@ class Command(BaseCommand):
             self.stdout.write("Creating dummy geometric entities...")
             self.create_geom_layer_entity()
             self.stdout.write("Creating template customizations...")
-            self.create_template_customization()
+            self.create_permit_site()
             self.stdout.write("Configurating template customizations...")
             self.setup_homepage()
             self.stdout.write("Setting integrator for selected confgurations...")
@@ -1014,19 +1014,33 @@ class Command(BaseCommand):
             geom="SRID=2056;MultiPolygon(((2526831.16912443 1159820.00193672, 2516148.68477727 1198947.70623155, 2551053.08130695 1201183.5750484, 2560741.84617995 1166651.82332153, 2526831.16912443 1159820.00193672)))",
         )
 
-    def create_template_customization(self):
-        models.TemplateCustomization.objects.create(
+    def create_permit_site(self):
+        models.PermitSite.objects.create(
             templatename="geocity",
             application_title="Geocity",
             application_subtitle="Demandes en lignes concenrnant le territoire communal",
             application_description="Demandes en ligne concernant le <b>domaine public</b>",
+            background_color="#FFFFFF",
+            login_background_color="#FFFFFF",
+            primary_color="#008c6f",
+            secondary_color="#01755d",
+            text_color="#000000",
+            title_color="#000000",
+            table_color="#212529",
         )
 
-        models.TemplateCustomization.objects.create(
+        models.PermitSite.objects.create(
             templatename="city",
             application_title="City Admin",
             application_subtitle="Demandes en lignes",
             application_description="Demandes concernant l' <i>administration</i>",
+            background_color="#FFFFFF",
+            login_background_color="#FFFFFF",
+            primary_color="#008c6f",
+            secondary_color="#01755d",
+            text_color="#000000",
+            title_color="#000000",
+            table_color="#212529",
         )
 
     def setup_homepage(self):
@@ -1042,6 +1056,13 @@ class Command(BaseCommand):
         <p>Consultez les emails générés par l'application:</p>
         => <a href="https://mailhog.geocity.ch" target="_blank">Boîte mail de demo<a/>
         """
+        config.BACKGROUND_COLOR = "#FFFFFF"
+        config.LOGIN_BACKGROUND_COLOR = "#FFFFFF"
+        config.PRIMARY_COLOR = "#008c6f"
+        config.SECONDARY_COLOR = "#01755d"
+        config.TEXT_COLOR = "#000000"
+        config.TITLE_COLOR = "#000000"
+        config.TABLE_COLOR = "#212529"
 
     def create_document_types(self, wot):
         document_types = [
