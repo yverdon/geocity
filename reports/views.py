@@ -153,3 +153,21 @@ def report_pdf(request, permit_request_id, work_object_type_id, report_id):
     # response["Content-Disposition"] = 'inline; filename="report.pdf"'
     response["Content-Type"] = "application/pdf"
     return response
+
+
+# @api_view(["GET"])  # pretend it's a DRF view, so we get token auth
+# @login_required
+# @permanent_user_required
+# class BackgroundDownloadView(View):
+#     def get(self, request, path, *args, **kwargs):
+#         return services.download_file(path)
+
+
+@api_view(["GET"])  # pretend it's a DRF view, so we get token auth
+@login_required
+@permanent_user_required
+def background_download(request, path):
+    """
+    Download the background file at the given `path` as an attachment.
+    """
+    return services.download_file(path)
