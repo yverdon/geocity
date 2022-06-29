@@ -15,4 +15,9 @@ urlpatterns = [
         views.report_pdf,
         name="permit_request_report_pdf",
     ),
+    path(
+        "report/<path:path>/download",
+        views.background_download,
+        name="background_download",
+    ),
 ]
