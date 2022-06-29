@@ -27,7 +27,7 @@ def export(args):
 
         # replace URLs to Django by internal calls
         for allowed_host in allowed_hosts.split(","):
-            pattern = rf"http(s)?://{allowed_host}(:[0-9]+)?/"
+            pattern = rf"http(s)?://{allowed_host}(.ch)?(:[0-9]+)?/"
             replacement = f"http://web:9000/"
             contents = re.sub(pattern, replacement, contents)
 
@@ -42,7 +42,7 @@ def export(args):
             rf"url='http://web:9000/wfs3/?permit_request_id={permit_request_id}'"
         )
         contents = contents.replace(pattern, replacement)
-
+        
         input_path = os.path.join(tmpdirname, "project.qgs")
         open(input_path, "w").write(contents)
 
@@ -80,6 +80,7 @@ def export(args):
 
         # get the atlas
         layout = project.layoutManager().layoutByName(template_name)
+        #TODO: Print when atlas name is wrong. Make easier to find configuration mistakes
         atlas = layout.atlas()
 
         # configure the atlas
