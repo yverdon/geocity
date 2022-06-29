@@ -2,37 +2,59 @@
 
 import django.core.validators
 from django.db import migrations, models
+
 import permits.fields
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('reports', '0005_add_report_permission'),
+        ("reports", "0005_add_report_permission"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='sectionamendproperty',
-            options={'verbose_name': 'Commentaire·s du secrétariat'},
+            name="sectionamendproperty",
+            options={"verbose_name": "Commentaire·s du secrétariat"},
         ),
         migrations.AlterModelOptions(
-            name='sectionvalidation',
-            options={'verbose_name': 'Commentaire·s des services'},
+            name="sectionvalidation",
+            options={"verbose_name": "Commentaire·s des services"},
         ),
         migrations.AlterField(
-            model_name='reportlayout',
-            name='background',
-            field=models.ImageField(blank=True, help_text='Image d\'arrière plan ("papier à en-tête"). Attention, ces documents ne sont PAS sécurisés', null=True, upload_to='backgound_paper'),
+            model_name="reportlayout",
+            name="background",
+            field=models.ImageField(
+                blank=True,
+                help_text='Image d\'arrière plan ("papier à en-tête"). Attention, ces documents ne sont PAS sécurisés',
+                null=True,
+                upload_to="backgound_paper",
+            ),
         ),
         migrations.AlterField(
-            model_name='sectionmap',
-            name='qgis_print_template_name',
-            field=models.CharField(blank=True, default='a4', help_text='Modèles du projet par défaut: a4', max_length=30),
+            model_name="sectionmap",
+            name="qgis_print_template_name",
+            field=models.CharField(
+                blank=True,
+                default="a4",
+                help_text="Modèles du projet par défaut: a4",
+                max_length=30,
+            ),
         ),
         migrations.AlterField(
-            model_name='sectionmap',
-            name='qgis_project_file',
-            field=permits.fields.AdministrativeEntityFileField(blank=True, help_text="Si aucun projet n'est ajouté, le projet par défaut sera utilisé.", storage=permits.fields.PrivateFileSystemStorage(), upload_to='qgis_templates', validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['qgs'])], verbose_name="Projet QGIS '*.qgs'"),
+            model_name="sectionmap",
+            name="qgis_project_file",
+            field=permits.fields.AdministrativeEntityFileField(
+                blank=True,
+                help_text="Si aucun projet n'est ajouté, le projet par défaut sera utilisé.",
+                storage=permits.fields.PrivateFileSystemStorage(),
+                upload_to="qgis_templates",
+                validators=[
+                    django.core.validators.FileExtensionValidator(
+                        allowed_extensions=["qgs"]
+                    )
+                ],
+                verbose_name="Projet QGIS '*.qgs'",
+            ),
         ),
     ]
