@@ -101,7 +101,6 @@ class ReportsTests(ReportsTestsBase):
             SectionAuthor: {},
             SectionDetail: {},
             SectionPlanning: {},
-            # SectionFiles: {}, # FIXME: TemplateDoesNotExist: sectionfiles.html
             SectionValidation: {},
             SectionAmendProperty: {},
             SectionStatus: {},
@@ -130,5 +129,6 @@ class ReportsTests(ReportsTestsBase):
                 },
             )
         )
+        print(response.streaming_content)
         pdf_bytes = b"".join(response.streaming_content)
         self.assert_pdf_is_as_expected(pdf_bytes)
