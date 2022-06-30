@@ -17,6 +17,7 @@ from polymorphic.models import PolymorphicModel
 
 from permits.fields import AdministrativeEntityFileField
 
+from .fields import BackgroundFileField
 from .utils import DockerRunFailedError, run_docker_container
 
 
@@ -42,14 +43,12 @@ class ReportLayout(models.Model):
             'La liste des polices disponbiles est visible sur <a href="https://fonts.google.com/" target="_blank">Goole Fonts</a>'
         ),
     )
-    # TODO: secure this field => private media
-    background = models.ImageField(
+
+    background = BackgroundFileField(
         null=True,
         blank=True,
         upload_to="backgound_paper",
-        help_text=_(
-            'Image d\'arrière plan ("papier à en-tête"). Attention, ces documents ne sont PAS sécurisés'
-        ),
+        help_text=_('Image d\'arrière plan ("papier à en-tête").'),
     )
     integrator = models.ForeignKey(
         Group,
