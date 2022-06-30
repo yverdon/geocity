@@ -449,11 +449,15 @@ class GroupAdminForm(forms.ModelForm):
             (
                 (
                     Q(content_type__app_label="permits")
-                    | Q(content_type__app_label="reports")
+                    & Q(
+                        content_type__model__in=permissions_groups.INTEGRATOR_PERMITS_MODELS_PERMISSIONS
+                    )
                 )
-                & Q(
-                    content_type__model__in=permissions_groups.INTEGRATOR_PERMITS_MODELS_PERMISSIONS
-                    + permissions_groups.INTEGRATOR_REPORTS_MODELS_PERMISSIONS
+                | (
+                    Q(content_type__app_label="reports")
+                    & Q(
+                        content_type__model__in=permissions_groups.INTEGRATOR_REPORTS_MODELS_PERMISSIONS
+                    )
                 )
             )
             | Q(codename__in=permissions_groups.OTHER_PERMISSIONS_CODENAMES)

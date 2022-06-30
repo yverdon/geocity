@@ -27,7 +27,8 @@ def export(args):
 
         # replace URLs to Django by internal calls
         for allowed_host in allowed_hosts.split(","):
-            pattern = rf"http(s)?://{allowed_host}(\.ch)?(:[0-9]+)?/"
+            escaped_allowed_host = re.escape(allowed_host)
+            pattern = rf"http(s)?://{escaped_allowed_host}(:[0-9]+)?/"
             replacement = f"http://web:9000/"
             contents = re.sub(pattern, replacement, contents)
 

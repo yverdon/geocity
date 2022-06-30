@@ -407,13 +407,6 @@ class PermitAuthor(models.Model):
             )
 
     @cached_property
-    def is_trusted(self):
-        """
-        PermitAuthor has a group or is superadmin
-        """
-        return self.user.is_superuser or self.user.groups.all().exists()
-
-    @cached_property
     def is_anonymous(self):
         """
         PermitAuthor unique per AdministrativeEntity.
@@ -747,9 +740,6 @@ class PermitRequest(models.Model):
             f"{item.works_object.name} ({item.works_type.name})"
             for item in self.works_object_types.all()
         ]
-
-    def wot_id_list(self):
-        return [item.pk for item in self.works_object_types.all()]
 
     def works_objects_html(self):
         """
