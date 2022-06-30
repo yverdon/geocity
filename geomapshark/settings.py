@@ -13,6 +13,9 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "permits:permit_requests_list"
 LOGOUT_REDIRECT_URL = LOGIN_URL
 
+# Name of isolated docker network used for print and pdf services. Must be unique for hosting multi
+ISOLATED_NETWORK_NAME = os.getenv("ISOLATED_NETWORK_NAME")
+
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE = os.getenv("CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE")
@@ -113,6 +116,7 @@ LOCATIONS_SEARCH_API_DETAILS = os.getenv("LOCATIONS_SEARCH_API_DETAILS")
 
 # Application definition
 INSTALLED_APPS = [
+    "polymorphic",
     "adminsortable2",
     "grappelli",
     "django.contrib.admin",
@@ -136,7 +140,7 @@ INSTALLED_APPS = [
     "django_filters",
     "rest_framework",
     "rest_framework_gis",
-    "rest_framework.authtoken",
+    "knox",
     "bootstrap4",
     "bootstrap_datepicker_plus",
     "django_tables2",
@@ -147,6 +151,7 @@ INSTALLED_APPS = [
     "django_cron",
     "axes",
     "captcha",
+    "ckeditor",
 ]
 
 if ENABLE_2FA:
@@ -158,7 +163,10 @@ if ENABLE_2FA:
     ]
 
 # project applications
-INSTALLED_APPS += ["permits"]
+INSTALLED_APPS += [
+    "permits",
+    "reports",
+]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -191,7 +199,6 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "APPLICATION_DESCRIPTION",
         "ALLOWED_FILE_EXTENSIONS",
         "MAX_FILE_UPLOAD_SIZE",
-        "MAX_FEATURE_NUMBER_FOR_QGISSERVER",
         "GEOCALENDAR_URL",
         "ENABLE_GEOCALENDAR",
         "ANONYMOUS_REQUEST_SENT_TITLE",
@@ -250,11 +257,6 @@ CONSTANCE_CONFIG = {
     "MAX_FILE_UPLOAD_SIZE": (
         10485760,
         "Taille maximum des fichiers uploadés",
-        int,
-    ),
-    "MAX_FEATURE_NUMBER_FOR_QGISSERVER": (
-        10,
-        "Nombre maximum d'entités disponible pour QGISSERVER, un nombre trop élevé impactera négativement les performances de l'impression",
         int,
     ),
     "GEOCALENDAR_URL": (
@@ -513,13 +515,11 @@ OL_MAP_HEIGHT = os.getenv("OL_MAP_HEIGHT")
 GRAPPELLI_ADMIN_TITLE = "Interface d'administration Geocity"
 
 # Django REST Framework
-DRF_ALLOW_TOKENAUTHENTICATION = (
-    os.getenv("DRF_ALLOW_TOKENAUTHENTICATION", "false").lower() == "true"
-)
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
         "rest_framework.authentication.SessionAuthentication",
+        "geomapshark.auth.InternalTokenAuthentication",
     ),
     "DEFAULT_PAGINATION_CLASS": "django_wfs3.pagination.CustomPagination",
     "DEFAULT_THROTTLE_CLASSES": [
@@ -536,11 +536,6 @@ REST_FRAMEWORK = {
         "search": os.getenv("DRF_THROTTLE_RATE_SEARCH_API"),
     },
 }
-# Allow TokenAuthentication to the API.
-if DRF_ALLOW_TOKENAUTHENTICATION:
-    REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] += (
-        "rest_framework.authentication.TokenAuthentication",
-    )
 
 WFS3_TITLE = "OGC API Features - Geocity"
 WFS3_DESCRIPTION = "Point d'accès OGC API Features aux données Geocity."
@@ -575,3 +570,26 @@ if ALLOW_REMOTE_USER_AUTH:
         "django.contrib.auth.backends.RemoteUserBackend",
         "django.contrib.auth.backends.ModelBackend",
     ]
+
+CKEDITOR_CONFIGS = {
+    "default": {
+        # TODO: customize style and format dropdowns
+        "toolbar": "custom",
+        "toolbar_custom": [
+            ["Undo", "Redo"],
+            ["Image", "Table", "HorizontalRule", "SpecialChar"],
+            ["Bold", "Italic", "Strike", "-", "RemoveFormat"],
+            [
+                "NumberedList",
+                "BulletedList",
+                "-",
+                "Outdent",
+                "Indent",
+                "-",
+                "Blockquote",
+            ],
+            ["Styles", "Format"],
+            ["Source"],
+        ],
+    },
+}

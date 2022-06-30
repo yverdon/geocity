@@ -24,12 +24,6 @@ if [ "$INITIAL" = "1" ]; then
         cp -n env.demo .env
     fi
 
-    if [[ $ENV = "DEV" || $ENV = "DEMO" ]]; then
-        # create demo pg_service.conf file if not exist
-        cp -n qgisserver/pg_service.conf_demo qgisserver/pg_service.conf
-        # setup app using the django tools
-    fi
-
     python3 manage.py migrate
     # django-constance models
     python3 manage.py migrate database

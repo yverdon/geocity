@@ -797,6 +797,11 @@ table.table thead th.desc {
   top: 0px;
 }
 
+.badge-beta {
+  background-color: #000;
+  font-weight: bold;
+}
+
 
 .badge-pill {
   font-size: 32%;
@@ -815,4 +820,36 @@ img.captcha {
 
 .display-none {
   display: none;
+}
+
+/* vertical divider, taken from https://codepen.io/Ruskyj/pen/PoOOZR */
+.vertical-divider {
+  position: absolute;
+  display: table;
+  text-align: center;
+
+  height: 100%;
+  width: 100%;
+}
+.vertical-divider .center-element {
+  position: relative;
+  display: table-cell;
+  vertical-align: middle;
+}
+.vertical-divider .center-element:before, .vertical-divider .center-element:after {
+  position: absolute;
+  content: "";
+  width: 1px;
+  left: 50%;
+  border-left: 1px solid black;
+}
+.vertical-divider .center-element:before {
+  bottom: 50%;
+  top: 0;
+  margin-bottom: 20px;
+}
+.vertical-divider .center-element:after {
+  top: 50%;
+  bottom: 0;
+  margin-top: 20px;
 }

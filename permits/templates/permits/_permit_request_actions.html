@@ -34,16 +34,6 @@
 
       {% endif %}
 
-      {% if has_permission_to_classify and print_templates %}
-
-        <li class="nav-item">
-        <a class="btn btn-primary btn-action nav-link" id="print-tab" data-toggle="tab" href="#print" role="tab" aria-controls="print">
-            {% trans "Impression" %}
-        </a>
-        </li>
-
-      {% endif %}
-
       {% if has_permission_to_classify and directives %}
 
         <li class="nav-item">
@@ -76,7 +66,7 @@
       {% if formsets.complementary_documents and document_enabled %}
           <li class="nav-item">
             <a class="btn btn-primary btn-action nav-link{% if active_form == 'complementary_documents' %} active{% endif %}" id="documents-tab" data-toggle="tab" href="#documents" role="tab" aria-controls="documents">
-                {% trans "Documents" %}
+                {% trans "Documents et impressions" %} <span class="badge badge-beta badge-success">Beta</span>
             </a>
           </li>
       {% endif %}
@@ -116,7 +106,7 @@
 
               {% if publication_enabled %}
               <hr>
-              <h4>{% trans "Mise en consultation publique" %}</h4>
+              <h4>{% trans "Mise en consultation publique" %}</h4><span class="badge badge-beta badge-success">Beta</span>
               <form method="post">
                 {% csrf_token %}
 
@@ -157,21 +147,6 @@
                         <input name="action" type="hidden" value="validate">
                         <button class="btn btn-primary" {% if forms.validate.disabled %}disabled{% endif %}>{% trans "Soumettre" %}</button>
                     </div>
-                </form>
-            </div>
-        {% endif %}
-
-        {% if print_templates %}
-            <div class="tab-pane" id="print" role="tabpanel" aria-labelledby="print-tab">
-                <h4>{% trans "Impression de documents" %}</h4>
-                <form method="post">
-                    {% csrf_token %}
-
-                    {% for print_template in print_templates %}
-                        <button class="btn btn-primary mr-3" formaction="{% url 'permits:permit_request_print' permit_request_id=permit_request.pk template_id=print_template.pk %}">
-                            <i class="fa fa-print" aria-hidden="true"></i> {{ print_template.description  }}
-                        </button>
-                    {% endfor %}
                 </form>
             </div>
         {% endif %}
@@ -262,9 +237,46 @@
                 {{ formsets.complementary_documents.management_form }}
                 {% csrf_token %}
                 <div id="complementary-documents">
+
                   {% for form in formsets.complementary_documents %}
                     <div class="complementary-document">
-                      {% bootstrap_form form layout='horizontal' %}
+
+                      {# Main document fields (either select report or upload) #}
+                      <div class="form-group row">
+                        <div class="col-sm-5">
+                          {% bootstrap_field form.generate_from_model layout='vertical'%}
+                          <button id="id_form-{{ forloop.counter0 }}-print_preview"
+                                  data-link-tpl="{% url 'reports:permit_request_report_pdf' permit_request.pk "888888888" "999999999" %}"
+                                  class="btn btn-primary"
+                                  name="preview" disabled>
+                            {% trans "Prévisualiser" %}
+                          </button>
+                        </div>
+                        <div class="col-sm-2">
+                          <div class="vertical-divider">
+                            <div class="center-element">{% translate 'ou' %}</div>
+                          </div>
+                        </div>
+                        <div class="col-sm-5">
+                          {% bootstrap_field form.document layout='vertical'%}
+                          {% bootstrap_field form.document_type layout='vertical'%}
+
+                          {# Parent fields #}
+                          {% for field in form %}
+                            {% if field.name|slice:":7" == "parent_" %}
+                              {% bootstrap_field field layout='vertical'%}
+                            {% endif %}
+                          {% endfor %}
+
+                        </div>
+                      </div>
+
+                      {# All other fields #}
+                      {% for field in form %}
+                        {% if field.name != "generate_from_model" and field.name != "document" and field.name != "document_type" and field.name != "document_type" and field.name|slice:":7" != "parent_" %}
+                          {% bootstrap_field field layout='horizontal'%}
+                        {% endif %}
+                      {% endfor %}
                     </div>
                   {% endfor %}
                 </div>

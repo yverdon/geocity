@@ -1,7 +1,5 @@
-import urllib.parse
 from datetime import datetime, timedelta
 
-import requests
 from constance import config
 from django.contrib.gis.geos import (
     GeometryCollection,
@@ -11,7 +9,7 @@ from django.contrib.gis.geos import (
     Point,
 )
 from django.test import TestCase
-from rest_framework.authtoken.models import Token
+from knox.models import AuthToken
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 
@@ -31,8 +29,14 @@ class PermitRequestAPITestCase(TestCase):
 
         # Users and Permissions
         self.normal_user = factories.UserFactory()
+
         self.secretariat_user = factories.SecretariatUserFactory(groups=[self.group])
+        self.secretariat_group = factories.SecretariatGroupFactory()
+        self.secretariat_group.user_set.add(self.secretariat_user)
+
         self.admin_user = factories.UserFactory(is_staff=True, is_superuser=True)
+        self.admin_group = factories.IntegratorGroupFactory()
+        self.admin_group.user_set.add(self.admin_user)
 
         # Works object Types
         self.works_object_types = factories.WorksObjectTypeFactory.create_batch(
@@ -187,22 +191,21 @@ class PermitRequestAPITestCase(TestCase):
         )
         self.client.login(username=validator_user.username, password="password")
         response = self.client.get(reverse("permits-list"), {})
-        response_json = response.json()
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            response_json["detail"],
-            "Vous n'avez pas la permission d'effectuer cette action.",
-        )
+        self.assertEqual(response.status_code, 200)
 
     def test_api_secretariat_user(self):
         self.client.login(username=self.secretariat_user.username, password="password")
         response = self.client.get(reverse("permits-list"), {})
         response_json = response.json()
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            response_json["detail"],
-            "Vous n'avez pas la permission d'effectuer cette action.",
-        )
+        permit_requests = models.PermitRequest.objects.all().only("id")
+        permit_requests_ids = [perm.id for perm in permit_requests]
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response_json["features"]), permit_requests.count())
+        for i, perm in enumerate(permit_requests):
+            self.assertIn(
+                response_json["features"][i]["properties"]["permit_request_id"],
+                permit_requests_ids,
+            )
 
     def test_api_filtering_by_status(self):
         self.client.login(username=self.admin_user.username, password="password")
@@ -388,25 +391,11 @@ class PermitRequestAPITestCase(TestCase):
             self.assertEqual(feature["geometry"]["type"], "Polygon")
             self.assertNotEqual(feature["geometry"]["coordinates"], [])
 
-    def test_qgisserver_is_up_and_atlas_plugin_is_working(self):
-        values = {
-            "SERVICE": "ATLAS",
-            "REQUEST": "GETCAPABILITIES",
-            "MAP": "/io/data/report_template.qgs",
-        }
-
-        qgisserver_url = "http://qgisserver/ogc/?" + urllib.parse.urlencode(values)
-        qgisserver_response = requests.get(
-            qgisserver_url, headers={"Accept": "application/pdf"}, stream=True
-        )
-        self.assertEqual(qgisserver_response.status_code, 200)
-        self.assertEqual(qgisserver_response.json()["status"], "success")
-
     def test_api_is_accessible_with_token_authentication(self):
         # Create token
-        token = Token.objects.create(user=self.admin_user)
+        auth_token, token = AuthToken.objects.create(user=self.admin_user)
         # Set token in header
-        self.client.credentials(HTTP_AUTHORIZATION="Token " + token.key)
+        self.client.credentials(HTTP_AUTHORIZATION="Token " + token)
         response = self.client.get(reverse("permits-list"), {})
         response_json = response.json()
         permit_requests = models.PermitRequest.objects.all().only("id")
@@ -427,63 +416,67 @@ class PermitRequestAPITestCase(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-    def test_non_authorized_ip_raises_exception(self):
-        # login as admin
-        self.client.login(username=self.admin_user.username, password="password")
+    def test_non_authorized_ip_raises_exception_with_tokenauth(self):
+        # login as admin with token
+        authtoken, token = AuthToken.objects.create(user=self.admin_user)
+        META = {"HTTP_AUTHORIZATION": f"Token {token}"}
         # check that login admin user is allowed to get data
-        response = self.client.get(reverse("permits-list"), {})
+        response = self.client.get(reverse("permits-list"), {}, **META)
         self.assertEqual(response.status_code, 200)
         # Set only localhost allowed in constance settings
         config.IP_WHITELIST = "127.0.0.1"
         config.NETWORK_WHITELIST = ""
         # Fake the client ip to something not allowed
         response = self.client.get(
-            reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0"
+            reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0", **META
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
-    def test_authorized_ip_does_not_raise_exception(self):
-        # login as admin
-        self.client.login(username=self.admin_user.username, password="password")
+    def test_authorized_ip_does_not_raise_exception_with_tokenauth(self):
+        # login as admin with token
+        authtoken, token = AuthToken.objects.create(user=self.admin_user)
+        META = {"HTTP_AUTHORIZATION": f"Token {token}"}
         # check that login admin user is allowed to get data
-        response = self.client.get(reverse("permits-list"), {})
+        response = self.client.get(reverse("permits-list"), {}, **META)
         self.assertEqual(response.status_code, 200)
         # Set only localhost allowed in constance settings
         config.IP_WHITELIST = "112.144.0.0"
         config.NETWORK_WHITELIST = ""
         # Fake the client ip to something not allowed
         response = self.client.get(
-            reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0"
+            reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0", **META
         )
         self.assertEqual(response.status_code, 200)
 
-    def test_non_authorized_network_raises_exception(self):
-        # login as admin
-        self.client.login(username=self.admin_user.username, password="password")
+    def test_non_authorized_network_raises_exception_with_tokenauth(self):
+        # login as admin with token
+        authtoken, token = AuthToken.objects.create(user=self.admin_user)
+        META = {"HTTP_AUTHORIZATION": f"Token {token}"}
         # check that login admin user is allowed to get data
-        response = self.client.get(reverse("permits-list"), {})
+        response = self.client.get(reverse("permits-list"), {}, **META)
         self.assertEqual(response.status_code, 200)
         # Set only localhost allowed in constance settings
         config.IP_WHITELIST = ""
         config.NETWORK_WHITELIST = "172.16.0.0/12,192.168.0.0/16"
         # Fake the client ip to something not allowed
         response = self.client.get(
-            reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0"
+            reverse("permits-list"), {}, REMOTE_ADDR="112.144.0.0", **META
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
-    def test_authorized_network_does_not_raise_exception(self):
-        # login as admin
-        self.client.login(username=self.admin_user.username, password="password")
+    def test_authorized_network_does_not_raise_exception_with_tokenauth(self):
+        # login as admin with token
+        authtoken, token = AuthToken.objects.create(user=self.admin_user)
+        META = {"HTTP_AUTHORIZATION": f"Token {token}"}
         # check that login admin user is allowed to get data
-        response = self.client.get(reverse("permits-list"), {})
+        response = self.client.get(reverse("permits-list"), {}, **META)
         self.assertEqual(response.status_code, 200)
         # Set only localhost allowed in constance settings
         config.IP_WHITELIST = ""
         config.NETWORK_WHITELIST = "172.16.0.0/12,192.168.0.0/16"
         # Fake the client ip to something not allowed
         response = self.client.get(
-            reverse("permits-list"), {}, REMOTE_ADDR="172.19.0.0"
+            reverse("permits-list"), {}, REMOTE_ADDR="172.19.0.0", **META
         )
         self.assertEqual(response.status_code, 200)
 
@@ -565,8 +558,6 @@ class PermitRequestAPITestCase(TestCase):
                 "is_logged": False,
             },
         )
-
-    # TODO: test also the permits:permit_request_print route
 
     def test_events_api_returns_current_inquiries(self):
         self.client.login(username=self.secretariat_user.username, password="password")

@@ -13,8 +13,8 @@ services:
         volumes:
             # Mount code for live reload
             - .:/code
-            - ./private_documents:/private_documents
             # For dev, set the temp folder in the main code directory, for convenience
+            - ./private_documents:/private_documents
             - ./archive:/archive
         depends_on:
             - "postgres"
@@ -23,13 +23,6 @@ services:
         environment:
             # Debug settings
             - DJANGO_SETTINGS_MODULE=geomapshark.settings_dev
-
-    qgisserver:
-        volumes:
-            # Local mount to debug QGIS projects
-            - ./private_documents:/private_documents #used to access to the private documents via a volume (check env.demo) search(ctrl+f) -> #access_to_private_document_local
-        environment:
-            - QGIS_SERVER_LOG_LEVEL=0
 
     postgres:
         image: postgis/postgis:13-3.2

@@ -1,3 +1,4 @@
+import io
 import json
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -17,6 +18,7 @@ from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis import forms as geoforms
 from django.core.exceptions import ValidationError
+from django.core.files import File
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import transaction
 from django.db.models import Max, Q
@@ -1601,10 +1603,16 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         widget=forms.CheckboxSelectMultiple,
         required=False,
     )
+    generate_from_model = forms.ChoiceField(
+        # choices=[], # dynamically populated in __init__
+        required=False,
+        label=_("Générer à partir du modèle"),
+    )
 
     class Meta:
         model = models.PermitRequestComplementaryDocument
         fields = [
+            "generate_from_model",
             "document",
             "description",
             "status",
@@ -1616,9 +1624,11 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
             "description": forms.Textarea(attrs={"rows": 2}),
         }
 
-    def __init__(self, permit_request, *args, **kwargs):
+    def __init__(self, request, permit_request, *args, **kwargs):
         super(PermitRequestComplementaryDocumentsForm, self).__init__(*args, **kwargs)
 
+        self.request = request
+        self.permit_request = permit_request
         self.fields[
             "authorised_departments"
         ].queryset = models.PermitDepartment.objects.filter(
@@ -1626,12 +1636,34 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         ).all()
         self.fields["authorised_departments"].label = _("Département autorisé")
 
+        # TODO: prefetch (to optimize reduce requests count)
+        choices = [("", _("Aucune sélection"))]
+        for wot in self.permit_request.works_object_types.all():
+            subchoices = []
+            parent_doc_types = wot.document_types.all()
+            for parent_doc_type in parent_doc_types:
+                doc_types = parent_doc_type.children.all()
+                for doc_type in doc_types:
+                    for report in doc_type.reports.all():
+                        subchoices.append(
+                            (
+                                f"{wot.pk}/{report.pk}/{doc_type.pk}",
+                                f"{report} / {doc_type}",
+                            )
+                        )
+            if subchoices:
+                choices.append((f"{wot}", subchoices))
+        self.fields["generate_from_model"].choices = choices
+
         parent_types = models.ComplementaryDocumentType.objects.filter(
             work_object_types__in=permit_request.works_object_types.all()
         ).all()
 
         self.fields["document_type"].queryset = parent_types
-        self.fields["document_type"].required = True
+
+        # Document, document type are not required, as user can also use a generated report
+        self.fields["document_type"].required = False
+        self.fields["document"].required = False
 
         for parent in parent_types:
             name = "parent_{}".format(parent.pk)
@@ -1649,7 +1681,11 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
         document = super(PermitRequestComplementaryDocumentsForm, self).save(
             commit=False
         )
-
+        # TODO: move logic to model
+        # Backoffice uploads are stored together in dedicated structure and regrouped by permit_request ID
+        document.document.field.upload_to = (
+            f"backoffice_uploads/{document.permit_request_id}"
+        )
         # set the child type as the documents type
         document.document_type = models.ComplementaryDocumentType.objects.filter(
             pk=self.cleaned_data[
@@ -1665,12 +1701,16 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
     def clean_document(self):
         document = self.cleaned_data.get("document")
 
-        services.validate_file(document)
+        # Document is not required, as user can also use a generated report
+        if document:
+            services.validate_file(document)
 
         return document
 
     def clean(self):
         cleaned_data = super(PermitRequestComplementaryDocumentsForm, self).clean()
+
+        # TODO: validation errors raised here don't appear in the template
 
         if not self.cleaned_data.get(
             "authorised_departments"
@@ -1680,6 +1720,54 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
                     "Un département doit être renseigner ou le document doit être publique"
                 )
             )
+
+        if self.cleaned_data.get("document") and self.cleaned_data.get(
+            "generate_from_model"
+        ):
+            raise ValidationError(
+                _(
+                    "Vous pouvez soit uploader un fichier, soit générer un document à partir d'un modèle, mais pas les deux."
+                )
+            )
+
+        if not self.cleaned_data.get("document") and not self.cleaned_data.get(
+            "generate_from_model"
+        ):
+            raise ValidationError(
+                _(
+                    "Vous devez soit uploader un fichier, soit générer un document à partir d'un modèle."
+                )
+            )
+
+        # If document is null, it must be because we use a preset
+        if not cleaned_data.get("document"):
+            generate_from_model = cleaned_data.get("generate_from_model")
+            try:
+                wot_pk, report_pk, child_doc_type_pk = generate_from_model.split("/")
+            except ValueError:
+                raise ValidationError(
+                    _("Selection invalide pour génération à partir du modèle !")
+                )
+
+            from reports.views import report_pdf
+
+            report_response = report_pdf(
+                self.request,
+                self.permit_request.pk,
+                work_object_type_id=wot_pk,
+                report_id=report_pk,
+            )
+            cleaned_data["document"] = File(
+                io.BytesIO(b"".join(report_response.streaming_content)),
+                name=report_response.filename,
+            )
+            # TODO CRITICAL: ensure user has access to these objects
+            # •To be filtered by user
+            child_doc_type = models.ComplementaryDocumentType.objects.get(
+                pk=child_doc_type_pk
+            )
+            cleaned_data["document_type"] = child_doc_type
+            cleaned_data[f"parent_{child_doc_type.pk}"] = child_doc_type.parent
 
         if not self.cleaned_data.get("document_type"):
             return cleaned_data

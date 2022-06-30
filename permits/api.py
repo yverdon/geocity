@@ -1,6 +1,5 @@
 import datetime
 
-from constance import config
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models import F, Prefetch, Q
 from rest_framework import viewsets
@@ -11,14 +10,7 @@ from rest_framework.throttling import ScopedRateThrottle
 
 from django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 
-from . import (
-    geoservices,
-    models,
-    search,
-    serializers,
-    services,
-    services_authentication,
-)
+from . import geoservices, models, search, serializers, services
 
 # ///////////////////////////////////
 # DJANGO REST API
@@ -28,10 +20,10 @@ from . import (
 class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Events request endpoint Usage:
-        1.- /rest/permits/?show_only_future=true (past events get filtered out)
-        2.- /rest/permits/?starts_at=2022-01-01
-        3.- /rest/permits/?ends_at=2020-01-01
-        4.- /rest/permits/?adminentities=1,2,3
+        1.- /rest/events/?show_only_future=true (past events get filtered out)
+        2.- /rest/events/?starts_at=2022-01-01
+        3.- /rest/events/?ends_at=2020-01-01
+        4.- /rest/events/?adminentities=1,2,3
 
     """
 
@@ -84,9 +76,6 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
                 Q(
                     permit_request__in=services.get_permit_requests_list_for_user(
                         self.request.user,
-                        request_comes_from_internal_qgisserver=services_authentication.check_request_comes_from_internal_qgisserver(
-                            self.request
-                        ),
                     )
                 )
                 | Q(permit_request__is_public=True)
@@ -145,32 +134,19 @@ class BlockRequesterUserPermission(BasePermission):
     """
 
     def has_permission(self, request, view):
-
-        if (
-            request.user.is_authenticated
-            and services_authentication.check_request_ip_is_allowed(request)
-        ):
-            is_integrator_admin = request.user.groups.filter(
-                permitdepartment__is_integrator_admin=True
-            ).exists()
-            return is_integrator_admin or request.user.is_superuser
-        else:
-            return services_authentication.check_request_comes_from_internal_qgisserver(
-                request
-            )
+        is_integrator_admin = request.user.groups.filter(
+            permitdepartment__is_integrator_admin=True
+        ).exists()
+        return is_integrator_admin or request.user.is_superuser
 
 
-class BlockRequesterUserLoggedOnToken(BasePermission):
+class BlockRequesterUserWithoutGroup(BasePermission):
     """
-    Block access to any user using a token instead of credentials
-    If 2FA is mandatory for one of user's group, it will be mandatory
+    Block untrusted user. User must belong to a group in order to access this endpoint
     """
 
     def has_permission(self, request, view):
-        if request.session._SessionBase__session_key and request.user.is_authenticated:
-            return True
-        else:
-            return False
+        return request.user.groups.exists()
 
 
 class PermitRequestViewSet(
@@ -198,7 +174,7 @@ class PermitRequestViewSet(
 
     throttle_scope = "permits"
     serializer_class = serializers.PermitRequestPrintSerializer
-    permission_classes = [BlockRequesterUserPermission]
+    permission_classes = [BlockRequesterUserWithoutGroup]
 
     wfs3_title = "Demandes"
     wfs3_description = "Toutes les demandes"
@@ -207,12 +183,7 @@ class PermitRequestViewSet(
 
     def get_throttles(self):
         # Do not throttle API if request is used py print internal service
-        if services_authentication.check_request_comes_from_internal_qgisserver(
-            self.request
-        ):
-            throttle_classes = []
-        else:
-            throttle_classes = [ScopedRateThrottle]
+        throttle_classes = [ScopedRateThrottle]
         return [throttle() for throttle in throttle_classes]
 
     def get_queryset(self, geom_type=None):
@@ -265,11 +236,6 @@ class PermitRequestViewSet(
             "works_object_types",
             queryset=models.WorksObjectType.objects.select_related("works_type"),
         )
-        request_comes_from_internal_qgisserver = (
-            services_authentication.check_request_comes_from_internal_qgisserver(
-                self.request
-            )
-        )
 
         qs = (
             models.PermitRequest.objects.filter(base_filter)
@@ -277,7 +243,6 @@ class PermitRequestViewSet(
                 Q(
                     id__in=services.get_permit_requests_list_for_user(
                         user,
-                        request_comes_from_internal_qgisserver=request_comes_from_internal_qgisserver,
                     )
                 )
             )
@@ -287,8 +252,6 @@ class PermitRequestViewSet(
             .prefetch_related("worksobjecttypechoice_set__amend_properties__property")
             .select_related("administrative_entity")
         )
-        if request_comes_from_internal_qgisserver:
-            qs = qs[: config.MAX_FEATURE_NUMBER_FOR_QGISSERVER]
 
         return qs
 
@@ -314,6 +277,7 @@ class PermitRequestDetailsViewSet(
 
     throttle_scope = "permits_details"
     serializer_class = serializers.PermitRequestDetailsSerializer
+    permission_classes = [BlockRequesterUserWithoutGroup]
 
     def get_queryset(self, geom_type=None):
         """
@@ -341,16 +305,11 @@ class PermitRequestDetailsViewSet(
         if filters["permit_request_id"]:
             base_filter &= Q(pk=filters["permit_request_id"])
 
-        request_comes_from_internal_qgisserver = (
-            services.check_request_comes_from_internal_qgisserver(self.request)
-        )
-
         if user:
             qs = models.PermitRequest.objects.filter(base_filter).filter(
                 Q(
                     id__in=services.get_permit_requests_list_for_user(
                         user,
-                        request_comes_from_internal_qgisserver=request_comes_from_internal_qgisserver,
                     )
                 )
                 | Q(is_public=True)
@@ -360,9 +319,6 @@ class PermitRequestDetailsViewSet(
                 Q(is_public=True)
                 | Q(status=models.PermitRequest.STATUS_INQUIRY_IN_PROGRESS)
             )
-
-        if request_comes_from_internal_qgisserver:
-            qs = qs[: config.MAX_FEATURE_NUMBER_FOR_QGISSERVER]
 
         return qs
 
@@ -405,18 +361,14 @@ def permitRequestViewSetSubsetFactory(geom_type_name):
         """
 
         throttle_scope = "permits"
+        serializer_class = Serializer
+        permission_classes = [BlockRequesterUserWithoutGroup]
+
         wfs3_title = f"{PermitRequestViewSet.wfs3_title} ({geom_type_name})"
         wfs3_description = f"{PermitRequestViewSet.wfs3_description} (géométries de type {geom_type_name})"
-        serializer_class = Serializer
 
         def get_throttles(self):
-            # Do not throttle API if request is used py print internal service
-            if services_authentication.check_request_comes_from_internal_qgisserver(
-                self.request
-            ):
-                throttle_classes = []
-            else:
-                throttle_classes = [ScopedRateThrottle]
+            throttle_classes = [ScopedRateThrottle]
             return [throttle() for throttle in throttle_classes]
 
         def get_queryset(self):

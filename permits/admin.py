@@ -1,6 +1,3 @@
-import re
-from io import BytesIO
-
 import django.db.models
 from adminsortable2.admin import SortableAdminMixin
 from django import forms
@@ -12,7 +9,6 @@ from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.sites.admin import SiteAdmin
 from django.contrib.sites.models import Site
-from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.management import CommandError, call_command
 from django.db.models import Q, Value
 from django.db.models.functions import StrIndex, Substr
@@ -22,65 +18,11 @@ from django.urls import re_path, reverse
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
-from rest_framework.authtoken.admin import TokenAdmin as BaseTokenAdmin
-from rest_framework.authtoken.models import TokenProxy
 
-from geomapshark import settings
+from geomapshark import permissions_groups, settings
 
 from . import forms as permit_forms
 from . import models
-
-# define permissions required by integrator role
-INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [
-    "permitadministrativeentity",
-    "workstype",
-    "worksobject",
-    "worksobjecttype",
-    "worksobjectproperty",
-    "permitactortype",
-    "permitrequestamendproperty",
-    "permitdepartment",
-    "permitworkflowstatus",
-    "permitauthor",
-    "qgisproject",
-    "complementarydocumenttype",
-]
-OTHER_PERMISSIONS_CODENAMES = [
-    "view_user",
-    "change_user",
-    "view_group",
-    "add_group",
-    "change_group",
-    "delete_group",
-    "see_private_requests",
-    # DRF Token authentication
-    "view_tokenproxy",
-    "add_tokenproxy",
-    "change_tokenproxy",
-    "delete_tokenproxy",
-]
-
-if not settings.ALLOW_REMOTE_USER_AUTH:
-    # Django axes
-    OTHER_PERMISSIONS_CODENAMES += [
-        "add_accessattempt",
-        "change_accessattempt",
-        "delete_accessattempt",
-        "view_accessattempt",
-        "add_accesslog",
-        "change_accesslog",
-        "delete_accesslog",
-        "view_accesslog",
-    ]
-
-
-AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
-    "amend_permit_request",
-    "validate_permit_request",
-    "classify_permit_request",
-    "edit_permit_request",
-    "see_private_requests",
-]
 
 MULTIPLE_INTEGRATOR_ERROR_MESSAGE = "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur'"
 
@@ -120,6 +62,11 @@ class PermitsAdminSite(AdminSite):
                 self.create_anonymous_user,
                 name="create_anonymous_user",
             ),
+            re_path(
+                r"^create-knox-token/$",
+                self.create_knox_token,
+                name="create_knox_token",
+            ),
         ]
         return custom_urls + urls
 
@@ -155,6 +102,40 @@ class PermitsAdminSite(AdminSite):
             reverse(
                 "admin:permits_permitadministrativeentity_change",
                 kwargs={"object_id": entity_id},
+            )
+        )
+
+    @method_decorator(staff_member_required)
+    @method_decorator(require_POST)
+    def create_knox_token(self, request):
+        """
+        Admin custom view to create the knox token for the given User
+        """
+        user_id = int(request.POST.get("user"))
+        request_user_id = request.user.id
+        try:
+            token = call_command("create_knox_token", user_id, request_user_id)
+        except CommandError:
+            # Display error
+            messages.add_message(
+                request,
+                messages.ERROR,
+                _("Echec de la création du knox token."),
+            )
+        else:
+            messages.add_message(
+                request,
+                messages.SUCCESS,
+                _(
+                    "Knox token créé avec succès. Veuillez le copier, il ne sera visible qu'une seule fois."
+                ),
+            )
+            messages.add_message(request, messages.INFO, token)
+
+        return redirect(
+            reverse(
+                "admin:auth_user_change",
+                kwargs={"object_id": user_id},
             )
         )
 
@@ -251,6 +232,8 @@ class UserAdmin(BaseUserAdmin):
 
     is_sociallogin.admin_order_field = "socialaccount"
     is_sociallogin.short_description = "Social"
+
+    change_form_template = "permits/admin/user_change.html"
 
     def get_readonly_fields(self, request, obj=None):
         # limit editable fields to protect user data, superuser creation must be done using django shell
@@ -464,10 +447,20 @@ class GroupAdminForm(forms.ModelForm):
         permissions = self.cleaned_data["permissions"]
         integrator_permissions = Permission.objects.filter(
             (
-                Q(content_type__app_label="permits")
-                & Q(content_type__model__in=INTEGRATOR_PERMITS_MODELS_PERMISSIONS)
+                (
+                    Q(content_type__app_label="permits")
+                    & Q(
+                        content_type__model__in=permissions_groups.INTEGRATOR_PERMITS_MODELS_PERMISSIONS
+                    )
+                )
+                | (
+                    Q(content_type__app_label="reports")
+                    & Q(
+                        content_type__model__in=permissions_groups.INTEGRATOR_REPORTS_MODELS_PERMISSIONS
+                    )
+                )
             )
-            | Q(codename__in=OTHER_PERMISSIONS_CODENAMES)
+            | Q(codename__in=permissions_groups.OTHER_PERMISSIONS_CODENAMES)
         )
 
         if "permitdepartment-0-is_integrator_admin" in self.data.keys():
@@ -475,7 +468,7 @@ class GroupAdminForm(forms.ModelForm):
         else:
             permissions = permissions.difference(
                 integrator_permissions.exclude(
-                    codename__in=AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
+                    codename__in=permissions_groups.AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
                 )
             )
         return permissions
@@ -567,7 +560,7 @@ class GroupAdmin(admin.ModelAdmin):
                 ).pk
             ):
                 integrator_permissions = Permission.objects.filter(
-                    codename__in=AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
+                    codename__in=permissions_groups.AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
                 )
                 kwargs["queryset"] = integrator_permissions
 
@@ -610,104 +603,6 @@ def get_works_object_types_field(user):
 works_object_type_administrative_entities.short_description = _(
     "Entités administratives"
 )
-
-
-class QgisProjectAdminForm(forms.ModelForm):
-
-    # Replaces the url to the ressource, cause server will pass by docker web:9000, remove access_token in url and delete the unwanted content
-    def clean_qgis_project_file(self):
-        # Retrieve the cleaned_data for the uploaded file
-        qgis_project_file = self.cleaned_data["qgis_project_file"]
-
-        # If no new file was uploaded, the object in an instance of custom FileField,
-        # thus, we do nothing
-        if qgis_project_file.__class__.__name__ == "AdministrativeEntityFieldFile":
-            return
-
-        encoder = "utf-8"
-
-        # Content of uploaded file in bytes
-        data = qgis_project_file.read()
-        # List of strings to replace
-        protocols = ["http", "https"]
-        hosts = ["localhost", "127.0.0.1"]
-        sites = settings.ALLOWED_HOSTS
-
-        # The final url. Docker communicate between layers
-        web_url = bytes("http://web:9000", encoder)
-
-        # Strings to complete the url
-        protocol_suffix = "://"
-        port_prefix = ":"
-        # Replace the url strings from the user
-        for protocol in protocols:
-            for host in hosts:
-                url = bytes(
-                    protocol
-                    + protocol_suffix
-                    + host
-                    + port_prefix
-                    + settings.DJANGO_DOCKER_PORT,
-                    encoder,
-                )
-                if not "web" in host:
-                    data = data.replace(url, web_url)
-            for site in sites:
-                url = bytes(protocol + protocol_suffix + site, encoder)
-                if not "web" in site:
-                    data = data.replace(url, web_url)
-
-        # Get characters between | and " or < without spaces, to prevent to take multiple lines
-        regex_url = bytes('\|[\S+]+"', encoder)
-        regex_element = bytes("\|[\S+]+<", encoder)
-
-        # Get characters between /?access_token and & or " without spaces
-        regex_authcfg_string = bytes("authcfg=\S+", encoder)
-        regex_user_string = bytes("user=\S+", encoder)
-        regex_password_string = bytes("password=\S+", encoder)
-        source_string = bytes('source=""', encoder)
-        coverage_source_string = bytes('coverageLayerSource=""', encoder)
-
-        # The regex will take the first to the last character, so we need to add it back
-        empty_bytes_string = bytes('"', encoder)
-        empty_bytes_balise = bytes("<", encoder)
-        empty_bytes_params = bytes("", encoder)
-        empty_source_params = bytes('source="', encoder)
-        empty_coverage_source_params = bytes('coverageLayerSource="', encoder)
-
-        # Replace characters using regex
-        data = re.sub(regex_url, empty_bytes_string, data)
-        data = re.sub(regex_element, empty_bytes_balise, data)
-
-        # Remove access_token without removing other params
-        data = re.sub(regex_authcfg_string, empty_bytes_string, data)
-        data = re.sub(regex_user_string, empty_bytes_string, data)
-        data = re.sub(regex_password_string, empty_bytes_string, data)
-        data = re.sub(source_string, empty_source_params, data)
-        data = re.sub(coverage_source_string, empty_coverage_source_params, data)
-
-        # Write the data in bytes in a new file
-        file = BytesIO()
-        file.write(data)
-
-        # Use the constructor of InMemoryUploadedFile to be able to set the value of self.cleaned_data['qgis_project_file']
-
-        qgis_project_file = InMemoryUploadedFile(
-            file,
-            qgis_project_file.field_name,
-            qgis_project_file._name,
-            qgis_project_file.content_type,
-            len(data),
-            qgis_project_file.charset,
-            qgis_project_file.content_type_extra,
-        )
-
-        return qgis_project_file
-
-
-class QgisProjectInline(admin.TabularInline):
-    model = models.QgisProject
-    form = QgisProjectAdminForm
 
 
 class WorksObjectTypeAdminForm(forms.ModelForm):
@@ -776,7 +671,6 @@ class WorksObjectTypeAdminForm(forms.ModelForm):
 
 class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = WorksObjectTypeAdminForm
-    inlines = [QgisProjectInline]
     list_display = [
         "sortable_str",
         works_object_type_administrative_entities,
@@ -866,15 +760,6 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             },
         ),
     )
-
-    def get_readonly_fields(self, request, obj=None):
-        if request.user.is_superuser:
-            return []
-        else:
-            return [
-                "document_enabled",
-                "publication_enabled",
-            ]
 
     def sortable_str(self, obj):
         return obj.__str__()
@@ -1392,47 +1277,10 @@ class TemplateCustomizationAdmin(admin.ModelAdmin):
     has_background_image.short_description = "Image de fond"
 
 
-# AuthToken admin
-
-
-class TokenAdmin(BaseTokenAdmin):
-    list_display = [
-        "__str__",
-        "user",
-        "created",
-    ]
-    list_filter = [
-        "user",
-        "created",
-    ]
-    search_fields = [
-        "user",
-    ]
-
-    def get_queryset(self, request):
-        if request.user.is_superuser:
-            return TokenProxy.objects.all()
-        else:
-            return TokenProxy.objects.filter(user=request.user)
-
-    def has_add_permission(self, request):
-        if request.user.is_superuser:
-            return True
-        return False
-
-    def get_readonly_fields(self, request, obj=None):
-        if request.user.is_superuser:
-            return []
-        else:
-            return [
-                "user",
-                "key",
-                "created",
-            ]
-
-
 class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = permit_forms.ComplementaryDocumentTypeAdminForm
+
+    fields = ["name", "parent", "work_object_types", "integrator"]
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "work_object_types":
@@ -1456,25 +1304,6 @@ class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
-    # Until further notice, disable this feature for integrators
-    def has_add_permission(self, request):
-        if request.user.is_superuser:
-            return True
-        else:
-            return False
-
-    def has_delete_permission(self, request, obj=None):
-        if request.user.is_superuser:
-            return True
-        else:
-            return False
-
-    def has_change_permission(self, request, obj=None):
-        if request.user.is_superuser:
-            return True
-        else:
-            return False
-
 
 class PermitRequestInquiryAdmin(admin.ModelAdmin):
     list_display = ("id", "start_date", "end_date", "submitter", "permit_request")
@@ -1484,10 +1313,6 @@ class PermitRequestInquiryAdmin(admin.ModelAdmin):
 
     sortable_str.admin_order_field = "name"
     sortable_str.short_description = _("3.2 Enquêtes public")
-
-
-admin.site.unregister(TokenProxy)
-admin.site.register(TokenProxy, TokenAdmin)
 
 
 class SiteAdmin(IntegratorFilterMixin, SiteAdmin):

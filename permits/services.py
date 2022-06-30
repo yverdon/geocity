@@ -1,10 +1,8 @@
 import enum
-import ipaddress
 import itertools
 import os
 import pathlib
 import shutil
-import socket
 import urllib
 from collections import defaultdict
 from datetime import datetime
@@ -455,7 +453,6 @@ def get_permit_request_for_user_or_404(user, permit_request_id, statuses=None):
 
 def get_permit_requests_list_for_user(
     user,
-    request_comes_from_internal_qgisserver=False,
     works_object_filter=None,
     ignore_archived=True,
 ):
@@ -495,10 +492,10 @@ def get_permit_requests_list_for_user(
     if ignore_archived:
         qs = qs.filter(~Q(status=models.PermitRequest.STATUS_ARCHIVED))
 
-    if not user.is_authenticated and not request_comes_from_internal_qgisserver:
+    if not user.is_authenticated:
         return qs.none()
 
-    if not user.is_superuser and not request_comes_from_internal_qgisserver:
+    if not user.is_superuser:
         qs_filter = Q(author=user.permitauthor)
 
         if user.has_perm("permits.amend_permit_request"):
@@ -1663,12 +1660,6 @@ def get_permit_request_directives(permit_request):
     ]
 
 
-def get_permit_request_print_templates(permit_request):
-    return models.QgisProject.objects.filter(
-        works_object_type__in=permit_request.works_object_types.all()
-    )
-
-
 # Validate a file, from checking the first bytes and detecting the kind of the file
 # Exemple : User puts "my_malware.exe" and rename as "file.txt"
 # kind.extension => will return "exe"
@@ -1752,49 +1743,6 @@ def store_tags_in_session(request):
 def clear_session_filters(request):
     request.session["entityfilter"] = []
     request.session["typefilter"] = []
-
-
-def get_client_ip(request):
-    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(",")[0]
-    else:
-        ip = request.META.get("REMOTE_ADDR")
-    return ip
-
-
-def check_request_ip_is_allowed(request):
-    """
-    Check that the request is coming from allowed ip
-    """
-    # Check for exact ip
-    client_ip = get_client_ip(request)
-    if config.IP_WHITELIST != "":
-        for whitelisted_ip in config.IP_WHITELIST.split(","):
-            if client_ip in whitelisted_ip:
-                return True
-    # Check for network
-    if config.NETWORK_WHITELIST != "":
-        for whitelisted_network in config.NETWORK_WHITELIST.split(","):
-            ip_address = ipaddress.ip_address(client_ip)
-            ip_network = ipaddress.ip_network(whitelisted_network)
-            if ip_address in ip_network:
-                return True
-
-    return False
-
-
-def check_request_comes_from_internal_qgisserver(request):
-    """
-    Check that the request is coming from inside the docker composition AND that it is an allowed ip
-    """
-
-    if (
-        check_request_ip_is_allowed(request)
-        and socket.gethostbyname("qgisserver") == request.META["REMOTE_ADDR"]
-    ):
-        return True
-    return False
 
 
 def get_wot_properties(value, user_is_authenticated=None, value_with_type=False):

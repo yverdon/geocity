@@ -44,6 +44,7 @@ router.register(r"permits_details", api.PermitRequestDetailsViewSet, "permits_de
 urlpatterns = [
     path("", permits_views.permit_request_select_administrative_entity),
     path("permit-requests/", include("permits.urls")),
+    path("reports/", include("reports.urls")),
     path("grappelli/", include("grappelli.urls")),  # grappelli URLS
 ]
 
@@ -144,6 +145,7 @@ urlpatterns += [
     path("admin/", admin.site.urls),
     path("oauth/", include("oauth2_provider.urls", namespace="oauth2_provider")),
     path("captcha/", include("captcha.urls")),
+    path("api-tokens/", include("knox.urls")),
 ]
 
 if settings.PREFIX_URL:
