@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('reports', '0007_use_private_storage_for_background'),
+        ("reports", "0007_use_private_storage_for_background"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='sectionmap',
-            name='qgis_print_template_name',
-            field=models.CharField(blank=True, default='paysage-cadastre', help_text='Modèles du projet par défaut: paysage-cadastre, paysage-ortho', max_length=30),
+            model_name="sectionmap",
+            name="qgis_print_template_name",
+            field=models.CharField(
+                blank=True,
+                default="paysage-cadastre",
+                help_text="Modèles du projet par défaut: paysage-cadastre, paysage-ortho",
+                max_length=30,
+            ),
         ),
     ]
