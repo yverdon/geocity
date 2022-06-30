@@ -130,8 +130,8 @@ class SectionMap(Section):
     qgis_print_template_name = models.CharField(
         max_length=30,
         blank=True,
-        default="a4",
-        help_text=(_("Modèles du projet par défaut: a4")),
+        default="paysage-cadastre",
+        help_text=(_("Modèles du projet par défaut: paysage-cadastre, paysage-ortho")),
     )
 
     class Meta:
