@@ -75,10 +75,7 @@ class CustomPasswordResetView(PasswordResetView):
 
     def get_context_data(self, **kwargs):
         context = super(CustomPasswordResetView, self).get_context_data(**kwargs)
-        domain = (
-            "https://" + self.request.build_absolute_uri().split("//")[1].split("/")[0]
-        )
-        self.extra_email_context["custom_host"] = domain
+        self.extra_email_context["custom_host"] = get_current_site(self.request).domain
         self.extra_email_context["site_name"] = self.request.build_absolute_uri().split(
             "/"
         )[2]
