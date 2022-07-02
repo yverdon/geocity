@@ -16,6 +16,7 @@ from . import geoservices, models, search, serializers, services
 # PERMIT REQUEST ENDPOINT
 # //////////////////////////////////
 
+
 class AllowAllRequesters(BasePermission):
     """
     Allow access to Permit Requesters
