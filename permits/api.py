@@ -12,6 +12,41 @@ from django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 
 from . import geoservices, models, search, serializers, services
 
+# //////////////////////////////////
+# PERMIT REQUEST ENDPOINT
+# //////////////////////////////////
+
+class AllowAllRequesters(BasePermission):
+    """
+    Allow access to Permit Requesters
+    """
+
+    def has_permission(self, request, view):
+        return True
+
+
+class BlockRequesterUserPermission(BasePermission):
+    """
+    Block access to Permit Requesters (General Public)
+    Only superuser or integrators can use these endpoints
+    """
+
+    def has_permission(self, request, view):
+        is_integrator_admin = request.user.groups.filter(
+            permitdepartment__is_integrator_admin=True
+        ).exists()
+        return is_integrator_admin or request.user.is_superuser
+
+
+class BlockRequesterUserWithoutGroup(BasePermission):
+    """
+    Block untrusted user. User must belong to a group in order to access this endpoint
+    """
+
+    def has_permission(self, request, view):
+        return request.user.groups.exists()
+
+
 # ///////////////////////////////////
 # DJANGO REST API
 # ///////////////////////////////////
@@ -29,6 +64,7 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
 
     serializer_class = serializers.PermitRequestGeoTimeSerializer
     throttle_scope = "events"
+    permission_classes = [AllowAllRequesters]
 
     def get_queryset(self):
         """
@@ -102,6 +138,7 @@ class CurrentUserAPIView(RetrieveAPIView):
     """
 
     serializer_class = serializers.CurrentUserSerializer
+    permission_classes = [AllowAllRequesters]
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -120,33 +157,6 @@ class CurrentUserAPIView(RetrieveAPIView):
             return User.objects.get(Q(username=self.request.user))
         except User.DoesNotExist:
             return AnonymousUser()
-
-
-# //////////////////////////////////
-# PERMIT REQUEST ENDPOINT
-# //////////////////////////////////
-
-
-class BlockRequesterUserPermission(BasePermission):
-    """
-    Block access to Permit Requesters (General Public)
-    Only superuser or integrators can use these endpoints
-    """
-
-    def has_permission(self, request, view):
-        is_integrator_admin = request.user.groups.filter(
-            permitdepartment__is_integrator_admin=True
-        ).exists()
-        return is_integrator_admin or request.user.is_superuser
-
-
-class BlockRequesterUserWithoutGroup(BasePermission):
-    """
-    Block untrusted user. User must belong to a group in order to access this endpoint
-    """
-
-    def has_permission(self, request, view):
-        return request.user.groups.exists()
 
 
 class PermitRequestViewSet(
