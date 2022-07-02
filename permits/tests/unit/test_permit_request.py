@@ -14,7 +14,7 @@ class PermitRequestTest(GeocityTestCase):
         status = models.PermitRequest.STATUS_CHOICES[permit_request.status][1]
         date = format_datetime(
             permit_request.created_at,
-            "d MMMM y HH:mm",
+            "d MMM y HH:mm",
             tzinfo=timezone("Europe/Berlin"),
             locale="fr_CH",
         )
