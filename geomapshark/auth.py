@@ -6,7 +6,7 @@ from knox.auth import TokenAuthentication
 from rest_framework import exceptions
 
 # Todo: Use name to get route path instead of hardcoding
-api_public_routes = ["/rest/events", "/rest/current_user/"]
+api_public_routes = ["/rest/events/", "/rest/current_user/"]
 
 
 def get_client_ip(request):
