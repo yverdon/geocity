@@ -5,6 +5,9 @@ from django.utils.translation import gettext_lazy as _
 from knox.auth import TokenAuthentication
 from rest_framework import exceptions
 
+# Todo: Use name to get route path instead of hardcoding
+api_public_routes = ["/rest/events", "/rest/current_user/"]
+
 
 def get_client_ip(request):
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
@@ -36,11 +39,18 @@ def check_request_ip_is_allowed(request):
     return False
 
 
+def check_is_public_route(request):
+    if request.path in api_public_routes:
+        return True
+
+    return False
+
+
 class InternalTokenAuthentication(TokenAuthentication):
     """Knox TokenAuthentication, but only usable for requests coming from a whitelisted IP range"""
 
     def authenticate(self, request):
-        if not check_request_ip_is_allowed(request):
+        if not (check_request_ip_is_allowed(request) or check_is_public_route(request)):
             msg = _("Token authentication is only accepted for internal calls.")
             raise exceptions.AuthenticationFailed(msg)
 
