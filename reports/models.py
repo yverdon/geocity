@@ -263,3 +263,8 @@ class SectionAmendProperty(Section):
 class SectionStatus(Section):
     class Meta:
         verbose_name = _("Statut")
+
+
+class SectionCreditor(Section):
+    class Meta:
+        verbose_name = _("Adresse de facturation")
