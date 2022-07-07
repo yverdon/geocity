@@ -121,6 +121,6 @@ class TestRegisterView(TestCase, TestRegisterMixin):
         self.assertRedirects(response, resolve_url("account_login"))
         self.assertContains(
             response,
-            "Votre compte a été créé avec succès! Vous allez recevoir un email pour valider votre email",
+            "Votre compte a été créé avec succès! Vous allez recevoir un email pour valider et activer votre compte.",
         )
         self.assertEqual(len(mail.outbox), 1)
