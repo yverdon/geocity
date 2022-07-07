@@ -1,6 +1,6 @@
 {% load i18n %}
 {% autoescape off %}
-{% blocktrans %}Bonjour {{ name }}{% endblocktrans %},
+{% blocktrans %}Bonjour {{ user }}{% endblocktrans %},
 
 {% trans "Nous devons simplement vérifier votre adresse e-mail avant que vous puissiez accéder à Geocity." %}
 
