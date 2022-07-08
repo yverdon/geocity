@@ -1820,7 +1820,7 @@ class PermitRequestList(ExportMixin, SingleTableMixin, FilterView):
         context = super(PermitRequestList, self).get_context_data(**kwargs)
         params = {key: value[0] for key, value in dict(self.request.GET).items()}
         context["display_clear_filters"] = bool(params)
-        params.update({"_export": "csv"})
+        params.update({"_export": "xlsx"})
         context["export_csv_url_params"] = urllib.parse.urlencode(params)
         return context
 

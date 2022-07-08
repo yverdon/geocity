@@ -328,7 +328,7 @@ sqlparse==0.4.2
     #   django-debug-toolbar
 stack-data==0.2.0
     # via ipython
-tablib==3.2.0
+tablib[xlsx]==3.2.0
     # via -r requirements.txt
 toml==0.10.2
     # via
