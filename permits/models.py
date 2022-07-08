@@ -343,7 +343,7 @@ class PermitAuthor(models.Model):
                 message="Le code d'entreprise doit être de type \
                          CHE-123.456.789 (TVA) \
                          et vous pouvez le trouver sur \
-                         le registe fédéral des entreprises \
+                         le registre fédéral des entreprises \
                          https://www.uid.admin.ch/search.aspx",
             )
         ],
