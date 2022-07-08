@@ -165,6 +165,7 @@ class PermitAuthorSerializer(serializers.ModelSerializer):
             "city",
             "company_name",
             "vat_number",
+            "iban",
             "phone_first",
             "phone_second",
             "email",

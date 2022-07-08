@@ -735,6 +735,7 @@ class GenericAuthorForm(forms.ModelForm):
             "phone_second",
             "company_name",
             "vat_number",
+            "iban",
             "notify_per_email",
         ]
         help_texts = {
@@ -747,6 +748,9 @@ class GenericAuthorForm(forms.ModelForm):
             "phone_first": forms.TextInput(attrs={"placeholder": "ex: 024 111 22 22"}),
             "phone_second": forms.TextInput(attrs={"placeholder": "ex: 079 111 22 22"}),
             "vat_number": forms.TextInput(attrs={"placeholder": "ex: CHE-123.456.789"}),
+            "iban": forms.TextInput(
+                attrs={"placeholder": "ex: CH12 3456 7890 1234 5678 9"}
+            ),
             "company_name": forms.TextInput(
                 attrs={"placeholder": "ex: Construction SA"}
             ),
@@ -1849,6 +1853,13 @@ class SocialSignupForm(SignupForm):
             'Trouvez votre numéro <a href="https://www.uid.admin.ch/Search.aspx'
             '?lang=fr" target="_blank">TVA</a>'
         ),
+    )
+
+    iban = forms.CharField(
+        required=False,
+        label=_("IBAN"),
+        max_length=30,
+        widget=forms.TextInput(attrs={"placeholder": "ex: CH12 3456 7890 1234 5678 9"}),
     )
 
     def __init__(self, *args, **kwargs):

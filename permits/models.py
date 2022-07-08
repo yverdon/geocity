@@ -381,6 +381,17 @@ class PermitAuthor(models.Model):
             )
         ],
     )
+    iban = models.CharField(
+        _("IBAN"),
+        blank=True,
+        max_length=30,
+        validators=[
+            RegexValidator(
+                regex=r"^[A-Z]{2}[0-9]{2}(?:[ ]?[0-9A-Z]{4}){4}(?:[ ]?[0-9]{1,2})?$",
+                message="L'IBAN doit être de type CH12 3456 7890 1234 5678 9",
+            )
+        ],
+    )
     notify_per_email = models.BooleanField(_("Me notifier par e-mail"), default=True)
     user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
     history = HistoricalRecords()
