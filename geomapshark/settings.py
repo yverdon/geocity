@@ -154,6 +154,7 @@ INSTALLED_APPS = [
     "axes",
     "captcha",
     "ckeditor",
+    "colorfield",
 ]
 
 if ENABLE_2FA:

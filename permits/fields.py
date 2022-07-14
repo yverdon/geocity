@@ -1,8 +1,10 @@
 import datetime
 import posixpath
 
+from colorfield.widgets import ColorWidget
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
+from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.fields.files import FieldFile
 from django.urls import reverse
@@ -120,3 +122,24 @@ class ComplementaryDocumentFileField(models.FileField):
     def __init__(self, verbose_name=None, name=None, **kwargs):
         kwargs["storage"] = PrivateFileSystemStorage()
         super().__init__(verbose_name, name, **kwargs)
+
+
+class ColorField(models.CharField):
+    """
+    ColorField made to accept hexadecimal color value (#FFFFFF)
+    with a color picker widget.
+    """
+
+    def __init__(self, *args, **kwargs):
+        kwargs["max_length"] = 7
+        kwargs["validators"] = [
+            RegexValidator(
+                regex=r"^\#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$",
+                message="Ce code de couleur n'est pas valide. Il doit s'agir d'un code couleur HTML, par exemple #000000.",
+            )
+        ]
+        super(ColorField, self).__init__(*args, **kwargs)
+
+    def formfield(self, **kwargs):
+        kwargs["widget"] = ColorWidget
+        return super(ColorField, self).formfield(**kwargs)

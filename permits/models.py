@@ -1809,82 +1809,33 @@ class PermitSite(models.Model):
             FileExtensionValidator(allowed_extensions=["svg", "png", "jpg", "jpeg"])
         ],
     )
-    background_color = models.CharField(
+    background_color = fields.ColorField(
         _("Couleur unie du fond"),
-        max_length=7,
         default="#FFFFFF",
-        validators=[
-            RegexValidator(
-                regex=r"^\#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$",
-                message="Ce code de couleur n'est pas valide. Il doit s'agir d'un code couleur HTML, par exemple #000000.",
-            )
-        ],
     )
-    login_background_color = models.CharField(
+    login_background_color = fields.ColorField(
         _("Couleur unie du fond login"),
-        max_length=7,
         default="#FFFFFF",
-        validators=[
-            RegexValidator(
-                regex=r"^\#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$",
-                message="Ce code de couleur n'est pas valide. Il doit s'agir d'un code couleur HTML, par exemple #000000.",
-            )
-        ],
     )
-    primary_color = models.CharField(
+    primary_color = fields.ColorField(
         _("Couleur de thème principale"),
-        max_length=7,
         default="#008c6f",
-        validators=[
-            RegexValidator(
-                regex=r"^\#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$",
-                message="Ce code de couleur n'est pas valide. Il doit s'agir d'un code couleur HTML, par exemple #000000.",
-            )
-        ],
     )
-    secondary_color = models.CharField(
+    secondary_color = fields.ColorField(
         _("Couleur de thème secondaire"),
-        max_length=7,
         default="#01755d",
-        validators=[
-            RegexValidator(
-                regex=r"^\#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$",
-                message="Ce code de couleur n'est pas valide. Il doit s'agir d'un code couleur HTML, par exemple #000000.",
-            )
-        ],
     )
-    text_color = models.CharField(
+    text_color = fields.ColorField(
         _("Couleur du texte"),
-        max_length=7,
         default="#000000",
-        validators=[
-            RegexValidator(
-                regex=r"^\#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$",
-                message="Ce code de couleur n'est pas valide. Il doit s'agir d'un code couleur HTML, par exemple #000000.",
-            )
-        ],
     )
-    title_color = models.CharField(
+    title_color = fields.ColorField(
         _("Couleur du titre"),
-        max_length=7,
         default="#000000",
-        validators=[
-            RegexValidator(
-                regex=r"^\#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$",
-                message="Ce code de couleur n'est pas valide. Il doit s'agir d'un code couleur HTML, par exemple #000000.",
-            )
-        ],
     )
-    table_color = models.CharField(
+    table_color = fields.ColorField(
         _("Couleur du texte dans les tableaux"),
-        max_length=7,
         default="#212529",
-        validators=[
-            RegexValidator(
-                regex=r"^\#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$",
-                message="Ce code de couleur n'est pas valide. Il doit s'agir d'un code couleur HTML, par exemple #000000.",
-            )
-        ],
     )
 
     class Meta:

@@ -65,6 +65,8 @@ django-bootstrap4==21.2
     # via -r requirements.in
 django-ckeditor==6.4.2
     # via -r requirements.in
+django-colorfield==0.7.1
+    # via -r requirements.in
 django-common-helpers==0.9.2
     # via django-cron
 django-constance[database]==2.8.0
@@ -151,6 +153,7 @@ phonenumbers==8.12.43
 pillow==9.0.1
     # via
     #   -r requirements.in
+    #   django-colorfield
     #   django-simple-captcha
     #   pdf2image
 psycopg2-binary==2.9.3
