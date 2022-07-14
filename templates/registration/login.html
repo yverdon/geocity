@@ -14,15 +14,46 @@
           background-image: url("{{ customization.background_image.url }}");
       }
     {% else %}
-      #login-content {
-            background-image: url("{% static 'images/login_geocity.svg' %}");
+      #login-background {
+          position: fixed;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          z-index: -100;
       }
     {% endif %}
   </style>
 {% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(function(){
+    const $style = window.getComputedStyle(document.body);
+    const $colorP = $style.getPropertyValue('--primary-color');
+    const $colorS = $style.getPropertyValue('--secondary-color');
+    $(document).find('.svg').each(function(i,obj){
+      let $el = obj.contentDocument;
+      let $primary = $el.querySelectorAll('.primary-color');
+      let $secondary = $el.querySelectorAll('.secondary-color');
+      if ($colorP !== 'None') {
+        $primary.forEach(e => {
+          e.style.fill = $colorP;
+      })};
+      if ($colorS !== 'None') {
+        $secondary.forEach(e => {
+          e.style.fill = $colorS;
+      })};
+    });
+  });
+</script>
+{% endblock %}
+
 {% block navbar %}{% endblock %}
 {% block content-fluid %}
-  <div id="login-content">
+  <div id="login-content" >
+    {% if not customization.background_image.url %}
+    <object id="login-background" class="svg" aria-hidden="true" data="{% static 'images/login_geocity.svg' %}" type="image/svg+xml"></object>
+    {% endif %}
     <div class="login-welcome-text">
       <div id="landing-page-link">
         <a href="https://geocity.ch/about" target="_blank" rel="noreferrer">{% trans "Découvrir Geocity" %}</a>
