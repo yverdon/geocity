@@ -157,7 +157,7 @@ def permit_author_create(request):
         messages.success(
             request,
             _(
-                "Votre compte a été créé avec succès! Vous allez recevoir un email pour valider votre email"
+                "Votre compte a été créé avec succès! Vous allez recevoir un email pour valider et activer votre compte."
             ),
         )
         return redirect(reverse("account_login"))
