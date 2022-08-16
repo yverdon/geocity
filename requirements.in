@@ -18,7 +18,7 @@ requests
 tablib
 whitenoise
 python-dotenv
-django-admin-sortable2
+django-admin-sortable2==1.0.4
 django-grappelli
 django-simple-history
 djangorestframework
