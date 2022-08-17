@@ -42,16 +42,8 @@
   width: 120px;
 }
 
-label.custom-file-label {
-  font-weight: normal;
-  overflow: hidden;
-  white-space: nowrap;
-  padding-right: 110px;
-  text-overflow: ellipsis;
-}
-
 label.custom-file-label:after {
-  content: "Parcourir...";
+  content: "Charger un KML...";
 }
 
 .map {
