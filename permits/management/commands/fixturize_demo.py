@@ -116,14 +116,22 @@ class Command(BaseCommand):
             self.stdout.write("Fixturize succeed!")
 
     def setup_site(self):
+        # default site, will not appear in admin
         site = Site.objects.get()
         site.name = "localhost"
         site.domain = "localhost"
         site.save()
+        # custom sites
         models.Site.objects.create(domain="yverdon.localhost", name="yverdon")
         models.Site.objects.create(domain="grandson.localhost", name="grandson")
         models.Site.objects.create(domain="vevey.localhost", name="vevey")
         models.Site.objects.create(domain="lausanne.localhost", name="lausanne")
+
+        # A domain with which all integrators cas associate their own created administrative entities
+        models.Site.objects.create(
+            domain=settings.BASE_DOMAIN, name="base common domain"
+        )
+
         # Site for internal use
         # TODO: we shouldn't need this ! Either we need forward the site for internal calls
         # or there should be a default site. For now this should have no impact because
