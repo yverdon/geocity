@@ -893,7 +893,6 @@ class SiteWithAdministrativeEntitiesField(forms.ModelMultipleChoiceField):
 
 
 def get_sites_field(user):
-    print(settings.BASE_DOMAIN)
     qs = models.Site.objects.all()
     if not user.is_superuser:
         qs = qs.filter(
