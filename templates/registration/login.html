@@ -38,6 +38,7 @@
       <br>
       <h3>{{ customization.application_title|safe }}</h3>
       <h5>{{ customization.application_subtitle|safe }}</h5>
+      <div class="login-description">{{ customization.application_description|safe }}</div>
     </div>
     <div id="login-container">
     {% if next and user.is_authenticated %}
@@ -72,9 +73,6 @@
         <a class="form-text" href="{% url 'password_reset' %}">{% trans "Perdu votre mot de passe ?" %}</a>
         {% include "registration/_social_login.html" %}
       </div>
-    </div>
-    <div class="login-welcome-text">
-      <div>{{ customization.application_description|safe }}</div>
     </div>
 </div>
 {% endblock %}

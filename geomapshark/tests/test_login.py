@@ -141,12 +141,16 @@ class TestLoginPage(TestCase):
 
         expected_title = "<h3>" + config.APPLICATION_TITLE + "</h3>"
         expected_subtitle = "<h5>" + config.APPLICATION_SUBTITLE + "</h5>"
-        expected_description = "<div>" + config.APPLICATION_DESCRIPTION + "</div>"
+        expected_description = (
+            '<div class="login-description">'
+            + config.APPLICATION_DESCRIPTION
+            + "</div>"
+        )
 
         parser = get_parser(response.content)
         title = str(parser.select(".login-welcome-text h3")[0])
         subtitle = str(parser.select(".login-welcome-text h5")[0])
-        description = str(parser.select(".login-welcome-text div")[0])
+        description = str(parser.select(".login-description")[0])
 
         self.assertEqual(response.status_code, 200)
         self.assertHTMLEqual(title, expected_title)
