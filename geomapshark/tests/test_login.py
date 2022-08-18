@@ -119,7 +119,9 @@ class TestLoginPage(TestCase):
         expected_title = "<h3>" + customization.application_title + "</h3>"
         expected_subtitle = "<h5>" + customization.application_subtitle + "</h5>"
         expected_description = (
-            "<div>" + customization.application_description + "</div>"
+            '<div class="login-description">'
+            + customization.application_description
+            + "</div>"
         )
 
         parser = get_parser(response.content)
