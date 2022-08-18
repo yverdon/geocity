@@ -893,14 +893,15 @@ class SiteWithAdministrativeEntitiesField(forms.ModelMultipleChoiceField):
 
 
 def get_sites_field(user):
-
     qs = models.Site.objects.all()
-
     if not user.is_superuser:
         qs = qs.filter(
-            integrator__in=user.groups.filter(
-                permitdepartment__is_integrator_admin=True
+            Q(
+                integrator__in=user.groups.filter(
+                    permitdepartment__is_integrator_admin=True
+                )
             )
+            | Q(domain=settings.BASE_DOMAIN)
         )
 
     return SiteWithAdministrativeEntitiesField(
