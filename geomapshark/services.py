@@ -12,6 +12,8 @@ def get_context_data(context, request):
         "application_title": config.APPLICATION_TITLE,
         "application_subtitle": config.APPLICATION_SUBTITLE,
         "application_description": config.APPLICATION_DESCRIPTION,
+        "general_conditions_url": config.GENERAL_CONDITIONS_URL,
+        "privacy_policy_url": config.PRIVACY_POLICY_URL,
         "background_image": None,
     }
     uri = parse.unquote(request.build_absolute_uri()).replace("next=/", "")

@@ -24,8 +24,21 @@
 {% block content-fluid %}
   <div id="login-content">
     <div class="login-welcome-text">
+      <div id="landing-page-link">
+        <a href="https://geocity.ch/about" target="_blank" rel="noreferrer">{% trans "Découvrir Geocity" %}</a>
+        {% if customization.general_conditions_url %}
+        &nbsp|
+        <a href="{{ customization.general_conditions_url }}" target="_blank" rel="noreferrer">{% trans "Conditions" %}</a>
+        {% endif %}
+        {% if customization.privacy_policy_url %}
+        &nbsp|
+        <a href="{{ customization.privacy_policy_url }}" target="_blank" rel="noreferrer">{% trans "Confidentialité" %}</a>
+        {% endif %}
+      </div>
+      <br>
       <h3>{{ customization.application_title|safe }}</h3>
       <h5>{{ customization.application_subtitle|safe }}</h5>
+      <div class="login-description">{{ customization.application_description|safe }}</div>
     </div>
     <div id="login-container">
     {% if next and user.is_authenticated %}
@@ -61,11 +74,5 @@
         {% include "registration/_social_login.html" %}
       </div>
     </div>
-    <div class="login-welcome-text">
-      <div>{{ customization.application_description|safe }}</div>
-    </div>
-</div>
-<div>
-  <a id="landing-page-link" href="https://geocity.ch/about" target="_blank" rel="noreferrer">Découvrir Geocity</a>
 </div>
 {% endblock %}
