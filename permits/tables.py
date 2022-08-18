@@ -55,7 +55,7 @@ class CustomPropertyValueAccessiblePermitRequest:
                     == property_value.property.INPUT_TYPE_DATE
                     == "date"
                 ):
-                    return datetime.strptime(value, "%Y-%m-%d").strftime("%d %B %Y")
+                    return datetime.strptime(value, "%Y-%m-%d").strftime("%d.%m.%Y")
                 else:
                     return value
             except models.WorksObjectPropertyValue.DoesNotExist:
@@ -140,13 +140,13 @@ class GenericPermitRequestTable(ColumnShiftTable):
     )
 
     def value_starts_at_min(self, record, value):
-        return datetime.strftime(value, "%m/%d/%Y, %H:%M:%S") if value else ""
+        return datetime.strftime(value, "%d.%m.%Y, %H:%M:%S") if value else ""
 
     def value_ends_at_max(self, record, value):
-        return datetime.strftime(value, "%m/%d/%Y, %H:%M:%S") if value else ""
+        return datetime.strftime(value, "%d.%m.%Y, %H:%M:%S") if value else ""
 
     def value_created_at(self, record, value):
-        return datetime.strftime(value, "%m/%d/%Y, %H:%M:%S") if value else ""
+        return datetime.strftime(value, "%d.%m.%Y, %H:%M:%S") if value else ""
 
 
 class SelectablePermitRequestTable(ColumnShiftTable):
