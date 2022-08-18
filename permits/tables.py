@@ -113,13 +113,20 @@ class PermitRequestCheckboxColumn(tables.CheckBoxColumn):
 
 
 class GenericPermitRequestTable(ColumnShiftTable):
+    created_at = tables.Column(
+        verbose_name=_("Date de création"),
+        attrs=ATTRIBUTES,
+        orderable=True,
+    )
     status = tables.TemplateColumn(
         template_name="tables/_permit_request_status.html",
         attrs=ATTRIBUTES,
         orderable=True,
     )
     starts_at_min = tables.Column(
-        verbose_name=_("Début"), attrs=ATTRIBUTES, orderable=True
+        verbose_name=_("Début"),
+        attrs=ATTRIBUTES,
+        orderable=True,
     )
     ends_at_max = tables.TemplateColumn(
         verbose_name=_("Fin"),
@@ -131,6 +138,15 @@ class GenericPermitRequestTable(ColumnShiftTable):
         verbose_name=_("Entité administrative"),
         orderable=False,
     )
+
+    def value_starts_at_min(self, record, value):
+        return datetime.strftime(value, "%m/%d/%Y, %H:%M:%S") if value else ""
+
+    def value_ends_at_max(self, record, value):
+        return datetime.strftime(value, "%m/%d/%Y, %H:%M:%S") if value else ""
+
+    def value_created_at(self, record, value):
+        return datetime.strftime(value, "%m/%d/%Y, %H:%M:%S") if value else ""
 
 
 class SelectablePermitRequestTable(ColumnShiftTable):
