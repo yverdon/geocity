@@ -205,6 +205,8 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "ENABLE_GEOCALENDAR",
         "ANONYMOUS_REQUEST_SENT_TITLE",
         "ANONYMOUS_REQUEST_SENT_BODY",
+        "PRIVACY_POLICY_URL",
+        "GENERAL_CONDITIONS_URL",
     ),
     "Theme Options": (
         "BACKGROUND_COLOR",
@@ -249,6 +251,16 @@ CONSTANCE_CONFIG = {
     "APPLICATION_DESCRIPTION": (
         "Une application du Système d'Information du Territoire de la Ville d'Yverdon-les-Bains - mapnv.ch",
         "Description de la page de login",
+        str,
+    ),
+    "GENERAL_CONDITIONS_URL": (
+        "",
+        "URL vers la politique de confidentialité",
+        str,
+    ),
+    "PRIVACY_POLICY_URL": (
+        "",
+        "URL vers la politique de confidentialité",
         str,
     ),
     "ALLOWED_FILE_EXTENSIONS": (  # Supported file extensions https://pypi.org/project/filetype/
