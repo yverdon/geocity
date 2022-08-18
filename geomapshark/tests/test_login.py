@@ -125,7 +125,7 @@ class TestLoginPage(TestCase):
         parser = get_parser(response.content)
         title = str(parser.select(".login-welcome-text h3")[0])
         subtitle = str(parser.select(".login-welcome-text h5")[0])
-        description = str(parser.select(".login-welcome-text div")[0])
+        description = str(parser.select(".login-description")[0])
 
         self.assertEqual(response.status_code, 200)
         self.assertHTMLEqual(title, expected_title)
