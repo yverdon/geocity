@@ -383,6 +383,9 @@ class PermitAuthor(models.Model):
     )
     iban = models.CharField(
         _("IBAN"),
+        help_text=_(
+            "A remplir uniquement pour les prestations liées à un remboursement (le titulaire du compte doit correspondre aux informations indiquées ci-dessus)."
+        ),
         blank=True,
         max_length=30,
         validators=[
