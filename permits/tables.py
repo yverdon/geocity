@@ -140,13 +140,13 @@ class GenericPermitRequestTable(ColumnShiftTable):
     )
 
     def value_starts_at_min(self, record, value):
-        return datetime.strftime(value, "%d.%m.%Y, %H:%M:%S") if value else ""
+        return datetime.strftime(value, "%d.%m.%Y %H:%M") if value else ""
 
     def value_ends_at_max(self, record, value):
-        return datetime.strftime(value, "%d.%m.%Y, %H:%M:%S") if value else ""
+        return datetime.strftime(value, "%d.%m.%Y %H:%M") if value else ""
 
     def value_created_at(self, record, value):
-        return datetime.strftime(value, "%d.%m.%Y, %H:%M:%S") if value else ""
+        return datetime.strftime(value, "%d.%m.%Y %H:%M") if value else ""
 
 
 class SelectablePermitRequestTable(ColumnShiftTable):
