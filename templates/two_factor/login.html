@@ -28,12 +28,12 @@
       <div id="landing-page-link">
         <a href="https://geocity.ch/about" target="_blank" rel="noreferrer">{% trans "Découvrir Geocity" %}</a>
         {% if customization.general_conditions_url %}
-        &nbsp|
-        <a href="{{ customization.general_conditions_url }}" target="_blank" rel="noreferrer">{% trans "Conditions" %}</a>
+          &nbsp;|&nbsp;
+          <a href="{{ customization.general_conditions_url }}" target="_blank" rel="noreferrer">{% trans "Conditions" %}</a>
         {% endif %}
         {% if customization.privacy_policy_url %}
-        &nbsp|
-        <a href="{{ customization.privacy_policy_url }}" target="_blank" rel="noreferrer">{% trans "Confidentialité" %}</a>
+          &nbsp;|&nbsp;
+          <a href="{{ customization.privacy_policy_url }}" target="_blank" rel="noreferrer">{% trans "Confidentialité" %}</a>
         {% endif %}
       </div>
       <br>
