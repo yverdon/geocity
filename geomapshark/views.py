@@ -33,11 +33,6 @@ from . import services
 
 
 def logout_view(request):
-    templatename = (
-        request.session.pop("templatename")
-        if "templatename" in request.session
-        else None
-    )
     logout(request)
 
     redirect_uri = request.GET.get("next", None)
@@ -46,11 +41,7 @@ def logout_view(request):
         redirect_uri
     ).hostname in config.LOGOUT_REDIRECT_HOSTNAME_WHITELIST.split(","):
         return redirect(redirect_uri)
-    return redirect(
-        f'{reverse("account_login")}?template={templatename}'
-        if templatename
-        else reverse("account_login")
-    )
+    return redirect(reverse("account_login"))
 
 
 # User has tried to many login attempts

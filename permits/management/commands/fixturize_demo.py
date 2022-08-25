@@ -108,8 +108,6 @@ class Command(BaseCommand):
             self.stdout.write("Creating dummy geometric entities...")
             self.create_geom_layer_entity()
             self.stdout.write("Creating template customizations...")
-            self.create_permit_site()
-            self.stdout.write("Configurating template customizations...")
             self.setup_homepage()
             self.stdout.write("Setting integrator for selected confgurations...")
             self.setup_integrator()
@@ -122,14 +120,77 @@ class Command(BaseCommand):
         site.domain = "localhost"
         site.save()
         # custom sites
-        models.Site.objects.create(domain="yverdon.localhost", name="yverdon")
-        models.Site.objects.create(domain="grandson.localhost", name="grandson")
-        models.Site.objects.create(domain="vevey.localhost", name="vevey")
-        models.Site.objects.create(domain="lausanne.localhost", name="lausanne")
+        models.Site.objects.create(
+            domain="yverdon.localhost",
+            name="yverdon",
+            application_title="Geocity",
+            application_subtitle="Demandes en lignes concenrnant le territoire communal",
+            application_description="Demandes en ligne concernant le <b>domaine public</b>",
+            background_color="#FFFFFF",
+            login_background_color="#FFFFFF",
+            primary_color="#008c6f",
+            secondary_color="#01755d",
+            text_color="#000000",
+            title_color="#000000",
+            table_color="#212529",
+        )
+        models.Site.objects.create(
+            domain="grandson.localhost",
+            name="grandson",
+            application_title="Geocity",
+            application_subtitle="Demandes en lignes concenrnant le territoire communal",
+            application_description="Demandes en ligne concernant le <b>domaine public</b>",
+            background_color="#FFFFFF",
+            login_background_color="#FFFFFF",
+            primary_color="#008c6f",
+            secondary_color="#01755d",
+            text_color="#000000",
+            title_color="#000000",
+            table_color="#212529",
+        )
+        models.Site.objects.create(
+            domain="vevey.localhost",
+            name="vevey",
+            application_title="Geocity",
+            application_subtitle="Demandes en lignes concenrnant le territoire communal",
+            application_description="Demandes en ligne concernant le <b>domaine public</b>",
+            background_color="#FFFFFF",
+            login_background_color="#FFFFFF",
+            primary_color="#008c6f",
+            secondary_color="#01755d",
+            text_color="#000000",
+            title_color="#000000",
+            table_color="#212529",
+        )
+        models.Site.objects.create(
+            domain="lausanne.localhost",
+            name="lausanne",
+            application_title="Geocity",
+            application_subtitle="Demandes en lignes concenrnant le territoire communal",
+            application_description="Demandes en ligne concernant le <b>domaine public</b>",
+            background_color="#FFFFFF",
+            login_background_color="#FFFFFF",
+            primary_color="#008c6f",
+            secondary_color="#01755d",
+            text_color="#000000",
+            title_color="#000000",
+            table_color="#212529",
+        )
 
         # A domain with which all integrators cas associate their own created administrative entities
         models.Site.objects.create(
-            domain=settings.BASE_DOMAIN, name="base common domain"
+            domain=settings.BASE_DOMAIN,
+            name="base common domain",
+            application_title="City Admin",
+            application_subtitle="Demandes en lignes",
+            application_description="Demandes concernant l' <i>administration</i>",
+            background_color="#FFFFFF",
+            login_background_color="#FFFFFF",
+            primary_color="#008c6f",
+            secondary_color="#01755d",
+            text_color="#000000",
+            title_color="#000000",
+            table_color="#212529",
         )
 
         # Site for internal use
@@ -1012,35 +1073,6 @@ class Command(BaseCommand):
             source_subid="9876",
             external_link="https://www.osm.org",
             geom="SRID=2056;MultiPolygon(((2526831.16912443 1159820.00193672, 2516148.68477727 1198947.70623155, 2551053.08130695 1201183.5750484, 2560741.84617995 1166651.82332153, 2526831.16912443 1159820.00193672)))",
-        )
-
-    def create_permit_site(self):
-        models.PermitSite.objects.create(
-            templatename="geocity",
-            application_title="Geocity",
-            application_subtitle="Demandes en lignes concenrnant le territoire communal",
-            application_description="Demandes en ligne concernant le <b>domaine public</b>",
-            background_color="#FFFFFF",
-            login_background_color="#FFFFFF",
-            primary_color="#008c6f",
-            secondary_color="#01755d",
-            text_color="#000000",
-            title_color="#000000",
-            table_color="#212529",
-        )
-
-        models.PermitSite.objects.create(
-            templatename="city",
-            application_title="City Admin",
-            application_subtitle="Demandes en lignes",
-            application_description="Demandes concernant l' <i>administration</i>",
-            background_color="#FFFFFF",
-            login_background_color="#FFFFFF",
-            primary_color="#008c6f",
-            secondary_color="#01755d",
-            text_color="#000000",
-            title_color="#000000",
-            table_color="#212529",
         )
 
     def setup_homepage(self):

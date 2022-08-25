@@ -2,6 +2,7 @@ from urllib import parse
 
 from constance import config
 from django.conf import settings
+from django.contrib.sites.shortcuts import get_current_site
 
 from permits import models
 
@@ -29,38 +30,32 @@ def get_context_data(context, request):
         parse.urlsplit(uri).query.replace("?", "").replace(settings.PREFIX_URL, "")
     )
 
-    request.session["templatename"] = None
+    current_site = get_current_site(request)
     url_qs = ""
 
-    if "template" in parse.parse_qs(params_str).keys():
-        template_value = parse.parse_qs(params_str)["template"][0]
-        template = models.PermitSite.objects.filter(templatename=template_value).first()
-        if template:
-            customization = {
-                "application_title": template.application_title
-                if template.application_title
-                else config.APPLICATION_TITLE,
-                "application_subtitle": template.application_subtitle
-                if template.application_subtitle
-                else config.APPLICATION_SUBTITLE,
-                "application_description": template.application_description
-                if template.application_description
-                else config.APPLICATION_DESCRIPTION,
-                "background_image": template.background_image
-                if template.background_image
-                else None,
-                "background_color": template.background_color,
-                "login_background_color": template.login_background_color,
-                "primary_color": template.primary_color,
-                "secondary_color": template.secondary_color,
-                "text_color": template.text_color,
-                "title_color": template.title_color,
-                "table_color": template.table_color,
-            }
-            request.session["templatename"] = template.templatename
-            url_qs = "&template=" + template.templatename
-        # use anonymous session
-        request.session["template"] = template_value
+    site = models.Site.objects.filter(name=current_site.name).first()
+    if site:
+        customization = {
+            "application_title": site.application_title
+            if site.application_title
+            else config.APPLICATION_TITLE,
+            "application_subtitle": site.application_subtitle
+            if site.application_subtitle
+            else config.APPLICATION_SUBTITLE,
+            "application_description": site.application_description
+            if site.application_description
+            else config.APPLICATION_DESCRIPTION,
+            "background_image": site.background_image
+            if site.background_image
+            else None,
+            "background_color": site.background_color,
+            "login_background_color": site.login_background_color,
+            "primary_color": site.primary_color,
+            "secondary_color": site.secondary_color,
+            "text_color": site.text_color,
+            "title_color": site.title_color,
+            "table_color": site.table_color,
+        }
     context.update({"customization": customization})
     if "entityfilter" in parse.parse_qs(params_str).keys():
         for value in parse.parse_qs(params_str)["entityfilter"]:

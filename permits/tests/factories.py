@@ -501,23 +501,6 @@ class PermitRequestAmendPropertyValueFactory(factory.django.DjangoModelFactory):
     value = factory.Faker("word")
 
 
-class PermitSiteFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.PermitSite
-
-    templatename = "mycustompage"
-    application_title = "mycustomtitle"
-    application_subtitle = "mycustomsubtitle"
-    application_description = "mycustomdescription"
-    background_color = "#000000"
-    login_background_color = "#000000"
-    primary_color = "#000000"
-    secondary_color = "#000000"
-    text_color = "#000000"
-    title_color = "#000000"
-    table_color = "#000000"
-
-
 class ComplementaryDocumentTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.ComplementaryDocumentType

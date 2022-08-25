@@ -111,10 +111,7 @@ if settings.ENABLE_2FA:
 
 class TestLoginPage(TestCase):
     def test_get_customized_login_view(self):
-        customization = factories.PermitSiteFactory()
-        response = self.client.get(
-            reverse("account_login"), data={"template": customization.templatename}
-        )
+        response = self.client.get(reverse("account_login"))
 
         expected_title = "<h3>" + customization.application_title + "</h3>"
         expected_subtitle = "<h5>" + customization.application_subtitle + "</h5>"

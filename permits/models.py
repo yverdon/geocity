@@ -25,7 +25,6 @@ from django.db.models import (
     Min,
     ProtectedError,
     Q,
-    UniqueConstraint,
 )
 from django.template.defaultfilters import slugify
 from django.urls import reverse
@@ -1752,18 +1751,12 @@ class ArchivedPermitRequest(models.Model):
         return super().delete(using, keep_parents)
 
 
-class PermitSite(models.Model):
-    templatename = models.CharField(
-        _("Identifiant"),
-        max_length=64,
-        blank=True,
-        help_text="Permettant d'afficher la page de login par l'url: https://geocity.ch/?template=vevey",
-        validators=[
-            RegexValidator(
-                regex=r"^[a-zA-Z0-9_]*$",
-                message="Seuls les caractères sans accents et les chiffres sont autorisés. Les espaces et autres caractères spéciaux ne sont pas autorisés",
-            )
-        ],
+class Site(Site):
+    integrator = models.ForeignKey(
+        Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs"),
     )
     application_title = models.CharField(_("Titre"), max_length=255, blank=True)
     application_subtitle = models.CharField(_("Sous-titre"), max_length=255, blank=True)
@@ -1805,25 +1798,6 @@ class PermitSite(models.Model):
     table_color = fields.ColorField(
         _("Couleur du texte dans les tableaux"),
         default="#212529",
-    )
-
-    class Meta:
-        constraints = [
-            UniqueConstraint(fields=["templatename"], name="unique_templatename")
-        ]
-        verbose_name = _("4.1 Configuration de la page de login")
-        verbose_name_plural = _("4.1 Configuration des pages de login")
-
-    def __str__(self):
-        return self.templatename
-
-
-class Site(Site):
-    integrator = models.ForeignKey(
-        Group,
-        null=True,
-        on_delete=models.SET_NULL,
-        verbose_name=_("Groupe des administrateurs"),
     )
 
     class Meta:

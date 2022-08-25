@@ -1251,40 +1251,6 @@ class PermitRequestAdmin(admin.ModelAdmin):
     get_works_object_types.short_description = "Objets et types de demandes"
 
 
-class PermitSiteAdmin(admin.ModelAdmin):
-    list_display = [
-        "__str__",
-        "templatename",
-        "application_title",
-        "application_subtitle",
-        "has_background_image",
-        "background_color",
-        "login_background_color",
-        "primary_color",
-        "secondary_color",
-        "text_color",
-        "title_color",
-        "table_color",
-    ]
-    list_filter = [
-        "templatename",
-        "application_title",
-    ]
-    search_fields = [
-        "templatename",
-    ]
-
-    @admin.display(boolean=True)
-    def has_background_image(self, obj):
-        try:
-            return obj.background_image.url is not None
-        except ValueError:
-            return False
-
-    has_background_image.admin_order_field = "background_image"
-    has_background_image.short_description = "Image de fond"
-
-
 class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = permit_forms.ComplementaryDocumentTypeAdminForm
 
@@ -1324,14 +1290,42 @@ class PermitRequestInquiryAdmin(admin.ModelAdmin):
 
 
 class SiteAdmin(IntegratorFilterMixin, SiteAdmin):
+    list_display = [
+        "__str__",
+        "name",
+        "domain",
+        "integrator",
+        "application_title",
+        "application_subtitle",
+        "has_background_image",
+        "background_color",
+        "login_background_color",
+        "primary_color",
+        "secondary_color",
+        "text_color",
+        "title_color",
+        "table_color",
+    ]
+    list_filter = [
+        "application_title",
+    ]
+
+    @admin.display(boolean=True)
+    def has_background_image(self, obj):
+        try:
+            return obj.background_image.url is not None
+        except ValueError:
+            return False
+
+    has_background_image.admin_order_field = "background_image"
+    has_background_image.short_description = "Image de fond"
+
     class Meta:
         model = models.Site
         fields = [
             "domains",
             "names" "integrator",
         ]
-
-    list_display = ("name", "domain", "integrator")
 
 
 admin.site.unregister(Site)
@@ -1343,7 +1337,6 @@ admin.site.register(models.WorksObjectProperty, WorksObjectPropertyAdmin)
 admin.site.register(models.PermitAdministrativeEntity, PermitAdministrativeEntityAdmin)
 admin.site.register(models.WorksObject, WorksObjectAdmin)
 admin.site.register(models.PermitRequestAmendProperty, PermitRequestAmendPropertyAdmin)
-admin.site.register(models.PermitSite, PermitSiteAdmin)
 admin.site.register(models.PermitRequest, PermitRequestAdmin)
 admin.site.register(models.ComplementaryDocumentType, ComplementaryDocumentTypeAdmin)
 admin.site.register(models.PermitRequestInquiry, PermitRequestInquiryAdmin)
