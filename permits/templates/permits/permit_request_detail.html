@@ -63,9 +63,11 @@
             &nbsp;/&nbsp; <a href="tel:{{ permit_request.author.phone_second }}" target="_blank" rel="noreferrer" title="{% trans 'Téléphone secondaire' %}">{{ permit_request.author.phone_second }}</a>
             {% endif %}
           </dd>
-          <dd>
-            {{ permit_request.author.iban }}
-          </dd>
+          {% if settings.AUTHOR_IBAN_VISIBLE %}
+            <dd>
+              {{ permit_request.author.iban }}
+            </dd>
+          {% endif %}
           <dd>
             {{ permit_request.author.company_name }} {{ permit_request.author.vat_number }}
           </dd>

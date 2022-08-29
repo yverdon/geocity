@@ -735,9 +735,12 @@ class GenericAuthorForm(forms.ModelForm):
             "phone_second",
             "company_name",
             "vat_number",
-            "iban",
             "notify_per_email",
         ]
+
+        if settings.AUTHOR_IBAN_VISIBLE:
+            fields.insert(7, "iban")
+
         help_texts = {
             "vat_number": 'Trouvez votre numéro <a href="https://www.uid.admin.ch/Search.aspx?lang=fr" target="_blank">TVA</a>',
             "notify_per_email": """Permet d'activer la réception des notifications
@@ -1855,12 +1858,15 @@ class SocialSignupForm(SignupForm):
         ),
     )
 
-    iban = forms.CharField(
-        required=False,
-        label=_("IBAN"),
-        max_length=30,
-        widget=forms.TextInput(attrs={"placeholder": "ex: CH12 3456 7890 1234 5678 9"}),
-    )
+    if settings.AUTHOR_IBAN_VISIBLE:
+        iban = forms.CharField(
+            required=False,
+            label=_("IBAN"),
+            max_length=30,
+            widget=forms.TextInput(
+                attrs={"placeholder": "ex: CH12 3456 7890 1234 5678 9"}
+            ),
+        )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

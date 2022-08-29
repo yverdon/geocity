@@ -184,6 +184,7 @@ class PermitRequestDetailView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def render_to_response(self, context):
+        context["settings"] = settings
         return render(self.request, "permits/permit_request_detail.html", context)
 
     def get_context_data(self, **kwargs):
