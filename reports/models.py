@@ -107,6 +107,7 @@ class Section(PolymorphicModel):
         return {
             **base_context,
             "section": self,
+            "settings": settings,
         }
 
     @property

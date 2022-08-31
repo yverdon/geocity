@@ -45,6 +45,7 @@ class DootixSocialAccountAdapter(DefaultSocialAccountAdapter):
             phone_second=form.cleaned_data["phone_second"],
             company_name=form.cleaned_data["company_name"],
             vat_number=form.cleaned_data["vat_number"],
+            iban=form.cleaned_data["iban"],
         )
 
         return user

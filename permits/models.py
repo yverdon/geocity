@@ -343,7 +343,7 @@ class PermitAuthor(models.Model):
                 message="Le code d'entreprise doit être de type \
                          CHE-123.456.789 (TVA) \
                          et vous pouvez le trouver sur \
-                         le registe fédéral des entreprises \
+                         le registre fédéral des entreprises \
                          https://www.uid.admin.ch/search.aspx",
             )
         ],
@@ -378,6 +378,20 @@ class PermitAuthor(models.Model):
             RegexValidator(
                 regex=r"^(((\+41)\s?)|(0))?(\d{2})\s?(\d{3})\s?(\d{2})\s?(\d{2})$",
                 message="Seuls les chiffres et les espaces sont autorisés.",
+            )
+        ],
+    )
+    iban = models.CharField(
+        _("IBAN"),
+        help_text=_(
+            "A remplir uniquement pour les prestations liées à un remboursement (le titulaire du compte doit correspondre aux informations indiquées ci-dessus)."
+        ),
+        blank=True,
+        max_length=30,
+        validators=[
+            RegexValidator(
+                regex=r"^[A-Z]{2}[0-9]{2}(?:[ ]?[0-9A-Z]{4}){4}(?:[ ]?[0-9]{1,2})?$",
+                message="L'IBAN doit être de type CH12 3456 7890 1234 5678 9",
             )
         ],
     )

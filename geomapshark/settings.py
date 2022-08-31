@@ -108,6 +108,9 @@ SITE_DOMAIN = None
 # Default domain on which all forms could be made visible by any integrator
 BASE_DOMAIN = os.getenv("BASE_DOMAIN")
 
+# IBAN for PermitAuthor model
+AUTHOR_IBAN_VISIBLE = os.getenv("AUTHOR_IBAN_VISIBLE", "false").lower() == "true"
+
 # Allow REMOTE_USER Authentication
 ALLOW_REMOTE_USER_AUTH = os.getenv("ALLOW_REMOTE_USER_AUTH", "false").lower() == "true"
 

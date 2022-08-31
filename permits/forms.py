@@ -737,6 +737,10 @@ class GenericAuthorForm(forms.ModelForm):
             "vat_number",
             "notify_per_email",
         ]
+
+        if settings.AUTHOR_IBAN_VISIBLE:
+            fields.insert(7, "iban")
+
         help_texts = {
             "vat_number": 'Trouvez votre numéro <a href="https://www.uid.admin.ch/Search.aspx?lang=fr" target="_blank">TVA</a>',
             "notify_per_email": """Permet d'activer la réception des notifications
@@ -747,6 +751,9 @@ class GenericAuthorForm(forms.ModelForm):
             "phone_first": forms.TextInput(attrs={"placeholder": "ex: 024 111 22 22"}),
             "phone_second": forms.TextInput(attrs={"placeholder": "ex: 079 111 22 22"}),
             "vat_number": forms.TextInput(attrs={"placeholder": "ex: CHE-123.456.789"}),
+            "iban": forms.TextInput(
+                attrs={"placeholder": "ex: CH12 3456 7890 1234 5678 9"}
+            ),
             "company_name": forms.TextInput(
                 attrs={"placeholder": "ex: Construction SA"}
             ),
@@ -879,7 +886,7 @@ class PermitRequestActorForm(forms.ModelForm):
                 message="Le code d'entreprise doit être de type \
                          CHE-123.456.789 (TVA) \
                          et vous pouvez le trouver sur \
-                         le registe fédéral des entreprises \
+                         le registre fédéral des entreprises \
                          https://www.uid.admin.ch/search.aspx",
             )
         ],
@@ -1850,6 +1857,16 @@ class SocialSignupForm(SignupForm):
             '?lang=fr" target="_blank">TVA</a>'
         ),
     )
+
+    if settings.AUTHOR_IBAN_VISIBLE:
+        iban = forms.CharField(
+            required=False,
+            label=_("IBAN"),
+            max_length=30,
+            widget=forms.TextInput(
+                attrs={"placeholder": "ex: CH12 3456 7890 1234 5678 9"}
+            ),
+        )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
