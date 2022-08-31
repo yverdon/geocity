@@ -177,6 +177,10 @@ djangorestframework-gis==0.18
     # via -r requirements.txt
 docker==5.0.3
     # via -r requirements.txt
+et-xmlfile==1.1.0
+    # via
+    #   -r requirements.txt
+    #   openpyxl
 executing==0.8.3
     # via stack-data
 factory-boy==3.2.1
@@ -230,6 +234,10 @@ oauthlib==3.2.0
     #   -r requirements.txt
     #   django-oauth-toolkit
     #   requests-oauthlib
+openpyxl==3.0.10
+    # via
+    #   -r requirements.txt
+    #   tablib
 parso==0.8.3
     # via jedi
 pdf2image==1.16.0
@@ -328,7 +336,7 @@ sqlparse==0.4.2
     #   django-debug-toolbar
 stack-data==0.2.0
     # via ipython
-tablib==3.2.0
+tablib[xlsx]==3.2.1
     # via -r requirements.txt
 toml==0.10.2
     # via

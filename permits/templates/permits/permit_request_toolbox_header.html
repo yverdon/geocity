@@ -32,7 +32,7 @@
     <div class="p-2 permits-action-btns">
         <a class="btn btn-outline-primary" href="{% url 'permits:permit_requests_list' %}?{{ export_csv_url_params }}" role="button">
           <i class="fa fa-file"></i>
-          {% trans "Exporter en CSV" %}
+          {% trans "Exporter" %}
         </a>
     </div>
     {% can_archive as can_archive %}

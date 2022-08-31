@@ -1,10 +1,12 @@
 # TODO split this file into multiple files
 import datetime
+import io
 import re
 import urllib.parse
 import uuid
 from datetime import date
 
+import tablib
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
@@ -4433,11 +4435,11 @@ class PermitRequestFilteredWorksObjectListTestCase(LoggedInSecretariatMixin, Tes
 
         self.assertInHTML(self.prop_value.value["val"], response.content.decode())
 
-    def test_secretariat_user_can_see_filtered_permits_details_in_csv(
+    def test_secretariat_user_can_see_filtered_permits_details_in_xlsx(
         self,
     ):
         response = self.client.get(
-            "{}?works_object_types__works_object={}&_export=csv".format(
+            "{}?works_object_types__works_object={}&_export=xlsx".format(
                 reverse(
                     "permits:permit_requests_list",
                 ),
@@ -4445,7 +4447,14 @@ class PermitRequestFilteredWorksObjectListTestCase(LoggedInSecretariatMixin, Tes
             )
         )
 
+        content = io.BytesIO(response.content)
+
+        # Replace content in bytes with the readable one
+        response.content = tablib.import_set(content.read(), format="xlsx")
+
+        self.assertContains(response, self.prop_value.id)
         self.assertContains(response, self.prop_value.value["val"])
+        self.assertContains(response, self.prop_value.property)
 
 
 class PermitRequestAnonymousTestCase(TestCase):

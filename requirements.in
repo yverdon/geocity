@@ -15,7 +15,7 @@ pytz
 PyYAML
 requests
 # Required by django-tables2, which doesn't list it in their requirements
-tablib
+tablib[xlsx]
 whitenoise
 python-dotenv
 django-admin-sortable2==1.0.4

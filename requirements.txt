@@ -122,6 +122,8 @@ djangorestframework-gis==0.18
     # via -r requirements.in
 docker==5.0.3
     # via -r requirements.in
+et-xmlfile==1.1.0
+    # via openpyxl
 filetype==1.0.10
     # via -r requirements.in
 gdal==3.3.2
@@ -144,6 +146,8 @@ oauthlib==3.2.0
     # via
     #   django-oauth-toolkit
     #   requests-oauthlib
+openpyxl==3.0.10
+    # via tablib
 pdf2image==1.16.0
     # via -r requirements.in
 phonenumbers==8.12.43
@@ -187,7 +191,7 @@ soupsieve==2.3.1
     # via beautifulsoup4
 sqlparse==0.4.2
     # via django
-tablib==3.2.0
+tablib[xlsx]==3.2.1
     # via -r requirements.in
 uritemplate==4.1.1
     # via -r requirements.in

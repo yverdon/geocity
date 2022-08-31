@@ -14,9 +14,9 @@ class PermitRequestTest(GeocityTestCase):
         status = models.PermitRequest.STATUS_CHOICES[permit_request.status][1]
         date = format_datetime(
             permit_request.created_at,
-            "d MMM y HH:mm",
-            tzinfo=timezone("Europe/Berlin"),
+            "dd.MM.yyyy HH:mm",
+            tzinfo=timezone("GMT"),
             locale="fr_CH",
         )
-        expected = f"ID,Date de création,État,Début,Fin,Objets et types de demandes,Entité administrative\r\n{permit_request.id},{date},{status},,—,,"
+        expected = f"ID,Date de création,État,Début,Fin,Objets et types de demandes,Entité administrative\r\n{permit_request.id},{date},{status},,"
         self.assertIn(expected, permit_request.to_csv())
