@@ -4,5 +4,5 @@ omit =
   .venv/*
   venv/*
   manage.py
-  geomapshark/settings*
-  geomapshark/wsgi.py
+  geocity/settings*
+  geocity/wsgi.py

@@ -19,7 +19,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
 
-from geomapshark import permissions_groups, settings
+from geocity import permissions_groups, settings
 
 from . import forms as permit_forms
 from . import models

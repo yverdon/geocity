@@ -1,5 +1,5 @@
 """
-WSGI config for geomapshark project.
+WSGI config for geocity project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -12,7 +12,7 @@ import os
 from django.core.wsgi import get_wsgi_application
 from whitenoise import WhiteNoise
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "geomapshark.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "geocity.settings")
 
 application = get_wsgi_application()
 application = WhiteNoise(application, root=os.environ["STATIC_FILES_ABSOLUTE_PATH"])

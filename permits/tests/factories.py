@@ -12,7 +12,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import Q
 from django.utils.text import Truncator
 
-from geomapshark import permissions_groups
+from geocity import permissions_groups
 from permits import models
 
 

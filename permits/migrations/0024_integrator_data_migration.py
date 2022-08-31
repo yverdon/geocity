@@ -2,7 +2,7 @@
 
 from django.db import migrations
 
-from geomapshark import permissions_groups
+from geocity import permissions_groups
 
 
 def set_default_integrator_on_existing_objects(apps, schema_editor):

@@ -29,7 +29,7 @@
 #            - "${DJANGO_DOCKER_PORT}:9000"
 #        environment:
 #            # If you aren't working in a DEV environment, you can remove/comment this line
-#            DJANGO_SETTINGS_MODULE: geomapshark.settings_dev
+#            DJANGO_SETTINGS_MODULE: geocity.settings_dev
 #            # if it's the first time your starting the containers, set this to 1
 #            INITIAL: 1
 #            # Possible values : DEV, DEMO or PROD

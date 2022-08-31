@@ -12,7 +12,7 @@ from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from django.utils import timezone
 
-from geomapshark import permissions_groups, settings
+from geocity import permissions_groups, settings
 from permits import models
 from reports.models import Report
 

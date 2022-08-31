@@ -13,7 +13,7 @@ from knox.models import AuthToken
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 
-from geomapshark import settings
+from geocity import settings
 from permits import models
 
 from . import factories

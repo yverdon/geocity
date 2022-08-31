@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
-from geomapshark import settings
+from geocity import settings
 
 from . import geoservices, models, search, services
 

@@ -7,7 +7,7 @@ load_dotenv()
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-ROOT_URLCONF = "geomapshark.urls"
+ROOT_URLCONF = "geocity.urls"
 PREFIX_URL = os.environ.get("PREFIX_URL", "")
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "permits:permit_requests_list"
@@ -99,7 +99,7 @@ ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 #  CustomLogin view.
 #  It also ensures get_current_site will get the right Site, which includes a subdomain.
 #  Note: Every subdomain is treated as a different Site, they require to login separately
-#  See: geomapshark.views.SetCurrentSiteMixin(), also: settings_test.py
+#  See: geocity.views.SetCurrentSiteMixin(), also: settings_test.py
 # FIXME: Need a default for emails sent by Crons (Cf. PermitRequestInquiryClosing)
 #  Or we need to add an attribute in the PermitRequest to save the site where it has
 #  been initiated.
@@ -385,7 +385,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "geomapshark.context_processors.two_factor_setting",
+                "geocity.context_processors.two_factor_setting",
                 "permits.context_processors.step_type",
             ],
         },
@@ -445,7 +445,7 @@ BOOTSTRAP4 = {
     "set_placeholder": False,
 }
 
-WSGI_APPLICATION = "geomapshark.wsgi.application"
+WSGI_APPLICATION = "geocity.wsgi.application"
 
 
 # Database
@@ -536,7 +536,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "oauth2_provider.contrib.rest_framework.OAuth2Authentication",
         "rest_framework.authentication.SessionAuthentication",
-        "geomapshark.auth.InternalTokenAuthentication",
+        "geocity.auth.InternalTokenAuthentication",
     ),
     "DEFAULT_PAGINATION_CLASS": "django_wfs3.pagination.CustomPagination",
     "DEFAULT_THROTTLE_CLASSES": [

@@ -27,7 +27,7 @@ if [ "$INITIAL" = "1" ]; then
     python3 manage.py migrate
     # django-constance models
     python3 manage.py migrate database
-    mkdir -p /code/geomapshark/static/
+    mkdir -p /code/geocity/static/
     echo yes | python3 manage.py compilemessages -l fr
 
     if [[ "$ENV" = "PROD" || "$ENV" = "DEMO" ]]; then
