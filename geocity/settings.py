@@ -66,8 +66,6 @@ DEBUG = False
 if ENV.lower() == "dev":
     DEBUG = True
 
-os.environ["GDAL_DATA"] = os.path.join(BASE_DIR, "gdal_data")
-GDAL_DATA = os.environ["GDAL_DATA"]
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
 
 DATE_INPUT_FORMAT = "%d.%m.%Y"
