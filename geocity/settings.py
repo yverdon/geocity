@@ -119,6 +119,7 @@ LOCATIONS_SEARCH_API_DETAILS = os.getenv("LOCATIONS_SEARCH_API_DETAILS")
 
 # Application definition
 INSTALLED_APPS = [
+    "geocity.apps.core",
     "polymorphic",
     "adminsortable2",
     "grappelli",
@@ -374,7 +375,6 @@ CONSTANCE_CONFIG = {
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -507,9 +507,6 @@ LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
 
 STATIC_URL = os.environ["STATIC_URL"]
 STATIC_ROOT = "/static_root"
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-]
 
 PRIVATE_MEDIA_ROOT = os.environ["PRIVATE_MEDIA_ROOT"]
 MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")

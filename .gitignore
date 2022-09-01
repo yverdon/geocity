@@ -4,9 +4,7 @@ __pycache__/
 /venv
 /print/*.conf
 /print/*.qgs~
-/static/images/print/STE_Signature.png
 gunicorn_log.log
-static/tempfiles/
 geocity/protected-static/
 env.yaml
 /docker-compose.override.yml
