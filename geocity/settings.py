@@ -505,10 +505,8 @@ LANGUAGES = (
 
 LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
 
-
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 STATIC_URL = os.environ["STATIC_URL"]
-STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
+STATIC_ROOT = "/static_root"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]

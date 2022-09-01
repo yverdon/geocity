@@ -5,7 +5,6 @@ __pycache__/
 /print/*.conf
 /print/*.qgs~
 /static/images/print/STE_Signature.png
-geocity/static/
 gunicorn_log.log
 static/tempfiles/
 geocity/protected-static/

@@ -16,6 +16,7 @@ services:
         volumes:
             - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
             - ${ARCHIVE_DIR}:/archive
+            - static_root:/static_root
             # to allow to spawn new QGIS containers
             - /var/run/docker.sock:/var/run/docker.sock
         ports:
@@ -43,6 +44,9 @@ services:
         # Runtime config below is therefore ignored.
         # networks:
         #     - isolated
+
+volumes:
+    static_root:
 
 networks:
     # Use this for containers that should only be able to communicate with Django
