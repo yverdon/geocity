@@ -119,19 +119,16 @@ LOCATIONS_SEARCH_API_DETAILS = os.getenv("LOCATIONS_SEARCH_API_DETAILS")
 
 # Application definition
 INSTALLED_APPS = [
+    # our apps
     "geocity.apps.core",
+    "geocity.apps.accounts.geomapfish",
+    "geocity.apps.accounts.dootix",
+    "geocity.apps.permits",
+    "geocity.apps.reports",
+    # dependencies
+    "grappelli",
     "polymorphic",
     "adminsortable2",
-    "grappelli",
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "django.contrib.gis",
-    "django.contrib.sites",
-    "django.contrib.postgres",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -154,6 +151,16 @@ INSTALLED_APPS = [
     "axes",
     "captcha",
     "ckeditor",
+    # django contrib apps
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "django.contrib.gis",
+    "django.contrib.sites",
+    "django.contrib.postgres",
 ]
 
 if ENABLE_2FA:
@@ -163,14 +170,6 @@ if ENABLE_2FA:
         "django_otp.plugins.otp_totp",
         "two_factor",
     ]
-
-# project applications
-INSTALLED_APPS += [
-    "geocity.apps.accounts.geomapfish",
-    "geocity.apps.accounts.dootix",
-    "geocity.apps.permits",
-    "geocity.apps.reports",
-]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
