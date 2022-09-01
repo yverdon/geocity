@@ -31,7 +31,7 @@ filetype
 # Open authentication provider
 django-oauth-toolkit
 # Open authentication consumer
-django-allauth
+django-allauth==0.45.0
 # django_wfs3 -> djangorestframework (optional for openapi schema generation, see https://www.django-rest-framework.org/api-guide/schemas/#install-dependencies)
 pyyaml
 uritemplate
