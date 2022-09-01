@@ -27,8 +27,8 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from permits import forms, models
-from permits import services as permits_services
+from geocity.apps.permits import forms, models
+from geocity.apps.permits import services as permits_services
 
 from . import services
 

@@ -1,10 +1,11 @@
 import json
 
-from accounts.dootix.provider import DootixProvider
 from allauth.socialaccount.tests import OAuth2TestsMixin
 from allauth.tests import MockedResponse, TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+
+from geocity.apps.accounts.dootix.provider import DootixProvider
 
 User = get_user_model()
 

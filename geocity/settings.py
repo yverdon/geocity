@@ -89,7 +89,7 @@ DEFAULT_CHARSET = "utf-8"
 
 # Django-Taggit
 TAGGIT_CASE_INSENSITIVE = True  # make tag unique
-TAGGIT_TAGS_FROM_STRING = "permits.utils.comma_splitter"
+TAGGIT_TAGS_FROM_STRING = "geocity.apps.permits.utils.comma_splitter"
 
 # 2FA activation
 ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
@@ -136,8 +136,6 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "accounts.geomapfish",
-    "accounts.dootix",
     "constance",
     "constance.backends.database",
     "simple_history",
@@ -169,8 +167,10 @@ if ENABLE_2FA:
 
 # project applications
 INSTALLED_APPS += [
-    "permits",
-    "reports",
+    "geocity.apps.accounts.geomapfish",
+    "geocity.apps.accounts.dootix",
+    "geocity.apps.permits",
+    "geocity.apps.reports",
 ]
 
 MIDDLEWARE = [
@@ -386,7 +386,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "geocity.context_processors.two_factor_setting",
-                "permits.context_processors.step_type",
+                "geocity.apps.permits.context_processors.step_type",
             ],
         },
     },
@@ -405,7 +405,7 @@ AUTH_PROVIDER_GEOMAPFISH_URL = os.getenv("AUTH_PROVIDER_GEOMAPFISH_URL", "")
 AUTH_PROVIDER_DOOTIX_URL = os.getenv("AUTH_PROVIDER_DOOTIX_URL", "")
 
 SOCIALACCOUNT_PROVIDERS = {
-    "accounts.geomapfish": {
+    "geocity.apps.accounts.geomapfish": {
         # Override SocialApp fields with an "APP" settings.
         # SocialApp object => /admin/socialaccount/socialapp.
         # Example:
@@ -418,7 +418,7 @@ SOCIALACCOUNT_PROVIDERS = {
         "SCOPE": ["email"],
         "VERIFIED_EMAIL": True,
     },
-    "accounts.dootix": {
+    "geocity.apps.accounts.dootix": {
         # Override SocialApp fields with an "APP" settings.
         # SocialApp object => /admin/socialaccount/socialapp.
         # Example:
@@ -434,7 +434,7 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 # Override SocialAccountAdapter to customize User creation
-SOCIALACCOUNT_FORMS = {"signup": "permits.forms.SocialSignupForm"}
+SOCIALACCOUNT_FORMS = {"signup": "geocity.apps.permits.forms.SocialSignupForm"}
 SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = None
@@ -538,7 +538,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
         "geocity.auth.InternalTokenAuthentication",
     ),
-    "DEFAULT_PAGINATION_CLASS": "django_wfs3.pagination.CustomPagination",
+    "DEFAULT_PAGINATION_CLASS": "geocity.apps.django_wfs3.pagination.CustomPagination",
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.ScopedRateThrottle",
     ],
@@ -560,8 +560,8 @@ WFS3_DESCRIPTION = "Point d'accès OGC API Features aux données Geocity."
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 CRON_CLASSES = [
-    "permits.cron.PermitRequestExpirationReminder",
-    "permits.cron.PermitRequestInquiryClosing",
+    "geocity.apps.permits.cron.PermitRequestExpirationReminder",
+    "geocity.apps.permits.cron.PermitRequestInquiryClosing",
 ]
 
 CAPTCHA_IMAGE_SIZE = (150, 50)

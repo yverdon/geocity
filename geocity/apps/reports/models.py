@@ -13,8 +13,9 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 from jinja2.sandbox import SandboxedEnvironment
 from knox.models import AuthToken
-from permits.fields import AdministrativeEntityFileField
 from polymorphic.models import PolymorphicModel
+
+from geocity.apps.permits.fields import AdministrativeEntityFileField
 
 from .fields import BackgroundFileField
 from .utils import DockerRunFailedError, run_docker_container

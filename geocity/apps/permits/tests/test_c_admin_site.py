@@ -3,9 +3,10 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 from django_otp import DEVICE_ID_SESSION_KEY
-from permits import admin, models
-from permits.tests.factories import SecretariatUserFactory, UserFactory
 from two_factor.utils import default_device
+
+from geocity.apps.permits import admin, models
+from geocity.apps.permits.tests.factories import SecretariatUserFactory, UserFactory
 
 from . import factories
 from .utils import LoggedInIntegratorMixin, get_parser

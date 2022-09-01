@@ -2,12 +2,13 @@ import datetime
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.db.models import F, Prefetch, Q
-from django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 from rest_framework import viewsets
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
+
+from geocity.apps.django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 
 from . import geoservices, models, search, serializers, services
 

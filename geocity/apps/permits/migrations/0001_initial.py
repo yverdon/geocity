@@ -5,9 +5,10 @@ import django.contrib.postgres.fields.jsonb
 import django.core.validators
 import django.db.models.deletion
 import django.utils.timezone
-import permits.fields
 from django.conf import settings
 from django.db import migrations, models
+
+from geocity.apps import permits
 
 
 class Migration(migrations.Migration):

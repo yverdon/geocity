@@ -15,7 +15,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-from permits import models, services
+
+from geocity.apps.permits import models, services
 
 from ..forms import PermitRequestGeoTimeForm
 from ..management.commands import create_anonymous_users
@@ -241,7 +242,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         prop = factories.WorksObjectPropertyFactoryTypeFile()
         prop.works_object_types.set(permit_request.works_object_types.all())
 
-        with open("permits/tests/files/real_jpg.jpg", "rb") as file:
+        with open("geocity/apps/permits/tests/files/real_jpg.jpg", "rb") as file:
             response = self.client.post(
                 reverse(
                     "permits:permit_request_appendices",
@@ -273,7 +274,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         prop = factories.WorksObjectPropertyFactoryTypeFile()
         prop.works_object_types.set(permit_request.works_object_types.all())
 
-        with open("permits/tests/files/real_png.png", "rb") as file:
+        with open("geocity/apps/permits/tests/files/real_png.png", "rb") as file:
             response = self.client.post(
                 reverse(
                     "permits:permit_request_appendices",
@@ -305,7 +306,7 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         prop = factories.WorksObjectPropertyFactoryTypeFile()
         prop.works_object_types.set(permit_request.works_object_types.all())
 
-        with open("permits/tests/files/real_pdf.pdf", "rb") as file:
+        with open("geocity/apps/permits/tests/files/real_pdf.pdf", "rb") as file:
             response = self.client.post(
                 reverse(
                     "permits:permit_request_appendices",
@@ -337,7 +338,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         prop = factories.WorksObjectPropertyFactoryTypeFile()
         prop.works_object_types.set(permit_request.works_object_types.all())
 
-        with open("permits/tests/files/unknow_type_for_filetype.txt", "rb") as file:
+        with open(
+            "geocity/apps/permits/tests/files/unknow_type_for_filetype.txt", "rb"
+        ) as file:
             response = self.client.post(
                 reverse(
                     "permits:permit_request_appendices",
@@ -368,7 +371,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         prop = factories.WorksObjectPropertyFactoryTypeFile()
         prop.works_object_types.set(permit_request.works_object_types.all())
 
-        with open("permits/tests/files/not_allowed_docx.docx", "rb") as file:
+        with open(
+            "geocity/apps/permits/tests/files/not_allowed_docx.docx", "rb"
+        ) as file:
             response = self.client.post(
                 reverse(
                     "permits:permit_request_appendices",
@@ -399,7 +404,9 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         prop = factories.WorksObjectPropertyFactoryTypeFile()
         prop.works_object_types.set(permit_request.works_object_types.all())
 
-        with open("permits/tests/files/not_allowed_bmp_as_jpg.jpg", "rb") as file:
+        with open(
+            "geocity/apps/permits/tests/files/not_allowed_bmp_as_jpg.jpg", "rb"
+        ) as file:
             response = self.client.post(
                 reverse(
                     "permits:permit_request_appendices",

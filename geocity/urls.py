@@ -8,12 +8,12 @@ from django.contrib.auth import views as auth_views
 from django.urls import include, path
 from rest_framework import routers
 
-from accounts.dootix.provider import DootixProvider
-from accounts.geomapfish.provider import GeomapfishProvider
-from django_wfs3.urls import wfs3_router
-from permits import api
-from permits import views as permits_views
-from permits.admin import PermitsAdminSite
+from geocity.apps.accounts.dootix.provider import DootixProvider
+from geocity.apps.accounts.geomapfish.provider import GeomapfishProvider
+from geocity.apps.django_wfs3.urls import wfs3_router
+from geocity.apps.permits import api
+from geocity.apps.permits import views as permits_views
+from geocity.apps.permits.admin import PermitsAdminSite
 
 from . import views
 
@@ -43,8 +43,8 @@ router.register(r"permits_details", api.PermitRequestDetailsViewSet, "permits_de
 # Django-configuration
 urlpatterns = [
     path("", permits_views.permit_request_select_administrative_entity),
-    path("permit-requests/", include("permits.urls")),
-    path("reports/", include("reports.urls")),
+    path("permit-requests/", include("geocity.apps.permits.urls")),
+    path("reports/", include("geocity.apps.reports.urls")),
     path("grappelli/", include("grappelli.urls")),  # grappelli URLS
 ]
 

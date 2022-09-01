@@ -4,7 +4,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.management import BaseCommand, CommandError
 from django.db import IntegrityError, transaction
 from django.utils.translation import gettext
-from permits.models import PermitAdministrativeEntity, PermitAuthor
+
+from geocity.apps.permits.models import PermitAdministrativeEntity, PermitAuthor
 
 
 def _create_anonymous_user_for_entity(entity):

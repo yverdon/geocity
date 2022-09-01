@@ -1,7 +1,8 @@
 from django.db import models
 from django.db.models.fields.files import FieldFile
 from django.urls import reverse
-from permits.fields import PrivateFileSystemStorage
+
+from geocity.apps.permits.fields import PrivateFileSystemStorage
 
 
 class BackgroundFieldFile(FieldFile):

@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.urls import reverse
-from permits import models, views
+
+from geocity.apps.permits import models, views
 
 from .. import factories
 from ..geocity_test_case import GeocityTestCase
@@ -57,7 +58,7 @@ class TestComplementaryDocuments(GeocityTestCase):
         self.assertInHTML(expected, permit_request_detail.content.decode())
 
     def test_pilot_can_upload_single_complementary_document(self):
-        with open("permits/tests/files/real_pdf.pdf", "rb") as file:
+        with open("geocity/apps/permits/tests/files/real_pdf.pdf", "rb") as file:
             data = {
                 "form-0-description": ["Single document upload"],
                 "form-0-status": [
@@ -73,7 +74,7 @@ class TestComplementaryDocuments(GeocityTestCase):
             self.execute_complementary_document_upload_test(data)
 
     def test_pilot_can_upload_multiple_complementary_documents(self):
-        with open("permits/tests/files/real_pdf.pdf", "rb") as file:
+        with open("geocity/apps/permits/tests/files/real_pdf.pdf", "rb") as file:
             data = {
                 "form-0-description": ["Multiple document upload. #1"],
                 "form-0-status": [

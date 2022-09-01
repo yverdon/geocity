@@ -2,9 +2,10 @@ from django import forms
 from django.contrib import admin
 from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
-from permits import models as permits_models
-from permits.admin import IntegratorFilterMixin
 from polymorphic.admin import PolymorphicInlineSupportMixin, StackedPolymorphicInline
+
+from geocity.apps.permits import models as permits_models
+from geocity.apps.permits.admin import IntegratorFilterMixin
 
 from .models import Report, ReportLayout, Section
 

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from permits import forms, models
+from geocity.apps.permits import forms, models
 
 from .. import factories
 from ..geocity_test_case import GeocityTestCase

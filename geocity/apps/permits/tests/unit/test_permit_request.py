@@ -1,6 +1,7 @@
 from babel.dates import format_datetime
-from permits import models
 from pytz import timezone
+
+from geocity.apps.permits import models
 
 from .. import factories
 from ..geocity_test_case import GeocityTestCase

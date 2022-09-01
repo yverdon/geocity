@@ -3,8 +3,9 @@
 import ckeditor.fields
 import django.core.validators
 import django.db.models.deletion
-import permits.fields
 from django.db import migrations, models
+
+from geocity.apps import permits
 
 
 class Migration(migrations.Migration):

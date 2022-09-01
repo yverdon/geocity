@@ -11,7 +11,8 @@ from django.test import LiveServerTestCase
 from django.test.testcases import LiveServerTestCase
 from django.utils.timezone import get_default_timezone, make_aware
 from freezegun import freeze_time
-from permits.models import (
+
+from geocity.apps.permits.models import (
     ComplementaryDocumentType,
     PermitAdministrativeEntity,
     PermitAuthor,

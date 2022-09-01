@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
-from permits.tests import factories
+from geocity.apps.permits.tests import factories
 
 
 class TestRegisterMixin:

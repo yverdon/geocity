@@ -1,5 +1,6 @@
 from django.urls import include, path
-from django_wfs3.urls import wfs3_router
+
+from geocity.apps.django_wfs3.urls import wfs3_router
 
 from . import api, geoviews, views
 

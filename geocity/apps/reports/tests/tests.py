@@ -1,5 +1,6 @@
 from django.urls import reverse
-from reports.models import (
+
+from geocity.apps.reports.models import (
     SectionAmendProperty,
     SectionAuthor,
     SectionContact,

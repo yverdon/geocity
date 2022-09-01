@@ -2,7 +2,8 @@ from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import ObjectDoesNotExist
 from django_otp import user_has_device
-from permits import services
+
+from geocity.apps.permits import services
 
 
 def check_mandatory_2FA(

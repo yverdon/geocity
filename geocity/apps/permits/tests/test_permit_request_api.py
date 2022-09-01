@@ -10,11 +10,11 @@ from django.contrib.gis.geos import (
 )
 from django.test import TestCase
 from knox.models import AuthToken
-from permits import models
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 
 from geocity import settings
+from geocity.apps.permits import models
 
 from . import factories
 

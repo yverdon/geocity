@@ -5,7 +5,8 @@ from django.core.management import BaseCommand, CommandError
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 from django.utils.translation import gettext
-from permits.models import PermitRequest
+
+from geocity.apps.permits.models import PermitRequest
 
 
 class Command(BaseCommand):

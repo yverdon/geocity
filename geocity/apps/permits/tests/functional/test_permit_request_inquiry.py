@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 
 from django.urls import reverse
-from permits import models
+
+from geocity.apps.permits import models
 
 from .. import factories
 from ..geocity_test_case import GeocityTestCase

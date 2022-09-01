@@ -1,6 +1,7 @@
 from django.contrib.gis.db.models import Extent
-from django_wfs3.urls import wfs3_router
 from rest_framework.response import Response
+
+from geocity.apps.django_wfs3.urls import wfs3_router
 
 
 class WFS3DescribeModelViewSetMixin:

@@ -8,7 +8,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django_otp.util import random_hex
 
-from permits.tests import factories
+from geocity.apps.permits.tests import factories
 
 
 def get_parser(content):

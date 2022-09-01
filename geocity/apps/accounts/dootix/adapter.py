@@ -3,7 +3,8 @@ from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.socialaccount.models import SocialLogin
 from allauth.utils import build_absolute_uri
 from django.conf import settings
-from permits.models import PermitAuthor
+
+from geocity.apps.permits.models import PermitAuthor
 
 
 class DootixAdapterError(Exception):

@@ -65,7 +65,7 @@ docker-compose exec web python manage.py test --settings=geocity.settings_test
 
 Run a specific test in the running container (adding the `--keepdb` flag speeds up iterations)
 ```bash
-docker-compose exec web python manage.py test --settings=geocity.settings_test --keepdb permits.tests.test_a_permit_request.PermitRequestTestCase.test_administrative_entity_is_filtered_by_tag
+docker-compose exec web python manage.py test --settings=geocity.settings_test --keepdb geocity.apps.permits.tests.test_a_permit_request.PermitRequestTestCase.test_administrative_entity_is_filtered_by_tag
 ```
 
 Test for report generation will fail when run in the running web container, because they spawn a test server to allow other container to communicate with it. You can run them in their own container, but need first to stop the running web container.

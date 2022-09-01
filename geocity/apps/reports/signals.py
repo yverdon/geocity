@@ -5,7 +5,8 @@ from django.contrib.staticfiles import finders
 from django.core.files import File
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from permits.models import ComplementaryDocumentType, Group
+
+from geocity.apps.permits.models import ComplementaryDocumentType, Group
 
 from .models import Report, ReportLayout, SectionAuthor, SectionMap, SectionParagraph
 

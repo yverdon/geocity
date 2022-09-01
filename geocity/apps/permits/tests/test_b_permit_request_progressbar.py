@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
-from permits import models
+
+from geocity.apps.permits import models
 
 from . import factories
 from .utils import LoggedInUserMixin, get_parser

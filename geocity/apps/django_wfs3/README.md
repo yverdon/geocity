@@ -15,7 +15,7 @@ Add this to your `urls.py` :
 Register your viewset in the wfs3 router
 ```python
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
-from django_wfs3.urls import wfs3_router
+from geocity.apps.django_wfs3.urls import wfs3_router
 
 class MyModelSerializer(gis_serializers.GeoFeatureModelSerializer):
     class Meta:

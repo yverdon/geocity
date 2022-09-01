@@ -8,7 +8,8 @@ from django.template.defaultfilters import floatformat
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
-from permits import forms, models, services
+
+from geocity.apps.permits import forms, models, services
 
 register = template.Library()
 

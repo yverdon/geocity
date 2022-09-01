@@ -11,9 +11,9 @@ from django.contrib.sites.models import Site
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import Q
 from django.utils.text import Truncator
-from permits import models
 
 from geocity import permissions_groups
+from geocity.apps.permits import models
 
 
 class PermitAuthorFactory(factory.django.DjangoModelFactory):
@@ -25,7 +25,9 @@ class PermitAuthorFactory(factory.django.DjangoModelFactory):
     city = factory.Faker("city")
     phone_first = Truncator(factory.Faker("phone_number")).chars(19)
     phone_second = Truncator(factory.Faker("phone_number")).chars(19)
-    user = factory.SubFactory("permits.tests.factories.UserFactory", actor=None)
+    user = factory.SubFactory(
+        "geocity.apps.permits.tests.factories.UserFactory", actor=None
+    )
 
 
 class UserFactory(factory.django.DjangoModelFactory):

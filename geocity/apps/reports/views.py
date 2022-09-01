@@ -7,11 +7,12 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from knox.models import AuthToken
-from permits import services
-from permits.decorators import permanent_user_required
-from permits.models import ComplementaryDocumentType, WorksObjectType
-from permits.serializers import PermitRequestPrintSerializer
 from rest_framework.decorators import api_view
+
+from geocity.apps.permits import services
+from geocity.apps.permits.decorators import permanent_user_required
+from geocity.apps.permits.models import ComplementaryDocumentType, WorksObjectType
+from geocity.apps.permits.serializers import PermitRequestPrintSerializer
 
 from .models import Report
 from .utils import run_docker_container

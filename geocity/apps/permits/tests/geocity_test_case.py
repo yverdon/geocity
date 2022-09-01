@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
-from permits.tests import factories
+
+from geocity.apps.permits.tests import factories
 
 
 class GeocityTestCase(TestCase):

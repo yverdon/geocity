@@ -11,10 +11,10 @@ from django.core import management
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from django.utils import timezone
-from permits import models
-from reports.models import Report
 
 from geocity import permissions_groups, settings
+from geocity.apps.permits import models
+from geocity.apps.reports.models import Report
 
 
 def strip_accents(text):

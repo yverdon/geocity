@@ -4,10 +4,6 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from itertools import groupby
 
-from accounts.dootix.adapter import DootixSocialAccountAdapter
-from accounts.dootix.provider import DootixProvider
-from accounts.geomapfish.adapter import GeomapfishSocialAccountAdapter
-from accounts.geomapfish.provider import GeomapfishProvider
 from allauth.socialaccount.forms import SignupForm
 from allauth.socialaccount.providers.base import ProviderException
 from bootstrap_datepicker_plus.widgets import DatePickerInput, DateTimePickerInput
@@ -31,6 +27,11 @@ from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
+
+from geocity.apps.accounts.dootix.adapter import DootixSocialAccountAdapter
+from geocity.apps.accounts.dootix.provider import DootixProvider
+from geocity.apps.accounts.geomapfish.adapter import GeomapfishSocialAccountAdapter
+from geocity.apps.accounts.geomapfish.provider import GeomapfishProvider
 
 from . import geoservices, models, services
 
@@ -1756,7 +1757,7 @@ class PermitRequestComplementaryDocumentsForm(forms.ModelForm):
                     _("Selection invalide pour génération à partir du modèle !")
                 )
 
-            from reports.views import report_pdf
+            from geocity.apps.reports.views import report_pdf
 
             report_response = report_pdf(
                 self.request,

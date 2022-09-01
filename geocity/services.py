@@ -3,7 +3,7 @@ from urllib import parse
 from constance import config
 from django.conf import settings
 
-from permits import models
+from geocity.apps.permits import models
 
 
 def get_context_data(context, request):
