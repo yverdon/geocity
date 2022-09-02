@@ -7,8 +7,6 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.models import Group, Permission, User
-from django.contrib.sites.admin import SiteAdmin
-from django.contrib.sites.models import Site
 from django.core.management import CommandError, call_command
 from django.db.models import Q, Value
 from django.db.models.functions import StrIndex, Substr
@@ -901,7 +899,7 @@ def get_sites_field(user):
                     permitdepartment__is_integrator_admin=True
                 )
             )
-            | Q(domain=settings.BASE_DOMAIN)
+            | Q(domain=settings.DEFAULT_SITE)
         )
 
     return SiteWithAdministrativeEntitiesField(
@@ -1316,19 +1314,27 @@ class PermitRequestInquiryAdmin(admin.ModelAdmin):
     sortable_str.short_description = _("3.2 Enquêtes public")
 
 
-class SiteAdmin(IntegratorFilterMixin, SiteAdmin):
+class SiteProfileAdminForm(forms.ModelForm):
     class Meta:
-        model = models.Site
-        fields = [
-            "domains",
-            "names" "integrator",
-        ]
-
-    list_display = ("name", "domain", "integrator")
+        model = models.Profile
+        fields = "__all__"
 
 
-admin.site.unregister(Site)
-admin.site.register(models.Site, SiteAdmin)
+class SiteProfileAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    form = SiteProfileAdminForm
+    list_display = [
+        "integrator",
+    ]
+
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "name"
+    sortable_str.short_description = _("15.0 Configuration des sites")
+
+
+# admin.site.unregister(Site)
+admin.site.register(models.Profile, SiteProfileAdmin)
 admin.site.register(models.PermitActorType, PermitActorTypeAdmin)
 admin.site.register(models.WorksType, WorksTypeAdmin)
 admin.site.register(models.WorksObjectType, WorksObjectTypeAdmin)

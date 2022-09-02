@@ -106,7 +106,7 @@ ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 SITE_ID = None
 SITE_DOMAIN = None
 # Default domain on which all forms could be made visible by any integrator
-BASE_DOMAIN = os.getenv("BASE_DOMAIN")
+DEFAULT_SITE = os.getenv("DEFAULT_SITE")
 
 # IBAN for PermitAuthor model
 AUTHOR_IBAN_VISIBLE = os.getenv("AUTHOR_IBAN_VISIBLE", "false").lower() == "true"

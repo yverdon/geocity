@@ -27,6 +27,8 @@ from django.db.models import (
     Q,
     UniqueConstraint,
 )
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.template.defaultfilters import slugify
 from django.urls import reverse
 from django.utils import timezone
@@ -1805,10 +1807,13 @@ class TemplateCustomization(models.Model):
         return self.templatename
 
 
-class Site(Site):
+# Custom Site to store more datas
+class Profile(models.Model):
+    site = models.OneToOneField(Site, on_delete=models.CASCADE)
     integrator = models.ForeignKey(
         Group,
         null=True,
+        default=None,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
     )
@@ -1817,3 +1822,14 @@ class Site(Site):
 
         verbose_name = _("1.0 Configuration du sous-domaine")
         verbose_name_plural = _("1.0 Configuration des sous-domaines")
+
+
+@receiver(post_save, sender=Site)
+def create_site_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(site=instance)
+
+
+# @receiver(post_save, sender=Site)
+# def save_site_profile(sender, instance, **kwargs):
+#     instance.profile.save()

@@ -122,15 +122,15 @@ class Command(BaseCommand):
         site.domain = "localhost"
         site.save()
         # custom sites
-        models.Site.objects.create(domain="yverdon.localhost", name="yverdon")
-        models.Site.objects.create(domain="grandson.localhost", name="grandson")
-        models.Site.objects.create(domain="vevey.localhost", name="vevey")
-        models.Site.objects.create(domain="lausanne.localhost", name="lausanne")
+        Site.objects.create(domain="yverdon.localhost", name="yverdon")
+        Site.objects.create(domain="grandson.localhost", name="grandson")
+        Site.objects.create(domain="vevey.localhost", name="vevey")
+        Site.objects.create(domain="lausanne.localhost", name="lausanne")
 
         # A domain with which all integrators cas associate their own created administrative entities
-        models.Site.objects.create(
-            domain=settings.BASE_DOMAIN, name="base common domain"
-        )
+        # models.Site.objects.create(
+        #     domain=settings.BASE_DOMAIN, name="base common domain"
+        # )
 
         # Site for internal use
         # TODO: we shouldn't need this ! Either we need forward the site for internal calls
@@ -141,7 +141,8 @@ class Command(BaseCommand):
 
     def setup_integrator(self):
         integrator = Group.objects.get(name="integrator")
-        models.Site.objects.filter(name="yverdon").update(integrator=integrator)
+        print(Site.objects.filter(name="yverdon"))
+        # Site.objects.filter(name="yverdon").update(integrator=integrator)
         models.PermitAdministrativeEntity.objects.update(integrator=integrator)
         models.WorksType.objects.update(integrator=integrator)
         models.WorksObject.objects.update(integrator=integrator)
