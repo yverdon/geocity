@@ -1,17 +1,15 @@
 #!/bin/bash
 
-cd /code
-# setup app using the django tools
-python3 manage.py migrate
-# django-constance models
-python3 manage.py migrate database
+set -e
 
-mkdir /code/geocity/static/
-echo yes | python3 manage.py compilemessages -l fr
-echo yes | python3 manage.py collectstatic
+# Ensuire we have connection to the database.
+# If not will, the container will fail and restart.
+python3 manage.py shell -c "import django; django.db.connection.ensure_connection();"
 
-# update integrator permissions
-python3 manage.py update_integrator_permissions
+# On PROD, we run migrations on startup.
+if [ "$ENV" == "PROD" ]; then
+    scripts/migrate.sh
+fi
 
-
+# Run the command
 exec $@

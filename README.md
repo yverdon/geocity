@@ -12,12 +12,18 @@ Django developpment server in reload mode.
 
 ```bash
 git clone git@github.com:yverdon/geocity.git && cd geocity
+# copy default config
 cp -n env.demo .env
-docker-compose build
-docker-compose down --remove-orphans && docker-compose up
+# start the stack
+docker-compose up --build -d --remove-orphans
+# run the migrations
+docker-compose run web scripts/migrate.sh
+# load demo data
+docker-compose run web python manage.py fixturize_demo
 ```
 
 ## Setting up production instance
+
 ### Database
 
 1. Create a  postgres database
@@ -37,6 +43,17 @@ DEV_DEPENDENCIES=false
 ```
 
 And review all other variables in order to fine tune your instance
+
+
+### Deploying changes
+
+New changes are deployed with the following command. :warning: **WARNING**: on PROD, docker-compose up will automatically
+run migrations, collect static files, compile messages and update integrator permissions in the entrypoint.
+
+```bash
+# update the stack
+docker-compose up --build -d --remove-orphans
+```
 
 ---
 ## Default Site
