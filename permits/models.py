@@ -1819,9 +1819,8 @@ class Profile(models.Model):
     )
 
     class Meta:
-
-        verbose_name = _("1.0 Configuration du sous-domaine")
-        verbose_name_plural = _("1.0 Configuration des sous-domaines")
+        verbose_name = _("6.0 Configuration du site")
+        verbose_name_plural = _("6.0 Configuration des sites")
 
 
 @receiver(post_save, sender=Site)

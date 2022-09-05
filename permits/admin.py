@@ -3,6 +3,7 @@ from adminsortable2.admin import SortableAdminMixin
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin import AdminSite, site
+from django.contrib.sites.models import Site
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserChangeForm
@@ -1320,20 +1321,11 @@ class SiteProfileAdminForm(forms.ModelForm):
         fields = "__all__"
 
 
-class SiteProfileAdmin(IntegratorFilterMixin, admin.ModelAdmin):
-    form = SiteProfileAdminForm
-    list_display = [
-        "integrator",
-    ]
-
-    def sortable_str(self, obj):
-        return obj.__str__()
-
-    sortable_str.admin_order_field = "name"
-    sortable_str.short_description = _("15.0 Configuration des sites")
+class SiteProfileAdmin(admin.ModelAdmin):
+    list_display    = ['id', 'integrator', 'site']
 
 
-# admin.site.unregister(Site)
+admin.site.unregister(Site)
 admin.site.register(models.Profile, SiteProfileAdmin)
 admin.site.register(models.PermitActorType, PermitActorTypeAdmin)
 admin.site.register(models.WorksType, WorksTypeAdmin)

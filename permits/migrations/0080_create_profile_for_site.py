@@ -44,8 +44,8 @@ class Migration(migrations.Migration):
                 ),
             ],
             options={
-                "verbose_name": "1.0 Configuration du sous-domaine",
-                "verbose_name_plural": "1.0 Configuration des sous-domaines",
+                "verbose_name": "6.0 Configuration du site",
+                "verbose_name_plural": "6.0 Configuration des sites",
             },
         ),
         migrations.DeleteModel(
