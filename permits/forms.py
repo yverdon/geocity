@@ -693,12 +693,16 @@ class DjangoAuthUserForm(forms.ModelForm):
             raise ValidationError(
                 _("Le prénom ne peut pas être %s") % settings.ANONYMOUS_NAME
             )
+        else:
+            return self.cleaned_data["first_name"]
 
     def clean_last_name(self):
         if self.cleaned_data["last_name"] == settings.ANONYMOUS_NAME:
             raise ValidationError(
                 _("Le nom ne peut pas être %s") % settings.ANONYMOUS_NAME
             )
+        else:
+            return self.cleaned_data["last_name"]
 
     class Meta:
         model = User
