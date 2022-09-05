@@ -75,12 +75,9 @@ DEFAULT_SITE=geocity.ch
 Following variable setup in your .env file will setup the developpment environment for you
 
 ```ini
-COMPOSE_FILE=docker-compose.yml:docker-compose-demo.yml
-COMPOSE_PATH_SEPARATOR=:
-ENV=DEV
-DEBUG=True
-DEV_DEPENDENCIES=true
-CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE=true
+PRIVATE_DOCUMENTS_DIR=C:\some\directory\for\mounting\geocity\private_documents
+ARCHIVE_DIR=C:\some\directory\for\mounting\geocity\archive
+BASE_DOMAIN=localhost
 ```
 
 ### Run the tests from within the docker container
