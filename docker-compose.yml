@@ -83,6 +83,7 @@ services:
             context: services/qgis
         # This service is only there for building, containers are instantaited on demand by Django.
         # Runtime config below is therefore ignored.
+        command: echo "built"
         # networks:
         #     - isolated
 
@@ -93,6 +94,7 @@ services:
             context: services/pdf
         # This service is only there for building, containers are instantaited on demand by Django.
         # Runtime config below is therefore ignored.
+        command: echo "built"
         # networks:
         #     - isolated
 
