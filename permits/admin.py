@@ -1315,12 +1315,6 @@ class PermitRequestInquiryAdmin(admin.ModelAdmin):
     sortable_str.short_description = _("3.2 Enquêtes public")
 
 
-class SiteProfileAdminForm(forms.ModelForm):
-    class Meta:
-        model = models.Profile
-        fields = "__all__"
-
-
 class SiteProfileAdmin(admin.ModelAdmin):
     list_display    = ['id', 'integrator', 'site']
 
