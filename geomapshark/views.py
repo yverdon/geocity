@@ -1,3 +1,4 @@
+from urllib import parse
 from urllib.parse import urlparse
 
 from allauth.socialaccount.models import SocialApp
@@ -109,15 +110,22 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
         return super(CustomLoginView, self).done(form_list, **kwargs)
 
     def get_success_url(self):
+
+        qs_dict = parse.parse_qs(self.request.META["QUERY_STRING"])
+
+        url_value = (
+            qs_dict["next"][0]
+            if "next" in qs_dict
+            else reverse("permits:permit_request_select_administrative_entity")
+        )
+
+        if "next" in qs_dict:
+            qs_dict.pop("next")
+
         return (
             reverse("two_factor:profile")
             if settings.ENABLE_2FA and not self.request.user.totpdevice_set.exists()
-            else reverse("permits:permit_request_select_administrative_entity")
-            + (
-                "?" + self.request.META["QUERY_STRING"]
-                if self.request.META["QUERY_STRING"]
-                else ""
-            )
+            else url_value
         )
 
 
