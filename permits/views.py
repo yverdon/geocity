@@ -220,8 +220,10 @@ class PermitRequestDetailView(View):
 
             if "poke" in active_forms and "validate" in active_forms:
                 active_form = active_forms[active_forms.index("validate")]
-        else:
+        elif len(active_forms) > 0:
             active_form = active_forms[0]
+        else:
+            active_form = None
 
         kwargs["has_validations"] = self.permit_request.has_validations()
 
