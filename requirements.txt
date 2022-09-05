@@ -163,8 +163,6 @@ pycparser==2.21
     # via cffi
 pyjwt[crypto]==2.3.0
     # via django-allauth
-python-dotenv==0.19.2
-    # via -r requirements.in
 python3-openid==3.2.0
     # via django-allauth
 pytz==2021.3

@@ -22,7 +22,7 @@ services:
             - "${DJANGO_DOCKER_PORT}:9000"
         environment:
             # Debug settings
-            - DJANGO_SETTINGS_MODULE=geomapshark.settings_dev
+            - DJANGO_SETTINGS_MODULE=geocity.settings_dev
 
     postgres:
         image: postgis/postgis:13-3.2

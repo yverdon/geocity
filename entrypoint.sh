@@ -6,7 +6,7 @@ python3 manage.py migrate
 # django-constance models
 python3 manage.py migrate database
 
-mkdir /code/geomapshark/static/
+mkdir /code/geocity/static/
 echo yes | python3 manage.py compilemessages -l fr
 echo yes | python3 manage.py collectstatic
 

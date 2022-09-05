@@ -18,15 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: geomapshark/settings.py:282
+#: geocity/settings.py:282
 msgid "French"
 msgstr ""
 
-#: geomapshark/settings.py:283
+#: geocity/settings.py:283
 msgid "English"
 msgstr ""
 
-#: geomapshark/settings.py:284
+#: geocity/settings.py:284
 msgid "German"
 msgstr ""
 

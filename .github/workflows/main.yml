@@ -34,7 +34,7 @@ jobs:
       env:
         ENABLE_2FA: "true"
       run: |
-        docker-compose run --service-ports --name=web --rm --entrypoint="" web coverage run --source='.' ./manage.py test --settings=geomapshark.settings_test --keepdb
+        docker-compose run --service-ports --name=web --rm --entrypoint="" web coverage run --source='.' ./manage.py test --settings=geocity.settings_test --keepdb
 
     - name: Coverage report (with 2FA)
       run: docker-compose run --rm --entrypoint="" web coverage report -m
@@ -43,7 +43,7 @@ jobs:
       env:
         ENABLE_2FA: "false"
       run: |
-        docker-compose run --service-ports --name=web --rm --entrypoint="" web coverage run --source='.' ./manage.py test --settings=geomapshark.settings_test --keepdb
+        docker-compose run --service-ports --name=web --rm --entrypoint="" web coverage run --source='.' ./manage.py test --settings=geocity.settings_test --keepdb
 
     - name: Coverage report (without 2FA)
       run: docker-compose run --rm --entrypoint="" web coverage report -m
