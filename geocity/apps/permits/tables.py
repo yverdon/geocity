@@ -119,6 +119,7 @@ class GenericPermitRequestTable(ColumnShiftTable):
         orderable=True,
     )
     status = tables.TemplateColumn(
+        verbose_name=_("État"),
         template_name="tables/_permit_request_status.html",
         attrs=ATTRIBUTES,
         orderable=True,
