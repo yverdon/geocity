@@ -1171,7 +1171,8 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
             template="permit_request_changed.txt",
             sender=sender,
             receivers=[permit_request.author.user.email],
-            subject=_("Votre demande %s a changé") % permit_request.works_objects_str(),
+            subject=_("Votre demande %s a changé de statut")
+            % permit_request.works_objects_str(),
             context={
                 "status": dict(permit_request.STATUS_CHOICES)[permit_request.status],
                 "reason": (
@@ -1185,6 +1186,8 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                         kwargs={"permit_request_id": permit_request.pk},
                     )
                 ),
+                "administrative_entity": permit_request.administrative_entity,
+                "name": permit_request.author.user.get_full_name(),
             },
         )
 

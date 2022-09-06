@@ -3372,14 +3372,14 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
         self.assertEqual(
             mail.outbox[0].subject,
-            f"Votre demande {permit_request.works_objects_str()} a changé",
+            f"Votre demande {permit_request.works_objects_str()} a changé de statut",
         )
         self.assertIn(
-            "Votre demande a changé.",
+            "Nous vous informons que votre demande a changé de statut.",
             mail.outbox[0].message().as_string(),
         )
         self.assertIn(
-            "Nouveau status:",
+            "Nouveau statut: Demande de compléments",
             mail.outbox[0].message().as_string(),
         )
         self.assertIn(
