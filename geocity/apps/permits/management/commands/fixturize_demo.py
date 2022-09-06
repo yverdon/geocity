@@ -116,24 +116,20 @@ class Command(BaseCommand):
             self.stdout.write("Fixturize succeed!")
 
     def setup_sites(self):
-
-        site = Site.objects.get()
-        site.name = settings.DEFAULT_SITE
-        site.domain = settings.DEFAULT_SITE
-        site.save()
+        Site.objects.get_or_create(domain=settings.DEFAULT_SITE, name="default site")
 
         # custom sites
-        Site.objects.create(domain="yverdon.localhost", name="yverdon")
-        Site.objects.create(domain="grandson.localhost", name="grandson")
-        Site.objects.create(domain="vevey.localhost", name="vevey")
-        Site.objects.create(domain="lausanne.localhost", name="lausanne")
+        Site.objects.get_or_create(domain="yverdon.localhost", name="yverdon")
+        Site.objects.get_or_create(domain="grandson.localhost", name="grandson")
+        Site.objects.get_or_create(domain="vevey.localhost", name="vevey")
+        Site.objects.get_or_create(domain="lausanne.localhost", name="lausanne")
 
         # Site for internal use
         # TODO: we shouldn't need this ! Either we need forward the site for internal calls
         # or there should be a default site. For now this should have no impact because
         # the API is not filtered by site.
         # see https://github.com/yverdon/geocity/issues/525
-        Site.objects.create(domain="web", name="web (internal calls)")
+        Site.objects.get_or_create(domain="web", name="web (internal calls)")
 
     def setup_integrator(self):
         integrator = Group.objects.get(name="integrator")
@@ -160,7 +156,7 @@ class Command(BaseCommand):
 
         administrative_entity_yverdon.tags.add("yverdon")
         administrative_entity_yverdon.sites.add(Site.objects.get(name="yverdon"))
-        administrative_entity_yverdon.sites.add(Site.objects.get(name="localhost"))
+        administrative_entity_yverdon.sites.add(Site.objects.get(name="default site"))
 
         administrative_entity_grandson = models.PermitAdministrativeEntity.objects.create(
             name="Démo Grandson",
@@ -172,7 +168,7 @@ class Command(BaseCommand):
 
         administrative_entity_grandson.tags.add("grandson")
         administrative_entity_grandson.sites.add(Site.objects.get(name="grandson"))
-        administrative_entity_grandson.sites.add(Site.objects.get(name="localhost"))
+        administrative_entity_grandson.sites.add(Site.objects.get(name="default site"))
 
         administrative_entity_lausanne = models.PermitAdministrativeEntity.objects.create(
             name="Démo Lausanne",
@@ -184,7 +180,7 @@ class Command(BaseCommand):
 
         administrative_entity_lausanne.tags.add("lausanne")
         administrative_entity_lausanne.sites.add(Site.objects.get(name="lausanne"))
-        administrative_entity_lausanne.sites.add(Site.objects.get(name="localhost"))
+        administrative_entity_lausanne.sites.add(Site.objects.get(name="default site"))
 
         administrative_entity_vevey = models.PermitAdministrativeEntity.objects.create(
             name="Démo Vevey",
@@ -196,7 +192,7 @@ class Command(BaseCommand):
 
         administrative_entity_vevey.tags.add("vevey")
         administrative_entity_vevey.sites.add(Site.objects.get(name="vevey"))
-        administrative_entity_vevey.sites.add(Site.objects.get(name="localhost"))
+        administrative_entity_vevey.sites.add(Site.objects.get(name="default site"))
 
         user = User.objects.create_user(
             email=f"yverdon-squad+admin@liip.ch",
