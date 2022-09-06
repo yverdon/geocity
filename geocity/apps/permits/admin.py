@@ -7,6 +7,8 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.models import Group, Permission, User
+from django.contrib.sites.admin import SiteAdmin as BaseSiteAdmin
+from django.contrib.sites.models import Site
 from django.core.management import CommandError, call_command
 from django.db.models import Q, Value
 from django.db.models.functions import StrIndex, Substr
@@ -1314,11 +1316,22 @@ class PermitRequestInquiryAdmin(admin.ModelAdmin):
     sortable_str.short_description = _("3.2 Enquêtes public")
 
 
-class SiteProfileAdmin(admin.ModelAdmin):
-    list_display = ["id", "integrator", "site"]
+# Inline for base Django Site
+class SiteInline(admin.TabularInline):
+    model = models.SiteProfile
+    inline_classes = ("collapse open",)
 
 
-# admin.site.register(models.Profile, SiteProfileAdmin)
+class SiteProfileAdmin(BaseSiteAdmin):
+    inlines = (SiteInline,)
+    list_display = [
+        "name",
+        "domain",
+    ]
+
+
+admin.site.unregister(Site)
+admin.site.register(Site, SiteProfileAdmin)
 admin.site.register(models.PermitActorType, PermitActorTypeAdmin)
 admin.site.register(models.WorksType, WorksTypeAdmin)
 admin.site.register(models.WorksObjectType, WorksObjectTypeAdmin)

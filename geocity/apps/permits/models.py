@@ -1815,18 +1815,19 @@ class SiteProfile(models.Model):
     site = models.OneToOneField(
         Site,
         on_delete=models.CASCADE,
+        related_name="site_profile",
     )
     integrator = models.ForeignKey(
         Group,
         null=True,
         default=None,
         on_delete=models.SET_NULL,
-        verbose_name=_("Détails du Site"),
+        verbose_name=_("Intégrateur"),
     )
 
     class Meta:
-        verbose_name = _("6.0 Configuration du site")
-        verbose_name_plural = _("6.0 Configuration des sites")
+        verbose_name = _("Configuration de l'intégrateur")
+        verbose_name_plural = _("Configuration de l'intégrateur")
 
 
 @receiver(post_save, sender=Site)
