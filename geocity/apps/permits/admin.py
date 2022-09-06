@@ -895,7 +895,7 @@ def get_sites_field(user):
     if not user.is_superuser:
         qs = qs.filter(
             Q(
-                integrator__in=user.groups.filter(
+                siteprofile__integrator__in=user.groups.filter(
                     permitdepartment__is_integrator_admin=True
                 )
             )

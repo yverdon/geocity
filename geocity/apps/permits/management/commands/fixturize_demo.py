@@ -137,7 +137,9 @@ class Command(BaseCommand):
 
     def setup_integrator(self):
         integrator = Group.objects.get(name="integrator")
-        # models.SiteProfile.objects.filter(name="yverdon").update(integrator=integrator)
+        models.SiteProfile.objects.filter(site__name="yverdon").update(
+            integrator=integrator
+        )
         models.PermitAdministrativeEntity.objects.update(integrator=integrator)
         models.WorksType.objects.update(integrator=integrator)
         models.WorksObject.objects.update(integrator=integrator)
