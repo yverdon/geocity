@@ -7,7 +7,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.models import Group, Permission, User
-from django.contrib.sites.admin import SiteAdmin
+from django.contrib.sites.admin import SiteAdmin as BaseSiteAdmin
 from django.contrib.sites.models import Site
 from django.core.management import CommandError, call_command
 from django.db.models import Q, Value
@@ -897,11 +897,11 @@ def get_sites_field(user):
     if not user.is_superuser:
         qs = qs.filter(
             Q(
-                integrator__in=user.groups.filter(
+                siteprofile__integrator__in=user.groups.filter(
                     permitdepartment__is_integrator_admin=True
                 )
             )
-            | Q(domain=settings.BASE_DOMAIN)
+            | Q(domain=settings.DEFAULT_SITE)
         )
 
     return SiteWithAdministrativeEntitiesField(
@@ -1316,19 +1316,22 @@ class PermitRequestInquiryAdmin(admin.ModelAdmin):
     sortable_str.short_description = _("3.2 Enquêtes public")
 
 
-class SiteAdmin(IntegratorFilterMixin, SiteAdmin):
-    class Meta:
-        model = models.Site
-        fields = [
-            "domains",
-            "names" "integrator",
-        ]
+# Inline for base Django Site
+class SiteInline(admin.TabularInline):
+    model = models.SiteProfile
+    inline_classes = ("collapse open",)
 
-    list_display = ("name", "domain", "integrator")
+
+class SiteProfileAdmin(BaseSiteAdmin):
+    inlines = (SiteInline,)
+    list_display = [
+        "name",
+        "domain",
+    ]
 
 
 admin.site.unregister(Site)
-admin.site.register(models.Site, SiteAdmin)
+admin.site.register(Site, SiteProfileAdmin)
 admin.site.register(models.PermitActorType, PermitActorTypeAdmin)
 admin.site.register(models.WorksType, WorksTypeAdmin)
 admin.site.register(models.WorksObjectType, WorksObjectTypeAdmin)

@@ -263,6 +263,7 @@ def get_administrative_entities(user, site=None):
         .order_by("ofs_id", "-name")
         .distinct()
     )
+
     if site:
         queryset = queryset.filter(sites=site)
 

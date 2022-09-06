@@ -97,8 +97,8 @@ class Command(BaseCommand):
         self.stdout.write("Resetting database...")
         reset_db()
         with transaction.atomic():
-            self.stdout.write("Setup Site objects...")
-            self.setup_site()
+            self.stdout.write("Creating sites...")
+            self.setup_sites()
             self.stdout.write("Creating users...")
             self.create_users()
             self.stdout.write("Creating works types and objs...")
@@ -111,26 +111,22 @@ class Command(BaseCommand):
             self.create_template_customization()
             self.stdout.write("Configurating template customizations...")
             self.setup_homepage()
-            self.stdout.write("Setting integrator for selected confgurations...")
+            self.stdout.write("Setting site integrator for selected confgurations...")
             self.setup_integrator()
             self.stdout.write("Fixturize succeed!")
 
-    def setup_site(self):
-        # default site, will not appear in admin
-        site = Site.objects.get()
-        site.name = "localhost"
-        site.domain = "localhost"
-        site.save()
-        # custom sites
-        models.Site.objects.create(domain="yverdon.localhost", name="yverdon")
-        models.Site.objects.create(domain="grandson.localhost", name="grandson")
-        models.Site.objects.create(domain="vevey.localhost", name="vevey")
-        models.Site.objects.create(domain="lausanne.localhost", name="lausanne")
+    def setup_sites(self):
 
-        # A domain with which all integrators cas associate their own created administrative entities
-        models.Site.objects.create(
-            domain=settings.BASE_DOMAIN, name="base common domain"
-        )
+        site = Site.objects.get()
+        site.name = settings.DEFAULT_SITE
+        site.domain = settings.DEFAULT_SITE
+        site.save()
+
+        # custom sites
+        Site.objects.create(domain="yverdon.localhost", name="yverdon")
+        Site.objects.create(domain="grandson.localhost", name="grandson")
+        Site.objects.create(domain="vevey.localhost", name="vevey")
+        Site.objects.create(domain="lausanne.localhost", name="lausanne")
 
         # Site for internal use
         # TODO: we shouldn't need this ! Either we need forward the site for internal calls
@@ -141,7 +137,9 @@ class Command(BaseCommand):
 
     def setup_integrator(self):
         integrator = Group.objects.get(name="integrator")
-        models.Site.objects.filter(name="yverdon").update(integrator=integrator)
+        models.SiteProfile.objects.filter(site__name="yverdon").update(
+            integrator=integrator
+        )
         models.PermitAdministrativeEntity.objects.update(integrator=integrator)
         models.WorksType.objects.update(integrator=integrator)
         models.WorksObject.objects.update(integrator=integrator)
