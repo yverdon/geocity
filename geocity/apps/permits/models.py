@@ -27,6 +27,8 @@ from django.db.models import (
     Q,
     UniqueConstraint,
 )
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.template.defaultfilters import slugify
 from django.urls import reverse
 from django.utils import timezone
@@ -275,7 +277,11 @@ class PermitAdministrativeEntity(models.Model):
             )
         ],
     )
-    sites = models.ManyToManyField(Site)
+    sites = models.ManyToManyField(
+        Site,
+        related_name="administrative_entity",
+        verbose_name=_("Détails du Site"),
+    )
 
     class Meta:
         verbose_name = _(
@@ -1805,15 +1811,27 @@ class TemplateCustomization(models.Model):
         return self.templatename
 
 
-class Site(Site):
+class SiteProfile(models.Model):
+    site = models.OneToOneField(
+        Site,
+        on_delete=models.CASCADE,
+    )
     integrator = models.ForeignKey(
         Group,
         null=True,
+        default=None,
         on_delete=models.SET_NULL,
-        verbose_name=_("Groupe des administrateurs"),
+        verbose_name=_("Détails du Site"),
     )
 
     class Meta:
+        verbose_name = _("6.0 Configuration du site")
+        verbose_name_plural = _("6.0 Configuration des sites")
 
-        verbose_name = _("1.0 Configuration du sous-domaine")
-        verbose_name_plural = _("1.0 Configuration des sous-domaines")
+
+@receiver(post_save, sender=Site)
+def save_site_profile(sender, instance, created, **kwargs):
+    if created or not SiteProfile.objects.filter(site=instance).exists():
+        SiteProfile.objects.create(
+            site=instance,
+        )
