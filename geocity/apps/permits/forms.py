@@ -1006,6 +1006,8 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                     tup
                     for tup in models.PermitRequest.STATUS_CHOICES
                     if any(i in tup for i in models.PermitRequest.AMENDABLE_STATUSES)
+                    # Add curent status even if this one cannot be changed (otherwise the wrong status is selected in the disabled dropdown)
+                    or self.instance.status in tup
                 ]
 
             filter2 = [
