@@ -75,7 +75,7 @@ Following variable setup in your .env file will setup the developpment environme
 ```ini
 PRIVATE_DOCUMENTS_DIR=C:\some\directory\for\mounting\geocity\private_documents
 ARCHIVE_DIR=C:\some\directory\for\mounting\geocity\archive
-BASE_DOMAIN=localhost
+DEFAULT_SITE=localhost
 ```
 
 ### Run the tests from within the docker container
