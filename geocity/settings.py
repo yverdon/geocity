@@ -1,5 +1,4 @@
 import os
-from distutils.util import strtobool
 
 # Set environment mode
 ENV = os.getenv("ENV")
@@ -619,7 +618,7 @@ CKEDITOR_CONFIGS = {
 
 def show_toolbar(request):
     """Shows the debug toolbar when `?DEBUG=true` is your URL and DEBUG is enabled."""
-    return DEBUG and strtobool(request.GET.get("DEBUG", "false"))
+    return DEBUG and request.GET.get("DEBUG", "false").lower() == "true"
 
 
 DEBUG_TOOLBAR_CONFIG = {
