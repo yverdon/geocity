@@ -14,6 +14,8 @@ services:
         entrypoint: /code/entrypoint.sh
         command: "gunicorn geocity.wsgi -b :9000 --error-logfile gunicorn_log.log --workers=2 --threads=4 --worker-class=gthread"
         volumes:
+            # TODO: use docker volumes instead of mounted volumes, meaning we should also dockerize backups
+            # and clarify upgrade path (copying stuff from PRIVATE_DOCUMENTS_DIR to that volume)
             - ${PRIVATE_DOCUMENTS_DIR}:/private_documents
             - ${ARCHIVE_DIR}:/archive
             - static_root:/static_root

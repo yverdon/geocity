@@ -7,6 +7,18 @@ from django.db import models
 from django.db.models.fields.files import FieldFile
 from django.urls import reverse
 
+# Can't we replace all these classes by:
+#
+# class MyModel:
+#     myfield = models.FileField(
+#         storage=FileSystemStorage(
+#             settings.PRIVATE_MEDIA_ROOT,
+#             base_url=reverse_lazy("permits:permit_request_file_download"),
+#         )
+#     )
+#
+# (and `FileField(upload_to=...)` where the upload name must be changed)
+
 
 class PrivateFileSystemStorage(FileSystemStorage):
     """

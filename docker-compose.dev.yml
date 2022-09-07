@@ -18,6 +18,7 @@ services:
             # Mount code for live reload
             - .:/code
             # For dev, set the temp folder in the main code directory, for convenience
+            # TODO: move this to better paths (e.g. ./dev_volumes/archive and ./dev_volumes/private_documents)
             - ./private_documents:/private_documents
             - ./archive:/archive
         depends_on:

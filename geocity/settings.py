@@ -525,10 +525,17 @@ LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
 STATIC_URL = os.environ["STATIC_URL"]
 STATIC_ROOT = "/static_root"
 
+# TODO: rename to /media_root/private to convey clearly what it is
 PRIVATE_MEDIA_ROOT = "/private_documents"
+
+# TO CLARIFY: we currently do not serve MEDIA_URLs. Either completely MEDIA_URL and MEDIA_ROOT settings
+# (as it's confusing to have them but unused) or set it up in a way that works (as it could indeed be
+# useful in the future for various django apps).
 MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
+# TODO: (if we didn't remove it) rename to /media_root/public to convey clearly what it is
 MEDIA_ROOT = os.environ.get("MEDIA_ROOT", os.path.join(BASE_DIR, "media"))
 
+# TODO: rename to /media_root/archive (but why not just reuse private too ?) to convey clearly what it is
 ARCHIVE_ROOT = os.environ.get("ARCHIVE_ROOT", "/archive")
 
 MIN_START_DELAY = os.getenv("MIN_START_DELAY")

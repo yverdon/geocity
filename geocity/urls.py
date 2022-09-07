@@ -156,6 +156,9 @@ if settings.DEBUG:
 
     urlpatterns = (
         [path("__debug__/", include(debug_toolbar.urls))]
+        # TODO: clarify this
+        # It seems to me we're not service media files at all, why do we need this
+        # in dev ?
         + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
         + urlpatterns
     )

@@ -940,6 +940,7 @@ class PermitRequest(models.Model):
             )
         )
 
+    # TODO: move this to ArchivedPermitRequest
     def archive(self, archivist):
         # make sure the request wasn't already archived
         if ArchivedPermitRequest.objects.filter(
@@ -952,6 +953,7 @@ class PermitRequest(models.Model):
             archivist=archivist,
         )
 
+        # TODO: store the file in a django filefield instead of custom logic
         try:
             os.mkdir(archive.path)
 
@@ -1637,6 +1639,10 @@ class PermitRequestComplementaryDocument(models.Model):
 
     @property
     def path(self):
+        # TODO: clarify this
+        # Seems contractory with document (a fields.ComplementaryDocumentFileField)
+        # which subclasses a different URL... Is this supposed to be public ?
+        raise Exception("check")
         return os.path.join(settings.MEDIA_ROOT, self.document.name)
 
     def delete(self, using=None, keep_parents=False):
