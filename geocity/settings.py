@@ -525,7 +525,7 @@ LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
 STATIC_URL = os.environ["STATIC_URL"]
 STATIC_ROOT = "/static_root"
 
-PRIVATE_MEDIA_ROOT = os.environ["PRIVATE_MEDIA_ROOT"]
+PRIVATE_MEDIA_ROOT = "/private_documents"
 MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
 MEDIA_ROOT = os.environ.get("MEDIA_ROOT", os.path.join(BASE_DIR, "media"))
 
