@@ -9,18 +9,18 @@ def update_site_data(apps, schema_editor):
     """
     Create default Site
     Fill SiteProfile data of Site
-
+    Add default site to each PermitAdministrativeEntity
     """
     Site = apps.get_model("sites", "Site")
     SiteProfile = apps.get_model("permits", "SiteProfile")
-    AdministrativeEntity = apps.get_model("permits", "PermitAdministrativeEntity")
+    PermitAdministrativeEntity = apps.get_model("permits", "PermitAdministrativeEntity")
 
-    default_site = Site.objects.update_or_create(
+    default_site = Site.objects.get_or_create(
         domain=settings.DEFAULT_SITE, name="default site"
     )
 
-    for entity in AdministrativeEntity.objects.all():
-        entity.sites.add(default_site)
+    for entity in PermitAdministrativeEntity.objects.all():
+        entity.sites.add(default_site[0])
 
     for site_obj in Site.objects.all():
         SiteProfile.objects.get_or_create(
