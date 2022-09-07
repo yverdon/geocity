@@ -15,12 +15,13 @@ def update_site_data(apps, schema_editor):
     SiteProfile = apps.get_model("permits", "SiteProfile")
     PermitAdministrativeEntity = apps.get_model("permits", "PermitAdministrativeEntity")
 
-    default_site = Site.objects.get_or_create(
-        domain=settings.DEFAULT_SITE, name="default site"
-    )
+    if not Site.objects.filter(domain=settings.DEFAULT_SITE).exists():
+        Site.objects.get_or_create(domain=settings.DEFAULT_SITE, name="default site")
+
+    default_site = Site.objects.get(domain=settings.DEFAULT_SITE)
 
     for entity in PermitAdministrativeEntity.objects.all():
-        entity.sites.add(default_site[0])
+        entity.sites.add(default_site)
 
     for site_obj in Site.objects.all():
         SiteProfile.objects.get_or_create(
