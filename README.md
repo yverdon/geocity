@@ -28,7 +28,7 @@ docker-compose down --remove-orphans && docker-compose up
 
 :warning: :warning: :warning:
 
-Set following variables as follow
+Set the following variables as follow
 ```ini
 COMPOSE_FILE=
 ENV=PROD
@@ -37,6 +37,17 @@ DEV_DEPENDENCIES=false
 ```
 
 And review all other variables in order to fine tune your instance
+
+---
+## Default Site
+
+The default site is automatically created and every PermitAdministrativeEntity is associated to this site.
+
+If you have `www.geocity.ch` as domain, you should put `geocity.ch`
+
+```ini
+DEFAULT_SITE=geocity.ch
+```
 
 ---
 ## Developpment tools
