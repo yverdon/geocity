@@ -529,7 +529,6 @@ PRIVATE_MEDIA_ROOT = "/private_documents"
 MEDIA_URL = os.environ.get("MEDIA_URL", "/media/")
 MEDIA_ROOT = os.environ.get("MEDIA_ROOT", os.path.join(BASE_DIR, "media"))
 
-ARCHIVE_URL = os.environ.get("ARCHIVE_URL", "/archive/")
 ARCHIVE_ROOT = os.environ.get("ARCHIVE_ROOT", "/archive")
 
 MIN_START_DELAY = os.getenv("MIN_START_DELAY")
