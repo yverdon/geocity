@@ -3,12 +3,17 @@ const STATUS_RECEIVED = 7
 const notify = document.getElementById("id_notify_author")
 const statusChange = document.getElementById("id_status")
 const reason = document.getElementById("id_reason")
+const reasonHelpText = reason.nextElementSibling
+const initialReasonHelpText = reasonHelpText.textContent
 
 statusChange.addEventListener("change", (e) => {
+  reasonHelpText.textContent = initialReasonHelpText
   notify.checked = false
   notify.closest(".form-group").style.display = "flex"
 
   if (parseInt(e.target.value) === STATUS_AWAITING_SUPPLEMENT) {
+    // Remove the (optional) in the helptext
+    reasonHelpText.textContent = initialReasonHelpText.replace(/\(.*\)/, "")
     notify.checked = true
   }
 
