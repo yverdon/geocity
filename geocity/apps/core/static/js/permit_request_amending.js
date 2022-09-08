@@ -5,18 +5,18 @@ const statusChange = document.getElementById("id_status")
 const reason = document.getElementById("id_reason")
 
 statusChange.addEventListener("change", (e) => {
+  notify.checked = false
+  notify.closest(".form-group").style.display = "flex"
+
   if (parseInt(e.target.value) === STATUS_AWAITING_SUPPLEMENT) {
     notify.checked = true
-    notify.dispatchEvent(new Event("change"))
   }
+
   else if (parseInt(e.target.value) === STATUS_RECEIVED) {
-    notify.checked = false
-    notify.dispatchEvent(new Event("change"))
     notify.closest(".form-group").style.display = "none"
   }
-  else {
-    notify.closest(".form-group").style.display = "flex"
-  }
+
+  notify.dispatchEvent(new Event("change"))
 })
 
 notify.addEventListener("change", (e) => {
