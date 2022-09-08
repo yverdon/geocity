@@ -37,7 +37,6 @@ docker-compose run web python manage.py fixturize_demo
 Set the following variables as follow
 ```ini
 COMPOSE_FILE=docker-compose.yml
-ENV=PROD
 ```
 
 And review all other variables in order to fine tune your instance

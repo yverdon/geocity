@@ -7,6 +7,11 @@ volumes:
 
 services:
     web:
+        build:
+            args:
+                ENV: DEV
+        environment:
+            ENV: DEV
         # Runserver for live reload
         command: "python3 manage.py runserver 0.0.0.0:9000"
         volumes:
