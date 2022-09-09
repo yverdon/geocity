@@ -4458,9 +4458,6 @@ class PermitRequestFilteredWorksObjectListTestCase(LoggedInSecretariatMixin, Tes
         # Replace content in bytes with the readable one
         response.content = tablib.import_set(content.read(), format="xlsx")
 
-        self.assertContains(
-            response, self.prop_value.id, msg_prefix=f"response: {response.content}"
-        )
         self.assertContains(response, self.prop_value.value["val"])
         self.assertContains(response, self.prop_value.property)
 
