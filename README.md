@@ -92,6 +92,12 @@ These tests compare generated PDFs to expected PDFs. To regenerated the expected
 docker-compose run --service-ports --name=web --rm --entrypoint="" -e TEST_UPDATED_EXPECTED_IMAGES=TRUE web python manage.py test --settings=geocity.settings_test --keepdb reports
 ```
 
+### Run the fixturize_demo.py
+
+```bash
+docker-compose exec web python manage.py fixturize_demo
+```
+
 ### Linting
 
 We use [pre-commit](https://pre-commit.com/) as code formatter. Just use the following command to automatically format your code when you commit:
