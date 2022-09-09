@@ -1220,7 +1220,7 @@ class GeometryWidget(geoforms.OSMWidget):
 class PermitRequestGeoTimeForm(forms.ModelForm):
     required_css_class = "required"
     starts_at = forms.DateTimeField(
-        label=_("Date planifiée de début"),
+        label=_("Date de début"),
         input_formats=[settings.DATETIME_INPUT_FORMAT],
         widget=DateTimePickerInput(
             options={
@@ -1230,10 +1230,10 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             },
             attrs={"autocomplete": "off"},
         ).start_of("event days"),
-        help_text="Cliquer sur le champ et selectionner la date planifiée de début à l'aide de l'outil mis à disposition",
+        help_text="Cliquer sur le champ et selectionner la date de début à l'aide de l'outil mis à disposition",
     )
     ends_at = forms.DateTimeField(
-        label=_("Date planifiée de fin"),
+        label=_("Date de fin"),
         input_formats=[settings.DATETIME_INPUT_FORMAT],
         widget=DateTimePickerInput(
             options={
@@ -1243,7 +1243,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             },
             attrs={"autocomplete": "off"},
         ).end_of("event days"),
-        help_text="Cliquer sur le champ et selectionner la date planifiée de fin à l'aide de l'outil mis à disposition",
+        help_text="Cliquer sur le champ et selectionner la date de fin à l'aide de l'outil mis à disposition",
     )
 
     class Meta:
@@ -1418,7 +1418,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 raise ValidationError(
                     {
                         "starts_at": _(
-                            "La date planifiée de début doit être postérieure à %(date)s"
+                            "La date de début doit être postérieure à %(date)s"
                         )
                         % {"date": min_starts_at.strftime("%d.%m.%Y %H:%M")}
                     }
@@ -1432,7 +1432,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                     raise ValidationError(
                         {
                             "ends_at": _(
-                                "La date planifiée de fin doit être au maximum: %(date)s"
+                                "La date de fin doit être au maximum: %(date)s"
                             )
                             % {"date": max_ends_at.strftime("%d.%m.%Y %H:%M")}
                         }
@@ -1900,7 +1900,7 @@ class AnonymousRequestForm(forms.Form):
 
 class PermitRequestInquiryForm(forms.ModelForm):
     start_date = forms.DateField(
-        label=_("Date planifiée de début"),
+        label=_("Date de début"),
         input_formats=[settings.DATE_INPUT_FORMAT],
         widget=DatePickerInput(
             options={
@@ -1911,7 +1911,7 @@ class PermitRequestInquiryForm(forms.ModelForm):
         ),
     )
     end_date = forms.DateField(
-        label=_("Date planifiée de fin"),
+        label=_("Date de fin"),
         input_formats=[settings.DATE_INPUT_FORMAT],
         widget=DatePickerInput(
             options={

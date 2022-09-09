@@ -121,11 +121,11 @@ msgid "Numéro TVA"
 msgstr ""
 
 #: permits/forms.py:628 permits/models.py:623
-msgid "Date planifiée de début"
+msgid "Date de début"
 msgstr ""
 
 #: permits/forms.py:642 permits/models.py:624
-msgid "Date planifiée de fin"
+msgid "Date de fin"
 msgstr ""
 
 #: permits/forms.py:746
