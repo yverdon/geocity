@@ -114,6 +114,12 @@ ALLOW_REMOTE_USER_AUTH = os.getenv("ALLOW_REMOTE_USER_AUTH", "false").lower() ==
 
 SITE_HTTPS = ENV == "PROD"
 
+# Allow CORS in DEV, needed for development of geocity_front, where the frontend domain is different
+# from the django domain
+if ENV == "DEV":
+    SESSION_COOKIE_HTTPONLY = False
+    CORS_ALLOW_CREDENTIALS = True
+
 LOCATIONS_SEARCH_API = os.getenv("LOCATIONS_SEARCH_API")
 LOCATIONS_SEARCH_API_DETAILS = os.getenv("LOCATIONS_SEARCH_API_DETAILS")
 
