@@ -552,7 +552,9 @@ class PermitRequestDetailView(View):
             )
 
         if form.cleaned_data.get("notify_author"):
-            success_message += _("Le requérant a été notifié du changement par email.")
+            success_message += " " + _(
+                "Le requérant a été notifié du changement par email."
+            )
 
         messages.success(self.request, success_message)
 
