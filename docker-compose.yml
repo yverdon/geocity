@@ -10,7 +10,7 @@ services:
         build:
             context: ./
             args:
-                dev_dependencies: "${DEV_DEPENDENCIES}"
+                ENV: PROD
         entrypoint: /code/entrypoint.sh
         command: "gunicorn geocity.wsgi -b :9000 --error-logfile gunicorn_log.log --workers=2 --threads=4 --worker-class=gthread"
         volumes:
@@ -20,7 +20,7 @@ services:
             # to allow to spawn new QGIS containers
             - /var/run/docker.sock:/var/run/docker.sock
         environment:
-            ENV: ${ENV}
+            ENV: PROD
             CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE: ${CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE}
             DJANGO_DOCKER_PORT: ${DJANGO_DOCKER_PORT}
             STATIC_URL: ${STATIC_URL}
@@ -40,7 +40,6 @@ services:
             EMAIL_TO_CONSOLE: ${EMAIL_TO_CONSOLE}
             DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL}
             PAGINATE_BY: ${PAGINATE_BY}
-            STATIC_FILES_ABSOLUTE_PATH: ${STATIC_FILES_ABSOLUTE_PATH}
             MIN_START_DELAY: ${MIN_START_DELAY}
             OL_MAP_HEIGHT: ${OL_MAP_HEIGHT}
             WMTS_GETCAP: ${WMTS_GETCAP}
@@ -83,6 +82,7 @@ services:
             context: services/qgis
         # This service is only there for building, containers are instantaited on demand by Django.
         # Runtime config below is therefore ignored.
+        command: echo "built"
         # networks:
         #     - isolated
 
@@ -93,6 +93,7 @@ services:
             context: services/pdf
         # This service is only there for building, containers are instantaited on demand by Django.
         # Runtime config below is therefore ignored.
+        command: echo "built"
         # networks:
         #     - isolated
 

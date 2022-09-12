@@ -1,5 +1,12 @@
 import os
 
+# Set environment mode
+ENV = os.getenv("ENV")
+if ENV not in ["DEV", "PROD"]:
+    raise Exception(
+        f"Incorrect setting for ENV: `{ENV}`. Expecting one of `DEV` or `PROD`."
+    )
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -51,15 +58,12 @@ AXES_COOLOFF_TIME = int(os.getenv("AXES_COOLOFF_TIME", 2))
 
 DJANGO_DOCKER_PORT = os.getenv("DJANGO_DOCKER_PORT")
 
-# Set environment mode
-ENV = os.getenv("ENV")
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
-if ENV.lower() == "dev":
+if ENV == "DEV":
     DEBUG = True
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
@@ -108,7 +112,13 @@ AUTHOR_IBAN_VISIBLE = os.getenv("AUTHOR_IBAN_VISIBLE", "false").lower() == "true
 # Allow REMOTE_USER Authentication
 ALLOW_REMOTE_USER_AUTH = os.getenv("ALLOW_REMOTE_USER_AUTH", "false").lower() == "true"
 
-SITE_HTTPS = bool(int(os.getenv("SITE_HTTPS", True)))
+SITE_HTTPS = ENV == "PROD"
+
+# Allow CORS in DEV, needed for development of geocity_front, where the frontend domain is different
+# from the django domain
+if ENV == "DEV":
+    SESSION_COOKIE_HTTPONLY = False
+    CORS_ALLOW_CREDENTIALS = True
 
 LOCATIONS_SEARCH_API = os.getenv("LOCATIONS_SEARCH_API")
 LOCATIONS_SEARCH_API_DETAILS = os.getenv("LOCATIONS_SEARCH_API_DETAILS")
@@ -167,6 +177,12 @@ if ENABLE_2FA:
         "two_factor",
     ]
 
+if ENV == "DEV":
+    INSTALLED_APPS += [
+        "debug_toolbar",
+        "django_extensions",
+    ]
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -188,6 +204,12 @@ MIDDLEWARE += [
     "django.middleware.locale.LocaleMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
 ]
+
+if ENV == "DEV":
+    MIDDLEWARE = [
+        "debug_toolbar.middleware.DebugToolbarMiddleware",
+        *MIDDLEWARE,
+    ]
 
 CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 
@@ -597,4 +619,14 @@ CKEDITOR_CONFIGS = {
             ["Source"],
         ],
     },
+}
+
+
+def show_toolbar(request):
+    """Shows the debug toolbar when `?DEBUG=true` is your URL and DEBUG is enabled."""
+    return DEBUG and request.GET.get("DEBUG", "false").lower() == "true"
+
+
+DEBUG_TOOLBAR_CONFIG = {
+    "SHOW_TOOLBAR_CALLBACK": "geocity.settings.show_toolbar",
 }

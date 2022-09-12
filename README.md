@@ -12,12 +12,18 @@ Django developpment server in reload mode.
 
 ```bash
 git clone git@github.com:yverdon/geocity.git && cd geocity
-cp -n env.demo .env
-docker-compose build
-docker-compose down --remove-orphans && docker-compose up
+# copy default config
+cp -n .env.example .env
+# start the stack
+docker-compose up --build -d --remove-orphans
+# run the migrations
+docker-compose run web scripts/migrate.sh
+# load demo data
+docker-compose run web python manage.py fixturize_demo
 ```
 
 ## Setting up production instance
+
 ### Database
 
 1. Create a  postgres database
@@ -30,13 +36,21 @@ docker-compose down --remove-orphans && docker-compose up
 
 Set the following variables as follow
 ```ini
-COMPOSE_FILE=
-ENV=PROD
-DEBUG=False
-DEV_DEPENDENCIES=false
+COMPOSE_FILE=docker-compose.yml
 ```
 
 And review all other variables in order to fine tune your instance
+
+
+### Deploying changes
+
+New changes are deployed with the following command. :warning: **WARNING**: on PROD, docker-compose up will automatically
+run migrations, collect static files, compile messages and update integrator permissions in the entrypoint.
+
+```bash
+# update the stack
+docker-compose up --build -d --remove-orphans
+```
 
 ---
 ## Default Site
@@ -58,12 +72,9 @@ DEFAULT_SITE=geocity.ch
 Following variable setup in your .env file will setup the developpment environment for you
 
 ```ini
-COMPOSE_FILE=docker-compose.yml:docker-compose-demo.yml
-COMPOSE_PATH_SEPARATOR=:
-ENV=DEV
-DEBUG=True
-DEV_DEPENDENCIES=true
-CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE=true
+PRIVATE_DOCUMENTS_DIR=C:\some\directory\for\mounting\geocity\private_documents
+ARCHIVE_DIR=C:\some\directory\for\mounting\geocity\archive
+DEFAULT_SITE=localhost
 ```
 
 ### Run the tests from within the docker container
