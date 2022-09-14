@@ -52,11 +52,13 @@ if settings.ENABLE_2FA:
     from two_factor.urls import urlpatterns as tf_urls
     from two_factor.views import ProfileView, SetupCompleteView
 
-    logger.info("2 factors authentification is enabled")
+    logger.info("2 factors authentication is enabled")
     urlpatterns += [
         path(
             "account/login/",
-            views.CustomLoginView.as_view(template_name="two_factor/login.html"),
+            views.CustomTwoFactorLoginView.as_view(
+                template_name="two_factor/login.html"
+            ),
             name="account_login",
         ),
         path(
@@ -69,10 +71,15 @@ if settings.ENABLE_2FA:
             SetupCompleteView.as_view(template_name="two_factor/setup_complete.html"),
             name="setup_complete",
         ),
+        path(
+            "account/duo_callback/",
+            views.DuoCallbackView.as_view(),
+            name="duo_callback",
+        ),
         path("", include(tf_urls)),
     ]
 else:
-    logger.info("2 factors authentification is disabled")
+    logger.info("2 factors authentication is disabled")
     urlpatterns += [
         path(
             "account/login/",

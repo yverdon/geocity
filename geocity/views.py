@@ -9,23 +9,18 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.views import PasswordResetView
+from django.contrib.auth.views import LoginView, PasswordResetView
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
 from django.views import View
-
-if settings.ENABLE_2FA:
-    from two_factor.views import LoginView
-else:
-    from django.contrib.auth.views import LoginView
-
-from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
+from two_factor.views import LoginView as TwoFactorLoginView
 
 from geocity.apps.permits import forms, models
 from geocity.apps.permits import services as permits_services
@@ -86,6 +81,7 @@ class CustomPasswordResetView(PasswordResetView):
         return context
 
 
+# TODO: DUO took the same code, check if it's still used
 class CustomLoginView(LoginView, SetCurrentSiteMixin):
     def get(self, request, *args, **kwargs):
         successful = request.GET.get("success")
@@ -132,6 +128,75 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
             if settings.ENABLE_2FA and not self.request.user.totpdevice_set.exists()
             else url_value
         )
+
+
+class CustomTwoFactorLoginView(TwoFactorLoginView):
+    def get(self, request, *args, **kwargs):
+        successful = request.GET.get("success")
+        # check if we need to display an activation message
+        # if the value is None, we didn't come from the activation view
+        if successful is None:
+            pass
+        elif successful == "True":
+            messages.success(request, _("Votre compte a été activé avec succès!"))
+        else:
+            messages.error(request, _("Une erreur est survenu lors de l'activation"))
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({"social_apps": SocialApp.objects.all()})
+
+        return services.get_context_data(context, self.request)
+
+    def done(self, form_list, **kwargs):
+        permits_services.store_tags_in_session(self.request)
+        return super(CustomTwoFactorLoginView, self).done(form_list, **kwargs)
+
+    def get_success_url(self):
+        return (
+            reverse("two_factor:profile")
+            if settings.ENABLE_2FA and not self.request.user.totpdevice_set.exists()
+            else reverse("permits:permit_request_select_administrative_entity")
+            + (
+                "?" + self.request.META["QUERY_STRING"]
+                if self.request.META["QUERY_STRING"]
+                else ""
+            )
+        )
+
+    def process_step(self, form):
+        if self.steps.current == "token":
+            from django.contrib.sessions.backends.db import SessionStore
+
+            # TODO: retrieve credentials from environment
+            # TODO: callback_url = self.request.build_absolute_uri(reverse('duo_callback'))
+            callback_url = "https://geocity.docker.test/account/duo_callback"
+
+            # TODO: Remove, this isn't crédentials of a real duo app, is probably going to perform a warning in github
+
+            state = duo_client.generate_state()
+            s = SessionStore()
+            s["state"] = state
+            # TODO get username
+            prompt_uri = duo_client.create_auth_url("aju", state)
+            print(prompt_uri)
+            redirect(prompt_uri)
+
+
+class DuoCallbackView(View):
+    print("DuoCallbackView")
+
+    def get(self, request, *args, **kwargs):
+        print("DuoCallbackView__get")
+        state = request.GET.get("state")
+        username = request.GET.get("username")
+        # TODO:  Check if state and username matches session data
+        # TODO: get session and compare state
+
+        # TODO: if state is OK, login, then redirect to URL
+        # login(username)
+        return redirect(settings.LOGIN_REDIRECT_URL)
 
 
 def permit_author_create(request):
