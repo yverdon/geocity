@@ -436,7 +436,11 @@ class PermitDepartmentInline(admin.StackedInline):
 class GroupAdminForm(forms.ModelForm):
     class Meta:
         model = Group
-        fields = "__all__"
+        fields = [
+            "name",
+            "shortname",
+            "permissions",
+        ]
         help_texts = {
             "permissions": _(
                 "Pour un rôle intégrateur, ajoutez toutes les permissions disponibles"
@@ -479,6 +483,7 @@ class GroupAdmin(admin.ModelAdmin):
     form = GroupAdminForm
     list_display = [
         "__str__",
+        "shortname",
         "get__integrator",
         "get__is_validator",
         "get__is_default_validator",
@@ -673,6 +678,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = WorksObjectTypeAdminForm
     list_display = [
         "sortable_str",
+        "shortname",
         works_object_type_administrative_entities,
         "can_always_update",
         "is_public",
@@ -702,6 +708,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             None,
             {
                 "fields": (
+                    "shortname",
                     "works_type",
                     "works_object",
                     "administrative_entities",
@@ -807,7 +814,11 @@ class WorksObjectTypeWithAdministrativeEntitiesField(forms.ModelMultipleChoiceFi
         entities = ", ".join(
             entity.name for entity in obj.administrative_entities.all()
         )
-        return f"{obj.works_object} ({obj.works_type}) - {entities}"
+        return (
+            f"[{obj.shortname}] - {obj.works_object} ({obj.works_type}) - {entities}"
+            if obj.shortname
+            else f"{obj.works_object} ({obj.works_type}) - {entities}"
+        )
 
 
 class WorksObjectPropertyForm(forms.ModelForm):

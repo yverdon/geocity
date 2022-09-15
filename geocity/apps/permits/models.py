@@ -131,6 +131,19 @@ class StepType(enum.Enum):
 StepType.do_not_call_in_templates = True
 
 
+Group.add_to_class(
+    "shortname",
+    models.CharField(
+        _("nom court"),
+        max_length=32,
+        help_text=_(
+            "Nom affiché par defaut dans les différentes étapes du formulaire. Ne s'affichage pas dans l'admin. (max. 32 caractères)"
+        ),
+        blank=True,
+    ),
+)
+
+
 class PermitDepartment(models.Model):
     group = models.OneToOneField(Group, on_delete=models.CASCADE)
     description = models.CharField(_("description"), max_length=100, default="Service")
@@ -1141,6 +1154,14 @@ class WorksObjectType(models.Model):
     )
     permanent_publication_enabled = models.BooleanField(
         _("Autoriser la mise en consultation sur une durée indéfinie"), default=False
+    )
+    shortname = models.CharField(
+        _("nom court"),
+        max_length=32,
+        help_text=_(
+            "Nom affiché par defaut dans les différentes étapes du formulaire. Ne s'affichage pas dans l'admin. (max. 32 caractères)"
+        ),
+        blank=True,
     )
 
     # All objects

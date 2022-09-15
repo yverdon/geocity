@@ -306,14 +306,14 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         for works_object_type, prop in self.get_properties():
             field_name = self.get_field_name(works_object_type, prop)
             if prop.is_value_property():
-                fields_per_work_object[str(works_object_type)].append(
+                fields_per_work_object[str(works_object_type.shortname)].append(
                     Field(field_name, title=prop.help_text)
                 )
                 self.fields[field_name] = self.field_for_property(prop)
                 if prop.is_mandatory:
                     self.fields[field_name].required = True
             else:
-                fields_per_work_object[str(works_object_type)].append(
+                fields_per_work_object[str(works_object_type.shortname)].append(
                     self.non_field_value_for_property(prop)
                 )
 
@@ -1465,7 +1465,10 @@ class PermitRequestValidationDepartmentSelectionForm(forms.Form):
             administrative_entity=self.permit_request.administrative_entity,
             group__permissions=validate_permission,
         ).distinct()
-
+        print(permit_request_departments)
+        print(dir(permit_request_departments))
+        print(permit_request_departments.values("group__shortname"))
+        print(permit_request_departments.values_list("group__shortname", flat=True))
         departments = []
         for validation in self.permit_request.validations.all():
             departements = departments.append(validation.department)
@@ -1476,8 +1479,14 @@ class PermitRequestValidationDepartmentSelectionForm(forms.Form):
             else permit_request_departments.filter(is_default_validator=True),
         )
 
+        # Create a qeryset with shortname shortname of group if exists
+        for prd in permit_request_departments:
+            print(prd.group.shortname)
+
         super().__init__(*args, **kwargs)
+        # TODO: Mettre une autre valeur qu'un queryset, ou alors créer mon propre queryset ?
         self.fields["departments"].queryset = permit_request_departments
+        print(self.fields["departments"].queryset)
 
 
 class PermitRequestValidationForm(forms.ModelForm):

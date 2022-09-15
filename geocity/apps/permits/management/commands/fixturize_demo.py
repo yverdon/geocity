@@ -1027,14 +1027,16 @@ class Command(BaseCommand):
         config.APPLICATION_TITLE = "Démo Geocity"
         config.APPLICATION_SUBTITLE = "Simplifiez votre administration"
         config.APPLICATION_DESCRIPTION = """<p><b>Essayez l'application à l'aide des différents comptes et rôles (utilisateur / mot de passe):</b></p>
-        <p>Utilisateur standard: user / demo</p>
-        <p>Pilote (secréatariat): pilot / demo</p>
-        <p>Validateur: validator / demo</p>
-        <p>Validateur 2: validator-2 / demo</p>
-        <p>Intégrateur 2: integrator / demo</p>
-        <p>Utilisateur: admin / demo</p>
-        <p>Consultez les emails générés par l'application:</p>
+        <ul>
+		<li>Utilisateur standard: user / demo</li>
+        <li>Pilote (secréatariat): pilot / demo</li>
+        <li>Validateur: validator / demo</li>
+        <li>Validateur 2: validator-2 / demo</li>
+        <li>Intégrateur 2: integrator / demo</li>
+        <li>Utilisateur: admin / demo</li>
+        <li>Consultez les emails générés par l'application:</li>
         => <a href="https://mailhog.geocity.ch" target="_blank">Boîte mail de demo<a/>
+		</ul>
         """
 
     def create_document_types(self, wot):
