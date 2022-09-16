@@ -888,7 +888,7 @@ class Command(BaseCommand):
             geom="GEOMETRYCOLLECTION(MULTIPOLYGON(((2539078 1181121, 2539092 1181084, 2539118 1181111, 2539099 1181105, 2539078 1181121))))",
         )
 
-        # Amend propertie with long text
+        # Amend properties with long text
         amend_property_1 = models.PermitRequestAmendProperty.objects.create(
             name="Commentaire interne",
             is_visible_by_author=False,
@@ -901,6 +901,14 @@ class Command(BaseCommand):
             is_visible_by_author=True,
         )
         amend_property_2.works_object_types.set(
+            [demo_works_object_type, demo_works_object_type_no_validation_document]
+        )
+        amend_property_3 = models.PermitRequestAmendProperty.objects.create(
+            name="Commentaire interne visible par les validateurs",
+            is_visible_by_author=False,
+            is_visible_by_validators=True,
+        )
+        amend_property_3.works_object_types.set(
             [demo_works_object_type, demo_works_object_type_no_validation_document]
         )
         works_object_type_choice_1 = models.WorksObjectTypeChoice.objects.get(
@@ -928,6 +936,16 @@ class Command(BaseCommand):
         )
         models.PermitRequestAmendPropertyValue.objects.create(
             property=amend_property_2,
+            works_object_type_choice=works_object_type_choice_2,
+            value=demo_small_text,
+        )
+        models.PermitRequestAmendPropertyValue.objects.create(
+            property=amend_property_3,
+            works_object_type_choice=works_object_type_choice_1,
+            value=demo_small_text,
+        )
+        models.PermitRequestAmendPropertyValue.objects.create(
+            property=amend_property_3,
             works_object_type_choice=works_object_type_choice_2,
             value=demo_small_text,
         )
