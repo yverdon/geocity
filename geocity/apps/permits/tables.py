@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import django_tables2 as tables
+from django.conf import settings
 from django.template.defaultfilters import floatformat
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
@@ -67,7 +68,7 @@ def get_custom_dynamic_table(inherits_from, extra_column_names):
     # In order to define additional columns at runtime, we need a table class factory
     class custom_class(inherits_from):
         class Meta(inherits_from.Meta):
-            fields = inherits_from.Meta.fields + extra_column_names
+            fields = tuple(inherits_from.Meta.fields) + extra_column_names
 
     return custom_class
 
@@ -220,6 +221,14 @@ class GenericDepartmentPermitRequestsTable(
         template_name="tables/_permit_request_author_details.html",
     )
 
+    if settings.AUTHOR_IBAN_VISIBLE:
+        author_iban = tables.TemplateColumn(
+            verbose_name=_("IBAN"),
+            attrs=ATTRIBUTES,
+            orderable=False,
+            template_name="tables/_permit_request_author_iban.html",
+        )
+
     def before_render(self, request):
         self.columns["actions"].column.extra_context = {
             "can_view": (
@@ -246,7 +255,7 @@ class DepartmentPermitRequestsHTMLTable(
 
     class Meta:
         model = models.PermitRequest
-        fields = (
+        fields = [
             "check",
             "id",
             "author_fullname",
@@ -257,7 +266,7 @@ class DepartmentPermitRequestsHTMLTable(
             "ends_at_max",
             "works_objects_html",
             "administrative_entity",
-        )
+        ]
 
 
 class DepartmentPermitRequestsExportTable(GenericDepartmentPermitRequestsTable):
@@ -265,7 +274,7 @@ class DepartmentPermitRequestsExportTable(GenericDepartmentPermitRequestsTable):
 
     class Meta:
         model = models.PermitRequest
-        fields = (
+        fields = [
             "id",
             "author_fullname",
             "author_details",
@@ -275,7 +284,10 @@ class DepartmentPermitRequestsExportTable(GenericDepartmentPermitRequestsTable):
             "ends_at_max",
             "works_objects_str",
             "administrative_entity",
-        )
+        ]
+
+        if settings.AUTHOR_IBAN_VISIBLE:
+            fields.insert(3, "author_iban")
 
 
 class ArchivedPermitRequestsTable(ColumnShiftTable):

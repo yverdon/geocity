@@ -1,0 +1,8 @@
+{% load i18n %}
+{% load permits_extras %}
+
+{% if not record.author.is_anonymous and record.author.iban %}
+  {{ record.author.iban }}
+{% else %}
+  —
+{% endif %}
