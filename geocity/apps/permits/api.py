@@ -288,7 +288,6 @@ class PermitRequestDetailsViewSet(
 
     throttle_scope = "permits_details"
     serializer_class = serializers.PermitRequestDetailsSerializer
-    permission_classes = [BlockRequesterUserWithoutGroup]
 
     def get_queryset(self, geom_type=None):
         """
