@@ -39,15 +39,6 @@ class BlockRequesterUserPermission(BasePermission):
         return is_integrator_admin or request.user.is_superuser
 
 
-class BlockRequesterUserWithoutGroup(BasePermission):
-    """
-    Block untrusted user. User must belong to a group in order to access this endpoint
-    """
-
-    def has_permission(self, request, view):
-        return request.user.groups.exists()
-
-
 # ///////////////////////////////////
 # DJANGO REST API
 # ///////////////////////////////////
@@ -185,7 +176,6 @@ class PermitRequestViewSet(
 
     throttle_scope = "permits"
     serializer_class = serializers.PermitRequestPrintSerializer
-    permission_classes = [BlockRequesterUserWithoutGroup]
 
     wfs3_title = "Demandes"
     wfs3_description = "Toutes les demandes"
@@ -288,7 +278,6 @@ class PermitRequestDetailsViewSet(
 
     throttle_scope = "permits_details"
     serializer_class = serializers.PermitRequestDetailsSerializer
-    permission_classes = [BlockRequesterUserWithoutGroup]
 
     def get_queryset(self, geom_type=None):
         """
@@ -373,7 +362,6 @@ def permitRequestViewSetSubsetFactory(geom_type_name):
 
         throttle_scope = "permits"
         serializer_class = Serializer
-        permission_classes = [BlockRequesterUserWithoutGroup]
 
         wfs3_title = f"{PermitRequestViewSet.wfs3_title} ({geom_type_name})"
         wfs3_description = f"{PermitRequestViewSet.wfs3_description} (géométries de type {geom_type_name})"
