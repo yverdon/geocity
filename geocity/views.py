@@ -1,15 +1,17 @@
 from urllib import parse
 from urllib.parse import urlparse
 
+import duo_universal
 from allauth.socialaccount.models import SocialApp
 from constance import config
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import logout
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.views import LoginView, PasswordResetView
+from django.contrib.auth.views import PasswordResetView
+from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
 from django.http import HttpResponseRedirect
@@ -81,8 +83,7 @@ class CustomPasswordResetView(PasswordResetView):
         return context
 
 
-# TODO: DUO took the same code, check if it's still used
-class CustomLoginView(LoginView, SetCurrentSiteMixin):
+class CustomTwoFactorLoginView(TwoFactorLoginView):
     def get(self, request, *args, **kwargs):
         successful = request.GET.get("success")
         # check if we need to display an activation message
@@ -108,10 +109,14 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
 
     def done(self, form_list, **kwargs):
         permits_services.store_tags_in_session(self.request)
-        return super(CustomLoginView, self).done(form_list, **kwargs)
+
+        # Redirect to the duo authentication page
+        if self.duo:
+            # login(self.request, self.get_user(), backend="django.contrib.auth.backends.ModelBackend")
+            return redirect(self.prompt_uri)
+        return super(CustomTwoFactorLoginView, self).done(form_list, **kwargs)
 
     def get_success_url(self):
-
         qs_dict = parse.parse_qs(self.request.META["QUERY_STRING"])
 
         url_value = (
@@ -123,79 +128,71 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
         if "next" in qs_dict:
             qs_dict.pop("next")
 
+        # TODO: Only 2fa without duo
         return (
             reverse("two_factor:profile")
             if settings.ENABLE_2FA and not self.request.user.totpdevice_set.exists()
             else url_value
         )
 
+    def process_step(self, form):
+        # Get username
+        username = form.is_valid() and form.user_cache
 
-class CustomTwoFactorLoginView(TwoFactorLoginView):
-    def get(self, request, *args, **kwargs):
-        successful = request.GET.get("success")
-        # check if we need to display an activation message
-        # if the value is None, we didn't come from the activation view
-        if successful is None:
-            pass
-        elif successful == "True":
-            messages.success(request, _("Votre compte a été activé avec succès!"))
-        else:
-            messages.error(request, _("Une erreur est survenu lors de l'activation"))
-        return super().get(request, *args, **kwargs)
+        # Get user corresponding to the user name
+        user = User.objects.get(username=username)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update({"social_apps": SocialApp.objects.all()})
-
-        return services.get_context_data(context, self.request)
-
-    def done(self, form_list, **kwargs):
-        permits_services.store_tags_in_session(self.request)
-        return super(CustomTwoFactorLoginView, self).done(form_list, **kwargs)
-
-    def get_success_url(self):
-        return (
-            reverse("two_factor:profile")
-            if settings.ENABLE_2FA and not self.request.user.totpdevice_set.exists()
-            else reverse("permits:permit_request_select_administrative_entity")
-            + (
-                "?" + self.request.META["QUERY_STRING"]
-                if self.request.META["QUERY_STRING"]
-                else ""
+        # Get PermitDepartments using duo. Need to retrieve data for duo_universal.Client()
+        permitdepartement = (
+            models.PermitDepartment.objects.filter(
+                group__in=user.groups.all(), mandatory_2fa=True
             )
+            .exclude(duo_client_id__exact="")
+            .exclude(duo_client_secret__exact="")
+            .exclude(duo_host__exact="")
         )
 
-    def process_step(self, form):
-        if self.steps.current == "token":
-            from django.contrib.sessions.backends.db import SessionStore
+        # Store information to know if duo is activated or not for this user
+        self.duo = permitdepartement.exists()
+        if self.duo:
+            # Retrieve information for duo_universal.Client from first PermitDepartment
+            client_id = permitdepartement[0].duo_client_id
+            client_secret = permitdepartement[0].duo_client_secret
+            host = permitdepartement[0].duo_host
 
-            # TODO: retrieve credentials from environment
-            # TODO: callback_url = self.request.build_absolute_uri(reverse('duo_callback'))
-            callback_url = "https://geocity.docker.test/account/duo_callback"
+            # Define the callback
+            callback_url = self.request.build_absolute_uri(reverse("duo_callback"))
 
-            # TODO: Remove, this isn't crédentials of a real duo app, is probably going to perform a warning in github
+            # Create the duo_universal.Client
+            duo_client = duo_universal.Client(
+                client_id, client_secret, host, callback_url
+            )
 
+            # Store the actual state
             state = duo_client.generate_state()
             s = SessionStore()
             s["state"] = state
-            # TODO get username
-            prompt_uri = duo_client.create_auth_url("aju", state)
-            print(prompt_uri)
-            redirect(prompt_uri)
+
+            # Create url to duo authentication page. Used in self.done()
+            self.prompt_uri = duo_client.create_auth_url(user.email, state)
+        else:
+            # When duo isn't activated, use django 2fa
+            return super().process_step(form)
 
 
 class DuoCallbackView(View):
-    print("DuoCallbackView")
-
     def get(self, request, *args, **kwargs):
-        print("DuoCallbackView__get")
         state = request.GET.get("state")
-        username = request.GET.get("username")
+        duo_code = request.GET.get("duo_code")
+        # username = request.GET.get("username")
         # TODO:  Check if state and username matches session data
         # TODO: get session and compare state
 
-        # TODO: if state is OK, login, then redirect to URL
-        # login(username)
+        # TODO: if state is OK and duo_code + user is OK, login, then redirect to URL
+        print(state)
+        print(duo_code)
+        admin_user = User.objects.get(username="admin")
+        login(request, admin_user, "django.contrib.auth.backends.ModelBackend")
         return redirect(settings.LOGIN_REDIRECT_URL)
 
 

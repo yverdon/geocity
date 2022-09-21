@@ -175,6 +175,24 @@ class PermitDepartment(models.Model):
         ),
         default=False,
     )
+    duo_client_id = integrator_emails_exceptions = models.CharField(
+        _("Client id pour duo"),
+        help_text=_("Double authentification à l'aide de duo, si renseigné"),
+        blank=True,
+        max_length=254,
+    )
+    duo_client_secret = integrator_emails_exceptions = models.CharField(
+        _("Client secret pour duo"),
+        help_text=_("Double authentification à l'aide de duo, si renseigné"),
+        blank=True,
+        max_length=254,
+    )
+    duo_host = integrator_emails_exceptions = models.CharField(
+        _("Host pour duo"),
+        help_text=_("Double authentification à l'aide de duo, si renseigné"),
+        blank=True,
+        max_length=254,
+    )
     integrator_email_domains = models.CharField(
         _("Domaines d'emails visibles pour l'intégrateur"),
         help_text=_(
@@ -200,6 +218,15 @@ class PermitDepartment(models.Model):
 
     def __str__(self):
         return str(self.group)
+
+    @cached_property
+    def duo_2fa(self):
+        return (
+            self.mandatory_2fa
+            and self.duo_client_id
+            and self.duo_client_secret
+            and self.duo_host
+        )
 
 
 class PermitAdministrativeEntityQuerySet(models.QuerySet):

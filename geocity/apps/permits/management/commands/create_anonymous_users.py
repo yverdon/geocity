@@ -22,6 +22,7 @@ def _create_anonymous_user_for_entity(entity):
             last_name=last_name,
             is_active=False,
         )
+        user.backend = "django.contrib.auth.backends.ModelBackend"
         user.save()
 
         PermitAuthor(
