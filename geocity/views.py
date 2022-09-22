@@ -11,7 +11,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordResetView
-from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
 from django.http import HttpResponseRedirect
@@ -84,6 +83,11 @@ class CustomPasswordResetView(PasswordResetView):
 
 
 class CustomTwoFactorLoginView(TwoFactorLoginView):
+    # Add default value to duo_mfa to prevent a throw error on "self.steps.current != 'auth'"
+    def __init__(self, **kwargs):
+        self.duo_mfa = None
+        super().__init__(**kwargs)
+
     def get(self, request, *args, **kwargs):
         successful = request.GET.get("success")
         # check if we need to display an activation message
@@ -111,8 +115,7 @@ class CustomTwoFactorLoginView(TwoFactorLoginView):
         permits_services.store_tags_in_session(self.request)
 
         # Redirect to the duo authentication page
-        if self.duo:
-            # login(self.request, self.get_user(), backend="django.contrib.auth.backends.ModelBackend")
+        if self.duo_mfa:
             return redirect(self.prompt_uri)
         return super(CustomTwoFactorLoginView, self).done(form_list, **kwargs)
 
@@ -136,63 +139,101 @@ class CustomTwoFactorLoginView(TwoFactorLoginView):
         )
 
     def process_step(self, form):
-        # Get username
-        username = form.is_valid() and form.user_cache
+        # Override only this step
+        if self.steps.current == "auth":
+            # Get username
+            username = form.is_valid() and form.user_cache
 
-        # Get user corresponding to the user name
-        user = User.objects.get(username=username)
+            # Get user, duo_mfa and duo_client
+            user, self.duo_mfa, duo_client = create_duo_client(username, self.request)
 
-        # Get PermitDepartments using duo. Need to retrieve data for duo_universal.Client()
-        permitdepartement = (
-            models.PermitDepartment.objects.filter(
-                group__in=user.groups.all(), mandatory_2fa=True
-            )
-            .exclude(duo_client_id__exact="")
-            .exclude(duo_client_secret__exact="")
-            .exclude(duo_host__exact="")
-        )
+            if self.duo_mfa:
+                # Health check
+                try:
+                    duo_client.health_check()
+                except:
+                    raise Exception("Duo n'est pas disponible pour le moment.")
 
-        # Store information to know if duo is activated or not for this user
-        self.duo = permitdepartement.exists()
-        if self.duo:
-            # Retrieve information for duo_universal.Client from first PermitDepartment
-            client_id = permitdepartement[0].duo_client_id
-            client_secret = permitdepartement[0].duo_client_secret
-            host = permitdepartement[0].duo_host
+                # Generate the actual state
+                state = duo_client.generate_state()
 
-            # Define the callback
-            callback_url = self.request.build_absolute_uri(reverse("duo_callback"))
+                # Store state and username in session
+                self.request.session["state"] = state
+                self.request.session["username"] = user.username
 
-            # Create the duo_universal.Client
-            duo_client = duo_universal.Client(
-                client_id, client_secret, host, callback_url
-            )
-
-            # Store the actual state
-            state = duo_client.generate_state()
-            s = SessionStore()
-            s["state"] = state
-
-            # Create url to duo authentication page. Used in self.done()
-            self.prompt_uri = duo_client.create_auth_url(user.email, state)
+                # Create url to duo authentication page. Used in self.done()
+                self.prompt_uri = duo_client.create_auth_url(user.username, state)
+            else:
+                # When duo isn't activated, use django 2fa
+                return super().process_step(form)
         else:
-            # When duo isn't activated, use django 2fa
             return super().process_step(form)
+
+
+def create_duo_client(username, request):
+    # Initial value of duo_client
+    duo_client = None
+
+    # Get user corresponding to the user name
+    user = User.objects.get(username=username)
+
+    # Get PermitDepartments using duo. Need to retrieve data for duo_universal.Client() or call exchange_authorization_code_for_2fa_result()
+    permitdepartement = (
+        models.PermitDepartment.objects.filter(
+            group__in=user.groups.all(), mandatory_2fa=True
+        )
+        .exclude(duo_client_id__exact="")
+        .exclude(duo_client_secret__exact="")
+        .exclude(duo_host__exact="")
+    )
+
+    # Tells if duo multi factor authentication is activated
+    duo_mfa = permitdepartement.exists()
+    if duo_mfa:
+        # Retrieve information for duo_universal.Client from first PermitDepartment
+        client_id = permitdepartement[0].duo_client_id
+        client_secret = permitdepartement[0].duo_client_secret
+        host = permitdepartement[0].duo_host
+
+        # Define the callback
+        callback_url = request.build_absolute_uri(reverse("duo_callback"))
+
+        # Create the duo_universal.Client
+        duo_client = duo_universal.Client(client_id, client_secret, host, callback_url)
+    return user, duo_mfa, duo_client
 
 
 class DuoCallbackView(View):
     def get(self, request, *args, **kwargs):
+        # Get informations from duo
         state = request.GET.get("state")
         duo_code = request.GET.get("duo_code")
-        # username = request.GET.get("username")
-        # TODO:  Check if state and username matches session data
-        # TODO: get session and compare state
 
-        # TODO: if state is OK and duo_code + user is OK, login, then redirect to URL
-        print(state)
-        print(duo_code)
-        admin_user = User.objects.get(username="admin")
-        login(request, admin_user, "django.contrib.auth.backends.ModelBackend")
+        # Get stored session
+        session_state = request.session["state"]
+        session_username = request.session["username"]
+
+        # Get user, duo_mfa and duo_client
+        user, duo_mfa, duo_client = create_duo_client(session_username, request)
+
+        # Check if state didn't change
+        if state != session_state:
+            raise Exception("Un problème de sécurité est survenu.")
+
+        # Ask to duo if the connection was made correctly
+        try:
+            decoded_token = duo_client.exchange_authorization_code_for_2fa_result(
+                duo_code, user.username
+            )
+            print("*****************************")
+            print(decoded_token)
+        except:
+            raise Exception("Un problème de connection est survenu.")
+
+        # Log the user
+        login(request, user, "django.contrib.auth.backends.ModelBackend")
+
+        # Redirect, end of the flow
         return redirect(settings.LOGIN_REDIRECT_URL)
 
 

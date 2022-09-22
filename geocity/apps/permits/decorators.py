@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import ObjectDoesNotExist
 from django_otp import user_has_device
 
-from geocity.apps.permits import services
+from geocity.apps.permits import models, services
 
 
 def check_mandatory_2FA(
@@ -16,8 +16,22 @@ def check_mandatory_2FA(
 
     def test(user):
         if services.is_2FA_mandatory(user):
-            return user.is_verified() or (
-                if_configured and user.is_authenticated and not user_has_device(user)
+            return (
+                user.is_verified()
+                or (
+                    if_configured
+                    and user.is_authenticated
+                    and not user_has_device(user)
+                )
+                or (
+                    models.PermitDepartment.objects.filter(
+                        group__in=user.groups.all(), mandatory_2fa=True
+                    )
+                    .exclude(duo_client_id__exact="")
+                    .exclude(duo_client_secret__exact="")
+                    .exclude(duo_host__exact="")
+                    .exists()
+                )
             )
         else:
             return True
