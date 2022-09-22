@@ -231,8 +231,6 @@ class DuoCallbackView(View):
             decoded_token = duo_client.exchange_authorization_code_for_2fa_result(
                 duo_code, user.username
             )
-            print("*****************************")
-            print(decoded_token)
         except:
             raise Exception("Un problème de connection est survenu.")
 

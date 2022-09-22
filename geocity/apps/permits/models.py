@@ -219,15 +219,6 @@ class PermitDepartment(models.Model):
     def __str__(self):
         return str(self.group)
 
-    @cached_property
-    def duo_2fa(self):
-        return (
-            self.mandatory_2fa
-            and self.duo_client_id
-            and self.duo_client_secret
-            and self.duo_host
-        )
-
 
 class PermitAdministrativeEntityQuerySet(models.QuerySet):
     def filter_by_tags(self, tags):
