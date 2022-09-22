@@ -82,6 +82,48 @@ class CustomPasswordResetView(PasswordResetView):
         return context
 
 
+def get_redirect_url_after_login(qs_dict):
+    url_value = (
+        qs_dict["next"][0]
+        if "next" in qs_dict
+        else reverse("permits:permit_request_select_administrative_entity")
+    )
+    return url_value
+
+
+def create_duo_client(username, request):
+    # Initial value of duo_client
+    duo_client = None
+
+    # Get user corresponding to the user name
+    user = User.objects.get(username=username)
+
+    # Get PermitDepartments using duo. Need to retrieve data for duo_universal.Client() or call exchange_authorization_code_for_2fa_result()
+    permitdepartement = (
+        models.PermitDepartment.objects.filter(
+            group__in=user.groups.all(), mandatory_2fa=True
+        )
+        .exclude(duo_client_id__exact="")
+        .exclude(duo_client_secret__exact="")
+        .exclude(duo_host__exact="")
+    )
+
+    # Tells if duo multi factor authentication is activated
+    duo_mfa = permitdepartement.exists()
+    if duo_mfa:
+        # Retrieve information for duo_universal.Client from first PermitDepartment
+        client_id = permitdepartement[0].duo_client_id
+        client_secret = permitdepartement[0].duo_client_secret
+        host = permitdepartement[0].duo_host
+
+        # Define the callback
+        callback_url = request.build_absolute_uri(reverse("duo_callback"))
+
+        # Create the duo_universal.Client
+        duo_client = duo_universal.Client(client_id, client_secret, host, callback_url)
+    return user, duo_mfa, duo_client
+
+
 class CustomTwoFactorLoginView(TwoFactorLoginView):
     # Add default value to duo_mfa to prevent a throw error on "self.steps.current != 'auth'"
     def __init__(self, **kwargs):
@@ -122,16 +164,8 @@ class CustomTwoFactorLoginView(TwoFactorLoginView):
     def get_success_url(self):
         qs_dict = parse.parse_qs(self.request.META["QUERY_STRING"])
 
-        url_value = (
-            qs_dict["next"][0]
-            if "next" in qs_dict
-            else reverse("permits:permit_request_select_administrative_entity")
-        )
+        url_value = get_redirect_url_after_login(qs_dict)
 
-        if "next" in qs_dict:
-            qs_dict.pop("next")
-
-        # TODO: Only 2fa without duo
         return (
             reverse("two_factor:profile")
             if settings.ENABLE_2FA and not self.request.user.totpdevice_set.exists()
@@ -157,9 +191,13 @@ class CustomTwoFactorLoginView(TwoFactorLoginView):
                 # Generate the actual state
                 state = duo_client.generate_state()
 
-                # Store state and username in session
+                # Get query_string. Used to know if there is a "next" in the request
+                qs_dict = parse.parse_qs(self.request.META["QUERY_STRING"])
+
+                # Store state, username and qs_disct in session
                 self.request.session["state"] = state
                 self.request.session["username"] = user.username
+                self.request.session["qs_dict"] = qs_dict
 
                 # Create url to duo authentication page. Used in self.done()
                 self.prompt_uri = duo_client.create_auth_url(user.username, state)
@@ -170,48 +208,16 @@ class CustomTwoFactorLoginView(TwoFactorLoginView):
             return super().process_step(form)
 
 
-def create_duo_client(username, request):
-    # Initial value of duo_client
-    duo_client = None
-
-    # Get user corresponding to the user name
-    user = User.objects.get(username=username)
-
-    # Get PermitDepartments using duo. Need to retrieve data for duo_universal.Client() or call exchange_authorization_code_for_2fa_result()
-    permitdepartement = (
-        models.PermitDepartment.objects.filter(
-            group__in=user.groups.all(), mandatory_2fa=True
-        )
-        .exclude(duo_client_id__exact="")
-        .exclude(duo_client_secret__exact="")
-        .exclude(duo_host__exact="")
-    )
-
-    # Tells if duo multi factor authentication is activated
-    duo_mfa = permitdepartement.exists()
-    if duo_mfa:
-        # Retrieve information for duo_universal.Client from first PermitDepartment
-        client_id = permitdepartement[0].duo_client_id
-        client_secret = permitdepartement[0].duo_client_secret
-        host = permitdepartement[0].duo_host
-
-        # Define the callback
-        callback_url = request.build_absolute_uri(reverse("duo_callback"))
-
-        # Create the duo_universal.Client
-        duo_client = duo_universal.Client(client_id, client_secret, host, callback_url)
-    return user, duo_mfa, duo_client
-
-
 class DuoCallbackView(View):
     def get(self, request, *args, **kwargs):
         # Get informations from duo
         state = request.GET.get("state")
         duo_code = request.GET.get("duo_code")
 
-        # Get stored session
+        # Get stored sessions
         session_state = request.session["state"]
         session_username = request.session["username"]
+        session_qs_dict = request.session["qs_dict"]
 
         # Get user, duo_mfa and duo_client
         user, duo_mfa, duo_client = create_duo_client(session_username, request)
@@ -233,8 +239,8 @@ class DuoCallbackView(View):
         # Log the user
         login(request, user, "django.contrib.auth.backends.ModelBackend")
 
-        # Redirect, end of the flow
-        return redirect(settings.LOGIN_REDIRECT_URL)
+        url_value = get_redirect_url_after_login(session_qs_dict)
+        return redirect(url_value)
 
 
 def permit_author_create(request):
