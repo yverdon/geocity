@@ -221,14 +221,6 @@ class GenericDepartmentPermitRequestsTable(
         template_name="tables/_permit_request_author_details.html",
     )
 
-    if settings.AUTHOR_IBAN_VISIBLE:
-        author_iban = tables.TemplateColumn(
-            verbose_name=_("IBAN"),
-            attrs=ATTRIBUTES,
-            orderable=False,
-            template_name="tables/_permit_request_author_iban.html",
-        )
-
     def before_render(self, request):
         self.columns["actions"].column.extra_context = {
             "can_view": (
@@ -271,6 +263,14 @@ class DepartmentPermitRequestsHTMLTable(
 
 class DepartmentPermitRequestsExportTable(GenericDepartmentPermitRequestsTable):
     works_objects_str = tables.Column(verbose_name=_("Objets et types de demandes"))
+
+    if settings.AUTHOR_IBAN_VISIBLE:
+        author_iban = tables.TemplateColumn(
+            verbose_name=_("IBAN"),
+            attrs=ATTRIBUTES,
+            orderable=False,
+            template_name="tables/_permit_request_author_iban.html",
+        )
 
     class Meta:
         model = models.PermitRequest
