@@ -175,23 +175,15 @@ class PermitDepartment(models.Model):
         ),
         default=False,
     )
-    duo_client_id = integrator_emails_exceptions = models.CharField(
-        _("Client id pour duo"),
-        help_text=_("Double authentification à l'aide de duo, si renseigné"),
+    duo_config = models.ForeignKey(
+        "DuoConfig",
+        null=True,
         blank=True,
-        max_length=254,
-    )
-    duo_client_secret = integrator_emails_exceptions = models.CharField(
-        _("Client secret pour duo"),
-        help_text=_("Double authentification à l'aide de duo, si renseigné"),
-        blank=True,
-        max_length=254,
-    )
-    duo_host = integrator_emails_exceptions = models.CharField(
-        _("Host pour duo"),
-        help_text=_("Double authentification à l'aide de duo, si renseigné"),
-        blank=True,
-        max_length=254,
+        on_delete=models.SET_NULL,
+        related_name="duo",
+        verbose_name=_(
+            "Configuration duo. Devient obligatoire si assigné avec un 2fa obligatoire"
+        ),
     )
     integrator_email_domains = models.CharField(
         _("Domaines d'emails visibles pour l'intégrateur"),
@@ -218,6 +210,43 @@ class PermitDepartment(models.Model):
 
     def __str__(self):
         return str(self.group)
+
+
+class DuoConfig(models.Model):
+    name = models.CharField(_("name"), max_length=128)
+    description = models.CharField(_("description"), max_length=128)
+    is_active = models.BooleanField(
+        _("Actif"),
+        default=True,
+        help_text=_(
+            "Décocher afin de désactiver cette configuration. Les groupes ayant cette configuration, ne seront plus redirigés vers duo"
+        ),
+    )
+    client_id = models.CharField(
+        _("Client id pour duo"),
+        max_length=254,
+    )
+    client_secret = models.CharField(
+        _("Client secret pour duo"),
+        max_length=254,
+    )
+    host = models.CharField(
+        _("Host pour duo"),
+        max_length=254,
+    )
+    integrator = models.ForeignKey(
+        Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs"),
+    )
+
+    class Meta:
+        verbose_name = _("4.2 Configuration du client duo")
+        verbose_name_plural = _("4.2 Configuration des clients duo")
+
+    def __str__(self):
+        return self.name
 
 
 class PermitAdministrativeEntityQuerySet(models.QuerySet):

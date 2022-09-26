@@ -342,9 +342,7 @@ class DepartmentAdminForm(forms.ModelForm):
             "is_backoffice",
             "is_integrator_admin",
             "mandatory_2fa",
-            "duo_client_id",
-            "duo_client_secret",
-            "duo_host",
+            "duo_config",
             "integrator_email_domains",
             "integrator_emails_exceptions",
             "integrator",
@@ -483,6 +481,7 @@ class GroupAdmin(admin.ModelAdmin):
     list_display = [
         "__str__",
         "get__integrator",
+        "get__duo_config",
         "get__is_validator",
         "get__is_default_validator",
         "get__is_backoffice",
@@ -516,6 +515,12 @@ class GroupAdmin(admin.ModelAdmin):
 
     get__is_backoffice.admin_order_field = "permitdepartment__is_backoffice"
     get__is_backoffice.short_description = _("Secrétariat")
+
+    def get__duo_config(self, obj):
+        return obj.permitdepartment.duo_config
+
+    get__duo_config.admin_order_field = "permitdepartment__duo_config"
+    get__duo_config.short_description = _("Configuration duo")
 
     def get__integrator(self, obj):
         return Group.objects.get(pk=obj.permitdepartment.integrator)
@@ -1310,7 +1315,28 @@ class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
 
 class PermitRequestInquiryAdmin(admin.ModelAdmin):
-    list_display = ("id", "start_date", "end_date", "submitter", "permit_request")
+    list_display = (
+        "id",
+        "start_date",
+        "end_date",
+        "submitter",
+        "permit_request",
+    )
+
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "name"
+    sortable_str.short_description = _("3.2 Enquêtes public")
+
+
+class DuoConfigAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "description",
+        "is_active",
+        "integrator",
+    )
 
     def sortable_str(self, obj):
         return obj.__str__()
@@ -1346,3 +1372,4 @@ admin.site.register(models.TemplateCustomization, TemplateCustomizationAdmin)
 admin.site.register(models.PermitRequest, PermitRequestAdmin)
 admin.site.register(models.ComplementaryDocumentType, ComplementaryDocumentTypeAdmin)
 admin.site.register(models.PermitRequestInquiry, PermitRequestInquiryAdmin)
+admin.site.register(models.DuoConfig, DuoConfigAdmin)

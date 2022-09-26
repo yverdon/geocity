@@ -19,9 +19,10 @@ class AdminSiteOTPRequiredMixinRedirSetup(AdminSiteOTPRequired, PermitsAdminSite
             models.PermitDepartment.objects.filter(
                 group__in=request.user.groups.all(), mandatory_2fa=True
             )
-            .exclude(duo_client_id__exact="")
-            .exclude(duo_client_secret__exact="")
-            .exclude(duo_host__exact="")
+            .exclude(duo_config__client_id__exact="")
+            .exclude(duo_config__client_secret__exact="")
+            .exclude(duo_config__host__exact="")
+            .exclude(duo_config__is_active=False)
             .exists()
         ):
             return True
