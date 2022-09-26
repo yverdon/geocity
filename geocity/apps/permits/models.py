@@ -214,7 +214,7 @@ class PermitDepartment(models.Model):
 
 class DuoConfig(models.Model):
     name = models.CharField(_("name"), max_length=128)
-    description = models.CharField(_("description"), max_length=128)
+    description = models.CharField(_("description"), blank=True, max_length=128)
     is_active = models.BooleanField(
         _("Actif"),
         default=True,

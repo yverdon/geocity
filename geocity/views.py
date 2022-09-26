@@ -98,19 +98,19 @@ def create_duo_client(username, request):
     # Get user corresponding to the user name
     user = User.objects.get(username=username)
 
-    # Get PermitDepartments using duo. Need to retrieve data for duo_universal.Client()
-    permitdepartement = (
-        models.PermitDepartment.objects.filter(
-            group__in=user.groups.all(), mandatory_2fa=True
-        )
-        .exclude(duo_config__client_id__exact="")
-        .exclude(duo_config__client_secret__exact="")
-        .exclude(duo_config__host__exact="")
-        .exclude(duo_config__is_active=False)
+    # Get base queryset
+    permitdepartement_qs = models.PermitDepartment.objects.filter(
+        group__in=user.groups.all(), mandatory_2fa=True, duo_config__isnull=False
     )
 
-    # Tells if duo multi factor authentication is activated
-    duo_mfa = permitdepartement.exists()
+    if permitdepartement_qs.exists():
+        # Get PermitDepartments using an active duo configuration. Used to retrieve data for duo_universal.Client()
+        permitdepartement = permitdepartement_qs.filter(duo_config__is_active=True)
+        duo_mfa = permitdepartement.exists()
+    else:
+        # Tells if duo multi factor authentication is activated
+        duo_mfa = False
+
     if duo_mfa:
         # Retrieve information for duo_universal.Client from first PermitDepartment
         client_id = permitdepartement[0].duo_config.client_id
