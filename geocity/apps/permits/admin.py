@@ -1342,7 +1342,6 @@ class DuoConfigAdmin(admin.ModelAdmin):
         return obj.__str__()
 
     sortable_str.admin_order_field = "name"
-    sortable_str.short_description = _("3.2 Enquêtes public")
 
 
 # Inline for base Django Site
