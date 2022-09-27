@@ -1,3 +1,5 @@
+import os
+
 from django.contrib import messages
 from django.urls import reverse
 
@@ -207,3 +209,15 @@ class TestComplementaryDocuments(GeocityTestCase):
             messages.ERROR,
         )
         self.assertResponseMessageContains(actual, expected)
+
+    # regression test for YC-880
+    def test_archive_works_with_completementary_documents(self):
+        factories.ComplementaryDocumentFactory.create(
+            permit_request=self.permit_request,
+            authorised_departments=[self.departments[self.VALIDATOR].pk],
+            is_public=True,
+        )
+        self.permit_request.archive(archivist=self.user)
+
+        self.assertTrue(self.permit_request.is_archived)
+        self.assertTrue(os.path.exists(self.permit_request.archivedpermitrequest.path))
