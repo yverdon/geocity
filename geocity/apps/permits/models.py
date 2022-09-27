@@ -1637,7 +1637,7 @@ class PermitRequestComplementaryDocument(models.Model):
 
     @property
     def path(self):
-        return os.path.join(settings.MEDIA_ROOT, self.document.name)
+        return self.document.path
 
     def delete(self, using=None, keep_parents=False):
         # delete the uploaded file
