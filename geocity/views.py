@@ -21,7 +21,11 @@ from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
 from django.views import View
-from two_factor.views import LoginView as TwoFactorLoginView
+
+if settings.ENABLE_2FA:
+    from two_factor.views import LoginView
+else:
+    from django.contrib.auth.views import LoginView
 
 from geocity.apps.permits import forms, models
 from geocity.apps.permits import services as permits_services
@@ -125,7 +129,7 @@ def create_duo_client(username, request):
     return user, duo_mfa, duo_client
 
 
-class CustomTwoFactorLoginView(TwoFactorLoginView):
+class CustomLoginView(LoginView, SetCurrentSiteMixin):
     # Add default value to duo_mfa to prevent a throw error on "self.steps.current != 'auth'"
     def __init__(self, **kwargs):
         self.duo_mfa = None
@@ -160,7 +164,7 @@ class CustomTwoFactorLoginView(TwoFactorLoginView):
         # Redirect to the duo authentication page
         if self.duo_mfa:
             return redirect(self.prompt_uri)
-        return super(CustomTwoFactorLoginView, self).done(form_list, **kwargs)
+        return super(CustomLoginView, self).done(form_list, **kwargs)
 
     def get_success_url(self):
         qs_dict = parse.parse_qs(self.request.META["QUERY_STRING"])

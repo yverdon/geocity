@@ -56,9 +56,7 @@ if settings.ENABLE_2FA:
     urlpatterns += [
         path(
             "account/login/",
-            views.CustomTwoFactorLoginView.as_view(
-                template_name="two_factor/login.html"
-            ),
+            views.CustomLoginView.as_view(template_name="two_factor/login.html"),
             name="account_login",
         ),
         path(
