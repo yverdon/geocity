@@ -47,7 +47,7 @@ def archive_to_filefield(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("permits", "0081_update_site_data"),
+        ("permits", "0082_add_visible_by_validators_for_amend_property"),
     ]
 
     operations = [
