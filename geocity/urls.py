@@ -188,10 +188,6 @@ else:
         ),
     ]
 
-
-if settings.PREFIX_URL:
-    urlpatterns = [path(settings.PREFIX_URL, include(urlpatterns))]
-
 if settings.DEBUG:
     import debug_toolbar
 
@@ -201,3 +197,6 @@ if settings.DEBUG:
             include(debug_toolbar.urls),
         ),
     ]
+
+if settings.PREFIX_URL:
+    urlpatterns = [path(settings.PREFIX_URL, include(urlpatterns))]
