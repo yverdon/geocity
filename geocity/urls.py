@@ -18,14 +18,14 @@ from . import views
 
 logger = logging.getLogger(__name__)
 
-admin.site = PermitsAdminSite()
-
 
 # See TWO_FACTOR_PATCH_ADMIN
 if settings.ENABLE_2FA:
-    from .admin_site import AdminSiteOTPRequiredMixinRedirSetup
+    from .admin_site import OTPRequiredPermitsAdminSite
 
-    admin.site.__class__ = AdminSiteOTPRequiredMixinRedirSetup
+    admin.site = OTPRequiredPermitsAdminSite()
+else:
+    admin.site = PermitsAdminSite()
 
 
 # Django-rest Configuration
