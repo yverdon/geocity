@@ -67,7 +67,7 @@ if settings.ENABLE_2FA:
                 data={
                     "auth-username": user.username,
                     "auth-password": "password",
-                    "custom_two_factor_login_view-current_step": "auth",
+                    "custom_login_view-current_step": "auth",
                 }
             )
 
@@ -84,7 +84,7 @@ if settings.ENABLE_2FA:
                 data={
                     "auth-username": user.username,
                     "auth-password": "password",
-                    "custom_two_factor_login_view-current_step": "auth",
+                    "custom_login_view-current_step": "auth",
                 }
             )
 
@@ -99,7 +99,7 @@ if settings.ENABLE_2FA:
         def test_post_login_view_with_step_fail(self):
             response = self.client.post(
                 reverse("account_login"),
-                {"custom_two_factor_login_view-current_step": "auth"},
+                {"custom_login_view-current_step": "auth"},
                 follow=True,
             )
             self.assertEqual(response.status_code, 200)
