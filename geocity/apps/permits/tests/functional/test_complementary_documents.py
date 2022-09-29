@@ -210,7 +210,6 @@ class TestComplementaryDocuments(GeocityTestCase):
         )
         self.assertResponseMessageContains(actual, expected)
 
-    # regression test for YC-880
     def test_archive_works_with_completementary_documents(self):
         factories.ComplementaryDocumentFactory.create(
             permit_request=self.permit_request,
