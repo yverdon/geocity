@@ -50,6 +50,8 @@ urlpatterns = [
         "accounts/social/",
         include("allauth.socialaccount.urls"),
     ),
+    # Not too why these need to be added manually here ? isn't allauth supposed to include them
+    # for all configured providers ? Otherwise how would new providers be available ?
     *default_urlpatterns(GeomapfishProvider),
     *default_urlpatterns(DootixProvider),
     path(
