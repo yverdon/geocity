@@ -1,9 +1,7 @@
 import datetime
 
-from django.contrib.auth.models import AnonymousUser, User
 from django.db.models import F, Prefetch, Q
 from rest_framework import viewsets
-from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
@@ -132,32 +130,17 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
 # //////////////////////////////////
 
 
-class CurrentUserAPIView(RetrieveAPIView):
+class CurrentUserAPIViewSet(viewsets.ViewSet):
     """
     Current user endpoint Usage:
         /rest/current_user/     shows current user
     """
 
-    serializer_class = serializers.CurrentUserSerializer
     permission_classes = [AllowAllRequesters]
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=False)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=False)
+        serializer = serializers.CurrentUserSerializer(self.request.user, many=False)
         return Response(serializer.data)
-
-    # Returns the logged user, if there's any
-    def get_object(self):
-        try:
-            return User.objects.get(Q(username=self.request.user))
-        except User.DoesNotExist:
-            return AnonymousUser()
 
 
 class PermitRequestViewSet(

@@ -1,13 +1,6 @@
 from django.urls import include, path
 
-from geocity.apps.django_wfs3.urls import wfs3_router
-
-from . import api, geoviews, views
-
-wfs3_router.register(r"permits", api.PermitRequestViewSet, "permits")
-wfs3_router.register(r"permits_point", api.PermitRequestPointViewSet, "permits_point")
-wfs3_router.register(r"permits_line", api.PermitRequestLineViewSet, "permits_line")
-wfs3_router.register(r"permits_poly", api.PermitRequestPolyViewSet, "permits_poly")
+from . import geoviews, views
 
 app_name = "permits"
 

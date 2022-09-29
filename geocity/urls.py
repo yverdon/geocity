@@ -5,12 +5,10 @@ from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
-from rest_framework import routers
 
 from geocity.apps.accounts.dootix.provider import DootixProvider
 from geocity.apps.accounts.geomapfish.provider import GeomapfishProvider
-from geocity.apps.django_wfs3.urls import wfs3_router
-from geocity.apps.permits import api
+from geocity.apps.permits import routers
 from geocity.apps.permits import views as permits_views
 from geocity.apps.permits.admin import PermitsAdminSite
 
@@ -29,17 +27,6 @@ else:
     logger.info("2 factors authentification is disabled")
     admin.site = PermitsAdminSite()
 
-
-# Django-rest Configuration
-
-router = routers.DefaultRouter()
-router.register(r"events", api.PermitRequestGeoTimeViewSet, "events")
-router.register(r"permits", api.PermitRequestViewSet, "permits")
-router.register(r"permits_point", api.PermitRequestPointViewSet, "permit_point")
-router.register(r"permits_line", api.PermitRequestLineViewSet, "permit_line")
-router.register(r"permits_poly", api.PermitRequestPolyViewSet, "permit_poly")
-router.register(r"search", api.SearchViewSet, "search")
-router.register(r"permits_details", api.PermitRequestDetailsViewSet, "permits_details")
 
 # Django-configuration
 urlpatterns = [
@@ -125,16 +112,11 @@ urlpatterns = [
     ),
     path(
         "rest/",
-        include(router.urls),
-    ),
-    path(
-        "rest/current_user/",
-        api.CurrentUserAPIView.as_view(),
-        name="current_user",
+        include(routers.default.urls),
     ),
     path(
         "wfs3/",
-        include(wfs3_router.urls),
+        include(routers.wfs3.urls),
     ),
     path(
         "admin/",
