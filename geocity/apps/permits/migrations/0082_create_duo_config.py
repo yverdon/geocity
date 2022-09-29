@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("auth", "0012_alter_user_first_name_max_length"),
-        ("permits", "0081_update_site_data"),
+        ("permits", "0082_add_visible_by_validators_for_amend_property"),
     ]
 
     operations = [
