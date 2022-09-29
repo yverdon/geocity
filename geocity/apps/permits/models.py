@@ -211,7 +211,34 @@ class PermitDepartment(models.Model):
     def __str__(self):
         return str(self.group)
 
+    def filter_active_duo_configurations_for_user_as_qs(user):
+        """
+        Get first permit department having an active duo configuration for
+        a specific user and return only the first one.
+        """
 
+        # Get all permit departments for all the groups of the user
+        # Take only departments where 2fa is mandatory
+        # Remove empty duo configurations
+        qs = PermitDepartment.objects.filter(
+            Q(group__in=user.groups.all())
+            & Q(
+                mandatory_2fa=True
+            )  # Remove this line to enable Duo MFA without making 2fa mandatory
+            & Q(duo_config__isnull=False)
+        ).distinct()
+
+        # Take only enabled duo configurations
+        if qs.exists():
+            qs = qs.filter(duo_config__is_active=True)
+
+            # Only first is needed
+            return qs.first()
+        else:
+            return None
+
+
+# https://duo.com/docs/duoweb#overview
 class DuoConfig(models.Model):
     name = models.CharField(_("name"), max_length=128)
     description = models.CharField(_("description"), blank=True, max_length=128)

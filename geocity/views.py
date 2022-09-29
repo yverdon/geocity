@@ -102,37 +102,31 @@ def create_duo_client(username, request):
     # Get user corresponding to the user name
     user = User.objects.get(username=username)
 
-    # Get base queryset
-    permitdepartement_qs = models.PermitDepartment.objects.filter(
-        group__in=user.groups.all(), mandatory_2fa=True, duo_config__isnull=False
-    )
+    # Get a permit department with duo enabled
+    permit_department = (
+        duo_enabled
+    ) = models.PermitDepartment.filter_active_duo_configurations_for_user_as_qs(user)
 
-    if permitdepartement_qs.exists():
-        # Get PermitDepartments using an active duo configuration. Used to retrieve data for duo_universal.Client()
-        permitdepartement = permitdepartement_qs.filter(duo_config__is_active=True)
-        duo_mfa = permitdepartement.exists()
-    else:
-        # Tells if duo multi factor authentication is activated
-        duo_mfa = False
-
-    if duo_mfa:
+    if duo_enabled:
         # Retrieve information for duo_universal.Client from first PermitDepartment
-        client_id = permitdepartement[0].duo_config.client_id
-        client_secret = permitdepartement[0].duo_config.client_secret
-        host = permitdepartement[0].duo_config.host
+        client_id = permit_department.duo_config.client_id
+        client_secret = permit_department.duo_config.client_secret
+        host = permit_department.duo_config.host
 
         # Define the callback
         callback_url = request.build_absolute_uri(reverse("duo_callback"))
 
         # Create the duo_universal.Client
         duo_client = duo_universal.Client(client_id, client_secret, host, callback_url)
-    return user, duo_mfa, duo_client
+        return user, duo_enabled, duo_client
+
+    messages.error(request, _("Une erreur est survenu lors de la connexion a duo."))
 
 
 class CustomLoginView(LoginView, SetCurrentSiteMixin):
-    # Add default value to duo_mfa to prevent a throw error on "self.steps.current != 'auth'"
+    # Add default value to duo_enabled to prevent a throw error on "self.steps.current != 'auth'"
     def __init__(self, **kwargs):
-        self.duo_mfa = None
+        self.duo_enabled = None
         super().__init__(**kwargs)
 
     def get(self, request, *args, **kwargs):
@@ -162,7 +156,7 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
         permits_services.store_tags_in_session(self.request)
 
         # Redirect to the duo authentication page
-        if self.duo_mfa:
+        if self.duo_enabled:
             return redirect(self.prompt_uri)
         return super(CustomLoginView, self).done(form_list, **kwargs)
 
@@ -183,10 +177,12 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
             # Get username
             username = form.is_valid() and form.user_cache
 
-            # Get user, duo_mfa and duo_client
-            user, self.duo_mfa, duo_client = create_duo_client(username, self.request)
+            # Get user, duo_enabled and duo_client
+            user, self.duo_enabled, duo_client = create_duo_client(
+                username, self.request
+            )
 
-            if self.duo_mfa:
+            if self.duo_enabled:
                 # Health check
                 try:
                     duo_client.health_check()
@@ -199,7 +195,7 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
                 # Get query_string. Used to know if there is a "next" in the request
                 qs_dict = parse.parse_qs(self.request.META["QUERY_STRING"])
 
-                # Store state, username and qs_disct in session
+                # Store state, username and qs_dict in session
                 self.request.session["state"] = state
                 self.request.session["username"] = user.username
                 self.request.session["qs_dict"] = qs_dict
@@ -224,8 +220,8 @@ class DuoCallbackView(View):
         session_username = request.session["username"]
         session_qs_dict = request.session["qs_dict"]
 
-        # Get user, duo_mfa and duo_client
-        user, duo_mfa, duo_client = create_duo_client(session_username, request)
+        # Get user, duo_enabled and duo_client
+        user, duo_enabled, duo_client = create_duo_client(session_username, request)
 
         # Check if state didn't change
         if state != session_state:

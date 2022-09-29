@@ -16,10 +16,10 @@ def check_mandatory_2FA(
 
     def test(user):
         if services.is_2FA_mandatory(user):
-            permitdepartement_qs = models.PermitDepartment.objects.filter(
-                group__in=user.groups.all(),
-                mandatory_2fa=True,
-                duo_config__isnull=False,
+            permit_department = (
+                models.PermitDepartment.filter_active_duo_configurations_for_user_as_qs(
+                    user
+                )
             )
 
             return (
@@ -29,8 +29,7 @@ def check_mandatory_2FA(
                     and user.is_authenticated
                     and not user_has_device(user)
                 )
-                or permitdepartement_qs.exists()
-                and (permitdepartement_qs.filter(duo_config__is_active=True).exists())
+                or permit_department
             )
         else:
             return True

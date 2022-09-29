@@ -1332,7 +1332,8 @@ class PermitRequestInquiryAdmin(admin.ModelAdmin):
     sortable_str.short_description = _("3.2 Enquêtes public")
 
 
-class DuoConfigAdmin(admin.ModelAdmin):
+# https://duo.com/docs/duoweb#overview
+class DuoConfigAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_display = (
         "name",
         "description",

@@ -15,15 +15,13 @@ from geocity.apps.permits.admin import PermitsAdminSite
 # Remove when https://github.com/Bouke/django-two-factor-auth/pull/370 is merged
 class AdminSiteOTPRequiredMixinRedirSetup(AdminSiteOTPRequired, PermitsAdminSite):
     def has_permission(self, request):
-        permitdepartement_qs = models.PermitDepartment.objects.filter(
-            group__in=request.user.groups.all(),
-            mandatory_2fa=True,
-            duo_config__isnull=False,
+        permit_department = (
+            models.PermitDepartment.filter_active_duo_configurations_for_user_as_qs(
+                request.user
+            )
         )
 
-        if permitdepartement_qs.exists() and (
-            permitdepartement_qs.filter(duo_config__is_active=True).exists()
-        ):
+        if permit_department:
             return True
         elif not super().has_permission(request):
             return False
