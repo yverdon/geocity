@@ -53,4 +53,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: test-output-images
-        path: ./reports/tests/data
+        path: ./geocity/apps/reports/tests/data

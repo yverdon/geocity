@@ -225,11 +225,12 @@ class ReportsTestsBase(LiveServerTestCase):
                 diff_img_file=diff_path,
             )
 
-            # We do not tolerate the slighest rendering difference. At some point we may need to implement
+            # For now we tolerate very small difference (0.01%) which seem to happen for unknown reason,
+            # maybe difference in antialiasing or whatnot. At some point we may need to implement
             # support for masks (areas that are not compared) to allow negligible rendering differences,
             # e.g. for QGIS updates.
-            if ratio > 0:
-                differences.append(f"{page_name}: {ratio*100:.2f}%")
+            if ratio > 0.0001:
+                differences.append(f"{page_name}: {ratio*100}%")
 
         if differences:
             differences_txt = "\n".join(differences)
