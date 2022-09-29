@@ -232,12 +232,15 @@ class DuoCallbackView(View):
             raise Exception("Un problème de sécurité est survenu.")
 
         # Ask to duo if the connection was made correctly
+        # Username from session has been tested to prevent "fake session attack", and duo handle this correctly.
+        # To replicate this test, just replace set "session_username" to a user
+        # https://ddos-guard.net/en/terminology/attack_type/fake-session-attack-spoofed-session-flood
         try:
             decoded_token = duo_client.exchange_authorization_code_for_2fa_result(
                 duo_code, user.username
             )
         except:
-            raise Exception("Un problème de connection est survenu.")
+            raise Exception("Un problème de connexion ou de sécurité est survenu.")
 
         # Log the user
         login(request, user, "django.contrib.auth.backends.ModelBackend")

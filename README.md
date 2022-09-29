@@ -64,6 +64,19 @@ DEFAULT_SITE=geocity.ch
 ```
 
 ---
+
+---
+## Duo MFA
+
+To turn on Duo MFA, check the checkbox `2fa mandatory` in a group and set a `Duo configuration`.
+
+:warning: **WARNING**: `SESSION_COOKIE_SAMESITE` needs to be setted to `'Lax'` in `.env`.
+
+```ini
+SESSION_COOKIE_SAMESITE='Lax'
+```
+
+---
 ## Developpment tools
 
 
@@ -113,22 +126,22 @@ docker-compose exec web python manage.py fixturize_demo
 
 We use [pre-commit](https://pre-commit.com/) as code formatter. Just use the following command to automatically format your code when you commit:
 
-```
-$ pip install pre-commit
-$ pre-commit install
+```bash
+pip install pre-commit
+pre-commit install
 ```
 
 If you wish to run it on all files:
 
-```
-$ pre-commit run --all-files
+```bash
+pre-commit run --all-files
 ```
 
 ### Show urls
 
 We use [django-extensions](https://django-extensions.readthedocs.io/en/latest/command_extensions.html?highlight=show_urls#command-extensions) to show urls. Can be used to export models to a file (as text or picture), to display them in terminal and much more things
 
-```
+```bash
 ./manage.py show_urls
 ```
 
@@ -156,7 +169,7 @@ Dependencies are managed with [`pip-tools`](https://github.com/jazzband/pip-tool
 To install a new package, add it to `requirements.in`, without pinning it to a
 specific version unless needed. Then run:
 
-```
+```bash
 docker-compose exec web pip-compile requirements.in
 docker-compose exec web pip-compile requirements_dev.in
 docker-compose exec web pip install -r requirements.txt
@@ -170,7 +183,7 @@ And the `requirements_dev.in` and the `requirements_dev.txt` files.
 
 To upgrade all the packages to their latest available version, run:
 
-```
+```bash
 docker-compose exec web pip-compile -U requirements.in
 docker-compose exec web pip install -r requirements.txt
 ```
@@ -179,7 +192,7 @@ To upgrade only a specific package, use `pip-compile -P <packagename>`.
 The following commands will upgrade Django to its latest version, making sure
 it's compatible with other packages listed in the `requirements.in` file:
 
-```
+```bash
 docker-compose exec web pip-compile -P django requirements.in
 docker-compose exec web pip install -r requirements.txt
 ```
@@ -261,14 +274,14 @@ To run a migration, for example when the model has changed, execute
 `manage.py makemigrations` from inside the docker service of the web app.
 Then execute `manage.py migrate`.
 
-```
+```bash
 docker-compose exec web python3 manage.py makemigrations <app_label>
 docker-compose exec web python3 manage.py migrate <app_label> <migration_name>
 ```
 
 For more information about django's migrations, help is available at:
 
-```
+```bash
 docker-compose exec web python3 manage.py makemigrations --help
 docker-compose exec web python3 manage.py migrate --help
 ```
