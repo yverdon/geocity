@@ -1921,17 +1921,16 @@ def download_archives(archive_ids, user):
 
         archives.append(archive)
 
+    filename = f"Archive_{datetime.today().strftime('%d.%m.%Y.%H.%M.%S')}.zip"
+
     if len(archives) == 1:
-        return FileResponse(archives[0].archive)
+        return FileResponse(archives[0].archive, filename=filename)
     else:
         with tempfile.NamedTemporaryFile() as tmp_file:
             with zipfile.ZipFile(tmp_file, "w") as zip_file:
                 for archive in archives:
                     zip_file.write(archive.archive.path, archive.archive.name)
-            return FileResponse(
-                open(tmp_file.name, "rb"),
-                filename=f"Archive_{datetime.today().strftime('%d.%m.%Y.%H.%M.%S')}.zip",
-            )
+            return FileResponse(open(tmp_file.name, "rb"), filename=filename)
 
 
 def can_download_archive(user, archivist):
