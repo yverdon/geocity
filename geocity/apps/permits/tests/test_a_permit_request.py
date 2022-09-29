@@ -2953,8 +2953,15 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         props_private = factories.PermitRequestAmendPropertyFactory.create_batch(
             props_quantity, is_visible_by_author=False
         )
+        props_private_validators = (
+            factories.PermitRequestAmendPropertyFactory.create_batch(
+                props_quantity,
+                is_visible_by_author=False,
+                is_visible_by_validators=True,
+            )
+        )
 
-        props = props_public + props_private
+        props = props_public + props_private + props_private_validators
 
         self.client.login(
             username=permit_request.author.user.username, password="password"
@@ -2982,7 +2989,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         )
 
         parser = get_parser(response.content)
-        # check that the 3 fields are visible by author and 3 are hidden
+        # check that the 3 fields are visible by author and 6 (3 private + 3 for validators) are hidden
         self.assertEqual(len(parser.select(".amend-property")), 3)
 
     def test_secretariat_can_see_submitted_requests(self):
@@ -3739,6 +3746,61 @@ class PermitRequestValidationTestcase(TestCase):
         )
 
         self.assertEqual(response.status_code, 404)
+
+    def test_validator_can_see_for_validators_amend_property(
+        self,
+    ):
+        validation = factories.PermitRequestValidationFactory()
+        validator = factories.ValidatorUserFactory(
+            groups=[validation.department.group, factories.ValidatorGroupFactory()]
+        )
+        permit_request = validation.permit_request
+        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
+
+        self.client.login(username=validator.username, password="password")
+
+        props_quantity = 3
+        works_object_type_choice = factories.WorksObjectTypeChoiceFactory(
+            permit_request=permit_request
+        )
+        props_private = factories.PermitRequestAmendPropertyFactory.create_batch(
+            props_quantity, is_visible_by_author=False, is_visible_by_validators=False
+        )
+        props_private_validators = (
+            factories.PermitRequestAmendPropertyFactory.create_batch(
+                props_quantity,
+                is_visible_by_author=False,
+                is_visible_by_validators=True,
+            )
+        )
+
+        props = props_private + props_private_validators
+
+        data = {
+            "action": models.ACTION_AMEND,
+            "status": models.PermitRequest.STATUS_PROCESSING,
+        }
+        works_object_types_pk = permit_request.works_object_types.first().pk
+        for prop in props:
+            prop.works_object_types.set(permit_request.works_object_types.all())
+            factories.PermitRequestAmendPropertyValueFactory(
+                property=prop,
+                works_object_type_choice=works_object_type_choice,
+            )
+            data[
+                f"{works_object_types_pk}_{prop.pk}"
+            ] = "I am a new property value, I am alive!"
+
+        response = self.client.get(
+            reverse(
+                "permits:permit_request_detail",
+                kwargs={"permit_request_id": permit_request.pk},
+            ),
+        )
+
+        parser = get_parser(response.content)
+        # check that the 3 fields are visible by validator and 3 are hidden
+        self.assertEqual(len(parser.select(".amend-property")), 3)
 
     def test_secretariat_can_send_validation_reminders(self):
         group = factories.SecretariatGroupFactory()

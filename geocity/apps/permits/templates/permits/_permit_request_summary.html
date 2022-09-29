@@ -38,7 +38,7 @@
           <div class="container">
             <h5>{% trans "Informations du service responsable" %}</h5>
             {% for object_property in amend_custom_properties %}
-              {% if object_property.property.is_visible_by_author %}
+              {% if object_property.property.is_visible_by_author or object_property.property.is_visible_by_validators and is_validator %}
                 <dl class="properties-list">
                   <dt class="amend-property">{{ object_property.property }}</dt>
                   <dd>{{ object_property.value }}</dd>
