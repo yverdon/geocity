@@ -23,8 +23,10 @@ logger = logging.getLogger(__name__)
 if settings.ENABLE_2FA:
     from .admin_site import OTPRequiredPermitsAdminSite
 
+    logger.info("2 factors authentification is enabled")
     admin.site = OTPRequiredPermitsAdminSite()
 else:
+    logger.info("2 factors authentification is disabled")
     admin.site = PermitsAdminSite()
 
 
@@ -57,56 +59,12 @@ urlpatterns = [
         "grappelli/",
         include("grappelli.urls"),
     ),
-]
-
-if settings.ENABLE_2FA:
-    from two_factor.urls import urlpatterns as tf_urls
-    from two_factor.views import ProfileView, SetupCompleteView
-
-    logger.info("2 factors authentification is enabled")
-    urlpatterns += [
-        path(
-            "account/login/",
-            views.CustomLoginView.as_view(template_name="two_factor/login.html"),
-            name="account_login",
-        ),
-        path(
-            "account/two_factor/",
-            ProfileView.as_view(template_name="two_factor/profile.html"),
-            name="profile",
-        ),
-        path(
-            "account/two_factor/setup/complete/",
-            SetupCompleteView.as_view(template_name="two_factor/setup_complete.html"),
-            name="setup_complete",
-        ),
-        path(
-            "",
-            include(tf_urls),
-        ),
-    ]
-else:
-    logger.info("2 factors authentification is disabled")
-    urlpatterns += [
-        path(
-            "account/login/",
-            views.CustomLoginView.as_view(template_name="registration/login.html"),
-            name="account_login",
-        ),
-    ]
-
-urlpatterns += (
-    [
-        path(
-            "accounts/social/",
-            include("allauth.socialaccount.urls"),
-        ),
-    ]
-    + default_urlpatterns(GeomapfishProvider)
-    + default_urlpatterns(DootixProvider)
-)
-
-urlpatterns += [
+    path(
+        "accounts/social/",
+        include("allauth.socialaccount.urls"),
+    ),
+    *default_urlpatterns(GeomapfishProvider),
+    *default_urlpatterns(DootixProvider),
     path(
         "account/logout/",
         views.logout_view,
@@ -168,7 +126,7 @@ urlpatterns += [
     path(
         "rest/",
         include(router.urls),
-    ),  # Django-rest urls
+    ),
     path(
         "rest/current_user/",
         api.CurrentUserAPIView.as_view(),
@@ -177,7 +135,7 @@ urlpatterns += [
     path(
         "wfs3/",
         include(wfs3_router.urls),
-    ),  # Django-rest urls
+    ),
     path(
         "admin/",
         admin.site.urls,
@@ -195,6 +153,41 @@ urlpatterns += [
         include("knox.urls"),
     ),
 ]
+
+if settings.ENABLE_2FA:
+    from two_factor.urls import urlpatterns as tf_urls
+    from two_factor.views import ProfileView, SetupCompleteView
+
+    urlpatterns += [
+        path(
+            "account/login/",
+            views.CustomLoginView.as_view(template_name="two_factor/login.html"),
+            name="account_login",
+        ),
+        path(
+            "account/two_factor/",
+            ProfileView.as_view(template_name="two_factor/profile.html"),
+            name="profile",
+        ),
+        path(
+            "account/two_factor/setup/complete/",
+            SetupCompleteView.as_view(template_name="two_factor/setup_complete.html"),
+            name="setup_complete",
+        ),
+        path(
+            "",
+            include(tf_urls),
+        ),
+    ]
+else:
+    urlpatterns += [
+        path(
+            "account/login/",
+            views.CustomLoginView.as_view(template_name="registration/login.html"),
+            name="account_login",
+        ),
+    ]
+
 
 if settings.PREFIX_URL:
     urlpatterns = [path(settings.PREFIX_URL, include(urlpatterns))]
