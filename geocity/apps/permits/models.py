@@ -1768,7 +1768,7 @@ class ArchivedPermitRequest(models.Model):
         self.permit_request.delete()
         ret = super().delete(using, keep_parents)
         # delete the archive file
-        self.archive.delete()
+        self.archive.delete(save=False)
         return ret
 
 
