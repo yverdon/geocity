@@ -1533,6 +1533,9 @@ class PermitRequestAmendProperty(models.Model):
     is_visible_by_author = models.BooleanField(
         _("Visible par l'auteur de la demande"), default=True
     )
+    is_visible_by_validators = models.BooleanField(
+        _("Visible par les validateurs"), default=False
+    )
     can_always_update = models.BooleanField(
         _("Editable même après classement de la demande"), default=False
     )

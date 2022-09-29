@@ -40,6 +40,9 @@ def permit_request_summary(context, permit_request):
     documents = services.get_permit_complementary_documents(
         permit_request, user=context.request.user
     )
+    is_validator = services.has_permission_to_validate_permit_request(
+        context.request.user, permit_request
+    )
 
     PermitRequestGeoTimeFormSet = modelformset_factory(
         models.PermitRequestGeoTime,
@@ -76,6 +79,7 @@ def permit_request_summary(context, permit_request):
         if permit_request.intersected_geometries != ""
         else None,
         "requires_payment": requires_payment,
+        "is_validator": is_validator,
     }
 
 
