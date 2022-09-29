@@ -41,10 +41,22 @@ router.register(r"permits_details", api.PermitRequestDetailsViewSet, "permits_de
 
 # Django-configuration
 urlpatterns = [
-    path("", permits_views.permit_request_select_administrative_entity),
-    path("permit-requests/", include("geocity.apps.permits.urls")),
-    path("reports/", include("geocity.apps.reports.urls")),
-    path("grappelli/", include("grappelli.urls")),  # grappelli URLS
+    path(
+        "",
+        permits_views.permit_request_select_administrative_entity,
+    ),
+    path(
+        "permit-requests/",
+        include("geocity.apps.permits.urls"),
+    ),
+    path(
+        "reports/",
+        include("geocity.apps.reports.urls"),
+    ),
+    path(
+        "grappelli/",
+        include("grappelli.urls"),
+    ),
 ]
 
 if settings.ENABLE_2FA:
@@ -68,7 +80,10 @@ if settings.ENABLE_2FA:
             SetupCompleteView.as_view(template_name="two_factor/setup_complete.html"),
             name="setup_complete",
         ),
-        path("", include(tf_urls)),
+        path(
+            "",
+            include(tf_urls),
+        ),
     ]
 else:
     logger.info("2 factors authentification is disabled")
@@ -82,7 +97,10 @@ else:
 
 urlpatterns += (
     [
-        path("accounts/social/", include("allauth.socialaccount.urls")),
+        path(
+            "accounts/social/",
+            include("allauth.socialaccount.urls"),
+        ),
     ]
     + default_urlpatterns(GeomapfishProvider)
     + default_urlpatterns(DootixProvider)
@@ -134,17 +152,48 @@ urlpatterns += [
         name="activate_account",
     ),
     path(
-        "permitauthorcreate/", views.permit_author_create, name="permit_author_create"
+        "permitauthorcreate/",
+        views.permit_author_create,
+        name="permit_author_create",
     ),
-    path("permitauthoredit/", views.permit_author_edit, name="permit_author_edit"),
-    path("account/", include("django.contrib.auth.urls")),
-    path("rest/", include(router.urls)),  # Django-rest urls
-    path("rest/current_user/", api.CurrentUserAPIView.as_view(), name="current_user"),
-    path("wfs3/", include(wfs3_router.urls)),  # Django-rest urls
-    path("admin/", admin.site.urls),
-    path("oauth/", include("oauth2_provider.urls", namespace="oauth2_provider")),
-    path("captcha/", include("captcha.urls")),
-    path("api-tokens/", include("knox.urls")),
+    path(
+        "permitauthoredit/",
+        views.permit_author_edit,
+        name="permit_author_edit",
+    ),
+    path(
+        "account/",
+        include("django.contrib.auth.urls"),
+    ),
+    path(
+        "rest/",
+        include(router.urls),
+    ),  # Django-rest urls
+    path(
+        "rest/current_user/",
+        api.CurrentUserAPIView.as_view(),
+        name="current_user",
+    ),
+    path(
+        "wfs3/",
+        include(wfs3_router.urls),
+    ),  # Django-rest urls
+    path(
+        "admin/",
+        admin.site.urls,
+    ),
+    path(
+        "oauth/",
+        include("oauth2_provider.urls", namespace="oauth2_provider"),
+    ),
+    path(
+        "captcha/",
+        include("captcha.urls"),
+    ),
+    path(
+        "api-tokens/",
+        include("knox.urls"),
+    ),
 ]
 
 if settings.PREFIX_URL:
@@ -153,4 +202,9 @@ if settings.PREFIX_URL:
 if settings.DEBUG:
     import debug_toolbar
 
-    urlpatterns = [path("__debug__/", include(debug_toolbar.urls))] + urlpatterns
+    urlpatterns = [
+        path(
+            "__debug__/",
+            include(debug_toolbar.urls),
+        ),
+    ] + urlpatterns

@@ -33,9 +33,15 @@ anonymous_permit_request_urlpatterns = [
 ]
 
 existing_permit_request_urlpatterns = [
-    path("", views.PermitRequestDetailView.as_view(), name="permit_request_detail"),
     path(
-        "types/", views.permit_request_select_types, name="permit_request_select_types"
+        "",
+        views.PermitRequestDetailView.as_view(),
+        name="permit_request_detail",
+    ),
+    path(
+        "types/",
+        views.permit_request_select_types,
+        name="permit_request_select_types",
     ),
     path(
         "objects/",
@@ -43,22 +49,50 @@ existing_permit_request_urlpatterns = [
         name="permit_request_select_objects",
     ),
     path(
-        "properties/", views.permit_request_properties, name="permit_request_properties"
+        "properties/",
+        views.permit_request_properties,
+        name="permit_request_properties",
     ),
     path(
-        "appendices/", views.permit_request_appendices, name="permit_request_appendices"
+        "appendices/",
+        views.permit_request_appendices,
+        name="permit_request_appendices",
     ),
-    path("actors/", views.permit_request_actors, name="permit_request_actors"),
-    path("submit/", views.permit_request_submit, name="permit_request_submit"),
+    path(
+        "actors/",
+        views.permit_request_actors,
+        name="permit_request_actors",
+    ),
+    path(
+        "submit/",
+        views.permit_request_submit,
+        name="permit_request_submit",
+    ),
     path(
         "submitconfirmed/",
         views.permit_request_submit_confirmed,
         name="permit_request_submit_confirmed",
     ),
-    path("geotime/", views.permit_request_geo_time, name="permit_request_geo_time"),
-    path("delete/", views.permit_request_delete, name="permit_request_delete"),
-    path("approve/", views.permit_request_approve, name="permit_request_approve"),
-    path("reject/", views.permit_request_reject, name="permit_request_reject"),
+    path(
+        "geotime/",
+        views.permit_request_geo_time,
+        name="permit_request_geo_time",
+    ),
+    path(
+        "delete/",
+        views.permit_request_delete,
+        name="permit_request_delete",
+    ),
+    path(
+        "approve/",
+        views.permit_request_approve,
+        name="permit_request_approve",
+    ),
+    path(
+        "reject/",
+        views.permit_request_reject,
+        name="permit_request_reject",
+    ),
     path(
         "prolongation/",
         views.permit_request_prolongation,
@@ -96,7 +130,11 @@ urlpatterns = [
         views.administrative_entity_file_download,
         name="administrative_entity_file_download",
     ),
-    path("", views.PermitRequestList.as_view(), name="permit_requests_list"),
+    path(
+        "",
+        views.PermitRequestList.as_view(),
+        name="permit_requests_list",
+    ),
     path(
         "", include(permit_request_urlpatterns + anonymous_permit_request_urlpatterns)
     ),
@@ -110,7 +148,11 @@ urlpatterns = [
         geoviews.administrative_entities_geojson,
         name="administrative_entities_geojson",
     ),
-    path("search/", views.permit_requests_search, name="permit_requests_search"),
+    path(
+        "search/",
+        views.permit_requests_search,
+        name="permit_requests_search",
+    ),
     path(
         "archives/",
         views.ArchivedPermitRequestListView.as_view(),
