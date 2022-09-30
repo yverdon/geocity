@@ -1230,7 +1230,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             },
             attrs={"autocomplete": "off"},
         ).start_of("event days"),
-        help_text="Cliquer sur le champ et selectionner la date de début à l'aide de l'outil mis à disposition",
+        help_text="Cliquer sur le champ et sélectionner la date de début à l'aide de l'outil mis à disposition",
     )
     ends_at = forms.DateTimeField(
         label=_("Date de fin"),
