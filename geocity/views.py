@@ -118,9 +118,8 @@ def create_duo_client(username, request):
 
         # Create the duo_universal.Client
         duo_client = duo_universal.Client(client_id, client_secret, host, callback_url)
-        return user, duo_enabled, duo_client
 
-    messages.error(request, _("Une erreur est survenu lors de la connexion a duo."))
+    return user, duo_enabled, duo_client
 
 
 class CustomLoginView(LoginView, SetCurrentSiteMixin):
