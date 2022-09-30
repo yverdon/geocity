@@ -1243,7 +1243,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             },
             attrs={"autocomplete": "off"},
         ).end_of("event days"),
-        help_text="Cliquer sur le champ et selectionner la date de fin à l'aide de l'outil mis à disposition",
+        help_text="Cliquer sur le champ et sélectionner la date de fin à l'aide de l'outil mis à disposition",
     )
 
     class Meta:
