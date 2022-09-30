@@ -235,7 +235,8 @@ class PermitDepartment(models.Model):
             # Only first is needed
             return qs.first()
         else:
-            return None
+            # False instead of none -> TypeError: cannot unpack non-iterable NoneType object
+            return False
 
 
 # https://duo.com/docs/duoweb#overview
