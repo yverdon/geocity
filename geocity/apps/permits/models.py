@@ -137,7 +137,7 @@ Group.add_to_class(
         _("nom court"),
         max_length=32,
         help_text=_(
-            "Nom affiché par defaut dans les différentes étapes du formulaire. Ne s'affichage pas dans l'admin. (max. 32 caractères)"
+            "Nom affiché par défaut dans les différentes étapes du formulaire, ne s'affiche pas dans l'admin (max. 32 caractères)"
         ),
         blank=True,
     ),
