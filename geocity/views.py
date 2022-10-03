@@ -186,7 +186,7 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
                 try:
                     duo_client.health_check()
                 except:
-                    raise Exception("Duo n'est pas disponible pour le moment.")
+                    raise Exception(f"Duo is not available")
 
                 # Generate the actual state
                 state = duo_client.generate_state()
@@ -224,7 +224,8 @@ class DuoCallbackView(View):
 
         # Check if state didn't change
         if state != session_state:
-            raise Exception("Un problème de sécurité est survenu.")
+            # TODO: Log this
+            raise Exception(f"A security issue has occurred")
 
         # Ask to duo if the connection was made correctly
         # Username from session has been tested to prevent "fake session attack", and duo handle this correctly.
@@ -235,7 +236,8 @@ class DuoCallbackView(View):
                 duo_code, user.username
             )
         except:
-            raise Exception("Un problème de connexion ou de sécurité est survenu.")
+            # TODO: Log this
+            raise Exception(f"A connection or security issue has occurred")
 
         # Log the user
         login(request, user, "django.contrib.auth.backends.ModelBackend")
