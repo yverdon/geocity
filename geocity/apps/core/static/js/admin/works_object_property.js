@@ -127,6 +127,6 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleMandatoryValue();
   });
 
-    toggleConditionalFields();
-    toggleMandatoryValue();
-  });
+  toggleConditionalFields();
+  toggleMandatoryValue();
+});

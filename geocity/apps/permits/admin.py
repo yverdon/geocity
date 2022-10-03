@@ -348,6 +348,9 @@ class DepartmentAdminForm(forms.ModelForm):
             "integrator",
         ]
 
+    class Media:
+        js = ("js/admin/permit_department.js",)
+
     # If the group is updated to be integrator, the users in this group should not be in another integrator group
     # If the group is updated to be integrator, the administrative_entity will be None. The integrator will create entities, so they don't exist yet
     def clean(self):
@@ -481,11 +484,11 @@ class GroupAdmin(admin.ModelAdmin):
     list_display = [
         "__str__",
         "get__integrator",
+        "get__mandatory_2fa",
         "get__duo_config",
         "get__is_validator",
         "get__is_default_validator",
         "get__is_backoffice",
-        "get__mandatory_2fa",
     ]
 
     filter_horizontal = ("permissions",)
