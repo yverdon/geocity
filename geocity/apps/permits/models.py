@@ -979,6 +979,16 @@ class PermitRequest(models.Model):
         return self.status == self.STATUS_ARCHIVED
 
     @property
+    def has_geom_intersection_enabled(self):
+        """
+        Check if there is any work_object_types with has_geom_intersection_enabled
+        """
+        has_geom_intersection_enabled = self.works_object_types.filter(
+            Q(has_geom_intersection_enabled=True)
+        ).exists()
+        return has_geom_intersection_enabled
+
+    @property
     def complementary_documents(self):
         return PermitRequestComplementaryDocument.objects.filter(
             permit_request=self
@@ -1005,8 +1015,6 @@ class WorksTypeQuerySet(models.QuerySet):
 
 
 class WorksType(models.Model):
-    name = models.CharField(_("nom"), max_length=255)
-
     META_TYPE_OTHER = 0
     META_TYPE_ROADWORK = 1
     META_TYPE_BUILDINGWORK = 2
@@ -1023,6 +1031,8 @@ class WorksType(models.Model):
         (META_TYPE_EVENT_COMMERCIAL, _("Événement commercial")),
         (META_TYPE_EVENT_POLICE, _("Dispositif de police")),
     )
+
+    name = models.CharField(_("nom"), max_length=255)
     integrator = models.ForeignKey(
         Group,
         null=True,
@@ -1063,7 +1073,6 @@ class WorksObjectType(models.Model):
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
     )
-
     works_type = models.ForeignKey(
         "WorksType",
         on_delete=models.CASCADE,
@@ -1157,6 +1166,9 @@ class WorksObjectType(models.Model):
             "Nom affiché par défaut dans les différentes étapes du formulaire, ne s'affiche pas dans l'admin (max. 32 caractères)"
         ),
         blank=True,
+    )
+    has_geom_intersection_enabled = models.BooleanField(
+        _("Activer l'intersection de géométries"), default=False
     )
 
     # All objects

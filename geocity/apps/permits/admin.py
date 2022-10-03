@@ -691,6 +691,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "requires_payment",
         "requires_validation_document",
         "is_anonymous",
+        "has_geom_intersection_enabled",
         "notify_services",
         "needs_date",
         "permit_duration",
@@ -723,6 +724,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     "requires_payment",
                     "requires_validation_document",
                     "is_anonymous",
+                    "has_geom_intersection_enabled",
                     "integrator",
                 )
             },
