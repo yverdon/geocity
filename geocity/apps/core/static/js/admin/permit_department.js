@@ -15,4 +15,6 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('id_permitdepartment-0-mandatory_2fa').addEventListener('change', function(e) {
     toggleDuoConfigurationField();
   });
+
+  toggleDuoConfigurationField();
 });
