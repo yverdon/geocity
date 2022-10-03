@@ -15,6 +15,13 @@ from geocity.apps.permits.admin import PermitsAdminSite
 # Remove when https://github.com/Bouke/django-two-factor-auth/pull/370 is merged
 class AdminSiteOTPRequiredMixinRedirSetup(AdminSiteOTPRequired, PermitsAdminSite):
     def has_permission(self, request):
+        """
+        Override AdminSiteOTPRequired.has_permission()
+        https://github.com/jazzband/django-two-factor-auth/blob/master/two_factor/admin.py#L19-L26
+        Returns True if the given HttpRequest has permission to view
+        *at least one* page in the admin site.
+        Or return True if user is in an active duo configuration
+        """
         permit_department = (
             models.PermitDepartment.filter_active_duo_configurations_for_user_as_qs(
                 request.user

@@ -182,7 +182,7 @@ class PermitDepartment(models.Model):
         on_delete=models.SET_NULL,
         related_name="duo",
         verbose_name=_(
-            "Configuration duo. Devient obligatoire si assigné avec un 2fa obligatoire"
+            "Si la case 2FA obligatoire est cochée et qu'une configuration DUO est sélectionnée, les utilisateurs utiliseront DUO"
         ),
     )
     integrator_email_domains = models.CharField(
