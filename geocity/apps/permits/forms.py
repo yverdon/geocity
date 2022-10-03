@@ -1448,8 +1448,18 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         return instance
 
 
+class ModelMultipleChoiceFieldWithShortname(forms.ModelMultipleChoiceField):
+    """
+    Override label_from_instance to use shortname of object
+    instead of __str__ method from object
+    """
+
+    def label_from_instance(self, obj):
+        return obj.shortname if obj.shortname else obj
+
+
 class PermitRequestValidationDepartmentSelectionForm(forms.Form):
-    departments = forms.ModelMultipleChoiceField(
+    departments = ModelMultipleChoiceFieldWithShortname(
         queryset=models.PermitDepartment.objects.none(),
         widget=forms.CheckboxSelectMultiple(),
         label=_("Services chargés de la validation"),
@@ -1465,10 +1475,6 @@ class PermitRequestValidationDepartmentSelectionForm(forms.Form):
             administrative_entity=self.permit_request.administrative_entity,
             group__permissions=validate_permission,
         ).distinct()
-        print(permit_request_departments)
-        print(dir(permit_request_departments))
-        print(permit_request_departments.values("group__shortname"))
-        print(permit_request_departments.values_list("group__shortname", flat=True))
         departments = []
         for validation in self.permit_request.validations.all():
             departements = departments.append(validation.department)
@@ -1479,14 +1485,8 @@ class PermitRequestValidationDepartmentSelectionForm(forms.Form):
             else permit_request_departments.filter(is_default_validator=True),
         )
 
-        # Create a qeryset with shortname shortname of group if exists
-        for prd in permit_request_departments:
-            print(prd.group.shortname)
-
         super().__init__(*args, **kwargs)
-        # TODO: Mettre une autre valeur qu'un queryset, ou alors créer mon propre queryset ?
         self.fields["departments"].queryset = permit_request_departments
-        print(self.fields["departments"].queryset)
 
 
 class PermitRequestValidationForm(forms.ModelForm):

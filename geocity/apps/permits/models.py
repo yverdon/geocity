@@ -131,22 +131,17 @@ class StepType(enum.Enum):
 StepType.do_not_call_in_templates = True
 
 
-Group.add_to_class(
-    "shortname",
-    models.CharField(
+class PermitDepartment(models.Model):
+    group = models.OneToOneField(Group, on_delete=models.CASCADE)
+    description = models.CharField(_("description"), max_length=100, default="Service")
+    shortname = models.CharField(
         _("nom court"),
         max_length=32,
         help_text=_(
             "Nom affiché par défaut dans les différentes étapes du formulaire, ne s'affiche pas dans l'admin (max. 32 caractères)"
         ),
         blank=True,
-    ),
-)
-
-
-class PermitDepartment(models.Model):
-    group = models.OneToOneField(Group, on_delete=models.CASCADE)
-    description = models.CharField(_("description"), max_length=100, default="Service")
+    )
     is_validator = models.BooleanField(
         _("validateur"),
         help_text=_(

@@ -335,6 +335,7 @@ class DepartmentAdminForm(forms.ModelForm):
     class Meta:
         model = models.PermitDepartment
         fields = [
+            "shortname",
             "description",
             "administrative_entity",
             "is_validator",
@@ -438,7 +439,6 @@ class GroupAdminForm(forms.ModelForm):
         model = Group
         fields = [
             "name",
-            "shortname",
             "permissions",
         ]
         help_texts = {
@@ -483,7 +483,7 @@ class GroupAdmin(admin.ModelAdmin):
     form = GroupAdminForm
     list_display = [
         "__str__",
-        "shortname",
+        "get__shortname",
         "get__integrator",
         "get__is_validator",
         "get__is_default_validator",
@@ -524,6 +524,12 @@ class GroupAdmin(admin.ModelAdmin):
 
     get__integrator.admin_order_field = "permitdepartment__integrator"
     get__integrator.short_description = _("Groupe des administrateurs")
+
+    def get__shortname(self, obj):
+        return obj.permitdepartment.shortname
+
+    get__shortname.admin_order_field = "permitdepartment__shortname"
+    get__shortname.short_description = _("Nom court")
 
     @admin.display(boolean=True)
     def get__mandatory_2fa(self, obj):
