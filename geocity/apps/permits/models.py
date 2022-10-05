@@ -2,7 +2,8 @@ import collections
 import dataclasses
 import enum
 import os
-import shutil
+import tempfile
+import zipfile
 from datetime import date, datetime, timedelta
 
 from django.conf import settings
@@ -29,7 +30,6 @@ from django.db.models import (
 )
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.template.defaultfilters import slugify
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.functional import cached_property
@@ -947,21 +947,23 @@ class PermitRequest(models.Model):
         ).first():
             raise SuspiciousOperation(_("La demande a déjà été archivée"))
 
-        archive = ArchivedPermitRequest.objects.create(
-            permit_request=self,
-            archivist=archivist,
-        )
+        # make the archive
+        with tempfile.SpooledTemporaryFile() as tmp_file:
+            with zipfile.ZipFile(tmp_file, "w") as zip_file:
+                # include the request data as CSV
+                zip_file.writestr("permit_request.csv", self.to_csv())
+                # include additional documents
+                for document in self.complementary_documents:
+                    zip_file.write(document.path, document.name)
 
-        try:
-            os.mkdir(archive.path)
-
-            for document in self.complementary_documents:
-                shutil.copy2(src=document.path, dst=archive.path)
-
-            with open(os.path.join(archive.path, "permit_request.csv"), "w") as f:
-                f.write(self.to_csv())
-        except OSError as e:
-            raise Exception(_("La demande n'a pas pu être archivée"), e)
+            # Reset file pointer
+            tmp_file.seek(0)
+            archived_request = ArchivedPermitRequest(
+                permit_request=self,
+                archivist=archivist,
+            )
+            archived_request.archive.save("archive.zip", tmp_file)
+            archived_request.save()
 
         self.status = self.STATUS_ARCHIVED
         self.save()
@@ -1640,7 +1642,7 @@ class PermitRequestComplementaryDocument(models.Model):
 
     @property
     def path(self):
-        return os.path.join(settings.MEDIA_ROOT, self.document.name)
+        return self.document.path
 
     def delete(self, using=None, keep_parents=False):
         # delete the uploaded file
@@ -1755,24 +1757,19 @@ class ArchivedPermitRequest(models.Model):
         on_delete=models.CASCADE,
         primary_key=True,
     )
-
-    @property
-    def dirname(self):
-        archived_date = self.archived_date.strftime("%d.%m.%Y.%H.%M.%S")
-        return f"{self.permit_request.id:02d}_{archived_date}-{slugify(self.permit_request.get_works_type_names_list())}"
+    archive = fields.ArchiveDocumentFileField(_("Archive"))
 
     @property
     def path(self):
-        return os.path.join(settings.ARCHIVE_ROOT, self.dirname)
+        return self.archive.path
 
     def delete(self, using=None, keep_parents=False):
-        # delete the archive
-        shutil.rmtree(self.path)
-
-        # delete the permit request linked to the archive
+        # TODO: is this really wanted ?!!
         self.permit_request.delete()
-
-        return super().delete(using, keep_parents)
+        ret = super().delete(using, keep_parents)
+        # delete the archive file
+        self.archive.delete(save=False)
+        return ret
 
 
 class TemplateCustomization(models.Model):
