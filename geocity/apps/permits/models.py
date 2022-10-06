@@ -940,6 +940,16 @@ class PermitRequest(models.Model):
             )
         )
 
+    def get_works_object_names_list(self):
+
+        return ", ".join(
+            list(
+                self.works_object_types.all()
+                .values_list("works_object__name", flat=True)
+                .distinct()
+            )
+        )
+
     def archive(self, archivist):
         # make sure the request wasn't already archived
         if ArchivedPermitRequest.objects.filter(

@@ -1122,6 +1122,7 @@ def submit_permit_request(permit_request, request):
             "template": "permit_request_complemented.txt",
             "permit_request": permit_request,
             "absolute_uri_func": request.build_absolute_uri,
+            "objects_list": get_works_object_names_list(permit_request),
         }
         send_email_notification(data)
 
@@ -1161,6 +1162,7 @@ def submit_permit_request(permit_request, request):
             "template": "permit_request_submitted.txt",
             "permit_request": permit_request,
             "absolute_uri_func": request.build_absolute_uri,
+            "objects_list": get_works_object_names_list(permit_request),
         }
         send_email_notification(data)
 
@@ -1170,6 +1172,7 @@ def submit_permit_request(permit_request, request):
             )
             data["users_to_notify"] = [permit_request.author.user.email]
             data["template"] = "permit_request_acknowledgment.txt"
+            data["objects_list"] = get_works_object_names_list(permit_request)
             send_email_notification(data)
 
     permit_request.status = models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
@@ -1211,6 +1214,7 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
         "template": "permit_request_validation_request.txt",
         "permit_request": permit_request,
         "absolute_uri_func": absolute_uri_func,
+        "objects_list": get_works_object_names_list(permit_request),
     }
     send_email_notification(data)
 
@@ -1244,6 +1248,7 @@ def send_validation_reminder(permit_request, absolute_uri_func):
         "template": "permit_request_validation_reminder.txt",
         "permit_request": permit_request,
         "absolute_uri_func": absolute_uri_func,
+        "objects_list": get_works_object_names_list(permit_request),
     }
     send_email_notification(data)
     return pending_validations
@@ -1292,6 +1297,7 @@ def send_email_notification(data):
             "administrative_entity": data["permit_request"].administrative_entity,
             "name": data["permit_request"].author.user.get_full_name(),
             "permit_request": data["permit_request"],
+            "objects_list": data["objects_list"],
         },
     )
 
@@ -1905,6 +1911,10 @@ def download_file(path):
 
 def get_works_type_names_list(permit_request):
     return permit_request.get_works_type_names_list()
+
+
+def get_works_object_names_list(permit_request):
+    return permit_request.get_works_object_names_list()
 
 
 def download_archives(archive_ids, user):
