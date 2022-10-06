@@ -199,14 +199,19 @@
 
       <div class="row sub-row">
         <div class="col">
-          <h2>{% trans "Statut de Prolongation" %}</h2>
-          <dl>
-          <dt>{{ permit_request.get_prolongation_status_display }}</dt>
-          {% if permit_request.prolongation_comment %}
-            <h6>{% trans "Commentaire" %}:</h6> {{ permit_request.prolongation_comment|linebreaksbr }}
-          {% endif %}
-          </dl>
-          <br>
+          <h2>{% trans "Prolongation" %}</h2>
+          <div class="container">
+            <dl>
+              {% if permit_request.get_prolongation_status_display %}
+                <dt>{% trans "État" %}</dt>
+                <dd> {{ permit_request.get_prolongation_status_display }} </dd>
+              {% endif %}
+              {% if permit_request.prolongation_comment %}
+                <dt>{% trans "Commentaire" %}</dt>
+                <dd> {{ permit_request.prolongation_comment|linebreaksbr }} </dd>
+              {% endif %}
+            </dl>
+          </div>
         </div>
       </div>
 
