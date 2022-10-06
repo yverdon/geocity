@@ -1049,7 +1049,7 @@ class Command(BaseCommand):
         <p>Pilote (secrétariat): pilot / demo</p>
         <p>Validateur: validator / demo</p>
         <p>Validateur 2: validator-2 / demo</p>
-        <p>Intégrateur 2: integrator / demo</p>
+        <p>Intégrateur: integrator / demo</p>
         <p>Administrateur: admin / demo</p>
         <p>Consultez les emails générés par l'application:</p>
         => <a href="https://mailhog.geocity.ch" target="_blank">Boîte mail de demo<a/>
