@@ -563,7 +563,7 @@ class Command(BaseCommand):
                 ],
             ),
             (
-                "Suvbentions (ex. de demande sans géométrie ni période temporelle)",
+                "Subventions (ex. de demande sans géométrie ni période temporelle)",
                 [
                     (
                         "Prime éco-mobilité",
@@ -643,7 +643,7 @@ class Command(BaseCommand):
 
         # No geom nor time
         for wot in models.WorksObjectType.objects.filter(
-            works_type__name="Suvbentions (ex. de demande sans géométrie ni période temporelle)"
+            works_type__name="Subventions (ex. de demande sans géométrie ni période temporelle)"
         ):
             wot.has_geometry_point = False
             wot.has_geometry_line = False
@@ -1046,11 +1046,11 @@ class Command(BaseCommand):
         config.APPLICATION_SUBTITLE = "Simplifiez votre administration"
         config.APPLICATION_DESCRIPTION = """<p><b>Essayez l'application à l'aide des différents comptes et rôles (utilisateur / mot de passe):</b></p>
         <p>Utilisateur standard: user / demo</p>
-        <p>Pilote (secréatariat): pilot / demo</p>
+        <p>Pilote (secrétariat): pilot / demo</p>
         <p>Validateur: validator / demo</p>
         <p>Validateur 2: validator-2 / demo</p>
         <p>Intégrateur 2: integrator / demo</p>
-        <p>Utilisateur: admin / demo</p>
+        <p>Administrateur: admin / demo</p>
         <p>Consultez les emails générés par l'application:</p>
         => <a href="https://mailhog.geocity.ch" target="_blank">Boîte mail de demo<a/>
         """
