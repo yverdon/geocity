@@ -179,13 +179,13 @@
                   {% endif %}
                 </dd>
                 {% if validation.comment_before %}
-                  <dt>{% trans "Commentaire (avant)" %}:</dt> <dd> {{ validation.comment_before }} </dd>
+                  <dt>{% trans "Commentaire (avant)" %}:</dt> <dd> {{ validation.comment_before|linebreaksbr }} </dd>
                 {% endif %}
                 {% if validation.comment_during %}
-                  <dt>{% trans "Commentaire (pendant)" %}:</dt> <dd> {{ validation.comment_during }} </dd>
+                  <dt>{% trans "Commentaire (pendant)" %}:</dt> <dd> {{ validation.comment_during|linebreaksbr }} </dd>
                 {% endif %}
                 {% if validation.comment_after %}
-                  <dt>{% trans "Commentaire (après)" %}:</dt> <dd> {{ validation.comment_after }} </dd>
+                  <dt>{% trans "Commentaire (après)" %}:</dt> <dd> {{ validation.comment_after|linebreaksbr }} </dd>
                 {% endif %}
               </dl>
             </div>
@@ -203,7 +203,7 @@
           <dl>
           <dt>{{ permit_request.get_prolongation_status_display }}</dt>
           {% if permit_request.prolongation_comment %}
-            <h6>{% trans "Commentaire" %}:</h6> {{ permit_request.prolongation_comment }}
+            <h6>{% trans "Commentaire" %}:</h6> {{ permit_request.prolongation_comment|linebreaksbr }}
           {% endif %}
           </dl>
           <br>
@@ -225,7 +225,7 @@
         <h2>{% trans "Informations complémentaires" %}</h2>
         <dl>
             <dt>{% trans "Information sur la décision" %}</dt>
-            <dd>{{ permit_request.additional_decision_information }}</dd>
+            <dd>{{ permit_request.additional_decision_information|linebreaksbr }}</dd>
         </dl>
     </div></div>
     {% endif %}
