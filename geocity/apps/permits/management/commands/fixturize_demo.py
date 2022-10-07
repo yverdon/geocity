@@ -563,7 +563,7 @@ class Command(BaseCommand):
                 ],
             ),
             (
-                "Suvbentions (ex. de demande sans géométrie ni période temporelle)",
+                "Subventions (ex. de demande sans géométrie ni période temporelle)",
                 [
                     (
                         "Prime éco-mobilité",
@@ -643,7 +643,7 @@ class Command(BaseCommand):
 
         # No geom nor time
         for wot in models.WorksObjectType.objects.filter(
-            works_type__name="Suvbentions (ex. de demande sans géométrie ni période temporelle)"
+            works_type__name="Subventions (ex. de demande sans géométrie ni période temporelle)"
         ):
             wot.has_geometry_point = False
             wot.has_geometry_line = False
@@ -1045,14 +1045,13 @@ class Command(BaseCommand):
         config.APPLICATION_TITLE = "Démo Geocity"
         config.APPLICATION_SUBTITLE = "Simplifiez votre administration"
         config.APPLICATION_DESCRIPTION = """<p><b>Essayez l'application à l'aide des différents comptes et rôles (utilisateur / mot de passe):</b></p>
-        <ul>
-		<li>Utilisateur standard: user / demo</li>
-        <li>Pilote (secréatariat): pilot / demo</li>
-        <li>Validateur: validator / demo</li>
-        <li>Validateur 2: validator-2 / demo</li>
-        <li>Intégrateur 2: integrator / demo</li>
-        <li>Utilisateur: admin / demo</li>
-        <li>Consultez les emails générés par l'application:</li>
+        <p>Utilisateur standard: user / demo</p>
+        <p>Pilote (secrétariat): pilot / demo</p>
+        <p>Validateur: validator / demo</p>
+        <p>Validateur 2: validator-2 / demo</p>
+        <p>Intégrateur: integrator / demo</p>
+        <p>Administrateur: admin / demo</p>
+        <p>Consultez les emails générés par l'application:</p>
         => <a href="https://mailhog.geocity.ch" target="_blank">Boîte mail de demo<a/>
 		</ul>
         """
