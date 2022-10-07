@@ -916,7 +916,7 @@ def get_sites_field(user):
     if not user.is_superuser:
         qs = qs.filter(
             Q(
-                siteprofile__integrator__in=user.groups.filter(
+                site_profile__integrator__in=user.groups.filter(
                     permitdepartment__is_integrator_admin=True
                 )
             )
@@ -1139,6 +1139,7 @@ class PermitRequestAmendPropertyForm(forms.ModelForm):
             "name",
             "is_mandatory",
             "is_visible_by_author",
+            "is_visible_by_validators",
             "can_always_update",
             "works_object_types",
             "integrator",
@@ -1150,6 +1151,7 @@ class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "sortable_str",
         "is_mandatory",
         "is_visible_by_author",
+        "is_visible_by_validators",
         "can_always_update",
     ]
     search_fields = [

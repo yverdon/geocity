@@ -25,7 +25,6 @@ services:
             DJANGO_DOCKER_PORT: ${DJANGO_DOCKER_PORT}
             STATIC_URL: ${STATIC_URL}
             PREFIX_URL: ${PREFIX_URL}
-            PRIVATE_MEDIA_ROOT: ${PRIVATE_MEDIA_ROOT}
             PGDATABASE: ${PGDATABASE}
             PGUSER: ${PGUSER}
             PGPASSWORD: ${PGPASSWORD}

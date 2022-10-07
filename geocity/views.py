@@ -94,7 +94,12 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
         if successful is None:
             pass
         elif successful == "True":
-            messages.success(request, _("Votre compte a été activé avec succès!"))
+            messages.success(
+                request,
+                _(
+                    "Votre compte a été activé avec succès! Vous pouvez maintenant vous connecter à l'aide de vos identifiants."
+                ),
+            )
         else:
             messages.error(request, _("Une erreur est survenu lors de l'activation"))
         return super().get(request, *args, **kwargs)

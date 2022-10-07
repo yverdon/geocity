@@ -1,12 +1,11 @@
 import enum
 import itertools
 import os
-import pathlib
-import shutil
+import tempfile
 import urllib
+import zipfile
 from collections import defaultdict
 from datetime import datetime
-from zipfile import ZipFile
 
 import filetype
 import PIL
@@ -1922,28 +1921,16 @@ def download_archives(archive_ids, user):
 
         archives.append(archive)
 
-    parent_name = f"Archive_{datetime.today().strftime('%d.%m.%Y.%H.%M.%S')}"
-    parent_path = os.path.join(settings.ARCHIVE_ROOT, parent_name)
+    filename = f"Archive_{datetime.today().strftime('%d.%m.%Y.%H.%M.%S')}.zip"
 
-    os.mkdir(parent_path)
-    for archive in archives:
-        shutil.copytree(
-            src=archive.path, dst=os.path.join(parent_path, archive.dirname)
-        )
-    zippath = compress_directory(parent_path)
-    response = FileResponse(open(zippath, "rb"))
-    shutil.rmtree(parent_path)
-    os.remove(zippath)
-    return response
-
-
-def compress_directory(dir_path):
-    directory = pathlib.Path(dir_path)
-    archive_name = "{}.zip".format(dir_path)
-    with ZipFile(archive_name, "w") as archive:
-        for filepath in directory.rglob("*"):
-            archive.write(filepath, arcname=filepath.relative_to(directory))
-    return archive_name
+    if len(archives) == 1:
+        return FileResponse(archives[0].archive, filename=filename)
+    else:
+        with tempfile.NamedTemporaryFile() as tmp_file:
+            with zipfile.ZipFile(tmp_file, "w") as zip_file:
+                for archive in archives:
+                    zip_file.write(archive.archive.path, archive.archive.name)
+            return FileResponse(open(tmp_file.name, "rb"), filename=filename)
 
 
 def can_download_archive(user, archivist):

@@ -1,10 +1,12 @@
 import datetime
+import os
 import posixpath
 
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.db import models
 from django.db.models.fields.files import FieldFile
+from django.template.defaultfilters import slugify
 from django.urls import reverse
 
 
@@ -120,3 +122,40 @@ class ComplementaryDocumentFileField(models.FileField):
     def __init__(self, verbose_name=None, name=None, **kwargs):
         kwargs["storage"] = PrivateFileSystemStorage()
         super().__init__(verbose_name, name, **kwargs)
+
+
+class ArchiveFileSystemStorage(FileSystemStorage):
+    """
+    Storage for files that MUST NOT get directly exposed by the web server.
+    """
+
+    def __init__(self):
+        super().__init__(location=settings.ARCHIVE_ROOT, base_url=None)
+
+
+class ArchiveDocumentFieldFile(FieldFile):
+    @property
+    def url(self):
+        return reverse(
+            "permits:complementary_documents_download",
+            kwargs={"path": self.name},
+        )
+
+
+class ArchiveDocumentFileField(models.FileField):
+    """
+    FileField storing information in a private media root.
+    """
+
+    attr_class = ArchiveDocumentFieldFile
+
+    def __init__(self, verbose_name=None, name=None, **kwargs):
+        kwargs["storage"] = ArchiveFileSystemStorage()
+        kwargs["upload_to"] = self._upload_to
+        super().__init__(verbose_name, name, **kwargs)
+
+    def _upload_to(self, instance, filename):
+        _, ext = os.path.splitext(filename)
+        t = instance.archived_date or datetime.datetime.now()
+        archived_date = t.strftime("%d.%m.%Y.%H.%M.%S")
+        return f"{instance.permit_request.id:02d}_{archived_date}_{slugify(instance.permit_request.get_works_type_names_list())}{ext}"
