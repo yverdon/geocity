@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("permits", "0082_change_text"),
+        ("permits", "0084_archivedpermitrequest_archive"),
     ]
 
     operations = [
