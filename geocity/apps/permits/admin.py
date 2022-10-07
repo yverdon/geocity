@@ -878,6 +878,7 @@ class WorksObjectPropertyAdmin(
         "input_type",
         "placeholder",
         "help_text",
+        "get_works_object_types",
     ]
     list_filter = [
         "name",
@@ -893,6 +894,14 @@ class WorksObjectPropertyAdmin(
 
     sortable_str.admin_order_field = "name"
     sortable_str.short_description = _("1.5 Configuration du champ")
+
+    def get_works_object_types(self, obj):
+        return ", ".join(
+            sorted([wot.__str__() for wot in obj.works_object_types.all()])
+        )
+
+    get_works_object_types.admin_order_field = "works_object_types"
+    get_works_object_types.short_description = "Objets"
 
     # Pass the request from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs):
@@ -1153,6 +1162,7 @@ class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "is_visible_by_author",
         "is_visible_by_validators",
         "can_always_update",
+        "get_works_object_types",
     ]
     search_fields = [
         "name",
@@ -1166,6 +1176,14 @@ class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "2.2 Configuration du champ de traitement des demandes"
     )
     sortable_str.admin_order_field = "name"
+
+    def get_works_object_types(self, obj):
+        return ", ".join(
+            sorted([wot.__str__() for wot in obj.works_object_types.all()])
+        )
+
+    get_works_object_types.admin_order_field = "works_object_types"
+    get_works_object_types.short_description = "Objets"
 
     # Pass the request from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs):

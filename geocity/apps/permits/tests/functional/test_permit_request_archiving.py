@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 
 from django.urls import reverse
@@ -78,10 +79,15 @@ class TestPermitRequestArchiving(GeocityTestCase):
             ),
         )
 
+        # Do not compare seconds as they can have a small delta and sometimes make the tests fail
+        expected_filename_regex = (
+            f"Archive_{datetime.today().strftime('%d.%m.%Y.%H.%M')}.[0-9][0-9]"
+        )
+
         self.assertEqual(file_response.get("Content-Type"), "application/zip")
-        self.assertEqual(
+        self.assertRegex(
             file_response.get("Content-Disposition"),
-            f'inline; filename="Archive_{datetime.today().strftime("%d.%m.%Y.%H.%M.%S")}.zip"',
+            re.compile(rf'inline; filename="{expected_filename_regex}.zip"'),
         )
 
     def test_bulk_download(self):
@@ -97,10 +103,15 @@ class TestPermitRequestArchiving(GeocityTestCase):
             data={"to_download": self.permit_request.pk},
         )
 
+        # Do not compare seconds as they can have a small delta and sometimes make the tests fail
+        expected_filename_regex = (
+            f"Archive_{datetime.today().strftime('%d.%m.%Y.%H.%M')}.[0-9][0-9]"
+        )
+
         self.assertEqual(file_response.get("Content-Type"), "application/zip")
-        self.assertEqual(
+        self.assertRegex(
             file_response.get("Content-Disposition"),
-            f'inline; filename="Archive_{datetime.today().strftime("%d.%m.%Y.%H.%M.%S")}.zip"',
+            re.compile(rf'inline; filename="{expected_filename_regex}.zip"'),
         )
 
     def test_users_not_in_archivist_group_cannot_single_download(self):
