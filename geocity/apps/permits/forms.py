@@ -1171,7 +1171,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
             receivers=[permit_request.author.user.email],
             subject="{} ({})".format(
                 _("Votre demande a changé de statut"),
-                services.get_works_type_names_list(permit_request),
+                permit_request.get_works_type_names_list(),
             ),
             context={
                 "status": dict(permit_request.STATUS_CHOICES)[permit_request.status],
@@ -1188,7 +1188,7 @@ class PermitRequestAdditionalInformationForm(forms.ModelForm):
                 ),
                 "administrative_entity": permit_request.administrative_entity,
                 "name": permit_request.author.user.get_full_name(),
-                "objects_list": services.get_works_object_names_list(permit_request),
+                "objects_list": permit_request.get_works_object_names_list(),
             },
         )
 

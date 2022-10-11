@@ -7,11 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from django_cron import CronJobBase, Schedule
 
 from .models import PermitRequest, PermitRequestInquiry
-from .services import (
-    get_works_object_names_list,
-    get_works_type_names_list,
-    send_email_notification,
-)
+from .services import send_email_notification
 
 logger = logging.getLogger(__name__)
 
@@ -49,13 +45,13 @@ class PermitRequestExpirationReminder(CronJobBase):
                     data = {
                         "subject": "{} ({})".format(
                             _("Votre autorisation arrive bientôt à échéance"),
-                            get_works_type_names_list(permit_request),
+                            permit_request.get_works_type_names_list(),
                         ),
                         "users_to_notify": [permit_request.author.user.email],
                         "template": "permit_request_prolongation_reminder.txt",
                         "permit_request": permit_request,
                         "absolute_uri_func": PermitRequest.get_absolute_url,
-                        "objects_list": get_works_object_names_list(permit_request),
+                        "objects_list": permit_request.get_works_object_names_list(),
                     }
                     send_email_notification(data)
 
@@ -105,7 +101,7 @@ class PermitRequestInquiryClosing(CronJobBase):
             data = {
                 "subject": "{} ({})".format(
                     _("Fin de l'enquête publique"),
-                    get_works_type_names_list(inquiry.permit_request),
+                    inquiry.permit_request.get_works_type_names_list(),
                 ),
                 "users_to_notify": [
                     inquiry.permit_request.author.user.email,
@@ -114,7 +110,7 @@ class PermitRequestInquiryClosing(CronJobBase):
                 "permit_request": inquiry.permit_request,
                 "absolute_uri_func": inquiry.permit_request.get_absolute_url,
                 "template": "permit_request_inquiry_closing.txt",
-                "objects_list": get_works_object_names_list(inquiry.permit_request),
+                "objects_list": inquiry.permit_request.get_works_object_names_list(),
             }
             send_email_notification(data)
 
