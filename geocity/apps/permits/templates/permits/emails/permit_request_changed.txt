@@ -1,4 +1,7 @@
-{% load i18n %}{% autoescape off %}{% blocktrans %}Bonjour {{ name }}{% endblocktrans %},
+{% load i18n %}{% autoescape off %}{{ objects_list }}
+
+
+{% blocktrans %}Bonjour {{ name }}{% endblocktrans %},
 
 {% trans "Nous vous informons que votre demande a changé de statut." %}
 
@@ -15,5 +18,6 @@
 {% else %}
 {{ administrative_entity.name }}
 {% endif %}
+
 {% trans "Ceci est un e-mail automatique, veuillez ne pas y répondre." %}
 {% endautoescape %}

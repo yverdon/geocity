@@ -1,4 +1,7 @@
-{% load i18n %}{% autoescape off %}{% trans "Bonjour," %}
+{% load i18n %}{% autoescape off %}{{ objects_list }}
+
+
+{% trans "Bonjour," %}
 
 {% trans "Une demande est toujours en attente de validation de votre part." %}
 
@@ -10,5 +13,6 @@
 {% else %}
 {{ administrative_entity.name }}
 {% endif %}
+
 {% trans "Ceci est un e-mail automatique, veuillez ne pas y répondre." %}
 {% endautoescape %}
