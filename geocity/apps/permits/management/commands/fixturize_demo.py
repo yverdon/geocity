@@ -1053,6 +1053,7 @@ class Command(BaseCommand):
         <p>Administrateur: admin / demo</p>
         <p>Consultez les emails générés par l'application:</p>
         => <a href="https://mailhog.geocity.ch" target="_blank">Boîte mail de demo<a/>
+		</ul>
         """
 
     def create_document_types(self, wot):

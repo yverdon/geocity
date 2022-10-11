@@ -306,14 +306,14 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         for works_object_type, prop in self.get_properties():
             field_name = self.get_field_name(works_object_type, prop)
             if prop.is_value_property():
-                fields_per_work_object[str(works_object_type)].append(
+                fields_per_work_object[str(works_object_type.shortname)].append(
                     Field(field_name, title=prop.help_text)
                 )
                 self.fields[field_name] = self.field_for_property(prop)
                 if prop.is_mandatory:
                     self.fields[field_name].required = True
             else:
-                fields_per_work_object[str(works_object_type)].append(
+                fields_per_work_object[str(works_object_type.shortname)].append(
                     self.non_field_value_for_property(prop)
                 )
 
@@ -1218,7 +1218,7 @@ class GeometryWidget(geoforms.OSMWidget):
 class PermitRequestGeoTimeForm(forms.ModelForm):
     required_css_class = "required"
     starts_at = forms.DateTimeField(
-        label=_("Date planifiée de début"),
+        label=_("Date de début"),
         input_formats=[settings.DATETIME_INPUT_FORMAT],
         widget=DateTimePickerInput(
             options={
@@ -1228,10 +1228,10 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             },
             attrs={"autocomplete": "off"},
         ).start_of("event days"),
-        help_text="Cliquer sur le champ et selectionner la date planifiée de début à l'aide de l'outil mis à disposition",
+        help_text="Cliquer sur le champ et sélectionner la date de début à l'aide de l'outil mis à disposition",
     )
     ends_at = forms.DateTimeField(
-        label=_("Date planifiée de fin"),
+        label=_("Date de fin"),
         input_formats=[settings.DATETIME_INPUT_FORMAT],
         widget=DateTimePickerInput(
             options={
@@ -1241,7 +1241,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
             },
             attrs={"autocomplete": "off"},
         ).end_of("event days"),
-        help_text="Cliquer sur le champ et selectionner la date planifiée de fin à l'aide de l'outil mis à disposition",
+        help_text="Cliquer sur le champ et sélectionner la date de fin à l'aide de l'outil mis à disposition",
     )
 
     class Meta:
@@ -1416,7 +1416,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                 raise ValidationError(
                     {
                         "starts_at": _(
-                            "La date planifiée de début doit être postérieure à %(date)s"
+                            "La date de début doit être postérieure à %(date)s"
                         )
                         % {"date": min_starts_at.strftime("%d.%m.%Y %H:%M")}
                     }
@@ -1430,7 +1430,7 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
                     raise ValidationError(
                         {
                             "ends_at": _(
-                                "La date planifiée de fin doit être au maximum: %(date)s"
+                                "La date de fin doit être au maximum: %(date)s"
                             )
                             % {"date": max_ends_at.strftime("%d.%m.%Y %H:%M")}
                         }
@@ -1446,8 +1446,18 @@ class PermitRequestGeoTimeForm(forms.ModelForm):
         return instance
 
 
+class ModelMultipleChoiceFieldWithShortname(forms.ModelMultipleChoiceField):
+    """
+    Override label_from_instance to use shortname of object
+    instead of __str__ method from object
+    """
+
+    def label_from_instance(self, obj):
+        return obj.shortname if obj.shortname else obj
+
+
 class PermitRequestValidationDepartmentSelectionForm(forms.Form):
-    departments = forms.ModelMultipleChoiceField(
+    departments = ModelMultipleChoiceFieldWithShortname(
         queryset=models.PermitDepartment.objects.none(),
         widget=forms.CheckboxSelectMultiple(),
         label=_("Services chargés de la validation"),
@@ -1463,7 +1473,6 @@ class PermitRequestValidationDepartmentSelectionForm(forms.Form):
             administrative_entity=self.permit_request.administrative_entity,
             group__permissions=validate_permission,
         ).distinct()
-
         departments = []
         for validation in self.permit_request.validations.all():
             departements = departments.append(validation.department)
@@ -1898,7 +1907,7 @@ class AnonymousRequestForm(forms.Form):
 
 class PermitRequestInquiryForm(forms.ModelForm):
     start_date = forms.DateField(
-        label=_("Date planifiée de début"),
+        label=_("Date de début"),
         input_formats=[settings.DATE_INPUT_FORMAT],
         widget=DatePickerInput(
             options={
@@ -1909,7 +1918,7 @@ class PermitRequestInquiryForm(forms.ModelForm):
         ),
     )
     end_date = forms.DateField(
-        label=_("Date planifiée de fin"),
+        label=_("Date de fin"),
         input_formats=[settings.DATE_INPUT_FORMAT],
         widget=DatePickerInput(
             options={

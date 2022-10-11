@@ -6,8 +6,13 @@
       this.emptyFormNode = node.querySelector("[data-geo-time-role='emptyForm']");
       this.addButtonNode = node.querySelector("[data-geo-time-role='addForm']");
       this.totalFormsInputNode = node.querySelector("[data-geo-time-role='managementForm'] input[name$='-TOTAL_FORMS']");
+      this.formNumber = node.querySelector("[data-geo-time-role='formNumber']");
       this.permitDurationMax = this.formsContainerNode.dataset.permitDurationMax
       this.fixEndsAt()
+
+      if (this.formNumber.textContent == 1){
+        this.formNumber.style.display = 'none'
+      }
 
       if (!this.emptyFormNode) {
         throw "No empty form node. Make sure there’s a node with `data-geo-time-role=\"emptyForm\"`.";
