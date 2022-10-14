@@ -305,15 +305,20 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         # Create a field for each property
         for works_object_type, prop in self.get_properties():
             field_name = self.get_field_name(works_object_type, prop)
+            wot_name = (
+                str(works_object_type.shortname)
+                if works_object_type.shortname
+                else str(works_object_type)
+            )
             if prop.is_value_property():
-                fields_per_work_object[str(works_object_type.shortname)].append(
+                fields_per_work_object[wot_name].append(
                     Field(field_name, title=prop.help_text)
                 )
                 self.fields[field_name] = self.field_for_property(prop)
                 if prop.is_mandatory:
                     self.fields[field_name].required = True
             else:
-                fields_per_work_object[str(works_object_type.shortname)].append(
+                fields_per_work_object[wot_name].append(
                     self.non_field_value_for_property(prop)
                 )
 
