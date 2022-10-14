@@ -306,7 +306,7 @@ class WorksObjectsPropertiesForm(PartialValidationMixin, forms.Form):
         for works_object_type, prop in self.get_properties():
             field_name = self.get_field_name(works_object_type, prop)
             wot_name = (
-                str(works_object_type.shortname)
+                works_object_type.shortname
                 if works_object_type.shortname
                 else str(works_object_type)
             )
