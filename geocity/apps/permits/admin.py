@@ -1,6 +1,7 @@
 import django.db.models
 from adminsortable2.admin import SortableAdminMixin
 from django import forms
+from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.admin import AdminSite, site
 from django.contrib.admin.views.decorators import staff_member_required
@@ -19,7 +20,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
 
-from geocity import permissions_groups, settings
+from geocity.apps.accounts import permissions_groups
 
 from . import forms as permit_forms
 from . import models

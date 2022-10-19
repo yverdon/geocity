@@ -2007,6 +2007,7 @@ class PermitRequestInquiryForm(forms.ModelForm):
         return inquiry
 
 
+# FIXME remove (moved to admin)
 class ComplementaryDocumentTypeAdminForm(forms.ModelForm):
     model = models.ComplementaryDocumentType
 

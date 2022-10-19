@@ -1,4 +1,4 @@
-from . import settings
+from django.conf import settings
 
 # define permissions required by integrator role
 INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [

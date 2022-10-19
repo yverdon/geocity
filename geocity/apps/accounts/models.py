@@ -25,6 +25,12 @@ from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 
+# public types: for public/restricted features
+PUBLIC_TYPE_CHOICES = (
+    (True, _("Visibilité grand public")),
+    (False, _("Visible uniquement par les utilisateur autorisés")),
+)
+
 
 class SiteProfile(models.Model):
     site = models.OneToOneField(

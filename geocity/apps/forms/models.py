@@ -182,6 +182,7 @@ class Form(models.Model):
     class Meta:
         verbose_name = _("1.4 Configuration du formulaire")
         verbose_name_plural = _("1.4 Configuration des formulaires")
+        ordering = ("order",)
 
     def __str__(self):
         return self.name

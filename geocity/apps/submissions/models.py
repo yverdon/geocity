@@ -33,11 +33,6 @@ from geocity.apps.forms.models import (
 
 from . import fields
 
-# public types: for public/restricted features
-PUBLIC_TYPE_CHOICES = (
-    (True, _("Visibilité grand public")),
-    (False, _("Visible uniquement par les utilisateur autorisés")),
-)
 
 # Contact types
 CONTACT_TYPE_OTHER = 0
@@ -570,7 +565,7 @@ class ContactType(models.Model):
         unique_together = [["type", "form_category"]]
 
     def __str__(self):
-        return self.get_type_display() + " (" + str(self.works_type) + ")"
+        return self.get_type_display() + " (" + str(self.form_category) + ")"
 
 
 class SubmissionContact(models.Model):
