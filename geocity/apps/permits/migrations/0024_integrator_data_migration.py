@@ -2,7 +2,10 @@
 
 from django.db import migrations
 
-from geocity import permissions_groups
+# TODO It’s not a good idea to import this in a migration (changing the app structure
+# might break the migration) but I don’t have time to refactor this right now. We could
+# just copy over values from permissions_groups here
+from geocity.apps.accounts import permissions_groups
 
 
 def set_default_integrator_on_existing_objects(apps, schema_editor):

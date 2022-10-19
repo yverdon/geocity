@@ -127,10 +127,13 @@ LOCATIONS_SEARCH_API_DETAILS = os.getenv("LOCATIONS_SEARCH_API_DETAILS")
 INSTALLED_APPS = [
     # our apps
     "geocity.apps.core",
+    "geocity.apps.accounts",
     "geocity.apps.accounts.geomapfish",
     "geocity.apps.accounts.dootix",
     "geocity.apps.permits",
     "geocity.apps.reports",
+    "geocity.apps.forms",
+    "geocity.apps.submissions",
     # dependencies
     "grappelli",
     "polymorphic",

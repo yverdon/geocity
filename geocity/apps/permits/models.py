@@ -39,6 +39,23 @@ from django_tables2.export import TableExport
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 
+from geocity.apps.forms.models import (
+    INPUT_TYPE_ADDRESS,
+    INPUT_TYPE_CHECKBOX,
+    INPUT_TYPE_DATE,
+    INPUT_TYPE_FILE,
+    INPUT_TYPE_FILE_DOWNLOAD,
+    INPUT_TYPE_LIST_MULTIPLE,
+    INPUT_TYPE_LIST_SINGLE,
+    INPUT_TYPE_NUMBER,
+    INPUT_TYPE_REGEX,
+    INPUT_TYPE_TEXT,
+    INPUT_TYPE_TITLE,
+    AdministrativeEntity,
+    Field,
+    Form,
+)
+
 from . import fields
 
 # public types: for public/restricted features
@@ -68,19 +85,6 @@ ACTOR_TYPE_CHOICES = (
     (ACTOR_TYPE_REQUESTOR, _("Requérant (si différent de l'auteur de la demande)")),
     (ACTOR_TYPE_SECURITY, _("Sécurité")),
 )
-
-# Input types
-INPUT_TYPE_ADDRESS = "address"
-INPUT_TYPE_CHECKBOX = "checkbox"
-INPUT_TYPE_DATE = "date"
-INPUT_TYPE_FILE = "file"
-INPUT_TYPE_FILE_DOWNLOAD = "file_download"
-INPUT_TYPE_LIST_MULTIPLE = "list_multiple"
-INPUT_TYPE_LIST_SINGLE = "list_single"
-INPUT_TYPE_NUMBER = "number"
-INPUT_TYPE_REGEX = "regex"
-INPUT_TYPE_TEXT = "text"
-INPUT_TYPE_TITLE = "title"
 
 # Actions
 ACTION_AMEND = "amend"
@@ -1851,7 +1855,7 @@ class SiteProfile(models.Model):
     site = models.OneToOneField(
         Site,
         on_delete=models.CASCADE,
-        related_name="site_profile",
+        related_name="site_profile_old",
     )
     integrator = models.ForeignKey(
         Group,

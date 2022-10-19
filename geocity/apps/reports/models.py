@@ -77,6 +77,10 @@ class Report(models.Model):
     document_types = models.ManyToManyField(
         "permits.ComplementaryDocumentType", blank=True, related_name="+"
     )
+    # FIXME rename this to "document_types" and remove the old field once the data is migrated
+    submissions_document_types = models.ManyToManyField(
+        "submissions.ComplementaryDocumentType", blank=True, related_name="+"
+    )
     integrator = models.ForeignKey(
         Group,
         null=True,
