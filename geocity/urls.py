@@ -16,20 +16,53 @@ from . import views
 
 logger = logging.getLogger(__name__)
 
+urlpatterns = []
 
 # See TWO_FACTOR_PATCH_ADMIN
 if settings.ENABLE_2FA:
+    from two_factor.urls import urlpatterns as tf_urls
+    from two_factor.views import ProfileView, SetupCompleteView
+
     from .admin_site import OTPRequiredPermitsAdminSite
 
     logger.info("2 factors authentification is enabled")
     admin.site = OTPRequiredPermitsAdminSite()
+
+    urlpatterns += [
+        path(
+            "account/login/",
+            views.CustomLoginView.as_view(template_name="two_factor/login.html"),
+            name="account_login",
+        ),
+        path(
+            "account/two_factor/",
+            ProfileView.as_view(template_name="two_factor/profile.html"),
+            name="profile",
+        ),
+        path(
+            "account/two_factor/setup/complete/",
+            SetupCompleteView.as_view(template_name="two_factor/setup_complete.html"),
+            name="setup_complete",
+        ),
+        path(
+            "",
+            include(tf_urls),
+        ),
+    ]
 else:
     logger.info("2 factors authentification is disabled")
     admin.site = PermitsAdminSite()
+    urlpatterns += [
+        path(
+            "account/login/",
+            views.CustomLoginView.as_view(template_name="registration/login.html"),
+            name="account_login",
+        ),
+    ]
 
 
 # Django-configuration
-urlpatterns = [
+urlpatterns += [
     path(
         "",
         permits_views.permit_request_select_administrative_entity,
@@ -138,39 +171,6 @@ urlpatterns = [
     ),
 ]
 
-if settings.ENABLE_2FA:
-    from two_factor.urls import urlpatterns as tf_urls
-    from two_factor.views import ProfileView, SetupCompleteView
-
-    urlpatterns += [
-        path(
-            "account/login/",
-            views.CustomLoginView.as_view(template_name="two_factor/login.html"),
-            name="account_login",
-        ),
-        path(
-            "account/two_factor/",
-            ProfileView.as_view(template_name="two_factor/profile.html"),
-            name="profile",
-        ),
-        path(
-            "account/two_factor/setup/complete/",
-            SetupCompleteView.as_view(template_name="two_factor/setup_complete.html"),
-            name="setup_complete",
-        ),
-        path(
-            "",
-            include(tf_urls),
-        ),
-    ]
-else:
-    urlpatterns += [
-        path(
-            "account/login/",
-            views.CustomLoginView.as_view(template_name="registration/login.html"),
-            name="account_login",
-        ),
-    ]
 
 if settings.DEBUG:
     import debug_toolbar
