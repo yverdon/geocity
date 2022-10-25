@@ -621,7 +621,9 @@ CKEDITOR_CONFIGS = {
 
 def show_toolbar(request):
     """Shows the debug toolbar when `?DEBUG=true` is your URL and DEBUG is enabled."""
-    return DEBUG and request.GET.get("DEBUG", "false").lower() == "true"
+    debug_requested = request.GET.get("DEBUG", "false").lower() == "true"
+    is_debug_page = "__debug__" in request.path
+    return DEBUG and (debug_requested or is_debug_page)
 
 
 DEBUG_TOOLBAR_CONFIG = {
