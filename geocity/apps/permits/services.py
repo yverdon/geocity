@@ -1115,12 +1115,13 @@ def submit_permit_request(permit_request, request):
         data = {
             "subject": "{} ({})".format(
                 _("La demande de compléments a été traitée"),
-                get_works_type_names_list(permit_request),
+                permit_request.get_works_type_names_list(),
             ),
             "users_to_notify": _get_secretary_email(permit_request),
             "template": "permit_request_complemented.txt",
             "permit_request": permit_request,
             "absolute_uri_func": request.build_absolute_uri,
+            "objects_list": permit_request.get_works_object_names_list(),
         }
         send_email_notification(data)
 
@@ -1154,21 +1155,23 @@ def submit_permit_request(permit_request, request):
 
         data = {
             "subject": "{} ({})".format(
-                _("Nouvelle demande"), get_works_type_names_list(permit_request)
+                _("Nouvelle demande"), permit_request.get_works_type_names_list()
             ),
             "users_to_notify": users_to_notify,
             "template": "permit_request_submitted.txt",
             "permit_request": permit_request,
             "absolute_uri_func": request.build_absolute_uri,
+            "objects_list": permit_request.get_works_object_names_list(),
         }
         send_email_notification(data)
 
         if permit_request.author.notify_per_email:
             data["subject"] = "{} ({})".format(
-                _("Votre demande"), get_works_type_names_list(permit_request)
+                _("Votre demande"), permit_request.get_works_type_names_list()
             )
             data["users_to_notify"] = [permit_request.author.user.email]
             data["template"] = "permit_request_acknowledgment.txt"
+            data["objects_list"] = permit_request.get_works_object_names_list()
             send_email_notification(data)
 
     permit_request.status = models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
@@ -1204,12 +1207,13 @@ def request_permit_request_validation(permit_request, departments, absolute_uri_
     data = {
         "subject": "{} ({})".format(
             _("Nouvelle demande en attente de validation"),
-            get_works_type_names_list(permit_request),
+            permit_request.get_works_type_names_list(),
         ),
         "users_to_notify": users_to_notify,
         "template": "permit_request_validation_request.txt",
         "permit_request": permit_request,
         "absolute_uri_func": absolute_uri_func,
+        "objects_list": permit_request.get_works_object_names_list(),
     }
     send_email_notification(data)
 
@@ -1237,12 +1241,13 @@ def send_validation_reminder(permit_request, absolute_uri_func):
     data = {
         "subject": "{} ({})".format(
             _("Demande toujours en attente de validation"),
-            get_works_type_names_list(permit_request),
+            permit_request.get_works_type_names_list(),
         ),
         "users_to_notify": users_to_notify,
         "template": "permit_request_validation_reminder.txt",
         "permit_request": permit_request,
         "absolute_uri_func": absolute_uri_func,
+        "objects_list": permit_request.get_works_object_names_list(),
     }
     send_email_notification(data)
     return pending_validations
@@ -1291,6 +1296,7 @@ def send_email_notification(data):
             "administrative_entity": data["permit_request"].administrative_entity,
             "name": data["permit_request"].author.user.get_full_name(),
             "permit_request": data["permit_request"],
+            "objects_list": data["objects_list"],
         },
     )
 
@@ -1900,10 +1906,6 @@ def download_file(path):
     # so we need to set the `Content-Type` to `application/octet-stream` so
     # firefox will download it. For the time being, this "dirty" hack works
     return FileResponse(storage.open(path), content_type="application/octet-stream")
-
-
-def get_works_type_names_list(permit_request):
-    return permit_request.get_works_type_names_list()
 
 
 def download_archives(archive_ids, user):

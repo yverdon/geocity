@@ -134,6 +134,14 @@ StepType.do_not_call_in_templates = True
 class PermitDepartment(models.Model):
     group = models.OneToOneField(Group, on_delete=models.CASCADE)
     description = models.CharField(_("description"), max_length=100, default="Service")
+    shortname = models.CharField(
+        _("nom court"),
+        max_length=32,
+        help_text=_(
+            "Nom affiché par défaut dans les différentes étapes du formulaire, ne s'affiche pas dans l'admin (max. 32 caractères)"
+        ),
+        blank=True,
+    )
     is_validator = models.BooleanField(
         _("validateur"),
         help_text=_(
@@ -940,6 +948,16 @@ class PermitRequest(models.Model):
             )
         )
 
+    def get_works_object_names_list(self):
+
+        return ", ".join(
+            list(
+                self.works_object_types.all()
+                .values_list("works_object__name", flat=True)
+                .distinct()
+            )
+        )
+
     def archive(self, archivist):
         # make sure the request wasn't already archived
         if ArchivedPermitRequest.objects.filter(
@@ -973,6 +991,16 @@ class PermitRequest(models.Model):
         return self.status == self.STATUS_ARCHIVED
 
     @property
+    def has_geom_intersection_enabled(self):
+        """
+        Check if there is any work_object_types with has_geom_intersection_enabled
+        """
+        has_geom_intersection_enabled = self.works_object_types.filter(
+            Q(has_geom_intersection_enabled=True)
+        ).exists()
+        return has_geom_intersection_enabled
+
+    @property
     def complementary_documents(self):
         return PermitRequestComplementaryDocument.objects.filter(
             permit_request=self
@@ -999,8 +1027,6 @@ class WorksTypeQuerySet(models.QuerySet):
 
 
 class WorksType(models.Model):
-    name = models.CharField(_("nom"), max_length=255)
-
     META_TYPE_OTHER = 0
     META_TYPE_ROADWORK = 1
     META_TYPE_BUILDINGWORK = 2
@@ -1017,6 +1043,8 @@ class WorksType(models.Model):
         (META_TYPE_EVENT_COMMERCIAL, _("Événement commercial")),
         (META_TYPE_EVENT_POLICE, _("Dispositif de police")),
     )
+
+    name = models.CharField(_("nom"), max_length=255)
     integrator = models.ForeignKey(
         Group,
         null=True,
@@ -1057,7 +1085,6 @@ class WorksObjectType(models.Model):
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
     )
-
     works_type = models.ForeignKey(
         "WorksType",
         on_delete=models.CASCADE,
@@ -1143,6 +1170,17 @@ class WorksObjectType(models.Model):
     )
     permanent_publication_enabled = models.BooleanField(
         _("Autoriser la mise en consultation sur une durée indéfinie"), default=False
+    )
+    shortname = models.CharField(
+        _("nom court"),
+        max_length=32,
+        help_text=_(
+            "Nom affiché par défaut dans les différentes étapes du formulaire, ne s'affiche pas dans l'admin (max. 32 caractères)"
+        ),
+        blank=True,
+    )
+    has_geom_intersection_enabled = models.BooleanField(
+        _("Activer l'intersection de géométries"), default=False
     )
 
     # All objects
@@ -1459,10 +1497,8 @@ class PermitRequestGeoTime(models.Model):
     permit_request = models.ForeignKey(
         "PermitRequest", on_delete=models.CASCADE, related_name="geo_time"
     )
-    starts_at = models.DateTimeField(
-        _("Date planifiée de début"), blank=True, null=True
-    )
-    ends_at = models.DateTimeField(_("Date planifiée de fin"), blank=True, null=True)
+    starts_at = models.DateTimeField(_("Date de début"), blank=True, null=True)
+    ends_at = models.DateTimeField(_("Date de fin"), blank=True, null=True)
     comment = models.CharField(_("Commentaire"), max_length=1024, blank=True)
     external_link = models.URLField(_("Lien externe"), blank=True)
     comes_from_automatic_geocoding = models.BooleanField(

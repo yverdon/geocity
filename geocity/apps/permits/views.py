@@ -568,12 +568,13 @@ class PermitRequestDetailView(View):
             data = {
                 "subject": "{} ({})".format(
                     _("Votre annonce a été prise en compte et classée"),
-                    services.get_works_type_names_list(permit_request),
+                    permit_request.get_works_type_names_list(),
                 ),
                 "users_to_notify": [permit_request.author.user.email],
                 "template": "permit_request_received.txt",
                 "permit_request": permit_request,
                 "absolute_uri_func": self.request.build_absolute_uri,
+                "objects_list": permit_request.get_works_object_names_list(),
             }
             services.send_email_notification(data)
 
@@ -586,12 +587,13 @@ class PermitRequestDetailView(View):
                         _(
                             "Une annonce a été prise en compte et classée par le secrétariat"
                         ),
-                        services.get_works_type_names_list(permit_request),
+                        permit_request.get_works_type_names_list(),
                     ),
                     "users_to_notify": set(mailing_list),
                     "template": "permit_request_received_for_services.txt",
                     "permit_request": permit_request,
                     "absolute_uri_func": self.request.build_absolute_uri,
+                    "objects_list": permit_request.get_works_object_names_list(),
                 }
                 services.send_email_notification(data)
 
@@ -667,7 +669,7 @@ class PermitRequestDetailView(View):
                             _(
                                 "Les services chargés de la validation d'une demande ont donné leur préavis"
                             ),
-                            services.get_works_type_names_list(self.permit_request),
+                            self.permit_request.get_works_type_names_list(),
                         ),
                         "users_to_notify": services._get_secretary_email(
                             self.permit_request
@@ -675,6 +677,7 @@ class PermitRequestDetailView(View):
                         "template": "permit_request_validated.txt",
                         "permit_request": self.permit_request,
                         "absolute_uri_func": self.request.build_absolute_uri,
+                        "objects_list": self.permit_request.get_works_object_names_list(),
                     }
                     services.send_email_notification(data)
             else:
@@ -718,18 +721,21 @@ class PermitRequestDetailView(View):
             messages.success(self.request, success_message)
 
             subject = (
-                _("Votre demande #%s a bien été prolongée.") % self.permit_request.pk
+                _("La prolongation de votre demande a été acceptée")
                 if form.instance.prolongation_status
                 == self.permit_request.PROLONGATION_STATUS_APPROVED
-                else _("La prolongation de votre demande #%s a été refusée.")
-                % self.permit_request.pk
+                else _("La prolongation de votre demande a été refusée")
             )
             data = {
-                "subject": subject,
+                "subject": "{} ({})".format(
+                    subject,
+                    form.instance.get_works_type_names_list(),
+                ),
                 "users_to_notify": [form.instance.author.user.email],
                 "template": "permit_request_prolongation.txt",
                 "permit_request": form.instance,
                 "absolute_uri_func": self.request.build_absolute_uri,
+                "objects_list": form.instance.get_works_object_names_list(),
             }
             services.send_email_notification(data)
 
@@ -1466,18 +1472,16 @@ def permit_request_prolongation(request, permit_request_id):
             # Send the email to the services
             messages.success(request, _("Votre demande de prolongation a été envoyée"))
 
-            subject = (
-                _(
-                    "Une demande de prolongation vient d'être soumise pour le permis #%s."
-                )
-                % permit_request_id
-            )
             data = {
-                "subject": subject,
+                "subject": "{} ({})".format(
+                    _("Une demande de prolongation vient d'être soumise"),
+                    permit_request.get_works_type_names_list(),
+                ),
                 "users_to_notify": services._get_secretary_email(permit_request),
                 "template": "permit_request_prolongation_for_services.txt",
                 "permit_request": form.instance,
                 "absolute_uri_func": request.build_absolute_uri,
+                "objects_list": permit_request.get_works_object_names_list(),
             }
             services.send_email_notification(data)
 
@@ -1897,11 +1901,15 @@ def permit_request_submit_confirmed(request, permit_request_id):
             ]
         if mailing_list:
             data = {
-                "subject": _("Votre service à été mentionné dans une demande"),
+                "subject": "{} ({})".format(
+                    _("Votre service à été mentionné dans une demande"),
+                    permit_request.get_works_type_names_list(),
+                ),
                 "users_to_notify": set(mailing_list),
                 "template": "permit_request_submitted_with_mention.txt",
                 "permit_request": permit_request,
                 "absolute_uri_func": request.build_absolute_uri,
+                "objects_list": permit_request.get_works_object_names_list(),
             }
             services.send_email_notification(data)
 
@@ -2019,12 +2027,13 @@ def permit_request_classify(request, permit_request_id, approve):
             data = {
                 "subject": "{} ({})".format(
                     _("Votre demande a été traitée et classée"),
-                    services.get_works_type_names_list(permit_request),
+                    permit_request.get_works_type_names_list(),
                 ),
                 "users_to_notify": [permit_request.author.user.email],
                 "template": "permit_request_classified.txt",
                 "permit_request": permit_request,
                 "absolute_uri_func": request.build_absolute_uri,
+                "objects_list": permit_request.get_works_object_names_list(),
             }
             services.send_email_notification(data)
 
@@ -2035,12 +2044,13 @@ def permit_request_classify(request, permit_request_id, approve):
                 data = {
                     "subject": "{} ({})".format(
                         _("Une demande a été traitée et classée par le secrétariat"),
-                        services.get_works_type_names_list(permit_request),
+                        permit_request.get_works_type_names_list(),
                     ),
                     "users_to_notify": set(mailing_list),
                     "template": "permit_request_classified_for_services.txt",
                     "permit_request": permit_request,
                     "absolute_uri_func": request.build_absolute_uri,
+                    "objects_list": permit_request.get_works_object_names_list(),
                 }
                 services.send_email_notification(data)
 

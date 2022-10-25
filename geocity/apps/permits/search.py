@@ -74,7 +74,7 @@ def match_type_label(match_type):
         MatchType.PROPERTY: _("Propriété"),
         MatchType.CREATED_AT: _("Date de création"),
         MatchType.ACTOR: _("Contact"),
-        MatchType.TIME: _("Date planifiée"),
+        MatchType.TIME: _("Date"),
     }.get(match_type)
 
 

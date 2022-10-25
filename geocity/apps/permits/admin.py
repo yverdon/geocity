@@ -335,6 +335,7 @@ class DepartmentAdminForm(forms.ModelForm):
     class Meta:
         model = models.PermitDepartment
         fields = [
+            "shortname",
             "description",
             "administrative_entity",
             "is_validator",
@@ -436,7 +437,10 @@ class PermitDepartmentInline(admin.StackedInline):
 class GroupAdminForm(forms.ModelForm):
     class Meta:
         model = Group
-        fields = "__all__"
+        fields = [
+            "name",
+            "permissions",
+        ]
         help_texts = {
             "permissions": _(
                 "Pour un rôle intégrateur, ajoutez toutes les permissions disponibles"
@@ -479,6 +483,7 @@ class GroupAdmin(admin.ModelAdmin):
     form = GroupAdminForm
     list_display = [
         "__str__",
+        "get__shortname",
         "get__integrator",
         "get__is_validator",
         "get__is_default_validator",
@@ -519,6 +524,12 @@ class GroupAdmin(admin.ModelAdmin):
 
     get__integrator.admin_order_field = "permitdepartment__integrator"
     get__integrator.short_description = _("Groupe des administrateurs")
+
+    def get__shortname(self, obj):
+        return obj.permitdepartment.shortname
+
+    get__shortname.admin_order_field = "permitdepartment__shortname"
+    get__shortname.short_description = _("Nom court")
 
     @admin.display(boolean=True)
     def get__mandatory_2fa(self, obj):
@@ -673,12 +684,14 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = WorksObjectTypeAdminForm
     list_display = [
         "sortable_str",
+        "shortname",
         works_object_type_administrative_entities,
         "can_always_update",
         "is_public",
         "requires_payment",
         "requires_validation_document",
         "is_anonymous",
+        "has_geom_intersection_enabled",
         "notify_services",
         "needs_date",
         "permit_duration",
@@ -702,6 +715,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             None,
             {
                 "fields": (
+                    "shortname",
                     "works_type",
                     "works_object",
                     "administrative_entities",
@@ -710,6 +724,7 @@ class WorksObjectTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     "requires_payment",
                     "requires_validation_document",
                     "is_anonymous",
+                    "has_geom_intersection_enabled",
                     "integrator",
                 )
             },
@@ -807,7 +822,11 @@ class WorksObjectTypeWithAdministrativeEntitiesField(forms.ModelMultipleChoiceFi
         entities = ", ".join(
             entity.name for entity in obj.administrative_entities.all()
         )
-        return f"{obj.works_object} ({obj.works_type}) - {entities}"
+        return (
+            f"[{obj.shortname}] - {obj.works_object} ({obj.works_type}) - {entities}"
+            if obj.shortname
+            else f"{obj.works_object} ({obj.works_type}) - {entities}"
+        )
 
 
 class WorksObjectPropertyForm(forms.ModelForm):
@@ -859,6 +878,7 @@ class WorksObjectPropertyAdmin(
         "input_type",
         "placeholder",
         "help_text",
+        "get_works_object_types",
     ]
     list_filter = [
         "name",
@@ -874,6 +894,14 @@ class WorksObjectPropertyAdmin(
 
     sortable_str.admin_order_field = "name"
     sortable_str.short_description = _("1.5 Configuration du champ")
+
+    def get_works_object_types(self, obj):
+        return ", ".join(
+            sorted([wot.__str__() for wot in obj.works_object_types.all()])
+        )
+
+    get_works_object_types.admin_order_field = "works_object_types"
+    get_works_object_types.short_description = "Objets"
 
     # Pass the request from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs):
@@ -1134,6 +1162,7 @@ class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "is_visible_by_author",
         "is_visible_by_validators",
         "can_always_update",
+        "get_works_object_types",
     ]
     search_fields = [
         "name",
@@ -1147,6 +1176,14 @@ class PermitRequestAmendPropertyAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "2.2 Configuration du champ de traitement des demandes"
     )
     sortable_str.admin_order_field = "name"
+
+    def get_works_object_types(self, obj):
+        return ", ".join(
+            sorted([wot.__str__() for wot in obj.works_object_types.all()])
+        )
+
+    get_works_object_types.admin_order_field = "works_object_types"
+    get_works_object_types.short_description = "Objets"
 
     # Pass the request from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs):

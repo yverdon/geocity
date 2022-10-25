@@ -573,9 +573,15 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
                 status=models.PermitRequest.STATUS_DRAFT,
             )
         ).permit_request
-
+        works_type = factories.WorksTypeFactory(name="Foo type")
+        works_object = factories.WorksObjectFactory()
+        wot = factories.WorksObjectTypeFactory(
+            works_type=works_type,
+            works_object=works_object,
+        )
         work_object_type_choice = factories.WorksObjectTypeChoiceFactory(
-            permit_request=permit_request
+            permit_request=permit_request,
+            works_object_type=wot,
         )
 
         prop = factories.WorksObjectPropertyFactory(
@@ -602,7 +608,8 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
 
         self.assertEqual(
-            mail.outbox[0].subject, "Votre service à été mentionné dans une demande"
+            mail.outbox[0].subject,
+            "Votre service à été mentionné dans une demande (Foo type)",
         )
         self.assertIn(
             "Une nouvelle demande mentionnant votre service vient d'être soumise.",
@@ -1800,7 +1807,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         icon_prolongation_processing = parser.findAll("i", title=regex)
         icon_prolongation_approved = parser.findAll("i", title="Demande renouvelée")
         expected_subject_regex = re.compile(
-            r"^Votre demande #[0-9]* a bien été prolongée."
+            r"^La prolongation de votre demande a été acceptée \(.*\)$"
         )
 
         self.assertEqual(response.status_code, 200)
@@ -1859,7 +1866,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         icon_prolongation_processing = parser.findAll("i", title=regex)
         icon_prolongation_rejected = parser.findAll("i", title="Prolongation refusée")
         expected_subject_regex = re.compile(
-            r"^La prolongation de votre demande #[0-9]* a été refusée."
+            r"^La prolongation de votre demande a été refusée \(.*\)$"
         )
 
         self.assertEqual(response.status_code, 200)
@@ -3355,6 +3362,13 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             administrative_entity=self.administrative_entity,
             author=user.permitauthor,
         )
+        works_type = factories.WorksTypeFactory(name="Foo type")
+        works_object = factories.WorksObjectFactory()
+        wot = factories.WorksObjectTypeFactory(
+            works_type=works_type,
+            works_object=works_object,
+        )
+        permit_request.works_object_types.set([wot])
         factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
         response = self.client.post(
             reverse(
@@ -3379,7 +3393,7 @@ class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
         self.assertEqual(
             mail.outbox[0].subject,
-            f"Votre demande {permit_request.works_objects_str()} a changé de statut",
+            f"Votre demande a changé de statut (Foo type)",
         )
         self.assertIn(
             "Nous vous informons que votre demande a changé de statut.",

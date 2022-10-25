@@ -563,7 +563,7 @@ class Command(BaseCommand):
                 ],
             ),
             (
-                "Suvbentions (ex. de demande sans géométrie ni période temporelle)",
+                "Subventions (ex. de demande sans géométrie ni période temporelle)",
                 [
                     (
                         "Prime éco-mobilité",
@@ -643,7 +643,7 @@ class Command(BaseCommand):
 
         # No geom nor time
         for wot in models.WorksObjectType.objects.filter(
-            works_type__name="Suvbentions (ex. de demande sans géométrie ni période temporelle)"
+            works_type__name="Subventions (ex. de demande sans géométrie ni période temporelle)"
         ):
             wot.has_geometry_point = False
             wot.has_geometry_line = False
@@ -1044,15 +1044,16 @@ class Command(BaseCommand):
     def setup_homepage(self):
         config.APPLICATION_TITLE = "Démo Geocity"
         config.APPLICATION_SUBTITLE = "Simplifiez votre administration"
-        config.APPLICATION_DESCRIPTION = """<p><b>Essayez l'application à l'aide des différents comptes et rôles (utilisateur / mot de passe):</b></p>
-        <p>Utilisateur standard: user / demo</p>
-        <p>Pilote (secréatariat): pilot / demo</p>
-        <p>Validateur: validator / demo</p>
-        <p>Validateur 2: validator-2 / demo</p>
-        <p>Intégrateur 2: integrator / demo</p>
-        <p>Utilisateur: admin / demo</p>
-        <p>Consultez les emails générés par l'application:</p>
-        => <a href="https://mailhog.geocity.ch" target="_blank">Boîte mail de demo<a/>
+        config.APPLICATION_DESCRIPTION = """<p>Essayez l'application à l'aide des différents comptes et rôles disponibles (utilisateur / mot de passe):</p>
+        <ul>
+        <li><strong>Utilisateur standard</strong>: user / demo</li>
+        <li><strong>Pilote</strong> (secrétariat): pilot / demo</li>
+        <li><strong>Validateur</strong>: validator / demo</li>
+        <li><strong>Validateur 2</strong>: validator-2 / demo</li>
+        <li><strong>Intégrateur</strong>: integrator / demo</li>
+        <li><strong>Administrateur</strong>: admin / demo</li>
+		</ul>
+        <p>Consultez les emails générés par l'application sur le <a href="https://mailhog.geocity.ch" target="_blank">webmail de démonstration</a>.</p>
         """
 
     def create_document_types(self, wot):

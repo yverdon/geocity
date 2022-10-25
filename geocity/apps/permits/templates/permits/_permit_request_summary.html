@@ -13,7 +13,7 @@
             {% for field in properties %}
               {% if field.label %}
                 <dt> {{ field.label }} </dt>
-                <dd> {{ field.value|human_field_value }} </dd>
+                <dd> {{ field.value|human_field_value|linebreaksbr }} </dd>
               {% else %}
                 <dt style="white-space: nowrap;">{{ field.repr|safe }}</dt>
                 <dd></dd>
@@ -41,7 +41,7 @@
               {% if object_property.property.is_visible_by_author or object_property.property.is_visible_by_validators and is_validator %}
                 <dl class="properties-list">
                   <dt class="amend-property">{{ object_property.property }}</dt>
-                  <dd>{{ object_property.value }}</dd>
+                  <dd>{{ object_property.value|linebreaksbr }}</dd>
                 </dl>
               {% endif %}
             {% endfor %}
