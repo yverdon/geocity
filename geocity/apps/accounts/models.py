@@ -1,5 +1,6 @@
 from django.conf import settings
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group
+from django.contrib.auth.models import User
 from django.contrib.gis.db import models as geomodels
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
@@ -103,6 +104,14 @@ class PermitDepartment(models.Model):
         Group, on_delete=models.CASCADE, related_name="permit_department"
     )
     description = models.CharField(_("description"), max_length=100, default="Service")
+    shortname = models.CharField(
+        _("nom court"),
+        max_length=32,
+        help_text=_(
+            "Nom affiché par défaut dans les différentes étapes du formulaire, ne s'affiche pas dans l'admin (max. 32 caractères)"
+        ),
+        blank=True,
+    )
     is_validator = models.BooleanField(
         _("validateur"),
         help_text=_(
@@ -269,6 +278,8 @@ class AdministrativeEntity(models.Model):
 
 class UserProfileManager(models.Manager):
     def create_temporary_user(self, entity):
+        # TODO should this be moved to User instead of UserProfile?
+        # TODO why isn’t the `entity` argument used?
         # Multiple temp users might exist at the same time
         last_temp_user = self.get_queryset().filter(is_temporary=True).last()
         if last_temp_user:

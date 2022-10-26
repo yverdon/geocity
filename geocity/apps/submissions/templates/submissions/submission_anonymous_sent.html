@@ -1,0 +1,17 @@
+{% extends "base_generic.html" %}
+{% load bootstrap4 %}
+{% load i18n %}
+{% load permits_extras %}
+
+{% block content %}
+  <h3>{% trans "Formulaire" %}</h3>
+  <hr>
+  <div class="card mb-3">
+    <div class="card-body">
+      <h4 class="card-title">{{ config.ANONYMOUS_REQUEST_SENT_TITLE }}</h4>
+      <p>
+        {{ config.ANONYMOUS_REQUEST_SENT_BODY }}
+      </p>
+    </div>
+  </div>
+{% endblock %}

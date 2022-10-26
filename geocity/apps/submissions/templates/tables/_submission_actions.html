@@ -1,0 +1,64 @@
+{% load i18n %}
+{% load submissions_extras %}
+
+<ul class="list-inline">
+  {% if record.author == request.user and not record.can_be_edited_by_author or can_view %}
+  <li>
+    <a title="{% trans "Voir" %}" href="{% url 'submissions:submission_detail' record.id %}">
+      <i class="fa fa-eye fa-lg"></i>
+    </a>
+  </li>
+  {% endif %}
+
+  {% can_always_be_updated as can_update %}
+  {% if record.author == request.user and record.can_be_edited_by_author or request.user.is_superuser or perms.permits.edit_permit_request and record.can_be_edited_by_pilot or can_update %}
+    <li>
+      <a title="{% trans "Modifier" %}" href="{% url 'submissions:submission_fields' record.id %}">
+        <i class="fa fa-edit fa-lg"></i>
+      </a>
+    </li>
+  {% endif %}
+
+  {% if record.author == request.user or request.user.is_superuser %}
+    {% if record.can_be_deleted_by_author %}
+      <li>
+        <a title="{% trans "Supprimer la demande" %}" href="{% url 'submissions:submission_delete' record.id %}">
+          <i class="fa fa-trash fa-lg"></i>
+        </a>
+      </li>
+    {% endif %}
+  {% endif %}
+
+  {% if record.author == request.user or request.user.is_superuser %}
+    {% if record.can_be_submitted_by_author %}
+      <li>
+        <a title="{% trans "Envoyer" %}" href="{% url 'submissions:submission_submit' record.id %}">
+          <i class="fa fa-envelope fa-lg"></i>
+        </a>
+      </li>
+    {% endif %}
+  {% endif %}
+  {% if record.can_be_prolonged %}
+    {% if record.can_prolongation_be_requested %}
+      {% if record.author == request.user %}
+        <li>
+          <a title="{% trans 'Demander une prolongation' %}" href="{% url 'submissions:submission_prolongation' record.id %}">
+            <i class="fa fa-clock-o fa-lg"></i>
+          </a>
+        </li>
+      {% endif %}
+    {% else %}
+      {# This icons might as well be shown to other users #}
+      {% if record.prolongation_status == record.PROLONGATION_STATUS_PENDING %}
+        <li>
+          <i class="fa fa-clock-o fa-lg status0" title="{% trans 'Prolongation en attente' %} ({{ record.prolongation_date }})"></i>
+        </li>
+      {% elif record.prolongation_status == record.PROLONGATION_STATUS_REJECTED %}
+        <li>
+          <i class="fa fa-clock-o fa-lg status6" title="{% trans 'Prolongation refusée' %}"></i>
+        </li>
+      {% endif %}
+    {% endif %}
+  {% endif %}
+
+</ul>

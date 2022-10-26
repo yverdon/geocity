@@ -112,12 +112,10 @@ def report_content(request, permit_request_id, work_object_type_id, report_id):
 # in WorksObjectTypeChoice, which already joins both, so they are consistent.
 @login_required
 @permanent_user_required
-def report_pdf(request, permit_request_id, work_object_type_id, report_id):
+def report_pdf(request, submission_id, form_id, report_id):
 
     # Ensure user is allowed to generate pdf
-    user_is_allowed_to_generate_report(
-        request, permit_request_id, work_object_type_id, report_id
-    )
+    user_is_allowed_to_generate_report(request, submission_id, form_id, report_id)
 
     authtoken, token = AuthToken.objects.create(
         request.user, expiry=timedelta(minutes=5)
@@ -126,8 +124,8 @@ def report_pdf(request, permit_request_id, work_object_type_id, report_id):
     url = reverse(
         "reports:permit_request_report_content",
         kwargs={
-            "permit_request_id": permit_request_id,
-            "work_object_type_id": work_object_type_id,
+            "submission_id": submission_id,
+            "form_id": form_id,
             "report_id": report_id,
         },
     )

@@ -182,9 +182,9 @@
       return element;
     }
 
-    _createResultElement(permitRequest, match) {
+    _createResultElement(submission, match) {
       const statusElement = document.createElement("i");
-      statusElement.setAttribute("class", `mr-3 fa fa-circle status${permitRequest.status}`);
+      statusElement.setAttribute("class", `mr-3 fa fa-circle status${submission.status}`);
 
       const matchFieldValueElement = document.createElement("span");
       matchFieldValueElement.setAttribute("class", "font-weight-bold");
@@ -200,14 +200,14 @@
 
       const resultLinkElement = document.createElement("a");
       resultLinkElement.setAttribute("class", "d-block media-body");
-      resultLinkElement.setAttribute("href", permitRequest.url);
+      resultLinkElement.setAttribute("href", submission.url);
       resultLinkElement.appendChild(matchFieldElement);
       if (match.type != 'created_at') {
-        resultLinkElement.appendChild(document.createTextNode(`Demande du ${permitRequest.createdAt}`));
+        resultLinkElement.appendChild(document.createTextNode(`Demande du ${submission.createdAt}`));
         resultLinkElement.appendChild(document.createElement("br"));
       }
       if (match.type != 'author') {
-        resultLinkElement.appendChild(document.createTextNode(`Auteur‧e: ${permitRequest.author}`));
+        resultLinkElement.appendChild(document.createTextNode(`Auteur‧e: ${submission.author}`));
       }
 
       const resultElement = document.createElement("div");
@@ -251,7 +251,7 @@
         const results = this.results.forEach((result, i) => {
           const listElement = document.createElement("li");
           const groupElement = this._createResultGroupElement(result.match.type, result.match.typeLabel);
-          const resultElement = this._createResultElement(result.permitRequest, result.match);
+          const resultElement = this._createResultElement(result.submission, result.match);
 
           listElement.appendChild(groupElement);
           listElement.appendChild(resultElement);

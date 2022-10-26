@@ -9,15 +9,6 @@ from geocity.apps.forms.models import Form
 from . import models
 
 
-class SubmissionWorkflowStatusInline(admin.StackedInline):
-    model = models.SubmissionWorkflowStatus
-    extra = 0
-    verbose_name = _("Étape - ")
-    verbose_name_plural = _(
-        "Étapes - Si aucune n'est ajoutée manuellement, toutes les étapes sont ajoutées automatiquement"
-    )
-
-
 class SubmissionAmendFieldForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user")

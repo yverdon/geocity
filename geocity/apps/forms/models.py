@@ -70,6 +70,63 @@ class AnonymousFormManager(models.Manager):
         return super().get_queryset().filter(is_anonymous=True)
 
 
+class FormQuerySet(models.QuerySet):
+    def get_default_forms(
+        self,
+        administrative_entity,
+        user,
+        form_categories=None,
+    ):
+        """
+        Return the `Form` that should be automatically selected for the given
+        `administrative_entity`. `form_categories` should be the categories the user has
+        selected, if any.
+        """
+        forms = self.filter(administrative_entities=administrative_entity)
+
+        if not user.has_perm("permits.see_private_requests"):
+            forms = forms.filter(is_public=True)
+
+        if form_categories is not None:
+            forms = forms.filter(category__in=form_categories)
+
+        available_forms = {form.pk for form in forms}
+        available_categories = {form.category_id for form in forms}
+
+        # If `form_categories` are not set, ie. the user has only selected an administrative
+        # entity but no categories yet, and there’s more than 1 category available, don’t
+        # return any default forms so the user can choose the categorie(s) first
+        if (form_categories is None and len(available_categories) > 1) or len(
+            available_forms
+        ) > 1:
+            return Form.objects.none()
+
+        return forms
+
+    def get_administrative_entities_with_forms(self, user, site=None):
+        """
+        FIXME: there are 2 versions of this function. This one is originally named
+        `get_user_administrative_entities`, the other is `get_administrative_entities`.
+        Should they be merged somehow?
+        """
+        queryset = (
+            AdministrativeEntity.objects.filter(
+                pk__in=self.values_list("administrative_entities", flat=True),
+                forms__is_anonymous=False,
+            )
+            .order_by("ofs_id", "-name")
+            .distinct()
+        )
+
+        if site:
+            queryset = queryset.filter(sites=site)
+
+        if not user.has_perm("permits.see_private_requests"):
+            queryset = queryset.filter(forms__is_public=True)
+
+        return queryset
+
+
 class Form(models.Model):
     """
     Represents a works object for a specific works type.
@@ -162,6 +219,17 @@ class Form(models.Model):
     permanent_publication_enabled = models.BooleanField(
         _("Autoriser la mise en consultation sur une durée indéfinie"), default=False
     )
+    shortname = models.CharField(
+        _("nom court"),
+        max_length=32,
+        help_text=_(
+            "Nom affiché par défaut dans les différentes étapes du formulaire, ne s'affiche pas dans l'admin (max. 32 caractères)"
+        ),
+        blank=True,
+    )
+    has_geom_intersection_enabled = models.BooleanField(
+        _("Activer l'intersection de géométries"), default=False
+    )
 
     # NEW: WorksType
     name = models.CharField(_("nom"), max_length=255)
@@ -174,7 +242,7 @@ class Form(models.Model):
     )
 
     # All objects
-    objects = models.Manager()
+    objects = FormQuerySet().as_manager()
 
     # Only anonymous objects
     anonymous_objects = AnonymousFormManager()
@@ -210,7 +278,9 @@ class Form(models.Model):
 
 class FormField(models.Model):
     form = models.ForeignKey(Form, related_name="+", on_delete=models.CASCADE)
-    field = models.ForeignKey("Field", related_name="+", on_delete=models.CASCADE)
+    field = models.ForeignKey(
+        "Field", related_name="form_fields", on_delete=models.CASCADE
+    )
     order = models.PositiveSmallIntegerField(default=0, db_index=True)
 
 
@@ -280,7 +350,7 @@ class Field(models.Model):
     )
     is_mandatory = models.BooleanField(_("obligatoire"), default=False)
     forms = models.ManyToManyField(
-        Form, verbose_name=_("objets"), related_name="properties", through=FormField
+        Form, verbose_name=_("objets"), related_name="fields", through=FormField
     )
     choices = models.TextField(
         verbose_name=_("valeurs à choix"),
@@ -348,7 +418,7 @@ class Field(models.Model):
     def __str__(self):
         return self.name
 
-    def is_value_property(self):
+    def is_value_field(self):
         return self.input_type in [
             Field.INPUT_TYPE_TEXT,
             Field.INPUT_TYPE_CHECKBOX,

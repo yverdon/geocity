@@ -1,0 +1,24 @@
+{% extends "base_generic.html" %}
+{% load bootstrap4 %}
+{% load i18n %}
+{% load permits_extras %}
+{% load crispy_forms_tags %}
+
+
+{% block content %}
+  {% permit_progressbar steps StepType.FIELDS %}
+  <h3>{{ config.PROPERTIES_STEP }} </h3>
+  <hr>
+  <form method="post">
+    {% csrf_token %}
+    {{ submission_form.media }}
+    {% crispy submission_form %}
+    {% buttons %}
+      {% if previous_step.url %}
+        <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
+      {% endif %}
+
+      <button class="btn btn-primary">{% trans "Enregistrer et continuer" %}</button>
+    {% endbuttons %}
+  </form>
+{% endblock %}

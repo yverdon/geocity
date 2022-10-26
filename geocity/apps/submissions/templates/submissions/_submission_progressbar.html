@@ -1,0 +1,35 @@
+{% load static %}
+
+{% if steps %}
+  <ul class="progress-nav mb-4">
+    {% for step_key, step in steps.items %}
+      <li class="progress-nav-item
+        {% if step_key == active_step %} progress-nav-item-active{% endif %}
+        {% if step.enabled %}progress-nav-item-enabled{% endif %}
+        {% if step.completed and step.enabled %}progress-nav-item-done{% endif %}
+        {% if step.errors_count and step.enabled %}progress-nav-item-partial{% endif %}
+        ">
+        {% if step.url and step.enabled %}
+          <a class="progress-nav-link" href="{{ step.url }}">
+        {% endif %}
+
+        <div class="circle">
+          {% if step.errors_count and step.enabled %}<div class="pill">{{ step.errors_count }}</div>{% endif %}
+          <div class="circle-inner">
+            {{ forloop.counter }}
+          </div>
+        </div>
+        <br>
+
+        {# Wrap the step name so it’s easier to extract in the tests #}
+        <span class="step-name">
+          {{ step.name }}
+        </span>
+
+        {% if step.url and step.enabled %}
+          </a>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}

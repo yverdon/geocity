@@ -1,0 +1,41 @@
+{% extends "base_generic.html" %}
+
+{% load static %}
+{% load bootstrap4 %}
+{% load i18n %}
+{% load permits_extras %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static 'libs/js/jquery-ui-custom/jquery-ui.min.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'customWidgets/RemoteAutocomplete/remoteautocomplete.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'css/contactform.css' %}">
+{% endblock %}
+
+{% block content %}
+  {% permit_progressbar steps StepType.ACTORS %}
+  <form method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    <br>
+    {% if requires_payment %}
+      <h4>Adresse de facturation si différente de celle de l'auteur</h4>
+      {% bootstrap_form creditorform layout='horizontal' %}
+    {% endif %}
+    <hr>
+    <h3>{{ config.ACTORS_STEP }}</h3>
+    <div id="forms-container">
+        {% for form in formset %}
+           {{ form.media }}
+          {% bootstrap_form form layout='horizontal' %}
+      <hr>
+        {% endfor %}
+      </div>
+    {% buttons %}
+      {% if previous_step %}
+        <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
+      {% endif %}
+      <button class="btn btn-primary">{% trans "Enregistrer et continuer" %}</button>
+    {% endbuttons %}
+  </form>
+{% endblock %}

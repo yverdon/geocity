@@ -416,16 +416,12 @@ def create_submission_workflow_statuses(apps, schema_editor):
     copy_model(PermitWorkflowStatus, SubmissionWorkflowStatus)
 
 
-def exception(apps, schema_editor):
-    raise Exception()
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("submissions", "0001_initial"),
-        ("accounts", "0002_migrate_permits_data"),
-        ("forms", "0002_migrate_permits_data"),
+        ("submissions", "0002_submission_ends_at_starts_at"),
+        ("accounts", "0003_migrate_permits_data"),
+        ("forms", "0003_migrate_permits_data"),
     ]
 
     operations = [

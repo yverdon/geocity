@@ -1,0 +1,6 @@
+{% for item in record.forms.all %}
+  {# FIXME where does works_object_filter get set? Is it still used? #}
+  {% if record.works_object_filter == item.works_object.id|stringformat:"i"  %}
+  <strong>{% endif %}{{ item.name }}{% if record.works_object_filter %}
+  </strong>{% endif %} ({{ item.category.name }}) <br />
+{% endfor %}

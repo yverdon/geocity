@@ -1,0 +1,18 @@
+{% load i18n %}{% autoescape off %}{{ objects_list }}
+
+
+{% blocktrans %}Bonjour {{ name }}{% endblocktrans %},
+
+{% trans "Nous vous confirmons bonne réception de votre demande et vous en remercions." %}
+
+{% trans "Vous pouvez la consulter sur le lien suivant" %}: {{ permit_request_url }}
+
+{% trans "Avec nos meilleures salutations," %}
+{% if administrative_entity.custom_signature %}
+{{ administrative_entity.custom_signature }}
+{% else %}
+{{ administrative_entity.name }}
+{% endif %}
+
+{% trans "Ceci est un e-mail automatique, veuillez ne pas y répondre." %}
+{% endautoescape %}

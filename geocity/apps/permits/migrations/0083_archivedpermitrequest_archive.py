@@ -28,20 +28,20 @@ def archive_to_filefield(apps, schema_editor):
 
     PermitRequest.get_works_type_names_list = get_works_type_names_list
 
-    for archived_request in ArchivedPermitRequest.objects.all():
-        # make the archive
-        with tempfile.TemporaryDirectory() as tmp_dir:
+    # for archived_request in ArchivedPermitRequest.objects.all():
+    #     # make the archive
+    #     with tempfile.TemporaryDirectory() as tmp_dir:
 
-            archived_date = archived_request.archived_date.strftime("%d.%m.%Y.%H.%M.%S")
-            old_name = f"{archived_request.permit_request.id:02d}_{archived_date}-{slugify(archived_request.permit_request.get_works_type_names_list())}"
-            old_path = os.path.join(settings.ARCHIVE_ROOT, old_name)
+    #         archived_date = archived_request.archived_date.strftime("%d.%m.%Y.%H.%M.%S")
+    #         old_name = f"{archived_request.permit_request.id:02d}_{archived_date}-{slugify(archived_request.permit_request.get_works_type_names_list())}"
+    #         old_path = os.path.join(settings.ARCHIVE_ROOT, old_name)
 
-            old_path_zipped = shutil.make_archive(
-                os.path.join(tmp_dir, "archive"), "zip", old_path
-            )
+    #         old_path_zipped = shutil.make_archive(
+    #             os.path.join(tmp_dir, "archive"), "zip", old_path
+    #         )
 
-            archived_request.archive.save("archive.zip", open(old_path_zipped, "rb"))
-            archived_request.save()
+    #         archived_request.archive.save("archive.zip", open(old_path_zipped, "rb"))
+    #         archived_request.save()
 
 
 class Migration(migrations.Migration):

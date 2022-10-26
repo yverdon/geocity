@@ -452,7 +452,7 @@ class Migration(migrations.Migration):
             model_name="field",
             name="forms",
             field=models.ManyToManyField(
-                related_name="properties",
+                related_name="fields",
                 through="forms.FormField",
                 to="forms.Form",
                 verbose_name="objets",

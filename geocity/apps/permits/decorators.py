@@ -1,3 +1,4 @@
+# MOVED to apps/accounts/decorators.py
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import ObjectDoesNotExist

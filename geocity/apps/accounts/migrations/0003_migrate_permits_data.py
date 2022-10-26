@@ -80,8 +80,8 @@ def create_template_customizations(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("accounts", "0001_initial"),
-        ("permits", "0083_archivedpermitrequest_archive"),
+        ("accounts", "0002_permitdepartment_shortname"),
+        ("permits", "0084_add_shortname_and_change_text"),
     ]
 
     operations = [

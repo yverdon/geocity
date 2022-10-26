@@ -1,0 +1,26 @@
+{% extends "base_generic.html" %}
+
+{% load i18n %}
+{% load bootstrap4 %}
+
+{% block content %}
+  <h3>{{ title }}</h3>
+
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {% bootstrap_form form %}
+
+    <div class="text-right">
+      <a href="{% url 'permits:permit_request_detail' permit_request_id=permit_request.pk %}"
+        class="mr-2">{% trans "Retour" %}</a>
+      <button class="btn btn-primary">
+        {% if approve %}
+        {% trans "Approuver la demande" %}
+        {% else %}
+        {% trans "Refuser la demande" %}
+        {% endif %}
+      </button>
+    </div>
+  </form>
+{% endblock %}

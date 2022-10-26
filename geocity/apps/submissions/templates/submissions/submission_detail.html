@@ -1,0 +1,257 @@
+{% extends "base_generic.html" %}
+
+{% load i18n %}
+{% load bootstrap4 %}
+{% load permits_extras %}
+{% load static %}
+{% load render_table from django_tables2 %}
+
+{% block content %}
+<h1>
+  {% blocktrans with request_id=permit_request.pk %}
+    Demande #{{ request_id }}
+  {% endblocktrans %}
+  {% if config.ENABLE_GEOCALENDAR %}
+    {% if permit_request.is_public %}
+      <span class="badge badge-pill badge-success">Publique</span>
+    {% else %}
+      <span class="badge badge-pill badge-danger">Privée</span>
+    {% endif %}
+  {% endif %}
+  {% if inquiry_in_progress %}
+    <span class="badge badge-pill badge-info">{% trans "Mise en consultation publique" %}</span>
+  {% endif %}
+  {% if permit_request.is_archived %}
+    <span class="badge badge-pill badge-info">{% trans "Archivée" %}</span>
+  {% endif %}
+</h1>
+
+<p title=""></p>
+
+
+{% if not permit_request.is_archived %}
+<div class="row">
+  <div class="col">
+    {% include "permits/_permit_request_actions.html" %}
+  </div>
+</div>
+{% endif %}
+
+<div class="row">
+  <div class="col-md-4">
+
+    <div class="row floating-elem">
+      <div class="col">
+
+        {% if not permit_request.author.is_anonymous %}
+
+        <dl>
+          <dd>
+            <h4>{% trans "Auteur-e" %}</h4>
+          </dd>
+          <dd>
+            <a href="mailto:{{ permit_request.author }} <{{ permit_request.author.user.email }}>" target="_blank" rel="noreferrer">
+              {{ permit_request.author.user.first_name }} {{ permit_request.author.user.last_name }} &lt;{{ permit_request.author.user.email }}&gt;
+            </a>
+          </dd>
+          <dd>
+            {{ permit_request.author.address }}, {{ permit_request.author.zipcode }} {{ permit_request.author.city }}
+          </dd>
+          <dd>
+            <a href="tel:{{ permit_request.author.phone_first }}" target="_blank" rel="noreferrer" title="{% trans 'Téléphone principal' %}">{{ permit_request.author.phone_first }}</a>
+            {% if permit_request.author.phone_second %}
+            &nbsp;/&nbsp; <a href="tel:{{ permit_request.author.phone_second }}" target="_blank" rel="noreferrer" title="{% trans 'Téléphone secondaire' %}">{{ permit_request.author.phone_second }}</a>
+            {% endif %}
+          </dd>
+          {% if settings.AUTHOR_IBAN_VISIBLE %}
+            <dd>
+              {{ permit_request.author.iban }}
+            </dd>
+          {% endif %}
+          <dd>
+            {{ permit_request.author.company_name }} {{ permit_request.author.vat_number }}
+          </dd>
+        </dl>
+
+        {% endif %}
+
+        {% if permit_request.validation_pdf %}
+
+        <div id="validation_pdf">
+          <dl>
+            <dd>
+              <h4>{% trans "Document" %}</h4>
+            </dd>
+            <dd>
+              <i class="fa fa-download pt-1 mr-1" aria-hidden="true"></i>
+              <a href="{{ permit_request.validation_pdf.url }}" target="_blank" rel="noreferrer">
+                Télécharger le document délivré
+              </a>
+            </dd>
+          </dl>
+        </div>
+
+        {% endif %}
+
+        {% if history %}
+
+          <div id="history_timeline">
+            <h4>{% trans "Historique" %}</h4>
+            <ul>
+              {% for archive in history %}
+                {% if archive.status == permit_request.STATUS_PROCESSING and forloop.last %}
+                  <li>
+                    <div class="row-1">
+                      <i class="fa fa-circle status{{archive.status}}"></i>
+                      {{ archive.history_date }}
+                      <b>{% trans "Demande soumise par" %}</b>
+                    </div>
+                    <div class="row-2 history_user">
+                      <b>{{ archive.history_user }}</b>
+                    </div>
+                  </li>
+                {% else %}
+                  <li>
+                    <div class="row-1">
+                      <i class="fa fa-circle status{{archive.status}}"></i>
+                      {{ archive.history_date }}
+                    </div>
+                    <div class="row-2 status_display">
+                      <b>{{ archive.get_status_display }}</b>
+                    </div>
+                    <div class="row-2 history_user">
+                      ({{ archive.history_user }})
+                    </div>
+                  </li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+          </div>
+
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+
+    {% if validations %}
+
+      <div class="row sub-row">
+        <div class="col">
+          <h2>{% trans "Informations générales" %}</h2>
+          <div class="container">
+            <dl>
+              {% if permit_request.status %}
+                <dt>{% trans "État" %}</dt>
+                <dd> {{ permit_request.get_status_display }} </dd>
+              {% endif %}
+            </dl>
+
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if validations %}
+    <div class="row sub-row">
+      <div class="col">
+        <h2>{% trans "Validation" %}</h2>
+          {% for validation in validations %}
+            <div class="container">
+              <dl>
+                <dt> {{ validation.department.group.name }} </dt>
+                <dd{% if validation.is_pending %} class="text-muted"{% endif %}>
+                  {% if 'Approuvé' in validation.get_validation_status_display %}
+                    <i class="fa fa-check-circle" aria-hidden="true"></i>&#x202F;
+                  {% elif 'attente' in validation.get_validation_status_display %}
+                    <i class="fa fa-clock-o" aria-hidden="true"></i>&#x202F;
+                  {% else %}
+                    <i class="fa fa-times-circle" aria-hidden="true"></i>&#x202F;
+                  {% endif %}
+                  {% if has_permission_to_classify or can_validate_permit_request%}
+                    {{ validation.get_validation_status_display }} par
+                    {% if validation.validated_by %}
+                      {{ validation.validated_by.permitauthor.user.first_name }}
+                      {{ validation.validated_by.permitauthor.user.last_name }}
+                      le
+                      {{ validation.validated_at }}
+                    {% endif %}
+                  {% endif %}
+                </dd>
+                {% if validation.comment_before %}
+                  <dt>{% trans "Commentaire (avant)" %}:</dt> <dd> {{ validation.comment_before|linebreaksbr }} </dd>
+                {% endif %}
+                {% if validation.comment_during %}
+                  <dt>{% trans "Commentaire (pendant)" %}:</dt> <dd> {{ validation.comment_during|linebreaksbr }} </dd>
+                {% endif %}
+                {% if validation.comment_after %}
+                  <dt>{% trans "Commentaire (après)" %}:</dt> <dd> {{ validation.comment_after|linebreaksbr }} </dd>
+                {% endif %}
+              </dl>
+            </div>
+          {% endfor %}
+      </div>
+    </div>
+
+  {% endif %}
+
+    {% if permit_request.can_be_prolonged and permit_request.prolongation_date %}
+
+      <div class="row sub-row">
+        <div class="col">
+          <h2>{% trans "Prolongation" %}</h2>
+          <div class="container">
+            <dl>
+              {% if permit_request.get_prolongation_status_display %}
+                <dt>{% trans "État" %}</dt>
+                <dd> {{ permit_request.get_prolongation_status_display }} </dd>
+              {% endif %}
+              {% if permit_request.prolongation_comment %}
+                <dt>{% trans "Commentaire" %}</dt>
+                <dd> {{ permit_request.prolongation_comment|linebreaksbr }} </dd>
+              {% endif %}
+            </dl>
+          </div>
+        </div>
+      </div>
+
+    {% endif %}
+
+    <div class="row sub-row">
+      <div class="col">
+        <h2>{% trans "Résumé" %}</h2>
+          {% permit_request_summary permit_request %}
+      </div>
+    </div>
+
+    {% if permit_request.additional_decision_information %}
+    <div class="row sub-row">
+      <div class="col">
+        <h2>{% trans "Informations complémentaires" %}</h2>
+        <dl>
+            <dt>{% trans "Information sur la décision" %}</dt>
+            <dd>{{ permit_request.additional_decision_information|linebreaksbr }}</dd>
+        </dl>
+    </div></div>
+    {% endif %}
+
+    <div class="row sub-row">
+      <div class="col">
+        <p class="mt-4">
+          {% if permit_request.is_archived %}
+            <a href="{% url 'permits:archived_permit_request_list' %}">{% trans "Retour à la liste des demandes archivées" %}</a>
+          {% else %}
+            <a href="{% url 'permits:permit_requests_list' %}">{% trans "Retour à la liste des demandes" %}</a>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+{% block scripts %}
+  <script src="{% static 'js/permits_complementary_documents.js' %}"></script>
+  <script src="{% static 'js/permit_request_amending.js' %}"></script>
+{% endblock %}

@@ -11,6 +11,7 @@ from django.db.models.functions import StrIndex, Substr
 from django.utils.translation import gettext_lazy as _
 
 from geocity.fields import GeometryWidget
+from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
 
 from . import models, permissions_groups
 
@@ -544,6 +545,15 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
         }
 
 
+class SubmissionWorkflowStatusInline(admin.StackedInline):
+    model = SubmissionWorkflowStatus
+    extra = 0
+    verbose_name = _("Étape - ")
+    verbose_name_plural = _(
+        "Étapes - Si aucune n'est ajoutée manuellement, toutes les étapes sont ajoutées automatiquement"
+    )
+
+
 @admin.register(models.AdministrativeEntity)
 class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     # Pass the user from ModelAdmin to ModelForm
@@ -559,10 +569,9 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
     change_form_template = "permits/admin/permit_administrative_entity_change.html"
     form = AdministrativeEntityAdminForm
-    # FIXME
-    # inlines = [
-    #     PermitWorkflowStatusInline,
-    # ]
+    inlines = [
+        SubmissionWorkflowStatusInline,
+    ]
     list_filter = [
         "name",
     ]
@@ -613,13 +622,12 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 permitdepartment__is_integrator_admin=True
             )
         obj.save()
-        # FIXME
-        has_workflow_status = models.PermitWorkflowStatus.objects.filter(
+        has_workflow_status = SubmissionWorkflowStatus.objects.filter(
             administrative_entity=obj
         ).exists()
         if not has_workflow_status:
-            for key, value in models.PermitRequest.STATUS_CHOICES:
-                models.PermitWorkflowStatus.objects.create(
+            for key, value in Submission.STATUS_CHOICES:
+                SubmissionWorkflowStatus.objects.create(
                     status=key,
                     administrative_entity=obj,
                 )

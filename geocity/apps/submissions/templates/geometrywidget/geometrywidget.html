@@ -1,0 +1,109 @@
+{# Adapted from django gis contrib #}
+
+{% load i18n l10n %}
+{% load static %}
+{% load permits_extras %}
+
+<div id="geometry-widget-{{ id }}" data-initialize="{% if "__prefix__" in id %}0{% else %}1{% endif %}" data-map-target="{{ id }}_map" data-options="{{ options|json }}" data-geometry-widget >
+  {% if options.edit_geom %}
+    <div>
+      Cliquer sur la carte : &nbsp;
+      {% if options.edit_point %}
+        <div data-action="editPoints" class="form-check form-check-inline">
+          <label class="form-check-label no-wildcard" title="Cliquer pour ajouter un point">
+            <input class="form-check-input" title="Cliquer pour ajouter un point" type="radio" name="inlineRadioOptions-{{ id }}" data-action="setDrawInteraction" data-interaction-type="MultiPoint">
+            Point<img src="{% static 'images/geometrywidget/points.svg'%}" height=30>
+          </label>
+        </div>
+      {% endif %}
+      {% if options.edit_line %}
+        <div data-action="editLines" class="form-check form-check-inline">
+          <label class="form-check-label no-wildcard" title="Double clique pour terminer la construction">
+            <input class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions-{{ id }}" data-action="setDrawInteraction" data-interaction-type="MultiLineString">
+            Ligne<img src="{% static 'images/geometrywidget/polyline.svg'%}" height=30>
+          </label>
+        </div>
+      {% endif %}
+      {% if options.edit_polygon %}
+        <div data-action="editPolygons" class="form-check form-check-inline">
+          <label class="form-check-label no-wildcard" title="Double clique pour terminer la construction">
+            <input class="form-check-input" title="Double clique pour terminer la construction" type="radio" name="inlineRadioOptions-{{ id }}" data-action="setDrawInteraction" data-interaction-type="MultiPolygon">
+            Polygone<img src="{% static 'images/geometrywidget/polygon.svg'%}" height=30>
+          </label>
+        </div>
+      {% endif %}
+    </div>
+    <hr>
+    <div>
+      <button type="button" class="btn btn-sm btn-outline-success mr-1 mb-2" title="Cliquer sur la carte pour ajouter des géométries"
+         role="button" data-action="enableDrawing">
+         <i class="fa fa-pencil"></i> Dessiner
+      </button>
+      <button type="button" class="btn btn-sm btn-outline-warning mr-1 mb-2" title="Maintenir la touche Maj (Shift) enfoncée pour une sélection multiple"
+         role="button" data-action="selectFeatures">
+         <i class="fa fa-mouse-pointer"></i> Sélectionner et modifier
+      </button>
+      <button type="button" class="btn btn-sm btn-outline-danger mr-1 mb-2"
+         role="button" data-action="removeSelectedFeatures">
+         <i class="fa fa-trash"></i> Effacer la sélection
+      </button>
+      <a data-action="setPointManual" class="btn btn-sm btn-outline-secondary mr-1 mb-2" data-toggle="collapse" href="#manual-coordinates-{{ id }}" role="button" aria-expanded="false" aria-controls="manual-coordinates">
+        <i class="fa fa-map-pin"></i> Saisir des coordonnées
+      </a>
+      <div class="collapse manual-coordinates" id="manual-coordinates-{{ id }}">
+        <br>
+        <div class="card card-body">
+          <div class="row">
+            <div class="col">
+              <label for="east_coord-{{ id }}">Est:</label>
+              <input class="form-control" name="east_coord" id="east_coord-{{ id }}" type="float" min=2535594.00 max=2542571.00 value=2539162.00 placeholder="ex: 2539142.00">
+            </div>
+            <div class="col">
+              <label for="east_coord-{{ id }}">Nord:</label>
+              <input class="form-control" name="north_coord" id="north_coord-{{ id }}" type="float" min=1178784.00 max=1183461.00 value=1181732.00 placeholder="ex: 1181572.00 ">
+            </div>
+            <div class="col">
+              <button type="button" class="btn btn-sm btn-outline-success" title="Ajouter ce point à la carte"
+                 role="button" data-action="addPointFeature">
+                 <i class="fa fa-plus"></i> Ajouter à la carte
+              </button>
+            </div>
+          </div>
+        </div>
+        <br>
+      </div>
+      <div class="import-kml" id="import-kml-{{ id }}">
+        <small class="custom-file">
+          <input type="file" class="custom-file-input" accept=".kml" data-action="addKML" title="Charger des géométries (point, ligne, polygone) depuis un fichier KML">
+          <label class="custom-file-label" for="selectfile"></label>
+        </small>
+      </div>
+      &nbsp
+      <div>
+          <input
+            type="text"
+            data-role="fulltext-location-search"
+            name="fulltext-location-search-{{ id }}"
+            placeholder="ex: Place Pestalozzi 2, 1400 Yverdon-les-Bains"
+            title=""
+            data-options="{{ options|json }}"
+            class="addresswidget form-control ui-autocomplete-input"
+            id="fulltext-location-search-{{ id }}"
+            autocomplete="off">
+      </div>
+    </div>
+    <hr>
+  {% endif %}
+  <div data-role="outOfAdministrativeLimits"></div>
+  <div class="map" data-role="map" style="width: {{ map_width }}; height: {{ map_height }}px;">
+    <img class="switchbaselayers" src="{% static 'images/switchbaselayers.png'%}" width="100" height="40" alt="" data-action="switchBaseLayers">
+  </div>
+  {% if display_raw %}<p>{% trans "Debugging window (serialized value)" %}</p>{% endif %}
+  <textarea id="{{ id }}" class="vSerializedField required{% if not display_raw %} d-none{% endif %}" cols="150" rows="10" name="{{ name }}" data-role="serialized">{{ serialized }}</textarea>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    geometryWidgetManager.rebind();
+  });
+</script>

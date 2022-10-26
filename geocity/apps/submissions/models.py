@@ -1,30 +1,42 @@
+import enum
 import tempfile
+import urllib.parse
 import zipfile
 from datetime import date, datetime, timedelta
 
 from django.conf import settings
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group
 from django.contrib.gis.db import models as geomodels
+from django.contrib.gis.geos import GeometryCollection, MultiPoint, Point
 from django.core.exceptions import SuspiciousOperation
 from django.core.validators import (
     FileExtensionValidator,
 )
-from django.db import models
+from django.db import models, transaction
 from django.db.models import (
+    Count,
+    F,
     JSONField,
     Max,
     Min,
     ProtectedError,
     Q,
+    Value,
 )
+from django.db.models.functions import Concat
 from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
+
+import PIL
+import requests
 from django_tables2.export import TableExport
+from PIL import Image
 from simple_history.models import HistoricalRecords
 
-from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment
+from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment, User
+from geocity.apps.accounts.validators import validate_email
 from geocity.apps.forms.models import (
     Field,
     Form,
@@ -56,9 +68,96 @@ CONTACT_TYPE_CHOICES = (
     (CONTACT_TYPE_SECURITY, _("Sécurité")),
 )
 
+# Actions
+ACTION_AMEND = "amend"
+ACTION_REQUEST_VALIDATION = "request_validation"
+ACTION_VALIDATE = "validate"
+ACTION_POKE = "poke"
+ACTION_PROLONG = "prolong"
+ACTION_COMPLEMENTARY_DOCUMENTS = "complementary_documents"
+ACTION_REQUEST_INQUIRY = "request_inquiry"
+# If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
+# and services.get_actions_for_administrative_entity
+ACTIONS = [
+    ACTION_AMEND,
+    ACTION_REQUEST_VALIDATION,
+    ACTION_VALIDATE,
+    ACTION_POKE,
+    ACTION_PROLONG,
+    ACTION_COMPLEMENTARY_DOCUMENTS,
+    ACTION_REQUEST_INQUIRY,
+]
+
 
 def printed_permit_request_storage(instance, filename):
     return f"permit_requests_uploads/{instance.permit_request.pk}/{filename}"
+
+
+class GeoTimeInfo(enum.Enum):
+    DATE = enum.auto()
+    GEOMETRY = enum.auto()
+    # Geometry automatically genrerate from address field using geoadmin API
+    GEOCODED_GEOMETRY = enum.auto()
+
+
+class SubmissionQuerySet(models.QuerySet):
+    def filter_for_user(self, user, form_filter=None, ignore_archived=True):
+        """
+        Return the list of permit requests this user has access to.
+        """
+        annotate_with = dict(
+            starts_at_min=Min("geo_time__starts_at"),
+            ends_at_max=Max("geo_time__ends_at"),
+            permit_duration_max=Max("forms__permit_duration"),
+            remaining_validations=Count("validations")
+            - Count(
+                "validations",
+                filter=~Q(
+                    validations__validation_status=SubmissionValidation.STATUS_REQUESTED
+                ),
+            ),
+            required_validations=Count("validations"),
+            author_fullname=Concat(
+                F("author__first_name"),
+                Value(" "),
+                F("author__last_name"),
+            ),
+            author_details=Concat(
+                F("author__email"),
+                Value(" / "),
+                F("author__userprofile__phone_first"),
+                output_field=models.CharField(),
+            ),
+        )
+
+        if form_filter is not None:
+            annotate_with.update({"form_filter": Value(form_filter)})
+
+        qs = self.annotate(**annotate_with)
+
+        if ignore_archived:
+            qs = qs.filter(~Q(status=Submission.STATUS_ARCHIVED))
+
+        if not user.is_authenticated:
+            return qs.none()
+
+        if not user.is_superuser:
+            qs_filter = Q(author=user)
+
+            if user.has_perm("submissions.amend_permit_request"):
+                qs_filter |= Q(
+                    administrative_entity__in=user.get_administrative_entities(),
+                ) & ~Q(status=Submission.STATUS_DRAFT)
+
+            if user.has_perm("submissions.validate_permit_request"):
+                qs_filter |= Q(
+                    validations__department__in=PermitDepartment.objects.filter(
+                        group__in=user.groups.all()
+                    )
+                )
+            return qs.filter(qs_filter)
+
+        return qs
 
 
 class Submission(models.Model):
@@ -186,6 +285,8 @@ class Submission(models.Model):
 
     history = HistoricalRecords()
 
+    objects = SubmissionQuerySet().as_manager()
+
     class Meta:
         verbose_name = _("3.1 Consultation de la demande")
         verbose_name_plural = _("3.1 Consultation des demandes")
@@ -196,6 +297,9 @@ class Submission(models.Model):
             ("edit_permit_request", _("Éditer les demandes de permis")),
         ]
         indexes = [models.Index(fields=["created_at"])]
+
+    def __str__(self):
+        return self.shortname
 
     def is_draft(self):
         return self.status == self.STATUS_DRAFT
@@ -212,12 +316,10 @@ class Submission(models.Model):
     def can_be_amended(self):
         return self.status in self.AMENDABLE_STATUSES
 
-    def get_amend_property_list_always_amendable(self):
+    def get_amend_field_list_always_amendable(self):
         amend_properties = []
-        qs = PermitRequestAmendProperty.objects.filter(
-            Q(
-                works_object_types__administrative_entities__name=self.administrative_entity
-            )
+        qs = SubmissionAmendField.objects.filter(
+            Q(form__administrative_entities=self.administrative_entity)
             & Q(can_always_update=True)
         ).distinct()
         for object in qs:
@@ -234,21 +336,6 @@ class Submission(models.Model):
 
     def can_be_edited_by_pilot(self):
         return self.status in self.EDITABLE_STATUSES
-
-    def can_always_be_updated(self, user):
-        can_always_update = self.works_object_types.filter(
-            can_always_update=True
-        ).exists()
-        user_is_integrator_admin = user.groups.filter(
-            permitdepartment__is_integrator_admin=True
-        ).exists()
-        user_is_backoffice = user_is_integrator_admin = user.groups.filter(
-            permitdepartment__is_backoffice=True
-        ).exists()
-        user_is_superuser = user.is_superuser
-        return can_always_update and (
-            user_is_integrator_admin or user_is_backoffice or user_is_superuser
-        )
 
     def can_be_validated(self):
         return self.status in {self.STATUS_AWAITING_VALIDATION, self.STATUS_PROCESSING}
@@ -287,10 +374,8 @@ class Submission(models.Model):
         """
         today = timezone.make_aware(datetime.today())
         max_delay = None
-        if self.works_object_types.exists():
-            max_delay = self.works_object_types.aggregate(Max("start_delay"))[
-                "start_delay__max"
-            ]
+        if self.forms.exists():
+            max_delay = self.forms.aggregate(Max("start_delay"))["start_delay__max"]
 
         return (
             today + timedelta(days=max_delay)
@@ -305,9 +390,7 @@ class Submission(models.Model):
         Return this interval (number of days), intended to pass as a custom option
         to the widget, so the value can be used by Javascript.
         """
-        return self.works_object_types.aggregate(Min("permit_duration"))[
-            "permit_duration__min"
-        ]
+        return self.forms.aggregate(Min("permit_duration"))["permit_duration__min"]
 
     def get_max_ends_at(self):
         return self.geo_time.aggregate(Max("ends_at"))["ends_at__max"]
@@ -324,7 +407,7 @@ class Submission(models.Model):
         )
 
     def has_expiration_reminder(self):
-        return self.works_object_types.filter(expiration_reminder=True).exists()
+        return self.forms.filter(expiration_reminder=True).exists()
 
     def can_prolongation_be_requested(self):
         if self.can_be_prolonged():
@@ -346,7 +429,7 @@ class Submission(models.Model):
             if reminder:
                 # Here, if the reminder is active, we must have
                 # the days_before_reminder value (validation on the admin)
-                days_before_reminder = self.works_object_types.aggregate(
+                days_before_reminder = self.forms.aggregate(
                     Max("days_before_reminder")
                 )["days_before_reminder__max"]
 
@@ -370,17 +453,15 @@ class Submission(models.Model):
             # It definitively can not be prolonged
             return False
 
-    def set_dates_for_renewables_wots(self):
+    def set_dates_for_renewable_forms(self):
         """
-        Calculate and set starts_at and ends_at for the WOTs that have no date
+        Calculate and set starts_at and ends_at for the forms that have no date
         required, but can be prolonged, so they have a value in their
         permit_duration field
         """
+        forms = self.forms.filter(needs_date=False).filter(permit_duration__gte=1)
 
-        works_object_types = self.works_object_types.filter(needs_date=False).filter(
-            permit_duration__gte=1
-        )
-        if works_object_types.exists():
+        if forms.exists():
             # Determine starts_at_min and ends_at_max to check if the WOTs are combined
             # between one(s) that needs_date and already set the time interval and those
             # that do not needs_date.
@@ -392,8 +473,8 @@ class Submission(models.Model):
             if not self.geo_time.exists():
                 # At this point following the permit request steps, the Geotime object
                 # must have been created only if Geometry or Dates are required,
-                # if the WOT does not need require either, we need to create the object.
-                PermitRequestGeoTime.objects.create(permit_request_id=self.pk)
+                # if the form does not need require either, we need to create the object.
+                SubmissionGeoTime.objects.create(submission_id=self.pk)
 
             starts_at_min = self.geo_time.aggregate(Min("starts_at"))["starts_at__min"]
             ends_at_max = self.geo_time.aggregate(Max("ends_at"))["ends_at__max"]
@@ -428,20 +509,20 @@ class Submission(models.Model):
             permit_request=self, start_date__lte=today, end_date__gte=today
         ).first()
 
-    def get_works_type_names_list(self):
-
+    def get_categories_names_list(self):
         return ", ".join(
-            list(
-                self.works_object_types.all()
-                .values_list("works_type__name", flat=True)
-                .distinct()
-            )
+            list(self.forms.all().values_list("category__name", flat=True).distinct())
+        )
+
+    def get_forms_names_list(self):
+        return ", ".join(
+            list(self.forms.all().values_list("name", flat=True).distinct())
         )
 
     def archive(self, archivist):
         # make sure the request wasn't already archived
-        if ArchivedPermitRequest.objects.filter(
-            permit_request=self,
+        if ArchivedSubmission.objects.filter(
+            submission=self,
         ).first():
             raise SuspiciousOperation(_("La demande a déjà été archivée"))
 
@@ -456,8 +537,8 @@ class Submission(models.Model):
 
             # Reset file pointer
             tmp_file.seek(0)
-            archived_request = ArchivedPermitRequest(
-                permit_request=self,
+            archived_request = ArchivedSubmission(
+                submission=self,
                 archivist=archivist,
             )
             archived_request.archive.save("archive.zip", tmp_file)
@@ -469,6 +550,16 @@ class Submission(models.Model):
     @property
     def is_archived(self):
         return self.status == self.STATUS_ARCHIVED
+
+    @property
+    def has_geom_intersection_enabled(self):
+        """
+        Check if there is any work_object_types with has_geom_intersection_enabled
+        """
+        has_geom_intersection_enabled = self.forms.filter(
+            has_geom_intersection_enabled=True
+        ).exists()
+        return has_geom_intersection_enabled
 
     @property
     def complementary_documents(self):
@@ -485,8 +576,544 @@ class Submission(models.Model):
 
         return exporter.export()
 
-    def __str__(self):
-        return self.shortname
+    def requires_payment(self):
+        return any(form.requires_payment for form in self.forms.all())
+
+    @transaction.atomic
+    def set_field_value(self, form, field, value):
+        """
+        Create or update the `FieldValue` object for the given field, form and
+        submission. The record will be deleted if value is an empty string or None.
+        `value` can be a variety of types: str in the case of a text field, bool in
+        the case of a boolean field, int in the case of a number field, and File
+        or bool in the case of a file field (the latter being `False` if the user is
+        asking for the file to be removed).
+        """
+        existing_value_obj = FieldValue.objects.filter(
+            selected_form__submission=self,
+            selected_form__form=form,
+            field=field,
+        )
+        is_file = field.input_type == Field.INPUT_TYPE_FILE
+        is_date = field.input_type == Field.INPUT_TYPE_DATE
+        # TODO this doesn’t seem to be used? Remove?
+        is_address = field.input_type == Field.INPUT_TYPE_ADDRESS
+
+        if value == "" or value is None:
+            existing_value_obj.delete()
+        else:
+            if is_file:
+                # Use private storage to prevent uploaded files exposition to the outside world
+                private_storage = fields.PrivateFileSystemStorage()
+                # If the given File has a `url` attribute, it means the value comes from the `initial` form data, so the
+                # value hasn't changed
+                if getattr(value, "url", None):
+                    return
+
+                # Remove the previous file, if any
+                try:
+                    current_value = existing_value_obj.get()
+                except FieldValue.DoesNotExist:
+                    pass
+                else:
+                    private_storage.delete(current_value.value["val"])
+                # User has asked to remove the file. The file has already been removed from the storage, remove the property
+                # value record and we're done
+                if value is False:
+                    existing_value_obj.delete()
+                    return
+
+                # TODO move all the low-level file processing mechanism elsewhere
+                # Add the file to the storage
+                directory = "permit_requests_uploads/{}".format(self.pk)
+                ext = os.path.splitext(value.name)[1]
+                upper_ext = ext[1:].upper()
+                path = os.path.join(directory, "{}_{}{}".format(form.pk, field.pk, ext))
+
+                private_storage.save(path, value)
+                # Postprocess images: remove all exif metadata from for better security and user privacy
+                if upper_ext != "PDF":
+
+                    upper_ext = ext[1:].upper()
+                    formats_map = {"JPG": "JPEG"}
+                    with Image.open(value) as image_full:
+                        data = list(image_full.getdata())
+                        new_image = Image.new(image_full.mode, image_full.size)
+                        new_image.putdata(data)
+                        new_image.save(
+                            private_storage.location + "/" + path,
+                            formats_map[upper_ext]
+                            if upper_ext in formats_map.keys()
+                            else upper_ext,
+                        )
+                # Postprocess PDF: convert everything to image, do not keep other content
+                elif upper_ext == "PDF":
+                    # File size to fix decompression bomb error
+                    PIL.Image.MAX_IMAGE_PIXELS = None
+
+                    all_images = convert_from_path(
+                        private_storage.location + "/" + path
+                    )
+                    first_image = all_images[0]
+                    following_images = all_images[1:]
+                    if len(following_images) > 0:
+                        first_image.save(
+                            private_storage.location + "/" + path,
+                            save_all=True,
+                            append_images=following_images,
+                        )
+                    else:
+                        first_image.save(
+                            private_storage.location + "/" + path, save_all=True
+                        )
+
+                value = path
+
+            elif is_date:
+                value = value.isoformat()
+
+            value_dict = {"val": value}
+            nb_objs = existing_value_obj.update(value=value_dict)
+
+            # No existing property value record, create it
+            if nb_objs == 0:
+                (
+                    selected_form,
+                    created,
+                ) = SelectedForm.objects.get_or_create(submission=self, form=form)
+                FieldValue.objects.create(
+                    selected_form=selected_form,
+                    field=field,
+                    value=value_dict,
+                )
+
+    def get_fields_values(self):
+        """
+        Return a queryset of `FieldValue` objects for this submission, excluding
+        properties of type file.
+        """
+        return (
+            FieldValue.objects.filter(selected_form__submission=self)
+            .exclude(field__input_type=Field.INPUT_TYPE_FILE)
+            .select_related(
+                "selected_form",
+                "selected_form__form",
+                "field",
+            )
+        )
+
+    def get_properties_value(permit_request, property):
+        """
+        Return a `WorksObjectPropertyValue` object for the given `permit_request` and given property
+        """
+        return (
+            models.WorksObjectPropertyValue.objects.filter(
+                works_object_type_choice__permit_request=permit_request
+            )
+            .exclude(property__input_type=models.WorksObjectProperty.INPUT_TYPE_FILE)
+            .select_related(
+                "works_object_type_choice",
+                "works_object_type_choice__works_object_type",
+                "property",
+            )
+        )
+
+    def get_appendices_values(self):
+        """
+        Return a queryset of `FieldValue` objects of type file for this submission.
+        """
+        return FieldValue.objects.filter(
+            selected_form__submission=self,
+            field__input_type=Field.INPUT_TYPE_FILE,
+        ).select_related(
+            "selected_form__form",
+            "field",
+        )
+
+    def get_form_categories(self):
+        return (
+            FormCategory.objects.filter(pk__in=self.forms.values_list("category_id"))
+            .order_by("name")
+            .distinct()
+        )
+
+    def _get_fields_filtered(self, props_filter):
+        """
+        Return a list of `(Form, QuerySet[Field])` for all forms of this submission.
+        `props_filter` is passed the properties queryset and should return it (or a
+        filtered version of it).
+
+        TODO move this in forms app?
+        """
+
+        fields_by_form = [
+            (
+                form,
+                props_filter(
+                    form.fields.filter(form_fields__form=form).order_by(
+                        "form_fields__order", "name"
+                    )
+                ),
+            )
+            for form in self.forms.order_by("order", "name")
+        ]
+
+        return [(form, fields) for form, fields in fields_by_form if fields]
+
+    def get_fields_by_form(self, additional_type_exclusions=None):
+        """
+        FIXME docstring
+        """
+        exclusions = [
+            Field.INPUT_TYPE_FILE,
+        ]
+        if additional_type_exclusions is not None:
+            exclusions += additional_type_exclusions
+        return self._get_fields_filtered(
+            lambda qs: qs.exclude(
+                input_type__in=[
+                    Field.INPUT_TYPE_FILE,
+                ]
+                + exclusions
+            ),
+        )
+
+    def get_appendices_fields_by_form(self):
+        return self._get_fields_filtered(
+            lambda qs: qs.filter(input_type=Field.INPUT_TYPE_FILE),
+        )
+
+    def set_works_types(permit_request, new_works_types):
+        """
+        Delete `WorksObjectTypeChoice` records that relate to a `WorksType` that is not in `new_works_types` (which must be
+        an iterable of `WorksType` instances).
+        """
+        get_works_object_type_choices(permit_request).exclude(
+            works_object_type__works_type__in=new_works_types
+        ).delete()
+
+    @transaction.atomic
+    def set_selected_forms(self, new_forms):
+        """
+        Add the given `new_works_object_types`, which should be an iterable of `WorksObjectType` instances to the given
+        `permit_request`. Existing `WorksObjectType` are ignored.
+        """
+        # Check which object type are new or have been removed. We can't just remove them all and recreate them
+        # because there might be data related to these relations (eg. FieldValue)
+        self.get_selected_forms().exclude(form__in=new_forms).delete()
+
+        for form in new_forms:
+            SelectedForm.objects.get_or_create(submission=self, form=form)
+
+        geotime_objects = self.get_geotime_objects()
+
+        if len(geotime_objects) > 0:
+            geotime_required_info = self.get_geotime_required_info()
+            # Reset the geometry/date if the new_works_object_type do not need Date/Geom
+            if len(geotime_required_info) == 0:
+                geotime_objects.delete()
+            # Reset the date only
+            if GeoTimeInfo.DATE not in geotime_required_info:
+                geotime_objects.update(starts_at=None, ends_at=None)
+            # Reset the geometry only
+            if GeoTimeInfo.GEOMETRY not in geotime_required_info:
+                geotime_objects.update(geom=None)
+
+    def get_contacts_types(self):
+        """
+        Get contacts types defined for each form defined for the submission.
+        """
+        return (
+            ContactType.objects.filter(form_category__in=self.get_form_categories())
+            .values_list("type", "is_mandatory")
+            .order_by("-is_mandatory")
+        )
+
+    def get_missing_required_actor_types(permit_request):
+        """
+        Get actors type required but not filled
+        """
+
+        return filter_only_missing_actor_types(
+            [
+                (actor_type, is_mandatory)
+                for actor_type, is_mandatory in get_actors_types(permit_request)
+                if is_mandatory
+            ],
+            permit_request,
+        )
+
+    def get_geotime_required_info(self):
+        forms = self.forms.all()
+        required_info = set()
+        if any(form.needs_date for form in forms):
+            required_info.add(GeoTimeInfo.DATE)
+
+        if any(form.has_geometry for form in forms):
+            required_info.add(GeoTimeInfo.GEOMETRY)
+        else:
+            exclusions = [
+                field[0]
+                for field in Field.INPUT_TYPE_CHOICES
+                if field[0] != Field.INPUT_TYPE_ADDRESS
+            ]
+
+            if (
+                self.get_fields_by_form(exclusions)
+                and self.get_geotime_objects()
+                .filter(comes_from_automatic_geocoding=True)
+                .exists()
+            ):
+                required_info.add(GeoTimeInfo.GEOCODED_GEOMETRY)
+        return required_info
+
+    def get_secretary_email(self):
+        department = self.administrative_entity.departments.filter(is_backoffice=True)
+        secretary_group_users = User.objects.filter(
+            Q(
+                groups__permitdepartment__in=department,
+                userprofile__notify_per_email=True,
+            )
+        )
+
+        return [user.email for user in secretary_group_users]
+
+    def get_complementary_documents(self, user):
+        qs = self.complementary_documents.all().order_by("pk").distinct()
+
+        if user.is_superuser:
+            return qs
+
+        return qs.filter(
+            Q(is_public=True)
+            | Q(owner=user)
+            | Q(authorised_departments__group__in=user.groups.all()),
+        )
+
+    def get_amend_custom_fields_by_form(self):
+        forms = self.forms.prefetch_related("amend_fields").select_related("category")
+
+        for form in forms:
+            yield (form, form.amend_properties.all())
+
+    @transaction.atomic
+    def set_amend_custom_field_value(self, form, field, value):
+        """
+        Create or update the `SubmissionAmendFieldValue` object for the given
+        field, form and submission. The record will be deleted if value is
+        an empty string or None. Value is only str type.
+        TODO: why is there a "custom" in this method name?
+        """
+        existing_value_obj = SubmissionAmendFieldValue.objects.filter(
+            form__submission=self,
+            form__form=form,
+            property=field,
+        )
+
+        if value == "" or value is None:
+            existing_value_obj.delete()
+        else:
+            nb_objs = existing_value_obj.update(value=value)
+            # No existing property value record, create it
+            if nb_objs == 0:
+                (
+                    selected_form,
+                    created,
+                ) = SelectedForm.objects.get_or_create(submission=self, form=form)
+                SubmissionAmendFieldValue.objects.create(
+                    form=selected_form,
+                    property=field,
+                    value=value,
+                )
+
+    def get_amend_custom_fields_values(self):
+        """
+        Return a queryset of `SubmissionAmendFieldValue` objects for this submission.
+        """
+        return SubmissionAmendFieldValue.objects.filter(
+            form__submission=self
+        ).select_related(
+            "form__form",
+            "field",
+        )
+
+    def get_submission_directives(self):
+        return [
+            (obj.directive, obj.directive_description, obj.additional_information)
+            for obj in self.forms.exclude(
+                directive="", directive_description="", additional_information=""
+            )
+        ]
+
+    @transaction.atomic
+    def set_administrative_entity(self, administrative_entity):
+        """
+        Set the given `administrative_entity`, which should be an instance of `models.PermitAdministrativeEntity`.
+        `WorksObjectTypeChoice` records that don't exist in the new `administrative_entity` will be deleted.
+        """
+        self.forms.exclude(category__in=administrative_entity.categories.all()).delete()
+
+        self.administrative_entity = administrative_entity
+        self.save()
+
+    def get_services_to_notify_mailing_list(self):
+        mailing_list = []
+
+        forms_to_notify = self.forms.filter(notify_services=True)
+
+        for emails in forms_to_notify.values_list("services_to_notify", flat=True):
+            emails_addresses = emails.replace("\n", ",").split(",")
+            mailing_list += [
+                ea.strip() for ea in emails_addresses if validate_email(ea.strip())
+            ]
+
+        return mailing_list
+
+    def has_document_enabled_for_wots(permit_request):
+        # Document module is activated if at leat on WOT has this property enabled
+
+        return (
+            permit_request.works_object_types.filter(document_enabled=True).count() > 0
+        )
+
+    def filter_only_missing_contact_types(self, contact_types):
+        """
+        Filter the given `contact_types` to return only the ones that have not been set in the given `permit_request`.
+        """
+
+        existing_contact_types = self.contacts.values_list(
+            "submissioncontact__contact_type", flat=True
+        )
+
+        return [
+            contact_type
+            for contact_type in contact_types
+            if contact_type[0] not in existing_contact_types
+        ]
+
+    def get_geotime_objects(self, exlude_geocoded_geom=False):
+        return self.geo_time.filter(comes_from_automatic_geocoding=exlude_geocoded_geom)
+
+    def get_actions_for_administrative_entity(self):
+        """
+        Filter out administrative workflow step that are not coherent
+        with current permit_request status
+        """
+
+        # Statuses for which a given action should be available
+        required_statuses_for_actions = {
+            "amend": list(Submission.AMENDABLE_STATUSES),
+            "request_validation": [Submission.STATUS_AWAITING_VALIDATION],
+            "poke": [Submission.STATUS_AWAITING_VALIDATION],
+            "validate": [
+                Submission.STATUS_APPROVED,
+                Submission.STATUS_REJECTED,
+                Submission.STATUS_AWAITING_VALIDATION,
+                Submission.STATUS_PROCESSING,
+            ],
+            "prolong": list(Submission.PROLONGABLE_STATUSES),
+            "complementary_documents": [
+                Submission.STATUS_AWAITING_VALIDATION,
+                Submission.STATUS_PROCESSING,
+            ],
+            "request_inquiry": list(Submission.AMENDABLE_STATUSES),
+        }
+
+        available_statuses_for_administrative_entity = (
+            SubmissionWorkflowStatus.objects.get_statuses_for_administrative_entity(
+                self.administrative_entity
+            )
+        )
+        available_actions = []
+        for action in required_statuses_for_actions.keys():
+            action_as_set = set(required_statuses_for_actions[action])
+            enabled_actions = list(
+                action_as_set.intersection(available_statuses_for_administrative_entity)
+            )
+            if enabled_actions:
+                available_actions.append(action)
+
+        distinct_available_actions = list(dict.fromkeys(available_actions))
+        return distinct_available_actions
+
+    def is_validation_document_required(self):
+        return self.forms.filter(requires_validation_document=True).exists()
+
+    def can_have_multiple_ranges(self):
+        return any(form.can_have_multiple_ranges for form in self.forms.all())
+
+    def get_selected_forms(self):
+        return SelectedForm.objects.filter(submission=self)
+
+    def get_intersected_geometries(self):
+        intersected_geometries = ""
+
+        if self.has_geom_intersection_enabled:
+
+            intersected_geometries_ids = []
+            geotimes = self.geo_time.all()
+
+            for geo_time in geotimes:
+
+                # Django GIS GEOS API does not support intersection with GeometryCollection
+                # For this reason, we have to iterate over collection content
+                for geom in geo_time.geom:
+                    results = (
+                        models.GeomLayer.objects.filter(geom__intersects=geom)
+                        .exclude(pk__in=intersected_geometries_ids)
+                        .distinct()
+                    )
+                    for result in results:
+                        intersected_geometries_ids.append(result.pk)
+                        intersected_geometries += f"""
+                            {result.pk}: {result.layer_name} ; {result.description} ;
+                            {result.source_id} ; {result.source_subid} <br>
+                            """
+
+        return intersected_geometries
+
+    def reverse_geocode_and_store_address_geometry(self, to_geocode_addresses):
+        # Delete the previous geocoded geometries
+        SubmissionGeoTime.objects.filter(
+            submission=self, comes_from_automatic_geocoding=True
+        ).delete()
+
+        if to_geocode_addresses:
+            geoadmin_address_search_api = settings.LOCATIONS_SEARCH_API
+            geom = GeometryCollection()
+            for address in to_geocode_addresses:
+                search_params = {
+                    "searchText": address,
+                    "limit": 1,
+                    "partitionlimit": 1,
+                    "type": "locations",
+                    "sr": "2056",
+                    "lang": "fr",
+                    "origins": "address",
+                }
+
+                data = urllib.parse.urlencode(search_params)
+                url = f"{geoadmin_address_search_api}?{data}"
+                # GEOADMIN API might be down and we don't want to block the user
+                try:
+                    response = requests.get(url, timeout=2)
+                except requests.exceptions.RequestException:
+                    return None
+
+                if response.status_code == 200 and response.json()["results"]:
+                    x = response.json()["results"][0]["attrs"]["x"]
+                    y = response.json()["results"][0]["attrs"]["y"]
+                    geom.append(MultiPoint(Point(y, x, srid=2056)))
+                # If geocoding matches nothing, set the address value on the administrative_entity centroid point
+                else:
+                    geom.append(MultiPoint(self.administrative_entity.geom.centroid))
+
+            # Save the new ones
+            SubmissionGeoTime.objects.create(
+                submission=self,
+                comes_from_automatic_geocoding=True,
+                geom=geom,
+            )
 
 
 class Contact(models.Model):
@@ -533,8 +1160,12 @@ class SelectedForm(models.Model):
     request. Property values will then point to this model.
     """
 
-    submission = models.ForeignKey("Submission", on_delete=models.CASCADE)
-    form = models.ForeignKey(Form, on_delete=models.CASCADE)
+    submission = models.ForeignKey(
+        "Submission", on_delete=models.CASCADE, related_name="selected_forms"
+    )
+    form = models.ForeignKey(
+        Form, on_delete=models.CASCADE, related_name="selected_forms"
+    )
 
     class Meta:
         unique_together = [("submission", "form")]
@@ -608,6 +1239,29 @@ class FieldValue(models.Model):
     class Meta:
         unique_together = [("field", "selected_form")]
 
+    def get_value(self):
+        value = self.value["val"]
+        if self.field.input_type == Field.INPUT_TYPE_DATE:
+            return parse_date(value)
+
+        elif self.field.input_type == Field.INPUT_TYPE_FILE:
+            private_storage = fields.PrivateFileSystemStorage()
+            # TODO: handle missing files! Database pointing empty files should be removed
+            try:
+                f = private_storage.open(value)
+                # The `url` attribute of the file is used to detect if there was already a file set (it is used by
+                # `ClearableFileInput` and by the `set_object_property_value` function)
+                f.url = reverse(
+                    "permits:permit_request_media_download",
+                    kwargs={"property_value_id": self.pk},
+                )
+            except IOError:
+                f = None
+
+            return f
+
+        return value
+
 
 class SubmissionGeoTime(models.Model):
     """
@@ -617,10 +1271,8 @@ class SubmissionGeoTime(models.Model):
     submission = models.ForeignKey(
         Submission, on_delete=models.CASCADE, related_name="geo_time"
     )
-    starts_at = models.DateTimeField(
-        _("Date planifiée de début"), blank=True, null=True
-    )
-    ends_at = models.DateTimeField(_("Date planifiée de fin"), blank=True, null=True)
+    starts_at = models.DateTimeField(_("Date de début"), blank=True, null=True)
+    ends_at = models.DateTimeField(_("Date de fin"), blank=True, null=True)
     comment = models.CharField(_("Commentaire"), max_length=1024, blank=True)
     external_link = models.URLField(_("Lien externe"), blank=True)
     comes_from_automatic_geocoding = models.BooleanField(
@@ -661,6 +1313,16 @@ class GeomLayer(models.Model):
         )
 
 
+class SubmissionWorkflowStatusQuerySet(models.QuerySet):
+    def get_statuses_for_administrative_entity(self, administrative_entity):
+        """
+        Returns the status availables for an administrative entity
+        """
+        return self.filter(administrative_entity=administrative_entity).values_list(
+            "status", flat=True
+        )
+
+
 class SubmissionWorkflowStatus(models.Model):
     """
     Represents a status in the administrative workflow
@@ -685,6 +1347,25 @@ class SubmissionWorkflowStatus(models.Model):
         unique_together = ("status", "administrative_entity")
 
 
+class ArchivedSubmissionQuerySet(models.QuerySet):
+    def filter_for_user(self, user):
+        """
+        Return the list of archived requests this user has access to.
+        """
+        if not user.is_authenticated:
+            return self.none()
+
+        if user.is_superuser:
+            return self
+
+        qs_filter = Q(archivist=user)
+        qs_filter |= Q(
+            permit_request__administrative_entity__in=user.get_administrative_entities()
+        )
+
+        return self.filter(qs_filter)
+
+
 class ArchivedSubmission(models.Model):
     archived_date = models.DateTimeField(auto_now_add=True)
     archivist = models.ForeignKey(
@@ -699,6 +1380,8 @@ class ArchivedSubmission(models.Model):
         primary_key=True,
     )
     archive = fields.ArchiveDocumentFileField(_("Archive"))
+
+    objects = ArchivedSubmissionQuerySet().as_manager()
 
     @property
     def path(self):
@@ -739,12 +1422,10 @@ class SubmissionInquiry(models.Model):
         verbose_name_plural = _("3.2 Enquêtes publics")
 
     @classmethod
-    def get_current_inquiry(cls, permit_request):
+    def get_current_inquiry(cls, submission):
         today = datetime.today().strftime("%Y-%m-%d")
         return cls.objects.filter(
-            Q(permit_request=permit_request)
-            & Q(start_date__lte=today)
-            & Q(end_date__gte=today)
+            Q(submission=submission) & Q(start_date__lte=today) & Q(end_date__gte=today)
         ).first()
 
 

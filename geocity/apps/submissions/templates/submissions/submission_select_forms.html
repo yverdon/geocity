@@ -1,0 +1,33 @@
+{% extends "base_generic.html" %}
+{% load bootstrap4 %}
+{% load i18n %}
+{% load permits_extras %}
+
+{% block content %}
+  {% permit_progressbar steps StepType.FORMS %}
+  <h3>{{ config.WORKS_OBJECTS_STEP }}</h3>
+
+  {% comment %}
+    {# FIXME #}
+    {% if typefilter and not user.permitauthor.is_temporary %}
+      {% trans "La liste ci-dessous est filtrée," %}<a class="ml-2" href="{% url 'submissions:submission_select_types' permit_request_id=permit_request.pk %}?cleartypefilter=true"><b>{% trans "Voir toutes les possibilités" %}</b></a>
+    {% endif %}
+  {% endcomment %}
+  <hr>
+  <form method="post">
+    {% csrf_token %}
+    {% bootstrap_form_errors forms_selection_form %}
+
+    {% for field in forms_selection_form %}
+      <h4>{{ field.label }}</h4>
+      {% bootstrap_field field show_label=False %}
+    {% endfor %}
+
+    {% buttons %}
+      {% if previous_step.url %}
+        <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
+      {% endif %}
+      <button class="btn btn-primary">{% trans "Enregistrer et continuer" %}</button>
+    {% endbuttons %}
+  </form>
+{% endblock %}

@@ -12,7 +12,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ROOT_URLCONF = "geocity.urls"
 PREFIX_URL = os.environ.get("PREFIX_URL", "")
-LOGIN_URL = "login"
+LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "permits:permit_requests_list"
 LOGOUT_REDIRECT_URL = LOGIN_URL
 
@@ -404,7 +404,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "geocity.context_processors.two_factor_setting",
-                "geocity.apps.permits.context_processors.step_type",
+                "geocity.apps.submissions.context_processors.step_type",
             ],
         },
     },

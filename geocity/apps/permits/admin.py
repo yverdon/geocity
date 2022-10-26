@@ -1,3 +1,4 @@
+# SPLIT between accounts/ , forms/, submissions/
 import django.db.models
 from adminsortable2.admin import SortableAdminMixin
 from django import forms

@@ -1,0 +1,62 @@
+{% load static %}
+{% load bootstrap4 %}
+{% load i18n %}
+{% load permits_extras %}
+
+{% if user.is_authenticated %}
+  <div class="d-flex flex-row center-table">
+
+    <div class="p-2 permits-action-btns">
+      <a class="btn btn-primary" href="{% url 'permits:permit_request_select_administrative_entity'%}" role="button">
+        <i class="fa fa-plus aria-hidden="true"></i>
+        {% trans "Créer une nouvelle demande" %}
+      </a>
+    </div>
+
+    <div class="p-2 permits-action-btns">
+        <a class="btn btn-outline-primary" data-toggle="collapse" href="#collapseFilter" role="button" aria-expanded="false" aria-controls="collapseFilter">
+          <i class="fa fa-filter"></i>
+          {% trans "Filtrer" %}
+      </a>
+    </div>
+
+    {% if display_clear_filters %}
+    <div class="p-2 permits-action-btns">
+        <a class="btn btn-outline-primary" href="{% url 'permits:permit_requests_list' %}" role="button">
+          <i class="fa fa-eraser"></i>
+          {% trans "Effacer le filtre" %}
+        </a>
+    </div>
+    {% endif %}
+
+    <div class="p-2 permits-action-btns">
+        <a class="btn btn-outline-primary" href="{% url 'permits:permit_requests_list' %}?{{ export_csv_url_params }}" role="button">
+          <i class="fa fa-file"></i>
+          {% trans "Exporter" %}
+        </a>
+    </div>
+    {% can_archive as can_archive %}
+    {% if can_archive %}
+      <div class="p-2 permits-action-btns">
+          <form id="archive-form" action="/permit-requests/archives/" method="post">
+            {% csrf_token %}
+            <button class="btn btn-outline-primary" type="submit">
+              <i class="fa fa-archive"></i>
+              {% trans "Archiver" %}
+            </button>
+          </form>
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
+
+{{ filter.form.media }}
+
+<div class="d-flex flex-row">
+  <form class="permits-list center-table" method="get">
+    <div class="collapse" id="collapseFilter">
+      {% bootstrap_form filter.form layout='horizontal' %}
+      {% bootstrap_button "Appliquer le filtre" button_type="submit" button_class="btn-primary"%}
+    </div>
+  </form>
+</div>

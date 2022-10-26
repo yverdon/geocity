@@ -88,7 +88,7 @@ class ArchiveDocumentFileField(models.FileField):
         _, ext = os.path.splitext(filename)
         t = instance.archived_date or datetime.datetime.now()
         archived_date = t.strftime("%d.%m.%Y.%H.%M.%S")
-        return f"{instance.permit_request.id:02d}_{archived_date}_{slugify(instance.permit_request.get_works_type_names_list())}{ext}"
+        return f"{instance.submission.id:02d}_{archived_date}_{slugify(instance.submission.get_categories_names_list())}{ext}"
 
 
 class ComplementaryDocumentFieldFile(FieldFile):

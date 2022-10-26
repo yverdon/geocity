@@ -1,0 +1,34 @@
+{% extends "base_generic.html" %}
+{% load static %}
+{% load i18n %}
+{% load bootstrap4 %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static 'libs/js/jquery-ui-custom/jquery-ui.min.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'customWidgets/RemoteAutocomplete/remoteautocomplete.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'css/contactform.css' %}">
+{% endblock %}
+{% block scripts %}
+  <script src="{% static 'libs/js/jquery-ui-custom/jquery-ui.js' %}"></script>
+  <script src="{% static 'customWidgets/RemoteAutocomplete/remoteautocomplete.js' %}"></script>
+{% endblock %}
+{% block content-fluid %}
+<div class = "container">
+  <br>
+  <h3>{% trans "Mon compte" %}</h3>
+  <hr>
+	<form method='POST' action='' enctype="multipart/form-data" novalidate id="actor-form">
+		{% csrf_token %}
+    {% if djangouserform %}
+      {% bootstrap_form djangouserform layout='horizontal'%}
+    {% endif %}
+    {% if permitauthorform %}
+		  {% bootstrap_form permitauthorform layout='horizontal'%}
+    {% endif %}
+    {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary mr-3" value="Enregistrer" %}
+    <a href="{% url 'permits:permit_requests_list' %}">{% trans "Annuler" %}</a>
+	</form>
+  <br>
+</div>
+{% endblock %}

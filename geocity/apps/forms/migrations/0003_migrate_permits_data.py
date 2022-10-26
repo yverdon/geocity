@@ -95,10 +95,10 @@ def create_forms(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("forms", "0001_initial"),
-        ("permits", "0083_archivedpermitrequest_archive"),
+        ("forms", "0002_geom_intersection_enabled_shortname"),
+        ("permits", "0084_add_shortname_and_change_text"),
         ("contenttypes", "0001_initial"),
-        ("accounts", "0002_migrate_permits_data"),
+        ("accounts", "0003_migrate_permits_data"),
     ]
 
     operations = [

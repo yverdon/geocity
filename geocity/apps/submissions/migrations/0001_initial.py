@@ -16,11 +16,11 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("forms", "0002_migrate_permits_data"),
+        ("forms", "0001_initial"),
         ("reports", "0009_add_section_creditor"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("auth", "0012_alter_user_first_name_max_length"),
-        ("accounts", "0002_migrate_permits_data"),
+        ("accounts", "0001_initial"),
     ]
 
     operations = [
