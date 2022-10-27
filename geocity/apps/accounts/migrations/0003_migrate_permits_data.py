@@ -5,6 +5,7 @@ from django.db import migrations
 from geocity.migrations import (
     copy_tags,
     migrate_contenttypes,
+    migrate_permissions,
     common_fields_values,
     sync_sequence,
 )
@@ -78,7 +79,6 @@ def create_template_customizations(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("accounts", "0002_permitdepartment_shortname"),
         ("permits", "0084_add_shortname_and_change_text"),

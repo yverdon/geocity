@@ -60,7 +60,7 @@ class CustomFieldValueAccessibleSubmission:
                     return value
             except models.FieldValue.DoesNotExist:
                 return None
-        return getattr(self.original_permit_request, name)
+        return getattr(self.original_submission, name)
 
 
 def get_custom_dynamic_table(inherits_from, extra_column_names):
@@ -225,10 +225,9 @@ class GenericDepartmentSubmissionsTable(DynamicColumnsTable, GenericSubmissionTa
     def before_render(self, request):
         self.columns["actions"].column.extra_context = {
             "can_view": (
-                # FIXME rename permissions
-                request.user.has_perm("permits.amend_permit_request")
-                or request.user.has_perm("permits.validate_permit_request")
-                or request.user.has_perm("permits.modify_permit_request")
+                request.user.has_perm("submissions.amend_submission")
+                or request.user.has_perm("submissions.validate_submission")
+                or request.user.has_perm("submissions.modify_submission")
             )
         }
 
@@ -301,7 +300,7 @@ class ArchivedSubmissionsTable(ColumnShiftTable):
     archived_date = tables.Column(verbose_name=_("Date d'archivage"), orderable=True)
     archivist = tables.Column(verbose_name=_("Archivé par"), orderable=True)
     actions = tables.TemplateColumn(
-        template_name="tables/_archived_submission.html",
+        template_name="tables/_archived_submission_actions.html",
         verbose_name=_("Actions"),
         orderable=False,
     )

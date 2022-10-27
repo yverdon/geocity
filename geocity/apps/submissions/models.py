@@ -24,7 +24,9 @@ from django.db.models import (
     Value,
 )
 from django.db.models.functions import Concat
+from django.urls import reverse
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 from django.utils.functional import cached_property
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
@@ -36,6 +38,7 @@ from PIL import Image
 from simple_history.models import HistoricalRecords
 
 from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment, User
+from geocity.apps.accounts import users
 from geocity.apps.accounts.validators import validate_email
 from geocity.apps.forms.models import (
     Field,
@@ -89,8 +92,8 @@ ACTIONS = [
 ]
 
 
-def printed_permit_request_storage(instance, filename):
-    return f"permit_requests_uploads/{instance.permit_request.pk}/{filename}"
+def printed_submission_storage(instance, filename):
+    return f"permit_requests_uploads/{instance.submission.pk}/{filename}"
 
 
 class GeoTimeInfo(enum.Enum):
@@ -144,12 +147,14 @@ class SubmissionQuerySet(models.QuerySet):
         if not user.is_superuser:
             qs_filter = Q(author=user)
 
-            if user.has_perm("submissions.amend_permit_request"):
+            if user.has_perm("submissions.amend_submission"):
                 qs_filter |= Q(
-                    administrative_entity__in=user.get_administrative_entities(),
+                    administrative_entity__in=users.get_administrative_entities_associated_to_user(
+                        user
+                    ),
                 ) & ~Q(status=Submission.STATUS_DRAFT)
 
-            if user.has_perm("submissions.validate_permit_request"):
+            if user.has_perm("submissions.validate_submission"):
                 qs_filter |= Q(
                     validations__department__in=PermitDepartment.objects.filter(
                         group__in=user.groups.all()
@@ -192,7 +197,7 @@ class Submission(models.Model):
         STATUS_INQUIRY_IN_PROGRESS,
     }
 
-    # Statuses that can be edited by pilot service if granted permission "edit_permit_request"
+    # Statuses that can be edited by pilot service if granted permission "edit_submission"
     EDITABLE_STATUSES = {
         STATUS_DRAFT,
         STATUS_AWAITING_SUPPLEMENT,
@@ -291,10 +296,10 @@ class Submission(models.Model):
         verbose_name = _("3.1 Consultation de la demande")
         verbose_name_plural = _("3.1 Consultation des demandes")
         permissions = [
-            ("amend_permit_request", _("Traiter les demandes de permis")),
-            ("validate_permit_request", _("Valider les demandes de permis")),
-            ("classify_permit_request", _("Classer les demandes de permis")),
-            ("edit_permit_request", _("Éditer les demandes de permis")),
+            ("amend_submission", _("Traiter les demandes de permis")),
+            ("validate_submission", _("Valider les demandes de permis")),
+            ("classify_submission", _("Classer les demandes de permis")),
+            ("edit_submission", _("Éditer les demandes de permis")),
         ]
         indexes = [models.Index(fields=["created_at"])]
 
@@ -319,7 +324,7 @@ class Submission(models.Model):
     def get_amend_field_list_always_amendable(self):
         amend_properties = []
         qs = SubmissionAmendField.objects.filter(
-            Q(form__administrative_entities=self.administrative_entity)
+            Q(forms__administrative_entities=self.administrative_entity)
             & Q(can_always_update=True)
         ).distinct()
         for object in qs:
@@ -359,7 +364,7 @@ class Submission(models.Model):
 
     def get_pending_validations(self):
         return self.validations.filter(
-            validation_status=PermitRequestValidation.STATUS_REQUESTED
+            validation_status=SubmissionValidation.STATUS_REQUESTED
         )
 
     def has_validations(self):
@@ -506,7 +511,7 @@ class Submission(models.Model):
     def current_inquiry(self):
         today = datetime.today()
         return SubmissionInquiry.objects.filter(
-            permit_request=self, start_date__lte=today, end_date__gte=today
+            submission=self, start_date__lte=today, end_date__gte=today
         ).first()
 
     def get_categories_names_list(self):
@@ -530,7 +535,7 @@ class Submission(models.Model):
         with tempfile.SpooledTemporaryFile() as tmp_file:
             with zipfile.ZipFile(tmp_file, "w") as zip_file:
                 # include the request data as CSV
-                zip_file.writestr("permit_request.csv", self.to_csv())
+                zip_file.writestr("submission.csv", self.to_csv())
                 # include additional documents
                 for document in self.complementary_documents:
                     zip_file.write(document.path, document.name)
@@ -563,7 +568,7 @@ class Submission(models.Model):
 
     @property
     def complementary_documents(self):
-        return SubmissionComplementaryDocument.objects.filter(permit_request=self).all()
+        return SubmissionComplementaryDocument.objects.filter(submission=self).all()
 
     def to_csv(self):
         from .tables import OwnPermitRequestsExportTable
@@ -796,7 +801,7 @@ class Submission(models.Model):
     def set_selected_forms(self, new_forms):
         """
         Add the given `new_works_object_types`, which should be an iterable of `WorksObjectType` instances to the given
-        `permit_request`. Existing `WorksObjectType` are ignored.
+        `submission`. Existing `WorksObjectType` are ignored.
         """
         # Check which object type are new or have been removed. We can't just remove them all and recreate them
         # because there might be data related to these relations (eg. FieldValue)
@@ -829,18 +834,17 @@ class Submission(models.Model):
             .order_by("-is_mandatory")
         )
 
-    def get_missing_required_actor_types(permit_request):
+    def get_missing_required_contact_types(self):
         """
-        Get actors type required but not filled
+        Get contacts types required but not filled
         """
 
-        return filter_only_missing_actor_types(
+        return self.filter_only_missing_contact_types(
             [
                 (actor_type, is_mandatory)
-                for actor_type, is_mandatory in get_actors_types(permit_request)
+                for actor_type, is_mandatory in self.get_contacts_types()
                 if is_mandatory
             ],
-            permit_request,
         )
 
     def get_geotime_required_info(self):
@@ -894,7 +898,7 @@ class Submission(models.Model):
         forms = self.forms.prefetch_related("amend_fields").select_related("category")
 
         for form in forms:
-            yield (form, form.amend_properties.all())
+            yield (form, form.amend_fields.all())
 
     @transaction.atomic
     def set_amend_custom_field_value(self, form, field, value):
@@ -907,14 +911,14 @@ class Submission(models.Model):
         existing_value_obj = SubmissionAmendFieldValue.objects.filter(
             form__submission=self,
             form__form=form,
-            property=field,
+            field=field,
         )
 
         if value == "" or value is None:
             existing_value_obj.delete()
         else:
             nb_objs = existing_value_obj.update(value=value)
-            # No existing property value record, create it
+            # No existing field value record, create it
             if nb_objs == 0:
                 (
                     selected_form,
@@ -922,7 +926,7 @@ class Submission(models.Model):
                 ) = SelectedForm.objects.get_or_create(submission=self, form=form)
                 SubmissionAmendFieldValue.objects.create(
                     form=selected_form,
-                    property=field,
+                    field=field,
                     value=value,
                 )
 
@@ -969,16 +973,12 @@ class Submission(models.Model):
 
         return mailing_list
 
-    def has_document_enabled_for_wots(permit_request):
-        # Document module is activated if at leat on WOT has this property enabled
-
-        return (
-            permit_request.works_object_types.filter(document_enabled=True).count() > 0
-        )
+    def has_document_enabled(self):
+        return self.forms.filter(document_enabled=True).exists()
 
     def filter_only_missing_contact_types(self, contact_types):
         """
-        Filter the given `contact_types` to return only the ones that have not been set in the given `permit_request`.
+        Filter the given `contact_types` to return only the ones that have not been set in the given `submission`.
         """
 
         existing_contact_types = self.contacts.values_list(
@@ -997,7 +997,7 @@ class Submission(models.Model):
     def get_actions_for_administrative_entity(self):
         """
         Filter out administrative workflow step that are not coherent
-        with current permit_request status
+        with current submission status
         """
 
         # Statuses for which a given action should be available
@@ -1252,7 +1252,7 @@ class FieldValue(models.Model):
                 # The `url` attribute of the file is used to detect if there was already a file set (it is used by
                 # `ClearableFileInput` and by the `set_object_property_value` function)
                 f.url = reverse(
-                    "permits:permit_request_media_download",
+                    "submissions:submission_media_download",
                     kwargs={"property_value_id": self.pk},
                 )
             except IOError:
@@ -1338,6 +1338,8 @@ class SubmissionWorkflowStatus(models.Model):
         related_name="enabled_statuses",
     )
 
+    objects = SubmissionWorkflowStatusQuerySet().as_manager()
+
     def __str__(self):
         return str(self.get_status_display())
 
@@ -1360,7 +1362,9 @@ class ArchivedSubmissionQuerySet(models.QuerySet):
 
         qs_filter = Q(archivist=user)
         qs_filter |= Q(
-            permit_request__administrative_entity__in=user.get_administrative_entities()
+            submission__administrative_entity__in=users.get_administrative_entities_associated_to_user(
+                user
+            )
         )
 
         return self.filter(qs_filter)
@@ -1630,7 +1634,7 @@ class SubmissionValidation(models.Model):
     department = models.ForeignKey(
         PermitDepartment,
         on_delete=models.CASCADE,
-        related_name="permit_request_validations",
+        related_name="submission_validations",
     )
     validation_status = models.IntegerField(
         _("Statut de validation"), choices=STATUS_CHOICES, default=STATUS_REQUESTED

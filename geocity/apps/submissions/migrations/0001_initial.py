@@ -188,7 +188,9 @@ class Migration(migrations.Migration):
                 (
                     "form",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to="forms.form"
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="selected_forms",
+                        to="forms.form",
                     ),
                 ),
             ],
@@ -342,11 +344,13 @@ class Migration(migrations.Migration):
                 "verbose_name": "3.1 Consultation de la demande",
                 "verbose_name_plural": "3.1 Consultation des demandes",
                 "permissions": [
-                    ("amend_permit_request", "Traiter les demandes de permis"),
-                    ("validate_permit_request", "Valider les demandes de permis"),
-                    ("classify_permit_request", "Classer les demandes de permis"),
-                    ("edit_permit_request", "Éditer les demandes de permis"),
+                    ("amend_submission", "Traiter les demandes de permis"),
+                    ("validate_submission", "Valider les demandes de permis"),
+                    ("classify_submission", "Classer les demandes de permis"),
+                    ("edit_submission", "Éditer les demandes de permis"),
                 ],
+                "verbose_name": "3.1 Consultation de la demande",
+                "verbose_name_plural": "3.1 Consultation des demandes",
             },
         ),
         migrations.CreateModel(
@@ -506,7 +510,7 @@ class Migration(migrations.Migration):
                     "archive",
                     geocity.apps.submissions.fields.ArchiveDocumentFileField(
                         storage=geocity.apps.submissions.fields.ArchiveFileSystemStorage(),
-                        upload_to=geocity.apps.submissions.fields.ArchiveDocumentFileField._upload_to,
+                        upload_to=geocity.apps.submissions.fields.archive_upload_to,
                         verbose_name="Archive",
                     ),
                 ),
@@ -724,7 +728,9 @@ class Migration(migrations.Migration):
             model_name="selectedform",
             name="submission",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, to="submissions.submission"
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="selected_forms",
+                to="submissions.submission",
             ),
         ),
         migrations.CreateModel(
@@ -1451,7 +1457,7 @@ class Migration(migrations.Migration):
                     "department",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name="permit_request_validations",
+                        related_name="submission_validations",
                         to="accounts.permitdepartment",
                     ),
                 ),

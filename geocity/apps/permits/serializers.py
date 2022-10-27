@@ -114,6 +114,7 @@ class WotPropertiesValuesSerializer(serializers.RelatedField):
 
 
 class AmendPropertiesValuesSerializer(serializers.RelatedField):
+    # FIXME this doesn’t seem to be used. Remove it?
     def to_representation(self, value):
         amend_properties = services.get_amend_properties(value)
         return amend_properties

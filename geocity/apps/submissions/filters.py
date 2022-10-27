@@ -12,7 +12,7 @@ from . import models
 
 class BaseSubmissionFilterSet(django_filters.FilterSet):
     id = django_filters.filters.NumberFilter(field_name="id")
-    forms__form_category = django_filters.filters.ModelChoiceFilter(
+    forms__category = django_filters.filters.ModelChoiceFilter(
         queryset=models.FormCategory.objects.order_by("name"),
         label=_("Type de demande"),
     )
@@ -53,7 +53,7 @@ class BaseSubmissionFilterSet(django_filters.FilterSet):
             "id",
             "status",
             "administrative_entity",
-            "selected_forms__form_category",
+            "forms__category",
         ]
 
 
@@ -86,9 +86,7 @@ def _get_form_categories_queryset_for_current_user(request):
 def _get_forms_queryset_for_current_user(request):
     return (
         Form.objects.filter(
-            forms__submissions__in=models.Submission.objects.filter_for_user(
-                request.user
-            )
+            submissions__in=models.Submission.objects.filter_for_user(request.user)
         )
         .distinct()
         .order_by("name")
@@ -96,15 +94,15 @@ def _get_forms_queryset_for_current_user(request):
 
 
 class DepartmentSubmissionFilterSet(BaseSubmissionFilterSet):
-    selected_forms__administrative_entities = django_filters.filters.ModelChoiceFilter(
+    forms__administrative_entities = django_filters.filters.ModelChoiceFilter(
         queryset=_get_administrative_entities_queryset_for_current_user,
         label=_("Entité administrative"),
     )
-    selected_forms__form_category = django_filters.filters.ModelChoiceFilter(
+    forms__category = django_filters.filters.ModelChoiceFilter(
         queryset=_get_form_categories_queryset_for_current_user,
         label=_("Type de demande"),
     )
-    selected_forms__form = django_filters.filters.ModelChoiceFilter(
+    forms = django_filters.filters.ModelChoiceFilter(
         queryset=_get_forms_queryset_for_current_user,
         label=_("Objet de la demande"),
     )
@@ -118,9 +116,9 @@ class DepartmentSubmissionFilterSet(BaseSubmissionFilterSet):
         fields = [
             "id",
             "status",
-            "selected_forms__administrative_entities",
-            "selected_forms__form_category",
-            "selected_forms__form",
+            "forms__administrative_entities",
+            "forms__category",
+            "forms",
             "created_at",
             "starts_at_min",
             "ends_at_max",

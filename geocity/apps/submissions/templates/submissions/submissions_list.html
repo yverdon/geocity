@@ -10,7 +10,7 @@
   <div id="archive-in_progress" class="container-fluid mb-4 display-none">
       <div class="alert alert-info">
         {% trans "L'archivage des demandes est en cours. Une fois terminé, elles seront visible " %}
-        <a href="{% url "permits:archived_permit_request_list" %}">ici</a>.
+        <a href="{% url "submissions:archived_submission_list" %}">ici</a>.
         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -22,7 +22,7 @@
     </div>
   </div>
 
-  {% include "permits/permit_request_toolbox_header.html" %}
+  {% include "submissions/submission_toolbox_header.html" %}
 
   <div class="permits-list center-table">
     {% render_table table %}

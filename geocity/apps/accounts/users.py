@@ -18,7 +18,7 @@ def has_profile(user):
     return True
 
 
-def get_administrative_entities(user):
+def get_administrative_entities_associated_to_user(user):
     return models.AdministrativeEntity.objects.filter(
         departments__group__in=user.groups.all(),
     ).order_by("ofs_id", "-name")

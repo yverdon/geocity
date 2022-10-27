@@ -122,22 +122,35 @@ class AdministrativeEntityForm(forms.Form):
         kwargs["initial"] = initial
 
         super().__init__(*args, **kwargs)
-        entities_by_tag = Form.objects.get_administrative_entities_with_forms(
-            self.user,
-            site,
-        ).filter_by_tags(tags)
-        if not entities_by_tag.exists():
+
+        available_administrative_entities = (
+            Form.objects.get_administrative_entities_with_forms(
+                self.user,
+                site,
+            )
+        )
+        entities_filter = Q(pk__in=available_administrative_entities)
+
+        if self.instance:
+            entities_filter |= Q(
+                pk__in=self.instance.forms.values_list(
+                    "administrative_entities", flat=True
+                ).distinct()
+            )
+
+        entities = AdministrativeEntity.objects.filter(entities_filter)
+        entities_filtered_by_tags = entities.filter_by_tags(tags)
+
+        filtered_entities = (
+            entities_filtered_by_tags if entities_filtered_by_tags else entities
+        )
+
+        if not filtered_entities and session:
             session["entityfilter"] = []
 
         self.fields["administrative_entity"].choices = [
             (ofs_id, [(entity.pk, entity.name) for entity in entities])
-            for ofs_id, entities in regroup_by_ofs_id(
-                entities_by_tag
-                if entities_by_tag
-                else Form.objects.get_administrative_entities_with_forms(
-                    self.user, site
-                )
-            )
+            for ofs_id, entities in regroup_by_ofs_id(filtered_entities)
         ]
 
     def save(self, author):
@@ -263,7 +276,7 @@ class FieldsForm(PartialValidationMixin, forms.Form):
                 if field.is_mandatory:
                     self.fields[field_name].required = True
             else:
-                fields_per_form[form_name].append(self.non_field_value_for_field(prop))
+                fields_per_form[form_name].append(self.non_field_value_for_field(field))
 
         if disable_fields:
             for field in self.fields.values():
@@ -746,7 +759,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
         for prop_value in self.get_values():
             initial[
                 self.get_field_name(
-                    prop_value.selected_form.form_id,
+                    prop_value.form_id,
                     prop_value.field_id,
                 )
             ] = prop_value.value
@@ -755,7 +768,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
 
         if self.instance:
             available_statuses_for_administrative_entity = list(
-                permissions.get_status_choices_for_administrative_entity(
+                models.SubmissionWorkflowStatus.objects.get_statuses_for_administrative_entity(
                     self.instance.administrative_entity
                 )
             )
@@ -947,10 +960,9 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                     if self.cleaned_data.get("reason")
                     else ""
                 ),
-                # FIXME change variable name in template (was permit_request_url)
                 "submission_url": submission.get_absolute_url(
                     reverse(
-                        "submissions:permit_request_detail",
+                        "submissions:submission_detail",
                         kwargs={"submission_id": submission.pk},
                     )
                 ),
@@ -1217,7 +1229,7 @@ class SubmissionValidationDepartmentSelectionForm(forms.Form):
         permit_request_ct = ContentType.objects.get_for_model(models.Submission)
         # FIXME rename permissions
         validate_permission = Permission.objects.get(
-            codename="validate_permit_request", content_type=permit_request_ct
+            codename="validate_submission", content_type=permit_request_ct
         )
         submission_departments = PermitDepartment.objects.filter(
             administrative_entity=self.submission.administrative_entity,
@@ -1689,3 +1701,25 @@ def get_submission_contacts_formset_initiated(submission, data=None):
         )
 
     return formset
+
+
+def get_submission_forms(submission):
+    fields_form = FieldsForm(instance=submission)
+    appendices_form = AppendicesForm(instance=submission)
+    fields_by_object_type = dict(fields_form.get_form_fields_by_form())
+    appendices_by_object_type = dict(appendices_form.get_form_fields_by_form())
+    amend_custom_fields_values = submission.get_amend_custom_fields_values()
+    amend_custom_properties_by_object_type = defaultdict(list)
+    for value in amend_custom_fields_values:
+        amend_custom_properties_by_object_type[value.form.form].append(value)
+    forms_infos = [
+        (
+            selected_form.form,
+            fields_by_object_type.get(selected_form.form, []),
+            appendices_by_object_type.get(selected_form.form, []),
+            amend_custom_properties_by_object_type[selected_form.form],
+        )
+        for selected_form in submission.selected_forms.all()
+    ]
+
+    return forms_infos

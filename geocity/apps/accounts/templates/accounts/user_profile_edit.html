@@ -14,21 +14,21 @@
   <script src="{% static 'customWidgets/RemoteAutocomplete/remoteautocomplete.js' %}"></script>
 {% endblock %}
 {% block content-fluid %}
-<div class = "container">
+<div class="container">
   <br>
   <h3>{% trans "Mon compte" %}</h3>
   <hr>
-	<form method='POST' action='' enctype="multipart/form-data" novalidate id="actor-form">
-		{% csrf_token %}
-    {% if djangouserform %}
-      {% bootstrap_form djangouserform layout='horizontal'%}
+  <form method='POST' action='' enctype="multipart/form-data" novalidate id="actor-form">
+    {% csrf_token %}
+    {% if django_user_form %}
+      {% bootstrap_form django_user_form layout='horizontal'%}
     {% endif %}
-    {% if permitauthorform %}
-		  {% bootstrap_form permitauthorform layout='horizontal'%}
+    {% if user_profile_form %}
+      {% bootstrap_form user_profile_form layout='horizontal'%}
     {% endif %}
     {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary mr-3" value="Enregistrer" %}
-    <a href="{% url 'permits:permit_requests_list' %}">{% trans "Annuler" %}</a>
-	</form>
+    <a href="{% url 'submissions:submissions_list' %}">{% trans "Annuler" %}</a>
+  </form>
   <br>
 </div>
 {% endblock %}

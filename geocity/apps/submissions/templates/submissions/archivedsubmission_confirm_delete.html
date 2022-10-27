@@ -9,6 +9,6 @@
     {% csrf_token %}
     <p>{% trans "Êtes vous sûr de vouloir supprimer l'archive n°" %}{{ object.pk }} ?</p>
     {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary" value="Confirmer" %}
-    <a class="ml-2" href="{% url 'permits:archived_permit_request_list' %}">{% trans "Annuler" %}</a>
+    <a class="ml-2" href="{% url 'submissions:archived_submission_list' %}">{% trans "Annuler" %}</a>
   </form>
 {% endblock %}

@@ -34,7 +34,7 @@ anonymous_submission_urlpatterns = [
 ]
 
 existing_submission_urlpatterns = [
-    path("", views.SubmissionDetailView.as_view(), name="permit_request_detail"),
+    path("", views.SubmissionDetailView.as_view(), name="submission_detail"),
     path(
         "objects/",
         views.submission_select_forms,

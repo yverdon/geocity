@@ -2,7 +2,7 @@
 
 {% load i18n l10n %}
 {% load static %}
-{% load permits_extras %}
+{% load submissions_extras %}
 
 <div id="geometry-widget-{{ id }}" data-initialize="{% if "__prefix__" in id %}0{% else %}1{% endif %}" data-map-target="{{ id }}_map" data-options="{{ options|json }}" data-geometry-widget >
   {% if options.edit_geom %}

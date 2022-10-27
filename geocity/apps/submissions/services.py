@@ -1,6 +1,5 @@
 import tempfile
 import zipfile
-from collections import defaultdict
 from datetime import datetime
 
 import filetype
@@ -22,28 +21,10 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from PIL import Image
 
-from geocity.apps.accounts.models import AdministrativeEntity
+from geocity.apps.accounts.models import UserProfile
 from geocity.apps.accounts.validators import validate_email
 
-from . import fields, forms, models
-
-
-def get_works_types(administrative_entity, user):
-    queryset = (
-        models.WorksType.objects.filter(
-            pk__in=models.WorksObjectType.objects.filter(
-                administrative_entities=administrative_entity
-            ).values_list("works_type_id", flat=True),
-            works_object_types__is_anonymous=False,
-        )
-        .order_by("name")
-        .distinct()
-    )
-
-    if not user.has_perm("permits.see_private_requests"):
-        queryset = queryset.filter(works_object_types__is_public=True)
-
-    return queryset
+from . import fields, forms, models, permissions
 
 
 def get_property_value_based_on_property(prop):
@@ -53,30 +34,6 @@ def get_property_value_based_on_property(prop):
     )
     # get_property_value return None if file does not exist
     return get_property_value(property_object)
-
-
-def get_total_error_count(permit_request):
-    """
-    Return the total count of errors in forms for a given permit request
-    """
-    properties_form = forms.WorksObjectsPropertiesForm(
-        instance=permit_request, enable_required=True, disable_fields=True, data={}
-    )
-    appendices_form = forms.WorksObjectsAppendicesForm(
-        instance=permit_request, enable_required=True, disable_fields=True, data={}
-    )
-
-    missing_actor_types = get_missing_required_actor_types(permit_request)
-
-    actor_errors = [
-        _('Contact de type "%s" manquant.') % models.ACTOR_TYPE_CHOICES[actor_type][1]
-        for actor_type in missing_actor_types
-    ]
-
-    return sum(
-        len(errors)
-        for errors in [appendices_form.errors, properties_form.errors, actor_errors]
-    )
 
 
 def submit_submission(submission, request):
@@ -99,10 +56,10 @@ def submit_submission(submission, request):
                 submission.get_categories_names_list(),
             ),
             "users_to_notify": submission.get_secretary_email(),
-            "template": "permit_request_complemented.txt",
+            "template": "submission_complemented.txt",
             "submission": submission,
             "absolute_uri_func": request.build_absolute_uri,
-            "objects_list": submission.get_forms_names_list(),
+            "forms_list": submission.get_forms_names_list(),
         }
         send_email_notification(data)
 
@@ -139,10 +96,9 @@ def submit_submission(submission, request):
                 _("Nouvelle demande"), submission.get_categories_names_list()
             ),
             "users_to_notify": users_to_notify,
-            "template": "permit_request_submitted.txt",
+            "template": "submission_submitted.txt",
             "submission": submission,
             "absolute_uri_func": request.build_absolute_uri,
-            # FIXME rename in template (was `objects_list`)
             "forms_list": submission.get_forms_names_list(),
         }
         send_email_notification(data)
@@ -152,8 +108,7 @@ def submit_submission(submission, request):
                 _("Votre demande"), submission.get_categories_names_list()
             )
             data["users_to_notify"] = [submission.author.user.email]
-            data["template"] = "permit_request_acknowledgment.txt"
-            # FIXME rename in template (was `objects_list`)
+            data["template"] = "submission_acknowledgment.txt"
             data["forms_list"] = submission.get_forms_names_list()
             send_email_notification(data)
 
@@ -175,12 +130,14 @@ def request_submission_validation(submission, departments, absolute_uri_func):
         )
 
     users_to_notify = set(
-        User.objects.filter(
+        get_user_model()
+        .objects.filter(
             Q(
                 groups__permitdepartment__in=departments,
                 userprofile__notify_per_email=True,
             )
-        ).values_list("userprofile__user__email", flat=True)
+        )
+        .values_list("email", flat=True)
     )
 
     data = {
@@ -189,22 +146,20 @@ def request_submission_validation(submission, departments, absolute_uri_func):
             submission.get_categories_names_list(),
         ),
         "users_to_notify": users_to_notify,
-        # FIXME rename template
         "template": "submission_validation_request.txt",
         "submission": submission,
         "absolute_uri_func": absolute_uri_func,
-        # FIXME rename in template (was `objects_list`)
         "forms_list": submission.get_forms_names_list(),
     }
     send_email_notification(data)
 
 
-def send_validation_reminder(permit_request, absolute_uri_func):
+def send_validation_reminder(submission, absolute_uri_func):
     """
-    Send a reminder to departments that have not yet processed the given `permit_request` and return the list of pending
+    Send a reminder to departments that have not yet processed the given `submission` and return the list of pending
     validations.
     """
-    pending_validations = permit_request.get_pending_validations()
+    pending_validations = submission.get_pending_validations()
     users_to_notify = set(
         get_user_model()
         .objects.filter(
@@ -212,23 +167,23 @@ def send_validation_reminder(permit_request, absolute_uri_func):
                 groups__permitdepartment__in=pending_validations.values_list(
                     "department", flat=True
                 ),
-                permitauthor__notify_per_email=True,
+                userprofile__notify_per_email=True,
             )
         )
-        .values_list("permitauthor__user__email", flat=True)
+        .values_list("email", flat=True)
         .distinct()
     )
 
     data = {
         "subject": "{} ({})".format(
             _("Demande toujours en attente de validation"),
-            permit_request.get_categories_names_list(),
+            submission.get_categories_names_list(),
         ),
         "users_to_notify": users_to_notify,
-        "template": "permit_request_validation_reminder.txt",
-        "permit_request": permit_request,
+        "template": "submission_validation_reminder.txt",
+        "submission": submission,
         "absolute_uri_func": absolute_uri_func,
-        "objects_list": permit_request.get_forms_names_list(),
+        "forms_list": submission.get_forms_names_list(),
     }
     send_email_notification(data)
     return pending_validations
@@ -236,13 +191,13 @@ def send_validation_reminder(permit_request, absolute_uri_func):
 
 def send_email_notification(data):
     from_email_name = (
-        f'{data["permit_request"].administrative_entity.expeditor_name} '
-        if data["permit_request"].administrative_entity.expeditor_name
+        f'{data["submission"].administrative_entity.expeditor_name} '
+        if data["submission"].administrative_entity.expeditor_name
         else ""
     )
     sender = (
-        f'{from_email_name}<{data["permit_request"].administrative_entity.expeditor_email}>'
-        if data["permit_request"].administrative_entity.expeditor_email
+        f'{from_email_name}<{data["submission"].administrative_entity.expeditor_email}>'
+        if data["submission"].administrative_entity.expeditor_email
         else settings.DEFAULT_FROM_EMAIL
     )
     send_email(
@@ -251,22 +206,22 @@ def send_email_notification(data):
         receivers=data["users_to_notify"],
         subject=data["subject"],
         context={
-            "permit_request_url": data["absolute_uri_func"](
+            "submission_url": data["absolute_uri_func"](
                 reverse(
-                    "permits:permit_request_detail",
-                    kwargs={"permit_request_id": data["permit_request"].pk},
+                    "permits:submission_detail",
+                    kwargs={"submission_id": data["submission"].pk},
                 )
             ),
-            "administrative_entity": data["permit_request"].administrative_entity,
-            "name": data["permit_request"].author.user.get_full_name(),
-            "permit_request": data["permit_request"],
-            "objects_list": data["objects_list"],
+            "administrative_entity": data["submission"].administrative_entity,
+            "name": data["submission"].author.get_full_name(),
+            "submission": data["submission"],
+            "forms_list": data["forms_list"],
         },
     )
 
 
 def send_email(template, sender, receivers, subject, context):
-    email_content = render_to_string(f"permits/emails/{template}", context)
+    email_content = render_to_string(f"submissions/emails/{template}", context)
     emails = [
         (
             subject,
@@ -280,28 +235,6 @@ def send_email(template, sender, receivers, subject, context):
 
     if emails:
         send_mass_mail(emails, fail_silently=True)
-
-
-def get_submission_forms(submission):
-    fields_form = forms.FieldsForm(instance=submission)
-    appendices_form = forms.AppendicesForm(instance=submission)
-    fields_by_object_type = dict(fields_form.get_form_fields_by_form())
-    appendices_by_object_type = dict(appendices_form.get_form_fields_by_form())
-    amend_custom_fields_values = submission.get_amend_custom_fields_values()
-    amend_custom_properties_by_object_type = defaultdict(list)
-    for value in amend_custom_fields_values:
-        amend_custom_properties_by_object_type[value.selected_form.form].append(value)
-    forms_infos = [
-        (
-            selected_form.form,
-            fields_by_object_type.get(selected_form.form, []),
-            appendices_by_object_type.get(selected_form.form, []),
-            amend_custom_properties_by_object_type[selected_form.form],
-        )
-        for selected_form in submission.selected_forms.all()
-    ]
-
-    return forms_infos
 
 
 # Validate a file, from checking the first bytes and detecting the kind of the file
@@ -371,6 +304,7 @@ def clear_session_filters(request):
 def get_wot_properties(value, user_is_authenticated=None, value_with_type=False):
     """
     Return wot properties in a list for the api, in a dict for backend
+    FIXME adapt it
     """
     obj = value.all()
     wot_props = obj.values(
@@ -472,26 +406,24 @@ def get_wot_properties(value, user_is_authenticated=None, value_with_type=False)
 
 
 def get_amend_properties(value):
-    # FIXME what’s the type of value? QuerySet[SelectedForm]?
+    # `value` here is QuerySet[SelectedForm]
     obj = value.all()
-    amend_props = obj.values(
-        "amend_properties__property__name",
-        "amend_properties__value",
-        "works_object_type_id",
-        "works_object_type__works_object__name",
-        "works_object_type__works_type__name",
+    amend_fields = obj.values(
+        "amend_fields__field__name",
+        "amend_fields__value",
+        "form_id",
+        "form__name",
+        "form__category__name",
     )
     amend_properties = {}
 
-    for prop in amend_props:
-        amends = f'{prop["works_object_type__works_object__name"]} ({prop["works_object_type__works_type__name"]})'
+    for field in amend_fields:
+        amends = f'{field["form__name"]} ({field["form__category__name"]})'
         amend_properties[amends] = {
-            prop_i["amend_properties__property__name"]: prop_i[
-                "amend_properties__value"
-            ]
-            for prop_i in amend_props
-            if prop_i["works_object_type_id"] == prop["works_object_type_id"]
-            and prop_i["amend_properties__property__name"]
+            prop_i["amend_fields__field__name"]: prop_i["amend_fields__value"]
+            for prop_i in amend_fields
+            if prop_i["form_id"] == field["form_id"]
+            and prop_i["amend_fields__field__name"]
         }
 
     return amend_properties
@@ -513,7 +445,7 @@ def login_for_anonymous_request(request, entity):
     """
     Authenticate with a new temporary user to proceed with an anonymous permit request.
     """
-    temp_author = models.UserProfile.objects.create_temporary_user(entity)
+    temp_author = UserProfile.objects.create_temporary_user(entity)
     login(request, temp_author.user, "django.contrib.auth.backends.ModelBackend")
     request.session["anonymous_request_token"] = hash((temp_author, entity))
 
@@ -529,14 +461,14 @@ def download_file(path):
 def download_archives(archive_ids, user):
     archives = []
     for archive_id in archive_ids:
-        archive = models.ArchivedPermitRequest.objects.filter(
-            permit_request=archive_id
+        archive = models.ArchivedSubmission.objects.filter(
+            submission=archive_id
         ).first()
 
         if not archive:
             raise ObjectDoesNotExist
 
-        if not can_download_archive(user, archive.archivist):
+        if not permissions.can_download_archive(user, archive.archivist):
             raise PermissionDenied
 
         archives.append(archive)

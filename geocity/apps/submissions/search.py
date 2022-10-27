@@ -200,7 +200,7 @@ def search_contacts(search_str, submissions_qs, limit=None):
         )
         .values(
             *contact_search_fields,
-            "contact_full_name",
+            "author_full_name",
             "submission_id",
             "submission__status",
             "submission__created_at",
@@ -277,7 +277,7 @@ def search_fields(search_str, submissions_qs, limit=None):
             submission_status=result["selected_form__submission__status"],
             submission_created_at=result["selected_form__submission__created_at"],
             author_name=result["author_full_name"],
-            field_label=result["property__name"],
+            field_label=result["field__name"],
             field_value=result["txt_value"],
             score=result["score"],
             match_type=MatchType.FIELD,
@@ -465,7 +465,7 @@ def search_result_to_json(result):
         "submission": {
             "id": result.submission_id,
             "url": reverse(
-                "permits:submission_detail",
+                "submissions:submission_detail",
                 kwargs={
                     "submission_id": result.submission_id,
                 },

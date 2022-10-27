@@ -1,11 +1,11 @@
-{% load i18n %}{% autoescape off %}{{ objects_list }}
+{% load i18n %}{% autoescape off %}{{ forms_list }}
 
 
 {% blocktrans %}Bonjour {{ name }}{% endblocktrans %},
 
 {% trans "Nous vous informons que votre demande a été traitée et classée." %}
 
-{% trans "Vous pouvez la consulter sur le lien suivant" %}: {{ permit_request_url }}
+{% trans "Vous pouvez la consulter sur le lien suivant" %}: {{ submission_url }}
 {% if permit_request.additional_decision_information %}
 {{ permit_request.additional_decision_information }}
 {% endif %}

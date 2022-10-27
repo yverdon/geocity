@@ -4,7 +4,7 @@
 
 <div class="d-flex flex-row center-table">
   <div class="p-2 permits-action-btns">
-      <form id="download-form" method="get" action="{% url "permits:archived_permit_request_bulk_download" %}">
+      <form id="download-form" method="get" action="{% url "submissions:archived_submission_bulk_download" %}">
         {% csrf_token %}
         <button class="btn btn-outline-primary" type="submit">
           <i class="fa fa-download"></i>

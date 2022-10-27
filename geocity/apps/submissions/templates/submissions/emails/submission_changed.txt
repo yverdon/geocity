@@ -1,4 +1,4 @@
-{% load i18n %}{% autoescape off %}{{ objects_list }}
+{% load i18n %}{% autoescape off %}{{ forms_list }}
 
 
 {% blocktrans %}Bonjour {{ name }}{% endblocktrans %},
@@ -10,7 +10,7 @@
 {% trans "Raison du changement:" %}
 {{ reason }}
 {% endif %}
-{% trans "Vous pouvez la consulter sur le lien suivant" %}: {{ permit_request_url }}
+{% trans "Vous pouvez la consulter sur le lien suivant" %}: {{ submission_url }}
 
 {% trans "Avec nos meilleures salutations," %}
 {% if administrative_entity.custom_signature %}

@@ -2,13 +2,13 @@
 {% load bootstrap4 %}
 {% load i18n %}
 {% load static %}
-{% load permits_extras %}
+{% load submissions_extras %}
 
 {% block scripts %}
 {% endblock %}
 {% block content %}
 <div id="permit-request-geo-time">
-  {% permit_progressbar steps StepType.GEO_TIME %}
+  {% submission_progressbar steps StepType.GEO_TIME %}
   <h3>{{ geo_title }}</h3>
   <hr>
   <form method="post">

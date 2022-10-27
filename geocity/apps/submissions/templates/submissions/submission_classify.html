@@ -12,7 +12,7 @@
     {% bootstrap_form form %}
 
     <div class="text-right">
-      <a href="{% url 'permits:permit_request_detail' permit_request_id=permit_request.pk %}"
+      <a href="{% url 'submissions:submission_detail' submission_id=submission.pk %}"
         class="mr-2">{% trans "Retour" %}</a>
       <button class="btn btn-primary">
         {% if approve %}

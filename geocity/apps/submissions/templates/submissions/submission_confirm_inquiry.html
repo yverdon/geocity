@@ -18,7 +18,7 @@
       <div class="text-right">
         <input name="action" type="hidden" value="request_inquiry">
         <input name="confirmation" type="hidden" value="confirmed">
-        <a class="ml-2" href="{% url 'permits:permit_request_detail' permit_request.pk %}">{% trans "Annuler" %}</a>
+        <a class="ml-2" href="{% url 'submissions:submission_detail' submission.pk %}">{% trans "Annuler" %}</a>
         <button class="btn btn-primary">{% trans "Continuer" %}</button>
       </div>
     </form>

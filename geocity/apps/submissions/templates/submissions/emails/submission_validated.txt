@@ -1,11 +1,11 @@
-{% load i18n %}{% autoescape off %}{{ objects_list }}
+{% load i18n %}{% autoescape off %}{{ forms_list }}
 
 
 {% trans "Bonjour," %}
 
 {% trans "Les services chargés de la validation d'une demande ont donné leur préavis." %}
 
-{% trans "Vous pouvez consulter la demande et la classer sur le lien suivant" %}: {{ permit_request_url }}
+{% trans "Vous pouvez consulter la demande et la classer sur le lien suivant" %}: {{ submission_url }}
 
 {% trans "Avec nos meilleures salutations," %}
 {% if administrative_entity.custom_signature %}

@@ -1,13 +1,13 @@
 {% load static %}
 {% load bootstrap4 %}
 {% load i18n %}
-{% load permits_extras %}
+{% load submissions_extras %}
 
 {% if user.is_authenticated %}
   <div class="d-flex flex-row center-table">
 
     <div class="p-2 permits-action-btns">
-      <a class="btn btn-primary" href="{% url 'permits:permit_request_select_administrative_entity'%}" role="button">
+      <a class="btn btn-primary" href="{% url 'submissions:submission_select_administrative_entity'%}" role="button">
         <i class="fa fa-plus aria-hidden="true"></i>
         {% trans "Créer une nouvelle demande" %}
       </a>
@@ -22,7 +22,7 @@
 
     {% if display_clear_filters %}
     <div class="p-2 permits-action-btns">
-        <a class="btn btn-outline-primary" href="{% url 'permits:permit_requests_list' %}" role="button">
+        <a class="btn btn-outline-primary" href="{% url 'submissions:submissions_list' %}" role="button">
           <i class="fa fa-eraser"></i>
           {% trans "Effacer le filtre" %}
         </a>
@@ -30,7 +30,7 @@
     {% endif %}
 
     <div class="p-2 permits-action-btns">
-        <a class="btn btn-outline-primary" href="{% url 'permits:permit_requests_list' %}?{{ export_csv_url_params }}" role="button">
+        <a class="btn btn-outline-primary" href="{% url 'submissions:submissions_list' %}?{{ export_csv_url_params }}" role="button">
           <i class="fa fa-file"></i>
           {% trans "Exporter" %}
         </a>

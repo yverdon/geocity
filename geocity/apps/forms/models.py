@@ -104,11 +104,6 @@ class FormQuerySet(models.QuerySet):
         return forms
 
     def get_administrative_entities_with_forms(self, user, site=None):
-        """
-        FIXME: there are 2 versions of this function. This one is originally named
-        `get_user_administrative_entities`, the other is `get_administrative_entities`.
-        Should they be merged somehow?
-        """
         queryset = (
             AdministrativeEntity.objects.filter(
                 pk__in=self.values_list("administrative_entities", flat=True),

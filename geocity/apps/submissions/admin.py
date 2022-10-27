@@ -109,11 +109,18 @@ class SubmissionAdmin(admin.ModelAdmin):
     ]
     list_filter = ("status", "author", "forms", "administrative_entity")
 
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .prefetch_related("forms")
+            .select_related("author")
+        )
+
     def has_add_permission(self, request):
         return False
 
     def get_forms(self, obj):
-        # FIXME add prefetch_related on forms? + select_related on author
         return ", ".join(sorted([form.name for form in obj.forms.all()]))
 
     get_forms.admin_order_field = "forms"

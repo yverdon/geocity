@@ -166,7 +166,7 @@ class SubmissionDetailView(View):
 
         if self.submission.is_draft() and self.submission.author == request.user:
             return redirect(
-                "permits:submission_select_administrative_entity",
+                "submissions:submission_select_administrative_entity",
                 submission_id=self.submission.pk,
             )
 
@@ -253,18 +253,16 @@ class SubmissionDetailView(View):
                 "forms": action_forms,
                 "formsets": action_formsets,
                 "active_form": active_form,
-                "has_permission_to_classify": services.has_permission_to_classify_submission(
+                "has_permission_to_classify": permissions.has_permission_to_classify_submission(
                     self.request.user, self.submission
                 ),
-                "can_classify": services.can_classify_submission(
+                "can_classify": permissions.can_classify_submission(
                     self.request.user, self.submission
                 ),
                 "can_validate_submission": can_validate_submission,
-                "directives": services.get_submission_directives(self.submission),
+                "directives": self.submission.get_submission_directives(),
                 "prolongation_enabled": prolongation_enabled,
-                "document_enabled": services.has_document_enabled_for_forms(
-                    self.submission
-                ),
+                "document_enabled": self.submission.has_document_enabled(),
                 "publication_enabled": self.submission.forms.filter(
                     publication_enabled=True
                 ).count()
@@ -744,7 +742,7 @@ class SubmissionDetailView(View):
 
         if "save_continue" in self.request.POST:
             target = reverse(
-                "permits:submission_detail",
+                "submissions:submission_detail",
                 kwargs={"submission_id": self.submission.pk},
             )
             query_string = urllib.parse.urlencode(
@@ -845,7 +843,7 @@ class ComplementaryDocumentDownloadView(View):
 @method_decorator(check_mandatory_2FA, name="dispatch")
 class ArchivedSubmissionListView(SingleTableMixin, ListView):
     model = models.ArchivedSubmission
-    template_name = "permits/archived_submission_list.html"
+    template_name = "submissions/archived_submission_list.html"
 
     permission_error_message = _(
         "Vous n'avez pas les permissions pour archiver cette demande"
@@ -1100,61 +1098,63 @@ def submission_select_administrative_entity(request, submission_id=None):
     services.store_tags_in_session(request)
     current_site = get_current_site(request)
 
-    if submission_id:
-        submission = get_submission_for_edition(request.user, submission_id)
-    else:
-        submission = None
-
-    # Manage redirect to type step when only 1 item is shown
-    # Handle single tag filters combinations
-    entityfilter = (
-        request.session["entityfilter"] if "entityfilter" in request.session else []
+    submission = (
+        get_submission_for_edition(request.user, submission_id)
+        if submission_id
+        else None
     )
 
-    entities = Form.objects.get_administrative_entities_with_forms(
-        request.user, current_site
-    )
-
-    # Manage entities by tag and by site. If site has already 1 result, dont check the tag
-    entities_after_filter = (
-        entities.filter_by_tags(entityfilter)
-        if entityfilter and len(entities) != 1
-        else entities
-    )
-
-    # If entityfilter returns only one entity, submission oject can already be created
-    if len(entities_after_filter) == 1 and not submission:
-        administrative_entity_instance = AdministrativeEntity.objects.get(
-            pk=entities_after_filter.first().pk
+    if not submission:
+        # Manage redirect to type step when only 1 item is shown
+        # Handle single tag filters combinations
+        entityfilter = (
+            request.session["entityfilter"] if "entityfilter" in request.session else []
         )
 
-        submission = models.Submission.objects.create(
-            administrative_entity=administrative_entity_instance,
-            author=request.user,
+        entities = Form.objects.get_administrative_entities_with_forms(
+            request.user, current_site
         )
 
-        candidate_forms = None
+        # Manage entities by tag and by site. If site has already 1 result, dont check the tag
+        entities_after_filter = (
+            entities.filter_by_tags(entityfilter)
+            if entityfilter and len(entities) != 1
+            else entities
+        )
 
-        if request.session["typefilter"] == []:
-            candidate_forms = models.Form.objects.filter(
-                administrative_entities__in=entities_after_filter,
-            )
-        else:
-            categories_by_tag = models.FormCategory.objects.filter_by_tags(
-                request.session["typefilter"]
-            ).values_list("pk", flat=True)
-
-            candidate_forms = models.Form.objects.filter(
-                administrative_entities__in=entities_after_filter,
-                category__in=categories_by_tag,
+        # If entityfilter returns only one entity, submission oject can already be created
+        if len(entities_after_filter) == 1:
+            administrative_entity_instance = AdministrativeEntity.objects.get(
+                pk=entities_after_filter.first().pk
             )
 
-        # If filter combinations return only one form object, this combination must be set on submission object
-        if len(candidate_forms) == 1:
-            submission.forms.set(candidate_forms)
+            submission = models.Submission.objects.create(
+                administrative_entity=administrative_entity_instance,
+                author=request.user,
+            )
 
-        steps = get_progress_bar_steps(request=request, submission=submission)
-        return redirect(get_next_step(steps, StepType.ADMINISTRATIVE_ENTITY).url)
+            candidate_forms = None
+
+            if request.session["typefilter"] == []:
+                candidate_forms = models.Form.objects.filter(
+                    administrative_entities__in=entities_after_filter,
+                )
+            else:
+                categories_by_tag = models.FormCategory.objects.filter_by_tags(
+                    request.session["typefilter"]
+                ).values_list("pk", flat=True)
+
+                candidate_forms = models.Form.objects.filter(
+                    administrative_entities__in=entities_after_filter,
+                    category__in=categories_by_tag,
+                )
+
+            # If filter combinations return only one form object, this combination must be set on submission object
+            if len(candidate_forms) == 1:
+                submission.forms.set(candidate_forms)
+
+            steps = get_progress_bar_steps(request=request, submission=submission)
+            return redirect(get_next_step(steps, StepType.ADMINISTRATIVE_ENTITY).url)
 
     steps_context = progress_bar_context(
         request=request,
@@ -1279,7 +1279,7 @@ def submission_fields(request, submission_id):
 
     return render(
         request,
-        "submissions/submission_properties.html",
+        "submissions/submission_fields.html",
         {
             "submission": submission,
             "submission_form": form,
@@ -1682,7 +1682,7 @@ def submission_submit(request, submission_id):
             raise SuspiciousOperation
 
         services.submit_submission(submission, request)
-        return redirect("permits:submissions_list")
+        return redirect("submissions:submissions_list")
 
     return render(
         request,

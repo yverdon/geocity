@@ -1,11 +1,11 @@
-{% load i18n %}{% autoescape off %}{{ objects_list }}
+{% load i18n %}{% autoescape off %}{{ forms_list }}
 
 
 {% trans "Bonjour," %}
 
 {% trans "La demande de compléments a été traitée." %}
 
-{% trans "Vous pouvez consulter la demande sur le lien suivant" %}: {{ permit_request_url }}
+{% trans "Vous pouvez consulter la demande sur le lien suivant" %}: {{ submission_url }}
 
 {% trans "Avec nos meilleures salutations," %}
 {% if administrative_entity.custom_signature %}

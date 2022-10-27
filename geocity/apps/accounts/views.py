@@ -129,17 +129,17 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
 
 
 def permit_author_create(request):
-    djangouserform = forms.NewDjangoAuthUserForm(request.POST or None)
-    permitauthorform = forms.GenericAuthorForm(request.POST or None)
-    is_valid = djangouserform.is_valid() and permitauthorform.is_valid()
+    django_user_form = forms.NewDjangoAuthUserForm(request.POST or None)
+    user_profile_form = forms.GenericAuthorForm(request.POST or None)
+    is_valid = django_user_form.is_valid() and user_profile_form.is_valid()
 
     if is_valid:
-        new_user = djangouserform.save()
+        new_user = django_user_form.save()
         # email wasn't verified yet, so account isn't active just yet
         new_user.is_active = False
         new_user.save()
-        permitauthorform.instance.user = new_user
-        permitauthorform.save()
+        user_profile_form.instance.user = new_user
+        user_profile_form.save()
 
         mail_subject = _("Activer votre compte")
         message = render_to_string(
@@ -171,8 +171,11 @@ def permit_author_create(request):
 
     return render(
         request,
-        "permits/permit_request_author.html",
-        {"permitauthorform": permitauthorform, "djangouserform": djangouserform},
+        "accounts/user_profile_edit.html",
+        {
+            "user_profile_form": user_profile_form,
+            "django_user_form": django_user_form,
+        },
     )
 
 
@@ -194,29 +197,32 @@ class ActivateAccountView(View):
 
 @login_required
 def user_profile_edit(request):
-
-    djangouserform = forms.DjangoAuthUserForm(
+    django_user_form = forms.DjangoAuthUserForm(
         request.POST or None, instance=request.user
     )
     # prevent a crash when admin accesses this page
-    permitauthorform = None
+    user_profile_form = None
     if hasattr(request.user, "userprofile"):
         permit_author_instance = get_object_or_404(
             models.UserProfile, pk=request.user.userprofile.pk
         )
-        permitauthorform = forms.GenericAuthorForm(
+        user_profile_form = forms.GenericAuthorForm(
             request.POST or None, instance=permit_author_instance
         )
 
-    if djangouserform.is_valid() and permitauthorform and permitauthorform.is_valid():
-        user = djangouserform.save()
-        permitauthorform.instance.user = user
-        permitauthorform.save()
+    if (
+        django_user_form.is_valid()
+        and user_profile_form
+        and user_profile_form.is_valid()
+    ):
+        user = django_user_form.save()
+        user_profile_form.instance.user = user
+        user_profile_form.save()
 
         return HttpResponseRedirect(reverse("submissions:submissions_list"))
 
     return render(
         request,
-        "accounts/permit_request_author.html",
-        {"permitauthorform": permitauthorform, "djangouserform": djangouserform},
+        "accounts/user_profile_edit.html",
+        {"user_profile_form": user_profile_form, "django_user_form": django_user_form},
     )

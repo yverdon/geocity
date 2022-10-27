@@ -1,12 +1,12 @@
 {% extends "base_generic.html" %}
 {% load bootstrap4 %}
 {% load i18n %}
-{% load permits_extras %}
+{% load submissions_extras %}
 {% load crispy_forms_tags %}
 
 
 {% block content %}
-  {% permit_progressbar steps StepType.FIELDS %}
+  {% submission_progressbar steps StepType.FIELDS %}
   <h3>{{ config.PROPERTIES_STEP }} </h3>
   <hr>
   <form method="post">

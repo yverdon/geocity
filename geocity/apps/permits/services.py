@@ -250,6 +250,7 @@ def get_works_types(administrative_entity, user):
     return queryset
 
 
+# -> get_administrative_entities_with_forms
 def get_administrative_entities(user, site=None):
     # Default queryset, with all administrative entities
     queryset = (

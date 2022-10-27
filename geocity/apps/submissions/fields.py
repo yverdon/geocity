@@ -72,6 +72,13 @@ class ArchiveDocumentFieldFile(FieldFile):
         )
 
 
+def archive_upload_to(instance, filename):
+    _, ext = os.path.splitext(filename)
+    t = instance.archived_date or datetime.datetime.now()
+    archived_date = t.strftime("%d.%m.%Y.%H.%M.%S")
+    return f"{instance.submission.id:02d}_{archived_date}_{slugify(instance.submission.get_categories_names_list())}{ext}"
+
+
 class ArchiveDocumentFileField(models.FileField):
     """
     FileField storing information in a private media root.
@@ -81,14 +88,8 @@ class ArchiveDocumentFileField(models.FileField):
 
     def __init__(self, verbose_name=None, name=None, **kwargs):
         kwargs["storage"] = ArchiveFileSystemStorage()
-        kwargs["upload_to"] = self._upload_to
+        kwargs["upload_to"] = archive_upload_to
         super().__init__(verbose_name, name, **kwargs)
-
-    def _upload_to(self, instance, filename):
-        _, ext = os.path.splitext(filename)
-        t = instance.archived_date or datetime.datetime.now()
-        archived_date = t.strftime("%d.%m.%Y.%H.%M.%S")
-        return f"{instance.submission.id:02d}_{archived_date}_{slugify(instance.submission.get_categories_names_list())}{ext}"
 
 
 class ComplementaryDocumentFieldFile(FieldFile):

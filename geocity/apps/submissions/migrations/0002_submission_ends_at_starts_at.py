@@ -7,33 +7,36 @@ import geocity.apps.submissions.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('submissions', '0001_initial'),
+        ("submissions", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='archivedsubmission',
-            name='archive',
-            field=geocity.apps.submissions.fields.ArchiveDocumentFileField(storage=geocity.apps.submissions.fields.ArchiveFileSystemStorage(), upload_to=geocity.apps.submissions.fields.ArchiveDocumentFileField._upload_to, verbose_name='Archive'),
+            model_name="historicalsubmissiongeotime",
+            name="ends_at",
+            field=models.DateTimeField(
+                blank=True, null=True, verbose_name="Date de fin"
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalsubmissiongeotime',
-            name='ends_at',
-            field=models.DateTimeField(blank=True, null=True, verbose_name='Date de fin'),
+            model_name="historicalsubmissiongeotime",
+            name="starts_at",
+            field=models.DateTimeField(
+                blank=True, null=True, verbose_name="Date de début"
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalsubmissiongeotime',
-            name='starts_at',
-            field=models.DateTimeField(blank=True, null=True, verbose_name='Date de début'),
+            model_name="submissiongeotime",
+            name="ends_at",
+            field=models.DateTimeField(
+                blank=True, null=True, verbose_name="Date de fin"
+            ),
         ),
         migrations.AlterField(
-            model_name='submissiongeotime',
-            name='ends_at',
-            field=models.DateTimeField(blank=True, null=True, verbose_name='Date de fin'),
-        ),
-        migrations.AlterField(
-            model_name='submissiongeotime',
-            name='starts_at',
-            field=models.DateTimeField(blank=True, null=True, verbose_name='Date de début'),
+            model_name="submissiongeotime",
+            name="starts_at",
+            field=models.DateTimeField(
+                blank=True, null=True, verbose_name="Date de début"
+            ),
         ),
     ]

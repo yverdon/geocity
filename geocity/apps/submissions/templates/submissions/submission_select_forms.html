@@ -1,10 +1,10 @@
 {% extends "base_generic.html" %}
 {% load bootstrap4 %}
 {% load i18n %}
-{% load permits_extras %}
+{% load submissions_extras %}
 
 {% block content %}
-  {% permit_progressbar steps StepType.FORMS %}
+  {% submission_progressbar steps StepType.FORMS %}
   <h3>{{ config.WORKS_OBJECTS_STEP }}</h3>
 
   {% comment %}

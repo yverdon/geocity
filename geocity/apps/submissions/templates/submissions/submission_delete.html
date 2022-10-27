@@ -6,14 +6,14 @@
 {% block content %}
   <h3 class="mt-2">{% trans "Effacer la demande ?" %}</h3>
   <form method="post">{% csrf_token %}
-    <p>{% trans "Êtes vous sûr de vouloir supprimer la demande n°" %}{{ permit_request.id }} ?</p>
+    <p>{% trans "Êtes vous sûr de vouloir supprimer la demande n°" %}{{ submission.id }} ?</p>
     <h4>{% trans "Détails de la demande:" %} </h4>
     <ul>
-      <li>{% trans "Requérant:"%} {{ permit_request.author.user.first_name }}, {{ permit_request.author.user.last_name}}
+      <li>{% trans "Requérant:"%} {{ submission.author.first_name }}, {{ submission.author.last_name}}
       </li>
-      <li>{% trans "Demande du:"%} {{ permit_request.created_at }}</li>
+      <li>{% trans "Demande du:"%} {{ submission.created_at }}</li>
     </ul>
     {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary" value="Confirmer" %}
-    <a class="ml-2" href="{% url 'permits:permit_requests_list' %}">{% trans "Annuler" %}</a>
+    <a class="ml-2" href="{% url 'submissions:submissions_list' %}">{% trans "Annuler" %}</a>
   </form>
 {% endblock %}

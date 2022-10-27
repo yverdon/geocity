@@ -1,12 +1,14 @@
 from . import models
 
-from geocity.apps.accounts.users import get_administrative_entities
+from geocity.apps.accounts.users import get_administrative_entities_associated_to_user
 
 
 def has_permission_to_amend_submission(user, submission):
     return user.has_perm(
         "submissions.amend_submission"
-    ) and submission.administrative_entity in get_administrative_entities(user)
+    ) and submission.administrative_entity in get_administrative_entities_associated_to_user(
+        user
+    )
 
 
 def can_amend_submission(user, submission):
@@ -46,7 +48,9 @@ def can_validate_submission(user, submission):
 def has_permission_to_poke_submission(user, submission):
     return user.has_perm(
         "submissions.amend_submission"
-    ) and submission.administrative_entity in get_administrative_entities(user)
+    ) and submission.administrative_entity in get_administrative_entities_associated_to_user(
+        user
+    )
 
 
 def can_poke_submission(user, submission):
@@ -59,7 +63,9 @@ def can_poke_submission(user, submission):
 def has_permission_to_classify_submission(user, submission):
     return user.has_perm(
         "submissions.amend_submission"
-    ) and submission.administrative_entity in get_administrative_entities(user)
+    ) and submission.administrative_entity in get_administrative_entities_associated_to_user(
+        user
+    )
 
 
 def can_classify_submission(user, submission):

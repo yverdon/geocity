@@ -1,6 +1,7 @@
 import functools
 import operator
 
+from django.contrib.auth.management import create_permissions
 from django.contrib.contenttypes.management import create_contenttypes
 from django.db import migrations
 
@@ -46,6 +47,20 @@ def migrate_contenttypes(apps, schema_editor):
     for app_config in apps.get_app_configs():
         app_config.models_module = True
         create_contenttypes(app_config, apps=apps, verbosity=0)
+        app_config.models_module = None
+
+
+def migrate_permissions(apps, schema_editor):
+    """
+    The new permissions are not available a migration run during the same run as the
+    initial migration (permissions are created at the post-migration step).
+
+    Since we need permissions (to reattribute them), we need to make sure they exist
+    here.
+    """
+    for app_config in apps.get_app_configs():
+        app_config.models_module = True
+        create_permissions(app_config, apps=apps, verbosity=0)
         app_config.models_module = None
 
 

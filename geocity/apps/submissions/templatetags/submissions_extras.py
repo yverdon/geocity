@@ -10,7 +10,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from geocity.apps.accounts.models import PermitDepartment
-from geocity.apps.submissions import forms, models, permissions, services
+from geocity.apps.submissions import forms, models, permissions
 
 register = template.Library()
 
@@ -37,11 +37,11 @@ def get_contacts_summary(submission):
 
     contacts = [
         (
-            contact_types.get(contact["actor_type"].value(), ""),
+            contact_types.get(contact["contact_type"].value(), ""),
             [
                 (field.label, field.value())
                 for field in contact
-                if field.name not in {"id", "actor_type"}
+                if field.name not in {"id", "contact_type"}
             ],
         )
         for contact in forms.get_submission_contacts_formset_initiated(submission)
@@ -53,7 +53,7 @@ def get_contacts_summary(submission):
 
 @register.inclusion_tag("submissions/_submission_summary.html", takes_context=True)
 def submission_summary(context, submission):
-    forms_infos = services.get_submission_forms(submission)
+    forms_infos = forms.get_submission_forms(submission)
     contacts = get_contacts_summary(submission)
     requires_payment = submission.requires_payment()
     documents = submission.get_complementary_documents(user=context.request.user)
@@ -77,12 +77,12 @@ def submission_summary(context, submission):
     if requires_payment:
         if submission.creditor_type is not None:
             creditor = submission.get_creditor_type_display()
-        elif submission.author.user and submission.creditor_type is None:
+        elif submission.author and submission.creditor_type is None:
             creditor = (
                 _("Auteur de la demande, ")
-                + submission.author.user.first_name
+                + submission.author.first_name
                 + " "
-                + submission.author.user.last_name
+                + submission.author.last_name
             )
 
     return {

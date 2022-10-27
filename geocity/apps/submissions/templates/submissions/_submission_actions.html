@@ -196,10 +196,10 @@
                         {% else %}
                             <div class="form-text text-muted mb-3">{% trans "Un message facultatif pourra être ajouté à la réponse à la page suivante." %}</div>
                             <div class="text-right">
-                                <a href="{% url 'permits:permit_request_reject' permit_request_id=permit_request.pk %}" class="btn btn-primary ">
+                                <a href="{% url 'submissions:submission_reject' submission_id=submission.pk %}" class="btn btn-primary ">
                                     {% trans "Refuser" %}
                                 </a>
-                                <a href="{% url 'permits:permit_request_approve' permit_request_id=permit_request.pk %}" class="btn btn-primary">
+                                <a href="{% url 'submissions:submission_approve' submission_id=submission.pk %}" class="btn btn-primary">
                                     {% trans "Approuver" %}
                                 </a>
                             </div>
@@ -246,7 +246,7 @@
                         <div class="col-sm-5">
                           {% bootstrap_field form.generate_from_model layout='vertical'%}
                           <button id="id_form-{{ forloop.counter0 }}-print_preview"
-                                  data-link-tpl="{% url 'reports:permit_request_report_pdf' permit_request.pk "888888888" "999999999" %}"
+                                  data-link-tpl="{% url 'reports:submission_report_pdf' submission.pk "888888888" "999999999" %}"
                                   class="btn btn-primary"
                                   name="preview" disabled>
                             {% trans "Prévisualiser" %}
