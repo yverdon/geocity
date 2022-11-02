@@ -103,11 +103,11 @@ def submit_submission(submission, request):
         }
         send_email_notification(data)
 
-        if submission.author.notify_per_email:
+        if submission.author.userprofile.notify_per_email:
             data["subject"] = "{} ({})".format(
                 _("Votre demande"), submission.get_categories_names_list()
             )
-            data["users_to_notify"] = [submission.author.user.email]
+            data["users_to_notify"] = [submission.author.email]
             data["template"] = "submission_acknowledgment.txt"
             data["forms_list"] = submission.get_forms_names_list()
             send_email_notification(data)
@@ -208,7 +208,7 @@ def send_email_notification(data):
         context={
             "submission_url": data["absolute_uri_func"](
                 reverse(
-                    "permits:submission_detail",
+                    "submissions:submission_detail",
                     kwargs={"submission_id": data["submission"].pk},
                 )
             ),
