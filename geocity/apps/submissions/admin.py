@@ -153,7 +153,7 @@ class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             else:
                 kwargs["queryset"] = Form.objects.filter(
                     integrator=request.user.groups.get(
-                        permitdepartment__is_integrator_admin=True
+                        permit_department__is_integrator_admin=True
                     )
                 )
         if db_field.name == "parent":
@@ -162,7 +162,7 @@ class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             else:
                 kwargs["queryset"] = models.ComplementaryDocumentType.objects.filter(
                     integrator=request.user.groups.get(
-                        permitdepartment__is_integrator_admin=True
+                        permit_department__is_integrator_admin=True
                     )
                 )
 

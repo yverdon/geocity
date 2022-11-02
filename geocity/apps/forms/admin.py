@@ -51,7 +51,7 @@ def get_forms_field(user):
     if not user.is_superuser:
         qs = qs.filter(
             integrator__in=user.groups.filter(
-                permitdepartment__is_integrator_admin=True
+                permit_department__is_integrator_admin=True
             )
         )
 
@@ -253,7 +253,7 @@ class FormAdmin(IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdmin):
             else:
                 kwargs["queryset"] = AdministrativeEntity.objects.filter(
                     integrator=request.user.groups.get(
-                        permitdepartment__is_integrator_admin=True
+                        permit_department__is_integrator_admin=True
                     )
                 )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)

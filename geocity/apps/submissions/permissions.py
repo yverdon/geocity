@@ -111,10 +111,10 @@ def can_edit_submission(user, submission):
 def can_always_be_updated(user, submission):
     can_always_update = submission.forms.filter(can_always_update=True).exists()
     user_is_integrator_admin = user.groups.filter(
-        permitdepartment__is_integrator_admin=True
+        permit_department__is_integrator_admin=True
     ).exists()
     user_is_backoffice = user_is_integrator_admin = user.groups.filter(
-        permitdepartment__is_backoffice=True
+        permit_department__is_backoffice=True
     ).exists()
     user_is_superuser = user.is_superuser
     return can_always_update and (

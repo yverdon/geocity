@@ -73,22 +73,22 @@ def submit_submission(submission, request):
             get_user_model()
             .objects.filter(
                 Q(
-                    groups__permitdepartment__administrative_entity=submission.administrative_entity,
-                    author__email__isnull=False,
-                    groups__permitdepartment__is_integrator_admin=False,
+                    groups__permit_department__administrative_entity=submission.administrative_entity,
+                    email__isnull=False,
+                    groups__permit_department__is_integrator_admin=False,
                 ),
                 Q(
                     Q(
-                        groups__permitdepartment__is_validator=False,
+                        groups__permit_department__is_validator=False,
                     )
                     | Q(
-                        groups__permitdepartment__is_validator=True,
-                        groups__permitdepartment__is_backoffice=True,
+                        groups__permit_department__is_validator=True,
+                        groups__permit_department__is_backoffice=True,
                     )
                 ),
-                Q(author__userprofile__notify_per_email=True),
+                Q(userprofile__notify_per_email=True),
             )
-            .values_list("author__email", flat=True)
+            .values_list("email", flat=True)
         )
 
         data = {
@@ -133,7 +133,7 @@ def request_submission_validation(submission, departments, absolute_uri_func):
         get_user_model()
         .objects.filter(
             Q(
-                groups__permitdepartment__in=departments,
+                groups__permit_department__in=departments,
                 userprofile__notify_per_email=True,
             )
         )
@@ -164,7 +164,7 @@ def send_validation_reminder(submission, absolute_uri_func):
         get_user_model()
         .objects.filter(
             Q(
-                groups__permitdepartment__in=pending_validations.values_list(
+                groups__permit_department__in=pending_validations.values_list(
                     "department", flat=True
                 ),
                 userprofile__notify_per_email=True,

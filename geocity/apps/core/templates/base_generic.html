@@ -78,12 +78,12 @@
                     </li>
                   {% endif %}
 
-                  {% if group.permitdepartment.administrative_entity.archive_link %}
+                  {% if group.permit_department.administrative_entity.archive_link %}
                 <li class="nav-item d-flex align-items-center">
                   {% with request.user.groups.all|first as group %}
-                    {% if group.permitdepartment.administrative_entity.archive_link != '' %}
+                    {% if group.permit_department.administrative_entity.archive_link != '' %}
                       {% if request.user.groups.all.count > 0 %}
-                        <a class="btn btn-outline-primary" href="{{group.permitdepartment.administrative_entity.archive_link}}" role="button" target="_blank" rel="noreferrer">
+                        <a class="btn btn-outline-primary" href="{{group.permit_department.administrative_entity.archive_link}}" role="button" target="_blank" rel="noreferrer">
                           <i class="fa fa-archive"></i>
                           {% trans "Archives" %}</a>
                       {% endif %}

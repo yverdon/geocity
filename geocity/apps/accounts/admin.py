@@ -22,7 +22,7 @@ def filter_for_user(user, qs):
     if not user.is_superuser:
         qs = qs.filter(
             integrator__in=user.groups.filter(
-                permitdepartment__is_integrator_admin=True
+                permit_department__is_integrator_admin=True
             )
         )
     return qs
@@ -39,7 +39,9 @@ class IntegratorFilterMixin:
     def save_model(self, request, obj, form, change):
         user = request.user
         if not user.is_superuser:
-            obj.integrator = user.groups.get(permitdepartment__is_integrator_admin=True)
+            obj.integrator = user.groups.get(
+                permit_department__is_integrator_admin=True
+            )
         super().save_model(request, obj, form, change)
 
     def get_readonly_fields(self, request, obj=None):
@@ -56,7 +58,7 @@ class UserAdminForm(UserChangeForm):
         groups = self.cleaned_data["groups"]
 
         edited_user_integrator_groups = groups.filter(
-            permitdepartment__is_integrator_admin=True
+            permit_department__is_integrator_admin=True
         )
 
         if len(edited_user_integrator_groups) > 1:
@@ -154,15 +156,15 @@ class UserAdmin(BaseUserAdmin):
             id=(int(request.resolver_match.kwargs["object_id"]))
         )
         integrator_group_for_user_being_updated = user_being_updated.groups.filter(
-            permitdepartment__is_integrator_admin=True
+            permit_department__is_integrator_admin=True
         )
         if db_field.name == "groups":
             if request.user.is_superuser:
                 kwargs["queryset"] = Group.objects.all()
             else:
                 kwargs["queryset"] = Group.objects.filter(
-                    permitdepartment__integrator=request.user.groups.get(
-                        permitdepartment__is_integrator_admin=True
+                    permit_department__integrator=request.user.groups.get(
+                        permit_department__is_integrator_admin=True
                     ).pk,
                 )
 
@@ -180,12 +182,12 @@ class UserAdmin(BaseUserAdmin):
             qs = User.objects.all()
         else:
             user_integrator_group = request.user.groups.get(
-                permitdepartment__is_integrator_admin=True
+                permit_department__is_integrator_admin=True
             )
             qs = (
                 User.objects.filter(
                     Q(is_superuser=False),
-                    Q(groups__permitdepartment__integrator=user_integrator_group.pk)
+                    Q(groups__permit_department__integrator=user_integrator_group.pk)
                     | Q(groups__isnull=True),
                 )
                 .annotate(
@@ -196,12 +198,12 @@ class UserAdmin(BaseUserAdmin):
 
             qs = qs.filter(
                 Q(
-                    email_domain__in=user_integrator_group.permitdepartment.integrator_email_domains.split(
+                    email_domain__in=user_integrator_group.permit_department.integrator_email_domains.split(
                         ","
                     )
                 )
                 | Q(
-                    email__in=user_integrator_group.permitdepartment.integrator_emails_exceptions.split(
+                    email__in=user_integrator_group.permit_department.integrator_emails_exceptions.split(
                         ","
                     )
                 )
@@ -216,7 +218,7 @@ class UserAdmin(BaseUserAdmin):
         if req.user.is_superuser:
             obj.is_staff = False if not obj.is_superuser else True
             for group in form.cleaned_data["groups"]:
-                if group.permitdepartment.is_integrator_admin:
+                if group.permit_department.is_integrator_admin:
                     obj.is_staff = True
 
         super().save_model(req, obj, form, change)
@@ -261,7 +263,7 @@ class DepartmentAdminForm(forms.ModelForm):
                     Group.objects.exclude(pk=group.pk)
                     .filter(
                         user__in=group.user_set.all(),
-                        permitdepartment__is_integrator_admin=True,
+                        permit_department__is_integrator_admin=True,
                     )
                     .exists()
                 )
@@ -307,7 +309,7 @@ class PermitDepartmentInline(admin.StackedInline):
             else:
                 kwargs["queryset"] = models.AdministrativeEntity.objects.filter(
                     integrator=request.user.groups.get(
-                        permitdepartment__is_integrator_admin=True
+                        permit_department__is_integrator_admin=True
                     )
                 )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
@@ -384,38 +386,38 @@ class GroupAdmin(admin.ModelAdmin):
 
     @admin.display(boolean=True)
     def get__is_validator(self, obj):
-        return obj.permitdepartment.is_validator
+        return obj.permit_department.is_validator
 
-    get__is_validator.admin_order_field = "permitdepartment__is_validator"
+    get__is_validator.admin_order_field = "permit_department__is_validator"
     get__is_validator.short_description = _("Validateur")
 
     @admin.display(boolean=True)
     def get__is_default_validator(self, obj):
-        return obj.permitdepartment.is_default_validator
+        return obj.permit_department.is_default_validator
 
     get__is_default_validator.admin_order_field = (
-        "permitdepartment__is_default_validator"
+        "permit_department__is_default_validator"
     )
     get__is_default_validator.short_description = _("Validateur par défaut")
 
     @admin.display(boolean=True)
     def get__is_backoffice(self, obj):
-        return obj.permitdepartment.is_backoffice
+        return obj.permit_department.is_backoffice
 
-    get__is_backoffice.admin_order_field = "permitdepartment__is_backoffice"
+    get__is_backoffice.admin_order_field = "permit_department__is_backoffice"
     get__is_backoffice.short_description = _("Secrétariat")
 
     def get__integrator(self, obj):
-        return Group.objects.get(pk=obj.permitdepartment.integrator)
+        return Group.objects.get(pk=obj.permit_department.integrator)
 
-    get__integrator.admin_order_field = "permitdepartment__integrator"
+    get__integrator.admin_order_field = "permit_department__integrator"
     get__integrator.short_description = _("Groupe des administrateurs")
 
     @admin.display(boolean=True)
     def get__mandatory_2fa(self, obj):
-        return obj.permitdepartment.mandatory_2fa
+        return obj.permit_department.mandatory_2fa
 
-    get__mandatory_2fa.admin_order_field = "permitdepartment__mandatory_2fa"
+    get__mandatory_2fa.admin_order_field = "permit_department__mandatory_2fa"
     get__mandatory_2fa.short_description = _("2FA obligatoire")
 
     def get_queryset(self, request):
@@ -425,8 +427,8 @@ class GroupAdmin(admin.ModelAdmin):
         else:
             qs = Group.objects.filter(
                 Q(
-                    permitdepartment__integrator=request.user.groups.get(
-                        permitdepartment__is_integrator_admin=True
+                    permit_department__integrator=request.user.groups.get(
+                        permit_department__is_integrator_admin=True
                     ).pk
                 )
             )
@@ -434,11 +436,11 @@ class GroupAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         if not request.user.is_superuser:
-            obj.permitdepartment.integrator = request.user.groups.get(
-                permitdepartment__is_integrator_admin=True
+            obj.permit_department.integrator = request.user.groups.get(
+                permit_department__is_integrator_admin=True
             ).pk
         super().save_model(request, obj, form, change)
-        obj.permitdepartment.save()
+        obj.permit_department.save()
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         # permissions that integrator role can grant to group
@@ -447,7 +449,7 @@ class GroupAdmin(admin.ModelAdmin):
             if (
                 not request.user.is_superuser
                 and request.user.groups.get(
-                    permitdepartment__is_integrator_admin=True
+                    permit_department__is_integrator_admin=True
                 ).pk
             ):
                 integrator_permissions = Permission.objects.filter(
@@ -469,7 +471,7 @@ def get_sites_field(user):
         qs = qs.filter(
             Q(
                 site_profile__integrator__in=user.groups.filter(
-                    permitdepartment__is_integrator_admin=True
+                    permit_department__is_integrator_admin=True
                 )
             )
             | Q(domain=settings.DEFAULT_SITE)
@@ -611,7 +613,7 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
         if db_field.name == "integrator":
             kwargs["queryset"] = Group.objects.filter(
-                permitdepartment__is_integrator_admin=True,
+                permit_department__is_integrator_admin=True,
             )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -619,7 +621,7 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
         if not request.user.is_superuser:
             obj.integrator = request.user.groups.get(
-                permitdepartment__is_integrator_admin=True
+                permit_department__is_integrator_admin=True
             )
         obj.save()
         has_workflow_status = SubmissionWorkflowStatus.objects.filter(

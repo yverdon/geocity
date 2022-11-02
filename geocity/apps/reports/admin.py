@@ -86,7 +86,7 @@ class ReportAdmin(
             else:
                 kwargs["queryset"] = qs.filter(
                     integrator=request.user.groups.get(
-                        permitdepartment__is_integrator_admin=True
+                        permit_department__is_integrator_admin=True
                     )
                 )
         return super().formfield_for_manytomany(db_field, request, **kwargs)

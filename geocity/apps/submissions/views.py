@@ -1588,7 +1588,7 @@ class SubmissionList(ExportMixin, SingleTableMixin, FilterView):
             return self.object_list
 
     def is_department_user(self):
-        return self.request.user.groups.filter(permitdepartment__isnull=False).exists()
+        return self.request.user.groups.filter(permit_department__isnull=False).exists()
 
     def _get_extra_column_specs(self, form_filter):
         extra_column_specs = dict()
@@ -1749,12 +1749,10 @@ def submission_submit_confirmed(request, submission_id):
     if submission.can_be_edited_by_author():
         services.submit_submission(submission, request)
 
-    user_is_backoffice_or_integrator_for_administrative_entity = (
-        request.user.groups.filter(
-            Q(permitdepartment__administrative_entity=submission.administrative_entity),
-            Q(permitdepartment__is_backoffice=True)
-            | Q(permitdepartment__is_integrator_admin=True),
-        )
+    user_is_backoffice_or_integrator_for_administrative_entity = request.user.groups.filter(
+        Q(permit_department__administrative_entity=submission.administrative_entity),
+        Q(permit_department__is_backoffice=True)
+        | Q(permit_department__is_integrator_admin=True),
     )
 
     # Backoffice and integrators creating a permit request for their own administrative

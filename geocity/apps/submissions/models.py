@@ -875,7 +875,7 @@ class Submission(models.Model):
         department = self.administrative_entity.departments.filter(is_backoffice=True)
         secretary_group_users = User.objects.filter(
             Q(
-                groups__permitdepartment__in=department,
+                groups__permit_department__in=department,
                 userprofile__notify_per_email=True,
             )
         )
