@@ -1723,17 +1723,6 @@ class ComplementaryDocumentType(models.Model):
         verbose_name=_("Groupe des administrateurs"),
     )
 
-    # reverse relationship is manually defined on reports.Report so it shows up on both sides in admin
-    # Note: theoretically, this should only be allowed on "child" ComplementaryDocumentType, but this will
-    # be solved by a future refactoring
-    # see https://github.com/yverdon/geocity/issues/526
-    reports = models.ManyToManyField(
-        "reports.Report",
-        blank=True,
-        through="reports.report_document_types",
-        related_name="+",
-    )
-
     class Meta:
         constraints = [
             models.CheckConstraint(

@@ -1541,6 +1541,7 @@ class ComplementaryDocumentType(models.Model):
         "reports.Report",
         blank=True,
         related_name="+",
+        through="reports.report_document_types",
     )
 
     class Meta:
