@@ -139,6 +139,7 @@ class Form(models.Model):
         on_delete=models.CASCADE,
         verbose_name=_("categorie"),
         related_name="forms",
+        null=True,
     )
     administrative_entities = models.ManyToManyField(
         AdministrativeEntity,
