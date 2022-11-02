@@ -1,20 +1,13 @@
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin import AdminSite, site
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.contrib.auth.views import redirect_to_login
 from django.core.management import CommandError, call_command
-from django.http import Http404, HttpResponseRedirect
-from django.shortcuts import redirect, resolve_url
+from django.http import Http404
+from django.shortcuts import redirect
 from django.urls import re_path, reverse
 from django.utils.decorators import method_decorator
-from django.utils.http import is_safe_url
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
-from two_factor.admin import AdminSiteOTPRequired, AdminSiteOTPRequiredMixin
-
-from geocity.apps.permits.admin import PermitsAdminSite
 
 
 class PermitsAdminSite(AdminSite):
@@ -106,31 +99,3 @@ class PermitsAdminSite(AdminSite):
                 kwargs={"object_id": user_id},
             )
         )
-
-
-# https://github.com/Bouke/django-two-factor-auth/issues/219#issuecomment-494382380
-# Remove when https://github.com/Bouke/django-two-factor-auth/pull/370 is merged
-class AdminSiteOTPRequiredMixinRedirSetup(AdminSiteOTPRequired, PermitsAdminSite):
-    def login(self, request, extra_context=None):
-        redirect_to = request.POST.get(
-            REDIRECT_FIELD_NAME, request.GET.get(REDIRECT_FIELD_NAME)
-        )
-
-        if request.method == "GET" and super(
-            AdminSiteOTPRequiredMixin, self
-        ).has_permission(request):
-            # Already logged-in and verified by OTP
-            if request.user.is_verified():
-                # User has permission
-                index_path = reverse("admin:index", current_app=self.name)
-            else:
-                # User has permission but no OTP set:
-                index_path = reverse("two_factor:setup", current_app=self.name)
-            return HttpResponseRedirect(index_path)
-
-        if not redirect_to or not is_safe_url(
-            url=redirect_to, allowed_hosts=[request.get_host()]
-        ):
-            redirect_to = resolve_url(settings.LOGIN_REDIRECT_URL)
-
-        return redirect_to_login(redirect_to)

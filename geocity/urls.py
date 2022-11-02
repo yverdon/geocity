@@ -8,18 +8,18 @@ from rest_framework import routers
 from geocity.apps.django_wfs3.urls import wfs3_router
 from geocity.apps.permits import api
 from geocity.apps.submissions import views as submissions_views
-from geocity.admin_site import PermitsAdminSite
+
+from .admin_site import PermitsAdminSite
 
 logger = logging.getLogger(__name__)
 
 admin.site = PermitsAdminSite()
 
-
 # See TWO_FACTOR_PATCH_ADMIN
 if settings.ENABLE_2FA:
     from .admin_site import AdminSiteOTPRequiredMixinRedirSetup
 
-    admin.site.__class__ = AdminSiteOTPRequiredMixinRedirSetup
+    admin.site = AdminSiteOTPRequiredMixinRedirSetup()
 
 
 # Django-rest Configuration
