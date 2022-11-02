@@ -955,7 +955,7 @@ class Submission(models.Model):
         Set the given `administrative_entity`, which should be an instance of `models.PermitAdministrativeEntity`.
         `WorksObjectTypeChoice` records that don't exist in the new `administrative_entity` will be deleted.
         """
-        self.forms.exclude(category__in=administrative_entity.categories.all()).delete()
+        self.selected_forms.exclude(form__in=administrative_entity.forms.all()).delete()
 
         self.administrative_entity = administrative_entity
         self.save()
