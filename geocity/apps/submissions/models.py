@@ -537,7 +537,7 @@ class Submission(models.Model):
                 # include the request data as CSV
                 zip_file.writestr("submission.csv", self.to_csv())
                 # include additional documents
-                for document in self.complementary_documents:
+                for document in self.complementary_documents.all():
                     zip_file.write(document.path, document.name)
 
             # Reset file pointer
@@ -571,11 +571,9 @@ class Submission(models.Model):
         return SubmissionComplementaryDocument.objects.filter(submission=self).all()
 
     def to_csv(self):
-        from .tables import OwnPermitRequestsExportTable
+        from .tables import OwnSubmissionsExportTable
 
-        table = OwnPermitRequestsExportTable(
-            data=PermitRequest.objects.filter(id=self.id)
-        )
+        table = OwnSubmissionsExportTable(data=Submission.objects.filter(id=self.id))
 
         exporter = TableExport(export_format=TableExport.CSV, table=table)
 

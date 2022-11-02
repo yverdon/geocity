@@ -38,7 +38,7 @@
     {% can_archive as can_archive %}
     {% if can_archive %}
       <div class="p-2 permits-action-btns">
-          <form id="archive-form" action="/permit-requests/archives/" method="post">
+          <form id="archive-form" action="{% url "submissions:archived_submission_list" %}" method="post">
             {% csrf_token %}
             <button class="btn btn-outline-primary" type="submit">
               <i class="fa fa-archive"></i>
