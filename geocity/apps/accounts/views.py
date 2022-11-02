@@ -46,9 +46,9 @@ def logout_view(request):
     ).hostname in config.LOGOUT_REDIRECT_HOSTNAME_WHITELIST.split(","):
         return redirect(redirect_uri)
     return redirect(
-        f'{reverse("account_login")}?template={templatename}'
+        f'{reverse("accounts:account_login")}?template={templatename}'
         if templatename
-        else reverse("account_login")
+        else reverse("accounts:account_login")
     )
 
 
@@ -128,9 +128,58 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
         )
 
 
-def permit_author_create(request):
+class ActivateAccountView(View):
+    def get(self, request, uid, token):
+        try:
+            uid = force_text(urlsafe_base64_decode(uid))
+            user = models.User.objects.get(pk=uid)
+        except models.User.DoesNotExist:
+            user = None
+
+        successful = user and default_token_generator.check_token(user, token)
+        if successful:
+            user.is_active = True
+            user.save()
+
+        return redirect(reverse("account_login") + f"?success={successful}")
+
+
+@login_required
+def user_profile_edit(request):
+    django_user_form = forms.DjangoAuthUserForm(
+        request.POST or None, instance=request.user
+    )
+    # prevent a crash when admin accesses this page
+    user_profile_form = None
+    if hasattr(request.user, "userprofile"):
+        permit_author_instance = get_object_or_404(
+            models.UserProfile, pk=request.user.userprofile.pk
+        )
+        user_profile_form = forms.GenericUserProfileForm(
+            request.POST or None, instance=permit_author_instance
+        )
+
+    if (
+        django_user_form.is_valid()
+        and user_profile_form
+        and user_profile_form.is_valid()
+    ):
+        user = django_user_form.save()
+        user_profile_form.instance.user = user
+        user_profile_form.save()
+
+        return HttpResponseRedirect(reverse("submissions:submissions_list"))
+
+    return render(
+        request,
+        "accounts/user_profile_edit.html",
+        {"user_profile_form": user_profile_form, "django_user_form": django_user_form},
+    )
+
+
+def user_profile_create(request):
     django_user_form = forms.NewDjangoAuthUserForm(request.POST or None)
-    user_profile_form = forms.GenericAuthorForm(request.POST or None)
+    user_profile_form = forms.GenericUserProfileForm(request.POST or None)
     is_valid = django_user_form.is_valid() and user_profile_form.is_valid()
 
     if is_valid:
@@ -176,53 +225,4 @@ def permit_author_create(request):
             "user_profile_form": user_profile_form,
             "django_user_form": django_user_form,
         },
-    )
-
-
-class ActivateAccountView(View):
-    def get(self, request, uid, token):
-        try:
-            uid = force_text(urlsafe_base64_decode(uid))
-            user = models.User.objects.get(pk=uid)
-        except models.User.DoesNotExist:
-            user = None
-
-        successful = user and default_token_generator.check_token(user, token)
-        if successful:
-            user.is_active = True
-            user.save()
-
-        return redirect(reverse("account_login") + f"?success={successful}")
-
-
-@login_required
-def user_profile_edit(request):
-    django_user_form = forms.DjangoAuthUserForm(
-        request.POST or None, instance=request.user
-    )
-    # prevent a crash when admin accesses this page
-    user_profile_form = None
-    if hasattr(request.user, "userprofile"):
-        permit_author_instance = get_object_or_404(
-            models.UserProfile, pk=request.user.userprofile.pk
-        )
-        user_profile_form = forms.GenericAuthorForm(
-            request.POST or None, instance=permit_author_instance
-        )
-
-    if (
-        django_user_form.is_valid()
-        and user_profile_form
-        and user_profile_form.is_valid()
-    ):
-        user = django_user_form.save()
-        user_profile_form.instance.user = user
-        user_profile_form.save()
-
-        return HttpResponseRedirect(reverse("submissions:submissions_list"))
-
-    return render(
-        request,
-        "accounts/user_profile_edit.html",
-        {"user_profile_form": user_profile_form, "django_user_form": django_user_form},
     )

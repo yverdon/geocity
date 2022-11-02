@@ -102,9 +102,6 @@ urlpatterns += [
         views.ActivateAccountView.as_view(),
         name="activate_account",
     ),
-    path("account/", include("django.contrib.auth.urls")),
-    path("oauth/", include("oauth2_provider.urls", namespace="oauth2_provider")),
-    path("captcha/", include("captcha.urls")),
-    path("api-tokens/", include("knox.urls")),
-    path("permitauthoredit/", views.user_profile_edit, name="user_profile_edit"),
+    path("profile/create/", views.user_profile_create, name="user_profile_create"),
+    path("profile/edit/", views.user_profile_edit, name="user_profile_edit"),
 ]

@@ -1,21 +1,14 @@
 import logging
 
-from allauth.socialaccount.providers.oauth2.urls import default_urlpatterns
 from django.conf import settings
 from django.contrib import admin
-from django.contrib.auth import views as auth_views
 from django.urls import include, path
 from rest_framework import routers
 
-from geocity.apps.accounts.dootix.provider import DootixProvider
-from geocity.apps.accounts.geomapfish.provider import GeomapfishProvider
 from geocity.apps.django_wfs3.urls import wfs3_router
 from geocity.apps.permits import api
 from geocity.apps.submissions import views as submissions_views
-from geocity.apps.permits import views as permits_views
-from geocity.apps.permits.admin import PermitsAdminSite
-
-from . import views
+from geocity.admin_site import PermitsAdminSite
 
 logger = logging.getLogger(__name__)
 
@@ -52,12 +45,13 @@ urlpatterns = [
 
 urlpatterns += [
     path("", include("geocity.apps.accounts.urls")),
-    path(
-        "permitauthorcreate/", views.permit_author_create, name="permit_author_create"
-    ),
     path("rest/", include(router.urls)),  # Django-rest urls
     path("rest/current_user/", api.CurrentUserAPIView.as_view(), name="current_user"),
     path("wfs3/", include(wfs3_router.urls)),  # Django-rest urls
+    path("captcha/", include("captcha.urls")),
+    path("api-tokens/", include("knox.urls")),
+    path("account/", include("django.contrib.auth.urls")),
+    path("oauth/", include("oauth2_provider.urls", namespace="oauth2_provider")),
     path("admin/", admin.site.urls),
 ]
 

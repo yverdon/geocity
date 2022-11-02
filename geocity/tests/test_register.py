@@ -13,12 +13,12 @@ from geocity.apps.permits.tests import factories
 
 class TestRegisterMixin:
     def test_get_register_view(self):
-        response = self.client.get(reverse("permit_author_create"))
+        response = self.client.get(reverse("accounts:user_profile_create"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Mon compte")
 
     def test_post_register_view_fail(self):
-        response = self.client.post(reverse("permit_author_create"), {})
+        response = self.client.post(reverse("accounts:user_profile_create"), {})
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.context["user"].is_authenticated)
 
@@ -45,12 +45,12 @@ class TestRegisterView(TestCase, TestRegisterMixin):
         data = self.get_user_data()
         captcha = self.generate_captcha()
         self.client.post(
-            reverse("permit_author_create"),
+            reverse("accounts:user_profile_create"),
             {**data, **{"captcha_0": captcha.hashkey, "captcha_1": captcha.response}},
             follow=True,
         )
         self.client.post(reverse("logout"))
-        response = self.client.post(reverse("permit_author_create"), data, follow=True)
+        response = self.client.post(reverse("accounts:user_profile_create"), data, follow=True)
         self.assertContains(response, "Cet email est déjà utilisé.")
         self.assertFalse(response.context["user"].is_authenticated)
 
@@ -58,7 +58,7 @@ class TestRegisterView(TestCase, TestRegisterMixin):
         data = self.get_user_data()
         captcha = self.generate_captcha()
         return self.client.post(
-            reverse("permit_author_create"),
+            reverse("accounts:user_profile_create"),
             {
                 **data,
                 **{"captcha_0": captcha.hashkey, "captcha_1": captcha.response},
@@ -107,7 +107,7 @@ class TestRegisterView(TestCase, TestRegisterMixin):
 
     def test_user_cannot_register_if_captcha_isnot_filled(self):
         data = self.get_user_data()
-        response = self.client.post(reverse("permit_author_create"), data, follow=True)
+        response = self.client.post(reverse("accounts:user_profile_create"), data, follow=True)
         self.assertEquals(
             response.context[0]["permitauthorform"].errors["captcha"],
             ["Ce champ est obligatoire."],

@@ -12,7 +12,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ROOT_URLCONF = "geocity.urls"
 PREFIX_URL = os.environ.get("PREFIX_URL", "")
-LOGIN_URL = "accounts:login"
+LOGIN_URL = "accounts:account_login"
 LOGIN_REDIRECT_URL = "permits:permit_requests_list"
 LOGOUT_REDIRECT_URL = LOGIN_URL
 

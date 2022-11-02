@@ -72,7 +72,7 @@
     </form>
     <br>
     <div>
-      <a class="form-text" href="{% url 'permit_author_create' %}{% if query_string %}?{{query_string}}{% endif %}">{% trans "Créer un compte" %}</a>
+      <a class="form-text" href="{% url 'accounts:user_profile_create' %}{% if query_string %}?{{query_string}}{% endif %}">{% trans "Créer un compte" %}</a>
       <a class="form-text" href="{% url 'accounts:password_reset' %}">{% trans "Perdu votre mot de passe ?" %}</a>
     </div>
     {% include "registration/_social_login.html" %}
