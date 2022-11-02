@@ -2,7 +2,7 @@ from django.contrib.auth.models import Group, Permission
 from django.core.management import BaseCommand, CommandError
 from django.utils.translation import gettext
 
-from geocity import permissions_groups
+from geocity.apps.accounts import permissions_groups
 
 
 class Command(BaseCommand):
