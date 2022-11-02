@@ -65,13 +65,13 @@ def user_is_allowed_to_generate_report(
 @api_view(["GET"])  # pretend it's a DRF view, so we get token auth
 @login_required
 @permanent_user_required
-def report_content(request, permit_request_id, work_object_type_id, report_id):
+def report_content(request, form_id, work_object_type_id, report_id):
     """This views returns the content of a report in HTML. It is mainly meant to be rendered
     to PDF (but could also work as a PDF)"""
 
     # Ensure user is allowed to generate pdf
     permit_request, work_object_type = user_is_allowed_to_generate_report(
-        request, permit_request_id, work_object_type_id, report_id
+        request, form_id, work_object_type_id, report_id
     )
 
     report = get_object_or_404(Report, pk=report_id)
@@ -122,7 +122,7 @@ def report_pdf(request, submission_id, form_id, report_id):
     )
 
     url = reverse(
-        "reports:permit_request_report_content",
+        "reports:submission_report_content",
         kwargs={
             "submission_id": submission_id,
             "form_id": form_id,
