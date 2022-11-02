@@ -16,52 +16,10 @@ from geocity import settings
 from geocity.apps.accounts import permissions_groups
 
 
-from geocity.apps.accounts.models import (
-    SiteProfile,
-    TemplateCustomization,
-    PermitDepartment,
-    AdministrativeEntityQuerySet,
-    AdministrativeEntityManager,
-    AdministrativeEntity,
-    UserProfileManager,
-    UserProfile,
-)
-from geocity.apps.forms.models import (
-    FormCategoryQuerySet,
-    FormCategory,
-    AnonymousFormManager,
-    FormQuerySet,
-    Form,
-    FormField,
-    Field,
-)
-from geocity.apps.reports.models import (
-    ReportLayout,
-    Report,
-    Section,
-)
-from geocity.apps.submissions.models import (
-    CONTACT_TYPE_OTHER,
-    SubmissionQuerySet,
-    Submission,
-    Contact,
-    SelectedForm,
-    ContactType,
-    SubmissionContact,
-    FieldValue,
-    SubmissionGeoTime,
-    GeomLayer,
-    SubmissionWorkflowStatusQuerySet,
-    SubmissionWorkflowStatus,
-    ArchivedSubmissionQuerySet,
-    ArchivedSubmission,
-    SubmissionInquiry,
-    SubmissionComplementaryDocument,
-    ComplementaryDocumentType,
-    SubmissionAmendField,
-    SubmissionAmendFieldValue,
-    SubmissionValidation,
-)
+from geocity.apps.accounts.models import *
+from geocity.apps.forms.models import *
+from geocity.apps.reports.models import *
+from geocity.apps.submissions.models import *
 
 
 def strip_accents(text):
@@ -145,23 +103,22 @@ class Command(BaseCommand):
         reset_db()
         with transaction.atomic():
             self.stdout.write("Creating sites...")
-            self.setup_sites() # Done
+            self.setup_sites()
             self.stdout.write("Creating users...")
-            self.create_users() # Done
-            self.stdout.write("Creating works types and objs...")
-            self.create_form_categories() # TODO: 
-            self.stdout.write("Creating demo permit...")
-            self.create_permit() # TODO: 
+            self.create_users()
+            self.stdout.write("Creating form categories")
+            self.create_form_categories()
+            self.stdout.write("Creating demo submission...")
+            self.create_submission()
             self.stdout.write("Creating dummy geometric entities...")
-            self.create_geom_layer_entity() # TODO: 
+            self.create_geom_layer_entity()
             self.stdout.write("Creating template customizations...")
-            self.create_template_customization() # TODO: 
+            self.create_template_customization()
             self.stdout.write("Configurating template customizations...")
-            self.setup_homepage() # TODO: 
-            self.stdout.write("Setting site integrator for selected confgurations...")
-            self.setup_integrator() # TODO: 
+            self.setup_homepage()
+            self.stdout.write("Setting site integrator for selected configurations...")
+            self.setup_integrator()
             self.stdout.write("Fixturize succeed!")
-            # TODO: Delete "done" text in front of each function
 
     def setup_sites(self):
         Site.objects.get_or_create(domain=settings.DEFAULT_SITE, name="default site")
@@ -187,7 +144,7 @@ class Command(BaseCommand):
         AdministrativeEntity.objects.update(integrator=integrator)
         FormCategory.objects.update(integrator=integrator)
         Form.objects.update(integrator=integrator)
-        # SubmissionContact.objects.update(integrator=integrator)
+        ContactType.objects.update(integrator=integrator)
         ComplementaryDocumentType.objects.update(integrator=integrator)
         SubmissionAmendField.objects.update(integrator=integrator)
 
@@ -315,7 +272,7 @@ class Command(BaseCommand):
         self.stdout.write("pilot-2 / demo")
 
         secretary_groups = Group.objects.filter(name__in=["pilot", "pilot-2"])
-        department = PermitDepartment.objects.filter(
+        PermitDepartment.objects.filter(
             group__in=secretary_groups
         ).update(is_backoffice=True)
 
@@ -333,9 +290,9 @@ class Command(BaseCommand):
         )
 
         validator_group = Group.objects.get(name="validator")
-        departement = PermitDepartment.objects.get(group=validator_group)
-        departement.is_validator = True
-        departement.save()
+        department = PermitDepartment.objects.get(group=validator_group)
+        department.is_validator = True
+        department.save()
 
         self.stdout.write("validator / demo")
 
@@ -362,9 +319,9 @@ class Command(BaseCommand):
             email="yverdon-squad+integrator@liip.ch",
         )
 
-        permits_permissions = Permission.objects.filter(
-            content_type__app_label="permits", # TODO: Change this ?
-            content_type__model__in=permissions_groups.INTEGRATOR_PERMITS_MODELS_PERMISSIONS, # TODO: Change this ?
+        required_permissions = Permission.objects.filter(
+            content_type__app_label="required",
+            content_type__model__in=permissions_groups.INTEGRATOR_REQUIRED_MODELS_PERMISSIONS,
         )
         report_permissions = Permission.objects.filter(
             content_type__app_label="reports",
@@ -376,11 +333,11 @@ class Command(BaseCommand):
         )
         # set the required permissions for the integrator group
         Group.objects.get(name="integrator").permissions.set(
-            permits_permissions.union(other_permissions).union(report_permissions)
+            required_permissions.union(other_permissions).union(report_permissions)
         )
         self.stdout.write("integrator / demo")
 
-        # Insert status choices from PermitRequest and insert status for adminsitrative_entity
+        # Insert status choices from Submission and insert status for adminsitrative_entity
         for status_value in Submission.STATUS_CHOICES:
             for entity in [
                 administrative_entity_yverdon,
@@ -437,16 +394,8 @@ class Command(BaseCommand):
 
     def create_form_categories(self):
         fields = {
-            "title": Field.objects.create(
-                name="Texte permettant de séparer visuellement les champs",
-                input_type="title",
-                help_text="Ce texte permet d'expliquer en détail à l'utilisateur les pourquoi et le comment des informations à fournir",
-                is_mandatory=False,
-                # order=2,
-            ),
             "comment": Field.objects.create(
-                name="Commentaire", input_type="text", is_mandatory=False, 
-                # order=0
+                name="Commentaire", input_type="text", is_mandatory=False,
             ),
             "width": Field.objects.create(
                 name="Largeur [m]",
@@ -454,7 +403,12 @@ class Command(BaseCommand):
                 placeholder="3",
                 help_text="Largeur en mètres",
                 is_mandatory=False,
-                # order=1,
+            ),
+            "title": Field.objects.create(
+                name="Texte permettant de séparer visuellement les champs",
+                input_type="title",
+                help_text="Ce texte permet d'expliquer en détail à l'utilisateur les pourquoi et le comment des informations à fournir",
+                is_mandatory=False,
             ),
             "height": Field.objects.create(
                 name="Hauteur [m]",
@@ -462,21 +416,18 @@ class Command(BaseCommand):
                 placeholder="2",
                 help_text="Longueur en mètres",
                 is_mandatory=False,
-                # order=3,
             ),
             "plan": Field.objects.create(
                 name="Plan de situation",
                 input_type="file",
                 help_text="Plan complémentaire détaillant votre projet",
                 is_mandatory=False,
-                # order=4,
             ),
             "adresse": Field.objects.create(
                 name="Adresse",
                 input_type="address",
                 placeholder="Place Pestalozzi 2, 1400 Yverdon-les-Bains",
                 is_mandatory=False,
-                # order=5,
             ),
             "adresse_geocode": Field.objects.create(
                 name="Adresse avec géocodage",
@@ -484,33 +435,28 @@ class Command(BaseCommand):
                 placeholder="Place Pestalozzi 2, 1400 Yverdon-les-Bains",
                 is_mandatory=False,
                 store_geometry_for_address_field=True,
-                # order=5,
             ),
             "date": Field.objects.create(
                 name="Date",
                 input_type="date",
                 is_mandatory=False,
-                # order=6,
             ),
             "checkbox": Field.objects.create(
                 name="Impact sur la chaussée",
                 input_type="checkbox",
                 is_mandatory=False,
-                # order=7,
             ),
             "list_single": Field.objects.create(
                 name="À moins de 3m d'un arbre",
                 input_type="list_single",
                 is_mandatory=False,
                 choices="oui\nnon",
-                # order=8,
             ),
             "list_multiple": Field.objects.create(
                 name="À moins de 3m d'un arbre",
                 input_type="list_multiple",
                 is_mandatory=False,
                 choices="Déviation trafic\nHoraire prolongé\nSon>90dB",
-                # order=9,
             ),
         }
         form_categories = [
@@ -656,7 +602,7 @@ class Command(BaseCommand):
                 is_mandatory=False,
             )
 
-            for form, *props in objs:
+            for form, *fields in objs:
                 form_obj = Form.objects.create(
                     name=form,
                     category=form_category_obj,
@@ -681,10 +627,10 @@ class Command(BaseCommand):
                     administrative_entity_vevey
                 )
                 self.create_document_types(form_obj)
-                for prop in props:
-                    prop.forms.add(form_obj)
+                for order, field in enumerate(fields):
+                    FormField.objects.create(field=field, form=form_obj, order=order)
 
-        # Configure specific WOT in order to illustrate full potential of Geocity
+        # Configure specific form in order to illustrate full potential of Geocity
 
         # No geom nor time
         for form in Form.objects.filter(
@@ -710,7 +656,7 @@ class Command(BaseCommand):
             form.days_before_reminder = 5
             form.save()
 
-    def create_permit(self):
+    def create_submission(self):
 
         demo_author = User.objects.get(username="user")
         demo_administrative_entity = AdministrativeEntity.objects.get(
@@ -730,7 +676,7 @@ class Command(BaseCommand):
             is_validator=True,
         ).first()
 
-        # Basic permit request
+        # Basic submission
         submission = Submission.objects.create(
             status=Submission.STATUS_DRAFT,
             administrative_entity=demo_administrative_entity,
@@ -748,7 +694,7 @@ class Command(BaseCommand):
             geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
         )
 
-        # Permit Request to Classify with no validation document required
+        # Submission to Classify with no validation document required
         submission2 = Submission.objects.create(
             status=Submission.STATUS_PROCESSING,
             administrative_entity=demo_administrative_entity,
@@ -777,7 +723,7 @@ class Command(BaseCommand):
             geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
         )
 
-        # Permit Request to Classify with mixed objects requiring and not requiring validation document
+        # Submission to Classify with mixed objects requiring and not requiring validation document
         submission3 = Submission.objects.create(
             status=Submission.STATUS_PROCESSING,
             administrative_entity=demo_administrative_entity,
@@ -810,7 +756,7 @@ class Command(BaseCommand):
             geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
         )
 
-        # Permit Requests to Classify with validation document required
+        # Submission to Classify with validation document required
         submission4 = Submission.objects.create(
             status=Submission.STATUS_PROCESSING,
             administrative_entity=demo_administrative_entity,
@@ -865,7 +811,7 @@ class Command(BaseCommand):
             geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
         )
 
-        # permit with pending validations
+        # Submission with pending validations
 
         submission6 = Submission.objects.create(
             status=Submission.STATUS_AWAITING_VALIDATION,
@@ -891,14 +837,14 @@ class Command(BaseCommand):
             geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
         )
 
-        # Permit Request to Classify with mixed objects with lots of text for print demo
+        # Submission to Classify with mixed objects with lots of text for print demo
         submission7 = Submission.objects.create(
             status=Submission.STATUS_PROCESSING,
             administrative_entity=demo_administrative_entity,
             author=demo_author,
             is_public=True,
         )
-        # Validations with long text
+        # SubmissionValidations with long text
         SubmissionValidation.objects.get_or_create(
             submission=submission7,
             department=department,

@@ -9,7 +9,7 @@ class Command(BaseCommand):
 
     help = gettext(
         "Update the permissions for Groups that have is_integrator_admin = True set in the admin."
-        "This command is useful when new models are added to INTEGRATOR_PERMITS_MODELS_PERMISSIONS in permits/admin.py"
+        "This command is useful when new models are added to INTEGRATOR_REQUIRED_MODELS_PERMISSIONS in permits/admin.py"
         "or to INTEGRATOR_REPORTS_MODELS_PERMISSIONS in reports/admin.py"
     )
 
@@ -23,7 +23,7 @@ class Command(BaseCommand):
 
             permits_permissions = Permission.objects.filter(
                 content_type__app_label="permits",
-                content_type__model__in=permissions_groups.INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
+                content_type__model__in=permissions_groups.INTEGRATOR_REQUIRED_MODELS_PERMISSIONS,
             )
 
             report_permissions = Permission.objects.filter(
