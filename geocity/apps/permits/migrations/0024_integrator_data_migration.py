@@ -52,7 +52,7 @@ def set_default_integrator_on_existing_objects(apps, schema_editor):
 
     permits_permissions = Permission.objects.filter(
         content_type__app_label="permits",
-        content_type__model__in=permissions_groups.INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
+        content_type__model__in=permissions_groups.INTEGRATOR_REQUIRED_MODELS_PERMISSIONS,
     )
 
     other_permissions = Permission.objects.filter(

@@ -1,18 +1,33 @@
 from django.conf import settings
 
-# define permissions required by integrator role
-INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [
-    "permitadministrativeentity",
-    "workstype",
-    "worksobject",
-    "worksobjecttype",
-    "worksobjectproperty",
-    "permitactortype",
-    "permitrequestamendproperty",
+
+INTEGRATOR_ACCOUNTS_MODELS_PERMISSIONS = [
+    "administrativeentity",
     "permitdepartment",
-    "permitworkflowstatus",
-    "permitauthor",
+    "userprofile",
+]
+INTEGRATOR_FORMS_MODELS_PERMISSIONS = [
+    "formcategory",
+    "form",
+    "field",
+]
+INTEGRATOR_SUBMISSIONS_MODELS_PERMISSIONS = [
+    "contacttype",       
+    "submissionamendfield",
+    "submissionworkflowstatus",
     "complementarydocumenttype",
+]
+INTEGRATOR_REPORTS_MODELS_PERMISSIONS = [
+    "report",
+    "reportlayout",
+    "section",
+]
+
+# define permissions required by integrator role
+INTEGRATOR_REQUIRED_MODELS_PERMISSIONS = [
+    INTEGRATOR_ACCOUNTS_MODELS_PERMISSIONS,
+    INTEGRATOR_FORMS_MODELS_PERMISSIONS,
+    INTEGRATOR_SUBMISSIONS_MODELS_PERMISSIONS,
 ]
 
 OTHER_PERMISSIONS_CODENAMES = [
@@ -46,11 +61,4 @@ AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
     "edit_permit_request",
     "see_private_requests",
     "can_generate_pdf",
-]
-
-
-INTEGRATOR_REPORTS_MODELS_PERMISSIONS = [
-    "report",
-    "reportlayout",
-    "section",
 ]
