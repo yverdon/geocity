@@ -7,6 +7,9 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("permits", "0084_add_shortname_and_change_text"),
+        ("submissions", "0003_migrate_permits_data"),
+        ("forms", "0003_migrate_permits_data"),
+        ("accounts", "0003_migrate_permits_data"),
     ]
 
     operations = [
