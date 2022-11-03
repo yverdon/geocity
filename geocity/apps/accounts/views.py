@@ -33,7 +33,6 @@ from geocity.apps.accounts.decorators import (
     permanent_user_required,
 )
 from geocity.fields import PrivateFileSystemStorage
-from geocity.services import get_context_data
 
 from . import forms, models
 
@@ -113,7 +112,59 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
         context = super().get_context_data(**kwargs)
         context.update({"social_apps": SocialApp.objects.all()})
 
-        return get_context_data(context, self.request)
+        customization = {
+            "application_title": config.APPLICATION_TITLE,
+            "application_subtitle": config.APPLICATION_SUBTITLE,
+            "application_description": config.APPLICATION_DESCRIPTION,
+            "general_conditions_url": config.GENERAL_CONDITIONS_URL,
+            "privacy_policy_url": config.PRIVACY_POLICY_URL,
+            "background_image": None,
+        }
+        uri = parse.unquote(self.request.build_absolute_uri()).replace("next=/", "")
+
+        params_str = (
+            parse.urlsplit(uri).query.replace("?", "").replace(settings.PREFIX_URL, "")
+        )
+
+        self.request.session["templatename"] = None
+        url_qs = ""
+
+        if "template" in parse.parse_qs(params_str).keys():
+            template_value = parse.parse_qs(params_str)["template"][0]
+            template = models.TemplateCustomization.objects.filter(
+                templatename=template_value
+            ).first()
+            if template:
+                customization = {
+                    "application_title": template.application_title
+                    if template.application_title
+                    else config.APPLICATION_TITLE,
+                    "application_subtitle": template.application_subtitle
+                    if template.application_subtitle
+                    else config.APPLICATION_SUBTITLE,
+                    "application_description": template.application_description
+                    if template.application_description
+                    else config.APPLICATION_DESCRIPTION,
+                    "background_image": template.background_image
+                    if template.background_image
+                    else None,
+                }
+                request.session["templatename"] = template.templatename
+                url_qs = "&template=" + template.templatename
+            # use anonymous session
+            self.request.session["template"] = template_value
+        context.update({"customization": customization})
+        if "entityfilter" in parse.parse_qs(params_str).keys():
+            for value in parse.parse_qs(params_str)["entityfilter"]:
+                url_qs += "&entityfilter=" + value
+
+        if "typefilter" in parse.parse_qs(params_str).keys():
+            for value in parse.parse_qs(params_str)["typefilter"]:
+                url_qs += "&typefilter=" + value
+        if url_qs:
+            context.update({"query_string": url_qs[1:]})
+
+        return context
 
     def get_success_url(self):
 
