@@ -1,3 +1,4 @@
+import mimetypes
 from urllib import parse
 from urllib.parse import urlparse
 
@@ -11,6 +12,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordResetView
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
+from django.http import StreamingHttpResponse
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -26,6 +28,11 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
+from geocity.apps.accounts.decorators import (
+    check_mandatory_2FA,
+    permanent_user_required,
+)
+from geocity.fields import PrivateFileSystemStorage
 from geocity.services import get_context_data
 
 from . import forms, models
@@ -226,3 +233,16 @@ def user_profile_create(request):
             "django_user_form": django_user_form,
         },
     )
+
+
+@login_required
+@permanent_user_required
+@check_mandatory_2FA
+def administrative_entity_file_download(request, path):
+    """
+    Only allows logged user to download administrative entity files
+    """
+
+    mime_type, encoding = mimetypes.guess_type(path)
+    storage = PrivateFileSystemStorage()
+    return StreamingHttpResponse(storage.open(path), content_type=mime_type)

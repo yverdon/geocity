@@ -5,21 +5,21 @@ from django.urls import reverse
 from geocity.fields import PrivateFileSystemStorage
 
 
-class FormFieldFile(FieldFile):
+class AdministrativeEntityFieldFile(FieldFile):
     @property
     def url(self):
         return reverse(
-            "submissions:field_file_download",
+            "accounts:administrative_entity_file_download",
             kwargs={"path": self.name},
         )
 
 
-class FormFileField(models.FileField):
+class AdministrativeEntityFileField(models.FileField):
     """
     FileField storing information in a private media root.
     """
 
-    attr_class = FormFieldFile
+    attr_class = AdministrativeEntityFieldFile
 
     def __init__(self, verbose_name=None, name=None, **kwargs):
         kwargs["storage"] = PrivateFileSystemStorage()

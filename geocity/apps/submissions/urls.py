@@ -85,11 +85,6 @@ urlpatterns = [
         views.SubmissionComplementaryDocumentDeleteView.as_view(),
         name="complementary_documents_delete",
     ),
-    path(
-        "admin-data/<path:path>",
-        views.administrative_entity_file_download,
-        name="administrative_entity_file_download",
-    ),
     path("", views.SubmissionList.as_view(), name="submissions_list"),
     path("", include(submission_urlpatterns + anonymous_submission_urlpatterns)),
     path(

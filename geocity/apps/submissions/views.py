@@ -51,10 +51,11 @@ from geocity.apps.accounts.models import (
     PermitDepartment,
     UserProfile,
 )
+from geocity.apps.accounts.forms import GenericUserProfileForm
 from geocity.apps.accounts.users import get_departments, has_profile
 from geocity.apps.forms.models import Field, Form
 
-from . import fields, filters, forms, models, permissions, services, tables
+from . import filters, forms, models, permissions, services, tables
 from .exceptions import BadSubmissionStatus, NonProlongableSubmission
 from .search import search_submissions, search_result_to_json
 from .shortcuts import get_submission_for_user_or_404
@@ -1929,23 +1930,10 @@ def field_file_download(request, path):
 @login_required
 @permanent_user_required
 @check_mandatory_2FA
-def administrative_entity_file_download(request, path):
-    """
-    Only allows logged user to download administrative entity files
-    """
-
-    mime_type, encoding = mimetypes.guess_type(path)
-    storage = fields.PrivateFileSystemStorage()
-    return StreamingHttpResponse(storage.open(path), content_type=mime_type)
-
-
-@login_required
-@permanent_user_required
-@check_mandatory_2FA
 def genericauthorview(request, pk):
     # FIXME shouldn’t we use the user id in the url?
     instance = get_object_or_404(UserProfile, pk=pk)
-    form = forms.GenericAuthorForm(request.POST or None, instance=instance)
+    form = GenericUserProfileForm(request.POST or None, instance=instance)
 
     for field in form.fields:
         form.fields[field].disabled = True

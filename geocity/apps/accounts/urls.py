@@ -104,4 +104,9 @@ urlpatterns += [
     ),
     path("profile/create/", views.user_profile_create, name="user_profile_create"),
     path("profile/edit/", views.user_profile_edit, name="user_profile_edit"),
+    path(
+        "admin-data/<path:path>",
+        views.administrative_entity_file_download,
+        name="administrative_entity_file_download",
+    ),
 ]
