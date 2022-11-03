@@ -945,7 +945,6 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
         )
 
         services.send_email(
-            # FIXME rename template file
             template="submission_changed.txt",
             sender=sender,
             receivers=[submission.author.email],
@@ -968,7 +967,6 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                 ),
                 "administrative_entity": submission.administrative_entity,
                 "name": submission.author.get_full_name(),
-                # FIXME change variable name in template (was objects_list)
                 "forms_list": submission.get_forms_names_list(),
             },
         )
@@ -1227,7 +1225,6 @@ class SubmissionValidationDepartmentSelectionForm(forms.Form):
     def __init__(self, instance, *args, **kwargs):
         self.submission = instance
         permit_request_ct = ContentType.objects.get_for_model(models.Submission)
-        # FIXME rename permissions
         validate_permission = Permission.objects.get(
             codename="validate_submission", content_type=permit_request_ct
         )

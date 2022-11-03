@@ -107,8 +107,8 @@ class SubmissionInquiryClosing(CronJobBase):
                 ],
                 "submission": inquiry.submission,
                 "absolute_uri_func": inquiry.submission.get_absolute_url,
-                "template": "permit_request_inquiry_closing.txt",
-                "objects_list": inquiry.submission.get_forms_names_list(),
+                "template": "submission_inquiry_closing.txt",
+                "forms_list": inquiry.submission.get_forms_names_list(),
             }
             send_email_notification(data)
 

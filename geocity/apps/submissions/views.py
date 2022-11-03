@@ -1,4 +1,3 @@
-# FIXME migrate permissions to new objects
 import datetime
 import json
 import logging
@@ -556,7 +555,6 @@ class SubmissionDetailView(View):
                 "template": "submission_received.txt",
                 "submission": submission,
                 "absolute_uri_func": self.request.build_absolute_uri,
-                # FIXME rename in template (was `objects_list`)
                 "forms_list": submission.get_forms_names_list(),
             }
             services.send_email_notification(data)
@@ -573,11 +571,9 @@ class SubmissionDetailView(View):
                         submission.get_categories_names_list(),
                     ),
                     "users_to_notify": set(mailing_list),
-                    # FIXME rename template
                     "template": "submission_received_for_services.txt",
                     "submission": submission,
                     "absolute_uri_func": self.request.build_absolute_uri,
-                    # FIXME rename in template (was `objects_list`)
                     "forms_list": submission.get_forms_names_list(),
                 }
                 services.send_email_notification(data)
@@ -653,11 +649,9 @@ class SubmissionDetailView(View):
                             self.submission.get_categories_names_list(),
                         ),
                         "users_to_notify": self.submission.get_secretary_email(),
-                        # FIXME rename template
                         "template": "submission_validated.txt",
                         "submission": self.submission,
                         "absolute_uri_func": self.request.build_absolute_uri,
-                        # FIXME rename in template (was `objects_list`)
                         "forms_list": self.submission.get_forms_names_list(),
                     }
                     services.send_email_notification(data)
@@ -711,11 +705,9 @@ class SubmissionDetailView(View):
                     form.instance.get_categories_names_list(),
                 ),
                 "users_to_notify": [form.instance.author.email],
-                # FIXME rename template
                 "template": "submission_prolongation.txt",
                 "submission": form.instance,
                 "absolute_uri_func": self.request.build_absolute_uri,
-                # FIXME rename in template (was `objects_list`)
                 "forms_list": form.instance.get_forms_names_list(),
             }
             services.send_email_notification(data)
@@ -766,7 +758,6 @@ class SubmissionDetailView(View):
             if non_public_documents:
                 return render(
                     self.request,
-                    # FIXME rename template
                     "submissions/submission_confirm_inquiry.html",
                     {
                         "non_public_documents": non_public_documents,
@@ -1331,7 +1322,7 @@ def submission_prolongation(request, submission_id):
                 "template": "submission_prolongation_for_services.txt",
                 "submission": form.instance,
                 "absolute_uri_func": request.build_absolute_uri,
-                "objects_list": submission.get_forms_names_list(),
+                "forms_list": submission.get_forms_names_list(),
             }
             services.send_email_notification(data)
 
@@ -1419,7 +1410,6 @@ def submission_appendices(request, submission_id):
         "submissions/submission_appendices.html",
         {
             "submission": submission,
-            # FIXME rename in template (was `object_types`)
             "forms": fields_by_form,
             **steps_context,
         },
@@ -1740,7 +1730,6 @@ def submission_submit_confirmed(request, submission_id):
                 "template": "submission_submitted_with_mention.txt",
                 "submission": submission,
                 "absolute_uri_func": request.build_absolute_uri,
-                # FIXME rename in template (was `objects_list`)
                 "forms_list": submission.get_forms_names_list(),
             }
             services.send_email_notification(data)
@@ -1860,7 +1849,6 @@ def submission_classify(request, submission_id, approve):
                 "template": "submission_classified.txt",
                 "submission": submission,
                 "absolute_uri_func": request.build_absolute_uri,
-                # FIXME rename in template (was `objects_list`)
                 "forms_list": submission.get_forms_names_list(),
             }
             services.send_email_notification(data)
@@ -1878,7 +1866,6 @@ def submission_classify(request, submission_id, approve):
                     "template": "submission_classified_for_services.txt",
                     "submission": submission,
                     "absolute_uri_func": request.build_absolute_uri,
-                    # FIXME rename in template (was `objects_list`)
                     "forms_list": submission.get_forms_names_list(),
                 }
                 services.send_email_notification(data)
