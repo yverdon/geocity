@@ -431,8 +431,9 @@ class UserProfile(models.Model):
         verbose_name_plural = _("3.2 Consultation des auteurs")
 
     def get_absolute_url(self):
-
-        return reverse("permits:genericauthorview", args=[str(self.id)])
+        # FIXME this URL name doesn’t exist, but that was already the case before the
+        # phoenix migration. Should we remove this?
+        return reverse("accounts:genericauthorview", args=[str(self.id)])
 
     def __str__(self):
 

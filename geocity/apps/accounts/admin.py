@@ -130,7 +130,7 @@ class UserAdmin(BaseUserAdmin):
     is_sociallogin.admin_order_field = "socialaccount"
     is_sociallogin.short_description = "Social"
 
-    change_form_template = "permits/admin/user_change.html"
+    change_form_template = "submissions/admin/user_change.html"
 
     def get_readonly_fields(self, request, obj=None):
         # limit editable fields to protect user data, superuser creation must be done using django shell
@@ -341,8 +341,9 @@ class GroupAdminForm(forms.ModelForm):
         integrator_permissions = Permission.objects.filter(
             (
                 (
-                    Q(content_type__app_label="permits")
+                    Q(content_type__app_label="submissions")
                     & Q(
+                        # FIXME update INTEGRATOR_PERMITS_MODELS_PERMISSIONS to include permissions from other apps
                         content_type__model__in=permissions_groups.INTEGRATOR_PERMITS_MODELS_PERMISSIONS
                     )
                 )
@@ -569,7 +570,7 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
         return RequestForm
 
-    change_form_template = "permits/admin/permit_administrative_entity_change.html"
+    change_form_template = "submissions/admin/administrative_entity_change.html"
     form = AdministrativeEntityAdminForm
     inlines = [
         SubmissionWorkflowStatusInline,

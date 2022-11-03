@@ -256,7 +256,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "validation_pdf",
-                    geocity.apps.submissions.fields.PermitRequestFileField(
+                    geocity.apps.submissions.fields.SubmissionFileField(
                         storage=geocity.fields.PrivateFileSystemStorage(),
                         upload_to="validations",
                         validators=[

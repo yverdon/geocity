@@ -1,4 +1,4 @@
-{% extends "permits/permit_request_author.html" %}
+{% extends "submissions/user_profile_edit.html" %}
 {% load i18n %}
 {% load bootstrap4 %}
 
@@ -11,7 +11,7 @@
       {% csrf_token %}
       {% bootstrap_form form layout='horizontal'%}
       {% bootstrap_button "Confirmer" button_type="submit" button_class="btn-primary mr-3" value="Enregistrer" %}
-      <a href="{% url 'permits:permit_requests_list' %}">{% trans "Annuler" %}</a>
+      <a href="{% url 'submissions:submissions_list' %}">{% trans "Annuler" %}</a>
     </form>
     <br>
   </div>

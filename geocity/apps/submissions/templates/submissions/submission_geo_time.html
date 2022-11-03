@@ -15,7 +15,7 @@
     <div data-geo-time-role="forms" data-nb-forms="{{ formset.forms|length }}" data-permit-duration-max="{{ permit_request.max_validity }}">
       {% for form in formset.forms %}
         {{ form.media }}
-        {% include "permits/_geo_time_form.html" with form=form form_id=forloop.counter0 form_number=forloop.counter open=forloop.last %}
+        {% include "submissions/_geo_time_form.html" with form=form form_id=forloop.counter0 form_number=forloop.counter open=forloop.last %}
       {% endfor %}
     </div>
 
@@ -37,11 +37,11 @@
   </form>
 
   <div class="d-none" data-geo-time-role="emptyForm">
-    {% include "permits/_geo_time_form.html" with form=formset.empty_form form_id="__prefix__" form_number="__prefix__" open=False %}
+    {% include "submissions/_geo_time_form.html" with form=formset.empty_form form_id="__prefix__" form_number="__prefix__" open=False %}
   </div>
 </div>
 
-<script src="{% static "js/permits_geo_time.js" %}"></script>
+<script src="{% static "js/submissions_geo_time.js" %}"></script>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
     new window.PermitsGeoTime(document.getElementById("permit-request-geo-time"));

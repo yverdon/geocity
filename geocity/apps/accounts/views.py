@@ -173,7 +173,7 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
         url_value = (
             qs_dict["next"][0]
             if "next" in qs_dict
-            else reverse("permits:permit_request_select_administrative_entity")
+            else reverse("submissions:submission_select_administrative_entity")
         )
 
         if "next" in qs_dict:

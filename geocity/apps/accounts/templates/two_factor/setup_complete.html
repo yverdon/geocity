@@ -12,10 +12,10 @@
     <p class="d-flex flex-column flex-md-row">
       <a href="{% url 'two_factor:profile' %}"
         class="btn btn-primary m-1">{% trans "Back to Account Security" %}</a>
-      <a class="btn btn-primary m-1" href="{% url 'permits:permit_requests_list' %}" role="button">
+      <a class="btn btn-primary m-1" href="{% url 'submissions:submissions_list' %}" role="button">
         {% trans "Voir mes demandes" %}
       </a>
-      <a class="btn btn-primary m-1" href="{% url 'permits:permit_request_select_administrative_entity'%}" role="button">
+      <a class="btn btn-primary m-1" href="{% url 'submissions:submission_select_administrative_entity'%}" role="button">
         <i class="fa fa-plus"></i> {% trans "Créer une nouvelle demande" %}
       </a>
     </p>

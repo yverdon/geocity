@@ -259,7 +259,7 @@ class Submission(models.Model):
     intersected_geometries = models.TextField(
         _("Entités géométriques concernées"), max_length=1024, null=True
     )
-    validation_pdf = fields.PermitRequestFileField(
+    validation_pdf = fields.SubmissionFileField(
         _("pdf de validation"),
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
         upload_to="validations",

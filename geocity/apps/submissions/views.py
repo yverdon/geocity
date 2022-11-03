@@ -1932,6 +1932,7 @@ def field_file_download(request, path):
 @check_mandatory_2FA
 def genericauthorview(request, pk):
     # FIXME shouldn’t we use the user id in the url?
+    # FIXME shouldn’t this be moved to the accounts app?
     instance = get_object_or_404(UserProfile, pk=pk)
     form = GenericUserProfileForm(request.POST or None, instance=instance)
 

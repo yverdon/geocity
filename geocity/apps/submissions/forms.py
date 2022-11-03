@@ -59,7 +59,7 @@ def _file_download_html_representation(prop, for_summary=False):
         description = prop.help_text if prop.help_text else _("Télécharger le fichier")
         return f"""<strong>{ prop.name }:</strong>
             <i class="fa fa-download" aria-hidden="true"></i>
-            <a class="file_download" href="{ reverse('permits:works_object_property_file_download', kwargs={'path':prop.file_download}) }" target="_blank" rel="noreferrer">{ description }</a>"""
+            <a class="file_download" href="{ reverse('submissions:field_file_download', kwargs={'path':prop.file_download}) }" target="_blank" rel="noreferrer">{ description }</a>"""
     return ""
 
 
@@ -190,7 +190,7 @@ class FormsSelectForm(forms.Form):
 
         super().__init__(*args, **{**kwargs, "initial": initial})
         user_can_see_private_requests = self.user.has_perm(
-            "permits.see_private_requests"
+            "submissions.see_private_requests"
         )
 
         forms = (
