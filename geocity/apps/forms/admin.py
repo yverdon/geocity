@@ -1,29 +1,13 @@
 import django.db.models
 from adminsortable2.admin import SortableAdminMixin
 from django import forms
-from django.contrib import admin, messages
-from django.contrib.admin import AdminSite, site
-from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.forms import UserChangeForm
-from django.contrib.auth.models import Group, Permission, User
-from django.contrib.sites.admin import SiteAdmin as BaseSiteAdmin
-from django.contrib.sites.models import Site
-from django.core.management import CommandError, call_command
-from django.db.models import Q, Value
-from django.db.models.functions import StrIndex, Substr
-from django.http import Http404
-from django.shortcuts import redirect
-from django.urls import re_path, reverse
-from django.utils.decorators import method_decorator
+from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-from django.views.decorators.http import require_POST
 
 from geocity.apps.accounts.admin import IntegratorFilterMixin, filter_for_user
 from geocity.apps.accounts.models import PUBLIC_TYPE_CHOICES, AdministrativeEntity
 
 from . import models
-
 
 PERMIT_DURATION_ERROR_MESSAGE = "Veuillez saisir une valeur > 0"
 DAYS_BEFORE_REMINDER_ERROR_MESSAGE = (

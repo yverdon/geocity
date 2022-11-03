@@ -10,6 +10,7 @@ from rest_framework_gis import serializers as gis_serializers
 
 from geocity import geometry, settings
 from geocity.apps.accounts.models import AdministrativeEntity, UserProfile
+from geocity.apps.submissions import search
 from geocity.apps.submissions.models import (
     FieldValue,
     Submission,
@@ -17,7 +18,6 @@ from geocity.apps.submissions.models import (
     SubmissionGeoTime,
     SubmissionInquiry,
 )
-from geocity.apps.submissions import search
 
 
 def get_field_value_based_on_field(prop):

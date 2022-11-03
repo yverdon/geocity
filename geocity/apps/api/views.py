@@ -8,10 +8,10 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 
 from geocity import geometry
+from geocity.apps.django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 from geocity.apps.forms.models import Form
 from geocity.apps.submissions import search
 from geocity.apps.submissions.models import Submission, SubmissionGeoTime
-from geocity.apps.django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 
 from . import permissions, serializers
 
