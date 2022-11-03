@@ -38,11 +38,11 @@ def permanent_user_required(
 
     def test(user):
         try:
-            permitauthor = user.permitauthor
+            user_profile = user.userprofile
         except ObjectDoesNotExist:
             return True
         else:
-            return not permitauthor.is_temporary
+            return not user_profile.is_temporary
 
     decorator = user_passes_test(
         test, login_url=login_url, redirect_field_name=redirect_field_name
