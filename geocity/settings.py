@@ -570,8 +570,8 @@ WFS3_DESCRIPTION = "Point d'accès OGC API Features aux données Geocity."
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 CRON_CLASSES = [
-    "geocity.apps.permits.cron.PermitRequestExpirationReminder",
-    "geocity.apps.permits.cron.PermitRequestInquiryClosing",
+    "geocity.apps.submissions.cron.SubmissionExpirationReminder",
+    "geocity.apps.submissions.cron.SubmissionInquiryClosing",
 ]
 
 CAPTCHA_IMAGE_SIZE = (150, 50)
