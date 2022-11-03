@@ -1199,7 +1199,9 @@ class ContactType(models.Model):
 
 class SubmissionContact(models.Model):
     contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
-    submission = models.ForeignKey("Submission", on_delete=models.CASCADE)
+    submission = models.ForeignKey(
+        "Submission", on_delete=models.CASCADE, related_name="submission_contacts"
+    )
     contact_type = models.PositiveSmallIntegerField(
         _("type de contact"), choices=CONTACT_TYPE_CHOICES, default=CONTACT_TYPE_OTHER
     )

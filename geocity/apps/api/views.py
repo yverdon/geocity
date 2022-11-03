@@ -4,48 +4,16 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.db.models import F, Prefetch, Q
 from rest_framework import viewsets
 from rest_framework.generics import RetrieveAPIView
-from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 
+from geocity import geometry
+from geocity.apps.forms.models import Form
+from geocity.apps.submissions import search
+from geocity.apps.submissions.models import Submission, SubmissionGeoTime
 from geocity.apps.django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 
-from . import geoservices, models, search, serializers, services
-
-# //////////////////////////////////
-# PERMIT REQUEST ENDPOINT
-# //////////////////////////////////
-
-
-class AllowAllRequesters(BasePermission):
-    """
-    Allow access to Permit Requesters
-    """
-
-    def has_permission(self, request, view):
-        return True
-
-
-class BlockRequesterUserPermission(BasePermission):
-    """
-    Block access to Permit Requesters (General Public)
-    Only superuser or integrators can use these endpoints
-    """
-
-    def has_permission(self, request, view):
-        is_integrator_admin = request.user.groups.filter(
-            permitdepartment__is_integrator_admin=True
-        ).exists()
-        return is_integrator_admin or request.user.is_superuser
-
-
-class BlockRequesterUserWithoutGroup(BasePermission):
-    """
-    Block untrusted user. User must belong to a group in order to access this endpoint
-    """
-
-    def has_permission(self, request, view):
-        return request.user.groups.exists()
+from . import permissions, serializers
 
 
 # ///////////////////////////////////
@@ -53,7 +21,7 @@ class BlockRequesterUserWithoutGroup(BasePermission):
 # ///////////////////////////////////
 
 
-class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
+class SubmissionGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Events request endpoint Usage:
         1.- /rest/events/?show_only_future=true (past events get filtered out)
@@ -63,9 +31,9 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
 
     """
 
-    serializer_class = serializers.PermitRequestGeoTimeSerializer
+    serializer_class = serializers.SubmissionGeoTimeSerializer
     throttle_scope = "events"
-    permission_classes = [AllowAllRequesters]
+    permission_classes = [permissions.AllowAllRequesters]
 
     def get_queryset(self):
         """
@@ -89,39 +57,35 @@ class PermitRequestGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
             base_filter &= Q(ends_at__gte=datetime.datetime.now())
         if administrative_entities:
             base_filter &= Q(
-                permit_request__administrative_entity__in=administrative_entities.split(
-                    ","
-                )
+                submission__administrative_entity__in=administrative_entities.split(",")
             )
-        base_filter &= ~Q(permit_request__status=models.PermitRequest.STATUS_DRAFT)
-        # Only allow WOTs that have at least one geometry type mandatory
-        works_object_types_prefetch = Prefetch(
-            "permit_request__works_object_types",
-            queryset=models.WorksObjectType.objects.filter(
+        base_filter &= ~Q(submission__status=Submission.STATUS_DRAFT)
+        # Only allow forms that have at least one geometry type mandatory
+        forms_prefetch = Prefetch(
+            "submission__forms",
+            queryset=Form.objects.filter(
                 (
                     Q(has_geometry_point=True)
                     | Q(has_geometry_line=True)
                     | Q(has_geometry_polygon=True)
                 )
                 & Q(needs_date=True)
-            ).select_related("works_type"),
+            ).select_related("category"),
         )
 
         qs = (
-            models.PermitRequestGeoTime.objects.filter(base_filter)
+            SubmissionGeoTime.objects.filter(base_filter)
             .filter(
                 Q(
-                    permit_request__in=services.get_permit_requests_list_for_user(
+                    submission__in=Submission.objects.filter_for_user(
                         self.request.user,
                     )
                 )
-                | Q(permit_request__is_public=True)
-                | Q(
-                    permit_request__status=models.PermitRequest.STATUS_INQUIRY_IN_PROGRESS
-                )
+                | Q(submission__is_public=True)
+                | Q(submission__status=Submission.STATUS_INQUIRY_IN_PROGRESS)
             )
-            .prefetch_related(works_object_types_prefetch)
-            .select_related("permit_request__administrative_entity")
+            .prefetch_related(forms_prefetch)
+            .select_related("submission__administrative_entity")
         )
 
         return qs.order_by("starts_at")
@@ -139,7 +103,7 @@ class CurrentUserAPIView(RetrieveAPIView):
     """
 
     serializer_class = serializers.CurrentUserSerializer
-    permission_classes = [AllowAllRequesters]
+    permission_classes = [permissions.AllowAllRequesters]
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -160,32 +124,30 @@ class CurrentUserAPIView(RetrieveAPIView):
             return AnonymousUser()
 
 
-class PermitRequestViewSet(
-    WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelViewSet
-):
+class SubmissionViewSet(WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """
     Permit request endpoint Usage:
-        1.- /rest/permits/?permit_request_id=1
-        2.- /rest/permits/?works_object_type=1
-        3.- /rest/permits/?status=0
+        1.- /rest/submissions/?submission_id=1
+        2.- /rest/submissions/?form=1
+        3.- /rest/submissions/?status=0
 
         Notes:
-            1.- For works objects types that do not have geometry, the returned
+            1.- For forms that do not have geometry, the returned
                 geometry is a 2x2 square around the centroid of the administrative entity geometry
             2.- This endpoint does not filter out items without geometry.
-                For works objects types that have only point geometry, the returned geometry
+                For forms types that have only point geometry, the returned geometry
                 is a polygon of 2 x 2 meters
 
             This endpoint is mainly designed for atlas print generation with QGIS Server
             For standard geometric endpoints, please use the following endpoints
-            1.- Points: /rest/permits_point/
-            2.- Lines: /rest/permits_line/
-            3.- Polygons: /rest/permits_polygon/
+            1.- Points: /rest/submissions_point/
+            2.- Lines: /rest/submissions_line/
+            3.- Polygons: /rest/submissions_polygon/
     """
 
-    throttle_scope = "permits"
-    serializer_class = serializers.PermitRequestPrintSerializer
-    permission_classes = [BlockRequesterUserWithoutGroup]
+    throttle_scope = "submissions"
+    serializer_class = serializers.SubmissionPrintSerializer
+    permission_classes = [permissions.BlockRequesterUserWithoutGroup]
 
     wfs3_title = "Demandes"
     wfs3_description = "Toutes les demandes"
@@ -199,15 +161,18 @@ class PermitRequestViewSet(
 
     def get_queryset(self, geom_type=None):
         """
-        This view should return a list of permits for which the logged user has
+        This view should return a list of submissions for which the logged user has
         view permissions
         """
         user = self.request.user
-        filters_serializer = serializers.PermitRequestFiltersSerializer(
+        filters_serializer = serializers.SubmissionFiltersSerializer(
             data={
-                "works_object_type": self.request.query_params.get("works_object_type"),
+                # FIXME inform API consumers of query params changes
+                # works_object_type -> form
+                # permit_request_id -> submission_id
+                "form": self.request.query_params.get("form"),
                 "status": self.request.query_params.get("status"),
-                "permit_request_id": self.request.query_params.get("permit_request_id"),
+                "submission_id": self.request.query_params.get("submission_id"),
             }
         )
         filters_serializer.is_valid(raise_exception=True)
@@ -215,20 +180,20 @@ class PermitRequestViewSet(
 
         base_filter = Q()
 
-        if filters["works_object_type"]:
-            base_filter &= Q(works_object_types=filters["works_object_type"])
+        if filters["form"]:
+            base_filter &= Q(forms=filters["form"])
 
         if filters["status"]:
             base_filter &= Q(status=filters["status"])
 
-        if filters["permit_request_id"]:
-            base_filter &= Q(pk=filters["permit_request_id"])
+        if filters["submission_id"]:
+            base_filter &= Q(pk=filters["submission_id"])
 
-        geom_qs = models.PermitRequestGeoTime.objects.all()
+        geom_qs = SubmissionGeoTime.objects.all()
         # filter item which have the geom_type in their geometry column
         if geom_type:
             geom_qs = geom_qs.annotate(
-                geom_type=geoservices.GeomStAsText(
+                geom_type=geometry.GeomStAsText(
                     F("geom"),
                 )
             )
@@ -239,40 +204,39 @@ class PermitRequestViewSet(
             if geom_type == "polygons":
                 geom_qs = geom_qs.filter(geom_type__contains="POLY")
             base_filter &= Q(
-                id__in=set(geom_qs.values_list("permit_request_id", flat=True))
+                id__in=set(geom_qs.values_list("submission_id", flat=True))
             )
 
         geotime_prefetch = Prefetch("geo_time", queryset=geom_qs)
-        works_object_types_prefetch = Prefetch(
-            "works_object_types",
-            queryset=models.WorksObjectType.objects.select_related("works_type"),
+        forms_prefetch = Prefetch(
+            "forms",
+            queryset=Form.objects.select_related("category"),
         )
 
         qs = (
-            models.PermitRequest.objects.filter(base_filter)
+            Submission.objects.filter(base_filter)
             .filter(
                 Q(
-                    id__in=services.get_permit_requests_list_for_user(
+                    id__in=Submission.objects.filter_for_user(
                         user,
                     )
                 )
             )
-            .prefetch_related(works_object_types_prefetch)
+            .prefetch_related(forms_prefetch)
             .prefetch_related(geotime_prefetch)
-            .prefetch_related("worksobjecttypechoice_set__properties__property")
-            .prefetch_related("worksobjecttypechoice_set__amend_properties__property")
+            .prefetch_related("selected_forms")
             .select_related("administrative_entity")
         )
 
         return qs
 
 
-class PermitRequestDetailsViewSet(
+class SubmissionDetailsViewSet(
     WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelViewSet
 ):
     """
     Permit request details endpoint usage:
-        1.- /rest/permits_details/?permit_request_id=1
+        1.- /rest/submissions_details/?submission_id=1
     Liste types :
     - address
     - checkbox
@@ -286,13 +250,13 @@ class PermitRequestDetailsViewSet(
     - title
     """
 
-    throttle_scope = "permits_details"
-    serializer_class = serializers.PermitRequestDetailsSerializer
-    permission_classes = [AllowAllRequesters]
+    throttle_scope = "submissions_details"
+    serializer_class = serializers.SubmissionDetailsSerializer
+    permission_classes = [permissions.AllowAllRequesters]
 
     def get_queryset(self, geom_type=None):
         """
-        This view should return a list of permits for which the logged user has
+        This view should return a list of submissions for which the logged user has
         view permissions
         """
         # Only take user with session authentication
@@ -303,9 +267,9 @@ class PermitRequestDetailsViewSet(
             else None
         )
 
-        filters_serializer = serializers.PermitRequestFiltersSerializer(
+        filters_serializer = serializers.SubmissionFiltersSerializer(
             data={
-                "permit_request_id": self.request.query_params.get("permit_request_id"),
+                "submission_id": self.request.query_params.get("submission_id"),
             }
         )
         filters_serializer.is_valid(raise_exception=True)
@@ -313,70 +277,63 @@ class PermitRequestDetailsViewSet(
 
         base_filter = Q()
 
-        if filters["permit_request_id"]:
-            base_filter &= Q(pk=filters["permit_request_id"])
+        if filters["submission_id"]:
+            base_filter &= Q(pk=filters["submission_id"])
 
         if user:
-            qs = models.PermitRequest.objects.filter(base_filter).filter(
+            qs = Submission.objects.filter(base_filter).filter(
                 Q(
-                    id__in=services.get_permit_requests_list_for_user(
+                    id__in=Submission.objects.filter_for_user(
                         user,
                     )
                 )
                 | Q(is_public=True)
             )
         else:
-            qs = models.PermitRequest.objects.filter(base_filter).filter(
-                Q(is_public=True)
-                | Q(status=models.PermitRequest.STATUS_INQUIRY_IN_PROGRESS)
+            qs = Submission.objects.filter(base_filter).filter(
+                Q(is_public=True) | Q(status=Submission.STATUS_INQUIRY_IN_PROGRESS)
             )
 
         return qs
 
 
-def permitRequestViewSetSubsetFactory(geom_type_name):
-    """Returns a subclass of PermitRequestViewSet with a specific multi-geometry instead
+def submission_view_set_subset_factory(geom_type_name):
+    """Returns a subclass of SubmissionViewSet with a specific multi-geometry instead
     of the bounding box"""
 
     if geom_type_name == "lines":
-        geom_serializer = (
-            serializers.PermitRequestGeoTimeGeoJSONSerializer.EXTRACT_LINES
-        )
+        geom_serializer = serializers.SubmissionGeoTimeGeoJSONSerializer.EXTRACT_LINES
     elif geom_type_name == "points":
-        geom_serializer = (
-            serializers.PermitRequestGeoTimeGeoJSONSerializer.EXTRACT_POINTS
-        )
+        geom_serializer = serializers.SubmissionGeoTimeGeoJSONSerializer.EXTRACT_POINTS
     elif geom_type_name == "polygons":
-        geom_serializer = (
-            serializers.PermitRequestGeoTimeGeoJSONSerializer.EXTRACT_POLYS
-        )
+        geom_serializer = serializers.SubmissionGeoTimeGeoJSONSerializer.EXTRACT_POLYS
     else:
         raise Exception(f"Unsupported geom type name {geom_type_name}")
 
-    class Serializer(serializers.PermitRequestPrintSerializer):
-        geo_envelop = serializers.PermitRequestGeoTimeGeoJSONSerializer(
+    class Serializer(serializers.SubmissionPrintSerializer):
+        geo_envelop = serializers.SubmissionGeoTimeGeoJSONSerializer(
             source="geo_time",
             read_only=True,
             extract_geom=geom_serializer,
         )
 
     # DRF want's the serializer to have a specific class name
-    Serializer.__name__ = f"PermitRequestViewSetSerializer{geom_type_name}"
+    Serializer.__name__ = f"SubmissionViewSetSerializer{geom_type_name}"
 
-    class ViewSet(PermitRequestViewSet):
+    class ViewSet(SubmissionViewSet):
         """
-        Permits request endpoint Usage:
-            1.- /rest/permits/?permit_request_id=1
-            2.- /rest/permits/?works_object_type=1
-            3.- /rest/permits/?status=0
+        Submissions endpoint Usage:
+            1.- /rest/submissions/?submission_id=1
+            2.- /rest/submissions/?form=1
+            3.- /rest/submissions/?status=0
         """
 
-        throttle_scope = "permits"
+        throttle_scope = "submissions"
         serializer_class = Serializer
-        permission_classes = [BlockRequesterUserWithoutGroup]
+        permission_classes = [permissions.BlockRequesterUserWithoutGroup]
 
-        wfs3_title = f"{PermitRequestViewSet.wfs3_title} ({geom_type_name})"
-        wfs3_description = f"{PermitRequestViewSet.wfs3_description} (géométries de type {geom_type_name})"
+        wfs3_title = f"{SubmissionViewSet.wfs3_title} ({geom_type_name})"
+        wfs3_description = f"{SubmissionViewSet.wfs3_description} (géométries de type {geom_type_name})"
 
         def get_throttles(self):
             throttle_classes = [ScopedRateThrottle]
@@ -406,7 +363,7 @@ class SearchViewSet(viewsets.ReadOnlyModelViewSet):
 
     throttle_scope = "search"
     serializer_class = serializers.SearchSerializer
-    permission_classes = [BlockRequesterUserPermission]
+    permission_classes = [permissions.BlockRequesterUserPermission]
 
     def get_queryset(self):
         terms = self.request.query_params.get("search")
@@ -414,17 +371,15 @@ class SearchViewSet(viewsets.ReadOnlyModelViewSet):
         # If a digit is given in query params, take this value casted to int, if not take 5 as default limit
         limit = int(limit_params) if limit_params and limit_params.isdigit() else 5
         if terms:
-            permit_requests = services.get_permit_requests_list_for_user(
-                self.request.user
-            )
-            results = search.search_permit_requests(
-                search_str=terms, permit_requests_qs=permit_requests, limit=limit
+            permit_requests = Submission.objects.filter_for_user(self.request.user)
+            results = search.search_submissions(
+                search_str=terms, submissions_qs=permit_requests, limit=limit
             )
             return results
         else:
             return None
 
 
-PermitRequestPointViewSet = permitRequestViewSetSubsetFactory("points")
-PermitRequestLineViewSet = permitRequestViewSetSubsetFactory("lines")
-PermitRequestPolyViewSet = permitRequestViewSetSubsetFactory("polygons")
+SubmissionPointViewSet = submission_view_set_subset_factory("points")
+SubmissionLineViewSet = submission_view_set_subset_factory("lines")
+SubmissionPolyViewSet = submission_view_set_subset_factory("polygons")
