@@ -3,6 +3,7 @@
 import django.core.validators
 from django.db import migrations, models
 import django.db.models.deletion
+import geocity.apps.accounts.fields
 import geocity.apps.forms.fields
 import geocity.fields
 import taggit.managers
@@ -194,7 +195,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "directive",
-                    geocity.apps.forms.fields.AdministrativeEntityFileField(
+                    geocity.apps.accounts.fields.AdministrativeEntityFileField(
                         blank=True,
                         storage=geocity.fields.PrivateFileSystemStorage(),
                         upload_to="",

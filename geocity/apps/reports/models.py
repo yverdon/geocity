@@ -15,7 +15,7 @@ from jinja2.sandbox import SandboxedEnvironment
 from knox.models import AuthToken
 from polymorphic.models import PolymorphicModel
 
-from geocity.apps.permits.fields import AdministrativeEntityFileField
+from geocity.apps.accounts.fields import AdministrativeEntityFileField
 
 from .fields import BackgroundFileField
 from .utils import DockerRunFailedError, run_docker_container

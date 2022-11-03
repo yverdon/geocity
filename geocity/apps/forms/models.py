@@ -13,6 +13,7 @@ from django.utils.translation import gettext_lazy as _
 
 from taggit.managers import TaggableManager
 
+from geocity.apps.accounts.fields import AdministrativeEntityFileField
 from geocity.apps.accounts.models import AdministrativeEntity
 from . import fields
 
@@ -55,7 +56,7 @@ class FormCategory(models.Model):
         verbose_name="Mots-clés",
         help_text="Mots clefs sans espaces, séparés par des virgules permettant de filtrer les types par l'url: https://geocity.ch/?typefilter=stationnement",
     )
-    objects = FormCategoryQuerySet.as_manager()
+    objects = FormCategoryQuerySet().as_manager()
 
     class Meta:
         verbose_name = _("1.2 Configuration du type")
@@ -155,7 +156,7 @@ class Form(models.Model):
     has_geometry_point = models.BooleanField(_("Point"), default=True)
     has_geometry_line = models.BooleanField(_("Ligne"), default=True)
     has_geometry_polygon = models.BooleanField(_("Surface"), default=True)
-    directive = fields.AdministrativeEntityFileField(
+    directive = AdministrativeEntityFileField(
         _("directive"),
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
         blank=True,

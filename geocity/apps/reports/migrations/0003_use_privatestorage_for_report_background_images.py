@@ -3,7 +3,8 @@
 import django.core.validators
 from django.db import migrations
 
-from geocity.apps import permits
+from geocity.apps.accounts.fields import AdministrativeEntityFileField
+from geocity.fields import PrivateFileSystemStorage
 
 
 class Migration(migrations.Migration):
@@ -16,10 +17,10 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="reportlayout",
             name="background",
-            field=permits.fields.AdministrativeEntityFileField(
+            field=AdministrativeEntityFileField(
                 blank=True,
                 null=True,
-                storage=permits.fields.PrivateFileSystemStorage(),
+                storage=PrivateFileSystemStorage(),
                 upload_to="report_layout_backgrounds",
                 validators=[
                     django.core.validators.FileExtensionValidator(

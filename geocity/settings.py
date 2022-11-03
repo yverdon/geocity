@@ -13,7 +13,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ROOT_URLCONF = "geocity.urls"
 PREFIX_URL = os.environ.get("PREFIX_URL", "")
 LOGIN_URL = "accounts:account_login"
-LOGIN_REDIRECT_URL = "permits:permit_requests_list"
+LOGIN_REDIRECT_URL = "submissions:submissions_list"
 LOGOUT_REDIRECT_URL = LOGIN_URL
 
 # Name of isolated docker network used for print and pdf services. Must be unique for hosting multi
@@ -87,7 +87,7 @@ DEFAULT_CHARSET = "utf-8"
 
 # Django-Taggit
 TAGGIT_CASE_INSENSITIVE = True  # make tag unique
-TAGGIT_TAGS_FROM_STRING = "geocity.apps.permits.utils.comma_splitter"
+TAGGIT_TAGS_FROM_STRING = "geocity.apps.submissions.utils.comma_splitter"
 
 # 2FA activation
 ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
@@ -98,15 +98,15 @@ ENABLE_2FA = os.getenv("ENABLE_2FA", "false").lower() == "true"
 #  It also ensures get_current_site will get the right Site, which includes a subdomain.
 #  Note: Every subdomain is treated as a different Site, they require to login separately
 #  See: geocity.views.SetCurrentSiteMixin(), also: settings_test.py
-# FIXME: Need a default for emails sent by Crons (Cf. PermitRequestInquiryClosing)
-#  Or we need to add an attribute in the PermitRequest to save the site where it has
+# FIXME: Need a default for emails sent by Crons (Cf. SubmissionInquiryClosing)
+#  Or we need to add an attribute in the Submission to save the site where it has
 #  been initiated.
 SITE_ID = None
 SITE_DOMAIN = None
 # Default domain on which all forms could be made visible by any integrator
 DEFAULT_SITE = os.getenv("DEFAULT_SITE")
 
-# IBAN for PermitAuthor model
+# IBAN for UserProfile model
 AUTHOR_IBAN_VISIBLE = os.getenv("AUTHOR_IBAN_VISIBLE", "false").lower() == "true"
 
 # Allow REMOTE_USER Authentication
@@ -130,10 +130,10 @@ INSTALLED_APPS = [
     "geocity.apps.accounts",
     "geocity.apps.accounts.geomapfish",
     "geocity.apps.accounts.dootix",
-    "geocity.apps.permits",
     "geocity.apps.reports",
     "geocity.apps.forms",
     "geocity.apps.submissions",
+    "geocity.apps.permits",
     # dependencies
     "grappelli",
     "polymorphic",
@@ -378,12 +378,12 @@ CONSTANCE_CONFIG = {
     ),
     "IP_WHITELIST": (
         "172.16.0.1,172.17.0.1,127.0.0.1,localhost",
-        "IP autorisées pour l'utilisation de l'API complète (/rest/permits), séparées par des ','",
+        "IP autorisées pour l'utilisation de l'API complète (/rest/submissions), séparées par des ','",
         str,
     ),
     "NETWORK_WHITELIST": (
         "172.16.0.0/12,192.168.0.0/16",
-        "Réseaux autorisés pour l'utilisation de l'API complète (/rest/permits), séparés par des ','",
+        "Réseaux autorisés pour l'utilisation de l'API complète (/rest/submissions), séparés par des ','",
         str,
     ),
     "LOGOUT_REDIRECT_HOSTNAME_WHITELIST": (
@@ -452,7 +452,7 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 # Override SocialAccountAdapter to customize User creation
-SOCIALACCOUNT_FORMS = {"signup": "geocity.apps.permits.forms.SocialSignupForm"}
+SOCIALACCOUNT_FORMS = {"signup": "geocity.apps.accounts.forms.SocialSignupForm"}
 SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = None
@@ -553,9 +553,9 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.ScopedRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        # Full API for permits
+        # Full API for submissions
         "submissions": os.getenv("DRF_THROTTLE_RATE_PERMITS_API"),
-        # Full API for permits_details
+        # Full API for submissions_details
         "submissions_details": os.getenv("DRF_THROTTLE_RATE_PERMITS_DETAILS_API"),
         # Limited pulic API used mainly by Geocalendar front app
         "events": os.getenv("DRF_THROTTLE_RATE_EVENTS_API"),
