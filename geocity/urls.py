@@ -16,8 +16,7 @@ admin.site = PermitsAdminSite()
 
 # See TWO_FACTOR_PATCH_ADMIN
 if settings.ENABLE_2FA:
-    from .admin_site import AdminSiteOTPRequiredMixinRedirSetup
-
+    from .admin_site_2fa import AdminSiteOTPRequiredMixinRedirSetup
     admin.site = AdminSiteOTPRequiredMixinRedirSetup()
 
 

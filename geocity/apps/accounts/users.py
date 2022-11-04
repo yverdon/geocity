@@ -31,5 +31,5 @@ def get_departments(user):
 def is_2FA_mandatory(user):
     return (
         settings.ENABLE_2FA
-        and user.groups.filter(permitdepartment__mandatory_2fa=True).exists()
+        and user.groups.filter(permit_department__mandatory_2fa=True).exists()
     )
