@@ -343,8 +343,8 @@ class GroupAdminForm(forms.ModelForm):
                 (
                     Q(content_type__app_label="submissions")
                     & Q(
-                        # FIXME update INTEGRATOR_PERMITS_MODELS_PERMISSIONS to include permissions from other apps
-                        content_type__model__in=permissions_groups.INTEGRATOR_PERMITS_MODELS_PERMISSIONS
+                        # FIXME update INTEGRATOR_REQUIRED_MODELS_PERMISSIONS to include permissions from other apps
+                        content_type__model__in=permissions_groups.INTEGRATOR_REQUIRED_MODELS_PERMISSIONS
                     )
                 )
                 | (
