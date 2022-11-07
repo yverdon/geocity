@@ -1,8 +1,6 @@
 from django.contrib.gis.db.models import Extent
 from rest_framework.response import Response
 
-from geocity.apps.django_wfs3.urls import wfs3_router
-
 
 class WFS3DescribeModelViewSetMixin:
     """
@@ -10,6 +8,8 @@ class WFS3DescribeModelViewSetMixin:
     """
 
     def _describe(self, request, base_url):
+        from geocity.apps.django_wfs3.urls import wfs3_router
+
         # retrieve the key under which this viewset was registered in the wfs3 router
         key = None
         for prefix, viewset, basename in wfs3_router.registry:

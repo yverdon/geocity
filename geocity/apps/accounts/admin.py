@@ -14,6 +14,7 @@ from geocity.fields import GeometryWidget
 from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
 
 from . import models, permissions_groups
+from .users import get_integrator_permissions
 
 MULTIPLE_INTEGRATOR_ERROR_MESSAGE = "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur'"
 
@@ -338,24 +339,7 @@ class GroupAdminForm(forms.ModelForm):
 
     def clean_permissions(self):
         permissions = self.cleaned_data["permissions"]
-        integrator_permissions = Permission.objects.filter(
-            (
-                (
-                    Q(content_type__app_label="submissions")
-                    & Q(
-                        # FIXME update INTEGRATOR_REQUIRED_MODELS_PERMISSIONS to include permissions from other apps
-                        content_type__model__in=permissions_groups.INTEGRATOR_REQUIRED_MODELS_PERMISSIONS
-                    )
-                )
-                | (
-                    Q(content_type__app_label="reports")
-                    & Q(
-                        content_type__model__in=permissions_groups.INTEGRATOR_REPORTS_MODELS_PERMISSIONS
-                    )
-                )
-            )
-            | Q(codename__in=permissions_groups.OTHER_PERMISSIONS_CODENAMES)
-        )
+        integrator_permissions = get_integrator_permissions()
 
         if "permitdepartment-0-is_integrator_admin" in self.data.keys():
             permissions = permissions.union(integrator_permissions)

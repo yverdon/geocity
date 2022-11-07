@@ -5,7 +5,7 @@ from django.core.management import BaseCommand, CommandError
 from django.db import IntegrityError, transaction
 from django.utils.translation import gettext
 
-from geocity.apps.permits.models import PermitAdministrativeEntity, PermitAuthor
+from geocity.apps.accounts.models import AdministrativeEntity, UserProfile
 
 
 def _create_anonymous_user_for_entity(entity):
@@ -24,7 +24,7 @@ def _create_anonymous_user_for_entity(entity):
         )
         user.save()
 
-        PermitAuthor(
+        UserProfile(
             administrative_entity=entity,
             user_id=user.id,
             zipcode=settings.ANONYMOUS_USER_ZIPCODE,
@@ -48,16 +48,12 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        self.stdout.write(
-            "Create an anonymous user for each PermitAdministrativeEntity..."
-        )
+        self.stdout.write("Create an anonymous user for each AdministrativeEntity...")
 
         if options["entity_ids"]:
-            entities = PermitAdministrativeEntity.objects.filter(
-                pk__in=options["entity_ids"]
-            )
+            entities = AdministrativeEntity.objects.filter(pk__in=options["entity_ids"])
         else:
-            entities = PermitAdministrativeEntity.objects.all()
+            entities = AdministrativeEntity.objects.all()
 
         with transaction.atomic():
             try:

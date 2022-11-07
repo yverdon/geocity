@@ -997,7 +997,7 @@ def anonymous_submission(request):
     services.store_tags_in_session(request)
     entityfilter = request.session.get("entityfilter", [])
     typefilter = request.session.get("typefilter", [])
-    if not len(entityfilter) > 0 or not len(typefilter) > 0:
+    if not entityfilter or not typefilter:
         raise Http404
 
     # Validate entity
@@ -1051,12 +1051,12 @@ def anonymous_submission(request):
     form_category = form_categories[0]
 
     # Validate available work objects types
-    forms = models.Form.anonymous_objects.filter(
+    anonymous_forms = models.Form.anonymous_objects.filter(
         administrative_entities=entity,
         category=form_category,
     )
 
-    if not forms:
+    if not anonymous_forms:
         raise Http404
 
     # Permit request page
@@ -1067,10 +1067,10 @@ def anonymous_submission(request):
         author=request.user,
     )
 
-    # If filter combinations return only one forms object,
+    # If filter combinations return only one anonymous_forms object,
     # this combination must be set on submission object
-    if len(forms) == 1:
-        submission.forms.set(forms)
+    if len(anonymous_forms) == 1:
+        submission.forms.set(anonymous_forms)
 
     steps = get_anonymous_steps(
         form_category=form_category, user=request.user, submission=submission
@@ -1763,7 +1763,7 @@ def submission_submit_confirmed(request, submission_id):
                 # between the creation and the submission of the permit request
                 raise Http404
             else:
-                submission.author = anonymous_user
+                submission.author = anonymous_user.user
                 submission.save()
                 temp_user = request.user
                 logout(request)
