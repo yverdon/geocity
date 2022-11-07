@@ -12,7 +12,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordResetView
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
-from django.http import StreamingHttpResponse
+from django.http import Http404, StreamingHttpResponse
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -296,4 +296,8 @@ def administrative_entity_file_download(request, path):
 
     mime_type, encoding = mimetypes.guess_type(path)
     storage = PrivateFileSystemStorage()
-    return StreamingHttpResponse(storage.open(path), content_type=mime_type)
+
+    try:
+        return StreamingHttpResponse(storage.open(path), content_type=mime_type)
+    except IOError:
+        raise Http404
