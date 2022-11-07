@@ -1,19 +1,34 @@
 from django.conf import settings
 
 # define permissions required by integrator role
-# FIXME adapt to new apps
-INTEGRATOR_PERMITS_MODELS_PERMISSIONS = [
-    "permitadministrativeentity",
-    "workstype",
-    "worksobject",
-    "worksobjecttype",
-    "worksobjectproperty",
-    "permitactortype",
-    "permitrequestamendproperty",
+INTEGRATOR_ACCOUNTS_MODELS_PERMISSIONS = [
+    "administrativeentity",
     "permitdepartment",
-    "permitworkflowstatus",
-    "permitauthor",
+    "userprofile",
+]
+INTEGRATOR_FORMS_MODELS_PERMISSIONS = [
+    "formcategory",
+    "form",
+    "field",
+]
+INTEGRATOR_SUBMISSIONS_MODELS_PERMISSIONS = [
+    "contacttype",       
+    "submissionamendfield",
+    "submissionworkflowstatus",
     "complementarydocumenttype",
+]
+INTEGRATOR_REPORTS_MODELS_PERMISSIONS = [
+    "report",
+    "reportlayout",
+    "section",
+]
+
+# define permissions required by integrator role
+INTEGRATOR_REQUIRED_MODELS_PERMISSIONS = [
+    INTEGRATOR_ACCOUNTS_MODELS_PERMISSIONS,
+    INTEGRATOR_FORMS_MODELS_PERMISSIONS,
+    INTEGRATOR_SUBMISSIONS_MODELS_PERMISSIONS,
+    INTEGRATOR_REPORTS_MODELS_PERMISSIONS,
 ]
 
 OTHER_PERMISSIONS_CODENAMES = [
@@ -33,13 +48,9 @@ if not settings.ALLOW_REMOTE_USER_AUTH:
         "change_accessattempt",
         "delete_accessattempt",
         "view_accessattempt",
-        "add_accesslog",
-        "change_accesslog",
-        "delete_accesslog",
-        "view_accesslog",
     ]
 
-
+#TODO: fix permissions names
 AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
     "amend_permit_request",
     "validate_permit_request",
@@ -49,9 +60,3 @@ AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
     "can_generate_pdf",
 ]
 
-
-INTEGRATOR_REPORTS_MODELS_PERMISSIONS = [
-    "report",
-    "reportlayout",
-    "section",
-]

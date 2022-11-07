@@ -317,7 +317,7 @@ class Command(BaseCommand):
 
         permits_permissions = Permission.objects.filter(
             content_type__app_label="permits",
-            content_type__model__in=permissions_groups.INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
+            content_type__model__in=permissions_groups.INTEGRATOR_REQUIRED_MODELS_PERMISSIONS,
         )
         report_permissions = Permission.objects.filter(
             content_type__app_label="reports",

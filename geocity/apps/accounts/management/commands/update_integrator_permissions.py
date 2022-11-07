@@ -2,15 +2,15 @@ from django.contrib.auth.models import Group, Permission
 from django.core.management import BaseCommand, CommandError
 from django.utils.translation import gettext
 
-from geocity import permissions_groups
+from geocity.apps.accounts import permissions_groups
 
 
 class Command(BaseCommand):
 
     help = gettext(
         "Update the permissions for Groups that have is_integrator_admin = True set in the admin."
-        "This command is useful when new models are added to INTEGRATOR_PERMITS_MODELS_PERMISSIONS in permits/admin.py"
-        "or to INTEGRATOR_REPORTS_MODELS_PERMISSIONS in reports/admin.py"
+        "This command is useful when new models are added to INTEGRATOR_REQUIRED_MODELS_PERMISSIONS in permits/admin.py"
+        "or to INTEGRATOR_REQUIRED_MODELS_PERMISSIONS in reports/admin.py"
     )
 
     def handle(self, *args, **options):
@@ -18,12 +18,20 @@ class Command(BaseCommand):
 
         try:
             integrator_groups = Group.objects.filter(
-                permitdepartment__is_integrator_admin=True
+                permit_department__is_integrator_admin=True
             )
 
-            permits_permissions = Permission.objects.filter(
-                content_type__app_label="permits",
-                content_type__model__in=permissions_groups.INTEGRATOR_PERMITS_MODELS_PERMISSIONS,
+            accounts_permissions = Permission.objects.filter(
+                content_type__app_label="accounts",
+                content_type__model__in=permissions_groups.INTEGRATOR_ACCOUNTS_MODELS_PERMISSIONS,
+            )
+            forms_permissions = Permission.objects.filter(
+                content_type__app_label="forms",
+                content_type__model__in=permissions_groups.INTEGRATOR_FORMS_MODELS_PERMISSIONS,
+            )
+            submissions_permissions = Permission.objects.filter(
+                content_type__app_label="submissions",
+                content_type__model__in=permissions_groups.INTEGRATOR_SUBMISSIONS_MODELS_PERMISSIONS,
             )
 
             report_permissions = Permission.objects.filter(
@@ -38,8 +46,10 @@ class Command(BaseCommand):
             for integrator_group in integrator_groups:
                 # set the required permissions for the integrator group
                 integrator_group.permissions.set(
-                    permits_permissions.union(other_permissions).union(
-                        report_permissions
+                    accounts_permissions.union(forms_permissions).union(
+                        submissions_permissions
+                    ).union(report_permissions).union(
+                        other_permissions
                     )
                 )
             self.stdout.write("Update of integrator permissions sucessful.")
