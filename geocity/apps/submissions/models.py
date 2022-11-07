@@ -1,4 +1,5 @@
 import enum
+import os
 import tempfile
 import urllib.parse
 import zipfile
@@ -34,6 +35,7 @@ from django.utils.translation import gettext_lazy as _
 import PIL
 import requests
 from django_tables2.export import TableExport
+from pdf2image import convert_from_path
 from PIL import Image
 from simple_history.models import HistoricalRecords
 
@@ -1057,7 +1059,7 @@ class Submission(models.Model):
                 # For this reason, we have to iterate over collection content
                 for geom in geo_time.geom:
                     results = (
-                        models.GeomLayer.objects.filter(geom__intersects=geom)
+                        GeomLayer.objects.filter(geom__intersects=geom)
                         .exclude(pk__in=intersected_geometries_ids)
                         .distinct()
                     )
