@@ -3,7 +3,7 @@ import logging
 from allauth.socialaccount.providers.oauth2.urls import default_urlpatterns
 from django.conf import settings
 from django.contrib.auth import views as auth_views
-from django.urls import include, path
+from django.urls import path
 
 from geocity.apps.accounts.dootix.provider import DootixProvider
 from geocity.apps.accounts.geomapfish.provider import GeomapfishProvider
@@ -17,7 +17,6 @@ app_name = "accounts"
 urlpatterns = []
 
 if settings.ENABLE_2FA:
-    from two_factor.urls import urlpatterns as tf_urls
     from two_factor.views import ProfileView, SetupCompleteView
 
     logger.info("2 factors authentification is enabled")
@@ -37,7 +36,6 @@ if settings.ENABLE_2FA:
             SetupCompleteView.as_view(template_name="two_factor/setup_complete.html"),
             name="setup_complete",
         ),
-        path("", include(tf_urls)),
     ]
 else:
     logger.info("2 factors authentification is disabled")
@@ -49,12 +47,8 @@ else:
         ),
     ]
 
-urlpatterns += (
-    [
-        path("accounts/social/", include("allauth.socialaccount.urls")),
-    ]
-    + default_urlpatterns(GeomapfishProvider)
-    + default_urlpatterns(DootixProvider)
+urlpatterns += default_urlpatterns(GeomapfishProvider) + default_urlpatterns(
+    DootixProvider
 )
 
 urlpatterns += [
@@ -76,21 +70,11 @@ urlpatterns += [
         name="password_reset",
     ),
     path(
-        "account/password_reset_confirm/",
-        auth_views.PasswordResetConfirmView.as_view(),
-        name="password_reset_confirm",
-    ),
-    path(
         "account/password_reset/done",
         auth_views.PasswordResetDoneView.as_view(
             template_name="registration/password_reset_done.html"
         ),
         name="password_reset_done",
-    ),
-    path(
-        "account/password_reset/",
-        auth_views.PasswordResetConfirmView.as_view(),
-        name="password_reset_confirm",
     ),
     path(
         "account/password_change/",

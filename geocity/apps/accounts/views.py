@@ -180,7 +180,7 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
             qs_dict.pop("next")
 
         return (
-            reverse("two_factor:profile")
+            reverse("accounts:profile")
             if settings.ENABLE_2FA and not self.request.user.totpdevice_set.exists()
             else url_value
         )
@@ -199,7 +199,7 @@ class ActivateAccountView(View):
             user.is_active = True
             user.save()
 
-        return redirect(reverse("account_login") + f"?success={successful}")
+        return redirect(reverse("accounts:account_login") + f"?success={successful}")
 
 
 @login_required
@@ -255,7 +255,7 @@ def user_profile_create(request):
                 "user": new_user,
                 "domain": get_current_site(request).domain,
                 "url": reverse(
-                    "activate_account",
+                    "accounts:activate_account",
                     kwargs={
                         # we need the user id to validate the token
                         "uid": urlsafe_base64_encode(force_bytes(new_user.pk)),
@@ -274,7 +274,7 @@ def user_profile_create(request):
                 "Votre compte a été créé avec succès! Vous allez recevoir un email pour valider et activer votre compte."
             ),
         )
-        return redirect(reverse("account_login"))
+        return redirect(reverse("accounts:account_login"))
 
     return render(
         request,
