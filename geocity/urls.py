@@ -39,7 +39,15 @@ urlpatterns += [
     path("account/", include("django.contrib.auth.urls")),
     path("oauth/", include("oauth2_provider.urls", namespace="oauth2_provider")),
     path("admin/", admin.site.urls),
+    path("accounts/social/", include("allauth.socialaccount.urls")),
 ]
+
+if settings.ENABLE_2FA:
+    from two_factor.urls import urlpatterns as tf_urls
+
+    urlpatterns += [
+        path("", include(tf_urls)),
+    ]
 
 if settings.PREFIX_URL:
     urlpatterns = [path(settings.PREFIX_URL, include(urlpatterns))]

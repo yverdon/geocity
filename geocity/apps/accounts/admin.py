@@ -130,7 +130,7 @@ class UserAdmin(BaseUserAdmin):
     is_sociallogin.admin_order_field = "socialaccount"
     is_sociallogin.short_description = "Social"
 
-    change_form_template = "submissions/admin/user_change.html"
+    change_form_template = "accounts/admin/user_change.html"
 
     def get_readonly_fields(self, request, obj=None):
         # limit editable fields to protect user data, superuser creation must be done using django shell
@@ -570,7 +570,7 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
         return RequestForm
 
-    change_form_template = "submissions/admin/administrative_entity_change.html"
+    change_form_template = "accounts/admin/administrative_entity_change.html"
     form = AdministrativeEntityAdminForm
     inlines = [
         SubmissionWorkflowStatusInline,

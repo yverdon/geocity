@@ -1,4 +1,5 @@
 import enum
+import os
 import tempfile
 import urllib.parse
 import zipfile
@@ -34,6 +35,7 @@ from django.utils.translation import gettext_lazy as _
 import PIL
 import requests
 from django_tables2.export import TableExport
+from pdf2image import convert_from_path
 from PIL import Image
 from simple_history.models import HistoricalRecords
 
@@ -705,22 +707,6 @@ class Submission(models.Model):
             )
         )
 
-    def get_properties_value(permit_request, property):
-        """
-        Return a `WorksObjectPropertyValue` object for the given `permit_request` and given property
-        """
-        return (
-            models.WorksObjectPropertyValue.objects.filter(
-                works_object_type_choice__permit_request=permit_request
-            )
-            .exclude(property__input_type=models.WorksObjectProperty.INPUT_TYPE_FILE)
-            .select_related(
-                "works_object_type_choice",
-                "works_object_type_choice__works_object_type",
-                "property",
-            )
-        )
-
     def get_appendices_values(self):
         """
         Return a queryset of `FieldValue` objects of type file for this submission.
@@ -785,15 +771,6 @@ class Submission(models.Model):
         return self._get_fields_filtered(
             lambda qs: qs.filter(input_type=Field.INPUT_TYPE_FILE),
         )
-
-    def set_works_types(permit_request, new_works_types):
-        """
-        Delete `WorksObjectTypeChoice` records that relate to a `WorksType` that is not in `new_works_types` (which must be
-        an iterable of `WorksType` instances).
-        """
-        get_works_object_type_choices(permit_request).exclude(
-            works_object_type__works_type__in=new_works_types
-        ).delete()
 
     @transaction.atomic
     def set_selected_forms(self, new_forms):
@@ -1057,7 +1034,7 @@ class Submission(models.Model):
                 # For this reason, we have to iterate over collection content
                 for geom in geo_time.geom:
                     results = (
-                        models.GeomLayer.objects.filter(geom__intersects=geom)
+                        GeomLayer.objects.filter(geom__intersects=geom)
                         .exclude(pk__in=intersected_geometries_ids)
                         .distinct()
                     )
@@ -1434,9 +1411,9 @@ class SubmissionInquiry(models.Model):
 
     @classmethod
     def get_current_inquiry(cls, submission):
-        today = datetime.today().strftime("%Y-%m-%d")
+        today = datetime.today()
         return cls.objects.filter(
-            Q(submission=submission) & Q(start_date__lte=today) & Q(end_date__gte=today)
+            submission=submission, start_date__lte=today, end_date__gte=today
         ).first()
 
 

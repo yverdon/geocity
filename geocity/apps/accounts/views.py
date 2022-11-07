@@ -12,7 +12,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordResetView
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
-from django.http import StreamingHttpResponse
+from django.http import Http404, StreamingHttpResponse
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -180,7 +180,7 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
             qs_dict.pop("next")
 
         return (
-            reverse("two_factor:profile")
+            reverse("accounts:profile")
             if settings.ENABLE_2FA and not self.request.user.totpdevice_set.exists()
             else url_value
         )
@@ -199,7 +199,7 @@ class ActivateAccountView(View):
             user.is_active = True
             user.save()
 
-        return redirect(reverse("account_login") + f"?success={successful}")
+        return redirect(reverse("accounts:account_login") + f"?success={successful}")
 
 
 @login_required
@@ -255,7 +255,7 @@ def user_profile_create(request):
                 "user": new_user,
                 "domain": get_current_site(request).domain,
                 "url": reverse(
-                    "activate_account",
+                    "accounts:activate_account",
                     kwargs={
                         # we need the user id to validate the token
                         "uid": urlsafe_base64_encode(force_bytes(new_user.pk)),
@@ -274,7 +274,7 @@ def user_profile_create(request):
                 "Votre compte a été créé avec succès! Vous allez recevoir un email pour valider et activer votre compte."
             ),
         )
-        return redirect(reverse("account_login"))
+        return redirect(reverse("accounts:account_login"))
 
     return render(
         request,
@@ -296,4 +296,8 @@ def administrative_entity_file_download(request, path):
 
     mime_type, encoding = mimetypes.guess_type(path)
     storage = PrivateFileSystemStorage()
-    return StreamingHttpResponse(storage.open(path), content_type=mime_type)
+
+    try:
+        return StreamingHttpResponse(storage.open(path), content_type=mime_type)
+    except IOError:
+        raise Http404
