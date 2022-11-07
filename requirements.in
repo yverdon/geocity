@@ -18,7 +18,6 @@ requests
 tablib[xlsx]
 whitenoise
 django-admin-sortable2==1.0.4
-django-grappelli
 django-simple-history
 djangorestframework
 djangorestframework-gis
@@ -27,6 +26,7 @@ django-constance[database]
 django-two-factor-auth[phonenumbers]
 django-taggit
 filetype
+django-jazzmin
 # Open authentication provider
 django-oauth-toolkit
 # Open authentication consumer

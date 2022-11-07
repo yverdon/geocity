@@ -24,9 +24,6 @@ from .utils import DockerRunFailedError, run_docker_container
 class ReportLayout(models.Model):
     """Page size/background/marings/fonts/etc, used by reports"""
 
-    class Meta:
-        verbose_name = _("5.1 Configuration du modèle d'impression de rapport")
-        verbose_name_plural = _("5.1 Configuration des modèles d'impression de rapport")
 
     name = models.CharField(max_length=150)
     width = models.PositiveIntegerField(default=210)
@@ -61,12 +58,18 @@ class ReportLayout(models.Model):
         return self.name
 
 
+class ProxyReportLayout(ReportLayout):
+    class Meta:
+        proxy = True
+        app_label = 'submissions'
+        verbose_name = _("2.3 Configuration du modèle d'impression de rapport")
+        verbose_name_plural = _("2.4 Configuration des modèles d'impression de rapport")
+
+
 class Report(models.Model):
     """Report definition, allowing to generate reports for permit requests"""
 
     class Meta:
-        verbose_name = _("5.2 Configuration du rapport")
-        verbose_name_plural = _("5.2 Configuration des rapports")
         permissions = [
             ("can_generate_pdf", _("Générer des documents pdf")),
         ]
@@ -86,6 +89,14 @@ class Report(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ProxyReport(Report):
+    class Meta:
+        proxy = True
+        app_label = 'submissions'
+        verbose_name = _("2.5 Configuration du rapport")
+        verbose_name_plural = _("2.5 Configuration des rapports")
 
 
 # https://github.com/django-polymorphic/django-polymorphic/issues/229#issuecomment-398434412

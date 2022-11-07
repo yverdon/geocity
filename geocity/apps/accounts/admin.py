@@ -494,7 +494,7 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
         self.fields["sites"] = get_sites_field(user)
 
     class Meta:
-        model = models.AdministrativeEntity
+        model = models.ProxyAdministrativeEntity
         fields = [
             "name",
             "tags",
@@ -557,7 +557,7 @@ class SubmissionWorkflowStatusInline(admin.StackedInline):
     )
 
 
-@admin.register(models.AdministrativeEntity)
+@admin.register(models.ProxyAdministrativeEntity)
 class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     # Pass the user from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs):

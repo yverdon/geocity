@@ -7,10 +7,10 @@ from polymorphic.admin import PolymorphicInlineSupportMixin, StackedPolymorphicI
 from geocity.apps.submissions.models import ComplementaryDocumentType
 from geocity.apps.accounts.admin import IntegratorFilterMixin
 
-from .models import Report, ReportLayout, Section
+from .models import ProxyReport, ProxyReportLayout, Section
 
 
-@admin.register(ReportLayout)
+@admin.register(ProxyReportLayout)
 class ReportLayoutAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_display = [
         "name",
@@ -50,7 +50,7 @@ class SectionInline(StackedPolymorphicInline):
     classes = ["grp-module"]
 
 
-@admin.register(Report)
+@admin.register(ProxyReport)
 class ReportAdmin(
     PolymorphicInlineSupportMixin, IntegratorFilterMixin, admin.ModelAdmin
 ):

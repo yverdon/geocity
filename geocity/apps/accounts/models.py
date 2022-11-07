@@ -255,18 +255,25 @@ class AdministrativeEntity(models.Model):
     objects = AdministrativeEntityManager()
 
     class Meta:
-        verbose_name = _(
-            "1.1 Configuration de l'entité administrative (commune, organisation)"
-        )
-        verbose_name_plural = _(
-            "1.1 Configuration des entités administratives (commune, organisation)"
-        )
         permissions = [
             ("see_private_requests", _("Voir les demandes restreintes")),
         ]
 
     def __str__(self):
         return self.name
+
+
+#Change the app_label in order to regroup models under the same app in admin
+class ProxyAdministrativeEntity(AdministrativeEntity):
+    class Meta:
+        proxy = True
+        app_label = 'forms'
+        verbose_name = _(
+            "1.1 Configuration de l'entité administrative (commune, organisation)"
+        )
+        verbose_name_plural = _(
+            "1.1 Configuration des entités administratives (commune, organisation)"
+        )
 
 
 class UserProfileManager(models.Manager):

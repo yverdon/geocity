@@ -1189,13 +1189,20 @@ class ContactType(models.Model):
     )
 
     class Meta:
-        verbose_name = _("1.6 Configuration du contact")
-        verbose_name_plural = _("1.6 Configuration des contacts")
         unique_together = [["type", "form_category"]]
+        app_label = 'forms'
 
     def __str__(self):
         return self.get_type_display() + " (" + str(self.form_category) + ")"
 
+
+#Change the app_label in order to regroup models under the same app in admin
+class ProxyContactType(ContactType):
+    class Meta:
+        proxy = True
+        app_label = 'forms'
+        verbose_name = _("1.6 Configuration du contact")
+        verbose_name_plural = _("1.6 Configuration des contacts")
 
 class SubmissionContact(models.Model):
     contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
@@ -1554,8 +1561,8 @@ class ComplementaryDocumentType(models.Model):
                 name="complementary_document_type_restrict_form_link_to_parents",
             )
         ]
-        verbose_name = _("1.7 Configuration du type de document")
-        verbose_name_plural = _("1.7 Configuration des types de document")
+        verbose_name = _("2.1 Configuration du type de document")
+        verbose_name_plural = _("2.1 Configuration des types de document")
 
     def __str__(self):
         return self.name
