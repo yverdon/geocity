@@ -1404,9 +1404,9 @@ class SubmissionInquiry(models.Model):
 
     @classmethod
     def get_current_inquiry(cls, submission):
-        today = datetime.today().strftime("%Y-%m-%d")
+        today = datetime.today()
         return cls.objects.filter(
-            Q(submission=submission) & Q(start_date__lte=today) & Q(end_date__gte=today)
+            submission=submission, start_date__lte=today, end_date__gte=today
         ).first()
 
 

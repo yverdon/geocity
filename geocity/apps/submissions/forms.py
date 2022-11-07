@@ -1276,15 +1276,14 @@ class SubmissionValidationForm(forms.ModelForm):
 
 class SubmissionValidationPokeForm(forms.Form):
     def __init__(self, instance, request, *args, **kwargs):
-        self.permit_request = instance
+        self.submission = instance
         self.request = request
 
         super().__init__(*args, **kwargs)
 
     def save(self):
-        # FIXME find a place for this function
         return services.send_validation_reminder(
-            self.permit_request, absolute_uri_func=self.request.build_absolute_uri
+            self.submission, absolute_uri_func=self.request.build_absolute_uri
         )
 
 
@@ -1624,7 +1623,7 @@ class SubmissionInquiryForm(forms.ModelForm):
             )
 
         overlap = models.SubmissionInquiry.objects.filter(
-            Q(permit_request=self.submission)
+            Q(submission=self.submission)
             & Q(end_date__gte=start_date)
             & Q(start_date__lte=end_date)
         )
@@ -1659,7 +1658,7 @@ def get_submission_contacts_formset_initiated(submission, data=None):
     Return PermitActorFormSet with initial values set
     """
 
-    # Queryset with all configured actor type for this permit_request
+    # Queryset with all configured actor type for this submission
     configured_contact_types = submission.get_contacts_types()
 
     # Get actor type that are not filled yet for the submission

@@ -110,6 +110,7 @@
               <form method="post">
                 {% csrf_token %}
 
+                {{ forms.request_inquiry.media }}
                 {% bootstrap_form forms.request_inquiry layout='horizontal' %}
                 <div class="text-right">
                     <input name="action" type="hidden" value="request_inquiry">
