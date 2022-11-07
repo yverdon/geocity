@@ -1178,8 +1178,8 @@ class ProxyContactType(ContactType):
     class Meta:
         proxy = True
         app_label = 'forms'
-        verbose_name = _("1.6 Configuration du contact")
-        verbose_name_plural = _("1.6 Configuration des contacts")
+        verbose_name = _("1.6 Contact")
+        verbose_name_plural = _("1.6 Contacts")
 
 class SubmissionContact(models.Model):
     contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
@@ -1538,8 +1538,8 @@ class ComplementaryDocumentType(models.Model):
                 name="complementary_document_type_restrict_form_link_to_parents",
             )
         ]
-        verbose_name = _("2.1 Configuration du type de document")
-        verbose_name_plural = _("2.1 Configuration des types de document")
+        verbose_name = _("2.2 Type de document")
+        verbose_name_plural = _("2.2 Types de document")
 
     def __str__(self):
         return self.name
@@ -1570,9 +1570,9 @@ class SubmissionAmendField(models.Model):
     )
 
     class Meta:
-        verbose_name = _("2.2 Configuration du champ de traitement des demandes")
+        verbose_name = _("2.1 Champ de traitement des demandes")
         verbose_name_plural = _(
-            "2.2 Configuration des champs de traitement des demandes"
+            "2.1 Champs de traitement des demandes"
         )
 
     def __str__(self):

@@ -269,10 +269,10 @@ class ProxyAdministrativeEntity(AdministrativeEntity):
         proxy = True
         app_label = 'forms'
         verbose_name = _(
-            "1.1 Configuration de l'entité administrative (commune, organisation)"
+            "1.1 Entité administrative (commune, organisation)"
         )
         verbose_name_plural = _(
-            "1.1 Configuration des entités administratives (commune, organisation)"
+            "1.1 Entités administratives (commune, organisation)"
         )
 
 

@@ -59,8 +59,8 @@ class FormCategory(models.Model):
     objects = FormCategoryQuerySet().as_manager()
 
     class Meta:
-        verbose_name = _("1.2 Configuration du type")
-        verbose_name_plural = _("1.2 Configuration des types")
+        verbose_name = _("1.2 Catégorie")
+        verbose_name_plural = _("1.2 Catégories")
 
     def __str__(self):
         return self.name
@@ -245,8 +245,8 @@ class Form(models.Model):
     anonymous_objects = AnonymousFormManager()
 
     class Meta:
-        verbose_name = _("1.4 Configuration du formulaire")
-        verbose_name_plural = _("1.4 Configuration des formulaires")
+        verbose_name = _("1.3 Formulaire")
+        verbose_name_plural = _("1.3 Formulaires")
         ordering = ("order",)
 
     def __str__(self):
@@ -395,8 +395,8 @@ class Field(models.Model):
     )
 
     class Meta(object):
-        verbose_name = _("1.5 Configuration du champ")
-        verbose_name_plural = _("1.5 Configuration des champs")
+        verbose_name = _("1.5 Champ")
+        verbose_name_plural = _("1.5 Champs")
         constraints = [
             models.CheckConstraint(
                 check=~(

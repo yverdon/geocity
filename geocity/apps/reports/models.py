@@ -62,8 +62,8 @@ class ProxyReportLayout(ReportLayout):
     class Meta:
         proxy = True
         app_label = 'submissions'
-        verbose_name = _("2.3 Configuration du modèle d'impression de rapport")
-        verbose_name_plural = _("2.4 Configuration des modèles d'impression de rapport")
+        verbose_name = _("2.3 Modèle d'impression")
+        verbose_name_plural = _("2.3 Modèles d'impression")
 
 
 class Report(models.Model):
@@ -95,8 +95,8 @@ class ProxyReport(Report):
     class Meta:
         proxy = True
         app_label = 'submissions'
-        verbose_name = _("2.5 Configuration du rapport")
-        verbose_name_plural = _("2.5 Configuration des rapports")
+        verbose_name = _("2.5 Modèle de Rapport")
+        verbose_name_plural = _("2.5 Modèles de Rapports")
 
 
 # https://github.com/django-polymorphic/django-polymorphic/issues/229#issuecomment-398434412
@@ -127,6 +127,14 @@ class Section(PolymorphicModel):
 
     def __str__(self):
         return self._meta.verbose_name
+
+
+class ProxySection(Section):
+    class Meta:
+        proxy = True
+        app_label = 'submissions'
+        verbose_name = _("2.6 Section du rapport")
+        verbose_name_plural = _("2.6 Sections du rapport")
 
 
 class SectionMap(Section):
