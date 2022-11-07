@@ -759,7 +759,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
         for prop_value in self.get_values():
             initial[
                 self.get_field_name(
-                    prop_value.form_id,
+                    prop_value.form.form_id,
                     prop_value.field_id,
                 )
             ] = prop_value.value
