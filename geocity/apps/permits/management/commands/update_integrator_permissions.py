@@ -34,7 +34,7 @@ class Command(BaseCommand):
                 content_type__model__in=permissions_groups.INTEGRATOR_SUBMISSIONS_MODELS_PERMISSIONS,
             )
 
-            report_permissions = Permission.objects.filter(
+            reports_permissions = Permission.objects.filter(
                 content_type__app_label="reports",
                 content_type__model__in=permissions_groups.INTEGRATOR_REPORTS_MODELS_PERMISSIONS,
             )
@@ -43,14 +43,17 @@ class Command(BaseCommand):
                 codename__in=permissions_groups.OTHER_PERMISSIONS_CODENAMES
             )
 
+            permissions = [
+                forms_permissions,
+                submissions_permissions,
+                reports_permissions,
+                other_permissions,
+            ]
+
             for integrator_group in integrator_groups:
                 # set the required permissions for the integrator group
                 integrator_group.permissions.set(
-                    accounts_permissions.union(forms_permissions).union(
-                        submissions_permissions
-                    ).union(report_permissions).union(
-                        other_permissions
-                    )
+                    accounts_permissions.union(*permissions)
                 )
             self.stdout.write("Update of integrator permissions sucessful.")
         except CommandError:
