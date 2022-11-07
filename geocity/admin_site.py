@@ -61,7 +61,7 @@ class PermitsAdminSite(AdminSite):
 
         return redirect(
             reverse(
-                "admin:permits_permitadministrativeentity_change",
+                "admin:accounts_administrativeentity_change",
                 kwargs={"object_id": entity_id},
             )
         )
