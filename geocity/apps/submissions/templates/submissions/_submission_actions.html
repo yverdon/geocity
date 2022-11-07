@@ -88,7 +88,7 @@
                         {% bootstrap_field field layout='horizontal'%}
                     {% endfor %}
 
-                    {% for object_type, fields in forms.amend.get_fields_by_object_type %}
+                    {% for object_type, fields in forms.amend.get_fields_by_form %}
                         {% if fields %}
                             <h4 class="my-5">{{ object_type }}</h4>
                             {% for field in fields %}
