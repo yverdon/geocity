@@ -680,9 +680,6 @@ JAZZMIN_SETTINGS = {
         # Url that gets reversed (Permissions can be added)
         {"name": "Home",  "url": "admin:index", },
 
-        # App with dropdown menu to all its models pages (Permissions checked against models)
-        {"app": "forms"},
-
         # external url that opens in a new window (Permissions can be added)
         {"name": "Support", "url": "https://github.com/yverdon/geocity/wiki", "new_window": True},
     ],
@@ -715,16 +712,6 @@ JAZZMIN_SETTINGS = {
     # List of apps (and/or models) to base side menu ordering off of (does not need to contain all apps/models)
     "order_with_respect_to": ["auth", "accounts", "forms", "submissions", "reports",],
 
-    # Custom links to append to app groups, keyed on app name
-    # "custom_links": {
-    #     "books": [{
-    #         "name": "Make Messages", 
-    #         "url": "make_messages", 
-    #         "icon": "fas fa-comments",
-    #         "permissions": ["books.view_book"]
-    #     }]
-    # },
-
     # Custom icons for side menu apps/models See https://fontawesome.com/icons?d=gallery&m=free&v=5.0.0,5.0.1,5.0.10,5.0.11,5.0.12,5.0.13,5.0.2,5.0.3,5.0.4,5.0.5,5.0.6,5.0.7,5.0.8,5.0.9,5.1.0,5.1.1,5.2.0,5.3.0,5.3.1,5.4.0,5.4.1,5.4.2,5.13.0,5.12.0,5.11.2,5.11.1,5.10.0,5.9.0,5.8.2,5.8.1,5.7.2,5.7.1,5.7.0,5.6.3,5.5.0,5.4.2
     # for the full list of 5.13.0 free icon classes
     "icons": {
@@ -741,7 +728,7 @@ JAZZMIN_SETTINGS = {
     # Related Modal #
     #################
     # Use modals instead of popups
-    "related_modal_active": False,
+    "related_modal_active": True,
 
     #############
     # UI Tweaks #
@@ -765,7 +752,7 @@ JAZZMIN_SETTINGS = {
     # - carousel
     "changeform_format": "vertical_tabs",
     # override change forms on a per modeladmin basis
-    "changeform_format_overrides": {"auth.user": "collapsible", "auth.group": "vertical_tabs"},
+    "changeform_format_overrides": {"auth.user": "single", "auth.group": "single", "forms.proxyadministrativeentity": "single"},
     # Add a language dropdown into the admin
     # "language_chooser": True,
 }
