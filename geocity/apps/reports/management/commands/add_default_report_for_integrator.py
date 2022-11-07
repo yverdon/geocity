@@ -6,7 +6,7 @@ from django.core.management import BaseCommand
 from django.db import transaction
 from django.utils.translation import gettext
 
-from ...signals import create_default_report_for_integrator
+from geocity.apps.reports.signals import create_default_report_for_integrator
 
 
 class Command(BaseCommand):
