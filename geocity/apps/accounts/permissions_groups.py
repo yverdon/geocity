@@ -54,6 +54,7 @@ AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
     "validate_submission",
     "classify_submission",
     "edit_submission",
+    # TODO rename as see_private_forms
     "see_private_requests",
     "can_generate_pdf",
 ]
