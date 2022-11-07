@@ -12,7 +12,8 @@ from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from django.utils import timezone
 
-from geocity import permissions_groups, settings
+from geocity import settings
+from geocity.apps.accounts.users import get_integrator_permissions
 from geocity.apps.permits import models
 from geocity.apps.reports.models import Report
 
@@ -315,21 +316,9 @@ class Command(BaseCommand):
             email="yverdon-squad+integrator@liip.ch",
         )
 
-        permits_permissions = Permission.objects.filter(
-            content_type__app_label="permits",
-            content_type__model__in=permissions_groups.INTEGRATOR_REQUIRED_MODELS_PERMISSIONS,
-        )
-        report_permissions = Permission.objects.filter(
-            content_type__app_label="reports",
-            content_type__model__in=permissions_groups.INTEGRATOR_REPORTS_MODELS_PERMISSIONS,
-        )
-
-        other_permissions = Permission.objects.filter(
-            codename__in=permissions_groups.OTHER_PERMISSIONS_CODENAMES
-        )
         # set the required permissions for the integrator group
         Group.objects.get(name="integrator").permissions.set(
-            permits_permissions.union(other_permissions).union(report_permissions)
+            get_integrator_permissions()
         )
         self.stdout.write("integrator / demo")
 

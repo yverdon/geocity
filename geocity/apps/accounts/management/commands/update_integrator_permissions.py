@@ -1,8 +1,8 @@
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Group
 from django.core.management import BaseCommand, CommandError
 from django.utils.translation import gettext
 
-from geocity.apps.accounts import permissions_groups
+from geocity.apps.accounts.users import get_integrator_permissions
 
 
 class Command(BaseCommand):
@@ -21,37 +21,9 @@ class Command(BaseCommand):
                 permit_department__is_integrator_admin=True
             )
 
-            accounts_permissions = Permission.objects.filter(
-                content_type__app_label="accounts",
-                content_type__model__in=permissions_groups.INTEGRATOR_ACCOUNTS_MODELS_PERMISSIONS,
-            )
-            forms_permissions = Permission.objects.filter(
-                content_type__app_label="forms",
-                content_type__model__in=permissions_groups.INTEGRATOR_FORMS_MODELS_PERMISSIONS,
-            )
-            submissions_permissions = Permission.objects.filter(
-                content_type__app_label="submissions",
-                content_type__model__in=permissions_groups.INTEGRATOR_SUBMISSIONS_MODELS_PERMISSIONS,
-            )
-
-            report_permissions = Permission.objects.filter(
-                content_type__app_label="reports",
-                content_type__model__in=permissions_groups.INTEGRATOR_REPORTS_MODELS_PERMISSIONS,
-            )
-
-            other_permissions = Permission.objects.filter(
-                codename__in=permissions_groups.OTHER_PERMISSIONS_CODENAMES
-            )
-
             for integrator_group in integrator_groups:
-                # set the required permissions for the integrator group
-                integrator_group.permissions.set(
-                    accounts_permissions.union(forms_permissions).union(
-                        submissions_permissions
-                    ).union(report_permissions).union(
-                        other_permissions
-                    )
-                )
+                integrator_group.permissions.set(get_integrator_permissions())
+
             self.stdout.write("Update of integrator permissions sucessful.")
         except CommandError:
             self.stdout.write("ERROR: Error while updating integrator permissions!")

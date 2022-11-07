@@ -9,10 +9,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import GeometryCollection, MultiPolygon, Point, Polygon
 from django.contrib.sites.models import Site
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.db.models import Q
 from django.utils.text import Truncator
 
-from geocity import permissions_groups
+from geocity.apps.accounts.users import get_integrator_permissions
 from geocity.apps.permits import models
 
 
@@ -206,25 +205,7 @@ class IntegratorGroupFactory(GroupFactory):
             return
 
         if not extracted:
-            extracted = list(
-                Permission.objects.filter(
-                    (
-                        (
-                            Q(content_type__app_label="permits")
-                            & Q(
-                                content_type__model__in=permissions_groups.INTEGRATOR_REQUIRED_MODELS_PERMISSIONS
-                            )
-                        )
-                        | (
-                            Q(content_type__app_label="reports")
-                            & Q(
-                                content_type__model__in=permissions_groups.INTEGRATOR_REPORTS_MODELS_PERMISSIONS
-                            )
-                        )
-                    )
-                    | Q(codename__in=permissions_groups.OTHER_PERMISSIONS_CODENAMES)
-                )
-            )
+            extracted = list(get_integrator_permissions())
 
         for permission in extracted:
             self.permissions.add(permission)
