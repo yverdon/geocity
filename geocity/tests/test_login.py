@@ -39,7 +39,7 @@ if not settings.ENABLE_2FA:
             self.assertTrue(response.context["user"].is_authenticated)
             self.assertRedirects(
                 response,
-                resolve_url("permits:permit_request_select_administrative_entity"),
+                resolve_url("submissions:submission_select_administrative_entity"),
             )
 
         def test_post_login_view_fail(self):
@@ -181,7 +181,7 @@ class TestRemoteUserLogin(TestCase):
     def test_automatic_login_of_remote_user(self):
         user = factories.UserFactory()
         response = self.client.get(
-            reverse("permits:permit_request_select_administrative_entity"),
+            reverse("submissions:submission_select_administrative_entity"),
             follow=True,
             REMOTE_USER=user.username,
         )
@@ -193,7 +193,7 @@ class TestRemoteUserLogin(TestCase):
     def test_automatic_login_of_remote_user_refuses_inactive_users(self):
         user = factories.UserFactory(is_active=False)
         response = self.client.get(
-            reverse("permits:permit_request_select_administrative_entity"),
+            reverse("submissions:submission_select_administrative_entity"),
             follow=True,
             REMOTE_USER=user.username,
         )
@@ -204,7 +204,7 @@ class TestRemoteUserLogin(TestCase):
 
     def test_automatic_login_of_remote_user_refuses_when_user_is_empty(self):
         response = self.client.get(
-            reverse("permits:permit_request_select_administrative_entity"),
+            reverse("submissions:submission_select_administrative_entity"),
             follow=True,
             REMOTE_USER="",
         )
@@ -216,7 +216,7 @@ class TestRemoteUserLogin(TestCase):
     def test_login_with_credentials_works_when_remote_user_is_empty(self):
         user = factories.UserFactory()
         response1 = self.client.get(
-            reverse("permits:permit_request_select_administrative_entity"),
+            reverse("submissions:submission_select_administrative_entity"),
             follow=True,
             REMOTE_USER="",
         )
@@ -224,7 +224,7 @@ class TestRemoteUserLogin(TestCase):
         self.assertEqual(response1.status_code, 200)
         self.assertRedirects(
             response1,
-            f"{resolve_url('account_login')}?next=/permit-requests/administrative-entity/",
+            f"{resolve_url('account_login')}?next=/submissions/administrative-entity/",
         )
         self.assertFalse(response1.context["user"].is_authenticated)
         self.assertContains(response1, "Connexion")
@@ -232,7 +232,7 @@ class TestRemoteUserLogin(TestCase):
 
         self.client.login(username=user.username, password="password")
         response2 = self.client.get(
-            reverse("permits:permit_request_select_administrative_entity"),
+            reverse("submissions:submission_select_administrative_entity"),
             follow=True,
             REMOTE_USER="",
         )
@@ -260,7 +260,7 @@ class TestRemoteUserLoginNotAllowed(TestCase):
     def test_automatic_login_of_remote_user_is_denied(self):
         user = factories.UserFactory()
         response = self.client.get(
-            reverse("permits:permit_request_select_administrative_entity"),
+            reverse("submissions:submission_select_administrative_entity"),
             follow=True,
             REMOTE_USER=user.username,
         )
