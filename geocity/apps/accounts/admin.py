@@ -638,6 +638,15 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     administrative_entity=obj,
                 )
 
+    def response_change(self, request, obj):
+        ret = super().response_change(request, obj)
+        if 'entity_id' in request.POST:
+            entity_id = request.POST.get("entity_id")
+            print(entity_id)
+            # TODO: post user_id to admin:create_anonymous_user
+            pass
+        return ret
+
 
 @admin.register(models.TemplateCustomization)
 class TemplateCustomizationAdmin(admin.ModelAdmin):

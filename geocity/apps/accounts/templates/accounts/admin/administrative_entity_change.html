@@ -8,12 +8,9 @@
       </a>
   {% else %}
   <div class="form-group">
-      <form action="{% url "admin:create_anonymous_user" %}" method="post">
-        </div>
-        {% csrf_token %}
-        <input type="hidden" name="entity_id" value="{{ original.pk }}">
-        <a class="btn btn-dark form-control" href="#" onclick="this.parentElement.submit()">{% translate "Créer le user anonyme" %}</a>
-      </form>
+      <div class="form-group">
+        <button type="submit" class="btn btn-dark form-control" value="{{ original.pk }}" name="entity_id">{% translate "Créer le user anonyme" %}</button>
+      </div>
   </div>
   {% endif %}
   <hr>
