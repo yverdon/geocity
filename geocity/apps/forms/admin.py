@@ -180,6 +180,8 @@ class FormAdmin(IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdmin):
                     "geometry_types",
                     "needs_date",
                     "start_delay",
+                    "wms_layers",
+                    "wms_layers_order",
                 )
             },
         ),
