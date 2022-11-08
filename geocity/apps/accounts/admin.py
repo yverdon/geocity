@@ -352,8 +352,27 @@ class GroupAdminForm(forms.ModelForm):
         return permissions
 
 
+class UserInLine(admin.TabularInline):
+    model = Group.user_set.through
+    can_delete = False
+    extra = 0
+    verbose_name = _("Utilisateur membre du groupe")
+    verbose_name_plural = _("Utilisateurs membres du groupe")
+
+    # Displayed users MUST remain readonly for privacy reasons
+    # TODO: filter user emails by domain using queryset
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 class GroupAdmin(admin.ModelAdmin):
-    inlines = (PermitDepartmentInline,)
+    inlines = (PermitDepartmentInline, UserInLine)
     form = GroupAdminForm
     list_display = [
         "__str__",
@@ -521,7 +540,7 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
                 choices=models.PUBLIC_TYPE_CHOICES,
             ),
         }
-
+    # TODO: remove cdn usage
     class Media:
         js = ("https://code.jquery.com/jquery-3.5.1.slim.min.js",)
         css = {
