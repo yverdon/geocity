@@ -2,20 +2,20 @@
 {% load i18n %}
 
 {% block object-tools-items %}
-  {{ block.super }}
   {% if original.anonymous_user %}
-    <li>
-      <a href="{% url "admin:auth_user_change" object_id=original.anonymous_user.user_id %}">
+      <a class="btn btn-dark form-control" href="{% url "admin:auth_user_change" object_id=original.anonymous_user.user_id %}">
         {% translate "Voir le user anonyme" %}
       </a>
-    </li>
   {% else %}
-    <li>
+  <div class="form-group">
       <form action="{% url "admin:create_anonymous_user" %}" method="post">
+        </div>
         {% csrf_token %}
         <input type="hidden" name="entity_id" value="{{ original.pk }}">
-        <a href="#" onclick="this.parentElement.submit()">{% translate "Créer le user anonyme" %}</a>
+        <a class="btn btn-dark form-control" href="#" onclick="this.parentElement.submit()">{% translate "Créer le user anonyme" %}</a>
       </form>
-    </li>
+  </div>
   {% endif %}
+  <hr>
+  {{ block.super }}
 {% endblock %}

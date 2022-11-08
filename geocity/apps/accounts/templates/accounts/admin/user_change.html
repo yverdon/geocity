@@ -9,7 +9,8 @@
             {% csrf_token %}
             <input type="hidden" name="user" value="{{ original.pk }}">
             <input type="hidden" name="request_user" value="{{ user.pk }}">
-            <a href="#" onclick="this.parentElement.submit()">{% translate "Créer un knox token" %}</a>
+            <br>
+            <a class="btn btn-dark form-control" href="#" onclick="this.parentElement.submit()">{% translate "Créer un knox token" %}</a>
             </form>
         </li>
     {% endif %}
