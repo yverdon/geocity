@@ -1,10 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
 
   function toggleMandatoryValue() {
-    const hiddenClass = 'grp-row-hidden';
+    const hiddenClass = 'd-none';
     const mandatoryElement = document.getElementById('id_is_mandatory');
-    const mandatoryRowElement = mandatoryElement.closest('.form-row.is_mandatory');
-    const placeholderElement = document.querySelector('div.placeholder');
+    const mandatoryRowElement = mandatoryElement.closest('.form-group');
+    const placeholderElement = document.getElementById('id_placeholder');
     const inputTypeElement = document.getElementById('id_input_type');
     const value = inputTypeElement.value;
     const disableMandatory = (value === 'title' || value === 'file_download');
@@ -23,44 +23,40 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function toggleConditionalFields() {
-    const hiddenClass = 'grp-row-hidden';
+    const hiddenClass = 'd-none';
     const requiredClass =  'required';
     const inputType = document.getElementById('id_input_type').value;
-
+    
     const choicesElement = document.getElementById('id_choices');
-    const choicesRowElement = choicesElement.closest('.form-row.choices');
+    const choicesRowElement = choicesElement.closest('.form-group');
     const choicesLabelElement = choicesRowElement.querySelector('label');
-
     const isChoicesVisible = inputType === 'list_single' || inputType === 'list_multiple';
 
     const regexElement = document.getElementById('id_regex_pattern');
-    const regexRowElement = regexElement.closest('.form-row.regex_pattern');
+    const regexRowElement = regexElement.closest('.form-group');
     const regexLabelElement = regexRowElement.querySelector('label');
-
     const isRegexPatternVisible = inputType === 'regex';
 
     const lineNumberForTextareaElement = document.getElementById('id_line_number_for_textarea');
-    const lineNumberForTextareaRowElement = lineNumberForTextareaElement.closest('.form-row.line_number_for_textarea');
+    const lineNumberForTextareaRowElement = lineNumberForTextareaElement.closest('.form-group');
     const lineNumberForTextareaLabelElement = lineNumberForTextareaRowElement.querySelector('label');
-
     const isLineNumberForTextareaVisible = inputType === 'text';
 
     const additionalSearchtextForAddressFieldElement = document.getElementById('id_additional_searchtext_for_address_field');
-    const additionalSearchtextForAddressFieldRowElement = additionalSearchtextForAddressFieldElement.closest('.form-row.additional_searchtext_for_address_field');
-
+    const additionalSearchtextForAddressFieldRowElement = additionalSearchtextForAddressFieldElement.closest('.form-group');
     const additionalSearchtextForAddressFieldVisible = inputType === 'address';
 
     const storeGeometryForAddressFieldElement = document.getElementById('id_store_geometry_for_address_field');
-    const storeGeometryForAddressFieldRowElement = storeGeometryForAddressFieldElement.closest('.form-row.store_geometry_for_address_field');
+    const storeGeometryForAddressFieldRowElement = storeGeometryForAddressFieldElement.closest('.form-group');
 
     const servicesToNotifyElement = document.getElementById('id_services_to_notify');
-    const servicesToNotifyRowElement = servicesToNotifyElement.closest('.form-row.services_to_notify');
+    const servicesToNotifyRowElement = servicesToNotifyElement.closest('.form-group');
     const servicesToNotifyLabelElement = servicesToNotifyRowElement.querySelector('label');
 
     const isServicesToNotifyPatternVisible = inputType === 'checkbox';
 
     const fileElement = document.getElementById('id_file_download');
-    const fileRowElement = fileElement.closest('.form-row.file_download');
+    const fileRowElement = fileElement.closest('.form-group');
     const fileLabelElement = fileRowElement.querySelector('label');
 
     const isFileVisible = inputType === 'file_download';
@@ -122,11 +118,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  document.getElementById('id_input_type').addEventListener('change', function(e) {
+  updateFields = function () {
     toggleConditionalFields();
     toggleMandatoryValue();
-  });
+  }
 
-    toggleConditionalFields();
-    toggleMandatoryValue();
-  });
+  document.getElementById('id_input_type').setAttribute("onchange", "updateFields()")
+  updateFields();
+
+});
