@@ -7,7 +7,7 @@ from polymorphic.admin import PolymorphicInlineSupportMixin, StackedPolymorphicI
 from geocity.apps.submissions.models import ComplementaryDocumentType
 from geocity.apps.accounts.admin import IntegratorFilterMixin
 
-from .models import ProxyReport, ProxyReportLayout, Section
+from .models import ProxyReport, ProxyReportLayout, ProxySection
 
 
 @admin.register(ProxyReportLayout)
@@ -36,7 +36,7 @@ class AlwaysChangedStackedPolymorphicInlineChild(StackedPolymorphicInline.Child)
 
 
 class SectionInline(StackedPolymorphicInline):
-    model = Section
+    model = ProxySection
     # Automatic registration of child inlines
     # see https://django-polymorphic.readthedocs.io/en/stable/admin.html#inline-models
     child_inlines = [
@@ -45,7 +45,7 @@ class SectionInline(StackedPolymorphicInline):
             (AlwaysChangedStackedPolymorphicInlineChild,),
             {"model": child_model},
         )
-        for child_model in Section.__subclasses__()
+        for child_model in ProxySection.__subclasses__()
     ]
     classes = ["grp-module"]
 
