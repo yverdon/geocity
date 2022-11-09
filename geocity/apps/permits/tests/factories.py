@@ -14,7 +14,7 @@ from django.utils.text import Truncator
 
 from geocity.apps.accounts import permissions_groups
 
-# Import all models of different apps
+# Import models of different apps
 from geocity.apps.accounts.models import *
 from geocity.apps.forms.models import *
 from geocity.apps.reports.models import *
@@ -536,7 +536,7 @@ class ComplementaryDocumentFactory(factory.django.DjangoModelFactory):
 
     document = factory.django.FileField(filename="awesome_file.pdf")
     description = factory.Faker("sentence")
-    # the "PermitRequestComplementaryDocument.STATUS_CANCELED" status
+    # the "ComplementaryDocument.STATUS_CANCELED" status
     # has extra logic, so to avoid any weird issues, it isn't among the choices
     status = factory.fuzzy.FuzzyChoice(
         choices=[
