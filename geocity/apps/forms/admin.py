@@ -1,4 +1,5 @@
 import django.db.models
+from adminsortable2.admin import SortableAdminMixin,  SortableInlineAdminMixin
 from django import forms
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
@@ -81,7 +82,6 @@ class FormAdminForm(forms.ModelForm):
         }
 
     class Media:
-        # FIXME rename to form.js
         js = ("js/admin/forms_admin.js",)
 
     def __init__(self, *args, **kwargs):
@@ -123,15 +123,7 @@ class FormAdminForm(forms.ModelForm):
         return super().save(*args, **kwargs)
 
 
-# def formfield_for_foreignkey(self, db_field, request, **kwargs):
-
-#         if db_field.name == "integrator":
-#             kwargs["queryset"] = Group.objects.filter(
-#                 permit_department__is_integrator_admin=True,
-#             )
-#         return super().formfield_for_foreignkey(db_field, request, **kwargs
-
-class FormFieldInline(admin.TabularInline):
+class FormFieldInline(admin.TabularInline, SortableInlineAdminMixin):
     model = models.FormField
     extra = 2
     verbose_name = _("Champ")
@@ -150,7 +142,7 @@ class FormFieldInline(admin.TabularInline):
 
 
 @admin.register(models.Form)
-class FormAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
     form = FormAdminForm
     inlines = [
         FormFieldInline,
@@ -186,6 +178,7 @@ class FormAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             None,
             {
                 "fields": (
+                    "name",
                     "category",
                     "administrative_entities",
                     "can_always_update",
@@ -247,10 +240,10 @@ class FormAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     )
 
     def sortable_str(self, obj):
-        return obj.__str__()
+        return obj.__str__() if obj.__str__() != '' else 'titi'
 
     sortable_str.admin_order_field = "name"
-    sortable_str.short_description = _("1.4 Configuration du type-objet-entité")
+    sortable_str.short_description = _("Nom du formulaire")
 
     def get_queryset(self, request):
         qs = (
@@ -382,12 +375,11 @@ class FormCategoryAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "id",
     ]
 
-    # FIXME: fix order management in list: does not appear. Add Order field ?
     def sortable_str(self, obj):
         return obj.__str__()
 
     sortable_str.admin_order_field = "name"
-    sortable_str.short_description = _("1.2 Configuration du type")
+    sortable_str.short_description = _("1.2 de la catégorie")
 
     def get__tags(self, obj):
         return list(obj.tags.all())

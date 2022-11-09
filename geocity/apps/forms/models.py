@@ -279,6 +279,8 @@ class FormField(models.Model):
         "Field", related_name="form_fields", on_delete=models.CASCADE
     )
     order = models.PositiveSmallIntegerField(default=0, db_index=True)
+    class Meta:
+        ordering = ['order']
 
 
 # Input types
