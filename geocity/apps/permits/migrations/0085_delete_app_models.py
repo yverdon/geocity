@@ -10,6 +10,7 @@ class Migration(migrations.Migration):
         ("submissions", "0003_migrate_permits_data"),
         ("forms", "0003_migrate_permits_data"),
         ("accounts", "0003_migrate_permits_data"),
+        ("reports", "0012_report_document_types"),
     ]
 
     operations = [
