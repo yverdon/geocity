@@ -7,10 +7,10 @@ from polymorphic.admin import PolymorphicInlineSupportMixin, StackedPolymorphicI
 from geocity.apps.submissions.models import ComplementaryDocumentType
 from geocity.apps.accounts.admin import IntegratorFilterMixin
 
-from .models import ProxyReport, ProxyReportLayout, ProxySection
+from .models import Report, ReportLayout, Section
 
 
-@admin.register(ProxyReportLayout)
+@admin.register(ReportLayout)
 class ReportLayoutAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_display = [
         "name",
@@ -36,7 +36,8 @@ class AlwaysChangedStackedPolymorphicInlineChild(StackedPolymorphicInline.Child)
 
 
 class SectionInline(StackedPolymorphicInline):
-    model = ProxySection
+    model = Section
+    # template = "toto.html"
     # Automatic registration of child inlines
     # see https://django-polymorphic.readthedocs.io/en/stable/admin.html#inline-models
     child_inlines = [
@@ -45,12 +46,16 @@ class SectionInline(StackedPolymorphicInline):
             (AlwaysChangedStackedPolymorphicInlineChild,),
             {"model": child_model},
         )
-        for child_model in ProxySection.__subclasses__()
+        for child_model in Section.__subclasses__()
     ]
-    classes = ["grp-module"]
+
+    class Media:
+        css = {"all": ("css/admin/reports_admin.css",)}
+
+    classes = ["grp-module", "polymorphic-jazzmin"]
 
 
-@admin.register(ProxyReport)
+@admin.register(Report)
 class ReportAdmin(
     PolymorphicInlineSupportMixin, IntegratorFilterMixin, admin.ModelAdmin
 ):
@@ -68,6 +73,7 @@ class ReportAdmin(
         "layout",
     ]
 
+    # List types using the report in admin list
     def types_(self, obj):
         list_content = format_html_join(
             "",

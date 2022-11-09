@@ -18,9 +18,11 @@ INTEGRATOR_PERMISSIONS_BY_APP = {
         "submissionamendfield",
         "submissionworkflowstatus",
         "complementarydocumenttype",
-        "proxyreport",
-        "proxyreportlayout",
-        "proxysection",
+    ],
+    "reports": [
+        "report",
+        "reportlayout",
+        "section",
     ],
 }
 

@@ -41,6 +41,10 @@ class ReportLayout(models.Model):
         ),
     )
 
+    class Meta:
+        verbose_name=_("3.1 Format de papier")
+        verbose_name_plural= _("3.1 Formats de papier")
+
     background = BackgroundFileField(
         null=True,
         blank=True,
@@ -58,14 +62,6 @@ class ReportLayout(models.Model):
         return self.name
 
 
-class ProxyReportLayout(ReportLayout):
-    class Meta:
-        proxy = True
-        app_label = 'submissions'
-        verbose_name = _("2.3 Modèle d'impression")
-        verbose_name_plural = _("2.3 Modèles d'impression")
-
-
 class Report(models.Model):
     """Report definition, allowing to generate reports for permit requests"""
 
@@ -73,6 +69,8 @@ class Report(models.Model):
         permissions = [
             ("can_generate_pdf", _("Générer des documents pdf")),
         ]
+        verbose_name=_("3.2 Modèle d'impression")
+        verbose_name_plural= _("3.2 Modèles d'impression")
 
     name = models.CharField(max_length=150)
     layout = models.ForeignKey(ReportLayout, on_delete=models.RESTRICT)
@@ -91,14 +89,6 @@ class Report(models.Model):
         return self.name
 
 
-class ProxyReport(Report):
-    class Meta:
-        proxy = True
-        app_label = 'submissions'
-        verbose_name = _("2.5 Modèle de Rapport")
-        verbose_name_plural = _("2.5 Modèles de Rapports")
-
-
 # https://github.com/django-polymorphic/django-polymorphic/issues/229#issuecomment-398434412
 def NON_POLYMORPHIC_CASCADE(collector, field, sub_objs, using):
     return models.CASCADE(collector, field, sub_objs.non_polymorphic(), using)
@@ -107,6 +97,8 @@ def NON_POLYMORPHIC_CASCADE(collector, field, sub_objs, using):
 class Section(PolymorphicModel):
     class Meta:
         ordering = ["order"]
+        verbose_name=_("Paragraphe")
+        verbose_name_plural= _("Paragraphes")
 
     report = models.ForeignKey(
         Report, on_delete=NON_POLYMORPHIC_CASCADE, related_name="sections"
@@ -127,14 +119,6 @@ class Section(PolymorphicModel):
 
     def __str__(self):
         return self._meta.verbose_name
-
-
-class ProxySection(Section):
-    class Meta:
-        proxy = True
-        app_label = 'submissions'
-        verbose_name = _("2.6 Section du rapport")
-        verbose_name_plural = _("2.6 Sections du rapport")
 
 
 class SectionMap(Section):
