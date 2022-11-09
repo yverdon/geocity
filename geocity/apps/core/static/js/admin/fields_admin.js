@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', function() {
       placeholderElement.style.display = 'none';
     } else {
       mandatoryElement.disabled = false;
-      placeholderElement.disabled = true;
       placeholderElement.style.display = '';
       mandatoryRowElement.classList.remove(hiddenClass);
     }

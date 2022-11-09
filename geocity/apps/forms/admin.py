@@ -123,6 +123,7 @@ class FormAdminForm(forms.ModelForm):
         return super().save(*args, **kwargs)
 
 
+# TODO: enable drag and drop for inline reorder
 class FormFieldInline(admin.TabularInline, SortableInlineAdminMixin):
     model = models.FormField
     extra = 2
@@ -191,49 +192,42 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
             },
         ),
         (
-            "Notifications aux services",
-            {"fields": ("notify_services", "services_to_notify")},
+            _("Directives - Données personnelles"),
+            {
+                "fields": (
+                    "directive",
+                    "directive_description",
+                    "additional_information",
+                )
+            },
         ),
         (
-            "Planning et localisation",
+            _("Planning et localisation"),
             {
                 "fields": (
                     "can_have_multiple_ranges",
-                    "geometry_types",
                     "needs_date",
                     "start_delay",
+                    "permit_duration",
+                    "expiration_reminder",
+                    "days_before_reminder",
+                    "geometry_types",
                     "wms_layers",
                     "wms_layers_order",
                 )
             },
         ),
         (
-            "Modules complémentaires",
+            _("Notifications aux services"),
+            {"fields": ("notify_services", "services_to_notify")},
+        ),
+        (
+            _("Modules complémentaires"),
             {
                 "fields": (
                     "document_enabled",
                     "publication_enabled",
                     "permanent_publication_enabled",
-                )
-            },
-        ),
-        (
-            "Prolongation",
-            {
-                "fields": (
-                    "permit_duration",
-                    "expiration_reminder",
-                    "days_before_reminder",
-                )
-            },
-        ),
-        (
-            "Directive",
-            {
-                "fields": (
-                    "directive",
-                    "directive_description",
-                    "additional_information",
                 )
             },
         ),
