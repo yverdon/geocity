@@ -1,8 +1,8 @@
 import django.db.models
-from adminsortable2.admin import SortableAdminMixin
 from django import forms
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
+
 
 from geocity.apps.accounts.admin import IntegratorFilterMixin, filter_for_user
 from geocity.apps.accounts.models import PUBLIC_TYPE_CHOICES, AdministrativeEntity
@@ -123,9 +123,38 @@ class FormAdminForm(forms.ModelForm):
         return super().save(*args, **kwargs)
 
 
+# def formfield_for_foreignkey(self, db_field, request, **kwargs):
+
+#         if db_field.name == "integrator":
+#             kwargs["queryset"] = Group.objects.filter(
+#                 permit_department__is_integrator_admin=True,
+#             )
+#         return super().formfield_for_foreignkey(db_field, request, **kwargs
+
+class FormFieldInline(admin.TabularInline):
+    model = models.FormField
+    extra = 2
+    verbose_name = _("Champ")
+    verbose_name_plural = _("Champs")
+
+    # Display only the fields that belongs to current integrator user
+    # TODO: Check this is secure
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        user = request.user
+
+        if db_field.name == "field":
+            qs = models.Field.objects.all()
+            kwargs["queryset"] = filter_for_user(user, qs)
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
 @admin.register(models.Form)
-class FormAdmin(IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdmin):
+class FormAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = FormAdminForm
+    inlines = [
+        FormFieldInline,
+    ]
     list_display = [
         "sortable_str",
         form_administrative_entities,
@@ -262,7 +291,7 @@ class FormWithAdministrativeEntitiesField(forms.ModelMultipleChoiceField):
         return f"{obj} ({obj.category}) - {entities}"
 
 
-class FieldForm(forms.ModelForm):
+class FieldAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
@@ -300,7 +329,7 @@ class FieldForm(forms.ModelForm):
 
 @admin.register(models.Field)
 class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
-    form = FieldForm
+    form = FieldAdminForm
     list_display = [
         "name",
         "is_mandatory",
@@ -353,6 +382,7 @@ class FormCategoryAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         "id",
     ]
 
+    # FIXME: fix order management in list: does not appear. Add Order field ?
     def sortable_str(self, obj):
         return obj.__str__()
 

@@ -761,7 +761,7 @@ JAZZMIN_SETTINGS = {
     # - carousel
     "changeform_format": "single",
     # override change forms on a per modeladmin basis
-    # "changeform_format_overrides": {"auth.user": "single", "auth.group": "single", "forms.proxyadministrativeentity": "single"},
+    "changeform_format_overrides": {"forms.form": "horizontal_tabs"},
     # Add a language dropdown into the admin
     # "language_chooser": True,
 }
