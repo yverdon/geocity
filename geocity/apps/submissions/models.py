@@ -1178,8 +1178,8 @@ class ProxyContactType(ContactType):
     class Meta:
         proxy = True
         app_label = 'forms'
-        verbose_name = _("1.6 Contact")
-        verbose_name_plural = _("1.6 Contacts")
+        verbose_name = _("1.5 Contact")
+        verbose_name_plural = _("1.5 Contacts")
 
 class SubmissionContact(models.Model):
     contact = models.ForeignKey(Contact, on_delete=models.CASCADE)

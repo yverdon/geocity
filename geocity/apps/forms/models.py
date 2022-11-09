@@ -245,8 +245,8 @@ class Form(models.Model):
     anonymous_objects = AnonymousFormManager()
 
     class Meta:
-        verbose_name = _("1.3 Formulaire")
-        verbose_name_plural = _("1.3 Formulaires")
+        verbose_name = _("1.4 Formulaire")
+        verbose_name_plural = _("1.4 Formulaires")
         ordering = ("order",)
 
     def __str__(self):
@@ -274,7 +274,7 @@ class Form(models.Model):
 
 
 class FormField(models.Model):
-    form = models.ForeignKey(Form, related_name="+", on_delete=models.CASCADE)
+    form = models.ForeignKey(Form, related_name="+", on_delete=models.CASCADE, null=True)
     field = models.ForeignKey(
         "Field", related_name="form_fields", on_delete=models.CASCADE
     )
@@ -397,8 +397,8 @@ class Field(models.Model):
     )
 
     class Meta(object):
-        verbose_name = _("1.5 Champ")
-        verbose_name_plural = _("1.5 Champs")
+        verbose_name = _("1.3 Champ")
+        verbose_name_plural = _("1.3 Champs")
         constraints = [
             models.CheckConstraint(
                 check=~(

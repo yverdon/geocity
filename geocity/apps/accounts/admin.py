@@ -551,12 +551,12 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
         }
 
 
-class SubmissionWorkflowStatusInline(admin.StackedInline):
+class SubmissionWorkflowStatusInline(admin.TabularInline):
     model = SubmissionWorkflowStatus
     extra = 0
     verbose_name = _("Étape - ")
     verbose_name_plural = _(
-        "Étapes - Si aucune n'est ajoutée manuellement, toutes les étapes sont ajoutées automatiquement"
+        "Flux (complet par défaut)"
     )
 
 
