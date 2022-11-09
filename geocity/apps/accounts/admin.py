@@ -43,6 +43,7 @@ class IntegratorFilterMixin:
             obj.integrator = user.groups.get(
                 permit_department__is_integrator_admin=True
             )
+        # FIXME: saving field new causes integrity error for FormField model PK
         super().save_model(request, obj, form, change)
 
     def get_readonly_fields(self, request, obj=None):

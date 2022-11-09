@@ -274,7 +274,7 @@ class Form(models.Model):
 
 
 class FormField(models.Model):
-    form = models.ForeignKey(Form, related_name="+", on_delete=models.CASCADE, null=True)
+    form = models.ForeignKey(Form, related_name="+", on_delete=models.CASCADE)
     field = models.ForeignKey(
         "Field", related_name="form_fields", on_delete=models.CASCADE
     )

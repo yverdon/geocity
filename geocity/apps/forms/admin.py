@@ -326,7 +326,6 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_filter = [
         "name",
         "input_type",
-        "forms",
     ]
     search_fields = [
         "name",
