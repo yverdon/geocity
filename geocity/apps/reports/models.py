@@ -25,14 +25,15 @@ class ReportLayout(models.Model):
     """Page size/background/marings/fonts/etc, used by reports"""
 
 
-    name = models.CharField(max_length=150)
-    width = models.PositiveIntegerField(default=210)
-    height = models.PositiveIntegerField(default=297)
-    margin_top = models.PositiveIntegerField(default=10)
-    margin_right = models.PositiveIntegerField(default=10)
-    margin_bottom = models.PositiveIntegerField(default=10)
-    margin_left = models.PositiveIntegerField(default=10)
+    name = models.CharField(_("Nom"), max_length=150)
+    width = models.PositiveIntegerField(_("Largeur"), default=210)
+    height = models.PositiveIntegerField(_("Hauteur"), default=297)
+    margin_top = models.PositiveIntegerField(_("Marge: haut"), default=10)
+    margin_right = models.PositiveIntegerField(_("Marge: droite"), default=10)
+    margin_bottom = models.PositiveIntegerField(_("Marge: bas"), default=10)
+    margin_left = models.PositiveIntegerField(_("Marge: gauche"), default=10)
     font = models.CharField(
+        _("Police"),
         max_length=1024,
         blank=True,
         null=True,
@@ -46,10 +47,12 @@ class ReportLayout(models.Model):
         verbose_name_plural= _("3.1 Formats de papier")
 
     background = BackgroundFileField(
+        _("Papier à entête"),
         null=True,
         blank=True,
         upload_to="backgound_paper",
-        help_text=_('Image d\'arrière plan ("papier à en-tête").'),
+        help_text=_('Image d\'arrière plan (PNG).'),
+        validators=[FileExtensionValidator(allowed_extensions=["png"])],
     )
     integrator = models.ForeignKey(
         Group,
@@ -72,11 +75,11 @@ class Report(models.Model):
         verbose_name=_("3.2 Modèle d'impression")
         verbose_name_plural= _("3.2 Modèles d'impression")
 
-    name = models.CharField(max_length=150)
-    layout = models.ForeignKey(ReportLayout, on_delete=models.RESTRICT)
+    name = models.CharField(_("Nom"), max_length=150)
+    layout = models.ForeignKey(ReportLayout, on_delete=models.RESTRICT, verbose_name=_("Format de papier"),)
     # reverse relationship is manually defined on submissions.ComplementaryDocumentType so it shows up on both sides in admin
     document_types = models.ManyToManyField(
-        "submissions.ComplementaryDocumentType", blank=True, related_name="+"
+        "submissions.ComplementaryDocumentType", blank=True, related_name="+", verbose_name=_("Types de documents")
     )
     integrator = models.ForeignKey(
         Group,
@@ -103,7 +106,7 @@ class Section(PolymorphicModel):
     report = models.ForeignKey(
         Report, on_delete=NON_POLYMORPHIC_CASCADE, related_name="sections"
     )
-    order = models.PositiveIntegerField(null=True, blank=True)
+    order = models.PositiveIntegerField(_("Ordre du paragraphe"), null=True, blank=True)
 
     def prepare_context(self, request, base_context):
         """Subclass this to add elements to the context (make sure to return a copy if you change it)"""
@@ -132,6 +135,7 @@ class SectionMap(Section):
         ),
     )
     qgis_print_template_name = models.CharField(
+        _("Nom du modèle QGIS"),
         max_length=30,
         blank=True,
         default="paysage-cadastre",
@@ -199,10 +203,12 @@ class SectionMap(Section):
 
 
 class SectionParagraph(Section):
-    title = models.CharField(default="", blank=True, max_length=2000)
+    title = models.CharField(_("Titre"), default="", blank=True, max_length=2000)
     content = RichTextField(
+        _("Contenu"),
         help_text=(
             _(
+                # FIXME: adapt for new api structure
                 'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}` et clles du work object type dans `{{wot_data}}`.'
             )
         )
@@ -213,6 +219,7 @@ class SectionParagraph(Section):
 
     def _render_user_template(self, base_context):
         # User template have only access to pure json elements for security reasons
+        # FIXME: adapt for new api structure
         inner_context = {
             "request_data": base_context["request_data"],
             "wot_data": base_context["wot_data"],
