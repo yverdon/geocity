@@ -1,8 +1,8 @@
 {% load i18n %}
 {% load submissions_extras %}
 
-{% if not record.author.is_anonymous %}
-  {{ record.author.user.email }} / {{ record.author.phone_first }}
+{% if not record.author.userprofile.is_anonymous %}
+  {{ record.author.email }} / {{ record.author.userprofile.phone_first }}
 {% else %}
   —
 {% endif %}
