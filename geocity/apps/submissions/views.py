@@ -45,18 +45,18 @@ from geocity.apps.accounts.decorators import (
     check_mandatory_2FA,
     permanent_user_required,
 )
+from geocity.apps.accounts.forms import GenericUserProfileForm
 from geocity.apps.accounts.models import (
     AdministrativeEntity,
     PermitDepartment,
     UserProfile,
 )
-from geocity.apps.accounts.forms import GenericUserProfileForm
 from geocity.apps.accounts.users import get_departments, has_profile
 from geocity.apps.forms.models import Field, Form
 
 from . import filters, forms, models, permissions, services, tables
 from .exceptions import BadSubmissionStatus, NonProlongableSubmission
-from .search import search_submissions, search_result_to_json
+from .search import search_result_to_json, search_submissions
 from .shortcuts import get_submission_for_user_or_404
 from .steps import (
     StepType,

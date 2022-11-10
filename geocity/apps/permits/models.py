@@ -1,4 +1,4 @@
-from . import fields
+from . import fields  # noqa
 
 
 def printed_permit_request_storage(instance, filename):

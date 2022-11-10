@@ -1,7 +1,6 @@
 from allauth.socialaccount.forms import SignupForm
 from allauth.socialaccount.providers.base import ProviderException
 from captcha.fields import CaptchaField
-
 from django import forms
 from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm

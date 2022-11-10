@@ -5,10 +5,10 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import resolve_url
 from django.urls import reverse
 from django.utils.http import is_safe_url
-from django.utils.translation import gettext_lazy as _
 from two_factor.admin import AdminSiteOTPRequired, AdminSiteOTPRequiredMixin
 
 from .admin_site import PermitsAdminSite
+
 
 # https://github.com/Bouke/django-two-factor-auth/issues/219#issuecomment-494382380
 # Remove when https://github.com/Bouke/django-two-factor-auth/pull/370 is merged

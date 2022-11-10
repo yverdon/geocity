@@ -6,6 +6,7 @@ Django user, and traversing relationships won’t return the custom user model.
 """
 import functools
 import operator
+
 from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.db.models import Q
