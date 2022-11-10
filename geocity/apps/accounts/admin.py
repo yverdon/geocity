@@ -6,8 +6,7 @@ from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.sites.admin import SiteAdmin as BaseSiteAdmin
 from django.contrib.sites.models import Site
-from django.db.models import Q, Value
-from django.db.models.functions import StrIndex, Substr
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -17,7 +16,7 @@ from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
 from geocity.fields import GeometryWidget
 
 from . import models, permissions_groups
-from .users import get_integrator_permissions
+from .users import get_integrator_permissions, get_users_list_for_integrator_admin
 
 MULTIPLE_INTEGRATOR_ERROR_MESSAGE = "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur'"
 
@@ -179,41 +178,9 @@ class UserAdmin(BaseUserAdmin):
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
-    # Only superuser can edit superuser users
+    # Filter users that can be by integrator
     def get_queryset(self, request):
-        # Only allow integrator to change users that have no group, are not superuser or are in group administrated by integrator.
-        if request.user.is_superuser:
-            qs = User.objects.all()
-        else:
-            user_integrator_group = request.user.groups.get(
-                permit_department__is_integrator_admin=True
-            )
-            qs = (
-                User.objects.filter(
-                    Q(is_superuser=False),
-                    Q(groups__permit_department__integrator=user_integrator_group.pk)
-                    | Q(groups__isnull=True),
-                )
-                .annotate(
-                    email_domain=Substr("email", StrIndex("email", Value("@")) + 1)
-                )
-                .distinct()
-            )
-
-            qs = qs.filter(
-                Q(
-                    email_domain__in=user_integrator_group.permit_department.integrator_email_domains.split(
-                        ","
-                    )
-                )
-                | Q(
-                    email__in=user_integrator_group.permit_department.integrator_emails_exceptions.split(
-                        ","
-                    )
-                )
-            )
-
-        return qs
+        return get_users_list_for_integrator_admin(self, request)
 
     def save_model(self, req, obj, form, change):
         """Set 'is_staff=True' when the saved user is in a integrator group.
@@ -362,16 +329,11 @@ class UserInLine(admin.TabularInline):
     verbose_name = _("Utilisateur membre du groupe")
     verbose_name_plural = _("Utilisateurs membres du groupe")
 
-    # Displayed users MUST remain readonly for privacy reasons
-    # TODO: filter user emails by domain using queryset
-    def has_change_permission(self, request, obj=None):
-        return False
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
 
-    def has_add_permission(self, request, obj=None):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
+        if db_field.name == "user":
+            kwargs["queryset"] = get_users_list_for_integrator_admin(self, request)
+            return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class GroupAdmin(admin.ModelAdmin):
@@ -544,7 +506,6 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
             ),
         }
 
-    # TODO: remove cdn usage
     class Media:
         js = ("https://code.jquery.com/jquery-3.5.1.slim.min.js",)
         css = {

@@ -1,3 +1,8 @@
+"""
+Configuration of the admin site style and layout
+All options: https://django-jazzmin.readthedocs.io/configuration/
+"""
+
 JAZZMIN_SETTINGS = {
     # title of the window (Will default to current_admin_site.site_title if absent or None)
     "site_title": "Geocity",

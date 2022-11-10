@@ -8,8 +8,9 @@ import functools
 import operator
 
 from django.conf import settings
-from django.contrib.auth.models import Permission
-from django.db.models import Q
+from django.contrib.auth.models import Permission, User
+from django.db.models import Q, Value
+from django.db.models.functions import StrIndex, Substr
 
 from . import models, permissions_groups
 
@@ -54,3 +55,38 @@ def get_integrator_permissions():
         permission_filters
         | Q(codename__in=permissions_groups.OTHER_PERMISSIONS_CODENAMES)
     )
+
+
+def get_users_list_for_integrator_admin(self, request):
+    # Integrators can only view users for restricted email domains.
+
+    if request.user.is_superuser:
+        qs = User.objects.all()
+    else:
+        user_integrator_group = request.user.groups.get(
+            permit_department__is_integrator_admin=True
+        )
+        qs = (
+            User.objects.filter(
+                Q(is_superuser=False),
+                Q(groups__permit_department__integrator=user_integrator_group.pk)
+                | Q(groups__isnull=True),
+            )
+            .annotate(email_domain=Substr("email", StrIndex("email", Value("@")) + 1))
+            .distinct()
+        )
+
+        qs = qs.filter(
+            Q(
+                email_domain__in=user_integrator_group.permit_department.integrator_email_domains.split(
+                    ","
+                )
+            )
+            | Q(
+                email__in=user_integrator_group.permit_department.integrator_emails_exceptions.split(
+                    ","
+                )
+            )
+        )
+
+    return qs
