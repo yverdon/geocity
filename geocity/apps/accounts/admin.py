@@ -6,10 +6,12 @@ from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.sites.admin import SiteAdmin as BaseSiteAdmin
 from django.contrib.sites.models import Site
+from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from knox.models import AuthToken
 
 from geocity.apps.accounts.models import AdministrativeEntity
 from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
@@ -74,12 +76,9 @@ class UserAdmin(BaseUserAdmin):
     fieldsets = (
         (
             None,
-            {"fields": ("username",)},
-        ),
-        (
-            "Informations personnelles",
             {
                 "fields": (
+                    "username",
                     "first_name",
                     "last_name",
                     "email",
@@ -88,7 +87,7 @@ class UserAdmin(BaseUserAdmin):
             },
         ),
         (
-            "Permissions",
+            _("Groupes et Permissions"),
             {
                 "fields": (
                     "is_active",
@@ -100,7 +99,7 @@ class UserAdmin(BaseUserAdmin):
             },
         ),
         (
-            "Dates importantes",
+            _("Dates importantes"),
             {
                 "fields": (
                     "last_login",
@@ -161,6 +160,8 @@ class UserAdmin(BaseUserAdmin):
         integrator_group_for_user_being_updated = user_being_updated.groups.filter(
             permit_department__is_integrator_admin=True
         )
+
+        # FIXME: Do not allow anonymous user to be set in groups!!!
         if db_field.name == "groups":
             if request.user.is_superuser:
                 kwargs["queryset"] = Group.objects.all()
@@ -193,6 +194,39 @@ class UserAdmin(BaseUserAdmin):
                     obj.is_staff = True
 
         super().save_model(req, obj, form, change)
+
+    def response_change(self, request, obj):
+
+        ret = super().response_change(request, obj)
+        if "user_id" in request.POST:
+            """
+            Admin custom action to create the knox token for the user
+            """
+
+            user_id = request.POST.get("user_id")
+            user = get_object_or_404(User, pk=request.POST.get("user_id"))
+
+            # TODO: Define when a token needs to be deleted
+            with transaction.atomic():
+                authtoken, token = AuthToken.objects.create(user, expiry=None)
+
+            messages.add_message(
+                request,
+                messages.SUCCESS,
+                _(
+                    "Jeton créé avec succès. Veuillez le copier, il ne sera visible qu'une seule fois."
+                ),
+            )
+            messages.add_message(request, messages.INFO, token)
+
+            return redirect(
+                reverse(
+                    "admin:auth_user_change",
+                    kwargs={"object_id": user_id},
+                )
+            )
+
+        return ret
 
 
 class DepartmentAdminForm(forms.ModelForm):
@@ -607,7 +641,7 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             entity_id = request.POST.get("entity_id")
 
             """
-                Admin custom view to create the anonymous user for the given Administrative
+                Admin custom action to create the anonymous user for the given Administrative
                 entity.
             """
 

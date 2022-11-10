@@ -424,7 +424,7 @@ class UserProfile(models.Model):
     @cached_property
     def is_anonymous(self):
         """
-        PermitAuthor unique per AdministrativeEntity.
+        UserProfile unique per AdministrativeEntity.
         Never logged in. Used to save anonymous requests.
         """
         return (
@@ -436,7 +436,7 @@ class UserProfile(models.Model):
     @cached_property
     def is_temporary(self):
         """
-        PermitAuthor created when starting an anonymous permit request,
+        UserProfile created when starting an anonymous permit request,
         then deleted at the submission (replaced by an anonymous user).
         """
         return self.user and self.user.username.startswith(
