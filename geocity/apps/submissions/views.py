@@ -1,4 +1,3 @@
-# FIXME migrate permissions to new objects
 import datetime
 import json
 import logging
@@ -51,10 +50,11 @@ from geocity.apps.accounts.models import (
     PermitDepartment,
     UserProfile,
 )
+from geocity.apps.accounts.forms import GenericUserProfileForm
 from geocity.apps.accounts.users import get_departments, has_profile
 from geocity.apps.forms.models import Field, Form
 
-from . import fields, filters, forms, models, permissions, services, tables
+from . import filters, forms, models, permissions, services, tables
 from .exceptions import BadSubmissionStatus, NonProlongableSubmission
 from .search import search_submissions, search_result_to_json
 from .shortcuts import get_submission_for_user_or_404
@@ -555,7 +555,6 @@ class SubmissionDetailView(View):
                 "template": "submission_received.txt",
                 "submission": submission,
                 "absolute_uri_func": self.request.build_absolute_uri,
-                # FIXME rename in template (was `objects_list`)
                 "forms_list": submission.get_forms_names_list(),
             }
             services.send_email_notification(data)
@@ -572,11 +571,9 @@ class SubmissionDetailView(View):
                         submission.get_categories_names_list(),
                     ),
                     "users_to_notify": set(mailing_list),
-                    # FIXME rename template
                     "template": "submission_received_for_services.txt",
                     "submission": submission,
                     "absolute_uri_func": self.request.build_absolute_uri,
-                    # FIXME rename in template (was `objects_list`)
                     "forms_list": submission.get_forms_names_list(),
                 }
                 services.send_email_notification(data)
@@ -652,11 +649,9 @@ class SubmissionDetailView(View):
                             self.submission.get_categories_names_list(),
                         ),
                         "users_to_notify": self.submission.get_secretary_email(),
-                        # FIXME rename template
                         "template": "submission_validated.txt",
                         "submission": self.submission,
                         "absolute_uri_func": self.request.build_absolute_uri,
-                        # FIXME rename in template (was `objects_list`)
                         "forms_list": self.submission.get_forms_names_list(),
                     }
                     services.send_email_notification(data)
@@ -710,11 +705,9 @@ class SubmissionDetailView(View):
                     form.instance.get_categories_names_list(),
                 ),
                 "users_to_notify": [form.instance.author.email],
-                # FIXME rename template
                 "template": "submission_prolongation.txt",
                 "submission": form.instance,
                 "absolute_uri_func": self.request.build_absolute_uri,
-                # FIXME rename in template (was `objects_list`)
                 "forms_list": form.instance.get_forms_names_list(),
             }
             services.send_email_notification(data)
@@ -765,7 +758,6 @@ class SubmissionDetailView(View):
             if non_public_documents:
                 return render(
                     self.request,
-                    # FIXME rename template
                     "submissions/submission_confirm_inquiry.html",
                     {
                         "non_public_documents": non_public_documents,
@@ -1005,7 +997,7 @@ def anonymous_submission(request):
     services.store_tags_in_session(request)
     entityfilter = request.session.get("entityfilter", [])
     typefilter = request.session.get("typefilter", [])
-    if not len(entityfilter) > 0 or not len(typefilter) > 0:
+    if not entityfilter or not typefilter:
         raise Http404
 
     # Validate entity
@@ -1059,12 +1051,12 @@ def anonymous_submission(request):
     form_category = form_categories[0]
 
     # Validate available work objects types
-    forms = models.Form.anonymous_objects.filter(
+    anonymous_forms = models.Form.anonymous_objects.filter(
         administrative_entities=entity,
         category=form_category,
     )
 
-    if not forms:
+    if not anonymous_forms:
         raise Http404
 
     # Permit request page
@@ -1075,10 +1067,10 @@ def anonymous_submission(request):
         author=request.user,
     )
 
-    # If filter combinations return only one forms object,
+    # If filter combinations return only one anonymous_forms object,
     # this combination must be set on submission object
-    if len(forms) == 1:
-        submission.forms.set(forms)
+    if len(anonymous_forms) == 1:
+        submission.forms.set(anonymous_forms)
 
     steps = get_anonymous_steps(
         form_category=form_category, user=request.user, submission=submission
@@ -1330,7 +1322,7 @@ def submission_prolongation(request, submission_id):
                 "template": "submission_prolongation_for_services.txt",
                 "submission": form.instance,
                 "absolute_uri_func": request.build_absolute_uri,
-                "objects_list": submission.get_forms_names_list(),
+                "forms_list": submission.get_forms_names_list(),
             }
             services.send_email_notification(data)
 
@@ -1418,7 +1410,6 @@ def submission_appendices(request, submission_id):
         "submissions/submission_appendices.html",
         {
             "submission": submission,
-            # FIXME rename in template (was `object_types`)
             "forms": fields_by_form,
             **steps_context,
         },
@@ -1739,7 +1730,6 @@ def submission_submit_confirmed(request, submission_id):
                 "template": "submission_submitted_with_mention.txt",
                 "submission": submission,
                 "absolute_uri_func": request.build_absolute_uri,
-                # FIXME rename in template (was `objects_list`)
                 "forms_list": submission.get_forms_names_list(),
             }
             services.send_email_notification(data)
@@ -1773,7 +1763,7 @@ def submission_submit_confirmed(request, submission_id):
                 # between the creation and the submission of the permit request
                 raise Http404
             else:
-                submission.author = anonymous_user
+                submission.author = anonymous_user.user
                 submission.save()
                 temp_user = request.user
                 logout(request)
@@ -1859,7 +1849,6 @@ def submission_classify(request, submission_id, approve):
                 "template": "submission_classified.txt",
                 "submission": submission,
                 "absolute_uri_func": request.build_absolute_uri,
-                # FIXME rename in template (was `objects_list`)
                 "forms_list": submission.get_forms_names_list(),
             }
             services.send_email_notification(data)
@@ -1877,7 +1866,6 @@ def submission_classify(request, submission_id, approve):
                     "template": "submission_classified_for_services.txt",
                     "submission": submission,
                     "absolute_uri_func": request.build_absolute_uri,
-                    # FIXME rename in template (was `objects_list`)
                     "forms_list": submission.get_forms_names_list(),
                 }
                 services.send_email_notification(data)
@@ -1929,23 +1917,11 @@ def field_file_download(request, path):
 @login_required
 @permanent_user_required
 @check_mandatory_2FA
-def administrative_entity_file_download(request, path):
-    """
-    Only allows logged user to download administrative entity files
-    """
-
-    mime_type, encoding = mimetypes.guess_type(path)
-    storage = fields.PrivateFileSystemStorage()
-    return StreamingHttpResponse(storage.open(path), content_type=mime_type)
-
-
-@login_required
-@permanent_user_required
-@check_mandatory_2FA
 def genericauthorview(request, pk):
     # FIXME shouldn’t we use the user id in the url?
+    # FIXME shouldn’t this be moved to the accounts app?
     instance = get_object_or_404(UserProfile, pk=pk)
-    form = forms.GenericAuthorForm(request.POST or None, instance=instance)
+    form = GenericUserProfileForm(request.POST or None, instance=instance)
 
     for field in form.fields:
         form.fields[field].disabled = True

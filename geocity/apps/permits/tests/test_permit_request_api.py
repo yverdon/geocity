@@ -153,15 +153,15 @@ class PermitRequestAPITestCase(TestCase):
     def test_logout_next_action_if_redirect_uri_not_whitelisted(self):
         config.LOGOUT_REDIRECT_HOSTNAME_WHITELIST = ""
         self.client.login(username=self.admin_user.username, password="password")
-        redirect_uri = "http://testserver" + reverse("permit_author_create")
+        redirect_uri = "http://testserver" + reverse("accounts:user_profile_create")
         logout_page = reverse("logout") + "?next=" + redirect_uri
         response = self.client.get(logout_page)
-        self.assertRedirects(response, expected_url=reverse("account_login"))
+        self.assertRedirects(response, expected_url=reverse("accounts:account_login"))
 
     def test_logout_next_action_if_redirect_uri_is_whitelisted(self):
         config.LOGOUT_REDIRECT_HOSTNAME_WHITELIST = "testserver"
         self.client.login(username=self.admin_user.username, password="password")
-        redirect_uri = "http://testserver" + reverse("permit_author_create")
+        redirect_uri = "http://testserver" + reverse("accounts:user_profile_create")
         logout_page = reverse("logout") + "?next=" + redirect_uri
         response = self.client.get(logout_page)
         self.assertRedirects(response, expected_url=redirect_uri)

@@ -104,7 +104,7 @@
     <div class="col">
       {% for geo_time_form in geo_time_formset %}
         {{ geo_time_form.media }}
-        {% include "permits/_geo_time_form.html" with form=geo_time_form form_id=forloop.counter0 form_number=forloop.counter open=True %}
+        {% include "submissions/_geo_time_form.html" with form=geo_time_form form_id=forloop.counter0 form_number=forloop.counter open=True %}
       {% endfor %}
     </div>
   </div>

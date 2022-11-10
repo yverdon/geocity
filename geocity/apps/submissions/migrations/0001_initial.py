@@ -256,7 +256,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "validation_pdf",
-                    geocity.apps.submissions.fields.PermitRequestFileField(
+                    geocity.apps.submissions.fields.SubmissionFileField(
                         storage=geocity.fields.PrivateFileSystemStorage(),
                         upload_to="validations",
                         validators=[
@@ -664,6 +664,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         to="submissions.submission",
+                        related_name="submission_contacts",
                     ),
                 ),
             ],

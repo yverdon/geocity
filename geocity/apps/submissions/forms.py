@@ -59,7 +59,7 @@ def _file_download_html_representation(prop, for_summary=False):
         description = prop.help_text if prop.help_text else _("Télécharger le fichier")
         return f"""<strong>{ prop.name }:</strong>
             <i class="fa fa-download" aria-hidden="true"></i>
-            <a class="file_download" href="{ reverse('permits:works_object_property_file_download', kwargs={'path':prop.file_download}) }" target="_blank" rel="noreferrer">{ description }</a>"""
+            <a class="file_download" href="{ reverse('submissions:field_file_download', kwargs={'path':prop.file_download}) }" target="_blank" rel="noreferrer">{ description }</a>"""
     return ""
 
 
@@ -190,7 +190,7 @@ class FormsSelectForm(forms.Form):
 
         super().__init__(*args, **{**kwargs, "initial": initial})
         user_can_see_private_requests = self.user.has_perm(
-            "permits.see_private_requests"
+            "submissions.see_private_requests"
         )
 
         forms = (
@@ -759,7 +759,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
         for prop_value in self.get_values():
             initial[
                 self.get_field_name(
-                    prop_value.form_id,
+                    prop_value.form.form_id,
                     prop_value.field_id,
                 )
             ] = prop_value.value
@@ -945,7 +945,6 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
         )
 
         services.send_email(
-            # FIXME rename template file
             template="submission_changed.txt",
             sender=sender,
             receivers=[submission.author.email],
@@ -968,7 +967,6 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                 ),
                 "administrative_entity": submission.administrative_entity,
                 "name": submission.author.get_full_name(),
-                # FIXME change variable name in template (was objects_list)
                 "forms_list": submission.get_forms_names_list(),
             },
         )
@@ -1227,7 +1225,6 @@ class SubmissionValidationDepartmentSelectionForm(forms.Form):
     def __init__(self, instance, *args, **kwargs):
         self.submission = instance
         permit_request_ct = ContentType.objects.get_for_model(models.Submission)
-        # FIXME rename permissions
         validate_permission = Permission.objects.get(
             codename="validate_submission", content_type=permit_request_ct
         )
@@ -1279,15 +1276,14 @@ class SubmissionValidationForm(forms.ModelForm):
 
 class SubmissionValidationPokeForm(forms.Form):
     def __init__(self, instance, request, *args, **kwargs):
-        self.permit_request = instance
+        self.submission = instance
         self.request = request
 
         super().__init__(*args, **kwargs)
 
     def save(self):
-        # FIXME find a place for this function
         return services.send_validation_reminder(
-            self.permit_request, absolute_uri_func=self.request.build_absolute_uri
+            self.submission, absolute_uri_func=self.request.build_absolute_uri
         )
 
 
@@ -1627,7 +1623,7 @@ class SubmissionInquiryForm(forms.ModelForm):
             )
 
         overlap = models.SubmissionInquiry.objects.filter(
-            Q(permit_request=self.submission)
+            Q(submission=self.submission)
             & Q(end_date__gte=start_date)
             & Q(start_date__lte=end_date)
         )
@@ -1662,7 +1658,7 @@ def get_submission_contacts_formset_initiated(submission, data=None):
     Return PermitActorFormSet with initial values set
     """
 
-    # Queryset with all configured actor type for this permit_request
+    # Queryset with all configured actor type for this submission
     configured_contact_types = submission.get_contacts_types()
 
     # Get actor type that are not filled yet for the submission

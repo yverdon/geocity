@@ -4,7 +4,7 @@ from allauth.socialaccount.models import SocialLogin
 from allauth.utils import build_absolute_uri
 from django.conf import settings
 
-from geocity.apps.permits.models import PermitAuthor
+from geocity.apps.accounts.models import UserProfile
 
 
 class DootixAdapterError(Exception):
@@ -36,7 +36,7 @@ class DootixSocialAccountAdapter(DefaultSocialAccountAdapter):
 
         sociallogin.save(request)
 
-        PermitAuthor.objects.create(
+        UserProfile.objects.create(
             user=user,
             address=form.cleaned_data["address"],
             zipcode=form.cleaned_data["zipcode"],

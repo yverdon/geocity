@@ -6,7 +6,7 @@ from django.core.files import File
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from geocity.apps.permits.models import ComplementaryDocumentType, Group
+from geocity.apps.submissions.models import ComplementaryDocumentType
 
 from .models import Report, ReportLayout, SectionAuthor, SectionMap, SectionParagraph
 

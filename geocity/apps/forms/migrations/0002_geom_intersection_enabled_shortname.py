@@ -6,22 +6,33 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('forms', '0001_initial'),
+        ("forms", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='form',
-            options={'ordering': ('order',), 'verbose_name': '1.4 Configuration du formulaire', 'verbose_name_plural': '1.4 Configuration des formulaires'},
+            name="form",
+            options={
+                "ordering": ("order",),
+                "verbose_name": "1.4 Configuration du formulaire",
+                "verbose_name_plural": "1.4 Configuration des formulaires",
+            },
         ),
         migrations.AddField(
-            model_name='form',
-            name='has_geom_intersection_enabled',
-            field=models.BooleanField(default=False, verbose_name="Activer l'intersection de géométries"),
+            model_name="form",
+            name="has_geom_intersection_enabled",
+            field=models.BooleanField(
+                default=False, verbose_name="Activer l'intersection de géométries"
+            ),
         ),
         migrations.AddField(
-            model_name='form',
-            name='shortname',
-            field=models.CharField(blank=True, help_text="Nom affiché par défaut dans les différentes étapes du formulaire, ne s'affiche pas dans l'admin (max. 32 caractères)", max_length=32, verbose_name='nom court'),
+            model_name="form",
+            name="shortname",
+            field=models.CharField(
+                blank=True,
+                help_text="Nom affiché par défaut dans les différentes étapes du formulaire, ne s'affiche pas dans l'admin (max. 32 caractères)",
+                max_length=32,
+                verbose_name="nom court",
+            ),
         ),
     ]

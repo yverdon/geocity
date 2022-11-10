@@ -3,10 +3,9 @@
 from django.db import migrations
 
 from geocity.migrations import (
+    common_fields_values,
     copy_tags,
     migrate_contenttypes,
-    migrate_permissions,
-    common_fields_values,
     sync_sequence,
 )
 

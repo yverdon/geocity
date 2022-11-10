@@ -4,8 +4,8 @@ from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
 from polymorphic.admin import PolymorphicInlineSupportMixin, StackedPolymorphicInline
 
-from geocity.apps.permits import models as permits_models
-from geocity.apps.permits.admin import IntegratorFilterMixin
+from geocity.apps.submissions.models import ComplementaryDocumentType
+from geocity.apps.accounts.admin import IntegratorFilterMixin
 
 from .models import Report, ReportLayout, Section
 
@@ -78,9 +78,7 @@ class ReportAdmin(
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "document_types":
-            qs = permits_models.ComplementaryDocumentType.objects.filter(
-                parent__isnull=False
-            )
+            qs = ComplementaryDocumentType.objects.filter(parent__isnull=False)
             if request.user.is_superuser:
                 kwargs["queryset"] = qs.all()
             else:

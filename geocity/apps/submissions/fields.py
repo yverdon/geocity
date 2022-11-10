@@ -12,21 +12,21 @@ from django.urls import reverse
 from geocity.fields import PrivateFileSystemStorage
 
 
-class PermitRequestFieldFile(FieldFile):
+class SubmissionFieldFile(FieldFile):
     @property
     def url(self):
         return reverse(
-            "permits:permit_request_file_download",
+            "submissions:submission_file_download",
             kwargs={"path": self.name},
         )
 
 
-class PermitRequestFileField(models.FileField):
+class SubmissionFileField(models.FileField):
     """
     FileField storing information in a private media root.
     """
 
-    attr_class = PermitRequestFieldFile
+    attr_class = SubmissionFieldFile
 
     def __init__(self, verbose_name=None, name=None, **kwargs):
         kwargs["storage"] = PrivateFileSystemStorage()
@@ -67,7 +67,7 @@ class ArchiveDocumentFieldFile(FieldFile):
     @property
     def url(self):
         return reverse(
-            "permits:complementary_documents_download",
+            "submissions:complementary_documents_download",
             kwargs={"path": self.name},
         )
 
@@ -96,7 +96,7 @@ class ComplementaryDocumentFieldFile(FieldFile):
     @property
     def url(self):
         return reverse(
-            "permits:complementary_documents_download",
+            "submissions:complementary_documents_download",
             kwargs={"path": self.name},
         )
 

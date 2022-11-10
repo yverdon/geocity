@@ -1,6 +1,5 @@
 from django.conf import settings
-from django.contrib.auth.models import Group
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
@@ -11,18 +10,12 @@ from django.core.validators import (
     RegexValidator,
 )
 from django.db import models
-from django.db.models import (
-    BooleanField,
-    ExpressionWrapper,
-    Q,
-    UniqueConstraint,
-)
+from django.db.models import BooleanField, ExpressionWrapper, Q, UniqueConstraint
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
-
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 
@@ -431,8 +424,9 @@ class UserProfile(models.Model):
         verbose_name_plural = _("3.2 Consultation des auteurs")
 
     def get_absolute_url(self):
-
-        return reverse("permits:genericauthorview", args=[str(self.id)])
+        # FIXME this URL name doesn’t exist, but that was already the case before the
+        # phoenix migration. Should we remove this?
+        return reverse("accounts:genericauthorview", args=[str(self.id)])
 
     def __str__(self):
 

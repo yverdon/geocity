@@ -9,18 +9,16 @@ from django.utils import timezone
 from knox.models import AuthToken
 from rest_framework.decorators import api_view
 
-from geocity.apps.permits import services
-from geocity.apps.permits.decorators import permanent_user_required
-from geocity.apps.permits.models import ComplementaryDocumentType, WorksObjectType
-from geocity.apps.permits.serializers import PermitRequestPrintSerializer
+from geocity.apps.accounts.decorators import permanent_user_required
+from geocity.apps.submissions import services
+from geocity.apps.forms.models import Form
+from geocity.apps.submissions.models import ComplementaryDocumentType, Submission
 
 from .models import Report
 from .utils import run_docker_container
 
 
-def user_is_allowed_to_generate_report(
-    request, permit_request_id, work_object_type_id, report_id
-):
+def user_is_allowed_to_generate_report(request, submission_id, form_id, report_id):
 
     # Check that user has permission to generate pdf
     if not (
@@ -30,24 +28,22 @@ def user_is_allowed_to_generate_report(
 
     # Check that user is allowed to see the current permit_request
     permit_request = get_object_or_404(
-        services.get_permit_requests_list_for_user(request.user), pk=permit_request_id
+        Submission.objects.filter_for_user(request.user), pk=submission_id
     )
 
-    # Check the current work_object_type_id is allowed for user
-    # The wot list is associated to a permitrequest, thus a user that have
-    # access to the permitrequest, also has access to all wots associated with it
-    if int(work_object_type_id) not in permit_request.works_object_types.values_list(
-        "pk", flat=True
-    ):
+    # Check the current form_id is allowed for user
+    # The form list is associated to a submission, thus a user that have
+    # access to the submission, also has access to all forms associated with it
+    if int(form_id) not in permit_request.forms.values_list("pk", flat=True):
         raise Http404
 
-    work_object_type = get_object_or_404(WorksObjectType, pk=work_object_type_id)
+    form = get_object_or_404(Form, pk=form_id)
 
     # Check the user is allowed to use this report template
 
-    # List parents documents for a given WOT
+    # List parents documents for a given form
     document_parent_list = ComplementaryDocumentType.objects.filter(
-        work_object_types__pk=work_object_type_id, parent__isnull=True
+        form_id=form_id, parent__isnull=True
     )
 
     # Check if there's a children document with the same report id as the request
@@ -57,21 +53,23 @@ def user_is_allowed_to_generate_report(
     if not children_document_exists:
         raise Http404
 
-    return permit_request, work_object_type
+    return permit_request, form
 
+
+# FIXME move this to api app
 
 # TODO: instead of taking PermitRequest and WorksObjectType arguments, we should take
 # in WorksObjectTypeChoice, which already joins both, so they are consistent.
 @api_view(["GET"])  # pretend it's a DRF view, so we get token auth
 @login_required
 @permanent_user_required
-def report_content(request, permit_request_id, work_object_type_id, report_id):
+def report_content(request, submission_id, form_id, report_id):
     """This views returns the content of a report in HTML. It is mainly meant to be rendered
     to PDF (but could also work as a PDF)"""
 
     # Ensure user is allowed to generate pdf
     permit_request, work_object_type = user_is_allowed_to_generate_report(
-        request, permit_request_id, work_object_type_id, report_id
+        request, submission_id, form_id, report_id
     )
 
     report = get_object_or_404(Report, pk=report_id)
@@ -122,7 +120,7 @@ def report_pdf(request, submission_id, form_id, report_id):
     )
 
     url = reverse(
-        "reports:permit_request_report_content",
+        "reports:submission_report_content",
         kwargs={
             "submission_id": submission_id,
             "form_id": form_id,

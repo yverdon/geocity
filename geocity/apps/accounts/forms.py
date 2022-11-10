@@ -142,7 +142,7 @@ class DjangoAuthUserForm(forms.ModelForm):
         fields = ["first_name", "last_name", "email"]
 
 
-class GenericAuthorForm(forms.ModelForm):
+class GenericUserProfileForm(forms.ModelForm):
     required_css_class = "required"
     address = forms.CharField(
         max_length=100, label=_("Adresse"), widget=AddressWidget()

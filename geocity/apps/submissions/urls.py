@@ -1,14 +1,6 @@
 from django.urls import include, path
 
-# from geocity.apps.django_wfs3.urls import wfs3_router
-
 from . import views
-
-# FIXME
-# wfs3_router.register(r"permits", api.PermitRequestViewSet, "permits")
-# wfs3_router.register(r"permits_point", api.PermitRequestPointViewSet, "permits_point")
-# wfs3_router.register(r"permits_line", api.PermitRequestLineViewSet, "permits_line")
-# wfs3_router.register(r"permits_poly", api.PermitRequestPolyViewSet, "permits_poly")
 
 app_name = "submissions"
 
@@ -84,11 +76,6 @@ urlpatterns = [
         "documents/<int:pk>/delete",
         views.SubmissionComplementaryDocumentDeleteView.as_view(),
         name="complementary_documents_delete",
-    ),
-    path(
-        "admin-data/<path:path>",
-        views.administrative_entity_file_download,
-        name="administrative_entity_file_download",
     ),
     path("", views.SubmissionList.as_view(), name="submissions_list"),
     path("", include(submission_urlpatterns + anonymous_submission_urlpatterns)),

@@ -1,4 +1,5 @@
 import enum
+import os
 import tempfile
 import urllib.parse
 import zipfile
@@ -34,6 +35,7 @@ from django.utils.translation import gettext_lazy as _
 import PIL
 import requests
 from django_tables2.export import TableExport
+from pdf2image import convert_from_path
 from PIL import Image
 from simple_history.models import HistoricalRecords
 
@@ -259,7 +261,7 @@ class Submission(models.Model):
     intersected_geometries = models.TextField(
         _("Entités géométriques concernées"), max_length=1024, null=True
     )
-    validation_pdf = fields.PermitRequestFileField(
+    validation_pdf = fields.SubmissionFileField(
         _("pdf de validation"),
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
         upload_to="validations",
@@ -537,7 +539,7 @@ class Submission(models.Model):
                 # include the request data as CSV
                 zip_file.writestr("submission.csv", self.to_csv())
                 # include additional documents
-                for document in self.complementary_documents:
+                for document in self.complementary_documents.all():
                     zip_file.write(document.path, document.name)
 
             # Reset file pointer
@@ -571,11 +573,9 @@ class Submission(models.Model):
         return SubmissionComplementaryDocument.objects.filter(submission=self).all()
 
     def to_csv(self):
-        from .tables import OwnPermitRequestsExportTable
+        from .tables import OwnSubmissionsExportTable
 
-        table = OwnPermitRequestsExportTable(
-            data=PermitRequest.objects.filter(id=self.id)
-        )
+        table = OwnSubmissionsExportTable(data=Submission.objects.filter(id=self.id))
 
         exporter = TableExport(export_format=TableExport.CSV, table=table)
 
@@ -707,22 +707,6 @@ class Submission(models.Model):
             )
         )
 
-    def get_properties_value(permit_request, property):
-        """
-        Return a `WorksObjectPropertyValue` object for the given `permit_request` and given property
-        """
-        return (
-            models.WorksObjectPropertyValue.objects.filter(
-                works_object_type_choice__permit_request=permit_request
-            )
-            .exclude(property__input_type=models.WorksObjectProperty.INPUT_TYPE_FILE)
-            .select_related(
-                "works_object_type_choice",
-                "works_object_type_choice__works_object_type",
-                "property",
-            )
-        )
-
     def get_appendices_values(self):
         """
         Return a queryset of `FieldValue` objects of type file for this submission.
@@ -787,15 +771,6 @@ class Submission(models.Model):
         return self._get_fields_filtered(
             lambda qs: qs.filter(input_type=Field.INPUT_TYPE_FILE),
         )
-
-    def set_works_types(permit_request, new_works_types):
-        """
-        Delete `WorksObjectTypeChoice` records that relate to a `WorksType` that is not in `new_works_types` (which must be
-        an iterable of `WorksType` instances).
-        """
-        get_works_object_type_choices(permit_request).exclude(
-            works_object_type__works_type__in=new_works_types
-        ).delete()
 
     @transaction.atomic
     def set_selected_forms(self, new_forms):
@@ -955,7 +930,7 @@ class Submission(models.Model):
         Set the given `administrative_entity`, which should be an instance of `models.PermitAdministrativeEntity`.
         `WorksObjectTypeChoice` records that don't exist in the new `administrative_entity` will be deleted.
         """
-        self.forms.exclude(category__in=administrative_entity.categories.all()).delete()
+        self.selected_forms.exclude(form__in=administrative_entity.forms.all()).delete()
 
         self.administrative_entity = administrative_entity
         self.save()
@@ -1059,7 +1034,7 @@ class Submission(models.Model):
                 # For this reason, we have to iterate over collection content
                 for geom in geo_time.geom:
                     results = (
-                        models.GeomLayer.objects.filter(geom__intersects=geom)
+                        GeomLayer.objects.filter(geom__intersects=geom)
                         .exclude(pk__in=intersected_geometries_ids)
                         .distinct()
                     )
@@ -1201,7 +1176,9 @@ class ContactType(models.Model):
 
 class SubmissionContact(models.Model):
     contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
-    submission = models.ForeignKey("Submission", on_delete=models.CASCADE)
+    submission = models.ForeignKey(
+        "Submission", on_delete=models.CASCADE, related_name="submission_contacts"
+    )
     contact_type = models.PositiveSmallIntegerField(
         _("type de contact"), choices=CONTACT_TYPE_CHOICES, default=CONTACT_TYPE_OTHER
     )
@@ -1427,9 +1404,9 @@ class SubmissionInquiry(models.Model):
 
     @classmethod
     def get_current_inquiry(cls, submission):
-        today = datetime.today().strftime("%Y-%m-%d")
+        today = datetime.today()
         return cls.objects.filter(
-            Q(submission=submission) & Q(start_date__lte=today) & Q(end_date__gte=today)
+            submission=submission, start_date__lte=today, end_date__gte=today
         ).first()
 
 
@@ -1543,6 +1520,7 @@ class ComplementaryDocumentType(models.Model):
         "reports.Report",
         blank=True,
         related_name="+",
+        through="reports.report_document_types",
     )
 
     class Meta:

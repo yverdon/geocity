@@ -1,3 +1,4 @@
+import mimetypes
 from urllib import parse
 from urllib.parse import urlparse
 
@@ -11,6 +12,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordResetView
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
+from django.http import Http404, StreamingHttpResponse
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -26,7 +28,11 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from geocity.services import get_context_data
+from geocity.apps.accounts.decorators import (
+    check_mandatory_2FA,
+    permanent_user_required,
+)
+from geocity.fields import PrivateFileSystemStorage
 
 from . import forms, models
 
@@ -46,9 +52,9 @@ def logout_view(request):
     ).hostname in config.LOGOUT_REDIRECT_HOSTNAME_WHITELIST.split(","):
         return redirect(redirect_uri)
     return redirect(
-        f'{reverse("account_login")}?template={templatename}'
+        f'{reverse("accounts:account_login")}?template={templatename}'
         if templatename
-        else reverse("account_login")
+        else reverse("accounts:account_login")
     )
 
 
@@ -106,7 +112,59 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
         context = super().get_context_data(**kwargs)
         context.update({"social_apps": SocialApp.objects.all()})
 
-        return get_context_data(context, self.request)
+        customization = {
+            "application_title": config.APPLICATION_TITLE,
+            "application_subtitle": config.APPLICATION_SUBTITLE,
+            "application_description": config.APPLICATION_DESCRIPTION,
+            "general_conditions_url": config.GENERAL_CONDITIONS_URL,
+            "privacy_policy_url": config.PRIVACY_POLICY_URL,
+            "background_image": None,
+        }
+        uri = parse.unquote(self.request.build_absolute_uri()).replace("next=/", "")
+
+        params_str = (
+            parse.urlsplit(uri).query.replace("?", "").replace(settings.PREFIX_URL, "")
+        )
+
+        self.request.session["templatename"] = None
+        url_qs = ""
+
+        if "template" in parse.parse_qs(params_str).keys():
+            template_value = parse.parse_qs(params_str)["template"][0]
+            template = models.TemplateCustomization.objects.filter(
+                templatename=template_value
+            ).first()
+            if template:
+                customization = {
+                    "application_title": template.application_title
+                    if template.application_title
+                    else config.APPLICATION_TITLE,
+                    "application_subtitle": template.application_subtitle
+                    if template.application_subtitle
+                    else config.APPLICATION_SUBTITLE,
+                    "application_description": template.application_description
+                    if template.application_description
+                    else config.APPLICATION_DESCRIPTION,
+                    "background_image": template.background_image
+                    if template.background_image
+                    else None,
+                }
+                request.session["templatename"] = template.templatename
+                url_qs = "&template=" + template.templatename
+            # use anonymous session
+            self.request.session["template"] = template_value
+        context.update({"customization": customization})
+        if "entityfilter" in parse.parse_qs(params_str).keys():
+            for value in parse.parse_qs(params_str)["entityfilter"]:
+                url_qs += "&entityfilter=" + value
+
+        if "typefilter" in parse.parse_qs(params_str).keys():
+            for value in parse.parse_qs(params_str)["typefilter"]:
+                url_qs += "&typefilter=" + value
+        if url_qs:
+            context.update({"query_string": url_qs[1:]})
+
+        return context
 
     def get_success_url(self):
 
@@ -115,68 +173,17 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
         url_value = (
             qs_dict["next"][0]
             if "next" in qs_dict
-            else reverse("permits:permit_request_select_administrative_entity")
+            else reverse("submissions:submission_select_administrative_entity")
         )
 
         if "next" in qs_dict:
             qs_dict.pop("next")
 
         return (
-            reverse("two_factor:profile")
+            reverse("accounts:profile")
             if settings.ENABLE_2FA and not self.request.user.totpdevice_set.exists()
             else url_value
         )
-
-
-def permit_author_create(request):
-    django_user_form = forms.NewDjangoAuthUserForm(request.POST or None)
-    user_profile_form = forms.GenericAuthorForm(request.POST or None)
-    is_valid = django_user_form.is_valid() and user_profile_form.is_valid()
-
-    if is_valid:
-        new_user = django_user_form.save()
-        # email wasn't verified yet, so account isn't active just yet
-        new_user.is_active = False
-        new_user.save()
-        user_profile_form.instance.user = new_user
-        user_profile_form.save()
-
-        mail_subject = _("Activer votre compte")
-        message = render_to_string(
-            "registration/emails/email_confirmation.txt",
-            {
-                "user": new_user,
-                "domain": get_current_site(request).domain,
-                "url": reverse(
-                    "activate_account",
-                    kwargs={
-                        # we need the user id to validate the token
-                        "uid": urlsafe_base64_encode(force_bytes(new_user.pk)),
-                        "token": default_token_generator.make_token(new_user),
-                    },
-                ),
-                "signature": _("L'équipe de Geocity"),
-            },
-        )
-
-        email = EmailMessage(mail_subject, message, to=[new_user.email])
-        email.send()
-        messages.success(
-            request,
-            _(
-                "Votre compte a été créé avec succès! Vous allez recevoir un email pour valider et activer votre compte."
-            ),
-        )
-        return redirect(reverse("account_login"))
-
-    return render(
-        request,
-        "accounts/user_profile_edit.html",
-        {
-            "user_profile_form": user_profile_form,
-            "django_user_form": django_user_form,
-        },
-    )
 
 
 class ActivateAccountView(View):
@@ -192,7 +199,7 @@ class ActivateAccountView(View):
             user.is_active = True
             user.save()
 
-        return redirect(reverse("account_login") + f"?success={successful}")
+        return redirect(reverse("accounts:account_login") + f"?success={successful}")
 
 
 @login_required
@@ -206,7 +213,7 @@ def user_profile_edit(request):
         permit_author_instance = get_object_or_404(
             models.UserProfile, pk=request.user.userprofile.pk
         )
-        user_profile_form = forms.GenericAuthorForm(
+        user_profile_form = forms.GenericUserProfileForm(
             request.POST or None, instance=permit_author_instance
         )
 
@@ -226,3 +233,71 @@ def user_profile_edit(request):
         "accounts/user_profile_edit.html",
         {"user_profile_form": user_profile_form, "django_user_form": django_user_form},
     )
+
+
+def user_profile_create(request):
+    django_user_form = forms.NewDjangoAuthUserForm(request.POST or None)
+    user_profile_form = forms.GenericUserProfileForm(request.POST or None)
+    is_valid = django_user_form.is_valid() and user_profile_form.is_valid()
+
+    if is_valid:
+        new_user = django_user_form.save()
+        # email wasn't verified yet, so account isn't active just yet
+        new_user.is_active = False
+        new_user.save()
+        user_profile_form.instance.user = new_user
+        user_profile_form.save()
+
+        mail_subject = _("Activer votre compte")
+        message = render_to_string(
+            "registration/emails/email_confirmation.txt",
+            {
+                "user": new_user,
+                "domain": get_current_site(request).domain,
+                "url": reverse(
+                    "accounts:activate_account",
+                    kwargs={
+                        # we need the user id to validate the token
+                        "uid": urlsafe_base64_encode(force_bytes(new_user.pk)),
+                        "token": default_token_generator.make_token(new_user),
+                    },
+                ),
+                "signature": _("L'équipe de Geocity"),
+            },
+        )
+
+        email = EmailMessage(mail_subject, message, to=[new_user.email])
+        email.send()
+        messages.success(
+            request,
+            _(
+                "Votre compte a été créé avec succès! Vous allez recevoir un email pour valider et activer votre compte."
+            ),
+        )
+        return redirect(reverse("accounts:account_login"))
+
+    return render(
+        request,
+        "accounts/user_profile_edit.html",
+        {
+            "user_profile_form": user_profile_form,
+            "django_user_form": django_user_form,
+        },
+    )
+
+
+@login_required
+@permanent_user_required
+@check_mandatory_2FA
+def administrative_entity_file_download(request, path):
+    """
+    Only allows logged user to download administrative entity files
+    """
+
+    mime_type, encoding = mimetypes.guess_type(path)
+    storage = PrivateFileSystemStorage()
+
+    try:
+        return StreamingHttpResponse(storage.open(path), content_type=mime_type)
+    except IOError:
+        raise Http404

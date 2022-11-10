@@ -15,7 +15,7 @@ from jinja2.sandbox import SandboxedEnvironment
 from knox.models import AuthToken
 from polymorphic.models import PolymorphicModel
 
-from geocity.apps.permits.fields import AdministrativeEntityFileField
+from geocity.apps.accounts.fields import AdministrativeEntityFileField
 
 from .fields import BackgroundFileField
 from .utils import DockerRunFailedError, run_docker_container
@@ -73,12 +73,8 @@ class Report(models.Model):
 
     name = models.CharField(max_length=150)
     layout = models.ForeignKey(ReportLayout, on_delete=models.RESTRICT)
-    # reverse relationship is manually defined on permits.ComplementaryDocumentType so it shows up on both sides in admin
+    # reverse relationship is manually defined on submissions.ComplementaryDocumentType so it shows up on both sides in admin
     document_types = models.ManyToManyField(
-        "permits.ComplementaryDocumentType", blank=True, related_name="+"
-    )
-    # FIXME rename this to "document_types" and remove the old field once the data is migrated
-    submissions_document_types = models.ManyToManyField(
         "submissions.ComplementaryDocumentType", blank=True, related_name="+"
     )
     integrator = models.ForeignKey(

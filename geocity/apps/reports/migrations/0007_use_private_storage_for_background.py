@@ -2,7 +2,8 @@
 
 from django.db import migrations
 
-from geocity.apps import permits, reports
+from geocity.apps import reports
+from geocity.fields import PrivateFileSystemStorage
 
 
 class Migration(migrations.Migration):
@@ -19,7 +20,7 @@ class Migration(migrations.Migration):
                 blank=True,
                 help_text='Image d\'arrière plan ("papier à en-tête").',
                 null=True,
-                storage=permits.fields.PrivateFileSystemStorage(),
+                storage=PrivateFileSystemStorage(),
                 upload_to="backgound_paper",
             ),
         ),

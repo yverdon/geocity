@@ -1,34 +1,34 @@
 from django.conf import settings
 
-
-INTEGRATOR_ACCOUNTS_MODELS_PERMISSIONS = [
-    "administrativeentity",
-    "permitdepartment",
-    "userprofile",
-]
-INTEGRATOR_FORMS_MODELS_PERMISSIONS = [
-    "formcategory",
-    "form",
-    "field",
-]
-INTEGRATOR_SUBMISSIONS_MODELS_PERMISSIONS = [
-    "contacttype",       
-    "submissionamendfield",
-    "submissionworkflowstatus",
-    "complementarydocumenttype",
-]
-INTEGRATOR_REPORTS_MODELS_PERMISSIONS = [
-    "report",
-    "reportlayout",
-    "section",
-]
+INTEGRATOR_PERMISSIONS_BY_APP = {
+    "accounts": [
+        "administrativeentity",
+        "permitdepartment",
+        "userprofile",
+    ],
+    "forms": [
+        "formcategory",
+        "form",
+        "field",
+    ],
+    "submissions": [
+        "contacttype",
+        "submissionamendfield",
+        "submissionworkflowstatus",
+        "complementarydocumenttype",
+    ],
+    "reports": [
+        "report",
+        "reportlayout",
+        "section",
+    ],
+}
 
 # define permissions required by integrator role
-INTEGRATOR_REQUIRED_MODELS_PERMISSIONS = [
-    INTEGRATOR_ACCOUNTS_MODELS_PERMISSIONS,
-    INTEGRATOR_FORMS_MODELS_PERMISSIONS,
-    INTEGRATOR_SUBMISSIONS_MODELS_PERMISSIONS,
-]
+# TODO this is kept for backwards compatibility with migrations of the legacy `permits`
+# app. Once the final migration of this app has been applied and all associated code of
+# this app has been removed, remove this line
+INTEGRATOR_REQUIRED_MODELS_PERMISSIONS = []
 
 OTHER_PERMISSIONS_CODENAMES = [
     "view_user",
@@ -47,18 +47,13 @@ if not settings.ALLOW_REMOTE_USER_AUTH:
         "change_accessattempt",
         "delete_accessattempt",
         "view_accessattempt",
-        "add_accesslog",
-        "change_accesslog",
-        "delete_accesslog",
-        "view_accesslog",
     ]
 
-
 AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
-    "amend_permit_request",
-    "validate_permit_request",
-    "classify_permit_request",
-    "edit_permit_request",
+    "amend_submission",
+    "validate_submission",
+    "classify_submission",
+    "edit_submission",
     "see_private_requests",
     "can_generate_pdf",
 ]

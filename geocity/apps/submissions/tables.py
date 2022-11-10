@@ -120,7 +120,6 @@ class GenericSubmissionTable(ColumnShiftTable):
     )
     status = tables.TemplateColumn(
         verbose_name=_("État"),
-        # FIXME rename file
         template_name="tables/_submission_status.html",
         attrs=ATTRIBUTES,
         orderable=True,
@@ -132,7 +131,6 @@ class GenericSubmissionTable(ColumnShiftTable):
     )
     ends_at_max = tables.TemplateColumn(
         verbose_name=_("Fin"),
-        # FIXME rename file
         template_name="tables/_submission_ends_at.html",
         attrs=ATTRIBUTES,
         orderable=True,
@@ -211,14 +209,12 @@ class GenericDepartmentSubmissionsTable(DynamicColumnsTable, GenericSubmissionTa
         verbose_name=_("Auteur de la demande"),
         attrs=ATTRIBUTES,
         orderable=True,
-        # FIXME probably adapt template contents
         template_name="tables/_submission_author_fullname.html",
     )
     author_details = tables.TemplateColumn(
         verbose_name=_("Coordonnées de l'auteur"),
         attrs=ATTRIBUTES,
         orderable=True,
-        # FIXME probably adapt template contents
         template_name="tables/_submission_author_details.html",
     )
 
