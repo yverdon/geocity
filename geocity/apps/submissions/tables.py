@@ -209,14 +209,12 @@ class GenericDepartmentSubmissionsTable(DynamicColumnsTable, GenericSubmissionTa
         verbose_name=_("Auteur de la demande"),
         attrs=ATTRIBUTES,
         orderable=True,
-        # FIXME probably adapt template contents
         template_name="tables/_submission_author_fullname.html",
     )
     author_details = tables.TemplateColumn(
         verbose_name=_("Coordonnées de l'auteur"),
         attrs=ATTRIBUTES,
         orderable=True,
-        # FIXME probably adapt template contents
         template_name="tables/_submission_author_details.html",
     )
 

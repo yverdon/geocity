@@ -10,11 +10,11 @@ from django.core.validators import (
 from django.db import models
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
-
 from taggit.managers import TaggableManager
 
 from geocity.apps.accounts.fields import AdministrativeEntityFileField
 from geocity.apps.accounts.models import AdministrativeEntity
+
 from . import fields
 
 

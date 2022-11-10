@@ -6,5 +6,4 @@ class SubmissionsConfig(AppConfig):
     verbose_name = _("Traitement et documents")
 
     def ready(self):
-        from . import signal_receivers
-
+        from . import signal_receivers  # noqa

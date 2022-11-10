@@ -10,8 +10,8 @@ from knox.models import AuthToken
 from rest_framework.decorators import api_view
 
 from geocity.apps.accounts.decorators import permanent_user_required
-from geocity.apps.submissions import services
 from geocity.apps.forms.models import Form
+from geocity.apps.submissions import services
 from geocity.apps.submissions.models import ComplementaryDocumentType, Submission
 
 from .models import Report

@@ -1,6 +1,6 @@
-from . import models
-
 from geocity.apps.accounts.users import get_administrative_entities_associated_to_user
+
+from . import models
 
 
 def has_permission_to_amend_submission(user, submission):

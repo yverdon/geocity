@@ -1,4 +1,5 @@
 from geocity.apps.api import views as api_views
+
 from .routers import WFS3Router
 
 wfs3_router = WFS3Router()

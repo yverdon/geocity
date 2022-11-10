@@ -16,9 +16,9 @@ from django.core.management import CommandError, call_command
 from django.shortcuts import redirect
 from django.urls import reverse
 
-from geocity.fields import GeometryWidget
 from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
 from geocity.apps.accounts.models import AdministrativeEntity
+from geocity.fields import GeometryWidget
 
 from . import models, permissions_groups
 from .users import get_integrator_permissions

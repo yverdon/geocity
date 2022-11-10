@@ -4,8 +4,8 @@ from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
 from polymorphic.admin import PolymorphicInlineSupportMixin, StackedPolymorphicInline
 
-from geocity.apps.submissions.models import ComplementaryDocumentType
 from geocity.apps.accounts.admin import IntegratorFilterMixin
+from geocity.apps.submissions.models import ComplementaryDocumentType
 
 from .models import Report, ReportLayout, Section
 

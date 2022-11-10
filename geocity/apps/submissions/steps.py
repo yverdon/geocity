@@ -4,7 +4,6 @@ import itertools
 import urllib
 
 from constance import config
-
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
