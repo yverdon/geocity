@@ -149,7 +149,7 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
                     if template.background_image
                     else None,
                 }
-                request.session["templatename"] = template.templatename
+                self.request.session["templatename"] = template.templatename
                 url_qs = "&template=" + template.templatename
             # use anonymous session
             self.request.session["template"] = template_value
