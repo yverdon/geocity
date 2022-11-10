@@ -1,10 +1,13 @@
 import logging
 
+from allauth.socialaccount.providers.oauth2.urls import default_urlpatterns
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 
 import geocity.apps.api.urls
+from geocity.apps.accounts.dootix.provider import DootixProvider
+from geocity.apps.accounts.geomapfish.provider import GeomapfishProvider
 from geocity.apps.django_wfs3.urls import wfs3_router
 from geocity.apps.submissions import views as submissions_views
 
@@ -21,11 +24,16 @@ if settings.ENABLE_2FA:
 
 
 # Django-configuration
-urlpatterns = [
-    path("", submissions_views.submission_select_administrative_entity),
-    path("permit-requests/", include("geocity.apps.submissions.urls")),
-    path("reports/", include("geocity.apps.reports.urls")),
-]
+urlpatterns = (
+    [
+        path("", submissions_views.submission_select_administrative_entity),
+        path("permit-requests/", include("geocity.apps.submissions.urls")),
+        path("reports/", include("geocity.apps.reports.urls")),
+    ]
+    + default_urlpatterns(GeomapfishProvider)
+    + default_urlpatterns(DootixProvider)
+)
+
 
 urlpatterns += [
     path("", include("geocity.apps.accounts.urls")),

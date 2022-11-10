@@ -166,7 +166,7 @@ class SectionMap(Section):
             "/io/project.qgs",
             "/io/output.png",
             self.qgis_print_template_name,
-            str(base_context["permit_request"].id),
+            str(base_context["submission"].id),
             str(token),
             ",".join(settings.ALLOWED_HOSTS),
         ]
@@ -228,7 +228,7 @@ class SectionParagraph(Section):
         # FIXME: adapt for new api structure
         inner_context = {
             "request_data": base_context["request_data"],
-            "wot_data": base_context["wot_data"],
+            "form_data": base_context["form_data"],
         }
         env = SandboxedEnvironment()
         rendered_html = env.from_string(self.content).render(inner_context)

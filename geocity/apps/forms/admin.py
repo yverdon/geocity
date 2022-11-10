@@ -231,6 +231,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
             },
         ),
     )
+    inlines = [FormFieldInline]
 
     def sortable_str(self, obj):
         return obj.__str__() if obj.__str__() != "" else "titi"

@@ -2,13 +2,13 @@
 
 {% block content %}
     <h2>Propriété·s de la demande</h2>
-    {% if request_data.properties.request_properties %}
+    {% if request_data.properties.submission_fields %}
         <div class="flex_container">
             <div class="flex_item-100">
-                {% for wot, props in request_data.properties.request_properties.items %}
-                    <h3>{{wot}}</h3>
-                    {% for key, prop in props.items %}
-                        <span class="bold">{{key}} : </span>{{prop}}<br>
+                {% for form, fields in request_data.properties.submission_fields.items %}
+                    <h3>{{form}}</h3>
+                    {% for key, field in fields.items %}
+                        <span class="bold">{{key}} : </span>{{field}}<br>
                     {% endfor %}
                 {% endfor %}
             </div>

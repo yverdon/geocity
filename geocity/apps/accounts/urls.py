@@ -1,12 +1,9 @@
 import logging
 
-from allauth.socialaccount.providers.oauth2.urls import default_urlpatterns
 from django.conf import settings
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-from geocity.apps.accounts.dootix.provider import DootixProvider
-from geocity.apps.accounts.geomapfish.provider import GeomapfishProvider
 
 from . import views
 
@@ -46,10 +43,6 @@ else:
             name="account_login",
         ),
     ]
-
-urlpatterns += default_urlpatterns(GeomapfishProvider) + default_urlpatterns(
-    DootixProvider
-)
 
 urlpatterns += [
     path(
