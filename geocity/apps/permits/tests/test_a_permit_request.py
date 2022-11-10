@@ -17,6 +17,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from geocity.apps.accounts import models as accounts_models
+from geocity.apps.forms import models as forms_models
 from geocity.apps.submissions import models as submissions_models, forms as submissions_forms, services as submissions_services
 
 from geocity.apps.accounts.management.commands import create_anonymous_users
@@ -44,11 +45,11 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         super().setUp()
         self.form_categories = factories.FormCategoryFactory.create_batch(2)
 
-        submissions_models.Form.objects.create(
+        forms_models.Form.objects.create(
             category=self.form_categories[0],
             is_public=True,
         )
-        submissions_models.Form.objects.create(
+        forms_models.Form.objects.create(
             category=self.form_categories[1],
             is_public=True,
         )
@@ -61,7 +62,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
     def test_categories_step_submit_redirects_to_forms_with_categories_qs(self):
         submission = factories.SubmissionFactory(author=self.user)
         submission.administrative_entity.forms.set(
-            submissions_models.Form.objects.all()
+            forms_models.Form.objects.all()
         )
 
         response = self.client.post(
@@ -86,7 +87,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
     def test_forms_step_without_qs_redirects_to_categories_step(self):
         submission = factories.SubmissionFactory(author=self.user)
         submission.administrative_entity.forms.set(
-            submissions_models.Form.objects.all()
+            forms_models.Form.objects.all()
         )
 
         response = self.client.get(
@@ -105,19 +106,20 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_forms_step_submit_saves_multiple_selected_forms(self):
         submission = factories.SubmissionFactory(author=self.user)
+        factories.FormFactory()
 
-        form = submissions_models.Form.objects.first()
+        form = forms_models.Form.objects.first()
         submission.administrative_entity.forms.set(
-            submissions_models.Form.objects.all()
+            forms_models.Form.objects.all()
         )
         self.client.post(
             reverse(
                 "submissions:submission_select_forms",
                 kwargs={"submission_id": submission.pk},
             )
-            + "?categories={}".format(self.form_categories[0].pk),
+            + "?types={}".format(self.form_categories[0].pk),
             data={
-                "forms-{}".format(self.form_categories[0].pk): form.pk
+                "form-{}".format(self.form_categories[0].pk): form.pk
             },
         )
 
@@ -1166,7 +1168,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             factories.AdministrativeEntityFactory(tags=[tag])
             for tag in ["first", "second", "third"]
         ]
-        forms = submissions_models.Form.objects.all()
+        forms = forms_models.Form.objects.all()
 
         for administrative_entity in administrative_entities:
             administrative_entity.forms.set(forms)
@@ -1213,7 +1215,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             factories.AdministrativeEntityFactory(tags=[tag])
             for tag in ["first", "second", "third"]
         ]
-        forms = submissions_models.Form.objects.all()
+        forms = forms_models.Form.objects.all()
 
         for administrative_entity in administrative_entities:
             administrative_entity.forms.set(forms)
@@ -1240,7 +1242,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             factories.AdministrativeEntityFactory(tags=[tag])
             for tag in ["first", "second", "third"]
         ]
-        forms = submissions_models.Form.objects.all()
+        forms = forms_models.Form.objects.all()
 
         for administrative_entity in administrative_entities:
             administrative_entity.forms.set(forms)
@@ -1263,7 +1265,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         additional_form_category = factories.FormCategoryFactory()
         additional_forms = factories.FormFactory()
 
-        submissions_models.Form.objects.create(
+        forms_models.Form.objects.create(
             form_category=additional_form_category,
             form=additional_forms,
             is_public=True,
@@ -1274,7 +1276,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         additional_form_category.tags.add("form_category_b")
         submission = factories.SubmissionFactory(author=self.user)
         submission.administrative_entity.forms.set(
-            submissions_models.Form.objects.all()
+            forms_models.Form.objects.all()
         )
 
         response = self.client.get(
@@ -1294,7 +1296,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
     def test_form_category_is_not_filtered_by_bad_tag(self):
         additional_form_category = factories.FormCategoryFactory()
 
-        submissions_models.Form.objects.create(
+        forms_models.Form.objects.create(
             form_category=additional_form_category,
             is_public=True,
         )
@@ -1304,7 +1306,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         additional_form_category.tags.add("form_category_b")
         submission = factories.SubmissionFactory(author=self.user)
         submission.administrative_entity.forms.set(
-            submissions_models.Form.objects.all()
+            forms_models.Form.objects.all()
         )
 
         response = self.client.get(
@@ -4360,15 +4362,15 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         )
 
         submission.administrative_entity.forms.set(
-            submissions_models.Form.objects.all()
+            forms_models.Form.objects.all()
         )
 
-        submissions_models.Form.objects.create(
+        forms_models.Form.objects.create(
             submission=submission,
             form=public_forms[0],
         )
 
-        submissions_models.Form.objects.create(
+        forms_models.Form.objects.create(
             submission=submission,
             form=public_forms[1],
         )
@@ -4410,20 +4412,20 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         )
 
         submission.administrative_entity.forms.set(
-            submissions_models.Form.objects.all()
+            forms_models.Form.objects.all()
         )
 
-        submissions_models.Form.objects.create(
+        forms_models.Form.objects.create(
             submission=submission,
             form=public_forms[0],
         )
 
-        submissions_models.Form.objects.create(
+        forms_models.Form.objects.create(
             submission=submission,
             form=public_forms[1],
         )
 
-        submissions_models.Form.objects.create(
+        forms_models.Form.objects.create(
             submission=submission, form=private_form
         )
 
