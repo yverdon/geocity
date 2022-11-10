@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
 from django.contrib.sites.models import Site
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.validators import (
     FileExtensionValidator,
     MaxValueValidator,
@@ -18,6 +18,7 @@ from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
+
 
 # public types: for public/restricted features
 PUBLIC_TYPE_CHOICES = (
@@ -261,6 +262,27 @@ class AdministrativeEntity(models.Model):
 
     def __str__(self):
         return self.name
+
+    def create_anonymous_user(self):
+        try:
+            self.anonymous_user
+        except ObjectDoesNotExist:
+            username = "%s%s" % (settings.ANONYMOUS_USER_PREFIX, self.pk)
+            first_name = "Anonymous user"
+            last_name = self.name
+
+            user = User.objects.create(
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+                is_active=False,
+            )
+
+            UserProfile.objects.create(
+                administrative_entity=self,
+                user_id=user.id,
+                zipcode=settings.ANONYMOUS_USER_ZIPCODE,
+            )
 
 
 #Change the app_label in order to regroup models under the same app in admin

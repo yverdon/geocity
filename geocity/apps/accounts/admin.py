@@ -9,9 +9,16 @@ from django.contrib.sites.models import Site
 from django.db.models import Q, Value
 from django.db.models.functions import StrIndex, Substr
 from django.utils.translation import gettext_lazy as _
+from django.shortcuts import get_object_or_404
+
+from django.contrib import messages
+from django.core.management import CommandError, call_command
+from django.shortcuts import redirect
+from django.urls import reverse
 
 from geocity.fields import GeometryWidget
 from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
+from geocity.apps.accounts.models import AdministrativeEntity
 
 from . import models, permissions_groups
 from .users import get_integrator_permissions
@@ -638,13 +645,32 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     administrative_entity=obj,
                 )
 
+
     def response_change(self, request, obj):
         ret = super().response_change(request, obj)
         if 'entity_id' in request.POST:
             entity_id = request.POST.get("entity_id")
-            print(entity_id)
-            # TODO: post user_id to admin:create_anonymous_user
-            pass
+
+            """
+                Admin custom view to create the anonymous user for the given Administrative
+                entity.
+            """
+
+            administrative_entity = get_object_or_404(AdministrativeEntity, pk=request.POST.get("entity_id"))
+
+            administrative_entity.create_anonymous_user()
+
+            messages.add_message(
+                request, messages.SUCCESS, _("Utilisateur anonyme créé avec succès.")
+            )
+
+            return redirect(
+                reverse(
+                    "admin:forms_proxyadministrativeentity_change",
+                    kwargs={"object_id": entity_id},
+                )
+            )
+
         return ret
 
 
