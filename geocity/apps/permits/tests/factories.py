@@ -13,16 +13,15 @@ from django.utils.text import Truncator
 
 from geocity.apps.accounts.users import get_integrator_permissions
 
-# Import models of different apps
-from geocity.apps.accounts.models import *
-from geocity.apps.forms.models import *
-from geocity.apps.reports.models import *
-from geocity.apps.submissions.models import *
+from geocity.apps.accounts import models as accounts_models
+from geocity.apps.forms import models as forms_models
+from geocity.apps.reports import models as reports_models
+from geocity.apps.submissions import models as submissions_models
 
 
 class UserProfileFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = UserProfile
+        model = accounts_models.UserProfile
 
     address = factory.Faker("word")
     zipcode = factory.Faker("zipcode")
@@ -74,16 +73,16 @@ class AdministrativeEntityFactory(factory.django.DjangoModelFactory):
     geom = MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
 
     class Meta:
-        model = AdministrativeEntity
+        model = accounts_models.AdministrativeEntity
 
     @factory.post_generation
     def workflow_statuses(self, create, extracted, **kwargs):
         if not create:
             return
 
-        extracted = extracted or [v[0] for v in Submission.STATUS_CHOICES]
+        extracted = extracted or [v[0] for v in submissions_models.Submission.STATUS_CHOICES]
         for status in extracted:
-            SubmissionWorkflowStatus.objects.create(
+            submissions_models.SubmissionWorkflowStatus.objects.create(
                 status=status,
                 administrative_entity=self,
             )
@@ -127,7 +126,7 @@ class GroupFactory(factory.django.DjangoModelFactory):
             return
 
         if not extracted:
-            submission_ct = ContentType.objects.get_for_model(Submission)
+            submission_ct = ContentType.objects.get_for_model(submissions_models.Submission)
             amend_permission = Permission.objects.get(
                 codename="amend_submission", content_type=submission_ct
             )
@@ -146,7 +145,7 @@ class PermitDepartmentFactory(factory.django.DjangoModelFactory):
     group = factory.SubFactory(GroupFactory)
 
     class Meta:
-        model = PermitDepartment
+        model = submissions_models.PermitDepartment
 
 
 class IntegratorPermitDepartmentFactory(factory.django.DjangoModelFactory):
@@ -158,7 +157,7 @@ class IntegratorPermitDepartmentFactory(factory.django.DjangoModelFactory):
     group = factory.SubFactory(GroupFactory)
 
     class Meta:
-        model = PermitDepartment
+        model = submissions_models.PermitDepartment
 
 
 class SecretariatGroupFactory(GroupFactory):
@@ -170,7 +169,7 @@ class SecretariatGroupFactory(GroupFactory):
             return
 
         if not extracted:
-            submission_ct = ContentType.objects.get_for_model(Submission)
+            submission_ct = ContentType.objects.get_for_model(submissions_models.Submission)
             extracted = list(
                 Permission.objects.filter(
                     codename__in=["amend_submission", "classify_submission"],
@@ -191,7 +190,7 @@ class ValidatorGroupFactory(GroupFactory):
             return
 
         if not extracted:
-            submission_ct = ContentType.objects.get_for_model(Submission)
+            submission_ct = ContentType.objects.get_for_model(submissions_models.Submission)
             validate_permission = Permission.objects.get(
                 codename="validate_submission", content_type=submission_ct
             )
@@ -259,7 +258,7 @@ class IntegratorUserFactory(UserFactory):
 
 class ContactFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Contact
+        model = submissions_models.Contact
 
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")
@@ -272,7 +271,7 @@ class ContactFactory(factory.django.DjangoModelFactory):
 
 class FormCategoryFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = FormCategory
+        model = forms_models.FormCategory
 
     name = factory.Faker("word")
     tags = "form_category_a"
@@ -294,10 +293,10 @@ class FormCategoryFactory(factory.django.DjangoModelFactory):
 
 class FormFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Form
+        model = forms_models.Form
 
     name = factory.Faker("word")
-    form_category = factory.SubFactory(FormCategoryFactory)
+    category = factory.SubFactory(FormCategoryFactory)
     is_public = True
         
     @factory.post_generation
@@ -317,7 +316,7 @@ class FormFactory(factory.django.DjangoModelFactory):
         
 class FormWithoutGeometryFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Form
+        model = forms_models.Form
 
     name = factory.Faker("word")
     form_category = factory.SubFactory(FormCategoryFactory)
@@ -344,7 +343,7 @@ class FormWithoutGeometryFactory(factory.django.DjangoModelFactory):
 
 class ContactTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = ContactType
+        model = submissions_models.ContactType
 
     form_category = factory.SubFactory(FormCategoryFactory)
 
@@ -358,21 +357,20 @@ class ContactTypeFactory(factory.django.DjangoModelFactory):
 
 class SubmissionFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Submission
+        model = submissions_models.Submission
 
     administrative_entity = factory.SubFactory(AdministrativeEntityFactory)
-    user_profile = factory.SubFactory(UserProfileFactory)
+    author = factory.SubFactory(UserFactory)
 
 
 class FieldFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Field
+        model = forms_models.Field
 
     name = factory.Faker("word")
     placeholder = factory.Faker("word")
     help_text = factory.Faker("word")
-    input_type = Field.INPUT_TYPE_TEXT
-    order = factory.Sequence(int)
+    input_type = forms_models.Field.INPUT_TYPE_TEXT
 
     @factory.post_generation
     def integrator(self, create, extracted, **kwargs):
@@ -384,46 +382,46 @@ class FieldFactory(factory.django.DjangoModelFactory):
 
 class FieldFactoryTypeAddress(factory.django.DjangoModelFactory):
     class Meta:
-        model = Field
+        model = forms_models.Field
 
     name = factory.Faker("word")
-    input_type = Field.INPUT_TYPE_ADDRESS
+    input_type = forms_models.Field.INPUT_TYPE_ADDRESS
     order = factory.Sequence(int)
 
 
 class FieldFactoryTypeFile(factory.django.DjangoModelFactory):
     class Meta:
-        model = Field
+        model = forms_models.Field
 
     name = factory.Faker("word")
-    input_type = Field.INPUT_TYPE_FILE
+    input_type = forms_models.Field.INPUT_TYPE_FILE
     order = factory.Sequence(int)
 
 
 class FieldFactoryTypeTitle(factory.django.DjangoModelFactory):
     class Meta:
-        model = Field
+        model = forms_models.Field
 
     name = factory.Faker("word")
     help_text = factory.Faker("word")
-    input_type = Field.INPUT_TYPE_TITLE
+    input_type = forms_models.Field.INPUT_TYPE_TITLE
     order = factory.Sequence(int)
 
 
 class FieldFactoryTypeFileDownload(factory.django.DjangoModelFactory):
     class Meta:
-        model = Field
+        model = forms_models.Field
 
     name = factory.Faker("word")
     help_text = factory.Faker("word")
-    input_type = Field.INPUT_TYPE_FILE_DOWNLOAD
+    input_type = forms_models.Field.INPUT_TYPE_FILE_DOWNLOAD
     order = factory.Sequence(int)
     file_download = SimpleUploadedFile("file.pdf", "contents".encode())
 
 
 class SelectedFormFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = SelectedForm
+        model = submissions_models.SelectedForm
 
     submission = factory.SubFactory(SubmissionFactory)
     form = factory.SubFactory(FormFactory)
@@ -431,7 +429,7 @@ class SelectedFormFactory(factory.django.DjangoModelFactory):
 
 class FieldValueFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = FieldValue
+        model = submissions_models.FieldValue
 
     value = factory.LazyFunction(lambda: {"val": faker.Faker().word()})
     field = factory.SubFactory(FieldFactory)
@@ -440,17 +438,17 @@ class FieldValueFactory(factory.django.DjangoModelFactory):
 
 class SubmissionValidationFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = SubmissionValidation
+        model = submissions_models.SubmissionValidation
 
     department = factory.SubFactory(PermitDepartmentFactory)
     submission = factory.SubFactory(
-        SubmissionFactory, status=Submission.STATUS_AWAITING_VALIDATION
+        SubmissionFactory, status=submissions_models.Submission.STATUS_AWAITING_VALIDATION
     )
 
 
 class SubmissionGeoTimeFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = SubmissionGeoTime
+        model = submissions_models.SubmissionGeoTime
 
     submission = factory.SubFactory(SubmissionFactory)
     starts_at = factory.Faker("date_time", tzinfo=timezone.utc)
@@ -462,7 +460,7 @@ class SubmissionGeoTimeFactory(factory.django.DjangoModelFactory):
 
 class SubmissionAmendFieldFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = SubmissionAmendField
+        model = submissions_models.SubmissionAmendField
 
     name = factory.Faker("word")
 
@@ -476,7 +474,7 @@ class SubmissionAmendFieldFactory(factory.django.DjangoModelFactory):
 
 class SubmissionAmendFieldValueFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = SubmissionAmendFieldValue
+        model = submissions_models.SubmissionAmendFieldValue
 
     field = factory.SubFactory(SubmissionAmendFieldFactory)
     selected_form = factory.SubFactory(SelectedFormFactory)
@@ -485,7 +483,7 @@ class SubmissionAmendFieldValueFactory(factory.django.DjangoModelFactory):
 
 class TemplateCustomizationFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = TemplateCustomization
+        model = accounts_models.TemplateCustomization
 
     templatename = "mycustompage"
     application_title = "mycustomtitle"
@@ -495,7 +493,7 @@ class TemplateCustomizationFactory(factory.django.DjangoModelFactory):
 
 class ComplementaryDocumentTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = ComplementaryDocumentType
+        model = submissions_models.ComplementaryDocumentType
 
     name = factory.Faker("name")
 
@@ -513,7 +511,7 @@ class ChildComplementaryDocumentTypeFactory(ComplementaryDocumentTypeFactory):
 
 class ComplementaryDocumentFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = SubmissionComplementaryDocument
+        model = submissions_models.SubmissionComplementaryDocument
 
     document = factory.django.FileField(filename="awesome_file.pdf")
     description = factory.Faker("sentence")
@@ -521,9 +519,9 @@ class ComplementaryDocumentFactory(factory.django.DjangoModelFactory):
     # has extra logic, so to avoid any weird issues, it isn't among the choices
     status = factory.fuzzy.FuzzyChoice(
         choices=[
-            SubmissionComplementaryDocument.STATUS_OTHER,
-            SubmissionComplementaryDocument.STATUS_TEMP,
-            SubmissionComplementaryDocument.STATUS_CANCELED,
+            submissions_models.SubmissionComplementaryDocument.STATUS_OTHER,
+            submissions_models.SubmissionComplementaryDocument.STATUS_TEMP,
+            submissions_models.SubmissionComplementaryDocument.STATUS_CANCELED,
         ]
     )
     owner = factory.SubFactory(UserFactory)
@@ -541,7 +539,7 @@ class ComplementaryDocumentFactory(factory.django.DjangoModelFactory):
 
 class SubmissionInquiryFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = SubmissionInquiry
+        model = submissions_models.SubmissionInquiry
 
     submitter = factory.SubFactory(UserFactory)
     submission = factory.SubFactory(SubmissionFactory)
@@ -551,7 +549,7 @@ class SubmissionInquiryFactory(factory.django.DjangoModelFactory):
 
 class ArchivedPermitRequestFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = ArchivedSubmission
+        model = submissions_models.ArchivedSubmission
 
     submission = factory.SubFactory(SubmissionFactory)
     archivist = factory.SubFactory(UserFactory)

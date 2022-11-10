@@ -241,7 +241,7 @@ class PartialValidationMixin:
 
 
 class FieldsForm(PartialValidationMixin, forms.Form):
-    prefix = "properties"
+    prefix = "fields"
     required_css_class = "required"
 
     def __init__(self, instance, *args, **kwargs):

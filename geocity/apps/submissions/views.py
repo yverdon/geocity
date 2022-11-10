@@ -1261,7 +1261,6 @@ def submission_fields(request, submission_id):
         form = forms.FieldsForm(
             instance=submission, data=request.POST, enable_required=False
         )
-
         if form.is_valid():
             form.save()
 
