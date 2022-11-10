@@ -1,6 +1,6 @@
 import os
 
-# from jazzmin_settings import JAZZMIN_SETTINGS
+from .admin_jazzmin_settings import JAZZMIN_SETTINGS  # noqa
 
 # Set environment mode
 ENV = os.getenv("ENV")

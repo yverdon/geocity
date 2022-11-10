@@ -8,11 +8,7 @@ import geocity.apps.api.urls
 from geocity.apps.django_wfs3.urls import wfs3_router
 from geocity.apps.submissions import views as submissions_views
 
-from .admin_site import PermitsAdminSite
-
 logger = logging.getLogger(__name__)
-
-admin.site = PermitsAdminSite()
 
 # See TWO_FACTOR_PATCH_ADMIN
 if settings.ENABLE_2FA:
