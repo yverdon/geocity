@@ -560,7 +560,7 @@ class SubmissionDetailView(View):
             services.send_email_notification(data)
 
             # Notify the services
-            mailing_list = submission.get_services_to_notify_mailing_list(submission)
+            mailing_list = submission.get_services_to_notify_mailing_list()
 
             if mailing_list:
                 data = {
