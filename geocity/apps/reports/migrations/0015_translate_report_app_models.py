@@ -2,8 +2,9 @@
 
 import ckeditor.fields
 import django.core.validators
-from django.db import migrations, models
 import django.db.models.deletion
+from django.db import migrations, models
+
 import geocity.apps.reports.fields
 import geocity.fields
 
@@ -11,89 +12,129 @@ import geocity.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('submissions', '0007_remove_proxy_models_for_polymorphic_models'),
-        ('reports', '0014_model_verbose_names'),
+        ("submissions", "0007_remove_proxy_models_for_polymorphic_models"),
+        ("reports", "0014_model_verbose_names"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='report',
-            name='document_types',
-            field=models.ManyToManyField(blank=True, related_name='_reports_report_document_types_+', to='submissions.ComplementaryDocumentType', verbose_name='Types de documents'),
+            model_name="report",
+            name="document_types",
+            field=models.ManyToManyField(
+                blank=True,
+                related_name="_reports_report_document_types_+",
+                to="submissions.ComplementaryDocumentType",
+                verbose_name="Types de documents",
+            ),
         ),
         migrations.AlterField(
-            model_name='report',
-            name='layout',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.RESTRICT, to='reports.reportlayout', verbose_name='Format de papier'),
+            model_name="report",
+            name="layout",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.RESTRICT,
+                to="reports.reportlayout",
+                verbose_name="Format de papier",
+            ),
         ),
         migrations.AlterField(
-            model_name='report',
-            name='name',
-            field=models.CharField(max_length=150, verbose_name='Nom'),
+            model_name="report",
+            name="name",
+            field=models.CharField(max_length=150, verbose_name="Nom"),
         ),
         migrations.AlterField(
-            model_name='reportlayout',
-            name='background',
-            field=geocity.apps.reports.fields.BackgroundFileField(blank=True, help_text="Image d'arrière plan (PNG).", null=True, storage=geocity.fields.PrivateFileSystemStorage(), upload_to='backgound_paper', validators=[django.core.validators.FileExtensionValidator(allowed_extensions=['png'])], verbose_name='Papier à entête'),
+            model_name="reportlayout",
+            name="background",
+            field=geocity.apps.reports.fields.BackgroundFileField(
+                blank=True,
+                help_text="Image d'arrière plan (PNG).",
+                null=True,
+                storage=geocity.fields.PrivateFileSystemStorage(),
+                upload_to="backgound_paper",
+                validators=[
+                    django.core.validators.FileExtensionValidator(
+                        allowed_extensions=["png"]
+                    )
+                ],
+                verbose_name="Papier à entête",
+            ),
         ),
         migrations.AlterField(
-            model_name='reportlayout',
-            name='font',
-            field=models.CharField(blank=True, help_text='La liste des polices disponbiles est visible sur <a href="https://fonts.google.com/" target="_blank">Goole Fonts</a>', max_length=1024, null=True, verbose_name='Police'),
+            model_name="reportlayout",
+            name="font",
+            field=models.CharField(
+                blank=True,
+                help_text='La liste des polices disponbiles est visible sur <a href="https://fonts.google.com/" target="_blank">Goole Fonts</a>',
+                max_length=1024,
+                null=True,
+                verbose_name="Police",
+            ),
         ),
         migrations.AlterField(
-            model_name='reportlayout',
-            name='height',
-            field=models.PositiveIntegerField(default=297, verbose_name='Hauteur'),
+            model_name="reportlayout",
+            name="height",
+            field=models.PositiveIntegerField(default=297, verbose_name="Hauteur"),
         ),
         migrations.AlterField(
-            model_name='reportlayout',
-            name='margin_bottom',
-            field=models.PositiveIntegerField(default=10, verbose_name='Marge: bas'),
+            model_name="reportlayout",
+            name="margin_bottom",
+            field=models.PositiveIntegerField(default=10, verbose_name="Marge: bas"),
         ),
         migrations.AlterField(
-            model_name='reportlayout',
-            name='margin_left',
-            field=models.PositiveIntegerField(default=10, verbose_name='Marge: gauche'),
+            model_name="reportlayout",
+            name="margin_left",
+            field=models.PositiveIntegerField(default=10, verbose_name="Marge: gauche"),
         ),
         migrations.AlterField(
-            model_name='reportlayout',
-            name='margin_right',
-            field=models.PositiveIntegerField(default=10, verbose_name='Marge: droite'),
+            model_name="reportlayout",
+            name="margin_right",
+            field=models.PositiveIntegerField(default=10, verbose_name="Marge: droite"),
         ),
         migrations.AlterField(
-            model_name='reportlayout',
-            name='margin_top',
-            field=models.PositiveIntegerField(default=10, verbose_name='Marge: haut'),
+            model_name="reportlayout",
+            name="margin_top",
+            field=models.PositiveIntegerField(default=10, verbose_name="Marge: haut"),
         ),
         migrations.AlterField(
-            model_name='reportlayout',
-            name='name',
-            field=models.CharField(max_length=150, verbose_name='Nom'),
+            model_name="reportlayout",
+            name="name",
+            field=models.CharField(max_length=150, verbose_name="Nom"),
         ),
         migrations.AlterField(
-            model_name='reportlayout',
-            name='width',
-            field=models.PositiveIntegerField(default=210, verbose_name='Largeur'),
+            model_name="reportlayout",
+            name="width",
+            field=models.PositiveIntegerField(default=210, verbose_name="Largeur"),
         ),
         migrations.AlterField(
-            model_name='section',
-            name='order',
-            field=models.PositiveIntegerField(blank=True, null=True, verbose_name='Ordre du paragraphe'),
+            model_name="section",
+            name="order",
+            field=models.PositiveIntegerField(
+                blank=True, null=True, verbose_name="Ordre du paragraphe"
+            ),
         ),
         migrations.AlterField(
-            model_name='sectionmap',
-            name='qgis_print_template_name',
-            field=models.CharField(blank=True, default='paysage-cadastre', help_text='Modèles du projet par défaut: paysage-cadastre, paysage-ortho', max_length=30, verbose_name='Nom du modèle QGIS'),
+            model_name="sectionmap",
+            name="qgis_print_template_name",
+            field=models.CharField(
+                blank=True,
+                default="paysage-cadastre",
+                help_text="Modèles du projet par défaut: paysage-cadastre, paysage-ortho",
+                max_length=30,
+                verbose_name="Nom du modèle QGIS",
+            ),
         ),
         migrations.AlterField(
-            model_name='sectionparagraph',
-            name='content',
-            field=ckeditor.fields.RichTextField(help_text='Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}` et clles du work object type dans `{{wot_data}}`.', verbose_name='Contenu'),
+            model_name="sectionparagraph",
+            name="content",
+            field=ckeditor.fields.RichTextField(
+                help_text='Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}` et clles du work object type dans `{{wot_data}}`.',
+                verbose_name="Contenu",
+            ),
         ),
         migrations.AlterField(
-            model_name='sectionparagraph',
-            name='title',
-            field=models.CharField(blank=True, default='', max_length=2000, verbose_name='Titre'),
+            model_name="sectionparagraph",
+            name="title",
+            field=models.CharField(
+                blank=True, default="", max_length=2000, verbose_name="Titre"
+            ),
         ),
     ]
