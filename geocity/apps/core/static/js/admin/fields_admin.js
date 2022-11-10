@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const hiddenClass = 'd-none';
     const requiredClass =  'required';
     const inputType = document.getElementById('id_input_type').value;
-    
+
     const choicesElement = document.getElementById('id_choices');
     const choicesRowElement = choicesElement.closest('.form-group');
     const choicesLabelElement = choicesRowElement.querySelector('label');

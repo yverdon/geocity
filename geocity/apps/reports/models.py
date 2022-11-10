@@ -24,7 +24,6 @@ from .utils import DockerRunFailedError, run_docker_container
 class ReportLayout(models.Model):
     """Page size/background/marings/fonts/etc, used by reports"""
 
-
     name = models.CharField(_("Nom"), max_length=150)
     width = models.PositiveIntegerField(_("Largeur"), default=210)
     height = models.PositiveIntegerField(_("Hauteur"), default=297)
@@ -43,15 +42,15 @@ class ReportLayout(models.Model):
     )
 
     class Meta:
-        verbose_name=_("3.1 Format de papier")
-        verbose_name_plural= _("3.1 Formats de papier")
+        verbose_name = _("3.1 Format de papier")
+        verbose_name_plural = _("3.1 Formats de papier")
 
     background = BackgroundFileField(
         _("Papier à entête"),
         null=True,
         blank=True,
         upload_to="backgound_paper",
-        help_text=_('Image d\'arrière plan (PNG).'),
+        help_text=_("Image d'arrière plan (PNG)."),
         validators=[FileExtensionValidator(allowed_extensions=["png"])],
     )
     integrator = models.ForeignKey(
@@ -72,14 +71,21 @@ class Report(models.Model):
         permissions = [
             ("can_generate_pdf", _("Générer des documents pdf")),
         ]
-        verbose_name=_("3.2 Modèle d'impression")
-        verbose_name_plural= _("3.2 Modèles d'impression")
+        verbose_name = _("3.2 Modèle d'impression")
+        verbose_name_plural = _("3.2 Modèles d'impression")
 
     name = models.CharField(_("Nom"), max_length=150)
-    layout = models.ForeignKey(ReportLayout, on_delete=models.RESTRICT, verbose_name=_("Format de papier"),)
+    layout = models.ForeignKey(
+        ReportLayout,
+        on_delete=models.RESTRICT,
+        verbose_name=_("Format de papier"),
+    )
     # reverse relationship is manually defined on submissions.ComplementaryDocumentType so it shows up on both sides in admin
     document_types = models.ManyToManyField(
-        "submissions.ComplementaryDocumentType", blank=True, related_name="+", verbose_name=_("Types de documents")
+        "submissions.ComplementaryDocumentType",
+        blank=True,
+        related_name="+",
+        verbose_name=_("Types de documents"),
     )
     integrator = models.ForeignKey(
         Group,
@@ -100,8 +106,8 @@ def NON_POLYMORPHIC_CASCADE(collector, field, sub_objs, using):
 class Section(PolymorphicModel):
     class Meta:
         ordering = ["order"]
-        verbose_name=_("Paragraphe")
-        verbose_name_plural= _("Paragraphes")
+        verbose_name = _("Paragraphe")
+        verbose_name_plural = _("Paragraphes")
 
     report = models.ForeignKey(
         Report, on_delete=NON_POLYMORPHIC_CASCADE, related_name="sections"
@@ -211,7 +217,7 @@ class SectionParagraph(Section):
                 # FIXME: adapt for new api structure
                 'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}` et clles du work object type dans `{{wot_data}}`.'
             )
-        )
+        ),
     )
 
     class Meta:

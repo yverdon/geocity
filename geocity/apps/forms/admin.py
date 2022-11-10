@@ -1,9 +1,8 @@
 import django.db.models
-from adminsortable2.admin import SortableAdminMixin,  SortableInlineAdminMixin
+from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
 from django import forms
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-
 
 from geocity.apps.accounts.admin import IntegratorFilterMixin, filter_for_user
 from geocity.apps.accounts.models import PUBLIC_TYPE_CHOICES, AdministrativeEntity
@@ -234,7 +233,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
     )
 
     def sortable_str(self, obj):
-        return obj.__str__() if obj.__str__() != '' else 'titi'
+        return obj.__str__() if obj.__str__() != "" else "titi"
 
     sortable_str.admin_order_field = "name"
     sortable_str.short_description = _("Nom du formulaire")

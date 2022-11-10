@@ -6,24 +6,36 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('submissions', '0005_makeproxymodels'),
+        ("submissions", "0005_makeproxymodels"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='complementarydocumenttype',
-            options={'verbose_name': '2.2 Type de document', 'verbose_name_plural': '2.2 Types de document'},
+            name="complementarydocumenttype",
+            options={
+                "verbose_name": "2.2 Type de document",
+                "verbose_name_plural": "2.2 Types de document",
+            },
         ),
         migrations.AlterModelOptions(
-            name='proxyreport',
-            options={'verbose_name': '2.5 Modèle de Rapport', 'verbose_name_plural': '2.5 Modèles de Rapports'},
+            name="proxyreport",
+            options={
+                "verbose_name": "2.5 Modèle de Rapport",
+                "verbose_name_plural": "2.5 Modèles de Rapports",
+            },
         ),
         migrations.AlterModelOptions(
-            name='proxyreportlayout',
-            options={'verbose_name': "2.3 Modèle d'impression", 'verbose_name_plural': "2.3 Modèles d'impression"},
+            name="proxyreportlayout",
+            options={
+                "verbose_name": "2.3 Modèle d'impression",
+                "verbose_name_plural": "2.3 Modèles d'impression",
+            },
         ),
         migrations.AlterModelOptions(
-            name='submissionamendfield',
-            options={'verbose_name': '2.1 Champ de traitement des demandes', 'verbose_name_plural': '2.1 Champs de traitement des demandes'},
+            name="submissionamendfield",
+            options={
+                "verbose_name": "2.1 Champ de traitement des demandes",
+                "verbose_name_plural": "2.1 Champs de traitement des demandes",
+            },
         ),
     ]

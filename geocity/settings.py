@@ -1,5 +1,4 @@
 import os
-from .admin_jazzmin_settings import JAZZMIN_SETTINGS
 
 # from jazzmin_settings import JAZZMIN_SETTINGS
 

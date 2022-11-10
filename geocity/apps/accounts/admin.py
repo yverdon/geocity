@@ -1,6 +1,6 @@
 from django import forms
 from django.conf import settings
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.models import Group, Permission, User
@@ -8,16 +8,12 @@ from django.contrib.sites.admin import SiteAdmin as BaseSiteAdmin
 from django.contrib.sites.models import Site
 from django.db.models import Q, Value
 from django.db.models.functions import StrIndex, Substr
-from django.utils.translation import gettext_lazy as _
-from django.shortcuts import get_object_or_404
-
-from django.contrib import messages
-from django.core.management import CommandError, call_command
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 
-from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
 from geocity.apps.accounts.models import AdministrativeEntity
+from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
 from geocity.fields import GeometryWidget
 
 from . import models, permissions_groups
@@ -547,6 +543,7 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
                 choices=models.PUBLIC_TYPE_CHOICES,
             ),
         }
+
     # TODO: remove cdn usage
     class Media:
         js = ("https://code.jquery.com/jquery-3.5.1.slim.min.js",)
@@ -562,9 +559,7 @@ class SubmissionWorkflowStatusInline(admin.TabularInline):
     model = SubmissionWorkflowStatus
     extra = 0
     verbose_name = _("Étape - ")
-    verbose_name_plural = _(
-        "Flux (complet par défaut)"
-    )
+    verbose_name_plural = _("Flux (complet par défaut)")
 
 
 @admin.register(models.ProxyAdministrativeEntity)
@@ -645,10 +640,9 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     administrative_entity=obj,
                 )
 
-
     def response_change(self, request, obj):
         ret = super().response_change(request, obj)
-        if 'entity_id' in request.POST:
+        if "entity_id" in request.POST:
             entity_id = request.POST.get("entity_id")
 
             """
@@ -656,7 +650,9 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 entity.
             """
 
-            administrative_entity = get_object_or_404(AdministrativeEntity, pk=request.POST.get("entity_id"))
+            administrative_entity = get_object_or_404(
+                AdministrativeEntity, pk=request.POST.get("entity_id")
+            )
 
             administrative_entity.create_anonymous_user()
 

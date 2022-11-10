@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
 from django.contrib.sites.models import Site
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import (
     FileExtensionValidator,
     MaxValueValidator,
@@ -18,7 +18,6 @@ from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
-
 
 # public types: for public/restricted features
 PUBLIC_TYPE_CHOICES = (
@@ -285,17 +284,13 @@ class AdministrativeEntity(models.Model):
             )
 
 
-#Change the app_label in order to regroup models under the same app in admin
+# Change the app_label in order to regroup models under the same app in admin
 class ProxyAdministrativeEntity(AdministrativeEntity):
     class Meta:
         proxy = True
-        app_label = 'forms'
-        verbose_name = _(
-            "1.1 Entité administrative (commune, organisation)"
-        )
-        verbose_name_plural = _(
-            "1.1 Entités administratives (commune, organisation)"
-        )
+        app_label = "forms"
+        verbose_name = _("1.1 Entité administrative (commune, organisation)")
+        verbose_name_plural = _("1.1 Entités administratives (commune, organisation)")
 
 
 class UserProfileManager(models.Manager):

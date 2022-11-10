@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('forms', '0005_admin_models_names'),
+        ("forms", "0005_admin_models_names"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='formfield',
-            options={'ordering': ['order']},
+            name="formfield",
+            options={"ordering": ["order"]},
         ),
     ]

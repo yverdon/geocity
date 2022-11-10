@@ -6,22 +6,21 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('reports', '0013_makeproxymodels'),
-        ('submissions', '0004_makeproxymodels'),
+        ("reports", "0013_makeproxymodels"),
+        ("submissions", "0004_makeproxymodels"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ProxySection',
-            fields=[
-            ],
+            name="ProxySection",
+            fields=[],
             options={
-                'verbose_name': '2.6 Section du rapport',
-                'verbose_name_plural': '2.6 Sections du rapport',
-                'proxy': True,
-                'indexes': [],
-                'constraints': [],
+                "verbose_name": "2.6 Section du rapport",
+                "verbose_name_plural": "2.6 Sections du rapport",
+                "proxy": True,
+                "indexes": [],
+                "constraints": [],
             },
-            bases=('reports.section',),
+            bases=("reports.section",),
         ),
     ]

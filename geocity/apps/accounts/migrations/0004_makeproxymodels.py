@@ -6,12 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0003_migrate_permits_data'),
+        ("accounts", "0003_migrate_permits_data"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='administrativeentity',
-            options={'permissions': [('see_private_requests', 'Voir les demandes restreintes')]},
+            name="administrativeentity",
+            options={
+                "permissions": [
+                    ("see_private_requests", "Voir les demandes restreintes")
+                ]
+            },
         ),
     ]

@@ -6,16 +6,18 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('reports', '0012_report_document_types'),
+        ("reports", "0012_report_document_types"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='report',
-            options={'permissions': [('can_generate_pdf', 'Générer des documents pdf')]},
+            name="report",
+            options={
+                "permissions": [("can_generate_pdf", "Générer des documents pdf")]
+            },
         ),
         migrations.AlterModelOptions(
-            name='reportlayout',
+            name="reportlayout",
             options={},
         ),
     ]

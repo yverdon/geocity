@@ -1150,19 +1150,20 @@ class ContactType(models.Model):
 
     class Meta:
         unique_together = [["type", "form_category"]]
-        app_label = 'forms'
+        app_label = "forms"
 
     def __str__(self):
         return self.get_type_display() + " (" + str(self.form_category) + ")"
 
 
-#Change the app_label in order to regroup models under the same app in admin
+# Change the app_label in order to regroup models under the same app in admin
 class ProxyContactType(ContactType):
     class Meta:
         proxy = True
-        app_label = 'forms'
+        app_label = "forms"
         verbose_name = _("1.5 Contact")
         verbose_name_plural = _("1.5 Contacts")
+
 
 class SubmissionContact(models.Model):
     contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
@@ -1554,9 +1555,7 @@ class SubmissionAmendField(models.Model):
 
     class Meta:
         verbose_name = _("2.1 Champ de traitement des demandes")
-        verbose_name_plural = _(
-            "2.1 Champs de traitement des demandes"
-        )
+        verbose_name_plural = _("2.1 Champs de traitement des demandes")
 
     def __str__(self):
         return self.name

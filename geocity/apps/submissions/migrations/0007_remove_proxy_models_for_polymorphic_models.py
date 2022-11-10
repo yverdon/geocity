@@ -6,17 +6,17 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('submissions', '0006_admin_models_names'),
+        ("submissions", "0006_admin_models_names"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='ProxyReport',
+            name="ProxyReport",
         ),
         migrations.DeleteModel(
-            name='ProxyReportLayout',
+            name="ProxyReportLayout",
         ),
         migrations.DeleteModel(
-            name='ProxySection',
+            name="ProxySection",
         ),
     ]

@@ -6,20 +6,31 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('reports', '0013_makeproxymodels'),
+        ("reports", "0013_makeproxymodels"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='report',
-            options={'permissions': [('can_generate_pdf', 'Générer des documents pdf')], 'verbose_name': "3.2 Modèle d'impression", 'verbose_name_plural': "3.2 Modèles d'impression"},
+            name="report",
+            options={
+                "permissions": [("can_generate_pdf", "Générer des documents pdf")],
+                "verbose_name": "3.2 Modèle d'impression",
+                "verbose_name_plural": "3.2 Modèles d'impression",
+            },
         ),
         migrations.AlterModelOptions(
-            name='reportlayout',
-            options={'verbose_name': '3.1 Format de papier', 'verbose_name_plural': '3.1 Formats de papier'},
+            name="reportlayout",
+            options={
+                "verbose_name": "3.1 Format de papier",
+                "verbose_name_plural": "3.1 Formats de papier",
+            },
         ),
         migrations.AlterModelOptions(
-            name='section',
-            options={'ordering': ['order'], 'verbose_name': 'Paragraphe', 'verbose_name_plural': 'Paragraphes'},
+            name="section",
+            options={
+                "ordering": ["order"],
+                "verbose_name": "Paragraphe",
+                "verbose_name_plural": "Paragraphes",
+            },
         ),
     ]

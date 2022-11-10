@@ -6,42 +6,43 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('reports', '0013_makeproxymodels'),
-        ('submissions', '0003_migrate_permits_data'),
+        ("reports", "0013_makeproxymodels"),
+        ("submissions", "0003_migrate_permits_data"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ProxyReport',
-            fields=[
-            ],
+            name="ProxyReport",
+            fields=[],
             options={
-                'verbose_name': '2.5 Configuration du rapport',
-                'verbose_name_plural': '2.5 Configuration des rapports',
-                'proxy': True,
-                'indexes': [],
-                'constraints': [],
+                "verbose_name": "2.5 Configuration du rapport",
+                "verbose_name_plural": "2.5 Configuration des rapports",
+                "proxy": True,
+                "indexes": [],
+                "constraints": [],
             },
-            bases=('reports.report',),
+            bases=("reports.report",),
         ),
         migrations.CreateModel(
-            name='ProxyReportLayout',
-            fields=[
-            ],
+            name="ProxyReportLayout",
+            fields=[],
             options={
-                'verbose_name': "2.3 Configuration du modèle d'impression de rapport",
-                'verbose_name_plural': "2.4 Configuration des modèles d'impression de rapport",
-                'proxy': True,
-                'indexes': [],
-                'constraints': [],
+                "verbose_name": "2.3 Configuration du modèle d'impression de rapport",
+                "verbose_name_plural": "2.4 Configuration des modèles d'impression de rapport",
+                "proxy": True,
+                "indexes": [],
+                "constraints": [],
             },
-            bases=('reports.reportlayout',),
+            bases=("reports.reportlayout",),
         ),
         migrations.AlterModelOptions(
-            name='complementarydocumenttype',
-            options={'verbose_name': '2.1 Configuration du type de document', 'verbose_name_plural': '2.1 Configuration des types de document'},
+            name="complementarydocumenttype",
+            options={
+                "verbose_name": "2.1 Configuration du type de document",
+                "verbose_name_plural": "2.1 Configuration des types de document",
+            },
         ),
         migrations.DeleteModel(
-            name='ContactType',
+            name="ContactType",
         ),
     ]
