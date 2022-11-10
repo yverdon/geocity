@@ -2,11 +2,11 @@
 
 {% block content %}
     <h2>Commentaire·s du secrétariat</h2>
-    {% if request_data.properties.amend_properties %}
+    {% if request_data.properties.amend_fields %}
         <div class="flex_container">
             <div class="flex_item-100">
-                {% for wot, commentaires in request_data.properties.amend_properties.items %}
-                    <h3>{{wot}}</h3>
+                {% for form, commentaires in request_data.properties.amend_fields.items %}
+                    <h3>{{form}}</h3>
                     {% for key, commentaire in commentaires.items %}
                         <span class="bold">{{key}} : </span>{{commentaire}}<br>
                     {% endfor %}

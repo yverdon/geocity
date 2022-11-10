@@ -56,7 +56,11 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
         if value_with_type:
             wot_properties = list()
             for prop in wot_props:
-                wot = f'{prop["form__name"]} ({prop["form__category__name"]})'
+                wot = prop["form__name"] + (
+                    f' ({prop["form__category__name"]})'
+                    if prop["form__category__name"]
+                    else ""
+                )
 
                 # List of a list, to split wot in objects. Check if last wot changed or never assigned. Means it's first iteration
                 if property and wot != last_wot:
@@ -82,7 +86,11 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
                         }
                     )
 
-                last_wot = f'{prop["form__name"]} ({prop["form__category__name"]})'
+                last_wot = prop["form__name"] + (
+                    f' ({prop["form__category__name"]})'
+                    if prop["form__category__name"]
+                    else ""
+                )
 
                 if prop["field_values__field__input_type"] == "file" and (
                     user_is_authenticated
@@ -181,7 +189,8 @@ class MetaTypesField(serializers.RelatedField):
 class FormsNames(serializers.RelatedField):
     def to_representation(self, value):
         forms_names = {
-            form.id: form.name + (f"({form.category.name})" if form.category_id else "")
+            form.id: form.name
+            + (f" ({form.category.name})" if form.category_id else "")
             for form in value.all()
         }
         return forms_names
@@ -573,8 +582,6 @@ class SubmissionPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
         return list_serializer_class(*args, **list_kwargs)
 
     def to_representation(self, value):
-        # FIXME inform API consumers of field changes
-        # properties -> fields
         rep = super().to_representation(value)
 
         # If the WOT has no geometry, we add the centroid of the administrative entity as a square (polygon)

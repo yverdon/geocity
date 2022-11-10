@@ -10,6 +10,7 @@ from knox.models import AuthToken
 from rest_framework.decorators import api_view
 
 from geocity.apps.accounts.decorators import permanent_user_required
+from geocity.apps.api.serializers import SubmissionPrintSerializer
 from geocity.apps.forms.models import Form
 from geocity.apps.submissions import services
 from geocity.apps.submissions.models import ComplementaryDocumentType, Submission
@@ -56,8 +57,6 @@ def user_is_allowed_to_generate_report(request, submission_id, form_id, report_i
     return permit_request, form
 
 
-# FIXME move this to api app
-
 # TODO: instead of taking PermitRequest and WorksObjectType arguments, we should take
 # in WorksObjectTypeChoice, which already joins both, so they are consistent.
 @api_view(["GET"])  # pretend it's a DRF view, so we get token auth
@@ -68,23 +67,21 @@ def report_content(request, submission_id, form_id, report_id):
     to PDF (but could also work as a PDF)"""
 
     # Ensure user is allowed to generate pdf
-    permit_request, work_object_type = user_is_allowed_to_generate_report(
+    submission, form = user_is_allowed_to_generate_report(
         request, submission_id, form_id, report_id
     )
 
     report = get_object_or_404(Report, pk=report_id)
 
     # Prepare the base context for rendering sections
-    request_json_data = PermitRequestPrintSerializer(permit_request).data
-    wot_key = (
-        f"{work_object_type.works_object.name} ({work_object_type.works_type.name})"
-    )
-    request_props = request_json_data["properties"]["request_properties"][wot_key]
-    amend_props = request_json_data["properties"]["amend_properties"][wot_key]
+    request_json_data = SubmissionPrintSerializer(submission).data
+    form_key = form.name + (f" ({form.category.name})" if form.category_id else "")
+    request_props = request_json_data["properties"]["submission_fields"][form_key]
+    amend_props = request_json_data["properties"]["amend_fields"][form_key]
     base_section_context = {
-        "permit_request": permit_request,
+        "submission": submission,
         "request_data": request_json_data,
-        "wot_data": {
+        "form_data": {
             "request_properties": request_props,
             "amend_properties": amend_props,
         },
