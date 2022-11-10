@@ -107,4 +107,7 @@ class Migration(migrations.Migration):
         sync_sequence("forms_formcategory"),
         migrations.RunPython(create_forms),
         sync_sequence("forms_form"),
+        sync_sequence("forms_field"),
+        sync_sequence("forms_formfield"),
+        sync_sequence("forms_form_administrative_entities"),
     ]
