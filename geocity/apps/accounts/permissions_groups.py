@@ -2,14 +2,16 @@ from django.conf import settings
 
 INTEGRATOR_PERMISSIONS_BY_APP = {
     "accounts": [
-        "administrativeentity",
         "permitdepartment",
         "userprofile",
     ],
     "forms": [
+        "proxyadministrativeentity",
         "formcategory",
         "form",
         "field",
+        "formfield",
+        "proxycontacttype",
     ],
     "submissions": [
         "contacttype",

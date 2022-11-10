@@ -28,14 +28,15 @@ class ReportLayout(models.Model):
         verbose_name = _("5.1 Configuration du modèle d'impression de rapport")
         verbose_name_plural = _("5.1 Configuration des modèles d'impression de rapport")
 
-    name = models.CharField(max_length=150)
-    width = models.PositiveIntegerField(default=210)
-    height = models.PositiveIntegerField(default=297)
-    margin_top = models.PositiveIntegerField(default=10)
-    margin_right = models.PositiveIntegerField(default=10)
-    margin_bottom = models.PositiveIntegerField(default=10)
-    margin_left = models.PositiveIntegerField(default=10)
+    name = models.CharField(_("Nom"), max_length=150)
+    width = models.PositiveIntegerField(_("Largeur"), default=210)
+    height = models.PositiveIntegerField(_("Hauteur"), default=297)
+    margin_top = models.PositiveIntegerField(_("Marge: haut"), default=10)
+    margin_right = models.PositiveIntegerField(_("Marge: droite"), default=10)
+    margin_bottom = models.PositiveIntegerField(_("Marge: bas"), default=10)
+    margin_left = models.PositiveIntegerField(_("Marge: gauche"), default=10)
     font = models.CharField(
+        _("Police"),
         max_length=1024,
         blank=True,
         null=True,
@@ -45,10 +46,12 @@ class ReportLayout(models.Model):
     )
 
     background = BackgroundFileField(
+        _("Papier à entête"),
         null=True,
         blank=True,
         upload_to="backgound_paper",
-        help_text=_('Image d\'arrière plan ("papier à en-tête").'),
+        help_text=_("Image d'arrière plan (PNG)."),
+        validators=[FileExtensionValidator(allowed_extensions=["png"])],
     )
     integrator = models.ForeignKey(
         Group,
@@ -56,6 +59,10 @@ class ReportLayout(models.Model):
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
     )
+
+    class Meta:
+        verbose_name = _("3.1 Format de papier")
+        verbose_name_plural = _("3.1 Formats de papier")
 
     def __str__(self):
         return self.name
@@ -65,17 +72,24 @@ class Report(models.Model):
     """Report definition, allowing to generate reports for permit requests"""
 
     class Meta:
-        verbose_name = _("5.2 Configuration du rapport")
-        verbose_name_plural = _("5.2 Configuration des rapports")
+        verbose_name = _("3.2 Modèle d'impression")
+        verbose_name_plural = _("3.2 Modèles d'impression")
         permissions = [
             ("can_generate_pdf", _("Générer des documents pdf")),
         ]
 
-    name = models.CharField(max_length=150)
-    layout = models.ForeignKey(ReportLayout, on_delete=models.RESTRICT)
+    name = models.CharField(_("Nom"), max_length=150)
+    layout = models.ForeignKey(
+        ReportLayout,
+        on_delete=models.RESTRICT,
+        verbose_name=_("Format de papier"),
+    )
     # reverse relationship is manually defined on submissions.ComplementaryDocumentType so it shows up on both sides in admin
     document_types = models.ManyToManyField(
-        "submissions.ComplementaryDocumentType", blank=True, related_name="+"
+        "submissions.ComplementaryDocumentType",
+        blank=True,
+        related_name="+",
+        verbose_name=_("Types de documents"),
     )
     integrator = models.ForeignKey(
         Group,
@@ -95,12 +109,14 @@ def NON_POLYMORPHIC_CASCADE(collector, field, sub_objs, using):
 
 class Section(PolymorphicModel):
     class Meta:
+        verbose_name = _("Paragraphe")
+        verbose_name_plural = _("Paragraphes")
         ordering = ["order"]
 
     report = models.ForeignKey(
         Report, on_delete=NON_POLYMORPHIC_CASCADE, related_name="sections"
     )
-    order = models.PositiveIntegerField(null=True, blank=True)
+    order = models.PositiveIntegerField(_("Ordre du paragraphe"), null=True, blank=True)
 
     def prepare_context(self, request, base_context):
         """Subclass this to add elements to the context (make sure to return a copy if you change it)"""
@@ -129,6 +145,7 @@ class SectionMap(Section):
         ),
     )
     qgis_print_template_name = models.CharField(
+        _("Nom du modèle QGIS"),
         max_length=30,
         blank=True,
         default="paysage-cadastre",
@@ -196,13 +213,14 @@ class SectionMap(Section):
 
 
 class SectionParagraph(Section):
-    title = models.CharField(default="", blank=True, max_length=2000)
+    title = models.CharField(_("Titre"), default="", blank=True, max_length=2000)
     content = RichTextField(
+        _("Contenu"),
         help_text=(
             _(
                 'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}` et clles du work object type dans `{{wot_data}}`.'
             )
-        )
+        ),
     )
 
     class Meta:
