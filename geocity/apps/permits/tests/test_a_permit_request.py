@@ -1667,11 +1667,13 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
             "input",
             title="Cliquer sur le champ et sélectionner la nouvelle date de fin planifiée",
         )
+        
         self.assertEqual(1, len(title))
         self.assertEqual("id_prolongation_date", widget.get("id"))
-
+        
         # Post
         prolongation_date = timezone.now() + datetime.timedelta(days=90)
+        
         response = self.client.post(
             reverse(
                 "submissions:submission_prolongation",
@@ -1680,6 +1682,7 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
             follow=True,
             data={"prolongation_date": prolongation_date},
         )
+        
         parser = get_parser(response.content)
         regex = re.compile(r"^Prolongation en attente")
         icon_prolongation_processing = parser.findAll("i", title=regex)
@@ -2225,7 +2228,7 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
 
     def test_submission_contact_creates(self):
         form = factories.FormFactory()
-        form_category = form.form_category
+        form_category = form.category
 
         contact_required = factories.ContactTypeFactory(
             is_mandatory=True, form_category=form_category
@@ -2250,13 +2253,13 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
             data=self.test_formset_data,
         )
 
-        actors = list(submission.actors.all())
-        self.assertEqual(len(actors), 1, "Expected 1 actor created")
-        self.assertEqual(actors[0].first_name, "John")
+        contacts = list(submission.contacts.all())
+        self.assertEqual(len(contacts), 1, "Expected 1 actor created")
+        self.assertEqual(contacts[0].first_name, "John")
 
     def test_submission_contact_required_cannot_have_empty_field(self):
         form = factories.FormFactory()
-        form_category = form.form_category
+        form_category = form.category
 
         contact_required = factories.ContactTypeFactory(
             is_mandatory=True, form_category=form_category
@@ -2286,13 +2289,13 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
 
         submission.refresh_from_db()
         # Check that no actor was saved for this submission
-        self.assertEqual(submission.actors.count(), 0)
+        self.assertEqual(submission.contacts.count(), 0)
         # Check that if form not valid, it does not redirect
         self.assertEqual(response.status_code, 200)
 
     def test_submission_contact_creditor_field_is_hidden_if_form_is_not_paid(self):
         form = factories.FormFactory(requires_payment=False)
-        form_category = form.form_category
+        form_category = form.category
 
         factories.ContactTypeFactory(is_mandatory=True, form_category=form_category)
 
@@ -2335,8 +2338,8 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
             2, requires_payment=False
         )
         paid_form = factories.FormFactory(requires_payment=True)
-        form_categories = [form.form_category for form in free_forms] + [
-            paid_form.form_category
+        form_categories = [form.category for form in free_forms] + [
+            paid_form.category
         ]
 
         for form_category in form_categories:
@@ -3439,7 +3442,7 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
     def test_secretary_email_and_name_are_set_for_the_administrative_entity(self):
         form_category = factories.FormCategoryFactory(name="Foo category")
         form = factories.FormFactory(
-            form_category=form_category,
+            category=form_category,
         )
         self.submission.forms.set([form])
 
@@ -3472,7 +3475,7 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
     def test_just_secretary_email_is_set_for_the_administrative_entity(self):
         form_category = factories.FormCategoryFactory(name="Foo category")
         form = factories.FormFactory(
-            form_category=form_category,
+            category=form_category,
         )
         self.submission.forms.set([form])
         self.administrative_entity_expeditor = (
@@ -3512,7 +3515,7 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
     def test_no_secretary_email_is_set_for_the_administrative_entity(self):
         form_category = factories.FormCategoryFactory(name="Foo category")
         form = factories.FormFactory(
-            form_category=form_category,
+            category=form_category,
         )
         self.submission.forms.set([form])
         self.administrative_entity_expeditor = (
@@ -4526,7 +4529,7 @@ class SubmissionAnonymousTestCase(TestCase):
             reverse("submissions:anonymous_submission"),
             data={
                 "entityfilter": entity.tags.get().slug,
-                "categoryfilter": category.tags.get().slug,
+                "typefilter": category.tags.get().slug,
             },
         )
 
@@ -4549,7 +4552,7 @@ class SubmissionAnonymousTestCase(TestCase):
             reverse("submissions:anonymous_submission"),
             data={
                 "entityfilter": entity.tags.get().slug,
-                "categoryfilter": category.tags.get().slug,
+                "typefilter": category.tags.get().slug,
             },
         )
 
@@ -4568,7 +4571,7 @@ class SubmissionAnonymousTestCase(TestCase):
         category = factories.FormCategoryFactory(tags=["a"])
         factories.FormFactory(
             is_anonymous=True,
-            form_category=category,
+            category=category,
             administrative_entities=[entity],
         )
 
@@ -4576,7 +4579,7 @@ class SubmissionAnonymousTestCase(TestCase):
             reverse("submissions:anonymous_submission"),
             data={
                 "entityfilter": entity.tags.get().slug,
-                "categoryfilter": category.tags.get().slug,
+                "typefilter": category.tags.get().slug,
             },
             follow=True,
         )
@@ -4600,14 +4603,14 @@ class SubmissionAnonymousTestCase(TestCase):
         category = factories.FormCategoryFactory(tags=["a"])
         form = factories.FormWithoutGeometryFactory(
             is_anonymous=True,
-            form_category=category,
+            category=category,
             administrative_entities=[entity],
             needs_date=False,
         )
 
         # Filled submission
         submission = factories.SubmissionFactory(
-            author=temp_author,
+            author=temp_author.user,
             status=submissions_models.Submission.STATUS_DRAFT,
             administrative_entity=entity,
         )
@@ -4634,10 +4637,9 @@ class SubmissionAnonymousTestCase(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, reverse("submissions:anonymous_submission_sent"))
-
-        self.assertEqual(submission.author, entity.anonymous_user)
+        self.assertEqual(submission.author, entity.anonymous_user.user)
 
         self.assertEqual(
             get_user_model().objects.get().pk,
-            submission.author.user_id,
+            submission.author.id,
         )
