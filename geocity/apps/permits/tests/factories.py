@@ -80,7 +80,9 @@ class AdministrativeEntityFactory(factory.django.DjangoModelFactory):
         if not create:
             return
 
-        extracted = extracted or [v[0] for v in submissions_models.Submission.STATUS_CHOICES]
+        extracted = extracted or [
+            v[0] for v in submissions_models.Submission.STATUS_CHOICES
+        ]
         for status in extracted:
             submissions_models.SubmissionWorkflowStatus.objects.create(
                 status=status,
@@ -126,7 +128,9 @@ class GroupFactory(factory.django.DjangoModelFactory):
             return
 
         if not extracted:
-            submission_ct = ContentType.objects.get_for_model(submissions_models.Submission)
+            submission_ct = ContentType.objects.get_for_model(
+                submissions_models.Submission
+            )
             amend_permission = Permission.objects.get(
                 codename="amend_submission", content_type=submission_ct
             )
@@ -169,7 +173,9 @@ class SecretariatGroupFactory(GroupFactory):
             return
 
         if not extracted:
-            submission_ct = ContentType.objects.get_for_model(submissions_models.Submission)
+            submission_ct = ContentType.objects.get_for_model(
+                submissions_models.Submission
+            )
             extracted = list(
                 Permission.objects.filter(
                     codename__in=["amend_submission", "classify_submission"],
@@ -190,7 +196,9 @@ class ValidatorGroupFactory(GroupFactory):
             return
 
         if not extracted:
-            submission_ct = ContentType.objects.get_for_model(submissions_models.Submission)
+            submission_ct = ContentType.objects.get_for_model(
+                submissions_models.Submission
+            )
             validate_permission = Permission.objects.get(
                 codename="validate_submission", content_type=submission_ct
             )
@@ -298,28 +306,28 @@ class FormFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("word")
     category = factory.SubFactory(FormCategoryFactory)
     is_public = True
-        
+
     @factory.post_generation
     def integrator(self, create, extracted, **kwargs):
         if not create:
             return
 
         self.integrator = extracted
-        
+
     @factory.post_generation
     def administrative_entities(self, create, extracted, **kwargs):
         if not create or not extracted:
             return
 
         self.administrative_entities.add(*extracted)
-        
-        
+
+
 class FormWithoutGeometryFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = forms_models.Form
 
     name = factory.Faker("word")
-    form_category = factory.SubFactory(FormCategoryFactory)
+    category = factory.SubFactory(FormCategoryFactory)
     is_public = True
     has_geometry_point = False
     has_geometry_line = False
@@ -338,7 +346,6 @@ class FormWithoutGeometryFactory(factory.django.DjangoModelFactory):
             return
 
         self.administrative_entities.add(*extracted)
-
 
 
 class ContactTypeFactory(factory.django.DjangoModelFactory):
@@ -442,7 +449,8 @@ class SubmissionValidationFactory(factory.django.DjangoModelFactory):
 
     department = factory.SubFactory(PermitDepartmentFactory)
     submission = factory.SubFactory(
-        SubmissionFactory, status=submissions_models.Submission.STATUS_AWAITING_VALIDATION
+        SubmissionFactory,
+        status=submissions_models.Submission.STATUS_AWAITING_VALIDATION,
     )
 
 
