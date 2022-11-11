@@ -555,7 +555,7 @@ class SubmissionInquiryFactory(factory.django.DjangoModelFactory):
     end_date = factory.Faker("date")
 
 
-class ArchivedPermitRequestFactory(factory.django.DjangoModelFactory):
+class ArchivedSubmissionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = submissions_models.ArchivedSubmission
 

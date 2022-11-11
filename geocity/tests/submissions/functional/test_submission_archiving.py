@@ -3,42 +3,42 @@ from datetime import datetime
 
 from django.urls import reverse
 
-from geocity.apps.permits import models
+from geocity.apps.submissions import models as submissions_models
 
-from .. import factories
-from ..geocity_test_case import GeocityTestCase
+from geocity.tests import factories
+from geocity.tests.geocity_test_case import GeocityTestCase
 
 
-class TestPermitRequestArchiving(GeocityTestCase):
+class TestSubmissionArchiving(GeocityTestCase):
     def setUp(self):
-        super(TestPermitRequestArchiving, self).setUp()
+        super(TestSubmissionArchiving, self).setUp()
 
         self.login(email="user@test.com")
         self.parent_type = factories.ParentComplementaryDocumentTypeFactory()
 
-        self.permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_RECEIVED,
+        self.submission = factories.SubmissionFactory(
+            author=self.user,
+            status=submissions_models.Submission.STATUS_RECEIVED,
             administrative_entity=self.administrative_entity,
         )
 
-    def test_permit_request_is_archived(self):
+    def test_submission_is_archived(self):
         self.login(email="pilot@test.com", group=self.SECRETARIAT)
 
         self.client.post(
-            reverse("permits:archived_permit_request_list"),
+            reverse("submissions:archived_submission_list"),
             data={
-                "to_archive[]": self.permit_request.id,
+                "to_archive[]": self.submission.id,
                 "action": "archive-requests",
             },
         )
-        self.permit_request.refresh_from_db()
+        self.submission.refresh_from_db()
         self.assertEquals(
-            self.permit_request.status, models.PermitRequest.STATUS_ARCHIVED
+            self.submission.status, submissions_models.Submission.STATUS_ARCHIVED
         )
         self.assertTrue(
-            models.ArchivedPermitRequest.objects.filter(
-                permit_request=self.permit_request
+            submissions_models.ArchivedSubmission.objects.filter(
+                submission=self.submission
             ).exists()
         )
 
@@ -46,19 +46,19 @@ class TestPermitRequestArchiving(GeocityTestCase):
         self.login(email="validator@test.com", group=self.VALIDATOR)
 
         response = self.client.post(
-            reverse("permits:archived_permit_request_list"),
+            reverse("submissions:archived_submission_list"),
             data={
-                "to_archive[]": self.permit_request.id,
+                "to_archive[]": self.submission.id,
                 "action": "archive-requests",
             },
         )
-        self.permit_request.refresh_from_db()
+        self.submission.refresh_from_db()
         self.assertNotEquals(
-            self.permit_request.status, models.PermitRequest.STATUS_ARCHIVED
+            self.submission.status, submissions_models.Submission.STATUS_ARCHIVED
         )
         self.assertFalse(
-            models.ArchivedPermitRequest.objects.filter(
-                permit_request=self.permit_request
+            submissions_models.ArchivedSubmission.objects.filter(
+                submission=self.submission
             ).exists()
         )
         self.assertEqual(response.status_code, 403)
@@ -69,12 +69,12 @@ class TestPermitRequestArchiving(GeocityTestCase):
 
     def test_single_download_archive(self):
         self.login(email="pilot@test.com", group=self.SECRETARIAT)
-        self.permit_request.archive(self.user)
+        self.submission.archive(self.user)
         file_response = self.client.get(
             reverse(
-                "permits:archived_permit_request_download",
+                "submissions:archived_submission_download",
                 kwargs={
-                    "pk": self.permit_request.pk,
+                    "pk": self.submission.pk,
                 },
             ),
         )
@@ -92,15 +92,15 @@ class TestPermitRequestArchiving(GeocityTestCase):
 
     def test_bulk_download(self):
         self.login(email="pilot@test.com", group=self.SECRETARIAT)
-        self.permit_request.archive(self.user)
-        archive = models.ArchivedPermitRequest.objects.filter(
-            permit_request=self.permit_request
+        self.submission.archive(self.user)
+        archive = submissions_models.ArchivedSubmission.objects.filter(
+            submission=self.submission
         ).first()
         file_response = self.client.get(
             reverse(
-                "permits:archived_permit_request_bulk_download",
+                "submissions:archived_submission_bulk_download",
             ),
-            data={"to_download": self.permit_request.pk},
+            data={"to_download": self.submission.pk},
         )
 
         # Do not compare seconds as they can have a small delta and sometimes make the tests fail
@@ -116,16 +116,16 @@ class TestPermitRequestArchiving(GeocityTestCase):
 
     def test_users_not_in_archivist_group_cannot_single_download(self):
         self.login(email="pilot@test.com", group=self.SECRETARIAT)
-        archive = factories.ArchivedPermitRequestFactory(
-            permit_request=self.permit_request, archivist=self.user
+        archive = factories.ArchivedSubmissionFactory(
+            submission=self.submission, archivist=self.user
         )
         self.login(email="validator@test.com", group=self.VALIDATOR)
 
         response = self.client.get(
             reverse(
-                "permits:archived_permit_request_download",
+                "submissions:archived_submission_download",
                 kwargs={
-                    "pk": archive.permit_request.pk,
+                    "pk": archive.submission.pk,
                 },
             ),
             follow=True,
@@ -138,16 +138,16 @@ class TestPermitRequestArchiving(GeocityTestCase):
 
     def test_users_not_in_archivist_group_cannot_bulk_download(self):
         self.login(email="pilot@test.com", group=self.SECRETARIAT)
-        self.permit_request.archive(self.user)
-        archive = models.ArchivedPermitRequest.objects.filter(
-            permit_request=self.permit_request
+        self.submission.archive(self.user)
+        archive = submissions_models.ArchivedSubmission.objects.filter(
+            submission=self.submission
         ).first()
         self.login(email="validator@test.com", group=self.VALIDATOR)
         response = self.client.get(
             reverse(
-                "permits:archived_permit_request_bulk_download",
+                "submissions:archived_submission_bulk_download",
             ),
-            data={"to_download": archive.permit_request.pk},
+            data={"to_download": archive.submission.pk},
             follow=True,
         )
         self.assertNotEqual(response.get("Content-Type"), "application/zip")
@@ -158,39 +158,39 @@ class TestPermitRequestArchiving(GeocityTestCase):
 
     def test_only_archivist_can_delete_archive(self):
         self.login(email="pilot@test.com", group=self.SECRETARIAT)
-        self.permit_request.archive(self.user)
-        archive = models.ArchivedPermitRequest.objects.filter(
-            permit_request=self.permit_request
+        self.submission.archive(self.user)
+        archive = submissions_models.ArchivedSubmission.objects.filter(
+            submission=self.submission
         ).first()
 
         self.client.post(
             reverse(
-                "permits:archived_permit_request_delete",
-                kwargs={"pk": archive.permit_request.pk},
+                "submissions:archived_submission_delete",
+                kwargs={"pk": archive.submission.pk},
             ),
         )
 
         self.assertFalse(
-            models.ArchivedPermitRequest.objects.filter(
-                permit_request=archive.permit_request
+            submissions_models.ArchivedSubmission.objects.filter(
+                submission=archive.submission
             ).exists()
         )
         self.assertFalse(
-            models.PermitRequest.objects.filter(pk=self.permit_request.pk).exists()
+            submissions_models.Submission.objects.filter(pk=self.submission.pk).exists()
         )
 
     def test_user_without_correct_permissions_cannot_delete_archive(self):
         self.login(email="pilot@test.com", group=self.SECRETARIAT)
-        self.permit_request.archive(self.user)
-        archive = models.ArchivedPermitRequest.objects.filter(
-            permit_request=self.permit_request
+        self.submission.archive(self.user)
+        archive = submissions_models.ArchivedSubmission.objects.filter(
+            submission=self.submission
         ).first()
         self.login(email="validator@test.com", group=self.VALIDATOR)
 
         response = self.client.post(
             reverse(
-                "permits:archived_permit_request_delete",
-                kwargs={"pk": archive.permit_request.pk},
+                "submissions:archived_submission_delete",
+                kwargs={"pk": archive.submission.pk},
             ),
             follow=True,
         )
@@ -200,10 +200,10 @@ class TestPermitRequestArchiving(GeocityTestCase):
             "Vous n'avez pas les permissions pour supprimer cette archive", messages
         )
         self.assertTrue(
-            models.ArchivedPermitRequest.objects.filter(
-                permit_request=archive.permit_request
+            submissions_models.ArchivedSubmission.objects.filter(
+                submission=archive.submission
             ).exists()
         )
         self.assertTrue(
-            models.PermitRequest.objects.filter(pk=self.permit_request.pk).exists()
+            submissions_models.Submission.objects.filter(pk=self.submission.pk).exists()
         )
