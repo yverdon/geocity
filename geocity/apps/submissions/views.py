@@ -1073,7 +1073,10 @@ def anonymous_submission(request):
         submission.forms.set(anonymous_forms)
 
     steps = get_anonymous_steps(
-        form_category=form_category, user=request.user, submission=submission
+        form_category=form_category,
+        user=request.user,
+        submission=submission,
+        current_site=get_current_site(request),
     )
 
     for step_type, step in steps.items():
@@ -1125,19 +1128,16 @@ def submission_select_administrative_entity(request, submission_id=None):
                 author=request.user,
             )
 
-            candidate_forms = None
+            candidate_forms = models.Form.objects.filter(
+                administrative_entities__in=entities_after_filter,
+            )
 
-            if request.session["typefilter"] == []:
-                candidate_forms = models.Form.objects.filter(
-                    administrative_entities__in=entities_after_filter,
-                )
-            else:
+            if request.session["typefilter"]:
                 categories_by_tag = models.FormCategory.objects.filter_by_tags(
                     request.session["typefilter"]
                 ).values_list("pk", flat=True)
 
-                candidate_forms = models.Form.objects.filter(
-                    administrative_entities__in=entities_after_filter,
+                candidate_forms = candidate_forms.filter(
                     category__in=categories_by_tag,
                 )
 

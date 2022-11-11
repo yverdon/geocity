@@ -1,10 +1,10 @@
 import dataclasses
 import enum
 import itertools
-import urllib
 
 from constance import config
 from django.contrib.sites.shortcuts import get_current_site
+from django.db.models import Q
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -50,80 +50,64 @@ def get_administrative_entity_step(submission):
     )
 
 
-def get_forms_step(submission, enabled, form_categories, user, typefilter):
+def get_forms_step(
+    submission,
+    enabled,
+    user,
+    current_site,
+    restrict_to_categories=None,
+    restrict_to_entities=None,
+):
+    restrict_to_categories = restrict_to_categories or []
+    restrict_to_entities = restrict_to_entities or []
+
     # If there are default forms it means the forms can be automatically selected and so
     # the step shouldn’t be visible
-
     if submission:
-        selected_categories = form_categories or submission.forms.values_list(
-            "category", flat=True
+        candidate_forms = Form.objects.all()
+        # FIXME: should forms here be restricted to public forms?
+        candidate_forms_filter = Q(pk__in=submission.administrative_entity.forms.all())
+
+        if restrict_to_categories:
+            candidate_forms_filter &= Q(category__in=restrict_to_categories)
+
+        if restrict_to_entities:
+            candidate_forms_filter &= Q(category__in=restrict_to_categories)
+
+        candidate_forms_filter |= Q(pk__in=submission.forms.all())
+    else:
+        administrative_entities = Form.objects.get_administrative_entities_with_forms(
+            user, current_site
         )
-        candidate_forms = (
-            models.Form.objects.filter(category__in=selected_categories)
-            if selected_categories
-            else submission.administrative_entity.forms.all()
-        ).distinct()
 
-        if (
-            models.Form.objects.get_default_forms(
-                submission.administrative_entity,
-                user,
-                form_categories=selected_categories or None,
-            )
-            # Also check if the candidates categories would all result in a single form
-            # (which will anyway get automatically selected)
-            or candidate_forms.count() <= 1
-        ):
-            return None
-
-    # If the user is editing a permit request and the administrative entity only has 1
-    # works type, there won’t be a works type step, so the works object step should have
-    # it in the URL
-    # return None
-    if submission and not form_categories:
-        if user.has_perm("submissions.see_private_requests"):
-            administrative_entity_categories = (
-                submission.administrative_entity.forms.values_list(
-                    "category", flat=True
-                ).distinct()
-            )
-        else:
-            administrative_entity_categories = (
-                submission.administrative_entity.forms.filter(is_public=True)
-                .values_list("category", flat=True)
-                .distinct()
-            )
-
-        if len(administrative_entity_categories) == 1:
-            form_categories = administrative_entity_categories
-
-        if typefilter:
-            filtered_works_type = (
-                models.FormCategory.objects.filter_by_tags(typefilter)
-                .values_list("id", flat=True)
-                .distinct()
-            )
-
-            if filtered_works_type.count() == 1:
-                form_categories = filtered_works_type
-
-    form_categories_qs = (
-        urllib.parse.urlencode(
-            {"types": form_categories},
-            doseq=True,
+        candidate_forms = Form.objects.filter(
+            administrative_entities__in=administrative_entities
         )
-        if form_categories
-        else ""
-    )
+        candidate_forms_filter = Q()
+
+        if restrict_to_entities:
+            candidate_forms_filter &= Q(
+                administrative_entities__in=administrative_entities
+            )
+
+        if restrict_to_categories:
+            candidate_forms_filter &= Q(category__in=restrict_to_categories)
+
+        if not user.has_perm("submissions:see_private_requests"):
+            candidate_forms_filter &= Q(is_public=True)
+
+    candidate_forms = candidate_forms.filter(candidate_forms_filter)
+
+    if candidate_forms.count() <= 1:
+        return None
 
     return Step(
         name=_("Objets"),
         url=(
             reverse_submission_url("submissions:submission_select_forms", submission)
-            + (f"?{form_categories_qs}" if form_categories_qs else "")
-        )
-        if submission
-        else "",
+            if submission
+            else ""
+        ),
         completed=enabled,
         enabled=enabled,
     )
@@ -258,15 +242,15 @@ def get_submit_step(submission, enabled, total_errors):
     )
 
 
-def get_anonymous_steps(form_category, user, submission):
+def get_anonymous_steps(form_category, user, submission, current_site):
     has_forms = submission.forms.exists()
 
     objects_step = get_forms_step(
         submission=submission,
         enabled=not has_forms,
-        form_categories=[form_category],
         user=user,
-        typefilter=[form_category],
+        current_site=current_site,
+        restrict_to_categories=[form_category],
     )
 
     if objects_step:
@@ -299,62 +283,42 @@ def get_progress_bar_steps(request, submission):
     necessarily have a `url` though, eg. before selecting the administrative entity).
     """
     has_forms = submission.forms.exists() if submission else False
-    selected_categories = request.GET.getlist("types")
+    current_site = get_current_site(request)
     entityfilter = (
         request.session["entityfilter"] if "entityfilter" in request.session else []
     )
-    single_entity_for_site = False
-    entities_by_tag = None
-    current_site = get_current_site(request)
-    entities_for_site = Form.objects.get_administrative_entities_with_forms(
-        request.user, current_site
-    )
-    single_entity_for_site = len(entities_for_site) == 1
 
-    # Don't care about filter if there is only one entity for the current site
-    if entityfilter and not single_entity_for_site:
-        entities_by_tag = Form.objects.get_administrative_entities_with_forms(
+    if entityfilter:
+        entities_by_tag = models.Form.objects.get_administrative_entities_with_forms(
             request.user, current_site
         ).filter_by_tags(
             entityfilter,
         )
+    else:
+        entities_by_tag = None
 
-    # Get work objects types if there is only one entity filtered
-    # Skipped if only one entity for site
+    selected_categories = None
     if entities_by_tag:
-        if (
-            not selected_categories
-            and "typefilter" in request.session
-            and len(entities_by_tag) == 1
-        ):
-            forms_by_category = (
+        if "typefilter" in request.session and len(entities_by_tag) == 1:
+            categories_by_tag = (
                 models.FormCategory.objects.filter_by_tags(
                     request.session["typefilter"]
                 )
                 .filter(forms__administrative_entities__in=entities_by_tag)
                 .values_list("pk", flat=True)
             )
-            if len(forms_by_category) == 1:
-                selected_categories = [str(forms_by_category[0])]
-
-    # Get forms if there is only one entity filtered
-    if single_entity_for_site and not selected_categories:
-        form_categories_for_single_entity = models.FormCategory.objects.filter(
-            forms__administrative_entities__in=entities_for_site
-        ).values_list("pk", flat=True)
-        if len(form_categories_for_single_entity) == 1:
-            selected_categories = [str(form_categories_for_single_entity[0])]
+            if len(categories_by_tag) == 1:
+                selected_categories = [str(categories_by_tag[0])]
 
     all_steps = {
         StepType.ADMINISTRATIVE_ENTITY: get_administrative_entity_step(submission),
         StepType.FORMS: get_forms_step(
             submission=submission,
             enabled=has_forms,
-            form_categories=selected_categories,
             user=request.user,
-            typefilter=request.session["typefilter"]
-            if "typefilter" in request.session
-            else [],
+            current_site=current_site,
+            restrict_to_categories=selected_categories,
+            restrict_to_entities=entities_by_tag,
         ),
         StepType.FIELDS: get_fields_step(submission=submission, enabled=has_forms),
         StepType.GEO_TIME: get_geo_time_step(submission=submission, enabled=has_forms),

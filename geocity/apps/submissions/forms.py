@@ -181,34 +181,37 @@ class FormsSelectForm(forms.Form):
         self.instance = instance
         self.user = kwargs.pop("user", None)
         form_categories = form_categories or []
+        selected_forms = list(
+            self.instance.selected_forms.values_list("form_id", flat=True)
+        )
 
-        initial = {
-            "selected_forms": list(
-                self.instance.selected_forms.values_list("form_id", flat=True)
-            )
-        }
+        initial = {"selected_forms": selected_forms}
 
         super().__init__(*args, **{**kwargs, "initial": initial})
         user_can_see_private_requests = self.user.has_perm(
             "submissions.see_private_requests"
         )
 
+        forms_filter = Q()
+
+        if form_categories:
+            forms_filter &= Q(category__in=form_categories)
+
+        if not user_can_see_private_requests:
+            forms_filter &= Q(is_public=True)
+
         forms = (
             models.Form.objects.filter(
-                administrative_entities=self.instance.administrative_entity,
+                Q(
+                    forms_filter,
+                    administrative_entities=self.instance.administrative_entity,
+                    is_anonymous=self.user.userprofile.is_temporary,
+                )
+                | Q(pk__in=selected_forms)
             )
             .select_related("category")
             .order_by("order")
         )
-
-        # FIXME: restore form categories filtering (with `typefilter` in session)?
-        if form_categories:
-            forms = forms.filter(category__in=form_categories)
-
-        if not user_can_see_private_requests:
-            forms = forms.filter(is_public=True)
-
-        forms = forms.filter(is_anonymous=self.user.userprofile.is_temporary)
 
         forms_by_category_dict = {}
         for form in forms:
