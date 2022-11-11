@@ -18,7 +18,11 @@ from django.utils import timezone
 
 from geocity.apps.accounts import models as accounts_models
 from geocity.apps.forms import models as forms_models
-from geocity.apps.submissions import models as submissions_models, forms as submissions_forms, services as submissions_services
+from geocity.apps.submissions import (
+    models as submissions_models,
+    forms as submissions_forms,
+    services as submissions_services,
+)
 
 from geocity.apps.accounts.management.commands import create_anonymous_users
 from . import factories
@@ -26,10 +30,7 @@ from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_
 
 
 def to_forms_dict(forms):
-    return {
-        "forms-{}".format(form.form_category.pk): form.pk
-        for form in forms
-    }
+    return {"forms-{}".format(form.form_category.pk): form.pk for form in forms}
 
 
 def get_submission_form_categories_ids(submission):
@@ -61,16 +62,16 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_categories_step_submit_redirects_to_forms_with_categories_qs(self):
         submission = factories.SubmissionFactory(author=self.user)
-        submission.administrative_entity.forms.set(
-            forms_models.Form.objects.all()
-        )
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
 
         response = self.client.post(
             reverse(
                 "submissions:submission_select_categories",
                 kwargs={"submission_id": submission.pk},
             ),
-            data={"categories": [self.form_categories[0].pk, self.form_categories[1].pk]},
+            data={
+                "categories": [self.form_categories[0].pk, self.form_categories[1].pk]
+            },
         )
 
         self.assertRedirects(
@@ -86,9 +87,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_forms_step_without_qs_redirects_to_categories_step(self):
         submission = factories.SubmissionFactory(author=self.user)
-        submission.administrative_entity.forms.set(
-            forms_models.Form.objects.all()
-        )
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
 
         response = self.client.get(
             reverse(
@@ -109,24 +108,18 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         factories.FormFactory()
 
         form = forms_models.Form.objects.first()
-        submission.administrative_entity.forms.set(
-            forms_models.Form.objects.all()
-        )
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
         self.client.post(
             reverse(
                 "submissions:submission_select_forms",
                 kwargs={"submission_id": submission.pk},
             )
             + "?types={}".format(self.form_categories[0].pk),
-            data={
-                "form-{}".format(self.form_categories[0].pk): form.pk
-            },
+            data={"form-{}".format(self.form_categories[0].pk): form.pk},
         )
 
         self.assertEqual(
-            submissions_models.Submission.objects.filter(
-                forms=form
-            ).count(),
+            submissions_models.Submission.objects.filter(forms=form).count(),
             1,
         )
 
@@ -166,7 +159,9 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             ),
         )
 
-    def test_categories_step_submit_redirects_to_detail_if_logged_as_integrator_admin(self):
+    def test_categories_step_submit_redirects_to_detail_if_logged_as_integrator_admin(
+        self,
+    ):
 
         integrator_group = factories.GroupFactory(name="Integrator")
         department = factories.PermitDepartmentFactory(
@@ -204,12 +199,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_non_required_fields_can_be_left_blank(self):
         submission = factories.SubmissionFactory(author=self.user)
-        factories.SelectedFormFactory.create_batch(
-            3, submission=submission
-        )
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
         field = factories.FieldFactory()
         field.forms.set(submission.forms.all())
 
@@ -230,12 +221,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_documents_step_filetype_allows_jpg(self):
         submission = factories.SubmissionFactory(author=self.user)
-        factories.SelectedFormFactory.create_batch(
-            3, submission=submission
-        )
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
@@ -245,11 +232,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
                     "submissions:submission_appendices",
                     kwargs={"submission_id": submission.pk},
                 ),
-                data={
-                    "appendices-{}_{}".format(
-                        field.forms.last().pk, field.pk
-                    ): file
-                },
+                data={"appendices-{}_{}".format(field.forms.last().pk, field.pk): file},
             )
 
         self.assertRedirects(
@@ -262,12 +245,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_documents_step_filetype_allows_png(self):
         submission = factories.SubmissionFactory(author=self.user)
-        factories.SelectedFormFactory.create_batch(
-            3, submission=submission
-        )
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
@@ -277,11 +256,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
                     "submissions:submission_appendices",
                     kwargs={"submission_id": submission.pk},
                 ),
-                data={
-                    "appendices-{}_{}".format(
-                        field.forms.last().pk, field.pk
-                    ): file
-                },
+                data={"appendices-{}_{}".format(field.forms.last().pk, field.pk): file},
             )
 
         self.assertRedirects(
@@ -294,12 +269,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_documents_step_filetype_allows_pdf(self):
         submission = factories.SubmissionFactory(author=self.user)
-        factories.SelectedFormFactory.create_batch(
-            3, submission=submission
-        )
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
@@ -309,11 +280,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
                     "submissions:submission_appendices",
                     kwargs={"submission_id": submission.pk},
                 ),
-                data={
-                    "appendices-{}_{}".format(
-                        field.forms.last().pk, field.pk
-                    ): file
-                },
+                data={"appendices-{}_{}".format(field.forms.last().pk, field.pk): file},
             )
 
         self.assertRedirects(
@@ -326,12 +293,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_documents_step_filetype_reject_unknow_type_for_filetype(self):
         submission = factories.SubmissionFactory(author=self.user)
-        factories.SelectedFormFactory.create_batch(
-            3, submission=submission
-        )
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
@@ -343,11 +306,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
                     "submissions:submission_appendices",
                     kwargs={"submission_id": submission.pk},
                 ),
-                data={
-                    "appendices-{}_{}".format(
-                        field.forms.last().pk, field.pk
-                    ): file
-                },
+                data={"appendices-{}_{}".format(field.forms.last().pk, field.pk): file},
             )
 
         content = response.content.decode()
@@ -359,12 +318,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_documents_step_filetype_reject_not_allowed_extension(self):
         submission = factories.SubmissionFactory(author=self.user)
-        factories.SelectedFormFactory.create_batch(
-            3, submission=submission
-        )
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
@@ -376,11 +331,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
                     "submissions:submission_appendices",
                     kwargs={"submission_id": submission.pk},
                 ),
-                data={
-                    "appendices-{}_{}".format(
-                        field.forms.last().pk, field.pk
-                    ): file
-                },
+                data={"appendices-{}_{}".format(field.forms.last().pk, field.pk): file},
             )
 
         content = response.content.decode()
@@ -392,12 +343,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_documents_step_filetype_reject_fake_jpg_with_not_allowed_extension(self):
         submission = factories.SubmissionFactory(author=self.user)
-        factories.SelectedFormFactory.create_batch(
-            3, submission=submission
-        )
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
@@ -409,11 +356,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
                     "submissions:submission_appendices",
                     kwargs={"submission_id": submission.pk},
                 ),
-                data={
-                    "appendices-{}_{}".format(
-                        field.forms.last().pk, field.pk
-                    ): file
-                },
+                data={"appendices-{}_{}".format(field.forms.last().pk, field.pk): file},
             )
 
         content = response.content.decode()
@@ -424,9 +367,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         self.assertInHTML(expected, content)
 
     def test_user_can_only_see_own_requests(self):
-        submission = factories.SubmissionFactory(
-            author=factories.UserFactory()
-        )
+        submission = factories.SubmissionFactory(author=factories.UserFactory())
 
         response = self.client.get(
             reverse(
@@ -468,9 +409,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             submission=submission,
             form=form,
         )
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        submission.administrative_entity.forms.set(submission.forms.all())
         response = self.client.get(
             reverse(
                 "submissions:submission_select_categories",
@@ -513,7 +452,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         )
         submission.refresh_from_db()
         self.assertEqual(
-            submission.status, submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION
+            submission.status,
+            submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION,
         )
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["secretary@geocity.ch"])
@@ -610,9 +550,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
     def test_missing_mandatory_date_field_gives_invalid_feedback(self):
         submission = factories.SubmissionFactory(author=self.user)
         factories.SelectedFormFactory(submission=submission)
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        submission.administrative_entity.forms.set(submission.forms.all())
         field = factories.FieldFactory(
             input_type=submissions_models.Field.INPUT_TYPE_DATE, is_mandatory=True
         )
@@ -639,11 +577,9 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         submission.administrative_entity.forms.set(
             factories.FormFactory.create_batch(2, form=form)
         )
-        form_category_id = (
-            submission.administrative_entity.forms.values_list(
-                "form_category_id", flat=True
-            ).first()
-        )
+        form_category_id = submission.administrative_entity.forms.values_list(
+            "form_category_id", flat=True
+        ).first()
 
         self.client.post(
             reverse(
@@ -1135,9 +1071,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             )
         ).submission
 
-        submission.forms.set(
-            [first_form, second_form]
-        )
+        submission.forms.set([first_form, second_form])
 
         response = self.client.get(
             reverse(
@@ -1275,9 +1209,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         self.form_categories[1].tags.add("form_category_a")
         additional_form_category.tags.add("form_category_b")
         submission = factories.SubmissionFactory(author=self.user)
-        submission.administrative_entity.forms.set(
-            forms_models.Form.objects.all()
-        )
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
 
         response = self.client.get(
             reverse(
@@ -1305,9 +1237,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         self.form_categories[1].tags.add("form_category_a")
         additional_form_category.tags.add("form_category_b")
         submission = factories.SubmissionFactory(author=self.user)
-        submission.administrative_entity.forms.set(
-            forms_models.Form.objects.all()
-        )
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
 
         response = self.client.get(
             reverse(
@@ -1327,9 +1257,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         submission = factories.SubmissionFactory(author=self.user)
         factories.SelectedFormFactory(submission=submission)
         form = submission.forms.first()
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        submission.administrative_entity.forms.set(submission.forms.all())
         list_single_field = factories.FieldFactory(
             input_type=submissions_models.Field.INPUT_TYPE_LIST_SINGLE,
             choices="foo\nbar",
@@ -1371,16 +1299,12 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         submission = factories.SubmissionFactory(author=self.user)
         factories.SelectedFormFactory(submission=submission)
         form = submission.forms.first()
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        submission.administrative_entity.forms.set(submission.forms.all())
         list_multiple_field = factories.FieldFactory(
             input_type=submissions_models.Field.INPUT_TYPE_LIST_MULTIPLE,
             choices="foo\nbar",
         )
-        list_multiple_field.forms.set(
-            submission.forms.all()
-        )
+        list_multiple_field.forms.set(submission.forms.all())
 
         data = {
             f"fields-{form.pk}_{list_multiple_field.pk}": [
@@ -1404,16 +1328,12 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         submission = factories.SubmissionFactory(author=self.user)
         factories.SelectedFormFactory(submission=submission)
         form = submission.forms.first()
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        submission.administrative_entity.forms.set(submission.forms.all())
         list_multiple_field = factories.FieldFactory(
             input_type=submissions_models.Field.INPUT_TYPE_LIST_MULTIPLE,
             choices="foo\nbar",
         )
-        list_multiple_field.forms.set(
-            submission.forms.all()
-        )
+        list_multiple_field.forms.set(submission.forms.all())
 
         data = {f"fields-{form.pk}_{list_multiple_field.pk}": "foo"}
 
@@ -1433,9 +1353,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         submission = factories.SubmissionFactory(author=self.user)
         factories.SelectedFormFactory(submission=submission)
         form = submission.forms.first()
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        submission.administrative_entity.forms.set(submission.forms.all())
         list_single_field = factories.FieldFactory(
             input_type=submissions_models.Field.INPUT_TYPE_LIST_SINGLE,
             choices="foo\nbar",
@@ -1613,9 +1531,7 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
             author=self.user,
             status=submissions_models.Submission.STATUS_AWAITING_SUPPLEMENT,
         )
-        submission.forms.set(
-            [self.form_prolongable_no_date_with_reminder]
-        )
+        submission.forms.set([self.form_prolongable_no_date_with_reminder])
         factories.SubmissionGeoTimeFactory(submission=submission)
 
         submission.administrative_entity.departments.set([self.department])
@@ -1647,9 +1563,7 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
         submission = factories.SubmissionFactory(
             author=self.user, status=submissions_models.Submission.STATUS_APPROVED
         )
-        submission.forms.set(
-            [self.form_prolongable_with_date_and_reminder]
-        )
+        submission.forms.set([self.form_prolongable_with_date_and_reminder])
         factories.SubmissionGeoTimeFactory(submission=submission)
         submission.administrative_entity.departments.set([self.department])
 
@@ -1710,9 +1624,7 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
         submission = factories.SubmissionFactory(
             author=self.user, status=submissions_models.Submission.STATUS_APPROVED
         )
-        submission.forms.set(
-            [self.form_prolongable_with_date_and_reminder]
-        )
+        submission.forms.set([self.form_prolongable_with_date_and_reminder])
         factories.SubmissionGeoTimeFactory(
             submission=submission,
             starts_at=timezone.now() - datetime.timedelta(days=30),
@@ -1803,9 +1715,7 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
             submission.prolongation_status,
         )
         self.assertEqual(prolongation_date, submission.prolongation_date)
-        self.assertEqual(
-            "Prolonged! I got the power!", submission.prolongation_comment
-        )
+        self.assertEqual("Prolonged! I got the power!", submission.prolongation_comment)
 
         self.assertIn("user@test.com", mail.outbox[0].to)
         self.assertRegex(mail.outbox[0].subject, expected_subject_regex)
@@ -1862,9 +1772,7 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
             submission.prolongation_status,
         )
         self.assertEqual(prolongation_date, submission.prolongation_date)
-        self.assertEqual(
-            "Rejected! Because I say so!", submission.prolongation_comment
-        )
+        self.assertEqual("Rejected! Because I say so!", submission.prolongation_comment)
 
         self.assertRegex(mail.outbox[0].subject, expected_subject_regex)
         self.assertIn(
@@ -1948,9 +1856,7 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
             status=submissions_models.Submission.STATUS_APPROVED,
             author=self.user,
         )
-        submission_expired.forms.set(
-            [self.form_prolongable_with_date_and_reminder]
-        )
+        submission_expired.forms.set([self.form_prolongable_with_date_and_reminder])
         ends_at_expired = timezone.now() + datetime.timedelta(days=5)
         factories.SubmissionGeoTimeFactory(
             submission=submission_expired,
@@ -1994,9 +1900,7 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
             prolongation_date=prolongation_date_prolonged,
             prolongation_status=submissions_models.Submission.PROLONGATION_STATUS_APPROVED,
         )
-        submission_prolonged.forms.set(
-            [self.form_prolongable_with_date_and_reminder]
-        )
+        submission_prolonged.forms.set([self.form_prolongable_with_date_and_reminder])
         ends_at_prolonged = timezone.now() + datetime.timedelta(days=5)
         factories.SubmissionGeoTimeFactory(
             submission=submission_prolonged,
@@ -2154,9 +2058,7 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
         submission = factories.SubmissionFactory(
             status=submissions_models.Submission.STATUS_APPROVED,
         )
-        submission.forms.set(
-            [self.form_prolongable_with_date, self.form_normal]
-        )
+        submission.forms.set([self.form_prolongable_with_date, self.form_normal])
         submission.administrative_entity.departments.set([self.department])
         self.client.login(username=self.secretariat, password="password")
 
@@ -2331,9 +2233,7 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
         self,
     ):
 
-        free_forms = factories.FormFactory.create_batch(
-            2, requires_payment=False
-        )
+        free_forms = factories.FormFactory.create_batch(2, requires_payment=False)
         paid_form = factories.FormFactory(requires_payment=True)
         form_categories = [form.form_category for form in free_forms] + [
             paid_form.form_category
@@ -2346,9 +2246,7 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
             author=self.user, status=submissions_models.Submission.STATUS_DRAFT
         )
 
-        submission.forms.set(
-            free_forms + [paid_form]
-        )
+        submission.forms.set(free_forms + [paid_form])
 
         response = self.client.get(
             reverse(
@@ -2376,255 +2274,12 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
         )
 
 
-class SubmissionUpdateTestCase(LoggedInUserMixin, TestCase):
-    def setUp(self):
-        super().setUp()
-        self.submission = factories.SubmissionFactory(
-            author=self.user
-        )
-        factories.SelectedFormFactory.create_batch(
-            3, submission=self.submission
-        )
-        self.submission.administrative_entity.forms.set(
-            self.submission.forms.all()
-        )
-
-    def test_categories_step_submit_shows_new_forms(self):
-        new_form = factories.FormFactory()
-
-        new_form.administrative_entities.set(
-            [self.submission.administrative_entity]
-        )
-
-        response = self.client.post(
-            reverse(
-                "submissions:submission_select_categories",
-                kwargs={"submission_id": self.submission.pk},
-            ),
-            follow=True,
-            data={
-                "categories": get_submission_form_categories_ids(self.submission)
-                + [new_form.form_category.pk]
-            },
-        )
-
-        self.assertContains(response, new_form.form_category)
-
-    def test_categories_step_submit_removes_deselected_categories_from_submission(self):
-        form_id = get_submission_form_categories_ids(self.submission)[
-            0
-        ]
-
-        self.client.post(
-            reverse(
-                "submissions:submission_select_categories",
-                kwargs={"submission_id": self.submission.pk},
-            ),
-            data={"categories": form_id},
-        )
-
-        self.submission.refresh_from_db()
-
-        self.assertEqual(submissions_models.Submission.objects.count(), 1)
-        self.assertEqual(
-            get_submission_form_categories_ids(self.submission),
-            [form_id],
-        )
-
-    def test_form_step_submit_updates_submission(self):
-        new_form = factories.FormFactory()
-        self.submission.administrative_entity.forms.add(
-            new_form
-        )
-        current_forms = list(self.submission.forms.all())
-        current_forms_dict = to_forms_dict(
-            current_forms
-        )
-        new_forms_dict = to_forms_dict([new_form])
-        form_categories_ids = get_submission_form_categories_ids(self.submission) + [
-            new_form.form_category.pk
-        ]
-        categories_param = urllib.parse.urlencode({"categories": form_categories_ids}, doseq=True)
-
-        self.client.post(
-            (
-                reverse(
-                    "submissions:submission_select_forms",
-                    kwargs={"submission_id": self.submission.pk},
-                )
-                + "?"
-                + categories_param
-            ),
-            data={**current_forms_dict, **new_forms_dict},
-        )
-
-        self.submission.refresh_from_db()
-
-        self.assertEqual(submissions_models.Submission.objects.count(), 1)
-        self.assertEqual(
-            set(self.submission.forms.all()),
-            set(current_forms + [new_form]),
-        )
-
-    def test_fields_step_submit_updates_submission(self):
-        new_field = factories.FieldFactory()
-        new_field.forms.set(self.submission.forms.all())
-        data = {
-            "fields-{}_{}".format(
-                form.pk, new_field.pk
-            ): "value-{}".format(form.pk)
-            for form in self.submission.forms.all()
-        }
-        self.client.post(
-            reverse(
-                "submissions:submission_fields",
-                kwargs={"submission_id": self.submission.pk},
-            ),
-            data=data,
-        )
-
-        self.assertEqual(
-            set(
-                item["val"]
-                for item in submissions_services.get_fields_values(
-                    self.submission
-                ).values_list("value", flat=True)
-            ),
-            set(data.values()),
-        )
-
-    def test_missing_mandatory_address_field_gives_invalid_feedback(self):
-        submission = factories.SubmissionFactory(author=self.user)
-        factories.SelectedFormFactory(submission=submission)
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
-        field = factories.FieldFactoryTypeAddress(
-            input_type=submissions_models.Field.INPUT_TYPE_ADDRESS, is_mandatory=True
-        )
-        field.forms.set(submission.forms.all())
-
-        data = {
-            "fields-{}_{}".format(form.pk, field.pk): ""
-            for form in submission.forms.all()
-        }
-
-        response = self.client.post(
-            reverse(
-                "submissions:submission_fields",
-                kwargs={"submission_id": submission.pk},
-            ),
-            data=data,
-        )
-        parser = get_parser(response.content)
-        self.assertEqual(1, len(parser.select(".invalid-feedback")))
-
-    def test_fields_step_submit_updates_submission_with_address(self):
-        address_field = factories.FieldFactoryTypeAddress(
-            input_type=submissions_models.Field.INPUT_TYPE_ADDRESS
-        )
-        address_field.forms.set(
-            self.submission.forms.all()
-        )
-        form = self.submission.forms.first()
-        data = {
-            f"fields-{form.pk}_{address_field.pk}": "Hôtel Martinez, Cannes"
-        }
-        self.client.post(
-            reverse(
-                "submissions:submission_fields",
-                kwargs={"submission_id": self.submission.pk},
-            ),
-            data=data,
-        )
-
-        self.submission.refresh_from_db()
-        field_val = submissions_services.get_fields_values(self.submission).get(
-            field__input_type=submissions_models.Field.INPUT_TYPE_ADDRESS
-        )
-        self.assertEqual(field_val.value, {"val": "Hôtel Martinez, Cannes"})
-
-    def test_fields_step_submit_updates_geotime_with_address_store_geometry_for_address_field(
-        self,
-    ):
-
-        address_field = factories.FieldFactoryTypeAddress(
-            input_type=submissions_models.Field.INPUT_TYPE_ADDRESS,
-            store_geometry_for_address_field=True,
-        )
-        address_field.forms.set(
-            self.submission.forms.all()
-        )
-        form = self.submission.forms.first()
-        data = {
-            f"fields-{form.pk}_{address_field.pk}": "Place pestalozzi 2, 1400 Yverdon-les-Bains"
-        }
-        self.client.post(
-            reverse(
-                "submissions:submission_fields",
-                kwargs={"submission_id": self.submission.pk},
-            ),
-            data=data,
-        )
-
-        self.submission.refresh_from_db()
-        field_val = submissions_services.get_fields_values(self.submission).get(
-            field__input_type=submissions_models.Field.INPUT_TYPE_ADDRESS
-        )
-        self.assertEqual(
-            field_val.value, {"val": "Place pestalozzi 2, 1400 Yverdon-les-Bains"}
-        )
-        geocoded_geotime_row = submissions_models.SubmissionGeoTime.objects.filter(
-            submission=self.submission, comes_from_automatic_geocoding=True
-        ).count()
-        self.assertEqual(1, geocoded_geotime_row)
-
-    def test_fields_step_submit_updates_submission_with_date(self):
-
-        date_field = factories.FieldFactory(
-            input_type=submissions_models.Field.INPUT_TYPE_DATE, name="datum"
-        )
-        today = date.today()
-        form = self.submission.forms.first()
-        date_field.forms.set([form])
-        data = {
-            f"fields-{form.pk}_{date_field.pk}": today.strftime(
-                settings.DATE_INPUT_FORMAT
-            )
-        }
-        self.client.post(
-            reverse(
-                "submissions:submission_fields",
-                kwargs={"submission_id": self.submission.pk},
-            ),
-            data=data,
-        )
-
-        field_val = submissions_services.get_fields_values(self.submission).get(
-            field__name="datum"
-        )
-        self.assertEqual(
-            field_val.value,
-            {"val": today.isoformat()},
-        )
-        self.assertEqual(
-            field_val.field.input_type,
-            submissions_models.Field.INPUT_TYPE_DATE,
-        )
-
-
 class SubmissionPrefillTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
         super().setUp()
-        self.submission = factories.SubmissionFactory(
-            author=self.user
-        )
-        factories.SelectedFormFactory.create_batch(
-            3, submission=self.submission
-        )
-        self.submission.administrative_entity.forms.set(
-            self.submission.forms.all()
-        )
+        self.submission = factories.SubmissionFactory(author=self.user)
+        factories.SelectedFormFactory.create_batch(3, submission=self.submission)
+        self.submission.administrative_entity.forms.set(self.submission.forms.all())
 
     def test_categories_step_preselects_categories_for_existing_submission(self):
         response = self.client.get(
@@ -2661,9 +2316,7 @@ class SubmissionPrefillTestCase(LoggedInUserMixin, TestCase):
             self.assertInHTML(expected, content)
 
     def test_fields_step_prefills_fields_for_existing_submission(self):
-        selected_form = submissions_services.get_selected_forms(
-            self.submission
-        ).first()
+        selected_form = submissions_services.get_selected_forms(self.submission).first()
         field = factories.FieldFactory()
         field.forms.add(selected_form.form)
         field_value = factories.FieldValueFactory(
@@ -2696,9 +2349,7 @@ class SubmissionPrefillTestCase(LoggedInUserMixin, TestCase):
         self.assertInHTML(expected_help_text, content)
 
     def test_fields_step_shows_title_and_additional_text(self):
-        selected_form = submissions_services.get_selected_forms(
-            self.submission
-        ).first()
+        selected_form = submissions_services.get_selected_forms(self.submission).first()
 
         field_title = factories.FieldFactoryTypeTitle()
         field_title.forms.add(selected_form.form)
@@ -2723,9 +2374,7 @@ class SubmissionPrefillTestCase(LoggedInUserMixin, TestCase):
 
     def test_fields_step_order_fields_for_existing_submission(self):
 
-        selected_form = submissions_services.get_selected_forms(
-            self.submission
-        ).first()
+        selected_form = submissions_services.get_selected_forms(self.submission).first()
 
         field_1 = factories.FieldFactory(order=10, name=str(uuid.uuid4()))
         field_2 = factories.FieldFactory(order=2, name=str(uuid.uuid4()))
@@ -2744,9 +2393,7 @@ class SubmissionPrefillTestCase(LoggedInUserMixin, TestCase):
         self.assertGreater(position_1, position_2)
 
     def test_fields_step_shows_downloadable_file(self):
-        selected_form = submissions_services.get_selected_forms(
-            self.submission
-        ).first()
+        selected_form = submissions_services.get_selected_forms(self.submission).first()
 
         field_file = factories.FieldFactoryTypeFileDownload()
         field_file.forms.add(selected_form.form)
@@ -2765,19 +2412,13 @@ class SubmissionPrefillTestCase(LoggedInUserMixin, TestCase):
         self.assertIn(expected_href, response.content.decode())
 
     def test_fields_step_shows_downloadable_files_more_than_once(self):
-        selected_forms = submissions_services.get_selected_forms(
-            self.submission
-        )
+        selected_forms = submissions_services.get_selected_forms(self.submission)
         selected_form_first = selected_forms.first()
         selected_form_last = selected_forms.last()
 
         field_file = factories.FieldFactoryTypeFileDownload()
-        field_file.forms.add(
-            selected_form_first.form
-        )
-        field_file.forms.add(
-            selected_form_last.form
-        )
+        field_file.forms.add(selected_form_first.form)
+        field_file.forms.add(selected_form_last.form)
 
         response = self.client.get(
             reverse(
@@ -2818,7 +2459,8 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         submission.refresh_from_db()
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            submission.status, submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION
+            submission.status,
+            submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION,
         )
 
     def test_secretariat_can_amend_request_with_custom_field_and_delete_field_value(
@@ -2829,11 +2471,11 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             status=submissions_models.Submission.STATUS_PROCESSING,
             administrative_entity=self.administrative_entity,
         )
-        selected_form = factories.SelectedFormFactory(
-            submission=submission
-        )
+        selected_form = factories.SelectedFormFactory(submission=submission)
 
-        amend_fields = factories.SubmissionAmendFieldFactory.create_batch(fields_quantity)
+        amend_fields = factories.SubmissionAmendFieldFactory.create_batch(
+            fields_quantity
+        )
 
         data = {
             "action": submissions_models.ACTION_AMEND,
@@ -2847,9 +2489,7 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
                 field=amend_field,
                 selected_form=selected_form,
             )
-            data[
-                f"{forms_pk}_{amend_field.pk}"
-            ] = "I am a new field value, I am alive!"
+            data[f"{forms_pk}_{amend_field.pk}"] = "I am a new field value, I am alive!"
 
         # The delete latter field value by setting it to an empty string
         data[f"{forms_pk}_{amend_fields[-1].pk}"] = ""
@@ -2934,9 +2574,7 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             status=submissions_models.Submission.STATUS_PROCESSING,
             administrative_entity=self.administrative_entity,
         )
-        selected_form = factories.SelectedFormFactory(
-            submission=submission
-        )
+        selected_form = factories.SelectedFormFactory(submission=submission)
 
         fields_public = factories.SubmissionAmendFieldFactory.create_batch(
             fields_quantity, is_visible_by_author=True
@@ -2944,19 +2582,15 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         fields_private = factories.SubmissionAmendFieldFactory.create_batch(
             fields_quantity, is_visible_by_author=False
         )
-        fields_private_validators = (
-            factories.SubmissionAmendFieldFactory.create_batch(
-                fields_quantity,
-                is_visible_by_author=False,
-                is_visible_by_validators=True,
-            )
+        fields_private_validators = factories.SubmissionAmendFieldFactory.create_batch(
+            fields_quantity,
+            is_visible_by_author=False,
+            is_visible_by_validators=True,
         )
 
         fields = fields_public + fields_private + fields_private_validators
 
-        self.client.login(
-            username=submission.author.username, password="password"
-        )
+        self.client.login(username=submission.author.username, password="password")
         data = {
             "action": submissions_models.ACTION_AMEND,
             "status": submissions_models.Submission.STATUS_PROCESSING,
@@ -2968,9 +2602,7 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
                 field=field,
                 selected_form=selected_form,
             )
-            data[
-                f"{forms_pk}_{field.pk}"
-            ] = "I am a new field value, I am alive!"
+            data[f"{forms_pk}_{field.pk}"] = "I am a new field value, I am alive!"
 
         response = self.client.get(
             reverse(
@@ -3056,9 +2688,7 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             administrative_entity=self.administrative_entity,
         )
 
-        submission.forms.set(
-            [first_form, second_form]
-        )
+        submission.forms.set([first_form, second_form])
 
         response = self.client.get(
             reverse(
@@ -3127,7 +2757,9 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         )
 
         submission.refresh_from_db()
-        self.assertEqual(submission.status, submissions_models.Submission.STATUS_RECEIVED)
+        self.assertEqual(
+            submission.status, submissions_models.Submission.STATUS_RECEIVED
+        )
         self.assertContains(response, "compléments")
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
@@ -3166,7 +2798,9 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         )
 
         submission.refresh_from_db()
-        self.assertEqual(submission.status, submissions_models.Submission.STATUS_RECEIVED)
+        self.assertEqual(
+            submission.status, submissions_models.Submission.STATUS_RECEIVED
+        )
 
         # 1 email to author + 2 emails to services
         self.assertEqual(len(mail.outbox), 3)
@@ -3205,9 +2839,7 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         form = factories.FormFactory()
         form.administrative_entities.set([submission.administrative_entity])
 
-        selected_form = factories.SelectedFormFactory(
-            submission=submission, form=form
-        )
+        selected_form = factories.SelectedFormFactory(submission=submission, form=form)
 
         fields = factories.SubmissionAmendFieldFactory.create_batch(
             fields_quantity, can_always_update=True
@@ -3226,9 +2858,7 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
                 field=field,
                 selected_form=selected_form,
             )
-            data[
-                f"{forms_pk}_{field.pk}"
-            ] = "I am a new field value, I am alive!"
+            data[f"{forms_pk}_{field.pk}"] = "I am a new field value, I am alive!"
 
         response = self.client.post(
             reverse(
@@ -3263,9 +2893,7 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         form = factories.FormFactory()
         form.administrative_entities.set([submission.administrative_entity])
 
-        selected_form = factories.SelectedFormFactory(
-            submission=submission, form=form
-        )
+        selected_form = factories.SelectedFormFactory(submission=submission, form=form)
 
         field_editable = factories.SubmissionAmendFieldFactory(
             name="Editable_field", can_always_update=True
@@ -3408,7 +3036,9 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         )
         submission.refresh_from_db()
 
-        self.assertEqual(submission.status, submissions_models.Submission.STATUS_PROCESSING)
+        self.assertEqual(
+            submission.status, submissions_models.Submission.STATUS_PROCESSING
+        )
         self.assertEqual(
             response.context[0]["forms"]["amend"].errors["notify_author"],
             ["Vous devez notifier l'auteur pour une demande de compléments"],
@@ -3418,11 +3048,9 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
 class AdministrativeEntitySecretaryEmailTestcase(TestCase):
     def setUp(self):
         self.user = factories.UserFactory(email="user@geocity.com")
-        self.administrative_entity_expeditor = (
-            factories.AdministrativeEntityFactory(
-                expeditor_email="geocity_rocks@geocity.ch",
-                expeditor_name="Geocity Rocks",
-            )
+        self.administrative_entity_expeditor = factories.AdministrativeEntityFactory(
+            expeditor_email="geocity_rocks@geocity.ch",
+            expeditor_name="Geocity Rocks",
         )
         self.group = factories.SecretariatGroupFactory(
             department__administrative_entity=self.administrative_entity_expeditor
@@ -3709,7 +3337,8 @@ class SubmissionValidationTestcase(TestCase):
         validation.refresh_from_db()
 
         self.assertEqual(
-            validation.validation_status, submissions_models.SubmissionValidation.STATUS_APPROVED
+            validation.validation_status,
+            submissions_models.SubmissionValidation.STATUS_APPROVED,
         )
 
     def test_validator_cannot_validate_non_assigned_submissions(self):
@@ -3747,18 +3376,14 @@ class SubmissionValidationTestcase(TestCase):
         self.client.login(username=validator.username, password="password")
 
         fields_quantity = 3
-        selected_form = factories.SelectedFormFactory(
-            submission=submission
-        )
+        selected_form = factories.SelectedFormFactory(submission=submission)
         fields_private = factories.SubmissionAmendFieldFactory.create_batch(
             fields_quantity, is_visible_by_author=False, is_visible_by_validators=False
         )
-        fields_private_validators = (
-            factories.SubmissionAmendFieldFactory.create_batch(
-                fields_quantity,
-                is_visible_by_author=False,
-                is_visible_by_validators=True,
-            )
+        fields_private_validators = factories.SubmissionAmendFieldFactory.create_batch(
+            fields_quantity,
+            is_visible_by_author=False,
+            is_visible_by_validators=True,
         )
 
         fields = fields_private + fields_private_validators
@@ -3774,9 +3399,7 @@ class SubmissionValidationTestcase(TestCase):
                 field=field,
                 selected_form=selected_form,
             )
-            data[
-                f"{forms_pk}_{field.pk}"
-            ] = "I am a new field value, I am alive!"
+            data[f"{forms_pk}_{field.pk}"] = "I am a new field value, I am alive!"
 
         response = self.client.get(
             reverse(
@@ -3852,7 +3475,8 @@ class SubmissionValidationTestcase(TestCase):
         validation.refresh_from_db()
 
         self.assertEqual(
-            validation.validation_status, submissions_models.SubmissionValidation.STATUS_APPROVED
+            validation.validation_status,
+            submissions_models.SubmissionValidation.STATUS_APPROVED,
         )
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["secretary@geocity.ch"])
@@ -4063,7 +3687,8 @@ class SubmissionClassifyTestCase(TestCase):
     def test_submission_validation_file_not_accessible_to_other_users(self):
         non_author_user = factories.UserFactory()
         submission = factories.SubmissionFactory(
-            validated_at=timezone.now(), status=submissions_models.Submission.STATUS_APPROVED
+            validated_at=timezone.now(),
+            status=submissions_models.Submission.STATUS_APPROVED,
         )
         # This cannot be performed in the factory because we need the submission to have an id to upload a file
         submission.validation_pdf = SimpleUploadedFile("file.pdf", b"contents")
@@ -4290,14 +3915,10 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         self,
     ):
 
-        public_forms = factories.FormFactory.create_batch(
-            2, is_public=True
-        )
+        public_forms = factories.FormFactory.create_batch(2, is_public=True)
         private_form = factories.FormFactory(is_public=False)
         administrative_entity = factories.AdministrativeEntityFactory()
-        administrative_entity.forms.set(
-            public_forms + [private_form]
-        )
+        administrative_entity.forms.set(public_forms + [private_form])
 
         submission = factories.SubmissionFactory(
             author=self.user, administrative_entity=administrative_entity
@@ -4322,14 +3943,10 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         )
         self.user.user_permissions.add(see_private_requests_permission)
 
-        public_forms = factories.FormFactory.create_batch(
-            2, is_public=True
-        )
+        public_forms = factories.FormFactory.create_batch(2, is_public=True)
         private_form = factories.FormFactory(is_public=False)
         administrative_entity = factories.AdministrativeEntityFactory()
-        administrative_entity.forms.set(
-            public_forms + [private_form]
-        )
+        administrative_entity.forms.set(public_forms + [private_form])
 
         submission = factories.SubmissionFactory(
             author=self.user, administrative_entity=administrative_entity
@@ -4348,22 +3965,16 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
     def test_form_category_step_show_public_requests_to_standard_user(
         self,
     ):
-        public_forms = factories.FormFactory.create_batch(
-            2, is_public=True
-        )
+        public_forms = factories.FormFactory.create_batch(2, is_public=True)
         private_form = factories.FormFactory(is_public=False)
         administrative_entity = factories.AdministrativeEntityFactory()
-        administrative_entity.forms.set(
-            public_forms + [private_form]
-        )
+        administrative_entity.forms.set(public_forms + [private_form])
 
         submission = factories.SubmissionFactory(
             author=self.user, administrative_entity=administrative_entity
         )
 
-        submission.administrative_entity.forms.set(
-            forms_models.Form.objects.all()
-        )
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
 
         forms_models.Form.objects.create(
             submission=submission,
@@ -4398,22 +4009,16 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         )
         self.user.user_permissions.add(see_private_requests_permission)
 
-        public_forms = factories.FormFactory.create_batch(
-            2, is_public=True
-        )
+        public_forms = factories.FormFactory.create_batch(2, is_public=True)
         private_form = factories.FormFactory(is_public=False)
         administrative_entity = factories.AdministrativeEntityFactory()
-        administrative_entity.forms.set(
-            public_forms + [private_form]
-        )
+        administrative_entity.forms.set(public_forms + [private_form])
 
         submission = factories.SubmissionFactory(
             author=self.user, administrative_entity=administrative_entity
         )
 
-        submission.administrative_entity.forms.set(
-            forms_models.Form.objects.all()
-        )
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
 
         forms_models.Form.objects.create(
             submission=submission,
@@ -4425,9 +4030,7 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             form=public_forms[1],
         )
 
-        forms_models.Form.objects.create(
-            submission=submission, form=private_form
-        )
+        forms_models.Form.objects.create(submission=submission, form=private_form)
 
         response = self.client.get(
             reverse(
@@ -4584,7 +4187,10 @@ class SubmissionAnonymousTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         # As the form has to fields, going directly to next step
         self.assertTrue(
-            isinstance(response.context["formset"].forms[0], submissions_forms.SubmissionGeoTimeForm)
+            isinstance(
+                response.context["formset"].forms[0],
+                submissions_forms.SubmissionGeoTimeForm,
+            )
         )
 
     def test_anonymous_request_submission_deletes_temporary_user(self):

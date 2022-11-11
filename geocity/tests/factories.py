@@ -393,7 +393,6 @@ class FieldFactoryTypeAddress(factory.django.DjangoModelFactory):
 
     name = factory.Faker("word")
     input_type = forms_models.Field.INPUT_TYPE_ADDRESS
-    order = factory.Sequence(int)
 
 
 class FieldFactoryTypeFile(factory.django.DjangoModelFactory):
@@ -402,7 +401,6 @@ class FieldFactoryTypeFile(factory.django.DjangoModelFactory):
 
     name = factory.Faker("word")
     input_type = forms_models.Field.INPUT_TYPE_FILE
-    order = factory.Sequence(int)
 
 
 class FieldFactoryTypeTitle(factory.django.DjangoModelFactory):
@@ -412,7 +410,6 @@ class FieldFactoryTypeTitle(factory.django.DjangoModelFactory):
     name = factory.Faker("word")
     help_text = factory.Faker("word")
     input_type = forms_models.Field.INPUT_TYPE_TITLE
-    order = factory.Sequence(int)
 
 
 class FieldFactoryTypeFileDownload(factory.django.DjangoModelFactory):
@@ -422,7 +419,6 @@ class FieldFactoryTypeFileDownload(factory.django.DjangoModelFactory):
     name = factory.Faker("word")
     help_text = factory.Faker("word")
     input_type = forms_models.Field.INPUT_TYPE_FILE_DOWNLOAD
-    order = factory.Sequence(int)
     file_download = SimpleUploadedFile("file.pdf", "contents".encode())
 
 
