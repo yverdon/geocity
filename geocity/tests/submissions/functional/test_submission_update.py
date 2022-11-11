@@ -6,17 +6,8 @@ from django.test import TestCase
 from django.urls import reverse
 
 from geocity.apps.submissions import models as submissions_models
-from geocity.apps.submissions import services as submissions_services
 from geocity.tests import factories
 from geocity.tests.utils import LoggedInUserMixin, get_parser
-
-
-def get_submission_form_categories_ids(submission):
-    return list(
-        submission.forms.order_by("category__name")
-        .values_list("category_id", flat=True)
-        .distinct()
-    )
 
 
 class SubmissionUpdateTestCase(LoggedInUserMixin, TestCase):
