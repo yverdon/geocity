@@ -345,7 +345,7 @@ def search_submission_created_at(date_or_partial_date, submissions_qs, limit=Non
     return [
         SearchResult(
             submission_id=result["id"],
-            iosubsubmission_status=result["status"],
+            submission_status=result["status"],
             submission_created_at=result["created_at"],
             author_name=result["author_full_name"],
             field_label=None,

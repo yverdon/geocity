@@ -10,8 +10,8 @@ from django.db.models import Q, Value
 from django.db.models.functions import StrIndex, Substr
 from django.utils.translation import gettext_lazy as _
 
-from geocity.fields import GeometryWidget
 from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
+from geocity.fields import GeometryWidget
 
 from . import models, permissions_groups
 from .users import get_integrator_permissions

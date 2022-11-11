@@ -45,18 +45,18 @@ from geocity.apps.accounts.decorators import (
     check_mandatory_2FA,
     permanent_user_required,
 )
+from geocity.apps.accounts.forms import GenericUserProfileForm
 from geocity.apps.accounts.models import (
     AdministrativeEntity,
     PermitDepartment,
     UserProfile,
 )
-from geocity.apps.accounts.forms import GenericUserProfileForm
 from geocity.apps.accounts.users import get_departments, has_profile
 from geocity.apps.forms.models import Field, Form
 
 from . import filters, forms, models, permissions, services, tables
 from .exceptions import BadSubmissionStatus, NonProlongableSubmission
-from .search import search_submissions, search_result_to_json
+from .search import search_result_to_json, search_submissions
 from .shortcuts import get_submission_for_user_or_404
 from .steps import (
     StepType,
@@ -560,7 +560,7 @@ class SubmissionDetailView(View):
             services.send_email_notification(data)
 
             # Notify the services
-            mailing_list = submission.get_services_to_notify_mailing_list(submission)
+            mailing_list = submission.get_services_to_notify_mailing_list()
 
             if mailing_list:
                 data = {
@@ -1073,7 +1073,10 @@ def anonymous_submission(request):
         submission.forms.set(anonymous_forms)
 
     steps = get_anonymous_steps(
-        form_category=form_category, user=request.user, submission=submission
+        form_category=form_category,
+        user=request.user,
+        submission=submission,
+        current_site=get_current_site(request),
     )
 
     for step_type, step in steps.items():
@@ -1125,19 +1128,16 @@ def submission_select_administrative_entity(request, submission_id=None):
                 author=request.user,
             )
 
-            candidate_forms = None
+            candidate_forms = models.Form.objects.filter(
+                administrative_entities__in=entities_after_filter,
+            )
 
-            if request.session["typefilter"] == []:
-                candidate_forms = models.Form.objects.filter(
-                    administrative_entities__in=entities_after_filter,
-                )
-            else:
+            if request.session["typefilter"]:
                 categories_by_tag = models.FormCategory.objects.filter_by_tags(
                     request.session["typefilter"]
                 ).values_list("pk", flat=True)
 
-                candidate_forms = models.Form.objects.filter(
-                    administrative_entities__in=entities_after_filter,
+                candidate_forms = candidate_forms.filter(
                     category__in=categories_by_tag,
                 )
 

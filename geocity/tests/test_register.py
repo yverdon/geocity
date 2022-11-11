@@ -50,7 +50,9 @@ class TestRegisterView(TestCase, TestRegisterMixin):
             follow=True,
         )
         self.client.post(reverse("logout"))
-        response = self.client.post(reverse("accounts:user_profile_create"), data, follow=True)
+        response = self.client.post(
+            reverse("accounts:user_profile_create"), data, follow=True
+        )
         self.assertContains(response, "Cet email est déjà utilisé.")
         self.assertFalse(response.context["user"].is_authenticated)
 
@@ -107,7 +109,9 @@ class TestRegisterView(TestCase, TestRegisterMixin):
 
     def test_user_cannot_register_if_captcha_isnot_filled(self):
         data = self.get_user_data()
-        response = self.client.post(reverse("accounts:user_profile_create"), data, follow=True)
+        response = self.client.post(
+            reverse("accounts:user_profile_create"), data, follow=True
+        )
         self.assertEquals(
             response.context[0]["userprofileform"].errors["captcha"],
             ["Ce champ est obligatoire."],

@@ -4,18 +4,18 @@
     <h2>Contact·s</h2>
     {% if request_data.properties.permit_request_actor %}
         <div class="flex_container">
-            {% for type, actor in request_data.properties.permit_request_actor.items %}
+            {% for type, contact in request_data.properties.contacts.items %}
                 <div class="flex_item-50">
-                    <span class="bold">Type : </span>{{actor.actor_type_display}}<br>
-                    <span class="bold">Prénom : </span>{{actor.first_name}}<br>
-                    <span class="bold">Nom : </span>{{actor.last_name}}<br>
-                    <span class="bold">Adresse : </span>{{actor.address}}<br>
-                    <span class="bold">NPA : </span>{{actor.zipcode}}<br>
-                    <span class="bold">Localité : </span>{{actor.city}}<br>
-                    <span class="bold">Raison sociale : </span>{{actor.company_name}}<br>
-                    <span class="bold">Numéro TVA : </span>{{actor.vat_number}}<br>
-                    <span class="bold">Téléphone : </span>{{actor.phone}}<br>
-                    <span class="bold">E-mail : </span>{{actor.email}}<br>
+                    <span class="bold">Type : </span>{{contact.contact_type_display}}<br>
+                    <span class="bold">Prénom : </span>{{contact.first_name}}<br>
+                    <span class="bold">Nom : </span>{{contact.last_name}}<br>
+                    <span class="bold">Adresse : </span>{{contact.address}}<br>
+                    <span class="bold">NPA : </span>{{contact.zipcode}}<br>
+                    <span class="bold">Localité : </span>{{contact.city}}<br>
+                    <span class="bold">Raison sociale : </span>{{contact.company_name}}<br>
+                    <span class="bold">Numéro TVA : </span>{{contact.vat_number}}<br>
+                    <span class="bold">Téléphone : </span>{{contact.phone}}<br>
+                    <span class="bold">E-mail : </span>{{contact.email}}<br>
                 </div>
             {% endfor %}
         </div>

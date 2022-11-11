@@ -18,10 +18,6 @@
         throw "No empty form node. Make sure there’s a node with `data-geo-time-role=\"emptyForm\"`.";
       }
 
-      if (!this.addButtonNode) {
-        throw "No add form node. Make sure there’s a node with `data-geo-time-role=\"addForm\"`.";
-      }
-
       if (!this.totalFormsInputNode) {
         throw "No total forms input node. Make sure there’s a node with `data-geo-time-role=\"managementForm\"` which contains the management form.";
       }
@@ -49,8 +45,8 @@
 
       // Manually set bindings for the datepickers
       // See https://github.com/monim67/django-bootstrap-datepicker-plus/blob/22c4299019cb6328eed2938598e323c0d43c5e9a/bootstrap_datepicker_plus/static/bootstrap_datepicker_plus/js/datepicker-widget.js
-      newNode.querySelectorAll("[dp_config]").forEach(function (node) {
-        let $picker = jQuery(node).datetimepicker(JSON.parse(node.attributes.dp_config.value).options);
+      newNode.querySelectorAll("[data-dp-config]").forEach(function (node) {
+        let $picker = jQuery(node).datetimepicker(JSON.parse(node.dataset.dpConfig).options);
 
         $picker.next('.input-group-addon').on('click', function () {
           $picker.data("DateTimePicker").show();
@@ -81,17 +77,17 @@
     }
 
     fixEndsAt() {
-      if (this.permitDurationMax !== "None") {
+      if (this.permitDurationMax !== "") {
         let allStarts = document.querySelectorAll("[id*='starts_at']")
         allStarts.forEach((node) => {
-          let $picker = jQuery(node).datetimepicker(JSON.parse(node.attributes.dp_config.value).options)
+          let $picker = jQuery(node).datetimepicker(JSON.parse(node.dataset.dpConfig).options)
           let form = $picker[0].id.slice(0, -9)
           let ends_at = document.querySelector("[id*=" + form + "ends_at]")
 
           $picker.on("dp.change", (e) => {
             let chosen_start_date = e.date.endOf('day')
             let min_end_date = moment(chosen_start_date, "DD.MM.YYYY").add(1, 'days').startOf('day')
-            let max_end_date = moment(chosen_start_date, "DD.MM.YYYY").add(parseInt(this.permitDurationMax), 'days')
+            let max_end_date = moment(chosen_start_date, "DD.MM.YYYY").add(Math.max(1, this.permitDurationMax), 'days')
             jQuery(ends_at).data("DateTimePicker").options(
               {
                 minDate: min_end_date,
@@ -107,7 +103,9 @@
     }
 
     _addEventListeners() {
-      this.addButtonNode.addEventListener("click", this.addForm.bind(this));
+      if (this.addButtonNode) {
+        this.addButtonNode.addEventListener("click", this.addForm.bind(this));
+      }
 
       this._getCollapses().forEach(this._fixMapSizeOnCollapseOpen);
     }

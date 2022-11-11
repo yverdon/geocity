@@ -5,25 +5,16 @@ import urllib.parse
 import zipfile
 from datetime import date, datetime, timedelta
 
+import PIL
+import requests
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.contrib.gis.db import models as geomodels
 from django.contrib.gis.geos import GeometryCollection, MultiPoint, Point
 from django.core.exceptions import SuspiciousOperation
-from django.core.validators import (
-    FileExtensionValidator,
-)
+from django.core.validators import FileExtensionValidator
 from django.db import models, transaction
-from django.db.models import (
-    Count,
-    F,
-    JSONField,
-    Max,
-    Min,
-    ProtectedError,
-    Q,
-    Value,
-)
+from django.db.models import Count, F, JSONField, Max, Min, ProtectedError, Q, Value
 from django.db.models.functions import Concat
 from django.urls import reverse
 from django.utils import timezone
@@ -31,25 +22,17 @@ from django.utils.dateparse import parse_date
 from django.utils.functional import cached_property
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
-
-import PIL
-import requests
 from django_tables2.export import TableExport
 from pdf2image import convert_from_path
 from PIL import Image
 from simple_history.models import HistoricalRecords
 
-from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment, User
 from geocity.apps.accounts import users
+from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment, User
 from geocity.apps.accounts.validators import validate_email
-from geocity.apps.forms.models import (
-    Field,
-    Form,
-    FormCategory,
-)
+from geocity.apps.forms.models import Field, Form, FormCategory
 
 from . import fields
-
 
 # Contact types
 CONTACT_TYPE_OTHER = 0

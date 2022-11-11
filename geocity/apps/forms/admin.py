@@ -123,6 +123,18 @@ class FormAdminForm(forms.ModelForm):
         return super().save(*args, **kwargs)
 
 
+class FormFieldInline(admin.TabularInline):
+    model = models.FormField
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "field":
+            kwargs["queryset"] = filter_for_user(
+                request.user, models.Field.objects.all()
+            )
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
 @admin.register(models.Form)
 class FormAdmin(IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdmin):
     form = FormAdminForm
@@ -214,6 +226,7 @@ class FormAdmin(IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdmin):
             },
         ),
     )
+    inlines = [FormFieldInline]
 
     def sortable_str(self, obj):
         return obj.__str__()

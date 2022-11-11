@@ -15,7 +15,6 @@ from geocity.apps.submissions.models import Submission, SubmissionGeoTime
 
 from . import permissions, serializers
 
-
 # ///////////////////////////////////
 # DJANGO REST API
 # ///////////////////////////////////
