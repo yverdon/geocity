@@ -113,7 +113,7 @@ class TestRegisterView(TestCase, TestRegisterMixin):
             reverse("accounts:user_profile_create"), data, follow=True
         )
         self.assertEquals(
-            response.context[0]["userprofileform"].errors["captcha"],
+            response.context[0]["user_profile_form"].errors["captcha"],
             ["Ce champ est obligatoire."],
         )
         self.assertFalse(response.context["user"].is_authenticated)

@@ -17,7 +17,7 @@ def get_parser(content):
 
 class TestLoginMixin:
     def test_get_login_view(self):
-        response = self.client.get(reverse("account_login"))
+        response = self.client.get(reverse("accounts:account_login"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Connexion")
 
@@ -31,7 +31,7 @@ if not settings.ENABLE_2FA:
         def test_post_login_view(self):
             user = factories.UserFactory()
             response = self.client.post(
-                reverse("account_login"),
+                reverse("accounts:account_login"),
                 {"username": user.username, "password": "password"},
                 follow=True,
             )
@@ -43,7 +43,9 @@ if not settings.ENABLE_2FA:
             )
 
         def test_post_login_view_fail(self):
-            response = self.client.post(reverse("account_login"), {}, follow=True)
+            response = self.client.post(
+                reverse("accounts:account_login"), {}, follow=True
+            )
             self.assertEqual(response.status_code, 200)
             self.assertContains(
                 response,
@@ -56,7 +58,7 @@ if settings.ENABLE_2FA:
     class TestLoginView2FA(TestCase, TestLoginMixin):
         def login(self, data):
             return self.client.post(
-                reverse("account_login"),
+                reverse("accounts:account_login"),
                 data,
                 follow=True,
             )
@@ -93,12 +95,14 @@ if settings.ENABLE_2FA:
             self.assertFalse(response.context["user"].is_authenticated)
 
         def test_post_login_view_fail(self):
-            response = self.client.post(reverse("account_login"), {}, follow=True)
+            response = self.client.post(
+                reverse("accounts:account_login"), {}, follow=True
+            )
             self.assertEqual(response.status_code, 400)
 
         def test_post_login_view_with_step_fail(self):
             response = self.client.post(
-                reverse("account_login"),
+                reverse("accounts:account_login"),
                 {"custom_login_view-current_step": "auth"},
                 follow=True,
             )
@@ -113,7 +117,8 @@ class TestLoginPage(TestCase):
     def test_get_customized_login_view(self):
         customization = factories.TemplateCustomizationFactory()
         response = self.client.get(
-            reverse("account_login"), data={"template": customization.templatename}
+            reverse("accounts:account_login"),
+            data={"template": customization.templatename},
         )
 
         expected_title = "<h3>" + customization.application_title + "</h3>"
@@ -137,7 +142,7 @@ class TestLoginPage(TestCase):
     def test_get_standard_login_view(self):
 
         response = self.client.get(
-            reverse("account_login"),
+            reverse("accounts:account_login"),
         )
         content = response.content.decode()
 
@@ -224,7 +229,7 @@ class TestRemoteUserLogin(TestCase):
         self.assertEqual(response1.status_code, 200)
         self.assertRedirects(
             response1,
-            f"{resolve_url('account_login')}?next=/submissions/administrative-entity/",
+            f"{resolve_url('accounts:account_login')}?next=/permit-requests/administrative-entity/",
         )
         self.assertFalse(response1.context["user"].is_authenticated)
         self.assertContains(response1, "Connexion")
