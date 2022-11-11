@@ -491,7 +491,7 @@ class SubmissionAmendFieldValueFactory(factory.django.DjangoModelFactory):
         model = submissions_models.SubmissionAmendFieldValue
 
     field = factory.SubFactory(SubmissionAmendFieldFactory)
-    selected_form = factory.SubFactory(SelectedFormFactory)
+    form = factory.SubFactory(SelectedFormFactory)
     value = factory.Faker("word")
 
 
