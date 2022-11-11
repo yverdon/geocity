@@ -306,6 +306,7 @@ class FormFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("word")
     category = factory.SubFactory(FormCategoryFactory)
     is_public = True
+    order = factory.Sequence(int)
 
     @factory.post_generation
     def integrator(self, create, extracted, **kwargs):
@@ -420,6 +421,15 @@ class FieldFactoryTypeFileDownload(factory.django.DjangoModelFactory):
     help_text = factory.Faker("word")
     input_type = forms_models.Field.INPUT_TYPE_FILE_DOWNLOAD
     file_download = SimpleUploadedFile("file.pdf", "contents".encode())
+
+
+class FormFieldFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = forms_models.FormField
+
+    form = factory.SubFactory(FormFactory)
+    field = factory.SubFactory(FieldFactory)
+    order = factory.Sequence(int)
 
 
 class SelectedFormFactory(factory.django.DjangoModelFactory):
