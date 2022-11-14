@@ -109,9 +109,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             reverse(
                 "submissions:submission_select_forms",
                 kwargs={"submission_id": submission.pk},
-            )
-            + "?types={}".format(self.form_categories[0].pk),
-            data={"form-{}".format(self.form_categories[0].pk): form.pk},
+            ),
+            data={"forms-selected_forms": form.pk},
         )
 
         self.assertEqual(
@@ -436,7 +435,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         )
         form_category = factories.FormCategoryFactory(name="Foo category")
         form = factories.FormWithoutGeometryFactory(
-            form_category=form_category,
+            category=form_category,
             needs_date=False,
         )
         submission.forms.set([form])
@@ -471,14 +470,14 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
         submission = factories.SubmissionGeoTimeFactory(
             submission=factories.SubmissionFactory(
-                administrative_entity=group.permitdepartment.administrative_entity,
+                administrative_entity=group.permit_department.administrative_entity,
                 author=self.user,
                 status=submissions_models.Submission.STATUS_DRAFT,
             )
         ).submission
         form_category = factories.FormCategoryFactory(name="Foo category")
         form = factories.FormFactory(
-            form_category=form_category,
+            category=form_category,
         )
         submission.forms.set([form])
 
@@ -504,7 +503,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         ).submission
         form_category = factories.FormCategoryFactory(name="Foo category")
         form = factories.FormFactory(
-            form_category=form_category,
+            category=form_category,
         )
         selected_form = factories.SelectedFormFactory(
             submission=submission,
@@ -569,9 +568,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_form_automatically_set_when_only_one_form(self):
         submission = factories.SubmissionFactory(author=self.user)
-        form = factories.FormFactory()
         submission.administrative_entity.forms.set(
-            factories.FormFactory.create_batch(2, form=form)
+            factories.FormFactory.create_batch(2)
         )
         form_category_id = submission.administrative_entity.forms.values_list(
             "form_category_id", flat=True
@@ -600,7 +598,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         form_category = factories.FormCategoryFactory()
         administrative_entity = factories.AdministrativeEntityFactory()
         administrative_entity.forms.set(
-            factories.FormFactory.create_batch(2, form_category=form_category)
+            factories.FormFactory.create_batch(2, category=form_category)
         )
 
         response = self.client.post(
@@ -618,7 +616,6 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
                 "submissions:submission_select_forms",
                 kwargs={"submission_id": submission.pk},
             )
-            + f"?categories={form_category.pk}",
         )
 
     def test_geotime_step_only_date_fields_appear_when_only_date_is_required(self):
@@ -973,7 +970,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
         submission = factories.SubmissionGeoTimeFactory(
             submission=factories.SubmissionFactory(
-                administrative_entity=group.permitdepartment.administrative_entity,
+                administrative_entity=group.permit_department.administrative_entity,
                 author=self.user,
                 status=submissions_models.Submission.STATUS_DRAFT,
             )
@@ -993,7 +990,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
         submission = factories.SubmissionGeoTimeFactory(
             submission=factories.SubmissionFactory(
-                administrative_entity=group.permitdepartment.administrative_entity,
+                administrative_entity=group.permit_department.administrative_entity,
                 author=self.user,
                 status=submissions_models.Submission.STATUS_DRAFT,
             )
@@ -1035,7 +1032,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         form = factories.FormFactory(start_delay=0)
         submission = factories.SubmissionGeoTimeFactory(
             submission=factories.SubmissionFactory(
-                administrative_entity=group.permitdepartment.administrative_entity,
+                administrative_entity=group.permit_department.administrative_entity,
                 author=self.user,
                 status=submissions_models.Submission.STATUS_DRAFT,
             )
@@ -1061,7 +1058,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
         submission = factories.SubmissionGeoTimeFactory(
             submission=factories.SubmissionFactory(
-                administrative_entity=group.permitdepartment.administrative_entity,
+                administrative_entity=group.permit_department.administrative_entity,
                 author=self.user,
                 status=submissions_models.Submission.STATUS_DRAFT,
             )
@@ -1193,11 +1190,9 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_form_category_is_filtered_by_tag(self):
         additional_form_category = factories.FormCategoryFactory()
-        additional_forms = factories.FormFactory()
 
         forms_models.Form.objects.create(
-            form_category=additional_form_category,
-            form=additional_forms,
+            category=additional_form_category,
             is_public=True,
         )
 
@@ -1225,7 +1220,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         additional_form_category = factories.FormCategoryFactory()
 
         forms_models.Form.objects.create(
-            form_category=additional_form_category,
+            category=additional_form_category,
             is_public=True,
         )
 
