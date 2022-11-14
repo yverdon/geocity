@@ -84,7 +84,7 @@ class FormQuerySet(models.QuerySet):
         """
         forms = self.filter(administrative_entities=administrative_entity)
 
-        if not user.has_perm("submissions.see_private_requests"):
+        if not user.has_perm("accounts.see_private_requests"):
             forms = forms.filter(is_public=True)
 
         if len(forms) > 1:
@@ -105,7 +105,7 @@ class FormQuerySet(models.QuerySet):
         if site:
             queryset = queryset.filter(sites=site)
 
-        if not user.has_perm("submissions.see_private_requests"):
+        if not user.has_perm("accounts.see_private_requests"):
             queryset = queryset.filter(forms__is_public=True)
 
         return queryset
