@@ -2,15 +2,15 @@ from datetime import datetime, timedelta
 
 from django.urls import reverse
 
-from geocity.apps.permits import models
+from geocity.apps.submissions import models as submissions_models
 
-from .. import factories
-from ..geocity_test_case import GeocityTestCase
+from geocity.tests import factories
+from geocity.tests.geocity_test_case import GeocityTestCase
 
 
-class TestPermitRequestInquiry(GeocityTestCase):
+class TestSubmissionInquiry(GeocityTestCase):
 
-    action = models.ACTION_REQUEST_INQUIRY
+    action = submissions_models.ACTION_REQUEST_INQUIRY
 
     def setUp(self):
         super().setUp()
@@ -18,12 +18,12 @@ class TestPermitRequestInquiry(GeocityTestCase):
         self.login(email="user@test.com")
         self.parent_type = factories.ParentComplementaryDocumentTypeFactory()
 
-        self.permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_RECEIVED,
+        self.submission = factories.SubmissionFactory(
+            author=self.user,
+            status=submissions_models.Submission.STATUS_RECEIVED,
             administrative_entity=self.administrative_entity,
         )
-        self.permit_request.works_object_types.add(factories.WorksObjectTypeFactory())
+        self.submission.forms.add(factories.FormFactory())
 
         today = datetime.today().date()
         self.data = {
@@ -60,7 +60,7 @@ class TestPermitRequestInquiry(GeocityTestCase):
 
     def test_start_inquiry_without_documents(self):
 
-        detail = self.execute_permit_request_action(data=self.data)
+        detail = self.execute_submission_action(data=self.data)
         inquiry = detail.context["forms"][self.action].instance
 
         self.assertInquiryCreated(
@@ -72,17 +72,18 @@ class TestPermitRequestInquiry(GeocityTestCase):
             },
         )
         self.assertEqual(
-            self.permit_request.status, models.PermitRequest.STATUS_INQUIRY_IN_PROGRESS
+            self.submission.status,
+            submissions_models.Submission.STATUS_INQUIRY_IN_PROGRESS,
         )
 
     def test_start_inquiry_with_public_documents(self):
         document = factories.ComplementaryDocumentFactory.create(
-            permit_request=self.permit_request,
+            submission=self.submission,
             authorised_departments=[self.departments[self.VALIDATOR].pk],
             is_public=True,
         )
 
-        detail = self.execute_permit_request_action(
+        detail = self.execute_submission_action(
             data={
                 **self.data,
                 **{
@@ -105,14 +106,14 @@ class TestPermitRequestInquiry(GeocityTestCase):
         self.login(email="pilot@test.com", group=self.SECRETARIAT)
 
         document = factories.ComplementaryDocumentFactory.create(
-            permit_request=self.permit_request,
+            submission=self.submission,
             authorised_departments=[self.departments[self.VALIDATOR].pk],
         )
 
         response = self.client.post(
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": self.permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": self.submission.pk},
             ),
             data={
                 **self.data,
@@ -127,11 +128,11 @@ class TestPermitRequestInquiry(GeocityTestCase):
 
     def test_inquiry_with_non_public_documents_changes_to_public(self):
         document = factories.ComplementaryDocumentFactory.create(
-            permit_request=self.permit_request,
+            submission=self.submission,
             authorised_departments=[self.departments[self.VALIDATOR].pk],
         )
 
-        detail = self.execute_permit_request_action(
+        detail = self.execute_submission_action(
             data={
                 **self.data,
                 **{

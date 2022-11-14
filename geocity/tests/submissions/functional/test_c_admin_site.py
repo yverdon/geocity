@@ -5,13 +5,12 @@ from django.urls import reverse
 from django_otp import DEVICE_ID_SESSION_KEY
 from two_factor.utils import default_device
 
-from geocity.apps.permits import admin, models
-from geocity.apps.permits.tests.factories import SecretariatUserFactory, UserFactory
+from geocity.apps.accounts.admin import MULTIPLE_INTEGRATOR_ERROR_MESSAGE
+from geocity.apps.submissions import models
+from geocity.tests import factories
+from geocity.tests.utils import LoggedInIntegratorMixin, get_parser
 
-from . import factories
-from .utils import LoggedInIntegratorMixin, get_parser
-
-# TODO: Write update/delete/create tests for [PermitAdministrativeEntity, WorksType, WorksObject, WorksObjectType, WorksObjectProperty, PermitActorType, PermitActorType, PermitRequestAmendProperty]
+# TODO: Write update/delete/create tests for [AdministrativeEntity, FormCategory, Form, Form, Field, ContactType, ContactType, SubmissionAmendField]
 
 # "$ ./manage.py show_urls" to show admin routes
 class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
@@ -25,11 +24,11 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
 
     def setUp(self):
         super().setUp()
-        self.administrative_entity = (
-            factories.PermitAdministrativeEntityFactory.create_batch(3)
+        self.administrative_entity = factories.AdministrativeEntityFactory.create_batch(
+            3
         )
-        self.integrator_administrative_entity = (
-            factories.PermitAdministrativeEntityFactory(integrator=self.group)
+        self.integrator_administrative_entity = factories.AdministrativeEntityFactory(
+            integrator=self.group
         )
 
         self.parent_type = factories.ParentComplementaryDocumentTypeFactory()
@@ -37,41 +36,30 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             integrator=self.group
         )
 
-        self.works_type = factories.WorksTypeFactory.create_batch(3)
-        self.integrator_works_type = factories.WorksTypeFactory(integrator=self.group)
+        self.category = factories.FormCategoryFactory.create_batch(3)
+        self.integrator_category = factories.FormCategoryFactory(integrator=self.group)
 
-        self.works_object = factories.WorksObjectFactory.create_batch(3)
-        self.integrator_works_object = factories.WorksObjectFactory(
+        self.forms = factories.FormFactory.create_batch(3)
+        self.integrator_form = factories.FormFactory(integrator=self.group)
+
+        self.fields = factories.FieldFactory.create_batch(3)
+        self.integrator_field = factories.FieldFactory(integrator=self.group)
+
+        self.contact_type = factories.ContactTypeFactory.create_batch(3)
+        self.integrator_contact_type = factories.ContactTypeFactory(
             integrator=self.group
         )
 
-        self.works_object_type = factories.WorksObjectTypeFactory.create_batch(3)
-        self.integrator_works_object_type = factories.WorksObjectTypeFactory(
+        self.contact_type = factories.ContactTypeFactory.create_batch(3)
+        self.integrator_contact_type = factories.ContactTypeFactory(
             integrator=self.group
         )
 
-        self.works_object_property = factories.WorksObjectPropertyFactory.create_batch(
-            3
+        self.submission_amend_field = (
+            factories.SubmissionAmendFieldFactory.create_batch(3)
         )
-        self.integrator_works_object_property = factories.WorksObjectPropertyFactory(
+        self.integrator_submission_amend_field = factories.SubmissionAmendFieldFactory(
             integrator=self.group
-        )
-
-        self.permit_actor_type = factories.PermitActorTypeFactory.create_batch(3)
-        self.integrator_permit_actor_type = factories.PermitActorTypeFactory(
-            integrator=self.group
-        )
-
-        self.permit_actor_type = factories.PermitActorTypeFactory.create_batch(3)
-        self.integrator_permit_actor_type = factories.PermitActorTypeFactory(
-            integrator=self.group
-        )
-
-        self.permit_request_amend_property = (
-            factories.PermitRequestAmendPropertyFactory.create_batch(3)
-        )
-        self.integrator_permit_request_amend_property = (
-            factories.PermitRequestAmendPropertyFactory(integrator=self.group)
         )
 
         if settings.ENABLE_2FA:
@@ -99,8 +87,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
     def test_integrator_can_see_user_if_integrator_email_domains_is_configured_by_admin(
         self,
     ):
-        self.group.permitdepartment.integrator_email_domains = "notalloweddomain.ch"
-        self.group.permitdepartment.save()
+        self.group.permit_department.integrator_email_domains = "notalloweddomain.ch"
+        self.group.permit_department.save()
         user = User.objects.create_user(
             email=f"yverdon-squad+admin@notalloweddomain.ch",
             first_name="nonadminuser",
@@ -135,10 +123,10 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
     def test_integrator_can_see_user_if_integrator_emails_exceptions_is_configured_by_admin(
         self,
     ):
-        self.group.permitdepartment.integrator_emails_exceptions = (
+        self.group.permit_department.integrator_emails_exceptions = (
             "dummyuser@notalloweddomain.ch"
         )
-        self.group.permitdepartment.save()
+        self.group.permit_department.save()
         user = User.objects.create_user(
             email=f"dummyuser@notalloweddomain.ch",
             first_name="nonadminuser",
@@ -153,136 +141,127 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(parser.select("tbody")), 1)
 
-    def test_integrator_can_only_see_own_permitadministrativeentity(self):
+    def test_integrator_can_only_see_own_administrativeentity(self):
         response = self.client.get(
-            reverse("admin:permits_permitadministrativeentity_changelist")
+            reverse("admin:accounts_administrativeentity_changelist")
         )
         parser = get_parser(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(parser.select(".field-sortable_str")), 1)
 
-    def test_admin_can_see_all_permitadministrativeentity(self):
+    def test_admin_can_see_all_administrativeentity(self):
         user = factories.SuperUserFactory()
         self.client.login(username=user.username, password="password")
         if settings.ENABLE_2FA:
             self.enable_otp_session(user=user)
 
         response = self.client.get(
-            reverse("admin:permits_permitadministrativeentity_changelist")
+            reverse("admin:accounts_administrativeentity_changelist")
         )
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
         self.assertGreaterEqual(len(parser.select(".field-sortable_str")), 2)
 
-    def test_integrator_can_only_see_own_workstype(self):
-        response = self.client.get(reverse("admin:permits_workstype_changelist"))
+    def test_integrator_can_only_see_own_categories(self):
+        response = self.client.get(reverse("admin:forms_formcategory_changelist"))
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(parser.select(".field-sortable_str")), 1)
 
-    def test_admin_can_see_all_workstype(self):
+    def test_admin_can_see_all_formcategory(self):
         user = factories.SuperUserFactory()
         self.client.login(username=user.username, password="password")
         if settings.ENABLE_2FA:
             self.enable_otp_session(user=user)
 
-        response = self.client.get(reverse("admin:permits_workstype_changelist"))
+        response = self.client.get(reverse("admin:forms_formcategory_changelist"))
         parser = get_parser(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             len(parser.select(".field-sortable_str")),
-            models.WorksType.objects.all().count(),
+            models.FormCategory.objects.all().count(),
         )
 
-    def test_integrator_can_only_see_own_worksobject(self):
-        response = self.client.get(reverse("admin:permits_worksobject_changelist"))
+    def test_integrator_can_only_see_own_form(self):
+        response = self.client.get(reverse("admin:forms_form_changelist"))
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(parser.select(".field-sortable_str")), 1)
 
-    def test_admin_can_see_all_worksobject(self):
+    def test_admin_can_see_all_form(self):
         user = factories.SuperUserFactory()
         self.client.login(username=user.username, password="password")
         if settings.ENABLE_2FA:
             self.enable_otp_session(user=user)
 
-        response = self.client.get(reverse("admin:permits_worksobject_changelist"))
+        response = self.client.get(reverse("admin:forms_form_changelist"))
         parser = get_parser(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             len(parser.select(".field-sortable_str")),
-            models.WorksObject.objects.all().count(),
+            models.Form.objects.all().count(),
         )
 
-    def test_integrator_can_only_see_own_worksobjecttype(self):
-        response = self.client.get(reverse("admin:permits_worksobjecttype_changelist"))
-        parser = get_parser(response.content)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-sortable_str")), 1)
-
-    def test_admin_can_see_all_worksobjecttype(self):
-        user = factories.SuperUserFactory()
-        self.client.login(username=user.username, password="password")
-        if settings.ENABLE_2FA:
-            self.enable_otp_session(user=user)
-
-        response = self.client.get(reverse("admin:permits_worksobjecttype_changelist"))
-        parser = get_parser(response.content)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            len(parser.select(".field-sortable_str")),
-            models.WorksObjectType.objects.all().count(),
-        )
-
-    def test_integrator_can_only_see_own_worksobjectproperty(self):
+    def test_integrator_can_only_see_own_field(self):
+        self.integrator_form.fields.add(self.integrator_field)
         response = self.client.get(
-            reverse("admin:permits_worksobjectproperty_changelist")
+            reverse(
+                "admin:forms_form_change", kwargs={"object_id": self.integrator_form.pk}
+            )
         )
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-sortable_str")), 1)
+        # 2 fields = 1 integrator field + empty choice
+        self.assertEqual(
+            len(parser.select(".grp-td.field")[0].select("select option")), 2
+        )
 
-    def test_admin_can_see_all_worksobjectproperty(self):
+    def test_admin_can_see_all_field(self):
         user = factories.SuperUserFactory()
         self.client.login(username=user.username, password="password")
         if settings.ENABLE_2FA:
             self.enable_otp_session(user=user)
 
         response = self.client.get(
-            reverse("admin:permits_worksobjectproperty_changelist")
+            reverse(
+                "admin:forms_form_change", kwargs={"object_id": self.integrator_form.pk}
+            )
         )
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".field-sortable_str")), 4)
+        self.assertEqual(
+            # 5 fields = 4 fields + empty choice
+            len(parser.select(".grp-td.field")[0].select("select option")),
+            5,
+        )
 
-    def test_integrator_can_only_see_own_permitactortype(self):
-        response = self.client.get(reverse("admin:permits_permitactortype_changelist"))
+    def test_integrator_can_only_see_own_contacttype(self):
+        response = self.client.get(reverse("admin:submissions_contacttype_changelist"))
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(parser.select(".field-sortable_str")), 2)
 
-    def test_admin_can_see_all_permitactortype(self):
+    def test_admin_can_see_all_contacttype(self):
         user = factories.SuperUserFactory()
         self.client.login(username=user.username, password="password")
         if settings.ENABLE_2FA:
             self.enable_otp_session(user=user)
 
-        response = self.client.get(reverse("admin:permits_permitactortype_changelist"))
+        response = self.client.get(reverse("admin:submissions_contacttype_changelist"))
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(parser.select(".field-sortable_str")), 8)
 
-    def test_integrator_can_only_see_own_permitrequestamendproperty(self):
+    def test_integrator_can_only_see_own_amendfield(self):
         response = self.client.get(
-            reverse("admin:permits_permitrequestamendproperty_changelist")
+            reverse("admin:submissions_submissionamendfield_changelist")
         )
         parser = get_parser(response.content)
 
@@ -291,20 +270,20 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
 
     def test_integrator_can_only_see_own_complementarydocumenttype(self):
         response = self.client.get(
-            reverse("admin:permits_complementarydocumenttype_changelist")
+            reverse("admin:submissions_complementarydocumenttype_changelist")
         )
         parser = get_parser(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(parser.select(".grp-row-even")), 1)
 
-    def test_admin_can_see_all_permitrequestamendproperty(self):
+    def test_admin_can_see_all_amendfield(self):
         user = factories.SuperUserFactory()
         self.client.login(username=user.username, password="password")
         if settings.ENABLE_2FA:
             self.enable_otp_session(user=user)
 
         response = self.client.get(
-            reverse("admin:permits_permitrequestamendproperty_changelist")
+            reverse("admin:submissions_submissionamendfield_changelist")
         )
         parser = get_parser(response.content)
 
@@ -326,12 +305,12 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         data = {
             "name": group.name,
             "permissions": 1,
-            "permitdepartment-TOTAL_FORMS": 1,
-            "permitdepartment-INITIAL_FORMS": 1,
-            "permitdepartment-MIN_NUM_FORMS": 1,
-            "permitdepartment-MAX_NUM_FORMS": 1,
-            "permitdepartment-0-is_integrator_admin": True,
-            "permitdepartment-0-group": group.id,
+            "permit_department-TOTAL_FORMS": 1,
+            "permit_department-INITIAL_FORMS": 1,
+            "permit_department-MIN_NUM_FORMS": 1,
+            "permit_department-MAX_NUM_FORMS": 1,
+            "permit_department-0-is_integrator_admin": True,
+            "permit_department-0-group": group.id,
         }
 
         response = self.client.post(
@@ -344,7 +323,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         content = response.content.decode()
 
         expected = "{error_msg}".format(
-            error_msg=admin.MULTIPLE_INTEGRATOR_ERROR_MESSAGE,
+            error_msg=MULTIPLE_INTEGRATOR_ERROR_MESSAGE,
         )
         self.assertInHTML(expected, content)
 
@@ -374,24 +353,24 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         content = response.content.decode()
 
         expected = "<li>{error_msg}</li>".format(
-            error_msg=admin.MULTIPLE_INTEGRATOR_ERROR_MESSAGE,
+            error_msg=MULTIPLE_INTEGRATOR_ERROR_MESSAGE,
         )
         self.assertInHTML(expected, content)
 
-    def test_admin_can_see_all_permit_requests(self):
+    def test_admin_can_see_all_submissions(self):
         user = factories.SuperUserFactory()
         self.client.login(username=user.username, password="password")
         if settings.ENABLE_2FA:
             self.enable_otp_session(user=user)
 
-        response = self.client.get(reverse("admin:permits_permitrequest_changelist"))
+        response = self.client.get(reverse("admin:submissions_submission_changelist"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "3.1 Consultation des demandes")
 
-    def test_integrator_cannot_see_permit_requests(self):
+    def test_integrator_cannot_see_submissions(self):
         if settings.ENABLE_2FA:
             self.enable_otp_session(user=self.user)
-        response = self.client.get(reverse("admin:permits_permitrequest_changelist"))
+        response = self.client.get(reverse("admin:submissions_submission_changelist"))
         self.assertEqual(response.status_code, 403)
 
     if settings.ENABLE_2FA:
@@ -412,7 +391,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             )
             self.assertContains(response, "Activer l'authentification à deux facteurs")
 
-        def test_user_of_group_with_mandatory_2FA_setup_can_see_permits_list(self):
+        def test_user_of_group_with_mandatory_2FA_setup_can_see_submissions_list(self):
             user = UserFactory()
             user.groups.set([self.group2fa])
             self.enable_otp_session(user)

@@ -76,7 +76,6 @@ class FormQuerySet(models.QuerySet):
         self,
         administrative_entity,
         user,
-        form_categories=None,
     ):
         """
         Return the `Form` that should be automatically selected for the given
@@ -88,18 +87,7 @@ class FormQuerySet(models.QuerySet):
         if not user.has_perm("submissions.see_private_requests"):
             forms = forms.filter(is_public=True)
 
-        if form_categories is not None:
-            forms = forms.filter(category__in=form_categories)
-
-        available_forms = {form.pk for form in forms}
-        available_categories = {form.category_id for form in forms}
-
-        # If `form_categories` are not set, ie. the user has only selected an administrative
-        # entity but no categories yet, and there’s more than 1 category available, don’t
-        # return any default forms so the user can choose the categorie(s) first
-        if (form_categories is None and len(available_categories) > 1) or len(
-            available_forms
-        ) > 1:
+        if len(forms) > 1:
             return Form.objects.none()
 
         return forms
@@ -372,6 +360,8 @@ class Field(models.Model):
         _("Fichier"),
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
         blank=True,
+        # TODO this name is historical because the Form model used to be call WorksObjectType
+        # This should be renamed someday and the files in `wot_files` should be moved
         upload_to="wot_files",
     )
     additional_searchtext_for_address_field = models.CharField(

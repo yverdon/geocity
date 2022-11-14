@@ -2,57 +2,52 @@
 import datetime
 import io
 import re
-import urllib.parse
-import uuid
 from datetime import date
 
 import tablib
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from geocity.apps.permits import models, services
+from geocity.apps.accounts import models as accounts_models
+from geocity.apps.forms import models as forms_models
+from geocity.apps.submissions import (
+    models as submissions_models,
+    forms as submissions_forms,
+)
 
-from ..forms import PermitRequestGeoTimeForm
-from ..management.commands import create_anonymous_users
+from geocity.apps.accounts.management.commands import create_anonymous_users
 from . import factories
 from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_parser
 
 
-def to_works_objects_dict(works_object_types):
-    return {
-        "works_objects-{}".format(works_object_type.works_type.pk): works_object_type.pk
-        for works_object_type in works_object_types
-    }
+def to_forms_dict(forms):
+    return {"forms-{}".format(form.form_category.pk): form.pk for form in forms}
 
 
-def get_permit_request_works_types_ids(permit_request):
+def get_submission_form_categories_ids(submission):
     return list(
-        permit_request.works_object_types.order_by("works_type__name")
-        .values_list("works_type__pk", flat=True)
+        submission.forms.order_by("form_category__name")
+        .values_list("form_category__pk", flat=True)
         .distinct()
     )
 
 
-class PermitRequestTestCase(LoggedInUserMixin, TestCase):
+class SubmissionTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
         super().setUp()
-        self.works_types = factories.WorksTypeFactory.create_batch(2)
-        self.works_objects = factories.WorksObjectFactory.create_batch(2)
+        self.form_categories = factories.FormCategoryFactory.create_batch(2)
 
-        models.WorksObjectType.objects.create(
-            works_type=self.works_types[0],
-            works_object=self.works_objects[0],
+        forms_models.Form.objects.create(
+            category=self.form_categories[0],
             is_public=True,
         )
-        models.WorksObjectType.objects.create(
-            works_type=self.works_types[1],
-            works_object=self.works_objects[1],
+        forms_models.Form.objects.create(
+            category=self.form_categories[1],
             is_public=True,
         )
         self.geotime_step_formset_data = {
@@ -61,296 +56,252 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             "form-MIN_NUM_FORMS": ["0"],
         }
 
-    def test_types_step_submit_redirects_to_objects_with_types_qs(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        permit_request.administrative_entity.works_object_types.set(
-            models.WorksObjectType.objects.all()
-        )
+    def test_categories_step_submit_redirects_to_forms_with_categories_qs(self):
+        submission = factories.SubmissionFactory(author=self.user)
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
 
         response = self.client.post(
             reverse(
-                "permits:permit_request_select_types",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_select_categories",
+                kwargs={"submission_id": submission.pk},
             ),
-            data={"types": [self.works_types[0].pk, self.works_types[1].pk]},
-        )
-
-        self.assertRedirects(
-            response,
-            reverse(
-                "permits:permit_request_select_objects",
-                kwargs={"permit_request_id": permit_request.pk},
-            )
-            + "?types={}&types={}".format(
-                self.works_types[0].pk, self.works_types[1].pk
-            ),
-        )
-
-    def test_objects_step_without_qs_redirects_to_types_step(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        permit_request.administrative_entity.works_object_types.set(
-            models.WorksObjectType.objects.all()
-        )
-
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_select_objects",
-                kwargs={"permit_request_id": permit_request.pk},
-            )
-        )
-        self.assertRedirects(
-            response,
-            reverse(
-                "permits:permit_request_select_types",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-        )
-
-    def test_objects_step_submit_saves_selected_object_types(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        # Create another works object type so that the works object step is not skipped
-        factories.WorksObjectTypeFactory(works_type=self.works_types[0])
-
-        works_object_type = models.WorksObjectType.objects.first()
-        permit_request.administrative_entity.works_object_types.set(
-            models.WorksObjectType.objects.all()
-        )
-        self.client.post(
-            reverse(
-                "permits:permit_request_select_objects",
-                kwargs={"permit_request_id": permit_request.pk},
-            )
-            + "?types={}".format(self.works_types[0].pk),
             data={
-                "works_objects-{}".format(self.works_types[0].pk): works_object_type.pk
+                "categories": [self.form_categories[0].pk, self.form_categories[1].pk]
             },
         )
 
+        self.assertRedirects(
+            response,
+            reverse(
+                "submissions:submission_select_forms",
+                kwargs={"submission_id": submission.pk},
+            )
+            + "?categories={}&categories={}".format(
+                self.form_categories[0].pk, self.form_categories[1].pk
+            ),
+        )
+
+    def test_forms_step_without_qs_redirects_to_categories_step(self):
+        submission = factories.SubmissionFactory(author=self.user)
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
+
+        response = self.client.get(
+            reverse(
+                "submissions:submission_select_forms",
+                kwargs={"submission_id": submission.pk},
+            )
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "submissions:submission_select_categories",
+                kwargs={"submission_id": submission.pk},
+            ),
+        )
+
+    def test_forms_step_submit_saves_multiple_selected_forms(self):
+        submission = factories.SubmissionFactory(author=self.user)
+        factories.FormFactory()
+
+        form = forms_models.Form.objects.first()
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
+        self.client.post(
+            reverse(
+                "submissions:submission_select_forms",
+                kwargs={"submission_id": submission.pk},
+            ),
+            data={"forms-selected_forms": form.pk},
+        )
+
         self.assertEqual(
-            models.PermitRequest.objects.filter(
-                works_object_types=works_object_type
-            ).count(),
+            submissions_models.Submission.objects.filter(forms=form).count(),
             1,
         )
 
-    def test_types_step_submit_redirects_to_detail_if_logged_as_backoffice(self):
+    def test_categories_step_submit_redirects_to_detail_if_logged_as_backoffice(self):
 
         secretary_group = factories.GroupFactory(name="Secrétariat")
         department = factories.PermitDepartmentFactory(
             group=secretary_group, is_backoffice=True
         )
 
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_APPROVED,
+        submission = factories.SubmissionFactory(
+            author=self.user,
+            status=submissions_models.Submission.STATUS_APPROVED,
             administrative_entity=department.administrative_entity,
         )
         secretary_group.user_set.add(self.user)
 
         response = self.client.get(
             reverse(
-                "permits:permit_request_prolongation",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_prolongation",
+                kwargs={"submission_id": submission.pk},
             ),
         )
 
         self.client.login(username=self.user.username, password="password")
         response = self.client.post(
             reverse(
-                "permits:permit_request_submit",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_submit",
+                kwargs={"submission_id": submission.pk},
             )
         )
         self.assertRedirects(
             response,
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": submission.pk},
             ),
         )
 
-    def test_types_step_submit_redirects_to_detail_if_logged_as_integrator_admin(self):
+    def test_categories_step_submit_redirects_to_detail_if_logged_as_integrator_admin(
+        self,
+    ):
 
         integrator_group = factories.GroupFactory(name="Integrator")
         department = factories.PermitDepartmentFactory(
             group=integrator_group, is_integrator_admin=True
         )
 
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_APPROVED,
+        submission = factories.SubmissionFactory(
+            author=self.user,
+            status=submissions_models.Submission.STATUS_APPROVED,
             administrative_entity=department.administrative_entity,
         )
         integrator_group.user_set.add(self.user)
 
         response = self.client.get(
             reverse(
-                "permits:permit_request_prolongation",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_prolongation",
+                kwargs={"submission_id": submission.pk},
             ),
         )
 
         self.client.login(username=self.user.username, password="password")
         response = self.client.post(
             reverse(
-                "permits:permit_request_submit",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_submit",
+                kwargs={"submission_id": submission.pk},
             )
         )
         self.assertRedirects(
             response,
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": submission.pk},
             ),
         )
 
-    def test_non_required_properties_can_be_left_blank(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        factories.WorksObjectTypeChoiceFactory.create_batch(
-            3, permit_request=permit_request
-        )
-        permit_request.administrative_entity.works_object_types.set(
-            permit_request.works_object_types.all()
-        )
-        prop = factories.WorksObjectPropertyFactory()
-        prop.works_object_types.set(permit_request.works_object_types.all())
+    def test_non_required_fields_can_be_left_blank(self):
+        submission = factories.SubmissionFactory(author=self.user)
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
+        field = factories.FieldFactory()
+        field.forms.set(submission.forms.all())
 
         response = self.client.post(
             reverse(
-                "permits:permit_request_properties",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_fields",
+                kwargs={"submission_id": submission.pk},
             )
         )
 
         self.assertRedirects(
             response,
             reverse(
-                "permits:permit_request_geo_time",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_geo_time",
+                kwargs={"submission_id": submission.pk},
             ),
         )
 
     def test_documents_step_filetype_allows_jpg(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        factories.WorksObjectTypeChoiceFactory.create_batch(
-            3, permit_request=permit_request
-        )
-        permit_request.administrative_entity.works_object_types.set(
-            permit_request.works_object_types.all()
-        )
-        prop = factories.WorksObjectPropertyFactoryTypeFile()
-        prop.works_object_types.set(permit_request.works_object_types.all())
+        submission = factories.SubmissionFactory(author=self.user)
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
+        field = factories.FieldFactoryTypeFile()
+        field.forms.set(submission.forms.all())
 
         with open("geocity/apps/permits/tests/files/real_jpg.jpg", "rb") as file:
             response = self.client.post(
                 reverse(
-                    "permits:permit_request_appendices",
-                    kwargs={"permit_request_id": permit_request.pk},
+                    "submissions:submission_appendices",
+                    kwargs={"submission_id": submission.pk},
                 ),
-                data={
-                    "appendices-{}_{}".format(
-                        prop.works_object_types.last().pk, prop.pk
-                    ): file
-                },
+                data={"appendices-{}_{}".format(field.forms.last().pk, field.pk): file},
             )
 
         self.assertRedirects(
             response,
             reverse(
-                "permits:permit_request_submit",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_submit",
+                kwargs={"submission_id": submission.pk},
             ),
         )
 
     def test_documents_step_filetype_allows_png(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        factories.WorksObjectTypeChoiceFactory.create_batch(
-            3, permit_request=permit_request
-        )
-        permit_request.administrative_entity.works_object_types.set(
-            permit_request.works_object_types.all()
-        )
-        prop = factories.WorksObjectPropertyFactoryTypeFile()
-        prop.works_object_types.set(permit_request.works_object_types.all())
+        submission = factories.SubmissionFactory(author=self.user)
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
+        field = factories.FieldFactoryTypeFile()
+        field.forms.set(submission.forms.all())
 
         with open("geocity/apps/permits/tests/files/real_png.png", "rb") as file:
             response = self.client.post(
                 reverse(
-                    "permits:permit_request_appendices",
-                    kwargs={"permit_request_id": permit_request.pk},
+                    "submissions:submission_appendices",
+                    kwargs={"submission_id": submission.pk},
                 ),
-                data={
-                    "appendices-{}_{}".format(
-                        prop.works_object_types.last().pk, prop.pk
-                    ): file
-                },
+                data={"appendices-{}_{}".format(field.forms.last().pk, field.pk): file},
             )
 
         self.assertRedirects(
             response,
             reverse(
-                "permits:permit_request_submit",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_submit",
+                kwargs={"submission_id": submission.pk},
             ),
         )
 
     def test_documents_step_filetype_allows_pdf(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        factories.WorksObjectTypeChoiceFactory.create_batch(
-            3, permit_request=permit_request
-        )
-        permit_request.administrative_entity.works_object_types.set(
-            permit_request.works_object_types.all()
-        )
-        prop = factories.WorksObjectPropertyFactoryTypeFile()
-        prop.works_object_types.set(permit_request.works_object_types.all())
+        submission = factories.SubmissionFactory(author=self.user)
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
+        field = factories.FieldFactoryTypeFile()
+        field.forms.set(submission.forms.all())
 
         with open("geocity/apps/permits/tests/files/real_pdf.pdf", "rb") as file:
             response = self.client.post(
                 reverse(
-                    "permits:permit_request_appendices",
-                    kwargs={"permit_request_id": permit_request.pk},
+                    "submissions:submission_appendices",
+                    kwargs={"submission_id": submission.pk},
                 ),
-                data={
-                    "appendices-{}_{}".format(
-                        prop.works_object_types.last().pk, prop.pk
-                    ): file
-                },
+                data={"appendices-{}_{}".format(field.forms.last().pk, field.pk): file},
             )
 
         self.assertRedirects(
             response,
             reverse(
-                "permits:permit_request_submit",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_submit",
+                kwargs={"submission_id": submission.pk},
             ),
         )
 
     def test_documents_step_filetype_reject_unknow_type_for_filetype(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        factories.WorksObjectTypeChoiceFactory.create_batch(
-            3, permit_request=permit_request
-        )
-        permit_request.administrative_entity.works_object_types.set(
-            permit_request.works_object_types.all()
-        )
-        prop = factories.WorksObjectPropertyFactoryTypeFile()
-        prop.works_object_types.set(permit_request.works_object_types.all())
+        submission = factories.SubmissionFactory(author=self.user)
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
+        field = factories.FieldFactoryTypeFile()
+        field.forms.set(submission.forms.all())
 
         with open(
             "geocity/apps/permits/tests/files/unknow_type_for_filetype.txt", "rb"
         ) as file:
             response = self.client.post(
                 reverse(
-                    "permits:permit_request_appendices",
-                    kwargs={"permit_request_id": permit_request.pk},
+                    "submissions:submission_appendices",
+                    kwargs={"submission_id": submission.pk},
                 ),
-                data={
-                    "appendices-{}_{}".format(
-                        prop.works_object_types.last().pk, prop.pk
-                    ): file
-                },
+                data={"appendices-{}_{}".format(field.forms.last().pk, field.pk): file},
             )
 
         content = response.content.decode()
@@ -361,29 +312,21 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.assertInHTML(expected, content)
 
     def test_documents_step_filetype_reject_not_allowed_extension(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        factories.WorksObjectTypeChoiceFactory.create_batch(
-            3, permit_request=permit_request
-        )
-        permit_request.administrative_entity.works_object_types.set(
-            permit_request.works_object_types.all()
-        )
-        prop = factories.WorksObjectPropertyFactoryTypeFile()
-        prop.works_object_types.set(permit_request.works_object_types.all())
+        submission = factories.SubmissionFactory(author=self.user)
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
+        field = factories.FieldFactoryTypeFile()
+        field.forms.set(submission.forms.all())
 
         with open(
             "geocity/apps/permits/tests/files/not_allowed_docx.docx", "rb"
         ) as file:
             response = self.client.post(
                 reverse(
-                    "permits:permit_request_appendices",
-                    kwargs={"permit_request_id": permit_request.pk},
+                    "submissions:submission_appendices",
+                    kwargs={"submission_id": submission.pk},
                 ),
-                data={
-                    "appendices-{}_{}".format(
-                        prop.works_object_types.last().pk, prop.pk
-                    ): file
-                },
+                data={"appendices-{}_{}".format(field.forms.last().pk, field.pk): file},
             )
 
         content = response.content.decode()
@@ -394,29 +337,21 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.assertInHTML(expected, content)
 
     def test_documents_step_filetype_reject_fake_jpg_with_not_allowed_extension(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        factories.WorksObjectTypeChoiceFactory.create_batch(
-            3, permit_request=permit_request
-        )
-        permit_request.administrative_entity.works_object_types.set(
-            permit_request.works_object_types.all()
-        )
-        prop = factories.WorksObjectPropertyFactoryTypeFile()
-        prop.works_object_types.set(permit_request.works_object_types.all())
+        submission = factories.SubmissionFactory(author=self.user)
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
+        field = factories.FieldFactoryTypeFile()
+        field.forms.set(submission.forms.all())
 
         with open(
             "geocity/apps/permits/tests/files/not_allowed_bmp_as_jpg.jpg", "rb"
         ) as file:
             response = self.client.post(
                 reverse(
-                    "permits:permit_request_appendices",
-                    kwargs={"permit_request_id": permit_request.pk},
+                    "submissions:submission_appendices",
+                    kwargs={"submission_id": submission.pk},
                 ),
-                data={
-                    "appendices-{}_{}".format(
-                        prop.works_object_types.last().pk, prop.pk
-                    ): file
-                },
+                data={"appendices-{}_{}".format(field.forms.last().pk, field.pk): file},
             )
 
         content = response.content.decode()
@@ -427,65 +362,61 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.assertInHTML(expected, content)
 
     def test_user_can_only_see_own_requests(self):
-        permit_request = factories.PermitRequestFactory(
-            author=factories.UserFactory().permitauthor
-        )
+        submission = factories.SubmissionFactory(author=factories.UserFactory())
 
         response = self.client.get(
             reverse(
-                "permits:permit_request_select_types",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_select_categories",
+                kwargs={"submission_id": submission.pk},
             )
         )
 
         self.assertEqual(response.status_code, 404)
 
     def test_user_cannot_edit_non_draft_request(self):
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+        submission = factories.SubmissionFactory(
+            author=self.user,
+            status=submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION,
         )
 
         response = self.client.get(
             reverse(
-                "permits:permit_request_select_types",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_select_categories",
+                kwargs={"submission_id": submission.pk},
             )
         )
 
         self.assertRedirects(
             response,
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": submission.pk},
             ),
         )
 
-    def test_user_can_edit_non_draft_request_if_wot_can_always_be_updated(self):
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+    def test_user_can_edit_non_draft_request_if_form_can_always_be_updated(self):
+        submission = factories.SubmissionFactory(
+            author=self.user,
+            status=submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION,
         )
-        works_object_type = factories.WorksObjectTypeFactory(can_always_update=True)
-        factories.WorksObjectTypeChoiceFactory(
-            permit_request=permit_request,
-            works_object_type=works_object_type,
+        form = factories.FormFactory(can_always_update=True)
+        factories.SelectedFormFactory(
+            submission=submission,
+            form=form,
         )
-        permit_request.administrative_entity.works_object_types.set(
-            permit_request.works_object_types.all()
-        )
+        submission.administrative_entity.forms.set(submission.forms.all())
         response = self.client.get(
             reverse(
-                "permits:permit_request_select_types",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_select_categories",
+                kwargs={"submission_id": submission.pk},
             )
         )
 
         self.assertNotEqual(
             response,
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": submission.pk},
             ),
         )
 
@@ -497,108 +428,103 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         factories.SecretariatUserFactory(
             groups=[secretary_group], email="secretary@geocity.ch"
         )
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
-            author=self.user.permitauthor,
+        submission = factories.SubmissionFactory(
+            status=submissions_models.Submission.STATUS_AWAITING_SUPPLEMENT,
+            author=self.user,
             administrative_entity=department.administrative_entity,
         )
-        works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory()
-        wot = factories.WorksObjectTypeWithoutGeometryFactory(
-            works_type=works_type,
-            works_object=works_object,
+        form_category = factories.FormCategoryFactory(name="Foo category")
+        form = factories.FormWithoutGeometryFactory(
+            category=form_category,
             needs_date=False,
         )
-        permit_request.works_object_types.set([wot])
+        submission.forms.set([form])
         self.client.post(
             reverse(
-                "permits:permit_request_submit",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_submit",
+                kwargs={"submission_id": submission.pk},
             )
         )
-        permit_request.refresh_from_db()
+        submission.refresh_from_db()
         self.assertEqual(
-            permit_request.status, models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
+            submission.status,
+            submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION,
         )
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["secretary@geocity.ch"])
         self.assertEqual(
             mail.outbox[0].subject,
-            "La demande de compléments a été traitée (Foo type)",
+            "La demande de compléments a été traitée (Foo category)",
         )
         self.assertIn(
             "La demande de compléments a été traitée",
             mail.outbox[0].message().as_string(),
         )
 
-    def test_submit_permit_request_sends_email_to_secretariat(self):
+    def test_submit_submission_sends_email_to_secretariat(self):
         # Create a secretariat user Yverdon (the one that will get the notification)
         group = factories.SecretariatGroupFactory()
         factories.SecretariatUserFactory(email="secretariat@yverdon.ch", groups=[group])
         # This one should not receive the notification
         factories.SecretariatUserFactory(email="secretariat@lausanne.ch")
 
-        permit_request = factories.PermitRequestGeoTimeFactory(
-            permit_request=factories.PermitRequestFactory(
-                administrative_entity=group.permitdepartment.administrative_entity,
-                author=self.user.permitauthor,
-                status=models.PermitRequest.STATUS_DRAFT,
+        submission = factories.SubmissionGeoTimeFactory(
+            submission=factories.SubmissionFactory(
+                administrative_entity=group.permit_department.administrative_entity,
+                author=self.user,
+                status=submissions_models.Submission.STATUS_DRAFT,
             )
-        ).permit_request
-        works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory()
-        wot = factories.WorksObjectTypeFactory(
-            works_type=works_type,
-            works_object=works_object,
+        ).submission
+        form_category = factories.FormCategoryFactory(name="Foo category")
+        form = factories.FormFactory(
+            category=form_category,
         )
-        permit_request.works_object_types.set([wot])
+        submission.forms.set([form])
 
         self.client.post(
             reverse(
-                "permits:permit_request_submit",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_submit",
+                kwargs={"submission_id": submission.pk},
             )
         )
-        emails = get_emails("Nouvelle demande (Foo type)")
+        emails = get_emails("Nouvelle demande (Foo category)")
 
         self.assertEqual(len(emails), 1)
         self.assertEqual(emails[0].to, ["secretariat@yverdon.ch"])
 
-    def test_submit_permit_request_sends_email_to_services_to_notify_from_workobjectproperty(
+    def test_submit_submission_sends_email_to_services_to_notify_from_field(
         self,
     ):
-        permit_request = factories.PermitRequestGeoTimeFactory(
-            permit_request=factories.PermitRequestFactory(
-                author=self.user.permitauthor,
-                status=models.PermitRequest.STATUS_DRAFT,
+        submission = factories.SubmissionGeoTimeFactory(
+            submission=factories.SubmissionFactory(
+                author=self.user,
+                status=submissions_models.Submission.STATUS_DRAFT,
             )
-        ).permit_request
-        works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory()
-        wot = factories.WorksObjectTypeFactory(
-            works_type=works_type,
-            works_object=works_object,
+        ).submission
+        form_category = factories.FormCategoryFactory(name="Foo category")
+        form = factories.FormFactory(
+            category=form_category,
         )
-        work_object_type_choice = factories.WorksObjectTypeChoiceFactory(
-            permit_request=permit_request,
-            works_object_type=wot,
+        selected_form = factories.SelectedFormFactory(
+            submission=submission,
+            form=form,
         )
 
-        prop = factories.WorksObjectPropertyFactory(
+        field = factories.FieldFactory(
             services_to_notify="test-send-1@geocity.ch, test-send-2@geocity.ch, test-i-am-not-an-email,  ,\n\n\n",
-            input_type=models.WorksObjectProperty.INPUT_TYPE_CHECKBOX,
+            input_type=submissions_models.Field.INPUT_TYPE_CHECKBOX,
         )
 
-        prop.works_object_types.set(permit_request.works_object_types.all())
-        factories.WorksObjectPropertyValueFactory(
-            property=prop,
-            works_object_type_choice=work_object_type_choice,
+        field.forms.set(submission.forms.all())
+        factories.FieldValueFactory(
+            field=field,
+            selected_form=selected_form,
             value={"val": True},
         )
         self.client.post(
             reverse(
-                "permits:permit_request_submit_confirmed",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_submit_confirmed",
+                kwargs={"submission_id": submission.pk},
             )
         )
 
@@ -609,106 +535,100 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         self.assertEqual(
             mail.outbox[0].subject,
-            "Votre service à été mentionné dans une demande (Foo type)",
+            "Votre service à été mentionné dans une demande (Foo category)",
         )
         self.assertIn(
             "Une nouvelle demande mentionnant votre service vient d'être soumise.",
             mail.outbox[0].message().as_string(),
         )
 
-    def test_missing_mandatory_date_property_gives_invalid_feedback(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        factories.WorksObjectTypeChoiceFactory(permit_request=permit_request)
-        permit_request.administrative_entity.works_object_types.set(
-            permit_request.works_object_types.all()
+    def test_missing_mandatory_date_field_gives_invalid_feedback(self):
+        submission = factories.SubmissionFactory(author=self.user)
+        factories.SelectedFormFactory(submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
+        field = factories.FieldFactory(
+            input_type=submissions_models.Field.INPUT_TYPE_DATE, is_mandatory=True
         )
-        prop = factories.WorksObjectPropertyFactory(
-            input_type=models.WorksObjectProperty.INPUT_TYPE_DATE, is_mandatory=True
-        )
-        prop.works_object_types.set(permit_request.works_object_types.all())
+        field.forms.set(submission.forms.all())
 
         data = {
-            "properties-{}_{}".format(works_object_type.pk, prop.pk): ""
-            for works_object_type in permit_request.works_object_types.all()
+            "fields-{}_{}".format(form.pk, field.pk): ""
+            for form in submission.forms.all()
         }
 
         response = self.client.post(
             reverse(
-                "permits:permit_request_properties",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_fields",
+                kwargs={"submission_id": submission.pk},
             ),
             data=data,
         )
         parser = get_parser(response.content)
         self.assertEqual(len(parser.select(".invalid-feedback")), 1)
 
-    def test_works_object_automatically_set_when_only_one_works_object(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        works_object = factories.WorksObjectFactory()
-        permit_request.administrative_entity.works_object_types.set(
-            factories.WorksObjectTypeFactory.create_batch(2, works_object=works_object)
+    def test_form_automatically_set_when_only_one_form(self):
+        submission = factories.SubmissionFactory(author=self.user)
+        submission.administrative_entity.forms.set(
+            factories.FormFactory.create_batch(2)
         )
-        works_type_id = (
-            permit_request.administrative_entity.works_object_types.values_list(
-                "works_type_id", flat=True
-            ).first()
-        )
+        form_category_id = submission.administrative_entity.forms.values_list(
+            "form_category_id", flat=True
+        ).first()
 
         self.client.post(
             reverse(
-                "permits:permit_request_select_types",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_select_categories",
+                kwargs={"submission_id": submission.pk},
             ),
-            data={"types": [works_type_id]},
+            data={"categories": [form_category_id]},
         )
 
-        permit_request.refresh_from_db()
-        works_object_types = permit_request.works_object_types.all()
+        submission.refresh_from_db()
+        forms = submission.forms.all()
 
         self.assertEqual(
-            len(works_object_types),
+            len(forms),
             1,
-            "Permit request should have one works object type set",
+            "Submission should have one works object type set",
         )
-        self.assertEqual(works_object_types[0].works_object, works_object)
-        self.assertEqual(works_object_types[0].works_type_id, works_type_id)
+        self.assertEqual(forms[0].form, form)
+        self.assertEqual(forms[0].form_category_id, form_category_id)
 
-    def test_works_type_automatically_set_when_only_one_works_object(self):
-        works_type = factories.WorksTypeFactory()
-        administrative_entity = factories.PermitAdministrativeEntityFactory()
-        administrative_entity.works_object_types.set(
-            factories.WorksObjectTypeFactory.create_batch(2, works_type=works_type)
+    def test_form_category_automatically_set_when_only_one_form(self):
+        form_category = factories.FormCategoryFactory()
+        administrative_entity = factories.AdministrativeEntityFactory()
+        administrative_entity.forms.set(
+            factories.FormFactory.create_batch(2, category=form_category)
         )
 
         response = self.client.post(
             reverse(
-                "permits:permit_request_select_administrative_entity",
+                "submissions:submission_select_administrative_entity",
             ),
             data={"administrative_entity": administrative_entity.pk},
         )
 
-        permit_request = models.PermitRequest.objects.get()
+        submission = submissions_models.Submission.objects.get()
 
         self.assertRedirects(
             response,
             reverse(
-                "permits:permit_request_select_objects",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_select_forms",
+                kwargs={"submission_id": submission.pk},
             )
-            + f"?types={works_type.pk}",
         )
 
     def test_geotime_step_only_date_fields_appear_when_only_date_is_required(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        works_object_type = factories.WorksObjectTypeWithoutGeometryFactory(
+        submission = factories.SubmissionFactory(author=self.user)
+        form = factories.FormWithoutGeometryFactory(
             needs_date=True,
         )
-        permit_request.works_object_types.set([works_object_type])
+        submission.forms.set([form])
 
         response = self.client.get(
             reverse(
-                "permits:permit_request_geo_time",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_geo_time",
+                kwargs={"submission_id": submission.pk},
             )
         )
         parser = get_parser(response.content)
@@ -726,18 +646,18 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
 
     def test_geotime_step_date_fields_cannot_be_empty_when_date_is_required(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        works_object_type = factories.WorksObjectTypeWithoutGeometryFactory(
+        submission = factories.SubmissionFactory(author=self.user)
+        form = factories.FormWithoutGeometryFactory(
             needs_date=True,
         )
-        permit_request.works_object_types.set([works_object_type])
+        submission.forms.set([form])
         self.geotime_step_formset_data.update(
             {"form-0-starts_at": [""], "form-0-ends_at": [""]}
         )
         response = self.client.post(
             reverse(
-                "permits:permit_request_geo_time",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_geo_time",
+                kwargs={"submission_id": submission.pk},
             ),
             data=self.geotime_step_formset_data,
         )
@@ -759,11 +679,11 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
 
     def test_geotime_step_date_fields_ends_at_must_not_be_before_starts_at(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        works_object_type = factories.WorksObjectTypeWithoutGeometryFactory(
+        submission = factories.SubmissionFactory(author=self.user)
+        form = factories.FormWithoutGeometryFactory(
             needs_date=True,
         )
-        permit_request.works_object_types.set([works_object_type])
+        submission.forms.set([form])
 
         today = date.today()
         starts_at = today + datetime.timedelta(days=(int(settings.MIN_START_DELAY) + 2))
@@ -777,8 +697,8 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
         response = self.client.post(
             reverse(
-                "permits:permit_request_geo_time",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_geo_time",
+                kwargs={"submission_id": submission.pk},
             ),
             data=self.geotime_step_formset_data,
         )
@@ -793,19 +713,19 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
 
     def test_geotime_step_only_geom_fields_appear_when_only_geom_is_required(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        works_object_type = factories.WorksObjectTypeFactory(
+        submission = factories.SubmissionFactory(author=self.user)
+        form = factories.FormFactory(
             has_geometry_point=True,
             has_geometry_line=True,
             has_geometry_polygon=True,
             needs_date=False,
         )
-        permit_request.works_object_types.set([works_object_type])
+        submission.forms.set([form])
 
         response = self.client.get(
             reverse(
-                "permits:permit_request_geo_time",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_geo_time",
+                kwargs={"submission_id": submission.pk},
             )
         )
         parser = get_parser(response.content)
@@ -823,19 +743,19 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(len(parser.select('input[name="form-0-ends_at"]')), 0)
 
     def test_geotime_step_date_and_geom_fields_appear_when_both_required(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        works_object_type = factories.WorksObjectTypeFactory(
+        submission = factories.SubmissionFactory(author=self.user)
+        form = factories.FormFactory(
             has_geometry_point=True,
             has_geometry_line=True,
             has_geometry_polygon=True,
             needs_date=True,
         )
-        permit_request.works_object_types.set([works_object_type])
+        submission.forms.set([form])
 
         response = self.client.get(
             reverse(
-                "permits:permit_request_geo_time",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_geo_time",
+                kwargs={"submission_id": submission.pk},
             )
         )
         parser = get_parser(response.content)
@@ -854,19 +774,19 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
     def test_geotime_step_only_point_geom_field_appear_when_only_point_geom_type_is_required(
         self,
     ):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        works_object_type = factories.WorksObjectTypeFactory(
+        submission = factories.SubmissionFactory(author=self.user)
+        form = factories.FormFactory(
             has_geometry_point=True,
             has_geometry_line=False,
             has_geometry_polygon=False,
             needs_date=False,
         )
-        permit_request.works_object_types.set([works_object_type])
+        submission.forms.set([form])
 
         response = self.client.get(
             reverse(
-                "permits:permit_request_geo_time",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_geo_time",
+                kwargs={"submission_id": submission.pk},
             )
         )
         parser = get_parser(response.content)
@@ -901,19 +821,19 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
     def test_geotime_step_only_line_geom_field_appear_when_only_line_geom_type_is_required(
         self,
     ):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        works_object_type = factories.WorksObjectTypeFactory(
+        submission = factories.SubmissionFactory(author=self.user)
+        form = factories.FormFactory(
             has_geometry_point=False,
             has_geometry_line=True,
             has_geometry_polygon=False,
             needs_date=False,
         )
-        permit_request.works_object_types.set([works_object_type])
+        submission.forms.set([form])
 
         response = self.client.get(
             reverse(
-                "permits:permit_request_geo_time",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_geo_time",
+                kwargs={"submission_id": submission.pk},
             )
         )
         parser = get_parser(response.content)
@@ -948,19 +868,19 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
     def test_geotime_step_only_polygon_geom_field_appear_when_only_polygon_geom_type_is_required(
         self,
     ):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        works_object_type = factories.WorksObjectTypeFactory(
+        submission = factories.SubmissionFactory(author=self.user)
+        form = factories.FormFactory(
             has_geometry_point=False,
             has_geometry_line=False,
             has_geometry_polygon=True,
             needs_date=False,
         )
-        permit_request.works_object_types.set([works_object_type])
+        submission.forms.set([form])
 
         response = self.client.get(
             reverse(
-                "permits:permit_request_geo_time",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_geo_time",
+                kwargs={"submission_id": submission.pk},
             )
         )
         parser = get_parser(response.content)
@@ -995,19 +915,19 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
     def test_geotime_step_only_two_geom_field_appear_when_only_two_geom_type_are_required(
         self,
     ):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        works_object_type = factories.WorksObjectTypeFactory(
+        submission = factories.SubmissionFactory(author=self.user)
+        form = factories.FormFactory(
             has_geometry_point=True,
             has_geometry_line=False,
             has_geometry_polygon=True,
             needs_date=False,
         )
-        permit_request.works_object_types.set([works_object_type])
+        submission.forms.set([form])
 
         response = self.client.get(
             reverse(
-                "permits:permit_request_geo_time",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_geo_time",
+                kwargs={"submission_id": submission.pk},
             )
         )
         parser = get_parser(response.content)
@@ -1039,26 +959,26 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
             1,
         )
 
-    def test_start_date_is_limited_by_work_object_types_with_biggest_start_delay(self):
+    def test_start_date_is_limited_by_forms_with_biggest_start_delay(self):
         group = factories.SecretariatGroupFactory()
-        work_object_type_1 = factories.WorksObjectTypeFactory(
+        form_1 = factories.FormFactory(
             start_delay=3,
         )
-        work_object_type_2 = factories.WorksObjectTypeFactory(
+        form_2 = factories.FormFactory(
             start_delay=1,
         )
 
-        permit_request = factories.PermitRequestGeoTimeFactory(
-            permit_request=factories.PermitRequestFactory(
-                administrative_entity=group.permitdepartment.administrative_entity,
-                author=self.user.permitauthor,
-                status=models.PermitRequest.STATUS_DRAFT,
+        submission = factories.SubmissionGeoTimeFactory(
+            submission=factories.SubmissionFactory(
+                administrative_entity=group.permit_department.administrative_entity,
+                author=self.user,
+                status=submissions_models.Submission.STATUS_DRAFT,
             )
-        ).permit_request
+        ).submission
 
-        permit_request.works_object_types.set([work_object_type_1, work_object_type_2])
+        submission.forms.set([form_1, form_2])
 
-        resulted_start_at = permit_request.get_min_starts_at().date()
+        resulted_start_at = submission.get_min_starts_at().date()
         expected_start_at = date.today() + datetime.timedelta(days=3)
 
         self.assertEqual(resulted_start_at, expected_start_at)
@@ -1066,30 +986,30 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
     def test_start_date_limit_falls_back_to_setting(self):
         today = date.today()
         group = factories.SecretariatGroupFactory()
-        work_object_type = factories.WorksObjectTypeFactory()
+        form = factories.FormFactory()
 
-        permit_request = factories.PermitRequestGeoTimeFactory(
-            permit_request=factories.PermitRequestFactory(
-                administrative_entity=group.permitdepartment.administrative_entity,
-                author=self.user.permitauthor,
-                status=models.PermitRequest.STATUS_DRAFT,
+        submission = factories.SubmissionGeoTimeFactory(
+            submission=factories.SubmissionFactory(
+                administrative_entity=group.permit_department.administrative_entity,
+                author=self.user,
+                status=submissions_models.Submission.STATUS_DRAFT,
             )
-        ).permit_request
+        ).submission
 
-        permit_request.works_object_types.set([work_object_type])
+        submission.forms.set([form])
 
         self.assertEqual(
-            permit_request.get_min_starts_at().date(),
+            submission.get_min_starts_at().date(),
             today + datetime.timedelta(days=int(settings.MIN_START_DELAY)),
         )
 
     def test_start_date_cant_be_of_limit(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        works_object_type = factories.WorksObjectTypeWithoutGeometryFactory(
+        submission = factories.SubmissionFactory(author=self.user)
+        form = factories.FormWithoutGeometryFactory(
             needs_date=True,
             start_delay=3,
         )
-        permit_request.works_object_types.set([works_object_type])
+        submission.forms.set([form])
         today = date.today()
         start_at = today + datetime.timedelta(days=1)  # Must be >= 3 to be valid
         self.geotime_step_formset_data.update(
@@ -1100,8 +1020,8 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         )
         response = self.client.post(
             reverse(
-                "permits:permit_request_geo_time",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_geo_time",
+                kwargs={"submission_id": submission.pk},
             ),
             data=self.geotime_step_formset_data,
         )
@@ -1109,49 +1029,47 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
     def test_start_date_limit_is_set_to_0(self):
         group = factories.SecretariatGroupFactory()
-        work_object_type = factories.WorksObjectTypeFactory(start_delay=0)
-        permit_request = factories.PermitRequestGeoTimeFactory(
-            permit_request=factories.PermitRequestFactory(
-                administrative_entity=group.permitdepartment.administrative_entity,
-                author=self.user.permitauthor,
-                status=models.PermitRequest.STATUS_DRAFT,
+        form = factories.FormFactory(start_delay=0)
+        submission = factories.SubmissionGeoTimeFactory(
+            submission=factories.SubmissionFactory(
+                administrative_entity=group.permit_department.administrative_entity,
+                author=self.user,
+                status=submissions_models.Submission.STATUS_DRAFT,
             )
-        ).permit_request
-        permit_request.works_object_types.set([work_object_type])
+        ).submission
+        submission.forms.set([form])
 
-        self.assertEqual(permit_request.get_min_starts_at().date(), date.today())
+        self.assertEqual(submission.get_min_starts_at().date(), date.today())
 
-    def test_summary_and_send_step_has_multiple_directive_fields_when_request_have_multiple_works_object_type(
+    def test_summary_and_send_step_has_multiple_directive_fields_when_request_have_multiple_forms(
         self,
     ):
         group = factories.SecretariatGroupFactory()
-        first_works_object_type = factories.WorksObjectTypeFactory(
+        first_form = factories.FormFactory(
             directive=SimpleUploadedFile("file.pdf", "contents".encode()),
             directive_description="First directive description for a test",
             additional_information="First additional information for a test",
         )
-        second_works_object_type = factories.WorksObjectTypeFactory(
+        second_form = factories.FormFactory(
             directive=SimpleUploadedFile("file.pdf", "contents".encode()),
             directive_description="Second directive description for a test",
             additional_information="Second additional information for a test",
         )
 
-        permit_request = factories.PermitRequestGeoTimeFactory(
-            permit_request=factories.PermitRequestFactory(
-                administrative_entity=group.permitdepartment.administrative_entity,
-                author=self.user.permitauthor,
-                status=models.PermitRequest.STATUS_DRAFT,
+        submission = factories.SubmissionGeoTimeFactory(
+            submission=factories.SubmissionFactory(
+                administrative_entity=group.permit_department.administrative_entity,
+                author=self.user,
+                status=submissions_models.Submission.STATUS_DRAFT,
             )
-        ).permit_request
+        ).submission
 
-        permit_request.works_object_types.set(
-            [first_works_object_type, second_works_object_type]
-        )
+        submission.forms.set([first_form, second_form])
 
         response = self.client.get(
             reverse(
-                "permits:permit_request_submit",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_submit",
+                kwargs={"submission_id": submission.pk},
             )
         )
 
@@ -1174,36 +1092,36 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
     def test_administrative_entity_is_filtered_by_tag(self):
         administrative_entities = [
-            factories.PermitAdministrativeEntityFactory(tags=[tag])
+            factories.AdministrativeEntityFactory(tags=[tag])
             for tag in ["first", "second", "third"]
         ]
-        works_object_types = models.WorksObjectType.objects.all()
+        forms = forms_models.Form.objects.all()
 
         for administrative_entity in administrative_entities:
-            administrative_entity.works_object_types.set(works_object_types)
+            administrative_entity.forms.set(forms)
 
         response = self.client.get(
-            reverse("permits:permit_request_select_administrative_entity"),
+            reverse("submissions:submission_select_administrative_entity"),
             {"entityfilter": "first"},
             follow=True,
         )
 
-        new_permit_request = models.PermitRequest.objects.last()
+        new_submission = submissions_models.Submission.objects.last()
 
         content = response.content.decode()
         self.assertInHTML("Sélectionnez le ou les type(s)", content)
         self.assertRedirects(
             response,
             reverse(
-                "permits:permit_request_select_types",
-                kwargs={"permit_request_id": new_permit_request.id},
+                "submissions:submission_select_categories",
+                kwargs={"submission_id": new_submission.id},
             ),
         )
 
         response2 = self.client.get(
             reverse(
-                "permits:permit_request_select_administrative_entity",
-                kwargs={"permit_request_id": new_permit_request.id},
+                "submissions:submission_select_administrative_entity",
+                kwargs={"submission_id": new_submission.id},
             ),
             {"entityfilter": "first"},
             follow=True,
@@ -1221,16 +1139,16 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
 
     def test_wrong_administrative_entity_tag_return_all_administratives_entities(self):
         administrative_entities = [
-            factories.PermitAdministrativeEntityFactory(tags=[tag])
+            factories.AdministrativeEntityFactory(tags=[tag])
             for tag in ["first", "second", "third"]
         ]
-        works_object_types = models.WorksObjectType.objects.all()
+        forms = forms_models.Form.objects.all()
 
         for administrative_entity in administrative_entities:
-            administrative_entity.works_object_types.set(works_object_types)
+            administrative_entity.forms.set(forms)
 
         response = self.client.get(
-            reverse("permits:permit_request_select_administrative_entity"),
+            reverse("submissions:submission_select_administrative_entity"),
             {"entityfilter": "wrongtag"},
         )
 
@@ -1248,16 +1166,16 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self,
     ):
         administrative_entities = [
-            factories.PermitAdministrativeEntityFactory(tags=[tag])
+            factories.AdministrativeEntityFactory(tags=[tag])
             for tag in ["first", "second", "third"]
         ]
-        works_object_types = models.WorksObjectType.objects.all()
+        forms = forms_models.Form.objects.all()
 
         for administrative_entity in administrative_entities:
-            administrative_entity.works_object_types.set(works_object_types)
+            administrative_entity.forms.set(forms)
 
         response = self.client.get(
-            reverse("permits:permit_request_select_administrative_entity"),
+            reverse("submissions:submission_select_administrative_entity"),
             {"entityfilter": ["first", "second"]},
         )
 
@@ -1270,248 +1188,223 @@ class PermitRequestTestCase(LoggedInUserMixin, TestCase):
         self.assertInHTML(administrative_entities[0].name, content)
         self.assertInHTML(administrative_entities[1].name, content)
 
-    def test_work_type_is_filtered_by_tag(self):
-        additional_works_type = factories.WorksTypeFactory()
-        additional_works_objects = factories.WorksObjectFactory()
+    def test_form_category_is_filtered_by_tag(self):
+        additional_form_category = factories.FormCategoryFactory()
 
-        models.WorksObjectType.objects.create(
-            works_type=additional_works_type,
-            works_object=additional_works_objects,
+        forms_models.Form.objects.create(
+            category=additional_form_category,
             is_public=True,
         )
 
-        self.works_types[0].tags.add("work_type_a")
-        self.works_types[1].tags.add("work_type_a")
-        additional_works_type.tags.add("work_type_b")
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        permit_request.administrative_entity.works_object_types.set(
-            models.WorksObjectType.objects.all()
-        )
+        self.form_categories[0].tags.add("form_category_a")
+        self.form_categories[1].tags.add("form_category_a")
+        additional_form_category.tags.add("form_category_b")
+        submission = factories.SubmissionFactory(author=self.user)
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
 
         response = self.client.get(
             reverse(
-                "permits:permit_request_select_types",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_select_categories",
+                kwargs={"submission_id": submission.pk},
             )
-            + "?typefilter=work_type_a"
+            + "?categoryfilter=form_category_a"
         )
 
         parser = get_parser(response.content)
         element_parsed = parser.select(".form-check-label")
 
-        # Check that 2 types are visibles
+        # Check that 2 forms are visibles
         self.assertEqual(2, len(element_parsed))
 
-    def test_work_type_is_not_filtered_by_bad_tag(self):
-        additional_works_type = factories.WorksTypeFactory()
-        additional_works_objects = factories.WorksObjectFactory()
+    def test_form_category_is_not_filtered_by_bad_tag(self):
+        additional_form_category = factories.FormCategoryFactory()
 
-        models.WorksObjectType.objects.create(
-            works_type=additional_works_type,
-            works_object=additional_works_objects,
+        forms_models.Form.objects.create(
+            category=additional_form_category,
             is_public=True,
         )
 
-        self.works_types[0].tags.add("work_type_a")
-        self.works_types[1].tags.add("work_type_a")
-        additional_works_type.tags.add("work_type_b")
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        permit_request.administrative_entity.works_object_types.set(
-            models.WorksObjectType.objects.all()
-        )
+        self.form_categories[0].tags.add("form_category_a")
+        self.form_categories[1].tags.add("form_category_a")
+        additional_form_category.tags.add("form_category_b")
+        submission = factories.SubmissionFactory(author=self.user)
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
 
         response = self.client.get(
             reverse(
-                "permits:permit_request_select_types",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_select_categories",
+                kwargs={"submission_id": submission.pk},
             )
-            + "?typefilter=badtag"
+            + "?categoryfilter=badtag"
         )
 
         parser = get_parser(response.content)
         element_parsed = parser.select(".form-check-label")
 
-        # Check that 3 types are visibles
+        # Check that 3 forms are visibles
         self.assertEqual(3, len(element_parsed))
 
     def test_missing_mandatory_list_values_show_error(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        factories.WorksObjectTypeChoiceFactory(permit_request=permit_request)
-        works_object_type = permit_request.works_object_types.first()
-        permit_request.administrative_entity.works_object_types.set(
-            permit_request.works_object_types.all()
-        )
-        list_single_prop = factories.WorksObjectPropertyFactory(
-            input_type=models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE,
+        submission = factories.SubmissionFactory(author=self.user)
+        factories.SelectedFormFactory(submission=submission)
+        form = submission.forms.first()
+        submission.administrative_entity.forms.set(submission.forms.all())
+        list_single_field = factories.FieldFactory(
+            input_type=submissions_models.Field.INPUT_TYPE_LIST_SINGLE,
             choices="foo\nbar",
             is_mandatory=True,
         )
-        list_multiple_prop = factories.WorksObjectPropertyFactory(
-            input_type=models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE,
+        list_multiple_field = factories.FieldFactory(
+            input_type=submissions_models.Field.INPUT_TYPE_LIST_MULTIPLE,
             choices="foo\nbar",
             is_mandatory=True,
         )
-        for prop in [list_single_prop, list_multiple_prop]:
-            prop.works_object_types.set(permit_request.works_object_types.all())
+        for field in [list_single_field, list_multiple_field]:
+            field.forms.set(submission.forms.all())
 
         data = {
-            f"properties-{works_object_type.pk}_{list_single_prop.pk}": "",
+            f"fields-{form.pk}_{list_single_field.pk}": "",
         }
 
         response = self.client.post(
             reverse(
-                "permits:permit_request_properties",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_fields",
+                kwargs={"submission_id": submission.pk},
             ),
             data=data,
         )
         self.assertFormError(
             response,
-            "permit_request_form",
-            f"{works_object_type.pk}_{list_single_prop.pk}",
+            "submission_form",
+            f"{form.pk}_{list_single_field.pk}",
             ["Ce champ est obligatoire."],
         )
         self.assertFormError(
             response,
-            "permit_request_form",
-            f"{works_object_type.pk}_{list_multiple_prop.pk}",
+            "submission_form",
+            f"{form.pk}_{list_multiple_field.pk}",
             ["Ce champ est obligatoire."],
         )
 
     def test_list_multiple_value_is_stored_as_list(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        factories.WorksObjectTypeChoiceFactory(permit_request=permit_request)
-        works_object_type = permit_request.works_object_types.first()
-        permit_request.administrative_entity.works_object_types.set(
-            permit_request.works_object_types.all()
-        )
-        list_multiple_prop = factories.WorksObjectPropertyFactory(
-            input_type=models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE,
+        submission = factories.SubmissionFactory(author=self.user)
+        factories.SelectedFormFactory(submission=submission)
+        form = submission.forms.first()
+        submission.administrative_entity.forms.set(submission.forms.all())
+        list_multiple_field = factories.FieldFactory(
+            input_type=submissions_models.Field.INPUT_TYPE_LIST_MULTIPLE,
             choices="foo\nbar",
         )
-        list_multiple_prop.works_object_types.set(
-            permit_request.works_object_types.all()
-        )
+        list_multiple_field.forms.set(submission.forms.all())
 
         data = {
-            f"properties-{works_object_type.pk}_{list_multiple_prop.pk}": [
+            f"fields-{form.pk}_{list_multiple_field.pk}": [
                 "foo",
                 "bar",
             ],
         }
-
         response = self.client.post(
             reverse(
-                "permits:permit_request_properties",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_fields",
+                kwargs={"submission_id": submission.pk},
             ),
             data=data,
         )
         self.assertEqual(
-            services.get_property_value(
-                models.WorksObjectPropertyValue.objects.first()
-            ),
+            submissions_models.FieldValue.objects.first().get_value(),
             ["foo", "bar"],
         )
 
     def test_list_single_value_is_stored_as_list(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        factories.WorksObjectTypeChoiceFactory(permit_request=permit_request)
-        works_object_type = permit_request.works_object_types.first()
-        permit_request.administrative_entity.works_object_types.set(
-            permit_request.works_object_types.all()
-        )
-        list_multiple_prop = factories.WorksObjectPropertyFactory(
-            input_type=models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE,
+        submission = factories.SubmissionFactory(author=self.user)
+        factories.SelectedFormFactory(submission=submission)
+        form = submission.forms.first()
+        submission.administrative_entity.forms.set(submission.forms.all())
+        list_multiple_field = factories.FieldFactory(
+            input_type=submissions_models.Field.INPUT_TYPE_LIST_MULTIPLE,
             choices="foo\nbar",
         )
-        list_multiple_prop.works_object_types.set(
-            permit_request.works_object_types.all()
-        )
+        list_multiple_field.forms.set(submission.forms.all())
 
-        data = {f"properties-{works_object_type.pk}_{list_multiple_prop.pk}": "foo"}
+        data = {f"fields-{form.pk}_{list_multiple_field.pk}": "foo"}
 
-        response = self.client.post(
+        self.client.post(
             reverse(
-                "permits:permit_request_properties",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_fields",
+                kwargs={"submission_id": submission.pk},
             ),
             data=data,
         )
         self.assertEqual(
-            services.get_property_value(
-                models.WorksObjectPropertyValue.objects.first()
-            ),
+            submissions_models.FieldValue.objects.first().get_value(),
             ["foo"],
         )
 
     def test_input_is_restricted_to_list_values(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        factories.WorksObjectTypeChoiceFactory(permit_request=permit_request)
-        works_object_type = permit_request.works_object_types.first()
-        permit_request.administrative_entity.works_object_types.set(
-            permit_request.works_object_types.all()
-        )
-        list_single_prop = factories.WorksObjectPropertyFactory(
-            input_type=models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE,
+        submission = factories.SubmissionFactory(author=self.user)
+        factories.SelectedFormFactory(submission=submission)
+        form = submission.forms.first()
+        submission.administrative_entity.forms.set(submission.forms.all())
+        list_single_field = factories.FieldFactory(
+            input_type=submissions_models.Field.INPUT_TYPE_LIST_SINGLE,
             choices="foo\nbar",
             is_mandatory=True,
         )
-        list_multiple_prop = factories.WorksObjectPropertyFactory(
-            input_type=models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE,
+        list_multiple_field = factories.FieldFactory(
+            input_type=submissions_models.Field.INPUT_TYPE_LIST_MULTIPLE,
             choices="foo\nbar",
             is_mandatory=True,
         )
-        for prop in [list_single_prop, list_multiple_prop]:
-            prop.works_object_types.set(permit_request.works_object_types.all())
+        for field in [list_single_field, list_multiple_field]:
+            field.forms.set(submission.forms.all())
 
         data = {
-            f"properties-{works_object_type.pk}_{list_single_prop.pk}": "baz",
-            f"properties-{works_object_type.pk}_{list_multiple_prop.pk}": ["baz"],
+            f"fields-{form.pk}_{list_single_field.pk}": "baz",
+            f"fields-{form.pk}_{list_multiple_field.pk}": ["baz"],
         }
 
         response = self.client.post(
             reverse(
-                "permits:permit_request_properties",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_fields",
+                kwargs={"submission_id": submission.pk},
             ),
             data=data,
         )
 
         self.assertFormError(
             response,
-            "permit_request_form",
-            f"{works_object_type.pk}_{list_single_prop.pk}",
+            "submission_form",
+            f"{form.pk}_{list_single_field.pk}",
             ["Sélectionnez un choix valide. baz n’en fait pas partie."],
         )
         self.assertFormError(
             response,
-            "permit_request_form",
-            f"{works_object_type.pk}_{list_multiple_prop.pk}",
+            "submission_form",
+            f"{form.pk}_{list_multiple_field.pk}",
             ["Sélectionnez un choix valide. baz n’en fait pas partie."],
         )
 
 
-class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
+class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
         super().setUp()
-        self.wot_normal = factories.WorksObjectTypeFactory()
-        self.wot_normal_no_date = factories.WorksObjectTypeFactory(needs_date=False)
-        self.wot_prolongable_no_date = factories.WorksObjectTypeFactory(
+        self.form_normal = factories.FormFactory()
+        self.form_normal_no_date = factories.FormFactory(needs_date=False)
+        self.form_prolongable_no_date = factories.FormFactory(
             needs_date=False,
             permit_duration=30,
         )
-        self.wot_prolongable_with_date = factories.WorksObjectTypeFactory(
+        self.form_prolongable_with_date = factories.FormFactory(
             needs_date=True,
             permit_duration=60,
         )
-        self.wot_prolongable_no_date_with_reminder = factories.WorksObjectTypeFactory(
+        self.form_prolongable_no_date_with_reminder = factories.FormFactory(
             needs_date=False,
             permit_duration=90,
             expiration_reminder=True,
             days_before_reminder=5,
         )
-        self.wot_prolongable_with_date_and_reminder = factories.WorksObjectTypeFactory(
+        self.form_prolongable_with_date_and_reminder = factories.FormFactory(
             needs_date=True,
             permit_duration=120,
             expiration_reminder=True,
@@ -1526,20 +1419,20 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             groups=[secretary_group], email="secretary@geocity.ch"
         )
 
-    def test_user_cannot_request_permit_prolongation_if_permit_is_not_prolongable(
+    def test_user_cannot_request_submission_prolongation_if_submission_is_not_prolongable(
         self,
     ):
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_APPROVED,
+        submission = factories.SubmissionFactory(
+            author=self.user,
+            status=submissions_models.Submission.STATUS_APPROVED,
         )
-        permit_request.works_object_types.set([self.wot_normal])
-        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
+        submission.forms.set([self.form_normal])
+        factories.SubmissionGeoTimeFactory(submission=submission)
 
-        # Permit list
+        # Submission list
         response = self.client.get(
             reverse(
-                "permits:permit_requests_list",
+                "submissions:submissions_list",
             )
         )
         parser = get_parser(response.content)
@@ -1549,8 +1442,8 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         # Prolongation form
         response = self.client.get(
             reverse(
-                "permits:permit_request_prolongation",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_prolongation",
+                kwargs={"submission_id": submission.pk},
             ),
             follow=True,
         )
@@ -1562,23 +1455,23 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(1, len(alert))
         self.assertNotContains(response, "Demander une prolongation")
 
-    def test_user_cannot_request_permit_prolongation_if_it_prolongation_is_processing(
+    def test_user_cannot_request_submission_prolongation_if_his_prolongation_is_processing(
         self,
     ):
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_PROCESSING,
-            prolongation_status=models.PermitRequest.PROLONGATION_STATUS_PENDING,
+        submission = factories.SubmissionFactory(
+            author=self.user,
+            status=submissions_models.Submission.STATUS_PROCESSING,
+            prolongation_status=submissions_models.Submission.PROLONGATION_STATUS_PENDING,
             prolongation_date=timezone.now() + datetime.timedelta(days=90),
         )
-        permit_request.works_object_types.set([self.wot_prolongable_with_date])
-        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
+        submission.forms.set([self.form_prolongable_with_date])
+        factories.SubmissionGeoTimeFactory(submission=submission)
 
         # Prolongation form
         response = self.client.get(
             reverse(
-                "permits:permit_request_prolongation",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_prolongation",
+                kwargs={"submission_id": submission.pk},
             ),
             follow=True,
         )
@@ -1592,23 +1485,23 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(1, len(alert))
         self.assertNotContains(response, "Demander une prolongation")
 
-    def test_user_cannot_request_permit_prolongation_if_it_has_been_rejected(
+    def test_user_cannot_request_submission_prolongation_if_it_has_been_rejected(
         self,
     ):
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
-            prolongation_status=models.PermitRequest.PROLONGATION_STATUS_REJECTED,
+        submission = factories.SubmissionFactory(
+            author=self.user,
+            status=submissions_models.Submission.STATUS_AWAITING_SUPPLEMENT,
+            prolongation_status=submissions_models.Submission.PROLONGATION_STATUS_REJECTED,
             prolongation_date=timezone.now() + datetime.timedelta(days=90),
         )
-        permit_request.works_object_types.set([self.wot_prolongable_with_date])
-        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
+        submission.forms.set([self.form_prolongable_with_date])
+        factories.SubmissionGeoTimeFactory(submission=submission)
 
         # Prolongation form
         response = self.client.get(
             reverse(
-                "permits:permit_request_prolongation",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_prolongation",
+                kwargs={"submission_id": submission.pk},
             ),
             follow=True,
         )
@@ -1622,27 +1515,25 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(1, len(alert))
         self.assertNotContains(response, "Demander une prolongation")
 
-    def test_secretariat_cannot_request_permit_prolongation_via_form_if_it_is_not_the_permit_author(
+    def test_secretariat_cannot_request_submission_prolongation_via_form_if_it_is_not_the_author(
         self,
     ):
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
+        submission = factories.SubmissionFactory(
+            author=self.user,
+            status=submissions_models.Submission.STATUS_AWAITING_SUPPLEMENT,
         )
-        permit_request.works_object_types.set(
-            [self.wot_prolongable_no_date_with_reminder]
-        )
-        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
+        submission.forms.set([self.form_prolongable_no_date_with_reminder])
+        factories.SubmissionGeoTimeFactory(submission=submission)
 
-        permit_request.administrative_entity.departments.set([self.department])
+        submission.administrative_entity.departments.set([self.department])
 
         self.client.login(username=self.secretariat, password="password")
 
         # Prolongation form
         response = self.client.get(
             reverse(
-                "permits:permit_request_prolongation",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_prolongation",
+                kwargs={"submission_id": submission.pk},
             ),
             follow=True,
         )
@@ -1657,23 +1548,21 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(1, len(alert))
         self.assertNotContains(response, "Demander une prolongation")
 
-    def test_user_can_request_permit_prolongation(
+    def test_user_can_request_submission_prolongation(
         self,
     ):
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED
+        submission = factories.SubmissionFactory(
+            author=self.user, status=submissions_models.Submission.STATUS_APPROVED
         )
-        permit_request.works_object_types.set(
-            [self.wot_prolongable_with_date_and_reminder]
-        )
-        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
-        permit_request.administrative_entity.departments.set([self.department])
+        submission.forms.set([self.form_prolongable_with_date_and_reminder])
+        factories.SubmissionGeoTimeFactory(submission=submission)
+        submission.administrative_entity.departments.set([self.department])
 
         # Prolongation form
         response = self.client.get(
             reverse(
-                "permits:permit_request_prolongation",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_prolongation",
+                kwargs={"submission_id": submission.pk},
             ),
         )
         parser = get_parser(response.content)
@@ -1683,54 +1572,55 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             "input",
             title="Cliquer sur le champ et sélectionner la nouvelle date de fin planifiée",
         )
+        
         self.assertEqual(1, len(title))
         self.assertEqual("id_prolongation_date", widget.get("id"))
-
+        
         # Post
         prolongation_date = timezone.now() + datetime.timedelta(days=90)
+        
         response = self.client.post(
             reverse(
-                "permits:permit_request_prolongation",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_prolongation",
+                kwargs={"submission_id": submission.pk},
             ),
             follow=True,
             data={"prolongation_date": prolongation_date},
         )
+        
         parser = get_parser(response.content)
         regex = re.compile(r"^Prolongation en attente")
         icon_prolongation_processing = parser.findAll("i", title=regex)
-        icon_permit_expired = parser.findAll("i", title="Demande échue")
+        icon_submission_expired = parser.findAll("i", title="Demande échue")
         expected_subject_regex = re.compile(
             r"Une demande de prolongation vient d'être soumise"
         )
 
-        permit_request.refresh_from_db()
+        submission.refresh_from_db()
 
-        self.assertRedirects(response, reverse("permits:permit_requests_list"))
+        self.assertRedirects(response, reverse("submissions:submissions_list"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(1, len(icon_prolongation_processing))
-        self.assertEqual(1, len(icon_permit_expired))
+        self.assertEqual(1, len(icon_submission_expired))
         self.assertEqual(
-            models.PermitRequest.PROLONGATION_STATUS_PENDING,
-            permit_request.prolongation_status,
+            submissions_models.Submission.PROLONGATION_STATUS_PENDING,
+            submission.prolongation_status,
         )
-        self.assertEqual(prolongation_date, permit_request.prolongation_date)
+        self.assertEqual(prolongation_date, submission.prolongation_date)
         # Emails
         self.assertIn("secretary@geocity.ch", mail.outbox[0].to)
         self.assertRegex(mail.outbox[0].subject, expected_subject_regex)
         self.assertRegex(mail.outbox[0].message().as_string(), expected_subject_regex)
 
-    def test_permit_prolongation_request_must_be_after_original_end_date(
+    def test_submission_prolongation_request_must_be_after_original_end_date(
         self,
     ):
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor, status=models.PermitRequest.STATUS_APPROVED
+        submission = factories.SubmissionFactory(
+            author=self.user, status=submissions_models.Submission.STATUS_APPROVED
         )
-        permit_request.works_object_types.set(
-            [self.wot_prolongable_with_date_and_reminder]
-        )
-        factories.PermitRequestGeoTimeFactory(
-            permit_request=permit_request,
+        submission.forms.set([self.form_prolongable_with_date_and_reminder])
+        factories.SubmissionGeoTimeFactory(
+            submission=submission,
             starts_at=timezone.now() - datetime.timedelta(days=30),
             ends_at=timezone.now(),
         )
@@ -1739,8 +1629,8 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
 
         response = self.client.post(
             reverse(
-                "permits:permit_request_prolongation",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_prolongation",
+                kwargs={"submission_id": submission.pk},
             ),
             follow=True,
             data={"prolongation_date": timezone.now() - datetime.timedelta(days=1)},
@@ -1753,23 +1643,23 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         )
 
     # TESTS FOR THE SECRETARIAT
-    def test_secretariat_can_prolonge_or_permit_request_without_user_asking(
+    def test_secretariat_can_prolonge_or_submission_without_user_asking(
         self,
     ):
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_APPROVED,
+        submission = factories.SubmissionFactory(
+            author=self.user,
+            status=submissions_models.Submission.STATUS_APPROVED,
         )
-        permit_request.works_object_types.set([self.wot_prolongable_with_date])
-        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
-        permit_request.administrative_entity.departments.set([self.department])
+        submission.forms.set([self.form_prolongable_with_date])
+        factories.SubmissionGeoTimeFactory(submission=submission)
+        submission.administrative_entity.departments.set([self.department])
         self.client.login(username=self.secretariat, password="password")
 
-        # Prolongation form on permit details
+        # Prolongation form on submission details
         response = self.client.get(
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": submission.pk},
             ),
             follow=True,
         )
@@ -1788,18 +1678,18 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
 
         response = self.client.post(
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": submission.pk},
             ),
             follow=True,
             data={
                 "prolongation_date": prolongation_date,
-                "prolongation_status": models.PermitRequest.PROLONGATION_STATUS_APPROVED,
+                "prolongation_status": submissions_models.Submission.PROLONGATION_STATUS_APPROVED,
                 "prolongation_comment": "Prolonged! I got the power!",
-                "action": models.ACTION_PROLONG,
+                "action": submissions_models.ACTION_PROLONG,
             },
         )
-        permit_request.refresh_from_db()
+        submission.refresh_from_db()
 
         parser = get_parser(response.content)
 
@@ -1811,17 +1701,15 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, reverse("permits:permit_requests_list"))
+        self.assertRedirects(response, reverse("submissions:submissions_list"))
         self.assertEqual(0, len(icon_prolongation_processing))
         self.assertEqual(1, len(icon_prolongation_approved))
         self.assertEqual(
-            models.PermitRequest.PROLONGATION_STATUS_APPROVED,
-            permit_request.prolongation_status,
+            submissions_models.Submission.PROLONGATION_STATUS_APPROVED,
+            submission.prolongation_status,
         )
-        self.assertEqual(prolongation_date, permit_request.prolongation_date)
-        self.assertEqual(
-            "Prolonged! I got the power!", permit_request.prolongation_comment
-        )
+        self.assertEqual(prolongation_date, submission.prolongation_date)
+        self.assertEqual("Prolonged! I got the power!", submission.prolongation_comment)
 
         self.assertIn("user@test.com", mail.outbox[0].to)
         self.assertRegex(mail.outbox[0].subject, expected_subject_regex)
@@ -1830,16 +1718,16 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             mail.outbox[0].message().as_string(),
         )
 
-    def test_secretariat_can_reject_permit_request(
+    def test_secretariat_can_reject_submission(
         self,
     ):
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_APPROVED,
+        submission = factories.SubmissionFactory(
+            author=self.user,
+            status=submissions_models.Submission.STATUS_APPROVED,
         )
-        permit_request.works_object_types.set([self.wot_prolongable_with_date])
-        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
-        permit_request.administrative_entity.departments.set([self.department])
+        submission.forms.set([self.form_prolongable_with_date])
+        factories.SubmissionGeoTimeFactory(submission=submission)
+        submission.administrative_entity.departments.set([self.department])
         self.client.login(username=self.secretariat, password="password")
 
         # Post the form
@@ -1847,18 +1735,18 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
 
         response = self.client.post(
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": submission.pk},
             ),
             follow=True,
             data={
                 "prolongation_date": prolongation_date,
-                "prolongation_status": models.PermitRequest.PROLONGATION_STATUS_REJECTED,
+                "prolongation_status": submissions_models.Submission.PROLONGATION_STATUS_REJECTED,
                 "prolongation_comment": "Rejected! Because I say so!",
-                "action": models.ACTION_PROLONG,
+                "action": submissions_models.ACTION_PROLONG,
             },
         )
-        permit_request.refresh_from_db()
+        submission.refresh_from_db()
 
         parser = get_parser(response.content)
 
@@ -1870,17 +1758,15 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertRedirects(response, reverse("permits:permit_requests_list"))
+        self.assertRedirects(response, reverse("submissions:submissions_list"))
         self.assertEqual(0, len(icon_prolongation_processing))
         self.assertEqual(1, len(icon_prolongation_rejected))
         self.assertEqual(
-            models.PermitRequest.PROLONGATION_STATUS_REJECTED,
-            permit_request.prolongation_status,
+            submissions_models.Submission.PROLONGATION_STATUS_REJECTED,
+            submission.prolongation_status,
         )
-        self.assertEqual(prolongation_date, permit_request.prolongation_date)
-        self.assertEqual(
-            "Rejected! Because I say so!", permit_request.prolongation_comment
-        )
+        self.assertEqual(prolongation_date, submission.prolongation_date)
+        self.assertEqual("Rejected! Because I say so!", submission.prolongation_comment)
 
         self.assertRegex(mail.outbox[0].subject, expected_subject_regex)
         self.assertIn(
@@ -1888,23 +1774,23 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             mail.outbox[0].message().as_string(),
         )
 
-    def test_secretariat_prolonge_form_is_disabled_on_bad_permit_request_status(
+    def test_secretariat_prolonge_form_is_disabled_on_bad_submission_status(
         self,
     ):
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_RECEIVED,
+        submission = factories.SubmissionFactory(
+            author=self.user,
+            status=submissions_models.Submission.STATUS_RECEIVED,
         )
-        permit_request.works_object_types.set([self.wot_prolongable_with_date])
-        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
-        permit_request.administrative_entity.departments.set([self.department])
+        submission.forms.set([self.form_prolongable_with_date])
+        factories.SubmissionGeoTimeFactory(submission=submission)
+        submission.administrative_entity.departments.set([self.department])
         self.client.login(username=self.secretariat, password="password")
 
-        # Prolongation form on permit details
+        # Prolongation form on submission details
         response = self.client.get(
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": submission.pk},
             ),
         )
 
@@ -1914,32 +1800,32 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         self.assertTrue("disabled" in str(prolong_form))
         self.assertEqual(response.status_code, 200)
 
-    def test_user_cannot_see_prolongation_icons_nor_info_if_expired_permit_is_draft(
+    def test_user_cannot_see_prolongation_icons_nor_info_if_expired_submission_is_draft(
         self,
     ):
         # Draft - No action icons - No expired/renew icons
 
-        permit_request_draft = factories.PermitRequestFactory(
+        submission_draft = factories.SubmissionFactory(
             validated_at=timezone.now(),
-            status=models.PermitRequest.STATUS_DRAFT,
-            author=self.user.permitauthor,
+            status=submissions_models.Submission.STATUS_DRAFT,
+            author=self.user,
         )
-        permit_request_draft.works_object_types.set([self.wot_normal])
+        submission_draft.forms.set([self.form_normal])
         ends_at_draft = timezone.now()
-        factories.PermitRequestGeoTimeFactory(
-            permit_request=permit_request_draft,
+        factories.SubmissionGeoTimeFactory(
+            submission=submission_draft,
             starts_at=timezone.now() - datetime.timedelta(days=30),
             ends_at=ends_at_draft,
         )
         response = self.client.get(
             reverse(
-                "permits:permit_requests_list",
+                "submissions:submissions_list",
             )
         )
         parser = get_parser(response.content)
 
-        info_expired_permits = parser.findAll("i", title="Demande échue")
-        info_prolonged_permits = parser.findAll("i", title="Demande renouvelée")
+        info_expired_submission = parser.findAll("i", title="Demande échue")
+        info_prolonged_submission = parser.findAll("i", title="Demande renouvelée")
         action_request_prolongation = parser.findAll(
             "a", title="Demander une prolongation"
         )
@@ -1949,40 +1835,38 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         action_prolongation_rejected = parser.findAll("i", title="Prolongation refusée")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(0, len(info_expired_permits))
-        self.assertEqual(0, len(info_prolonged_permits))
+        self.assertEqual(0, len(info_expired_submission))
+        self.assertEqual(0, len(info_prolonged_submission))
         self.assertEqual(0, len(action_request_prolongation))
         self.assertEqual(0, len(action_prolongation_requested))
         self.assertEqual(0, len(action_prolongation_rejected))
 
-    def test_user_can_see_prolongation_icons_if_permit_is_about_to_expire(
+    def test_user_can_see_prolongation_icons_if_submission_is_about_to_expire(
         self,
     ):
         # Expired within delay of reminder  - Action icon - No expired/renew icons
-        permit_request_expired = factories.PermitRequestFactory(
+        submission_expired = factories.SubmissionFactory(
             validated_at=timezone.now(),
-            status=models.PermitRequest.STATUS_APPROVED,
-            author=self.user.permitauthor,
+            status=submissions_models.Submission.STATUS_APPROVED,
+            author=self.user,
         )
-        permit_request_expired.works_object_types.set(
-            [self.wot_prolongable_with_date_and_reminder]
-        )
+        submission_expired.forms.set([self.form_prolongable_with_date_and_reminder])
         ends_at_expired = timezone.now() + datetime.timedelta(days=5)
-        factories.PermitRequestGeoTimeFactory(
-            permit_request=permit_request_expired,
+        factories.SubmissionGeoTimeFactory(
+            submission=submission_expired,
             starts_at=timezone.now() - datetime.timedelta(days=120),
             ends_at=ends_at_expired,
         )
 
         response = self.client.get(
             reverse(
-                "permits:permit_requests_list",
+                "submissions:submissions_list",
             )
         )
         parser = get_parser(response.content)
 
-        info_expired_permits = parser.findAll("i", title="Demande échue")
-        info_prolonged_permits = parser.findAll("i", title="Demande renouvelée")
+        info_expired_submission = parser.findAll("i", title="Demande échue")
+        info_prolonged_submission = parser.findAll("i", title="Demande renouvelée")
         action_request_prolongation = parser.findAll(
             "a", title="Demander une prolongation"
         )
@@ -1992,43 +1876,41 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         action_prolongation_rejected = parser.findAll("i", title="Prolongation refusée")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(0, len(info_expired_permits))
-        self.assertEqual(0, len(info_prolonged_permits))
+        self.assertEqual(0, len(info_expired_submission))
+        self.assertEqual(0, len(info_prolonged_submission))
         self.assertEqual(1, len(action_request_prolongation))
         self.assertEqual(0, len(action_prolongation_requested))
         self.assertEqual(0, len(action_prolongation_rejected))
 
-    def test_user_can_see_prolongation_info_icons_if_permit_is_prolonged(
+    def test_user_can_see_prolongation_info_icons_if_submission_is_prolonged(
         self,
     ):
         # Prolonged  - No action icons - Renew icons - Date fin = prolongation_date
         prolongation_date_prolonged = timezone.now() + datetime.timedelta(days=365)
-        permit_request_prolonged = factories.PermitRequestFactory(
+        submission_prolonged = factories.SubmissionFactory(
             validated_at=timezone.now(),
-            status=models.PermitRequest.STATUS_APPROVED,
-            author=self.user.permitauthor,
+            status=submissions_models.Submission.STATUS_APPROVED,
+            author=self.user,
             prolongation_date=prolongation_date_prolonged,
-            prolongation_status=models.PermitRequest.PROLONGATION_STATUS_APPROVED,
+            prolongation_status=submissions_models.Submission.PROLONGATION_STATUS_APPROVED,
         )
-        permit_request_prolonged.works_object_types.set(
-            [self.wot_prolongable_with_date_and_reminder]
-        )
+        submission_prolonged.forms.set([self.form_prolongable_with_date_and_reminder])
         ends_at_prolonged = timezone.now() + datetime.timedelta(days=5)
-        factories.PermitRequestGeoTimeFactory(
-            permit_request=permit_request_prolonged,
+        factories.SubmissionGeoTimeFactory(
+            submission=submission_prolonged,
             starts_at=timezone.now() - datetime.timedelta(days=120),
             ends_at=ends_at_prolonged,
         )
 
         response = self.client.get(
             reverse(
-                "permits:permit_requests_list",
+                "submissions:submissions_list",
             )
         )
         parser = get_parser(response.content)
 
-        info_expired_permits = parser.findAll("i", title="Demande échue")
-        info_prolonged_permits = parser.findAll("i", title="Demande renouvelée")
+        info_expired_submission = parser.findAll("i", title="Demande échue")
+        info_prolonged_submission = parser.findAll("i", title="Demande renouvelée")
         action_request_prolongation = parser.findAll(
             "a", title="Demander une prolongation"
         )
@@ -2038,44 +1920,44 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         action_prolongation_rejected = parser.findAll("i", title="Prolongation refusée")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(0, len(info_expired_permits))
-        self.assertEqual(1, len(info_prolonged_permits))
+        self.assertEqual(0, len(info_expired_submission))
+        self.assertEqual(1, len(info_prolonged_submission))
         self.assertEqual(0, len(action_request_prolongation))
         self.assertEqual(0, len(action_prolongation_requested))
         self.assertEqual(0, len(action_prolongation_rejected))
 
-    def test_user_can_see_prolongation_info_icons_if_permit_prolongation_is_requested(
+    def test_user_can_see_prolongation_info_icons_if_submission_prolongation_is_requested(
         self,
     ):
 
         # Prolongation Requested
         prolongation_date_requested = timezone.now() + datetime.timedelta(days=365)
-        permit_request_prolongation_requested = factories.PermitRequestFactory(
+        submission_prolongation_requested = factories.SubmissionFactory(
             validated_at=timezone.now(),
-            status=models.PermitRequest.STATUS_APPROVED,
-            author=self.user.permitauthor,
+            status=submissions_models.Submission.STATUS_APPROVED,
+            author=self.user,
             prolongation_date=prolongation_date_requested,
-            prolongation_status=models.PermitRequest.PROLONGATION_STATUS_PENDING,
+            prolongation_status=submissions_models.Submission.PROLONGATION_STATUS_PENDING,
         )
-        permit_request_prolongation_requested.works_object_types.set(
-            [self.wot_prolongable_no_date_with_reminder]
+        submission_prolongation_requested.forms.set(
+            [self.form_prolongable_no_date_with_reminder]
         )
         ends_at_requested = timezone.now() + datetime.timedelta(days=4)
-        factories.PermitRequestGeoTimeFactory(
-            permit_request=permit_request_prolongation_requested,
+        factories.SubmissionGeoTimeFactory(
+            submission=submission_prolongation_requested,
             starts_at=timezone.now() - datetime.timedelta(days=120),
             ends_at=ends_at_requested,
         )
 
         response = self.client.get(
             reverse(
-                "permits:permit_requests_list",
+                "submissions:submissions_list",
             )
         )
         parser = get_parser(response.content)
 
-        info_expired_permits = parser.findAll("i", title="Demande échue")
-        info_prolonged_permits = parser.findAll("i", title="Demande renouvelée")
+        info_expired_submission = parser.findAll("i", title="Demande échue")
+        info_prolonged_submission = parser.findAll("i", title="Demande renouvelée")
         action_request_prolongation = parser.findAll(
             "a", title="Demander une prolongation"
         )
@@ -2085,44 +1967,44 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         action_prolongation_rejected = parser.findAll("i", title="Prolongation refusée")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(0, len(info_expired_permits))
-        self.assertEqual(0, len(info_prolonged_permits))
+        self.assertEqual(0, len(info_expired_submission))
+        self.assertEqual(0, len(info_prolonged_submission))
         self.assertEqual(0, len(action_request_prolongation))
         self.assertEqual(1, len(action_prolongation_requested))
         self.assertEqual(0, len(action_prolongation_rejected))
 
-    def test_user_can_see_prolongation_info_icons_if_permit_prolongation_is_rejected(
+    def test_user_can_see_prolongation_info_icons_if_submission_prolongation_is_rejected(
         self,
     ):
 
         # Prolongation Rejected
         prolongation_date_rejected = timezone.now() + datetime.timedelta(days=300)
-        permit_request_prolongation_rejected = factories.PermitRequestFactory(
+        submission_prolongation_rejected = factories.SubmissionFactory(
             validated_at=timezone.now(),
-            status=models.PermitRequest.STATUS_APPROVED,
-            author=self.user.permitauthor,
+            status=submissions_models.Submission.STATUS_APPROVED,
+            author=self.user,
             prolongation_date=prolongation_date_rejected,
-            prolongation_status=models.PermitRequest.PROLONGATION_STATUS_REJECTED,
+            prolongation_status=submissions_models.Submission.PROLONGATION_STATUS_REJECTED,
         )
-        permit_request_prolongation_rejected.works_object_types.set(
-            [self.wot_prolongable_no_date_with_reminder]
+        submission_prolongation_rejected.forms.set(
+            [self.form_prolongable_no_date_with_reminder]
         )
         ends_at_rejected = timezone.now() - datetime.timedelta(days=3)
-        factories.PermitRequestGeoTimeFactory(
-            permit_request=permit_request_prolongation_rejected,
+        factories.SubmissionGeoTimeFactory(
+            submission=submission_prolongation_rejected,
             starts_at=timezone.now() - datetime.timedelta(days=120),
             ends_at=ends_at_rejected,
         )
 
         response = self.client.get(
             reverse(
-                "permits:permit_requests_list",
+                "submissions:submissions_list",
             )
         )
         parser = get_parser(response.content)
 
-        info_expired_permits = parser.findAll("i", title="Demande échue")
-        info_prolonged_permits = parser.findAll("i", title="Demande renouvelée")
+        info_expired_submission = parser.findAll("i", title="Demande échue")
+        info_prolonged_submission = parser.findAll("i", title="Demande renouvelée")
         action_request_prolongation = parser.findAll(
             "a", title="Demander une prolongation"
         )
@@ -2132,27 +2014,27 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         action_prolongation_rejected = parser.findAll("i", title="Prolongation refusée")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(1, len(info_expired_permits))
-        self.assertEqual(0, len(info_prolonged_permits))
+        self.assertEqual(1, len(info_expired_submission))
+        self.assertEqual(0, len(info_prolonged_submission))
         self.assertEqual(0, len(action_request_prolongation))
         self.assertEqual(0, len(action_prolongation_requested))
         self.assertEqual(1, len(action_prolongation_rejected))
 
-    def test_secretariat_can_see_prolongation_buttons_if_wot_has_prolongation_enabled(
+    def test_secretariat_can_see_prolongation_buttons_if_form_has_prolongation_enabled(
         self,
     ):
 
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_APPROVED,
+        submission = factories.SubmissionFactory(
+            status=submissions_models.Submission.STATUS_APPROVED,
         )
-        permit_request.works_object_types.set([self.wot_prolongable_with_date])
-        permit_request.administrative_entity.departments.set([self.department])
+        submission.forms.set([self.form_prolongable_with_date])
+        submission.administrative_entity.departments.set([self.department])
         self.client.login(username=self.secretariat, password="password")
 
         response = self.client.get(
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": submission.pk},
             )
         )
         parser = get_parser(response.content)
@@ -2163,23 +2045,21 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             2,
         )
 
-    def test_secretariat_can_see_prolongation_buttons_if_at_least_one_wot_has_prolongation_enabled(
+    def test_secretariat_can_see_prolongation_buttons_if_at_least_one_form_has_prolongation_enabled(
         self,
     ):
 
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_APPROVED,
+        submission = factories.SubmissionFactory(
+            status=submissions_models.Submission.STATUS_APPROVED,
         )
-        permit_request.works_object_types.set(
-            [self.wot_prolongable_with_date, self.wot_normal]
-        )
-        permit_request.administrative_entity.departments.set([self.department])
+        submission.forms.set([self.form_prolongable_with_date, self.form_normal])
+        submission.administrative_entity.departments.set([self.department])
         self.client.login(username=self.secretariat, password="password")
 
         response = self.client.get(
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": submission.pk},
             )
         )
         parser = get_parser(response.content)
@@ -2190,21 +2070,21 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
             2,
         )
 
-    def test_secretariat_cannot_see_prolongation_buttons_if_wot_has_not_prolongation_enabled(
+    def test_secretariat_cannot_see_prolongation_buttons_if_form_has_not_prolongation_enabled(
         self,
     ):
 
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_APPROVED,
+        submission = factories.SubmissionFactory(
+            status=submissions_models.Submission.STATUS_APPROVED,
         )
-        permit_request.works_object_types.set([self.wot_normal])
-        permit_request.administrative_entity.departments.set([self.department])
+        submission.forms.set([self.form_normal])
+        submission.administrative_entity.departments.set([self.department])
         self.client.login(username=self.secretariat, password="password")
 
         response = self.client.get(
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": submission.pk},
             )
         )
         parser = get_parser(response.content)
@@ -2216,7 +2096,7 @@ class PermitRequestProlongationTestCase(LoggedInUserMixin, TestCase):
         )
 
 
-class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
+class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
     def setUp(self):
         super().setUp()
 
@@ -2226,7 +2106,7 @@ class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
             "form-MIN_NUM_FORMS": ["0"],
             "form-MAX_NUM_FORMS": ["1000"],
             "creditor_type": [""],
-            "form-0-actor_type": "",
+            "form-0-contact_type": "",
             "form-0-first_name": ["John"],
             "form-0-last_name": ["Doe"],
             "form-0-phone": ["000 000 00 00"],
@@ -2239,89 +2119,89 @@ class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
             "form-0-id": [""],
         }
 
-    def test_permitrequestactor_creates(self):
-        works_object_type = factories.WorksObjectTypeFactory()
-        works_type = works_object_type.works_type
+    def test_submission_contact_creates(self):
+        form = factories.FormFactory()
+        form_category = form.category
 
-        actor_required = factories.PermitActorTypeFactory(
-            is_mandatory=True, works_type=works_type
+        contact_required = factories.ContactTypeFactory(
+            is_mandatory=True, form_category=form_category
         )
 
-        self.test_formset_data["form-0-actor_type"] = actor_required.type
+        self.test_formset_data["form-0-contact_type"] = contact_required.type
 
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor, status=models.PermitRequest.STATUS_DRAFT
+        submission = factories.SubmissionFactory(
+            author=self.user, status=submissions_models.Submission.STATUS_DRAFT
         )
 
-        permit_request.administrative_entity.works_object_types.set([works_object_type])
-        permit_request.works_object_types.set([works_object_type])
-        prop = factories.WorksObjectPropertyFactory()
-        prop.works_object_types.set([works_object_type])
+        submission.administrative_entity.forms.set([form])
+        submission.forms.set([form])
+        field = factories.FieldFactory()
+        field.forms.set([form])
 
         self.client.post(
             reverse(
-                "permits:permit_request_actors",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_contacts",
+                kwargs={"submission_id": submission.pk},
             ),
             data=self.test_formset_data,
         )
 
-        actors = list(permit_request.actors.all())
-        self.assertEqual(len(actors), 1, "Expected 1 actor created")
-        self.assertEqual(actors[0].first_name, "John")
+        contacts = list(submission.contacts.all())
+        self.assertEqual(len(contacts), 1, "Expected 1 actor created")
+        self.assertEqual(contacts[0].first_name, "John")
 
-    def test_permitrequestactor_required_cannot_have_empty_field(self):
-        works_object_type = factories.WorksObjectTypeFactory()
-        works_type = works_object_type.works_type
+    def test_submission_contact_required_cannot_have_empty_field(self):
+        form = factories.FormFactory()
+        form_category = form.category
 
-        actor_required = factories.PermitActorTypeFactory(
-            is_mandatory=True, works_type=works_type
+        contact_required = factories.ContactTypeFactory(
+            is_mandatory=True, form_category=form_category
         )
 
-        self.test_formset_data["form-0-actor_type"] = actor_required.type
+        self.test_formset_data["form-0-contact_type"] = contact_required.type
 
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor, status=models.PermitRequest.STATUS_DRAFT
+        submission = factories.SubmissionFactory(
+            author=self.user, status=submissions_models.Submission.STATUS_DRAFT
         )
 
-        permit_request.administrative_entity.works_object_types.set([works_object_type])
-        permit_request.works_object_types.set([works_object_type])
-        prop = factories.WorksObjectPropertyFactory()
-        prop.works_object_types.set([works_object_type])
+        submission.administrative_entity.forms.set([form])
+        submission.forms.set([form])
+        field = factories.FieldFactory()
+        field.forms.set([form])
 
         self.test_formset_data["form-0-last_name"] = ""
 
         response = self.client.post(
             reverse(
-                "permits:permit_request_actors",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_contacts",
+                kwargs={"submission_id": submission.pk},
             ),
             follow=True,
             data=self.test_formset_data,
         )
 
-        permit_request.refresh_from_db()
-        # Check that no actor was saved for this permit
-        self.assertEqual(permit_request.actors.count(), 0)
+        submission.refresh_from_db()
+        # Check that no actor was saved for this submission
+        self.assertEqual(submission.contacts.count(), 0)
         # Check that if form not valid, it does not redirect
         self.assertEqual(response.status_code, 200)
 
-    def test_permitrequestactor_creditor_field_is_hidden_if_wot_is_not_paid(self):
-        works_object_type = factories.WorksObjectTypeFactory(requires_payment=False)
-        works_type = works_object_type.works_type
+    def test_submission_contact_creditor_field_is_hidden_if_form_is_not_paid(self):
+        form = factories.FormFactory(requires_payment=False)
+        form_category = form.category
 
-        factories.PermitActorTypeFactory(is_mandatory=True, works_type=works_type)
+        factories.ContactTypeFactory(is_mandatory=True, form_category=form_category)
 
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor, status=models.PermitRequest.STATUS_DRAFT
+        submission = factories.SubmissionFactory(
+            author=self.user, status=submissions_models.Submission.STATUS_DRAFT
         )
 
-        permit_request.works_object_types.set([works_object_type])
+        submission.forms.set([form])
 
         response = self.client.get(
             reverse(
-                "permits:permit_request_actors",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_contacts",
+                kwargs={"submission_id": submission.pk},
             ),
             follow=True,
         )
@@ -2343,33 +2223,29 @@ class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
             0,
         )
 
-    def test_permitrequestactor_creditor_field_is_shown_if_at_least_one_wot_requires_payment(
+    def test_submission_contact_creditor_field_is_shown_if_at_least_one_form_requires_payment(
         self,
     ):
 
-        free_works_object_types = factories.WorksObjectTypeFactory.create_batch(
-            2, requires_payment=False
-        )
-        paid_works_object_type = factories.WorksObjectTypeFactory(requires_payment=True)
-        works_types = [wt.works_type for wt in free_works_object_types] + [
-            paid_works_object_type.works_type
+        free_forms = factories.FormFactory.create_batch(2, requires_payment=False)
+        paid_form = factories.FormFactory(requires_payment=True)
+        form_categories = [form.category for form in free_forms] + [
+            paid_form.category
         ]
 
-        for wt in works_types:
-            factories.PermitActorTypeFactory(is_mandatory=True, works_type=wt)
+        for form_category in form_categories:
+            factories.ContactTypeFactory(is_mandatory=True, form_category=form_category)
 
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor, status=models.PermitRequest.STATUS_DRAFT
+        submission = factories.SubmissionFactory(
+            author=self.user, status=submissions_models.Submission.STATUS_DRAFT
         )
 
-        permit_request.works_object_types.set(
-            free_works_object_types + [paid_works_object_type]
-        )
+        submission.forms.set(free_forms + [paid_form])
 
         response = self.client.get(
             reverse(
-                "permits:permit_request_actors",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_contacts",
+                kwargs={"submission_id": submission.pk},
             ),
             follow=True,
         )
@@ -2392,1058 +2268,12 @@ class PermitRequestActorsTestCase(LoggedInUserMixin, TestCase):
         )
 
 
-class PermitRequestUpdateTestCase(LoggedInUserMixin, TestCase):
-    def setUp(self):
-        super().setUp()
-        self.permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor
-        )
-        factories.WorksObjectTypeChoiceFactory.create_batch(
-            3, permit_request=self.permit_request
-        )
-        self.permit_request.administrative_entity.works_object_types.set(
-            self.permit_request.works_object_types.all()
-        )
-
-    def test_types_step_submit_shows_new_objects(self):
-        new_works_object_type = factories.WorksObjectTypeFactory()
-
-        new_works_object_type.administrative_entities.set(
-            [self.permit_request.administrative_entity]
-        )
-
-        response = self.client.post(
-            reverse(
-                "permits:permit_request_select_types",
-                kwargs={"permit_request_id": self.permit_request.pk},
-            ),
-            follow=True,
-            data={
-                "types": get_permit_request_works_types_ids(self.permit_request)
-                + [new_works_object_type.works_type.pk]
-            },
-        )
-
-        self.assertContains(response, new_works_object_type.works_type)
-
-    def test_types_step_submit_removes_deselected_types_from_permit_request(self):
-        works_object_type_id = get_permit_request_works_types_ids(self.permit_request)[
-            0
-        ]
-
-        self.client.post(
-            reverse(
-                "permits:permit_request_select_types",
-                kwargs={"permit_request_id": self.permit_request.pk},
-            ),
-            data={"types": works_object_type_id},
-        )
-
-        self.permit_request.refresh_from_db()
-
-        self.assertEqual(models.PermitRequest.objects.count(), 1)
-        self.assertEqual(
-            get_permit_request_works_types_ids(self.permit_request),
-            [works_object_type_id],
-        )
-
-    def test_objects_step_submit_updates_permit_request(self):
-        new_works_object_type = factories.WorksObjectTypeFactory()
-        self.permit_request.administrative_entity.works_object_types.add(
-            new_works_object_type
-        )
-        current_works_object_types = list(self.permit_request.works_object_types.all())
-        current_works_object_types_dict = to_works_objects_dict(
-            current_works_object_types
-        )
-        new_works_object_types_dict = to_works_objects_dict([new_works_object_type])
-        works_types_ids = get_permit_request_works_types_ids(self.permit_request) + [
-            new_works_object_type.works_type.pk
-        ]
-        types_param = urllib.parse.urlencode({"types": works_types_ids}, doseq=True)
-
-        self.client.post(
-            (
-                reverse(
-                    "permits:permit_request_select_objects",
-                    kwargs={"permit_request_id": self.permit_request.pk},
-                )
-                + "?"
-                + types_param
-            ),
-            data={**current_works_object_types_dict, **new_works_object_types_dict},
-        )
-
-        self.permit_request.refresh_from_db()
-
-        self.assertEqual(models.PermitRequest.objects.count(), 1)
-        self.assertEqual(
-            set(self.permit_request.works_object_types.all()),
-            set(current_works_object_types + [new_works_object_type]),
-        )
-
-    def test_properties_step_submit_updates_permit_request(self):
-        new_prop = factories.WorksObjectPropertyFactory()
-        new_prop.works_object_types.set(self.permit_request.works_object_types.all())
-        data = {
-            "properties-{}_{}".format(
-                works_object_type.pk, new_prop.pk
-            ): "value-{}".format(works_object_type.pk)
-            for works_object_type in self.permit_request.works_object_types.all()
-        }
-        self.client.post(
-            reverse(
-                "permits:permit_request_properties",
-                kwargs={"permit_request_id": self.permit_request.pk},
-            ),
-            data=data,
-        )
-
-        self.assertEqual(
-            set(
-                item["val"]
-                for item in services.get_properties_values(
-                    self.permit_request
-                ).values_list("value", flat=True)
-            ),
-            set(data.values()),
-        )
-
-    def test_missing_mandatory_address_property_gives_invalid_feedback(self):
-        permit_request = factories.PermitRequestFactory(author=self.user.permitauthor)
-        factories.WorksObjectTypeChoiceFactory(permit_request=permit_request)
-        permit_request.administrative_entity.works_object_types.set(
-            permit_request.works_object_types.all()
-        )
-        prop = factories.WorksObjectPropertyFactoryTypeAddress(
-            input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS, is_mandatory=True
-        )
-        prop.works_object_types.set(permit_request.works_object_types.all())
-
-        data = {
-            "properties-{}_{}".format(works_object_type.pk, prop.pk): ""
-            for works_object_type in permit_request.works_object_types.all()
-        }
-
-        response = self.client.post(
-            reverse(
-                "permits:permit_request_properties",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-            data=data,
-        )
-        parser = get_parser(response.content)
-        self.assertEqual(1, len(parser.select(".invalid-feedback")))
-
-    def test_properties_step_submit_updates_permit_request_with_address(self):
-        address_prop = factories.WorksObjectPropertyFactoryTypeAddress(
-            input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS
-        )
-        address_prop.works_object_types.set(
-            self.permit_request.works_object_types.all()
-        )
-        works_object_type = self.permit_request.works_object_types.first()
-        data = {
-            f"properties-{works_object_type.pk}_{address_prop.pk}": "Hôtel Martinez, Cannes"
-        }
-        self.client.post(
-            reverse(
-                "permits:permit_request_properties",
-                kwargs={"permit_request_id": self.permit_request.pk},
-            ),
-            data=data,
-        )
-
-        self.permit_request.refresh_from_db()
-        prop_val = services.get_properties_values(self.permit_request).get(
-            property__input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS
-        )
-        self.assertEqual(prop_val.value, {"val": "Hôtel Martinez, Cannes"})
-
-    def test_properties_step_submit_updates_geotime_with_address_store_geometry_for_address_field(
-        self,
-    ):
-
-        address_prop = factories.WorksObjectPropertyFactoryTypeAddress(
-            input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS,
-            store_geometry_for_address_field=True,
-        )
-        address_prop.works_object_types.set(
-            self.permit_request.works_object_types.all()
-        )
-        works_object_type = self.permit_request.works_object_types.first()
-        data = {
-            f"properties-{works_object_type.pk}_{address_prop.pk}": "Place pestalozzi 2, 1400 Yverdon-les-Bains"
-        }
-        self.client.post(
-            reverse(
-                "permits:permit_request_properties",
-                kwargs={"permit_request_id": self.permit_request.pk},
-            ),
-            data=data,
-        )
-
-        self.permit_request.refresh_from_db()
-        prop_val = services.get_properties_values(self.permit_request).get(
-            property__input_type=models.WorksObjectProperty.INPUT_TYPE_ADDRESS
-        )
-        self.assertEqual(
-            prop_val.value, {"val": "Place pestalozzi 2, 1400 Yverdon-les-Bains"}
-        )
-        geocoded_geotime_row = models.PermitRequestGeoTime.objects.filter(
-            permit_request=self.permit_request, comes_from_automatic_geocoding=True
-        ).count()
-        self.assertEqual(1, geocoded_geotime_row)
-
-    def test_properties_step_submit_updates_permit_request_with_date(self):
-
-        date_prop = factories.WorksObjectPropertyFactory(
-            input_type=models.WorksObjectProperty.INPUT_TYPE_DATE, name="datum"
-        )
-        today = date.today()
-        works_object_type = self.permit_request.works_object_types.first()
-        date_prop.works_object_types.set([works_object_type])
-        data = {
-            f"properties-{works_object_type.pk}_{date_prop.pk}": today.strftime(
-                settings.DATE_INPUT_FORMAT
-            )
-        }
-        self.client.post(
-            reverse(
-                "permits:permit_request_properties",
-                kwargs={"permit_request_id": self.permit_request.pk},
-            ),
-            data=data,
-        )
-
-        prop_val = services.get_properties_values(self.permit_request).get(
-            property__name="datum"
-        )
-        self.assertEqual(
-            prop_val.value,
-            {"val": today.isoformat()},
-        )
-        self.assertEqual(
-            prop_val.property.input_type,
-            models.WorksObjectProperty.INPUT_TYPE_DATE,
-        )
-
-
-class PermitRequestPrefillTestCase(LoggedInUserMixin, TestCase):
-    def setUp(self):
-        super().setUp()
-        self.permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor
-        )
-        factories.WorksObjectTypeChoiceFactory.create_batch(
-            3, permit_request=self.permit_request
-        )
-        self.permit_request.administrative_entity.works_object_types.set(
-            self.permit_request.works_object_types.all()
-        )
-
-    def test_types_step_preselects_types_for_existing_permit_request(self):
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_select_types",
-                kwargs={"permit_request_id": self.permit_request.pk},
-            )
-        )
-        content = response.content.decode()
-
-        for i, works_type_id in enumerate(
-            get_permit_request_works_types_ids(self.permit_request)
-        ):
-            expected = (
-                '<input checked="" class="form-check-input" id="id_types_{i}" name="types" title=""'
-                '  type="checkbox" value="{value}"/>'
-            ).format(value=works_type_id, i=i)
-            self.assertInHTML(expected, content)
-
-    def test_objects_step_preselects_objects_for_existing_permit_request(self):
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_select_objects",
-                kwargs={"permit_request_id": self.permit_request.pk},
-            )
-        )
-        content = response.content.decode()
-
-        for works_object_type in self.permit_request.works_object_types.all():
-            expected = (
-                '<input checked="" class="form-check-input" id="id_works_objects-{id}_0"'
-                ' name="works_objects-{id}" title="" type="checkbox" value="{value}"/>'
-            ).format(id=works_object_type.works_type.pk, value=works_object_type.pk)
-            self.assertInHTML(expected, content)
-
-    def test_properties_step_prefills_properties_for_existing_permit_request(self):
-        works_object_type_choice = services.get_works_object_type_choices(
-            self.permit_request
-        ).first()
-        prop = factories.WorksObjectPropertyFactory()
-        prop.works_object_types.add(works_object_type_choice.works_object_type)
-        prop_value = factories.WorksObjectPropertyValueFactory(
-            works_object_type_choice=works_object_type_choice, property=prop
-        )
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_properties",
-                kwargs={"permit_request_id": self.permit_request.pk},
-            )
-        )
-        content = response.content.decode()
-
-        expected = '<textarea name="properties-{obj_type_id}_{prop_id}" cols="40" rows="1" placeholder="ex: {placeholder}" class="textarea form-control" title="{help_text}" id="id_properties-{obj_type_id}_{prop_id}">{value}'.format(
-            obj_type_id=works_object_type_choice.works_object_type.pk,
-            prop_id=prop.pk,
-            prop_name=prop.name,
-            value=prop_value.value["val"],
-            placeholder=prop.placeholder,
-            help_text=prop.help_text,
-        )
-
-        expected_help_text = '<small id="hint_id_properties-{obj_type_id}_{prop_id}" class="form-text text-muted">{help_text}</small>'.format(
-            help_text=prop.help_text,
-            obj_type_id=works_object_type_choice.works_object_type.pk,
-            prop_id=prop.pk,
-        )
-
-        self.assertInHTML(expected, content)
-        self.assertInHTML(expected_help_text, content)
-
-    def test_properties_step_shows_title_and_additional_text(self):
-        works_object_type_choice = services.get_works_object_type_choices(
-            self.permit_request
-        ).first()
-
-        prop_title = factories.WorksObjectPropertyFactoryTypeTitle()
-        prop_title.works_object_types.add(works_object_type_choice.works_object_type)
-
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_properties",
-                kwargs={"permit_request_id": self.permit_request.pk},
-            )
-        )
-        content = response.content.decode()
-        expected = "<h5 class='propertyTitle'>{prop_name}</h5>".format(
-            prop_name=prop_title.name,
-        )
-
-        expected_help_text = "<small>{help_text}</small>".format(
-            help_text=prop_title.help_text
-        )
-
-        self.assertInHTML(expected, content)
-        self.assertInHTML(expected_help_text, content)
-
-    def test_properties_step_order_properties_for_existing_permit_request(self):
-
-        works_object_type_choice = services.get_works_object_type_choices(
-            self.permit_request
-        ).first()
-
-        prop_1 = factories.WorksObjectPropertyFactory(order=10, name=str(uuid.uuid4()))
-        prop_2 = factories.WorksObjectPropertyFactory(order=2, name=str(uuid.uuid4()))
-        prop_1.works_object_types.add(works_object_type_choice.works_object_type)
-        prop_2.works_object_types.add(works_object_type_choice.works_object_type)
-
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_properties",
-                kwargs={"permit_request_id": self.permit_request.pk},
-            )
-        )
-        content = response.content.decode()
-        position_1 = content.find(prop_1.name)
-        position_2 = content.find(prop_2.name)
-        self.assertGreater(position_1, position_2)
-
-    def test_properties_step_shows_downloadable_file(self):
-        works_object_type_choice = services.get_works_object_type_choices(
-            self.permit_request
-        ).first()
-
-        prop_file = factories.WorksObjectPropertyFactoryTypeFileDownload()
-        prop_file.works_object_types.add(works_object_type_choice.works_object_type)
-
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_properties",
-                kwargs={"permit_request_id": self.permit_request.pk},
-            )
-        )
-
-        expected_href = rf"/permit-requests/wot-files/{prop_file.file_download.name}"
-        parser = get_parser(response.content)
-        file_links = parser.find_all("a", href=re.compile(expected_href))
-        self.assertEqual(1, len(file_links))
-        self.assertIn(expected_href, response.content.decode())
-
-    def test_properties_step_shows_downloadable_files_more_than_once(self):
-        works_object_type_choices = services.get_works_object_type_choices(
-            self.permit_request
-        )
-        works_object_type_choice_first = works_object_type_choices.first()
-        works_object_type_choice_last = works_object_type_choices.last()
-
-        prop_file = factories.WorksObjectPropertyFactoryTypeFileDownload()
-        prop_file.works_object_types.add(
-            works_object_type_choice_first.works_object_type
-        )
-        prop_file.works_object_types.add(
-            works_object_type_choice_last.works_object_type
-        )
-
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_properties",
-                kwargs={"permit_request_id": self.permit_request.pk},
-            )
-        )
-
-        expected_href = rf"/permit-requests/wot-files/{prop_file.file_download.name}"
-        parser = get_parser(response.content)
-        file_links = parser.find_all("a", href=re.compile(expected_href))
-
-        self.assertEqual(2, len(file_links))
-        self.assertIn(expected_href, response.content.decode())
-
-
-class PermitRequestAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
-    def test_non_secretariat_user_cannot_amend_request(self):
-        user = factories.UserFactory()
-        self.client.login(username=user.username, password="password")
-
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-            administrative_entity=self.administrative_entity,
-            author=user.permitauthor,
-        )
-        response = self.client.post(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-            data={
-                "status": models.PermitRequest.STATUS_PROCESSING,
-                "action": models.ACTION_AMEND,
-            },
-        )
-
-        permit_request.refresh_from_db()
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            permit_request.status, models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION
-        )
-
-    def test_secretariat_can_amend_request_with_custom_property_field_and_delete_property_value(
-        self,
-    ):
-        props_quantity = 3
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_PROCESSING,
-            administrative_entity=self.administrative_entity,
-        )
-        works_object_type_choice = factories.WorksObjectTypeChoiceFactory(
-            permit_request=permit_request
-        )
-
-        props = factories.PermitRequestAmendPropertyFactory.create_batch(props_quantity)
-
-        data = {
-            "action": models.ACTION_AMEND,
-            "status": models.PermitRequest.STATUS_PROCESSING,
-        }
-
-        works_object_types_pk = permit_request.works_object_types.first().pk
-        for prop in props:
-            prop.works_object_types.set(permit_request.works_object_types.all())
-            factories.PermitRequestAmendPropertyValueFactory(
-                property=prop,
-                works_object_type_choice=works_object_type_choice,
-            )
-            data[
-                f"{works_object_types_pk}_{prop.pk}"
-            ] = "I am a new property value, I am alive!"
-
-        # The delete latter property value by setting it to an empty string
-        data[f"{works_object_types_pk}_{props[-1].pk}"] = ""
-
-        self.client.post(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-            data=data,
-        )
-
-        new_properties_values_qs = (
-            models.PermitRequestAmendPropertyValue.objects.values_list(
-                "value", flat=True
-            )
-        )
-        self.assertEqual(len(new_properties_values_qs), props_quantity - 1)
-        self.assertIn(
-            "I am a new property value, I am alive!",
-            new_properties_values_qs,
-        )
-
-    def test_secretariat_cannot_amend_permit_request_fields_if_can_always_be_updated(
-        self,
-    ):
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_APPROVED,
-            administrative_entity=self.administrative_entity,
-        )
-        work_object_type = factories.WorksObjectTypeFactory()
-        permit_request.works_object_types.set([work_object_type])
-        test_shortname_value = "my permitrequest shortname"
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-            data={
-                f"shortname": test_shortname_value,
-                "action": models.ACTION_AMEND,
-                "status": models.PermitRequest.STATUS_PROCESSING,
-            },
-        )
-
-        parser = get_parser(response.content)
-        element = "disabled" in str(parser.select('input[id="id_shortname"]'))
-        self.assertTrue(element)
-
-    def test_secretariat_can_amend_permit_request_fields_if_can_always_be_updated(
-        self,
-    ):
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_APPROVED,
-            administrative_entity=self.administrative_entity,
-        )
-        work_object_type = factories.WorksObjectTypeFactory(can_always_update=True)
-        permit_request.works_object_types.set([work_object_type])
-        test_shortname_value = "my permitrequest shortname"
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-            data={
-                f"shortname": test_shortname_value,
-                "action": models.ACTION_AMEND,
-                "status": models.PermitRequest.STATUS_PROCESSING,
-            },
-        )
-
-        parser = get_parser(response.content)
-        element = "disabled" in str(parser.select('input[id="id_shortname"]'))
-        self.assertTrue(element)
-
-    def test_author_cannot_see_private_secretariat_amend_property(
-        self,
-    ):
-
-        props_quantity = 3
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_PROCESSING,
-            administrative_entity=self.administrative_entity,
-        )
-        works_object_type_choice = factories.WorksObjectTypeChoiceFactory(
-            permit_request=permit_request
-        )
-
-        props_public = factories.PermitRequestAmendPropertyFactory.create_batch(
-            props_quantity, is_visible_by_author=True
-        )
-        props_private = factories.PermitRequestAmendPropertyFactory.create_batch(
-            props_quantity, is_visible_by_author=False
-        )
-        props_private_validators = (
-            factories.PermitRequestAmendPropertyFactory.create_batch(
-                props_quantity,
-                is_visible_by_author=False,
-                is_visible_by_validators=True,
-            )
-        )
-
-        props = props_public + props_private + props_private_validators
-
-        self.client.login(
-            username=permit_request.author.user.username, password="password"
-        )
-        data = {
-            "action": models.ACTION_AMEND,
-            "status": models.PermitRequest.STATUS_PROCESSING,
-        }
-        works_object_types_pk = permit_request.works_object_types.first().pk
-        for prop in props:
-            prop.works_object_types.set(permit_request.works_object_types.all())
-            factories.PermitRequestAmendPropertyValueFactory(
-                property=prop,
-                works_object_type_choice=works_object_type_choice,
-            )
-            data[
-                f"{works_object_types_pk}_{prop.pk}"
-            ] = "I am a new property value, I am alive!"
-
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-        )
-
-        parser = get_parser(response.content)
-        # check that the 3 fields are visible by author and 6 (3 private + 3 for validators) are hidden
-        self.assertEqual(len(parser.select(".amend-property")), 3)
-
-    def test_secretariat_can_see_submitted_requests(self):
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-            administrative_entity=self.administrative_entity,
-        )
-        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
-        response = self.client.get(reverse("permits:permit_requests_list"))
-
-        self.assertEqual(list(response.context["permitrequest_list"]), [permit_request])
-
-    def test_ask_for_supplements_shows_specific_message(self):
-        work_object_type_1 = factories.WorksObjectTypeFactory()
-        work_object_type_2 = factories.WorksObjectTypeFactory()
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-            administrative_entity=self.administrative_entity,
-        )
-        permit_request.works_object_types.set([work_object_type_1, work_object_type_2])
-        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
-        response = self.client.post(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-            data={
-                "status": models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
-                "action": models.ACTION_AMEND,
-                "notify_author": "on",
-                "reason": "reason",
-            },
-            follow=True,
-        )
-        permit_request.refresh_from_db()
-        self.assertEqual(
-            permit_request.status, models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
-        )
-        self.assertContains(response, "compléments")
-
-    def test_secretariat_cannot_amend_permit_request_with_validation_requested(self):
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
-            administrative_entity=self.administrative_entity,
-        )
-        response = self.client.post(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-            data={
-                "status": models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
-                "action": models.ACTION_AMEND,
-            },
-        )
-
-        self.assertEqual(response.status_code, 400)
-
-    def test_secretariat_can_see_directives(self):
-        first_works_object_type = factories.WorksObjectTypeFactory(
-            directive=SimpleUploadedFile("file.pdf", "contents".encode()),
-            directive_description="First directive description for a test",
-            additional_information="First additional information for a test",
-        )
-        second_works_object_type = factories.WorksObjectTypeFactory(
-            directive=SimpleUploadedFile("file.pdf", "contents".encode()),
-            directive_description="Second directive description for a test",
-            additional_information="Second additional information for a test",
-        )
-
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
-            administrative_entity=self.administrative_entity,
-        )
-
-        permit_request.works_object_types.set(
-            [first_works_object_type, second_works_object_type]
-        )
-
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            )
-        )
-
-        parser = get_parser(response.content)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            len(parser.select(".tab-pane#directives span.directive_description")),
-            2,
-        )
-
-    def test_secretariat_cannot_see_directives_if_not_configured(
-        self,
-    ):
-        works_object_types = factories.WorksObjectTypeFactory.create_batch(2)
-
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
-            administrative_entity=self.administrative_entity,
-        )
-
-        permit_request.works_object_types.set(works_object_types)
-
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            )
-        )
-
-        parser = get_parser(response.content)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            len(parser.select(".tab-pane#directives span.directive_description")),
-            0,
-        )
-
-    def test_email_to_author_is_sent_when_secretariat_acknowledges_reception(self):
-        user = factories.UserFactory(email="user@geocity.com")
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-            administrative_entity=self.administrative_entity,
-            author=user.permitauthor,
-        )
-        works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory()
-        wot = factories.WorksObjectTypeFactory(
-            works_type=works_type,
-            works_object=works_object,
-        )
-        permit_request.works_object_types.set([wot])
-        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
-        response = self.client.post(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-            data={
-                "status": models.PermitRequest.STATUS_RECEIVED,
-                "action": models.ACTION_AMEND,
-            },
-            follow=True,
-        )
-
-        permit_request.refresh_from_db()
-        self.assertEqual(permit_request.status, models.PermitRequest.STATUS_RECEIVED)
-        self.assertContains(response, "compléments")
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
-        self.assertEqual(
-            mail.outbox[0].subject,
-            "Votre annonce a été prise en compte et classée (Foo type)",
-        )
-        self.assertIn(
-            "Nous vous informons que votre annonce a été prise en compte et classée.",
-            mail.outbox[0].message().as_string(),
-        )
-
-    def test_email_to_services_is_sent_when_secretariat_acknowledges_reception(self):
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-            administrative_entity=self.administrative_entity,
-        )
-        wot = factories.WorksObjectTypeFactory(
-            requires_validation_document=False,
-            notify_services=True,
-            services_to_notify="service-1@geocity.ch, service-2@geocity.ch, i-am-not-an-email,  ,\n\n\n",
-        )
-        permit_request.works_object_types.set([wot])
-        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
-
-        response = self.client.post(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-            data={
-                "status": models.PermitRequest.STATUS_RECEIVED,
-                "action": models.ACTION_AMEND,
-            },
-            follow=True,
-        )
-
-        permit_request.refresh_from_db()
-        self.assertEqual(permit_request.status, models.PermitRequest.STATUS_RECEIVED)
-
-        # 1 email to author + 2 emails to services
-        self.assertEqual(len(mail.outbox), 3)
-
-        services_message_subject = (
-            "Une annonce a été prise en compte et classée par le secrétariat"
-        )
-        services_message_content = "Nous vous informons qu'une annonce a été prise en compte et classée par le secrétariat."
-        valid_services_emails = [
-            "service-1@geocity.ch",
-            "service-2@geocity.ch",
-        ]
-
-        self.assertTrue(mail.outbox[1].to[0] in valid_services_emails)
-        self.assertIn(
-            services_message_subject,
-            mail.outbox[1].subject,
-        )
-        self.assertIn(services_message_content, mail.outbox[1].message().as_string())
-        self.assertTrue(mail.outbox[2].to[0] in valid_services_emails)
-        self.assertIn(
-            services_message_subject,
-            mail.outbox[2].subject,
-        )
-        self.assertIn(services_message_content, mail.outbox[2].message().as_string())
-
-    def test_secretariat_can_amend_permit_request_with_status_approved_if_property_is_always_amendable(
-        self,
-    ):
-        props_quantity = 3
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_APPROVED,
-            administrative_entity=self.administrative_entity,
-        )
-
-        wot = factories.WorksObjectTypeFactory()
-        wot.administrative_entities.set([permit_request.administrative_entity])
-
-        works_object_type_choice = factories.WorksObjectTypeChoiceFactory(
-            permit_request=permit_request, works_object_type=wot
-        )
-
-        props = factories.PermitRequestAmendPropertyFactory.create_batch(
-            props_quantity, can_always_update=True
-        )
-
-        data = {
-            "action": models.ACTION_AMEND,
-            "status": models.PermitRequest.STATUS_APPROVED,
-        }
-
-        works_object_types_pk = permit_request.works_object_types.first().pk
-
-        for prop in props:
-            prop.works_object_types.set(permit_request.works_object_types.all())
-            factories.PermitRequestAmendPropertyValueFactory(
-                property=prop,
-                works_object_type_choice=works_object_type_choice,
-            )
-            data[
-                f"{works_object_types_pk}_{prop.pk}"
-            ] = "I am a new property value, I am alive!"
-
-        response = self.client.post(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-            data=data,
-            follow=True,
-        )
-
-        new_properties_values_qs = (
-            models.PermitRequestAmendPropertyValue.objects.values_list(
-                "value", flat=True
-            )
-        )
-
-        self.assertIn(
-            "I am a new property value, I am alive!",
-            new_properties_values_qs,
-        )
-
-        self.assertEqual(response.status_code, 200)
-
-    def test_amend_property_are_editable_in_status_approved_if_property_is_always_amendable(
-        self,
-    ):
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_APPROVED,
-            administrative_entity=self.administrative_entity,
-        )
-
-        wot = factories.WorksObjectTypeFactory()
-        wot.administrative_entities.set([permit_request.administrative_entity])
-
-        works_object_type_choice = factories.WorksObjectTypeChoiceFactory(
-            permit_request=permit_request, works_object_type=wot
-        )
-
-        prop_editable = factories.PermitRequestAmendPropertyFactory(
-            name="Editable_prop", can_always_update=True
-        )
-
-        prop_not_editable = factories.PermitRequestAmendPropertyFactory(
-            name="Not_editable_prop", can_always_update=False
-        )
-
-        props = [prop_editable, prop_not_editable]
-
-        data = {
-            "action": models.ACTION_AMEND,
-            "status": models.PermitRequest.STATUS_APPROVED,
-        }
-
-        works_object_types_pk = permit_request.works_object_types.first().pk
-
-        for prop in props:
-            prop.works_object_types.set(permit_request.works_object_types.all())
-            factories.PermitRequestAmendPropertyValueFactory(
-                property=prop,
-                works_object_type_choice=works_object_type_choice,
-                value=prop.name,
-            )
-            if prop.name == "Editable_prop":
-                data[f"{works_object_types_pk}_{prop.pk}"] = "I have been edited!"
-
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-        )
-
-        parser = get_parser(response.content)
-
-        self.assertEqual(response.status_code, 200)
-
-        self.assertEqual(
-            len(parser.select("#amend .form-group textarea")),
-            3,
-        )
-
-        self.assertEqual(
-            len(parser.select("#amend .form-group textarea[disabled]")),
-            2,
-        )
-
-        # Send form edit
-        response2 = self.client.post(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-            data=data,
-            follow=True,
-        )
-
-        new_properties_values_qs = (
-            models.PermitRequestAmendPropertyValue.objects.values_list(
-                "value", flat=True
-            )
-        )
-
-        self.assertIn(
-            "I have been edited!",
-            new_properties_values_qs,
-        )
-        self.assertEqual(response2.status_code, 200)
-
-    def test_email_to_author_is_sent_when_secretariat_checks_notify(self):
-        user = factories.UserFactory(email="user@geocity.com")
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-            administrative_entity=self.administrative_entity,
-            author=user.permitauthor,
-        )
-        works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory()
-        wot = factories.WorksObjectTypeFactory(
-            works_type=works_type,
-            works_object=works_object,
-        )
-        permit_request.works_object_types.set([wot])
-        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
-        response = self.client.post(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-            data={
-                "status": models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
-                "notify_author": "1",
-                "reason": "Testing email sending",
-                "action": models.ACTION_AMEND,
-            },
-            follow=True,
-        )
-
-        permit_request.refresh_from_db()
-        self.assertEqual(
-            permit_request.status, models.PermitRequest.STATUS_AWAITING_SUPPLEMENT
-        )
-        self.assertContains(response, "compléments")
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
-        self.assertEqual(
-            mail.outbox[0].subject,
-            f"Votre demande a changé de statut (Foo type)",
-        )
-        self.assertIn(
-            "Nous vous informons que votre demande a changé de statut.",
-            mail.outbox[0].message().as_string(),
-        )
-        self.assertIn(
-            "Nouveau statut: Demande de compléments",
-            mail.outbox[0].message().as_string(),
-        )
-        self.assertIn(
-            "Raison du changement:",
-            mail.outbox[0].message().as_string(),
-        )
-
-    # def test_permit_request_status_cannot_change_to_awaiting_supplement_if_no_reason_is_given(
-    def test_awaiting_supplement_requires_to_notify_author(
-        self,
-    ):
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_PROCESSING,
-            administrative_entity=self.administrative_entity,
-        )
-        response = self.client.post(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-            data={
-                "status": models.PermitRequest.STATUS_AWAITING_SUPPLEMENT,
-                "action": models.ACTION_AMEND,
-            },
-            follow=True,
-        )
-        permit_request.refresh_from_db()
-
-        self.assertEqual(permit_request.status, models.PermitRequest.STATUS_PROCESSING)
-        self.assertEqual(
-            response.context[0]["forms"]["amend"].errors["notify_author"],
-            ["Vous devez notifier l'auteur pour une demande de compléments"],
-        )
-
-
 class AdministrativeEntitySecretaryEmailTestcase(TestCase):
     def setUp(self):
         self.user = factories.UserFactory(email="user@geocity.com")
-        self.administrative_entity_expeditor = (
-            factories.PermitAdministrativeEntityFactory(
-                expeditor_email="geocity_rocks@geocity.ch",
-                expeditor_name="Geocity Rocks",
-            )
+        self.administrative_entity_expeditor = factories.AdministrativeEntityFactory(
+            expeditor_email="geocity_rocks@geocity.ch",
+            expeditor_name="Geocity Rocks",
         )
         self.group = factories.SecretariatGroupFactory(
             department__administrative_entity=self.administrative_entity_expeditor
@@ -3451,29 +2281,27 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         self.secretary = factories.SecretariatUserFactory(groups=[self.group])
         self.client.login(username=self.secretary.username, password="password")
 
-        self.permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
+        self.submission = factories.SubmissionFactory(
+            status=submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION,
             administrative_entity=self.administrative_entity_expeditor,
-            author=self.user.permitauthor,
+            author=self.user,
         )
 
     def test_secretary_email_and_name_are_set_for_the_administrative_entity(self):
-        works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory()
-        wot = factories.WorksObjectTypeFactory(
-            works_type=works_type,
-            works_object=works_object,
+        form_category = factories.FormCategoryFactory(name="Foo category")
+        form = factories.FormFactory(
+            category=form_category,
         )
-        self.permit_request.works_object_types.set([wot])
+        self.submission.forms.set([form])
 
         response = self.client.post(
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": self.permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": self.submission.pk},
             ),
             data={
-                "status": models.PermitRequest.STATUS_RECEIVED,
-                "action": models.ACTION_AMEND,
+                "status": submissions_models.Submission.STATUS_RECEIVED,
+                "action": submissions_models.ACTION_AMEND,
             },
             follow=True,
         )
@@ -3485,7 +2313,7 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         )
         self.assertEqual(
             mail.outbox[0].subject,
-            "Votre annonce a été prise en compte et classée (Foo type)",
+            "Votre annonce a été prise en compte et classée (Foo category)",
         )
         self.assertIn(
             "Nous vous informons que votre annonce a été prise en compte et classée.",
@@ -3493,15 +2321,13 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         )
 
     def test_just_secretary_email_is_set_for_the_administrative_entity(self):
-        works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory()
-        wot = factories.WorksObjectTypeFactory(
-            works_type=works_type,
-            works_object=works_object,
+        form_category = factories.FormCategoryFactory(name="Foo category")
+        form = factories.FormFactory(
+            category=form_category,
         )
-        self.permit_request.works_object_types.set([wot])
+        self.submission.forms.set([form])
         self.administrative_entity_expeditor = (
-            models.PermitAdministrativeEntity.objects.first()
+            submissions_models.AdministrativeEntity.objects.first()
         )
         self.administrative_entity_expeditor.expeditor_email = (
             "geocity_rocks@geocity.ch"
@@ -3512,12 +2338,12 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
 
         response = self.client.post(
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": self.permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": self.submission.pk},
             ),
             data={
-                "status": models.PermitRequest.STATUS_RECEIVED,
-                "action": models.ACTION_AMEND,
+                "status": submissions_models.Submission.STATUS_RECEIVED,
+                "action": submissions_models.ACTION_AMEND,
             },
             follow=True,
         )
@@ -3527,7 +2353,7 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         self.assertEqual(mail.outbox[0].from_email, "<geocity_rocks@geocity.ch>")
         self.assertEqual(
             mail.outbox[0].subject,
-            "Votre annonce a été prise en compte et classée (Foo type)",
+            "Votre annonce a été prise en compte et classée (Foo category)",
         )
         self.assertIn(
             "Nous vous informons que votre annonce a été prise en compte et classée.",
@@ -3535,15 +2361,13 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         )
 
     def test_no_secretary_email_is_set_for_the_administrative_entity(self):
-        works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory()
-        wot = factories.WorksObjectTypeFactory(
-            works_type=works_type,
-            works_object=works_object,
+        form_category = factories.FormCategoryFactory(name="Foo category")
+        form = factories.FormFactory(
+            category=form_category,
         )
-        self.permit_request.works_object_types.set([wot])
+        self.submission.forms.set([form])
         self.administrative_entity_expeditor = (
-            models.PermitAdministrativeEntity.objects.first()
+            submissions_models.AdministrativeEntity.objects.first()
         )
         self.administrative_entity_expeditor.expeditor_email = ""
         self.administrative_entity_expeditor.expeditor_name = "Geocity Rocks"
@@ -3552,12 +2376,12 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
 
         response = self.client.post(
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": self.permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": self.submission.pk},
             ),
             data={
-                "status": models.PermitRequest.STATUS_RECEIVED,
-                "action": models.ACTION_AMEND,
+                "status": submissions_models.Submission.STATUS_RECEIVED,
+                "action": submissions_models.ACTION_AMEND,
             },
             follow=True,
         )
@@ -3569,7 +2393,7 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         self.assertEqual(mail.outbox[0].from_email, "your_noreply_email")
         self.assertEqual(
             mail.outbox[0].subject,
-            "Votre annonce a été prise en compte et classée (Foo type)",
+            "Votre annonce a été prise en compte et classée (Foo category)",
         )
         self.assertIn(
             "Nous vous informons que votre annonce a été prise en compte et classée.",
@@ -3577,1107 +2401,148 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         )
 
 
-class PermitRequestValidationRequestTestcase(LoggedInSecretariatMixin, TestCase):
-    def test_secretariat_can_request_validation(self):
-        validator_groups = factories.ValidatorGroupFactory.create_batch(
-            2, department__administrative_entity=self.administrative_entity
-        )
-        validator_departments = [
-            group.permitdepartment.pk for group in validator_groups
-        ]
-
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-            administrative_entity=self.administrative_entity,
-        )
-        self.client.post(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-            data={
-                "departments": validator_departments,
-                "action": models.ACTION_REQUEST_VALIDATION,
-            },
-        )
-
-        permit_request.refresh_from_db()
-
-        self.assertEqual(
-            permit_request.status, models.PermitRequest.STATUS_AWAITING_VALIDATION
-        )
-        self.assertEqual(
-            list(permit_request.validations.values_list("department", flat=True)),
-            validator_departments,
-        )
-
-    def test_secretariat_cannot_request_validation_for_already_validated_permit_request(
-        self,
-    ):
-        validator_group = factories.ValidatorGroupFactory(
-            department__administrative_entity=self.administrative_entity
-        )
-
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
-            administrative_entity=self.administrative_entity,
-        )
-        response = self.client.post(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-            data={
-                "departments": [validator_group.permitdepartment.pk],
-                "action": models.ACTION_REQUEST_VALIDATION,
-            },
-        )
-
-        self.assertEqual(response.status_code, 400)
-
-    def test_default_departments_are_checked(self):
-        default_validator_groups = factories.ValidatorGroupFactory.create_batch(
-            2,
-            department__administrative_entity=self.administrative_entity,
-            department__is_default_validator=True,
-        )
-        non_default_validator_group = factories.ValidatorGroupFactory(
-            department__administrative_entity=self.administrative_entity
-        )
-
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_PROCESSING,
-            administrative_entity=self.administrative_entity,
-        )
-
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-        )
-
-        parser = get_parser(response.content)
-        inputs = {
-            int(input_["value"]): input_.get("checked") is not None
-            for input_ in parser.select('input[name="departments"]')
-        }
-
-        self.assertDictEqual(
-            inputs,
-            {
-                **{group.pk: True for group in default_validator_groups},
-                **{non_default_validator_group.pk: False},
-            },
-        )
-
-    def test_validation_request_sends_mail_to_selected_validators(self):
-        validator_groups = factories.ValidatorGroupFactory.create_batch(
-            2, department__administrative_entity=self.administrative_entity
-        )
-        validator_user = factories.ValidatorUserFactory(
-            groups=[validator_groups[0]], email="validator@geocity.ch"
-        )
-        factories.ValidatorUserFactory(groups=[validator_groups[1]])
-
-        permit_request = factories.PermitRequestFactory(
-            status=models.PermitRequest.STATUS_SUBMITTED_FOR_VALIDATION,
-            administrative_entity=self.administrative_entity,
-        )
-        self.client.post(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-            data={
-                "departments": [validator_groups[0].permitdepartment.pk],
-                "action": models.ACTION_REQUEST_VALIDATION,
-            },
-        )
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, [validator_user.permitauthor.user.email])
-
-
-class PermitRequestValidationTestcase(TestCase):
-    def test_validator_can_see_assigned_permit_requests(self):
-        validation = factories.PermitRequestValidationFactory()
-        validator = factories.ValidatorUserFactory(
-            groups=[validation.department.group, factories.ValidatorGroupFactory()]
-        )
-        factories.PermitRequestGeoTimeFactory(permit_request=validation.permit_request)
-
-        self.client.login(username=validator.username, password="password")
-
-        response = self.client.get(reverse("permits:permit_requests_list"))
-
-        self.assertEqual(
-            list(response.context["permitrequest_list"]), [validation.permit_request]
-        )
-
-    def test_validator_can_validate_assigned_permit_requests(self):
-        validation = factories.PermitRequestValidationFactory()
-        validator = factories.ValidatorUserFactory(
-            groups=[validation.department.group, factories.ValidatorGroupFactory()]
-        )
-
-        self.client.login(username=validator.username, password="password")
-
-        self.client.post(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": validation.permit_request.pk},
-            ),
-            data={
-                "action": models.ACTION_VALIDATE,
-                "validation_status": models.PermitRequestValidation.STATUS_APPROVED,
-            },
-        )
-
-        validation.refresh_from_db()
-
-        self.assertEqual(
-            validation.validation_status, models.PermitRequestValidation.STATUS_APPROVED
-        )
-
-    def test_validator_cannot_validate_non_assigned_permit_requests(self):
-        validation = factories.PermitRequestValidationFactory()
-        factories.ValidatorUserFactory(
-            groups=[validation.department.group, factories.ValidatorGroupFactory()]
-        )
-        validator = factories.ValidatorUserFactory()
-
-        self.client.login(username=validator.username, password="password")
-
-        response = self.client.post(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": validation.permit_request.pk},
-            ),
-            data={
-                "action": models.ACTION_VALIDATE,
-                "validation_status": models.PermitRequestValidation.STATUS_APPROVED,
-            },
-        )
-
-        self.assertEqual(response.status_code, 404)
-
-    def test_validator_can_see_for_validators_amend_property(
-        self,
-    ):
-        validation = factories.PermitRequestValidationFactory()
-        validator = factories.ValidatorUserFactory(
-            groups=[validation.department.group, factories.ValidatorGroupFactory()]
-        )
-        permit_request = validation.permit_request
-        factories.PermitRequestGeoTimeFactory(permit_request=permit_request)
-
-        self.client.login(username=validator.username, password="password")
-
-        props_quantity = 3
-        works_object_type_choice = factories.WorksObjectTypeChoiceFactory(
-            permit_request=permit_request
-        )
-        props_private = factories.PermitRequestAmendPropertyFactory.create_batch(
-            props_quantity, is_visible_by_author=False, is_visible_by_validators=False
-        )
-        props_private_validators = (
-            factories.PermitRequestAmendPropertyFactory.create_batch(
-                props_quantity,
-                is_visible_by_author=False,
-                is_visible_by_validators=True,
-            )
-        )
-
-        props = props_private + props_private_validators
-
-        data = {
-            "action": models.ACTION_AMEND,
-            "status": models.PermitRequest.STATUS_PROCESSING,
-        }
-        works_object_types_pk = permit_request.works_object_types.first().pk
-        for prop in props:
-            prop.works_object_types.set(permit_request.works_object_types.all())
-            factories.PermitRequestAmendPropertyValueFactory(
-                property=prop,
-                works_object_type_choice=works_object_type_choice,
-            )
-            data[
-                f"{works_object_types_pk}_{prop.pk}"
-            ] = "I am a new property value, I am alive!"
-
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-        )
-
-        parser = get_parser(response.content)
-        # check that the 3 fields are visible by validator and 3 are hidden
-        self.assertEqual(len(parser.select(".amend-property")), 3)
-
-    def test_secretariat_can_send_validation_reminders(self):
-        group = factories.SecretariatGroupFactory()
-        administrative_entity = group.permitdepartment.administrative_entity
-        secretariat = factories.SecretariatUserFactory(groups=[group])
-
-        validation = factories.PermitRequestValidationFactory(
-            permit_request__administrative_entity=administrative_entity
-        )
-        validator = factories.ValidatorUserFactory(
-            groups=[validation.department.group, factories.ValidatorGroupFactory()],
-            email="validator@geocity.ch",
-        )
-
-        self.client.login(username=secretariat.username, password="password")
-
-        self.client.post(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": validation.permit_request.pk},
-            ),
-            data={
-                "action": models.ACTION_POKE,
-            },
-        )
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, [validator.permitauthor.user.email])
-
-    def test_secretary_email_is_sent_when_permit_request_is_validated(self):
-        validation = factories.PermitRequestValidationFactory()
-        secretary_group = factories.GroupFactory(name="Secrétariat")
-        department = factories.PermitDepartmentFactory(
-            group=secretary_group, is_backoffice=True
-        )
-        factories.SecretariatUserFactory(
-            groups=[secretary_group], email="secretary@geocity.ch"
-        )
-        validation.permit_request.administrative_entity.departments.set([department])
-        works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory()
-        wot = factories.WorksObjectTypeFactory(
-            works_type=works_type,
-            works_object=works_object,
-        )
-        validation.permit_request.works_object_types.set([wot])
-
-        validator = factories.ValidatorUserFactory(
-            groups=[validation.department.group, factories.ValidatorGroupFactory()],
-        )
-
-        self.client.login(username=validator.username, password="password")
-
-        self.client.post(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": validation.permit_request.pk},
-            ),
-            data={
-                "action": models.ACTION_VALIDATE,
-                "validation_status": models.PermitRequestValidation.STATUS_APPROVED,
-            },
-        )
-
-        validation.refresh_from_db()
-
-        self.assertEqual(
-            validation.validation_status, models.PermitRequestValidation.STATUS_APPROVED
-        )
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, ["secretary@geocity.ch"])
-        self.assertEqual(
-            mail.outbox[0].subject,
-            "Les services chargés de la validation d'une demande ont donné leur préavis (Foo type)",
-        )
-        self.assertIn(
-            "Les services chargés de la validation d'une demande ont donné leur préavis",
-            mail.outbox[0].message().as_string(),
-        )
-
-
-class PermitRequestClassifyTestCase(TestCase):
-    def setUp(self):
-        self.secretariat_group = factories.SecretariatGroupFactory()
-        self.administrative_entity = (
-            self.secretariat_group.permitdepartment.administrative_entity
-        )
-        self.administrative_entity.custom_signature = "a custom signature for email"
-        self.administrative_entity.save()
-        self.secretariat_user = factories.SecretariatUserFactory(
-            groups=[self.secretariat_group]
-        )
-
-        validation = factories.PermitRequestValidationFactory(
-            permit_request__administrative_entity=self.administrative_entity
-        )
-        self.validator_user = factories.ValidatorUserFactory(
-            groups=[validation.department.group, factories.ValidatorGroupFactory()]
-        )
-
-    def test_secretariat_can_approve_permit_request_and_email_to_author_is_sent(self):
-
-        validation = factories.PermitRequestValidationFactory(
-            permit_request__administrative_entity=self.administrative_entity,
-            permit_request__status=models.PermitRequest.STATUS_PROCESSING,
-            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
-            permit_request__author__user__email="user@geocity.com",
-        )
-        works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory()
-        wot = factories.WorksObjectTypeFactory(
-            works_type=works_type,
-            works_object=works_object,
-        )
-        validation.permit_request.works_object_types.set([wot])
-
-        self.client.login(username=self.secretariat_user.username, password="password")
-        factories.PermitRequestGeoTimeFactory(permit_request=validation.permit_request)
-        response = self.client.post(
-            reverse(
-                "permits:permit_request_approve",
-                kwargs={"permit_request_id": validation.permit_request.pk},
-            ),
-            data={
-                "validation_pdf": SimpleUploadedFile("file.pdf", "contents".encode())
-            },
-        )
-
-        self.assertRedirects(
-            response,
-            reverse("permits:permit_requests_list"),
-            fetch_redirect_response=False,
-        )
-        validation.permit_request.refresh_from_db()
-        self.assertEqual(
-            validation.permit_request.status, models.PermitRequest.STATUS_APPROVED
-        )
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
-        self.assertEqual(
-            mail.outbox[0].subject,
-            "Votre demande a été traitée et classée (Foo type)",
-        )
-        self.assertIn(
-            "Nous vous informons que votre demande a été traitée et classée.",
-            mail.outbox[0].message().as_string(),
-        )
-        self.assertIn(
-            "a custom signature for email",
-            mail.outbox[0].message().as_string(),
-        )
-
-    def test_secretariat_can_reject_permit_request_and_email_to_author_is_sent(self):
-
-        validation = factories.PermitRequestValidationFactory(
-            permit_request__administrative_entity=self.administrative_entity,
-            permit_request__status=models.PermitRequest.STATUS_PROCESSING,
-            validation_status=models.PermitRequestValidation.STATUS_REJECTED,
-            permit_request__author__user__email="user@geocity.com",
-        )
-        works_type = factories.WorksTypeFactory(name="Foo type")
-        works_object = factories.WorksObjectFactory()
-        wot = factories.WorksObjectTypeFactory(
-            works_type=works_type,
-            works_object=works_object,
-        )
-        validation.permit_request.works_object_types.set([wot])
-
-        self.client.login(username=self.secretariat_user.username, password="password")
-        factories.PermitRequestGeoTimeFactory(permit_request=validation.permit_request)
-        response = self.client.post(
-            reverse(
-                "permits:permit_request_reject",
-                kwargs={"permit_request_id": validation.permit_request.pk},
-            ),
-            data={
-                "validation_pdf": SimpleUploadedFile("file.pdf", "contents".encode()),
-            },
-        )
-
-        self.assertRedirects(
-            response,
-            reverse("permits:permit_requests_list"),
-            fetch_redirect_response=False,
-        )
-        validation.permit_request.refresh_from_db()
-        self.assertEqual(
-            validation.permit_request.status, models.PermitRequest.STATUS_REJECTED
-        )
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
-        self.assertEqual(
-            mail.outbox[0].subject,
-            "Votre demande a été traitée et classée (Foo type)",
-        )
-        self.assertIn(
-            "Nous vous informons que votre demande a été traitée et classée.",
-            mail.outbox[0].message().as_string(),
-        )
-        self.assertIn(
-            "a custom signature for email",
-            mail.outbox[0].message().as_string(),
-        )
-
-    def test_secretariat_cannot_classify_permit_request_with_pending_validations(self):
-
-        validation = factories.PermitRequestValidationFactory(
-            permit_request__administrative_entity=self.administrative_entity
-        )
-
-        self.client.login(username=self.secretariat_user.username, password="password")
-        response = self.client.post(
-            reverse(
-                "permits:permit_request_approve",
-                kwargs={"permit_request_id": validation.permit_request.pk},
-            ),
-            data={"validation_pdf": SimpleUploadedFile("file.pdf", "")},
-        )
-
-        self.assertEqual(response.status_code, 404)
-
-    def test_secretariat_does_not_see_classify_form_when_pending_validations(self):
-        validation = factories.PermitRequestValidationFactory(
-            permit_request__administrative_entity=self.administrative_entity
-        )
-
-        self.client.login(username=self.secretariat_user.username, password="password")
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": validation.permit_request.pk},
-            )
-        )
-
-        self.assertNotContains(
-            response,
-            reverse(
-                "permits:permit_request_approve",
-                kwargs={"permit_request_id": validation.permit_request.pk},
-            ),
-        )
-
-    def test_user_without_permission_cannot_classify_permit_request(self):
-        validation = factories.PermitRequestValidationFactory(
-            permit_request__administrative_entity=self.administrative_entity,
-            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
-        )
-        user = factories.UserFactory(actor=validation.permit_request.author)
-        self.client.login(username=user.username, password="password")
-
-        approve_url = reverse(
-            "permits:permit_request_approve",
-            kwargs={"permit_request_id": validation.permit_request.pk},
-        )
-
-        response = self.client.post(
-            approve_url, data={"validation_pdf": SimpleUploadedFile("file.pdf", "")}
-        )
-
-        self.assertRedirects(
-            response, "%s?next=%s" % (reverse(settings.LOGIN_URL), approve_url)
-        )
-
-    def test_permit_request_validation_file_accessible_to_permit_request_author(self):
-        author_user = factories.UserFactory()
-        permit_request = factories.PermitRequestFactory(
-            validated_at=timezone.now(),
-            status=models.PermitRequest.STATUS_APPROVED,
-            author=author_user.permitauthor,
-        )
-        # This cannot be performed in the factory because we need the permit request to have an id to upload a file
-        permit_request.validation_pdf = SimpleUploadedFile("file.pdf", b"contents")
-        permit_request.save()
-
-        self.client.login(username=author_user, password="password")
-        response = self.client.get(permit_request.validation_pdf.url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(b"".join(response.streaming_content), b"contents")
-
-    def test_permit_request_validation_file_not_accessible_to_other_users(self):
-        non_author_user = factories.UserFactory()
-        permit_request = factories.PermitRequestFactory(
-            validated_at=timezone.now(), status=models.PermitRequest.STATUS_APPROVED
-        )
-        # This cannot be performed in the factory because we need the permit request to have an id to upload a file
-        permit_request.validation_pdf = SimpleUploadedFile("file.pdf", b"contents")
-        permit_request.save()
-
-        self.client.login(username=non_author_user, password="password")
-        response = self.client.get(permit_request.validation_pdf.url)
-        self.assertEqual(response.status_code, 404)
-
-    def test_classify_sets_validation_date(self):
-        validation = factories.PermitRequestValidationFactory(
-            permit_request__administrative_entity=self.administrative_entity,
-            permit_request__status=models.PermitRequest.STATUS_PROCESSING,
-            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
-        )
-
-        self.client.login(username=self.secretariat_user.username, password="password")
-        self.client.post(
-            reverse(
-                "permits:permit_request_approve",
-                kwargs={"permit_request_id": validation.permit_request.pk},
-            ),
-            data={"validation_pdf": SimpleUploadedFile("file.pdf", b"contents")},
-        )
-
-        validation.permit_request.refresh_from_db()
-        self.assertIsNotNone(validation.permit_request.validated_at)
-
-    def test_email_to_services_is_sent_when_secretariat_classifies_permit_request(self):
-        works_type_1 = factories.WorksTypeFactory(name="Foo type")
-        works_type_2 = factories.WorksTypeFactory(name="Bar type")
-        works_object = factories.WorksObjectFactory()
-        wot = factories.WorksObjectTypeFactory(
-            requires_validation_document=False,
-            notify_services=True,
-            services_to_notify="test-send-1@geocity.ch, test-send-2@geocity.ch, test-i-am-not-an-email,  ,\n\n\n",
-            works_type=works_type_1,
-            works_object=works_object,
-        )
-        wot2 = factories.WorksObjectTypeFactory(
-            requires_validation_document=False,
-            notify_services=True,
-            services_to_notify="not-repeated-email@liip.ch, test-send-1@geocity.ch, \n, test-send-2@geocity.ch, test-i-am-not-an-email,  ,",
-            works_type=works_type_2,
-            works_object=works_object,
-        )
-        validation = factories.PermitRequestValidationFactory(
-            permit_request__administrative_entity=self.administrative_entity,
-            permit_request__status=models.PermitRequest.STATUS_PROCESSING,
-            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
-            permit_request__author__user__email="user@geocity.com",
-        )
-        validation.permit_request.works_object_types.set([wot, wot2])
-        factories.PermitRequestGeoTimeFactory(permit_request=validation.permit_request)
-
-        self.client.login(username=self.secretariat_user.username, password="password")
-        response = self.client.post(
-            reverse(
-                "permits:permit_request_approve",
-                kwargs={"permit_request_id": validation.permit_request.pk},
-            ),
-        )
-
-        self.assertRedirects(
-            response,
-            reverse("permits:permit_requests_list"),
-            fetch_redirect_response=False,
-        )
-        validation.permit_request.refresh_from_db()
-        self.assertEqual(
-            validation.permit_request.status, models.PermitRequest.STATUS_APPROVED
-        )
-        # Only valid emails are sent, not repeated emails.
-        self.assertEqual(len(mail.outbox), 4)
-        self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
-
-        self.assertIn(
-            "Votre demande a été traitée et classée",
-            mail.outbox[0].subject,
-        )
-
-        self.assertIn(
-            "Bar type",
-            mail.outbox[0].subject,
-        )
-
-        self.assertIn(
-            "Foo type",
-            mail.outbox[0].subject,
-        )
-
-        self.assertIn(
-            "Nous vous informons que votre demande a été traitée et classée.",
-            mail.outbox[0].message().as_string(),
-        )
-
-        services_message_content = "Nous vous informons qu'une demande a été traitée et classée par le secrétariat."
-        valid_services_emails = [
-            "not-repeated-email@liip.ch",
-            "test-send-2@geocity.ch",
-            "test-send-1@geocity.ch",
-        ]
-        self.assertIn(
-            "a custom signature for email",
-            mail.outbox[0].message().as_string(),
-        )
-        self.assertTrue(mail.outbox[1].to[0] in valid_services_emails)
-        self.assertIn(services_message_content, mail.outbox[1].message().as_string())
-        self.assertTrue(mail.outbox[2].to[0] in valid_services_emails)
-        self.assertIn(services_message_content, mail.outbox[2].message().as_string())
-        self.assertTrue(mail.outbox[3].to[0] in valid_services_emails)
-        self.assertIn(services_message_content, mail.outbox[3].message().as_string())
-
-
-class ApprovedPermitRequestClassifyTestCase(TestCase):
-    def setUp(self):
-        self.secretariat_group = factories.SecretariatGroupFactory()
-        self.administrative_entity = (
-            self.secretariat_group.permitdepartment.administrative_entity
-        )
-        self.secretariat_user = factories.SecretariatUserFactory(
-            groups=[self.secretariat_group]
-        )
-
-        self.validation = factories.PermitRequestValidationFactory(
-            permit_request__administrative_entity=self.administrative_entity,
-            permit_request__status=models.PermitRequest.STATUS_PROCESSING,
-            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
-        )
-        self.client.login(username=self.secretariat_user.username, password="password")
-
-    def _get_approval(self):
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_approve",
-                kwargs={"permit_request_id": self.validation.permit_request.pk},
-            ),
-        )
-        self.assertContains(response, "Approbation de la demande")
-        self.assertEqual(
-            self.validation.permit_request.status,
-            models.PermitRequest.STATUS_PROCESSING,
-        )
-        return response
-
-    def test_classify_permit_request_with_required_validation_doc_shows_file_field(
-        self,
-    ):
-        wot = factories.WorksObjectTypeFactory(requires_validation_document=True)
-        self.validation.permit_request.works_object_types.set([wot])
-        response = self._get_approval()
-        self.assertContains(response, "validation_pdf")
-
-    def test_classify_permit_request_without_required_validation_doc_does_not_show_file_field(
-        self,
-    ):
-        wot = factories.WorksObjectTypeFactory(requires_validation_document=False)
-        self.validation.permit_request.works_object_types.set([wot])
-        response = self._get_approval()
-        self.assertNotContains(response, "validation_pdf")
-
-    def test_classify_permit_request_with_any_object_requiring_validation_doc_shows_file_field(
-        self,
-    ):
-        wot1 = factories.WorksObjectTypeFactory(requires_validation_document=True)
-        wot2 = factories.WorksObjectTypeFactory(requires_validation_document=False)
-        self.validation.permit_request.works_object_types.set([wot1, wot2])
-        response = self._get_approval()
-        self.assertContains(response, "validation_pdf")
-
-
-class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
-    def test_administrative_entity_step_without_public_requests_is_empty_to_standard_user(
-        self,
-    ):
-
-        works_types = factories.WorksTypeFactory.create_batch(2)
-        works_objects = factories.WorksObjectFactory.create_batch(2)
-
-        administrative_entity = factories.PermitAdministrativeEntityFactory(
-            name="privateEntity"
-        )
-        private_works_object_type = models.WorksObjectType.objects.create(
-            works_type=works_types[0],
-            works_object=works_objects[0],
-            is_public=False,
-        )
-        private_works_object_type.administrative_entities.set([administrative_entity])
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_select_administrative_entity",
-            ),
-        )
-        self.assertNotContains(response, "privateEntity")
-
-    def test_administrative_entity_step_without_public_requests_is_visible_to_user_with_specific_permission(
-        self,
-    ):
-
-        see_private_requests_permission = Permission.objects.get(
-            codename="see_private_requests"
-        )
-        self.user.user_permissions.add(see_private_requests_permission)
-        works_types = factories.WorksTypeFactory.create_batch(2)
-        works_objects = factories.WorksObjectFactory.create_batch(2)
-
-        administrative_entity_1 = factories.PermitAdministrativeEntityFactory(
-            name="privateEntity1"
-        )
-        administrative_entity_2 = factories.PermitAdministrativeEntityFactory(
-            name="privateEntity2"
-        )
-        private_works_object_type = models.WorksObjectType.objects.create(
-            works_type=works_types[0],
-            works_object=works_objects[0],
-            is_public=True,
-        )
-        private_works_object_type.administrative_entities.set(
-            [administrative_entity_1, administrative_entity_2]
-        )
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_select_administrative_entity",
-            ),
-        )
-
-        self.assertContains(response, "privateEntity1")
-        self.assertContains(response, "privateEntity2")
-
-    def test_work_type_step_only_show_public_requests_to_standard_user(
-        self,
-    ):
-
-        public_works_object_types = factories.WorksObjectTypeFactory.create_batch(
-            2, is_public=True
-        )
-        private_works_object_type = factories.WorksObjectTypeFactory(is_public=False)
-        administrative_entity = factories.PermitAdministrativeEntityFactory()
-        administrative_entity.works_object_types.set(
-            public_works_object_types + [private_works_object_type]
-        )
-
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor, administrative_entity=administrative_entity
-        )
-
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_select_types",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-        )
-        self.assertEqual(
-            len(get_parser(response.content).select(".form-check-label")), 2
-        )
-
-    def test_work_type_step_show_private_requests_with_choices_to_user_with_specific_permission(
-        self,
-    ):
-
-        see_private_requests_permission = Permission.objects.get(
-            codename="see_private_requests"
-        )
-        self.user.user_permissions.add(see_private_requests_permission)
-
-        public_works_object_types = factories.WorksObjectTypeFactory.create_batch(
-            2, is_public=True
-        )
-        private_works_object_type = factories.WorksObjectTypeFactory(is_public=False)
-        administrative_entity = factories.PermitAdministrativeEntityFactory()
-        administrative_entity.works_object_types.set(
-            public_works_object_types + [private_works_object_type]
-        )
-
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor, administrative_entity=administrative_entity
-        )
-
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_select_types",
-                kwargs={"permit_request_id": permit_request.pk},
-            ),
-        )
-        self.assertEqual(
-            len(get_parser(response.content).select(".form-check-label")), 3
-        )
-
-    def test_work_type_step_show_public_requests_to_standard_user(
-        self,
-    ):
-        public_works_object_types = factories.WorksObjectTypeFactory.create_batch(
-            2, is_public=True
-        )
-        private_works_object_type = factories.WorksObjectTypeFactory(is_public=False)
-        administrative_entity = factories.PermitAdministrativeEntityFactory()
-        administrative_entity.works_object_types.set(
-            public_works_object_types + [private_works_object_type]
-        )
-
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor, administrative_entity=administrative_entity
-        )
-
-        permit_request.administrative_entity.works_object_types.set(
-            models.WorksObjectType.objects.all()
-        )
-
-        models.WorksObjectTypeChoice.objects.create(
-            permit_request=permit_request,
-            works_object_type=public_works_object_types[0],
-        )
-
-        models.WorksObjectTypeChoice.objects.create(
-            permit_request=permit_request,
-            works_object_type=public_works_object_types[1],
-        )
-
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_select_objects",
-                kwargs={"permit_request_id": permit_request.pk},
-            )
-            + "?types={}&types={}".format(
-                public_works_object_types[0].works_type.pk,
-                public_works_object_types[1].works_type.pk,
-            ),
-        )
-        self.assertEqual(
-            len(get_parser(response.content).select(".form-check-label")), 2
-        )
-
-    def test_work_type_step_show_private_requests_to_user_with_specific_permission(
-        self,
-    ):
-
-        see_private_requests_permission = Permission.objects.get(
-            codename="see_private_requests"
-        )
-        self.user.user_permissions.add(see_private_requests_permission)
-
-        public_works_object_types = factories.WorksObjectTypeFactory.create_batch(
-            2, is_public=True
-        )
-        private_works_object_type = factories.WorksObjectTypeFactory(is_public=False)
-        administrative_entity = factories.PermitAdministrativeEntityFactory()
-        administrative_entity.works_object_types.set(
-            public_works_object_types + [private_works_object_type]
-        )
-
-        permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor, administrative_entity=administrative_entity
-        )
-
-        permit_request.administrative_entity.works_object_types.set(
-            models.WorksObjectType.objects.all()
-        )
-
-        models.WorksObjectTypeChoice.objects.create(
-            permit_request=permit_request,
-            works_object_type=public_works_object_types[0],
-        )
-
-        models.WorksObjectTypeChoice.objects.create(
-            permit_request=permit_request,
-            works_object_type=public_works_object_types[1],
-        )
-
-        models.WorksObjectTypeChoice.objects.create(
-            permit_request=permit_request, works_object_type=private_works_object_type
-        )
-
-        response = self.client.get(
-            reverse(
-                "permits:permit_request_select_objects",
-                kwargs={"permit_request_id": permit_request.pk},
-            )
-            + "?types={}&types={}&types={}".format(
-                public_works_object_types[0].works_type.pk,
-                public_works_object_types[1].works_type.pk,
-                private_works_object_type.works_type.pk,
-            ),
-        )
-        self.assertEqual(
-            len(get_parser(response.content).select(".form-check-label")), 3
-        )
-
-
-class PermitRequestFilteredWorksObjectListTestCase(LoggedInSecretariatMixin, TestCase):
-    def setUp(self):
-        super().setUp()
-        self.wot_normal = factories.WorksObjectTypeFactory()
-        self.permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_APPROVED,
-        )
-        self.permit_request.works_object_types.set([self.wot_normal])
-        factories.PermitRequestGeoTimeFactory(permit_request=self.permit_request)
-
-        works_object_type_choice = self.permit_request.worksobjecttypechoice_set.first()
-        prop = factories.WorksObjectPropertyFactory()
-        prop.works_object_types.add(works_object_type_choice.works_object_type)
-        self.prop_value = factories.WorksObjectPropertyValueFactory(
-            works_object_type_choice=works_object_type_choice, property=prop
-        )
-
-    def test_secretariat_user_can_see_filtered_permits_details(
-        self,
-    ):
-        response = self.client.get(
-            "{}?works_object_types__works_object={}".format(
-                reverse(
-                    "permits:permit_requests_list",
-                ),
-                self.permit_request.works_object_types.first().works_object.id,
-            )
-        )
-
-        self.assertInHTML(self.prop_value.value["val"], response.content.decode())
-
-    def test_secretariat_user_can_see_filtered_permits_details_in_xlsx(
-        self,
-    ):
-        response = self.client.get(
-            "{}?works_object_types__works_object={}&_export=xlsx".format(
-                reverse(
-                    "permits:permit_requests_list",
-                ),
-                self.permit_request.works_object_types.first().works_object.id,
-            )
-        )
-
-        content = io.BytesIO(response.content)
-
-        # Replace content in bytes with the readable one
-        response.content = tablib.import_set(content.read(), format="xlsx")
-
-        self.assertContains(response, self.prop_value.value["val"])
-        self.assertContains(response, self.prop_value.property)
-
-
-class PermitRequestAnonymousTestCase(TestCase):
+class SubmissionAnonymousTestCase(TestCase):
     def setUp(self):
         super().setUp()
 
     def test_anonymous_request_on_non_anonymous_entity_returns_404(self):
-        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
-        type = factories.WorksTypeFactory(tags=["a"])
+        entity = factories.AdministrativeEntityFactory(tags=["a"])
+        category = factories.FormCategoryFactory(tags=["a"])
 
         response = self.client.get(
-            reverse("permits:anonymous_permit_request"),
+            reverse("submissions:anonymous_submission"),
             data={
                 "entityfilter": entity.tags.get().slug,
-                "typefilter": type.tags.get().slug,
+                "categoryfilter": category.tags.get().slug,
             },
         )
 
         self.assertEqual(response.status_code, 404)
 
     def test_anonymous_request_on_anonymous_entity_displays_captcha_form(self):
-        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        entity = factories.AdministrativeEntityFactory(tags=["a"])
         create_anonymous_users._create_anonymous_user_for_entity(entity)
 
-        type = factories.WorksTypeFactory(tags=["a"])
+        category = factories.FormCategoryFactory(tags=["a"])
 
         response = self.client.get(
-            reverse("permits:anonymous_permit_request"),
+            reverse("submissions:anonymous_submission"),
             data={
                 "entityfilter": entity.tags.get().slug,
-                "typefilter": type.tags.get().slug,
+                "typefilter": category.tags.get().slug,
             },
         )
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("anonymous_request_form", response.context)
 
-    def test_anonymous_request_temporary_logged_in_no_wot_displays_request_form(self):
-        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+    def test_anonymous_request_temporary_logged_in_no_form_displays_request_form(self):
+        entity = factories.AdministrativeEntityFactory(tags=["a"])
         create_anonymous_users._create_anonymous_user_for_entity(entity)
 
-        temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
+        temp_author = accounts_models.UserProfile.objects.create_temporary_user(entity)
         self.client.force_login(temp_author.user)
         session = self.client.session
         session["anonymous_request_token"] = hash((temp_author, entity))
         session.save()
 
-        type = factories.WorksTypeFactory(tags=["a"])
+        category = factories.FormCategoryFactory(tags=["a"])
 
         response = self.client.get(
-            reverse("permits:anonymous_permit_request"),
+            reverse("submissions:anonymous_submission"),
             data={
                 "entityfilter": entity.tags.get().slug,
-                "typefilter": type.tags.get().slug,
+                "typefilter": category.tags.get().slug,
             },
         )
 
         self.assertEqual(response.status_code, 404)
 
     def test_anonymous_request_temporary_logged_in_displays_request_form(self):
-        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        entity = factories.AdministrativeEntityFactory(tags=["a"])
         create_anonymous_users._create_anonymous_user_for_entity(entity)
 
-        temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
+        temp_author = accounts_models.UserProfile.objects.create_temporary_user(entity)
         self.client.force_login(temp_author.user)
         session = self.client.session
         session["anonymous_request_token"] = hash((temp_author, entity))
         session.save()
 
-        type = factories.WorksTypeFactory(tags=["a"])
-        factories.WorksObjectTypeFactory(
+        category = factories.FormCategoryFactory(tags=["a"])
+        factories.FormFactory(
             is_anonymous=True,
-            works_type=type,
+            category=category,
             administrative_entities=[entity],
         )
 
         response = self.client.get(
-            reverse("permits:anonymous_permit_request"),
+            reverse("submissions:anonymous_submission"),
             data={
                 "entityfilter": entity.tags.get().slug,
-                "typefilter": type.tags.get().slug,
+                "typefilter": category.tags.get().slug,
             },
             follow=True,
         )
 
         self.assertEqual(response.status_code, 200)
-        # As the wot has to properties, going directly to next step
+        # As the form has to fields, going directly to next step
         self.assertTrue(
-            isinstance(response.context["formset"].forms[0], PermitRequestGeoTimeForm)
+            isinstance(
+                response.context["formset"].forms[0],
+                submissions_forms.SubmissionGeoTimeForm,
+            )
         )
 
     def test_anonymous_request_submission_deletes_temporary_user(self):
-        entity = factories.PermitAdministrativeEntityFactory(tags=["a"])
+        entity = factories.AdministrativeEntityFactory(tags=["a"])
         create_anonymous_users._create_anonymous_user_for_entity(entity)
 
-        temp_author = models.PermitAuthor.objects.create_temporary_user(entity)
+        temp_author = accounts_models.UserProfile.objects.create_temporary_user(entity)
         self.client.force_login(temp_author.user)
         session = self.client.session
         session["anonymous_request_token"] = hash((temp_author, entity))
         session.save()
 
-        type = factories.WorksTypeFactory(tags=["a"])
-        wot = factories.WorksObjectTypeWithoutGeometryFactory(
+        category = factories.FormCategoryFactory(tags=["a"])
+        form = factories.FormWithoutGeometryFactory(
             is_anonymous=True,
-            works_type=type,
+            category=category,
             administrative_entities=[entity],
             needs_date=False,
         )
 
-        # Filled permit request
-        permit_request = factories.PermitRequestFactory(
-            author=temp_author,
-            status=models.PermitRequest.STATUS_DRAFT,
+        # Filled submission
+        submission = factories.SubmissionFactory(
+            author=temp_author.user,
+            status=submissions_models.Submission.STATUS_DRAFT,
             administrative_entity=entity,
         )
-        work_object_type_choice = factories.WorksObjectTypeChoiceFactory(
-            permit_request=permit_request,
-            works_object_type=wot,
+        selected_form = factories.SelectedFormFactory(
+            submission=submission,
+            form=form,
         )
-        prop = factories.WorksObjectPropertyFactory()
-        prop.works_object_types.set([wot])
-        factories.WorksObjectPropertyValueFactory(
-            property=prop,
-            works_object_type_choice=work_object_type_choice,
+        field = factories.FieldFactory()
+        field.forms.set([form])
+        factories.FieldValueFactory(
+            field=field,
+            selected_form=selected_form,
             value={"val": True},
         )
 
         response = self.client.post(
             reverse(
-                "permits:permit_request_submit_confirmed",
-                kwargs={"permit_request_id": permit_request.pk},
+                "submissions:submission_submit_confirmed",
+                kwargs={"submission_id": submission.pk},
             )
         )
 
-        permit_request.refresh_from_db()
+        submission.refresh_from_db()
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse("permits:anonymous_permit_request_sent"))
-
-        self.assertEqual(permit_request.author, entity.anonymous_user)
+        self.assertEqual(response.url, reverse("submissions:anonymous_submission_sent"))
+        self.assertEqual(submission.author, entity.anonymous_user.user)
 
         self.assertEqual(
             get_user_model().objects.get().pk,
-            permit_request.author.user_id,
+            submission.author.id,
         )

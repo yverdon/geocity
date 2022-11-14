@@ -63,7 +63,7 @@ urlpatterns = [
         name="submission_file_download",
     ),
     path(
-        "wot-files/<path:path>",
+        "form-files/<path:path>",
         views.field_file_download,
         name="field_file_download",
     ),

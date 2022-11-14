@@ -1,10 +1,11 @@
 from django.contrib import messages
 from django.urls import reverse
 
-from geocity.apps.permits import models, views
+from geocity.apps.submissions import models as submissions_models
+from geocity.apps.submissions import views
 
-from .. import factories
-from ..geocity_test_case import GeocityTestCase
+from geocity.tests import factories
+from geocity.tests.geocity_test_case import GeocityTestCase
 
 
 class TestComplementaryDocuments(GeocityTestCase):
@@ -27,42 +28,42 @@ class TestComplementaryDocuments(GeocityTestCase):
             parent=self.parent_type
         )
 
-        self.permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_RECEIVED,
+        self.submission = factories.SubmissionFactory(
+            author=self.user,
+            status=submissions_models.Submission.STATUS_RECEIVED,
             administrative_entity=self.administrative_entity,
         )
-        self.permit_request.works_object_types.add(self.parent_type.work_object_types)
+        self.submission.forms.add(self.parent_type.form)
 
     def execute_complementary_document_upload_test(self, data):
         self.login(email="pilot@test.com", group=self.SECRETARIAT)
 
         response = self.client.post(
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": self.permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": self.submission.pk},
             ),
             data={**self.management_form, **data},
         )
         self.assertEqual(response.status_code, 302)
 
-        permit_request_detail = self.client.get(
+        submission_detail = self.client.get(
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": self.permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": self.submission.pk},
             )
         )
         expected = "<div class='alert alert-success'>Les documents ont bien été ajoutés à la demande #{pk}.</div>".format(
-            pk=self.permit_request.pk,
+            pk=self.submission.pk,
         )
-        self.assertInHTML(expected, permit_request_detail.content.decode())
+        self.assertInHTML(expected, submission_detail.content.decode())
 
     def test_pilot_can_upload_single_complementary_document(self):
-        with open("geocity/apps/permits/tests/files/real_pdf.pdf", "rb") as file:
+        with open("geocity/tests/files/real_pdf.pdf", "rb") as file:
             data = {
                 "form-0-description": ["Single document upload"],
                 "form-0-status": [
-                    models.PermitRequestComplementaryDocument.STATUS_OTHER
+                    submissions_models.SubmissionComplementaryDocument.STATUS_OTHER
                 ],
                 "form-0-authorised_departments": [self.departments[self.VALIDATOR].pk],
                 "form-0-is_public": ["0"],
@@ -74,11 +75,11 @@ class TestComplementaryDocuments(GeocityTestCase):
             self.execute_complementary_document_upload_test(data)
 
     def test_pilot_can_upload_multiple_complementary_documents(self):
-        with open("geocity/apps/permits/tests/files/real_pdf.pdf", "rb") as file:
+        with open("geocity/tests/files/real_pdf.pdf", "rb") as file:
             data = {
                 "form-0-description": ["Multiple document upload. #1"],
                 "form-0-status": [
-                    models.PermitRequestComplementaryDocument.STATUS_OTHER
+                    submissions_models.SubmissionComplementaryDocument.STATUS_OTHER
                 ],
                 "form-0-authorised_departments": [self.departments[self.VALIDATOR].pk],
                 "form-0-is_public": ["0"],
@@ -87,7 +88,7 @@ class TestComplementaryDocuments(GeocityTestCase):
                 "form-0-parent_{}".format(self.parent_type.pk): [self.child_type.pk],
                 "form-1-description": ["Multiple document upload. #2"],
                 "form-1-status": [
-                    models.PermitRequestComplementaryDocument.STATUS_FINALE
+                    submissions_models.SubmissionComplementaryDocument.STATUS_FINALE
                 ],
                 "form-1-authorised_departments": [self.departments[self.VALIDATOR].pk],
                 "form-1-is_public": ["0"],
@@ -102,8 +103,8 @@ class TestComplementaryDocuments(GeocityTestCase):
         self.login(email="pilot@test.com", group=self.SECRETARIAT)
         self.client.post(
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": self.permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": self.submission.pk},
             ),
             data={
                 "action": "request_validation",
@@ -113,39 +114,39 @@ class TestComplementaryDocuments(GeocityTestCase):
 
         self.login(email="validator@geocity.lo", group=self.VALIDATOR)
         document = factories.ComplementaryDocumentFactory.create(
-            permit_request=self.permit_request,
+            submission=self.submission,
             authorised_departments=[self.departments[self.VALIDATOR].pk],
         )
-        permit_request_detail = self.client.get(
+        submission_detail = self.client.get(
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": self.permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": self.submission.pk},
             )
         )
 
-        self.assertIn(document, list(permit_request_detail.context["documents"]))
+        self.assertIn(document, list(submission_detail.context["documents"]))
 
     def test_public_document_visible_by_everyone(self):
         # we're logged in as the other of the request
         document = factories.ComplementaryDocumentFactory.create(
-            permit_request=self.permit_request,
+            submission=self.submission,
             authorised_departments=[self.departments[self.VALIDATOR].pk],
             is_public=True,
         )
-        permit_request_detail = self.client.get(
+        submission_detail = self.client.get(
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": self.permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": self.submission.pk},
             )
         )
-        self.assertIn(document, list(permit_request_detail.context["documents"]))
+        self.assertIn(document, list(submission_detail.context["documents"]))
 
     def prepare_document_test(self, document_args):
 
         document = factories.ComplementaryDocumentFactory.create(
             **{
                 **{
-                    "permit_request": self.permit_request,
+                    "submission": self.submission,
                     "authorised_departments": [self.departments[self.VALIDATOR].pk],
                 },
                 **document_args,
@@ -154,7 +155,7 @@ class TestComplementaryDocuments(GeocityTestCase):
 
         response = self.client.get(
             reverse(
-                "permits:complementary_documents_delete",
+                "submissions:complementary_documents_delete",
                 kwargs={"pk": document.pk},
             ),
             follow=True,
@@ -171,7 +172,7 @@ class TestComplementaryDocuments(GeocityTestCase):
         )
 
         self.assertFalse(
-            models.PermitRequestComplementaryDocument.objects.filter(
+            submissions_models.SubmissionComplementaryDocument.objects.filter(
                 pk=document.pk
             ).exists()
         )
@@ -181,14 +182,14 @@ class TestComplementaryDocuments(GeocityTestCase):
         document, response = self.prepare_document_test(
             document_args={
                 "owner": self.user,
-                "status": models.PermitRequestComplementaryDocument.STATUS_FINALE,
+                "status": submissions_models.SubmissionComplementaryDocument.STATUS_FINALE,
             }
         )
 
         message = [m for m in response.context["messages"]][0]
         actual = (message.message, message.level)
         expected = (
-            views.PermitRequestComplementaryDocumentDeleteView.final_error_message,
+            views.SubmissionComplementaryDocumentDeleteView.final_error_message,
             messages.ERROR,
         )
         self.assertResponseMessageContains(actual, expected)
@@ -196,14 +197,14 @@ class TestComplementaryDocuments(GeocityTestCase):
     def test_non_owners_can_not_delete_documents(self):
         document, response = self.prepare_document_test(
             document_args={
-                "status": models.PermitRequestComplementaryDocument.STATUS_FINALE,
+                "status": submissions_models.SubmissionComplementaryDocument.STATUS_FINALE,
             }
         )
 
         message = [m for m in response.context["messages"]][0]
         actual = (message.message, message.level)
         expected = (
-            views.PermitRequestComplementaryDocumentDeleteView.owner_error_message,
+            views.SubmissionComplementaryDocumentDeleteView.owner_error_message,
             messages.ERROR,
         )
         self.assertResponseMessageContains(actual, expected)

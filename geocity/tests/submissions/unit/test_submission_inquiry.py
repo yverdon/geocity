@@ -1,29 +1,27 @@
 from datetime import datetime, timedelta
 
-from geocity.apps.permits import forms, models
+from geocity.apps.submissions import forms
+from geocity.apps.submissions import models as submissions_models
 
-from .. import factories
-from ..geocity_test_case import GeocityTestCase
+from geocity.tests import factories
+from geocity.tests.geocity_test_case import GeocityTestCase
 
 
-class TestPermitRequestInquiry(GeocityTestCase):
-    def setUp(self):
-        super().setUp()
-
+class TestSubmissionInquiry(GeocityTestCase):
+    def test_inquiries_cant_overlap(self):
         self.login(email="user@test.com")
 
-        self.permit_request = factories.PermitRequestFactory(
-            author=self.user.permitauthor,
-            status=models.PermitRequest.STATUS_RECEIVED,
+        submission = factories.SubmissionFactory(
+            author=self.user,
+            status=submissions_models.Submission.STATUS_RECEIVED,
             administrative_entity=self.administrative_entity,
         )
-        self.permit_request.works_object_types.add(factories.WorksObjectTypeFactory())
+        submission.forms.add(factories.FormFactory())
 
-    def test_inquiries_cant_overlap(self):
         start_date = datetime.today() + timedelta(days=10)
         end_date = start_date + timedelta(days=10)
-        factories.PermitRequestInquiryFactory(
-            permit_request=self.permit_request, start_date=start_date, end_date=end_date
+        factories.SubmissionInquiryFactory(
+            submission=submission, start_date=start_date, end_date=end_date
         )
 
         test_data = [
@@ -46,9 +44,7 @@ class TestPermitRequestInquiry(GeocityTestCase):
         ]
 
         for data in test_data:
-            form = forms.PermitRequestInquiryForm(
-                permit_request=self.permit_request, data=data
-            )
+            form = forms.SubmissionInquiryForm(submission=submission, data=data)
 
             self.assertFalse(form.is_valid())
             self.assertEqual(
