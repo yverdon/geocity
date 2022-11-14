@@ -402,7 +402,6 @@ class FieldFactoryTypeFile(factory.django.DjangoModelFactory):
 
     name = factory.Faker("word")
     input_type = forms_models.Field.INPUT_TYPE_FILE
-    order = factory.Sequence(int)
 
 
 class FieldFactoryTypeTitle(factory.django.DjangoModelFactory):

@@ -306,6 +306,7 @@ class FormFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("word")
     category = factory.SubFactory(FormCategoryFactory)
     is_public = True
+    order = factory.Sequence(int)
 
     @factory.post_generation
     def integrator(self, create, extracted, **kwargs):
@@ -393,7 +394,6 @@ class FieldFactoryTypeAddress(factory.django.DjangoModelFactory):
 
     name = factory.Faker("word")
     input_type = forms_models.Field.INPUT_TYPE_ADDRESS
-    order = factory.Sequence(int)
 
 
 class FieldFactoryTypeFile(factory.django.DjangoModelFactory):
@@ -402,7 +402,6 @@ class FieldFactoryTypeFile(factory.django.DjangoModelFactory):
 
     name = factory.Faker("word")
     input_type = forms_models.Field.INPUT_TYPE_FILE
-    order = factory.Sequence(int)
 
 
 class FieldFactoryTypeTitle(factory.django.DjangoModelFactory):
@@ -412,7 +411,6 @@ class FieldFactoryTypeTitle(factory.django.DjangoModelFactory):
     name = factory.Faker("word")
     help_text = factory.Faker("word")
     input_type = forms_models.Field.INPUT_TYPE_TITLE
-    order = factory.Sequence(int)
 
 
 class FieldFactoryTypeFileDownload(factory.django.DjangoModelFactory):
@@ -422,8 +420,16 @@ class FieldFactoryTypeFileDownload(factory.django.DjangoModelFactory):
     name = factory.Faker("word")
     help_text = factory.Faker("word")
     input_type = forms_models.Field.INPUT_TYPE_FILE_DOWNLOAD
-    order = factory.Sequence(int)
     file_download = SimpleUploadedFile("file.pdf", "contents".encode())
+
+
+class FormFieldFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = forms_models.FormField
+
+    form = factory.SubFactory(FormFactory)
+    field = factory.SubFactory(FieldFactory)
+    order = factory.Sequence(int)
 
 
 class SelectedFormFactory(factory.django.DjangoModelFactory):
@@ -485,7 +491,7 @@ class SubmissionAmendFieldValueFactory(factory.django.DjangoModelFactory):
         model = submissions_models.SubmissionAmendFieldValue
 
     field = factory.SubFactory(SubmissionAmendFieldFactory)
-    selected_form = factory.SubFactory(SelectedFormFactory)
+    form = factory.SubFactory(SelectedFormFactory)
     value = factory.Faker("word")
 
 

@@ -2,14 +2,11 @@
 import datetime
 import io
 import re
-import urllib.parse
-import uuid
 from datetime import date
 
 import tablib
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
@@ -18,7 +15,10 @@ from django.utils import timezone
 
 from geocity.apps.accounts import models as accounts_models
 from geocity.apps.forms import models as forms_models
-from geocity.apps.submissions import models as submissions_models, forms as submissions_forms, services as submissions_services
+from geocity.apps.submissions import (
+    models as submissions_models,
+    forms as submissions_forms,
+)
 
 from geocity.apps.accounts.management.commands import create_anonymous_users
 from . import factories
@@ -26,10 +26,7 @@ from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_
 
 
 def to_forms_dict(forms):
-    return {
-        "forms-{}".format(form.form_category.pk): form.pk
-        for form in forms
-    }
+    return {"forms-{}".format(form.form_category.pk): form.pk for form in forms}
 
 
 def get_submission_form_categories_ids(submission):
@@ -61,16 +58,16 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_categories_step_submit_redirects_to_forms_with_categories_qs(self):
         submission = factories.SubmissionFactory(author=self.user)
-        submission.administrative_entity.forms.set(
-            forms_models.Form.objects.all()
-        )
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
 
         response = self.client.post(
             reverse(
                 "submissions:submission_select_categories",
                 kwargs={"submission_id": submission.pk},
             ),
-            data={"categories": [self.form_categories[0].pk, self.form_categories[1].pk]},
+            data={
+                "categories": [self.form_categories[0].pk, self.form_categories[1].pk]
+            },
         )
 
         self.assertRedirects(
@@ -86,9 +83,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_forms_step_without_qs_redirects_to_categories_step(self):
         submission = factories.SubmissionFactory(author=self.user)
-        submission.administrative_entity.forms.set(
-            forms_models.Form.objects.all()
-        )
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
 
         response = self.client.get(
             reverse(
@@ -109,24 +104,17 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         factories.FormFactory()
 
         form = forms_models.Form.objects.first()
-        submission.administrative_entity.forms.set(
-            forms_models.Form.objects.all()
-        )
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
         self.client.post(
             reverse(
                 "submissions:submission_select_forms",
                 kwargs={"submission_id": submission.pk},
-            )
-            + "?types={}".format(self.form_categories[0].pk),
-            data={
-                "form-{}".format(self.form_categories[0].pk): form.pk
-            },
+            ),
+            data={"forms-selected_forms": form.pk},
         )
 
         self.assertEqual(
-            submissions_models.Submission.objects.filter(
-                forms=form
-            ).count(),
+            submissions_models.Submission.objects.filter(forms=form).count(),
             1,
         )
 
@@ -166,7 +154,9 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             ),
         )
 
-    def test_categories_step_submit_redirects_to_detail_if_logged_as_integrator_admin(self):
+    def test_categories_step_submit_redirects_to_detail_if_logged_as_integrator_admin(
+        self,
+    ):
 
         integrator_group = factories.GroupFactory(name="Integrator")
         department = factories.PermitDepartmentFactory(
@@ -204,12 +194,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_non_required_fields_can_be_left_blank(self):
         submission = factories.SubmissionFactory(author=self.user)
-        factories.SelectedFormFactory.create_batch(
-            3, submission=submission
-        )
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
         field = factories.FieldFactory()
         field.forms.set(submission.forms.all())
 
@@ -230,12 +216,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_documents_step_filetype_allows_jpg(self):
         submission = factories.SubmissionFactory(author=self.user)
-        factories.SelectedFormFactory.create_batch(
-            3, submission=submission
-        )
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
@@ -245,11 +227,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
                     "submissions:submission_appendices",
                     kwargs={"submission_id": submission.pk},
                 ),
-                data={
-                    "appendices-{}_{}".format(
-                        field.forms.last().pk, field.pk
-                    ): file
-                },
+                data={"appendices-{}_{}".format(field.forms.last().pk, field.pk): file},
             )
 
         self.assertRedirects(
@@ -262,12 +240,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_documents_step_filetype_allows_png(self):
         submission = factories.SubmissionFactory(author=self.user)
-        factories.SelectedFormFactory.create_batch(
-            3, submission=submission
-        )
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
@@ -277,11 +251,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
                     "submissions:submission_appendices",
                     kwargs={"submission_id": submission.pk},
                 ),
-                data={
-                    "appendices-{}_{}".format(
-                        field.forms.last().pk, field.pk
-                    ): file
-                },
+                data={"appendices-{}_{}".format(field.forms.last().pk, field.pk): file},
             )
 
         self.assertRedirects(
@@ -294,12 +264,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_documents_step_filetype_allows_pdf(self):
         submission = factories.SubmissionFactory(author=self.user)
-        factories.SelectedFormFactory.create_batch(
-            3, submission=submission
-        )
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
@@ -309,11 +275,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
                     "submissions:submission_appendices",
                     kwargs={"submission_id": submission.pk},
                 ),
-                data={
-                    "appendices-{}_{}".format(
-                        field.forms.last().pk, field.pk
-                    ): file
-                },
+                data={"appendices-{}_{}".format(field.forms.last().pk, field.pk): file},
             )
 
         self.assertRedirects(
@@ -326,12 +288,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_documents_step_filetype_reject_unknow_type_for_filetype(self):
         submission = factories.SubmissionFactory(author=self.user)
-        factories.SelectedFormFactory.create_batch(
-            3, submission=submission
-        )
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
@@ -343,11 +301,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
                     "submissions:submission_appendices",
                     kwargs={"submission_id": submission.pk},
                 ),
-                data={
-                    "appendices-{}_{}".format(
-                        field.forms.last().pk, field.pk
-                    ): file
-                },
+                data={"appendices-{}_{}".format(field.forms.last().pk, field.pk): file},
             )
 
         content = response.content.decode()
@@ -359,12 +313,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_documents_step_filetype_reject_not_allowed_extension(self):
         submission = factories.SubmissionFactory(author=self.user)
-        factories.SelectedFormFactory.create_batch(
-            3, submission=submission
-        )
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
@@ -376,11 +326,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
                     "submissions:submission_appendices",
                     kwargs={"submission_id": submission.pk},
                 ),
-                data={
-                    "appendices-{}_{}".format(
-                        field.forms.last().pk, field.pk
-                    ): file
-                },
+                data={"appendices-{}_{}".format(field.forms.last().pk, field.pk): file},
             )
 
         content = response.content.decode()
@@ -392,12 +338,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_documents_step_filetype_reject_fake_jpg_with_not_allowed_extension(self):
         submission = factories.SubmissionFactory(author=self.user)
-        factories.SelectedFormFactory.create_batch(
-            3, submission=submission
-        )
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        factories.SelectedFormFactory.create_batch(3, submission=submission)
+        submission.administrative_entity.forms.set(submission.forms.all())
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
@@ -409,11 +351,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
                     "submissions:submission_appendices",
                     kwargs={"submission_id": submission.pk},
                 ),
-                data={
-                    "appendices-{}_{}".format(
-                        field.forms.last().pk, field.pk
-                    ): file
-                },
+                data={"appendices-{}_{}".format(field.forms.last().pk, field.pk): file},
             )
 
         content = response.content.decode()
@@ -424,9 +362,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         self.assertInHTML(expected, content)
 
     def test_user_can_only_see_own_requests(self):
-        submission = factories.SubmissionFactory(
-            author=factories.UserFactory()
-        )
+        submission = factories.SubmissionFactory(author=factories.UserFactory())
 
         response = self.client.get(
             reverse(
@@ -468,9 +404,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             submission=submission,
             form=form,
         )
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        submission.administrative_entity.forms.set(submission.forms.all())
         response = self.client.get(
             reverse(
                 "submissions:submission_select_categories",
@@ -501,7 +435,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         )
         form_category = factories.FormCategoryFactory(name="Foo category")
         form = factories.FormWithoutGeometryFactory(
-            form_category=form_category,
+            category=form_category,
             needs_date=False,
         )
         submission.forms.set([form])
@@ -513,7 +447,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         )
         submission.refresh_from_db()
         self.assertEqual(
-            submission.status, submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION
+            submission.status,
+            submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION,
         )
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["secretary@geocity.ch"])
@@ -535,14 +470,14 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
         submission = factories.SubmissionGeoTimeFactory(
             submission=factories.SubmissionFactory(
-                administrative_entity=group.permitdepartment.administrative_entity,
+                administrative_entity=group.permit_department.administrative_entity,
                 author=self.user,
                 status=submissions_models.Submission.STATUS_DRAFT,
             )
         ).submission
         form_category = factories.FormCategoryFactory(name="Foo category")
         form = factories.FormFactory(
-            form_category=form_category,
+            category=form_category,
         )
         submission.forms.set([form])
 
@@ -568,7 +503,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         ).submission
         form_category = factories.FormCategoryFactory(name="Foo category")
         form = factories.FormFactory(
-            form_category=form_category,
+            category=form_category,
         )
         selected_form = factories.SelectedFormFactory(
             submission=submission,
@@ -610,9 +545,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
     def test_missing_mandatory_date_field_gives_invalid_feedback(self):
         submission = factories.SubmissionFactory(author=self.user)
         factories.SelectedFormFactory(submission=submission)
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        submission.administrative_entity.forms.set(submission.forms.all())
         field = factories.FieldFactory(
             input_type=submissions_models.Field.INPUT_TYPE_DATE, is_mandatory=True
         )
@@ -635,15 +568,12 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_form_automatically_set_when_only_one_form(self):
         submission = factories.SubmissionFactory(author=self.user)
-        form = factories.FormFactory()
         submission.administrative_entity.forms.set(
-            factories.FormFactory.create_batch(2, form=form)
+            factories.FormFactory.create_batch(2)
         )
-        form_category_id = (
-            submission.administrative_entity.forms.values_list(
-                "form_category_id", flat=True
-            ).first()
-        )
+        form_category_id = submission.administrative_entity.forms.values_list(
+            "form_category_id", flat=True
+        ).first()
 
         self.client.post(
             reverse(
@@ -668,7 +598,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         form_category = factories.FormCategoryFactory()
         administrative_entity = factories.AdministrativeEntityFactory()
         administrative_entity.forms.set(
-            factories.FormFactory.create_batch(2, form_category=form_category)
+            factories.FormFactory.create_batch(2, category=form_category)
         )
 
         response = self.client.post(
@@ -686,7 +616,6 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
                 "submissions:submission_select_forms",
                 kwargs={"submission_id": submission.pk},
             )
-            + f"?categories={form_category.pk}",
         )
 
     def test_geotime_step_only_date_fields_appear_when_only_date_is_required(self):
@@ -1041,7 +970,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
         submission = factories.SubmissionGeoTimeFactory(
             submission=factories.SubmissionFactory(
-                administrative_entity=group.permitdepartment.administrative_entity,
+                administrative_entity=group.permit_department.administrative_entity,
                 author=self.user,
                 status=submissions_models.Submission.STATUS_DRAFT,
             )
@@ -1061,7 +990,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
         submission = factories.SubmissionGeoTimeFactory(
             submission=factories.SubmissionFactory(
-                administrative_entity=group.permitdepartment.administrative_entity,
+                administrative_entity=group.permit_department.administrative_entity,
                 author=self.user,
                 status=submissions_models.Submission.STATUS_DRAFT,
             )
@@ -1103,7 +1032,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         form = factories.FormFactory(start_delay=0)
         submission = factories.SubmissionGeoTimeFactory(
             submission=factories.SubmissionFactory(
-                administrative_entity=group.permitdepartment.administrative_entity,
+                administrative_entity=group.permit_department.administrative_entity,
                 author=self.user,
                 status=submissions_models.Submission.STATUS_DRAFT,
             )
@@ -1129,15 +1058,13 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
         submission = factories.SubmissionGeoTimeFactory(
             submission=factories.SubmissionFactory(
-                administrative_entity=group.permitdepartment.administrative_entity,
+                administrative_entity=group.permit_department.administrative_entity,
                 author=self.user,
                 status=submissions_models.Submission.STATUS_DRAFT,
             )
         ).submission
 
-        submission.forms.set(
-            [first_form, second_form]
-        )
+        submission.forms.set([first_form, second_form])
 
         response = self.client.get(
             reverse(
@@ -1263,11 +1190,9 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_form_category_is_filtered_by_tag(self):
         additional_form_category = factories.FormCategoryFactory()
-        additional_forms = factories.FormFactory()
 
         forms_models.Form.objects.create(
-            form_category=additional_form_category,
-            form=additional_forms,
+            category=additional_form_category,
             is_public=True,
         )
 
@@ -1275,9 +1200,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         self.form_categories[1].tags.add("form_category_a")
         additional_form_category.tags.add("form_category_b")
         submission = factories.SubmissionFactory(author=self.user)
-        submission.administrative_entity.forms.set(
-            forms_models.Form.objects.all()
-        )
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
 
         response = self.client.get(
             reverse(
@@ -1297,7 +1220,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         additional_form_category = factories.FormCategoryFactory()
 
         forms_models.Form.objects.create(
-            form_category=additional_form_category,
+            category=additional_form_category,
             is_public=True,
         )
 
@@ -1305,9 +1228,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         self.form_categories[1].tags.add("form_category_a")
         additional_form_category.tags.add("form_category_b")
         submission = factories.SubmissionFactory(author=self.user)
-        submission.administrative_entity.forms.set(
-            forms_models.Form.objects.all()
-        )
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
 
         response = self.client.get(
             reverse(
@@ -1327,9 +1248,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         submission = factories.SubmissionFactory(author=self.user)
         factories.SelectedFormFactory(submission=submission)
         form = submission.forms.first()
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        submission.administrative_entity.forms.set(submission.forms.all())
         list_single_field = factories.FieldFactory(
             input_type=submissions_models.Field.INPUT_TYPE_LIST_SINGLE,
             choices="foo\nbar",
@@ -1371,16 +1290,12 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         submission = factories.SubmissionFactory(author=self.user)
         factories.SelectedFormFactory(submission=submission)
         form = submission.forms.first()
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        submission.administrative_entity.forms.set(submission.forms.all())
         list_multiple_field = factories.FieldFactory(
             input_type=submissions_models.Field.INPUT_TYPE_LIST_MULTIPLE,
             choices="foo\nbar",
         )
-        list_multiple_field.forms.set(
-            submission.forms.all()
-        )
+        list_multiple_field.forms.set(submission.forms.all())
 
         data = {
             f"fields-{form.pk}_{list_multiple_field.pk}": [
@@ -1404,16 +1319,12 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         submission = factories.SubmissionFactory(author=self.user)
         factories.SelectedFormFactory(submission=submission)
         form = submission.forms.first()
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        submission.administrative_entity.forms.set(submission.forms.all())
         list_multiple_field = factories.FieldFactory(
             input_type=submissions_models.Field.INPUT_TYPE_LIST_MULTIPLE,
             choices="foo\nbar",
         )
-        list_multiple_field.forms.set(
-            submission.forms.all()
-        )
+        list_multiple_field.forms.set(submission.forms.all())
 
         data = {f"fields-{form.pk}_{list_multiple_field.pk}": "foo"}
 
@@ -1433,9 +1344,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         submission = factories.SubmissionFactory(author=self.user)
         factories.SelectedFormFactory(submission=submission)
         form = submission.forms.first()
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
+        submission.administrative_entity.forms.set(submission.forms.all())
         list_single_field = factories.FieldFactory(
             input_type=submissions_models.Field.INPUT_TYPE_LIST_SINGLE,
             choices="foo\nbar",
@@ -1613,9 +1522,7 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
             author=self.user,
             status=submissions_models.Submission.STATUS_AWAITING_SUPPLEMENT,
         )
-        submission.forms.set(
-            [self.form_prolongable_no_date_with_reminder]
-        )
+        submission.forms.set([self.form_prolongable_no_date_with_reminder])
         factories.SubmissionGeoTimeFactory(submission=submission)
 
         submission.administrative_entity.departments.set([self.department])
@@ -1647,9 +1554,7 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
         submission = factories.SubmissionFactory(
             author=self.user, status=submissions_models.Submission.STATUS_APPROVED
         )
-        submission.forms.set(
-            [self.form_prolongable_with_date_and_reminder]
-        )
+        submission.forms.set([self.form_prolongable_with_date_and_reminder])
         factories.SubmissionGeoTimeFactory(submission=submission)
         submission.administrative_entity.departments.set([self.department])
 
@@ -1713,9 +1618,7 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
         submission = factories.SubmissionFactory(
             author=self.user, status=submissions_models.Submission.STATUS_APPROVED
         )
-        submission.forms.set(
-            [self.form_prolongable_with_date_and_reminder]
-        )
+        submission.forms.set([self.form_prolongable_with_date_and_reminder])
         factories.SubmissionGeoTimeFactory(
             submission=submission,
             starts_at=timezone.now() - datetime.timedelta(days=30),
@@ -1806,9 +1709,7 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
             submission.prolongation_status,
         )
         self.assertEqual(prolongation_date, submission.prolongation_date)
-        self.assertEqual(
-            "Prolonged! I got the power!", submission.prolongation_comment
-        )
+        self.assertEqual("Prolonged! I got the power!", submission.prolongation_comment)
 
         self.assertIn("user@test.com", mail.outbox[0].to)
         self.assertRegex(mail.outbox[0].subject, expected_subject_regex)
@@ -1865,9 +1766,7 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
             submission.prolongation_status,
         )
         self.assertEqual(prolongation_date, submission.prolongation_date)
-        self.assertEqual(
-            "Rejected! Because I say so!", submission.prolongation_comment
-        )
+        self.assertEqual("Rejected! Because I say so!", submission.prolongation_comment)
 
         self.assertRegex(mail.outbox[0].subject, expected_subject_regex)
         self.assertIn(
@@ -1951,9 +1850,7 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
             status=submissions_models.Submission.STATUS_APPROVED,
             author=self.user,
         )
-        submission_expired.forms.set(
-            [self.form_prolongable_with_date_and_reminder]
-        )
+        submission_expired.forms.set([self.form_prolongable_with_date_and_reminder])
         ends_at_expired = timezone.now() + datetime.timedelta(days=5)
         factories.SubmissionGeoTimeFactory(
             submission=submission_expired,
@@ -1997,9 +1894,7 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
             prolongation_date=prolongation_date_prolonged,
             prolongation_status=submissions_models.Submission.PROLONGATION_STATUS_APPROVED,
         )
-        submission_prolonged.forms.set(
-            [self.form_prolongable_with_date_and_reminder]
-        )
+        submission_prolonged.forms.set([self.form_prolongable_with_date_and_reminder])
         ends_at_prolonged = timezone.now() + datetime.timedelta(days=5)
         factories.SubmissionGeoTimeFactory(
             submission=submission_prolonged,
@@ -2157,9 +2052,7 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
         submission = factories.SubmissionFactory(
             status=submissions_models.Submission.STATUS_APPROVED,
         )
-        submission.forms.set(
-            [self.form_prolongable_with_date, self.form_normal]
-        )
+        submission.forms.set([self.form_prolongable_with_date, self.form_normal])
         submission.administrative_entity.departments.set([self.department])
         self.client.login(username=self.secretariat, password="password")
 
@@ -2334,9 +2227,7 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
         self,
     ):
 
-        free_forms = factories.FormFactory.create_batch(
-            2, requires_payment=False
-        )
+        free_forms = factories.FormFactory.create_batch(2, requires_payment=False)
         paid_form = factories.FormFactory(requires_payment=True)
         form_categories = [form.category for form in free_forms] + [
             paid_form.category
@@ -2349,9 +2240,7 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
             author=self.user, status=submissions_models.Submission.STATUS_DRAFT
         )
 
-        submission.forms.set(
-            free_forms + [paid_form]
-        )
+        submission.forms.set(free_forms + [paid_form])
 
         response = self.client.get(
             reverse(
@@ -2379,1053 +2268,12 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
         )
 
 
-class SubmissionUpdateTestCase(LoggedInUserMixin, TestCase):
-    def setUp(self):
-        super().setUp()
-        self.submission = factories.SubmissionFactory(
-            author=self.user
-        )
-        factories.SelectedFormFactory.create_batch(
-            3, submission=self.submission
-        )
-        self.submission.administrative_entity.forms.set(
-            self.submission.forms.all()
-        )
-
-    def test_categories_step_submit_shows_new_forms(self):
-        new_form = factories.FormFactory()
-
-        new_form.administrative_entities.set(
-            [self.submission.administrative_entity]
-        )
-
-        response = self.client.post(
-            reverse(
-                "submissions:submission_select_categories",
-                kwargs={"submission_id": self.submission.pk},
-            ),
-            follow=True,
-            data={
-                "categories": get_submission_form_categories_ids(self.submission)
-                + [new_form.form_category.pk]
-            },
-        )
-
-        self.assertContains(response, new_form.form_category)
-
-    def test_categories_step_submit_removes_deselected_categories_from_submission(self):
-        form_id = get_submission_form_categories_ids(self.submission)[
-            0
-        ]
-
-        self.client.post(
-            reverse(
-                "submissions:submission_select_categories",
-                kwargs={"submission_id": self.submission.pk},
-            ),
-            data={"categories": form_id},
-        )
-
-        self.submission.refresh_from_db()
-
-        self.assertEqual(submissions_models.Submission.objects.count(), 1)
-        self.assertEqual(
-            get_submission_form_categories_ids(self.submission),
-            [form_id],
-        )
-
-    def test_form_step_submit_updates_submission(self):
-        new_form = factories.FormFactory()
-        self.submission.administrative_entity.forms.add(
-            new_form
-        )
-        current_forms = list(self.submission.forms.all())
-        current_forms_dict = to_forms_dict(
-            current_forms
-        )
-        new_forms_dict = to_forms_dict([new_form])
-        form_categories_ids = get_submission_form_categories_ids(self.submission) + [
-            new_form.form_category.pk
-        ]
-        categories_param = urllib.parse.urlencode({"categories": form_categories_ids}, doseq=True)
-
-        self.client.post(
-            (
-                reverse(
-                    "submissions:submission_select_forms",
-                    kwargs={"submission_id": self.submission.pk},
-                )
-                + "?"
-                + categories_param
-            ),
-            data={**current_forms_dict, **new_forms_dict},
-        )
-
-        self.submission.refresh_from_db()
-
-        self.assertEqual(submissions_models.Submission.objects.count(), 1)
-        self.assertEqual(
-            set(self.submission.forms.all()),
-            set(current_forms + [new_form]),
-        )
-
-    def test_fields_step_submit_updates_submission(self):
-        new_field = factories.FieldFactory()
-        new_field.forms.set(self.submission.forms.all())
-        data = {
-            "fields-{}_{}".format(
-                form.pk, new_field.pk
-            ): "value-{}".format(form.pk)
-            for form in self.submission.forms.all()
-        }
-        self.client.post(
-            reverse(
-                "submissions:submission_fields",
-                kwargs={"submission_id": self.submission.pk},
-            ),
-            data=data,
-        )
-
-        self.assertEqual(
-            set(
-                item["val"]
-                for item in submissions_services.get_fields_values(
-                    self.submission
-                ).values_list("value", flat=True)
-            ),
-            set(data.values()),
-        )
-
-    def test_missing_mandatory_address_field_gives_invalid_feedback(self):
-        submission = factories.SubmissionFactory(author=self.user)
-        factories.SelectedFormFactory(submission=submission)
-        submission.administrative_entity.forms.set(
-            submission.forms.all()
-        )
-        field = factories.FieldFactoryTypeAddress(
-            input_type=submissions_models.Field.INPUT_TYPE_ADDRESS, is_mandatory=True
-        )
-        field.forms.set(submission.forms.all())
-
-        data = {
-            "fields-{}_{}".format(form.pk, field.pk): ""
-            for form in submission.forms.all()
-        }
-
-        response = self.client.post(
-            reverse(
-                "submissions:submission_fields",
-                kwargs={"submission_id": submission.pk},
-            ),
-            data=data,
-        )
-        parser = get_parser(response.content)
-        self.assertEqual(1, len(parser.select(".invalid-feedback")))
-
-    def test_fields_step_submit_updates_submission_with_address(self):
-        address_field = factories.FieldFactoryTypeAddress(
-            input_type=submissions_models.Field.INPUT_TYPE_ADDRESS
-        )
-        address_field.forms.set(
-            self.submission.forms.all()
-        )
-        form = self.submission.forms.first()
-        data = {
-            f"fields-{form.pk}_{address_field.pk}": "Hôtel Martinez, Cannes"
-        }
-        self.client.post(
-            reverse(
-                "submissions:submission_fields",
-                kwargs={"submission_id": self.submission.pk},
-            ),
-            data=data,
-        )
-
-        self.submission.refresh_from_db()
-        field_val = submissions_services.get_fields_values(self.submission).get(
-            field__input_type=submissions_models.Field.INPUT_TYPE_ADDRESS
-        )
-        self.assertEqual(field_val.value, {"val": "Hôtel Martinez, Cannes"})
-
-    def test_fields_step_submit_updates_geotime_with_address_store_geometry_for_address_field(
-        self,
-    ):
-
-        address_field = factories.FieldFactoryTypeAddress(
-            input_type=submissions_models.Field.INPUT_TYPE_ADDRESS,
-            store_geometry_for_address_field=True,
-        )
-        address_field.forms.set(
-            self.submission.forms.all()
-        )
-        form = self.submission.forms.first()
-        data = {
-            f"fields-{form.pk}_{address_field.pk}": "Place pestalozzi 2, 1400 Yverdon-les-Bains"
-        }
-        self.client.post(
-            reverse(
-                "submissions:submission_fields",
-                kwargs={"submission_id": self.submission.pk},
-            ),
-            data=data,
-        )
-
-        self.submission.refresh_from_db()
-        field_val = submissions_services.get_fields_values(self.submission).get(
-            field__input_type=submissions_models.Field.INPUT_TYPE_ADDRESS
-        )
-        self.assertEqual(
-            field_val.value, {"val": "Place pestalozzi 2, 1400 Yverdon-les-Bains"}
-        )
-        geocoded_geotime_row = submissions_models.SubmissionGeoTime.objects.filter(
-            submission=self.submission, comes_from_automatic_geocoding=True
-        ).count()
-        self.assertEqual(1, geocoded_geotime_row)
-
-    def test_fields_step_submit_updates_submission_with_date(self):
-
-        date_field = factories.FieldFactory(
-            input_type=submissions_models.Field.INPUT_TYPE_DATE, name="datum"
-        )
-        today = date.today()
-        form = self.submission.forms.first()
-        date_field.forms.set([form])
-        data = {
-            f"fields-{form.pk}_{date_field.pk}": today.strftime(
-                settings.DATE_INPUT_FORMAT
-            )
-        }
-        self.client.post(
-            reverse(
-                "submissions:submission_fields",
-                kwargs={"submission_id": self.submission.pk},
-            ),
-            data=data,
-        )
-
-        field_val = submissions_services.get_fields_values(self.submission).get(
-            field__name="datum"
-        )
-        self.assertEqual(
-            field_val.value,
-            {"val": today.isoformat()},
-        )
-        self.assertEqual(
-            field_val.field.input_type,
-            submissions_models.Field.INPUT_TYPE_DATE,
-        )
-
-
-class SubmissionPrefillTestCase(LoggedInUserMixin, TestCase):
-    def setUp(self):
-        super().setUp()
-        self.submission = factories.SubmissionFactory(
-            author=self.user
-        )
-        factories.SelectedFormFactory.create_batch(
-            3, submission=self.submission
-        )
-        self.submission.administrative_entity.forms.set(
-            self.submission.forms.all()
-        )
-
-    def test_categories_step_preselects_categories_for_existing_submission(self):
-        response = self.client.get(
-            reverse(
-                "submissions:submission_select_categories",
-                kwargs={"submission_id": self.submission.pk},
-            )
-        )
-        content = response.content.decode()
-
-        for i, form_category_id in enumerate(
-            get_submission_form_categories_ids(self.submission)
-        ):
-            expected = (
-                '<input checked="" class="form-check-input" id="id_forms_{i}" name="forms" title=""'
-                '  type="checkbox" value="{value}"/>'
-            ).format(value=form_category_id, i=i)
-            self.assertInHTML(expected, content)
-
-    def test_forms_step_preselects_forms_for_existing_submission(self):
-        response = self.client.get(
-            reverse(
-                "submissions:submission_select_forms",
-                kwargs={"submission_id": self.submission.pk},
-            )
-        )
-        content = response.content.decode()
-
-        for form in self.submission.forms.all():
-            expected = (
-                '<input checked="" class="form-check-input" id="id_forms-{id}_0"'
-                ' name="forms-{id}" title="" type="checkbox" value="{value}"/>'
-            ).format(id=form.form_category.pk, value=form.pk)
-            self.assertInHTML(expected, content)
-
-    def test_fields_step_prefills_fields_for_existing_submission(self):
-        selected_form = submissions_services.get_selected_forms(
-            self.submission
-        ).first()
-        field = factories.FieldFactory()
-        field.forms.add(selected_form.form)
-        field_value = factories.FieldValueFactory(
-            selected_form=selected_form, field=field
-        )
-        response = self.client.get(
-            reverse(
-                "submissions:submission_fields",
-                kwargs={"submission_id": self.submission.pk},
-            )
-        )
-        content = response.content.decode()
-
-        expected = '<textarea name="fields-{form_id}_{field_id}" cols="40" rows="1" placeholder="ex: {placeholder}" class="textarea form-control" title="{help_text}" id="id_fields-{form_id}_{field_id}">{value}'.format(
-            form_id=selected_form.form.pk,
-            field_id=field.pk,
-            field_name=field.name,
-            value=field_value.value["val"],
-            placeholder=field.placeholder,
-            help_text=field.help_text,
-        )
-
-        expected_help_text = '<small id="hint_id_fields-{form_id}_{field_id}" class="form-text text-muted">{help_text}</small>'.format(
-            help_text=field.help_text,
-            form_id=selected_form.form.pk,
-            field_id=field.pk,
-        )
-
-        self.assertInHTML(expected, content)
-        self.assertInHTML(expected_help_text, content)
-
-    def test_fields_step_shows_title_and_additional_text(self):
-        selected_form = submissions_services.get_selected_forms(
-            self.submission
-        ).first()
-
-        field_title = factories.FieldFactoryTypeTitle()
-        field_title.forms.add(selected_form.form)
-
-        response = self.client.get(
-            reverse(
-                "submissions:submission_fields",
-                kwargs={"submission_id": self.submission.pk},
-            )
-        )
-        content = response.content.decode()
-        expected = "<h5 class='fieldTitle'>{field_name}</h5>".format(
-            field_name=field_title.name,
-        )
-
-        expected_help_text = "<small>{help_text}</small>".format(
-            help_text=field_title.help_text
-        )
-
-        self.assertInHTML(expected, content)
-        self.assertInHTML(expected_help_text, content)
-
-    def test_fields_step_order_fields_for_existing_submission(self):
-
-        selected_form = submissions_services.get_selected_forms(
-            self.submission
-        ).first()
-
-        field_1 = factories.FieldFactory(order=10, name=str(uuid.uuid4()))
-        field_2 = factories.FieldFactory(order=2, name=str(uuid.uuid4()))
-        field_1.forms.add(selected_form.form)
-        field_2.forms.add(selected_form.form)
-
-        response = self.client.get(
-            reverse(
-                "submissions:submission_fields",
-                kwargs={"submission_id": self.submission.pk},
-            )
-        )
-        content = response.content.decode()
-        position_1 = content.find(field_1.name)
-        position_2 = content.find(field_2.name)
-        self.assertGreater(position_1, position_2)
-
-    def test_fields_step_shows_downloadable_file(self):
-        selected_form = submissions_services.get_selected_forms(
-            self.submission
-        ).first()
-
-        field_file = factories.FieldFactoryTypeFileDownload()
-        field_file.forms.add(selected_form.form)
-
-        response = self.client.get(
-            reverse(
-                "submissions:submission_fields",
-                kwargs={"submission_id": self.submission.pk},
-            )
-        )
-
-        expected_href = rf"/submissions/form-files/{field_file.file_download.name}"
-        parser = get_parser(response.content)
-        file_links = parser.find_all("a", href=re.compile(expected_href))
-        self.assertEqual(1, len(file_links))
-        self.assertIn(expected_href, response.content.decode())
-
-    def test_fields_step_shows_downloadable_files_more_than_once(self):
-        selected_forms = submissions_services.get_selected_forms(
-            self.submission
-        )
-        selected_form_first = selected_forms.first()
-        selected_form_last = selected_forms.last()
-
-        field_file = factories.FieldFactoryTypeFileDownload()
-        field_file.forms.add(
-            selected_form_first.form
-        )
-        field_file.forms.add(
-            selected_form_last.form
-        )
-
-        response = self.client.get(
-            reverse(
-                "submissions:submission_fields",
-                kwargs={"submission_id": self.submission.pk},
-            )
-        )
-
-        expected_href = rf"/submissions/form-files/{field_file.file_download.name}"
-        parser = get_parser(response.content)
-        file_links = parser.find_all("a", href=re.compile(expected_href))
-
-        self.assertEqual(2, len(file_links))
-        self.assertIn(expected_href, response.content.decode())
-
-
-class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
-    def test_non_secretariat_user_cannot_amend_request(self):
-        user = factories.UserFactory()
-        self.client.login(username=user.username, password="password")
-
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION,
-            administrative_entity=self.administrative_entity,
-            author=user,
-        )
-        response = self.client.post(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            ),
-            data={
-                "status": submissions_models.Submission.STATUS_PROCESSING,
-                "action": submissions_models.ACTION_AMEND,
-            },
-        )
-
-        submission.refresh_from_db()
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            submission.status, submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION
-        )
-
-    def test_secretariat_can_amend_request_with_custom_field_and_delete_field_value(
-        self,
-    ):
-        fields_quantity = 3
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_PROCESSING,
-            administrative_entity=self.administrative_entity,
-        )
-        selected_form = factories.SelectedFormFactory(
-            submission=submission
-        )
-
-        amend_fields = factories.SubmissionAmendFieldFactory.create_batch(fields_quantity)
-
-        data = {
-            "action": submissions_models.ACTION_AMEND,
-            "status": submissions_models.Submission.STATUS_PROCESSING,
-        }
-
-        forms_pk = submission.forms.first().pk
-        for amend_field in amend_fields:
-            amend_field.forms.set(submission.forms.all())
-            factories.SubmissionAmendFieldValueFactory(
-                field=amend_field,
-                selected_form=selected_form,
-            )
-            data[
-                f"{forms_pk}_{amend_field.pk}"
-            ] = "I am a new field value, I am alive!"
-
-        # The delete latter field value by setting it to an empty string
-        data[f"{forms_pk}_{amend_fields[-1].pk}"] = ""
-
-        self.client.post(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            ),
-            data=data,
-        )
-
-        new_fields_values_qs = (
-            submissions_models.SubmissionAmendFieldValue.objects.values_list(
-                "value", flat=True
-            )
-        )
-        self.assertEqual(len(new_fields_values_qs), fields_quantity - 1)
-        self.assertIn(
-            "I am a new field value, I am alive!",
-            new_fields_values_qs,
-        )
-
-    def test_secretariat_cannot_amend_submission_fields_if_can_always_be_updated(
-        self,
-    ):
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_APPROVED,
-            administrative_entity=self.administrative_entity,
-        )
-        form = factories.FormFactory()
-        submission.forms.set([form])
-        test_shortname_value = "my submission shortname"
-        response = self.client.get(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            ),
-            data={
-                f"shortname": test_shortname_value,
-                "action": submissions_models.ACTION_AMEND,
-                "status": submissions_models.Submission.STATUS_PROCESSING,
-            },
-        )
-
-        parser = get_parser(response.content)
-        element = "disabled" in str(parser.select('input[id="id_shortname"]'))
-        self.assertTrue(element)
-
-    def test_secretariat_can_amend_submission_fields_if_it_can_always_be_updated(
-        self,
-    ):
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_APPROVED,
-            administrative_entity=self.administrative_entity,
-        )
-        form = factories.FormFactory(can_always_update=True)
-        submission.forms.set([form])
-        test_shortname_value = "my submission shortname"
-        response = self.client.get(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            ),
-            data={
-                f"shortname": test_shortname_value,
-                "action": submissions_models.ACTION_AMEND,
-                "status": submissions_models.Submission.STATUS_PROCESSING,
-            },
-        )
-
-        parser = get_parser(response.content)
-        element = "disabled" in str(parser.select('input[id="id_shortname"]'))
-        self.assertTrue(element)
-
-    def test_author_cannot_see_private_secretariat_amend_field(
-        self,
-    ):
-
-        fields_quantity = 3
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_PROCESSING,
-            administrative_entity=self.administrative_entity,
-        )
-        selected_form = factories.SelectedFormFactory(
-            submission=submission
-        )
-
-        fields_public = factories.SubmissionAmendFieldFactory.create_batch(
-            fields_quantity, is_visible_by_author=True
-        )
-        fields_private = factories.SubmissionAmendFieldFactory.create_batch(
-            fields_quantity, is_visible_by_author=False
-        )
-        fields_private_validators = (
-            factories.SubmissionAmendFieldFactory.create_batch(
-                fields_quantity,
-                is_visible_by_author=False,
-                is_visible_by_validators=True,
-            )
-        )
-
-        fields = fields_public + fields_private + fields_private_validators
-
-        self.client.login(
-            username=submission.author.username, password="password"
-        )
-        data = {
-            "action": submissions_models.ACTION_AMEND,
-            "status": submissions_models.Submission.STATUS_PROCESSING,
-        }
-        forms_pk = submission.forms.first().pk
-        for field in fields:
-            field.forms.set(submission.forms.all())
-            factories.SubmissionAmendFieldValueFactory(
-                field=field,
-                selected_form=selected_form,
-            )
-            data[
-                f"{forms_pk}_{field.pk}"
-            ] = "I am a new field value, I am alive!"
-
-        response = self.client.get(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            ),
-        )
-
-        parser = get_parser(response.content)
-        # check that the 3 fields are visible by author and 6 (3 private + 3 for validators) are hidden
-        self.assertEqual(len(parser.select(".amend-field")), 3)
-
-    def test_secretariat_can_see_submitted_requests(self):
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION,
-            administrative_entity=self.administrative_entity,
-        )
-        factories.SubmissionGeoTimeFactory(submission=submission)
-        response = self.client.get(reverse("submissions:submissions_list"))
-
-        self.assertEqual(list(response.context["submission_list"]), [submission])
-
-    def test_ask_for_supplements_shows_specific_message(self):
-        form_1 = factories.FormFactory()
-        form_2 = factories.FormFactory()
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION,
-            administrative_entity=self.administrative_entity,
-        )
-        submission.forms.set([form_1, form_2])
-        factories.SubmissionGeoTimeFactory(submission=submission)
-        response = self.client.post(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            ),
-            data={
-                "status": submissions_models.Submission.STATUS_AWAITING_SUPPLEMENT,
-                "action": submissions_models.ACTION_AMEND,
-                "notify_author": "on",
-                "reason": "reason",
-            },
-            follow=True,
-        )
-        submission.refresh_from_db()
-        self.assertEqual(
-            submission.status, submissions_models.Submission.STATUS_AWAITING_SUPPLEMENT
-        )
-        self.assertContains(response, "compléments")
-
-    def test_secretariat_cannot_amend_submission_with_validation_requested(self):
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_AWAITING_VALIDATION,
-            administrative_entity=self.administrative_entity,
-        )
-        response = self.client.post(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            ),
-            data={
-                "status": submissions_models.Submission.STATUS_AWAITING_SUPPLEMENT,
-                "action": submissions_models.ACTION_AMEND,
-            },
-        )
-
-        self.assertEqual(response.status_code, 400)
-
-    def test_secretariat_can_see_directives(self):
-        first_form = factories.FormFactory(
-            directive=SimpleUploadedFile("file.pdf", "contents".encode()),
-            directive_description="First directive description for a test",
-            additional_information="First additional information for a test",
-        )
-        second_form = factories.FormFactory(
-            directive=SimpleUploadedFile("file.pdf", "contents".encode()),
-            directive_description="Second directive description for a test",
-            additional_information="Second additional information for a test",
-        )
-
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_AWAITING_VALIDATION,
-            administrative_entity=self.administrative_entity,
-        )
-
-        submission.forms.set(
-            [first_form, second_form]
-        )
-
-        response = self.client.get(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            )
-        )
-
-        parser = get_parser(response.content)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            len(parser.select(".tab-pane#directives span.directive_description")),
-            2,
-        )
-
-    def test_secretariat_cannot_see_directives_if_not_configured(
-        self,
-    ):
-        forms = factories.FormFactory.create_batch(2)
-
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_AWAITING_VALIDATION,
-            administrative_entity=self.administrative_entity,
-        )
-
-        submission.forms.set(forms)
-
-        response = self.client.get(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            )
-        )
-
-        parser = get_parser(response.content)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            len(parser.select(".tab-pane#directives span.directive_description")),
-            0,
-        )
-
-    def test_email_to_author_is_sent_when_secretariat_acknowledges_reception(self):
-        user = factories.UserFactory(email="user@geocity.com")
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION,
-            administrative_entity=self.administrative_entity,
-            author=user,
-        )
-        form_category = factories.FormCategoryFactory(name="Foo category")
-        form = factories.FormFactory(
-            form_category=form_category,
-        )
-        submission.forms.set([form])
-        factories.SubmissionGeoTimeFactory(submission=submission)
-        response = self.client.post(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            ),
-            data={
-                "status": submissions_models.Submission.STATUS_RECEIVED,
-                "action": submissions_models.ACTION_AMEND,
-            },
-            follow=True,
-        )
-
-        submission.refresh_from_db()
-        self.assertEqual(submission.status, submissions_models.Submission.STATUS_RECEIVED)
-        self.assertContains(response, "compléments")
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
-        self.assertEqual(
-            mail.outbox[0].subject,
-            "Votre annonce a été prise en compte et classée (Foo category)",
-        )
-        self.assertIn(
-            "Nous vous informons que votre annonce a été prise en compte et classée.",
-            mail.outbox[0].message().as_string(),
-        )
-
-    def test_email_to_services_is_sent_when_secretariat_acknowledges_reception(self):
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION,
-            administrative_entity=self.administrative_entity,
-        )
-        form = factories.FormFactory(
-            requires_validation_document=False,
-            notify_services=True,
-            services_to_notify="service-1@geocity.ch, service-2@geocity.ch, i-am-not-an-email,  ,\n\n\n",
-        )
-        submission.forms.set([form])
-        factories.SubmissionGeoTimeFactory(submission=submission)
-
-        self.client.post(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            ),
-            data={
-                "status": submissions_models.Submission.STATUS_RECEIVED,
-                "action": submissions_models.ACTION_AMEND,
-            },
-            follow=True,
-        )
-
-        submission.refresh_from_db()
-        self.assertEqual(submission.status, submissions_models.Submission.STATUS_RECEIVED)
-
-        # 1 email to author + 2 emails to services
-        self.assertEqual(len(mail.outbox), 3)
-
-        services_message_subject = (
-            "Une annonce a été prise en compte et classée par le secrétariat"
-        )
-        services_message_content = "Nous vous informons qu'une annonce a été prise en compte et classée par le secrétariat."
-        valid_services_emails = [
-            "service-1@geocity.ch",
-            "service-2@geocity.ch",
-        ]
-
-        self.assertTrue(mail.outbox[1].to[0] in valid_services_emails)
-        self.assertIn(
-            services_message_subject,
-            mail.outbox[1].subject,
-        )
-        self.assertIn(services_message_content, mail.outbox[1].message().as_string())
-        self.assertTrue(mail.outbox[2].to[0] in valid_services_emails)
-        self.assertIn(
-            services_message_subject,
-            mail.outbox[2].subject,
-        )
-        self.assertIn(services_message_content, mail.outbox[2].message().as_string())
-
-    def test_secretariat_can_amend_submission_with_status_approved_if_field_is_always_amendable(
-        self,
-    ):
-        fields_quantity = 3
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_APPROVED,
-            administrative_entity=self.administrative_entity,
-        )
-
-        form = factories.FormFactory()
-        form.administrative_entities.set([submission.administrative_entity])
-
-        selected_form = factories.SelectedFormFactory(
-            submission=submission, form=form
-        )
-
-        fields = factories.SubmissionAmendFieldFactory.create_batch(
-            fields_quantity, can_always_update=True
-        )
-
-        data = {
-            "action": submissions_models.ACTION_AMEND,
-            "status": submissions_models.Submission.STATUS_APPROVED,
-        }
-
-        forms_pk = submission.forms.first().pk
-
-        for field in fields:
-            field.forms.set(submission.forms.all())
-            factories.SubmissionAmendFieldValueFactory(
-                field=field,
-                selected_form=selected_form,
-            )
-            data[
-                f"{forms_pk}_{field.pk}"
-            ] = "I am a new field value, I am alive!"
-
-        response = self.client.post(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            ),
-            data=data,
-            follow=True,
-        )
-
-        new_fields_values_qs = (
-            submissions_models.SubmissionAmendFieldValue.objects.values_list(
-                "value", flat=True
-            )
-        )
-
-        self.assertIn(
-            "I am a new field value, I am alive!",
-            new_fields_values_qs,
-        )
-
-        self.assertEqual(response.status_code, 200)
-
-    def test_amend_field_are_editable_in_status_approved_if_field_is_always_amendable(
-        self,
-    ):
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_APPROVED,
-            administrative_entity=self.administrative_entity,
-        )
-
-        form = factories.FormFactory()
-        form.administrative_entities.set([submission.administrative_entity])
-
-        selected_form = factories.SelectedFormFactory(
-            submission=submission, form=form
-        )
-
-        field_editable = factories.SubmissionAmendFieldFactory(
-            name="Editable_field", can_always_update=True
-        )
-
-        field_not_editable = factories.SubmissionAmendFieldFactory(
-            name="Not_editable_field", can_always_update=False
-        )
-
-        fields = [field_editable, field_not_editable]
-
-        data = {
-            "action": submissions_models.ACTION_AMEND,
-            "status": submissions_models.Submission.STATUS_APPROVED,
-        }
-
-        forms_pk = submission.forms.first().pk
-
-        for field in fields:
-            field.forms.set(submission.forms.all())
-            factories.SubmissionAmendFieldValueFactory(
-                field=field,
-                selected_form=selected_form,
-                value=field.name,
-            )
-            if field.name == "Editable_field":
-                data[f"{forms_pk}_{field.pk}"] = "I have been edited!"
-
-        response = self.client.get(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            ),
-        )
-
-        parser = get_parser(response.content)
-
-        self.assertEqual(response.status_code, 200)
-
-        self.assertEqual(
-            len(parser.select("#amend .form-group textarea")),
-            3,
-        )
-
-        self.assertEqual(
-            len(parser.select("#amend .form-group textarea[disabled]")),
-            2,
-        )
-
-        # Send form edit
-        response2 = self.client.post(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            ),
-            data=data,
-            follow=True,
-        )
-
-        new_fields_values_qs = (
-            submissions_models.SubmissionAmendFieldValue.objects.values_list(
-                "value", flat=True
-            )
-        )
-
-        self.assertIn(
-            "I have been edited!",
-            new_fields_values_qs,
-        )
-        self.assertEqual(response2.status_code, 200)
-
-    def test_email_to_author_is_sent_when_secretariat_checks_notify(self):
-        user = factories.UserFactory(email="user@geocity.com")
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION,
-            administrative_entity=self.administrative_entity,
-            author=user,
-        )
-        form_category = factories.FormCategoryFactory(name="Foo category")
-        form = factories.FormFactory(
-            form_category=form_category,
-        )
-        submission.forms.set([form])
-        factories.SubmissionGeoTimeFactory(submission=submission)
-        response = self.client.post(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            ),
-            data={
-                "status": submissions_models.Submission.STATUS_AWAITING_SUPPLEMENT,
-                "notify_author": "1",
-                "reason": "Testing email sending",
-                "action": submissions_models.ACTION_AMEND,
-            },
-            follow=True,
-        )
-
-        submission.refresh_from_db()
-        self.assertEqual(
-            submission.status, submissions_models.Submission.STATUS_AWAITING_SUPPLEMENT
-        )
-        self.assertContains(response, "compléments")
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
-        self.assertEqual(
-            mail.outbox[0].subject,
-            f"Votre demande a changé de statut (Foo category)",
-        )
-        self.assertIn(
-            "Nous vous informons que votre demande a changé de statut.",
-            mail.outbox[0].message().as_string(),
-        )
-        self.assertIn(
-            "Nouveau statut: Demande de compléments",
-            mail.outbox[0].message().as_string(),
-        )
-        self.assertIn(
-            "Raison du changement:",
-            mail.outbox[0].message().as_string(),
-        )
-
-    def test_awaiting_supplement_requires_to_notify_author(
-        self,
-    ):
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_PROCESSING,
-            administrative_entity=self.administrative_entity,
-        )
-        response = self.client.post(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            ),
-            data={
-                "status": submissions_models.Submission.STATUS_AWAITING_SUPPLEMENT,
-                "action": submissions_models.ACTION_AMEND,
-            },
-            follow=True,
-        )
-        submission.refresh_from_db()
-
-        self.assertEqual(submission.status, submissions_models.Submission.STATUS_PROCESSING)
-        self.assertEqual(
-            response.context[0]["forms"]["amend"].errors["notify_author"],
-            ["Vous devez notifier l'auteur pour une demande de compléments"],
-        )
-
-
 class AdministrativeEntitySecretaryEmailTestcase(TestCase):
     def setUp(self):
         self.user = factories.UserFactory(email="user@geocity.com")
-        self.administrative_entity_expeditor = (
-            factories.AdministrativeEntityFactory(
-                expeditor_email="geocity_rocks@geocity.ch",
-                expeditor_name="Geocity Rocks",
-            )
+        self.administrative_entity_expeditor = factories.AdministrativeEntityFactory(
+            expeditor_email="geocity_rocks@geocity.ch",
+            expeditor_name="Geocity Rocks",
         )
         self.group = factories.SecretariatGroupFactory(
             department__administrative_entity=self.administrative_entity_expeditor
@@ -3553,954 +2401,6 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         )
 
 
-class SubmissionValidationRequestTestcase(LoggedInSecretariatMixin, TestCase):
-    def test_secretariat_can_request_validation(self):
-        validator_groups = factories.ValidatorGroupFactory.create_batch(
-            2, department__administrative_entity=self.administrative_entity
-        )
-        validator_departments = [
-            group.permitdepartment.pk for group in validator_groups
-        ]
-
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION,
-            administrative_entity=self.administrative_entity,
-        )
-        self.client.post(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            ),
-            data={
-                "departments": validator_departments,
-                "action": submissions_models.ACTION_REQUEST_VALIDATION,
-            },
-        )
-
-        submission.refresh_from_db()
-
-        self.assertEqual(
-            submission.status, submissions_models.Submission.STATUS_AWAITING_VALIDATION
-        )
-        self.assertEqual(
-            list(submission.validations.values_list("department", flat=True)),
-            validator_departments,
-        )
-
-    def test_secretariat_cannot_request_validation_for_already_validated_submission(
-        self,
-    ):
-        validator_group = factories.ValidatorGroupFactory(
-            department__administrative_entity=self.administrative_entity
-        )
-
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_AWAITING_VALIDATION,
-            administrative_entity=self.administrative_entity,
-        )
-        response = self.client.post(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            ),
-            data={
-                "departments": [validator_group.permitdepartment.pk],
-                "action": submissions_models.ACTION_REQUEST_VALIDATION,
-            },
-        )
-
-        self.assertEqual(response.status_code, 400)
-
-    def test_default_departments_are_checked(self):
-        default_validator_groups = factories.ValidatorGroupFactory.create_batch(
-            2,
-            department__administrative_entity=self.administrative_entity,
-            department__is_default_validator=True,
-        )
-        non_default_validator_group = factories.ValidatorGroupFactory(
-            department__administrative_entity=self.administrative_entity
-        )
-
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_PROCESSING,
-            administrative_entity=self.administrative_entity,
-        )
-
-        response = self.client.get(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            ),
-        )
-
-        parser = get_parser(response.content)
-        inputs = {
-            int(input_["value"]): input_.get("checked") is not None
-            for input_ in parser.select('input[name="departments"]')
-        }
-
-        self.assertDictEqual(
-            inputs,
-            {
-                **{group.pk: True for group in default_validator_groups},
-                **{non_default_validator_group.pk: False},
-            },
-        )
-
-    def test_validation_request_sends_mail_to_selected_validators(self):
-        validator_groups = factories.ValidatorGroupFactory.create_batch(
-            2, department__administrative_entity=self.administrative_entity
-        )
-        validator_user = factories.ValidatorUserFactory(
-            groups=[validator_groups[0]], email="validator@geocity.ch"
-        )
-        factories.ValidatorUserFactory(groups=[validator_groups[1]])
-
-        submission = factories.SubmissionFactory(
-            status=submissions_models.Submission.STATUS_SUBMITTED_FOR_VALIDATION,
-            administrative_entity=self.administrative_entity,
-        )
-        self.client.post(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            ),
-            data={
-                "departments": [validator_groups[0].permitdepartment.pk],
-                "action": submissions_models.ACTION_REQUEST_VALIDATION,
-            },
-        )
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, [validator_user.user.email])
-
-
-class SubmissionValidationTestcase(TestCase):
-    def test_validator_can_see_assigned_submissions(self):
-        validation = factories.SubmissionValidationFactory()
-        validator = factories.ValidatorUserFactory(
-            groups=[validation.department.group, factories.ValidatorGroupFactory()]
-        )
-        factories.SubmissionGeoTimeFactory(submission=validation.submission)
-
-        self.client.login(username=validator.username, password="password")
-
-        response = self.client.get(reverse("submissions:submissions_list"))
-
-        self.assertEqual(
-            list(response.context["submission_list"]), [validation.submission]
-        )
-
-    def test_validator_can_validate_assigned_submissions(self):
-        validation = factories.SubmissionValidationFactory()
-        validator = factories.ValidatorUserFactory(
-            groups=[validation.department.group, factories.ValidatorGroupFactory()]
-        )
-
-        self.client.login(username=validator.username, password="password")
-
-        self.client.post(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": validation.submission.pk},
-            ),
-            data={
-                "action": submissions_models.ACTION_VALIDATE,
-                "validation_status": submissions_models.SubmissionValidation.STATUS_APPROVED,
-            },
-        )
-
-        validation.refresh_from_db()
-
-        self.assertEqual(
-            validation.validation_status, submissions_models.SubmissionValidation.STATUS_APPROVED
-        )
-
-    def test_validator_cannot_validate_non_assigned_submissions(self):
-        validation = factories.SubmissionValidationFactory()
-        factories.ValidatorUserFactory(
-            groups=[validation.department.group, factories.ValidatorGroupFactory()]
-        )
-        validator = factories.ValidatorUserFactory()
-
-        self.client.login(username=validator.username, password="password")
-
-        response = self.client.post(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": validation.submission.pk},
-            ),
-            data={
-                "action": submissions_models.ACTION_VALIDATE,
-                "validation_status": submissions_models.SubmissionValidation.STATUS_APPROVED,
-            },
-        )
-
-        self.assertEqual(response.status_code, 404)
-
-    def test_validator_can_see_for_validators_amend_field(
-        self,
-    ):
-        validation = factories.SubmissionValidationFactory()
-        validator = factories.ValidatorUserFactory(
-            groups=[validation.department.group, factories.ValidatorGroupFactory()]
-        )
-        submission = validation.submission
-        factories.SubmissionGeoTimeFactory(submission=submission)
-
-        self.client.login(username=validator.username, password="password")
-
-        fields_quantity = 3
-        selected_form = factories.SelectedFormFactory(
-            submission=submission
-        )
-        fields_private = factories.SubmissionAmendFieldFactory.create_batch(
-            fields_quantity, is_visible_by_author=False, is_visible_by_validators=False
-        )
-        fields_private_validators = (
-            factories.SubmissionAmendFieldFactory.create_batch(
-                fields_quantity,
-                is_visible_by_author=False,
-                is_visible_by_validators=True,
-            )
-        )
-
-        fields = fields_private + fields_private_validators
-
-        data = {
-            "action": submissions_models.ACTION_AMEND,
-            "status": submissions_models.Submission.STATUS_PROCESSING,
-        }
-        forms_pk = submission.forms.first().pk
-        for field in fields:
-            field.forms.set(submission.forms.all())
-            factories.SubmissionAmendFieldValueFactory(
-                field=field,
-                selected_form=selected_form,
-            )
-            data[
-                f"{forms_pk}_{field.pk}"
-            ] = "I am a new field value, I am alive!"
-
-        response = self.client.get(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": submission.pk},
-            ),
-        )
-
-        parser = get_parser(response.content)
-        # check that the 3 fields are visible by validator and 3 are hidden
-        self.assertEqual(len(parser.select(".amend-field")), 3)
-
-    def test_secretariat_can_send_validation_reminders(self):
-        group = factories.SecretariatGroupFactory()
-        administrative_entity = group.permitdepartment.administrative_entity
-        secretariat = factories.SecretariatUserFactory(groups=[group])
-
-        validation = factories.SubmissionValidationFactory(
-            submission__administrative_entity=administrative_entity
-        )
-        validator = factories.ValidatorUserFactory(
-            groups=[validation.department.group, factories.ValidatorGroupFactory()],
-            email="validator@geocity.ch",
-        )
-
-        self.client.login(username=secretariat.username, password="password")
-
-        self.client.post(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": validation.submission.pk},
-            ),
-            data={
-                "action": submissions_models.ACTION_POKE,
-            },
-        )
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, [validator.user.email])
-
-    def test_secretary_email_is_sent_when_submission_is_validated(self):
-        validation = factories.SubmissionValidationFactory()
-        secretary_group = factories.GroupFactory(name="Secrétariat")
-        department = factories.PermitDepartmentFactory(
-            group=secretary_group, is_backoffice=True
-        )
-        factories.SecretariatUserFactory(
-            groups=[secretary_group], email="secretary@geocity.ch"
-        )
-        validation.submission.administrative_entity.departments.set([department])
-        form_category = factories.FormCategoryFactory(name="Foo category")
-        form = factories.FormFactory(
-            form_category=form_category,
-        )
-        validation.submission.forms.set([form])
-
-        validator = factories.ValidatorUserFactory(
-            groups=[validation.department.group, factories.ValidatorGroupFactory()],
-        )
-
-        self.client.login(username=validator.username, password="password")
-
-        self.client.post(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": validation.submission.pk},
-            ),
-            data={
-                "action": submissions_models.ACTION_VALIDATE,
-                "validation_status": submissions_models.SubmissionValidation.STATUS_APPROVED,
-            },
-        )
-
-        validation.refresh_from_db()
-
-        self.assertEqual(
-            validation.validation_status, submissions_models.SubmissionValidation.STATUS_APPROVED
-        )
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, ["secretary@geocity.ch"])
-        self.assertEqual(
-            mail.outbox[0].subject,
-            "Les services chargés de la validation d'une demande ont donné leur préavis (Foo category)",
-        )
-        self.assertIn(
-            "Les services chargés de la validation d'une demande ont donné leur préavis",
-            mail.outbox[0].message().as_string(),
-        )
-
-
-class SubmissionClassifyTestCase(TestCase):
-    def setUp(self):
-        self.secretariat_group = factories.SecretariatGroupFactory()
-        self.administrative_entity = (
-            self.secretariat_group.permitdepartment.administrative_entity
-        )
-        self.administrative_entity.custom_signature = "a custom signature for email"
-        self.administrative_entity.save()
-        self.secretariat_user = factories.SecretariatUserFactory(
-            groups=[self.secretariat_group]
-        )
-
-        validation = factories.SubmissionValidationFactory(
-            submission__administrative_entity=self.administrative_entity
-        )
-        self.validator_user = factories.ValidatorUserFactory(
-            groups=[validation.department.group, factories.ValidatorGroupFactory()]
-        )
-
-    def test_secretariat_can_approve_submission_and_email_to_author_is_sent(self):
-
-        validation = factories.SubmissionValidationFactory(
-            submission__administrative_entity=self.administrative_entity,
-            submission__status=submissions_models.Submission.STATUS_PROCESSING,
-            validation_status=submissions_models.SubmissionValidation.STATUS_APPROVED,
-            submission__author__user__email="user@geocity.com",
-        )
-        form_category = factories.FormCategoryFactory(name="Foo category")
-        form = factories.FormFactory(
-            form_category=form_category,
-        )
-        validation.submission.forms.set([form])
-
-        self.client.login(username=self.secretariat_user.username, password="password")
-        factories.SubmissionGeoTimeFactory(submission=validation.submission)
-        response = self.client.post(
-            reverse(
-                "submissions:submission_approve",
-                kwargs={"submission_id": validation.submission.pk},
-            ),
-            data={
-                "validation_pdf": SimpleUploadedFile("file.pdf", "contents".encode())
-            },
-        )
-
-        self.assertRedirects(
-            response,
-            reverse("submissions:submissions_list"),
-            fetch_redirect_response=False,
-        )
-        validation.submission.refresh_from_db()
-        self.assertEqual(
-            validation.submission.status, submissions_models.Submission.STATUS_APPROVED
-        )
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
-        self.assertEqual(
-            mail.outbox[0].subject,
-            "Votre demande a été traitée et classée (Foo category)",
-        )
-        self.assertIn(
-            "Nous vous informons que votre demande a été traitée et classée.",
-            mail.outbox[0].message().as_string(),
-        )
-        self.assertIn(
-            "a custom signature for email",
-            mail.outbox[0].message().as_string(),
-        )
-
-    def test_secretariat_can_reject_submission_and_email_to_author_is_sent(self):
-
-        validation = factories.SubmissionValidationFactory(
-            submission__administrative_entity=self.administrative_entity,
-            submission__status=submissions_models.Submission.STATUS_PROCESSING,
-            validation_status=submissions_models.SubmissionValidation.STATUS_REJECTED,
-            submission__author__user__email="user@geocity.com",
-        )
-        form_category = factories.FormCategoryFactory(name="Foo category")
-        form = factories.FormFactory(
-            form_category=form_category,
-        )
-        validation.submission.forms.set([form])
-
-        self.client.login(username=self.secretariat_user.username, password="password")
-        factories.SubmissionGeoTimeFactory(submission=validation.submission)
-        response = self.client.post(
-            reverse(
-                "submissions:submission_reject",
-                kwargs={"submission_id": validation.submission.pk},
-            ),
-            data={
-                "validation_pdf": SimpleUploadedFile("file.pdf", "contents".encode()),
-            },
-        )
-
-        self.assertRedirects(
-            response,
-            reverse("submissions:submissions_list"),
-            fetch_redirect_response=False,
-        )
-        validation.submission.refresh_from_db()
-        self.assertEqual(
-            validation.submission.status, submissions_models.Submission.STATUS_REJECTED
-        )
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
-        self.assertEqual(
-            mail.outbox[0].subject,
-            "Votre demande a été traitée et classée (Foo category)",
-        )
-        self.assertIn(
-            "Nous vous informons que votre demande a été traitée et classée.",
-            mail.outbox[0].message().as_string(),
-        )
-        self.assertIn(
-            "a custom signature for email",
-            mail.outbox[0].message().as_string(),
-        )
-
-    def test_secretariat_cannot_classify_submission_with_pending_validations(self):
-
-        validation = factories.SubmissionValidationFactory(
-            submission__administrative_entity=self.administrative_entity
-        )
-
-        self.client.login(username=self.secretariat_user.username, password="password")
-        response = self.client.post(
-            reverse(
-                "submissions:submission_approve",
-                kwargs={"submission_id": validation.submission.pk},
-            ),
-            data={"validation_pdf": SimpleUploadedFile("file.pdf", "")},
-        )
-
-        self.assertEqual(response.status_code, 404)
-
-    def test_secretariat_does_not_see_classify_form_when_pending_validations(self):
-        validation = factories.SubmissionValidationFactory(
-            submission__administrative_entity=self.administrative_entity
-        )
-
-        self.client.login(username=self.secretariat_user.username, password="password")
-        response = self.client.get(
-            reverse(
-                "submissions:submission_detail",
-                kwargs={"submission_id": validation.submission.pk},
-            )
-        )
-
-        self.assertNotContains(
-            response,
-            reverse(
-                "submissions:submission_approve",
-                kwargs={"submission_id": validation.submission.pk},
-            ),
-        )
-
-    def test_user_without_permission_cannot_classify_submission(self):
-        validation = factories.SubmissionValidationFactory(
-            submission__administrative_entity=self.administrative_entity,
-            validation_status=submissions_models.SubmissionValidation.STATUS_APPROVED,
-        )
-        user = factories.UserFactory(actor=validation.submission.author)
-        self.client.login(username=user.username, password="password")
-
-        approve_url = reverse(
-            "submissions:submission_approve",
-            kwargs={"submission_id": validation.submission.pk},
-        )
-
-        response = self.client.post(
-            approve_url, data={"validation_pdf": SimpleUploadedFile("file.pdf", "")}
-        )
-
-        self.assertRedirects(
-            response, "%s?next=%s" % (reverse(settings.LOGIN_URL), approve_url)
-        )
-
-    def test_submission_validation_file_accessible_to_submission_author(self):
-        author_user = factories.UserFactory()
-        submission = factories.SubmissionFactory(
-            validated_at=timezone.now(),
-            status=submissions_models.Submission.STATUS_APPROVED,
-            author=author_user,
-        )
-        # This cannot be performed in the factory because we need the submission to have an id to upload a file
-        submission.validation_pdf = SimpleUploadedFile("file.pdf", b"contents")
-        submission.save()
-
-        self.client.login(username=author_user, password="password")
-        response = self.client.get(submission.validation_pdf.url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(b"".join(response.streaming_content), b"contents")
-
-    def test_submission_validation_file_not_accessible_to_other_users(self):
-        non_author_user = factories.UserFactory()
-        submission = factories.SubmissionFactory(
-            validated_at=timezone.now(), status=submissions_models.Submission.STATUS_APPROVED
-        )
-        # This cannot be performed in the factory because we need the submission to have an id to upload a file
-        submission.validation_pdf = SimpleUploadedFile("file.pdf", b"contents")
-        submission.save()
-
-        self.client.login(username=non_author_user, password="password")
-        response = self.client.get(submission.validation_pdf.url)
-        self.assertEqual(response.status_code, 404)
-
-    def test_classify_sets_validation_date(self):
-        validation = factories.SubmissionValidationFactory(
-            submission__administrative_entity=self.administrative_entity,
-            submission__status=submissions_models.Submission.STATUS_PROCESSING,
-            validation_status=submissions_models.SubmissionValidation.STATUS_APPROVED,
-        )
-
-        self.client.login(username=self.secretariat_user.username, password="password")
-        self.client.post(
-            reverse(
-                "submissions:submission_approve",
-                kwargs={"submission_id": validation.submission.pk},
-            ),
-            data={"validation_pdf": SimpleUploadedFile("file.pdf", b"contents")},
-        )
-
-        validation.submission.refresh_from_db()
-        self.assertIsNotNone(validation.submission.validated_at)
-
-    def test_email_to_services_is_sent_when_secretariat_classifies_submission(self):
-        form_category_1 = factories.FormCategoryFactory(name="Foo category")
-        form_category_2 = factories.FormCategoryFactory(name="Bar category")
-        form = factories.FormFactory(
-            requires_validation_document=False,
-            notify_services=True,
-            services_to_notify="test-send-1@geocity.ch, test-send-2@geocity.ch, test-i-am-not-an-email,  ,\n\n\n",
-            form_category=form_category_1,
-        )
-        form2 = factories.FormFactory(
-            requires_validation_document=False,
-            notify_services=True,
-            services_to_notify="not-repeated-email@liip.ch, test-send-1@geocity.ch, \n, test-send-2@geocity.ch, test-i-am-not-an-email,  ,",
-            form_category=form_category_2,
-        )
-        validation = factories.SubmissionValidationFactory(
-            submission__administrative_entity=self.administrative_entity,
-            submission__status=submissions_models.Submission.STATUS_PROCESSING,
-            validation_status=submissions_models.SubmissionValidation.STATUS_APPROVED,
-            submission__author__user__email="user@geocity.com",
-        )
-        validation.submission.forms.set([form, form2])
-        factories.SubmissionGeoTimeFactory(submission=validation.submission)
-
-        self.client.login(username=self.secretariat_user.username, password="password")
-        response = self.client.post(
-            reverse(
-                "submissions:submission_approve",
-                kwargs={"submission_id": validation.submission.pk},
-            ),
-        )
-
-        self.assertRedirects(
-            response,
-            reverse("submissions:submissions_list"),
-            fetch_redirect_response=False,
-        )
-        validation.submission.refresh_from_db()
-        self.assertEqual(
-            validation.submission.status, submissions_models.Submission.STATUS_APPROVED
-        )
-        # Only valid emails are sent, not repeated emails.
-        self.assertEqual(len(mail.outbox), 4)
-        self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
-
-        self.assertIn(
-            "Votre demande a été traitée et classée",
-            mail.outbox[0].subject,
-        )
-
-        self.assertIn(
-            "Bar category",
-            mail.outbox[0].subject,
-        )
-
-        self.assertIn(
-            "Foo category",
-            mail.outbox[0].subject,
-        )
-
-        self.assertIn(
-            "Nous vous informons que votre demande a été traitée et classée.",
-            mail.outbox[0].message().as_string(),
-        )
-
-        services_message_content = "Nous vous informons qu'une demande a été traitée et classée par le secrétariat."
-        valid_services_emails = [
-            "not-repeated-email@liip.ch",
-            "test-send-2@geocity.ch",
-            "test-send-1@geocity.ch",
-        ]
-        self.assertIn(
-            "a custom signature for email",
-            mail.outbox[0].message().as_string(),
-        )
-        self.assertTrue(mail.outbox[1].to[0] in valid_services_emails)
-        self.assertIn(services_message_content, mail.outbox[1].message().as_string())
-        self.assertTrue(mail.outbox[2].to[0] in valid_services_emails)
-        self.assertIn(services_message_content, mail.outbox[2].message().as_string())
-        self.assertTrue(mail.outbox[3].to[0] in valid_services_emails)
-        self.assertIn(services_message_content, mail.outbox[3].message().as_string())
-
-
-class ApprovedSubmissionClassifyTestCase(TestCase):
-    def setUp(self):
-        self.secretariat_group = factories.SecretariatGroupFactory()
-        self.administrative_entity = (
-            self.secretariat_group.permitdepartment.administrative_entity
-        )
-        self.secretariat_user = factories.SecretariatUserFactory(
-            groups=[self.secretariat_group]
-        )
-
-        self.validation = factories.SubmissionValidationFactory(
-            submission__administrative_entity=self.administrative_entity,
-            submission__status=submissions_models.Submission.STATUS_PROCESSING,
-            validation_status=submissions_models.SubmissionValidation.STATUS_APPROVED,
-        )
-        self.client.login(username=self.secretariat_user.username, password="password")
-
-    def _get_approval(self):
-        response = self.client.get(
-            reverse(
-                "submissions:submission_approve",
-                kwargs={"submission_id": self.validation.submission.pk},
-            ),
-        )
-        self.assertContains(response, "Approbation de la demande")
-        self.assertEqual(
-            self.validation.submission.status,
-            submissions_models.Submission.STATUS_PROCESSING,
-        )
-        return response
-
-    def test_classify_submission_with_required_validation_doc_shows_file_field(
-        self,
-    ):
-        form = factories.FormFactory(requires_validation_document=True)
-        self.validation.submission.forms.set([form])
-        response = self._get_approval()
-        self.assertContains(response, "validation_pdf")
-
-    def test_classify_submission_without_required_validation_doc_does_not_show_file_field(
-        self,
-    ):
-        form = factories.FormFactory(requires_validation_document=False)
-        self.validation.submission.forms.set([form])
-        response = self._get_approval()
-        self.assertNotContains(response, "validation_pdf")
-
-    def test_classify_submission_with_any_object_requiring_validation_doc_shows_file_field(
-        self,
-    ):
-        form1 = factories.FormFactory(requires_validation_document=True)
-        form2 = factories.FormFactory(requires_validation_document=False)
-        self.validation.submission.forms.set([form1, form2])
-        response = self._get_approval()
-        self.assertContains(response, "validation_pdf")
-
-
-class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
-    def test_administrative_entity_step_without_public_requests_is_empty_to_standard_user(
-        self,
-    ):
-
-        form_category = factories.FormCategoryFactory()
-        private_form = factories.FormFactory(
-            form_category=form_category,
-            is_public=False,
-        )
-
-        administrative_entity = factories.AdministrativeEntityFactory(
-            name="privateEntity"
-        )
-        private_form.administrative_entities.set([administrative_entity])
-        response = self.client.get(
-            reverse(
-                "submissions:submission_select_administrative_entity",
-            ),
-        )
-        self.assertNotContains(response, "privateEntity")
-
-    def test_administrative_entity_step_without_public_requests_is_visible_to_user_with_specific_permission(
-        self,
-    ):
-
-        see_private_requests_permission = Permission.objects.get(
-            codename="see_private_requests"
-        )
-        self.user.user_permissions.add(see_private_requests_permission)
-        form_category = factories.FormCategoryFactory()
-        private_form = factories.FormFactory(
-            form_category=form_category,
-            is_public=True,
-        )
-
-        administrative_entity_1 = factories.AdministrativeEntityFactory(
-            name="privateEntity1"
-        )
-        administrative_entity_2 = factories.AdministrativeEntityFactory(
-            name="privateEntity2"
-        )
-        private_form.administrative_entities.set(
-            [administrative_entity_1, administrative_entity_2]
-        )
-        response = self.client.get(
-            reverse(
-                "submissions:submission_select_administrative_entity",
-            ),
-        )
-
-        self.assertContains(response, "privateEntity1")
-        self.assertContains(response, "privateEntity2")
-
-    def test_form_category_step_only_show_public_requests_to_standard_user(
-        self,
-    ):
-
-        public_forms = factories.FormFactory.create_batch(
-            2, is_public=True
-        )
-        private_form = factories.FormFactory(is_public=False)
-        administrative_entity = factories.AdministrativeEntityFactory()
-        administrative_entity.forms.set(
-            public_forms + [private_form]
-        )
-
-        submission = factories.SubmissionFactory(
-            author=self.user, administrative_entity=administrative_entity
-        )
-
-        response = self.client.get(
-            reverse(
-                "submissions:submission_select_categories",
-                kwargs={"submission_id": submission.pk},
-            ),
-        )
-        self.assertEqual(
-            len(get_parser(response.content).select(".form-check-label")), 2
-        )
-
-    def test_form_category_step_show_private_requests_with_choices_to_user_with_specific_permission(
-        self,
-    ):
-
-        see_private_requests_permission = Permission.objects.get(
-            codename="see_private_requests"
-        )
-        self.user.user_permissions.add(see_private_requests_permission)
-
-        public_forms = factories.FormFactory.create_batch(
-            2, is_public=True
-        )
-        private_form = factories.FormFactory(is_public=False)
-        administrative_entity = factories.AdministrativeEntityFactory()
-        administrative_entity.forms.set(
-            public_forms + [private_form]
-        )
-
-        submission = factories.SubmissionFactory(
-            author=self.user, administrative_entity=administrative_entity
-        )
-
-        response = self.client.get(
-            reverse(
-                "submissions:submission_select_categories",
-                kwargs={"submission_id": submission.pk},
-            ),
-        )
-        self.assertEqual(
-            len(get_parser(response.content).select(".form-check-label")), 3
-        )
-
-    def test_form_category_step_show_public_requests_to_standard_user(
-        self,
-    ):
-        public_forms = factories.FormFactory.create_batch(
-            2, is_public=True
-        )
-        private_form = factories.FormFactory(is_public=False)
-        administrative_entity = factories.AdministrativeEntityFactory()
-        administrative_entity.forms.set(
-            public_forms + [private_form]
-        )
-
-        submission = factories.SubmissionFactory(
-            author=self.user, administrative_entity=administrative_entity
-        )
-
-        submission.administrative_entity.forms.set(
-            forms_models.Form.objects.all()
-        )
-
-        forms_models.Form.objects.create(
-            submission=submission,
-            form=public_forms[0],
-        )
-
-        forms_models.Form.objects.create(
-            submission=submission,
-            form=public_forms[1],
-        )
-
-        response = self.client.get(
-            reverse(
-                "submissions:submission_select_forms",
-                kwargs={"submission_id": submission.pk},
-            )
-            + "?categories={}&forms={}".format(
-                public_forms[0].form_category.pk,
-                public_forms[1].form_category.pk,
-            ),
-        )
-        self.assertEqual(
-            len(get_parser(response.content).select(".form-check-label")), 2
-        )
-
-    def test_form_category_step_show_private_requests_to_user_with_specific_permission(
-        self,
-    ):
-
-        see_private_requests_permission = Permission.objects.get(
-            codename="see_private_requests"
-        )
-        self.user.user_permissions.add(see_private_requests_permission)
-
-        public_forms = factories.FormFactory.create_batch(
-            2, is_public=True
-        )
-        private_form = factories.FormFactory(is_public=False)
-        administrative_entity = factories.AdministrativeEntityFactory()
-        administrative_entity.forms.set(
-            public_forms + [private_form]
-        )
-
-        submission = factories.SubmissionFactory(
-            author=self.user, administrative_entity=administrative_entity
-        )
-
-        submission.administrative_entity.forms.set(
-            forms_models.Form.objects.all()
-        )
-
-        forms_models.Form.objects.create(
-            submission=submission,
-            form=public_forms[0],
-        )
-
-        forms_models.Form.objects.create(
-            submission=submission,
-            form=public_forms[1],
-        )
-
-        forms_models.Form.objects.create(
-            submission=submission, form=private_form
-        )
-
-        response = self.client.get(
-            reverse(
-                "submissions:submission_select_forms",
-                kwargs={"submission_id": submission.pk},
-            )
-            + "?categories={}&forms={}&forms={}".format(
-                public_forms[0].form_category.pk,
-                public_forms[1].form_category.pk,
-                private_form.form_category.pk,
-            ),
-        )
-        self.assertEqual(
-            len(get_parser(response.content).select(".form-check-label")), 3
-        )
-
-
-class SubmissionFilteredFormListTestCase(LoggedInSecretariatMixin, TestCase):
-    def setUp(self):
-        super().setUp()
-        self.form_normal = factories.FormFactory()
-        self.submission = factories.SubmissionFactory(
-            author=self.user,
-            status=submissions_models.Submission.STATUS_APPROVED,
-        )
-        self.submission.forms.set([self.form_normal])
-        factories.SubmissionGeoTimeFactory(submission=self.submission)
-
-        selected_form = self.submission.selectedform_set.first()
-        field = factories.FieldFactory()
-        field.forms.add(selected_form.form)
-        self.field_value = factories.FieldValueFactory(
-            selected_form=selected_form, field=field
-        )
-
-    def test_secretariat_user_can_see_filtered_submission_details(
-        self,
-    ):
-        response = self.client.get(
-            "{}?forms__form={}".format(
-                reverse(
-                    "submissions:submissions_list",
-                ),
-                self.submission.forms.first().form.id,
-            )
-        )
-
-        self.assertInHTML(self.field_value.value["val"], response.content.decode())
-
-    def test_secretariat_user_can_see_filtered_submission_details_in_xlsx(
-        self,
-    ):
-        response = self.client.get(
-            "{}?forms__form={}&_export=xlsx".format(
-                reverse(
-                    "submissions:submissions_list",
-                ),
-                self.submission.forms.first().form.id,
-            )
-        )
-
-        content = io.BytesIO(response.content)
-
-        # Replace content in bytes with the readable one
-        response.content = tablib.import_set(content.read(), format="xlsx")
-
-        self.assertContains(response, self.field_value.value["val"])
-        self.assertContains(response, self.field_value.field)
-
-
 class SubmissionAnonymousTestCase(TestCase):
     def setUp(self):
         super().setUp()
@@ -4587,7 +2487,10 @@ class SubmissionAnonymousTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         # As the form has to fields, going directly to next step
         self.assertTrue(
-            isinstance(response.context["formset"].forms[0], submissions_forms.SubmissionGeoTimeForm)
+            isinstance(
+                response.context["formset"].forms[0],
+                submissions_forms.SubmissionGeoTimeForm,
+            )
         )
 
     def test_anonymous_request_submission_deletes_temporary_user(self):
