@@ -39,9 +39,7 @@ def export(args):
         # Also in theory, this should be set as a layer filter rather than on the provider URL,
         # but this seems not supported by QGIS 3.24 (!!).
         pattern = r"url='http://web:9000/wfs3/'"
-        replacement = (
-            rf"url='http://web:9000/wfs3/?submission_id={submission_id}'"
-        )
+        replacement = rf"url='http://web:9000/wfs3/?submission_id={submission_id}'"
         contents = contents.replace(pattern, replacement)
 
         input_path = os.path.join(tmpdirname, "project.qgs")
