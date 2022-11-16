@@ -2,18 +2,18 @@ from django.conf import settings
 
 INTEGRATOR_PERMISSIONS_BY_APP = {
     "accounts": [
-        "administrativeentity",
         "permitdepartment",
         "userprofile",
     ],
     "forms": [
+        "administrativeentityforadminsite",
         "formcategory",
         "form",
         "field",
         "formfield",
+        "contacttypeforadminsite",
     ],
     "submissions": [
-        "contacttype",
         "submissionamendfield",
         "submissionworkflowstatus",
         "complementarydocumenttype",

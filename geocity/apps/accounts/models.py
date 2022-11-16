@@ -269,6 +269,15 @@ class AdministrativeEntity(models.Model):
         return self.name
 
 
+# Change the app_label in order to regroup models under the same app in admin
+class AdministrativeEntityForAdminSite(AdministrativeEntity):
+    class Meta:
+        proxy = True
+        app_label = "forms"
+        verbose_name = _("1.1 Entité administrative (commune, organisation)")
+        verbose_name_plural = _("1.1 Entités administratives (commune, organisation)")
+
+
 class UserProfileManager(models.Manager):
     def create_temporary_user(self, entity):
         # TODO should this be moved to User instead of UserProfile?

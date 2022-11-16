@@ -125,6 +125,7 @@ class FormAdminForm(forms.ModelForm):
 
 class FormFieldInline(admin.TabularInline):
     model = models.FormField
+    extra = 2
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "field":
@@ -169,6 +170,7 @@ class FormAdmin(IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdmin):
             None,
             {
                 "fields": (
+                    "name",
                     "category",
                     "administrative_entities",
                     "can_always_update",
@@ -181,47 +183,42 @@ class FormAdmin(IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdmin):
             },
         ),
         (
-            "Notifications aux services",
-            {"fields": ("notify_services", "services_to_notify")},
-        ),
-        (
-            "Planning et localisation",
-            {
-                "fields": (
-                    "can_have_multiple_ranges",
-                    "geometry_types",
-                    "needs_date",
-                    "start_delay",
-                )
-            },
-        ),
-        (
-            "Modules complémentaires",
-            {
-                "fields": (
-                    "document_enabled",
-                    "publication_enabled",
-                    "permanent_publication_enabled",
-                )
-            },
-        ),
-        (
-            "Prolongation",
-            {
-                "fields": (
-                    "permit_duration",
-                    "expiration_reminder",
-                    "days_before_reminder",
-                )
-            },
-        ),
-        (
-            "Directive",
+            _("Directives - Données personnelles"),
             {
                 "fields": (
                     "directive",
                     "directive_description",
                     "additional_information",
+                )
+            },
+        ),
+        (
+            _("Planning et localisation"),
+            {
+                "fields": (
+                    "can_have_multiple_ranges",
+                    "needs_date",
+                    "start_delay",
+                    "permit_duration",
+                    "expiration_reminder",
+                    "days_before_reminder",
+                    "geometry_types",
+                    "wms_layers",
+                    "wms_layers_order",
+                )
+            },
+        ),
+        (
+            _("Notifications aux services"),
+            {"fields": ("notify_services", "services_to_notify")},
+        ),
+        (
+            _("Modules complémentaires"),
+            {
+                "fields": (
+                    "document_enabled",
+                    "publication_enabled",
+                    "permanent_publication_enabled",
                 )
             },
         ),
@@ -232,7 +229,7 @@ class FormAdmin(IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdmin):
         return obj.__str__()
 
     sortable_str.admin_order_field = "name"
-    sortable_str.short_description = _("1.4 Configuration du type-objet-entité")
+    sortable_str.short_description = _("Nom du formulaire")
 
     def get_queryset(self, request):
         qs = (
@@ -277,7 +274,6 @@ class FieldForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
-        self.fields["forms"] = get_forms_field(user)
 
     class Meta:
         model = models.Field
@@ -295,7 +291,6 @@ class FieldForm(forms.ModelForm):
             "is_public_when_permitrequest_is_public",
             "additional_searchtext_for_address_field",
             "store_geometry_for_address_field",
-            "forms",
             "integrator",
         ]
 
@@ -368,7 +363,7 @@ class FormCategoryAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return obj.__str__()
 
     sortable_str.admin_order_field = "name"
-    sortable_str.short_description = _("1.2 Configuration du type")
+    sortable_str.short_description = _("1.2 de la catégorie")
 
     def get__tags(self, obj):
         return list(obj.tags.all())
