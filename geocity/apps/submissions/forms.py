@@ -100,9 +100,6 @@ class GroupedRadioWidget(forms.RadioSelect):
 class CheckboxSelectMultipleWidget(forms.CheckboxSelectMultiple):
     template_name = "submissions/widgets/multipleselect.html"
 
-    # class Media:
-    #     css = {"all": ("customWidgets/GroupedRadio/groupedradio.css",)}
-
 
 class AdministrativeEntityForm(forms.Form):
     administrative_entity = forms.ModelChoiceField(

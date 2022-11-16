@@ -1,16 +1,20 @@
 {% with id=widget.attrs.id %}
-  <div{% if id %} id="{{ id }}"{% endif %}{% if widget.attrs.class %} class="{{ widget.attrs.class }}"{% endif %}>
-    {% for group, options, index in widget.optgroups %}
-      {% if group %}
-        <div class="card">
-          <label>{{ group }}</label>{% endif %}{% for option in options %}
-          <div>
-            {% include option.template_name with widget=option %}
-          </div>
-          {% endfor %}
-      {% if group %}
-        </div>
-      {% endif %}
-    {% endfor %}
-  </div>
+<div{% if id %} id="{{ id }}"{% endif %}{% if widget.attrs.class %} class="{{ widget.attrs.class }}"{% endif %}>
+{% for group, options, index in widget.optgroups %}
+  {% if group %}
+    <div class="card" style="border-radius:0">
+      <div class="card-header"><label>{{ group }}</label></div>
+      <div class="card-body">
+  {% endif %}
+  {% for option in options %}
+    <div class="card-text">
+      {% include option.template_name with widget=option %}
+    </div>
+  {% endfor %}
+  {% if group %}
+    </div>
+    </div>
+  {% endif %}
+{% endfor %}
+</div>
 {% endwith %}
