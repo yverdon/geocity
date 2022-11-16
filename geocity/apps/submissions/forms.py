@@ -160,8 +160,8 @@ class FormsSelectForm(forms.Form):
         initial = {"selected_forms": selected_forms}
 
         super().__init__(*args, **{**kwargs, "initial": initial})
-        user_can_see_private_requests = self.user.has_perm(
-            "submissions.see_private_requests"
+        user_can_view_private_submission = self.user.has_perm(
+            "submissions.view_private_submission"
         )
 
         forms_filter = Q()
@@ -169,7 +169,7 @@ class FormsSelectForm(forms.Form):
         if form_categories:
             forms_filter &= Q(category__in=form_categories)
 
-        if not user_can_see_private_requests:
+        if not user_can_view_private_submission:
             forms_filter &= Q(is_public=True)
 
         forms = (

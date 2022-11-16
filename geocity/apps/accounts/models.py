@@ -261,9 +261,6 @@ class AdministrativeEntity(models.Model):
         verbose_name_plural = _(
             "1.1 Configuration des entités administratives (commune, organisation)"
         )
-        permissions = [
-            ("see_private_requests", _("Voir les demandes restreintes")),
-        ]
 
     def __str__(self):
         return self.name

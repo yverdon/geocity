@@ -34,10 +34,10 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         self,
     ):
 
-        see_private_requests_permission = Permission.objects.get(
-            codename="see_private_requests", content_type__app_label="accounts"
+        view_private_submission_permission = Permission.objects.get(
+            codename="view_private_submission", content_type__app_label="submissions"
         )
-        self.user.user_permissions.add(see_private_requests_permission)
+        self.user.user_permissions.add(view_private_submission_permission)
         form_category = factories.FormCategoryFactory()
         private_form = factories.FormFactory(
             category=form_category,
@@ -100,10 +100,10 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
         self,
     ):
 
-        see_private_requests_permission = Permission.objects.get(
-            codename="see_private_requests", content_type__app_label="accounts"
+        view_private_submission_permission = Permission.objects.get(
+            codename="view_private_submission", content_type__app_label="submissions"
         )
-        self.user.user_permissions.add(see_private_requests_permission)
+        self.user.user_permissions.add(view_private_submission_permission)
 
         public_forms = factories.FormFactory.create_batch(2, is_public=True)
         private_form = factories.FormFactory(is_public=False)
