@@ -14,9 +14,9 @@ from freezegun import freeze_time
 
 from geocity.apps.accounts import models as accounts_models
 from geocity.apps.forms import models as forms_models
+from geocity.apps.reports.models import Report
 from geocity.apps.submissions import models as submissions_models
 
-from ..models import Report
 
 UPDATE_EXPECTED_IMAGES = strtobool(os.getenv("TEST_UPDATED_EXPECTED_IMAGES", "false"))
 

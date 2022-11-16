@@ -8,7 +8,7 @@ from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
-from geocity.apps.permits.tests import factories
+from geocity.tests import factories
 
 
 class TestRegisterMixin:
@@ -74,7 +74,7 @@ class TestRegisterView(TestCase, TestRegisterMixin):
 
         response = self.client.get(
             reverse(
-                "activate_account",
+                "accounts:activate_account",
                 kwargs={
                     "uid": urlsafe_base64_encode(force_bytes(user.pk)),
                     "token": default_token_generator.make_token(user),
@@ -94,7 +94,7 @@ class TestRegisterView(TestCase, TestRegisterMixin):
 
         response = self.client.get(
             reverse(
-                "activate_account",
+                "accounts:activate_account",
                 kwargs={
                     "uid": urlsafe_base64_encode(force_bytes(user2.pk)),
                     "token": default_token_generator.make_token(user),
@@ -122,7 +122,7 @@ class TestRegisterView(TestCase, TestRegisterMixin):
         response = self.execute_post_register()
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.context["user"].is_authenticated)
-        self.assertRedirects(response, resolve_url("account_login"))
+        self.assertRedirects(response, resolve_url("accounts:account_login"))
         self.assertContains(
             response,
             "Votre compte a été créé avec succès! Vous allez recevoir un email pour valider et activer votre compte.",
