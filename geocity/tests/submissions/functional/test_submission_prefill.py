@@ -1,7 +1,7 @@
 import uuid
 
-from django.urls import reverse
 from django.test import TestCase
+from django.urls import reverse
 
 from geocity.tests import factories
 from geocity.tests.utils import LoggedInUserMixin, get_parser

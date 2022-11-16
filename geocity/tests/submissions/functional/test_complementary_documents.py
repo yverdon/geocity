@@ -3,7 +3,6 @@ from django.urls import reverse
 
 from geocity.apps.submissions import models as submissions_models
 from geocity.apps.submissions import views
-
 from geocity.tests import factories
 from geocity.tests.geocity_test_case import GeocityTestCase
 

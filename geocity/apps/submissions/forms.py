@@ -29,7 +29,6 @@ from geocity.apps.accounts.models import (
     AdministrativeEntity,
     PermitDepartment,
 )
-from geocity.apps.forms.models import Form
 from geocity.fields import AddressWidget
 
 from . import models, permissions, services

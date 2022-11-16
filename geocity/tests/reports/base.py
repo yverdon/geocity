@@ -17,7 +17,6 @@ from geocity.apps.forms import models as forms_models
 from geocity.apps.reports.models import Report
 from geocity.apps.submissions import models as submissions_models
 
-
 UPDATE_EXPECTED_IMAGES = strtobool(os.getenv("TEST_UPDATED_EXPECTED_IMAGES", "false"))
 
 

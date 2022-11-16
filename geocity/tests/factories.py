@@ -11,11 +11,9 @@ from django.contrib.sites.models import Site
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils.text import Truncator
 
-from geocity.apps.accounts.users import get_integrator_permissions
-
 from geocity.apps.accounts import models as accounts_models
+from geocity.apps.accounts.users import get_integrator_permissions
 from geocity.apps.forms import models as forms_models
-from geocity.apps.reports import models as reports_models
 from geocity.apps.submissions import models as submissions_models
 
 

@@ -13,19 +13,12 @@ from django.urls import reverse
 from django.utils import timezone
 
 from geocity.apps.accounts import models as accounts_models
-from geocity.apps.forms import models as forms_models
-from geocity.apps.submissions import (
-    models as submissions_models,
-    forms as submissions_forms,
-)
-
 from geocity.apps.accounts.management.commands import create_anonymous_users
+from geocity.apps.forms import models as forms_models
+from geocity.apps.submissions import forms as submissions_forms
+from geocity.apps.submissions import models as submissions_models
 from geocity.tests import factories
-from geocity.tests.utils import (
-    LoggedInUserMixin,
-    get_emails,
-    get_parser,
-)
+from geocity.tests.utils import LoggedInUserMixin, get_emails, get_parser
 
 
 def to_forms_dict(forms):
