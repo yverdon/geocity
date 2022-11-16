@@ -7,62 +7,78 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('submissions', '0004_admin_reorder_for_phoenix'),
-        ('accounts', '0003_migrate_permits_data'),
-        ('forms', '0003_migrate_permits_data'),
+        ("submissions", "0004_admin_reorder_for_phoenix"),
+        ("accounts", "0003_migrate_permits_data"),
+        ("forms", "0003_migrate_permits_data"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ProxyAdministrativeEntity',
-            fields=[
-            ],
+            name="AdministrativeEntityForAdminSite",
+            fields=[],
             options={
-                'verbose_name': '1.1 Entité administrative (commune, organisation)',
-                'verbose_name_plural': '1.1 Entités administratives (commune, organisation)',
-                'proxy': True,
-                'indexes': [],
-                'constraints': [],
+                "verbose_name": "1.1 Entité administrative (commune, organisation)",
+                "verbose_name_plural": "1.1 Entités administratives (commune, organisation)",
+                "proxy": True,
+                "indexes": [],
+                "constraints": [],
             },
-            bases=('accounts.administrativeentity',),
+            bases=("accounts.administrativeentity",),
         ),
         migrations.CreateModel(
-            name='ProxyContactType',
-            fields=[
-            ],
+            name="ContactTypeForAdminSite",
+            fields=[],
             options={
-                'verbose_name': '1.5 Contact',
-                'verbose_name_plural': '1.5 Contacts',
-                'proxy': True,
-                'indexes': [],
-                'constraints': [],
+                "verbose_name": "1.5 Contact",
+                "verbose_name_plural": "1.5 Contacts",
+                "proxy": True,
+                "indexes": [],
+                "constraints": [],
             },
-            bases=('submissions.contacttype',),
+            bases=("submissions.contacttype",),
         ),
         migrations.AlterModelOptions(
-            name='field',
-            options={'verbose_name': '1.3 Champ', 'verbose_name_plural': '1.3 Champs'},
+            name="field",
+            options={"verbose_name": "1.3 Champ", "verbose_name_plural": "1.3 Champs"},
         ),
         migrations.AlterModelOptions(
-            name='form',
-            options={'ordering': ('order',), 'verbose_name': '1.4 Formulaire', 'verbose_name_plural': '1.4 Formulaires'},
+            name="form",
+            options={
+                "ordering": ("order",),
+                "verbose_name": "1.4 Formulaire",
+                "verbose_name_plural": "1.4 Formulaires",
+            },
         ),
         migrations.AlterModelOptions(
-            name='formcategory',
-            options={'verbose_name': '1.2 Catégorie', 'verbose_name_plural': '1.2 Catégories'},
+            name="formcategory",
+            options={
+                "verbose_name": "1.2 Catégorie",
+                "verbose_name_plural": "1.2 Catégories",
+            },
         ),
         migrations.AlterModelOptions(
-            name='formfield',
-            options={'ordering': ('order',), 'verbose_name': 'Champ du formulaire', 'verbose_name_plural': 'Champs du Formulaires'},
+            name="formfield",
+            options={
+                "ordering": ("order",),
+                "verbose_name": "Champ du formulaire",
+                "verbose_name_plural": "Champs du formulaire",
+            },
         ),
         migrations.AlterField(
-            model_name='formfield',
-            name='field',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='form_fields', to='forms.field', verbose_name='Champ'),
+            model_name="formfield",
+            name="field",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="form_fields",
+                to="forms.field",
+                verbose_name="Champ",
+            ),
         ),
         migrations.AlterField(
-            model_name='formfield',
-            name='order',
-            field=models.PositiveSmallIntegerField(db_index=True, default=0, verbose_name='Position dans le formulaire'),
+            model_name="formfield",
+            name="order",
+            field=models.PositiveSmallIntegerField(
+                db_index=True, default=0, verbose_name="Position dans le formulaire"
+            ),
         ),
     ]

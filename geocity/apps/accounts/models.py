@@ -270,7 +270,7 @@ class AdministrativeEntity(models.Model):
 
 
 # Change the app_label in order to regroup models under the same app in admin
-class ProxyAdministrativeEntity(AdministrativeEntity):
+class AdministrativeEntityForAdminSite(AdministrativeEntity):
     class Meta:
         proxy = True
         app_label = "forms"

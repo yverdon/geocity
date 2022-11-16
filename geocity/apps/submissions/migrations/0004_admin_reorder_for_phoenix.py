@@ -6,16 +6,22 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('submissions', '0003_migrate_permits_data'),
+        ("submissions", "0003_migrate_permits_data"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='complementarydocumenttype',
-            options={'verbose_name': '2.2 Type de document', 'verbose_name_plural': '2.2 Types de document'},
+            name="complementarydocumenttype",
+            options={
+                "verbose_name": "2.2 Type de document",
+                "verbose_name_plural": "2.2 Types de document",
+            },
         ),
         migrations.AlterModelOptions(
-            name='contacttype',
-            options={'verbose_name': '1.5 Contact', 'verbose_name_plural': '1.5 Contacts'},
+            name="contacttype",
+            options={
+                "verbose_name": "1.5 Contact",
+                "verbose_name_plural": "1.5 Contacts",
+            },
         ),
     ]

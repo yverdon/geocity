@@ -6,12 +6,12 @@ INTEGRATOR_PERMISSIONS_BY_APP = {
         "userprofile",
     ],
     "forms": [
-        "proxyadministrativeentity",
+        "administrativeentityforadminsite",
         "formcategory",
         "form",
         "field",
         "formfield",
-        "proxycontacttype",
+        "contacttypeforadminsite",
     ],
     "submissions": [
         "contacttype",

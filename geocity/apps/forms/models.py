@@ -287,7 +287,7 @@ class FormField(models.Model):
 
     class Meta:
         verbose_name = _("Champ du formulaire")
-        verbose_name_plural = _("Champs du Formulaires")
+        verbose_name_plural = _("Champs du formulaire")
         ordering = ("order",)
 
 

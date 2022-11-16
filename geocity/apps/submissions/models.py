@@ -1158,7 +1158,7 @@ class ContactType(models.Model):
 
 
 # Change the app_label in order to regroup models under the same app in admin
-class ProxyContactType(ContactType):
+class ContactTypeForAdminSite(ContactType):
     class Meta:
         proxy = True
         app_label = "forms"

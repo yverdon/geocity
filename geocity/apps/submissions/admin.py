@@ -62,7 +62,7 @@ class SubmissionAmendFieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return RequestForm
 
 
-@admin.register(models.ProxyContactType)
+@admin.register(models.ContactTypeForAdminSite)
 class ContactTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_display = [
         "sortable_str",
