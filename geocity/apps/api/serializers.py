@@ -251,7 +251,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
         )
 
 
-class FieldValuesSerializer(serializers.RelatedField):
+class FieldsValuesSerializer(serializers.RelatedField):
     def to_representation(self, value):
         current_user = None
         request = self.context.get("request", None)
@@ -621,14 +621,14 @@ class SubmissionPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
 
 class SubmissionDetailsSerializer(serializers.ModelSerializer):
     # FIXME inform API consumers of field changes
-    # wot_properties -> field_values
-    field_values = FieldValuesSerializer(source="selected_forms", read_only=True)
+    # wot_properties -> fields_values
+    fields_values = FieldsValuesSerializer(source="selected_forms", read_only=True)
 
     class Meta:
         model = Submission
         fields = (
             "id",
-            "field_values",
+            "fields_values",
         )
 
 
