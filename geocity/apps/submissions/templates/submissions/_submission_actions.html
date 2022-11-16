@@ -1,5 +1,7 @@
 {% load i18n %}
 {% load bootstrap4 %}
+{% load static %}
+
 
 <div class="container">
   {% if forms.amend or forms.request_validation or forms.validate or forms.poke %}
@@ -299,3 +301,9 @@
   </div>
   {% endif %}
 </div>
+
+{% block scripts %}
+  {% if formsets.complementary_documents and document_enabled %}
+  <script src="{% static 'js/submissions_complementary_documents.js' %}"></script>
+  {% endif %}
+{% endblock %}
