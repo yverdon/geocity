@@ -5,7 +5,7 @@ from allauth.tests import MockedResponse, TestCase
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
-from ..provider import GeomapfishProvider
+from geocity.apps.accounts.geomapfish.provider import GeomapfishProvider
 
 User = get_user_model()
 
