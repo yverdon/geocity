@@ -274,7 +274,6 @@ class FieldForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
-        self.fields["forms"] = get_forms_field(user)
 
     class Meta:
         model = models.Field
@@ -292,7 +291,6 @@ class FieldForm(forms.ModelForm):
             "is_public_when_permitrequest_is_public",
             "additional_searchtext_for_address_field",
             "store_geometry_for_address_field",
-            "forms",
             "integrator",
         ]
 
