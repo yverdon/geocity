@@ -1,10 +1,8 @@
 # TODO split this file into multiple files
 import datetime
-import io
 import re
 from datetime import date
 
-import tablib
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import mail
@@ -21,8 +19,12 @@ from geocity.apps.submissions import (
 )
 
 from geocity.apps.accounts.management.commands import create_anonymous_users
-from . import factories
-from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_parser
+from geocity.tests import factories
+from geocity.tests.utils import (
+    LoggedInUserMixin,
+    get_emails,
+    get_parser,
+)
 
 
 def to_forms_dict(forms):
@@ -178,7 +180,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
-        with open("geocity/apps/permits/tests/files/real_jpg.jpg", "rb") as file:
+        with open("geocity/tests/files/real_jpg.jpg", "rb") as file:
             response = self.client.post(
                 reverse(
                     "submissions:submission_appendices",
@@ -202,7 +204,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
-        with open("geocity/apps/permits/tests/files/real_png.png", "rb") as file:
+        with open("geocity/tests/files/real_png.png", "rb") as file:
             response = self.client.post(
                 reverse(
                     "submissions:submission_appendices",
@@ -226,7 +228,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
-        with open("geocity/apps/permits/tests/files/real_pdf.pdf", "rb") as file:
+        with open("geocity/tests/files/real_pdf.pdf", "rb") as file:
             response = self.client.post(
                 reverse(
                     "submissions:submission_appendices",
@@ -250,9 +252,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
-        with open(
-            "geocity/apps/permits/tests/files/unknow_type_for_filetype.txt", "rb"
-        ) as file:
+        with open("geocity/tests/files/unknow_type_for_filetype.txt", "rb") as file:
             response = self.client.post(
                 reverse(
                     "submissions:submission_appendices",
@@ -275,9 +275,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
-        with open(
-            "geocity/apps/permits/tests/files/not_allowed_docx.docx", "rb"
-        ) as file:
+        with open("geocity/tests/files/not_allowed_docx.docx", "rb") as file:
             response = self.client.post(
                 reverse(
                     "submissions:submission_appendices",
@@ -300,9 +298,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
-        with open(
-            "geocity/apps/permits/tests/files/not_allowed_bmp_as_jpg.jpg", "rb"
-        ) as file:
+        with open("geocity/tests/files/not_allowed_bmp_as_jpg.jpg", "rb") as file:
             response = self.client.post(
                 reverse(
                     "submissions:submission_appendices",
@@ -527,15 +523,10 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         submission = factories.SubmissionFactory(author=self.user)
         form_first = factories.FormFactory()
         form_second = factories.FormFactory()
-        submission.administrative_entity.forms.set(
-            [form_first, form_second]
-        )
-        print("world")
-        print(submission.administrative_entity.forms.values())
+        submission.administrative_entity.forms.set([form_first, form_second])
         form_category_id = submission.administrative_entity.forms.values_list(
             "category_id", flat=True
         ).first()
-        print(form_category_id)
 
         self.client.post(
             reverse(
@@ -553,7 +544,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             1,
             "Submission should have one form set",
         )
-        
+
         self.assertEqual(forms[0].form, form_first)
         self.assertEqual(forms[0].form_category_id, form_category_id)
 
@@ -578,7 +569,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             reverse(
                 "submissions:submission_select_forms",
                 kwargs={"submission_id": submission.pk},
-            )
+            ),
         )
 
     def test_geotime_step_only_date_fields_appear_when_only_date_is_required(self):
@@ -1535,13 +1526,13 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
             "input",
             title="Cliquer sur le champ et sélectionner la nouvelle date de fin planifiée",
         )
-        
+
         self.assertEqual(1, len(title))
         self.assertEqual("id_prolongation_date", widget.get("id"))
-        
+
         # Post
         prolongation_date = timezone.now() + datetime.timedelta(days=90)
-        
+
         response = self.client.post(
             reverse(
                 "submissions:submission_prolongation",
@@ -1550,7 +1541,7 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
             follow=True,
             data={"prolongation_date": prolongation_date},
         )
-        
+
         parser = get_parser(response.content)
         regex = re.compile(r"^Prolongation en attente")
         icon_prolongation_processing = parser.findAll("i", title=regex)
@@ -2192,9 +2183,7 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
 
         free_forms = factories.FormFactory.create_batch(2, requires_payment=False)
         paid_form = factories.FormFactory(requires_payment=True)
-        form_categories = [form.category for form in free_forms] + [
-            paid_form.category
-        ]
+        form_categories = [form.category for form in free_forms] + [paid_form.category]
 
         for form_category in form_categories:
             factories.ContactTypeFactory(is_mandatory=True, form_category=form_category)

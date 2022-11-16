@@ -5,7 +5,7 @@ from django.urls import reverse
 from django_otp import DEVICE_ID_SESSION_KEY
 from two_factor.utils import default_device
 
-from geocity.apps.permits.tests.factories import SuperUserFactory
+from geocity.tests.factories import SuperUserFactory
 
 # Make sure we don't patch the admin site by mistake
 if not settings.ENABLE_2FA:

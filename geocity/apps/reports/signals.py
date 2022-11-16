@@ -18,8 +18,6 @@ def create_default_report_for_integrator(sender, instance, created, **kwargs):
 
     integrator = instance
 
-    print(f"Creating a default report for integrator {integrator}")
-
     # Create report setup
     layout = ReportLayout(
         name="demo_layout",
