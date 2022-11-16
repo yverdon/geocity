@@ -380,7 +380,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
     if settings.ENABLE_2FA:
 
         def test_user_of_group_with_mandatory_2FA_is_asked_to_set_it_up(self):
-            user = SecretariatUserFactory()
+            user = factories.SecretariatUserFactory()
             user.groups.set([self.group2fa])
             self.client.login(username=user.username, password="password")
 
@@ -396,7 +396,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             self.assertContains(response, "Activer l'authentification à deux facteurs")
 
         def test_user_of_group_with_mandatory_2FA_setup_can_see_submissions_list(self):
-            user = UserFactory()
+            user = factories.UserFactory()
             user.groups.set([self.group2fa])
             self.enable_otp_session(user)
             response = self.client.get(
@@ -409,7 +409,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         def test_user_of_group_with_mandatory_2FA_not_setup_can_access_change_password(
             self,
         ):
-            user = UserFactory()
+            user = factories.UserFactory()
             user.groups.set([self.group2fa])
             self.client.login(username=user.username, password="password")
             response = self.client.get(
@@ -422,7 +422,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         def test_user_of_group_with_mandatory_2FA_not_setup_can_access_modify_account(
             self,
         ):
-            user = UserFactory()
+            user = factories.UserFactory()
             group = factories.GroupFactory()
             factories.PermitDepartmentFactory(group=group, mandatory_2fa=True)
             user.groups.set([self.group2fa])
@@ -437,7 +437,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         def test_user_of_group_with_mandatory_2FA_not_setup_can_access_account_security(
             self,
         ):
-            user = UserFactory()
+            user = factories.UserFactory()
             group = factories.GroupFactory()
             factories.PermitDepartmentFactory(group=group, mandatory_2fa=True)
             user.groups.set([self.group2fa])
