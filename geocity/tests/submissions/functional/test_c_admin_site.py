@@ -413,7 +413,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             user.groups.set([self.group2fa])
             self.client.login(username=user.username, password="password")
             response = self.client.get(
-                reverse("password_change"),
+                reverse("accounts:password_change"),
                 follow=True,
             )
             self.assertEqual(response.status_code, 200)
@@ -428,7 +428,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             user.groups.set([self.group2fa])
             self.client.login(username=user.username, password="password")
             response = self.client.get(
-                reverse("permit_author_edit"),
+                reverse("accounts:user_profile_edit"),
                 follow=True,
             )
             self.assertEqual(response.status_code, 200)
@@ -443,7 +443,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             user.groups.set([self.group2fa])
             self.client.login(username=user.username, password="password")
             response = self.client.get(
-                reverse("profile"),
+                reverse("accounts:profile"),
                 follow=True,
             )
             self.assertEqual(response.status_code, 200)
