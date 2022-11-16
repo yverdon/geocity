@@ -105,15 +105,15 @@ class AdministrativeEntityFactory(factory.django.DjangoModelFactory):
 
     @factory.post_generation
     def sites(self, create, extracted, **kwargs):
-        if not create or not extracted:
-            Site.objects.get_or_create(domain="yverdon.localhost", name="yverdon")
-            Site.objects.get_or_create(domain="grandson.localhost", name="grandson")
-            Site.objects.get_or_create(domain="vevey.localhost", name="vevey")
-            Site.objects.get_or_create(domain="lausanne.localhost", name="lausanne")
-            self.sites.set(Site.objects.all())
-            return
-
-        self.sites.set(extracted)
+        if create:
+            if extracted is None:
+                Site.objects.get_or_create(domain="yverdon.localhost", name="yverdon")
+                Site.objects.get_or_create(domain="grandson.localhost", name="grandson")
+                Site.objects.get_or_create(domain="vevey.localhost", name="vevey")
+                Site.objects.get_or_create(domain="lausanne.localhost", name="lausanne")
+                self.sites.set(Site.objects.all())
+            else:
+                self.sites.set(extracted)
 
 
 class GroupFactory(factory.django.DjangoModelFactory):

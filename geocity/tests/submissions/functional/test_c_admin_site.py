@@ -143,7 +143,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
 
     def test_integrator_can_only_see_own_administrativeentity(self):
         response = self.client.get(
-            reverse("admin:accounts_administrativeentity_changelist")
+            reverse("admin:forms_administrativeentityforadminsite_changelist")
         )
         parser = get_parser(response.content)
         self.assertEqual(response.status_code, 200)
@@ -156,7 +156,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             self.enable_otp_session(user=user)
 
         response = self.client.get(
-            reverse("admin:accounts_administrativeentity_changelist")
+            reverse("admin:forms_administrativeentityforadminsite_changelist")
         )
         parser = get_parser(response.content)
 
@@ -241,7 +241,9 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         )
 
     def test_integrator_can_only_see_own_contacttype(self):
-        response = self.client.get(reverse("admin:submissions_contacttype_changelist"))
+        response = self.client.get(
+            reverse("admin:forms_contacttypeforadminsite_changelist")
+        )
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
@@ -253,7 +255,9 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         if settings.ENABLE_2FA:
             self.enable_otp_session(user=user)
 
-        response = self.client.get(reverse("admin:submissions_contacttype_changelist"))
+        response = self.client.get(
+            reverse("admin:forms_contacttypeforadminsite_changelist")
+        )
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)

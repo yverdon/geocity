@@ -11,7 +11,7 @@
   {% endif %}
   <h3>{{ config.LOCATION_STEP }}</h3>
   {% if entityfilter %}
-    {% trans "La liste ci-dessous est filtrée," %}<a class="ml-2" href="{% url 'submissions:submission_select_administrative_entity' %}?clearentityfilter=true"><b>{% trans "tout voir" %}</b></a>
+    {% trans "La liste ci-dessous est filtrée," %}<a class="ml-2" href="{% url 'submissions:submission_select_administrative_entity' %}"><b>{% trans "tout voir" %}</b></a>
   {% endif %}
   <br>
   <hr>
