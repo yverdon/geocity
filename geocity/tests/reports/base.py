@@ -142,7 +142,7 @@ class ReportsTestsBase(LiveServerTestCase):
         # Create the submission
         submission = submissions_models.Submission.objects.create(
             administrative_entity=admin_entity,
-            author=author,
+            author=author.user,
             status=submissions_models.Submission.STATUS_PROCESSING,
         )
         works_obj_type_choice = forms_models.FormChoice.objects.create(

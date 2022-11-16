@@ -7,7 +7,10 @@ from .users import is_2FA_mandatory
 
 
 def check_mandatory_2FA(
-    view=None, redirect_field_name="next", login_url="profile", if_configured=False
+    view=None,
+    redirect_field_name="next",
+    login_url="accounts:profile",
+    if_configured=False,
 ):
     """
     Do same as :func:`django_otp.decorators.otp_required`, but verify first if the user
