@@ -81,8 +81,7 @@ class FormAdminForm(forms.ModelForm):
         }
 
     class Media:
-        # FIXME rename to form.js
-        js = ("js/admin/works_object_type.js",)
+        js = ("js/admin/form.js",)
 
     def __init__(self, *args, **kwargs):
         instance = kwargs.get("instance")
@@ -301,7 +300,7 @@ class FieldForm(forms.ModelForm):
         return self.cleaned_data["file_download"]
 
     class Media:
-        js = ("js/admin/works_object_property.js",)
+        js = ("js/admin/form_field.js",)
 
 
 @admin.register(models.Field)
