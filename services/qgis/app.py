@@ -12,12 +12,12 @@ def export(args):
     project_path = args.project_path
     output_path = args.output_path
     template_name = args.template_name
-    permit_request_id = args.permit_request_id
+    submission_id = args.submission_id
     allowed_hosts = args.allowed_hosts
     token = args.token
 
     print(
-        f"Exporting {project_path=} {template_name=} {permit_request_id=} {allowed_hosts=} {token=}"
+        f"Exporting {project_path=} {template_name=} {submission_id=} {allowed_hosts=} {token=}"
     )
 
     with tempfile.TemporaryDirectory() as tmpdirname:
@@ -39,9 +39,7 @@ def export(args):
         # Also in theory, this should be set as a layer filter rather than on the provider URL,
         # but this seems not supported by QGIS 3.24 (!!).
         pattern = r"url='http://web:9000/wfs3/'"
-        replacement = (
-            rf"url='http://web:9000/wfs3/?permit_request_id={permit_request_id}'"
-        )
+        replacement = rf"url='http://web:9000/wfs3/?submission_id={submission_id}'"
         contents = contents.replace(pattern, replacement)
 
         input_path = os.path.join(tmpdirname, "project.qgs")
@@ -90,7 +88,7 @@ def export(args):
 
         # move to the requested feature (workaround using filter if the above does not work)
         atlas.setFilterFeatures(True)
-        atlas.setFilterExpression(f"permit_request_id={permit_request_id}")
+        atlas.setFilterExpression(f"submission_id={submission_id}")
         atlas.seekTo(0)
         atlas.refreshCurrentFeature()
 
@@ -103,7 +101,7 @@ def export(args):
             print(" invalid !")
             # show contents of the response
             r = requests.get(
-                f"http://web:9000/wfs3/collections/permits/items/{permit_request_id}",
+                f"http://web:9000/wfs3/collections/permits/items/{submission_id}",
                 headers={"Authorization": f"Token {token}"},
             )
             print(f"response code: {r.status_code}")
@@ -135,7 +133,7 @@ if __name__ == "__main__":
     parser.add_argument("project_path", type=str, help="path to qgis project")
     parser.add_argument("output_path", type=str, help="path to output")
     parser.add_argument("template_name", type=str)
-    parser.add_argument("permit_request_id", type=int)
+    parser.add_argument("submission_id", type=int)
     parser.add_argument("token", type=str)
     parser.add_argument("allowed_hosts", type=str)
 

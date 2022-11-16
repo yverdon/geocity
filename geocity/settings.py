@@ -567,6 +567,11 @@ REST_FRAMEWORK = {
 WFS3_TITLE = "OGC API Features - Geocity"
 WFS3_DESCRIPTION = "Point d'accès OGC API Features aux données Geocity."
 
+# OAUTH2 Config
+OAUTH2_PROVIDER = {
+    "PKCE_REQUIRED": os.getenv("OAUTH2_PKCE_REQUIRED", "false").lower() == "true"
+}
+
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 CRON_CLASSES = [

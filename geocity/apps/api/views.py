@@ -234,7 +234,7 @@ class SubmissionDetailsViewSet(
     WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelViewSet
 ):
     """
-    Permit request details endpoint usage:
+    Submissions details endpoint usage:
         1.- /rest/submissions_details/?submission_id=1
     Liste types :
     - address

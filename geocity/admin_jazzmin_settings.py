@@ -78,11 +78,11 @@ JAZZMIN_SETTINGS = {
         "auth": "fas fa-users-cog",
         "auth.user": "fas fa-user",
         "auth.Group": "fas fa-users",
-        "forms.ProxyAdministrativeEntity": "fas fa-landmark",
+        "forms.AdministrativeEntityForAdminSite": "fas fa-landmark",
         "forms.FormCategory": "fas fa-object-ungroup",
         "forms.Form": "fas fa-book",
         "forms.Field": "fas fa-list-ol",
-        "forms.ProxyContactType": "fas fa-address-card",
+        "forms.ContactTypeForAdminSite": "fas fa-address-card",
         "submissions.SubmissionAmendField": "fas fa-list-alt",
         "submissions.ComplementaryDocumentType": "fas fa-copy",
         "reports.ReportLayout": "fas fa-file-alt",
@@ -120,7 +120,7 @@ JAZZMIN_SETTINGS = {
     # override change forms on a per modeladmin basis
     "changeform_format_overrides": {
         "forms.form": "horizontal_tabs",
-        "forms.proxyadministrativeentity": "horizontal_tabs",
+        "forms.administrativeentityforadminsite": "horizontal_tabs",
         "reports.report": "horizontal_tabs",
     },
     # Add a language dropdown into the admin

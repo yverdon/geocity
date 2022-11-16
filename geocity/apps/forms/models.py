@@ -264,9 +264,19 @@ class Form(models.Model):
 class FormField(models.Model):
     form = models.ForeignKey(Form, related_name="+", on_delete=models.CASCADE)
     field = models.ForeignKey(
-        "Field", related_name="form_fields", on_delete=models.CASCADE
+        "Field",
+        related_name="form_fields",
+        on_delete=models.CASCADE,
+        verbose_name=_("Champ"),
     )
-    order = models.PositiveSmallIntegerField(default=0, db_index=True)
+    order = models.PositiveSmallIntegerField(
+        _("Position dans le formulaire"), default=0, db_index=True
+    )
+
+    class Meta:
+        verbose_name = _("Champ du formulaire")
+        verbose_name_plural = _("Champs du formulaire")
+        ordering = ("order",)
 
     class Meta:
         ordering = ["order"]

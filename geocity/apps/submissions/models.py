@@ -1149,6 +1149,8 @@ class ContactType(models.Model):
     )
 
     class Meta:
+        verbose_name = _("1.5 Contact")
+        verbose_name_plural = _("1.5 Contacts")
         unique_together = [["type", "form_category"]]
         app_label = "forms"
 
@@ -1157,7 +1159,7 @@ class ContactType(models.Model):
 
 
 # Change the app_label in order to regroup models under the same app in admin
-class ProxyContactType(ContactType):
+class ContactTypeForAdminSite(ContactType):
     class Meta:
         proxy = True
         app_label = "forms"

@@ -60,6 +60,10 @@ class ReportLayout(models.Model):
         verbose_name=_("Groupe des administrateurs"),
     )
 
+    class Meta:
+        verbose_name = _("3.1 Format de papier")
+        verbose_name_plural = _("3.1 Formats de papier")
+
     def __str__(self):
         return self.name
 
@@ -105,6 +109,8 @@ def NON_POLYMORPHIC_CASCADE(collector, field, sub_objs, using):
 
 class Section(PolymorphicModel):
     class Meta:
+        verbose_name = _("Paragraphe")
+        verbose_name_plural = _("Paragraphes")
         ordering = ["order"]
         verbose_name = _("Paragraphe")
         verbose_name_plural = _("Paragraphes")

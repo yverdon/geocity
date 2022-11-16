@@ -17,5 +17,5 @@ geocity/permit_requests_uploads/
 .coverage
 env.backup
 /media/
-/geocity/apps/permits/tests/files/archive/*
+/geocity/tests/files/archive/*
 /_dev_volumes/

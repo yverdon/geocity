@@ -496,7 +496,7 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
         self.fields["sites"] = get_sites_field(user)
 
     class Meta:
-        model = models.ProxyAdministrativeEntity
+        model = models.AdministrativeEntityForAdminSite
         fields = [
             "name",
             "tags",
@@ -557,7 +557,7 @@ class SubmissionWorkflowStatusInline(admin.TabularInline):
     verbose_name_plural = _("Flux (complet par défaut)")
 
 
-@admin.register(models.ProxyAdministrativeEntity)
+@admin.register(models.AdministrativeEntityForAdminSite)
 class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     # Pass the user from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs):
@@ -657,7 +657,7 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
             return redirect(
                 reverse(
-                    "admin:forms_proxyadministrativeentity_change",
+                    "admin:forms_administrativeentityforadminsite_change",
                     kwargs={"object_id": entity_id},
                 )
             )

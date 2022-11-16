@@ -3,8 +3,8 @@ from django.urls import reverse
 
 from geocity.apps.forms import models as forms_models
 
-from . import factories
-from .utils import LoggedInUserMixin, get_parser
+from geocity.tests import factories
+from geocity.tests.utils import LoggedInUserMixin, get_parser
 
 
 def extract_nav_items(content):

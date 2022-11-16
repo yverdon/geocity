@@ -1,10 +1,8 @@
 # TODO split this file into multiple files
 import datetime
-import io
 import re
 from datetime import date
 
-import tablib
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core import mail
@@ -21,8 +19,12 @@ from geocity.apps.submissions import (
 )
 
 from geocity.apps.accounts.management.commands import create_anonymous_users
-from . import factories
-from .utils import LoggedInSecretariatMixin, LoggedInUserMixin, get_emails, get_parser
+from geocity.tests import factories
+from geocity.tests.utils import (
+    LoggedInUserMixin,
+    get_emails,
+    get_parser,
+)
 
 
 def to_forms_dict(forms):
@@ -55,49 +57,6 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             "form-INITIAL_FORMS": ["0"],
             "form-MIN_NUM_FORMS": ["0"],
         }
-
-    def test_categories_step_submit_redirects_to_forms_with_categories_qs(self):
-        submission = factories.SubmissionFactory(author=self.user)
-        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
-
-        response = self.client.post(
-            reverse(
-                "submissions:submission_select_categories",
-                kwargs={"submission_id": submission.pk},
-            ),
-            data={
-                "categories": [self.form_categories[0].pk, self.form_categories[1].pk]
-            },
-        )
-
-        self.assertRedirects(
-            response,
-            reverse(
-                "submissions:submission_select_forms",
-                kwargs={"submission_id": submission.pk},
-            )
-            + "?categories={}&categories={}".format(
-                self.form_categories[0].pk, self.form_categories[1].pk
-            ),
-        )
-
-    def test_forms_step_without_qs_redirects_to_categories_step(self):
-        submission = factories.SubmissionFactory(author=self.user)
-        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
-
-        response = self.client.get(
-            reverse(
-                "submissions:submission_select_forms",
-                kwargs={"submission_id": submission.pk},
-            )
-        )
-        self.assertRedirects(
-            response,
-            reverse(
-                "submissions:submission_select_categories",
-                kwargs={"submission_id": submission.pk},
-            ),
-        )
 
     def test_forms_step_submit_saves_multiple_selected_forms(self):
         submission = factories.SubmissionFactory(author=self.user)
@@ -221,7 +180,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
-        with open("geocity/apps/permits/tests/files/real_jpg.jpg", "rb") as file:
+        with open("geocity/tests/files/real_jpg.jpg", "rb") as file:
             response = self.client.post(
                 reverse(
                     "submissions:submission_appendices",
@@ -245,7 +204,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
-        with open("geocity/apps/permits/tests/files/real_png.png", "rb") as file:
+        with open("geocity/tests/files/real_png.png", "rb") as file:
             response = self.client.post(
                 reverse(
                     "submissions:submission_appendices",
@@ -269,7 +228,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
-        with open("geocity/apps/permits/tests/files/real_pdf.pdf", "rb") as file:
+        with open("geocity/tests/files/real_pdf.pdf", "rb") as file:
             response = self.client.post(
                 reverse(
                     "submissions:submission_appendices",
@@ -293,9 +252,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
-        with open(
-            "geocity/apps/permits/tests/files/unknow_type_for_filetype.txt", "rb"
-        ) as file:
+        with open("geocity/tests/files/unknow_type_for_filetype.txt", "rb") as file:
             response = self.client.post(
                 reverse(
                     "submissions:submission_appendices",
@@ -318,9 +275,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
-        with open(
-            "geocity/apps/permits/tests/files/not_allowed_docx.docx", "rb"
-        ) as file:
+        with open("geocity/tests/files/not_allowed_docx.docx", "rb") as file:
             response = self.client.post(
                 reverse(
                     "submissions:submission_appendices",
@@ -343,9 +298,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         field = factories.FieldFactoryTypeFile()
         field.forms.set(submission.forms.all())
 
-        with open(
-            "geocity/apps/permits/tests/files/not_allowed_bmp_as_jpg.jpg", "rb"
-        ) as file:
+        with open("geocity/tests/files/not_allowed_bmp_as_jpg.jpg", "rb") as file:
             response = self.client.post(
                 reverse(
                     "submissions:submission_appendices",
@@ -366,7 +319,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
         response = self.client.get(
             reverse(
-                "submissions:submission_select_categories",
+                "submissions:submission_select_forms",
                 kwargs={"submission_id": submission.pk},
             )
         )
@@ -381,7 +334,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
         response = self.client.get(
             reverse(
-                "submissions:submission_select_categories",
+                "submissions:submission_select_forms",
                 kwargs={"submission_id": submission.pk},
             )
         )
@@ -407,7 +360,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         submission.administrative_entity.forms.set(submission.forms.all())
         response = self.client.get(
             reverse(
-                "submissions:submission_select_categories",
+                "submissions:submission_select_forms",
                 kwargs={"submission_id": submission.pk},
             )
         )
@@ -568,16 +521,16 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
     def test_form_automatically_set_when_only_one_form(self):
         submission = factories.SubmissionFactory(author=self.user)
-        submission.administrative_entity.forms.set(
-            factories.FormFactory.create_batch(2)
-        )
+        form_first = factories.FormFactory()
+        form_second = factories.FormFactory()
+        submission.administrative_entity.forms.set([form_first, form_second])
         form_category_id = submission.administrative_entity.forms.values_list(
-            "form_category_id", flat=True
+            "category_id", flat=True
         ).first()
 
         self.client.post(
             reverse(
-                "submissions:submission_select_categories",
+                "submissions:submission_select_forms",
                 kwargs={"submission_id": submission.pk},
             ),
             data={"categories": [form_category_id]},
@@ -589,9 +542,10 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(
             len(forms),
             1,
-            "Submission should have one works object type set",
+            "Submission should have one form set",
         )
-        self.assertEqual(forms[0].form, form)
+
+        self.assertEqual(forms[0].form, form_first)
         self.assertEqual(forms[0].form_category_id, form_category_id)
 
     def test_form_category_automatically_set_when_only_one_form(self):
@@ -615,7 +569,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             reverse(
                 "submissions:submission_select_forms",
                 kwargs={"submission_id": submission.pk},
-            )
+            ),
         )
 
     def test_geotime_step_only_date_fields_appear_when_only_date_is_required(self):
@@ -1191,7 +1145,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
     def test_form_category_is_filtered_by_tag(self):
         additional_form_category = factories.FormCategoryFactory()
 
-        forms_models.Form.objects.create(
+        factories.FormFactory(
             category=additional_form_category,
             is_public=True,
         )
@@ -1204,10 +1158,10 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
         response = self.client.get(
             reverse(
-                "submissions:submission_select_categories",
+                "submissions:submission_select_forms",
                 kwargs={"submission_id": submission.pk},
             )
-            + "?categoryfilter=form_category_a"
+            + "?typefilter=form_category_a"
         )
 
         parser = get_parser(response.content)
@@ -1232,10 +1186,10 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
         response = self.client.get(
             reverse(
-                "submissions:submission_select_categories",
+                "submissions:submission_select_forms",
                 kwargs={"submission_id": submission.pk},
             )
-            + "?categoryfilter=badtag"
+            + "?typefilter=badtag"
         )
 
         parser = get_parser(response.content)
@@ -1572,13 +1526,13 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
             "input",
             title="Cliquer sur le champ et sélectionner la nouvelle date de fin planifiée",
         )
-        
+
         self.assertEqual(1, len(title))
         self.assertEqual("id_prolongation_date", widget.get("id"))
-        
+
         # Post
         prolongation_date = timezone.now() + datetime.timedelta(days=90)
-        
+
         response = self.client.post(
             reverse(
                 "submissions:submission_prolongation",
@@ -1587,7 +1541,7 @@ class SubmissionProlongationTestCase(LoggedInUserMixin, TestCase):
             follow=True,
             data={"prolongation_date": prolongation_date},
         )
-        
+
         parser = get_parser(response.content)
         regex = re.compile(r"^Prolongation en attente")
         icon_prolongation_processing = parser.findAll("i", title=regex)
@@ -2229,9 +2183,7 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
 
         free_forms = factories.FormFactory.create_batch(2, requires_payment=False)
         paid_form = factories.FormFactory(requires_payment=True)
-        form_categories = [form.category for form in free_forms] + [
-            paid_form.category
-        ]
+        form_categories = [form.category for form in free_forms] + [paid_form.category]
 
         for form_category in form_categories:
             factories.ContactTypeFactory(is_mandatory=True, form_category=form_category)
@@ -2413,7 +2365,7 @@ class SubmissionAnonymousTestCase(TestCase):
             reverse("submissions:anonymous_submission"),
             data={
                 "entityfilter": entity.tags.get().slug,
-                "categoryfilter": category.tags.get().slug,
+                "typefilter": category.tags.get().slug,
             },
         )
 

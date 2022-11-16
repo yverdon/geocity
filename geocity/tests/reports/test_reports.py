@@ -44,9 +44,7 @@ class ReportsTests(ReportsTestsBase):
         """Test attachment of PDF to permit request through the form"""
 
         # Ensure we have no document
-        self.assertEqual(
-            self.submission.submissioncomplementarydocument_set.count(), 0
-        )
+        self.assertEqual(self.submission.submissioncomplementarydocument_set.count(), 0)
 
         # Get the form
         self.client.force_login(self.user)
@@ -79,9 +77,7 @@ class ReportsTests(ReportsTestsBase):
         self.assertEqual(response.status_code, 200)
 
         # Ensure a document was added
-        self.assertEqual(
-            self.submission.submissioncomplementarydocument_set.count(), 1
-        )
+        self.assertEqual(self.submission.submissioncomplementarydocument_set.count(), 1)
 
     def test_block_gallery(self):
         """Test rendering for all blocks"""
@@ -129,6 +125,5 @@ class ReportsTests(ReportsTestsBase):
                 },
             )
         )
-        print(response.streaming_content)
         pdf_bytes = b"".join(response.streaming_content)
         self.assert_pdf_is_as_expected(pdf_bytes)
