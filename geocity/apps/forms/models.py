@@ -357,6 +357,8 @@ class Field(models.Model):
         _("Fichier"),
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
         blank=True,
+        # TODO this name is historical because the Form model used to be call WorksObjectType
+        # This should be renamed someday and the files in `wot_files` should be moved
         upload_to="wot_files",
     )
     additional_searchtext_for_address_field = models.CharField(

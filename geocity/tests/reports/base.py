@@ -12,23 +12,11 @@ from django.test.testcases import LiveServerTestCase
 from django.utils.timezone import get_default_timezone, make_aware
 from freezegun import freeze_time
 
-from geocity.apps.permits.models import (
-    ComplementaryDocumentType,
-    PermitAdministrativeEntity,
-    PermitAuthor,
-    PermitDepartment,
-    PermitRequest,
-    PermitRequestAmendProperty,
-    PermitRequestAmendPropertyValue,
-    PermitRequestGeoTime,
-    PermitWorkflowStatus,
-    WorksObject,
-    WorksObjectType,
-    WorksObjectTypeChoice,
-    WorksType,
-)
+from geocity.apps.accounts import models as accounts_models
+from geocity.apps.forms import models as forms_models
+from geocity.apps.reports.models import Report
+from geocity.apps.submissions import models as submissions_models
 
-from ..models import Report
 
 UPDATE_EXPECTED_IMAGES = strtobool(os.getenv("TEST_UPDATED_EXPECTED_IMAGES", "false"))
 
@@ -104,7 +92,7 @@ class ReportsTestsBase(LiveServerTestCase):
     def setUp(self):
 
         # Create the admin entity
-        admin_entity = PermitAdministrativeEntity.objects.create(
+        admin_entity = accounts_models.AdministrativeEntity.objects.create(
             name="entity",
             ofs_id=1,
             geom="SRID=2056;MultiPolygon (((2538512 1181638, 2538447 1180620, 2539787 1180606, 2539784 1181553, 2538512 1181638)))",
@@ -117,7 +105,7 @@ class ReportsTestsBase(LiveServerTestCase):
         )
         group = Group.objects.create(name="group")
         user.groups.set([group])
-        dept = PermitDepartment.objects.create(
+        dept = accounts_models.PermitDepartment.objects.create(
             administrative_entity=admin_entity,
             group=group,
             is_validator=True,
@@ -125,7 +113,7 @@ class ReportsTestsBase(LiveServerTestCase):
             is_backoffice=True,
             is_default_validator=True,
         )
-        author = PermitAuthor.objects.create(
+        author = accounts_models.UserProfile.objects.create(
             user=user,
             company_name="company_name",
             vat_number="vat_number",
@@ -137,50 +125,48 @@ class ReportsTestsBase(LiveServerTestCase):
         )
 
         # Create and configure the work object type
-        works_type = WorksType.objects.create(name="type")
-        works_obj = WorksObject.objects.create(name="object")
-        works_object_type = WorksObjectType.objects.create(
-            works_type=works_type,
-            works_object=works_obj,
+        category = forms_models.FormCategory.objects.create(name="type")
+        form = forms_models.Form.objects.create(
+            category=category,
             is_public=True,
             document_enabled=True,
         )
-        prop = PermitRequestAmendProperty.objects.create(
-            name="prop",
+        field = submissions_models.SubmissionAmendField.objects.create(
+            name="field",
         )
-        prop.works_object_types.set([works_object_type])
-        status = PermitWorkflowStatus.objects.create(
-            status=PermitRequest.STATUS_PROCESSING,
+        field.forms.set([form])
+        status = submissions_models.SubmissionWorkflowStatus.objects.create(
+            status=submissions_models.Submission.STATUS_PROCESSING,
             administrative_entity=admin_entity,
         )
 
-        # Create the permit request
-        permit_request = PermitRequest.objects.create(
+        # Create the submission
+        submission = submissions_models.Submission.objects.create(
             administrative_entity=admin_entity,
             author=author,
-            status=PermitRequest.STATUS_PROCESSING,
+            status=submissions_models.Submission.STATUS_PROCESSING,
         )
-        works_obj_type_choice = WorksObjectTypeChoice.objects.create(
-            permit_request=permit_request,
-            works_object_type=works_object_type,
+        works_obj_type_choice = forms_models.FormChoice.objects.create(
+            submission=submission,
+            form=form,
         )
 
-        PermitRequestGeoTime.objects.create(
-            permit_request=permit_request,
+        submissions_models.SubmissionGeoTime.objects.create(
+            submission=submission,
             geom="SRID=2056;GEOMETRYCOLLECTION (MultiPolygon (((2539069 1181160, 2539052 1181120, 2539099 1181110, 2539118 1181147, 2539069 1181160))))",
         )
-        PermitRequestAmendPropertyValue.objects.create(
-            property=prop,
+        submissions_models.SubmissionAmendFieldValue.objects.create(
+            property=field,
             works_object_type_choice=works_obj_type_choice,
             value="myvalue",
         )
 
         # Create the document type
-        parent_doc_type = ComplementaryDocumentType.objects.create(
+        parent_doc_type = submissions_models.ComplementaryDocumentType.objects.create(
             name="parent",
-            work_object_types=works_object_type,
+            form=form,
         )
-        doc_type = ComplementaryDocumentType.objects.create(
+        doc_type = submissions_models.ComplementaryDocumentType.objects.create(
             name="child",
             parent=parent_doc_type,
         )
@@ -190,8 +176,8 @@ class ReportsTestsBase(LiveServerTestCase):
         report.document_types.set([doc_type])
 
         # Make fixtures available to testcase
-        self.permit_request = permit_request
-        self.works_object_type = works_object_type
+        self.submission = submission
+        self.form = form
         self.report = report
         self.doc_type = doc_type
         self.user = user

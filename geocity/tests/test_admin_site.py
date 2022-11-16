@@ -5,7 +5,7 @@ from django.urls import reverse
 from django_otp import DEVICE_ID_SESSION_KEY
 from two_factor.utils import default_device
 
-from geocity.apps.permits.tests.factories import SuperUserFactory
+from geocity.tests.factories import SuperUserFactory
 
 # Make sure we don't patch the admin site by mistake
 if not settings.ENABLE_2FA:
@@ -40,7 +40,10 @@ if settings.ENABLE_2FA:
             self.assertRedirects(
                 response,
                 "%s?next=%s"
-                % (resolve_url("account_login"), reverse(settings.LOGIN_REDIRECT_URL)),
+                % (
+                    resolve_url("accounts:account_login"),
+                    reverse(settings.LOGIN_REDIRECT_URL),
+                ),
             )
 
         def test_superuser_get_admin_after_login_but_not_otp_verified(self):

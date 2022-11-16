@@ -10,6 +10,7 @@ INTEGRATOR_PERMISSIONS_BY_APP = {
         "formcategory",
         "form",
         "field",
+        "formfield",
     ],
     "submissions": [
         "contacttype",

@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 
-from geocity.apps.permits.tests import factories
+from . import factories
 
 
 class GeocityTestCase(TestCase):
@@ -11,7 +11,7 @@ class GeocityTestCase(TestCase):
     SUPER_USER = 3
 
     def setUp(self):
-        self.administrative_entity = factories.PermitAdministrativeEntityFactory()
+        self.administrative_entity = factories.AdministrativeEntityFactory()
         self.groups = {
             self.SECRETARIAT: factories.SecretariatGroupFactory.create(department=None),
             self.INTEGRATOR: factories.IntegratorGroupFactory.create(department=None),
@@ -76,13 +76,13 @@ class GeocityTestCase(TestCase):
         if not actual_message == expected_message:
             raise AssertionError("{} != {}".format(actual_message, expected_message))
 
-    def execute_permit_request_action(self, data):
+    def execute_submission_action(self, data):
         self.login(email="pilot@test.com", group=self.SECRETARIAT)
 
         response = self.client.post(
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": self.permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": self.submission.pk},
             ),
             data=data,
         )
@@ -90,10 +90,10 @@ class GeocityTestCase(TestCase):
 
         detail = self.client.get(
             reverse(
-                "permits:permit_request_detail",
-                kwargs={"permit_request_id": self.permit_request.pk},
+                "submissions:submission_detail",
+                kwargs={"submission_id": self.submission.pk},
             )
         )
-        self.permit_request.refresh_from_db()
+        self.submission.refresh_from_db()
 
         return detail

@@ -13,5 +13,5 @@ SITE_ID = 1
 SITE_DOMAIN = "localhost"
 
 ARCHIVE_ROOT = os.environ.get(
-    "ARCHIVE_ROOT", os.path.join(BASE_DIR, "geocity/apps/permits/tests/files/archive")
+    "ARCHIVE_ROOT", os.path.join(BASE_DIR, "geocity/tests/files/archive")
 )

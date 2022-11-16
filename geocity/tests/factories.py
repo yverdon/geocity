@@ -12,12 +12,16 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils.text import Truncator
 
 from geocity.apps.accounts.users import get_integrator_permissions
-from geocity.apps.permits import models
+
+from geocity.apps.accounts import models as accounts_models
+from geocity.apps.forms import models as forms_models
+from geocity.apps.reports import models as reports_models
+from geocity.apps.submissions import models as submissions_models
 
 
-class PermitAuthorFactory(factory.django.DjangoModelFactory):
+class UserProfileFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.PermitAuthor
+        model = accounts_models.UserProfile
 
     address = factory.Faker("word")
     zipcode = factory.Faker("zipcode")
@@ -37,7 +41,7 @@ class UserFactory(factory.django.DjangoModelFactory):
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")
     email = factory.Faker("email")
-    actor = factory.RelatedFactory(PermitAuthorFactory, "user")
+    actor = factory.RelatedFactory(UserProfileFactory, "user")
     password = "password"
 
     @classmethod
@@ -63,22 +67,24 @@ class SuperUserFactory(factory.django.DjangoModelFactory):
         return manager.create_superuser(*args, **kwargs)
 
 
-class PermitAdministrativeEntityFactory(factory.django.DjangoModelFactory):
+class AdministrativeEntityFactory(factory.django.DjangoModelFactory):
     ofs_id = 0
     name = factory.Faker("company")
     geom = MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
 
     class Meta:
-        model = models.PermitAdministrativeEntity
+        model = accounts_models.AdministrativeEntity
 
     @factory.post_generation
     def workflow_statuses(self, create, extracted, **kwargs):
         if not create:
             return
 
-        extracted = extracted or [v[0] for v in models.PermitRequest.STATUS_CHOICES]
+        extracted = extracted or [
+            v[0] for v in submissions_models.Submission.STATUS_CHOICES
+        ]
         for status in extracted:
-            models.PermitWorkflowStatus.objects.create(
+            submissions_models.SubmissionWorkflowStatus.objects.create(
                 status=status,
                 administrative_entity=self,
             )
@@ -122,9 +128,11 @@ class GroupFactory(factory.django.DjangoModelFactory):
             return
 
         if not extracted:
-            permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
+            submission_ct = ContentType.objects.get_for_model(
+                submissions_models.Submission
+            )
             amend_permission = Permission.objects.get(
-                codename="amend_permit_request", content_type=permit_request_ct
+                codename="amend_submission", content_type=submission_ct
             )
             extracted = [amend_permission]
 
@@ -137,11 +145,11 @@ class PermitDepartmentFactory(factory.django.DjangoModelFactory):
     is_validator = False
     is_integrator_admin = False
     is_backoffice = False
-    administrative_entity = factory.SubFactory(PermitAdministrativeEntityFactory)
+    administrative_entity = factory.SubFactory(AdministrativeEntityFactory)
     group = factory.SubFactory(GroupFactory)
 
     class Meta:
-        model = models.PermitDepartment
+        model = submissions_models.PermitDepartment
 
 
 class IntegratorPermitDepartmentFactory(factory.django.DjangoModelFactory):
@@ -149,11 +157,11 @@ class IntegratorPermitDepartmentFactory(factory.django.DjangoModelFactory):
     is_validator = False
     is_integrator_admin = True
     is_backoffice = False
-    administrative_entity = factory.SubFactory(PermitAdministrativeEntityFactory)
+    administrative_entity = factory.SubFactory(AdministrativeEntityFactory)
     group = factory.SubFactory(GroupFactory)
 
     class Meta:
-        model = models.PermitDepartment
+        model = submissions_models.PermitDepartment
 
 
 class SecretariatGroupFactory(GroupFactory):
@@ -165,11 +173,13 @@ class SecretariatGroupFactory(GroupFactory):
             return
 
         if not extracted:
-            permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
+            submission_ct = ContentType.objects.get_for_model(
+                submissions_models.Submission
+            )
             extracted = list(
                 Permission.objects.filter(
-                    codename__in=["amend_permit_request", "classify_permit_request"],
-                    content_type=permit_request_ct,
+                    codename__in=["amend_submission", "classify_submission"],
+                    content_type=submission_ct,
                 )
             )
 
@@ -186,9 +196,11 @@ class ValidatorGroupFactory(GroupFactory):
             return
 
         if not extracted:
-            permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
+            submission_ct = ContentType.objects.get_for_model(
+                submissions_models.Submission
+            )
             validate_permission = Permission.objects.get(
-                codename="validate_permit_request", content_type=permit_request_ct
+                codename="validate_submission", content_type=submission_ct
             )
             extracted = [validate_permission]
 
@@ -252,9 +264,9 @@ class IntegratorUserFactory(UserFactory):
             self.groups.add(group)
 
 
-class PermitActorFactory(factory.django.DjangoModelFactory):
+class ContactFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.PermitActor
+        model = submissions_models.Contact
 
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")
@@ -265,26 +277,12 @@ class PermitActorFactory(factory.django.DjangoModelFactory):
     phone = Truncator(factory.Faker("phone_number")).chars(19)
 
 
-class WorksObjectFactory(factory.django.DjangoModelFactory):
+class FormCategoryFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.WorksObject
+        model = forms_models.FormCategory
 
     name = factory.Faker("word")
-
-    @factory.post_generation
-    def integrator(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        self.integrator = extracted
-
-
-class WorksTypeFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.WorksType
-
-    name = factory.Faker("word")
-    tags = "work_type_a"
+    tags = "form_category_a"
 
     @factory.post_generation
     def integrator(self, create, extracted, **kwargs):
@@ -301,92 +299,14 @@ class WorksTypeFactory(factory.django.DjangoModelFactory):
         self.tags.add(*extracted)
 
 
-class PermitActorTypeFactory(factory.django.DjangoModelFactory):
+class FormFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.PermitActorType
-
-    works_type = factory.SubFactory(WorksTypeFactory)
-
-    @factory.post_generation
-    def integrator(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        self.integrator = extracted
-
-
-class PermitRequestFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.PermitRequest
-
-    administrative_entity = factory.SubFactory(PermitAdministrativeEntityFactory)
-    author = factory.SubFactory(PermitAuthorFactory)
-
-
-class WorksObjectPropertyFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.WorksObjectProperty
+        model = forms_models.Form
 
     name = factory.Faker("word")
-    placeholder = factory.Faker("word")
-    help_text = factory.Faker("word")
-    input_type = models.WorksObjectProperty.INPUT_TYPE_TEXT
-    order = factory.Sequence(int)
-
-    @factory.post_generation
-    def integrator(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        self.integrator = extracted
-
-
-class WorksObjectPropertyFactoryTypeAddress(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.WorksObjectProperty
-
-    name = factory.Faker("word")
-    input_type = models.WorksObjectProperty.INPUT_TYPE_ADDRESS
-    order = factory.Sequence(int)
-
-
-class WorksObjectPropertyFactoryTypeFile(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.WorksObjectProperty
-
-    name = factory.Faker("word")
-    input_type = models.WorksObjectProperty.INPUT_TYPE_FILE
-    order = factory.Sequence(int)
-
-
-class WorksObjectPropertyFactoryTypeTitle(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.WorksObjectProperty
-
-    name = factory.Faker("word")
-    help_text = factory.Faker("word")
-    input_type = models.WorksObjectProperty.INPUT_TYPE_TITLE
-    order = factory.Sequence(int)
-
-
-class WorksObjectPropertyFactoryTypeFileDownload(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.WorksObjectProperty
-
-    name = factory.Faker("word")
-    help_text = factory.Faker("word")
-    input_type = models.WorksObjectProperty.INPUT_TYPE_FILE_DOWNLOAD
-    order = factory.Sequence(int)
-    file_download = SimpleUploadedFile("file.pdf", "contents".encode())
-
-
-class WorksObjectTypeFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.WorksObjectType
-
-    works_object = factory.SubFactory(WorksObjectFactory)
-    works_type = factory.SubFactory(WorksTypeFactory)
+    category = factory.SubFactory(FormCategoryFactory)
     is_public = True
+    order = factory.Sequence(int)
 
     @factory.post_generation
     def integrator(self, create, extracted, **kwargs):
@@ -403,18 +323,25 @@ class WorksObjectTypeFactory(factory.django.DjangoModelFactory):
         self.administrative_entities.add(*extracted)
 
 
-class WorksObjectTypeWithoutGeometryFactory(factory.django.DjangoModelFactory):
+class FormWithoutGeometryFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.WorksObjectType
+        model = forms_models.Form
 
-    works_object = factory.SubFactory(WorksObjectFactory)
-    works_type = factory.SubFactory(WorksTypeFactory)
+    name = factory.Faker("word")
+    category = factory.SubFactory(FormCategoryFactory)
     is_public = True
     has_geometry_point = False
     has_geometry_line = False
     has_geometry_polygon = False
 
     @factory.post_generation
+    def integrator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        self.integrator = extracted
+
+    @factory.post_generation
     def administrative_entities(self, create, extracted, **kwargs):
         if not create or not extracted:
             return
@@ -422,38 +349,122 @@ class WorksObjectTypeWithoutGeometryFactory(factory.django.DjangoModelFactory):
         self.administrative_entities.add(*extracted)
 
 
-class WorksObjectTypeChoiceFactory(factory.django.DjangoModelFactory):
+class ContactTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.WorksObjectTypeChoice
+        model = submissions_models.ContactType
 
-    permit_request = factory.SubFactory(PermitRequestFactory)
-    works_object_type = factory.SubFactory(WorksObjectTypeFactory)
+    form_category = factory.SubFactory(FormCategoryFactory)
+
+    @factory.post_generation
+    def integrator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        self.integrator = extracted
 
 
-class WorksObjectPropertyValueFactory(factory.django.DjangoModelFactory):
+class SubmissionFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.WorksObjectPropertyValue
+        model = submissions_models.Submission
+
+    administrative_entity = factory.SubFactory(AdministrativeEntityFactory)
+    author = factory.SubFactory(UserFactory)
+
+
+class FieldFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = forms_models.Field
+
+    name = factory.Faker("word")
+    placeholder = factory.Faker("word")
+    help_text = factory.Faker("word")
+    input_type = forms_models.Field.INPUT_TYPE_TEXT
+
+    @factory.post_generation
+    def integrator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        self.integrator = extracted
+
+
+class FieldFactoryTypeAddress(factory.django.DjangoModelFactory):
+    class Meta:
+        model = forms_models.Field
+
+    name = factory.Faker("word")
+    input_type = forms_models.Field.INPUT_TYPE_ADDRESS
+
+
+class FieldFactoryTypeFile(factory.django.DjangoModelFactory):
+    class Meta:
+        model = forms_models.Field
+
+    name = factory.Faker("word")
+    input_type = forms_models.Field.INPUT_TYPE_FILE
+
+
+class FieldFactoryTypeTitle(factory.django.DjangoModelFactory):
+    class Meta:
+        model = forms_models.Field
+
+    name = factory.Faker("word")
+    help_text = factory.Faker("word")
+    input_type = forms_models.Field.INPUT_TYPE_TITLE
+
+
+class FieldFactoryTypeFileDownload(factory.django.DjangoModelFactory):
+    class Meta:
+        model = forms_models.Field
+
+    name = factory.Faker("word")
+    help_text = factory.Faker("word")
+    input_type = forms_models.Field.INPUT_TYPE_FILE_DOWNLOAD
+    file_download = SimpleUploadedFile("file.pdf", "contents".encode())
+
+
+class FormFieldFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = forms_models.FormField
+
+    form = factory.SubFactory(FormFactory)
+    field = factory.SubFactory(FieldFactory)
+    order = factory.Sequence(int)
+
+
+class SelectedFormFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = submissions_models.SelectedForm
+
+    submission = factory.SubFactory(SubmissionFactory)
+    form = factory.SubFactory(FormFactory)
+
+
+class FieldValueFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = submissions_models.FieldValue
 
     value = factory.LazyFunction(lambda: {"val": faker.Faker().word()})
-    property = factory.SubFactory(WorksObjectPropertyFactory)
-    works_object_type_choice = factory.SubFactory(WorksObjectTypeChoiceFactory)
+    field = factory.SubFactory(FieldFactory)
+    selected_form = factory.SubFactory(SelectedFormFactory)
 
 
-class PermitRequestValidationFactory(factory.django.DjangoModelFactory):
+class SubmissionValidationFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.PermitRequestValidation
+        model = submissions_models.SubmissionValidation
 
     department = factory.SubFactory(PermitDepartmentFactory)
-    permit_request = factory.SubFactory(
-        PermitRequestFactory, status=models.PermitRequest.STATUS_AWAITING_VALIDATION
+    submission = factory.SubFactory(
+        SubmissionFactory,
+        status=submissions_models.Submission.STATUS_AWAITING_VALIDATION,
     )
 
 
-class PermitRequestGeoTimeFactory(factory.django.DjangoModelFactory):
+class SubmissionGeoTimeFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.PermitRequestGeoTime
+        model = submissions_models.SubmissionGeoTime
 
-    permit_request = factory.SubFactory(PermitRequestFactory)
+    submission = factory.SubFactory(SubmissionFactory)
     starts_at = factory.Faker("date_time", tzinfo=timezone.utc)
     ends_at = factory.Faker("date_time", tzinfo=timezone.utc)
     geom = factory.LazyFunction(
@@ -461,9 +472,9 @@ class PermitRequestGeoTimeFactory(factory.django.DjangoModelFactory):
     )
 
 
-class PermitRequestAmendPropertyFactory(factory.django.DjangoModelFactory):
+class SubmissionAmendFieldFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.PermitRequestAmendProperty
+        model = submissions_models.SubmissionAmendField
 
     name = factory.Faker("word")
 
@@ -475,18 +486,18 @@ class PermitRequestAmendPropertyFactory(factory.django.DjangoModelFactory):
         self.integrator = extracted
 
 
-class PermitRequestAmendPropertyValueFactory(factory.django.DjangoModelFactory):
+class SubmissionAmendFieldValueFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.PermitRequestAmendPropertyValue
+        model = submissions_models.SubmissionAmendFieldValue
 
-    property = factory.SubFactory(PermitRequestAmendPropertyFactory)
-    works_object_type_choice = factory.SubFactory(WorksObjectTypeChoiceFactory)
+    field = factory.SubFactory(SubmissionAmendFieldFactory)
+    form = factory.SubFactory(SelectedFormFactory)
     value = factory.Faker("word")
 
 
 class TemplateCustomizationFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.TemplateCustomization
+        model = accounts_models.TemplateCustomization
 
     templatename = "mycustompage"
     application_title = "mycustomtitle"
@@ -496,39 +507,39 @@ class TemplateCustomizationFactory(factory.django.DjangoModelFactory):
 
 class ComplementaryDocumentTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.ComplementaryDocumentType
+        model = submissions_models.ComplementaryDocumentType
 
     name = factory.Faker("name")
 
 
 class ParentComplementaryDocumentTypeFactory(ComplementaryDocumentTypeFactory):
-    work_object_types = factory.SubFactory(WorksObjectTypeFactory)
+    form = factory.SubFactory(FormFactory)
     parent = None
     integrator = None
 
 
 class ChildComplementaryDocumentTypeFactory(ComplementaryDocumentTypeFactory):
-    work_object_types = None
+    form = None
     parent = factory.SubFactory(ParentComplementaryDocumentTypeFactory)
 
 
 class ComplementaryDocumentFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.PermitRequestComplementaryDocument
+        model = submissions_models.SubmissionComplementaryDocument
 
     document = factory.django.FileField(filename="awesome_file.pdf")
     description = factory.Faker("sentence")
-    # the "models.PermitRequestComplementaryDocument.STATUS_CANCELED" status
+    # the "ComplementaryDocument.STATUS_CANCELED" status
     # has extra logic, so to avoid any weird issues, it isn't among the choices
     status = factory.fuzzy.FuzzyChoice(
         choices=[
-            models.PermitRequestComplementaryDocument.STATUS_OTHER,
-            models.PermitRequestComplementaryDocument.STATUS_TEMP,
-            models.PermitRequestComplementaryDocument.STATUS_CANCELED,
+            submissions_models.SubmissionComplementaryDocument.STATUS_OTHER,
+            submissions_models.SubmissionComplementaryDocument.STATUS_TEMP,
+            submissions_models.SubmissionComplementaryDocument.STATUS_CANCELED,
         ]
     )
     owner = factory.SubFactory(UserFactory)
-    permit_request = factory.SubFactory(PermitRequestFactory)
+    submission = factory.SubFactory(SubmissionFactory)
     document_type = factory.SubFactory(ChildComplementaryDocumentTypeFactory)
     is_public = False
 
@@ -540,19 +551,19 @@ class ComplementaryDocumentFactory(factory.django.DjangoModelFactory):
         self.authorised_departments.add(*extracted)
 
 
-class PermitRequestInquiryFactory(factory.django.DjangoModelFactory):
+class SubmissionInquiryFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.PermitRequestInquiry
+        model = submissions_models.SubmissionInquiry
 
     submitter = factory.SubFactory(UserFactory)
-    permit_request = factory.SubFactory(PermitRequestFactory)
+    submission = factory.SubFactory(SubmissionFactory)
     start_date = factory.Faker("date")
     end_date = factory.Faker("date")
 
 
-class ArchivedPermitRequestFactory(factory.django.DjangoModelFactory):
+class ArchivedSubmissionFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.ArchivedPermitRequest
+        model = submissions_models.ArchivedSubmission
 
-    permit_request = factory.SubFactory(PermitRequestFactory)
+    submission = factory.SubFactory(SubmissionFactory)
     archivist = factory.SubFactory(UserFactory)

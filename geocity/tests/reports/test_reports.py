@@ -20,16 +20,16 @@ class ReportsTests(ReportsTestsBase):
     """Test report workflows"""
 
     def test_pdf_preview(self):
-        """Test PDF generation through the reports:permit_request_report view"""
+        """Test PDF generation through the reports:submission_report view"""
 
         # Get the PDF
         self.client.force_login(self.user)
         response = self.client.get(
             reverse(
-                "reports:permit_request_report_pdf",
+                "reports:submission_report_pdf",
                 kwargs={
-                    "permit_request_id": self.permit_request.pk,
-                    "work_object_type_id": self.works_object_type.pk,
+                    "submission_id": self.submission.pk,
+                    "form_id": self.form.pk,
                     "report_id": self.report.pk,
                 },
             )
@@ -44,15 +44,13 @@ class ReportsTests(ReportsTestsBase):
         """Test attachment of PDF to permit request through the form"""
 
         # Ensure we have no document
-        self.assertEqual(
-            self.permit_request.permitrequestcomplementarydocument_set.count(), 0
-        )
+        self.assertEqual(self.submission.submissioncomplementarydocument_set.count(), 0)
 
         # Get the form
         self.client.force_login(self.user)
         url = reverse(
-            "permits:permit_request_detail",
-            kwargs={"permit_request_id": self.permit_request.pk},
+            "permits:submission_detail",
+            kwargs={"submission_id": self.submission.pk},
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -74,14 +72,12 @@ class ReportsTests(ReportsTestsBase):
         # open("output.html", "wb").write(response.content)  # help debugging
         self.assertContains(
             response,
-            f"Les documents ont bien été ajoutés à la demande #{self.permit_request.pk}.",
+            f"Les documents ont bien été ajoutés à la demande #{self.submission.pk}.",
         )
         self.assertEqual(response.status_code, 200)
 
         # Ensure a document was added
-        self.assertEqual(
-            self.permit_request.permitrequestcomplementarydocument_set.count(), 1
-        )
+        self.assertEqual(self.submission.submissioncomplementarydocument_set.count(), 1)
 
     def test_block_gallery(self):
         """Test rendering for all blocks"""
@@ -106,8 +102,8 @@ class ReportsTests(ReportsTestsBase):
             SectionStatus: {},
         }
 
-        for i, (SectionKlass, kwargs) in enumerate(sections_config.items()):
-            SectionKlass.objects.create(
+        for i, (SectionClass, kwargs) in enumerate(sections_config.items()):
+            SectionClass.objects.create(
                 order=i * 10,
                 report=self.report,
                 **kwargs,
@@ -121,14 +117,13 @@ class ReportsTests(ReportsTestsBase):
         self.client.force_login(self.user)
         response = self.client.get(
             reverse(
-                "reports:permit_request_report_pdf",
+                "reports:submission_report_pdf",
                 kwargs={
-                    "permit_request_id": self.permit_request.pk,
-                    "work_object_type_id": self.works_object_type.pk,
+                    "submission_id": self.submission.pk,
+                    "form_id": self.form.pk,
                     "report_id": self.report.pk,
                 },
             )
         )
-        print(response.streaming_content)
         pdf_bytes = b"".join(response.streaming_content)
         self.assert_pdf_is_as_expected(pdf_bytes)

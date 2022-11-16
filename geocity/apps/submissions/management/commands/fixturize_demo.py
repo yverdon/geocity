@@ -14,8 +14,12 @@ from django.utils import timezone
 
 from geocity import settings
 from geocity.apps.accounts.users import get_integrator_permissions
-from geocity.apps.permits import models
-from geocity.apps.reports.models import Report
+
+
+from geocity.apps.accounts.models import *
+from geocity.apps.forms.models import *
+from geocity.apps.reports.models import *
+from geocity.apps.submissions.models import *
 
 
 def strip_accents(text):
@@ -102,17 +106,17 @@ class Command(BaseCommand):
             self.setup_sites()
             self.stdout.write("Creating users...")
             self.create_users()
-            self.stdout.write("Creating works types and objs...")
-            self.create_works_types()
-            self.stdout.write("Creating demo permit...")
-            self.create_permit()
+            self.stdout.write("Creating form categories")
+            self.create_form_categories()
+            self.stdout.write("Creating demo submission...")
+            self.create_submission()
             self.stdout.write("Creating dummy geometric entities...")
             self.create_geom_layer_entity()
             self.stdout.write("Creating template customizations...")
             self.create_template_customization()
             self.stdout.write("Configurating template customizations...")
             self.setup_homepage()
-            self.stdout.write("Setting site integrator for selected confgurations...")
+            self.stdout.write("Setting site integrator for selected configurations...")
             self.setup_integrator()
             self.stdout.write("Fixturize succeed!")
 
@@ -134,20 +138,19 @@ class Command(BaseCommand):
 
     def setup_integrator(self):
         integrator = Group.objects.get(name="integrator")
-        models.SiteProfile.objects.filter(site__name="yverdon").update(
+        SiteProfile.objects.filter(site__name="yverdon").update(
             integrator=integrator
         )
-        models.PermitAdministrativeEntity.objects.update(integrator=integrator)
-        models.WorksType.objects.update(integrator=integrator)
-        models.WorksObject.objects.update(integrator=integrator)
-        models.WorksObjectType.objects.update(integrator=integrator)
-        models.PermitActorType.objects.update(integrator=integrator)
-        models.ComplementaryDocumentType.objects.update(integrator=integrator)
-        models.PermitRequestAmendProperty.objects.update(integrator=integrator)
+        AdministrativeEntity.objects.update(integrator=integrator)
+        FormCategory.objects.update(integrator=integrator)
+        Form.objects.update(integrator=integrator)
+        ContactType.objects.update(integrator=integrator)
+        ComplementaryDocumentType.objects.update(integrator=integrator)
+        SubmissionAmendField.objects.update(integrator=integrator)
 
     def create_users(self):
 
-        administrative_entity_yverdon = models.PermitAdministrativeEntity.objects.create(
+        administrative_entity_yverdon = AdministrativeEntity.objects.create(
             name="Démo Yverdon",
             ofs_id=5938,
             link="https://mapnv.ch",
@@ -159,7 +162,7 @@ class Command(BaseCommand):
         administrative_entity_yverdon.sites.add(Site.objects.get(name="yverdon"))
         administrative_entity_yverdon.sites.add(Site.objects.get(name="default site"))
 
-        administrative_entity_grandson = models.PermitAdministrativeEntity.objects.create(
+        administrative_entity_grandson = AdministrativeEntity.objects.create(
             name="Démo Grandson",
             ofs_id=5938,
             link="https://mapnv.ch",
@@ -171,7 +174,7 @@ class Command(BaseCommand):
         administrative_entity_grandson.sites.add(Site.objects.get(name="grandson"))
         administrative_entity_grandson.sites.add(Site.objects.get(name="default site"))
 
-        administrative_entity_lausanne = models.PermitAdministrativeEntity.objects.create(
+        administrative_entity_lausanne = AdministrativeEntity.objects.create(
             name="Démo Lausanne",
             ofs_id=5586,
             link="https://mapnv.ch",
@@ -183,7 +186,7 @@ class Command(BaseCommand):
         administrative_entity_lausanne.sites.add(Site.objects.get(name="lausanne"))
         administrative_entity_lausanne.sites.add(Site.objects.get(name="default site"))
 
-        administrative_entity_vevey = models.PermitAdministrativeEntity.objects.create(
+        administrative_entity_vevey = AdministrativeEntity.objects.create(
             name="Démo Vevey",
             ofs_id=5890,
             link="https://mapnv.ch",
@@ -206,7 +209,7 @@ class Command(BaseCommand):
         )
         self.stdout.write("admin / demo")
 
-        models.PermitAuthor.objects.create(
+        UserProfile.objects.create(
             user=user,
             address="Rue du test",
             zipcode=1234,
@@ -222,7 +225,7 @@ class Command(BaseCommand):
             first_name="User",
             last_name="Demo",
         )
-        models.PermitAuthor.objects.create(
+        UserProfile.objects.create(
             user=user,
             address="Rue du Port",
             zipcode=1234,
@@ -232,15 +235,15 @@ class Command(BaseCommand):
         )
         self.stdout.write("user / demo")
 
-        permit_request_ct = ContentType.objects.get_for_model(models.PermitRequest)
+        submission_ct = ContentType.objects.get_for_model(Submission)
         secretariat_permissions = Permission.objects.filter(
             codename__in=[
-                "amend_permit_request",
-                "classify_permit_request",
+                "amend_submission",
+                "classify_submission",
             ],
-            content_type=permit_request_ct,
+            content_type=submission_ct,
         )
-
+        
         reports_request_ct = ContentType.objects.get_for_model(Report)
         secretariat_permissions_reports = Permission.objects.filter(
             codename__in=[
@@ -269,7 +272,7 @@ class Command(BaseCommand):
         self.stdout.write("pilot-2 / demo")
 
         secretary_groups = Group.objects.filter(name__in=["pilot", "pilot-2"])
-        department = models.PermitDepartment.objects.filter(
+        PermitDepartment.objects.filter(
             group__in=secretary_groups
         ).update(is_backoffice=True)
 
@@ -282,14 +285,14 @@ class Command(BaseCommand):
         )
         Group.objects.get(name="validator").permissions.add(
             Permission.objects.get(
-                codename="validate_permit_request", content_type=permit_request_ct
+                codename="validate_submission", content_type=submission_ct
             )
         )
 
         validator_group = Group.objects.get(name="validator")
-        departement = models.PermitDepartment.objects.get(group=validator_group)
-        departement.is_validator = True
-        departement.save()
+        department = PermitDepartment.objects.get(group=validator_group)
+        department.is_validator = True
+        department.save()
 
         self.stdout.write("validator / demo")
 
@@ -301,7 +304,7 @@ class Command(BaseCommand):
         )
         Group.objects.get(name="validator-2").permissions.add(
             Permission.objects.get(
-                codename="validate_permit_request", content_type=permit_request_ct
+                codename="validate_submission", content_type=submission_ct
             )
         )
         self.stdout.write("validator-2 / demo")
@@ -322,15 +325,15 @@ class Command(BaseCommand):
         )
         self.stdout.write("integrator / demo")
 
-        # Insert status choices from PermitRequest and insert status for adminsitrative_entity
-        for status_value in models.PermitRequest.STATUS_CHOICES:
+        # Insert status choices from Submission and insert status for adminsitrative_entity
+        for status_value in Submission.STATUS_CHOICES:
             for entity in [
                 administrative_entity_yverdon,
                 administrative_entity_grandson,
                 administrative_entity_lausanne,
                 administrative_entity_vevey,
             ]:
-                models.PermitWorkflowStatus.objects.get_or_create(
+                SubmissionWorkflowStatus.objects.get_or_create(
                     status=status_value[0], administrative_entity=entity
                 )
         # Add admin user in all groups
@@ -360,13 +363,13 @@ class Command(BaseCommand):
             is_staff=is_staff,
         )
         user.groups.set([group])
-        models.PermitAuthor.objects.create(
+        UserProfile.objects.create(
             user=user,
             address="Rue du Lac",
             zipcode=1400,
             city="Yverdon",
         )
-        models.PermitDepartment.objects.create(
+        PermitDepartment.objects.create(
             group=group,
             is_validator=False,
             is_integrator_admin=is_integrator_admin,
@@ -377,102 +380,92 @@ class Command(BaseCommand):
 
         return user
 
-    def create_works_types(self):
-        properties = {
-            "title": models.WorksObjectProperty.objects.create(
-                name="Texte permettant de séparer visuellement les champs",
-                input_type="title",
-                help_text="Ce texte permet d'expliquer en détail à l'utilisateur les pourquoi et le comment des informations à fournir",
-                is_mandatory=False,
-                order=2,
+    def create_form_categories(self):
+        fields = {
+            "comment": Field.objects.create(
+                name="Commentaire", input_type="text", is_mandatory=False,
             ),
-            "comment": models.WorksObjectProperty.objects.create(
-                name="Commentaire", input_type="text", is_mandatory=False, order=0
-            ),
-            "width": models.WorksObjectProperty.objects.create(
+            "width": Field.objects.create(
                 name="Largeur [m]",
                 input_type="number",
                 placeholder="3",
                 help_text="Largeur en mètres",
                 is_mandatory=False,
-                order=1,
             ),
-            "height": models.WorksObjectProperty.objects.create(
+            "title": Field.objects.create(
+                name="Texte permettant de séparer visuellement les champs",
+                input_type="title",
+                help_text="Ce texte permet d'expliquer en détail à l'utilisateur les pourquoi et le comment des informations à fournir",
+                is_mandatory=False,
+            ),
+            "height": Field.objects.create(
                 name="Hauteur [m]",
                 input_type="number",
                 placeholder="2",
                 help_text="Longueur en mètres",
                 is_mandatory=False,
-                order=3,
             ),
-            "plan": models.WorksObjectProperty.objects.create(
+            "plan": Field.objects.create(
                 name="Plan de situation",
                 input_type="file",
                 help_text="Plan complémentaire détaillant votre projet",
                 is_mandatory=False,
-                order=4,
             ),
-            "adresse": models.WorksObjectProperty.objects.create(
+            "adresse": Field.objects.create(
                 name="Adresse",
                 input_type="address",
                 placeholder="Place Pestalozzi 2, 1400 Yverdon-les-Bains",
                 is_mandatory=False,
-                order=5,
             ),
-            "adresse_geocode": models.WorksObjectProperty.objects.create(
+            "adresse_geocode": Field.objects.create(
                 name="Adresse avec géocodage",
                 input_type="address",
                 placeholder="Place Pestalozzi 2, 1400 Yverdon-les-Bains",
                 is_mandatory=False,
                 store_geometry_for_address_field=True,
-                order=5,
             ),
-            "date": models.WorksObjectProperty.objects.create(
+            "date": Field.objects.create(
                 name="Date",
                 input_type="date",
                 is_mandatory=False,
-                order=6,
             ),
-            "checkbox": models.WorksObjectProperty.objects.create(
+            "checkbox": Field.objects.create(
                 name="Impact sur la chaussée",
                 input_type="checkbox",
                 is_mandatory=False,
-                order=7,
             ),
-            "list_single": models.WorksObjectProperty.objects.create(
+            "list_single": Field.objects.create(
                 name="À moins de 3m d'un arbre",
                 input_type="list_single",
                 is_mandatory=False,
                 choices="oui\nnon",
-                order=8,
             ),
-            "list_multiple": models.WorksObjectProperty.objects.create(
+            "list_multiple": Field.objects.create(
                 name="À moins de 3m d'un arbre",
                 input_type="list_multiple",
                 is_mandatory=False,
                 choices="Déviation trafic\nHoraire prolongé\nSon>90dB",
-                order=9,
             ),
         }
-        works_types = [
+        form_categories = [
             (
                 "Stationnement (ex. de demande devant être prolongée)",
                 [
                     (
                         "Demande de macaron",
-                        properties["comment"],
-                        properties["date"],
+                        fields["comment"],
+                        fields["date"],
                     ),
                     (
                         "Accès au centre-ville historique",
-                        properties["plan"],
-                        properties["width"],
-                        properties["comment"],
-                        properties["title"],
-                        properties["date"],
-                        properties["checkbox"],
-                        properties["adresse"],
-                        properties["list_multiple"],
+                        fields["plan"],
+                        fields["width"],
+                        fields["comment"],
+                        fields["title"],
+                        fields["date"],
+                        fields["checkbox"],
+                        fields["adresse"],
+                        fields["list_multiple"],
                     ),
                 ],
             ),
@@ -481,47 +474,47 @@ class Command(BaseCommand):
                 [
                     (
                         "Événement sportif",
-                        properties["plan"],
-                        properties["width"],
-                        properties["comment"],
-                        properties["title"],
-                        properties["date"],
-                        properties["checkbox"],
-                        properties["adresse"],
-                        properties["list_multiple"],
+                        fields["plan"],
+                        fields["width"],
+                        fields["comment"],
+                        fields["title"],
+                        fields["date"],
+                        fields["checkbox"],
+                        fields["adresse"],
+                        fields["list_multiple"],
                     ),
                     (
                         "Événement culturel",
-                        properties["plan"],
-                        properties["width"],
-                        properties["comment"],
-                        properties["title"],
-                        properties["date"],
-                        properties["checkbox"],
-                        properties["adresse"],
-                        properties["list_multiple"],
+                        fields["plan"],
+                        fields["width"],
+                        fields["comment"],
+                        fields["title"],
+                        fields["date"],
+                        fields["checkbox"],
+                        fields["adresse"],
+                        fields["list_multiple"],
                     ),
                     (
                         "Événement politique",
-                        properties["plan"],
-                        properties["width"],
-                        properties["comment"],
-                        properties["title"],
-                        properties["date"],
-                        properties["checkbox"],
-                        properties["adresse"],
-                        properties["list_multiple"],
+                        fields["plan"],
+                        fields["width"],
+                        fields["comment"],
+                        fields["title"],
+                        fields["date"],
+                        fields["checkbox"],
+                        fields["adresse"],
+                        fields["list_multiple"],
                     ),
                     (
                         "Événement commercial",
-                        properties["plan"],
-                        properties["width"],
-                        properties["comment"],
-                        properties["title"],
-                        properties["date"],
-                        properties["checkbox"],
-                        properties["adresse"],
-                        properties["list_multiple"],
+                        fields["plan"],
+                        fields["width"],
+                        fields["comment"],
+                        fields["title"],
+                        fields["date"],
+                        fields["checkbox"],
+                        fields["adresse"],
+                        fields["list_multiple"],
                     ),
                 ],
             ),
@@ -530,24 +523,24 @@ class Command(BaseCommand):
                 [
                     (
                         "Permis de fouille",
-                        properties["width"],
-                        properties["height"],
-                        properties["title"],
-                        properties["comment"],
-                        properties["adresse"],
-                        properties["adresse_geocode"],
-                        properties["checkbox"],
-                        properties["list_single"],
+                        fields["width"],
+                        fields["height"],
+                        fields["title"],
+                        fields["comment"],
+                        fields["adresse"],
+                        fields["adresse_geocode"],
+                        fields["checkbox"],
+                        fields["list_single"],
                     ),
                     (
                         "Permis de dépôt",
-                        properties["width"],
-                        properties["height"],
-                        properties["comment"],
-                        properties["title"],
-                        properties["adresse"],
-                        properties["adresse_geocode"],
-                        properties["checkbox"],
+                        fields["width"],
+                        fields["height"],
+                        fields["comment"],
+                        fields["title"],
+                        fields["adresse"],
+                        fields["adresse_geocode"],
+                        fields["checkbox"],
                     ),
                 ],
             ),
@@ -556,28 +549,28 @@ class Command(BaseCommand):
                 [
                     (
                         "Prime éco-mobilité",
-                        properties["comment"],
+                        fields["comment"],
                     ),
                     (
                         "Abonnement de bus",
-                        properties["comment"],
+                        fields["comment"],
                     ),
                 ],
             ),
         ]
-        administrative_entity_yverdon = models.PermitAdministrativeEntity.objects.get(
+        administrative_entity_yverdon = AdministrativeEntity.objects.get(
             name="Démo Yverdon",
         )
         administrative_entity_yverdon.tags.add("yverdon")
-        administrative_entity_grandson = models.PermitAdministrativeEntity.objects.get(
+        administrative_entity_grandson = AdministrativeEntity.objects.get(
             name="Démo Grandson",
         )
         administrative_entity_grandson.tags.add("grandson")
-        administrative_entity_lausanne = models.PermitAdministrativeEntity.objects.get(
+        administrative_entity_lausanne = AdministrativeEntity.objects.get(
             name="Démo Lausanne",
         )
         administrative_entity_lausanne.tags.add("lausanne")
-        administrative_entity_vevey = models.PermitAdministrativeEntity.objects.get(
+        administrative_entity_vevey = AdministrativeEntity.objects.get(
             name="Démo Vevey",
         )
         administrative_entity_vevey.tags.add("vevey")
@@ -588,22 +581,19 @@ class Command(BaseCommand):
         de remise en état après une fouille sur le domaine public
         """
 
-        for works_type, objs in works_types:
-            works_type_obj = models.WorksType.objects.create(name=works_type)
-            works_type_obj.tags.add(unaccent(works_type))
-            models.PermitActorType.objects.create(
-                type=models.ACTOR_TYPE_OTHER,
-                works_type=works_type_obj,
+        for form_category, objs in form_categories:
+            form_category_obj = FormCategory.objects.create(name=form_category)
+            form_category_obj.tags.add(unaccent(form_category))
+            ContactType.objects.create(
+                type=CONTACT_TYPE_OTHER,
+                form_category=form_category_obj,
                 is_mandatory=False,
             )
 
-            for works_obj, *props in objs:
-                works_obj_obj, created = models.WorksObject.objects.get_or_create(
-                    name=works_obj
-                )
-                works_object_type = models.WorksObjectType.objects.create(
-                    works_type=works_type_obj,
-                    works_object=works_obj_obj,
+            for form, *fields in objs:
+                form_obj = Form.objects.create(
+                    name=form,
+                    category=form_category_obj,
                     is_public=True,
                     notify_services=True,
                     document_enabled=True,
@@ -612,392 +602,391 @@ class Command(BaseCommand):
                     services_to_notify=f"yverdon-squad+admin@liip.ch",
                     additional_information=additional_information_text,
                 )
-                works_object_type.administrative_entities.add(
+                form_obj.administrative_entities.add(
                     administrative_entity_yverdon
                 )
-                works_object_type.administrative_entities.add(
+                form_obj.administrative_entities.add(
                     administrative_entity_grandson
                 )
-                works_object_type.administrative_entities.add(
+                form_obj.administrative_entities.add(
                     administrative_entity_lausanne
                 )
-                works_object_type.administrative_entities.add(
+                form_obj.administrative_entities.add(
                     administrative_entity_vevey
                 )
-                self.create_document_types(works_object_type)
-                for prop in props:
-                    prop.works_object_types.add(works_object_type)
+                self.create_document_types(form_obj)
+                for order, field in enumerate(fields):
+                    FormField.objects.create(field=field, form=form_obj, order=order)
 
-        # Configure specific WOT in order to illustrate full potential of Geocity
+        # Configure specific form in order to illustrate full potential of Geocity
 
         # No geom nor time
-        for wot in models.WorksObjectType.objects.filter(
-            works_type__name="Subventions (ex. de demande sans géométrie ni période temporelle)"
+        for form in Form.objects.filter(
+            category__name="Subventions (ex. de demande sans géométrie ni période temporelle)"
         ):
-            wot.has_geometry_point = False
-            wot.has_geometry_line = False
-            wot.has_geometry_polygon = False
-            wot.needs_date = False
-            wot.save()
+            form.has_geometry_point = False
+            form.has_geometry_line = False
+            form.has_geometry_polygon = False
+            form.needs_date = False
+            form.save()
 
         # Renewal reminder
-        for wot in models.WorksObjectType.objects.filter(
-            works_type__name="Stationnement (ex. de demande devant être prolongée)"
+        for form in Form.objects.filter(
+            category__name="Stationnement (ex. de demande devant être prolongée)"
         ):
-            wot.has_geometry_point = True
-            wot.has_geometry_line = False
-            wot.has_geometry_polygon = False
-            wot.needs_date = True
-            wot.start_delay = 1
-            wot.permit_duration = 2
-            wot.expiration_reminder = True
-            wot.days_before_reminder = 5
-            wot.save()
+            form.has_geometry_point = True
+            form.has_geometry_line = False
+            form.has_geometry_polygon = False
+            form.needs_date = True
+            form.start_delay = 1
+            form.permit_duration = 2
+            form.expiration_reminder = True
+            form.days_before_reminder = 5
+            form.save()
 
-    def create_permit(self):
+    def create_submission(self):
 
-        demo_user = User.objects.get(username="user")
-        demo_author = models.PermitAuthor.objects.get(id=demo_user.id)
-        demo_administrative_entity = models.PermitAdministrativeEntity.objects.get(
+        demo_author = User.objects.get(username="user")
+        demo_administrative_entity = AdministrativeEntity.objects.get(
             name="Démo Yverdon"
         )
-        demo_works_object_type = models.WorksObjectType.objects.first()
-        models.WorksObjectType.objects.filter(id=5).update(
+        demo_form = Form.objects.first()
+        Form.objects.filter(id=5).update(
             requires_validation_document=False
         )
-        demo_works_object_type_no_validation_document = (
-            models.WorksObjectType.objects.filter(
+        demo_form_no_validation_document = (
+            Form.objects.filter(
                 requires_validation_document=False
             ).first()
         )
-        department = models.PermitDepartment.objects.filter(
+        department = PermitDepartment.objects.filter(
             administrative_entity=demo_administrative_entity,
             is_validator=True,
         ).first()
 
-        # Basic permit request
-        permit_request = models.PermitRequest.objects.create(
-            status=models.PermitRequest.STATUS_DRAFT,
+        # Basic submission
+        submission = Submission.objects.create(
+            status=Submission.STATUS_DRAFT,
             administrative_entity=demo_administrative_entity,
             author=demo_author,
         )
 
-        models.WorksObjectTypeChoice.objects.create(
-            permit_request=permit_request, works_object_type=demo_works_object_type
+        SelectedForm.objects.create(
+            submission=submission, form=demo_form
         )
 
-        models.PermitRequestGeoTime.objects.create(
-            permit_request=permit_request,
+        SubmissionGeoTime.objects.create(
+            submission=submission,
             starts_at=timezone.now(),
             ends_at=timezone.now(),
             geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
         )
 
-        # Permit Request to Classify with no validation document required
-        permit_request2 = models.PermitRequest.objects.create(
-            status=models.PermitRequest.STATUS_PROCESSING,
+        # Submission to Classify with no validation document required
+        submission2 = Submission.objects.create(
+            status=Submission.STATUS_PROCESSING,
             administrative_entity=demo_administrative_entity,
             author=demo_author,
             is_public=True,
         )
 
-        models.PermitRequestValidation.objects.get_or_create(
-            permit_request=permit_request2,
+        SubmissionValidation.objects.get_or_create(
+            submission=submission2,
             department=department,
-            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+            validation_status=SubmissionValidation.STATUS_APPROVED,
             comment_before="Ce projet n'est pas admissible, veuillez l'améliorer.",
             comment_during="Les améliorations ont été prise en compte.",
             comment_after="Excellent projet qui bénéficiera à la communauté.",
         )
 
-        models.WorksObjectTypeChoice.objects.create(
-            permit_request=permit_request2,
-            works_object_type=demo_works_object_type_no_validation_document,
+        SelectedForm.objects.create(
+            submission=submission2,
+            form=demo_form_no_validation_document,
         )
 
-        models.PermitRequestGeoTime.objects.create(
-            permit_request=permit_request2,
+        SubmissionGeoTime.objects.create(
+            submission=submission2,
             starts_at=timezone.now(),
             ends_at=timezone.now(),
             geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
         )
 
-        # Permit Request to Classify with mixed objects requiring and not requiring validation document
-        permit_request3 = models.PermitRequest.objects.create(
-            status=models.PermitRequest.STATUS_PROCESSING,
+        # Submission to Classify with mixed objects requiring and not requiring validation document
+        submission3 = Submission.objects.create(
+            status=Submission.STATUS_PROCESSING,
             administrative_entity=demo_administrative_entity,
             author=demo_author,
             is_public=True,
         )
 
-        models.PermitRequestValidation.objects.get_or_create(
-            permit_request=permit_request3,
+        SubmissionValidation.objects.get_or_create(
+            submission=submission3,
             department=department,
-            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+            validation_status=SubmissionValidation.STATUS_APPROVED,
             comment_before="Ce projet n'est pas admissible, veuillez l'améliorer.",
             comment_during="Les améliorations ont été prise en compte.",
             comment_after="Excellent projet qui bénéficiera à la communauté.",
         )
 
-        models.WorksObjectTypeChoice.objects.create(
-            permit_request=permit_request3, works_object_type=demo_works_object_type
+        SelectedForm.objects.create(
+            submission=submission3, form=demo_form
         )
 
-        models.WorksObjectTypeChoice.objects.create(
-            permit_request=permit_request3,
-            works_object_type=demo_works_object_type_no_validation_document,
+        SelectedForm.objects.create(
+            submission=submission3,
+            form=demo_form_no_validation_document,
         )
 
-        models.PermitRequestGeoTime.objects.create(
-            permit_request=permit_request3,
+        SubmissionGeoTime.objects.create(
+            submission=submission3,
             starts_at=timezone.now(),
             ends_at=timezone.now(),
             geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
         )
 
-        # Permit Requests to Classify with validation document required
-        permit_request4 = models.PermitRequest.objects.create(
-            status=models.PermitRequest.STATUS_PROCESSING,
+        # Submission to Classify with validation document required
+        submission4 = Submission.objects.create(
+            status=Submission.STATUS_PROCESSING,
             administrative_entity=demo_administrative_entity,
             author=demo_author,
             is_public=True,
         )
 
-        models.PermitRequestValidation.objects.get_or_create(
-            permit_request=permit_request4,
+        SubmissionValidation.objects.get_or_create(
+            submission=submission4,
             department=department,
-            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+            validation_status=SubmissionValidation.STATUS_APPROVED,
             comment_before="Ce projet n'est pas admissible, veuillez l'améliorer.",
             comment_during="Les améliorations ont été prise en compte.",
             comment_after="Excellent projet qui bénéficiera à la communauté.",
         )
-        models.WorksObjectTypeChoice.objects.create(
-            permit_request=permit_request4, works_object_type=demo_works_object_type
+        SelectedForm.objects.create(
+            submission=submission4, form=demo_form
         )
 
-        models.PermitRequestGeoTime.objects.create(
-            permit_request=permit_request4,
+        SubmissionGeoTime.objects.create(
+            submission=submission4,
             starts_at=timezone.now(),
             ends_at=timezone.now(),
             geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
         )
 
-        permit_request5 = models.PermitRequest.objects.create(
-            status=models.PermitRequest.STATUS_PROCESSING,
+        submission5 = Submission.objects.create(
+            status=Submission.STATUS_PROCESSING,
             administrative_entity=demo_administrative_entity,
             author=demo_author,
             is_public=True,
         )
 
-        models.PermitRequestValidation.objects.get_or_create(
-            permit_request=permit_request5,
+        SubmissionValidation.objects.get_or_create(
+            submission=submission5,
             department=department,
-            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+            validation_status=SubmissionValidation.STATUS_APPROVED,
             comment_before="Ce projet n'est pas admissible, veuillez l'améliorer.",
             comment_during="Les améliorations ont été prise en compte.",
             comment_after="Excellent projet qui bénéficiera à la communauté.",
         )
 
-        models.WorksObjectTypeChoice.objects.create(
-            permit_request=permit_request5,
-            works_object_type=models.WorksObjectType.objects.last(),
+        SelectedForm.objects.create(
+            submission=submission5,
+            form=Form.objects.last(),
         )
 
-        models.PermitRequestGeoTime.objects.create(
-            permit_request=permit_request5,
+        SubmissionGeoTime.objects.create(
+            submission=submission5,
             starts_at=timezone.now(),
             ends_at=timezone.now(),
             geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
         )
 
-        # permit with pending validations
+        # Submission with pending validations
 
-        permit_request6 = models.PermitRequest.objects.create(
-            status=models.PermitRequest.STATUS_AWAITING_VALIDATION,
+        submission6 = Submission.objects.create(
+            status=Submission.STATUS_AWAITING_VALIDATION,
             administrative_entity=demo_administrative_entity,
             author=demo_author,
             is_public=True,
         )
 
-        models.PermitRequestValidation.objects.get_or_create(
-            permit_request=permit_request6,
+        SubmissionValidation.objects.get_or_create(
+            submission=submission6,
             department=department,
         )
 
-        models.WorksObjectTypeChoice.objects.create(
-            permit_request=permit_request6,
-            works_object_type=models.WorksObjectType.objects.last(),
+        SelectedForm.objects.create(
+            submission=submission6,
+            form=Form.objects.last(),
         )
 
-        models.PermitRequestGeoTime.objects.create(
-            permit_request=permit_request6,
+        SubmissionGeoTime.objects.create(
+            submission=submission6,
             starts_at=timezone.now(),
             ends_at=timezone.now(),
             geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
         )
 
-        # Permit Request to Classify with mixed objects with lots of text for print demo
-        permit_request7 = models.PermitRequest.objects.create(
-            status=models.PermitRequest.STATUS_PROCESSING,
+        # Submission to Classify with mixed objects with lots of text for print demo
+        submission7 = Submission.objects.create(
+            status=Submission.STATUS_PROCESSING,
             administrative_entity=demo_administrative_entity,
             author=demo_author,
             is_public=True,
         )
-        # Validations with long text
-        models.PermitRequestValidation.objects.get_or_create(
-            permit_request=permit_request7,
+        # SubmissionValidations with long text
+        SubmissionValidation.objects.get_or_create(
+            submission=submission7,
             department=department,
-            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+            validation_status=SubmissionValidation.STATUS_APPROVED,
             comment_before=demo_small_text,
             comment_during=demo_small_text,
             comment_after=demo_small_text,
         )
-        models.PermitRequestValidation.objects.get_or_create(
-            permit_request=permit_request7,
-            department=models.PermitDepartment.objects.get(group__name="validator-2"),
-            validation_status=models.PermitRequestValidation.STATUS_APPROVED,
+        SubmissionValidation.objects.get_or_create(
+            submission=submission7,
+            department=PermitDepartment.objects.get(group__name="validator-2"),
+            validation_status=SubmissionValidation.STATUS_APPROVED,
             comment_before=demo_small_text,
             comment_during=demo_small_text,
             comment_after=demo_small_text,
         )
 
-        models.WorksObjectTypeChoice.objects.create(
-            permit_request=permit_request7, works_object_type=demo_works_object_type
+        SelectedForm.objects.create(
+            submission=submission7, form=demo_form
         )
 
-        models.WorksObjectTypeChoice.objects.create(
-            permit_request=permit_request7,
-            works_object_type=demo_works_object_type_no_validation_document,
+        SelectedForm.objects.create(
+            submission=submission7,
+            form=demo_form_no_validation_document,
         )
 
-        models.PermitRequestGeoTime.objects.create(
-            permit_request=permit_request7,
+        SubmissionGeoTime.objects.create(
+            submission=submission7,
             starts_at=timezone.now(),
             ends_at=timezone.now(),
             geom="GEOMETRYCOLLECTION(MULTIPOLYGON(((2539078 1181121, 2539092 1181084, 2539118 1181111, 2539099 1181105, 2539078 1181121))))",
         )
 
         # Amend properties with long text
-        amend_property_1 = models.PermitRequestAmendProperty.objects.create(
+        amend_field_1 = SubmissionAmendField.objects.create(
             name="Commentaire interne",
             is_visible_by_author=False,
         )
-        amend_property_1.works_object_types.set(
-            [demo_works_object_type, demo_works_object_type_no_validation_document]
+        amend_field_1.forms.set(
+            [demo_form, demo_form_no_validation_document]
         )
-        amend_property_2 = models.PermitRequestAmendProperty.objects.create(
+        amend_field_2 = SubmissionAmendField.objects.create(
             name="Commentaire visible par le requérant",
             is_visible_by_author=True,
         )
-        amend_property_2.works_object_types.set(
-            [demo_works_object_type, demo_works_object_type_no_validation_document]
+        amend_field_2.forms.set(
+            [demo_form, demo_form_no_validation_document]
         )
-        amend_property_3 = models.PermitRequestAmendProperty.objects.create(
+        amend_field_3 = SubmissionAmendField.objects.create(
             name="Commentaire interne visible par les validateurs",
             is_visible_by_author=False,
             is_visible_by_validators=True,
         )
-        amend_property_3.works_object_types.set(
-            [demo_works_object_type, demo_works_object_type_no_validation_document]
+        amend_field_3.forms.set(
+            [demo_form, demo_form_no_validation_document]
         )
-        works_object_type_choice_1 = models.WorksObjectTypeChoice.objects.get(
-            permit_request=permit_request7,
-            works_object_type=demo_works_object_type,
+        selected_form_1 = SelectedForm.objects.get(
+            submission=submission7,
+            form=demo_form,
         )
-        works_object_type_choice_2 = models.WorksObjectTypeChoice.objects.get(
-            permit_request=permit_request7,
-            works_object_type=demo_works_object_type_no_validation_document,
+        selected_form_2 = SelectedForm.objects.get(
+            submission=submission7,
+            form=demo_form_no_validation_document,
         )
-        models.PermitRequestAmendPropertyValue.objects.create(
-            property=amend_property_1,
-            works_object_type_choice=works_object_type_choice_1,
+        SubmissionAmendFieldValue.objects.create(
+            field=amend_field_1,
+            form=selected_form_1,
             value=demo_small_text,
         )
-        models.PermitRequestAmendPropertyValue.objects.create(
-            property=amend_property_1,
-            works_object_type_choice=works_object_type_choice_2,
+        SubmissionAmendFieldValue.objects.create(
+            field=amend_field_1,
+            form=selected_form_2,
             value=demo_small_text,
         )
-        models.PermitRequestAmendPropertyValue.objects.create(
-            property=amend_property_2,
-            works_object_type_choice=works_object_type_choice_1,
+        SubmissionAmendFieldValue.objects.create(
+            field=amend_field_2,
+            form=selected_form_1,
             value=demo_small_text,
         )
-        models.PermitRequestAmendPropertyValue.objects.create(
-            property=amend_property_2,
-            works_object_type_choice=works_object_type_choice_2,
+        SubmissionAmendFieldValue.objects.create(
+            field=amend_field_2,
+            form=selected_form_2,
             value=demo_small_text,
         )
-        models.PermitRequestAmendPropertyValue.objects.create(
-            property=amend_property_3,
-            works_object_type_choice=works_object_type_choice_1,
+        SubmissionAmendFieldValue.objects.create(
+            field=amend_field_3,
+            form=selected_form_1,
             value=demo_small_text,
         )
-        models.PermitRequestAmendPropertyValue.objects.create(
-            property=amend_property_3,
-            works_object_type_choice=works_object_type_choice_2,
+        SubmissionAmendFieldValue.objects.create(
+            field=amend_field_3,
+            form=selected_form_2,
             value=demo_small_text,
         )
 
-        # Set default values for properties
-        for prop in models.WorksObjectProperty.objects.all():
-            for works_object_type_choice in [
-                works_object_type_choice_1,
-                works_object_type_choice_2,
+        # Set default values for fields
+        for field_obj in Field.objects.all():
+            for selected_form in [
+                selected_form_1,
+                selected_form_2,
             ]:
-                if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_DATE:
-                    models.WorksObjectPropertyValue.objects.create(
-                        property=prop,
-                        works_object_type_choice=works_object_type_choice,
+                if field_obj.input_type == Field.INPUT_TYPE_DATE:
+                    FieldValue.objects.create(
+                        field=field_obj,
+                        selected_form=selected_form,
                         value={"val": "01.01.2021"},
                     )
-                if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_ADDRESS:
-                    models.WorksObjectPropertyValue.objects.create(
-                        property=prop,
-                        works_object_type_choice=works_object_type_choice,
+                if field_obj.input_type == Field.INPUT_TYPE_ADDRESS:
+                    FieldValue.objects.create(
+                        field=field_obj,
+                        selected_form=selected_form,
                         value={"val": "Place pestalozzi 2, 1400 Yverdon-les-Bains"},
                     )
-                if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_CHECKBOX:
-                    models.WorksObjectPropertyValue.objects.create(
-                        property=prop,
-                        works_object_type_choice=works_object_type_choice,
+                if field_obj.input_type == Field.INPUT_TYPE_CHECKBOX:
+                    FieldValue.objects.create(
+                        field=field_obj,
+                        selected_form=selected_form,
                         value={"val": True},
                     )
-                if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_NUMBER:
-                    models.WorksObjectPropertyValue.objects.create(
-                        property=prop,
-                        works_object_type_choice=works_object_type_choice,
+                if field_obj.input_type == Field.INPUT_TYPE_NUMBER:
+                    FieldValue.objects.create(
+                        field=field_obj,
+                        selected_form=selected_form,
                         value={"val": 42},
                     )
-                if prop.input_type == models.WorksObjectProperty.INPUT_TYPE_LIST_SINGLE:
-                    models.WorksObjectPropertyValue.objects.create(
-                        property=prop,
-                        works_object_type_choice=works_object_type_choice,
+                if field_obj.input_type == Field.INPUT_TYPE_LIST_SINGLE:
+                    FieldValue.objects.create(
+                        field=field_obj,
+                        selected_form=selected_form,
                         value={"val": "Oui"},
                     )
                 if (
-                    prop.input_type
-                    == models.WorksObjectProperty.INPUT_TYPE_LIST_MULTIPLE
+                    field_obj.input_type
+                    == Field.INPUT_TYPE_LIST_MULTIPLE
                 ):
-                    models.WorksObjectPropertyValue.objects.create(
-                        property=prop,
-                        works_object_type_choice=works_object_type_choice,
+                    FieldValue.objects.create(
+                        field=field_obj,
+                        selected_form=selected_form,
                         value={"val": "Le bon choix"},
                     )
                 if (
-                    prop.input_type == models.WorksObjectProperty.INPUT_TYPE_TEXT
-                    or prop.input_type == models.WorksObjectProperty.INPUT_TYPE_REGEX
-                    or prop.input_type == models.WorksObjectProperty.INPUT_TYPE_TITLE
+                    field_obj.input_type == Field.INPUT_TYPE_TEXT
+                    or field_obj.input_type == Field.INPUT_TYPE_REGEX
+                    or field_obj.input_type == Field.INPUT_TYPE_TITLE
                 ):
-                    models.WorksObjectPropertyValue.objects.create(
-                        property=prop,
-                        works_object_type_choice=works_object_type_choice,
+                    FieldValue.objects.create(
+                        field=field_obj,
+                        selected_form=selected_form,
                         value={"val": demo_small_text},
                     )
 
     def create_geom_layer_entity(self):
 
-        models.GeomLayer.objects.create(
+        GeomLayer.objects.create(
             layer_name="Parcelle",
             description="Démo parcelle",
             source_id="1234",
@@ -1006,7 +995,7 @@ class Command(BaseCommand):
             geom="SRID=2056;MultiPolygon(((2526831.16912443 1159820.00193672, 2516148.68477727 1198947.70623155, 2551053.08130695 1201183.5750484, 2560741.84617995 1166651.82332153, 2526831.16912443 1159820.00193672)))",
         )
 
-        models.GeomLayer.objects.create(
+        GeomLayer.objects.create(
             layer_name="Archéologie",
             description="Démo archéologie",
             source_id="1234",
@@ -1016,14 +1005,14 @@ class Command(BaseCommand):
         )
 
     def create_template_customization(self):
-        models.TemplateCustomization.objects.create(
+        TemplateCustomization.objects.create(
             templatename="geocity",
             application_title="Geocity",
             application_subtitle="Demandes en lignes concenrnant le territoire communal",
             application_description="Demandes en ligne concernant le <b>domaine public</b>",
         )
 
-        models.TemplateCustomization.objects.create(
+        TemplateCustomization.objects.create(
             templatename="city",
             application_title="City Admin",
             application_subtitle="Demandes en lignes",
@@ -1060,14 +1049,14 @@ class Command(BaseCommand):
         ]
 
         for document_type in document_types:
-            name, work_object_type, children = document_type
-            parent = models.ComplementaryDocumentType.objects.create(
-                name=name, work_object_types=work_object_type, parent=None
+            name, form, children = document_type
+            parent = ComplementaryDocumentType.objects.create(
+                name=name, form=form, parent=None
             )
 
             for child in children:
-                models.ComplementaryDocumentType.objects.create(
-                    name=child, work_object_types=None, parent=parent
+                ComplementaryDocumentType.objects.create(
+                    name=child, form=None, parent=parent
                 )
 
 
