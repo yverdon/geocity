@@ -93,7 +93,8 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             )
         )
         self.assertEqual(
-            len(get_parser(response.content).select(".form-check-label")), 2
+            len(get_parser(response.content).select("#id_forms-selected_forms label")),
+            2,
         )
 
     def test_form_step_show_private_requests_to_user_with_specific_permission(
@@ -137,5 +138,6 @@ class PrivateDemandsTestCase(LoggedInUserMixin, TestCase):
             )
         )
         self.assertEqual(
-            len(get_parser(response.content).select(".form-check-label")), 3
+            len(get_parser(response.content).select("#id_forms-selected_forms label")),
+            3,
         )

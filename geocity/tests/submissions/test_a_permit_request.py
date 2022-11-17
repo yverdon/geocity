@@ -1273,7 +1273,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         )
 
         parser = get_parser(response.content)
-        element_parsed = parser.select(".form-check-label")
+        element_parsed = parser.select("#id_forms-selected_forms label")
 
         # Check that 2 forms are visibles
         self.assertEqual(2, len(element_parsed))
@@ -1301,7 +1301,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         )
 
         parser = get_parser(response.content)
-        element_parsed = parser.select(".form-check-label")
+        element_parsed = parser.select("#id_forms-selected_forms label")
 
         # Check that 3 forms are visibles
         self.assertEqual(3, len(element_parsed))
