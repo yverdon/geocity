@@ -6,19 +6,25 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('submissions', '0003_migrate_permits_data'),
+        ("submissions", "0003_migrate_permits_data"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='complementarydocumenttype',
-            options={'verbose_name': '2.2 Type de document', 'verbose_name_plural': '2.2 Types de document'},
+            name="complementarydocumenttype",
+            options={
+                "verbose_name": "2.2 Type de document",
+                "verbose_name_plural": "2.2 Types de document",
+            },
         ),
         migrations.AlterModelOptions(
-            name='submissionamendfield',
-            options={'verbose_name': '2.1 Champ de traitement des demandes', 'verbose_name_plural': '2.1 Champs de traitement des demandes'},
+            name="submissionamendfield",
+            options={
+                "verbose_name": "2.1 Champ de traitement des demandes",
+                "verbose_name_plural": "2.1 Champs de traitement des demandes",
+            },
         ),
         migrations.DeleteModel(
-            name='ContactType',
+            name="ContactType",
         ),
     ]
