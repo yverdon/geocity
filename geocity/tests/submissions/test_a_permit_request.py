@@ -1033,9 +1033,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             3, sites=[]
         )
 
-        site, created = Site.objects.get_or_create(
-            get_current_site(self.client.request())
-        )
+        site = get_current_site(self.client.request())
         administrative_entities[0].sites.set([site])
         forms = forms_models.Form.objects.all()
 
