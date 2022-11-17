@@ -76,6 +76,7 @@ class FormQuerySet(models.QuerySet):
         self,
         administrative_entity,
         user,
+        limit_to_categories=None,
     ):
         """
         Return the `Form` that should be automatically selected for the given
@@ -84,8 +85,11 @@ class FormQuerySet(models.QuerySet):
         """
         forms = self.filter(administrative_entities=administrative_entity)
 
-        if not user.has_perm("accounts.see_private_requests"):
+        if not user.has_perm("submissions.view_private_submission"):
             forms = forms.filter(is_public=True)
+
+        if limit_to_categories:
+            forms = forms.filter(category__in=limit_to_categories)
 
         if len(forms) > 1:
             return Form.objects.none()
@@ -105,7 +109,7 @@ class FormQuerySet(models.QuerySet):
         if site:
             queryset = queryset.filter(sites=site)
 
-        if not user.has_perm("accounts.see_private_requests"):
+        if not user.has_perm("submissions.view_private_submission"):
             queryset = queryset.filter(forms__is_public=True)
 
         return queryset

@@ -13,10 +13,8 @@ from django.db import connection, transaction
 from django.utils import timezone
 
 from geocity import settings
-from geocity.apps.accounts.users import get_integrator_permissions
-
-
 from geocity.apps.accounts.models import *
+from geocity.apps.accounts.users import get_integrator_permissions
 from geocity.apps.forms.models import *
 from geocity.apps.reports.models import *
 from geocity.apps.submissions.models import *
@@ -138,9 +136,7 @@ class Command(BaseCommand):
 
     def setup_integrator(self):
         integrator = Group.objects.get(name="integrator")
-        SiteProfile.objects.filter(site__name="yverdon").update(
-            integrator=integrator
-        )
+        SiteProfile.objects.filter(site__name="yverdon").update(integrator=integrator)
         AdministrativeEntity.objects.update(integrator=integrator)
         FormCategory.objects.update(integrator=integrator)
         Form.objects.update(integrator=integrator)
@@ -243,7 +239,7 @@ class Command(BaseCommand):
             ],
             content_type=submission_ct,
         )
-        
+
         reports_request_ct = ContentType.objects.get_for_model(Report)
         secretariat_permissions_reports = Permission.objects.filter(
             codename__in=[
@@ -272,9 +268,9 @@ class Command(BaseCommand):
         self.stdout.write("pilot-2 / demo")
 
         secretary_groups = Group.objects.filter(name__in=["pilot", "pilot-2"])
-        PermitDepartment.objects.filter(
-            group__in=secretary_groups
-        ).update(is_backoffice=True)
+        PermitDepartment.objects.filter(group__in=secretary_groups).update(
+            is_backoffice=True
+        )
 
         user = self.create_user(
             "validator",
@@ -383,7 +379,9 @@ class Command(BaseCommand):
     def create_form_categories(self):
         fields = {
             "comment": Field.objects.create(
-                name="Commentaire", input_type="text", is_mandatory=False,
+                name="Commentaire",
+                input_type="text",
+                is_mandatory=False,
             ),
             "width": Field.objects.create(
                 name="Largeur [m]",
@@ -602,18 +600,10 @@ class Command(BaseCommand):
                     services_to_notify=f"yverdon-squad+admin@liip.ch",
                     additional_information=additional_information_text,
                 )
-                form_obj.administrative_entities.add(
-                    administrative_entity_yverdon
-                )
-                form_obj.administrative_entities.add(
-                    administrative_entity_grandson
-                )
-                form_obj.administrative_entities.add(
-                    administrative_entity_lausanne
-                )
-                form_obj.administrative_entities.add(
-                    administrative_entity_vevey
-                )
+                form_obj.administrative_entities.add(administrative_entity_yverdon)
+                form_obj.administrative_entities.add(administrative_entity_grandson)
+                form_obj.administrative_entities.add(administrative_entity_lausanne)
+                form_obj.administrative_entities.add(administrative_entity_vevey)
                 self.create_document_types(form_obj)
                 for order, field in enumerate(fields):
                     FormField.objects.create(field=field, form=form_obj, order=order)
@@ -651,14 +641,10 @@ class Command(BaseCommand):
             name="Démo Yverdon"
         )
         demo_form = Form.objects.first()
-        Form.objects.filter(id=5).update(
+        Form.objects.filter(id=5).update(requires_validation_document=False)
+        demo_form_no_validation_document = Form.objects.filter(
             requires_validation_document=False
-        )
-        demo_form_no_validation_document = (
-            Form.objects.filter(
-                requires_validation_document=False
-            ).first()
-        )
+        ).first()
         department = PermitDepartment.objects.filter(
             administrative_entity=demo_administrative_entity,
             is_validator=True,
@@ -671,9 +657,7 @@ class Command(BaseCommand):
             author=demo_author,
         )
 
-        SelectedForm.objects.create(
-            submission=submission, form=demo_form
-        )
+        SelectedForm.objects.create(submission=submission, form=demo_form)
 
         SubmissionGeoTime.objects.create(
             submission=submission,
@@ -728,9 +712,7 @@ class Command(BaseCommand):
             comment_after="Excellent projet qui bénéficiera à la communauté.",
         )
 
-        SelectedForm.objects.create(
-            submission=submission3, form=demo_form
-        )
+        SelectedForm.objects.create(submission=submission3, form=demo_form)
 
         SelectedForm.objects.create(
             submission=submission3,
@@ -760,9 +742,7 @@ class Command(BaseCommand):
             comment_during="Les améliorations ont été prise en compte.",
             comment_after="Excellent projet qui bénéficiera à la communauté.",
         )
-        SelectedForm.objects.create(
-            submission=submission4, form=demo_form
-        )
+        SelectedForm.objects.create(submission=submission4, form=demo_form)
 
         SubmissionGeoTime.objects.create(
             submission=submission4,
@@ -850,9 +830,7 @@ class Command(BaseCommand):
             comment_after=demo_small_text,
         )
 
-        SelectedForm.objects.create(
-            submission=submission7, form=demo_form
-        )
+        SelectedForm.objects.create(submission=submission7, form=demo_form)
 
         SelectedForm.objects.create(
             submission=submission7,
@@ -871,24 +849,18 @@ class Command(BaseCommand):
             name="Commentaire interne",
             is_visible_by_author=False,
         )
-        amend_field_1.forms.set(
-            [demo_form, demo_form_no_validation_document]
-        )
+        amend_field_1.forms.set([demo_form, demo_form_no_validation_document])
         amend_field_2 = SubmissionAmendField.objects.create(
             name="Commentaire visible par le requérant",
             is_visible_by_author=True,
         )
-        amend_field_2.forms.set(
-            [demo_form, demo_form_no_validation_document]
-        )
+        amend_field_2.forms.set([demo_form, demo_form_no_validation_document])
         amend_field_3 = SubmissionAmendField.objects.create(
             name="Commentaire interne visible par les validateurs",
             is_visible_by_author=False,
             is_visible_by_validators=True,
         )
-        amend_field_3.forms.set(
-            [demo_form, demo_form_no_validation_document]
-        )
+        amend_field_3.forms.set([demo_form, demo_form_no_validation_document])
         selected_form_1 = SelectedForm.objects.get(
             submission=submission7,
             form=demo_form,
@@ -964,10 +936,7 @@ class Command(BaseCommand):
                         selected_form=selected_form,
                         value={"val": "Oui"},
                     )
-                if (
-                    field_obj.input_type
-                    == Field.INPUT_TYPE_LIST_MULTIPLE
-                ):
+                if field_obj.input_type == Field.INPUT_TYPE_LIST_MULTIPLE:
                     FieldValue.objects.create(
                         field=field_obj,
                         selected_form=selected_form,

@@ -65,6 +65,8 @@ from .steps import (
     get_next_step,
     get_previous_step,
     get_progress_bar_steps,
+    get_selectable_categories,
+    get_selectable_entities,
 )
 from .tables import CustomFieldValueAccessibleSubmission, get_custom_dynamic_table
 
@@ -994,9 +996,8 @@ def anonymous_submission(request):
         raise Http404
 
     # Validate tags
-    services.store_tags_in_session(request)
-    entityfilter = request.session.get("entityfilter", [])
-    typefilter = request.session.get("typefilter", [])
+    entityfilter = request.GET.getlist("entityfilter")
+    typefilter = request.GET.getlist("typefilter")
     if not entityfilter or not typefilter:
         raise Http404
 
@@ -1090,7 +1091,6 @@ def anonymous_submission(request):
 @permanent_user_required
 @check_mandatory_2FA
 def submission_select_administrative_entity(request, submission_id=None):
-    services.store_tags_in_session(request)
     current_site = get_current_site(request)
 
     submission = (
@@ -1099,54 +1099,36 @@ def submission_select_administrative_entity(request, submission_id=None):
         else None
     )
 
-    if not submission:
-        # Manage redirect to type step when only 1 item is shown
-        # Handle single tag filters combinations
-        entityfilter = (
-            request.session["entityfilter"] if "entityfilter" in request.session else []
+    entity_tags = request.GET.getlist("entityfilter")
+    entities = get_selectable_entities(
+        user=request.user,
+        current_site=current_site,
+        submission=submission,
+        entity_tags=entity_tags,
+    )
+
+    if not submission and len(entities) == 1:
+        submission = models.Submission.objects.create(
+            administrative_entity=entities[0],
+            author=request.user,
         )
 
-        entities = Form.objects.get_administrative_entities_with_forms(
-            request.user, current_site
+        selectable_categories = get_selectable_categories(
+            submission=submission, category_tags=request.GET.getlist("typefilter")
         )
 
-        # Manage entities by tag and by site. If site has already 1 result, dont check the tag
-        entities_after_filter = (
-            entities.filter_by_tags(entityfilter)
-            if entityfilter and len(entities) != 1
-            else entities
+        candidate_forms = Form.objects.get_default_forms(
+            administrative_entity=submission.administrative_entity,
+            user=request.user,
+            limit_to_categories=selectable_categories,
         )
 
-        # If entityfilter returns only one entity, submission oject can already be created
-        if len(entities_after_filter) == 1:
-            administrative_entity_instance = AdministrativeEntity.objects.get(
-                pk=entities_after_filter.first().pk
-            )
+        # If filter combinations return only one form object, this combination must be set on submission object
+        if len(candidate_forms) == 1:
+            submission.forms.set(candidate_forms)
 
-            submission = models.Submission.objects.create(
-                administrative_entity=administrative_entity_instance,
-                author=request.user,
-            )
-
-            candidate_forms = models.Form.objects.filter(
-                administrative_entities__in=entities_after_filter,
-            )
-
-            if request.session["typefilter"]:
-                categories_by_tag = models.FormCategory.objects.filter_by_tags(
-                    request.session["typefilter"]
-                ).values_list("pk", flat=True)
-
-                candidate_forms = candidate_forms.filter(
-                    category__in=categories_by_tag,
-                )
-
-            # If filter combinations return only one form object, this combination must be set on submission object
-            if len(candidate_forms) == 1:
-                submission.forms.set(candidate_forms)
-
-            steps = get_progress_bar_steps(request=request, submission=submission)
-            return redirect(get_next_step(steps, StepType.ADMINISTRATIVE_ENTITY).url)
+        steps = get_progress_bar_steps(request=request, submission=submission)
+        return redirect(get_next_step(steps, StepType.ADMINISTRATIVE_ENTITY).url)
 
     steps_context = progress_bar_context(
         request=request,
@@ -1154,43 +1136,37 @@ def submission_select_administrative_entity(request, submission_id=None):
         current_step_type=StepType.ADMINISTRATIVE_ENTITY,
     )
 
-    if request.method == "POST":
-        administrative_entity_form = forms.AdministrativeEntityForm(
-            instance=submission,
-            data=request.POST,
-            user=request.user,
-            session=request.session,
+    administrative_entity_form = forms.AdministrativeEntityForm(
+        instance=submission,
+        administrative_entities=entities,
+        data=request.POST if request.method == "POST" else None,
+    )
+
+    if request.method == "POST" and administrative_entity_form.is_valid():
+        submission = administrative_entity_form.save(author=request.user)
+        selectable_categories = get_selectable_categories(
+            submission=submission, category_tags=request.GET.getlist("typefilter")
         )
 
-        if administrative_entity_form.is_valid():
-            submission = administrative_entity_form.save(author=request.user)
-
-            submission_forms = Form.objects.get_default_forms(
-                administrative_entity=submission.administrative_entity,
-                user=request.user,
-            )
-            if submission_forms:
-                submission.set_selected_forms(submission_forms)
-
-            steps = get_progress_bar_steps(request=request, submission=submission)
-
-            return redirect(get_next_step(steps, StepType.ADMINISTRATIVE_ENTITY).url)
-    else:
-        administrative_entity_form = forms.AdministrativeEntityForm(
-            instance=submission,
+        submission_forms = Form.objects.get_default_forms(
+            administrative_entity=submission.administrative_entity,
             user=request.user,
-            session=request.session,
-            site=current_site,
+            limit_to_categories=selectable_categories,
         )
+        if submission_forms:
+            submission.set_selected_forms(submission_forms)
+
+        steps = get_progress_bar_steps(request=request, submission=submission)
+
+        return redirect(get_next_step(steps, StepType.ADMINISTRATIVE_ENTITY).url)
+
     return render(
         request,
         "submissions/submission_select_administrative_entity.html",
         {
             "form": administrative_entity_form,
             "submission": submission,
-            "entityfilter": request.session["entityfilter"]
-            if "entityfilter" in request.session
-            else None,
+            "entityfilter": entity_tags,
             **steps_context,
         },
     )
@@ -1211,11 +1187,20 @@ def submission_select_forms(request, submission_id):
         current_step_type=StepType.FORMS,
     )
 
+    categories_filters = request.GET.getlist("typefilter")
+    if categories_filters:
+        selectable_categories = models.FormCategory.objects.filter_by_tags(
+            categories_filters
+        ).values_list("pk", flat=True)
+    else:
+        selectable_categories = None
+
     if request.method == "POST":
         forms_selection_form = forms.FormsSelectForm(
             data=request.POST,
             instance=submission,
             user=request.user,
+            form_categories=selectable_categories,
         )
 
         if forms_selection_form.is_valid():
@@ -1225,7 +1210,9 @@ def submission_select_forms(request, submission_id):
             return redirect(get_next_step(steps, StepType.FORMS).url)
     else:
         forms_selection_form = forms.FormsSelectForm(
-            instance=submission, user=request.user
+            instance=submission,
+            user=request.user,
+            form_categories=selectable_categories,
         )
 
     return render(
@@ -1234,9 +1221,7 @@ def submission_select_forms(request, submission_id):
         {
             "forms_selection_form": forms_selection_form,
             "submission": submission,
-            "typefilter": request.session["typefilter"]
-            if "typefilter" in request.session
-            else [],
+            "typefilter": categories_filters,
             **steps_context,
         },
     )

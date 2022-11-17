@@ -1,6 +1,7 @@
 import dataclasses
 import enum
 import itertools
+import urllib.parse
 
 from constance import config
 from django.contrib.sites.shortcuts import get_current_site
@@ -8,6 +9,7 @@ from django.db.models import Q
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
+from geocity.apps.accounts.models import AdministrativeEntity
 from geocity.apps.forms.models import Form
 
 from . import forms, models
@@ -37,6 +39,50 @@ class StepType(enum.Enum):
 StepType.do_not_call_in_templates = True
 
 
+def get_selectable_entities(user, current_site, submission=None, entity_tags=None):
+    administrative_entities_with_forms = (
+        Form.objects.get_administrative_entities_with_forms(user, current_site)
+    )
+
+    entities_filter = Q(pk__in=administrative_entities_with_forms)
+
+    entities = AdministrativeEntity.objects.filter(entities_filter)
+
+    if entity_tags and entities.count() != 1:
+        entities_filtered_by_tag = entities.filter_by_tags(entity_tags)
+
+        # Only filter entities if at least 1 matches
+        if entities_filtered_by_tag.exists():
+            entities = entities_filtered_by_tag
+
+    if not submission:
+        return entities
+
+    return AdministrativeEntity.objects.filter(
+        Q(pk__in=entities) | Q(pk=submission.administrative_entity_id)
+    )
+
+
+def get_selectable_categories(submission=None, category_tags=None):
+    categories = models.FormCategory.objects.all()
+
+    if submission:
+        categories = categories.filter(
+            forms__administrative_entities=submission.administrative_entity
+        )
+
+    if category_tags:
+        categories_filtered_by_tag = categories.filter_by_tags(category_tags)
+
+        # Only filter categories if at least 1 matches
+        if categories_filtered_by_tag.exists():
+            categories = categories_filtered_by_tag
+
+    return models.FormCategory.objects.filter(
+        Q(pk__in=categories) | Q(forms__in=submission.forms.values_list("pk"))
+    ).distinct()
+
+
 def get_administrative_entity_step(submission):
     return Step(
         name=_("Entité"),
@@ -55,59 +101,47 @@ def get_forms_step(
     enabled,
     user,
     current_site,
-    restrict_to_categories=None,
-    restrict_to_entities=None,
+    entity_tags=None,
+    category_tags=None,
 ):
-    restrict_to_categories = restrict_to_categories or []
-    restrict_to_entities = restrict_to_entities or []
+    step_title = _("Objets")
 
-    # If there are default forms it means the forms can be automatically selected and so
-    # the step shouldn’t be visible
-    if submission:
-        candidate_forms = Form.objects.all()
-        # FIXME: should forms here be restricted to public forms?
-        candidate_forms_filter = Q(pk__in=submission.administrative_entity.forms.all())
-
-        if restrict_to_categories:
-            candidate_forms_filter &= Q(category__in=restrict_to_categories)
-
-        if restrict_to_entities:
-            candidate_forms_filter &= Q(category__in=restrict_to_categories)
-
-        candidate_forms_filter |= Q(pk__in=submission.forms.all())
-    else:
-        administrative_entities = Form.objects.get_administrative_entities_with_forms(
-            user, current_site
+    if not submission:
+        return Step(
+            name=step_title,
+            url="",
+            completed=False,
+            enabled=False,
         )
 
-        candidate_forms = Form.objects.filter(
-            administrative_entities__in=administrative_entities
+    entities = get_selectable_entities(
+        user=user,
+        current_site=current_site,
+        submission=submission,
+        entity_tags=entity_tags,
+    )
+    selectable_categories = get_selectable_categories(
+        submission=submission,
+        category_tags=category_tags,
+    )
+
+    candidate_forms = (
+        Form.objects.filter(
+            administrative_entities__in=entities,
+            is_anonymous=user.userprofile.is_temporary,
         )
-        candidate_forms_filter = Q()
-
-        if restrict_to_entities:
-            candidate_forms_filter &= Q(
-                administrative_entities__in=administrative_entities
-            )
-
-        if restrict_to_categories:
-            candidate_forms_filter &= Q(category__in=restrict_to_categories)
-
-        if not user.has_perm("submissions:see_private_requests"):
-            candidate_forms_filter &= Q(is_public=True)
-
-    candidate_forms = candidate_forms.filter(candidate_forms_filter)
+        .filter(category__in=selectable_categories)
+        .distinct()
+    )
+    if not user.has_perm("submissions.view_private_submission"):
+        candidate_forms = candidate_forms.filter(is_public=True)
 
     if candidate_forms.count() <= 1:
         return None
 
     return Step(
-        name=_("Objets"),
-        url=(
-            reverse_submission_url("submissions:submission_select_forms", submission)
-            if submission
-            else ""
-        ),
+        name=step_title,
+        url=reverse_submission_url("submissions:submission_select_forms", submission),
         completed=enabled,
         enabled=enabled,
     )
@@ -250,7 +284,6 @@ def get_anonymous_steps(form_category, user, submission, current_site):
         enabled=not has_forms,
         user=user,
         current_site=current_site,
-        restrict_to_categories=[form_category],
     )
 
     if objects_step:
@@ -276,6 +309,30 @@ def get_anonymous_steps(form_category, user, submission, current_site):
     return {step_type: step for step_type, step in steps.items() if step is not None}
 
 
+def add_filter_qs(step, *, category_tags, entity_tags):
+    """
+    Add the `entityfilter` or `typefilter` keys as querystring to the step URL. This
+    function currently doesn’t support URL with an existing querystring in them.
+    """
+    if not step or step.url == "":
+        return step
+
+    qs = {}
+    if entity_tags:
+        qs["entityfilter"] = entity_tags
+
+    if category_tags:
+        qs["typefilter"] = category_tags
+
+    if qs:
+        encoded_qs = urllib.parse.urlencode(qs, doseq=True)
+        url = f"{step.url}?{encoded_qs}"
+    else:
+        url = step.url
+
+    return dataclasses.replace(step, url=url)
+
+
 def get_progress_bar_steps(request, submission):
     """
     Return a dict of `Step` items that can be used to track the user progress through
@@ -284,41 +341,19 @@ def get_progress_bar_steps(request, submission):
     """
     has_forms = submission.forms.exists() if submission else False
     current_site = get_current_site(request)
-    entityfilter = (
-        request.session["entityfilter"] if "entityfilter" in request.session else []
-    )
 
-    if entityfilter:
-        entities_by_tag = models.Form.objects.get_administrative_entities_with_forms(
-            request.user, current_site
-        ).filter_by_tags(
-            entityfilter,
-        )
-    else:
-        entities_by_tag = None
-
-    selected_categories = None
-    if entities_by_tag:
-        if "typefilter" in request.session and len(entities_by_tag) == 1:
-            categories_by_tag = (
-                models.FormCategory.objects.filter_by_tags(
-                    request.session["typefilter"]
-                )
-                .filter(forms__administrative_entities__in=entities_by_tag)
-                .values_list("pk", flat=True)
-            )
-            if len(categories_by_tag) == 1:
-                selected_categories = [str(categories_by_tag[0])]
+    category_tags = request.GET.getlist("typefilter")
+    entity_tags = request.GET.getlist("entityfilter")
 
     all_steps = {
         StepType.ADMINISTRATIVE_ENTITY: get_administrative_entity_step(submission),
         StepType.FORMS: get_forms_step(
             submission=submission,
-            enabled=has_forms,
+            enabled=bool(submission),
             user=request.user,
             current_site=current_site,
-            restrict_to_categories=selected_categories,
-            restrict_to_entities=entities_by_tag,
+            category_tags=category_tags,
+            entity_tags=entity_tags,
         ),
         StepType.FIELDS: get_fields_step(submission=submission, enabled=has_forms),
         StepType.GEO_TIME: get_geo_time_step(submission=submission, enabled=has_forms),
@@ -327,12 +362,20 @@ def get_progress_bar_steps(request, submission):
         ),
         StepType.CONTACTS: get_contacts_step(submission=submission, enabled=has_forms),
     }
+    all_steps = {
+        key: add_filter_qs(step, category_tags=category_tags, entity_tags=entity_tags)
+        for key, step in all_steps.items()
+    }
 
     total_errors = sum([step.errors_count for step in all_steps.values() if step])
-    all_steps[StepType.SUBMIT] = get_submit_step(
-        submission=submission,
-        enabled=has_forms,
-        total_errors=total_errors,
+    all_steps[StepType.SUBMIT] = add_filter_qs(
+        get_submit_step(
+            submission=submission,
+            enabled=has_forms,
+            total_errors=total_errors,
+        ),
+        category_tags=category_tags,
+        entity_tags=entity_tags,
     )
 
     return {

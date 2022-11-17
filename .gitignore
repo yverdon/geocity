@@ -18,4 +18,6 @@ geocity/permit_requests_uploads/
 env.backup
 /media/
 /geocity/tests/files/archive/*
+/geocity/tests/reports/data/*/*.generated.*
+/geocity/tests/reports/data/*/*.result.*
 /_dev_volumes/

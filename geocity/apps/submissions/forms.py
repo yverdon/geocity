@@ -29,7 +29,6 @@ from geocity.apps.accounts.models import (
     AdministrativeEntity,
     PermitDepartment,
 )
-from geocity.apps.forms.models import Form
 from geocity.fields import AddressWidget
 
 from . import models, permissions, services
@@ -107,9 +106,7 @@ class AdministrativeEntityForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.instance = kwargs.pop("instance", None)
         self.user = kwargs.pop("user", None)
-        session = kwargs.pop("session", None)
-        site = kwargs.pop("site", None)
-        tags = session["entityfilter"] if "entityfilter" in session else []
+        administrative_entities = kwargs.pop("administrative_entities")
 
         if self.instance:
             initial = {
@@ -123,34 +120,9 @@ class AdministrativeEntityForm(forms.Form):
 
         super().__init__(*args, **kwargs)
 
-        available_administrative_entities = (
-            Form.objects.get_administrative_entities_with_forms(
-                self.user,
-                site,
-            )
-        )
-        entities_filter = Q(pk__in=available_administrative_entities)
-
-        if self.instance:
-            entities_filter |= Q(
-                pk__in=self.instance.forms.values_list(
-                    "administrative_entities", flat=True
-                ).distinct()
-            )
-
-        entities = AdministrativeEntity.objects.filter(entities_filter)
-        entities_filtered_by_tags = entities.filter_by_tags(tags)
-
-        filtered_entities = (
-            entities_filtered_by_tags if entities_filtered_by_tags else entities
-        )
-
-        if not filtered_entities and session:
-            session["entityfilter"] = []
-
         self.fields["administrative_entity"].choices = [
             (ofs_id, [(entity.pk, entity.name) for entity in entities])
-            for ofs_id, entities in regroup_by_ofs_id(filtered_entities)
+            for ofs_id, entities in regroup_by_ofs_id(administrative_entities)
         ]
 
     def save(self, author):
@@ -188,8 +160,13 @@ class FormsSelectForm(forms.Form):
         initial = {"selected_forms": selected_forms}
 
         super().__init__(*args, **{**kwargs, "initial": initial})
+<<<<<<< HEAD
         user_can_see_private_requests = self.user.has_perm(
             "accounts.see_private_requests"
+=======
+        user_can_view_private_submission = self.user.has_perm(
+            "submissions.view_private_submission"
+>>>>>>> origin/phoenix
         )
 
         forms_filter = Q()
@@ -197,7 +174,7 @@ class FormsSelectForm(forms.Form):
         if form_categories:
             forms_filter &= Q(category__in=form_categories)
 
-        if not user_can_see_private_requests:
+        if not user_can_view_private_submission:
             forms_filter &= Q(is_public=True)
 
         forms = (
@@ -209,6 +186,7 @@ class FormsSelectForm(forms.Form):
                 )
                 | Q(pk__in=selected_forms)
             )
+            .distinct()
             .select_related("category")
             .order_by("order")
         )

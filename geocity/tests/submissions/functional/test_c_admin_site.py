@@ -143,7 +143,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
 
     def test_integrator_can_only_see_own_administrativeentity(self):
         response = self.client.get(
-            reverse("admin:accounts_administrativeentity_changelist")
+            reverse("admin:forms_administrativeentityforadminsite_changelist")
         )
         parser = get_parser(response.content)
         self.assertEqual(response.status_code, 200)
@@ -156,7 +156,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             self.enable_otp_session(user=user)
 
         response = self.client.get(
-            reverse("admin:accounts_administrativeentity_changelist")
+            reverse("admin:forms_administrativeentityforadminsite_changelist")
         )
         parser = get_parser(response.content)
 
@@ -241,7 +241,9 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         )
 
     def test_integrator_can_only_see_own_contacttype(self):
-        response = self.client.get(reverse("admin:submissions_contacttype_changelist"))
+        response = self.client.get(
+            reverse("admin:forms_contacttypeforadminsite_changelist")
+        )
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
@@ -253,7 +255,9 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         if settings.ENABLE_2FA:
             self.enable_otp_session(user=user)
 
-        response = self.client.get(reverse("admin:submissions_contacttype_changelist"))
+        response = self.client.get(
+            reverse("admin:forms_contacttypeforadminsite_changelist")
+        )
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
@@ -376,7 +380,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
     if settings.ENABLE_2FA:
 
         def test_user_of_group_with_mandatory_2FA_is_asked_to_set_it_up(self):
-            user = SecretariatUserFactory()
+            user = factories.SecretariatUserFactory()
             user.groups.set([self.group2fa])
             self.client.login(username=user.username, password="password")
 
@@ -392,7 +396,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             self.assertContains(response, "Activer l'authentification à deux facteurs")
 
         def test_user_of_group_with_mandatory_2FA_setup_can_see_submissions_list(self):
-            user = UserFactory()
+            user = factories.UserFactory()
             user.groups.set([self.group2fa])
             self.enable_otp_session(user)
             response = self.client.get(
@@ -405,11 +409,11 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         def test_user_of_group_with_mandatory_2FA_not_setup_can_access_change_password(
             self,
         ):
-            user = UserFactory()
+            user = factories.UserFactory()
             user.groups.set([self.group2fa])
             self.client.login(username=user.username, password="password")
             response = self.client.get(
-                reverse("password_change"),
+                reverse("accounts:password_change"),
                 follow=True,
             )
             self.assertEqual(response.status_code, 200)
@@ -418,13 +422,13 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         def test_user_of_group_with_mandatory_2FA_not_setup_can_access_modify_account(
             self,
         ):
-            user = UserFactory()
+            user = factories.UserFactory()
             group = factories.GroupFactory()
             factories.PermitDepartmentFactory(group=group, mandatory_2fa=True)
             user.groups.set([self.group2fa])
             self.client.login(username=user.username, password="password")
             response = self.client.get(
-                reverse("permit_author_edit"),
+                reverse("accounts:user_profile_edit"),
                 follow=True,
             )
             self.assertEqual(response.status_code, 200)
@@ -433,13 +437,13 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         def test_user_of_group_with_mandatory_2FA_not_setup_can_access_account_security(
             self,
         ):
-            user = UserFactory()
+            user = factories.UserFactory()
             group = factories.GroupFactory()
             factories.PermitDepartmentFactory(group=group, mandatory_2fa=True)
             user.groups.set([self.group2fa])
             self.client.login(username=user.username, password="password")
             response = self.client.get(
-                reverse("profile"),
+                reverse("accounts:profile"),
                 follow=True,
             )
             self.assertEqual(response.status_code, 200)

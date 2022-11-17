@@ -58,14 +58,13 @@ class SubmissionExpirationReminder(CronJobBase):
         logger.info("The submission expiration reminder Cronjob finished successfully")
 
 
-class CleanupAnonymousRequests(CronJobBase):
+class CleanupAnonymousSubmissions(CronJobBase):
     RUN_AT_TIMES = ["00:00"]
     schedule = Schedule(run_at_times=RUN_AT_TIMES)
     code = "submissions.anonymous_submission_cleanup"
 
     def do(self):
         try:
-            # FIXME rename command (was `cleanup_anonymous_requests`)
             call_command("cleanup_anonymous_submissions")
         except CommandError:
             logger.error(

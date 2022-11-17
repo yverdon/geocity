@@ -255,9 +255,18 @@ class AdministrativeEntity(models.Model):
     objects = AdministrativeEntityManager()
 
     class Meta:
+<<<<<<< HEAD
         permissions = [
             ("see_private_requests", _("Voir les demandes restreintes")),
         ]
+=======
+        verbose_name = _(
+            "1.1 Configuration de l'entité administrative (commune, organisation)"
+        )
+        verbose_name_plural = _(
+            "1.1 Configuration des entités administratives (commune, organisation)"
+        )
+>>>>>>> origin/phoenix
 
     def __str__(self):
         return self.name

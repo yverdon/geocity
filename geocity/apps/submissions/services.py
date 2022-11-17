@@ -107,7 +107,6 @@ def submit_submission(submission, request):
     if models.GeoTimeInfo.GEOMETRY in submission.get_geotime_required_info():
         submission.intersected_geometries = submission.get_intersected_geometries()
     submission.save()
-    clear_session_filters(request)
 
 
 @transaction.atomic
@@ -264,32 +263,6 @@ def validate_file(file):
             ),
             params={"file": file},
         )
-
-
-def store_tags_in_session(request):
-
-    if "entityfilter" not in request.session or request.GET.get(
-        "clearentityfilter", None
-    ):
-        request.session["entityfilter"] = []
-
-    if len(request.GET.getlist("entityfilter")) > 0:
-        request.session["entityfilter"] = request.GET.getlist("entityfilter")
-    else:
-        request.session["entityfilter"] = []
-
-    if "typefilter" not in request.session or request.GET.get("cleartypefilter", None):
-        request.session["typefilter"] = []
-
-    if len(request.GET.getlist("typefilter")) > 0:
-        request.session["typefilter"] = request.GET.getlist("typefilter")
-    else:
-        request.session["typefilter"] = []
-
-
-def clear_session_filters(request):
-    request.session["entityfilter"] = []
-    request.session["typefilter"] = []
 
 
 def is_anonymous_request_logged_in(request, entity):

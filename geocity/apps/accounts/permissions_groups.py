@@ -38,7 +38,7 @@ OTHER_PERMISSIONS_CODENAMES = [
     "add_group",
     "change_group",
     "delete_group",
-    "see_private_requests",
+    "view_private_submission",
 ]
 
 if not settings.ALLOW_REMOTE_USER_AUTH:
@@ -55,7 +55,11 @@ AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
     "validate_submission",
     "classify_submission",
     "edit_submission",
+<<<<<<< HEAD
     # TODO rename as see_private_forms
     "see_private_requests",
+=======
+    "view_private_submission",
+>>>>>>> origin/phoenix
     "can_generate_pdf",
 ]

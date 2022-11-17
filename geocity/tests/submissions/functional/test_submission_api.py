@@ -16,7 +16,6 @@ from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 
 from geocity.apps.submissions import models as submissions_models
-
 from geocity.tests import factories
 
 User = get_user_model()

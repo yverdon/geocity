@@ -37,8 +37,8 @@ class SubmissionValidationRequestTestcase(LoggedInSecretariatMixin, TestCase):
             submission.status, submissions_models.Submission.STATUS_AWAITING_VALIDATION
         )
         self.assertEqual(
-            list(submission.validations.values_list("department", flat=True)),
-            validator_departments,
+            set(submission.validations.values_list("department", flat=True)),
+            set(validator_departments),
         )
 
     def test_secretariat_cannot_request_validation_for_already_validated_submission(

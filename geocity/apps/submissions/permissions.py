@@ -107,7 +107,6 @@ def can_edit_submission(user, submission):
     )
 
 
-# FIXME change callers of PermissionRequest.can_always_be_updated(self, user)
 def can_always_be_updated(user, submission):
     can_always_update = submission.forms.filter(can_always_update=True).exists()
     user_is_integrator_admin = user.groups.filter(

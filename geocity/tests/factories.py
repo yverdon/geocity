@@ -11,11 +11,9 @@ from django.contrib.sites.models import Site
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils.text import Truncator
 
-from geocity.apps.accounts.users import get_integrator_permissions
-
 from geocity.apps.accounts import models as accounts_models
+from geocity.apps.accounts.users import get_integrator_permissions
 from geocity.apps.forms import models as forms_models
-from geocity.apps.reports import models as reports_models
 from geocity.apps.submissions import models as submissions_models
 
 
@@ -105,15 +103,15 @@ class AdministrativeEntityFactory(factory.django.DjangoModelFactory):
 
     @factory.post_generation
     def sites(self, create, extracted, **kwargs):
-        if not create or not extracted:
-            Site.objects.get_or_create(domain="yverdon.localhost", name="yverdon")
-            Site.objects.get_or_create(domain="grandson.localhost", name="grandson")
-            Site.objects.get_or_create(domain="vevey.localhost", name="vevey")
-            Site.objects.get_or_create(domain="lausanne.localhost", name="lausanne")
-            self.sites.set(Site.objects.all())
-            return
-
-        self.sites.set(extracted)
+        if create:
+            if extracted is None:
+                Site.objects.get_or_create(domain="yverdon.localhost", name="yverdon")
+                Site.objects.get_or_create(domain="grandson.localhost", name="grandson")
+                Site.objects.get_or_create(domain="vevey.localhost", name="vevey")
+                Site.objects.get_or_create(domain="lausanne.localhost", name="lausanne")
+                self.sites.set(Site.objects.all())
+            else:
+                self.sites.set(extracted)
 
 
 class GroupFactory(factory.django.DjangoModelFactory):

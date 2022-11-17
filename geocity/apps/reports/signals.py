@@ -51,7 +51,7 @@ def create_default_report_for_integrator(sender, instance, created, **kwargs):
         order=2,
         report=report,
         title="Demand summary",
-        content="<p>This demand contains the following objects.</p><ul>{% for wot in request_data.properties.permit_request_works_object_types_names.values() %}<li>{{wot}}</li>{% endfor %}</ul>",
+        content="<p>This demand contains the following objects.</p><ul>{% for form in request_data.properties.submission_forms_names.values() %}<li>{{form}}</li>{% endfor %}</ul>",
     )
     section_paragraph_2.save()
 
@@ -66,8 +66,8 @@ def create_default_report_for_integrator(sender, instance, created, **kwargs):
     section_paragraph_4 = SectionParagraph(
         order=4,
         report=report,
-        title="Raw wot data",
-        content="<pre>{{wot_data}}</pre>",
+        title="Raw form data",
+        content="<pre>{{form_data}}</pre>",
     )
     section_paragraph_4.save()
 

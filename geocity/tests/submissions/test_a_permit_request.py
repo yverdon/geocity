@@ -5,6 +5,7 @@ from datetime import date
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.sites.shortcuts import get_current_site
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
@@ -12,19 +13,12 @@ from django.urls import reverse
 from django.utils import timezone
 
 from geocity.apps.accounts import models as accounts_models
-from geocity.apps.forms import models as forms_models
-from geocity.apps.submissions import (
-    models as submissions_models,
-    forms as submissions_forms,
-)
-
 from geocity.apps.accounts.management.commands import create_anonymous_users
+from geocity.apps.forms import models as forms_models
+from geocity.apps.submissions import forms as submissions_forms
+from geocity.apps.submissions import models as submissions_models
 from geocity.tests import factories
-from geocity.tests.utils import (
-    LoggedInUserMixin,
-    get_emails,
-    get_parser,
-)
+from geocity.tests.utils import LoggedInUserMixin, get_emails, get_parser
 
 
 def to_forms_dict(forms):
@@ -520,56 +514,22 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(len(parser.select(".invalid-feedback")), 1)
 
     def test_form_automatically_set_when_only_one_form(self):
-        submission = factories.SubmissionFactory(author=self.user)
-        form_first = factories.FormFactory()
-        form_second = factories.FormFactory()
-        submission.administrative_entity.forms.set([form_first, form_second])
-        form_category_id = submission.administrative_entity.forms.values_list(
-            "category_id", flat=True
-        ).first()
-
-        self.client.post(
-            reverse(
-                "submissions:submission_select_forms",
-                kwargs={"submission_id": submission.pk},
-            ),
-            data={"categories": [form_category_id]},
-        )
-
-        submission.refresh_from_db()
-        forms = submission.forms.all()
-
-        self.assertEqual(
-            len(forms),
-            1,
-            "Submission should have one form set",
-        )
-
-        self.assertEqual(forms[0].form, form_first)
-        self.assertEqual(forms[0].form_category_id, form_category_id)
-
-    def test_form_category_automatically_set_when_only_one_form(self):
-        form_category = factories.FormCategoryFactory()
         administrative_entity = factories.AdministrativeEntityFactory()
-        administrative_entity.forms.set(
-            factories.FormFactory.create_batch(2, category=form_category)
+        form_first = factories.FormFactory(
+            administrative_entities=[administrative_entity]
         )
-
-        response = self.client.post(
+        self.client.post(
             reverse(
                 "submissions:submission_select_administrative_entity",
             ),
-            data={"administrative_entity": administrative_entity.pk},
+            {"administrative_entity": [administrative_entity]},
         )
 
-        submission = submissions_models.Submission.objects.get()
-
-        self.assertRedirects(
-            response,
-            reverse(
-                "submissions:submission_select_forms",
-                kwargs={"submission_id": submission.pk},
-            ),
+        self.assertEqual(submissions_models.Submission.objects.count(), 1)
+        self.assertEqual(
+            submissions_models.Submission.objects.get().selected_forms.count(),
+            1,
+            "Submission should have one form set",
         )
 
     def test_geotime_step_only_date_fields_appear_when_only_date_is_required(self):
@@ -1044,6 +1004,164 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             2,
         )
 
+    def test_single_administrative_entity_with_tag_is_automatically_selected(self):
+        administrative_entities = [
+            factories.AdministrativeEntityFactory(tags=[tag])
+            for tag in ["first", "second", "third"]
+        ]
+        forms = forms_models.Form.objects.all()
+
+        for administrative_entity in administrative_entities:
+            administrative_entity.forms.set(forms)
+
+        response = self.client.get(
+            reverse("submissions:submission_select_administrative_entity"),
+            {"entityfilter": "first"},
+            follow=True,
+        )
+
+        self.assertEqual(
+            submissions_models.Submission.objects.filter(
+                administrative_entity=administrative_entities[0].pk
+            ).count(),
+            1,
+        )
+
+    def test_single_administrative_entity_for_site_is_automatically_selected(self):
+        administrative_entities = factories.AdministrativeEntityFactory.create_batch(
+            3, sites=[]
+        )
+
+        site = get_current_site(self.client.request())
+        administrative_entities[0].sites.set([site])
+        forms = forms_models.Form.objects.all()
+
+        for administrative_entity in administrative_entities:
+            administrative_entity.forms.set(forms)
+
+        response = self.client.get(
+            reverse("submissions:submission_select_administrative_entity"),
+            follow=True,
+        )
+
+        self.assertEqual(
+            submissions_models.Submission.objects.filter(
+                administrative_entity=administrative_entities[0].pk
+            ).count(),
+            1,
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "submissions:submission_select_forms",
+                kwargs={
+                    "submission_id": submissions_models.Submission.objects.get().pk
+                },
+            ),
+        )
+
+    def test_single_administrative_entity_with_single_form_has_administrative_entity_and_form_automatically_selected(
+        self,
+    ):
+        form = factories.FormFactory()
+        administrative_entity = factories.AdministrativeEntityFactory()
+        administrative_entity.forms.set([form])
+
+        response = self.client.get(
+            reverse("submissions:submission_select_administrative_entity"),
+            follow=True,
+        )
+
+        self.assertEqual(
+            submissions_models.Submission.objects.filter(
+                administrative_entity=administrative_entity,
+                forms=form,
+            ).count(),
+            1,
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "submissions:submission_fields",
+                kwargs={
+                    "submission_id": submissions_models.Submission.objects.get().pk
+                },
+            ),
+        )
+
+    def test_post_administrative_entity_with_single_form_has_form_automatically_selected(
+        self,
+    ):
+        form = factories.FormFactory()
+        administrative_entities = factories.AdministrativeEntityFactory.create_batch(2)
+
+        forms = forms_models.Form.objects.all()
+        administrative_entities[0].forms.set([forms[0]])
+        administrative_entities[1].forms.set(forms)
+
+        response = self.client.post(
+            reverse("submissions:submission_select_administrative_entity"),
+            {"administrative_entity": administrative_entities[0].pk},
+        )
+
+        self.assertEqual(
+            submissions_models.Submission.objects.filter(
+                administrative_entity=administrative_entities[0],
+                forms=forms[0],
+            ).count(),
+            1,
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "submissions:submission_fields",
+                kwargs={
+                    "submission_id": submissions_models.Submission.objects.get().pk
+                },
+            ),
+        )
+
+    def test_post_administrative_entity_with_multiple_forms_shows_form_select_step(
+        self,
+    ):
+        form = factories.FormFactory()
+        administrative_entities = factories.AdministrativeEntityFactory.create_batch(2)
+
+        forms = forms_models.Form.objects.all()
+        for administrative_entity in administrative_entities:
+            administrative_entity.forms.set(forms)
+
+        response = self.client.post(
+            reverse("submissions:submission_select_administrative_entity"),
+            {"administrative_entity": administrative_entities[0].pk},
+        )
+
+        self.assertEqual(
+            submissions_models.Submission.objects.filter(
+                administrative_entity=administrative_entities[0],
+            ).count(),
+            1,
+        )
+        self.assertEqual(
+            list(
+                submissions_models.Submission.objects.filter(
+                    administrative_entity=administrative_entities[0],
+                )
+                .get()
+                .forms.all()
+            ),
+            [],
+        )
+        self.assertRedirects(
+            response,
+            reverse(
+                "submissions:submission_select_forms",
+                kwargs={
+                    "submission_id": submissions_models.Submission.objects.get().pk
+                },
+            ),
+        )
+
     def test_administrative_entity_is_filtered_by_tag(self):
         administrative_entities = [
             factories.AdministrativeEntityFactory(tags=[tag])
@@ -1061,16 +1179,6 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         )
 
         new_submission = submissions_models.Submission.objects.last()
-
-        content = response.content.decode()
-        self.assertInHTML("Sélectionnez le ou les type(s)", content)
-        self.assertRedirects(
-            response,
-            reverse(
-                "submissions:submission_select_categories",
-                kwargs={"submission_id": new_submission.id},
-            ),
-        )
 
         response2 = self.client.get(
             reverse(

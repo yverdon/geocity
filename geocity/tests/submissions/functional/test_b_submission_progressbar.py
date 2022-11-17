@@ -2,7 +2,6 @@ from django.test import TestCase
 from django.urls import reverse
 
 from geocity.apps.forms import models as forms_models
-
 from geocity.tests import factories
 from geocity.tests.utils import LoggedInUserMixin, get_parser
 

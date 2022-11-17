@@ -285,6 +285,7 @@ class Submission(models.Model):
             ("validate_submission", _("Valider les demandes de permis")),
             ("classify_submission", _("Classer les demandes de permis")),
             ("edit_submission", _("Éditer les demandes de permis")),
+            ("view_private_submission", _("Voir les demandes restreintes")),
         ]
         indexes = [models.Index(fields=["created_at"])]
 

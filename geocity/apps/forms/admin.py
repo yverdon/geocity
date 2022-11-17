@@ -81,7 +81,7 @@ class FormAdminForm(forms.ModelForm):
         }
 
     class Media:
-        js = ("js/admin/forms_admin.js",)
+        js = ("js/admin/form.js",)
 
     def __init__(self, *args, **kwargs):
         instance = kwargs.get("instance")
@@ -309,7 +309,7 @@ class FieldAdminForm(forms.ModelForm):
         return self.cleaned_data["file_download"]
 
     class Media:
-        js = ("js/admin/fields_admin.js",)
+        js = ("js/admin/form_field.js",)
 
 
 @admin.register(models.Field)

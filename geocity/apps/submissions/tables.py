@@ -158,11 +158,9 @@ class OwnSubmissionsHTMLTable(GenericSubmissionTable, SelectableSubmissionTable)
     forms_html = tables.TemplateColumn(
         verbose_name=_("Objets et types de demandes"),
         orderable=False,
-        # FIXME rename template (was _permit_request_works_objects.html)
         template_name="tables/_submission_forms.html",
     )
     actions = tables.TemplateColumn(
-        # FIXME rename template
         template_name="tables/_submission_actions.html",
         verbose_name=_("Actions"),
         orderable=False,
@@ -234,11 +232,9 @@ class DepartmentSubmissionsHTMLTable(
     forms_html = tables.TemplateColumn(
         verbose_name=_("Objets et types de demandes"),
         orderable=False,
-        # FIXME rename template (was _permit_request_works_objects.html)
         template_name="tables/_submission_forms.html",
     )
     actions = tables.TemplateColumn(
-        # FIXME rename template
         template_name="tables/_submission_actions.html",
         verbose_name=_("Actions"),
         orderable=False,
@@ -268,7 +264,6 @@ class DepartmentSubmissionsExportTable(GenericDepartmentSubmissionsTable):
             verbose_name=_("IBAN"),
             attrs=ATTRIBUTES,
             orderable=False,
-            # FIXME rename template
             template_name="tables/_submission_author_iban.html",
         )
 
