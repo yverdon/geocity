@@ -470,7 +470,7 @@ def create_assigned_permissions(apps, schema_editor):
     for user_permission in User.user_permissions.through.objects.filter(
         permission__in=old_permissions_by_codename.values()
     ).select_related("permission"):
-        User.permissions.through.objects.create(
+        User.user_permissions.through.objects.create(
             user_id=user_permission.user_id,
             permission_id=new_permissions_by_codename[
                 permissions_mapping[user_permission.permission.codename]
