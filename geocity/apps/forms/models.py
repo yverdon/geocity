@@ -126,13 +126,11 @@ class Form(models.Model):
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
     )
-
     category = models.ForeignKey(
         FormCategory,
         on_delete=models.CASCADE,
         verbose_name=_("categorie"),
         related_name="forms",
-        null=True,
     )
     administrative_entities = models.ManyToManyField(
         AdministrativeEntity,
