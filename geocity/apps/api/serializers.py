@@ -43,6 +43,7 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
         "form_id",
         "id",
         "form__name",
+        "submission__shortname",
         "form__category__name",
         "field_values__field__is_public_when_permitrequest_is_public",
     )
@@ -64,13 +65,13 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
 
                 # List of a list, to split wot in objects. Check if last wot changed or never assigned. Means it's first iteration
                 if property and wot != last_wot:
-                    wot_properties.append(property)
+                    wot_properties.append(property) if user_is_authenticated else ''
                     property = []
                     # WOT
                     property.append(
                         {
                             # FIXME should this be renamed?
-                            "key": "work_object_type",
+                            "key": "Formulaire",
                             "value": wot,
                             "type": "text",
                         }
@@ -80,17 +81,13 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
                     property.append(
                         {
                             # FIXME should this be renamed?
-                            "key": "work_object_type",
+                            "key": "Formulaire",
                             "value": wot,
                             "type": "text",
                         }
                     )
 
-                last_wot = prop["form__name"] + (
-                    f' ({prop["form__category__name"]})'
-                    if prop["form__category__name"]
-                    else ""
-                )
+                last_wot = wot
 
                 if prop["field_values__field__input_type"] == "file" and (
                     user_is_authenticated
@@ -125,7 +122,7 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
                         }
                     )
             # Add last wot_properties, or show something when there's only one
-            wot_properties.append(property)
+            wot_properties.append(property) if user_is_authenticated else ''
         else:
             for prop in wot_props:
                 wot = f'{prop["form__name"]} ({prop["form__category__name"]})'
