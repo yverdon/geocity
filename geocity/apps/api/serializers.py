@@ -64,14 +64,14 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
 
                 # List of a list, to split wot in objects. Check if last wot changed or never assigned. Means it's first iteration
                 if property and wot != last_wot:
-                    if user_is_authenticated:
+                    # Don't add values if there's only the "WOT" without any field
+                    if len(property) > 1:
                         wot_properties.append(property)
 
                     property = []
                     # WOT
                     property.append(
                         {
-                            # FIXME should this be renamed?
                             "key": "Formulaire",
                             "value": wot,
                             "type": "text",
@@ -81,7 +81,6 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
                 if not last_wot:
                     property.append(
                         {
-                            # FIXME should this be renamed?
                             "key": "Formulaire",
                             "value": wot,
                             "type": "text",
@@ -123,7 +122,8 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
                         }
                     )
             # Add last wot_properties, or show something when there's only one
-            if user_is_authenticated:
+            # Don't add values if there's only the "WOT" without any field
+            if len(property) > 1:
                 wot_properties.append(property)
         else:
             for prop in wot_props:
