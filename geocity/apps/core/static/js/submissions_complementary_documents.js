@@ -1,6 +1,6 @@
-  
+
 let setUpDocumentManagement = function(){
-  
+
   let container = document.getElementById('complementary-documents')
   let documents = document.getElementsByClassName('complementary-document')
   let nbDocuments = documents.length;
