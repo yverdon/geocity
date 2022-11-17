@@ -17,7 +17,6 @@
     {% bootstrap_form_errors forms_selection_form %}
 
     {% for field in forms_selection_form %}
-      <h4>{{ field.label }}</h4>
       {% bootstrap_field field show_label=False %}
     {% endfor %}
 

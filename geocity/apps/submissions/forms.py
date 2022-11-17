@@ -96,6 +96,10 @@ class GroupedRadioWidget(forms.RadioSelect):
         css = {"all": ("customWidgets/GroupedRadio/groupedradio.css",)}
 
 
+class CheckboxSelectMultipleWidget(forms.CheckboxSelectMultiple):
+    template_name = "submissions/widgets/multipleselect.html"
+
+
 class AdministrativeEntityForm(forms.Form):
     administrative_entity = forms.ModelChoiceField(
         label=_("Entité administrative"),
@@ -147,7 +151,7 @@ class FormChoiceField(forms.ModelMultipleChoiceField):
 
 class FormsSelectForm(forms.Form):
     prefix = "forms"
-    selected_forms = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple())
+    selected_forms = forms.MultipleChoiceField(widget=CheckboxSelectMultipleWidget())
 
     def __init__(self, instance, form_categories=None, *args, **kwargs):
         self.instance = instance
