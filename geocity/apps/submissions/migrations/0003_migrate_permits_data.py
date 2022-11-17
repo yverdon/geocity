@@ -429,6 +429,7 @@ def create_assigned_permissions(apps, schema_editor):
         "validate_permit_request": "validate_submission",
         "classify_permit_request": "classify_submission",
         "edit_permit_request": "edit_submission",
+        "see_private_requests": "view_private_submission",
     }
 
     permissions_filter = Q()
