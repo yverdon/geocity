@@ -6,6 +6,7 @@ from datetime import date
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
+from django.contrib.sites.shortcuts import get_current_site
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
@@ -1031,7 +1032,11 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         administrative_entities = factories.AdministrativeEntityFactory.create_batch(
             3, sites=[]
         )
-        administrative_entities[0].sites.set([Site.objects.get(domain="web")])
+
+        site, created = Site.objects.get_or_create(
+            get_current_site(self.client.request())
+        )
+        administrative_entities[0].sites.set([site])
         forms = forms_models.Form.objects.all()
 
         for administrative_entity in administrative_entities:

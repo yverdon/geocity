@@ -145,7 +145,7 @@ class ReportsTestsBase(LiveServerTestCase):
             author=author.user,
             status=submissions_models.Submission.STATUS_PROCESSING,
         )
-        works_obj_type_choice = forms_models.FormChoice.objects.create(
+        selected_form = submissions_models.SelectedForm.objects.create(
             submission=submission,
             form=form,
         )
@@ -155,8 +155,8 @@ class ReportsTestsBase(LiveServerTestCase):
             geom="SRID=2056;GEOMETRYCOLLECTION (MultiPolygon (((2539069 1181160, 2539052 1181120, 2539099 1181110, 2539118 1181147, 2539069 1181160))))",
         )
         submissions_models.SubmissionAmendFieldValue.objects.create(
-            property=field,
-            works_object_type_choice=works_obj_type_choice,
+            field=field,
+            form=selected_form,
             value="myvalue",
         )
 
