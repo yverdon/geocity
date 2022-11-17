@@ -2,12 +2,6 @@
 {% load submissions_extras %}
 
 <ul class="list-inline text-right">
-  <li>
-    <a title="{% trans "Voir" %}" href="{% url 'submissions:submission_detail' record.pk %}">
-      <i class="fa fa-eye fa-lg"></i>
-    </a>
-  </li>
-
   {% can_download_archive as can_download %}
   {% if can_download %}
     <li>
