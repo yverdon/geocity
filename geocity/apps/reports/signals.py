@@ -67,7 +67,7 @@ def create_default_report_for_integrator(sender, instance, created, **kwargs):
         order=4,
         report=report,
         title="Raw wot data",
-        content="<pre>{{wot_data}}</pre>",
+        content="<pre>{{form_data}}</pre>",
     )
     section_paragraph_4.save()
 
