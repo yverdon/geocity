@@ -438,7 +438,6 @@ class Migration(migrations.Migration):
                 related_name="forms",
                 to="forms.formcategory",
                 verbose_name="categorie",
-                null=True,
             ),
         ),
         migrations.AddField(

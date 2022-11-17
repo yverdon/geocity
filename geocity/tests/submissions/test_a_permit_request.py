@@ -1190,7 +1190,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         )
         parser2 = get_parser(response2.content)
         content2 = response2.content.decode()
-        element_parsed = parser2.select(".form-check-label")
+        element_parsed = parser2.select("#id_forms-selected_forms label")
 
         # Check that selected item is there
         self.assertEqual(1, len(element_parsed))
@@ -1215,7 +1215,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         )
 
         parser = get_parser(response.content)
-        element_parsed = parser.select(".form-check-label")
+        element_parsed = parser.select("#id_forms-selected_forms label")
 
         content = response.content.decode()
 
@@ -1242,7 +1242,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         )
 
         parser = get_parser(response.content)
-        element_parsed = parser.select(".form-check-label")
+        element_parsed = parser.select("#id_forms-selected_forms label")
 
         content = response.content.decode()
 
@@ -1273,7 +1273,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         )
 
         parser = get_parser(response.content)
-        element_parsed = parser.select(".form-check-label")
+        element_parsed = parser.select("#id_forms-selected_forms label")
 
         # Check that 2 forms are visibles
         self.assertEqual(2, len(element_parsed))
@@ -1301,7 +1301,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         )
 
         parser = get_parser(response.content)
-        element_parsed = parser.select(".form-check-label")
+        element_parsed = parser.select("#id_forms-selected_forms label")
 
         # Check that 3 forms are visibles
         self.assertEqual(3, len(element_parsed))

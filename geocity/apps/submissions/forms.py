@@ -22,6 +22,7 @@ from django.forms import modelformset_factory
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from geocity.apps.accounts.models import (
@@ -96,6 +97,10 @@ class GroupedRadioWidget(forms.RadioSelect):
         css = {"all": ("customWidgets/GroupedRadio/groupedradio.css",)}
 
 
+class CheckboxSelectMultipleWidget(forms.CheckboxSelectMultiple):
+    template_name = "submissions/widgets/multipleselect.html"
+
+
 class AdministrativeEntityForm(forms.Form):
     administrative_entity = forms.ModelChoiceField(
         label=_("Entité administrative"),
@@ -147,7 +152,7 @@ class FormChoiceField(forms.ModelMultipleChoiceField):
 
 class FormsSelectForm(forms.Form):
     prefix = "forms"
-    selected_forms = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple())
+    selected_forms = forms.MultipleChoiceField(widget=CheckboxSelectMultipleWidget())
 
     def __init__(self, instance, form_categories=None, *args, **kwargs):
         self.instance = instance
@@ -193,7 +198,7 @@ class FormsSelectForm(forms.Form):
         forms_by_category = [
             (category, [(form.pk, form.name) for form in forms])
             for category, forms in sorted(
-                forms_by_category_dict.items(), key=lambda item: item[0].name
+                forms_by_category_dict.items(), key=lambda item: slugify(item[0].name)
             )
         ]
 

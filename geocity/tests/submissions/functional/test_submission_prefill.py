@@ -29,7 +29,7 @@ class SubmissionPrefillTestCase(LoggedInUserMixin, TestCase):
 
         for i, form in enumerate(self.submission.forms.order_by("order")):
             expected = (
-                f'<input checked="" class="form-check-input" id="id_forms-selected_forms_0_{i}"'
+                f'<input checked="" class="" id="id_forms-selected_forms_0_{i}"'
                 f' name="forms-selected_forms" title="" type="checkbox" value="{form.pk}"/>'
             )
             self.assertInHTML(expected, content)
