@@ -437,7 +437,6 @@ def create_assigned_permissions(apps, schema_editor):
         permissions_filter |= Q(
             codename=old_perm_codename,
             content_type__app_label="permits",
-            content_type__model="permitrequest",
         ) | Q(
             codename=new_perm_codename,
             content_type__app_label="submissions",
