@@ -2,7 +2,7 @@
 
 {% block content %}
     <h2>Contact·s</h2>
-    {% if request_data.properties.permit_request_actor %}
+    {% if request_data.properties.contacts %}
         <div class="flex_container">
             {% for type, contact in request_data.properties.contacts.items %}
                 <div class="flex_item-50">
