@@ -57,8 +57,8 @@ def user_is_allowed_to_generate_report(request, submission_id, form_id, report_i
     return permit_request, form
 
 
-# TODO: instead of taking PermitRequest and WorksObjectType arguments, we should take
-# in WorksObjectTypeChoice, which already joins both, so they are consistent.
+# TODO: instead of taking Submission and Form arguments, we should take
+# in SelectedForm, which already joins both, so they are consistent.
 @api_view(["GET"])  # pretend it's a DRF view, so we get token auth
 @login_required
 @permanent_user_required
@@ -103,8 +103,8 @@ def report_content(request, submission_id, form_id, report_id):
     return render(request, "reports/report.html", context)
 
 
-# TODO: instead of taking PermitRequest and WorksObjectType arguments, we should take
-# in WorksObjectTypeChoice, which already joins both, so they are consistent.
+# TODO: instead of taking Submission and Form arguments, we should take
+# in SelectedForm, which already joins both, so they are consistent.
 @login_required
 @permanent_user_required
 def report_pdf(request, submission_id, form_id, report_id):

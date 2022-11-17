@@ -228,7 +228,6 @@ class SubmissionInquirySerializer(serializers.ModelSerializer):
 class SubmissionSerializer(serializers.ModelSerializer):
     administrative_entity = AdministrativeEntitySerializer(read_only=True)
     meta_types = MetaTypesField(source="forms", read_only=True)
-    # FIXME inform the API consumers that the name of this field has changed
     forms_names = FormsNames(source="forms", read_only=True)
     intersected_geometries = serializers.SerializerMethodField()
     current_inquiry = SubmissionInquirySerializer(read_only=True)
@@ -275,9 +274,6 @@ class SelectedFormSerializer(serializers.RelatedField):
         fields = get_form_fields(value)
         amend_fields = get_amend_properties(value)
 
-        # FIXME inform API consumers of the change:
-        # request_properties -> submission_fields
-        # amend_properties -> amend_fields
         form_and_amend_fields = {
             "submission_fields": fields,
             "amend_fields": amend_fields,
@@ -362,8 +358,6 @@ class SubmissionValidationSerializer(serializers.Serializer):
 
 
 class SubmissionGeoTimeSerializer(gis_serializers.GeoFeatureModelSerializer):
-    # FIXME inform API consumers of field changes
-    # permit_request -> submission
     submission = SubmissionSerializer(read_only=True)
 
     class Meta:
@@ -505,10 +499,6 @@ class SubmissionPrintListSerialier(gis_serializers.ListSerializer):
 
 
 class SubmissionPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
-    # FIXME inform API consumers of field changes
-    # permit_request -> submission
-    # wot_and_amend_properties -> form_and_amend_fields
-    # permit_request_actor -> contacts
     submission = SubmissionSerializer(source="*", read_only=True)
     form_and_amend_fields = SelectedFormSerializer(
         source="selected_forms", read_only=True
@@ -620,8 +610,6 @@ class SubmissionPrintSerializer(gis_serializers.GeoFeatureModelSerializer):
 
 
 class SubmissionDetailsSerializer(serializers.ModelSerializer):
-    # FIXME inform API consumers of field changes
-    # wot_properties -> field_values
     field_values = FieldValuesSerializer(source="selected_forms", read_only=True)
 
     class Meta:
@@ -633,9 +621,6 @@ class SubmissionDetailsSerializer(serializers.ModelSerializer):
 
 
 class SubmissionFiltersSerializer(serializers.Serializer):
-    # FIXME inform API consumers of field changes
-    # works_object_type -> form
-    # permit_request_id -> submission_id
     form = serializers.IntegerField(default=None, allow_null=True)
     status = serializers.ChoiceField(
         Submission.STATUS_CHOICES, default=None, allow_null=True

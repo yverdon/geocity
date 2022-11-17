@@ -65,7 +65,6 @@ class CleanupAnonymousRequests(CronJobBase):
 
     def do(self):
         try:
-            # FIXME rename command (was `cleanup_anonymous_requests`)
             call_command("cleanup_anonymous_submissions")
         except CommandError:
             logger.error(
