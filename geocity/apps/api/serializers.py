@@ -43,6 +43,7 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
         "form_id",
         "id",
         "form__name",
+        "submission__shortname",
         "form__category__name",
         "field_values__field__is_public_when_permitrequest_is_public",
     )
