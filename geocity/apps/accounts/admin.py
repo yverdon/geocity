@@ -345,7 +345,7 @@ class GroupAdminForm(forms.ModelForm):
         permissions = self.cleaned_data["permissions"]
         integrator_permissions = get_integrator_permissions()
 
-        if "permitdepartment-0-is_integrator_admin" in self.data.keys():
+        if "permit_department-0-is_integrator_admin" in self.data.keys():
             permissions = permissions.union(integrator_permissions)
         else:
             permissions = permissions.difference(
