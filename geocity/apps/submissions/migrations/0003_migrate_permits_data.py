@@ -345,10 +345,10 @@ def create_submission_validations(apps, schema_editor):
     SubmissionValidation = apps.get_model("submissions", "SubmissionValidation")
 
     def submission_validations():
-        for permit_request_geo_time in PermitRequestValidation.objects.all():
+        for permit_request_validation in PermitRequestValidation.objects.all():
             yield SubmissionValidation(
-                **common_fields_values(SubmissionValidation, permit_request_geo_time),
-                submission_id=permit_request_geo_time.permit_request_id,
+                **common_fields_values(SubmissionValidation, permit_request_validation),
+                submission_id=permit_request_validation.permit_request_id,
             )
 
     bulk_create(submission_validations())
@@ -363,12 +363,14 @@ def create_historical_submission_validations(apps, schema_editor):
     )
 
     def historical_submission_validations():
-        for permit_request_geo_time in HistoricalPermitRequestValidation.objects.all():
+        for (
+            permit_request_validation
+        ) in HistoricalPermitRequestValidation.objects.all():
             yield HistoricalSubmissionValidation(
                 **common_fields_values(
-                    HistoricalSubmissionValidation, permit_request_geo_time
+                    HistoricalSubmissionValidation, permit_request_validation
                 ),
-                submission_id=permit_request_geo_time.permit_request_id,
+                submission_id=permit_request_validation.permit_request_id,
             )
 
     bulk_create(historical_submission_validations())
