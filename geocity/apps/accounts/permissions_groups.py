@@ -55,11 +55,6 @@ AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
     "validate_submission",
     "classify_submission",
     "edit_submission",
-<<<<<<< HEAD
-    # TODO rename as see_private_forms
-    "see_private_requests",
-=======
     "view_private_submission",
->>>>>>> origin/phoenix
     "can_generate_pdf",
 ]

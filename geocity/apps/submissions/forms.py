@@ -160,13 +160,8 @@ class FormsSelectForm(forms.Form):
         initial = {"selected_forms": selected_forms}
 
         super().__init__(*args, **{**kwargs, "initial": initial})
-<<<<<<< HEAD
-        user_can_see_private_requests = self.user.has_perm(
-            "accounts.see_private_requests"
-=======
         user_can_view_private_submission = self.user.has_perm(
             "submissions.view_private_submission"
->>>>>>> origin/phoenix
         )
 
         forms_filter = Q()

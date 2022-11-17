@@ -234,7 +234,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
     inlines = [FormFieldInline]
 
     def sortable_str(self, obj):
-        return obj.__str__() if obj.__str__() != "" else "titi"
+        return obj.__str__() if obj.__str__() != "" else str(obj.pk)
 
     sortable_str.admin_order_field = "name"
     sortable_str.short_description = _("Nom du formulaire")

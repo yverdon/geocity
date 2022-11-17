@@ -37,7 +37,6 @@ class AlwaysChangedStackedPolymorphicInlineChild(StackedPolymorphicInline.Child)
 
 class SectionInline(StackedPolymorphicInline):
     model = Section
-    # template = "toto.html"
     # Automatic registration of child inlines
     # see https://django-polymorphic.readthedocs.io/en/stable/admin.html#inline-models
     child_inlines = [

@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("submissions", "0004_admin_reorder_for_phoenix"),
+        ("submissions", "0004_new_admin_models_and_metadata"),
     ]
 
     operations = [
