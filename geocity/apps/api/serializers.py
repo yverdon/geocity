@@ -64,7 +64,9 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
 
                 # List of a list, to split wot in objects. Check if last wot changed or never assigned. Means it's first iteration
                 if property and wot != last_wot:
-                    wot_properties.append(property) if user_is_authenticated else ''
+                    if user_is_authenticated:
+                        wot_properties.append(property)
+
                     property = []
                     # WOT
                     property.append(
@@ -121,7 +123,8 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
                         }
                     )
             # Add last wot_properties, or show something when there's only one
-            wot_properties.append(property) if user_is_authenticated else ''
+            if user_is_authenticated:
+                wot_properties.append(property)
         else:
             for prop in wot_props:
                 wot = f'{prop["form__name"]} ({prop["form__category__name"]})'
