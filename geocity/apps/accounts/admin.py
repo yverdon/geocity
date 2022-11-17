@@ -578,9 +578,7 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return obj.__str__()
 
     sortable_str.admin_order_field = "name"
-    sortable_str.short_description = (
-        "1.1 Configuration de l'entité administrative (commune, organisation)"
-    )
+    sortable_str.short_description = "Entité administrative"
 
     def get_sites(self, obj):
         return [site["name"] for site in obj.sites.all().values("name")]

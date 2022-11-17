@@ -45,9 +45,7 @@ class SubmissionAmendFieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     def sortable_str(self, obj):
         return str(obj)
 
-    sortable_str.short_description = (
-        "2.2 Configuration du champ de traitement des demandes"
-    )
+    sortable_str.short_description = "Champ de traitement"
     sortable_str.admin_order_field = "name"
 
     # Pass the user from ModelAdmin to ModelForm
@@ -82,7 +80,7 @@ class ContactTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return obj.__str__()
 
     sortable_str.admin_order_field = "type"
-    sortable_str.short_description = _("1.6 Configuration du contact")
+    sortable_str.short_description = _("Contact")
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "form_category":

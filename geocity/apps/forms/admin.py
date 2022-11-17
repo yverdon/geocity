@@ -228,7 +228,7 @@ class FormAdmin(IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdmin):
         return obj.__str__()
 
     sortable_str.admin_order_field = "name"
-    sortable_str.short_description = _("Nom du formulaire")
+    sortable_str.short_description = _("Formulaire")
 
     def get_queryset(self, request):
         qs = (
@@ -362,7 +362,7 @@ class FormCategoryAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return obj.__str__()
 
     sortable_str.admin_order_field = "name"
-    sortable_str.short_description = _("1.2 de la catégorie")
+    sortable_str.short_description = _("Catégorie")
 
     def get__tags(self, obj):
         return list(obj.tags.all())
