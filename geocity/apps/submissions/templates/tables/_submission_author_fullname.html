@@ -1,0 +1,8 @@
+{% load i18n %}
+{% load submissions_extras %}
+
+{% if not record.author.userprofile.is_anonymous %}
+  {{ record.author.userprofile }}
+{% else %}
+  —
+{% endif %}

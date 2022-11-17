@@ -5,7 +5,9 @@ import django.core.validators
 import django.db.models.deletion
 from django.db import migrations, models
 
-from geocity.apps import permits, reports
+from geocity.apps import reports
+from geocity.apps.accounts.fields import AdministrativeEntityFileField
+from geocity.fields import PrivateFileSystemStorage
 
 
 class Migration(migrations.Migration):
@@ -128,8 +130,8 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "qgis_project_file",
-                    permits.fields.AdministrativeEntityFileField(
-                        storage=permits.fields.PrivateFileSystemStorage(),
+                    AdministrativeEntityFileField(
+                        storage=PrivateFileSystemStorage(),
                         upload_to="qgis_templates",
                         validators=[
                             django.core.validators.FileExtensionValidator(

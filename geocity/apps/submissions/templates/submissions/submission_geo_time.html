@@ -1,0 +1,50 @@
+{% extends "base_generic.html" %}
+{% load bootstrap4 %}
+{% load i18n %}
+{% load static %}
+{% load submissions_extras %}
+
+{% block scripts %}
+{% endblock %}
+{% block content %}
+<div id="permit-request-geo-time">
+  {% submission_progressbar steps StepType.GEO_TIME %}
+  <h3>{{ geo_title }}</h3>
+  <hr>
+  <form method="post">
+    <div data-geo-time-role="forms" data-nb-forms="{{ formset.forms|length }}" data-permit-duration-max="{{ permit_request.max_validity }}">
+      {% for form in formset.forms %}
+        {{ form.media }}
+        {% include "submissions/_geo_time_form.html" with form=form form_id=forloop.counter0 form_number=forloop.counter open=forloop.last %}
+      {% endfor %}
+    </div>
+
+    {% csrf_token %}
+
+    <div data-geo-time-role="managementForm">
+      {{ formset.management_form }}
+    </div>
+
+    {% buttons %}
+      {% if previous_step.url %}
+        <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
+      {% endif %}
+      {% if can_have_multiple_ranges %}
+        <button class="btn btn-secondary" type="button" data-geo-time-role="addForm">{% trans "Ajouter un nouveau" %}</button>
+      {% endif %}
+      <button class="btn btn-primary">{% trans "Enregistrer et poursuivre" %}</button>
+    {% endbuttons %}
+  </form>
+
+  <div class="d-none" data-geo-time-role="emptyForm">
+    {% include "submissions/_geo_time_form.html" with form=formset.empty_form form_id="__prefix__" form_number="__prefix__" open=False %}
+  </div>
+</div>
+
+<script src="{% static "js/submissions_geo_time.js" %}"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    new window.PermitsGeoTime(document.getElementById("permit-request-geo-time"));
+  });
+</script>
+{% endblock %}

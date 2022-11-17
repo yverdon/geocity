@@ -1,0 +1,5 @@
+{% for item in record.forms.all %}
+  {% if record.form_filter == item.id|stringformat:"i"  %}
+  <strong>{% endif %}{{ item.name }}{% if record.form_filter == item.id|stringformat:"i" %}
+  </strong>{% endif %} ({{ item.category.name }}) <br />
+{% endfor %}

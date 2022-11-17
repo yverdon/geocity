@@ -9,7 +9,7 @@
     {% load static %}
     {% load i18n %}
     {% load bootstrap4 %}
-    {% load permits_extras %}
+    {% load submissions_extras %}
     {% bootstrap_css %}
     {% bootstrap_javascript jquery='full' %}
     {% block script %}
@@ -51,11 +51,11 @@
             <span class="navbar-toggler-icon"></span>
           </button>
 
-          {% if user.is_authenticated and not user.permitauthor.is_temporary %}
+          {% if user.is_authenticated and not user.userprofile.is_temporary %}
             <div class="collapse navbar-collapse navbar-toggle">
               <ul class="navbar-nav mr-auto">
                 <li class="nav-item d-flex align-items-center">
-                    <a href="{% url 'permits:permit_requests_list' %}" role="button">
+                    <a href="{% url 'submissions:submissions_list' %}" role="button">
                       <i class="fa fa-list-ul" aria-hidden="true"></i>
                       {% trans "Mes demandes" %}
                     </a>
@@ -63,7 +63,7 @@
                 {% can_archive as can_archive %}
                 {% if can_archive %}
                   <li class="nav-item d-flex align-items-center">
-                      <a href="{% url 'permits:archived_permit_request_list' %}" role="button">
+                      <a href="{% url 'submissions:archived_submission_list' %}" role="button">
                         <i class="fa fa-archive" aria-hidden="true"></i>
                         {% trans "Demandes archivées" %}
                       </a>
@@ -78,12 +78,12 @@
                     </li>
                   {% endif %}
 
-                  {% if group.permitdepartment.administrative_entity.archive_link %}
+                  {% if group.permit_department.administrative_entity.archive_link %}
                 <li class="nav-item d-flex align-items-center">
                   {% with request.user.groups.all|first as group %}
-                    {% if group.permitdepartment.administrative_entity.archive_link != '' %}
+                    {% if group.permit_department.administrative_entity.archive_link != '' %}
                       {% if request.user.groups.all.count > 0 %}
-                        <a class="btn btn-outline-primary" href="{{group.permitdepartment.administrative_entity.archive_link}}" role="button" target="_blank" rel="noreferrer">
+                        <a class="btn btn-outline-primary" href="{{group.permit_department.administrative_entity.archive_link}}" role="button" target="_blank" rel="noreferrer">
                           <i class="fa fa-archive"></i>
                           {% trans "Archives" %}</a>
                       {% endif %}
@@ -95,7 +95,7 @@
               <ul class="navbar-nav ml-auto">
                 <li class="nav-item d-flex align-items-center">
                   <div class="global-search-form-container">
-                    <form  class="navbar-form navbar-right" method="get" action="{% url 'permits:permit_requests_search' %}" id="global-search-form">
+                    <form  class="navbar-form navbar-right" method="get" action="{% url 'submissions:submissions_search' %}" id="global-search-form">
                       <input data-role="search-input" placeholder="{% trans "Recherche…" %}" type="text" name="search" class="w-100 search-input form-control" autocomplete="off">
                       <div data-role="search-results" class="search-results-container"></div>
                     </form>
@@ -111,15 +111,15 @@
                       <a class="dropdown-item" href="{% url 'admin:index' %}">{% trans "Interface d'administration" %}</a>
                       <div class="dropdown-divider"></div>
                       {% endif %}
-                      <a class="dropdown-item" href="{% url 'permit_author_edit' %}">{% trans "Gérer mon compte" %}</a>
+                      <a class="dropdown-item" href="{% url 'accounts:user_profile_edit' %}">{% trans "Gérer mon compte" %}</a>
                       {% if ENABLE_2FA %}
                       <a class="dropdown-item" href="{% url 'two_factor:profile' %}">{% trans "Gérer la sécurité de mon compte" %}</a>
                       {% endif %}
                       {% if not user.socialaccount_set.exists %}
-                      <a class="dropdown-item" href="{% url 'password_change' %}">{% trans "Modifier mon mot de passe" %}</a>
+                      <a class="dropdown-item" href="{% url 'accounts:password_change' %}">{% trans "Modifier mon mot de passe" %}</a>
                       {% endif %}
                       <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="{% url 'logout' %}">{% trans "Me déconnecter" %}</a>
+                      <a class="dropdown-item" href="{% url 'accounts:logout' %}">{% trans "Me déconnecter" %}</a>
                   </div>
                 </li>
 
@@ -134,7 +134,7 @@
                       <div class="dropdown-divider"></div>
                       {% endif %}
                       <li class="nav-item">
-                        <a class="nav-link" href="{% url 'permit_author_edit' %}">{% trans "Gérer mon compte" %}</a>
+                        <a class="nav-link" href="{% url 'accounts:user_profile_edit' %}">{% trans "Gérer mon compte" %}</a>
                       </li>
                       {% if ENABLE_2FA %}
                       <li class="nav-item">
@@ -143,12 +143,12 @@
                       {% endif %}
                       {% if not user.socialaccount_set.exists %}
                       <li class="nav-item">
-                        <a class="nav-link" href="{% url 'password_change' %}">{% trans "Modifier mon mot de passe" %}</a>
+                        <a class="nav-link" href="{% url 'accounts:password_change' %}">{% trans "Modifier mon mot de passe" %}</a>
                       </li>
                       {% endif %}
                       <div class="dropdown-divider"></div>
                       <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">{% trans "Me déconnecter" %}</a>
+                        <a class="nav-link" href="{% url 'accounts:logout' %}">{% trans "Me déconnecter" %}</a>
                       </li>
                     </ul>
                   </div>

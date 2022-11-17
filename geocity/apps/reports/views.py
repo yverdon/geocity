@@ -9,18 +9,17 @@ from django.utils import timezone
 from knox.models import AuthToken
 from rest_framework.decorators import api_view
 
-from geocity.apps.permits import services
-from geocity.apps.permits.decorators import permanent_user_required
-from geocity.apps.permits.models import ComplementaryDocumentType, WorksObjectType
-from geocity.apps.permits.serializers import PermitRequestPrintSerializer
+from geocity.apps.accounts.decorators import permanent_user_required
+from geocity.apps.api.serializers import SubmissionPrintSerializer
+from geocity.apps.forms.models import Form
+from geocity.apps.submissions import services
+from geocity.apps.submissions.models import ComplementaryDocumentType, Submission
 
 from .models import Report
 from .utils import run_docker_container
 
 
-def user_is_allowed_to_generate_report(
-    request, permit_request_id, work_object_type_id, report_id
-):
+def user_is_allowed_to_generate_report(request, submission_id, form_id, report_id):
 
     # Check that user has permission to generate pdf
     if not (
@@ -30,24 +29,22 @@ def user_is_allowed_to_generate_report(
 
     # Check that user is allowed to see the current permit_request
     permit_request = get_object_or_404(
-        services.get_permit_requests_list_for_user(request.user), pk=permit_request_id
+        Submission.objects.filter_for_user(request.user), pk=submission_id
     )
 
-    # Check the current work_object_type_id is allowed for user
-    # The wot list is associated to a permitrequest, thus a user that have
-    # access to the permitrequest, also has access to all wots associated with it
-    if int(work_object_type_id) not in permit_request.works_object_types.values_list(
-        "pk", flat=True
-    ):
+    # Check the current form_id is allowed for user
+    # The form list is associated to a submission, thus a user that have
+    # access to the submission, also has access to all forms associated with it
+    if int(form_id) not in permit_request.forms.values_list("pk", flat=True):
         raise Http404
 
-    work_object_type = get_object_or_404(WorksObjectType, pk=work_object_type_id)
+    form = get_object_or_404(Form, pk=form_id)
 
     # Check the user is allowed to use this report template
 
-    # List parents documents for a given WOT
+    # List parents documents for a given form
     document_parent_list = ComplementaryDocumentType.objects.filter(
-        work_object_types__pk=work_object_type_id, parent__isnull=True
+        form_id=form_id, parent__isnull=True
     )
 
     # Check if there's a children document with the same report id as the request
@@ -57,36 +54,34 @@ def user_is_allowed_to_generate_report(
     if not children_document_exists:
         raise Http404
 
-    return permit_request, work_object_type
+    return permit_request, form
 
 
-# TODO: instead of taking PermitRequest and WorksObjectType arguments, we should take
-# in WorksObjectTypeChoice, which already joins both, so they are consistent.
+# TODO: instead of taking Submission and Form arguments, we should take
+# in SelectedForm, which already joins both, so they are consistent.
 @api_view(["GET"])  # pretend it's a DRF view, so we get token auth
 @login_required
 @permanent_user_required
-def report_content(request, permit_request_id, work_object_type_id, report_id):
+def report_content(request, submission_id, form_id, report_id):
     """This views returns the content of a report in HTML. It is mainly meant to be rendered
     to PDF (but could also work as a PDF)"""
 
     # Ensure user is allowed to generate pdf
-    permit_request, work_object_type = user_is_allowed_to_generate_report(
-        request, permit_request_id, work_object_type_id, report_id
+    submission, form = user_is_allowed_to_generate_report(
+        request, submission_id, form_id, report_id
     )
 
     report = get_object_or_404(Report, pk=report_id)
 
     # Prepare the base context for rendering sections
-    request_json_data = PermitRequestPrintSerializer(permit_request).data
-    wot_key = (
-        f"{work_object_type.works_object.name} ({work_object_type.works_type.name})"
-    )
-    request_props = request_json_data["properties"]["request_properties"][wot_key]
-    amend_props = request_json_data["properties"]["amend_properties"][wot_key]
+    request_json_data = SubmissionPrintSerializer(submission).data
+    form_key = form.name + (f" ({form.category.name})" if form.category_id else "")
+    request_props = request_json_data["properties"]["submission_fields"][form_key]
+    amend_props = request_json_data["properties"]["amend_fields"][form_key]
     base_section_context = {
-        "permit_request": permit_request,
+        "submission": submission,
         "request_data": request_json_data,
-        "wot_data": {
+        "form_data": {
             "request_properties": request_props,
             "amend_properties": amend_props,
         },
@@ -108,26 +103,24 @@ def report_content(request, permit_request_id, work_object_type_id, report_id):
     return render(request, "reports/report.html", context)
 
 
-# TODO: instead of taking PermitRequest and WorksObjectType arguments, we should take
-# in WorksObjectTypeChoice, which already joins both, so they are consistent.
+# TODO: instead of taking Submission and Form arguments, we should take
+# in SelectedForm, which already joins both, so they are consistent.
 @login_required
 @permanent_user_required
-def report_pdf(request, permit_request_id, work_object_type_id, report_id):
+def report_pdf(request, submission_id, form_id, report_id):
 
     # Ensure user is allowed to generate pdf
-    user_is_allowed_to_generate_report(
-        request, permit_request_id, work_object_type_id, report_id
-    )
+    user_is_allowed_to_generate_report(request, submission_id, form_id, report_id)
 
     authtoken, token = AuthToken.objects.create(
         request.user, expiry=timedelta(minutes=5)
     )
 
     url = reverse(
-        "reports:permit_request_report_content",
+        "reports:submission_report_content",
         kwargs={
-            "permit_request_id": permit_request_id,
-            "work_object_type_id": work_object_type_id,
+            "submission_id": submission_id,
+            "form_id": form_id,
             "report_id": report_id,
         },
     )

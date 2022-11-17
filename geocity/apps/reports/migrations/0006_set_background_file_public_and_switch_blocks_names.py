@@ -3,7 +3,8 @@
 import django.core.validators
 from django.db import migrations, models
 
-from geocity.apps import permits
+from geocity.apps.accounts.fields import AdministrativeEntityFileField
+from geocity.fields import PrivateFileSystemStorage
 
 
 class Migration(migrations.Migration):
@@ -44,10 +45,10 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="sectionmap",
             name="qgis_project_file",
-            field=permits.fields.AdministrativeEntityFileField(
+            field=AdministrativeEntityFileField(
                 blank=True,
                 help_text="Si aucun projet n'est ajouté, le projet par défaut sera utilisé.",
-                storage=permits.fields.PrivateFileSystemStorage(),
+                storage=PrivateFileSystemStorage(),
                 upload_to="qgis_templates",
                 validators=[
                     django.core.validators.FileExtensionValidator(

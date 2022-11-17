@@ -1,0 +1,152 @@
+{% load i18n %}
+{% load bootstrap4 %}
+{% load submissions_extras %}
+
+<div class="container">
+  <div class="row">
+    <div class="col">
+      {% for form, fields, appendices, amend_custom_fields in forms_infos %}
+        <h4 class="workObjectHeader"> {{ form }} </h4>
+        <div class="container">
+          <dl class="properties-list">
+            {% for field in fields %}
+              {% if field.label %}
+                <dt> {{ field.label }} </dt>
+                <dd> {{ field.value|human_field_value|linebreaksbr }} </dd>
+              {% else %}
+                <dt style="white-space: nowrap;">{{ field.repr|safe }}</dt>
+                <dd></dd>
+              {% endif %}
+            {% endfor %}
+
+            {% for field in appendices %}
+              <dt>{{ field.label }}</dt>
+              <dd>
+                {% if not field.value %}
+                  <em>{% trans "Information non fournie" %}</em>
+                {% else %}
+                  <i class="fa fa-download pt-1 mr-1" aria-hidden="true"></i>
+                  <a href="{{ field.value.url }}" rel="noreferrer" target="_blank">{% trans "Télécharger le document" %}</a>
+                {% endif %}
+              </dd>
+            {% endfor %}
+          </dl>
+        </div>
+
+        {% if amend_custom_fields %}
+          <div class="container">
+            <h5>{% trans "Informations du service responsable" %}</h5>
+            {% for field_value in amend_custom_fields %}
+              {% if field_value.field.is_visible_by_author or field_value.field.is_visible_by_validators and is_validator %}
+                <dl class="properties-list">
+                  <dt class="amend-property">{{ field_value.field }}</dt>
+                  <dd>{{ field_value.value|linebreaksbr }}</dd>
+                </dl>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+
+  {% if contacts %}
+
+    <div class="row">
+      <div class="col">
+        <div class="container">
+          <h4>{% trans "Contacts" %}</h4>
+            <dl>
+              {% if requires_payment %}
+                <dt>Destinataire de la facture</dt>
+                <dd> {{ creditor }} </dd>
+              {% endif %}
+            </dl>
+        </div>
+
+          {% for contact_type, contact_infos in contacts %}
+          <h5>{{ contact_type }}</h5>
+            <div class="row">
+              <div class="col">
+                <div class="grid-container">
+                  {% for field_label, field_value in contact_infos %}
+                    {% if field_value %}
+                    <div class="grid-element">
+                      <dl>
+                         <dt> {{ field_label }} </dt>
+                         <dd> {{ field_value }} </dd>
+                      </dl>
+                    </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+
+      </div>
+    </div>
+
+  {% endif %}
+
+
+  <div class="row">
+    <div class="col">
+      {% if intersected_geometries %}
+        <h4>{% trans "Éléments géographiques touchés par la demande (automatique)" %}</h4>
+        {{ intersected_geometries|safe }}
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      {% for geo_time_form in geo_time_formset %}
+        {{ geo_time_form.media }}
+        {% include "submissions/_geo_time_form.html" with form=geo_time_form form_id=forloop.counter0 form_number=forloop.counter open=True %}
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if documents %}
+    <div class="row">
+      <div class="col">
+        <h2>Documents</h2>
+
+        {% for document in documents %}
+          <dl class="mb-4">
+            <dt>{% trans "Nom" %}</dt>
+            <dd>
+                <div class="pl-0 col-10">
+                  {{ document.document }}
+                  {% if document.is_public %}
+                    <span class="badge badge-pill badge-pill-55 badge-success">{% trans "Publique" %}</span>
+                  {% endif %}
+                </div>
+                <div class="col-2 text-right">
+                  <a href="{% url 'submissions:complementary_documents_download' document.name %}"><i class="fa fa-download" aria-hidden="true"></i></a>
+                  {% if user == document.owner or user.is_superuser %}
+                    <a class="text-danger" href="{% url 'submissions:complementary_documents_delete' pk=document.id %}"><i class="fa fa-trash" aria-hidden="true"></i></a>
+                  {% endif %}
+                </div>
+            </dd>
+
+            <dt>{% trans "Status" %}</dt>
+            <dd>{{ document.get_status_display }}</dd>
+
+            <dt>{% trans "Description" %}</dt>
+            <dd>{{ document.description }}</dd>
+
+            <dt>{% trans "Type" %}</dt>
+            <dd>{{ document.document_type }}</dd>
+          </dl>
+          {% if not forloop.last %}
+            <hr>
+          {% endif %}
+        {% endfor %}
+
+      </div>
+    </div>
+  {% endif %}
+</div>

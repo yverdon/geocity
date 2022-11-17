@@ -1,0 +1,46 @@
+{% extends "base_generic.html" %}
+{% load bootstrap4 %}
+{% load i18n %}
+{% load submissions_extras %}
+
+{% block content %}
+  <h3>{% trans "Formulaire" %}</h3>
+  <hr>
+  <div class="card mb-3">
+    <div class="card-body">
+      <h4 class="card-title">{{ config.ANONYMOUS_CAPTCHA_STEP }}</h4>
+      <form method="post">
+        {% csrf_token %}
+        {% bootstrap_form anonymous_request_form layout='horizontal' %}
+        {% buttons %}
+          <button class='js-captcha-refresh btn btn-secondary'>
+            {% trans "Rafraîchir le captcha" %}
+          </button>
+          <button type="submit" class="btn btn-primary">{% trans "Continuer" %}</button>
+        {% endbuttons %}
+      </form>
+    </div>
+  </div>
+{% endblock %}
+
+
+{% block scripts %}
+  <script>
+    $('.js-captcha-refresh').click(function(){
+      const $form = $(this).parents('form');
+      $.getJSON('{{ captcha_refresh_url }}', function(json) {
+        $('.captcha', $form).attr('src', json['image_url']);
+        $('#id_captcha_0', $form).val(json['key'])
+      });
+      return false;
+    });
+
+    $('#id_captcha_1').keydown(function(e) {
+      const $form = $(this).parents('form');
+      if (e.which === 13) {
+        e.preventDefault();
+        $form.submit();
+      }
+    });
+  </script>
+{% endblock %}

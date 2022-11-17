@@ -1,0 +1,37 @@
+{% extends "base_generic.html" %}
+{% load bootstrap4 %}
+{% load i18n %}
+{% load submissions_extras %}
+
+{% block content %}
+<div class="container">
+  {% submission_progressbar steps StepType.APPENDICES %}
+  <h3>{{ config.APPENDICES_STEP }}</h3>
+  <hr>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {% for form, fields in forms %}
+      <h4>{{ form.name }}</h4>
+      {% for field in fields %}
+        {% bootstrap_field field %}
+      {% endfor %}
+    {% empty %}
+      <h5>{% trans "Aucune annexe requise pour cette demande de permis." %}</h5>
+      <br>
+    {% endfor %}
+
+    {% buttons %}
+    {% if previous_step.url %}
+      <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
+    {% endif %}
+    <button class="btn btn-primary">
+      {% if forms %}
+        {% trans "Enregistrer et continuer" %}
+      {% else %}
+        {% trans "Continuer" %}
+      {% endif %}
+    </button>
+    {% endbuttons %}
+  </form>
+{% endblock %}

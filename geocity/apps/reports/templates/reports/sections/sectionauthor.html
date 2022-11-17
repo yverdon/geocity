@@ -2,21 +2,21 @@
 
 {% block content %}
     <h2>Auteur·e de la demande</h2>
-    {% if permit_request.author %}
+    {% if submission.author %}
         <div class="flex_container">
             <div class="flex_item-100">
-                <span class="bold">Prénom : </span>{{permit_request.author.user.first_name}}<br>
-                <span class="bold">Nom : </span>{{permit_request.author.user.last_name}}<br>
-                <span class="bold">Adresse : </span>{{permit_request.author.address}}<br>
-                <span class="bold">NPA : </span>{{permit_request.author.zipcode}}<br>
-                <span class="bold">Localité : </span>{{permit_request.author.city}}<br>
-                <span class="bold">Raison sociale : </span>{{permit_request.author.company_name}}<br>
-                <span class="bold">Numéro TVA : </span>{{permit_request.author.vat_number}}<br>
-                <span class="bold">Téléphone : </span>{{permit_request.author.phone_first}}<br>
-                <span class="bold">Téléphone : </span>{{permit_request.author.phone_second}}<br>
-                <span class="bold">E-mail : </span>{{permit_request.author.user.email}}<br>
+                <span class="bold">Prénom : </span>{{submission.author.first_name}}<br>
+                <span class="bold">Nom : </span>{{submission.author.last_name}}<br>
+                <span class="bold">Adresse : </span>{{submission.author.userprofile.address}}<br>
+                <span class="bold">NPA : </span>{{submission.author.userprofile.zipcode}}<br>
+                <span class="bold">Localité : </span>{{submission.author.userprofile.city}}<br>
+                <span class="bold">Raison sociale : </span>{{submission.author.userprofile.company_name}}<br>
+                <span class="bold">Numéro TVA : </span>{{submission.author.userprofile.vat_number}}<br>
+                <span class="bold">Téléphone : </span>{{submission.author.userprofile.phone_first}}<br>
+                <span class="bold">Téléphone : </span>{{submission.author.userprofile.phone_second}}<br>
+                <span class="bold">E-mail : </span>{{submission.author.email}}<br>
                 {% if settings.AUTHOR_IBAN_VISIBLE %}
-                    <span class="bold">IBAN : </span>{{permit_request.author.iban}}<br>
+                    <span class="bold">IBAN : </span>{{submission.author.userprofile.iban}}<br>
                 {% endif %}
             </div>
         </div>

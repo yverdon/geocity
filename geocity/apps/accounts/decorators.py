@@ -1,0 +1,55 @@
+from django.contrib.auth import REDIRECT_FIELD_NAME
+from django.contrib.auth.decorators import user_passes_test
+from django.core.exceptions import ObjectDoesNotExist
+from django_otp import user_has_device
+
+from .users import is_2FA_mandatory
+
+
+def check_mandatory_2FA(
+    view=None,
+    redirect_field_name="next",
+    login_url="accounts:profile",
+    if_configured=False,
+):
+    """
+    Do same as :func:`django_otp.decorators.otp_required`, but verify first if the user
+    is in a group where 2FA is required.
+    """
+
+    def test(user):
+        if is_2FA_mandatory(user):
+            return user.is_verified() or (
+                if_configured and user.is_authenticated and not user_has_device(user)
+            )
+        else:
+            return True
+
+    decorator = user_passes_test(
+        test, login_url=login_url, redirect_field_name=redirect_field_name
+    )
+
+    return decorator if (view is None) else decorator(view)
+
+
+def permanent_user_required(
+    function=None, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None
+):
+    """
+    Decorate after login required, to enforce that the user is also not temporary.
+    """
+
+    def test(user):
+        try:
+            user_profile = user.userprofile
+        except ObjectDoesNotExist:
+            return True
+        else:
+            return not user_profile.is_temporary
+
+    decorator = user_passes_test(
+        test, login_url=login_url, redirect_field_name=redirect_field_name
+    )
+    if function:
+        return decorator(function)
+    return decorator

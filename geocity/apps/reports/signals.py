@@ -6,7 +6,7 @@ from django.core.files import File
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from geocity.apps.permits.models import ComplementaryDocumentType, Group
+from geocity.apps.submissions.models import ComplementaryDocumentType
 
 from .models import Report, ReportLayout, SectionAuthor, SectionMap, SectionParagraph
 
@@ -17,8 +17,6 @@ def create_default_report_for_integrator(sender, instance, created, **kwargs):
         return
 
     integrator = instance
-
-    print(f"Creating a default report for integrator {integrator}")
 
     # Create report setup
     layout = ReportLayout(
@@ -53,7 +51,7 @@ def create_default_report_for_integrator(sender, instance, created, **kwargs):
         order=2,
         report=report,
         title="Demand summary",
-        content="<p>This demand contains the following objects.</p><ul>{% for wot in request_data.properties.permit_request_works_object_types_names.values() %}<li>{{wot}}</li>{% endfor %}</ul>",
+        content="<p>This demand contains the following objects.</p><ul>{% for form in request_data.properties.submission_forms_names.values() %}<li>{{form}}</li>{% endfor %}</ul>",
     )
     section_paragraph_2.save()
 
@@ -68,8 +66,8 @@ def create_default_report_for_integrator(sender, instance, created, **kwargs):
     section_paragraph_4 = SectionParagraph(
         order=4,
         report=report,
-        title="Raw wot data",
-        content="<pre>{{wot_data}}</pre>",
+        title="Raw form data",
+        content="<pre>{{form_data}}</pre>",
     )
     section_paragraph_4.save()
 

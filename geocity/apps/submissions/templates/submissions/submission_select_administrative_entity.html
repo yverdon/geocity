@@ -1,0 +1,28 @@
+{% extends "base_generic.html" %}
+{% load bootstrap4 %}
+{% load i18n %}
+{% load submissions_extras %}
+{% load static %}
+
+
+{% block content %}
+  {% if submission %}
+    {% submission_progressbar steps StepType.ADMINISTRATIVE_ENTITY %}
+  {% endif %}
+  <h3>{{ config.LOCATION_STEP }}</h3>
+  {% if entityfilter and not user.userprofile.is_temporary %}
+    {% trans "La liste ci-dessous est filtrée," %}<a class="ml-2" href="{% url 'submissions:submission_select_administrative_entity' %}"><b>{% trans "tout voir" %}</b></a>
+  {% endif %}
+  <br>
+  <hr>
+  <form method="post">
+    {% bootstrap_form_errors form %}
+    {% csrf_token %}
+    {{ form.media }}
+    {% bootstrap_field form.administrative_entity show_label=False %}
+
+    {% buttons %}
+      <button class="btn btn-primary">{% trans "Continuer" %}</button>
+    {% endbuttons %}
+  </form>
+{% endblock %}
