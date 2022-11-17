@@ -22,6 +22,7 @@ from django.forms import modelformset_factory
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from geocity.apps.accounts.models import (
@@ -197,7 +198,7 @@ class FormsSelectForm(forms.Form):
         forms_by_category = [
             (category, [(form.pk, form.name) for form in forms])
             for category, forms in sorted(
-                forms_by_category_dict.items(), key=lambda item: item[0].name
+                forms_by_category_dict.items(), key=lambda item: slugify(item[0].name)
             )
         ]
 
