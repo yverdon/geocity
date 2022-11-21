@@ -24,11 +24,25 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE = os.getenv("CLEAR_PUBLIC_SCHEMA_ON_FIXTURIZE")
 
 
-SECURE_PROXY_SSL_HEADER = (
-    tuple(os.getenv("SECURE_PROXY_SSL_HEADER").split(","))
-    if os.getenv("SECURE_PROXY_SSL_HEADER")
-    else None
-)
+ENABLE_SSL = os.getenv('ENABLE_SSL', False) == 'True'
+if ENABLE_SSL:
+    SECURE_PROXY_SSL_HEADER = (
+        tuple(os.getenv("SECURE_PROXY_SSL_HEADER").split(","))
+        if os.getenv("SECURE_PROXY_SSL_HEADER")
+        else None
+    )
+    #SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+# https://stackoverflow.com/a/71194288/6630397
+if ENABLE_SSL:
+    CSRF_TRUSTED_ORIGINS = [
+        f"https://*.{os.getenv('BASE_URL')}",
+        "https://*.127.0.0.1",
+    ]
+
 
 # This is django's default but make sure no one turns it to False
 SESSION_COOKIE_HTTPONLY = True
