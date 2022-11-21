@@ -255,9 +255,6 @@ class AdministrativeEntity(models.Model):
     objects = AdministrativeEntityManager()
 
     class Meta:
-        permissions = [
-            ("see_private_requests", _("Voir les demandes restreintes")),
-        ]
         verbose_name = _(
             "1.1 Configuration de l'entité administrative (commune, organisation)"
         )

@@ -12,7 +12,7 @@ import geocity.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("submissions", "0005_alter_submission_options"),
+        ("submissions", "0004_new_admin_models_and_metadata"),
         ("reports", "0013_rename_report_sections_variables"),
     ]
 
@@ -149,7 +149,7 @@ class Migration(migrations.Migration):
             model_name="sectionparagraph",
             name="content",
             field=ckeditor.fields.RichTextField(
-                help_text='Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}` et clles du work object type dans `{{wot_data}}`.',
+                help_text='Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}` et celles du formulaire dans `{{form_data}}`.',
                 verbose_name="Contenu",
             ),
         ),

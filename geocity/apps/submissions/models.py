@@ -1153,7 +1153,6 @@ class ContactType(models.Model):
         verbose_name = _("1.5 Contact")
         verbose_name_plural = _("1.5 Contacts")
         unique_together = [["type", "form_category"]]
-        app_label = "forms"
 
     def __str__(self):
         return self.get_type_display() + " (" + str(self.form_category) + ")"

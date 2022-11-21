@@ -24,7 +24,11 @@ class Migration(migrations.Migration):
                 "verbose_name_plural": "2.1 Champs de traitement des demandes",
             },
         ),
-        migrations.DeleteModel(
-            name="ContactType",
+        migrations.AlterModelOptions(
+            name="contacttype",
+            options={
+                "verbose_name": "1.5 Contact",
+                "verbose_name_plural": "1.5 Contacts",
+            },
         ),
     ]

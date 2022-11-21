@@ -280,9 +280,6 @@ class FormField(models.Model):
         verbose_name_plural = _("Champs du formulaire")
         ordering = ("order",)
 
-    class Meta:
-        ordering = ["order"]
-
 
 # Input types
 INPUT_TYPE_ADDRESS = "address"

@@ -112,8 +112,6 @@ class Section(PolymorphicModel):
         verbose_name = _("Paragraphe")
         verbose_name_plural = _("Paragraphes")
         ordering = ["order"]
-        verbose_name = _("Paragraphe")
-        verbose_name_plural = _("Paragraphes")
 
     report = models.ForeignKey(
         Report, on_delete=NON_POLYMORPHIC_CASCADE, related_name="sections"
@@ -220,8 +218,7 @@ class SectionParagraph(Section):
         _("Contenu"),
         help_text=(
             _(
-                # FIXME: adapt for new api structure
-                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}` et clles du work object type dans `{{wot_data}}`.'
+                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}` et celles du formulaire dans `{{form_data}}`.'
             )
         ),
     )
@@ -231,8 +228,8 @@ class SectionParagraph(Section):
 
     def _render_user_template(self, base_context):
         # User template have only access to pure json elements for security reasons
-        # FIXME: adapt for new api structure
         inner_context = {
+            # TODO rename to `submission_data` (& migrate sections) to match new naming
             "request_data": base_context["request_data"],
             "form_data": base_context["form_data"],
         }
