@@ -349,6 +349,7 @@ class Migration(migrations.Migration):
                     ("validate_submission", "Valider les demandes de permis"),
                     ("classify_submission", "Classer les demandes de permis"),
                     ("edit_submission", "Éditer les demandes de permis"),
+                    ("view_private_submission", "Voir les demandes restreintes"),
                 ],
                 "verbose_name": "3.1 Consultation de la demande",
                 "verbose_name_plural": "3.1 Consultation des demandes",

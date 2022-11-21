@@ -345,10 +345,10 @@ def create_submission_validations(apps, schema_editor):
     SubmissionValidation = apps.get_model("submissions", "SubmissionValidation")
 
     def submission_validations():
-        for permit_request_geo_time in PermitRequestValidation.objects.all():
+        for permit_request_validation in PermitRequestValidation.objects.all():
             yield SubmissionValidation(
-                **common_fields_values(SubmissionValidation, permit_request_geo_time),
-                submission_id=permit_request_geo_time.permit_request_id,
+                **common_fields_values(SubmissionValidation, permit_request_validation),
+                submission_id=permit_request_validation.permit_request_id,
             )
 
     bulk_create(submission_validations())
@@ -363,12 +363,14 @@ def create_historical_submission_validations(apps, schema_editor):
     )
 
     def historical_submission_validations():
-        for permit_request_geo_time in HistoricalPermitRequestValidation.objects.all():
+        for (
+            permit_request_validation
+        ) in HistoricalPermitRequestValidation.objects.all():
             yield HistoricalSubmissionValidation(
                 **common_fields_values(
-                    HistoricalSubmissionValidation, permit_request_geo_time
+                    HistoricalSubmissionValidation, permit_request_validation
                 ),
-                submission_id=permit_request_geo_time.permit_request_id,
+                submission_id=permit_request_validation.permit_request_id,
             )
 
     bulk_create(historical_submission_validations())
@@ -427,6 +429,7 @@ def create_assigned_permissions(apps, schema_editor):
         "validate_permit_request": "validate_submission",
         "classify_permit_request": "classify_submission",
         "edit_permit_request": "edit_submission",
+        "see_private_requests": "view_private_submission",
     }
 
     permissions_filter = Q()
@@ -434,7 +437,6 @@ def create_assigned_permissions(apps, schema_editor):
         permissions_filter |= Q(
             codename=old_perm_codename,
             content_type__app_label="permits",
-            content_type__model="permitrequest",
         ) | Q(
             codename=new_perm_codename,
             content_type__app_label="submissions",
@@ -468,7 +470,7 @@ def create_assigned_permissions(apps, schema_editor):
     for user_permission in User.user_permissions.through.objects.filter(
         permission__in=old_permissions_by_codename.values()
     ).select_related("permission"):
-        User.permissions.through.objects.create(
+        User.user_permissions.through.objects.create(
             user_id=user_permission.user_id,
             permission_id=new_permissions_by_codename[
                 permissions_mapping[user_permission.permission.codename]
