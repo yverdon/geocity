@@ -1392,8 +1392,8 @@ class SubmissionInquiry(models.Model):
     )
 
     class Meta:
-        verbose_name = _("3.2 Enquête public")
-        verbose_name_plural = _("3.2 Enquêtes publics")
+        verbose_name = _("3.2 Enquête publique")
+        verbose_name_plural = _("3.2 Enquêtes publiques")
 
     @classmethod
     def get_current_inquiry(cls, submission):

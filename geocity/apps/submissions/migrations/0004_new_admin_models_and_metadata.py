@@ -31,4 +31,11 @@ class Migration(migrations.Migration):
                 "verbose_name_plural": "1.5 Contacts",
             },
         ),
+        migrations.AlterModelOptions(
+            name="submissioninquiry",
+            options={
+                "verbose_name": "3.2 Enquête publique",
+                "verbose_name_plural": "3.2 Enquêtes publiques",
+            },
+        ),
     ]
