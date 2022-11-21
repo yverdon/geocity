@@ -117,12 +117,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  updateFields = function () {
+  function updateFields() {
     toggleConditionalFields();
     toggleMandatoryValue();
   }
 
-  document.getElementById('id_input_type').setAttribute("onchange", "updateFields()")
-  updateFields();
+  document.getElementById('id_input_type').addEventListener("onchange", updateFields);
 
+  updateFields();
 });

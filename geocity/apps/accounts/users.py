@@ -57,36 +57,34 @@ def get_integrator_permissions():
     )
 
 
-def get_users_list_for_integrator_admin(self, request):
+def get_users_list_for_integrator_admin(user):
     # Integrators can only view users for restricted email domains.
+    if user.is_superuser:
+        return User.objects.all()
 
-    if request.user.is_superuser:
-        qs = User.objects.all()
-    else:
-        user_integrator_group = request.user.groups.get(
-            permit_department__is_integrator_admin=True
+    user_integrator_group = user.groups.get(permit_department__is_integrator_admin=True)
+    email_domains = [
+        domain.strip()
+        for domain in user_integrator_group.permit_department.integrator_email_domains.split(
+            ","
         )
-        qs = (
-            User.objects.filter(
-                Q(is_superuser=False),
-                Q(groups__permit_department__integrator=user_integrator_group.pk)
-                | Q(groups__isnull=True),
-            )
-            .annotate(email_domain=Substr("email", StrIndex("email", Value("@")) + 1))
-            .distinct()
+    ]
+    emails = [
+        email.strip()
+        for email in user_integrator_group.permit_department.integrator_emails_exceptions.split(
+            ","
         )
+    ]
 
-        qs = qs.filter(
-            Q(
-                email_domain__in=user_integrator_group.permit_department.integrator_email_domains.split(
-                    ","
-                )
-            )
-            | Q(
-                email__in=user_integrator_group.permit_department.integrator_emails_exceptions.split(
-                    ","
-                )
-            )
+    return (
+        User.objects.annotate(
+            email_domain=Substr("email", StrIndex("email", Value("@")) + 1)
         )
-
-    return qs
+        .filter(
+            Q(is_superuser=False),
+            Q(email_domain__in=email_domains) | Q(email__in=emails),
+            Q(groups__permit_department__integrator=user_integrator_group.pk)
+            | Q(groups__isnull=True),
+        )
+        .distinct()
+    )

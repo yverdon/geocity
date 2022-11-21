@@ -2,13 +2,12 @@
 {% load i18n %}
 
 {% block object-tools-items %}
-    {{ block.super }}
-    {% if original.pk == user.pk %}
-        <br>
-        <div class="form-group">
-            <div class="form-group">
-              <button type="submit" class="btn btn-dark form-control" value="{{ original.pk }}" name="user_id">{% translate "Créer un jeton d'authentification" %}</button>
-            </div>
-        </div>
-    {% endif %}
+  {% if original.pk == user.pk %}
+    <div class="form-group">
+      <button type="submit" class="btn btn-dark form-control" value="{{ original.pk }}" name="user_id">{% translate "Créer un jeton d'authentification" %}</button>
+    </div>
+    <hr>
+  {% endif %}
+
+  {{ block.super }}
 {% endblock %}

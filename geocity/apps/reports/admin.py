@@ -51,7 +51,7 @@ class SectionInline(StackedPolymorphicInline):
     class Media:
         css = {"all": ("css/admin/reports_admin.css",)}
 
-    classes = ["grp-module", "polymorphic-jazzmin"]
+    classes = ["polymorphic-jazzmin"]
 
 
 @admin.register(Report)

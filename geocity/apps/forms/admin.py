@@ -129,14 +129,12 @@ class FormFieldInline(admin.TabularInline, SortableInlineAdminMixin):
     verbose_name = _("Champ")
     verbose_name_plural = _("Champs")
 
-    # Display only the fields that belongs to current integrator user
-    # TODO: Check this is secure
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        user = request.user
-
+        # Display only the fields that belongs to current integrator user
         if db_field.name == "field":
-            qs = models.Field.objects.all()
-            kwargs["queryset"] = filter_for_user(user, qs)
+            kwargs["queryset"] = filter_for_user(
+                request.user, models.Field.objects.all()
+            )
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -234,7 +232,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
     inlines = [FormFieldInline]
 
     def sortable_str(self, obj):
-        return obj.__str__() if obj.__str__() != "" else str(obj.pk)
+        return str(obj) if str(obj) != "" else str(obj.pk)
 
     sortable_str.admin_order_field = "name"
     sortable_str.short_description = _("Nom du formulaire")

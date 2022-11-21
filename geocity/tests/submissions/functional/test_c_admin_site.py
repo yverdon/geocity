@@ -217,7 +217,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         # 2 fields = 1 integrator field + empty choice
         self.assertEqual(
-            len(parser.select(".grp-td.field")[0].select("select option")), 2
+            len(parser.select(".field-field")[0].select("select option")), 2
         )
 
     def test_admin_can_see_all_field(self):
@@ -236,7 +236,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             # 5 fields = 4 fields + empty choice
-            len(parser.select(".grp-td.field")[0].select("select option")),
+            len(parser.select(".field-field")[0].select("select option")),
             5,
         )
 

@@ -181,7 +181,7 @@ class UserAdmin(BaseUserAdmin):
 
     # Filter users that can be by integrator
     def get_queryset(self, request):
-        return get_users_list_for_integrator_admin(self, request)
+        return get_users_list_for_integrator_admin(request.user)
 
     def save_model(self, req, obj, form, change):
         """Set 'is_staff=True' when the saved user is in a integrator group.
@@ -356,7 +356,7 @@ class GroupAdminForm(forms.ModelForm):
         return permissions
 
 
-class UserInLine(admin.TabularInline):
+class UserInline(admin.TabularInline):
     model = Group.user_set.through
     can_delete = False
     extra = 0
@@ -364,14 +364,13 @@ class UserInLine(admin.TabularInline):
     verbose_name_plural = _("Utilisateurs membres du groupe")
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-
         if db_field.name == "user":
-            kwargs["queryset"] = get_users_list_for_integrator_admin(self, request)
+            kwargs["queryset"] = get_users_list_for_integrator_admin(request.user)
             return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class GroupAdmin(admin.ModelAdmin):
-    inlines = (PermitDepartmentInline, UserInLine)
+    inlines = (PermitDepartmentInline, UserInline)
     form = GroupAdminForm
     list_display = [
         "__str__",

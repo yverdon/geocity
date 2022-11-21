@@ -267,7 +267,7 @@ class AdministrativeEntity(models.Model):
 
     def create_anonymous_user(self):
         try:
-            self.anonymous_user
+            return self.anonymous_user
         except ObjectDoesNotExist:
             username = "%s%s" % (settings.ANONYMOUS_USER_PREFIX, self.pk)
             first_name = "Anonymous user"
@@ -280,7 +280,7 @@ class AdministrativeEntity(models.Model):
                 is_active=False,
             )
 
-            UserProfile.objects.create(
+            return UserProfile.objects.create(
                 administrative_entity=self,
                 user_id=user.id,
                 zipcode=settings.ANONYMOUS_USER_ZIPCODE,
