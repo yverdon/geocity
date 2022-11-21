@@ -47,7 +47,11 @@ class SectionInline(StackedPolymorphicInline):
         )
         for child_model in Section.__subclasses__()
     ]
-    classes = ["grp-module"]
+
+    class Media:
+        css = {"all": ("css/admin/reports_admin.css",)}
+
+    classes = ["polymorphic-jazzmin"]
 
 
 @admin.register(Report)
@@ -68,6 +72,7 @@ class ReportAdmin(
         "layout",
     ]
 
+    # List types using the report in admin list
     def types_(self, obj):
         list_content = format_html_join(
             "",

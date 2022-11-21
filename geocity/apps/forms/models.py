@@ -218,7 +218,6 @@ class Form(models.Model):
         _("Activer l'intersection de géométries"), default=False
     )
 
-    # NEW: WorksType
     name = models.CharField(_("nom"), max_length=255)
     order = models.PositiveIntegerField(
         _("ordre"), default=0, blank=False, null=False, db_index=True

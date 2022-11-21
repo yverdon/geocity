@@ -24,10 +24,6 @@ from .utils import DockerRunFailedError, run_docker_container
 class ReportLayout(models.Model):
     """Page size/background/marings/fonts/etc, used by reports"""
 
-    class Meta:
-        verbose_name = _("5.1 Configuration du modèle d'impression de rapport")
-        verbose_name_plural = _("5.1 Configuration des modèles d'impression de rapport")
-
     name = models.CharField(_("Nom"), max_length=150)
     width = models.PositiveIntegerField(_("Largeur"), default=210)
     height = models.PositiveIntegerField(_("Hauteur"), default=297)
@@ -44,6 +40,10 @@ class ReportLayout(models.Model):
             'La liste des polices disponbiles est visible sur <a href="https://fonts.google.com/" target="_blank">Goole Fonts</a>'
         ),
     )
+
+    class Meta:
+        verbose_name = _("3.1 Format de papier")
+        verbose_name_plural = _("3.1 Formats de papier")
 
     background = BackgroundFileField(
         _("Papier à entête"),
@@ -72,11 +72,11 @@ class Report(models.Model):
     """Report definition, allowing to generate reports for permit requests"""
 
     class Meta:
-        verbose_name = _("3.2 Modèle d'impression")
-        verbose_name_plural = _("3.2 Modèles d'impression")
         permissions = [
             ("can_generate_pdf", _("Générer des documents pdf")),
         ]
+        verbose_name = _("3.2 Modèle d'impression")
+        verbose_name_plural = _("3.2 Modèles d'impression")
 
     name = models.CharField(_("Nom"), max_length=150)
     layout = models.ForeignKey(
@@ -218,7 +218,7 @@ class SectionParagraph(Section):
         _("Contenu"),
         help_text=(
             _(
-                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}` et clles du work object type dans `{{wot_data}}`.'
+                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}` et celles du formulaire dans `{{form_data}}`.'
             )
         ),
     )
@@ -229,6 +229,7 @@ class SectionParagraph(Section):
     def _render_user_template(self, base_context):
         # User template have only access to pure json elements for security reasons
         inner_context = {
+            # TODO rename to `submission_data` (& migrate sections) to match new naming
             "request_data": base_context["request_data"],
             "form_data": base_context["form_data"],
         }

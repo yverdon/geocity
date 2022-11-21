@@ -14,7 +14,7 @@ if not settings.ENABLE_2FA:
         def test_superuser_get_admin_login_superuser_not_auth(self):
             response = self.client.get(reverse("admin:login"))
             self.assertEqual(response.status_code, 200)
-            self.assertContains(response, "administration Geocity")
+            self.assertContains(response, "administration de Geocity")
 
 
 if settings.ENABLE_2FA:
@@ -60,4 +60,4 @@ if settings.ENABLE_2FA:
             response = self.client.get(reverse("admin:login"), follow=True)
             self.assertEqual(response.status_code, 200)
             self.assertRedirects(response, resolve_url("admin:index"))
-            self.assertContains(response, "administration Geocity")
+            self.assertContains(response, "Geocity")

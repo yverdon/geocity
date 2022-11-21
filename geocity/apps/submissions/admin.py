@@ -82,7 +82,7 @@ class ContactTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return obj.__str__()
 
     sortable_str.admin_order_field = "type"
-    sortable_str.short_description = _("1.6 Configuration du contact")
+    sortable_str.short_description = _("1.5 Contacts")
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "form_category":

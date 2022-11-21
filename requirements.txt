@@ -39,6 +39,7 @@ django==3.2.15
     #   django-cron
     #   django-filter
     #   django-formtools
+    #   django-jazzmin
     #   django-js-asset
     #   django-oauth-toolkit
     #   django-otp
@@ -79,10 +80,10 @@ django-filter==21.1
     # via -r requirements.in
 django-formtools==2.3
     # via django-two-factor-auth
-django-grappelli==3.0.3
-    # via -r requirements.in
 django-ipware==4.0.2
     # via django-axes
+django-jazzmin==2.6.0
+    # via -r requirements.in
 django-js-asset==2.0.0
     # via django-ckeditor
 django-oauth-toolkit==2.1.0

@@ -1,0 +1,41 @@
+.polymorphic-jazzmin h3 {
+  font-size: 1rem;
+}
+
+.polymorphic-jazzmin h2 {
+  display: none;
+}
+
+.polymorphic-jazzmin .inline_label {
+  visibility: hidden;
+}
+
+.polymorphic-jazzmin .dynamic-sections {
+  border-bottom: 1px solid var(--gray);
+}
+
+.polymorphic-add-choice {
+  position: absolute;
+  top: 20px;
+  right: 17px;
+}
+
+.polymorphic-add-choice .btn {
+  background-color: var(--primary);
+  color: white;
+  font-size: 1rem;
+  border: none;
+  font-weight: 400;
+}
+
+.polymorphic-type-menu {
+  position: absolute;
+  top: 35px;
+  left: 0;
+  right: 17px;
+  width: 216px;
+}
+
+.vCheckboxLabel {
+  color: var(--danger) !important;
+}

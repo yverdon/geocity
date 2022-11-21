@@ -1,5 +1,7 @@
 import os
 
+from .admin_jazzmin_settings import JAZZMIN_SETTINGS  # noqa
+
 # Set environment mode
 ENV = os.getenv("ENV")
 if ENV not in ["DEV", "PROD"]:
@@ -135,7 +137,6 @@ INSTALLED_APPS = [
     "geocity.apps.submissions",
     "geocity.apps.permits",
     # dependencies
-    "grappelli",
     "polymorphic",
     "adminsortable2",
     "allauth",
@@ -160,6 +161,7 @@ INSTALLED_APPS = [
     "axes",
     "captcha",
     "ckeditor",
+    "jazzmin",
     # django contrib apps
     "django.contrib.admin",
     "django.contrib.auth",
@@ -538,8 +540,6 @@ WMTS_LAYER = os.getenv("WMTS_LAYER")
 WMTS_GETCAP_ALTERNATIVE = os.getenv("WMTS_GETCAP_ALTERNATIVE")
 WMTS_LAYER_ALTERNATIVE = os.getenv("WMTS_LAYER_ALTERNATIVE")
 OL_MAP_HEIGHT = os.getenv("OL_MAP_HEIGHT")
-
-GRAPPELLI_ADMIN_TITLE = "Interface d'administration Geocity"
 
 # Django REST Framework
 REST_FRAMEWORK = {

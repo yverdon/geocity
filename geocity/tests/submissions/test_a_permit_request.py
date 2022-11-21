@@ -13,7 +13,6 @@ from django.urls import reverse
 from django.utils import timezone
 
 from geocity.apps.accounts import models as accounts_models
-from geocity.apps.accounts.management.commands import create_anonymous_users
 from geocity.apps.forms import models as forms_models
 from geocity.apps.submissions import forms as submissions_forms
 from geocity.apps.submissions import models as submissions_models
@@ -2481,7 +2480,7 @@ class SubmissionAnonymousTestCase(TestCase):
 
     def test_anonymous_request_on_anonymous_entity_displays_captcha_form(self):
         entity = factories.AdministrativeEntityFactory(tags=["a"])
-        create_anonymous_users._create_anonymous_user_for_entity(entity)
+        entity.create_anonymous_user()
 
         category = factories.FormCategoryFactory(tags=["a"])
 
@@ -2498,7 +2497,7 @@ class SubmissionAnonymousTestCase(TestCase):
 
     def test_anonymous_request_temporary_logged_in_no_form_displays_request_form(self):
         entity = factories.AdministrativeEntityFactory(tags=["a"])
-        create_anonymous_users._create_anonymous_user_for_entity(entity)
+        entity.create_anonymous_user()
 
         temp_author = accounts_models.UserProfile.objects.create_temporary_user(entity)
         self.client.force_login(temp_author.user)
@@ -2520,7 +2519,7 @@ class SubmissionAnonymousTestCase(TestCase):
 
     def test_anonymous_request_temporary_logged_in_displays_request_form(self):
         entity = factories.AdministrativeEntityFactory(tags=["a"])
-        create_anonymous_users._create_anonymous_user_for_entity(entity)
+        entity.create_anonymous_user()
 
         temp_author = accounts_models.UserProfile.objects.create_temporary_user(entity)
         self.client.force_login(temp_author.user)
@@ -2555,7 +2554,7 @@ class SubmissionAnonymousTestCase(TestCase):
 
     def test_anonymous_request_submission_deletes_temporary_user(self):
         entity = factories.AdministrativeEntityFactory(tags=["a"])
-        create_anonymous_users._create_anonymous_user_for_entity(entity)
+        entity.create_anonymous_user()
 
         temp_author = accounts_models.UserProfile.objects.create_temporary_user(entity)
         self.client.force_login(temp_author.user)

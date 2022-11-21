@@ -74,6 +74,7 @@ django==3.2.15
     #   django-extensions
     #   django-filter
     #   django-formtools
+    #   django-jazzmin
     #   django-js-asset
     #   django-oauth-toolkit
     #   django-otp
@@ -122,12 +123,12 @@ django-formtools==2.3
     # via
     #   -r requirements.txt
     #   django-two-factor-auth
-django-grappelli==3.0.3
-    # via -r requirements.txt
 django-ipware==4.0.2
     # via
     #   -r requirements.txt
     #   django-axes
+django-jazzmin==2.6.0
+    # via -r requirements.txt
 django-js-asset==2.0.0
     # via
     #   -r requirements.txt

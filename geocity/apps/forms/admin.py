@@ -1,5 +1,5 @@
 import django.db.models
-from adminsortable2.admin import SortableAdminMixin
+from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
 from django import forms
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
@@ -122,11 +122,15 @@ class FormAdminForm(forms.ModelForm):
         return super().save(*args, **kwargs)
 
 
-class FormFieldInline(admin.TabularInline):
+# TODO: enable drag and drop for inline reorder
+class FormFieldInline(admin.TabularInline, SortableInlineAdminMixin):
     model = models.FormField
     extra = 2
+    verbose_name = _("Champ")
+    verbose_name_plural = _("Champs")
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        # Display only the fields that belongs to current integrator user
         if db_field.name == "field":
             kwargs["queryset"] = filter_for_user(
                 request.user, models.Field.objects.all()
@@ -136,8 +140,11 @@ class FormFieldInline(admin.TabularInline):
 
 
 @admin.register(models.Form)
-class FormAdmin(IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdmin):
+class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
     form = FormAdminForm
+    inlines = [
+        FormFieldInline,
+    ]
     list_display = [
         "sortable_str",
         form_administrative_entities,
@@ -225,7 +232,7 @@ class FormAdmin(IntegratorFilterMixin, SortableAdminMixin, admin.ModelAdmin):
     inlines = [FormFieldInline]
 
     def sortable_str(self, obj):
-        return obj.__str__()
+        return str(obj) if str(obj) != "" else str(obj.pk)
 
     sortable_str.admin_order_field = "name"
     sortable_str.short_description = _("Nom du formulaire")
@@ -269,7 +276,7 @@ class FormWithAdministrativeEntitiesField(forms.ModelMultipleChoiceField):
         return f"{obj} ({obj.category}) - {entities}"
 
 
-class FieldForm(forms.ModelForm):
+class FieldAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
@@ -305,7 +312,7 @@ class FieldForm(forms.ModelForm):
 
 @admin.register(models.Field)
 class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
-    form = FieldForm
+    form = FieldAdminForm
     list_display = [
         "name",
         "is_mandatory",
@@ -317,7 +324,6 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_filter = [
         "name",
         "input_type",
-        "forms",
     ]
     search_fields = [
         "name",

@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.admin import site
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.views import redirect_to_login
 from django.http import HttpResponseRedirect
@@ -7,12 +8,14 @@ from django.urls import reverse
 from django.utils.http import is_safe_url
 from two_factor.admin import AdminSiteOTPRequired, AdminSiteOTPRequiredMixin
 
-from .admin_site import PermitsAdminSite
-
 
 # https://github.com/Bouke/django-two-factor-auth/issues/219#issuecomment-494382380
 # Remove when https://github.com/Bouke/django-two-factor-auth/pull/370 is merged
-class AdminSiteOTPRequiredMixinRedirSetup(AdminSiteOTPRequired, PermitsAdminSite):
+class AdminSiteOTPRequiredMixinRedirSetup(AdminSiteOTPRequired):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._registry.update(site._registry)
+
     def login(self, request, extra_context=None):
         redirect_to = request.POST.get(
             REDIRECT_FIELD_NAME, request.GET.get(REDIRECT_FIELD_NAME)
