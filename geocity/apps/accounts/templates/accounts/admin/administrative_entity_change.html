@@ -8,7 +8,9 @@
     </a>
   {% else %}
     <div class="form-group">
-      <button type="submit" class="btn btn-dark form-control" value="{{ original.pk }}" name="entity_id">{% translate "Créer l’utilisateur anonyme" %}</button>
+      <button formaction="{% url "admin:create_administrative_entity_anonymous_user" administrative_entity_id=original.pk %}" type="submit" class="btn btn-dark form-control">
+        {% translate "Créer l’utilisateur anonyme" %}
+      </button>
     </div>
   {% endif %}
   <hr>

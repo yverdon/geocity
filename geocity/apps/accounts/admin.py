@@ -9,7 +9,7 @@ from django.contrib.sites.models import Site
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse
+from django.urls import path, reverse
 from django.utils.translation import gettext_lazy as _
 from knox.models import AuthToken
 
@@ -195,38 +195,39 @@ class UserAdmin(BaseUserAdmin):
 
         super().save_model(req, obj, form, change)
 
-    def response_change(self, request, obj):
+    def get_urls(self):
+        urls = super().get_urls()
 
-        ret = super().response_change(request, obj)
-        if "user_id" in request.POST:
-            """
-            Admin custom action to create the knox token for the user
-            """
-
-            user_id = request.POST.get("user_id")
-            user = get_object_or_404(User, pk=request.POST.get("user_id"))
-
-            # TODO: Define when a token needs to be deleted
-            with transaction.atomic():
-                authtoken, token = AuthToken.objects.create(user, expiry=None)
-
-            messages.add_message(
-                request,
-                messages.SUCCESS,
-                _(
-                    "Jeton créé avec succès. Veuillez le copier, il ne sera visible qu'une seule fois."
-                ),
+        return [
+            path(
+                "<int:user_id>/create-token/",
+                self.admin_site.admin_view(self.create_auth_token),
+                name="create_auth_token",
             )
-            messages.add_message(request, messages.INFO, token)
+        ] + urls
 
-            return redirect(
-                reverse(
-                    "admin:auth_user_change",
-                    kwargs={"object_id": user_id},
-                )
+    def create_auth_token(self, request, user_id):
+        user = get_object_or_404(User, pk=user_id)
+
+        # TODO: Define when a token needs to be deleted
+        with transaction.atomic():
+            authtoken, token = AuthToken.objects.create(user, expiry=None)
+
+        messages.add_message(
+            request,
+            messages.SUCCESS,
+            _(
+                "Jeton créé avec succès. Veuillez le copier, il ne sera visible qu'une seule fois."
+            ),
+        )
+        messages.add_message(request, messages.INFO, token)
+
+        return redirect(
+            reverse(
+                "admin:auth_user_change",
+                kwargs={"object_id": user_id},
             )
-
-        return ret
+        )
 
 
 class DepartmentAdminForm(forms.ModelForm):
@@ -366,7 +367,8 @@ class UserInline(admin.TabularInline):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "user":
             kwargs["queryset"] = get_users_list_for_integrator_admin(request.user)
-            return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class GroupAdmin(admin.ModelAdmin):
@@ -634,34 +636,34 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     administrative_entity=obj,
                 )
 
-    def response_change(self, request, obj):
-        ret = super().response_change(request, obj)
-        if "entity_id" in request.POST:
-            entity_id = request.POST.get("entity_id")
+    def get_urls(self):
+        urls = super().get_urls()
 
-            """
-                Admin custom action to create the anonymous user for the given Administrative
-                entity.
-            """
-
-            administrative_entity = get_object_or_404(
-                AdministrativeEntity, pk=request.POST.get("entity_id")
+        return [
+            path(
+                "<int:administrative_entity_id>/create-anonymous-user/",
+                self.admin_site.admin_view(self.create_anonymous_user),
+                name="create_administrative_entity_anonymous_user",
             )
+        ] + urls
 
-            administrative_entity.create_anonymous_user()
+    def create_anonymous_user(self, request, administrative_entity_id):
+        administrative_entity = get_object_or_404(
+            AdministrativeEntity, pk=administrative_entity_id
+        )
 
-            messages.add_message(
-                request, messages.SUCCESS, _("Utilisateur anonyme créé avec succès.")
+        administrative_entity.create_anonymous_user()
+
+        messages.add_message(
+            request, messages.SUCCESS, _("Utilisateur anonyme créé avec succès.")
+        )
+
+        return redirect(
+            reverse(
+                "admin:forms_administrativeentityforadminsite_change",
+                kwargs={"object_id": administrative_entity_id},
             )
-
-            return redirect(
-                reverse(
-                    "admin:forms_administrativeentityforadminsite_change",
-                    kwargs={"object_id": entity_id},
-                )
-            )
-
-        return ret
+        )
 
 
 @admin.register(models.TemplateCustomization)
