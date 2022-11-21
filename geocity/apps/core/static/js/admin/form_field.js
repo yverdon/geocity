@@ -122,7 +122,9 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleMandatoryValue();
   }
 
-  document.getElementById('id_input_type').addEventListener("onchange", updateFields);
+  // We can’t use the native `addEventListener` method because the select is
+  // changed by select2
+  jQuery('#id_input_type').on("change", updateFields);
 
   updateFields();
 });
