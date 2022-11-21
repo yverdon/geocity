@@ -13,7 +13,7 @@ def reorder(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("forms", "0004_admin_reorder_for_phoenix"),
+        ("forms", "0004_adapt_models_for_new_admin"),
     ]
 
     operations = [
