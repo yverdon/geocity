@@ -278,8 +278,8 @@ class Submission(models.Model):
     objects = SubmissionQuerySet().as_manager()
 
     class Meta:
-        verbose_name = _("3.1 Consultation de la demande")
-        verbose_name_plural = _("3.1 Consultation des demandes")
+        verbose_name = _("2.3 Consultation de la demande")
+        verbose_name_plural = _("2.3 Consultation des demandes")
         permissions = [
             ("amend_submission", _("Traiter les demandes de permis")),
             ("validate_submission", _("Valider les demandes de permis")),
@@ -1392,8 +1392,8 @@ class SubmissionInquiry(models.Model):
     )
 
     class Meta:
-        verbose_name = _("3.2 Enquête publique")
-        verbose_name_plural = _("3.2 Enquêtes publiques")
+        verbose_name = _("2.4 Enquête publique")
+        verbose_name_plural = _("2.4 Enquêtes publiques")
 
     @classmethod
     def get_current_inquiry(cls, submission):

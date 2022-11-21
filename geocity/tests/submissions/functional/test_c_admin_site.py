@@ -368,7 +368,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
 
         response = self.client.get(reverse("admin:submissions_submission_changelist"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "3.1 Consultation des demandes")
+        self.assertContains(response, "Consultation des demandes")
 
     def test_integrator_cannot_see_submissions(self):
         if settings.ENABLE_2FA:

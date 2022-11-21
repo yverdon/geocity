@@ -34,8 +34,30 @@ class Migration(migrations.Migration):
         migrations.AlterModelOptions(
             name="submissioninquiry",
             options={
-                "verbose_name": "3.2 Enquête publique",
-                "verbose_name_plural": "3.2 Enquêtes publiques",
+                "verbose_name": "2.4 Enquête publique",
+                "verbose_name_plural": "2.4 Enquêtes publiques",
+            },
+        ),
+        migrations.AlterModelOptions(
+            name="historicalsubmission",
+            options={
+                "get_latest_by": "history_date",
+                "ordering": ("-history_date", "-history_id"),
+                "verbose_name": "historical 2.3 Consultation de la demande",
+            },
+        ),
+        migrations.AlterModelOptions(
+            name="submission",
+            options={
+                "permissions": [
+                    ("amend_submission", "Traiter les demandes de permis"),
+                    ("validate_submission", "Valider les demandes de permis"),
+                    ("classify_submission", "Classer les demandes de permis"),
+                    ("edit_submission", "Éditer les demandes de permis"),
+                    ("view_private_submission", "Voir les demandes restreintes"),
+                ],
+                "verbose_name": "2.3 Consultation de la demande",
+                "verbose_name_plural": "2.3 Consultation des demandes",
             },
         ),
     ]
