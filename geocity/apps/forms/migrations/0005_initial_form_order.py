@@ -5,8 +5,8 @@ from django.db import migrations
 def reorder(apps, schema_editor):
     Form = apps.get_model("forms", "Form")
     for order, item in enumerate(Form.objects.all(), 1):
-        item.my_order = order
-        item.save(update_fields=['my_order'])
+        item.order = order
+        item.save(update_fields=['order'])
 
 class Migration(migrations.Migration):
 
