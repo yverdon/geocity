@@ -2,16 +2,18 @@
 
 from django.db import migrations
 
+
 def reorder(apps, schema_editor):
     Form = apps.get_model("forms", "Form")
     for order, item in enumerate(Form.objects.all(), 1):
         item.order = order
-        item.save(update_fields=['order'])
+        item.save(update_fields=["order"])
+
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('forms', '0004_admin_reorder_for_phoenix'),
+        ("forms", "0004_admin_reorder_for_phoenix"),
     ]
 
     operations = [
