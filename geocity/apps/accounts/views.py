@@ -18,6 +18,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
 from django.views import View
+from django.views.decorators.http import require_POST
 
 if settings.ENABLE_2FA:
     from two_factor.views import LoginView
@@ -37,6 +38,7 @@ from geocity.fields import PrivateFileSystemStorage
 from . import forms, models
 
 
+@require_POST
 def logout_view(request):
     templatename = (
         request.session.pop("templatename")
