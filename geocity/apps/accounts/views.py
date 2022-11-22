@@ -112,7 +112,14 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({"social_apps": SocialApp.objects.all()})
+
+        context.update(
+            {
+                "social_apps": SocialApp.objects.filter(
+                    sites__id=get_current_site(self.request).id
+                ).all()
+            }
+        )
 
         customization = {
             "application_title": config.APPLICATION_TITLE,
