@@ -14,7 +14,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
 from django.http import Http404, StreamingHttpResponse
 from django.template.loader import render_to_string
-from django.utils.encoding import force_bytes, force_text
+from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
 from django.views import View
@@ -189,7 +189,7 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
 class ActivateAccountView(View):
     def get(self, request, uid, token):
         try:
-            uid = force_text(urlsafe_base64_decode(uid))
+            uid = urlsafe_base64_decode(uid).decode()
             user = models.User.objects.get(pk=uid)
         except models.User.DoesNotExist:
             user = None
