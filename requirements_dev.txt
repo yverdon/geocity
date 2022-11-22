@@ -164,7 +164,7 @@ django-tables2-column-shifter==2.0.3
     # via -r requirements.txt
 django-taggit==3.1.0
     # via -r requirements.txt
-django-two-factor-auth[phonenumbers]==1.13.2
+django-two-factor-auth[phonenumbers]==1.14.0
     # via -r requirements.txt
 djangorestframework==3.13.1
     # via
