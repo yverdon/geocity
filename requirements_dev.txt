@@ -58,7 +58,7 @@ diffimg==0.3.0
     # via -r requirements_dev.in
 distlib==0.3.4
     # via virtualenv
-django==3.2.15
+django==3.2.16
     # via
     #   -r requirements.txt
     #   django-admin-sortable2
