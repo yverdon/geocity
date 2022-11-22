@@ -5,7 +5,7 @@ from django.contrib.auth.views import redirect_to_login
 from django.http import HttpResponseRedirect
 from django.shortcuts import resolve_url
 from django.urls import reverse
-from django.utils.http import is_safe_url
+from django.utils.http import url_has_allowed_host_and_scheme
 from two_factor.admin import AdminSiteOTPRequired, AdminSiteOTPRequiredMixin
 
 
@@ -33,7 +33,7 @@ class AdminSiteOTPRequiredMixinRedirSetup(AdminSiteOTPRequired):
                 index_path = reverse("two_factor:setup", current_app=self.name)
             return HttpResponseRedirect(index_path)
 
-        if not redirect_to or not is_safe_url(
+        if not redirect_to or not url_has_allowed_host_and_scheme(
             url=redirect_to, allowed_hosts=[request.get_host()]
         ):
             redirect_to = resolve_url(settings.LOGIN_REDIRECT_URL)
