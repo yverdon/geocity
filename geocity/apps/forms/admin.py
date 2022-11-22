@@ -235,7 +235,7 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         return str(obj) if str(obj) != "" else str(obj.pk)
 
     sortable_str.admin_order_field = "name"
-    sortable_str.short_description = _("Nom du formulaire")
+    sortable_str.short_description = _("Formulaire")
 
     def get_queryset(self, request):
         qs = (
@@ -314,7 +314,7 @@ class FieldAdminForm(forms.ModelForm):
 class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = FieldAdminForm
     list_display = [
-        "name",
+        "sortable_str",
         "is_mandatory",
         "is_public_when_permitrequest_is_public",
         "input_type",
@@ -328,6 +328,12 @@ class FieldAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     search_fields = [
         "name",
     ]
+
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "name"
+    sortable_str.short_description = _("Champ")
 
     # Pass the user from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs):
@@ -368,7 +374,7 @@ class FormCategoryAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return obj.__str__()
 
     sortable_str.admin_order_field = "name"
-    sortable_str.short_description = _("1.2 de la catégorie")
+    sortable_str.short_description = _("Catégorie")
 
     def get__tags(self, obj):
         return list(obj.tags.all())
