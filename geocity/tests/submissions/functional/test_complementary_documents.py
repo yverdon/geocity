@@ -2,7 +2,6 @@ from django.contrib import messages
 from django.urls import reverse
 
 from geocity.apps.submissions import models as submissions_models
-from geocity.apps.submissions import views
 from geocity.tests import factories
 from geocity.tests.geocity_test_case import GeocityTestCase
 
@@ -152,7 +151,7 @@ class TestComplementaryDocuments(GeocityTestCase):
             }
         )
 
-        response = self.client.get(
+        response = self.client.post(
             reverse(
                 "submissions:complementary_documents_delete",
                 kwargs={"pk": document.pk},
@@ -188,7 +187,7 @@ class TestComplementaryDocuments(GeocityTestCase):
         message = [m for m in response.context["messages"]][0]
         actual = (message.message, message.level)
         expected = (
-            views.SubmissionComplementaryDocumentDeleteView.final_error_message,
+            "Les documents finaux ne peuvent pas être supprimés",
             messages.ERROR,
         )
         self.assertResponseMessageContains(actual, expected)
@@ -203,7 +202,7 @@ class TestComplementaryDocuments(GeocityTestCase):
         message = [m for m in response.context["messages"]][0]
         actual = (message.message, message.level)
         expected = (
-            views.SubmissionComplementaryDocumentDeleteView.owner_error_message,
+            "Vous pouvez seulement supprimer vos documents",
             messages.ERROR,
         )
         self.assertResponseMessageContains(actual, expected)
