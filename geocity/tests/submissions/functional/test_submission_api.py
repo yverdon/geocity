@@ -141,7 +141,7 @@ class SubmissionAPITestCase(TestCase):
         self.client.login(username=self.admin_user.username, password="password")
         redirect_uri = "http://testserver" + reverse("accounts:user_profile_create")
         logout_page = reverse("logout") + "?next=" + redirect_uri
-        response = self.client.get(logout_page)
+        response = self.client.post(logout_page)
         self.assertRedirects(response, expected_url=reverse("accounts:account_login"))
 
     def test_logout_next_action_if_redirect_uri_is_whitelisted(self):
@@ -149,7 +149,7 @@ class SubmissionAPITestCase(TestCase):
         self.client.login(username=self.admin_user.username, password="password")
         redirect_uri = "http://testserver" + reverse("accounts:user_profile_create")
         logout_page = reverse("logout") + "?next=" + redirect_uri
-        response = self.client.get(logout_page)
+        response = self.client.post(logout_page)
         self.assertRedirects(response, expected_url=redirect_uri)
 
     def test_api_admin_user(self):

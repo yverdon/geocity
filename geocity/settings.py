@@ -458,6 +458,10 @@ SOCIALACCOUNT_FORMS = {"signup": "geocity.apps.accounts.forms.SocialSignupForm"}
 SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = None
+ACCOUNT_SIGNUP_REDIRECT_URL = "submissions:submissions_list"
+SOCIALACCOUNT_LOGIN_ON_GET = True
+# Anticipate issues with upcoming 0.52.0 update
+OAUTH_PKCE_ENABLED = False
 
 BOOTSTRAP4 = {
     "include_jquery": True,
