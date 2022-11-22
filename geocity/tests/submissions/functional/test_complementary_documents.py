@@ -152,7 +152,7 @@ class TestComplementaryDocuments(GeocityTestCase):
             }
         )
 
-        response = self.client.get(
+        response = self.client.post(
             reverse(
                 "submissions:complementary_documents_delete",
                 kwargs={"pk": document.pk},

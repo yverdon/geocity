@@ -35,6 +35,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views import View
+from django.views.decorators.http import require_POST
 from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
 from django_filters.views import FilterView
@@ -784,16 +785,14 @@ class SubmissionDetailView(View):
         )
 
 
+@method_decorator(require_POST, name="dispatch")
 class SubmissionComplementaryDocumentDeleteView(DeleteView):
     model = models.SubmissionComplementaryDocument
     success_message = _("Le document '%s' a été supprimé avec succès")
     final_error_message = _("Les documents finaux ne peuvent pas être supprimés")
     owner_error_message = _("Vous pouvez seulement supprimer vos documents")
 
-    def get(self, request, *args, **kwargs):
-        return self.post(request, *args, **kwargs)
-
-    def delete(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         obj = self.get_object()
 
         if obj.owner != self.request.user and not self.request.user.is_superuser:

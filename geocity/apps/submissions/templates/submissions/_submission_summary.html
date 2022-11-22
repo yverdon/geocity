@@ -125,9 +125,14 @@
                   {% endif %}
                 </div>
                 <div class="col-2 text-right">
-                  <a href="{% url 'submissions:complementary_documents_download' document.name %}"><i class="fa fa-download" aria-hidden="true"></i></a>
+                  <a class="align-middle" href="{% url 'submissions:complementary_documents_download' document.name %}"><i class="fa fa-download" aria-hidden="true"></i></a>
                   {% if user == document.owner or user.is_superuser %}
-                    <a class="text-danger" href="{% url 'submissions:complementary_documents_delete' pk=document.id %}"><i class="fa fa-trash" aria-hidden="true"></i></a>
+                    <form class="d-inline-block" method="post" action="{% url 'submissions:complementary_documents_delete' pk=document.id %}">
+                      {% csrf_token %}
+                      <button class="btn btn-link text-danger p-0" type="submit">
+                        <i class="fa fa-trash" aria-hidden="true"></i>
+                      </button>
+                    </form>
                   {% endif %}
                 </div>
             </dd>
