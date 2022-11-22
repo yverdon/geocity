@@ -55,13 +55,6 @@ urlpatterns += [
         name="lockout",
     ),
     path(
-        "account/password_reset/",
-        views.CustomPasswordResetView.as_view(
-            template_name="registration/password_reset.html"
-        ),
-        name="password_reset",
-    ),
-    path(
         "account/password_reset/done",
         auth_views.PasswordResetDoneView.as_view(
             template_name="registration/password_reset_done.html"
