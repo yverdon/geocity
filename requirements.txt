@@ -126,7 +126,7 @@ et-xmlfile==1.1.0
     # via openpyxl
 filetype==1.2.0
     # via -r requirements.in
-gdal==3.6.0.1
+gdal==3.3.2
     # via -r requirements.in
 gunicorn==20.1.0
     # via -r requirements.in

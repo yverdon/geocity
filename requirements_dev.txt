@@ -98,7 +98,7 @@ django-allauth==0.51.0
     # via -r requirements.txt
 django-axes==5.40.0
     # via -r requirements.txt
-django-bootstrap-datepicker-plus==5.0.1
+django-bootstrap-datepicker-plus==4.0.0
     # via -r requirements.txt
 django-bootstrap4==22.3
     # via -r requirements.txt
@@ -195,7 +195,7 @@ filetype==1.2.0
     # via -r requirements.txt
 freezegun==1.2.2
     # via -r requirements_dev.in
-gdal==3.6.0.1
+gdal==3.3.2
     # via -r requirements.txt
 gunicorn==20.1.0
     # via -r requirements.txt
@@ -283,10 +283,6 @@ pycparser==2.21
     # via
     #   -r requirements.txt
     #   cffi
-pydantic==1.10.2
-    # via
-    #   -r requirements.txt
-    #   django-bootstrap-datepicker-plus
 pygments==2.13.0
     # via ipython
 pyjwt[crypto]==2.6.0
@@ -358,11 +354,6 @@ traitlets==5.5.0
     # via
     #   ipython
     #   matplotlib-inline
-typing-extensions==4.4.0
-    # via
-    #   -r requirements.txt
-    #   django-bootstrap-datepicker-plus
-    #   pydantic
 uritemplate==4.1.1
     # via -r requirements.txt
 urllib3==1.26.12
