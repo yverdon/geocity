@@ -57,9 +57,9 @@ django==4.1
     #   djangorestframework
 django-admin-sortable2==2.1.4
     # via -r requirements.in
-django-allauth==0.45.0
+django-allauth==0.51.0
     # via -r requirements.in
-django-axes==5.31.0
+django-axes==5.40.0
     # via -r requirements.in
 django-bootstrap-datepicker-plus==4.0.0
     # via -r requirements.in
@@ -113,12 +113,12 @@ django-taggit==3.1.0
     # via -r requirements.in
 django-two-factor-auth[phonenumbers]==1.14.0
     # via -r requirements.in
-djangorestframework==3.13.1
+djangorestframework==3.14.0
     # via
     #   -r requirements.in
     #   django-rest-knox
     #   djangorestframework-gis
-djangorestframework-gis==0.18
+djangorestframework-gis==1.0
     # via -r requirements.in
 docker==5.0.3
     # via -r requirements.in
@@ -152,7 +152,7 @@ pdf2image==1.16.0
     # via -r requirements.in
 phonenumbers==8.12.43
     # via django-two-factor-auth
-pillow==9.0.1
+pillow==9.3.0
     # via
     #   -r requirements.in
     #   django-simple-captcha
