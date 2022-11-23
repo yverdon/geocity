@@ -1,11 +1,11 @@
 beautifulsoup4
 Django
-django-bootstrap-datepicker-plus
+django-bootstrap-datepicker-plus==4.0.0
 django-bootstrap4
 django-filter
 django-tables2
 django-tables2-column-shifter
-gdal
+gdal==3.3.2
 gunicorn
 html5lib
 jdcal
