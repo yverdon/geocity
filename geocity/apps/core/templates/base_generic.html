@@ -37,7 +37,7 @@
     </style>
   </head>
 
-  <body>
+  <body class="d-flex flex-column min-vh-100">
 
     <header class="header_navigation" id="banner">
       <!-- Navbar -->
@@ -196,6 +196,22 @@
       <div class="container-fluid">
         {% block content-fluid %}{% endblock %}
       </div>
+
+      <footer class="flex-shrink-0 py-2 bg-light text-dark mt-auto">
+        <div class="container text-center">
+          <small>
+            <a href="https://geocity.ch/about" target="_blank" rel="noreferrer">{% trans "Découvrir Geocity" %}</a>
+            {% if config.GENERAL_CONDITIONS_URL %}
+              &nbsp;|&nbsp;
+              <a href="{{ config.GENERAL_CONDITIONS_URL }}" target="_blank" rel="noreferrer">{% trans "Conditions" %}</a>
+            {% endif %}
+            {% if config.PRIVACY_POLICY_URL %}
+              &nbsp;|&nbsp;
+              <a href="{{ config.PRIVACY_POLICY_URL }}" target="_blank" rel="noreferrer">{% trans "Confidentialité" %}</a>
+            {% endif %}
+          </small>
+        </div>
+      </footer>
 
       {% block scripts %}{% endblock %}
 
