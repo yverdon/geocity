@@ -252,7 +252,7 @@ phonenumbers==8.12.43
     #   django-two-factor-auth
 pickleshare==0.7.5
     # via ipython
-pillow==9.0.1
+pillow==9.3.0
     # via
     #   -r requirements.txt
     #   diffimg
