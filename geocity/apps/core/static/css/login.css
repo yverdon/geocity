@@ -49,10 +49,6 @@ body {
   float: left;
 }
 
-#landing-page-link {
-  font-size:  0.9rem;
-}
-
 
 @media (max-width: 768px) {
 
@@ -104,10 +100,6 @@ body {
 
   .application-title {
     visibility: visible !important;
-  }
-
-  #landing-page-link {
-    font-size: 0.7rem;
   }
 
 }
