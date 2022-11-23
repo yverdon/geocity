@@ -1,6 +1,6 @@
 beautifulsoup4
 Django
-django-bootstrap-datepicker-plus
+django-bootstrap-datepicker-plus<5
 django-bootstrap4
 django-filter
 django-tables2

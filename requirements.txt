@@ -61,7 +61,7 @@ django-allauth==0.51.0
     # via -r requirements.in
 django-axes==5.40.0
     # via -r requirements.in
-django-bootstrap-datepicker-plus==5.0.1
+django-bootstrap-datepicker-plus==4.0.0
     # via -r requirements.in
 django-bootstrap4==22.3
     # via -r requirements.in
@@ -163,8 +163,6 @@ psycopg2-binary==2.9.5
     # via -r requirements.in
 pycparser==2.21
     # via cffi
-pydantic==1.10.2
-    # via django-bootstrap-datepicker-plus
 pyjwt[crypto]==2.6.0
     # via django-allauth
 pyparsing==3.0.9
@@ -194,10 +192,6 @@ sqlparse==0.4.3
     # via django
 tablib[xlsx]==3.2.1
     # via -r requirements.in
-typing-extensions==4.4.0
-    # via
-    #   django-bootstrap-datepicker-plus
-    #   pydantic
 uritemplate==4.1.1
     # via -r requirements.in
 urllib3==1.26.12
