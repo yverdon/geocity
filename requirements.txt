@@ -57,7 +57,7 @@ django==4.1
     #   djangorestframework
 django-admin-sortable2==2.1.4
     # via -r requirements.in
-django-allauth==0.45.0
+django-allauth==0.51.0
     # via -r requirements.in
 django-axes==5.31.0
     # via -r requirements.in
