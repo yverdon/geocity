@@ -9,6 +9,7 @@ from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
 from geocity import geometry, settings
+from geocity.apps.accounts import users
 from geocity.apps.accounts.models import AdministrativeEntity, UserProfile
 from geocity.apps.submissions import search
 from geocity.apps.submissions.models import (
@@ -29,7 +30,7 @@ def get_field_value_based_on_field(prop):
     return property_object.get_value()
 
 
-def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
+def get_form_fields(value, admin_entities_assoc_user=None, value_with_type=False):
     """
     Return form fields in a list for the api, in a dict for backend
     `value` is a query set of SelectedForm objects.
@@ -45,6 +46,7 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
         "form__name",
         "form__category__name",
         "field_values__field__is_public_when_permitrequest_is_public",
+        "submission__administrative_entity",
     )
 
     wot_properties = dict()
@@ -89,8 +91,11 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
 
                 last_wot = wot
 
+                # Show fields_values only when the current submission__administrative_entity
+                # is one of the administrative_entities associated to the user
+                # or show field_values that are designed as public in a public permit_request
                 if prop["field_values__field__input_type"] == "file" and (
-                    user_is_authenticated
+                    prop["submission__administrative_entity"] in admin_entities_assoc_user 
                     or prop[
                         "field_values__field__is_public_when_permitrequest_is_public"
                     ]
@@ -108,7 +113,7 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
                             }
                         )
                 elif prop["field_values__value__val"] and (
-                    user_is_authenticated
+                    prop["submission__administrative_entity"] in admin_entities_assoc_user 
                     or prop[
                         "field_values__field__is_public_when_permitrequest_is_public"
                     ]
@@ -264,7 +269,15 @@ class FieldsValuesSerializer(serializers.RelatedField):
         user_is_authenticated = (
             current_user and current_user.is_authenticated and session_authentication
         )
-        fields = get_form_fields(value, user_is_authenticated, value_with_type=True)
+        
+        admin_entities_assoc_user = None
+        
+        if user_is_authenticated:
+            admin_entities_assoc_user = users.get_administrative_entities_associated_to_user(
+                request.user
+            )
+
+        fields = get_form_fields(value, admin_entities_assoc_user, value_with_type=True)
         return fields
 
 
