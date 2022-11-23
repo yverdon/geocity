@@ -3,6 +3,7 @@ from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.socialaccount.models import SocialLogin
 from allauth.utils import build_absolute_uri
 from django.conf import settings
+from django.db import transaction
 
 from geocity.apps.accounts.models import UserProfile
 
@@ -22,6 +23,7 @@ class GeomapfishSocialAccountAdapter(DefaultSocialAccountAdapter):
         }
         return initial
 
+    @transaction.atomic
     def save_user(self, request, sociallogin: SocialLogin, form=None):
         if not form:
             # A subscription form is enforced by settings.SOCIALACCOUNT_AUTO_SIGNUP
@@ -35,7 +37,7 @@ class GeomapfishSocialAccountAdapter(DefaultSocialAccountAdapter):
 
         sociallogin.save(request)
 
-        UserProfile.objects.create(
+        user_profile = UserProfile(
             user=user,
             address=form.cleaned_data["address"],
             zipcode=form.cleaned_data["zipcode"],
@@ -44,8 +46,12 @@ class GeomapfishSocialAccountAdapter(DefaultSocialAccountAdapter):
             phone_second=form.cleaned_data["phone_second"],
             company_name=form.cleaned_data["company_name"],
             vat_number=form.cleaned_data["vat_number"],
-            iban=form.cleaned_data["iban"],
         )
+
+        if settings.AUTHOR_IBAN_VISIBLE:
+            user_profile.iban = form.cleaned_data["iban"]
+
+        user_profile.save()
 
         return user
 

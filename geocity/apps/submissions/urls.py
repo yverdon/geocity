@@ -74,7 +74,7 @@ urlpatterns = [
     ),
     path(
         "documents/<int:pk>/delete",
-        views.SubmissionComplementaryDocumentDeleteView.as_view(),
+        views.submission_complementary_document_delete,
         name="complementary_documents_delete",
     ),
     path("", views.SubmissionList.as_view(), name="submissions_list"),

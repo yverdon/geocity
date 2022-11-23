@@ -6,7 +6,6 @@ import operator
 import re
 from typing import Optional
 
-from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.contrib.postgres.lookups import Unaccent
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import connection
@@ -21,10 +20,11 @@ from django.db.models import (
     Value,
     When,
 )
+from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Concat, Greatest
 from django.db.models.lookups import PostgresOperatorLookup
 from django.urls import reverse
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from geocity.apps.forms.models import Field
 

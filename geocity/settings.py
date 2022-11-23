@@ -458,6 +458,10 @@ SOCIALACCOUNT_FORMS = {"signup": "geocity.apps.accounts.forms.SocialSignupForm"}
 SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = None
+ACCOUNT_SIGNUP_REDIRECT_URL = "submissions:submissions_list"
+SOCIALACCOUNT_LOGIN_ON_GET = True
+# Anticipate issues with upcoming 0.52.0 update
+OAUTH_PKCE_ENABLED = False
 
 BOOTSTRAP4 = {
     "include_jquery": True,
@@ -634,4 +638,22 @@ def show_toolbar(request):
 
 DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": "geocity.settings.show_toolbar",
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": True,
+        },
+    },
 }
