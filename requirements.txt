@@ -152,7 +152,7 @@ pdf2image==1.16.0
     # via -r requirements.in
 phonenumbers==8.12.43
     # via django-two-factor-auth
-pillow==9.0.1
+pillow==9.3.0
     # via
     #   -r requirements.in
     #   django-simple-captcha
