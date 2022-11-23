@@ -113,12 +113,12 @@ django-taggit==3.1.0
     # via -r requirements.in
 django-two-factor-auth[phonenumbers]==1.14.0
     # via -r requirements.in
-djangorestframework==3.13.1
+djangorestframework==3.14.0
     # via
     #   -r requirements.in
     #   django-rest-knox
     #   djangorestframework-gis
-djangorestframework-gis==0.18
+djangorestframework-gis==1.0
     # via -r requirements.in
 docker==5.0.3
     # via -r requirements.in
