@@ -55,9 +55,16 @@ class SubmissionGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
             end = datetime.datetime.strptime(ends_at, "%Y-%m-%d")
             base_filter &= Q(ends_at__lte=end)
 
-        # Prevent confusing anonymous and unstrusted users with too much data
+        # Prevent confusing anonymous and unstrusted users with too much data. Only show next 3 months
+        if not user_is_trusted:
+            date_in_three_months = datetime.datetime.now() + datetime.timedelta(days=90)
+            base_filter &= Q(starts_at__lte=date_in_three_months)
+
+        # Prevent confusing anonymous and unstrusted users with too much data. Take 1 day margin
         if show_only_future == "true" or not user_is_trusted:
-            base_filter &= Q(ends_at__gte=datetime.datetime.now())
+            base_filter &= Q(
+                ends_at__gte=datetime.datetime.now() - datetime.timedelta(days=1)
+            )
         if administrative_entities:
             base_filter &= Q(
                 submission__administrative_entity__in=administrative_entities.split(",")
