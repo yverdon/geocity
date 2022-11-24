@@ -107,6 +107,15 @@ class CustomPasswordResetView(PasswordResetView):
         return context
 
 
+# Create this class to simulate ProfileView in a non 2FA context
+class FakeView:
+    pass
+
+
+if not settings.ENABLE_2FA:
+    ProfileView = FakeView
+
+
 class Custom2FAProfileView(ProfileView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
