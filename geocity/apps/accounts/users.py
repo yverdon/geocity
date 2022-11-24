@@ -30,6 +30,11 @@ def get_administrative_entities_associated_to_user(user):
     ).order_by("ofs_id", "-name")
 
 
+# A trusted user is an authenticated user that is associated at least with one administrative entity
+def is_user_trusted(user):
+    return len(get_administrative_entities_associated_to_user(user)) > 0
+
+
 def get_departments(user):
     return models.PermitDepartment.objects.filter(group__in=user.groups.all())
 

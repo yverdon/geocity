@@ -1,5 +1,7 @@
 from rest_framework.permissions import BasePermission
 
+from geocity.apps.accounts.users import is_user_trusted
+
 
 class AllowAllRequesters(BasePermission):
     """
@@ -29,4 +31,4 @@ class BlockRequesterUserWithoutGroup(BasePermission):
     """
 
     def has_permission(self, request, view):
-        return request.user.groups.exists()
+        return is_user_trusted(request.user)

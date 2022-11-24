@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 
 from geocity import geometry
+from geocity.apps.accounts.users import is_user_trusted
 from geocity.apps.django_wfs3.mixins import WFS3DescribeModelViewSetMixin
 from geocity.apps.forms.models import Form
 from geocity.apps.submissions import search
@@ -39,11 +40,12 @@ class SubmissionGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
         This view should return a list of events for which the logged user has
         view permissions or events set as public by pilot
         """
-
         show_only_future = self.request.query_params.get("show_only_future", None)
         starts_at = self.request.query_params.get("starts_at", None)
         ends_at = self.request.query_params.get("ends_at", None)
         administrative_entities = self.request.query_params.get("adminentities", None)
+
+        user_is_trusted = is_user_trusted(self.request.user)
 
         base_filter = Q()
         if starts_at:
@@ -52,7 +54,9 @@ class SubmissionGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
         if ends_at:
             end = datetime.datetime.strptime(ends_at, "%Y-%m-%d")
             base_filter &= Q(ends_at__lte=end)
-        if show_only_future == "true":
+
+        # Prevent confusing anonymous and unstrusted users with too much data
+        if show_only_future == "true" or not user_is_trusted:
             base_filter &= Q(ends_at__gte=datetime.datetime.now())
         if administrative_entities:
             base_filter &= Q(
@@ -166,9 +170,6 @@ class SubmissionViewSet(WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelVie
         user = self.request.user
         filters_serializer = serializers.SubmissionFiltersSerializer(
             data={
-                # FIXME inform API consumers of query params changes
-                # works_object_type -> form
-                # permit_request_id -> submission_id
                 "form": self.request.query_params.get("form"),
                 "status": self.request.query_params.get("status"),
                 "submission_id": self.request.query_params.get("submission_id"),
