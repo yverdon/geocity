@@ -30,7 +30,9 @@ def get_field_value_based_on_field(prop):
     return property_object.get_value()
 
 
-def get_form_fields(value, admin_entities_assoc_user_list=None, value_with_type=False):
+def get_form_fields(
+    value, administrative_entities_associated_to_user_list=None, value_with_type=False
+):
     """
     Return form fields in a list for the api, in a dict for backend
     `value` is a query set of SelectedForm objects.
@@ -57,6 +59,7 @@ def get_form_fields(value, admin_entities_assoc_user_list=None, value_with_type=
         # Flat view is used in the api for geocalandar, the WOT shows only the works_object__name and not the type
         if value_with_type:
             wot_properties = list()
+            key_for_form = _("Formulaire")
             for prop in wot_props:
                 wot = prop["form__name"] + (
                     f' ({prop["form__category__name"]})'
@@ -74,7 +77,7 @@ def get_form_fields(value, admin_entities_assoc_user_list=None, value_with_type=
                     # WOT
                     property.append(
                         {
-                            "key": "Formulaire",
+                            "key": key_for_form,
                             "value": wot,
                             "type": "text",
                         }
@@ -83,7 +86,7 @@ def get_form_fields(value, admin_entities_assoc_user_list=None, value_with_type=
                 if not last_wot:
                     property.append(
                         {
-                            "key": "Formulaire",
+                            "key": key_for_form,
                             "value": wot,
                             "type": "text",
                         }
@@ -96,7 +99,7 @@ def get_form_fields(value, admin_entities_assoc_user_list=None, value_with_type=
                 # or show field_values that are designed as public in a public permit_request
                 if prop["field_values__field__input_type"] == "file" and (
                     prop["submission__administrative_entity"]
-                    in admin_entities_assoc_user_list
+                    in administrative_entities_associated_to_user_list
                     or prop[
                         "field_values__field__is_public_when_permitrequest_is_public"
                     ]
@@ -115,7 +118,7 @@ def get_form_fields(value, admin_entities_assoc_user_list=None, value_with_type=
                         )
                 elif prop["field_values__value__val"] and (
                     prop["submission__administrative_entity"]
-                    in admin_entities_assoc_user_list
+                    in administrative_entities_associated_to_user_list
                     or prop[
                         "field_values__field__is_public_when_permitrequest_is_public"
                     ]
@@ -272,17 +275,17 @@ class FieldsValuesSerializer(serializers.RelatedField):
             current_user and current_user.is_authenticated and session_authentication
         )
 
-        admin_entities_assoc_user_list = None
+        administrative_entities_associated_to_user_list = None
 
         if user_is_authenticated:
-            admin_entities_assoc_user_list = (
+            administrative_entities_associated_to_user_list = (
                 users.get_administrative_entities_associated_to_user_as_list(
                     request.user
                 )
             )
 
         fields = get_form_fields(
-            value, admin_entities_assoc_user_list, value_with_type=True
+            value, administrative_entities_associated_to_user_list, value_with_type=True
         )
         return fields
 
