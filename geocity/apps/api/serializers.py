@@ -95,7 +95,8 @@ def get_form_fields(value, admin_entities_assoc_user_list=None, value_with_type=
                 # is one of the administrative_entities associated to the user
                 # or show field_values that are designed as public in a public permit_request
                 if prop["field_values__field__input_type"] == "file" and (
-                    prop["submission__administrative_entity"] in admin_entities_assoc_user_list 
+                    prop["submission__administrative_entity"]
+                    in admin_entities_assoc_user_list
                     or prop[
                         "field_values__field__is_public_when_permitrequest_is_public"
                     ]
@@ -113,7 +114,8 @@ def get_form_fields(value, admin_entities_assoc_user_list=None, value_with_type=
                             }
                         )
                 elif prop["field_values__value__val"] and (
-                    prop["submission__administrative_entity"] in admin_entities_assoc_user_list 
+                    prop["submission__administrative_entity"]
+                    in admin_entities_assoc_user_list
                     or prop[
                         "field_values__field__is_public_when_permitrequest_is_public"
                     ]
@@ -269,15 +271,19 @@ class FieldsValuesSerializer(serializers.RelatedField):
         user_is_authenticated = (
             current_user and current_user.is_authenticated and session_authentication
         )
-        
+
         admin_entities_assoc_user_list = None
-        
+
         if user_is_authenticated:
-            admin_entities_assoc_user_list = users.get_administrative_entities_associated_to_user_as_list(
-                request.user
+            admin_entities_assoc_user_list = (
+                users.get_administrative_entities_associated_to_user_as_list(
+                    request.user
+                )
             )
 
-        fields = get_form_fields(value, admin_entities_assoc_user_list, value_with_type=True)
+        fields = get_form_fields(
+            value, admin_entities_assoc_user_list, value_with_type=True
+        )
         return fields
 
 
