@@ -30,6 +30,17 @@ def get_administrative_entities_associated_to_user(user):
     ).order_by("ofs_id", "-name")
 
 
+def get_administrative_entities_associated_to_user_as_list(user):
+    return (
+        models.AdministrativeEntity.objects.filter(
+            departments__group__in=user.groups.all(),
+        )
+        .values_list("id", flat=True)
+        .order_by("ofs_id", "-name")
+        .distinct()
+    )
+
+
 # A trusted user is an authenticated user that is associated at least with one administrative entity
 def is_user_trusted(user):
     return len(get_administrative_entities_associated_to_user(user)) > 0
