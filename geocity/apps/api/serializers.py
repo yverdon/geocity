@@ -280,11 +280,10 @@ class FieldsValuesSerializer(serializers.RelatedField):
 
         if user_is_authenticated:
             administrative_entities_associated_to_user_list = (
-                AdministrativeEntity.associated_to_user(request.user)
+                AdministrativeEntity.objects.associated_to_user(request.user)
                 .values_list("id", flat=True)
                 .distinct()
             )
-        print(administrative_entities_associated_to_user_list)
 
         fields = get_form_fields(
             value, administrative_entities_associated_to_user_list, value_with_type=True
