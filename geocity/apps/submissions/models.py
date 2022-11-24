@@ -133,7 +133,7 @@ class SubmissionQuerySet(models.QuerySet):
 
             if user.has_perm("submissions.amend_submission"):
                 qs_filter |= Q(
-                    administrative_entity__in=AdministrativeEntity.associated_to_user(
+                    administrative_entity__in=AdministrativeEntity.objects.associated_to_user(
                         user
                     ),
                 ) & ~Q(status=Submission.STATUS_DRAFT)
@@ -1331,7 +1331,7 @@ class ArchivedSubmissionQuerySet(models.QuerySet):
 
         qs_filter = Q(archivist=user)
         qs_filter |= Q(
-            submission__administrative_entity__in=AdministrativeEntity.associated_to_user(
+            submission__administrative_entity__in=AdministrativeEntity.objects.associated_to_user(
                 user
             )
         )
