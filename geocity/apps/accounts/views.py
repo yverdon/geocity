@@ -198,7 +198,7 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
     def get_success_url(self):
 
         qs_dict = parse.parse_qs(self.request.META["QUERY_STRING"])
-        filter_qs = qs_dict["next"][0].replace("/", "") if "next" in qs_dict else ""
+        filter_qs = qs_dict["next"][0].replace(settings.PREFIX_URL, "").replace("/", "") if "next" in qs_dict else ""
         url_value = (
             qs_dict["next"][0]
             if "next" in qs_dict
