@@ -68,6 +68,21 @@ def lockout_view(request):
     )
 
 
+def update_context_with_filters(context, params_str, url_qs):
+    if "entityfilter" in parse.parse_qs(params_str).keys():
+        for value in parse.parse_qs(params_str)["entityfilter"]:
+            url_qs += "&entityfilter=" + value
+
+    if "typefilter" in parse.parse_qs(params_str).keys():
+        for value in parse.parse_qs(params_str)["typefilter"]:
+            url_qs += "&typefilter=" + value
+
+    if url_qs:
+        context.update({"query_string": url_qs[1:]})
+
+    return context
+
+
 class SetCurrentSiteMixin:
     def __init__(self, *args, **kwargs):
         super.__init__(*args, **kwargs)
@@ -100,16 +115,8 @@ class Custom2FAProfileView(ProfileView):
         params_str = (
             parse.urlsplit(uri).query.replace("?", "").replace(settings.PREFIX_URL, "")
         )
-        if "entityfilter" in parse.parse_qs(params_str).keys():
-            for value in parse.parse_qs(params_str)["entityfilter"]:
-                url_qs += "&entityfilter=" + value
 
-        if "typefilter" in parse.parse_qs(params_str).keys():
-            for value in parse.parse_qs(params_str)["typefilter"]:
-                url_qs += "&typefilter=" + value
-        if url_qs:
-            context.update({"query_string": url_qs[1:]})
-        return context
+        return update_context_with_filters(context, params_str, url_qs)
 
 
 class CustomLoginView(LoginView, SetCurrentSiteMixin):
@@ -183,17 +190,8 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
             # use anonymous session
             self.request.session["template"] = template_value
         context.update({"customization": customization})
-        if "entityfilter" in parse.parse_qs(params_str).keys():
-            for value in parse.parse_qs(params_str)["entityfilter"]:
-                url_qs += "&entityfilter=" + value
 
-        if "typefilter" in parse.parse_qs(params_str).keys():
-            for value in parse.parse_qs(params_str)["typefilter"]:
-                url_qs += "&typefilter=" + value
-        if url_qs:
-            context.update({"query_string": url_qs[1:]})
-
-        return context
+        return update_context_with_filters(context, params_str, url_qs)
 
     def get_success_url(self):
 
