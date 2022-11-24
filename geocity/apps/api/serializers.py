@@ -9,6 +9,7 @@ from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
 from geocity import geometry, settings
+from geocity.apps.accounts import users
 from geocity.apps.accounts.models import AdministrativeEntity, UserProfile
 from geocity.apps.submissions import search
 from geocity.apps.submissions.models import (
@@ -29,7 +30,9 @@ def get_field_value_based_on_field(prop):
     return property_object.get_value()
 
 
-def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
+def get_form_fields(
+    value, administrative_entities_associated_to_user_list=None, value_with_type=False
+):
     """
     Return form fields in a list for the api, in a dict for backend
     `value` is a query set of SelectedForm objects.
@@ -45,6 +48,7 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
         "form__name",
         "form__category__name",
         "field_values__field__is_public_when_permitrequest_is_public",
+        "submission__administrative_entity",
     )
 
     wot_properties = dict()
@@ -55,6 +59,7 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
         # Flat view is used in the api for geocalandar, the WOT shows only the works_object__name and not the type
         if value_with_type:
             wot_properties = list()
+            key_for_form = _("Formulaire")
             for prop in wot_props:
                 wot = prop["form__name"] + (
                     f' ({prop["form__category__name"]})'
@@ -64,13 +69,15 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
 
                 # List of a list, to split wot in objects. Check if last wot changed or never assigned. Means it's first iteration
                 if property and wot != last_wot:
-                    wot_properties.append(property)
+                    # Don't add values if there's only the "WOT" without any field
+                    if len(property) > 1:
+                        wot_properties.append(property)
+
                     property = []
                     # WOT
                     property.append(
                         {
-                            # FIXME should this be renamed?
-                            "key": "work_object_type",
+                            "key": key_for_form,
                             "value": wot,
                             "type": "text",
                         }
@@ -79,21 +86,20 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
                 if not last_wot:
                     property.append(
                         {
-                            # FIXME should this be renamed?
-                            "key": "work_object_type",
+                            "key": key_for_form,
                             "value": wot,
                             "type": "text",
                         }
                     )
 
-                last_wot = prop["form__name"] + (
-                    f' ({prop["form__category__name"]})'
-                    if prop["form__category__name"]
-                    else ""
-                )
+                last_wot = wot
 
+                # Show fields_values only when the current submission__administrative_entity
+                # is one of the administrative_entities associated to the user
+                # or show field_values that are designed as public in a public permit_request
                 if prop["field_values__field__input_type"] == "file" and (
-                    user_is_authenticated
+                    prop["submission__administrative_entity"]
+                    in administrative_entities_associated_to_user_list
                     or prop[
                         "field_values__field__is_public_when_permitrequest_is_public"
                     ]
@@ -111,7 +117,8 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
                             }
                         )
                 elif prop["field_values__value__val"] and (
-                    user_is_authenticated
+                    prop["submission__administrative_entity"]
+                    in administrative_entities_associated_to_user_list
                     or prop[
                         "field_values__field__is_public_when_permitrequest_is_public"
                     ]
@@ -125,7 +132,9 @@ def get_form_fields(value, user_is_authenticated=None, value_with_type=False):
                         }
                     )
             # Add last wot_properties, or show something when there's only one
-            wot_properties.append(property)
+            # Don't add values if there's only the "WOT" without any field
+            if len(property) > 1:
+                wot_properties.append(property)
         else:
             for prop in wot_props:
                 wot = f'{prop["form__name"]} ({prop["form__category__name"]})'
@@ -265,7 +274,19 @@ class FieldsValuesSerializer(serializers.RelatedField):
         user_is_authenticated = (
             current_user and current_user.is_authenticated and session_authentication
         )
-        fields = get_form_fields(value, user_is_authenticated, value_with_type=True)
+
+        administrative_entities_associated_to_user_list = None
+
+        if user_is_authenticated:
+            administrative_entities_associated_to_user_list = (
+                users.get_administrative_entities_associated_to_user_as_list(
+                    request.user
+                )
+            )
+
+        fields = get_form_fields(
+            value, administrative_entities_associated_to_user_list, value_with_type=True
+        )
         return fields
 
 
