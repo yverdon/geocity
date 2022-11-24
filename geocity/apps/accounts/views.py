@@ -21,7 +21,7 @@ from django.views import View
 from django.views.decorators.http import require_POST
 
 if settings.ENABLE_2FA:
-    from two_factor.views import LoginView
+    from two_factor.views import LoginView, ProfileView
 else:
     from django.contrib.auth.views import LoginView
 
@@ -89,6 +89,26 @@ class CustomPasswordResetView(PasswordResetView):
         self.extra_email_context["site_name"] = self.request.build_absolute_uri().split(
             "/"
         )[2]
+        return context
+
+
+class Custom2FAProfileView(ProfileView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        url_qs = ""
+        uri = parse.unquote(self.request.build_absolute_uri()).replace("next=/", "")
+        params_str = (
+            parse.urlsplit(uri).query.replace("?", "").replace(settings.PREFIX_URL, "")
+        )
+        if "entityfilter" in parse.parse_qs(params_str).keys():
+            for value in parse.parse_qs(params_str)["entityfilter"]:
+                url_qs += "&entityfilter=" + value
+
+        if "typefilter" in parse.parse_qs(params_str).keys():
+            for value in parse.parse_qs(params_str)["typefilter"]:
+                url_qs += "&typefilter=" + value
+        if url_qs:
+            context.update({"query_string": url_qs[1:]})
         return context
 
 
@@ -178,7 +198,7 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
     def get_success_url(self):
 
         qs_dict = parse.parse_qs(self.request.META["QUERY_STRING"])
-
+        filter_qs = qs_dict["next"][0].replace("/", "") if "next" in qs_dict else ""
         url_value = (
             qs_dict["next"][0]
             if "next" in qs_dict
@@ -189,7 +209,7 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
             qs_dict.pop("next")
 
         return (
-            reverse("accounts:profile")
+            reverse("accounts:profile") + filter_qs
             if settings.ENABLE_2FA and not self.request.user.totpdevice_set.exists()
             else url_value
         )
