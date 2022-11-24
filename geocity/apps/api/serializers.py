@@ -9,7 +9,6 @@ from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
 from geocity import geometry, settings
-from geocity.apps.accounts import users
 from geocity.apps.accounts.models import AdministrativeEntity, UserProfile
 from geocity.apps.submissions import search
 from geocity.apps.submissions.models import (
@@ -98,7 +97,8 @@ def get_form_fields(
                 # is one of the administrative_entities associated to the user
                 # or show field_values that are designed as public in a public permit_request
                 if prop["field_values__field__input_type"] == "file" and (
-                    prop["submission__administrative_entity"]
+                    administrative_entities_associated_to_user_list
+                    and prop["submission__administrative_entity"]
                     in administrative_entities_associated_to_user_list
                     or prop[
                         "field_values__field__is_public_when_permitrequest_is_public"
@@ -117,7 +117,8 @@ def get_form_fields(
                             }
                         )
                 elif prop["field_values__value__val"] and (
-                    prop["submission__administrative_entity"]
+                    administrative_entities_associated_to_user_list
+                    and prop["submission__administrative_entity"]
                     in administrative_entities_associated_to_user_list
                     or prop[
                         "field_values__field__is_public_when_permitrequest_is_public"
@@ -279,10 +280,11 @@ class FieldsValuesSerializer(serializers.RelatedField):
 
         if user_is_authenticated:
             administrative_entities_associated_to_user_list = (
-                users.get_administrative_entities_associated_to_user_as_list(
-                    request.user
-                )
+                AdministrativeEntity.associated_to_user(request.user)
+                .values_list("id", flat=True)
+                .distinct()
             )
+        print(administrative_entities_associated_to_user_list)
 
         fields = get_form_fields(
             value, administrative_entities_associated_to_user_list, value_with_type=True

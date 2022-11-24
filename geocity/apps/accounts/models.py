@@ -286,6 +286,15 @@ class AdministrativeEntity(models.Model):
                 zipcode=settings.ANONYMOUS_USER_ZIPCODE,
             )
 
+    @classmethod
+    def associated_to_user(self, user):
+        """
+        Get the administrative entities associated to a specific user
+        """
+        return self.objects.filter(
+            departments__group__in=user.groups.all(),
+        ).order_by("ofs_id", "-name")
+
 
 # Change the app_label in order to regroup models under the same app in admin
 class AdministrativeEntityForAdminSite(AdministrativeEntity):
