@@ -54,7 +54,7 @@ body {
 
   #login-content {
     width: 95%;
-    height: 600px;
+    height: auto;
     background: none;
     margin-top: 10px;
   }
