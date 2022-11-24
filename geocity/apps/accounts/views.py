@@ -14,10 +14,11 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
 from django.http import Http404, StreamingHttpResponse
 from django.template.loader import render_to_string
-from django.utils.encoding import force_bytes, force_text
+from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
 from django.views import View
+from django.views.decorators.http import require_POST
 
 if settings.ENABLE_2FA:
     from two_factor.views import LoginView
@@ -37,6 +38,7 @@ from geocity.fields import PrivateFileSystemStorage
 from . import forms, models
 
 
+@require_POST
 def logout_view(request):
     templatename = (
         request.session.pop("templatename")
@@ -110,7 +112,14 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({"social_apps": SocialApp.objects.all()})
+
+        context.update(
+            {
+                "social_apps": SocialApp.objects.filter(
+                    sites__id=get_current_site(self.request).id
+                ).all()
+            }
+        )
 
         customization = {
             "application_title": config.APPLICATION_TITLE,
@@ -189,7 +198,7 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
 class ActivateAccountView(View):
     def get(self, request, uid, token):
         try:
-            uid = force_text(urlsafe_base64_decode(uid))
+            uid = urlsafe_base64_decode(uid).decode()
             user = models.User.objects.get(pk=uid)
         except models.User.DoesNotExist:
             user = None

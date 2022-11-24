@@ -7,7 +7,6 @@ factory_boy
 Faker
 ipdb
 pip-tools
-babel
 pdf2image
 diffimg
 freezegun

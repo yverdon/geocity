@@ -11,11 +11,7 @@ from geocity.apps.accounts.geomapfish.provider import GeomapfishProvider
 from geocity.apps.django_wfs3.urls import wfs3_router
 from geocity.apps.submissions import views as submissions_views
 
-from .admin_site import PermitsAdminSite
-
 logger = logging.getLogger(__name__)
-
-admin.site = PermitsAdminSite()
 
 # See TWO_FACTOR_PATCH_ADMIN
 if settings.ENABLE_2FA:
@@ -33,7 +29,6 @@ urlpatterns = (
         path("", submissions_views.submission_select_administrative_entity),
         path("permit-requests/", include("geocity.apps.submissions.urls")),
         path("reports/", include("geocity.apps.reports.urls")),
-        path("grappelli/", include("grappelli.urls")),  # grappelli URLS
     ]
     + default_urlpatterns(GeomapfishProvider)
     + default_urlpatterns(DootixProvider)

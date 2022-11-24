@@ -2,15 +2,14 @@
 {% load i18n %}
 
 {% block object-tools-items %}
-    {{ block.super }}
-    {% if original.pk == user.pk %}
-        <li>
-            <form action="{% url "admin:create_knox_token" %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="user" value="{{ original.pk }}">
-            <input type="hidden" name="request_user" value="{{ user.pk }}">
-            <a href="#" onclick="this.parentElement.submit()">{% translate "Créer un knox token" %}</a>
-            </form>
-        </li>
-    {% endif %}
+  {% if original.pk == user.pk %}
+    <div class="form-group">
+      <button formaction="{% url "admin:create_auth_token" user_id=original.pk %}" type="submit" class="btn btn-dark form-control">
+        {% translate "Créer un jeton d'authentification" %}
+      </button>
+    </div>
+    <hr>
+  {% endif %}
+
+  {{ block.super }}
 {% endblock %}

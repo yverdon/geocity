@@ -4,7 +4,7 @@ class Prolongation {
     this.permitDuration = document.querySelector("#id_permit_duration");
     this.expirationReminder = document.querySelector("#id_expiration_reminder");
     this.daysBeforeReminder = document.querySelector("#id_days_before_reminder");
-    this.daysBeforeReminderLabel = this.daysBeforeReminder.closest('.form-row.days_before_reminder').querySelector("label");
+    this.daysBeforeReminderLabel = this.daysBeforeReminder.closest('.row').querySelector("label");
     this.requiredClass = 'required';
 
     this._init()
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
   new Prolongation();
 
   const needsDateElement = document.getElementById('id_needs_date');
-  const startDelayRow = document.getElementById('id_start_delay').closest('.form-row');
+  const startDelayRow = document.getElementById('id_start_delay').closest('.row');
   const hiddenClass = 'grp-row-hidden';
 
   function toggleConditionalFields() {

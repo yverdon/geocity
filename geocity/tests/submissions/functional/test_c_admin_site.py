@@ -217,7 +217,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         # 2 fields = 1 integrator field + empty choice
         self.assertEqual(
-            len(parser.select(".grp-td.field")[0].select("select option")), 2
+            len(parser.select(".field-field")[0].select("select option")), 2
         )
 
     def test_admin_can_see_all_field(self):
@@ -236,7 +236,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             # 5 fields = 4 fields + empty choice
-            len(parser.select(".grp-td.field")[0].select("select option")),
+            len(parser.select(".field-field")[0].select("select option")),
             5,
         )
 
@@ -270,7 +270,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         parser = get_parser(response.content)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".grp-row")), 3)
+        self.assertEqual(len(parser.select("tr")), 2)
 
     def test_integrator_can_only_see_own_complementarydocumenttype(self):
         response = self.client.get(
@@ -278,7 +278,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
         )
         parser = get_parser(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".grp-row-even")), 1)
+        self.assertEqual(len(parser.select(".even")), 1)
 
     def test_admin_can_see_all_amendfield(self):
         user = factories.SuperUserFactory()
@@ -290,9 +290,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             reverse("admin:submissions_submissionamendfield_changelist")
         )
         parser = get_parser(response.content)
-
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(parser.select(".grp-row")), 6)
+        self.assertEqual(len(parser.select("tr")), 5)
 
     # An user can only have 1 integrator group, updating a group shouldn't bypass this rule
     def test_cannot_change_a_group_as_integrator_if_an_user_of_this_group_has_already_an_integrator_group(
@@ -369,7 +368,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
 
         response = self.client.get(reverse("admin:submissions_submission_changelist"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "3.1 Consultation des demandes")
+        self.assertContains(response, "Consultation des demandes")
 
     def test_integrator_cannot_see_submissions(self):
         if settings.ENABLE_2FA:

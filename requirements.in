@@ -1,5 +1,5 @@
 beautifulsoup4
-Django<4
+Django
 django-bootstrap-datepicker-plus
 django-bootstrap4
 django-filter
@@ -9,16 +9,14 @@ gdal
 gunicorn
 html5lib
 jdcal
-Pillow>=9.0.0
+Pillow
 psycopg2-binary
-pytz
 PyYAML
 requests
 # Required by django-tables2, which doesn't list it in their requirements
 tablib[xlsx]
 whitenoise
-django-admin-sortable2==1.0.4
-django-grappelli
+django-admin-sortable2
 django-simple-history
 djangorestframework
 djangorestframework-gis
@@ -27,10 +25,11 @@ django-constance[database]
 django-two-factor-auth[phonenumbers]
 django-taggit
 filetype
+django-jazzmin
 # Open authentication provider
-django-oauth-toolkit
+django-oauth-toolkit<2.2.0
 # Open authentication consumer
-django-allauth==0.45.0
+django-allauth
 # django_wfs3 -> djangorestframework (optional for openapi schema generation, see https://www.django-rest-framework.org/api-guide/schemas/#install-dependencies)
 pyyaml
 uritemplate

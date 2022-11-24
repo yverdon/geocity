@@ -1,20 +1,24 @@
 from django import forms
 from django.conf import settings
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.sites.admin import SiteAdmin as BaseSiteAdmin
 from django.contrib.sites.models import Site
-from django.db.models import Q, Value
-from django.db.models.functions import StrIndex, Substr
+from django.db import transaction
+from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import path, reverse
 from django.utils.translation import gettext_lazy as _
+from knox.models import AuthToken
 
+from geocity.apps.accounts.models import AdministrativeEntity
 from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
 from geocity.fields import GeometryWidget
 
 from . import models, permissions_groups
-from .users import get_integrator_permissions
+from .users import get_integrator_permissions, get_users_list_for_integrator_admin
 
 MULTIPLE_INTEGRATOR_ERROR_MESSAGE = "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur'"
 
@@ -72,12 +76,9 @@ class UserAdmin(BaseUserAdmin):
     fieldsets = (
         (
             None,
-            {"fields": ("username",)},
-        ),
-        (
-            "Informations personnelles",
             {
                 "fields": (
+                    "username",
                     "first_name",
                     "last_name",
                     "email",
@@ -86,7 +87,7 @@ class UserAdmin(BaseUserAdmin):
             },
         ),
         (
-            "Permissions",
+            _("Groupes et Permissions"),
             {
                 "fields": (
                     "is_active",
@@ -98,7 +99,7 @@ class UserAdmin(BaseUserAdmin):
             },
         ),
         (
-            "Dates importantes",
+            _("Dates importantes"),
             {
                 "fields": (
                     "last_login",
@@ -159,6 +160,8 @@ class UserAdmin(BaseUserAdmin):
         integrator_group_for_user_being_updated = user_being_updated.groups.filter(
             permit_department__is_integrator_admin=True
         )
+
+        # FIXME: Do not allow anonymous user to be set in groups!!!
         if db_field.name == "groups":
             if request.user.is_superuser:
                 kwargs["queryset"] = Group.objects.all()
@@ -176,41 +179,9 @@ class UserAdmin(BaseUserAdmin):
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
-    # Only superuser can edit superuser users
+    # Filter users that can be by integrator
     def get_queryset(self, request):
-        # Only allow integrator to change users that have no group, are not superuser or are in group administrated by integrator.
-        if request.user.is_superuser:
-            qs = User.objects.all()
-        else:
-            user_integrator_group = request.user.groups.get(
-                permit_department__is_integrator_admin=True
-            )
-            qs = (
-                User.objects.filter(
-                    Q(is_superuser=False),
-                    Q(groups__permit_department__integrator=user_integrator_group.pk)
-                    | Q(groups__isnull=True),
-                )
-                .annotate(
-                    email_domain=Substr("email", StrIndex("email", Value("@")) + 1)
-                )
-                .distinct()
-            )
-
-            qs = qs.filter(
-                Q(
-                    email_domain__in=user_integrator_group.permit_department.integrator_email_domains.split(
-                        ","
-                    )
-                )
-                | Q(
-                    email__in=user_integrator_group.permit_department.integrator_emails_exceptions.split(
-                        ","
-                    )
-                )
-            )
-
-        return qs
+        return get_users_list_for_integrator_admin(request.user)
 
     def save_model(self, req, obj, form, change):
         """Set 'is_staff=True' when the saved user is in a integrator group.
@@ -223,6 +194,40 @@ class UserAdmin(BaseUserAdmin):
                     obj.is_staff = True
 
         super().save_model(req, obj, form, change)
+
+    def get_urls(self):
+        urls = super().get_urls()
+
+        return [
+            path(
+                "<int:user_id>/create-token/",
+                self.admin_site.admin_view(self.create_auth_token),
+                name="create_auth_token",
+            )
+        ] + urls
+
+    def create_auth_token(self, request, user_id):
+        user = get_object_or_404(User, pk=user_id)
+
+        # TODO: Define when a token needs to be deleted
+        with transaction.atomic():
+            authtoken, token = AuthToken.objects.create(user, expiry=None)
+
+        messages.add_message(
+            request,
+            messages.SUCCESS,
+            _(
+                "Jeton créé avec succès. Veuillez le copier, il ne sera visible qu'une seule fois."
+            ),
+        )
+        messages.add_message(request, messages.INFO, token)
+
+        return redirect(
+            reverse(
+                "admin:auth_user_change",
+                kwargs={"object_id": user_id},
+            )
+        )
 
 
 class DepartmentAdminForm(forms.ModelForm):
@@ -352,8 +357,22 @@ class GroupAdminForm(forms.ModelForm):
         return permissions
 
 
+class UserInline(admin.TabularInline):
+    model = Group.user_set.through
+    can_delete = False
+    extra = 0
+    verbose_name = _("Utilisateur membre du groupe")
+    verbose_name_plural = _("Utilisateurs membres du groupe")
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "user":
+            kwargs["queryset"] = get_users_list_for_integrator_admin(request.user)
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
 class GroupAdmin(admin.ModelAdmin):
-    inlines = (PermitDepartmentInline,)
+    inlines = (PermitDepartmentInline, UserInline)
     form = GroupAdminForm
     list_display = [
         "__str__",
@@ -478,7 +497,7 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
         self.fields["sites"] = get_sites_field(user)
 
     class Meta:
-        model = models.AdministrativeEntity
+        model = models.AdministrativeEntityForAdminSite
         fields = [
             "name",
             "tags",
@@ -532,13 +551,11 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
         }
 
 
-class SubmissionWorkflowStatusInline(admin.StackedInline):
+class SubmissionWorkflowStatusInline(admin.TabularInline):
     model = SubmissionWorkflowStatus
     extra = 0
     verbose_name = _("Étape - ")
-    verbose_name_plural = _(
-        "Étapes - Si aucune n'est ajoutée manuellement, toutes les étapes sont ajoutées automatiquement"
-    )
+    verbose_name_plural = _("Flux (complet par défaut)")
 
 
 @admin.register(models.AdministrativeEntityForAdminSite)
@@ -578,9 +595,7 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         return obj.__str__()
 
     sortable_str.admin_order_field = "name"
-    sortable_str.short_description = (
-        "1.1 Configuration de l'entité administrative (commune, organisation)"
-    )
+    sortable_str.short_description = "Entité administrative"
 
     def get_sites(self, obj):
         return [site["name"] for site in obj.sites.all().values("name")]
@@ -619,12 +634,40 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                     administrative_entity=obj,
                 )
 
+    def get_urls(self):
+        urls = super().get_urls()
+
+        return [
+            path(
+                "<int:administrative_entity_id>/create-anonymous-user/",
+                self.admin_site.admin_view(self.create_anonymous_user),
+                name="create_administrative_entity_anonymous_user",
+            )
+        ] + urls
+
+    def create_anonymous_user(self, request, administrative_entity_id):
+        administrative_entity = get_object_or_404(
+            AdministrativeEntity, pk=administrative_entity_id
+        )
+
+        administrative_entity.create_anonymous_user()
+
+        messages.add_message(
+            request, messages.SUCCESS, _("Utilisateur anonyme créé avec succès.")
+        )
+
+        return redirect(
+            reverse(
+                "admin:forms_administrativeentityforadminsite_change",
+                kwargs={"object_id": administrative_entity_id},
+            )
+        )
+
 
 @admin.register(models.TemplateCustomization)
 class TemplateCustomizationAdmin(admin.ModelAdmin):
     list_display = [
-        "__str__",
-        "templatename",
+        "sortable_str",
         "application_title",
         "application_subtitle",
         "has_background_image",
@@ -636,6 +679,12 @@ class TemplateCustomizationAdmin(admin.ModelAdmin):
     search_fields = [
         "templatename",
     ]
+
+    def sortable_str(self, obj):
+        return obj.__str__()
+
+    sortable_str.admin_order_field = "templatename"
+    sortable_str.short_description = _("Page de login")
 
     @admin.display(boolean=True)
     def has_background_image(self, obj):

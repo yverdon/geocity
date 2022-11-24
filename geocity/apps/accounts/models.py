@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
 from django.contrib.sites.models import Site
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import (
     FileExtensionValidator,
     MaxValueValidator,
@@ -265,6 +265,27 @@ class AdministrativeEntity(models.Model):
     def __str__(self):
         return self.name
 
+    def create_anonymous_user(self):
+        try:
+            return self.anonymous_user
+        except ObjectDoesNotExist:
+            username = "%s%s" % (settings.ANONYMOUS_USER_PREFIX, self.pk)
+            first_name = "Anonymous user"
+            last_name = self.name
+
+            user = User.objects.create(
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+                is_active=False,
+            )
+
+            return UserProfile.objects.create(
+                administrative_entity=self,
+                user_id=user.id,
+                zipcode=settings.ANONYMOUS_USER_ZIPCODE,
+            )
+
 
 # Change the app_label in order to regroup models under the same app in admin
 class AdministrativeEntityForAdminSite(AdministrativeEntity):
@@ -406,7 +427,7 @@ class UserProfile(models.Model):
     @cached_property
     def is_anonymous(self):
         """
-        PermitAuthor unique per AdministrativeEntity.
+        UserProfile unique per AdministrativeEntity.
         Never logged in. Used to save anonymous requests.
         """
         return (
@@ -418,7 +439,7 @@ class UserProfile(models.Model):
     @cached_property
     def is_temporary(self):
         """
-        PermitAuthor created when starting an anonymous permit request,
+        UserProfile created when starting an anonymous permit request,
         then deleted at the submission (replaced by an anonymous user).
         """
         return self.user and self.user.username.startswith(

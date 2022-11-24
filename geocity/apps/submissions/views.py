@@ -24,7 +24,7 @@ from django.core.exceptions import (
 )
 from django.core.serializers import serialize
 from django.db import transaction
-from django.db.models import Prefetch, ProtectedError, Q, Sum
+from django.db.models import Prefetch, Q, Sum
 from django.forms import formset_factory, modelformset_factory
 from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.http.response import HttpResponseNotFound
@@ -35,6 +35,7 @@ from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views import View
+from django.views.decorators.http import require_POST
 from django.views.generic.edit import DeleteView
 from django.views.generic.list import ListView
 from django_filters.views import FilterView
@@ -784,45 +785,39 @@ class SubmissionDetailView(View):
         )
 
 
-class SubmissionComplementaryDocumentDeleteView(DeleteView):
-    model = models.SubmissionComplementaryDocument
-    success_message = _("Le document '%s' a été supprimé avec succès")
-    final_error_message = _("Les documents finaux ne peuvent pas être supprimés")
-    owner_error_message = _("Vous pouvez seulement supprimer vos documents")
+@require_POST
+@login_required
+@check_mandatory_2FA
+def submission_complementary_document_delete(request, pk):
+    document = get_object_or_404(models.SubmissionComplementaryDocument.objects, pk=pk)
 
-    def get(self, request, *args, **kwargs):
-        return self.post(request, *args, **kwargs)
+    success_url = reverse(
+        "submissions:submission_detail",
+        kwargs={"submission_id": document.submission_id},
+    )
 
-    def delete(self, request, *args, **kwargs):
-        obj = self.get_object()
-
-        if obj.owner != self.request.user and not self.request.user.is_superuser:
-            messages.add_message(request, messages.ERROR, self.owner_error_message)
-            return redirect(self.get_success_url())
-
-        # Final documents can't be deleted!
-        if obj.status == models.SubmissionComplementaryDocument.STATUS_FINALE:
-            messages.add_message(request, messages.ERROR, self.final_error_message)
-            return redirect(self.get_success_url())
-
-        try:
-            res = super().delete(request, *args, **kwargs)
-        except ProtectedError as error:
-            messages.add_message(
-                request,
-                messages.ERROR,
-                _("%s. [%s]") % (error.args[0], error.args[1].args[1]),
-            )
-            return redirect(self.get_success_url())
-
-        messages.success(self.request, self.success_message % obj.document)
-        return res
-
-    def get_success_url(self):
-        return reverse_lazy(
-            "submissions:submission_detail",
-            kwargs={"submission_id": self.get_object().submission_id},
+    if document.owner != request.user and not request.user.is_superuser:
+        messages.add_message(
+            request, messages.ERROR, _("Vous pouvez seulement supprimer vos documents")
         )
+        return redirect(success_url)
+
+    # Final documents can't be deleted!
+    if document.status == models.SubmissionComplementaryDocument.STATUS_FINALE:
+        messages.add_message(
+            request,
+            messages.ERROR,
+            _("Les documents finaux ne peuvent pas être supprimés"),
+        )
+        return redirect(success_url)
+
+    document.delete()
+
+    messages.success(
+        request, _("Le document '%s' a été supprimé avec succès") % document.document
+    )
+
+    return redirect(success_url)
 
 
 @method_decorator(login_required, name="dispatch")

@@ -579,6 +579,7 @@ class Command(BaseCommand):
         de remise en état après une fouille sur le domaine public
         """
 
+        form_order = 0
         for form_category, objs in form_categories:
             form_category_obj = FormCategory.objects.create(name=form_category)
             form_category_obj.tags.add(unaccent(form_category))
@@ -599,7 +600,9 @@ class Command(BaseCommand):
                     permanent_publication_enabled=True,
                     services_to_notify=f"yverdon-squad+admin@liip.ch",
                     additional_information=additional_information_text,
+                    order=form_order,
                 )
+                form_order += 1
                 form_obj.administrative_entities.add(administrative_entity_yverdon)
                 form_obj.administrative_entities.add(administrative_entity_grandson)
                 form_obj.administrative_entities.add(administrative_entity_lausanne)

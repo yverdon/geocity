@@ -1,5 +1,7 @@
 import os
 
+from .admin_jazzmin_settings import JAZZMIN_SETTINGS  # noqa
+
 # Set environment mode
 ENV = os.getenv("ENV")
 if ENV not in ["DEV", "PROD"]:
@@ -149,7 +151,6 @@ INSTALLED_APPS = [
     "geocity.apps.submissions",
     "geocity.apps.permits",
     # dependencies
-    "grappelli",
     "polymorphic",
     "adminsortable2",
     "allauth",
@@ -174,6 +175,7 @@ INSTALLED_APPS = [
     "axes",
     "captcha",
     "ckeditor",
+    "jazzmin",
     # django contrib apps
     "django.contrib.admin",
     "django.contrib.auth",
@@ -470,6 +472,10 @@ SOCIALACCOUNT_FORMS = {"signup": "geocity.apps.accounts.forms.SocialSignupForm"}
 SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = None
+ACCOUNT_SIGNUP_REDIRECT_URL = "submissions:submissions_list"
+SOCIALACCOUNT_LOGIN_ON_GET = True
+# Anticipate issues with upcoming 0.52.0 update
+OAUTH_PKCE_ENABLED = False
 
 BOOTSTRAP4 = {
     "include_jquery": True,
@@ -552,8 +558,6 @@ WMTS_LAYER = os.getenv("WMTS_LAYER")
 WMTS_GETCAP_ALTERNATIVE = os.getenv("WMTS_GETCAP_ALTERNATIVE")
 WMTS_LAYER_ALTERNATIVE = os.getenv("WMTS_LAYER_ALTERNATIVE")
 OL_MAP_HEIGHT = os.getenv("OL_MAP_HEIGHT")
-
-GRAPPELLI_ADMIN_TITLE = "Interface d'administration Geocity"
 
 # Django REST Framework
 REST_FRAMEWORK = {
@@ -648,4 +652,22 @@ def show_toolbar(request):
 
 DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": "geocity.settings.show_toolbar",
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": True,
+        },
+    },
 }
