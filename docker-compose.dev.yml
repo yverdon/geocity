@@ -1,6 +1,6 @@
 # Overrides for development
 
-version: "3"
+version: "3.5"
 
 volumes:
     pgdata:
