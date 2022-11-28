@@ -221,6 +221,12 @@ class FormsSelectForm(forms.Form):
 class FormsSingleSelectForm(FormsSelectForm):
     selected_forms = forms.ChoiceField(widget=SingleFormRadioSelectWidget())
 
+    @transaction.atomic
+    def save(self):
+        selected_form = models.Form.objects.get(pk=self.cleaned_data["selected_forms"])
+        self.instance.set_selected_forms([selected_form])
+        return self.instance
+
 
 class PartialValidationMixin:
     def __init__(self, *args, **kwargs):
