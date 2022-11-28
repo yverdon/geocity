@@ -13,7 +13,7 @@ app_name = "accounts"
 urlpatterns = []
 
 if settings.ENABLE_2FA:
-    from two_factor.views import ProfileView, SetupCompleteView
+    from two_factor.views import SetupCompleteView
 
     logger.info("2 factors authentification is enabled")
     urlpatterns += [
@@ -24,7 +24,7 @@ if settings.ENABLE_2FA:
         ),
         path(
             "account/two_factor/",
-            ProfileView.as_view(template_name="two_factor/profile.html"),
+            views.Custom2FAProfileView.as_view(template_name="two_factor/profile.html"),
             name="profile",
         ),
         path(

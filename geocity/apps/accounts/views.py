@@ -21,7 +21,7 @@ from django.views import View
 from django.views.decorators.http import require_POST
 
 if settings.ENABLE_2FA:
-    from two_factor.views import LoginView
+    from two_factor.views import LoginView, ProfileView
 else:
     from django.contrib.auth.views import LoginView
 
@@ -68,6 +68,21 @@ def lockout_view(request):
     )
 
 
+def update_context_with_filters(context, params_str, url_qs):
+    if "entityfilter" in parse.parse_qs(params_str).keys():
+        for value in parse.parse_qs(params_str)["entityfilter"]:
+            url_qs += "&entityfilter=" + value
+
+    if "typefilter" in parse.parse_qs(params_str).keys():
+        for value in parse.parse_qs(params_str)["typefilter"]:
+            url_qs += "&typefilter=" + value
+
+    if url_qs:
+        context.update({"query_string": url_qs[1:]})
+
+    return context
+
+
 class SetCurrentSiteMixin:
     def __init__(self, *args, **kwargs):
         super.__init__(*args, **kwargs)
@@ -90,6 +105,27 @@ class CustomPasswordResetView(PasswordResetView):
             "/"
         )[2]
         return context
+
+
+# Create this class to simulate ProfileView in a non 2FA context
+class FakeView:
+    pass
+
+
+if not settings.ENABLE_2FA:
+    ProfileView = FakeView
+
+
+class Custom2FAProfileView(ProfileView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        url_qs = ""
+        uri = parse.unquote(self.request.build_absolute_uri()).replace("next=/", "")
+        params_str = (
+            parse.urlsplit(uri).query.replace("?", "").replace(settings.PREFIX_URL, "")
+        )
+
+        return update_context_with_filters(context, params_str, url_qs)
 
 
 class CustomLoginView(LoginView, SetCurrentSiteMixin):
@@ -163,22 +199,17 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
             # use anonymous session
             self.request.session["template"] = template_value
         context.update({"customization": customization})
-        if "entityfilter" in parse.parse_qs(params_str).keys():
-            for value in parse.parse_qs(params_str)["entityfilter"]:
-                url_qs += "&entityfilter=" + value
 
-        if "typefilter" in parse.parse_qs(params_str).keys():
-            for value in parse.parse_qs(params_str)["typefilter"]:
-                url_qs += "&typefilter=" + value
-        if url_qs:
-            context.update({"query_string": url_qs[1:]})
-
-        return context
+        return update_context_with_filters(context, params_str, url_qs)
 
     def get_success_url(self):
 
         qs_dict = parse.parse_qs(self.request.META["QUERY_STRING"])
-
+        filter_qs = (
+            qs_dict["next"][0].replace(settings.PREFIX_URL, "").replace("/", "")
+            if "next" in qs_dict
+            else ""
+        )
         url_value = (
             qs_dict["next"][0]
             if "next" in qs_dict
@@ -189,7 +220,7 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
             qs_dict.pop("next")
 
         return (
-            reverse("accounts:profile")
+            reverse("accounts:profile") + filter_qs
             if settings.ENABLE_2FA and not self.request.user.totpdevice_set.exists()
             else url_value
         )
