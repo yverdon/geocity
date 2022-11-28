@@ -37,21 +37,22 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         super().setUp()
         self.form_categories = factories.FormCategoryFactory.create_batch(2)
 
-        forms_models.Form.objects.create(
+        factories.FormFactory(
             category=self.form_categories[0],
             is_public=True,
         )
-        forms_models.Form.objects.create(
+        factories.FormFactory(
             category=self.form_categories[1],
             is_public=True,
         )
+
         self.geotime_step_formset_data = {
             "form-TOTAL_FORMS": ["1"],
             "form-INITIAL_FORMS": ["0"],
             "form-MIN_NUM_FORMS": ["0"],
         }
 
-    def test_forms_step_submit_saves_multiple_selected_forms(self):
+    def test_forms_step_submit_saves_selected_forms(self):
         submission = factories.SubmissionFactory(author=self.user)
         factories.FormFactory()
 
@@ -70,9 +71,52 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             1,
         )
 
+    def test_forms_step_submit_saves_multiple_selected_forms(self):
+        submission = factories.SubmissionFactory(author=self.user)
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
+
+        self.client.post(
+            reverse(
+                "submissions:submission_select_forms",
+                kwargs={"submission_id": submission.pk},
+            ),
+            data={
+                "forms-selected_forms": forms_models.Form.objects.values_list(
+                    "pk", flat=True
+                )
+            },
+        )
+
+        submission.refresh_from_db()
+        self.assertEqual(
+            submission.forms.count(),
+            forms_models.Form.objects.count(),
+        )
+
     def test_single_form_submission_submit_saves_one_selected_form_only(self):
-        # TODO
-        pass
+        submission = factories.SubmissionFactory(
+            author=self.user,
+            administrative_entity__is_single_form_submissions=True,
+        )
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
+
+        self.client.post(
+            reverse(
+                "submissions:submission_select_forms",
+                kwargs={"submission_id": submission.pk},
+            ),
+            data={
+                "forms-selected_forms": forms_models.Form.objects.values_list(
+                    "pk", flat=True
+                )
+            },
+        )
+
+        submission.refresh_from_db()
+        self.assertEqual(
+            submission.forms.count(),
+            1,
+        )
 
     def test_categories_step_submit_redirects_to_detail_if_logged_as_backoffice(self):
 

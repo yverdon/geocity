@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0005_alter_administrativeentity_sites'),
+        ("accounts", "0005_alter_administrativeentity_sites"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='administrativeentity',
-            name='is_single_form_submissions',
-            field=models.BooleanField(default=False, help_text="Nécessaire à l'utilisation du système paiement en ligne", verbose_name='Autoriser uniquement un Form par demande'),
+            model_name="administrativeentity",
+            name="is_single_form_submissions",
+            field=models.BooleanField(
+                default=False,
+                help_text="Nécessaire à l'utilisation du système paiement en ligne",
+                verbose_name="Autoriser uniquement un Form par demande",
+            ),
         ),
     ]
