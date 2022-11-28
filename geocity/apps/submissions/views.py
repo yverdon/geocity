@@ -1182,6 +1182,12 @@ def submission_select_forms(request, submission_id):
         current_step_type=StepType.FORMS,
     )
 
+    form_class = (
+        forms.FormsSingleSelectForm
+        if submission.administrative_entity.is_single_form_submissions
+        else forms.FormsSelectForm
+    )
+
     categories_filters = request.GET.getlist("typefilter")
     if categories_filters:
         selectable_categories = models.FormCategory.objects.filter_by_tags(
@@ -1191,7 +1197,7 @@ def submission_select_forms(request, submission_id):
         selectable_categories = None
 
     if request.method == "POST":
-        forms_selection_form = forms.FormsSelectForm(
+        forms_selection_form = form_class(
             data=request.POST,
             instance=submission,
             user=request.user,
@@ -1204,7 +1210,7 @@ def submission_select_forms(request, submission_id):
 
             return redirect(get_next_step(steps, StepType.FORMS).url)
     else:
-        forms_selection_form = forms.FormsSelectForm(
+        forms_selection_form = form_class(
             instance=submission,
             user=request.user,
             form_categories=selectable_categories,
