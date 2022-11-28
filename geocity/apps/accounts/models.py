@@ -259,6 +259,12 @@ class AdministrativeEntity(models.Model):
             )
         ],
     )
+    is_single_form_submissions = models.BooleanField(
+        _("Autoriser uniquement un Form par demande"),
+        default=False,
+        help_text=_("Nécessaire à l'utilisation du système paiement en ligne"),
+    )
+
     sites = models.ManyToManyField(
         Site,
         related_name="+",

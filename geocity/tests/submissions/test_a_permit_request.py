@@ -70,6 +70,10 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             1,
         )
 
+    def test_single_form_submission_submit_saves_one_selected_form_only(self):
+        # TODO
+        pass
+
     def test_categories_step_submit_redirects_to_detail_if_logged_as_backoffice(self):
 
         secretary_group = factories.GroupFactory(name="Secrétariat")

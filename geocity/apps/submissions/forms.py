@@ -101,6 +101,10 @@ class CheckboxSelectMultipleWidget(forms.CheckboxSelectMultiple):
     template_name = "submissions/widgets/multipleselect.html"
 
 
+class SingleFormRadioSelectWidget(forms.RadioSelect):
+    template_name = "submissions/widgets/categorized_groupedradio.html"
+
+
 class AdministrativeEntityForm(forms.Form):
     administrative_entity = forms.ModelChoiceField(
         label=_("Entité administrative"),
@@ -212,6 +216,10 @@ class FormsSelectForm(forms.Form):
         self.instance.set_selected_forms(selected_forms)
 
         return self.instance
+
+
+class FormsSingleSelectForm(FormsSelectForm):
+    selected_forms = forms.ChoiceField(widget=SingleFormRadioSelectWidget())
 
 
 class PartialValidationMixin:
