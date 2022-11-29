@@ -203,6 +203,10 @@
             &copy; {% now "Y" %} Geocity
             &nbsp;|&nbsp;
             <a href="https://geocity.ch/about" target="_blank" rel="noreferrer">{% trans "A propos" %}</a>
+            {% if config.CONTACT_URL %}
+              &nbsp;|&nbsp;
+              <a href="{{ config.CONTACT_URL }}" target="_blank" rel="noreferrer">{% trans "Contact" %}</a>
+            {% endif %}
             {% if config.GENERAL_CONDITIONS_URL %}
               &nbsp;|&nbsp;
               <a href="{{ config.GENERAL_CONDITIONS_URL }}" target="_blank" rel="noreferrer">{% trans "Conditions" %}</a>
