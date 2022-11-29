@@ -279,12 +279,12 @@ CONSTANCE_CONFIG = {
     ),
     "GENERAL_CONDITIONS_URL": (
         "",
-        "URL vers la politique de confidentialité",
+        "Lien vers les conditions générales",
         str,
     ),
     "PRIVACY_POLICY_URL": (
         "",
-        "URL vers la politique de confidentialité",
+        "Lien vers la politique de confidentialité",
         str,
     ),
     "ALLOWED_FILE_EXTENSIONS": (  # Supported file extensions https://pypi.org/project/filetype/
