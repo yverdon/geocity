@@ -196,6 +196,12 @@ class Submission(models.Model):
         STATUS_AWAITING_SUPPLEMENT,
     }
 
+    # Statuses of submission visible in calendar (api => submissions_details)
+    VISIBLE_IN_CALENDAR_STATUSES = {
+        STATUS_APPROVED,
+        STATUS_INQUIRY_IN_PROGRESS,
+    }
+
     PROLONGATION_STATUS_PENDING = 0
     PROLONGATION_STATUS_APPROVED = 1
     PROLONGATION_STATUS_REJECTED = 2

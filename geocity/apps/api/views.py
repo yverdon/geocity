@@ -256,7 +256,39 @@ class SubmissionDetailsViewSet(
     def get_queryset(self, geom_type=None):
         """
         This view should return a list of submissions for which the logged user has
-        view permissions
+        view permissions.
+
+        # TODO: In another story, implement the difference between anonymous and user. Group public/private with inquiry status in the same section of form or add buttons to make public permanent
+        # TODO: Update test_api_submissions_details_user
+        +---------++---------+---------++---------+---------++---------+---------+
+        | Status  || Public  | Private || Public  | Private || Public  | Private |
+        |         || Anonym. | Anonym. || User    | User    || Trusted | Trusted |
+        +=========++=========+=========++=========+=========++=========+=========+
+        |    0    ||    X    |    X    ||    X    |    X    ||    X    |    X    |
+        +---------++---------+---------++---------+---------++---------+---------+
+        |    1    ||    X    |    X    ||    X    |    X    ||    X    |    X    |
+        +---------++---------+---------++---------+---------++---------+---------+
+        |    2    ||    /    |    X    ||    /    |    /    ||    /    |    /    |
+        +---------++---------+---------++---------+---------++---------+---------+
+        |    3    ||    X    |    X    ||    X    |    X    ||    X    |    X    |
+        +---------++---------+---------++---------+---------++---------+---------+
+        |    4    ||    X    |    X    ||    X    |    X    ||    X    |    X    |
+        +---------++---------+---------++---------+---------++---------+---------+
+        |    5    ||    X    |    X    ||    X    |    X    ||    X    |    X    |
+        +---------++---------+---------++---------+---------++---------+---------+
+        |    6    ||    X    |    X    ||    X    |    X    ||    X    |    X    |
+        +---------++---------+---------++---------+---------++---------+---------+
+        |    7    ||    X    |    X    ||    X    |    X    ||    X    |    X    |
+        +---------++---------+---------++---------+---------++---------+---------+
+        |    8    ||    ///////////    ||    ///////////    ||    ///////////    |
+        +---------++---------+---------++---------+---------++---------+---------+
+        |    9    ||    X    |    X    ||    X    |    X    ||    X    |    X    |
+        +---------++---------+---------++---------+---------++---------+---------+
+        O = Should show
+        X = Should not show
+        Anonym. = Any non logged user. Anonym. = Anonymous
+        User = Logged user, based on his submissions
+        Trusted = Logged user, based on group in the same administrative entity as the submission
         """
         # Only take user with session authentication
         user = (
@@ -286,11 +318,11 @@ class SubmissionDetailsViewSet(
                         user,
                     )
                 )
-                | Q(is_public=True)
+                & Q(status__in=Submission.VISIBLE_IN_CALENDAR_STATUSES)
             )
         else:
             qs = Submission.objects.filter(base_filter).filter(
-                Q(is_public=True) | Q(status=Submission.STATUS_INQUIRY_IN_PROGRESS)
+                Q(is_public=True) & Q(status=Submission.STATUS_INQUIRY_IN_PROGRESS)
             )
 
         return qs
