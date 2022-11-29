@@ -231,6 +231,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "ANONYMOUS_REQUEST_SENT_BODY",
         "PRIVACY_POLICY_URL",
         "GENERAL_CONDITIONS_URL",
+        "CONTACT_URL",
     ),
     "Theme Options": (
         "BACKGROUND_COLOR",
@@ -279,12 +280,17 @@ CONSTANCE_CONFIG = {
     ),
     "GENERAL_CONDITIONS_URL": (
         "",
-        "URL vers la politique de confidentialité",
+        "Lien vers les conditions générales",
         str,
     ),
     "PRIVACY_POLICY_URL": (
         "",
-        "URL vers la politique de confidentialité",
+        "Lien vers la politique de confidentialité",
+        str,
+    ),
+    "CONTACT_URL": (
+        "",
+        "Lien vers le moyen de contact (peut également être une adresse email, p. ex. mailto:info@geocity.ch)",
         str,
     ),
     "ALLOWED_FILE_EXTENSIONS": (  # Supported file extensions https://pypi.org/project/filetype/
