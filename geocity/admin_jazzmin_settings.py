@@ -39,9 +39,13 @@ JAZZMIN_SETTINGS = {
             "name": "Home",
             "url": "admin:index",
         },
+        {
+            "name": "Site",
+            "url": "submissions:submission_select_administrative_entity",
+        },
         # external url that opens in a new window (Permissions can be added)
         {
-            "name": "Support",
+            "name": "Documentation",
             "url": "https://github.com/yverdon/geocity/wiki",
             "new_window": True,
         },

@@ -292,8 +292,8 @@ class AdministrativeEntityForAdminSite(AdministrativeEntity):
     class Meta:
         proxy = True
         app_label = "forms"
-        verbose_name = _("1.1 Entité administrative (commune, organisation)")
-        verbose_name_plural = _("1.1 Entités administratives (commune, organisation)")
+        verbose_name = _("1.1 Entité administrative")
+        verbose_name_plural = _("1.1 Entités administratives")
 
 
 class UserProfileManager(models.Manager):
