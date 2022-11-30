@@ -319,10 +319,13 @@ class SubmissionDetailsViewSet(
                     )
                 )
                 & Q(status__in=Submission.VISIBLE_IN_CALENDAR_STATUSES)
+                | Q(is_public=True)
+                & Q(status__in=Submission.VISIBLE_IN_CALENDAR_STATUSES)
             )
         else:
             qs = Submission.objects.filter(base_filter).filter(
-                Q(is_public=True) & Q(status=Submission.STATUS_INQUIRY_IN_PROGRESS)
+                Q(is_public=True)
+                & Q(status__in=Submission.VISIBLE_IN_CALENDAR_STATUSES)
             )
 
         return qs
