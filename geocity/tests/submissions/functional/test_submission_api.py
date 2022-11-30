@@ -25,21 +25,15 @@ class SubmissionAPITestCase(TestCase):
     def setUp(self):
         super().setUp()
         self.client = APIClient()
-        self.normal_group = factories.GroupFactory()
-        self.permit_department = factories.PermitDepartmentFactory(
-            group=self.normal_group
-        )
-        self.group = factories.SecretariatGroupFactory(
-            department=self.permit_department
-        )
-        self.administrative_entity = self.permit_department.administrative_entity
+        self.group = factories.SecretariatGroupFactory()
+        self.administrative_entity = self.group.permit_department.administrative_entity
 
         # Users and Permissions
         self.normal_user = factories.UserFactory()
 
         self.secretariat_user = factories.SecretariatUserFactory(groups=[self.group])
         self.secretariat_group = factories.SecretariatGroupFactory(
-            department=self.permit_department
+            permit_department=self.group.permit_department
         )
         self.secretariat_group.user_set.add(self.secretariat_user)
 
@@ -246,6 +240,23 @@ class SubmissionAPITestCase(TestCase):
         factories.FieldValueFactory(selected_form=selected_form, field=field)
         factories.SubmissionGeoTimeFactory(submission=self.approved_submission_2)
         factories.SubmissionValidationFactory(submission=self.approved_submission_2)
+
+        # Private of another administrative_entity
+        another_administrative_entity = factories.AdministrativeEntityFactory()
+        self.approved_submission_3 = factories.SubmissionFactory(
+            status=submissions_models.Submission.STATUS_APPROVED,
+            administrative_entity=another_administrative_entity,
+            author=self.normal_user,
+            is_public=False,
+        )
+        selected_form = factories.SelectedFormFactory(
+            submission=self.approved_submission_3,
+            form=self.forms[0],
+        )
+        field = factories.FieldFactory(is_public_when_permitrequest_is_public=False)
+        factories.FieldValueFactory(selected_form=selected_form, field=field)
+        factories.SubmissionGeoTimeFactory(submission=self.approved_submission_3)
+        factories.SubmissionValidationFactory(submission=self.approved_submission_3)
 
         # ////////////////////////////////
         # Processing submissions
@@ -576,10 +587,10 @@ class SubmissionAPITestCase(TestCase):
         self.client.login(username=self.secretariat_user.username, password="password")
         response = self.client.get(reverse("submissions-list"), {})
         response_json = response.json()
-        submissions = submissions_models.Submission.objects.all().only("id")
+        submissions = submissions_models.Submission.objects.filter_for_user(
+            self.secretariat_user
+        ).only("id")
         submissions_ids = [submission.id for submission in submissions]
-        print(submissions.count())
-        print(len(response_json["features"]))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response_json["features"]), submissions.count())
         for i, perm in enumerate(submissions):
@@ -1004,6 +1015,7 @@ class SubmissionAPITestCase(TestCase):
         for field_value_value in own_approved_field_value_values:
             self.assertContains(response, field_value_value.get("val"))
 
+    # TODO: Improve test by adding on another administrative entities public and private field_values to be sure they don't appear
     def test_api_submissions_details_pilot(self):
         """
         Submission details on a pilot should return
@@ -1017,47 +1029,186 @@ class SubmissionAPITestCase(TestCase):
         **Be sure that only public field_values are returned for public submissions, if the user isn't associated by the administrative entities**
         """
 
+        # Is pilot for all submissions excepted for self.approved_submission_3
         self.client.login(username=self.secretariat_user.username, password="password")
 
         response = self.client.get(
             reverse("submissions_details-list"),
         )
 
-        print(response.content)
-
         # Should return 200
         self.assertEqual(response.status_code, 200)
 
-        # Retrieve the informations to compare with the result of API
-        submission_id = self.inquiry_in_progress_submission_1
-        form_name = list(
+        # //////////////////////////////////////////
+        # submission_admin_user is STATUS_APPROVED
+        # //////////////////////////////////////////
+
+        admin_approved_submission_id = self.submission_admin_user.id
+        admin_approved_form_name = list(
+            self.submission_admin_user.get_selected_forms().values_list(
+                "form__name", flat=True
+            )
+        )[0]
+        admin_approved_form_category = list(
+            self.submission_admin_user.get_form_categories()
+        )[0]
+        get_fields_values = self.submission_admin_user.get_fields_values()
+        admin_approved_field_value_keys = list(
+            get_fields_values.values_list("field__name", flat=True)
+        )
+        admin_approved_field_value_values = list(
+            get_fields_values.values_list("value", flat=True)
+        )
+
+        # //////////////////////////////////////////////
+        # Public and STATUS_APPROVED should be visible
+        # //////////////////////////////////////////////
+
+        public_approved_submission_id = self.approved_submission_1.id
+        public_approved_form_name = list(
+            self.approved_submission_1.get_selected_forms().values_list(
+                "form__name", flat=True
+            )
+        )[0]
+        public_approved_form_category = list(
+            self.approved_submission_1.get_form_categories()
+        )[0]
+        get_fields_values = self.approved_submission_1.get_fields_values()
+        public_approved_field_value_keys = list(
+            get_fields_values.values_list("field__name", flat=True)
+        )
+        public_approved_field_value_values = list(
+            get_fields_values.values_list("value", flat=True)
+        )
+
+        # //////////////////////////////////////////////
+        # Private and STATUS_APPROVED should be visible
+        # //////////////////////////////////////////////
+
+        private_approved_submission_id = self.approved_submission_2.id
+        private_approved_form_name = list(
+            self.approved_submission_2.get_selected_forms().values_list(
+                "form__name", flat=True
+            )
+        )[0]
+        private_approved_form_category = list(
+            self.approved_submission_2.get_form_categories()
+        )[0]
+        get_fields_values = self.approved_submission_2.get_fields_values()
+        private_approved_field_value_keys = list(
+            get_fields_values.values_list("field__name", flat=True)
+        )
+        private_approved_field_value_values = list(
+            get_fields_values.values_list("value", flat=True)
+        )
+
+        # /////////////////////////////////////////////////////////
+        # Public and STATUS_INQUIRY_IN_PROGRESS should be visible
+        # /////////////////////////////////////////////////////////
+
+        public_inquiry_submission_id = self.inquiry_in_progress_submission_1.id
+        public_inquiry_form_name = list(
             self.inquiry_in_progress_submission_1.get_selected_forms().values_list(
                 "form__name", flat=True
             )
         )[0]
-        form_category = list(
+        public_inquiry_form_category = list(
             self.inquiry_in_progress_submission_1.get_form_categories()
         )[0]
         get_fields_values = self.inquiry_in_progress_submission_1.get_fields_values()
-        field_value_keys = list(get_fields_values.values_list("field__name", flat=True))
-        field_value_values = list(get_fields_values.values_list("value", flat=True))
+        public_inquiry_field_value_keys = list(
+            get_fields_values.values_list("field__name", flat=True)
+        )
+        public_inquiry_field_value_values = list(
+            get_fields_values.values_list("value", flat=True)
+        )
 
-        # There is only one public in inquiry_in_progress
-        self.assertContains(response, '"id":', count=1)
+        # /////////////////////////////////////////////////////////
+        # Private and STATUS_INQUIRY_IN_PROGRESS should be visible
+        # /////////////////////////////////////////////////////////
 
-        # Submission id, Form and FormCategory should be shown
-        self.assertContains(response, submission_id)
-        self.assertContains(response, form_name)
-        self.assertContains(response, form_category)
+        private_inquiry_submission_id = self.inquiry_in_progress_submission_2.id
+        private_inquiry_form_name = list(
+            self.inquiry_in_progress_submission_2.get_selected_forms().values_list(
+                "form__name", flat=True
+            )
+        )[0]
+        private_inquiry_form_category = list(
+            self.inquiry_in_progress_submission_2.get_form_categories()
+        )[0]
+        get_fields_values = self.inquiry_in_progress_submission_2.get_fields_values()
+        private_inquiry_field_value_keys = list(
+            get_fields_values.values_list("field__name", flat=True)
+        )
+        private_inquiry_field_value_values = list(
+            get_fields_values.values_list("value", flat=True)
+        )
 
-        # Check if key and values for FieldValue are shown correctly
-        for field_value_key in field_value_keys:
+        # 3 STATUS_APPROVED, 1 public and 2 private
+        # 2 STATUS_INQUIRY_IN_PROGRESS, 1 public and 1 private
+        self.assertContains(response, '"id":', count=5)
+
+        # Submission id, Form and FormCategory should be shown for admin_approved
+        self.assertContains(response, admin_approved_submission_id)
+        self.assertContains(response, admin_approved_form_name)
+        self.assertContains(response, admin_approved_form_category)
+
+        # Submission id, Form and FormCategory should be shown for public_approved
+        self.assertContains(response, public_approved_submission_id)
+        self.assertContains(response, public_approved_form_name)
+        self.assertContains(response, public_approved_form_category)
+
+        # Submission id, Form and FormCategory should be shown for private_approved
+        self.assertContains(response, private_approved_submission_id)
+        self.assertContains(response, private_approved_form_name)
+        self.assertContains(response, private_approved_form_category)
+
+        # Submission id, Form and FormCategory should be shown for public_inquiry
+        self.assertContains(response, public_inquiry_submission_id)
+        self.assertContains(response, public_inquiry_form_name)
+        self.assertContains(response, public_inquiry_form_category)
+
+        # Submission id, Form and FormCategory should be shown for private_inquiry
+        self.assertContains(response, private_inquiry_submission_id)
+        self.assertContains(response, private_inquiry_form_name)
+        self.assertContains(response, private_inquiry_form_category)
+
+        # Check if key and values for FieldValue are shown correctly for admin_approved
+        for field_value_key in admin_approved_field_value_keys:
             self.assertContains(response, field_value_key)
 
-        for field_value_value in field_value_values:
+        for field_value_value in admin_approved_field_value_values:
             self.assertContains(response, field_value_value.get("val"))
 
-    # TODO: Write test for inquiry dates
+        # Check if key and values for FieldValue are shown correctly for public_approved
+        for field_value_key in public_approved_field_value_keys:
+            self.assertContains(response, field_value_key)
+
+        for field_value_value in public_approved_field_value_values:
+            self.assertContains(response, field_value_value.get("val"))
+
+        # Check if key and values for FieldValue are shown correctly for private_approved
+        for field_value_key in private_approved_field_value_keys:
+            self.assertContains(response, field_value_key)
+
+        for field_value_value in private_approved_field_value_values:
+            self.assertContains(response, field_value_value.get("val"))
+
+        # Check if key and values for FieldValue are shown correctly for public_inquiry
+        for field_value_key in public_inquiry_field_value_keys:
+            self.assertContains(response, field_value_key)
+
+        for field_value_value in public_inquiry_field_value_values:
+            self.assertContains(response, field_value_value.get("val"))
+
+        # Check if key and values for FieldValue are shown correctly for private_inquiry
+        for field_value_key in private_inquiry_field_value_keys:
+            self.assertContains(response, field_value_key)
+
+        for field_value_value in private_inquiry_field_value_values:
+            self.assertContains(response, field_value_value.get("val"))
+
+    # TODO: Write test to control submissions are visible only on inquiry dates
 
     def test_non_authorized_ip_raises_exception_with_tokenauth(self):
         # login as admin with token

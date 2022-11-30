@@ -163,7 +163,7 @@ class IntegratorPermitDepartmentFactory(factory.django.DjangoModelFactory):
 
 
 class SecretariatGroupFactory(GroupFactory):
-    department = factory.RelatedFactory(PermitDepartmentFactory, "group")
+    permit_department = factory.RelatedFactory(PermitDepartmentFactory, "group")
 
     @factory.post_generation
     def permissions(self, create, extracted, **kwargs):
@@ -186,7 +186,7 @@ class SecretariatGroupFactory(GroupFactory):
 
 
 class ValidatorGroupFactory(GroupFactory):
-    department = factory.RelatedFactory(PermitDepartmentFactory, "group")
+    permit_department = factory.RelatedFactory(PermitDepartmentFactory, "group")
 
     @factory.post_generation
     def permissions(self, create, extracted, **kwargs):
@@ -207,7 +207,9 @@ class ValidatorGroupFactory(GroupFactory):
 
 
 class IntegratorGroupFactory(GroupFactory):
-    department = factory.RelatedFactory(IntegratorPermitDepartmentFactory, "group")
+    permit_department = factory.RelatedFactory(
+        IntegratorPermitDepartmentFactory, "group"
+    )
 
     @factory.post_generation
     def permissions(self, create, extracted, **kwargs):
