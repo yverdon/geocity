@@ -1182,11 +1182,12 @@ def submission_select_forms(request, submission_id):
         current_step_type=StepType.FORMS,
     )
 
-    form_class = (
-        forms.FormsSingleSelectForm
-        if submission.administrative_entity.is_single_form_submissions
-        else forms.FormsSelectForm
-    )
+    if submission.administrative_entity.is_single_form_submissions:
+        form_class = forms.FormsSingleSelectForm
+        steps_context["current_step_title"] = config.FORMS_SINGLE_STEP
+    else:
+        form_class = forms.FormsSelectForm
+        steps_context["current_step_title"] = config.FORMS_STEP
 
     categories_filters = request.GET.getlist("typefilter")
     if categories_filters:
