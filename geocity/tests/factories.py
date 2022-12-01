@@ -58,11 +58,23 @@ class SuperUserFactory(factory.django.DjangoModelFactory):
     email = factory.Faker("email")
     password = "password"
     is_superuser = True
+    is_staff = True
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
         manager = cls._get_manager(model_class)
         return manager.create_superuser(*args, **kwargs)
+
+    @factory.post_generation
+    def groups(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if not extracted:
+            extracted = [SuperUserGroupFactory()]
+
+        for group in extracted:
+            self.groups.add(group)
 
 
 class AdministrativeEntityFactory(factory.django.DjangoModelFactory):
@@ -216,6 +228,21 @@ class IntegratorGroupFactory(GroupFactory):
 
         if not extracted:
             extracted = list(get_integrator_permissions())
+
+        for permission in extracted:
+            self.permissions.add(permission)
+
+
+class SuperUserGroupFactory(GroupFactory):
+    department = factory.RelatedFactory(IntegratorPermitDepartmentFactory, "group")
+
+    @factory.post_generation
+    def permissions(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if not extracted:
+            extracted = list(Permission.objects.all())
 
         for permission in extracted:
             self.permissions.add(permission)

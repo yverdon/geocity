@@ -37,10 +37,8 @@ class SubmissionAPITestCase(TestCase):
         )
         self.secretariat_group.user_set.add(self.secretariat_user)
 
-        self.admin_user = factories.IntegratorUserFactory(
-            is_staff=True, is_superuser=True, groups=[self.group]
-        )
-        self.admin_group = factories.IntegratorGroupFactory()
+        self.admin_user = factories.SuperUserFactory(groups=[self.group])
+        self.admin_group = factories.SuperUserGroupFactory()
         self.admin_group.user_set.add(self.admin_user)
 
         # Forms
