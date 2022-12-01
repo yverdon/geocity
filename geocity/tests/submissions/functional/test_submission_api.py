@@ -33,7 +33,7 @@ class SubmissionAPITestCase(TestCase):
 
         self.secretariat_user = factories.SecretariatUserFactory(groups=[self.group])
         self.secretariat_group = factories.SecretariatGroupFactory(
-            permit_department=self.group.permit_department
+            department=self.group.permit_department
         )
         self.secretariat_group.user_set.add(self.secretariat_user)
 
