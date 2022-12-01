@@ -27,7 +27,6 @@ from pdf2image import convert_from_path
 from PIL import Image
 from simple_history.models import HistoricalRecords
 
-from geocity.apps.accounts import users
 from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment, User
 from geocity.apps.accounts.validators import validate_email
 from geocity.apps.forms.models import Field, Form, FormCategory
@@ -134,7 +133,7 @@ class SubmissionQuerySet(models.QuerySet):
 
             if user.has_perm("submissions.amend_submission"):
                 qs_filter |= Q(
-                    administrative_entity__in=users.get_administrative_entities_associated_to_user(
+                    administrative_entity__in=AdministrativeEntity.objects.associated_to_user(
                         user
                     ),
                 ) & ~Q(status=Submission.STATUS_DRAFT)
@@ -195,6 +194,12 @@ class Submission(models.Model):
         STATUS_APPROVED,
         STATUS_PROCESSING,
         STATUS_AWAITING_SUPPLEMENT,
+    }
+
+    # Statuses of submission visible in calendar (api => submissions_details)
+    VISIBLE_IN_CALENDAR_STATUSES = {
+        STATUS_APPROVED,
+        STATUS_INQUIRY_IN_PROGRESS,
     }
 
     PROLONGATION_STATUS_PENDING = 0
@@ -1332,7 +1337,7 @@ class ArchivedSubmissionQuerySet(models.QuerySet):
 
         qs_filter = Q(archivist=user)
         qs_filter |= Q(
-            submission__administrative_entity__in=users.get_administrative_entities_associated_to_user(
+            submission__administrative_entity__in=AdministrativeEntity.objects.associated_to_user(
                 user
             )
         )

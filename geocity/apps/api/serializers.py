@@ -9,7 +9,6 @@ from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
 from geocity import geometry, settings
-from geocity.apps.accounts import users
 from geocity.apps.accounts.models import AdministrativeEntity, UserProfile
 from geocity.apps.submissions import search
 from geocity.apps.submissions.models import (
@@ -31,7 +30,10 @@ def get_field_value_based_on_field(prop):
 
 
 def get_form_fields(
-    value, administrative_entities_associated_to_user_list=None, value_with_type=False
+    value,
+    administrative_entities_associated_to_user_list=None,
+    current_user=None,
+    value_with_type=False,
 ):
     """
     Return form fields in a list for the api, in a dict for backend
@@ -49,6 +51,7 @@ def get_form_fields(
         "form__category__name",
         "field_values__field__is_public_when_permitrequest_is_public",
         "submission__administrative_entity",
+        "submission__author",
     )
 
     wot_properties = dict()
@@ -96,10 +99,15 @@ def get_form_fields(
 
                 # Show fields_values only when the current submission__administrative_entity
                 # is one of the administrative_entities associated to the user
+                # or user is the submission__author
                 # or show field_values that are designed as public in a public permit_request
                 if prop["field_values__field__input_type"] == "file" and (
-                    prop["submission__administrative_entity"]
-                    in administrative_entities_associated_to_user_list
+                    (
+                        administrative_entities_associated_to_user_list
+                        and prop["submission__administrative_entity"]
+                        in administrative_entities_associated_to_user_list
+                    )
+                    or (current_user and prop["submission__author"] == current_user.id)
                     or prop[
                         "field_values__field__is_public_when_permitrequest_is_public"
                     ]
@@ -117,8 +125,12 @@ def get_form_fields(
                             }
                         )
                 elif prop["field_values__value__val"] and (
-                    prop["submission__administrative_entity"]
-                    in administrative_entities_associated_to_user_list
+                    (
+                        administrative_entities_associated_to_user_list
+                        and prop["submission__administrative_entity"]
+                        in administrative_entities_associated_to_user_list
+                    )
+                    or (current_user and prop["submission__author"] == current_user.id)
                     or prop[
                         "field_values__field__is_public_when_permitrequest_is_public"
                     ]
@@ -279,13 +291,16 @@ class FieldsValuesSerializer(serializers.RelatedField):
 
         if user_is_authenticated:
             administrative_entities_associated_to_user_list = (
-                users.get_administrative_entities_associated_to_user_as_list(
-                    request.user
-                )
+                AdministrativeEntity.objects.associated_to_user(request.user)
+                .values_list("id", flat=True)
+                .distinct()
             )
 
         fields = get_form_fields(
-            value, administrative_entities_associated_to_user_list, value_with_type=True
+            value,
+            administrative_entities_associated_to_user_list,
+            current_user,
+            value_with_type=True,
         )
         return fields
 
