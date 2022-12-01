@@ -229,7 +229,7 @@ class TestRemoteUserLogin(TestCase):
         self.assertEqual(response1.status_code, 200)
         self.assertRedirects(
             response1,
-            f"{resolve_url('accounts:account_login')}?next=/permit-requests/administrative-entity/",
+            f"{resolve_url('accounts:account_login')}?next=/submissions/administrative-entity/",
         )
         self.assertFalse(response1.context["user"].is_authenticated)
         self.assertContains(response1, "Connexion")

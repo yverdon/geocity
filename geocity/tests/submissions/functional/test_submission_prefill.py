@@ -125,7 +125,7 @@ class SubmissionPrefillTestCase(LoggedInUserMixin, TestCase):
             )
         )
 
-        expected_href = f"/permit-requests/form-files/{field_file.file_download.name}"
+        expected_href = f"/submissions/form-files/{field_file.file_download.name}"
         parser = get_parser(response.content)
         file_links = parser.find_all("a", href=expected_href)
         self.assertEqual(1, len(file_links))
@@ -147,7 +147,7 @@ class SubmissionPrefillTestCase(LoggedInUserMixin, TestCase):
             )
         )
 
-        expected_href = f"/permit-requests/form-files/{field_file.file_download.name}"
+        expected_href = f"/submissions/form-files/{field_file.file_download.name}"
         parser = get_parser(response.content)
         file_links = parser.find_all("a", href=expected_href)
 
