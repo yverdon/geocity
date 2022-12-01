@@ -10,7 +10,7 @@ from django.core.validators import (
     RegexValidator,
 )
 from django.db import models
-from django.db.models import BooleanField, ExpressionWrapper, Q, UniqueConstraint
+from django.db.models import BooleanField, Count, ExpressionWrapper, Q, UniqueConstraint
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
@@ -302,6 +302,26 @@ class AdministrativeEntity(models.Model):
                 administrative_entity=self,
                 user_id=user.id,
                 zipcode=settings.ANONYMOUS_USER_ZIPCODE,
+            )
+
+    def clean(self):
+        from geocity.apps.forms.models import Form
+
+        if (
+            self.is_single_form_submissions
+            and Form.objects.annotate(entities_count=Count("administrative_entities"))
+            .filter(
+                is_public=True, entities_count__gt=1, administrative_entities=self.pk
+            )
+            .exists()
+        ):
+            raise ValidationError(
+                {
+                    "is_single_form_submissions": _(
+                        "Des formulaires partagés avec d'autres entités "
+                        "administratives sont encore disponible."
+                    )
+                }
             )
 
 
