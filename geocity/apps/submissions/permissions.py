@@ -127,3 +127,31 @@ def can_download_archive(user, archivist):
         or user.is_superuser
         or (user.groups.all() & archivist.groups.all()).exists()
     )
+
+
+def can_revert_refund_transaction(user, transaction):
+    submission = transaction.submission_price.submission
+    return user.is_superuser or (
+        user.has_perm("submissions.can_revert_refund_transactions")
+        and submission.administrative_entity
+        in get_administrative_entities_associated_to_user(user)
+    )
+
+
+def can_refund_transaction(user, transaction):
+    submission = transaction.submission_price.submission
+    return user.is_superuser or (
+        user.has_perm("submissions.can_refund_transactions")
+        and submission.administrative_entity
+        in get_administrative_entities_associated_to_user(user)
+    )
+
+
+def user_has_permission_to_change_transaction_status(user, transaction, new_status):
+    if new_status in (transaction.STATUS_REFUNDED, transaction.STATUS_TO_REFUND):
+        permission_check = can_refund_transaction
+    elif new_status == transaction.STATUS_PAID:
+        permission_check = can_revert_refund_transaction
+    else:
+        return False
+    return permission_check(user, transaction)

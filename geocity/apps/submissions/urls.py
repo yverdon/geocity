@@ -110,4 +110,19 @@ urlpatterns = [
         views.ArchivedSubmissionBulkDownloadView.as_view(),
         name="archived_submission_bulk_download",
     ),
+    path(
+        "transactions/<str:merchant_reference>/change-status",
+        views.ChangeTransactionStatus.as_view(),
+        name="change_transaction_status",
+    ),
+    path(
+        "transactions/confirm",
+        views.ConfirmTransactionCallback.as_view(),
+        name="confirm_transaction",
+    ),
+    path(
+        "transactions/fail",
+        views.FailTransactionCallback.as_view(),
+        name="fail_transaction",
+    ),
 ]

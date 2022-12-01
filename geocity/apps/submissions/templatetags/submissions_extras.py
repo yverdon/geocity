@@ -166,3 +166,13 @@ def can_archive(context):
         department is not None
         and (department.is_backoffice or department.is_integrator_admin)
     )
+
+
+@register.simple_tag(takes_context=True)
+def can_revert_refund_transaction(context):
+    return permissions.can_revert_refund_transaction(context["user"], context["record"])
+
+
+@register.simple_tag(takes_context=True)
+def can_refund_transaction(context):
+    return permissions.can_refund_transaction(context["user"], context["record"])

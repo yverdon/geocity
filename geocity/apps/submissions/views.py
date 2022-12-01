@@ -32,6 +32,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views import View
@@ -57,6 +58,10 @@ from geocity.apps.forms.models import Field, Form
 
 from . import filters, forms, models, permissions, services, tables
 from .exceptions import BadSubmissionStatus, NonProlongableSubmission
+from .payments.services import (
+    get_payment_processor,
+    get_transaction_from_merchant_reference,
+)
 from .search import search_result_to_json, search_submissions
 from .shortcuts import get_submission_for_user_or_404
 from .steps import (
@@ -69,7 +74,11 @@ from .steps import (
     get_selectable_categories,
     get_selectable_entities,
 )
-from .tables import CustomFieldValueAccessibleSubmission, get_custom_dynamic_table
+from .tables import (
+    CustomFieldValueAccessibleSubmission,
+    TransactionsTable,
+    get_custom_dynamic_table,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -247,6 +256,11 @@ class SubmissionDetailView(View):
             )["form__permit_duration__sum"]
             is not None
         )
+        transactions_table = None
+        if self.submission.requires_online_payment():
+            transactions_table = TransactionsTable(
+                data=self.submission.get_transactions()
+            )
 
         return {
             **kwargs,
@@ -266,6 +280,8 @@ class SubmissionDetailView(View):
                 "directives": self.submission.get_submission_directives(),
                 "prolongation_enabled": prolongation_enabled,
                 "document_enabled": self.submission.has_document_enabled(),
+                "online_payment_enabled": self.submission.requires_online_payment(),
+                "transactions_table": transactions_table,
                 "publication_enabled": self.submission.forms.filter(
                     publication_enabled=True
                 ).count()
@@ -1242,18 +1258,35 @@ def submission_fields(request, submission_id):
         submission=submission,
         current_step_type=StepType.FIELDS,
     )
+    prices_form = None
+    requires_online_payment = False
+
+    form_payment = submission.get_form_for_payment()
+    if form_payment is not None:
+        requires_online_payment = form_payment.requires_online_payment
 
     if request.method == "POST":
         # Disable `required` fields validation to allow partial save
         form = forms.FieldsForm(
             instance=submission, data=request.POST, enable_required=False
         )
-        if form.is_valid():
+        prices_form_valid = True
+        if requires_online_payment:
+            prices_form = forms.FormsPriceSelectForm(
+                instance=submission, data=request.POST
+            )
+            if prices_form.is_valid():
+                prices_form.save()
+            else:
+                prices_form_valid = False
+        if form.is_valid() and prices_form_valid:
             form.save()
 
             return redirect(get_next_step(steps_context["steps"], StepType.FIELDS).url)
     else:
         form = forms.FieldsForm(instance=submission, enable_required=False)
+        if requires_online_payment:
+            prices_form = forms.FormsPriceSelectForm(instance=submission)
 
     return render(
         request,
@@ -1261,6 +1294,7 @@ def submission_fields(request, submission_id):
         {
             "submission": submission,
             "submission_form": form,
+            "prices_form": prices_form,
             **steps_context,
         },
     )
@@ -1661,11 +1695,21 @@ def submission_submit(request, submission_id):
         services.submit_submission(submission, request)
         return redirect("submissions:submissions_list")
 
+    payment_url = ""
+    if (
+        submission.requires_online_payment()
+        and submission.status == models.Submission.STATUS_DRAFT
+    ):
+        processor = get_payment_processor(submission.get_form_for_payment())
+        payment_url = processor.create_transaction_and_return_payment_page_url(
+            submission, request
+        )
     return render(
         request,
         "submissions/submission_submit.html",
         {
             "submission": submission,
+            "payment_url": payment_url,
             "directives": submission.get_submission_directives(),
             "incomplete_steps": incomplete_steps,
             **progress_bar_context(
@@ -1953,3 +1997,86 @@ def administrative_entities_geojson(request, administrative_entity_id):
     )
 
     return JsonResponse(geojson, safe=False)
+
+
+@method_decorator(login_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
+class ChangeTransactionStatus(View):
+    permission_error_message = _(
+        "Vous n'avez pas les permissions pour changer le statut de cette transaction"
+    )
+    not_exist_error_message = _("La transaction demandée n'existe pas")
+
+    def get(self, request, *args, **kwargs):
+        try:
+            merchant_reference = kwargs.get("merchant_reference")
+            new_status = request.GET.get("new_status")
+
+            transaction = get_transaction_from_merchant_reference(merchant_reference)
+            submission = transaction.submission_price.submission
+            if not permissions.user_has_permission_to_change_transaction_status(
+                request.user, transaction, new_status
+            ):
+                raise PermissionDenied
+
+            transaction.set_new_status(new_status)
+
+            redirect_page = reverse_lazy(
+                "submissions:submission_detail",
+                kwargs={"submission_id": submission.pk},
+            )
+            redirect_page = f"{redirect_page}?prev_active_form=payments"
+
+            new_status_display = transaction.get_status_display()
+            merchant_site = transaction.CHECKOUT_PROCESSOR_ID
+
+            messages.success(
+                request,
+                mark_safe(
+                    _(
+                        f"""La transaction {merchant_reference} a été mise dans le statut
+                    <strong>{new_status_display}</strong>
+                    <br />
+                    <strong>Si nécessaire, pensez à mettre à jour la transaction sur {merchant_site}</strong>"""
+                    ).format()
+                ),
+            )
+            return redirect(redirect_page)
+        except PermissionDenied:
+            error_message = self.permission_error_message
+        except ObjectDoesNotExist:
+            error_message = self.not_exist_error_message
+        except Exception as exc:
+            error_message = _(
+                "Une erreur est survenue lors du changement de statut de la transaction. Veuillez contacter votre administrateur"
+            )
+
+        messages.error(request, error_message)
+
+        return redirect(reverse_lazy("submissions:submissions_list"))
+
+
+@method_decorator(login_required, name="dispatch")
+class ConfirmTransactionCallback(View):
+    def get(self, request, *args, **kwargs):
+        submisson_id = 17
+        # TODO Add hash and fetch submission
+        return redirect(
+            reverse_lazy(
+                "submissions:submission_submit_confirmed",
+                kwargs={"submission_id": submisson_id},
+            )
+        )
+
+
+@method_decorator(login_required, name="dispatch")
+class FailTransactionCallback(View):
+    def get(self, request, *args, **kwargs):
+        submisson_id = 17
+        # TODO Add hash and fetch submission
+        messages.error(request, _("Paiement annulé !"))
+        return redirect(
+            reverse_lazy(
+                "submissions:submission_fields", kwargs={"submission_id": submisson_id}
+            )
+        )

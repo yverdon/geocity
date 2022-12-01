@@ -1,5 +1,6 @@
 import collections
 
+from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.core.validators import (
@@ -9,7 +10,9 @@ from django.core.validators import (
 )
 from django.db import models
 from django.db.models import Q
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
+from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 
 from geocity.apps.accounts.fields import AdministrativeEntityFileField
@@ -115,6 +118,77 @@ class FormQuerySet(models.QuerySet):
         return queryset
 
 
+def default_currency():
+    return settings.PAYMENT_CURRENCY
+
+
+class PaymentSettings(models.Model):
+    name = models.CharField(_("Nom des paramètres"), max_length=255)
+    prices_label = models.CharField(
+        _("Label pour les tarifs"),
+        max_length=255,
+        default=_("Tarifs"),
+        help_text=_(
+            "Texte affiché à l'utilisateur comme en-têtes des prix (p. ex.: 'Tarifs')"
+        ),
+    )
+    internal_account = models.CharField(
+        _("Compte interne"),
+        max_length=255,
+        help_text=_("Compte interne de comptabilité utilisé pour les paiements"),
+    )
+    payment_processor = models.CharField(
+        _("Processeur de paiement"),
+        max_length=255,
+        choices=[
+            ("PostFinance", "PostFinance Checkout"),
+        ],
+        default="PostFinance",
+    )
+    space_id = models.CharField(_("Space ID"), max_length=255, null=False)
+    user_id = models.CharField(_("User ID"), max_length=255, null=False)
+    api_key = models.CharField(_("API key"), max_length=255, null=False)
+
+    def __str__(self):
+        return f"{self.name} - {self.internal_account}"
+
+    class Meta:
+        verbose_name = _("Paramètres de paiement")
+        verbose_name_plural = _("Paramètres de paiement")
+
+
+class Price(models.Model):
+    text = models.CharField(_("Texte"), max_length=255)
+    amount = models.DecimalField(_("Montant"), max_digits=6, decimal_places=2)
+    currency = models.CharField(_("Devise"), max_length=20, default=default_currency)
+    history = HistoricalRecords()
+
+    def __str__(self):
+        return f"{self.text} - {self.amount:6.2f} {self.currency}"
+
+    def str_for_choice(self):
+        return mark_safe(
+            f"<strong>{self.text}</strong> - {self.amount:6.2f} {self.currency}"
+        )
+
+    class Meta:
+        verbose_name = _("Tarif")
+        verbose_name_plural = _("Tarifs")
+
+
+class FormPrice(models.Model):
+    price = models.ForeignKey("Price", on_delete=models.CASCADE)
+    form = models.ForeignKey("Form", on_delete=models.CASCADE)
+
+    order = models.PositiveSmallIntegerField(
+        _("Position dans les tarifs"), default=0, db_index=True
+    )
+
+    class Meta:
+        unique_together = ("price", "form")
+        ordering = ("order",)
+
+
 class Form(models.Model):
     """
     Represents a works object for a specific works type.
@@ -168,6 +242,18 @@ class Form(models.Model):
     requires_payment = models.BooleanField(
         _("Demande soumise à des frais"), default=True
     )
+
+    requires_online_payment = models.BooleanField(
+        _("Soumis au paiement en ligne"), default=False
+    )
+    payment_settings = models.ForeignKey(
+        "PaymentSettings",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        verbose_name=_("Paramètres de paiement"),
+    )
+
     requires_validation_document = models.BooleanField(
         _("Document de validation obligatoire"), default=True
     )
@@ -223,6 +309,9 @@ class Form(models.Model):
     wms_layers = models.URLField(_("Couche(s) WMS"), blank=True, max_length=1024)
     wms_layers_order = models.PositiveIntegerField(
         _("Ordre de(s) couche(s)"), default=1
+    )
+    prices = models.ManyToManyField(
+        "Price", verbose_name=_("tarifs"), related_name="forms", through=FormPrice
     )
 
     # All objects

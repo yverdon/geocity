@@ -32,6 +32,7 @@ from geocity.apps.accounts.validators import validate_email
 from geocity.apps.forms.models import Field, Form, FormCategory
 
 from . import fields
+from .payments.models import SubmissionPrice
 
 # Contact types
 CONTACT_TYPE_OTHER = 0
@@ -63,6 +64,7 @@ ACTION_POKE = "poke"
 ACTION_PROLONG = "prolong"
 ACTION_COMPLEMENTARY_DOCUMENTS = "complementary_documents"
 ACTION_REQUEST_INQUIRY = "request_inquiry"
+ACTION_TRANSACTION = "transactins"
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
 ACTIONS = [
@@ -287,6 +289,8 @@ class Submission(models.Model):
             ("classify_submission", _("Classer les demandes de permis")),
             ("edit_submission", _("Éditer les demandes de permis")),
             ("view_private_submission", _("Voir les demandes restreintes")),
+            ("can_refund_transactions", _("Rembourser une transaction")),
+            ("can_revert_refund_transactions", _("Revenir sur un remboursement")),
         ]
         indexes = [models.Index(fields=["created_at"])]
 
@@ -967,6 +971,12 @@ class Submission(models.Model):
                 Submission.STATUS_PROCESSING,
             ],
             "request_inquiry": list(Submission.AMENDABLE_STATUSES),
+            "transactions": [
+                Submission.STATUS_APPROVED,
+                Submission.STATUS_REJECTED,
+                Submission.STATUS_AWAITING_VALIDATION,
+                Submission.STATUS_PROCESSING,
+            ],
         }
 
         available_statuses_for_administrative_entity = (
@@ -1037,6 +1047,33 @@ class Submission(models.Model):
                 comes_from_automatic_geocoding=True,
                 geom=geom,
             )
+
+    def get_form_for_payment(self):
+        """
+        For online payments, only one form can exist on a Submission
+        """
+        if self.forms.count() != 1:
+            # TODO: raise exception for this ?
+            return None
+        return self.forms.first()
+
+    def requires_online_payment(self):
+        form_for_payment = self.get_form_for_payment()
+        return form_for_payment and form_for_payment.requires_online_payment
+
+    @property
+    def submission_price(self):
+        return self.get_submission_price()
+
+    def get_submission_price(self):
+        try:
+            return SubmissionPrice.objects.get(submission=self)
+        except SubmissionPrice.DoesNotExist:
+            return None
+
+    def get_transactions(self):
+        # TODO: if more payment processors are implemented, change this to add all transaction types to queryset
+        return self.submission_price.postfinancetransaction_set.all()
 
 
 class Contact(models.Model):

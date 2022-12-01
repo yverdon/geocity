@@ -32,7 +32,9 @@ from geocity.apps.accounts.models import (
 )
 from geocity.fields import AddressWidget
 
+from ..forms.models import Price
 from . import models, permissions, services
+from .payments.models import SubmissionPrice
 
 input_type_mapping = {
     models.Field.INPUT_TYPE_TEXT: forms.CharField,
@@ -57,9 +59,9 @@ def _title_html_representation(prop, for_summary=False):
 def _file_download_html_representation(prop, for_summary=False):
     if not for_summary and prop.file_download:
         description = prop.help_text if prop.help_text else _("Télécharger le fichier")
-        return f"""<strong>{ prop.name }:</strong>
+        return f"""<strong>{prop.name}:</strong>
             <i class="fa fa-download" aria-hidden="true"></i>
-            <a class="file_download" href="{ reverse('submissions:field_file_download', kwargs={'path':prop.file_download}) }" target="_blank" rel="noreferrer">{ description }</a>"""
+            <a class="file_download" href="{reverse('submissions:field_file_download', kwargs={'path': prop.file_download})}" target="_blank" rel="noreferrer">{description}</a>"""
     return ""
 
 
@@ -225,6 +227,58 @@ class FormsSingleSelectForm(FormsSelectForm):
     def save(self):
         selected_form = models.Form.objects.get(pk=self.cleaned_data["selected_forms"])
         self.instance.set_selected_forms([selected_form])
+        return self.instance
+
+
+class FormsPriceSelectForm(forms.Form):
+
+    selected_price = forms.ChoiceField(
+        label=False, widget=SingleFormRadioSelectWidget(), required=True
+    )
+
+    def __init__(self, instance, *args, **kwargs):
+        self.instance = instance
+        initial = {}
+        if self.instance.submission_price is not None:
+            initial = {
+                "selected_price": self.instance.submission_price.original_price.pk
+            }
+        super(FormsPriceSelectForm, self).__init__(
+            *args, **{**kwargs, "initial": initial}
+        )
+        if self.instance.status != self.instance.STATUS_DRAFT:
+            self.fields["selected_price"].widget.attrs["disabled"] = "disabled"
+        form_for_payment = self.instance.get_form_for_payment()
+
+        choices = []
+        for price in form_for_payment.prices.order_by("formprice"):
+            choices.append((price.pk, price.str_for_choice()))
+        self.fields["selected_price"].choices = choices
+
+    @transaction.atomic
+    def save(self):
+        selected_price_id = self.cleaned_data["selected_price"]
+        selected_price = Price.objects.get(pk=selected_price_id)
+        price_data = {
+            "amount": selected_price.amount,
+            "currency": selected_price.currency,
+            "text": selected_price.text,
+        }
+        current_submission_price = self.instance.get_submission_price()
+        if current_submission_price is not None:
+            current_submission_price.amount = price_data["amount"]
+            current_submission_price.text = price_data["text"]
+            current_submission_price.currency = price_data["currency"]
+            current_submission_price.original_price = selected_price
+            current_submission_price.save()
+        else:
+            SubmissionPrice.objects.create(
+                **{
+                    **price_data,
+                    "original_price": selected_price,
+                    "submission": self.instance,
+                }
+            )
         return self.instance
 
 

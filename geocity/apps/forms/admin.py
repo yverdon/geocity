@@ -139,10 +139,18 @@ class FormFieldInline(admin.TabularInline, SortableInlineAdminMixin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
+class FormPricesInline(admin.TabularInline, SortableInlineAdminMixin):
+    model = models.Form.prices.through
+    extra = 1
+    verbose_name = _("Tarif")
+    verbose_name_plural = _("Tarifs")
+
+
 @admin.register(models.Form)
 class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
     form = FormAdminForm
     inlines = [
+        FormPricesInline,
         FormFieldInline,
     ]
     list_display = [
@@ -151,6 +159,8 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         "can_always_update",
         "is_public",
         "requires_payment",
+        "requires_online_payment",
+        "payment_settings",
         "requires_validation_document",
         "is_anonymous",
         "notify_services",
@@ -181,7 +191,6 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                     "administrative_entities",
                     "can_always_update",
                     "is_public",
-                    "requires_payment",
                     "requires_validation_document",
                     "is_anonymous",
                     "integrator",
@@ -228,8 +237,27 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                 )
             },
         ),
+        (
+            _("Paiements"),
+            {
+                "fields": (
+                    "requires_payment",
+                    "requires_online_payment",
+                    "payment_settings",
+                )
+            },
+        ),
     )
-    inlines = [FormFieldInline]
+    jazzmin_section_order = (
+        None,
+        _("Directives - Données personnelles"),
+        _("Planning et localisation"),
+        _("Notifications aux services"),
+        _("Modules complémentaires"),
+        "Champs",
+        _("Paiements"),
+        "Tarifs",
+    )
 
     def sortable_str(self, obj):
         return str(obj) if str(obj) != "" else str(obj.pk)
@@ -308,6 +336,47 @@ class FieldAdminForm(forms.ModelForm):
 
     class Media:
         js = ("js/admin/form_field.js",)
+
+
+class PriceAdminForm(forms.ModelForm):
+    class Meta:
+        model = models.Price
+        fields = ["text", "amount", "currency"]
+
+
+@admin.register(models.Price)
+class PriceAdmin(admin.ModelAdmin):
+    form = PriceAdminForm
+    list_display = ["text", "amount", "currency"]
+    list_filter = [
+        "text",
+        "amount",
+    ]
+    readonly_fields = ["currency"]
+    search_fields = [
+        "name",
+    ]
+
+
+class PaymentSettingsAdminForm(forms.ModelForm):
+    class Meta:
+        model = models.PaymentSettings
+        fields = [
+            "name",
+            "prices_label",
+            "internal_account",
+            "payment_processor",
+            "space_id",
+            "user_id",
+            "api_key",
+        ]
+
+
+@admin.register(models.PaymentSettings)
+class PaymentSettingsAdmin(admin.ModelAdmin):
+    form = PaymentSettingsAdminForm
+    list_display = ["name", "prices_label", "payment_processor"]
+    list_filter = ["name", "internal_account", "payment_processor"]
 
 
 @admin.register(models.Field)
