@@ -27,7 +27,7 @@ if settings.ENABLE_2FA:
 urlpatterns = (
     [
         path("", submissions_views.submission_select_administrative_entity),
-        path("permit-requests/", include("geocity.apps.submissions.urls")),
+        path("submissions/", include("geocity.apps.submissions.urls")),
         path("reports/", include("geocity.apps.reports.urls")),
     ]
     + default_urlpatterns(GeomapfishProvider)
