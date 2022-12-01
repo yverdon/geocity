@@ -15,8 +15,8 @@ class Migration(migrations.Migration):
             name="is_single_form_submissions",
             field=models.BooleanField(
                 default=False,
-                help_text="Nécessaire à l'utilisation du système paiement en ligne",
-                verbose_name="Autoriser uniquement un Form par demande",
+                help_text="Nécessaire pour l'utilisation du système de paiement en ligne",
+                verbose_name="Autoriser uniquement un objet par demande",
             ),
         ),
     ]
