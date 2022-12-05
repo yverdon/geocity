@@ -296,6 +296,10 @@ class DepartmentAdminForm(forms.ModelForm):
                 }
             )
 
+        # An integrator group cannot belong to another integrator group
+        if self.instance.is_integrator_admin:
+            self.cleaned_data["integrator"] = 0
+
         return self.cleaned_data
 
 
@@ -435,7 +439,7 @@ class GroupAdmin(admin.ModelAdmin):
                         permit_department__is_integrator_admin=True
                     ).pk
                 )
-            )
+            ).exclude(permit_department__is_integrator_admin=True)
         return qs
 
     def save_model(self, request, obj, form, change):
