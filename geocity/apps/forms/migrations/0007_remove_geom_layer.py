@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('forms', '0006_rename_admin_entities_shorter'),
+        ("forms", "0006_rename_admin_entities_shorter"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='form',
-            name='has_geom_intersection_enabled',
+            model_name="form",
+            name="has_geom_intersection_enabled",
         ),
     ]

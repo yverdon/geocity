@@ -6,11 +6,11 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('submissions', '0005_alter_complementarydocumenttype_reports_and_more'),
+        ("submissions", "0005_alter_complementarydocumenttype_reports_and_more"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='GeomLayer',
+            name="GeomLayer",
         ),
     ]
