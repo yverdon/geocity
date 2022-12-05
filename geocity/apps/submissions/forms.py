@@ -807,6 +807,10 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
 
                     self.fields["status"].choices = tuple(all_statuses_tuple)
 
+            # A permit that is anonymous cannot be notified
+            if self.instance.forms.filter(is_anonymous=True).exists():
+                self.fields["notify_author"].disabled = True
+
             if not config.ENABLE_GEOCALENDAR:
                 self.fields["shortname"].widget = forms.HiddenInput()
                 self.fields["is_public"].widget = forms.HiddenInput()
