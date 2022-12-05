@@ -104,8 +104,6 @@ def submit_submission(submission, request):
             send_email_notification(data)
 
     submission.status = models.Submission.STATUS_SUBMITTED_FOR_VALIDATION
-    if models.GeoTimeInfo.GEOMETRY in submission.get_geotime_required_info():
-        submission.intersected_geometries = submission.get_intersected_geometries()
     submission.save()
 
 

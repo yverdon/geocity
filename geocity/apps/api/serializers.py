@@ -253,9 +253,6 @@ class SubmissionSerializer(serializers.ModelSerializer):
     intersected_geometries = serializers.SerializerMethodField()
     current_inquiry = SubmissionInquirySerializer(read_only=True)
 
-    def get_intersected_geometries(self, obj):
-        return obj.intersected_geometries if obj.intersected_geometries else ""
-
     class Meta:
         model = Submission
         fields = (

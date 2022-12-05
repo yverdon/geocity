@@ -108,8 +108,6 @@ class Command(BaseCommand):
             self.create_form_categories()
             self.stdout.write("Creating demo submission...")
             self.create_submission()
-            self.stdout.write("Creating dummy geometric entities...")
-            self.create_geom_layer_entity()
             self.stdout.write("Creating template customizations...")
             self.create_template_customization()
             self.stdout.write("Configurating template customizations...")
@@ -955,26 +953,6 @@ class Command(BaseCommand):
                         selected_form=selected_form,
                         value={"val": demo_small_text},
                     )
-
-    def create_geom_layer_entity(self):
-
-        GeomLayer.objects.create(
-            layer_name="Parcelle",
-            description="Démo parcelle",
-            source_id="1234",
-            source_subid="9876",
-            external_link="https://www.osm.org",
-            geom="SRID=2056;MultiPolygon(((2526831.16912443 1159820.00193672, 2516148.68477727 1198947.70623155, 2551053.08130695 1201183.5750484, 2560741.84617995 1166651.82332153, 2526831.16912443 1159820.00193672)))",
-        )
-
-        GeomLayer.objects.create(
-            layer_name="Archéologie",
-            description="Démo archéologie",
-            source_id="1234",
-            source_subid="9876",
-            external_link="https://www.osm.org",
-            geom="SRID=2056;MultiPolygon(((2526831.16912443 1159820.00193672, 2516148.68477727 1198947.70623155, 2551053.08130695 1201183.5750484, 2560741.84617995 1166651.82332153, 2526831.16912443 1159820.00193672)))",
-        )
 
     def create_template_customization(self):
         TemplateCustomization.objects.create(
