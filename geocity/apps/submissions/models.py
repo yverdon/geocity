@@ -178,7 +178,7 @@ class Submission(models.Model):
         STATUS_PROCESSING,
         STATUS_AWAITING_SUPPLEMENT,
         STATUS_RECEIVED,
-        STATUS_INQUIRY_IN_PROGRESS,
+        # STATUS_INQUIRY_IN_PROGRESS,
     }
 
     # Statuses that can be edited by pilot service if granted permission "edit_submission"

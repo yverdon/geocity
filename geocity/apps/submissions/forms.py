@@ -753,6 +753,18 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                     self.instance.administrative_entity
                 )
             )
+
+            # Add STATUS_INQUIRY_IN_PROGRESS when any form of submission can be STATUS_INQUIRY_IN_PROGRESS
+            permanent_publication_enabled = self.instance.forms.filter(
+                permanent_publication_enabled=True
+            ).exists()
+            if permanent_publication_enabled:
+                STATUS_INQUIRY_IN_PROGRESS = (
+                    models.Submission.STATUS_INQUIRY_IN_PROGRESS
+                )
+            else:
+                STATUS_INQUIRY_IN_PROGRESS = None
+
             # If an amend property in the permit request can always be amended, some statuses are added to the list
             if permissions.can_always_be_updated(user, self.instance):
                 filter1 = [
@@ -761,7 +773,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                     if any(i in tup for i in models.Submission.AMENDABLE_STATUSES)
                     or models.Submission.STATUS_APPROVED in tup
                     or models.Submission.STATUS_REJECTED in tup
-                    or models.Submission.STATUS_INQUIRY_IN_PROGRESS in tup
+                    or STATUS_INQUIRY_IN_PROGRESS in tup
                 ]
             else:
                 filter1 = [
@@ -769,7 +781,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                     for tup in models.Submission.STATUS_CHOICES
                     if any(i in tup for i in models.Submission.AMENDABLE_STATUSES)
                     # Add curent status even if this one cannot be changed (otherwise the wrong status is selected in the disabled dropdown)
-                    or self.instance.status in tup
+                    or self.instance.status in tup or STATUS_INQUIRY_IN_PROGRESS in tup
                 ]
 
             filter2 = [
