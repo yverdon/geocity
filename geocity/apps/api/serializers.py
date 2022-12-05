@@ -250,7 +250,6 @@ class SubmissionSerializer(serializers.ModelSerializer):
     administrative_entity = AdministrativeEntitySerializer(read_only=True)
     meta_types = MetaTypesField(source="forms", read_only=True)
     forms_names = FormsNames(source="forms", read_only=True)
-    intersected_geometries = serializers.SerializerMethodField()
     current_inquiry = SubmissionInquirySerializer(read_only=True)
 
     class Meta:
@@ -262,7 +261,6 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "administrative_entity",
             "forms",
             "meta_types",
-            "intersected_geometries",
             "forms_names",
             "current_inquiry",
         )
