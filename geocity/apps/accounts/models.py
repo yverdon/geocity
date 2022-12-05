@@ -306,20 +306,35 @@ class AdministrativeEntity(models.Model):
 
     def clean(self):
         from geocity.apps.forms.models import Form
+        from geocity.apps.submissions.models import Submission
 
         if (
-            self.is_single_form_submissions
-            and Form.objects.annotate(entities_count=Count("administrative_entities"))
+            Form.objects.annotate(entities_count=Count("administrative_entities"))
             .filter(
                 is_public=True, entities_count__gt=1, administrative_entities=self.pk
             )
             .exists()
         ):
             raise ValidationError(
+                _(
+                    "Des formulaires partagés avec d'autres entités "
+                    "administratives sont encore disponibles."
+                )
+            )
+
+        if (
+            self.is_single_form_submissions
+            and Submission.objects.annotate(forms_count=Count("forms"))
+            .filter(forms_count__gt=1, administrative_entity=self.pk)
+            .exclude(status=Submission.STATUS_ARCHIVED)
+            .exists()
+        ):
+            raise ValidationError(
                 {
                     "is_single_form_submissions": _(
-                        "Des formulaires partagés avec d'autres entités "
-                        "administratives sont encore disponible."
+                        "Impossible tant que des demandes liées à plusieurs "
+                        "formulaires sont encore actives dans cette entité "
+                        "administrative."
                     )
                 }
             )
