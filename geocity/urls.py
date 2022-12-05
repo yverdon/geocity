@@ -3,7 +3,8 @@ import logging
 from allauth.socialaccount.providers.oauth2.urls import default_urlpatterns
 from django.conf import settings
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
+from django.views.generic.base import RedirectView
 
 import geocity.apps.api.urls
 from geocity.apps.accounts.dootix.provider import DootixProvider
@@ -20,15 +21,23 @@ if settings.ENABLE_2FA:
     admin.site = AdminSiteOTPRequiredMixinRedirSetup()
 
 
-# Django-rest Configuration
-
-
 # Django-configuration
 urlpatterns = (
     [
         path("", submissions_views.submission_select_administrative_entity),
         path("submissions/", include("geocity.apps.submissions.urls")),
         path("reports/", include("geocity.apps.reports.urls")),
+        # Backward compatibility for Geocity < 3.1, will be deprecated in 4
+        re_path(
+            r".*permit-requests/anonymous.*",
+            RedirectView.as_view(url="/submissions/anonymous", query_string=True),
+            name="permit-requests-anonymous-legacy",
+        ),
+        re_path(
+            r".*permit-requests.*",
+            RedirectView.as_view(url="/submissions", query_string=True),
+            name="permit-requests-legacy",
+        ),
     ]
     + default_urlpatterns(GeomapfishProvider)
     + default_urlpatterns(DootixProvider)
