@@ -296,6 +296,8 @@ class DepartmentAdminForm(forms.ModelForm):
                 }
             )
 
+        return self.cleaned_data
+
 
 # Inline for group & department (1to1)
 class PermitDepartmentInline(admin.StackedInline):
