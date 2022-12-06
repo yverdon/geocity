@@ -215,9 +215,6 @@ class Form(models.Model):
         ),
         blank=True,
     )
-    has_geom_intersection_enabled = models.BooleanField(
-        _("Activer l'intersection de géométries"), default=False
-    )
 
     name = models.CharField(_("nom"), max_length=255)
     order = models.PositiveIntegerField(

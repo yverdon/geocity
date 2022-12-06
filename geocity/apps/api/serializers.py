@@ -250,11 +250,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
     administrative_entity = AdministrativeEntitySerializer(read_only=True)
     meta_types = MetaTypesField(source="forms", read_only=True)
     forms_names = FormsNames(source="forms", read_only=True)
-    intersected_geometries = serializers.SerializerMethodField()
     current_inquiry = SubmissionInquirySerializer(read_only=True)
-
-    def get_intersected_geometries(self, obj):
-        return obj.intersected_geometries if obj.intersected_geometries else ""
 
     class Meta:
         model = Submission
@@ -265,7 +261,6 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "administrative_entity",
             "forms",
             "meta_types",
-            "intersected_geometries",
             "forms_names",
             "current_inquiry",
         )

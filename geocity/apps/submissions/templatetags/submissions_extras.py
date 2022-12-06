@@ -92,9 +92,6 @@ def submission_summary(context, submission):
         "forms_infos": forms_infos,
         "documents": documents,
         "geo_time_formset": geo_time_formset,
-        "intersected_geometries": submission.intersected_geometries
-        if submission.intersected_geometries != ""
-        else None,
         "requires_payment": requires_payment,
         "is_validator": is_validator,
     }

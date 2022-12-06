@@ -245,9 +245,6 @@ class Submission(models.Model):
     contacts = models.ManyToManyField(
         "Contact", related_name="+", through="SubmissionContact"
     )
-    intersected_geometries = models.TextField(
-        _("Entités géométriques concernées"), max_length=1024, null=True
-    )
     validation_pdf = fields.SubmissionFileField(
         _("pdf de validation"),
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
@@ -545,16 +542,6 @@ class Submission(models.Model):
     @property
     def is_archived(self):
         return self.status == self.STATUS_ARCHIVED
-
-    @property
-    def has_geom_intersection_enabled(self):
-        """
-        Check if there is any work_object_types with has_geom_intersection_enabled
-        """
-        has_geom_intersection_enabled = self.forms.filter(
-            has_geom_intersection_enabled=True
-        ).exists()
-        return has_geom_intersection_enabled
 
     @property
     def complementary_documents(self):
@@ -1008,33 +995,6 @@ class Submission(models.Model):
     def get_selected_forms(self):
         return SelectedForm.objects.filter(submission=self)
 
-    def get_intersected_geometries(self):
-        intersected_geometries = ""
-
-        if self.has_geom_intersection_enabled:
-
-            intersected_geometries_ids = []
-            geotimes = self.geo_time.all()
-
-            for geo_time in geotimes:
-
-                # Django GIS GEOS API does not support intersection with GeometryCollection
-                # For this reason, we have to iterate over collection content
-                for geom in geo_time.geom:
-                    results = (
-                        GeomLayer.objects.filter(geom__intersects=geom)
-                        .exclude(pk__in=intersected_geometries_ids)
-                        .distinct()
-                    )
-                    for result in results:
-                        intersected_geometries_ids.append(result.pk)
-                        intersected_geometries += f"""
-                            {result.pk}: {result.layer_name} ; {result.description} ;
-                            {result.source_id} ; {result.source_subid} <br>
-                            """
-
-        return intersected_geometries
-
     def reverse_geocode_and_store_address_geometry(self, to_geocode_addresses):
         # Delete the previous geocoded geometries
         SubmissionGeoTime.objects.filter(
@@ -1262,29 +1222,6 @@ class SubmissionGeoTime(models.Model):
             models.Index(fields=["starts_at"]),
             models.Index(fields=["ends_at"]),
         ]
-
-
-class GeomLayer(models.Model):
-    """
-    Geometric entities that might be touched by the PermitRequest
-    """
-
-    layer_name = models.CharField(
-        _("Nom de la couche source"), max_length=128, blank=True
-    )
-    description = models.CharField(_("Commentaire"), max_length=1024, blank=True)
-    source_id = models.CharField(_("Id entité"), max_length=128, blank=True)
-    source_subid = models.CharField(
-        _("Id entité secondaire"), max_length=128, blank=True
-    )
-    external_link = models.URLField(_("Lien externe"), blank=True)
-    geom = geomodels.MultiPolygonField(_("Géométrie"), null=True, srid=2056)
-
-    class Meta:
-        verbose_name = _("3.4 Consultation de l'entité géographique à intersecter")
-        verbose_name_plural = _(
-            "3.4 Consultation des entités géographiques à intersecter"
-        )
 
 
 class SubmissionWorkflowStatusQuerySet(models.QuerySet):
