@@ -136,7 +136,6 @@ JAZZMIN_SETTINGS = {
         "forms.form": "horizontal_tabs",
         "forms.administrativeentityforadminsite": "horizontal_tabs",
         "reports.report": "horizontal_tabs",
-        "reports.ComplementaryDocumentTypeForAdminSite": "horizontal_tabs",
     },
     # Add a language dropdown into the admin
     "language_chooser": False,
