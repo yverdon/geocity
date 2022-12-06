@@ -29,7 +29,7 @@ urlpatterns = (
         path("submissions/", include("geocity.apps.submissions.urls")),
         path("reports/", include("geocity.apps.reports.urls")),
         # Backward compatibility for Geocity < 2.1, will be deprecated in 3.0
-        re_path(r".*permit-requests.*", legacy_urls_redirect),
+        re_path(r"permit-requests/.*", legacy_urls_redirect),
     ]
     + default_urlpatterns(GeomapfishProvider)
     + default_urlpatterns(DootixProvider)
