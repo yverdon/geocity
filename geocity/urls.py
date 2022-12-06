@@ -4,13 +4,14 @@ from allauth.socialaccount.providers.oauth2.urls import default_urlpatterns
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path, re_path
-from django.views.generic.base import RedirectView
 
 import geocity.apps.api.urls
 from geocity.apps.accounts.dootix.provider import DootixProvider
 from geocity.apps.accounts.geomapfish.provider import GeomapfishProvider
 from geocity.apps.django_wfs3.urls import wfs3_router
 from geocity.apps.submissions import views as submissions_views
+
+from .views import legacy_urls_redirect
 
 logger = logging.getLogger(__name__)
 
@@ -28,16 +29,7 @@ urlpatterns = (
         path("submissions/", include("geocity.apps.submissions.urls")),
         path("reports/", include("geocity.apps.reports.urls")),
         # Backward compatibility for Geocity < 3.1, will be deprecated in 4
-        re_path(
-            r".*permit-requests/anonymous.*",
-            RedirectView.as_view(url="/submissions/anonymous", query_string=True),
-            name="permit-requests-anonymous-legacy",
-        ),
-        re_path(
-            r".*permit-requests.*",
-            RedirectView.as_view(url="/submissions", query_string=True),
-            name="permit-requests-legacy",
-        ),
+        re_path(r".*permit-requests.*", legacy_urls_redirect),
     ]
     + default_urlpatterns(GeomapfishProvider)
     + default_urlpatterns(DootixProvider)
