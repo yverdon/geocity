@@ -140,7 +140,7 @@ class ComplementaryDocumentTypeInline(admin.TabularInline):
     verbose_name = _("Type de document")
     verbose_name_plural = _("Type de documents")
 
-    # Defines the number of empty documents it shows by default. Default is set to 3
+    # Defines the number of extra forms to by default. Default is set to 3
     # https://docs.djangoproject.com/en/4.1/ref/contrib/admin/#django.contrib.admin.InlineModelAdmin.extra
     extra = 1
 
