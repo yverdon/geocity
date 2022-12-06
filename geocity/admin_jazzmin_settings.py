@@ -97,7 +97,7 @@ JAZZMIN_SETTINGS = {
         "reports.Report": "fas fa-print",
         "reports.ReportLayout": "fas fa-file-alt",
         "sites.Site": "fas fa-sitemap",
-        "submissions.ComplementaryDocumentType": "fas fa-copy",
+        "reports.ComplementaryDocumentForAdminSite": "fas fa-copy",
         "submissions.Submission": "fas fa-search",
         "submissions.SubmissionAmendField": "fas fa-list-alt",
         "submissions.SubmissionInquiry": "fas fa-calendar",
@@ -136,6 +136,7 @@ JAZZMIN_SETTINGS = {
         "forms.form": "horizontal_tabs",
         "forms.administrativeentityforadminsite": "horizontal_tabs",
         "reports.report": "horizontal_tabs",
+        "reports.ComplementaryDocumentForAdminSite": "horizontal_tabs",
     },
     # Add a language dropdown into the admin
     "language_chooser": False,

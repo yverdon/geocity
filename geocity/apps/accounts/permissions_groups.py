@@ -16,10 +16,10 @@ INTEGRATOR_PERMISSIONS_BY_APP = {
     "submissions": [
         "submissionamendfield",
         "submissionworkflowstatus",
-        "complementarydocumenttype",
     ],
     "reports": [
         "report",
+        "complementarydocumenttypeforadminsite",
         "reportlayout",
         "section",
     ],

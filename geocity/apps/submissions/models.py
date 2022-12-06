@@ -283,8 +283,8 @@ class Submission(models.Model):
     objects = SubmissionQuerySet().as_manager()
 
     class Meta:
-        verbose_name = _("2.3 Consultation de la demande")
-        verbose_name_plural = _("2.3 Consultation des demandes")
+        verbose_name = _("2.2 Consultation de la demande")
+        verbose_name_plural = _("2.2 Consultation des demandes")
         permissions = [
             ("amend_submission", _("Traiter les demandes de permis")),
             ("validate_submission", _("Valider les demandes de permis")),
@@ -1397,8 +1397,8 @@ class SubmissionInquiry(models.Model):
     )
 
     class Meta:
-        verbose_name = _("2.4 Enquête publique")
-        verbose_name_plural = _("2.4 Enquêtes publiques")
+        verbose_name = _("2.3 Enquête publique")
+        verbose_name_plural = _("2.3 Enquêtes publiques")
 
     @classmethod
     def get_current_inquiry(cls, submission):
@@ -1484,6 +1484,19 @@ class SubmissionComplementaryDocument(models.Model):
         return self.document.name
 
 
+class ChildrenFormManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(parent__isnull=False)
+
+    def associated_to_parent(self, parent):
+        """
+        Get the complementary document types associated the parent
+        """
+        return self.get_queryset().filter(
+            parent=parent,
+        )
+
+
 class ComplementaryDocumentType(models.Model):
     name = models.CharField(_("nom"), max_length=255)
     parent = models.ForeignKey(
@@ -1521,6 +1534,11 @@ class ComplementaryDocumentType(models.Model):
         through="reports.report_document_types",
     )
 
+    objects = models.Manager()
+
+    # Only children objects
+    children_objects = ChildrenFormManager()
+
     class Meta:
         constraints = [
             models.CheckConstraint(
@@ -1529,11 +1547,20 @@ class ComplementaryDocumentType(models.Model):
                 name="complementary_document_type_restrict_form_link_to_parents",
             )
         ]
-        verbose_name = _("2.2 Type de document")
-        verbose_name_plural = _("2.2 Types de document")
+        verbose_name = _("3.2 Catégorie de document")
+        verbose_name_plural = _("3.2 Catégories de document")
 
     def __str__(self):
         return self.name
+
+
+# Change the app_label in order to regroup models under the same app in admin
+class ComplementaryDocumentForAdminSite(ComplementaryDocumentType):
+    class Meta:
+        proxy = True
+        app_label = "reports"
+        verbose_name = _("3.2 Catégorie de document")
+        verbose_name_plural = _("3.2 Catégories de document")
 
 
 class SubmissionAmendField(models.Model):
