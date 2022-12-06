@@ -296,12 +296,6 @@ class DepartmentAdminForm(forms.ModelForm):
                 }
             )
 
-        # An integrator group cannot belong to another integrator group
-        if self.instance.is_integrator_admin:
-            self.cleaned_data["integrator"] = 0
-
-        return self.cleaned_data
-
 
 # Inline for group & department (1to1)
 class PermitDepartmentInline(admin.StackedInline):
