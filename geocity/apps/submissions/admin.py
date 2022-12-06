@@ -128,11 +128,11 @@ class SubmissionAdmin(admin.ModelAdmin):
 
 
 class ComplementaryDocumentTypeAdminForm(forms.ModelForm):
-    model = models.ComplementaryDocumentType
+    model = models.ComplementaryDocumentTypeForAdminSite
 
 
 class ComplementaryDocumentTypeInline(admin.TabularInline):
-    model = models.ComplementaryDocumentType
+    model = models.ComplementaryDocumentTypeForAdminSite
     form = ComplementaryDocumentTypeAdminForm
 
     fields = ["name"]
