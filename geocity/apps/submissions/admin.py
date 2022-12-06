@@ -1,5 +1,7 @@
 from django import forms
 from django.contrib import admin
+from django.utils.html import format_html_join
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from geocity.apps.accounts.admin import IntegratorFilterMixin, filter_for_user
@@ -126,23 +128,68 @@ class SubmissionAdmin(admin.ModelAdmin):
 
 
 class ComplementaryDocumentTypeAdminForm(forms.ModelForm):
-    model = models.ComplementaryDocumentType
-
-    def clean(self):
-        cleaned_data = super(ComplementaryDocumentTypeAdminForm, self).clean()
-        if cleaned_data["parent"] and cleaned_data["form"]:
-            raise forms.ValidationError(
-                _("Seul les types parents peuvent être lié a un Work Object Type")
-            )
-
-        return cleaned_data
+    model = models.ComplementaryDocumentTypeForAdminSite
 
 
-@admin.register(models.ComplementaryDocumentType)
-class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+class ComplementaryDocumentTypeInline(admin.TabularInline):
+    model = models.ComplementaryDocumentTypeForAdminSite
     form = ComplementaryDocumentTypeAdminForm
 
-    fields = ["name", "parent", "form", "integrator"]
+    fields = ["name"]
+
+    verbose_name = _("Type de document")
+    verbose_name_plural = _("Type de documents")
+
+    # Defines the number of extra forms to by default. Default is set to 3
+    # https://docs.djangoproject.com/en/4.1/ref/contrib/admin/#django.contrib.admin.InlineModelAdmin.extra
+    extra = 1
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(parent__isnull=False)
+
+
+@admin.register(models.ComplementaryDocumentTypeForAdminSite)
+class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    inlines = [
+        ComplementaryDocumentTypeInline,
+    ]
+    form = ComplementaryDocumentTypeAdminForm
+    fields = ["name", "form", "integrator"]
+    list_display = [
+        "name",
+        "form",
+        "integrator",
+        "types_",
+    ]
+    search_fields = [
+        "name",
+        "form",
+        "integrator",
+    ]
+    list_filter = [
+        "name",
+        "form",
+        "integrator",
+    ]
+
+    # List types of documents
+    def types_(self, obj):
+        list_content = format_html_join(
+            "",
+            "<li>{}</li>",
+            [
+                [d]
+                for d in models.ComplementaryDocumentType.children_objects.associated_to_parent(
+                    obj
+                ).values_list(
+                    "name", flat=True
+                )
+            ],
+        )
+        return mark_safe(f"<ul>{list_content}</ul>")
+
+    types_.short_description = _("Type de document")
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "form":
@@ -165,6 +212,10 @@ class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 )
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(parent__isnull=True)
 
 
 @admin.register(models.SubmissionInquiry)

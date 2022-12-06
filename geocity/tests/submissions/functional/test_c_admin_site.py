@@ -274,7 +274,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
 
     def test_integrator_can_only_see_own_complementarydocumenttype(self):
         response = self.client.get(
-            reverse("admin:submissions_complementarydocumenttype_changelist")
+            reverse("admin:reports_complementarydocumenttypeforadminsite_changelist")
         )
         parser = get_parser(response.content)
         self.assertEqual(response.status_code, 200)

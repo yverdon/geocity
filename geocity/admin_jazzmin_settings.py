@@ -97,7 +97,7 @@ JAZZMIN_SETTINGS = {
         "reports.Report": "fas fa-print",
         "reports.ReportLayout": "fas fa-file-alt",
         "sites.Site": "fas fa-sitemap",
-        "submissions.ComplementaryDocumentType": "fas fa-copy",
+        "reports.ComplementaryDocumentTypeForAdminSite": "fas fa-copy",
         "submissions.Submission": "fas fa-search",
         "submissions.SubmissionAmendField": "fas fa-list-alt",
         "submissions.SubmissionInquiry": "fas fa-calendar",
