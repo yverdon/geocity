@@ -1555,7 +1555,7 @@ class ComplementaryDocumentType(models.Model):
 
 
 # Change the app_label in order to regroup models under the same app in admin
-class ComplementaryDocumentForAdminSite(ComplementaryDocumentType):
+class ComplementaryDocumentTypeForAdminSite(ComplementaryDocumentType):
     class Meta:
         proxy = True
         app_label = "reports"

@@ -145,7 +145,7 @@ class ComplementaryDocumentTypeInline(admin.TabularInline):
         return qs.filter(parent__isnull=False)
 
 
-@admin.register(models.ComplementaryDocumentForAdminSite)
+@admin.register(models.ComplementaryDocumentTypeForAdminSite)
 class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     inlines = [
         ComplementaryDocumentTypeInline,

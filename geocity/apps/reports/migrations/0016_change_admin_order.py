@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name="ComplementaryDocumentForAdminSite",
+            name="ComplementaryDocumentTypeForAdminSite",
             fields=[],
             options={
                 "verbose_name": "3.2 Catégorie de document",
