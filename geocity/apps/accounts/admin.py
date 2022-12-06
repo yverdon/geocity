@@ -435,7 +435,7 @@ class GroupAdmin(admin.ModelAdmin):
                         permit_department__is_integrator_admin=True
                     ).pk
                 )
-            )
+            ).exclude(permit_department__is_integrator_admin=True)
         return qs
 
     def save_model(self, request, obj, form, change):
