@@ -756,9 +756,9 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
 
             # Add STATUS_INQUIRY_IN_PROGRESS when any form of submission can be STATUS_INQUIRY_IN_PROGRESS
             permanent_publication_enabled = self.instance.forms.filter(
-                permanent_publication_enabled=True
+                permanent_publication_enabled=False
             ).exists()
-            if permanent_publication_enabled:
+            if not permanent_publication_enabled:
                 STATUS_INQUIRY_IN_PROGRESS = (
                     models.Submission.STATUS_INQUIRY_IN_PROGRESS
                 )
