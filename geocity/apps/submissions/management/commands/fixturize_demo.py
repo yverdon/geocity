@@ -14,7 +14,6 @@ from django.utils import timezone
 
 from geocity import settings
 from geocity.apps.accounts.models import *
-from geocity.apps.accounts.users import get_integrator_permissions
 from geocity.apps.forms.models import *
 from geocity.apps.reports.models import *
 from geocity.apps.submissions.models import *
@@ -245,79 +244,79 @@ class Command(BaseCommand):
             ],
             content_type=reports_request_ct,
         )
-        user = self.create_user(
-            "pilot",
-            "pilot",
-            administrative_entity_yverdon,
-            email="yverdon-squad+pilot@liip.ch",
-        )
-        user.user_permissions.set(
-            secretariat_permissions.union(secretariat_permissions_reports)
-        )
-        self.stdout.write("pilot / demo")
+        # user = self.create_user(
+        #     "pilot",
+        #     "pilot",
+        #     administrative_entity_yverdon,
+        #     email="yverdon-squad+pilot@liip.ch",
+        # )
+        # user.user_permissions.set(
+        #     secretariat_permissions.union(secretariat_permissions_reports)
+        # )
+        # self.stdout.write("pilot / demo")
 
-        user = self.create_user(
-            "pilot-2",
-            "pilot-2",
-            administrative_entity_grandson,
-            email="yverdon-squad+pilot-2@liip.ch",
-        )
-        user.user_permissions.set(secretariat_permissions)
-        self.stdout.write("pilot-2 / demo")
+        # user = self.create_user(
+        #     "pilot-2",
+        #     "pilot-2",
+        #     administrative_entity_grandson,
+        #     email="yverdon-squad+pilot-2@liip.ch",
+        # )
+        # user.user_permissions.set(secretariat_permissions)
+        # self.stdout.write("pilot-2 / demo")
 
-        secretary_groups = Group.objects.filter(name__in=["pilot", "pilot-2"])
-        PermitDepartment.objects.filter(group__in=secretary_groups).update(
-            is_backoffice=True
-        )
+        # secretary_groups = Group.objects.filter(name__in=["pilot", "pilot-2"])
+        # PermitDepartment.objects.filter(group__in=secretary_groups).update(
+        #     is_backoffice=True
+        # )
 
-        user = self.create_user(
-            "validator",
-            "validator",
-            administrative_entity_yverdon,
-            is_default_validator=True,
-            email="yverdon-squad+validator@liip.ch",
-        )
-        Group.objects.get(name="validator").permissions.add(
-            Permission.objects.get(
-                codename="validate_submission", content_type=submission_ct
-            )
-        )
+        # user = self.create_user(
+        #     "validator",
+        #     "validator",
+        #     administrative_entity_yverdon,
+        #     is_default_validator=True,
+        #     email="yverdon-squad+validator@liip.ch",
+        # )
+        # Group.objects.get(name="validator").permissions.add(
+        #     Permission.objects.get(
+        #         codename="validate_submission", content_type=submission_ct
+        #     )
+        # )
 
-        validator_group = Group.objects.get(name="validator")
-        department = PermitDepartment.objects.get(group=validator_group)
-        department.is_validator = True
-        department.save()
+        # validator_group = Group.objects.get(name="validator")
+        # department = PermitDepartment.objects.get(group=validator_group)
+        # department.is_validator = True
+        # department.save()
 
-        self.stdout.write("validator / demo")
+        # self.stdout.write("validator / demo")
 
-        user = self.create_user(
-            "validator-2",
-            "validator-2",
-            administrative_entity_yverdon,
-            email="yverdon-squad+validator-2@liip.ch",
-        )
-        Group.objects.get(name="validator-2").permissions.add(
-            Permission.objects.get(
-                codename="validate_submission", content_type=submission_ct
-            )
-        )
-        self.stdout.write("validator-2 / demo")
+        # user = self.create_user(
+        #     "validator-2",
+        #     "validator-2",
+        #     administrative_entity_yverdon,
+        #     email="yverdon-squad+validator-2@liip.ch",
+        # )
+        # Group.objects.get(name="validator-2").permissions.add(
+        #     Permission.objects.get(
+        #         codename="validate_submission", content_type=submission_ct
+        #     )
+        # )
+        # self.stdout.write("validator-2 / demo")
 
-        user = self.create_user(
-            "integrator",
-            "integrator",
-            administrative_entity_yverdon,
-            is_default_validator=True,
-            is_integrator_admin=True,
-            is_staff=True,
-            email="yverdon-squad+integrator@liip.ch",
-        )
+        # user = self.create_user(
+        #     "integrator",
+        #     "integrator",
+        #     administrative_entity_yverdon,
+        #     is_default_validator=True,
+        #     is_integrator_admin=True,
+        #     is_staff=True,
+        #     email="yverdon-squad+integrator@liip.ch",
+        # )
 
-        # set the required permissions for the integrator group
-        Group.objects.get(name="integrator").permissions.set(
-            get_integrator_permissions()
-        )
-        self.stdout.write("integrator / demo")
+        # # set the required permissions for the integrator group
+        # Group.objects.get(name="integrator").permissions.set(
+        #     get_integrator_permissions()
+        # )
+        # self.stdout.write("integrator / demo")
 
         # Insert status choices from Submission and insert status for adminsitrative_entity
         for status_value in Submission.STATUS_CHOICES:
