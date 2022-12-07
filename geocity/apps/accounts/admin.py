@@ -20,7 +20,12 @@ from geocity.fields import GeometryWidget
 from . import models, permissions_groups
 from .users import get_integrator_permissions, get_users_list_for_integrator_admin
 
-MULTIPLE_INTEGRATOR_ERROR_MESSAGE = "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur'"
+MULTIPLE_INTEGRATOR_ERROR_MESSAGE = _(
+    "Un utilisateur ne peut être membre que d'un seul groupe 'Intégrateur'"
+)
+SELF_REMOVE_INTEGRATOR_ERROR_MESSAGE = _(
+    "Un groupe 'Intégrateur' ne peut être retiré. Veuillez contacter un administrateur"
+)
 
 # Allow a user belonging to integrator group to see only objects created by this group
 def filter_for_user(user, qs):
@@ -180,8 +185,8 @@ class UserAdmin(BaseUserAdmin):
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
     # Filter users that can be by integrator
-    def get_queryset(self, request):
-        return get_users_list_for_integrator_admin(request.user)
+    # def get_queryset(self, request):
+    #     return get_users_list_for_integrator_admin(request.user)
 
     def save_model(self, req, obj, form, change):
         """Set 'is_staff=True' when the saved user is in a integrator group.
