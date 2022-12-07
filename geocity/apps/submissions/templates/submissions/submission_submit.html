@@ -32,6 +32,9 @@
         toutes les informations saisies, vous pourrez l'envoyer.
       {% endblocktrans %}
     </p>
+    <p>
+      <a class="btn btn-primary" href="{{ incomplete_steps|first }}">{% trans "Renseigner les informations manquantes" %}</a>
+    </p>
   {% endif %}
   <p>
     {% trans "Vous trouverez ci-dessous un récapitulatif de votre saisie." %}
@@ -39,9 +42,7 @@
   <form method="post">
     {% csrf_token %}
     {% buttons %}
-      {% if incomplete_steps %}
-        <a class="btn btn-primary" href="{{ incomplete_steps|first }}">{% trans "Renseigner les informations manquantes" %}</a>
-      {% else %}
+      {% if not incomplete_steps %}
         {% if previous_step.url %}
           <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
         {% endif %}
