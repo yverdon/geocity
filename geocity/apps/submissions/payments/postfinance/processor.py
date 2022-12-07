@@ -5,6 +5,7 @@ from postfinancecheckout import (
     Environment,
     LineItemAttribute,
     TransactionEnvironmentSelectionStrategy,
+    TransactionState,
 )
 from postfinancecheckout.api import (
     TransactionPaymentPageServiceApi,
@@ -49,7 +50,7 @@ class PostFinanceCheckoutProcessor(PaymentProcessor):
             )
         return self.transaction_payment_page_service
 
-    def create_merchant_transaction(self, submission, request):
+    def create_merchant_transaction(self, request, submission, transaction):
         transaction_service = self._get_transaction_service_api()
         transaction_payment_page_service = (
             self._get_transaction_payment_page_service_api()
@@ -81,11 +82,13 @@ class PostFinanceCheckoutProcessor(PaymentProcessor):
             else Environment.LIVE
         )
         success_url = request.build_absolute_uri(
-            reverse("submissions:confirm_transaction")
+            reverse("submissions:confirm_transaction", kwargs={"pk": transaction.pk})
         )
-        failed_url = request.build_absolute_uri(reverse("submissions:fail_transaction"))
+        failed_url = request.build_absolute_uri(
+            reverse("submissions:fail_transaction", kwargs={"pk": transaction.pk})
+        )
 
-        transaction = TransactionCreate(
+        merchant_transaction = TransactionCreate(
             line_items=[line_item],
             auto_confirmation_enabled=True,
             currency=submission.price.currency,
@@ -95,8 +98,9 @@ class PostFinanceCheckoutProcessor(PaymentProcessor):
             failed_url=failed_url,
         )
         transaction_create = transaction_service.create(
-            space_id=self.space_id, transaction=transaction
+            space_id=self.space_id, transaction=merchant_transaction
         )
+
         payment_page_url = transaction_payment_page_service.payment_page_url(
             space_id=self.space_id, id=transaction_create.id
         )
@@ -105,3 +109,14 @@ class PostFinanceCheckoutProcessor(PaymentProcessor):
             "merchant_reference": transaction_create.merchant_reference,
             "payment_page_url": payment_page_url,
         }
+
+    def _get_transaction_status(self, transaction):
+        transaction_service = self._get_transaction_service_api()
+        merchant_transaction = transaction_service.read(
+            self.space_id, transaction.merchant_reference
+        )
+        return merchant_transaction.state
+
+    def is_transaction_fulfilled(self, transaction):
+        status = self._get_transaction_status(transaction)
+        return status == TransactionState.FULFILL

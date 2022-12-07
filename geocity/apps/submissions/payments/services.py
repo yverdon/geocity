@@ -25,3 +25,7 @@ def get_transaction_from_merchant_reference(merchant_reference):
     return PostFinanceCheckoutProcessor.transaction_class.objects.get(
         merchant_reference=merchant_reference
     )
+
+
+def get_transaction_from_id(transaction_id):
+    return PostFinanceCheckoutProcessor.transaction_class.objects.get(pk=transaction_id)

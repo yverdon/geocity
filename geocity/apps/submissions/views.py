@@ -60,6 +60,7 @@ from . import filters, forms, models, permissions, services, tables
 from .exceptions import BadSubmissionStatus, NonProlongableSubmission
 from .payments.services import (
     get_payment_processor,
+    get_transaction_from_id,
     get_transaction_from_merchant_reference,
 )
 from .search import search_result_to_json, search_submissions
@@ -1695,21 +1696,17 @@ def submission_submit(request, submission_id):
         services.submit_submission(submission, request)
         return redirect("submissions:submissions_list")
 
-    payment_url = ""
-    if (
+    should_go_to_payment = (
         submission.requires_online_payment()
         and submission.status == models.Submission.STATUS_DRAFT
-    ):
-        processor = get_payment_processor(submission.get_form_for_payment())
-        payment_url = processor.create_transaction_and_return_payment_page_url(
-            submission, request
-        )
+    )
+
     return render(
         request,
         "submissions/submission_submit.html",
         {
             "submission": submission,
-            "payment_url": payment_url,
+            "should_go_to_payment": should_go_to_payment,
             "directives": submission.get_submission_directives(),
             "incomplete_steps": incomplete_steps,
             **progress_bar_context(
@@ -2027,20 +2024,29 @@ class ChangeTransactionStatus(View):
             )
             redirect_page = f"{redirect_page}?prev_active_form=payments"
 
-            new_status_display = transaction.get_status_display()
+            new_status_display = transaction.get_status_display().lower()
             merchant_site = transaction.CHECKOUT_PROCESSOR_ID
 
             messages.success(
                 request,
                 mark_safe(
                     _(
-                        f"""La transaction {merchant_reference} a été mise dans le statut
+                        """Le statut de la transaction {merchant_reference} a été mis à jour en
                     <strong>{new_status_display}</strong>
-                    <br />
-                    <strong>Si nécessaire, pensez à mettre à jour la transaction sur {merchant_site}</strong>"""
-                    ).format()
+                    """
+                    ).format(
+                        new_status_display=new_status_display,
+                        merchant_reference=merchant_reference,
+                    )
                 ),
             )
+            if transaction.requires_action_on_merchant_site(new_status):
+                messages.warning(
+                    request,
+                    _(
+                        "Ne pas oublier d'également mettre à jour la transaction dans {merchant_site}"
+                    ).format(merchant_site=merchant_site),
+                )
             return redirect(redirect_page)
         except PermissionDenied:
             error_message = self.permission_error_message
@@ -2058,25 +2064,65 @@ class ChangeTransactionStatus(View):
 
 @method_decorator(login_required, name="dispatch")
 class ConfirmTransactionCallback(View):
-    def get(self, request, *args, **kwargs):
-        submisson_id = 17
-        # TODO Add hash and fetch submission
-        return redirect(
-            reverse_lazy(
-                "submissions:submission_submit_confirmed",
-                kwargs={"submission_id": submisson_id},
+    def get(self, request, pk, *args, **kwargs):
+        transaction = get_transaction_from_id(pk)
+        submission = transaction.submission_price.submission
+        if (
+            not request.user == submission.author
+            or not transaction.status == transaction.STATUS_UNPAID
+        ):
+            raise PermissionDenied
+
+        processor = get_payment_processor(submission.get_form_for_payment())
+        if processor.is_transaction_fulfilled(
+            transaction
+        ):  # TODO: what is payment takes some time?
+            transaction.set_paid()
+            # TODO: confirm submission
+
+            return render(
+                request,
+                "submissions/submission_payment_callback_confirm.html",
+                {
+                    "submission": submission,
+                },
             )
-        )
+
+        messages.error(_("Il y a un problème avec votre paiement"))
+        return redirect(reverse_lazy("submissions:submissions_list"))
 
 
 @method_decorator(login_required, name="dispatch")
 class FailTransactionCallback(View):
-    def get(self, request, *args, **kwargs):
-        submisson_id = 17
-        # TODO Add hash and fetch submission
-        messages.error(request, _("Paiement annulé !"))
-        return redirect(
-            reverse_lazy(
-                "submissions:submission_fields", kwargs={"submission_id": submisson_id}
-            )
+    def get(self, request, pk, *args, **kwargs):
+        transaction = get_transaction_from_id(pk)
+        submission = transaction.submission_price.submission
+        if not request.user == submission.author:
+            raise PermissionDenied
+
+        return render(
+            request,
+            "submissions/submission_payment_callback_fail.html",
+            {
+                "submission": submission,
+            },
         )
+
+
+@method_decorator(login_required, name="dispatch")
+class SubmissionPaymentRedirect(View):
+    def get(self, request, pk, *args, **kwargs):
+        submission = models.Submission.objects.get(pk=pk)
+
+        if (
+            submission.requires_online_payment()
+            and submission.status == models.Submission.STATUS_DRAFT
+        ):
+            processor = get_payment_processor(submission.get_form_for_payment())
+            payment_url = processor.create_transaction_and_return_payment_page_url(
+                submission, request
+            )
+            return redirect(payment_url)
+
+        messages.error(_("Il y a un problème avec votre demande"))
+        return redirect(reverse_lazy("submissions:submissions_list"))

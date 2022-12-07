@@ -5,11 +5,11 @@
 {% can_refund_transaction as can_refund %}
 
 {% if can_revert_refund or can_refund %}
-<ul class="list-inline text-right">
+<ul class="list-inline text-left">
   <li>
     <div class="form-group">
       <select class="form-control transactionStatusChangeSelect" id="transactionStatusChangeSelect-{{ record.merchant_reference }}">
-
+        <option value="">--------</option>
         {% if can_refund %}
           {% if record.status != 'to_refund' and record.status != 'refunded' %}
             <option value="to_refund">{% trans "A rembourser" %}</option>
@@ -26,7 +26,7 @@
   </li>
   <li>
       <button class="btn btn-primary transactionStatusChangeBtn" data-href="{% url 'submissions:change_transaction_status' record.merchant_reference %}" data-merchant-reference="{{ record.merchant_reference }}">
-        <i class="fa fa-save"></i>
+        <i class="fa fa-save" style="pointer-events: none"></i>
       </button>
   </li>
 </ul>

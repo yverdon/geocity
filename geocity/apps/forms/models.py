@@ -382,6 +382,20 @@ class Form(models.Model):
                     )
                 }
             )
+        if (
+            self.requires_online_payment
+            and settings.SESSION_COOKIE_SAMESITE.lower() != "lax"
+        ):
+            raise ValidationError(
+                {
+                    "requires_online_payment": mark_safe(
+                        _(
+                            """Cette instance de Geocity n'est pas configurée correctement pour le
+                            paiement en ligne. <strong>SESSION_COOKIE_SAMESITE</strong> doit être <strong>Lax</strong>"""
+                        )
+                    )
+                }
+            )
 
 
 class FormField(models.Model):

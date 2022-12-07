@@ -321,7 +321,7 @@ class TransactionsTable(tables.Table):
     status = tables.Column(verbose_name=_("Statut"), orderable=False)
     actions = tables.TemplateColumn(
         template_name="tables/_submission_transactions_table_actions.html",
-        verbose_name=_("Actions"),
+        verbose_name="",
         orderable=False,
     )
 

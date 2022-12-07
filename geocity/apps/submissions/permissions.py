@@ -134,7 +134,7 @@ def can_revert_refund_transaction(user, transaction):
     return user.is_superuser or (
         user.has_perm("submissions.can_revert_refund_transactions")
         and submission.administrative_entity
-        in get_administrative_entities_associated_to_user(user)
+        in AdministrativeEntity.objects.associated_to_user(user)
     )
 
 
@@ -143,7 +143,7 @@ def can_refund_transaction(user, transaction):
     return user.is_superuser or (
         user.has_perm("submissions.can_refund_transactions")
         and submission.administrative_entity
-        in get_administrative_entities_associated_to_user(user)
+        in AdministrativeEntity.objects.associated_to_user(user)
     )
 
 

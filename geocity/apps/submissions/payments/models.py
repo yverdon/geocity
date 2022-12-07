@@ -64,3 +64,6 @@ class Transaction(models.Model):
             self.STATUS_REFUNDED: self.set_refunded,
             self.STATUS_PAID: self.set_paid,
         }[new_status]()
+
+    def requires_action_on_merchant_site(self, new_status):
+        return new_status in (self.STATUS_REFUNDED, self.STATUS_PAID)
