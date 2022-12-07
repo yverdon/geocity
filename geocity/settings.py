@@ -323,7 +323,7 @@ CONSTANCE_CONFIG = {
         "",
         str,
     ),
-    "LOCATION_STEP": ("Sélectionnez la commune / l'entité", "", str),
+    "LOCATION_STEP": ("Sélectionnez l'entité administrative", "", str),
     "WORKS_OBJECTS_STEP": ("Sélectionnez les objets", "", str),
     "PROPERTIES_STEP": ("Renseignez les caractéristiques des objets", "", str),
     "GEO_TIME_STEP": ("Renseignez le planning et la localisation", "", str),
