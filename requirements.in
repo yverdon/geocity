@@ -1,11 +1,13 @@
 beautifulsoup4
 Django>4.1
-django-bootstrap-datepicker-plus
-django-bootstrap4
+django-bootstrap-datepicker-plus==4.0.0
+django-bootstrap4==21.2
 django-filter
 django-tables2
 django-tables2-column-shifter
-gdal
+# Base docker image must be update when GDAL is updated
+# https://github.com/yverdon/docker-geocity/
+gdal==3.3.2
 gunicorn
 html5lib
 jdcal
