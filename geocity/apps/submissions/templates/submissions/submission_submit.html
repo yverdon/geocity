@@ -37,23 +37,23 @@
     </p>
   {% endif %}
   <p>
-    {% trans "Vous trouverez ci-dessous un récapitulatif de votre saisie." %}
+    {% trans "Vous trouvez ci-dessous un récapitulatif de votre saisie." %}
   </p>
-  <form method="post">
-    {% csrf_token %}
-    {% buttons %}
-      {% if not incomplete_steps %}
-        {% if previous_step.url %}
-          <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
-        {% endif %}
-        <a class="btn btn-primary" href="{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}" class="mr-2">
-        {% trans "Envoyer" %}</a>
-      {% endif %}
-    {% endbuttons %}
-  </form>
   <div class="row">
     <div class="col">
         {% submission_summary submission %}
     </div>
   </div>
+    {% if not incomplete_steps %}
+      <form method="post">
+        {% csrf_token %}
+        {% buttons %}
+          {% if previous_step.url %}
+            <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
+          {% endif %}
+          <a class="btn btn-primary" href="{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}" class="mr-2">
+          {% trans "Envoyer" %}</a>
+        {% endbuttons %}
+      </form>
+    {% endif %}
 {% endblock %}
