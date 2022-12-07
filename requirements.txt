@@ -171,7 +171,7 @@ pyyaml==6.0
     # via -r requirements.in
 qrcode==7.3.1
     # via django-two-factor-auth
-requests==2.27.1
+requests==2.28.1
     # via
     #   -r requirements.in
     #   django-allauth
