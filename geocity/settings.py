@@ -231,6 +231,7 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "ANONYMOUS_REQUEST_SENT_BODY",
         "PRIVACY_POLICY_URL",
         "GENERAL_CONDITIONS_URL",
+        "CONTACT_URL",
     ),
     "Theme Options": (
         "BACKGROUND_COLOR",
@@ -244,7 +245,6 @@ CONSTANCE_CONFIG_FIELDSETS = {
     "Step Options": (
         "ANONYMOUS_CAPTCHA_STEP",
         "LOCATION_STEP",
-        "WORKS_TYPES_STEP",
         "WORKS_OBJECTS_STEP",
         "PROPERTIES_STEP",
         "GEO_TIME_STEP",
@@ -279,12 +279,17 @@ CONSTANCE_CONFIG = {
     ),
     "GENERAL_CONDITIONS_URL": (
         "",
-        "URL vers la politique de confidentialité",
+        "Lien vers les conditions générales",
         str,
     ),
     "PRIVACY_POLICY_URL": (
         "",
-        "URL vers la politique de confidentialité",
+        "Lien vers la politique de confidentialité",
+        str,
+    ),
+    "CONTACT_URL": (
+        "",
+        "Lien vers le moyen de contact (peut également être une adresse email, p. ex. mailto:info@geocity.ch)",
         str,
     ),
     "ALLOWED_FILE_EXTENSIONS": (  # Supported file extensions https://pypi.org/project/filetype/
@@ -318,14 +323,13 @@ CONSTANCE_CONFIG = {
         "",
         str,
     ),
-    "LOCATION_STEP": ("Sélectionnez la commune / l'entité", "", str),
-    "WORKS_TYPES_STEP": ("Sélectionnez le ou les type(s)", "", str),
+    "LOCATION_STEP": ("Sélectionnez l'entité administrative", "", str),
     "WORKS_OBJECTS_STEP": ("Sélectionnez les objets", "", str),
     "PROPERTIES_STEP": ("Renseignez les caractéristiques des objets", "", str),
     "GEO_TIME_STEP": ("Renseignez le planning et la localisation", "", str),
     "TIME_STEP": ("Renseignez le planning", "", str),
     "GEO_STEP": ("Renseignez la localisation", "", str),
-    "APPENDICES_STEP": ("Ajouter des documents", "", str),
+    "APPENDICES_STEP": ("Ajoutez les documents", "", str),
     "ACTORS_STEP": ("Renseignez les contacts", "", str),
     "SUBMIT_STEP": ("Résumé et envoi", "", str),
     "APPLICATION_TITLE": (

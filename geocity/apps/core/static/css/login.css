@@ -49,16 +49,12 @@ body {
   float: left;
 }
 
-#landing-page-link {
-  font-size:  0.9rem;
-}
-
 
 @media (max-width: 768px) {
 
   #login-content {
     width: 95%;
-    height: 600px;
+    height: auto;
     background: none;
     margin-top: 10px;
   }
@@ -79,14 +75,6 @@ body {
     font-size: smaller;
   }
 
-  .text-center {
-    font-size: 20px !important;
-  }
-
-  .login-welcome-text .text-center {
-    font-size: 15px;
-  }
-
   .login-welcome-text {
     top: 5px;
     margin-top: 5px;
@@ -104,10 +92,6 @@ body {
 
   .application-title {
     visibility: visible !important;
-  }
-
-  #landing-page-link {
-    font-size: 0.7rem;
   }
 
 }

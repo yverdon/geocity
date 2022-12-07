@@ -75,8 +75,8 @@ class Report(models.Model):
         permissions = [
             ("can_generate_pdf", _("Générer des documents pdf")),
         ]
-        verbose_name = _("3.2 Modèle d'impression")
-        verbose_name_plural = _("3.2 Modèles d'impression")
+        verbose_name = _("3.3 Modèle d'impression")
+        verbose_name_plural = _("3.3 Modèles d'impression")
 
     name = models.CharField(_("Nom"), max_length=150)
     layout = models.ForeignKey(

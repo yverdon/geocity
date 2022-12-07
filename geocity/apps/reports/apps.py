@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 class ReportsConfig(AppConfig):
     name = "geocity.apps.reports"
-    verbose_name = _("Rapports")
+    verbose_name = _("Rapports et documents")
 
     def ready(self):
         from . import signals  # noqa

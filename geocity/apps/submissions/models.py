@@ -27,7 +27,6 @@ from pdf2image import convert_from_path
 from PIL import Image
 from simple_history.models import HistoricalRecords
 
-from geocity.apps.accounts import users
 from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment, User
 from geocity.apps.accounts.validators import validate_email
 from geocity.apps.forms.models import Field, Form, FormCategory
@@ -134,7 +133,7 @@ class SubmissionQuerySet(models.QuerySet):
 
             if user.has_perm("submissions.amend_submission"):
                 qs_filter |= Q(
-                    administrative_entity__in=users.get_administrative_entities_associated_to_user(
+                    administrative_entity__in=AdministrativeEntity.objects.associated_to_user(
                         user
                     ),
                 ) & ~Q(status=Submission.STATUS_DRAFT)
@@ -179,7 +178,6 @@ class Submission(models.Model):
         STATUS_PROCESSING,
         STATUS_AWAITING_SUPPLEMENT,
         STATUS_RECEIVED,
-        STATUS_INQUIRY_IN_PROGRESS,
     }
 
     # Statuses that can be edited by pilot service if granted permission "edit_submission"
@@ -195,6 +193,12 @@ class Submission(models.Model):
         STATUS_APPROVED,
         STATUS_PROCESSING,
         STATUS_AWAITING_SUPPLEMENT,
+    }
+
+    # Statuses of submission visible in calendar (api => submissions_details)
+    VISIBLE_IN_CALENDAR_STATUSES = {
+        STATUS_APPROVED,
+        STATUS_INQUIRY_IN_PROGRESS,
     }
 
     PROLONGATION_STATUS_PENDING = 0
@@ -241,9 +245,6 @@ class Submission(models.Model):
     contacts = models.ManyToManyField(
         "Contact", related_name="+", through="SubmissionContact"
     )
-    intersected_geometries = models.TextField(
-        _("Entités géométriques concernées"), max_length=1024, null=True
-    )
     validation_pdf = fields.SubmissionFileField(
         _("pdf de validation"),
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
@@ -278,8 +279,8 @@ class Submission(models.Model):
     objects = SubmissionQuerySet().as_manager()
 
     class Meta:
-        verbose_name = _("2.3 Consultation de la demande")
-        verbose_name_plural = _("2.3 Consultation des demandes")
+        verbose_name = _("2.2 Consultation de la demande")
+        verbose_name_plural = _("2.2 Consultation des demandes")
         permissions = [
             ("amend_submission", _("Traiter les demandes de permis")),
             ("validate_submission", _("Valider les demandes de permis")),
@@ -541,16 +542,6 @@ class Submission(models.Model):
     @property
     def is_archived(self):
         return self.status == self.STATUS_ARCHIVED
-
-    @property
-    def has_geom_intersection_enabled(self):
-        """
-        Check if there is any work_object_types with has_geom_intersection_enabled
-        """
-        has_geom_intersection_enabled = self.forms.filter(
-            has_geom_intersection_enabled=True
-        ).exists()
-        return has_geom_intersection_enabled
 
     @property
     def complementary_documents(self):
@@ -1004,33 +995,6 @@ class Submission(models.Model):
     def get_selected_forms(self):
         return SelectedForm.objects.filter(submission=self)
 
-    def get_intersected_geometries(self):
-        intersected_geometries = ""
-
-        if self.has_geom_intersection_enabled:
-
-            intersected_geometries_ids = []
-            geotimes = self.geo_time.all()
-
-            for geo_time in geotimes:
-
-                # Django GIS GEOS API does not support intersection with GeometryCollection
-                # For this reason, we have to iterate over collection content
-                for geom in geo_time.geom:
-                    results = (
-                        GeomLayer.objects.filter(geom__intersects=geom)
-                        .exclude(pk__in=intersected_geometries_ids)
-                        .distinct()
-                    )
-                    for result in results:
-                        intersected_geometries_ids.append(result.pk)
-                        intersected_geometries += f"""
-                            {result.pk}: {result.layer_name} ; {result.description} ;
-                            {result.source_id} ; {result.source_subid} <br>
-                            """
-
-        return intersected_geometries
-
     def reverse_geocode_and_store_address_geometry(self, to_geocode_addresses):
         # Delete the previous geocoded geometries
         SubmissionGeoTime.objects.filter(
@@ -1260,29 +1224,6 @@ class SubmissionGeoTime(models.Model):
         ]
 
 
-class GeomLayer(models.Model):
-    """
-    Geometric entities that might be touched by the PermitRequest
-    """
-
-    layer_name = models.CharField(
-        _("Nom de la couche source"), max_length=128, blank=True
-    )
-    description = models.CharField(_("Commentaire"), max_length=1024, blank=True)
-    source_id = models.CharField(_("Id entité"), max_length=128, blank=True)
-    source_subid = models.CharField(
-        _("Id entité secondaire"), max_length=128, blank=True
-    )
-    external_link = models.URLField(_("Lien externe"), blank=True)
-    geom = geomodels.MultiPolygonField(_("Géométrie"), null=True, srid=2056)
-
-    class Meta:
-        verbose_name = _("3.4 Consultation de l'entité géographique à intersecter")
-        verbose_name_plural = _(
-            "3.4 Consultation des entités géographiques à intersecter"
-        )
-
-
 class SubmissionWorkflowStatusQuerySet(models.QuerySet):
     def get_statuses_for_administrative_entity(self, administrative_entity):
         """
@@ -1332,7 +1273,7 @@ class ArchivedSubmissionQuerySet(models.QuerySet):
 
         qs_filter = Q(archivist=user)
         qs_filter |= Q(
-            submission__administrative_entity__in=users.get_administrative_entities_associated_to_user(
+            submission__administrative_entity__in=AdministrativeEntity.objects.associated_to_user(
                 user
             )
         )
@@ -1392,8 +1333,8 @@ class SubmissionInquiry(models.Model):
     )
 
     class Meta:
-        verbose_name = _("2.4 Enquête publique")
-        verbose_name_plural = _("2.4 Enquêtes publiques")
+        verbose_name = _("2.3 Enquête publique")
+        verbose_name_plural = _("2.3 Enquêtes publiques")
 
     @classmethod
     def get_current_inquiry(cls, submission):
@@ -1479,6 +1420,19 @@ class SubmissionComplementaryDocument(models.Model):
         return self.document.name
 
 
+class ChildrenFormManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(parent__isnull=False)
+
+    def associated_to_parent(self, parent):
+        """
+        Get the complementary document types associated the parent
+        """
+        return self.get_queryset().filter(
+            parent=parent,
+        )
+
+
 class ComplementaryDocumentType(models.Model):
     name = models.CharField(_("nom"), max_length=255)
     parent = models.ForeignKey(
@@ -1516,6 +1470,11 @@ class ComplementaryDocumentType(models.Model):
         through="reports.report_document_types",
     )
 
+    objects = models.Manager()
+
+    # Only children objects
+    children_objects = ChildrenFormManager()
+
     class Meta:
         constraints = [
             models.CheckConstraint(
@@ -1524,11 +1483,20 @@ class ComplementaryDocumentType(models.Model):
                 name="complementary_document_type_restrict_form_link_to_parents",
             )
         ]
-        verbose_name = _("2.2 Type de document")
-        verbose_name_plural = _("2.2 Types de document")
+        verbose_name = _("3.2 Catégorie de document")
+        verbose_name_plural = _("3.2 Catégories de document")
 
     def __str__(self):
         return self.name
+
+
+# Change the app_label in order to regroup models under the same app in admin
+class ComplementaryDocumentTypeForAdminSite(ComplementaryDocumentType):
+    class Meta:
+        proxy = True
+        app_label = "reports"
+        verbose_name = _("3.2 Catégorie de document")
+        verbose_name_plural = _("3.2 Catégories de document")
 
 
 class SubmissionAmendField(models.Model):

@@ -90,16 +90,6 @@
 
   {% endif %}
 
-
-  <div class="row">
-    <div class="col">
-      {% if intersected_geometries %}
-        <h4>{% trans "Éléments géographiques touchés par la demande (automatique)" %}</h4>
-        {{ intersected_geometries|safe }}
-      {% endif %}
-    </div>
-  </div>
-
   <div class="row">
     <div class="col">
       {% for geo_time_form in geo_time_formset %}

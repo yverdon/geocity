@@ -200,7 +200,13 @@
       <footer class="flex-shrink-0 py-2 bg-light text-dark mt-auto">
         <div class="container text-center">
           <small>
-            <a href="https://geocity.ch/about" target="_blank" rel="noreferrer">{% trans "Découvrir Geocity" %}</a>
+            &copy; {% now "Y" %} Geocity
+            &nbsp;|&nbsp;
+            <a href="https://geocity.ch/about" target="_blank" rel="noreferrer">{% trans "A propos" %}</a>
+            {% if config.CONTACT_URL %}
+              &nbsp;|&nbsp;
+              <a href="{{ config.CONTACT_URL }}" target="_blank" rel="noreferrer">{% trans "Contact" %}</a>
+            {% endif %}
             {% if config.GENERAL_CONDITIONS_URL %}
               &nbsp;|&nbsp;
               <a href="{{ config.GENERAL_CONDITIONS_URL }}" target="_blank" rel="noreferrer">{% trans "Conditions" %}</a>

@@ -171,6 +171,7 @@ class Form(models.Model):
     requires_validation_document = models.BooleanField(
         _("Document de validation obligatoire"), default=True
     )
+    # TODO: sphinx documentation, to explain is used to make visible/hidden in the list of forms
     is_public = models.BooleanField(_("Visibilité "), default=False)
     is_anonymous = models.BooleanField(
         _("Demandes anonymes uniquement"),
@@ -213,9 +214,6 @@ class Form(models.Model):
             "Nom affiché par défaut dans les différentes étapes du formulaire, ne s'affiche pas dans l'admin (max. 32 caractères)"
         ),
         blank=True,
-    )
-    has_geom_intersection_enabled = models.BooleanField(
-        _("Activer l'intersection de géométries"), default=False
     )
 
     name = models.CharField(_("nom"), max_length=255)

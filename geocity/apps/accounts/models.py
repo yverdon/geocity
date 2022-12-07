@@ -185,6 +185,18 @@ class AdministrativeEntityManager(models.Manager):
     def public(self):
         return self.get_queryset().filter(anonymous_user__isnull=False)
 
+    def associated_to_user(self, user):
+        """
+        Get the administrative entities associated to a specific user
+        """
+        return (
+            self.get_queryset()
+            .filter(
+                departments__group__in=user.groups.all(),
+            )
+            .order_by("ofs_id", "-name")
+        )
+
 
 class AdministrativeEntity(models.Model):
     name = models.CharField(_("name"), max_length=128)
@@ -292,8 +304,8 @@ class AdministrativeEntityForAdminSite(AdministrativeEntity):
     class Meta:
         proxy = True
         app_label = "forms"
-        verbose_name = _("1.1 Entité administrative (commune, organisation)")
-        verbose_name_plural = _("1.1 Entités administratives (commune, organisation)")
+        verbose_name = _("1.1 Entité administrative")
+        verbose_name_plural = _("1.1 Entités administratives")
 
 
 class UserProfileManager(models.Manager):

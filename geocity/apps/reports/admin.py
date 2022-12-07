@@ -2,6 +2,7 @@ from django import forms
 from django.contrib import admin
 from django.utils.html import format_html_join
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext_lazy as _
 from polymorphic.admin import PolymorphicInlineSupportMixin, StackedPolymorphicInline
 
 from geocity.apps.accounts.admin import IntegratorFilterMixin
@@ -64,13 +65,38 @@ class ReportAdmin(
         "name",
         "layout",
         "integrator",
+        "form_",
+        "category_",
         "types_",
     ]
-    list_filter = ["name"]
+    list_filter = [
+        "name",
+        "layout",
+        "integrator",
+    ]
     search_fields = [
         "name",
         "layout",
+        "integrator",
     ]
+
+    # List forms using the report in admin list
+    def form_(self, obj):
+        list_content = format_html_join(
+            "",
+            "<li>{}</li>",
+            [[d.parent.form] for d in obj.document_types.all()],
+        )
+        return mark_safe(f"<ul>{list_content}</ul>")
+
+    # List category (parent) using the report in admin list
+    def category_(self, obj):
+        list_content = format_html_join(
+            "",
+            "<li>{}</li>",
+            [[d.parent.name] for d in obj.document_types.all()],
+        )
+        return mark_safe(f"<ul>{list_content}</ul>")
 
     # List types using the report in admin list
     def types_(self, obj):
@@ -81,6 +107,10 @@ class ReportAdmin(
         )
         return mark_safe(f"<ul>{list_content}</ul>")
 
+    form_.short_description = _("Formulaire")
+    category_.short_description = _("Catégorie de document")
+    types_.short_description = _("Type de document")
+
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "document_types":
             qs = ComplementaryDocumentType.objects.filter(parent__isnull=False)
@@ -88,7 +118,7 @@ class ReportAdmin(
                 kwargs["queryset"] = qs.all()
             else:
                 kwargs["queryset"] = qs.filter(
-                    integrator=request.user.groups.get(
+                    parent__integrator=request.user.groups.get(
                         permit_department__is_integrator_admin=True
                     )
                 )
