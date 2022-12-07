@@ -329,7 +329,7 @@ CONSTANCE_CONFIG = {
     "GEO_TIME_STEP": ("Renseignez le planning et la localisation", "", str),
     "TIME_STEP": ("Renseignez le planning", "", str),
     "GEO_STEP": ("Renseignez la localisation", "", str),
-    "APPENDICES_STEP": ("Ajouter des documents", "", str),
+    "APPENDICES_STEP": ("Ajoutez les documents", "", str),
     "ACTORS_STEP": ("Renseignez les contacts", "", str),
     "SUBMIT_STEP": ("Résumé et envoi", "", str),
     "APPLICATION_TITLE": (
