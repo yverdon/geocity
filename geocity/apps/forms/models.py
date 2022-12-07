@@ -348,6 +348,41 @@ class Form(models.Model):
                 }
             )
 
+        if (
+            self.requires_online_payment
+            and not self.administrative_entities.first().is_single_form_submissions
+        ):
+            raise ValidationError(
+                {
+                    "requires_online_payment": _(
+                        "Ne peut pas être coché, car l'entité administrative accepte "
+                        "les demandes sur plusieurs objets."
+                    )
+                }
+            )
+
+        if self.requires_online_payment and not self.payment_settings:
+            raise ValidationError(
+                {
+                    "requires_online_payment": _(
+                        "Nécessite que des paramètres de paiement soient sélectionnés."
+                    )
+                }
+            )
+
+        if self.requires_online_payment and self.requires_payment:
+            raise ValidationError(
+                {
+                    "requires_online_payment": mark_safe(
+                        _(
+                            "Les demandes <strong>soumises à des frais</strong> ne peuvent "
+                            "pas offrir le <strong>paiement en ligne</strong>. "
+                            "Veuillez choisir une des deux options."
+                        )
+                    )
+                }
+            )
+
 
 class FormField(models.Model):
     form = models.ForeignKey(Form, related_name="+", on_delete=models.CASCADE)
