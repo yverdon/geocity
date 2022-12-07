@@ -245,7 +245,6 @@ CONSTANCE_CONFIG_FIELDSETS = {
     "Step Options": (
         "ANONYMOUS_CAPTCHA_STEP",
         "LOCATION_STEP",
-        "WORKS_TYPES_STEP",
         "WORKS_OBJECTS_STEP",
         "PROPERTIES_STEP",
         "GEO_TIME_STEP",
@@ -325,7 +324,6 @@ CONSTANCE_CONFIG = {
         str,
     ),
     "LOCATION_STEP": ("Sélectionnez la commune / l'entité", "", str),
-    "WORKS_TYPES_STEP": ("Sélectionnez le ou les type(s)", "", str),
     "WORKS_OBJECTS_STEP": ("Sélectionnez les objets", "", str),
     "PROPERTIES_STEP": ("Renseignez les caractéristiques des objets", "", str),
     "GEO_TIME_STEP": ("Renseignez le planning et la localisation", "", str),
