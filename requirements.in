@@ -1,5 +1,5 @@
 beautifulsoup4
-Django
+Django>4.1
 django-bootstrap-datepicker-plus
 django-bootstrap4
 django-filter
@@ -27,7 +27,7 @@ django-taggit
 filetype
 django-jazzmin
 # Open authentication provider
-django-oauth-toolkit<2.2.0
+django-oauth-toolkit
 # Open authentication consumer
 django-allauth
 # django_wfs3 -> djangorestframework (optional for openapi schema generation, see https://www.django-rest-framework.org/api-guide/schemas/#install-dependencies)
