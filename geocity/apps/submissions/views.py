@@ -1962,7 +1962,9 @@ def submissions_search(request):
     terms = request.GET.get("search")
 
     if len(terms) >= 2:
-        submissions = models.Submission.objects.filter_for_user(request.user)
+        submissions = models.Submission.objects.filter_for_user(
+            request.user
+        ).prefetch_related("price__transactions")
         results = search_submissions(
             search_str=terms, submissions_qs=submissions, limit=5
         )

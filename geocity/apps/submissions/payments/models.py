@@ -16,7 +16,7 @@ class SubmissionPrice(models.Model):
     history = HistoricalRecords()
 
     def get_transactions(self):
-        return self.postfinancetransaction_set.all()
+        return self.transactions.all()
 
 
 class Transaction(models.Model):
@@ -25,7 +25,11 @@ class Transaction(models.Model):
     STATUS_PAID = "paid"
     STATUS_TO_REFUND = "to_refund"
     STATUS_REFUNDED = "refunded"
-    submission_price = models.ForeignKey("SubmissionPrice", on_delete=models.CASCADE)
+    submission_price = models.ForeignKey(
+        "SubmissionPrice",
+        on_delete=models.CASCADE,
+        related_name="transactions",
+    )
     amount = models.DecimalField(_("Montant"), max_digits=6, decimal_places=2)
     currency = models.CharField(_("Devise"), max_length=20)
     merchant_reference = models.CharField(_("Référence marchande"), max_length=255)

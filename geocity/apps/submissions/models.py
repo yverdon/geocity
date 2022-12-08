@@ -1073,7 +1073,7 @@ class Submission(models.Model):
 
     def get_transactions(self):
         # TODO: if more payment processors are implemented, change this to add all transaction types to queryset
-        return self.submission_price.postfinancetransaction_set.all()
+        return self.submission_price.get_transactions()
 
 
 class Contact(models.Model):
