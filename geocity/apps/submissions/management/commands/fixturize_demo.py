@@ -443,117 +443,8 @@ class Command(BaseCommand):
                 choices="Déviation trafic\nHoraire prolongé\nSon>90dB",
             ),
         }
-        form_categories = [
-            (
-                "Stationnement (ex. de demande devant être prolongée)",
-                [
-                    (
-                        "Demande de macaron",
-                        fields["comment"],
-                        fields["date"],
-                    ),
-                    (
-                        "Accès au centre-ville historique",
-                        fields["plan"],
-                        fields["width"],
-                        fields["comment"],
-                        fields["title"],
-                        fields["date"],
-                        fields["checkbox"],
-                        fields["adresse"],
-                        fields["list_multiple"],
-                    ),
-                ],
-            ),
-            (
-                "Événements sur la voie publique",
-                [
-                    (
-                        "Événement sportif",
-                        fields["plan"],
-                        fields["width"],
-                        fields["comment"],
-                        fields["title"],
-                        fields["date"],
-                        fields["checkbox"],
-                        fields["adresse"],
-                        fields["list_multiple"],
-                    ),
-                    (
-                        "Événement culturel",
-                        fields["plan"],
-                        fields["width"],
-                        fields["comment"],
-                        fields["title"],
-                        fields["date"],
-                        fields["checkbox"],
-                        fields["adresse"],
-                        fields["list_multiple"],
-                    ),
-                    (
-                        "Événement politique",
-                        fields["plan"],
-                        fields["width"],
-                        fields["comment"],
-                        fields["title"],
-                        fields["date"],
-                        fields["checkbox"],
-                        fields["adresse"],
-                        fields["list_multiple"],
-                    ),
-                    (
-                        "Événement commercial",
-                        fields["plan"],
-                        fields["width"],
-                        fields["comment"],
-                        fields["title"],
-                        fields["date"],
-                        fields["checkbox"],
-                        fields["adresse"],
-                        fields["list_multiple"],
-                    ),
-                ],
-            ),
-            (
-                "Chantier",
-                [
-                    (
-                        "Permis de fouille",
-                        fields["width"],
-                        fields["height"],
-                        fields["title"],
-                        fields["comment"],
-                        fields["adresse"],
-                        fields["adresse_geocode"],
-                        fields["checkbox"],
-                        fields["list_single"],
-                    ),
-                    (
-                        "Permis de dépôt",
-                        fields["width"],
-                        fields["height"],
-                        fields["comment"],
-                        fields["title"],
-                        fields["adresse"],
-                        fields["adresse_geocode"],
-                        fields["checkbox"],
-                    ),
-                ],
-            ),
-            (
-                "Subventions (ex. de demande sans géométrie ni période temporelle)",
-                [
-                    (
-                        "Prime éco-mobilité",
-                        fields["comment"],
-                    ),
-                    (
-                        "Abonnement de bus",
-                        fields["comment"],
-                    ),
-                ],
-            ),
-        ]
+
+        # Administrative entities
         administrative_entity_yverdon = AdministrativeEntity.objects.get(
             name="Démo Yverdon",
         )
@@ -571,6 +462,129 @@ class Command(BaseCommand):
         )
         administrative_entity_vevey.tags.add("vevey")
 
+        # Forms
+        form_categories = [
+            (
+                "Stationnement (ex. de demande devant être prolongée)",
+                [
+                    (
+                        "Demande de macaron",
+                        administrative_entity_yverdon,
+                        fields["comment"],
+                        fields["date"],
+                    ),
+                    (
+                        "Accès au centre-ville historique",
+                        administrative_entity_lausanne,
+                        fields["plan"],
+                        fields["width"],
+                        fields["comment"],
+                        fields["title"],
+                        fields["date"],
+                        fields["checkbox"],
+                        fields["adresse"],
+                        fields["list_multiple"],
+                    ),
+                ],
+            ),
+            (
+                "Événements sur la voie publique",
+                [
+                    (
+                        "Événement sportif",
+                        administrative_entity_yverdon,
+                        fields["plan"],
+                        fields["width"],
+                        fields["comment"],
+                        fields["title"],
+                        fields["date"],
+                        fields["checkbox"],
+                        fields["adresse"],
+                        fields["list_multiple"],
+                    ),
+                    (
+                        "Événement culturel",
+                        administrative_entity_yverdon,
+                        fields["plan"],
+                        fields["width"],
+                        fields["comment"],
+                        fields["title"],
+                        fields["date"],
+                        fields["checkbox"],
+                        fields["adresse"],
+                        fields["list_multiple"],
+                    ),
+                    (
+                        "Événement politique",
+                        administrative_entity_grandson,
+                        fields["plan"],
+                        fields["width"],
+                        fields["comment"],
+                        fields["title"],
+                        fields["date"],
+                        fields["checkbox"],
+                        fields["adresse"],
+                        fields["list_multiple"],
+                    ),
+                    (
+                        "Événement commercial",
+                        administrative_entity_grandson,
+                        fields["plan"],
+                        fields["width"],
+                        fields["comment"],
+                        fields["title"],
+                        fields["date"],
+                        fields["checkbox"],
+                        fields["adresse"],
+                        fields["list_multiple"],
+                    ),
+                ],
+            ),
+            (
+                "Chantier",
+                [
+                    (
+                        "Permis de fouille",
+                        administrative_entity_grandson,
+                        fields["width"],
+                        fields["height"],
+                        fields["title"],
+                        fields["comment"],
+                        fields["adresse"],
+                        fields["adresse_geocode"],
+                        fields["checkbox"],
+                        fields["list_single"],
+                    ),
+                    (
+                        "Permis de dépôt",
+                        administrative_entity_vevey,
+                        fields["width"],
+                        fields["height"],
+                        fields["comment"],
+                        fields["title"],
+                        fields["adresse"],
+                        fields["adresse_geocode"],
+                        fields["checkbox"],
+                    ),
+                ],
+            ),
+            (
+                "Subventions (ex. de demande sans géométrie ni période temporelle)",
+                [
+                    (
+                        "Prime éco-mobilité",
+                        administrative_entity_vevey,
+                        fields["comment"],
+                    ),
+                    (
+                        "Abonnement de bus",
+                        administrative_entity_vevey,
+                        fields["comment"],
+                    ),
+                ],
+            ),
+        ]
+
         additional_information_text = """
         Texte expliquant la ou les conditions particulière(s) s'appliquant à cette demande.
         Un document pdf peut également être proposé à l'utilisateur, par exemple pour les conditions
@@ -578,6 +592,7 @@ class Command(BaseCommand):
         """
 
         form_order = 0
+
         for form_category, objs in form_categories:
             form_category_obj = FormCategory.objects.create(name=form_category)
             form_category_obj.tags.add(unaccent(form_category))
@@ -587,7 +602,7 @@ class Command(BaseCommand):
                 is_mandatory=False,
             )
 
-            for form, *fields in objs:
+            for form, administrative_entity, *fields in objs:
                 form_obj = Form.objects.create(
                     name=form,
                     category=form_category_obj,
@@ -598,13 +613,11 @@ class Command(BaseCommand):
                     permanent_publication_enabled=True,
                     services_to_notify=f"yverdon-squad+admin@liip.ch",
                     additional_information=additional_information_text,
+                    administrative_entities=[administrative_entity],
                     order=form_order,
                 )
                 form_order += 1
-                form_obj.administrative_entities.add(administrative_entity_yverdon)
-                form_obj.administrative_entities.add(administrative_entity_grandson)
-                form_obj.administrative_entities.add(administrative_entity_lausanne)
-                form_obj.administrative_entities.add(administrative_entity_vevey)
+
                 self.create_document_types(form_obj)
                 for order, field in enumerate(fields):
                     FormField.objects.create(field=field, form=form_obj, order=order)
