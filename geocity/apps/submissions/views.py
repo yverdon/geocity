@@ -2076,11 +2076,9 @@ class ConfirmTransactionCallback(View):
             raise PermissionDenied
 
         processor = get_payment_processor(submission.get_form_for_payment())
-        if processor.is_transaction_fulfilled(
-            transaction
-        ):  # TODO: what is payment takes some time?
+        if processor.is_transaction_authorized(transaction):
             transaction.set_paid()
-            # TODO: confirm submission
+            submission_submit_confirmed(request, submission.pk)
 
             return render(
                 request,
@@ -2090,8 +2088,18 @@ class ConfirmTransactionCallback(View):
                 },
             )
 
-        messages.error(_("Il y a un problème avec votre paiement"))
-        return redirect(reverse_lazy("submissions:submissions_list"))
+        transaction.set_failed()
+        return render(
+            request,
+            "submissions/submission_payment_callback_fail.html",
+            {
+                "submission": submission,
+                "submission_url": reverse(
+                    "submissions:submission_submit",
+                    kwargs={"submission_id": submission.pk},
+                ),
+            },
+        )
 
 
 @method_decorator(login_required, name="dispatch")
@@ -2102,11 +2110,17 @@ class FailTransactionCallback(View):
         if not request.user == submission.author:
             raise PermissionDenied
 
+        transaction.set_failed()
+
         return render(
             request,
             "submissions/submission_payment_callback_fail.html",
             {
                 "submission": submission,
+                "submission_url": reverse(
+                    "submissions:submission_fields",
+                    kwargs={"submission_id": submission.pk},
+                ),
             },
         )
 
@@ -2119,12 +2133,11 @@ class SubmissionPaymentRedirect(View):
         if (
             submission.requires_online_payment()
             and submission.status == models.Submission.STATUS_DRAFT
-        ):
+        ) or request.user != submission.author:
             processor = get_payment_processor(submission.get_form_for_payment())
             payment_url = processor.create_transaction_and_return_payment_page_url(
                 submission, request
             )
             return redirect(payment_url)
 
-        messages.error(_("Il y a un problème avec votre demande"))
         return redirect(reverse_lazy("submissions:submissions_list"))

@@ -36,29 +36,33 @@ class PaymentProcessor:
 
     def _create_internal_transaction(self, submission):
         price = submission.get_submission_price()
-        return self.transaction_class.objects.create(
-            submission_price=price,
-            merchant_reference=0,  # TODO: field null=True instead of this?
-            amount=price.amount,
-            currency=price.currency,
+        return (
+            self.transaction_class.objects.create(
+                submission_price=price,
+                merchant_reference=0,  # TODO: field null=True instead of this?
+                amount=price.amount,
+                currency=price.currency,
+            ),
+            True,
         )
 
-    def _save_merchant_reference(self, transaction, merchant_reference):
-        transaction.merchant_reference = merchant_reference
+    def _save_merchant_data(self, transaction, merchant_transaction_data):
+        transaction.merchant_reference = merchant_transaction_data["merchant_reference"]
         transaction.save()
 
     def create_transaction_and_return_payment_page_url(self, submission, request):
-        transaction = self._create_internal_transaction(submission)
-        merchant_transaction_data = self.create_merchant_transaction(
-            request, submission, transaction
-        )
-        self._save_merchant_reference(
-            transaction, merchant_transaction_data["merchant_reference"]
-        )
-        return merchant_transaction_data["payment_page_url"]
+        transaction, is_new_transaction = self._create_internal_transaction(submission)
+        if is_new_transaction:
+            merchant_transaction_data = self.create_merchant_transaction(
+                request, submission, transaction
+            )
+            self._save_merchant_data(transaction, merchant_transaction_data)
+            return merchant_transaction_data["payment_page_url"]
+        else:
+            return transaction.payment_url
 
     def _get_transaction_status(self, transaction):
         raise NotImplementedError
 
-    def is_transaction_fulfilled(self, transaction):
+    def is_transaction_authorized(self, transaction):
         raise NotImplementedError

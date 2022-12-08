@@ -145,6 +145,12 @@ class PaymentSettings(models.Model):
         ],
         default="PostFinance",
     )
+    integrator = models.ForeignKey(
+        Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs"),
+    )
     space_id = models.CharField(_("Space ID"), max_length=255, null=False)
     user_id = models.CharField(_("User ID"), max_length=255, null=False)
     api_key = models.CharField(_("API key"), max_length=255, null=False)
@@ -177,8 +183,12 @@ class Price(models.Model):
 
 
 class FormPrice(models.Model):
-    price = models.ForeignKey("Price", on_delete=models.CASCADE)
-    form = models.ForeignKey("Form", on_delete=models.CASCADE)
+    price = models.ForeignKey(
+        "Price", on_delete=models.CASCADE, verbose_name=_("Tarif")
+    )
+    form = models.ForeignKey(
+        "Form", on_delete=models.CASCADE, verbose_name=_("Formulaire")
+    )
 
     order = models.PositiveSmallIntegerField(
         _("Position dans les tarifs"), default=0, db_index=True

@@ -25,6 +25,7 @@ class Transaction(models.Model):
     STATUS_PAID = "paid"
     STATUS_TO_REFUND = "to_refund"
     STATUS_REFUNDED = "refunded"
+    STATUS_FAILED = "failed"
     submission_price = models.ForeignKey(
         "SubmissionPrice",
         on_delete=models.CASCADE,
@@ -41,11 +42,16 @@ class Transaction(models.Model):
             (STATUS_PAID, _("Payé")),
             (STATUS_TO_REFUND, _("À rembourser")),
             (STATUS_REFUNDED, _("Remboursé")),
+            (STATUS_FAILED, _("Échoué")),
         ],
         default=STATUS_UNPAID,
     )
     creation_date = models.DateTimeField(_("Date de création"), auto_now_add=True)
     updated_date = models.DateTimeField(_("Date de modification"), auto_now=True)
+    authorization_timeout_on = models.DateTimeField(
+        _("Date de fin d'authorisation"), null=True
+    )
+    payment_url = models.CharField(_("URL de paiement"), max_length=255, null=True)
 
     class Meta:
         abstract = True
@@ -60,6 +66,10 @@ class Transaction(models.Model):
 
     def set_to_refund(self):
         self.status = self.STATUS_TO_REFUND
+        self.save()
+
+    def set_failed(self):
+        self.status = self.STATUS_FAILED
         self.save()
 
     def set_new_status(self, new_status):

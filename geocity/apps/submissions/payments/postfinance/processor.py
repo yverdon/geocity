@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.urls import reverse
+from django.utils import timezone
 from postfinancecheckout import (
     Configuration,
     Environment,
@@ -51,6 +52,20 @@ class PostFinanceCheckoutProcessor(PaymentProcessor):
         return self.transaction_payment_page_service
 
     def create_merchant_transaction(self, request, submission, transaction):
+        """
+        Creates a transaction on PostFinance Checkout. The transaction contains 1 line item with:
+        - Name: The submission's price's text (description of the price)
+        - Unique ID: The submission's ID
+        - SKU: The submission's original price instance's ID
+        - Attribute "Compte interne": the internal_accoutn value specified in PaymentSettings
+
+        Returns a dict with the following entries:
+        {
+            "merchant_reference": <str, PostFinance's transaction identifier>,
+            "authorization_timeout_on": <datetime, when the transaction times out, if not paid/cancelld>,
+            "payment_page_url": <str, the URL when payment is done on PostFinance>,
+        }
+        """
         transaction_service = self._get_transaction_service_api()
         transaction_payment_page_service = (
             self._get_transaction_payment_page_service_api()
@@ -107,6 +122,7 @@ class PostFinanceCheckoutProcessor(PaymentProcessor):
 
         return {
             "merchant_reference": transaction_create.merchant_reference,
+            "authorization_timeout_on": transaction_create.authorization_timeout_on,
             "payment_page_url": payment_page_url,
         }
 
@@ -117,6 +133,40 @@ class PostFinanceCheckoutProcessor(PaymentProcessor):
         )
         return merchant_transaction.state
 
-    def is_transaction_fulfilled(self, transaction):
+    def is_transaction_authorized(self, transaction):
+        # The following are considered to be the "success" statuses by PostFinance
         status = self._get_transaction_status(transaction)
-        return status == TransactionState.FULFILL
+        return status in (
+            TransactionState.FULFILL,
+            TransactionState.COMPLETED,
+            TransactionState.AUTHORIZED,
+        )
+
+    def _create_internal_transaction(self, submission):
+        # If there is a related existing transaction, which:
+        # 1. Is still within the PostFinance authorization time window
+        # 2. Has the same amount and currency
+        #    (if it is different, it means that the user has chosen a different price)
+        # 3. Is unpaid
+        # Then we can reuse it, instead of re-generating another one
+        existing_transaction = self.transaction_class.objects.filter(
+            submission_price=submission.submission_price,
+            amount=submission.submission_price.amount,
+            currency=submission.submission_price.currency,
+            status=self.transaction_class.STATUS_UNPAID,
+            authorization_timeout_on__gt=timezone.now(),
+        ).first()
+        if existing_transaction:
+            return existing_transaction, False
+        return super(PostFinanceCheckoutProcessor, self)._create_internal_transaction(
+            submission
+        )
+
+    def _save_merchant_data(self, transaction, merchant_transaction_data):
+        transaction.authorization_timeout_on = merchant_transaction_data[
+            "authorization_timeout_on"
+        ]
+        transaction.payment_url = merchant_transaction_data["payment_page_url"]
+        return super(PostFinanceCheckoutProcessor, self)._save_merchant_data(
+            transaction, merchant_transaction_data
+        )
