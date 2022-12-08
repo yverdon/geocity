@@ -244,7 +244,15 @@ class Form(models.Model):
     )
 
     requires_online_payment = models.BooleanField(
-        _("Soumis au paiement en ligne"), default=False
+        _("Soumis au paiement en ligne"),
+        default=False,
+        help_text=mark_safe(
+            _(
+                "Requiert la présence de <strong>paramètres de paiement</strong>, "
+                "d'au moins un <strong>tarif</strong>, et de <strong>ne pas être "
+                "soumis à des frais</strong>."
+            )
+        ),
     )
     payment_settings = models.ForeignKey(
         "PaymentSettings",
@@ -393,6 +401,15 @@ class Form(models.Model):
                             """Cette instance de Geocity n'est pas configurée correctement pour le
                             paiement en ligne. <strong>SESSION_COOKIE_SAMESITE</strong> doit être <strong>Lax</strong>"""
                         )
+                    )
+                }
+            )
+
+        if self.requires_online_payment and not self.prices.exists():
+            raise ValidationError(
+                {
+                    "requires_online_payment": mark_safe(
+                        _("Nécessite l'existence d'au moins un <strong>tarif</strong>.")
                     )
                 }
             )

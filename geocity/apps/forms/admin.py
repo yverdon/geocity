@@ -344,18 +344,48 @@ class PriceAdminForm(forms.ModelForm):
         fields = ["text", "amount", "currency"]
 
 
+class PriceByEntityListFilter(admin.SimpleListFilter):
+    title = _("Entité administrative")
+    parameter_name = "entity"
+
+    def lookups(self, request, model_admin):
+        entities = AdministrativeEntity.objects.filter(
+            forms__prices__isnull=False
+        ).distinct()
+        return ((entity.pk, entity.name) for entity in entities)
+
+    def queryset(self, request, queryset):
+        if self.value():
+            queryset = queryset.filter(forms__administrative_entities__id=self.value())
+
+        return queryset
+
+
 @admin.register(models.Price)
 class PriceAdmin(admin.ModelAdmin):
     form = PriceAdminForm
-    list_display = ["text", "amount", "currency"]
-    list_filter = [
-        "text",
-        "amount",
-    ]
+    list_display = ["text", "amount", "currency", "entities", "form_names"]
+    list_filter = ["text", "amount", PriceByEntityListFilter]
     readonly_fields = ["currency"]
     search_fields = [
         "name",
     ]
+
+    def entities(self, obj):
+        entities = (
+            AdministrativeEntity.objects.filter(forms__prices=obj)
+            .distinct()
+            .values_list("name", flat=True)
+        )
+        return ", ".join(entities) if entities else "-"
+
+    entities.short_description = _("Entité(s) administrative(s)")
+
+    def form_names(self, obj):
+        form_names = (form.name for form in obj.forms.all())
+        return ", ".join(form_names) if form_names else "-"
+
+    form_names.short_description = _("Form(s)")
 
 
 class PaymentSettingsAdminForm(forms.ModelForm):
