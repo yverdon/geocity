@@ -19,7 +19,7 @@ class DootixProvider(OAuth2Provider):
         """
         Extract available/matching fields to populate the User instance.
         """
-        # permitauthor
+        # User profile
         return dict(
             name=data["name"],
             email=data["email"],

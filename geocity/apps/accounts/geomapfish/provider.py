@@ -22,7 +22,7 @@ class GeomapfishProvider(OAuth2Provider):
         """
         Extract common fields to populate the User instance.
         """
-        # permitauthor
+        # User profile
         return dict(
             username=data["username"],
             email=data["email"],
