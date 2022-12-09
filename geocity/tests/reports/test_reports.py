@@ -41,7 +41,7 @@ class ReportsTests(ReportsTestsBase):
         self.assert_pdf_is_as_expected(pdf_bytes)
 
     def test_attach_pdf(self):
-        """Test attachment of PDF to permit request through the form"""
+        """Test attachment of PDF to submission through the form"""
 
         # Ensure we have no document
         self.assertEqual(self.submission.complementary_documents.count(), 0)

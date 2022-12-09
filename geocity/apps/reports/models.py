@@ -69,7 +69,7 @@ class ReportLayout(models.Model):
 
 
 class Report(models.Model):
-    """Report definition, allowing to generate reports for permit requests"""
+    """Report definition, allowing to generate reports for submissions"""
 
     class Meta:
         permissions = [
