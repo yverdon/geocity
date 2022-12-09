@@ -6,16 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('submissions', '0007_remove_geom_layer'),
+        ("submissions", "0007_remove_geom_layer"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='historicalsubmission',
-            name='intersected_geometries',
+            model_name="historicalsubmission",
+            name="intersected_geometries",
         ),
         migrations.RemoveField(
-            model_name='submission',
-            name='intersected_geometries',
+            model_name="submission",
+            name="intersected_geometries",
         ),
     ]
