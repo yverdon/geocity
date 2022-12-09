@@ -4,7 +4,6 @@
 
 **[Features and user guide](https://github.com/yverdon/geocity/wiki)**
 
-
 ## Setting up full Docker non persistent demo
 
 This will bring up a demo instance with preset fixtures served by the
@@ -26,7 +25,7 @@ docker-compose run web python manage.py fixturize_demo
 
 ### Database
 
-1. Create a  postgres database
+1. Create a postgres database
 2. Install required extensions: postgis, pg_trgm, unaccent extension
 3. Edit DB connection in .env file
 
@@ -35,12 +34,12 @@ docker-compose run web python manage.py fixturize_demo
 :warning: :warning: :warning:
 
 Set the following variables as follow
+
 ```ini
 COMPOSE_FILE=docker-compose.yml
 ```
 
 And review all other variables in order to fine tune your instance
-
 
 ### Deploying changes
 
@@ -52,7 +51,6 @@ run migrations, collect static files, compile messages and update integrator per
 docker-compose up --build -d --remove-orphans
 ```
 
----
 ## Default Site
 
 The default site is automatically created and every PermitAdministrativeEntity is associated to this site.
@@ -63,9 +61,7 @@ If you have `www.geocity.ch` as domain, you should put `geocity.ch`
 DEFAULT_SITE=geocity.ch
 ```
 
----
 ## Developpment tools
-
 
 ### Setup your Environment file
 
@@ -79,13 +75,14 @@ DEFAULT_SITE=localhost
 
 ### Run the tests from within the docker container
 
-
 Run tests in a the running container
+
 ```bash
 docker-compose exec web python manage.py test --settings=geocity.settings_test
 ```
 
 Run a specific test in the running container (adding the `--keepdb` flag speeds up iterations)
+
 ```bash
 docker-compose exec web python manage.py test --settings=geocity.settings_test --keepdb geocity.apps.permits.tests.test_a_permit_request.PermitRequestTestCase.test_administrative_entity_is_filtered_by_tag
 ```
@@ -183,7 +180,7 @@ it's compatible with other packages listed in the `requirements.in` file:
 docker-compose exec web pip-compile -P django requirements.in
 docker-compose exec web pip install -r requirements.txt
 ```
----
+
 ## Permissions and authentication
 
 ### Permissions
@@ -194,7 +191,6 @@ The user belonging to backoffice group can be granted specific permissions:
 - `validate_submission`,"Valider les demandes de permis": allow the user to fill the validation form
 - `classify_submission`,"Classer les demandes de permis" allow the user to accept/reject the requests if validations services have all accepted it.
 - `edit_submission`, "Éditer les demandes de permis": allow the user to edit de requests filled by another person
-
 
 ### Two factor authentification
 
@@ -254,7 +250,6 @@ This will override the data of any SocialApp with provider geomapfish.
 Geomapfish login process will raise an error if no APP settings and no SocialApp
 object are present.
 
----
 ## Migrations
 
 To run a migration, for example when the model has changed, execute
@@ -283,7 +278,6 @@ Note: prepend `docker-compose exec web ` to the following python calls if your a
 Finally, you can apply it using:
 `python manage.py migrate permits 0056_my_changes_to_the_user_model`
 
----
 ## Wiki
 
 Sidebar of wiki to show the new pages is managed by : [github-wiki-sidebar](https://www.npmjs.com/package/github-wiki-sidebar).
@@ -297,8 +291,6 @@ Used `_` instead of `:` for `Define the category separator` because the characte
 ? Select the items to be excluded from menu: (Press <space> to select, <a> to toggle all, <i> to invert selection)
 ? Change the priority/order of the items in menu <space separated list of ids - ex: 0 2 3>
 ```
-
-
 
 ## Cronjobs
 
