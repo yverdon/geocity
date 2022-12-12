@@ -613,10 +613,10 @@ class Command(BaseCommand):
                     permanent_publication_enabled=True,
                     services_to_notify=f"yverdon-squad+admin@liip.ch",
                     additional_information=additional_information_text,
-                    administrative_entities=[administrative_entity],
                     order=form_order,
                 )
                 form_order += 1
+                form_obj.administrative_entities.set([administrative_entity])
 
                 self.create_document_types(form_obj)
                 for order, field in enumerate(fields):
