@@ -2069,6 +2069,8 @@ class ConfirmTransactionCallback(View):
     def get(self, request, pk, *args, **kwargs):
         transaction = get_transaction_from_id(pk)
         submission = transaction.submission_price.submission
+        submission.generate_confirmation_pdf(transaction)
+
         if (
             not request.user == submission.author
             or not transaction.status == transaction.STATUS_UNPAID

@@ -18,6 +18,7 @@ from taggit.managers import TaggableManager
 from geocity.apps.accounts.fields import AdministrativeEntityFileField
 from geocity.apps.accounts.models import AdministrativeEntity
 
+from ..reports.models import Report
 from . import fields
 
 
@@ -155,12 +156,38 @@ class PaymentSettings(models.Model):
     user_id = models.CharField(_("User ID"), max_length=255, null=False)
     api_key = models.CharField(_("API key"), max_length=255, null=False)
 
+    payment_confirmation_report = models.ForeignKey(
+        Report,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="confirmation_payment_settings_objects",
+        verbose_name=_("Rapport pour la confirmation des paiements"),
+    )
+    payment_refund_report = models.ForeignKey(
+        Report,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="refund_payment_settings_objects",
+        verbose_name=_("Rapport pour le remboursement des paiements"),
+    )
+
     def __str__(self):
         return f"{self.name} - {self.internal_account}"
 
     class Meta:
         verbose_name = _("Paramètres de paiement")
         verbose_name_plural = _("Paramètres de paiement")
+
+    def clean(self):
+        if self.payment_confirmation_report is not None:
+            for form in self.form_set.all():
+                test = self.payment_confirmation_report.document_types.filter(
+                    parent__form=form.pk
+                )
+                if not test:
+                    raise ValidationError(
+                        {"payment_confirmation_report": _("Not gooude")}
+                    )
 
 
 class Price(models.Model):

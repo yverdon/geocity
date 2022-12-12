@@ -55,10 +55,36 @@ class SectionInline(StackedPolymorphicInline):
     classes = ["polymorphic-jazzmin"]
 
 
+class ReportAdminForm(forms.ModelForm):
+    def clean_document_types(self):
+        doc_types = self.cleaned_data["document_types"]
+        error_message = ""
+        if self.instance.confirmation_payment_settings_objects.exists():
+            if not self.instance.confirmation_payment_settings_objects.filter(
+                form__in=doc_types.all().values("parent__form")
+            ).exists():
+                error_message = _(
+                    "Il existe encore un ou des paramètres de paiements qui utilise(nt) ce rapport comme modèle d'impression pour la confirmation de paiement."
+                )
+        if self.instance.refund_payment_settings_objects.exists():
+            if not self.instance.refund_payment_settings_objects.filter(
+                form__in=doc_types.all().values("parent__form")
+            ).exists():
+                error_message = _(
+                    "Il existe encore un ou des paramètres de paiements qui utilise(nt) ce rapport comme modèle d'impression pour les remboursements."
+                )
+
+        if error_message:
+            raise forms.ValidationError(error_message)
+
+        return doc_types
+
+
 @admin.register(Report)
 class ReportAdmin(
     PolymorphicInlineSupportMixin, IntegratorFilterMixin, admin.ModelAdmin
 ):
+    form = ReportAdminForm
     inlines = (SectionInline,)
     filter_horizontal = ("document_types",)
     list_display = [

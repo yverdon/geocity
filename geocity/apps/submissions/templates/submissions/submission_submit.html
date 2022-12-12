@@ -54,15 +54,12 @@
     {% else %}
       <div class="alert alert-info mb-4">
         <div class="mb-4">
-          Avant de continuer avec votre commande, nous vous demandons de vérifier les détails de celle-ci
-          ci-dessous pour vous <strong>assurer que tout est correct</strong>.
-          Une fois que vous avez vérifié les détails de votre commande et que vous êtes prêt à passer au paiement,
-          cliquez simplement sur le bouton <strong>Payer maintenant</strong> pour être redirigé vers notre passerelle de
-          paiement sécurisée.
+          Avant de continuer, nous vous demandons de vérifier les détails de votre demande pour vous assurer que tout est correct.
+          Lorsque vous êtes prêt à procéder au paiement, cliquez sur le bouton Payer maintenant pour être redirigé vers l’interface de paiement sécurisée.
           <hr/>
         </div>
         <div class="mb-4">
-          <p>Vous avez sélectionné <strong>{{ submission.get_submission_price.text }}</strong> au prix
+          <p>Vous avez sélectionné <strong>{{ submission.get_submission_price.text }}</strong> au prix de
             <strong>{{ submission.get_submission_price.amount }} {{ submission.get_submission_price.currency }}</strong>
           </p>
         </div>

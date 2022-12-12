@@ -7,8 +7,8 @@ from geocity.apps.accounts.decorators import permanent_user_required
 from geocity.apps.api.serializers import SubmissionPrintSerializer
 from geocity.apps.submissions import services
 
+from ..submissions.permissions import user_is_allowed_to_generate_report
 from .models import Report
-from .permissions import user_is_allowed_to_generate_report
 from .services import generate_report_pdf_as_response
 
 

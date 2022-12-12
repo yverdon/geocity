@@ -12,6 +12,7 @@ from django.contrib.auth.models import Group
 from django.contrib.gis.db import models as geomodels
 from django.contrib.gis.geos import GeometryCollection, MultiPoint, Point
 from django.core.exceptions import SuspiciousOperation
+from django.core.files import File
 from django.core.validators import FileExtensionValidator
 from django.db import models, transaction
 from django.db.models import Count, F, JSONField, Max, Min, ProtectedError, Q, Value
@@ -1074,6 +1075,70 @@ class Submission(models.Model):
     def get_transactions(self):
         # TODO: if more payment processors are implemented, change this to add all transaction types to queryset
         return self.submission_price.get_transactions()
+
+    def get_submission_submitted_attachments(self):
+        form = self.get_form_for_payment()
+        payment_settings = form.payment_settings
+        if not payment_settings or not payment_settings.payment_confirmation_report:
+            return []
+        child_doc_type = None
+        for (
+            doc_type
+        ) in payment_settings.payment_confirmation_report.document_types.all():
+            if doc_type.parent.form.pk == form.pk:
+                child_doc_type = doc_type
+                break
+        if not child_doc_type:
+            return []
+        comp_docs = self.get_complementary_documents(self.author).filter(
+            document_type=child_doc_type
+        )
+        documents = []
+        for comp_doc in comp_docs:
+            documents.append((comp_doc.name, comp_doc.document.file.read()))
+
+        return documents
+
+    def generate_confirmation_pdf(self, transaction):
+        filename, file_bytes = transaction.get_confirmation_pdf()
+
+        complementary_document_attrs = {
+            "document": File(
+                file_bytes,
+                name=filename,
+            )
+        }
+        form = self.get_form_for_payment()
+        payment_settings = form.payment_settings
+        child_doc_type = None
+        for (
+            doc_type
+        ) in payment_settings.payment_confirmation_report.document_types.all():
+            if doc_type.parent.form.pk == form.pk:
+                child_doc_type = doc_type
+                break
+
+        if child_doc_type is None:
+            # Payment settings are not configured correctly, failing silently
+            return None
+        complementary_document_attrs["document_type"] = child_doc_type
+
+        complementary_document_attrs[
+            "description"
+        ] = f"Confirmation de transaction {transaction.merchant_reference}"
+        complementary_document_attrs["owner"] = self.author
+        complementary_document_attrs["submission"] = self
+        complementary_document_attrs[
+            "status"
+        ] = SubmissionComplementaryDocument.STATUS_FINALE
+
+        complementary_document_attrs["is_public"] = False
+        comp_doc = SubmissionComplementaryDocument.objects.create(
+            **complementary_document_attrs
+        )
+
+        comp_doc.authorised_departments.set(PermitDepartment.objects.all())
+        return comp_doc
 
 
 class Contact(models.Model):

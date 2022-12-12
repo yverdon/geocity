@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 
 from geocity.apps.forms.models import Price
+from geocity.apps.reports.services import generate_report_pdf
 
 
 class SubmissionPrice(models.Model):
@@ -81,3 +82,15 @@ class Transaction(models.Model):
 
     def requires_action_on_merchant_site(self, new_status):
         return new_status in (self.STATUS_REFUNDED, self.STATUS_PAID)
+
+    def get_confirmation_pdf(self, read=False):
+        submission = self.submission_price.submission
+        form = submission.get_form_for_payment()
+        payment_settings = form.payment_settings
+        report = payment_settings.payment_confirmation_report
+        output = generate_report_pdf(
+            submission.author, submission.pk, form.pk, report.pk
+        )
+        if read:
+            output = output.read()
+        return f"facture_{self.merchant_reference}.pdf", output

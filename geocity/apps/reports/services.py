@@ -5,14 +5,10 @@ from django.urls import reverse
 from django.utils import timezone
 from knox.models import AuthToken
 
-from .permissions import user_is_allowed_to_generate_report
 from .utils import run_docker_container
 
 
 def generate_report_pdf(user, submission_id, form_id, report_id):
-    # Ensure user is allowed to generate pdf
-    user_is_allowed_to_generate_report(user, submission_id, form_id, report_id)
-
     authtoken, token = AuthToken.objects.create(user, expiry=timedelta(minutes=5))
 
     url = reverse(

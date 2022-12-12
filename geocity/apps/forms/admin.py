@@ -399,6 +399,9 @@ class PaymentSettingsAdminForm(forms.ModelForm):
             "space_id",
             "user_id",
             "api_key",
+            "payment_confirmation_report",
+            "payment_refund_report",
+            "integrator",
         ]
 
 
