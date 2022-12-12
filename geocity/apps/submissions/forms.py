@@ -33,6 +33,7 @@ from geocity.apps.accounts.models import (
 from geocity.fields import AddressWidget
 
 from ..forms.models import Price
+from ..reports.services import generate_report_pdf_as_response
 from . import models, permissions, services
 from .payments.models import SubmissionPrice
 
@@ -1589,11 +1590,8 @@ class SubmissionComplementaryDocumentsForm(forms.ModelForm):
                     _("Selection invalide pour génération à partir du modèle !")
                 )
 
-            # TODO ugh! Importing a view from a form, really?
-            from geocity.apps.reports.views import report_pdf
-
-            report_response = report_pdf(
-                self.request,
+            report_response = generate_report_pdf_as_response(
+                self.request.user,
                 self.submission.pk,
                 form_id=form_pk,
                 report_id=report_pk,
