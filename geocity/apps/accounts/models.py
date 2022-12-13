@@ -451,7 +451,7 @@ class UserProfile(models.Model):
     @cached_property
     def is_temporary(self):
         """
-        UserProfile created when starting an anonymous permit request,
+        UserProfile created when starting an anonymous submission,
         then deleted at the submission (replaced by an anonymous user).
         """
         return self.user and self.user.username.startswith(

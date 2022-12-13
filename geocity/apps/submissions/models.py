@@ -90,7 +90,7 @@ class GeoTimeInfo(enum.Enum):
 class SubmissionQuerySet(models.QuerySet):
     def filter_for_user(self, user, form_filter=None, ignore_archived=True):
         """
-        Return the list of permit requests this user has access to.
+        Return the list of submissions this user has access to.
         """
         annotate_with = dict(
             starts_at_min=Min("geo_time__starts_at"),
@@ -463,7 +463,7 @@ class Submission(models.Model):
             # What a good sweat!!!
 
             if not self.geo_time.exists():
-                # At this point following the permit request steps, the Geotime object
+                # At this point following the submission steps, the Geotime object
                 # must have been created only if Geometry or Dates are required,
                 # if the form does not need require either, we need to create the object.
                 SubmissionGeoTime.objects.create(submission_id=self.pk)
@@ -1150,7 +1150,7 @@ class SubmissionContact(models.Model):
 
 class FieldValue(models.Model):
     """
-    Value of a property for a selected object in a permit request.
+    Value of a property for a selected object in a submission.
     """
 
     field = models.ForeignKey(

@@ -29,7 +29,7 @@ from . import fields, forms, models, permissions
 
 def submit_submission(submission, request):
     """
-    Change the permit request status to submitted and send notification e-mails. `absolute_uri_func` should be a
+    Change the submission status to submitted and send notification e-mails. `absolute_uri_func` should be a
     callable that takes a path and returns an absolute URI, usually `request.build_absolute_uri`.
     FIXME: rename to `request_submission_validation`?
     """
@@ -265,7 +265,7 @@ def validate_file(file):
 
 def is_anonymous_request_logged_in(request, entity):
     """
-    Verify the authentication for anonymous permit requests.
+    Verify the authentication for anonymous submissions.
     """
     return (
         request.user.is_authenticated
@@ -277,7 +277,7 @@ def is_anonymous_request_logged_in(request, entity):
 
 def login_for_anonymous_request(request, entity):
     """
-    Authenticate with a new temporary user to proceed with an anonymous permit request.
+    Authenticate with a new temporary user to proceed with an anonymous submission.
     """
     temp_author = UserProfile.objects.create_temporary_user(entity)
     login(request, temp_author.user, "django.contrib.auth.backends.ModelBackend")

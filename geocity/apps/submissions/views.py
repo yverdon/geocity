@@ -447,7 +447,7 @@ class SubmissionDetailView(View):
 
         if rest:
             logger.error(
-                "User %s is a member of more than 1 validation group for permit request %s. This is not"
+                "User %s is a member of more than 1 validation group for submission %s. This is not"
                 " implemented yet.",
                 self.request.user,
                 self.submission,
@@ -1055,9 +1055,9 @@ def anonymous_submission(request):
     if not anonymous_forms:
         raise Http404
 
-    # Permit request page
+    # Submission page
 
-    # Never create a second permit request for the same temp_author
+    # Never create a second submission for the same temp_author
     submission, _ = models.Submission.objects.get_or_create(
         administrative_entity=entity,
         author=request.user,
@@ -1350,7 +1350,7 @@ def submission_prolongation(request, submission_id):
 @check_mandatory_2FA
 def submission_appendices(request, submission_id):
     """
-    Step to upload appendices for the given permit request.
+    Step to upload appendices for the given submission.
     """
     submission = get_submission_for_edition(request.user, submission_id)
     steps_context = progress_bar_context(
@@ -1724,7 +1724,7 @@ def submission_submit_confirmed(request, submission_id):
         | Q(permit_department__is_integrator_admin=True),
     )
 
-    # Backoffice and integrators creating a permit request for their own administrative
+    # Backoffice and integrators creating a submission for their own administrative
     # entity, are directly redirected to the permit detail
     # Same flow for requests when submission can't be edited by author
     if (
@@ -1739,7 +1739,7 @@ def submission_submit_confirmed(request, submission_id):
                 anonymous_user = submission.administrative_entity.anonymous_user
             except ObjectDoesNotExist:
                 # Might happen only if the entity's anonymous user has been removed
-                # between the creation and the submission of the permit request
+                # between the creation and the submission of the submission
                 raise Http404
             else:
                 submission.author = anonymous_user.user

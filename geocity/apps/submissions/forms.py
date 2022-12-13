@@ -313,7 +313,7 @@ class FieldsForm(PartialValidationMixin, forms.Form):
 
     def get_values(self):
         """
-        Return `FieldValue` objects for the current permit request. They're used to set the initial
+        Return `FieldValue` objects for the current submission. They're used to set the initial
         value of the form fields.
         """
         return self.instance.get_fields_values()
@@ -765,7 +765,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             else:
                 STATUS_INQUIRY_IN_PROGRESS = None
 
-            # If an amend property in the permit request can always be amended, some statuses are added to the list
+            # If an amend property in the submission can always be amended, some statuses are added to the list
             if permissions.can_always_be_updated(user, self.instance):
                 filter1 = [
                     tup
