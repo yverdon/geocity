@@ -184,9 +184,9 @@ class UserAdmin(BaseUserAdmin):
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
-    # Filter users that can be by integrator
-    # def get_queryset(self, request):
-    #     return get_users_list_for_integrator_admin(request.user)
+    # Filter users that can be seen by integrator
+    def get_queryset(self, request):
+        return get_users_list_for_integrator_admin(request.user)
 
     def save_model(self, req, obj, form, change):
         """Set 'is_staff=True' when the saved user is in a integrator group.

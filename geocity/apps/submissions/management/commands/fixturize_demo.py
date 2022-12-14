@@ -318,60 +318,60 @@ class Command(BaseCommand):
         # )
         # self.stdout.write("integrator / demo")
 
-        # Insert status choices from Submission and insert status for adminsitrative_entity
-        for status_value in Submission.STATUS_CHOICES:
-            for entity in [
-                administrative_entity_yverdon,
-                administrative_entity_grandson,
-                administrative_entity_lausanne,
-                administrative_entity_vevey,
-            ]:
-                SubmissionWorkflowStatus.objects.get_or_create(
-                    status=status_value[0], administrative_entity=entity
-                )
+        # # Insert status choices from Submission and insert status for adminsitrative_entity
+        # for status_value in Submission.STATUS_CHOICES:
+        #     for entity in [
+        #         administrative_entity_yverdon,
+        #         administrative_entity_grandson,
+        #         administrative_entity_lausanne,
+        #         administrative_entity_vevey,
+        #     ]:
+        #         SubmissionWorkflowStatus.objects.get_or_create(
+        #             status=status_value[0], administrative_entity=entity
+        #         )
         # Add admin user in all groups
-        groups = Group.objects.all()
-        user_admin = User.objects.get(username="admin")
-        for group in groups:
-            user_admin.groups.add(group)
+        # groups = Group.objects.all()
+        # user_admin = User.objects.get(username="admin")
+        # for group in groups:
+        #     user_admin.groups.add(group)
 
-    def create_user(
-        self,
-        username,
-        group_name,
-        administrative_entity,
-        is_default_validator=False,
-        is_integrator_admin=False,
-        is_staff=False,
-        email="yverdon-squad+user@liip.ch",
-    ):
+    # def create_user(
+    #     self,
+    #     username,
+    #     group_name,
+    #     administrative_entity,
+    #     is_default_validator=False,
+    #     is_integrator_admin=False,
+    #     is_staff=False,
+    #     email="yverdon-squad+user@liip.ch",
+    # ):
 
-        group, created = Group.objects.get_or_create(name=group_name)
-        user = User.objects.create_user(
-            email=email,
-            first_name="User First",
-            last_name="User Last",
-            username=username,
-            password="demo",
-            is_staff=is_staff,
-        )
-        user.groups.set([group])
-        UserProfile.objects.create(
-            user=user,
-            address="Rue du Lac",
-            zipcode=1400,
-            city="Yverdon",
-        )
-        PermitDepartment.objects.create(
-            group=group,
-            is_validator=False,
-            is_integrator_admin=is_integrator_admin,
-            is_backoffice=False,
-            administrative_entity=administrative_entity,
-            is_default_validator=is_default_validator,
-        )
+    # group, created = Group.objects.get_or_create(name=group_name)
+    # user = User.objects.create_user(
+    #     email=email,
+    #     first_name="User First",
+    #     last_name="User Last",
+    #     username=username,
+    #     password="demo",
+    #     is_staff=is_staff,
+    # )
+    # user.groups.set([group])
+    # UserProfile.objects.create(
+    #     user=user,
+    #     address="Rue du Lac",
+    #     zipcode=1400,
+    #     city="Yverdon",
+    # )
+    # PermitDepartment.objects.create(
+    #     group=group,
+    #     is_validator=False,
+    #     is_integrator_admin=is_integrator_admin,
+    #     is_backoffice=False,
+    #     administrative_entity=administrative_entity,
+    #     is_default_validator=is_default_validator,
+    # )
 
-        return user
+    # return user
 
     def create_form_categories(self):
         fields = {
@@ -553,86 +553,86 @@ class Command(BaseCommand):
                 ],
             ),
         ]
-        administrative_entity_yverdon = AdministrativeEntity.objects.get(
-            name="Démo Yverdon",
-        )
-        administrative_entity_yverdon.tags.add("yverdon")
-        administrative_entity_grandson = AdministrativeEntity.objects.get(
-            name="Démo Grandson",
-        )
-        administrative_entity_grandson.tags.add("grandson")
-        administrative_entity_lausanne = AdministrativeEntity.objects.get(
-            name="Démo Lausanne",
-        )
-        administrative_entity_lausanne.tags.add("lausanne")
-        administrative_entity_vevey = AdministrativeEntity.objects.get(
-            name="Démo Vevey",
-        )
-        administrative_entity_vevey.tags.add("vevey")
+        # administrative_entity_yverdon = AdministrativeEntity.objects.get(
+        #     name="Démo Yverdon",
+        # )
+        # administrative_entity_yverdon.tags.add("yverdon")
+        # administrative_entity_grandson = AdministrativeEntity.objects.get(
+        #     name="Démo Grandson",
+        # )
+        # administrative_entity_grandson.tags.add("grandson")
+        # administrative_entity_lausanne = AdministrativeEntity.objects.get(
+        #     name="Démo Lausanne",
+        # )
+        # administrative_entity_lausanne.tags.add("lausanne")
+        # administrative_entity_vevey = AdministrativeEntity.objects.get(
+        #     name="Démo Vevey",
+        # )
+        # administrative_entity_vevey.tags.add("vevey")
 
-        additional_information_text = """
-        Texte expliquant la ou les conditions particulière(s) s'appliquant à cette demande.
-        Un document pdf peut également être proposé à l'utilisateur, par exemple pour les conditions
-        de remise en état après une fouille sur le domaine public
-        """
+        # additional_information_text = """
+        # Texte expliquant la ou les conditions particulière(s) s'appliquant à cette demande.
+        # Un document pdf peut également être proposé à l'utilisateur, par exemple pour les conditions
+        # de remise en état après une fouille sur le domaine public
+        # """
 
-        form_order = 0
-        for form_category, objs in form_categories:
-            form_category_obj = FormCategory.objects.create(name=form_category)
-            form_category_obj.tags.add(unaccent(form_category))
-            ContactType.objects.create(
-                type=CONTACT_TYPE_OTHER,
-                form_category=form_category_obj,
-                is_mandatory=False,
-            )
+        # form_order = 0
+        # for form_category, objs in form_categories:
+        #     form_category_obj = FormCategory.objects.create(name=form_category)
+        #     form_category_obj.tags.add(unaccent(form_category))
+        #     ContactType.objects.create(
+        #         type=CONTACT_TYPE_OTHER,
+        #         form_category=form_category_obj,
+        #         is_mandatory=False,
+        #     )
 
-            for form, *fields in objs:
-                form_obj = Form.objects.create(
-                    name=form,
-                    category=form_category_obj,
-                    is_public=True,
-                    notify_services=True,
-                    document_enabled=True,
-                    publication_enabled=True,
-                    permanent_publication_enabled=True,
-                    services_to_notify=f"yverdon-squad+admin@liip.ch",
-                    additional_information=additional_information_text,
-                    order=form_order,
-                )
-                form_order += 1
-                form_obj.administrative_entities.add(administrative_entity_yverdon)
-                form_obj.administrative_entities.add(administrative_entity_grandson)
-                form_obj.administrative_entities.add(administrative_entity_lausanne)
-                form_obj.administrative_entities.add(administrative_entity_vevey)
-                self.create_document_types(form_obj)
-                for order, field in enumerate(fields):
-                    FormField.objects.create(field=field, form=form_obj, order=order)
+        #     for form, *fields in objs:
+        #         form_obj = Form.objects.create(
+        #             name=form,
+        #             category=form_category_obj,
+        #             is_public=True,
+        #             notify_services=True,
+        #             document_enabled=True,
+        #             publication_enabled=True,
+        #             permanent_publication_enabled=True,
+        #             services_to_notify=f"yverdon-squad+admin@liip.ch",
+        #             additional_information=additional_information_text,
+        #             order=form_order,
+        #         )
+        #         form_order += 1
+        #         form_obj.administrative_entities.add(administrative_entity_yverdon)
+        #         form_obj.administrative_entities.add(administrative_entity_grandson)
+        #         form_obj.administrative_entities.add(administrative_entity_lausanne)
+        #         form_obj.administrative_entities.add(administrative_entity_vevey)
+        #         self.create_document_types(form_obj)
+        #         for order, field in enumerate(fields):
+        #             FormField.objects.create(field=field, form=form_obj, order=order)
 
-        # Configure specific form in order to illustrate full potential of Geocity
+        # # Configure specific form in order to illustrate full potential of Geocity
 
-        # No geom nor time
-        for form in Form.objects.filter(
-            category__name="Subventions (ex. de demande sans géométrie ni période temporelle)"
-        ):
-            form.has_geometry_point = False
-            form.has_geometry_line = False
-            form.has_geometry_polygon = False
-            form.needs_date = False
-            form.save()
+        # # No geom nor time
+        # for form in Form.objects.filter(
+        #     category__name="Subventions (ex. de demande sans géométrie ni période temporelle)"
+        # ):
+        #     form.has_geometry_point = False
+        #     form.has_geometry_line = False
+        #     form.has_geometry_polygon = False
+        #     form.needs_date = False
+        #     form.save()
 
-        # Renewal reminder
-        for form in Form.objects.filter(
-            category__name="Stationnement (ex. de demande devant être prolongée)"
-        ):
-            form.has_geometry_point = True
-            form.has_geometry_line = False
-            form.has_geometry_polygon = False
-            form.needs_date = True
-            form.start_delay = 1
-            form.permit_duration = 2
-            form.expiration_reminder = True
-            form.days_before_reminder = 5
-            form.save()
+        # # Renewal reminder
+        # for form in Form.objects.filter(
+        #     category__name="Stationnement (ex. de demande devant être prolongée)"
+        # ):
+        #     form.has_geometry_point = True
+        #     form.has_geometry_line = False
+        #     form.has_geometry_polygon = False
+        #     form.needs_date = True
+        #     form.start_delay = 1
+        #     form.permit_duration = 2
+        #     form.expiration_reminder = True
+        #     form.days_before_reminder = 5
+        #     form.save()
 
     def create_submission(self):
 
@@ -983,30 +983,30 @@ class Command(BaseCommand):
         <p>Consultez les emails générés par l'application sur le <a href="https://mailhog.geocity.ch" target="_blank">webmail de démonstration</a>.</p>
         """
 
-    def create_document_types(self, wot):
-        document_types = [
-            (
-                "{} Parent #1".format(wot.pk),
-                wot,
-                ["{} Child #1.{}".format(wot.pk, i) for i in range(1, 4)],
-            ),
-            (
-                "{} Parent #2".format(wot.pk),
-                wot,
-                ["{} Child #2.{}".format(wot.pk, i) for i in range(1, 5)],
-            ),
-        ]
+    # def create_document_types(self, wot):
+    #     document_types = [
+    #         (
+    #             "{} Parent #1".format(wot.pk),
+    #             wot,
+    #             ["{} Child #1.{}".format(wot.pk, i) for i in range(1, 4)],
+    #         ),
+    #         (
+    #             "{} Parent #2".format(wot.pk),
+    #             wot,
+    #             ["{} Child #2.{}".format(wot.pk, i) for i in range(1, 5)],
+    #         ),
+    #     ]
 
-        for document_type in document_types:
-            name, form, children = document_type
-            parent = ComplementaryDocumentType.objects.create(
-                name=name, form=form, parent=None
-            )
+    #     for document_type in document_types:
+    #         name, form, children = document_type
+    #         parent = ComplementaryDocumentType.objects.create(
+    #             name=name, form=form, parent=None
+    #         )
 
-            for child in children:
-                ComplementaryDocumentType.objects.create(
-                    name=child, form=None, parent=parent
-                )
+    #         for child in children:
+    #             ComplementaryDocumentType.objects.create(
+    #                 name=child, form=None, parent=parent
+    #             )
 
 
 demo_long_text = """Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
