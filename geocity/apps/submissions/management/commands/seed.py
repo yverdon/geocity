@@ -230,21 +230,25 @@ class Command(BaseCommand):
     ):
         form_order = 0
         for form_category, objs in form_categories:
-            form_category_obj = FormCategory.objects.create(
-                name=form_category,
-                integrator=integrator_group,
+
+            # Used to manage specific cases on forms
+            if form_category.startswith("RENEWAL_REMINDER") or form_category.startswith(
+                "NO_GEOM_NOR_TIME"
+            ):
+                # Remove first word
+                form_category_name = form_category.split(" ", 1)[1]
+            else:
+                form_category_name = form_category
+
+            form_category_obj = self.create_form_category(
+                form_category_name, integrator_group
             )
-            form_category_obj.tags.add(unaccent(form_category))
-            ContactType.objects.create(
-                type=CONTACT_TYPE_OTHER,
-                form_category=form_category_obj,
-                is_mandatory=False,
-                integrator=integrator_group,
-            )
+            self.create_contact_type(form_category_obj, integrator_group)
 
             for form, *fields in objs:
                 form_obj, form_order = self.create_form(
                     form,
+                    form_category,
                     form_category_obj,
                     form_additional_information,
                     form_order,
@@ -258,41 +262,35 @@ class Command(BaseCommand):
                     field = self.create_field(field, integrator_group)
                     self.create_form_field(field, form_obj, order)
 
-        # Configure specific form in order to illustrate full potential of Geocity
+    def create_form_category(self, form_category, integrator_group):
+        form_category_obj = FormCategory.objects.create(
+            name=form_category,
+            integrator=integrator_group,
+        )
+        form_category_obj.tags.add(unaccent(form_category))
+        return form_category_obj
 
-        # No geom nor time
-        for form in Form.objects.filter(
-            category__name="Subventions (ex. de demande sans géométrie ni période temporelle)"
-        ):
-            form.has_geometry_point = False
-            form.has_geometry_line = False
-            form.has_geometry_polygon = False
-            form.needs_date = False
-            form.save()
-
-        # Renewal reminder
-        for form in Form.objects.filter(
-            category__name="Stationnement (ex. de demande devant être prolongée)"
-        ):
-            form.has_geometry_point = True
-            form.has_geometry_line = False
-            form.has_geometry_polygon = False
-            form.needs_date = True
-            form.start_delay = 1
-            form.permit_duration = 2
-            form.expiration_reminder = True
-            form.days_before_reminder = 5
-            form.save()
+    def create_contact_type(self, form_category_obj, integrator_group):
+        ContactType.objects.create(
+            type=CONTACT_TYPE_OTHER,
+            form_category=form_category_obj,
+            is_mandatory=False,
+            integrator=integrator_group,
+        )
 
     def create_form(
         self,
         form,
+        form_category,
         form_category_obj,
         form_additional_information,
         form_order,
         administrative_entity,
         integrator_group,
     ):
+
+        result = self.setup_form_specific_cases(form_category)
+
         form_obj = Form.objects.create(
             name=form,
             category=form_category_obj,
@@ -305,11 +303,58 @@ class Command(BaseCommand):
             additional_information=form_additional_information,
             order=form_order,
             integrator=integrator_group,
+            has_geometry_point=result.get("has_geometry_point"),
+            has_geometry_line=result.get("has_geometry_line"),
+            has_geometry_polygon=result.get("has_geometry_polygon"),
+            needs_date=result.get("needs_date"),
+            start_delay=result.get("start_delay"),
+            permit_duration=result.get("permit_duration"),
+            expiration_reminder=result.get("expiration_reminder"),
+            days_before_reminder=result.get("days_before_reminder"),
         )
         form_obj.administrative_entities.add(administrative_entity)
         form_order += 1
 
         return form_obj, form_order
+
+    def setup_form_specific_cases(self, form_category):
+        has_geometry_point = True
+        has_geometry_line = True
+        has_geometry_polygon = True
+        needs_date = True
+        start_delay = None
+        permit_duration = None
+        expiration_reminder = False
+        days_before_reminder = None
+
+        # Configure specific form in order to illustrate full potential of Geocity
+        # Check if form has RENEWAL_REMINDER or NO_GEOM_NOR_TIME
+        if form_category.startswith("RENEWAL_REMINDER"):
+            has_geometry_point = True
+            has_geometry_line = False
+            has_geometry_polygon = False
+            needs_date = True
+            start_delay = 1
+            permit_duration = 2
+            expiration_reminder = True
+            days_before_reminder = 5
+        elif form_category.startswith("NO_GEOM_NOR_TIME"):
+            has_geometry_point = False
+            has_geometry_line = False
+            has_geometry_polygon = False
+            needs_date = False
+
+        result = {
+            "has_geometry_point": has_geometry_point,
+            "has_geometry_line": has_geometry_line,
+            "has_geometry_polygon": has_geometry_polygon,
+            "needs_date": needs_date,
+            "start_delay": start_delay,
+            "permit_duration": permit_duration,
+            "expiration_reminder": expiration_reminder,
+            "days_before_reminder": days_before_reminder,
+        }
+        return result
 
     def create_document_types(self, form, integrator_group):
         document_types = [
@@ -571,7 +616,7 @@ class Command(BaseCommand):
         self.create_user_profile(user, entity)
 
     # /////////////////////////////////////
-    # Functions
+    # Generic functions
     # /////////////////////////////////////
 
     def create_user(self, username, email, is_staff=False, is_superuser=False):
