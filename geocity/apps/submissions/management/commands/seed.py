@@ -17,6 +17,9 @@ from geocity.apps.forms.models import *
 from geocity.apps.reports.models import *
 from geocity.apps.submissions.models import *
 
+# Change this import to change the data
+from ..seed_data.example import *
+
 
 def strip_accents(text):
     """
@@ -97,119 +100,339 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write("Resetting database...")
         reset_db()
-        # with transaction.atomic():
-        #     self.stdout.write("Creating sites...")
-        #     self.setup_sites()
-        #     self.stdout.write("Creating users...")
-        #     self.create_users()
-        #     self.stdout.write("Creating form categories")
-        #     self.create_form_categories()
-        #     self.stdout.write("Creating demo submission...")
-        #     self.create_submission()
-        #     self.stdout.write("Creating template customizations...")
-        #     self.create_template_customization()
-        #     self.stdout.write("Configurating template customizations...")
-        #     self.setup_homepage()
-        #     self.stdout.write("Setting site integrator for selected configurations...")
-        #     self.setup_integrator()
-        #     self.stdout.write("Fixturize succeed!")
+        self.stdout.write("")
+        self.stdout.write("")
+        self.stdout.write("░██████╗███████╗███████╗██████╗░")
+        self.stdout.write("██╔════╝██╔════╝██╔════╝██╔══██╗")
+        self.stdout.write("╚█████╗░█████╗░░█████╗░░██║░░██║")
+        self.stdout.write("░╚═══██╗██╔══╝░░██╔══╝░░██║░░██║")
+        self.stdout.write("██████╔╝███████╗███████╗██████╔╝")
+        self.stdout.write("╚═════╝░╚══════╝╚══════╝╚═════╝░")
+        self.stdout.write("")
+        self.stdout.write("")
 
-    entities = [
-        "first_entity",
-        "second_entity",
-        "third_entity",
-        "fourth_entity",
-        "fifth_entity",
-    ]
-    integrators = [
-        "first_integrator",
-        "second_integrator",
-        "third_integrator",
-        "fourth_integrator",
-        "fifth_integrator",
-    ]
-    geoms = [
-        "SRID=2056;MultiPolygon (((2538391 1176432, 2538027 1178201, 2538485 1178804, 2537777 1179199, 2536748 1178450, 2536123 1179647, 2537382 1180593, 2537143 1181623, 2538651 1183257, 2540368 1183236, 2541252 1181093, 2541460 1180458, 2540160 1179543, 2540097 1178877, 2538391 1176432)))",
-        "SRID=2056;MultiPolygon (((2543281 1184952, 2542053 1186731, 2541148 1186887, 2538214 1186367, 2537195 1184609, 2537153 1183330, 2537757 1182653, 2539317 1182404, 2543281 1184952)))",
-        "SRID=2056;MultiPolygon (((2533045 1151566, 2533789 1154840, 2538236 1155380, 2541064 1154989, 2541790 1157408, 2540934 1160087, 2543074 1161259, 2546553 1159715, 2545399 1156329, 2542757 1155361, 2542348 1153798, 2542497 1152347, 2540692 1150617, 2535855 1152105, 2533045 1151566)),((2529938 1157110, 2529789 1160329, 2532245 1161557, 2532580 1160273, 2530831 1158934, 2530757 1157259, 2529938 1157110)))",
-        "SRID=2056;MultiPolygon (((2553381 1146430, 2553679 1145798, 2553660 1145500, 2554777 1145296, 2555502 1145965, 2554870 1146617, 2555335 1147398, 2555037 1147417, 2554311 1146803, 2553418 1146840, 2553269 1146524, 2553381 1146430)))",
-        "SRID=2056;MultiPolygon (((2538391 1176432, 2538027 1178201, 2538485 1178804, 2537777 1179199, 2536748 1178450, 2536123 1179647, 2537382 1180593, 2537143 1181623, 2538651 1183257, 2540368 1183236, 2541252 1181093, 2541460 1180458, 2540160 1179543, 2540097 1178877, 2538391 1176432)))",
-    ]
-    ofs_ids = [5938, 5938, 5586, 5890, 5938]
+        with transaction.atomic():
+            self.stdout.write("Creating default site...")
+            self.setup_necessary_default_site()
+            for idx, (domain, entity) in enumerate(entities.items()):
+                self.stdout.write(f"Entity : {entity}")
+                self.stdout.write(" • Creating site...")
+                self.setup_site(entity)
+                self.stdout.write(" • Creating administrative entity...")
+                administrative_entity = self.create_administrative_entity(
+                    entity, ofs_ids[idx], geoms[idx]
+                )
+                self.stdout.write(" • Creating users...")
+                integrator_group = self.create_users(
+                    iterations, entity, domain, administrative_entity
+                )
+                self.stdout.write(" • Setting administrative_entity integrator...")
+                self.setup_administrative_entity_integrator(
+                    administrative_entity, integrator_group
+                )
+                self.stdout.write(" • Setting site integrator...")
+                self.setup_site_integrator(entity)
+                self.stdout.write(
+                    " • Setting form, form categories and complementary document type..."
+                )
+                self.setup_form_and_form_categories(
+                    form_categories,
+                    integrator_group,
+                    form_additional_information,
+                    administrative_entity,
+                )
+            self.stdout.write("Seed succeed ✔")
 
     def setup_necessary_default_site(self):
         Site.objects.get_or_create(domain=settings.DEFAULT_SITE, name="default site")
 
-    def setup_sites(self, entities):
-        for entity in entities:
-            domain = f"{entity}.localhost"
-            Site.objects.get_or_create(domain=domain, name=entity)
+    def setup_site(self, entity):
+        domain = f"{entity}.localhost"
+        Site.objects.get_or_create(domain=domain, name=entity)
 
-    def setup_integrator(self, integrators, entities):
-        for idx, integrator in enumerate(integrators):
-            integrator = Group.objects.get(name=integrator)
-            AdministrativeEntity.objects.update(integrator=integrator)
-            FormCategory.objects.update(integrator=integrator)
-            Form.objects.update(integrator=integrator)
-            ContactType.objects.update(integrator=integrator)
-            ComplementaryDocumentType.objects.update(integrator=integrator)
-            SubmissionAmendField.objects.update(integrator=integrator)
+    def create_users(self, iterations, entity, domain, administrative_entity):
+        """For each administrative entity, create :
+        - Administrative entity
+        - 1 super user
+        - 3 integrators
+        - 5 pilots
+            - With permissions
+            - With group
+        - 6 validators
+        - 8 users
+        """
+        # Store ContentType.objects for model Submission and Report to prevent multiple requests
+        self.submission_ct = ContentType.objects.get_for_model(Submission)
+        self.reports_request_ct = ContentType.objects.get_for_model(Report)
 
-            # 1 integrator per site
-            SiteProfile.objects.filter(site__name=entities[idx]).update(
-                integrator=integrator
+        integrator_iterations = iterations.get("integrator_iterations")
+        pilot_iterations = iterations.get("pilot_iterations")
+        validator_iterations = iterations.get("validator_iterations")
+        user_iterations = iterations.get("user_iterations")
+
+        # Create superuser
+        self.setup_user_superuser(entity, domain)
+
+        # Create integrators
+        for integrator_iteration in range(integrator_iterations):
+            integrator_group = self.setup_user_integrator(
+                entity, domain, integrator_iteration, administrative_entity
             )
 
-    def create_administrative_entity(self, entity, ofs_id, geom):
-        name = f"Démo {entity}"
-        administrative_entity = AdministrativeEntity.objects.create(
-            name=name,
-            ofs_id=ofs_id,
-            link="https://mapnv.ch",
-            archive_link="https://mapnv.ch",
-            geom=geom,
+        # Create pilots
+        for pilot_iteration in range(pilot_iterations):
+            self.setup_user_pilot(
+                entity,
+                domain,
+                pilot_iteration,
+                administrative_entity,
+                integrator_group.pk,
+            )
+
+        # Create validators
+        for validator_iteration in range(validator_iterations):
+            self.setup_user_validator(
+                entity,
+                domain,
+                validator_iteration,
+                administrative_entity,
+                integrator_group.pk,
+            )
+
+        # Create users
+        for user_iteration in range(user_iterations):
+            self.setup_user(entity, domain, user_iteration)
+
+        return integrator_group
+
+    def setup_site_integrator(self, entity):
+        group = f"{entity}-integrator"
+        integrator = Group.objects.get(name=group)
+        # ComplementaryDocumentType.objects.update(integrator=integrator)
+        # SubmissionAmendField.objects.update(integrator=integrator)
+
+        # 1 integrator per site
+        SiteProfile.objects.filter(site__name=entity).update(integrator=integrator)
+
+    def setup_administrative_entity_integrator(
+        self, administrative_entity, integrator_group
+    ):
+        # Setup administrative entity integrator
+        administrative_entity.integrator = integrator_group
+        administrative_entity.save()
+
+    def setup_form_and_form_categories(
+        self,
+        form_categories,
+        integrator_group,
+        form_additional_information,
+        administrative_entity,
+    ):
+        form_order = 0
+        for form_category, objs in form_categories:
+            form_category_obj = FormCategory.objects.create(
+                name=form_category,
+                integrator=integrator_group,
+            )
+            form_category_obj.tags.add(unaccent(form_category))
+            ContactType.objects.create(
+                type=CONTACT_TYPE_OTHER,
+                form_category=form_category_obj,
+                is_mandatory=False,
+                integrator=integrator_group,
+            )
+
+            for form, *fields in objs:
+                form_obj, form_order = self.create_form(
+                    form,
+                    form_category_obj,
+                    form_additional_information,
+                    form_order,
+                    administrative_entity,
+                    integrator_group,
+                )
+
+                self.create_document_types(form_obj, integrator_group)
+
+                for order, field in enumerate(fields):
+                    field = self.create_field(field, integrator_group)
+                    self.create_form_field(field, form_obj, order)
+
+        # Configure specific form in order to illustrate full potential of Geocity
+
+        # No geom nor time
+        for form in Form.objects.filter(
+            category__name="Subventions (ex. de demande sans géométrie ni période temporelle)"
+        ):
+            form.has_geometry_point = False
+            form.has_geometry_line = False
+            form.has_geometry_polygon = False
+            form.needs_date = False
+            form.save()
+
+        # Renewal reminder
+        for form in Form.objects.filter(
+            category__name="Stationnement (ex. de demande devant être prolongée)"
+        ):
+            form.has_geometry_point = True
+            form.has_geometry_line = False
+            form.has_geometry_polygon = False
+            form.needs_date = True
+            form.start_delay = 1
+            form.permit_duration = 2
+            form.expiration_reminder = True
+            form.days_before_reminder = 5
+            form.save()
+
+    def create_form(
+        self,
+        form,
+        form_category_obj,
+        form_additional_information,
+        form_order,
+        administrative_entity,
+        integrator_group,
+    ):
+        form_obj = Form.objects.create(
+            name=form,
+            category=form_category_obj,
+            is_public=True,
+            notify_services=True,
+            document_enabled=True,
+            publication_enabled=True,
+            permanent_publication_enabled=True,
+            services_to_notify=f"yverdon-squad+admin@liip.ch",
+            additional_information=form_additional_information,
+            order=form_order,
+            integrator=integrator_group,
+        )
+        form_obj.administrative_entities.add(administrative_entity)
+        form_order += 1
+
+        return form_obj, form_order
+
+    def create_document_types(self, form, integrator_group):
+        document_types = [
+            (
+                "{} Parent #1".format(form.pk),
+                form,
+                ["{} Child #1.{}".format(form.pk, i) for i in range(1, 4)],
+            ),
+            (
+                "{} Parent #2".format(form.pk),
+                form,
+                ["{} Child #2.{}".format(form.pk, i) for i in range(1, 5)],
+            ),
+        ]
+
+        for document_type in document_types:
+            name, form, children = document_type
+            parent = ComplementaryDocumentType.objects.create(
+                name=name, form=form, parent=None, integrator=integrator_group
+            )
+
+            for child in children:
+                ComplementaryDocumentType.objects.create(
+                    name=child, form=None, parent=parent
+                )
+
+    def create_field(self, field, integrator_group):
+        # Defines possible fields for Field model
+        integrator = integrator_group
+        name = field.get("name")
+        placeholder = field.get("placeholder", "")
+        help_text = field.get("help_text", "")
+        input_type = field.get("input_type")
+        line_number_for_textarea = field.get("line_number_for_textarea", None)
+        is_mandatory = field.get("is_mandatory", False)
+        choices = field.get("choices", "")
+        regex_pattern = field.get("regex_pattern", "")
+        services_to_notify = field.get("services_to_notify", "")
+        file_download = field.get("file_download", "")
+        additional_searchtext_for_address_field = field.get(
+            "additional_searchtext_for_address_field", ""
+        )
+        store_geometry_for_address_field = field.get(
+            "store_geometry_for_address_field", False
+        )
+        is_public_when_permitrequest_is_public = field.get(
+            "is_public_when_permitrequest_is_public", False
         )
 
-        administrative_entity.tags.add(entity)
-        administrative_entity.sites.add(Site.objects.get(name=entity))
-        administrative_entity.sites.add(Site.objects.get(name="default site"))
-        return administrative_entity
+        field, created = Field.objects.get_or_create(
+            integrator=integrator,
+            name=name,
+            placeholder=placeholder,
+            help_text=help_text,
+            input_type=input_type,
+            line_number_for_textarea=line_number_for_textarea,
+            is_mandatory=is_mandatory,
+            choices=choices,
+            regex_pattern=regex_pattern,
+            services_to_notify=services_to_notify,
+            file_download=file_download,
+            additional_searchtext_for_address_field=additional_searchtext_for_address_field,
+            store_geometry_for_address_field=store_geometry_for_address_field,
+            is_public_when_permitrequest_is_public=is_public_when_permitrequest_is_public,
+        )
+        return field
 
-    # TODO: Do the same for super user and user
-    def create_user_superuser(self, entity):
-        email = f"{entity}-squad+admin@ylb.ch"
+    def create_form_field(self, field, form_obj, order):
+        FormField.objects.get_or_create(field=field, form=form_obj, order=order)
+
+    def create_submissions(self):
+        pass
+
+    # /////////////////////////////////////
+    # Functions used to make code DRY and readable
+    # /////////////////////////////////////
+
+    # /////////////////////////////////////
+    # User superuser
+    # /////////////////////////////////////
+
+    def setup_user_superuser(self, entity, domain):
+        # Define username
         username = f"{entity}-superuser"
-        user = User.objects.create_user(
-            email=email,
-            first_name=username,
-            last_name="Demo",
-            username=username,
-            password="demo",
+
+        # Define email
+        email = f"{entity}-squad+superuser@{domain}"
+
+        # Create user
+        user = self.create_user(
+            username,
+            email,
             is_staff=True,
             is_superuser=True,
         )
 
-        self.create_user_profile(self, user, entity)
+        # Create user profile
+        self.create_user_profile(user, entity)
 
     # /////////////////////////////////////
     # User integrator
     # /////////////////////////////////////
 
-    def setup_user_integrator(self, entity, user_iteration, administrative_entity):
+    def setup_user_integrator(
+        self, entity, domain, integrator_iteration, administrative_entity
+    ):
         # Define username
-        username = f"{entity}-integrator-{user_iteration}"
+        username = f"{entity}-integrator-{integrator_iteration}"
 
         # Define email
-        email = f"{entity}-squad+integrator-{user_iteration}@ylb.ch"
+        email = f"{entity}-squad+integrator-{integrator_iteration}@{domain}"
+
+        # Define group
+        group = f"{entity}-integrator"
 
         # Create user
-        user = self.create_user(self, username, email)
+        user = self.create_user(username, email, is_staff=True)
 
         # Create user profile
-        self.create_user_profile(self, user, entity)
+        self.create_user_profile(user, entity)
 
         # Create group and user in it
-        group = self.create_group(username)
+        group = self.create_group(group)
         user.groups.set([group])
 
         # Create permit_department
@@ -218,36 +441,44 @@ class Command(BaseCommand):
             administrative_entity,
             is_default_validator=True,
             is_integrator_admin=True,
-            is_staff=True,
+            integrator_email_domains=domain,
         )
 
         # Set permissions
         permissions = get_integrator_permissions()
         group.permissions.set(permissions)
+        return group
 
     # /////////////////////////////////////
     # User pilot
     # /////////////////////////////////////
 
-    def setup_user_pilot(self, entity, user_iteration, administrative_entity):
+    def setup_user_pilot(
+        self, entity, domain, pilot_iteration, administrative_entity, integrator_group
+    ):
         # Define username
-        username = f"{entity}-pilot-{user_iteration}"
+        username = f"{entity}-pilot-{pilot_iteration}"
 
         # Define email
-        email = f"{entity}-squad+pilot-{user_iteration}@ylb.ch"
+        email = f"{entity}-squad+pilot-{pilot_iteration}@{domain}"
+
+        # Define group
+        group = f"{entity}-pilot"
 
         # Create user
-        user = self.create_user(self, username, email)
+        user = self.create_user(username, email)
 
         # Create user profile
-        self.create_user_profile(self, user, entity)
+        self.create_user_profile(user, entity)
 
         # Create group and user in it
-        group = self.create_group(username)
+        group = self.create_group(group)
         user.groups.set([group])
 
         # Create permit_department
-        self.create_permit_department(group, administrative_entity)
+        self.create_permit_department(
+            group, administrative_entity, integrator=integrator_group
+        )
 
         # Set permissions
         permissions = self.get_pilot_permissions()
@@ -276,31 +507,45 @@ class Command(BaseCommand):
     # User validator
     # /////////////////////////////////////
 
-    def setup_user_validator(self, entity, user_iteration, administrative_entity):
+    def setup_user_validator(
+        self,
+        entity,
+        domain,
+        validator_iteration,
+        administrative_entity,
+        integrator_group,
+    ):
         # Define username
-        username = f"{entity}-validator-{user_iteration}"
+        username = f"{entity}-validator-{validator_iteration}"
 
         # Define email
-        email = f"{entity}-squad+validator-{user_iteration}@ylb.ch"
+        email = f"{entity}-squad+validator-{validator_iteration}@{domain}"
+
+        # Define group
+        group = f"{entity}-validator"
 
         # Create user
-        user = self.create_user(self, username, email)
+        user = self.create_user(username, email)
 
         # Create user profile
-        self.create_user_profile(self, user, entity)
+        self.create_user_profile(user, entity)
 
         # Create group and user in it
-        group = self.create_group(username)
+        group = self.create_group(group)
         user.groups.set([group])
 
         # Create permit_department
         self.create_permit_department(
-            group, administrative_entity, is_validator=True, is_default_validator=True
+            group,
+            administrative_entity,
+            is_validator=True,
+            is_default_validator=True,
+            integrator=integrator_group,
         )
 
         # Set permissions
         permissions = self.get_validator_permissions()
-        group.permissions.set(permissions)
+        group.permissions.set([permissions])
 
     def get_validator_permissions(self):
         permissions = Permission.objects.get(
@@ -309,10 +554,27 @@ class Command(BaseCommand):
         return permissions
 
     # /////////////////////////////////////
+    # User
+    # /////////////////////////////////////
+
+    def setup_user(self, entity, domain, user_iteration):
+        # Define username
+        username = f"{entity}-user-{user_iteration}"
+
+        # Define email
+        email = f"{entity}-squad+user-{user_iteration}@{domain}"
+
+        # Create user
+        user = self.create_user(username, email)
+
+        # Create user profile
+        self.create_user_profile(user, entity)
+
+    # /////////////////////////////////////
     # Functions
     # /////////////////////////////////////
 
-    def create_user(self, username, email, is_staff=False):
+    def create_user(self, username, email, is_staff=False, is_superuser=False):
         user = User.objects.create_user(
             email=email,
             first_name=username,
@@ -320,6 +582,7 @@ class Command(BaseCommand):
             username=username,
             password="demo",
             is_staff=is_staff,
+            is_superuser=is_superuser,
         )
 
         return user
@@ -335,7 +598,7 @@ class Command(BaseCommand):
         )
 
     def create_group(self, username):
-        group = Group.objects.get_or_create(name=username)
+        group, created = Group.objects.get_or_create(name=username)
         return group
 
     def create_permit_department(
@@ -346,64 +609,39 @@ class Command(BaseCommand):
         is_integrator_admin=False,
         is_backoffice=False,
         is_default_validator=False,
+        integrator=0,
+        integrator_email_domains="",
     ):
-        PermitDepartment.objects.create(
+        PermitDepartment.objects.get_or_create(
             group=group,
             administrative_entity=administrative_entity,
             is_validator=is_validator,
             is_integrator_admin=is_integrator_admin,
             is_backoffice=is_backoffice,
             is_default_validator=is_default_validator,
+            integrator=integrator,
+            integrator_email_domains=integrator_email_domains,
         )
 
-    def create_users(self, entities, ofs_ids, geoms):
-        """For each administrative entity, create :
-        - Administrative entity
-        - 1 super user
-        - 3 integrators
-        - 5 pilots
-            - With permissions
-            - With group
-        - 6 validators
-        - 8 users
-        """
-        # Store ContentType.objects for model Submission and Report to prevent requests
-        self.submission_ct = ContentType.objects.get_for_model(Submission)
-        self.reports_request_ct = ContentType.objects.get_for_model(Report)
+    def create_administrative_entity(self, entity, ofs_id, geom):
+        name = f"Démo {entity}"
+        administrative_entity = AdministrativeEntity.objects.create(
+            name=name,
+            ofs_id=ofs_id,
+            link="https://mapnv.ch",
+            archive_link="https://mapnv.ch",
+            geom=geom,
+        )
 
-        for idx, entity in enumerate(entities):
+        administrative_entity.tags.add(entity)
+        administrative_entity.sites.add(Site.objects.get(name=entity))
+        administrative_entity.sites.add(Site.objects.get(name="default site"))
 
-            # Create administrative entity
-            administrative_entity = self.create_administrative_entity(
-                entity, ofs_ids[idx], geoms[idx]
+        self.set_statuses_for_entity(administrative_entity)
+        return administrative_entity
+
+    def set_statuses_for_entity(self, administrative_entity):
+        for status_value in Submission.STATUS_CHOICES:
+            SubmissionWorkflowStatus.objects.get_or_create(
+                status=status_value[0], administrative_entity=administrative_entity
             )
-
-            # Create superuser
-            self.create_user_superuser(entity)
-            self.stdout.write(f"Create superuser for entity {entity}")
-
-            # Create integrators
-            user_iterations = 3
-            for user_iteration in range(user_iterations):
-                self.create_user_integrator(entity, user_iteration)
-            self.stdout.write(f"Create {user_iterations} integrators for {entity}")
-
-            # Create pilots
-            user_iterations = 5
-            for user_iteration in range(user_iterations):
-                self.create_user_pilot(entity, user_iteration, administrative_entity)
-            self.stdout.write(f"Create {user_iterations} pilots for {entity}")
-
-            # Create validators
-            user_iterations = 6
-            for user_iteration in range(user_iterations):
-                self.create_user_validator(
-                    entity, user_iteration, administrative_entity
-                )
-            self.stdout.write(f"Create {user_iterations} validators for {entity}")
-
-            # Create users
-            user_iterations = 8
-            for user_iteration in range(user_iterations):
-                self.create_user(entity, user_iteration)
-            self.stdout.write(f"Create {user_iterations} users for {entity}")
