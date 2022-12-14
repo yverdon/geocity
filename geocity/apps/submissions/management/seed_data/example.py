@@ -104,9 +104,12 @@ field_list_multiple = {
 }
 
 # Define form_categories for each entity
+# To create specific cases add in front of category name :
+# - RENEWAL_REMINDER
+# - NO_GEOM_NOR_TIME
 form_categories = [
     (
-        "Stationnement (ex. de demande devant être prolongée)",
+        "RENEWAL_REMINDER Stationnement (ex. de demande devant être prolongée)",
         [
             (
                 "Demande de macaron",
@@ -202,7 +205,7 @@ form_categories = [
         ],
     ),
     (
-        "Subventions (ex. de demande sans géométrie ni période temporelle)",
+        "NO_GEOM_NOR_TIME Subventions (ex. de demande sans géométrie ni période temporelle)",
         [
             (
                 "Prime éco-mobilité",
