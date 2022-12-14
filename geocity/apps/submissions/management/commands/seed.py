@@ -2,6 +2,7 @@ import re
 import unicodedata
 from io import StringIO
 
+from constance import config
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
@@ -141,6 +142,16 @@ class Command(BaseCommand):
                     form_additional_information,
                     administrative_entity,
                 )
+                # TODO: Create submissions
+                # TODO: Create reports (with setup_form_and_form_categories ?)
+                # TODO: Setup_homepage
+                # TODO: fill seed_data/demo.py with good data for demo
+                # TODO: Filter integrator field on models with limit_choices_to (wait @sephii answer)
+                # TODO: Remove geocity.apps.reports.signals and make a button on group to create instead of signal
+                # TODO: Filter fields in 1.3 and little admin improvements, admin isn't readable with that amount of data. User integrator to know the administrative entity linked to the data
+                # TODO: Fix group bug, to prevent user from removing group he can't see => non_editable_groups_of_user = user_groups - editor_groups; result = user_groups + non_editable_groups_of_user
+            self.stdout.write("Setup template customizations...")
+            self.setup_homepage()
             self.stdout.write("Seed succeed ✔")
 
     def setup_necessary_default_site(self):
@@ -427,6 +438,75 @@ class Command(BaseCommand):
 
     def create_submissions(self):
         pass
+
+    def setup_homepage(self):
+        entity_description = ""
+        for domain, entity in entities.items():
+            entity_description += f"<li>{entity}</li>"
+
+        application_description_css = """
+        <style>
+        ul {
+            background-color:rgba(255,255,255,0.7);
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            text-align: left;
+            padding: 8px;
+        }
+        </style>
+        """
+
+        config.APPLICATION_TITLE = "Démo Geocity"
+        config.APPLICATION_SUBTITLE = "Simplifiez votre administration"
+        config.APPLICATION_DESCRIPTION = f"""
+        {application_description_css}
+        <p>Essayez l'application à l'aide des différents comptes et rôles disponibles (utilisateur / mot de passe):</p>
+            <p>Construction d'un utilisateur : entité-role-nombre</p>
+            <p>Mot de passe par defaut <strong>demo</strong></p>
+            <p></p>
+            <p>Quelques exemples :</p>
+            <table>
+                <tr>
+                <th>Entités disponibles</th>
+                <th>Roles disponibles</th>
+                <th>Nombres disponibles</th>
+                </tr>
+                <tr>
+                <td><ul>{entity_description}</ul></td>
+                <td>
+                    <ul>
+                        <li>superuser</li>
+                        <li>integrator</li>
+                        <li>pilot</li>
+                        <li>validator</li>
+                        <li>user</li>
+                    </ul>
+                </td>
+                <td>
+                    <ul>
+                        <li>Aucun</li>
+                        <li>0 à {iterations.get("integrator_iterations")-1}</li>
+                        <li>0 à {iterations.get("pilot_iterations")-1}</li>
+                        <li>0 à {iterations.get("validator_iterations")-1}</li>
+                        <li>0 à {iterations.get("user_iterations")-1}</li>
+                    </ul>
+                </td>
+                </td>
+                </tr>
+            </table>
+            <ul>
+            <li><strong>Administrateur</strong>: {list(entities.values())[0]}-superuser / demo</li>
+            <li><strong>Intégrateur</strong>: {list(entities.values())[0]}-integrator-2 / demo</li>
+            <li><strong>Pilote</strong> (secrétariat): {list(entities.values())[0]}-pilot-3 / demo</li>
+            <li><strong>Validateur</strong>: {list(entities.values())[0]}-validator-3 / demo</li>
+            <li><strong>Utilisateur standard</strong>: {list(entities.values())[0]}-user-0 / demo</li>
+            </ul>
+        """
 
     # /////////////////////////////////////
     # Functions used to make code DRY and readable
