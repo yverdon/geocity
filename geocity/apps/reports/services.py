@@ -8,16 +8,21 @@ from knox.models import AuthToken
 from .utils import run_docker_container
 
 
-def generate_report_pdf(user, submission_id, form_id, report_id):
+def generate_report_pdf(user, submission_id, form_id, report_id, transaction_id=None):
     authtoken, token = AuthToken.objects.create(user, expiry=timedelta(minutes=5))
+
+    kwargs = {
+        "submission_id": submission_id,
+        "form_id": form_id,
+        "report_id": report_id,
+    }
+
+    if transaction_id is not None:
+        kwargs.update({"transaction_id": transaction_id})
 
     url = reverse(
         "reports:submission_report_content",
-        kwargs={
-            "submission_id": submission_id,
-            "form_id": form_id,
-            "report_id": report_id,
-        },
+        kwargs=kwargs,
     )
 
     commands = [
@@ -37,8 +42,12 @@ def generate_report_pdf(user, submission_id, form_id, report_id):
     return output
 
 
-def generate_report_pdf_as_response(user, submission_id, form_id, report_id):
-    output = generate_report_pdf(user, submission_id, form_id, report_id)
+def generate_report_pdf_as_response(
+    user, submission_id, form_id, report_id, transaction_id=None
+):
+    output = generate_report_pdf(
+        user, submission_id, form_id, report_id, transaction_id
+    )
     now = timezone.now()
 
     response = FileResponse(

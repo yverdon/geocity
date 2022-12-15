@@ -232,6 +232,41 @@ class SectionParagraph(Section):
             # TODO rename to `submission_data` (& migrate sections) to match new naming
             "request_data": base_context["request_data"],
             "form_data": base_context["form_data"],
+            "transaction_data": base_context["transaction_data"],
+        }
+        env = SandboxedEnvironment()
+        rendered_html = env.from_string(self.content).render(inner_context)
+        return mark_safe(rendered_html)
+
+    def prepare_context(self, request, base_context):
+        # Return updated context
+        return {
+            **super().prepare_context(request, base_context),
+            "rendered_content": self._render_user_template(base_context),
+        }
+
+
+class SectionParagraphRight(Section):
+    title = models.CharField(_("Titre"), default="", blank=True, max_length=2000)
+    content = RichTextField(
+        _("Contenu"),
+        help_text=(
+            _(
+                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}` et celles du formulaire dans `{{form_data}}`.'
+            )
+        ),
+    )
+
+    class Meta:
+        verbose_name = _("Paragraphe libre aligné à droite")
+
+    def _render_user_template(self, base_context):
+        # User template have only access to pure json elements for security reasons
+        inner_context = {
+            # TODO rename to `submission_data` (& migrate sections) to match new naming
+            "request_data": base_context["request_data"],
+            "form_data": base_context["form_data"],
+            "transaction_data": base_context["transaction_data"],
         }
         env = SandboxedEnvironment()
         rendered_html = env.from_string(self.content).render(inner_context)

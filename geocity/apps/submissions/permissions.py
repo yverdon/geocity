@@ -163,21 +163,33 @@ def user_has_permission_to_change_transaction_status(user, transaction, new_stat
 
 
 def user_is_allowed_to_generate_report(user, submission_id, form_id, report_id):
-
-    # Check that user has permission to generate pdf
-    # TODO: DO NOT COMMITT
-    # if not (user.has_perm("reports.can_generate_pdf") or user.is_superuser):
-    #     raise Http404
-    # TODO: DO NOT COMMITT
     # Check that user is allowed to see the current permit_request
-    permit_request = get_object_or_404(
+    submission = get_object_or_404(
         Submission.objects.filter_for_user(user), pk=submission_id
     )
+
+    # Check if report is linked to payments
+    form_for_payment = submission.get_form_for_payment()
+    is_linked_to_payment = (
+        form_for_payment
+        and form_for_payment.payment_settings
+        and (
+            form_for_payment.payment_settings.payment_confirmation_report.pk
+            == report_id
+            or form_for_payment.payment_settings.payment_refund_report.pk == report_id
+        )
+    )
+
+    # Check that user has permission to generate pdf
+    if not is_linked_to_payment and (
+        not (user.has_perm("reports.can_generate_pdf") or user.is_superuser)
+    ):
+        raise Http404
 
     # Check the current form_id is allowed for user
     # The form list is associated to a submission, thus a user that have
     # access to the submission, also has access to all forms associated with it
-    if int(form_id) not in permit_request.forms.values_list("pk", flat=True):
+    if int(form_id) not in submission.forms.values_list("pk", flat=True):
         raise Http404
 
     form = get_object_or_404(Form, pk=form_id)
@@ -200,4 +212,4 @@ def user_is_allowed_to_generate_report(user, submission_id, form_id, report_id):
     # if not children_document_exists:
     #     raise Http404
 
-    return permit_request, form
+    return submission, form

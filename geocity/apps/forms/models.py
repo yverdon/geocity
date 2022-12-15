@@ -181,12 +181,33 @@ class PaymentSettings(models.Model):
     def clean(self):
         if self.payment_confirmation_report is not None and self.pk is not None:
             for form in self.form_set.all():
-                test = self.payment_confirmation_report.document_types.filter(
-                    parent__form=form.pk
+                has_doc_types_with_form = (
+                    self.payment_confirmation_report.document_types.filter(
+                        parent__form=form.pk
+                    )
                 )
-                if not test:
+                if not has_doc_types_with_form:
                     raise ValidationError(
-                        {"payment_confirmation_report": _("Not gooude")}
+                        {
+                            "payment_confirmation_report": _(
+                                f"Il faut ajouter une catégorie de document liée à {form.name} dans le modèle d'impression {self.payment_confirmation_report.name}"
+                            )
+                        }
+                    )
+        if self.payment_refund_report is not None and self.pk is not None:
+            for form in self.form_set.all():
+                has_doc_types_with_form = (
+                    self.payment_refund_report.document_types.filter(
+                        parent__form=form.pk
+                    )
+                )
+                if not has_doc_types_with_form:
+                    raise ValidationError(
+                        {
+                            "payment_refund_report": _(
+                                f"Il faut ajouter une catégorie de document liée à {form.name} dans le modèle d'impression {self.payment_refund_report.name}"
+                            )
+                        }
                     )
 
 
@@ -450,6 +471,32 @@ class Form(models.Model):
                     )
                 }
             )
+        if self.payment_settings:
+            conf_report = self.payment_settings.payment_confirmation_report
+            refund_report = self.payment_settings.payment_refund_report
+
+            has_doc_types_with_conf_report = conf_report.document_types.filter(
+                parent__form=self.pk
+            )
+            has_doc_types_with_refund_report = refund_report.document_types.filter(
+                parent__form=self.pk
+            )
+            if not has_doc_types_with_conf_report.exists():
+                raise ValidationError(
+                    {
+                        "payment_settings": _(
+                            f"Il faut ajouter une catégorie de document liée à {self.name} dans le modèle d'impression {conf_report.name}"
+                        )
+                    }
+                )
+            if not has_doc_types_with_refund_report.exists():
+                raise ValidationError(
+                    {
+                        "payment_settings": _(
+                            f"Il faut ajouter une catégorie de document liée à {self.name} dans le modèle d'impression {refund_report.name}"
+                        )
+                    }
+                )
 
 
 class FormField(models.Model):

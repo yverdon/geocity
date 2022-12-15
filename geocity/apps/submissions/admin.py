@@ -132,6 +132,8 @@ class ComplementaryDocumentTypeAdminForm(forms.ModelForm):
 
     def clean_form(self):
         form = self.cleaned_data["form"]
+        if not self.instance.pk:
+            return form
         payment_settings_confirmation_reports = self.instance.children.exclude(
             reports__confirmation_payment_settings_objects=None
         )

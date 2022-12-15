@@ -4,10 +4,12 @@ from django.template.loader import render_to_string
 from rest_framework.decorators import api_view
 
 from geocity.apps.accounts.decorators import permanent_user_required
-from geocity.apps.api.serializers import SubmissionPrintSerializer
-from geocity.apps.submissions import services
+from geocity.apps.api.serializers import (
+    PostFinanceTransactionPrintSerializer,
+    SubmissionPrintSerializer,
+)
+from geocity.apps.submissions import permissions, services
 
-from ..submissions.permissions import user_is_allowed_to_generate_report
 from .models import Report
 from .services import generate_report_pdf_as_response
 
@@ -17,12 +19,12 @@ from .services import generate_report_pdf_as_response
 @api_view(["GET"])  # pretend it's a DRF view, so we get token auth
 @login_required
 @permanent_user_required
-def report_content(request, submission_id, form_id, report_id):
+def report_content(request, submission_id, form_id, report_id, **kwargs):
     """This views returns the content of a report in HTML. It is mainly meant to be rendered
     to PDF (but could also work as a PDF)"""
 
     # Ensure user is allowed to generate pdf
-    submission, form = user_is_allowed_to_generate_report(
+    submission, form = permissions.user_is_allowed_to_generate_report(
         request.user, submission_id, form_id, report_id
     )
 
@@ -41,6 +43,22 @@ def report_content(request, submission_id, form_id, report_id):
             "amend_properties": amend_props,
         },
     }
+
+    transaction = None
+    if kwargs.get("transaction_id"):
+        transaction = (
+            submission.get_transactions()
+            .filter(pk=kwargs.get("transaction_id"))
+            .first()
+        )
+    if transaction is not None:
+        base_section_context.update(
+            {
+                "transaction_data": PostFinanceTransactionPrintSerializer(
+                    transaction
+                ).data
+            }
+        )
 
     # Render all sections
     rendered_sections = []
@@ -62,9 +80,15 @@ def report_content(request, submission_id, form_id, report_id):
 # in SelectedForm, which already joins both, so they are consistent.
 @login_required
 @permanent_user_required
-def report_pdf(request, submission_id, form_id, report_id):
+def report_pdf(request, submission_id, form_id, report_id, **kwargs):
+    permissions.user_is_allowed_to_generate_report(
+        request.user,
+        submission_id,
+        form_id,
+        report_id,
+    )
     return generate_report_pdf_as_response(
-        request.user, submission_id, form_id, report_id
+        request.user, submission_id, form_id, report_id, kwargs.get("transaction_id")
     )
 
 

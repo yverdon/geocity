@@ -92,7 +92,7 @@ def submit_submission(submission, request):
             "absolute_uri_func": request.build_absolute_uri,
             "forms_list": submission.get_forms_names_list(),
         }
-        attachments = submission.get_submission_submitted_attachments()
+        attachments = submission.get_submission_payment_attachments("confirmation")
         send_email_notification(data, attachments=attachments)
 
         if submission.author.userprofile.notify_per_email:
@@ -340,3 +340,17 @@ def download_archives(archive_ids, user):
                 for archive in archives:
                     zip_file.write(archive.archive.path, archive.archive.name)
             return FileResponse(open(tmp_file.name, "rb"), filename=filename)
+
+
+def send_refund_email(request, submission):
+    data = {
+        "subject": _("Remboursement pour votre demande"),
+        "users_to_notify": [submission.author.email],
+        "template": "submission_refund.txt",
+        "submission": submission,
+        "absolute_uri_func": request.build_absolute_uri,
+        "forms_list": submission.get_forms_names_list(),
+    }
+    send_email_notification(
+        data, attachments=submission.get_submission_payment_attachments("refund")
+    )

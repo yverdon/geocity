@@ -89,8 +89,20 @@ class Transaction(models.Model):
         payment_settings = form.payment_settings
         report = payment_settings.payment_confirmation_report
         output = generate_report_pdf(
-            submission.author, submission.pk, form.pk, report.pk
+            submission.author, submission.pk, form.pk, report.pk, self.pk
         )
         if read:
             output = output.read()
         return f"facture_{self.merchant_reference}.pdf", output
+
+    def get_refund_pdf(self, read=False):
+        submission = self.submission_price.submission
+        form = submission.get_form_for_payment()
+        payment_settings = form.payment_settings
+        report = payment_settings.payment_refund_report
+        output = generate_report_pdf(
+            submission.author, submission.pk, form.pk, report.pk, self.pk
+        )
+        if read:
+            output = output.read()
+        return f"refund_{self.merchant_reference}.pdf", output

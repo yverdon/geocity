@@ -1480,6 +1480,12 @@ class SubmissionComplementaryDocumentsForm(forms.ModelForm):
         ).all()
         self.fields["authorised_departments"].label = _("Département autorisé")
 
+        # TOFIX: reports that are linked to transaction should not
+        # be able to be generated here but rather through the transactions' tab
+        # For now, we have to get the last transaction, in order for the reports
+        # linked payments to work.
+        last_transaction = self.submission.get_last_transaction()
+
         # TODO: prefetch (to optimize reduce requests count)
         choices = [("", _("Aucune sélection"))]
         for form in self.submission.forms.all():
@@ -1489,12 +1495,20 @@ class SubmissionComplementaryDocumentsForm(forms.ModelForm):
                 doc_types = parent_doc_type.children.all()
                 for doc_type in doc_types:
                     for report in doc_type.reports.all():
-                        subchoices.append(
-                            (
-                                f"{form.pk}/{report.pk}/{doc_type.pk}",
-                                f"{report} / {doc_type}",
+                        if last_transaction is not None:
+                            subchoices.append(
+                                (
+                                    f"{form.pk}/{report.pk}/{doc_type.pk}/{last_transaction.pk}",
+                                    f"{report} / {doc_type}",
+                                )
                             )
-                        )
+                        else:
+                            subchoices.append(
+                                (
+                                    f"{form.pk}/{report.pk}/{doc_type.pk}/0",
+                                    f"{report} / {doc_type}",
+                                )
+                            )
             if subchoices:
                 choices.append((f"{form}", subchoices))
         self.fields["generate_from_model"].choices = choices
@@ -1585,17 +1599,29 @@ class SubmissionComplementaryDocumentsForm(forms.ModelForm):
         if not cleaned_data.get("document"):
             generate_from_model = cleaned_data.get("generate_from_model")
             try:
-                form_pk, report_pk, child_doc_type_pk = generate_from_model.split("/")
+                (
+                    form_pk,
+                    report_pk,
+                    child_doc_type_pk,
+                    transaction_pk,
+                ) = generate_from_model.split("/")
             except ValueError:
                 raise ValidationError(
                     _("Selection invalide pour génération à partir du modèle !")
                 )
 
+            kwargs = {
+                "form_id": form_pk,
+                "report_id": report_pk,
+            }
+            if self.submission.get_transactions():
+                rel_transaction = (
+                    self.submission.get_transactions().filter(pk=transaction_pk).last()
+                )
+                if rel_transaction is not None:
+                    kwargs.update({"transaction_id": rel_transaction.pk})
             report_response = generate_report_pdf_as_response(
-                self.request.user,
-                self.submission.pk,
-                form_id=form_pk,
-                report_id=report_pk,
+                self.request.user, self.submission.pk, **kwargs
             )
             cleaned_data["document"] = File(
                 io.BytesIO(b"".join(report_response.streaming_content)),

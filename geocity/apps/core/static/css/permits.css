@@ -480,6 +480,27 @@ th.actions {
   color: #A0B46F;
 }
 
+/* TRANSACTION STATUSES */
+.statusunpaid {
+  color: #bbbbbb;
+}
+
+.statuspaid {
+  color: #ffc107;
+}
+
+.statusto_refund {
+  color: #ffe493;
+}
+
+.statusrefunded {
+  color: #fff0c5;
+}
+
+.statusfailed {
+  color: #787878;
+}
+
 #validation_pdf {
   margin-top: 20px;
 }

@@ -64,6 +64,7 @@ from .payments.services import (
     get_transaction_from_merchant_reference,
 )
 from .search import search_result_to_json, search_submissions
+from .services import send_refund_email
 from .shortcuts import get_submission_for_user_or_404
 from .steps import (
     StepType,
@@ -244,6 +245,7 @@ class SubmissionDetailView(View):
             self.request.user, self.submission
         )
 
+        history = []
         # Prepare history for the submission and transaction(s)
         if (
             permissions.has_permission_to_amend_submission(
@@ -2022,6 +2024,10 @@ class ChangeTransactionStatus(View):
 
             transaction.set_new_status(new_status)
 
+            if new_status == transaction.STATUS_REFUNDED:
+                submission.generate_and_save_pdf("refund", transaction)
+                send_refund_email(request, submission)
+
             redirect_page = reverse_lazy(
                 "submissions:submission_detail",
                 kwargs={"submission_id": submission.pk},
@@ -2056,10 +2062,6 @@ class ChangeTransactionStatus(View):
             error_message = self.permission_error_message
         except ObjectDoesNotExist:
             error_message = self.not_exist_error_message
-        except Exception as exc:
-            error_message = _(
-                "Une erreur est survenue lors du changement de statut de la transaction. Veuillez contacter votre administrateur"
-            )
 
         messages.error(request, error_message)
 
@@ -2071,7 +2073,8 @@ class ConfirmTransactionCallback(View):
     def get(self, request, pk, *args, **kwargs):
         transaction = get_transaction_from_id(pk)
         submission = transaction.submission_price.submission
-        submission.generate_confirmation_pdf(transaction)
+
+        submission.generate_and_save_pdf("confirmation", transaction)
 
         if (
             not request.user == submission.author

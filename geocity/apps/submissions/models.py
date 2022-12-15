@@ -1081,11 +1081,16 @@ class Submission(models.Model):
 
     def get_transactions(self):
         # TODO: if more payment processors are implemented, change this to add all transaction types to queryset
+        if self.submission_price is None:
+            return None
         return self.submission_price.get_transactions()
 
     def get_history(self):
         # Transactions history
-        transactions = self.submission_price.transactions.all()
+        if self.submission_price is None:
+            transactions = []
+        else:
+            transactions = self.submission_price.transactions.all()
         transaction_versions = []
         last_status = ""
         for transaction in transactions:
@@ -1105,44 +1110,63 @@ class Submission(models.Model):
         history.sort(reverse=True)
         return history
 
-    def get_submission_submitted_attachments(self):
+    def get_last_transaction(self):
+        if self.get_transactions() is None:
+            return None
+        return self.get_transactions().order_by("-updated_date").last()
+
+    def get_submission_payment_attachments(self, pdf_type):
+        pdf_types = {
+            "confirmation": lambda p: p.payment_confirmation_report,
+            "refund": lambda p: p.payment_refund_report,
+        }
+        report_func = pdf_types[pdf_type]
         form = self.get_form_for_payment()
         payment_settings = form.payment_settings
-        if not payment_settings or not payment_settings.payment_confirmation_report:
+        if not payment_settings or not report_func(payment_settings):
             return []
         child_doc_type = None
-        for (
-            doc_type
-        ) in payment_settings.payment_confirmation_report.document_types.all():
+        for doc_type in report_func(payment_settings).document_types.all():
             if doc_type.parent.form.pk == form.pk:
                 child_doc_type = doc_type
                 break
+
         if not child_doc_type:
             return []
-        comp_docs = self.get_complementary_documents(self.author).filter(
-            document_type=child_doc_type
+
+        comp_doc = (
+            self.get_complementary_documents(self.author)
+            .filter(document_type=child_doc_type)
+            .last()
         )
-        documents = []
-        for comp_doc in comp_docs:
-            documents.append((comp_doc.name, comp_doc.document.file.read()))
+        if not comp_doc:
+            return []
+        return [(comp_doc.name, comp_doc.document.file.read())]
 
-        return documents
-
-    def generate_confirmation_pdf(self, transaction):
-        filename, file_bytes = transaction.get_confirmation_pdf()
-
+    def generate_and_save_pdf(self, pdf_type, transaction):
+        pdf_types = {
+            "confirmation": (
+                lambda t: t.get_confirmation_pdf(),
+                lambda p: p.payment_confirmation_report,
+                "Facture",
+            ),
+            "refund": (
+                lambda t: t.get_refund_pdf(),
+                lambda p: p.payment_refund_report,
+                "Remboursement",
+            ),
+        }
+        gen_func, report_func, description = pdf_types[pdf_type]
+        file_name, file_bytes = gen_func(transaction)
         complementary_document_attrs = {
             "document": File(
                 file_bytes,
-                name=filename,
+                name=file_name,
             )
         }
         form = self.get_form_for_payment()
-        payment_settings = form.payment_settings
         child_doc_type = None
-        for (
-            doc_type
-        ) in payment_settings.payment_confirmation_report.document_types.all():
+        for doc_type in report_func(form.payment_settings).document_types.all():
             if doc_type.parent.form.pk == form.pk:
                 child_doc_type = doc_type
                 break
@@ -1154,7 +1178,7 @@ class Submission(models.Model):
 
         complementary_document_attrs[
             "description"
-        ] = f"Confirmation de transaction {transaction.merchant_reference}"
+        ] = f"{description} {transaction.merchant_reference}"
         complementary_document_attrs["owner"] = self.author
         complementary_document_attrs["submission"] = self
         complementary_document_attrs[

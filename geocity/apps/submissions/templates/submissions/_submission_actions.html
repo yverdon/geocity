@@ -255,7 +255,7 @@
                         <div class="col-sm-5">
                           {% bootstrap_field form.generate_from_model layout='vertical'%}
                           <button id="id_form-{{ forloop.counter0 }}-print_preview"
-                                  data-link-tpl="{% url 'reports:submission_report_pdf' submission.pk "888888888" "999999999" %}"
+                                  data-link-tpl="{% url 'reports:submission_report_pdf' submission.pk "888888888" "999999999" "000000000" %}"
                                   class="btn btn-primary"
                                   name="preview" disabled>
                             {% trans "Prévisualiser" %}

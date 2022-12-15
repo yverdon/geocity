@@ -59,6 +59,8 @@ class ReportAdminForm(forms.ModelForm):
     def clean_document_types(self):
         doc_types = self.cleaned_data["document_types"]
         error_message = ""
+        if not self.instance.pk:
+            return doc_types
         if self.instance.confirmation_payment_settings_objects.exists():
             if not self.instance.confirmation_payment_settings_objects.filter(
                 form__in=doc_types.all().values("parent__form")
