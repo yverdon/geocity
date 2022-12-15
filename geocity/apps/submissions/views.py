@@ -251,16 +251,7 @@ class SubmissionDetailView(View):
             )
             or can_validate_submission
         ):
-            transactions = self.submission.submission_price.transactions.all()
-            transaction_versions = []
-            for transaction in transactions:
-                transaction_versions += transaction.history.all()
-
-            history = [
-                (event.history_date, event)
-                for event in (*self.submission.history.all(), *transaction_versions)
-            ]
-            history.sort(reverse=True)
+            history = self.submission.get_history()
 
         prolongation_enabled = (
             self.submission.get_selected_forms().aggregate(

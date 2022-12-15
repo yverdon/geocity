@@ -1083,6 +1083,28 @@ class Submission(models.Model):
         # TODO: if more payment processors are implemented, change this to add all transaction types to queryset
         return self.submission_price.get_transactions()
 
+    def get_history(self):
+        # Transactions history
+        transactions = self.submission_price.transactions.all()
+        transaction_versions = []
+        last_status = ""
+        for transaction in transactions:
+            versions = []
+            for version in transaction.history.all():
+                # Include only updates that changed the transaction status
+                if last_status != version.status:
+                    versions.append(version)
+                last_status = version.status
+            transaction_versions += versions
+
+        # Merge with Submission (self) history
+        history = [
+            (event.history_date, event)
+            for event in (*self.history.all(), *transaction_versions)
+        ]
+        history.sort(reverse=True)
+        return history
+
     def get_submission_submitted_attachments(self):
         form = self.get_form_for_payment()
         payment_settings = form.payment_settings
