@@ -179,7 +179,7 @@ class PaymentSettings(models.Model):
         verbose_name_plural = _("Paramètres de paiement")
 
     def clean(self):
-        if self.payment_confirmation_report is not None:
+        if self.payment_confirmation_report is not None and self.pk is not None:
             for form in self.form_set.all():
                 test = self.payment_confirmation_report.document_types.filter(
                     parent__form=form.pk
@@ -223,7 +223,7 @@ class FormPrice(models.Model):
 
     class Meta:
         unique_together = ("price", "form")
-        ordering = ("order",)
+        ordering = ("order", "price")
 
 
 class Form(models.Model):

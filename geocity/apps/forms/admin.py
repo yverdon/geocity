@@ -388,26 +388,8 @@ class PriceAdmin(admin.ModelAdmin):
     form_names.short_description = _("Form(s)")
 
 
-class PaymentSettingsAdminForm(forms.ModelForm):
-    class Meta:
-        model = models.PaymentSettings
-        fields = [
-            "name",
-            "prices_label",
-            "internal_account",
-            "payment_processor",
-            "space_id",
-            "user_id",
-            "api_key",
-            "payment_confirmation_report",
-            "payment_refund_report",
-            "integrator",
-        ]
-
-
 @admin.register(models.PaymentSettings)
 class PaymentSettingsAdmin(admin.ModelAdmin):
-    form = PaymentSettingsAdminForm
     list_display = ["name", "prices_label", "payment_processor"]
     list_filter = ["name", "internal_account", "payment_processor"]
 

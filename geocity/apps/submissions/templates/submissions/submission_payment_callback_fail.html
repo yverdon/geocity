@@ -8,14 +8,18 @@
   <div class="card">
     <div class="card-body alert-warning">
       <div class="mb-4">
-        Votre paiement a été annulé. Si vous souhaitez réessayer, vous pouvez <a href="{{ submission_url }}">revenir sur votre demande</a>.
+        {% blocktrans trimmed %}
+          Votre paiement a été annulé. Si vous souhaitez réessayer, vous pouvez <a href="{{ submission_url }}">revenir sur votre demande</a>.
+        {% endblocktrans %}
       </div>
       <div class="mb-4">
-        Veillez à bien vérifier vos informations de paiement avant de tenter à nouveau la transaction.
-        Nous vous remercions de votre patience et de votre compréhension.
+        {% blocktrans trimmed %}
+          Veillez à bien vérifier vos informations de paiement avant de tenter à nouveau la transaction.
+          Nous vous remercions de votre patience et de votre compréhension.
+        {% endblocktrans %}
       </div>
       <div class="mb-4">
-        <a class="btn btn-primary" href="{{ submission_url }}">Revenir sur la demande</a>
+        <a class="btn btn-primary" href="{{ submission_url }}">{% trans "Revenir sur la demande" %}</a>
       </div>
     </div>
   </div>

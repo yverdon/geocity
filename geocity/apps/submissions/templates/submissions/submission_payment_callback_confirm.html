@@ -8,11 +8,13 @@
   <div class="card">
     <div class="card-body alert-success">
       <div class="mb-4">
-        Merci pour votre paiement.
-        Votre transaction a été traitée avec succès.
+        {% blocktrans trimmed %}
+          Merci pour votre paiement.
+          Votre transaction a été traitée avec succès.
+        {% endblocktrans %}
       </div>
       <div class="mb-4">
-        <a class="btn btn-primary" href="{% url 'submissions:submissions_list' %}">Revenir sur la liste des demandes</a>
+        <a class="btn btn-primary" href="{% url 'submissions:submissions_list' %}">{% trans "Revenir sur la liste des demandes" %}</a>
       </div>
     </div>
   </div>

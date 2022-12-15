@@ -266,13 +266,7 @@ class FormsPriceSelectForm(forms.Form):
             "text": selected_price.text,
         }
         current_submission_price = self.instance.get_submission_price()
-        if current_submission_price is not None:
-            current_submission_price.amount = price_data["amount"]
-            current_submission_price.text = price_data["text"]
-            current_submission_price.currency = price_data["currency"]
-            current_submission_price.original_price = selected_price
-            current_submission_price.save()
-        else:
+        if current_submission_price is None:
             SubmissionPrice.objects.create(
                 **{
                     **price_data,
@@ -280,6 +274,13 @@ class FormsPriceSelectForm(forms.Form):
                     "submission": self.instance,
                 }
             )
+        else:
+            current_submission_price.amount = price_data["amount"]
+            current_submission_price.text = price_data["text"]
+            current_submission_price.currency = price_data["currency"]
+            current_submission_price.original_price = selected_price
+            current_submission_price.save()
+
         return self.instance
 
 

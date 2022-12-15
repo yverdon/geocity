@@ -667,7 +667,6 @@ LOGGING = {
 }
 
 # Payment processing
-PAYMENT_PROCESSING_PROVIDERS = os.getenv("PAYMENT_PROCESSING_PROVIDERS", "").split(",")
 PAYMENT_PROCESSING_TEST_ENVIRONMENT = (
     os.getenv("PAYMENT_PROCESSING_TEST_ENVIRONMENT", "true").lower() == "true" or DEBUG
 )

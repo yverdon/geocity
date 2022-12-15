@@ -1054,8 +1054,9 @@ class Submission(models.Model):
         For online payments, only one form can exist on a Submission
         """
         if self.forms.count() != 1:
-            # TODO: raise exception for this ?
-            return None
+            raise SuspiciousOperation(
+                "Multiple forms detected on a submission that has payment active"
+            )
         return self.forms.first()
 
     def requires_online_payment(self):

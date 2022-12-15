@@ -132,16 +132,16 @@ class ComplementaryDocumentTypeAdminForm(forms.ModelForm):
 
     def clean_form(self):
         form = self.cleaned_data["form"]
-        is_payment_confirmation_type = self.instance.children.exclude(
+        payment_settings_confirmation_reports = self.instance.children.exclude(
             reports__confirmation_payment_settings_objects=None
         )
-        is_refund_confirmation_type = self.instance.children.exclude(
+        payment_settings_refund_reports = self.instance.children.exclude(
             reports__refund_payment_settings_objects=None
         )
         error_msg = ""
         if (
-            is_payment_confirmation_type.exists()
-            and not is_payment_confirmation_type.filter(
+            payment_settings_confirmation_reports.exists()
+            and not payment_settings_confirmation_reports.filter(
                 reports__confirmation_payment_settings_objects__form__in=[form]
             )
         ):
@@ -149,8 +149,8 @@ class ComplementaryDocumentTypeAdminForm(forms.ModelForm):
                 "Ce type de document est utilisé comme confirmation de paiement dans une configuration de paiement, via un modèle d'impression. Vous devez dé-lier le modèle d'impression de la configuration de paiement afin de pouvoir modifier ce champ."
             )
         if (
-            is_refund_confirmation_type.exists()
-            and not is_refund_confirmation_type.filter(
+            payment_settings_refund_reports.exists()
+            and not payment_settings_refund_reports.filter(
                 reports__refund_payment_settings_objects__form__in=[form]
             )
         ):

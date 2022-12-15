@@ -43,7 +43,9 @@
     {% if not submission.get_submission_price %}
       <div class="alert alert-danger mb-4">
         <div class="mb-4">
-          Vous devez choisir un tarif à l'étape "Détails"
+          {% blocktrans trimmed %}
+            Vous devez choisir un tarif à l'étape "Détails"
+          {% endblocktrans %}
           <hr/>
         </div>
         <div class="mb-4">
@@ -54,14 +56,18 @@
     {% else %}
       <div class="alert alert-info mb-4">
         <div class="mb-4">
-          Avant de continuer, nous vous demandons de vérifier les détails de votre demande pour vous assurer que tout est correct.
-          Lorsque vous êtes prêt à procéder au paiement, cliquez sur le bouton Payer maintenant pour être redirigé vers l’interface de paiement sécurisée.
+          {% blocktrans trimmed %}
+            Avant de continuer, nous vous demandons de vérifier les détails de votre demande pour vous assurer que tout est correct.
+            Lorsque vous êtes prêt à procéder au paiement, cliquez sur le bouton Payer maintenant pour être redirigé vers l’interface de paiement sécurisée.
+          {% endblocktrans %}
           <hr/>
         </div>
         <div class="mb-4">
-          <p>Vous avez sélectionné <strong>{{ submission.get_submission_price.text }}</strong> au prix de
-            <strong>{{ submission.get_submission_price.amount }} {{ submission.get_submission_price.currency }}</strong>
-          </p>
+          {% blocktrans trimmed with text=submission.get_submission_price.text amount=submission.get_submission_price.amount currency=submission.get_submission_price.currency %}
+            <p>Vous avez sélectionné <strong>{{ text }}</strong> au prix de
+              <strong>{{ amount }} {{ currency }}</strong>
+            </p>
+          {% endblocktrans %}
         </div>
         <div class="mb-4">
           {% if previous_step.url %}
