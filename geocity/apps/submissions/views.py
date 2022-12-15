@@ -243,14 +243,25 @@ class SubmissionDetailView(View):
         can_validate_submission = permissions.can_validate_submission(
             self.request.user, self.submission
         )
-        history = (
-            self.submission.history.all()
-            if permissions.has_permission_to_amend_submission(
+
+        # Prepare history for the submission and transaction(s)
+        if (
+            permissions.has_permission_to_amend_submission(
                 self.request.user, self.submission
             )
             or can_validate_submission
-            else None
-        )
+        ):
+            transactions = self.submission.submission_price.transactions.all()
+            transaction_versions = []
+            for transaction in transactions:
+                transaction_versions += transaction.history.all()
+
+            history = [
+                (event.history_date, event)
+                for event in (*self.submission.history.all(), *transaction_versions)
+            ]
+            history.sort(reverse=True)
+
         prolongation_enabled = (
             self.submission.get_selected_forms().aggregate(
                 Sum("form__permit_duration")

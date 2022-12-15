@@ -1,4 +1,5 @@
 import enum
+import logging
 import os
 import tempfile
 import urllib.parse
@@ -77,6 +78,8 @@ ACTIONS = [
     ACTION_COMPLEMENTARY_DOCUMENTS,
     ACTION_REQUEST_INQUIRY,
 ]
+
+logger = logging.getLogger(__name__)
 
 
 def printed_submission_storage(instance, filename):
@@ -1054,9 +1057,12 @@ class Submission(models.Model):
         For online payments, only one form can exist on a Submission
         """
         if self.forms.count() != 1:
-            raise SuspiciousOperation(
-                "Multiple forms detected on a submission that has payment active"
+            logger.warning(
+                f"Multiple forms in the submission ({self.pk}), in an "
+                f"entity set to [single form submission]. Payment feature"
+                f"not available."
             )
+            return None
         return self.forms.first()
 
     def requires_online_payment(self):
