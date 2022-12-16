@@ -28,7 +28,7 @@ class Command(BaseCommand):
             order=1,
             report=report,
             title="",
-            content="""<p><strong>D&eacute;biteur n&deg; :</strong> <strong>{{request_data.properties.author.user_id}}</strong><br />
+            content="""<p><strong>Client Geocity n&deg; :</strong> <strong>{{request_data.properties.author.user_id}}</strong><br />
 Date:&nbsp;{{ transaction_data.creation_date }}<br />
 <strong>Ann&eacute;e:</strong>&nbsp;<strong>{{ transaction_data.creation_date_year }}</strong><br />
 Page: 1/1</p>""",
@@ -107,7 +107,7 @@ Pay&eacute; le {{ transaction_data.creation_date }}</p>
             order=1,
             report=report,
             title="",
-            content="""<p><strong>D&eacute;biteur n&deg; :</strong> <strong>{{request_data.properties.author.user_id}}</strong><br />
+            content="""<p><strong>Client Geocity n&deg; :</strong> <strong>{{request_data.properties.author.user_id}}</strong><br />
 Date:&nbsp;{{ transaction_data.creation_date }}<br />
 <strong>Ann&eacute;e:</strong>&nbsp;<strong>{{ transaction_data.creation_date_year }}</strong><br />
 Page: 1/1</p>""",
@@ -130,7 +130,7 @@ Page: 1/1</p>""",
             order=3,
             report=report,
             title="",
-            content="""<p><strong>FACTURE N&deg;: GEOCITY-{{request_data.id}}</strong></p>
+            content="""<p><strong>REMBOURSEMENT N&deg;: GEOCITY-{{request_data.id}}</strong></p>
 
 <p>&nbsp;</p>
 
@@ -165,7 +165,7 @@ Pay&eacute; le {{ transaction_data.creation_date }}</p>
 		<tr>
 			<td><strong>Montant rembours&eacute;:</strong></td>
 			<td>&nbsp;</td>
-			<td style="text-align:right">{{request_data.properties.submission_submission_price.amount}}</td>
+			<td style="text-align:right">-{{request_data.properties.submission_submission_price.amount}}</td>
 		</tr>
 	</tbody>
 </table>

@@ -3,9 +3,9 @@
 
 {% blocktrans %}Bonjour {{ name }}{% endblocktrans %},
 
-{% trans "Nous vous confirmons que votre demande a été remboursée." %}
+{% trans "Nous vous confirmons le remboursement lié à votre demande." %}
 
-{% trans "Veuillez trouver ci-joint le reçu par rapport au remboursement de la demande" %}
+{% trans "Veuillez trouver ci-joint les détails." %}
 
 {% trans "Avec nos meilleures salutations," %}
 {% if administrative_entity.custom_signature %}

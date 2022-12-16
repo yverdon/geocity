@@ -218,7 +218,7 @@ class SectionParagraph(Section):
         _("Contenu"),
         help_text=(
             _(
-                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}` et celles du formulaire dans `{{form_data}}`.'
+                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}`, celles du formulaire dans `{{form_data}}`, celles des transactions dans `{{transaction_data}}`.'
             )
         ),
     )
@@ -232,8 +232,10 @@ class SectionParagraph(Section):
             # TODO rename to `submission_data` (& migrate sections) to match new naming
             "request_data": base_context["request_data"],
             "form_data": base_context["form_data"],
-            "transaction_data": base_context["transaction_data"],
         }
+        if "transaction_data" in base_context:
+            inner_context["transaction_data"] = base_context["transaction_data"]
+
         env = SandboxedEnvironment()
         rendered_html = env.from_string(self.content).render(inner_context)
         return mark_safe(rendered_html)
@@ -252,7 +254,7 @@ class SectionParagraphRight(Section):
         _("Contenu"),
         help_text=(
             _(
-                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}` et celles du formulaire dans `{{form_data}}`.'
+                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}`, celles du formulaire dans `{{form_data}}`, celles des transactions dans `{{transaction_data}}`.'
             )
         ),
     )
@@ -266,8 +268,9 @@ class SectionParagraphRight(Section):
             # TODO rename to `submission_data` (& migrate sections) to match new naming
             "request_data": base_context["request_data"],
             "form_data": base_context["form_data"],
-            "transaction_data": base_context["transaction_data"],
         }
+        if "transaction_data" in base_context:
+            inner_context["transaction_data"] = base_context["transaction_data"]
         env = SandboxedEnvironment()
         rendered_html = env.from_string(self.content).render(inner_context)
         return mark_safe(rendered_html)

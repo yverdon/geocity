@@ -1266,9 +1266,10 @@ def submission_fields(request, submission_id):
     prices_form = None
     requires_online_payment = False
 
-    form_payment = submission.get_form_for_payment()
-    if form_payment is not None:
-        requires_online_payment = form_payment.requires_online_payment
+    if submission.requires_online_payment():
+        form_payment = submission.get_form_for_payment()
+        if form_payment is not None:
+            requires_online_payment = form_payment.requires_online_payment
 
     if request.method == "POST":
         # Disable `required` fields validation to allow partial save

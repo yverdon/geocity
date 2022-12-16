@@ -168,17 +168,20 @@ def user_is_allowed_to_generate_report(user, submission_id, form_id, report_id):
         Submission.objects.filter_for_user(user), pk=submission_id
     )
 
+    is_linked_to_payment = False
     # Check if report is linked to payments
-    form_for_payment = submission.get_form_for_payment()
-    is_linked_to_payment = (
-        form_for_payment
-        and form_for_payment.payment_settings
-        and (
-            form_for_payment.payment_settings.payment_confirmation_report.pk
-            == report_id
-            or form_for_payment.payment_settings.payment_refund_report.pk == report_id
+    if submission.requires_online_payment():
+        form_for_payment = submission.get_form_for_payment()
+        is_linked_to_payment = (
+            form_for_payment
+            and form_for_payment.payment_settings
+            and (
+                form_for_payment.payment_settings.payment_confirmation_report.pk
+                == report_id
+                or form_for_payment.payment_settings.payment_refund_report.pk
+                == report_id
+            )
         )
-    )
 
     # Check that user has permission to generate pdf
     if not is_linked_to_payment and (
