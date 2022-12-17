@@ -14,6 +14,7 @@ from django.utils import timezone
 
 from geocity.apps.accounts import models as accounts_models
 from geocity.apps.forms import models as forms_models
+from geocity.apps.reports.models import Report
 from geocity.apps.submissions import forms as submissions_forms
 from geocity.apps.submissions import models as submissions_models
 from geocity.tests import factories
@@ -2373,6 +2374,119 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
             ),
             1,
         )
+
+
+class OnlinePaymentTestCase(LoggedInUserMixin, TestCase):
+    def setUp(self):
+        super().setUp()
+        entity = factories.AdministrativeEntityFactory(is_single_form_submissions=True)
+
+        self.parent_type = factories.ParentComplementaryDocumentTypeFactory()
+        self.child_type = factories.ChildComplementaryDocumentTypeFactory(
+            parent=self.parent_type
+        )
+
+        self.parent_type2 = factories.ParentComplementaryDocumentTypeFactory(
+            form=self.parent_type.form
+        )
+        self.child_type2 = factories.ChildComplementaryDocumentTypeFactory(
+            parent=self.parent_type
+        )
+
+        prices = factories.PriceFactory.create_batch(4)
+        self.payment_settings = factories.PaymentSettingsFactory()
+
+        self.secretariat = factories.SecretariatUserFactory()
+
+        report = Report.objects.filter(
+            integrator=self.secretariat.groups.first()
+        ).first()
+        report.document_types.set([self.child_type])
+        self.payment_settings.payment_confirmation_report = report
+        self.payment_settings.payment_refund_report = report
+        self.payment_settings.integrator = self.secretariat.groups.first()
+        self.payment_settings.save()
+
+        self.parent_type.form.payment_settings = self.payment_settings
+        self.parent_type.form.prices.set(prices)
+        self.parent_type.form.save()
+
+        self.parent_type.form.requires_payment = False
+        self.parent_type.form.requires_online_payment = True
+        self.parent_type.form.save()
+        entity.forms.set([self.parent_type.form])
+
+    def _add_fields_to_form(self):
+        list_single_field = factories.FieldFactory(
+            input_type=submissions_models.Field.INPUT_TYPE_LIST_SINGLE,
+            choices="foo\nbar",
+            is_mandatory=True,
+        )
+        list_multiple_field = factories.FieldFactory(
+            input_type=submissions_models.Field.INPUT_TYPE_LIST_MULTIPLE,
+            choices="foo\nbar",
+            is_mandatory=True,
+        )
+        for field in [list_single_field, list_multiple_field]:
+            field.forms.set([self.parent_type.form])
+        return list_single_field, list_multiple_field
+
+    def _add_fields_select_price_and_save(self, submission):
+        list_single_field, list_multiple_field = self._add_fields_to_form()
+
+        data = {
+            "selected_price": self.parent_type.form.prices.first().pk,
+            f"fields-{self.parent_type.form.pk}_{list_single_field.pk}": "foo",
+            f"fields-{self.parent_type.form.pk}_{list_multiple_field.pk}": ["bar"],
+        }
+
+        return self.client.post(
+            reverse(
+                "submissions:submission_fields",
+                kwargs={"submission_id": submission.pk},
+            ),
+            data=data,
+        )
+
+    def test_price_selection_and_submit_page(self):
+        submission = factories.SubmissionFactory(
+            author=self.user,
+        )
+        submission.forms.set([self.parent_type.form])
+
+        response = self._add_fields_select_price_and_save(submission)
+
+        assert response.status_code == 302
+
+        response = self.client.get(
+            reverse(
+                "submissions:submission_submit",
+                kwargs={"submission_id": submission.pk},
+            )
+        )
+
+        content = response.content.decode()
+
+        self.assertInHTML("Payer maintenant", content)
+        self.assertIn("/submissions/payment/", content)
+
+    def test_price_is_required_to_be_selected_in_submit_page(self):
+        submission = factories.SubmissionFactory(
+            author=self.user,
+        )
+        submission.forms.set([self.parent_type.form])
+
+        self._add_fields_to_form()
+
+        response = self.client.get(
+            reverse(
+                "submissions:submission_submit",
+                kwargs={"submission_id": submission.pk},
+            )
+        )
+        open("output.html", "wb").write(response.content)
+
+        assert "Vous devez choisir un tarif" in response.content.decode()
 
 
 class AdministrativeEntitySecretaryEmailTestcase(TestCase):
