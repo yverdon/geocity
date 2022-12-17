@@ -1,0 +1,26 @@
+{% extends "base_generic.html" %}
+{% load bootstrap4 %}
+{% load i18n %}
+{% load submissions_extras %}
+
+
+{% block content %}
+  <div class="card">
+    <div class="card-body alert-warning">
+      <div class="mb-4">
+        {% blocktrans trimmed %}
+          Votre paiement a été annulé. Si vous souhaitez réessayer, vous pouvez <a href="{{ submission_url }}">revenir sur votre demande</a>.
+        {% endblocktrans %}
+      </div>
+      <div class="mb-4">
+        {% blocktrans trimmed %}
+          Veillez à bien vérifier vos informations de paiement avant de tenter à nouveau la transaction.
+          Nous vous remercions de votre patience et de votre compréhension.
+        {% endblocktrans %}
+      </div>
+      <div class="mb-4">
+        <a class="btn btn-primary" href="{{ submission_url }}">{% trans "Revenir sur la demande" %}</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

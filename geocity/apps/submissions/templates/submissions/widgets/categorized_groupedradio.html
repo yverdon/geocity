@@ -1,4 +1,4 @@
-{% with id=widget.attrs.id %}
+{% with id=widget.attrs.id disabled=widget.attrs.disabled %}
 <div{% if id %} id="{{ id }}"{% endif %}{% if widget.attrs.class %} class="{{ widget.attrs.class }}"{% endif %}>
 {% for group, options, index in widget.optgroups %}
   {% if group %}
@@ -8,7 +8,7 @@
   {% endif %}
   {% for option in options %}
     <div class="card-text">
-      <input type="radio" name="{{ option.name }}" value="{{option.value}}" id="{{option.attrs.id}}" required="required"
+      <input type="radio" name="{{ option.name }}" value="{{option.value}}" id="{{option.attrs.id}}" required="required" {% if disabled and not option.selected %} disabled="disabled" {% endif %}
       {% if option.selected %} checked {% endif %} >
       <label for="{{option.attrs.id}}">{{option.label}}</label>
     </div>

@@ -6,6 +6,9 @@
 
     <style>
       {% include "reports/report.css" %}
+      {% if not transaction_data %}
+        {% include "reports/_submission_info_header_footer.css" %}" %}
+      {% endif %}
     </style>
 
     {% if report.layout.font %}

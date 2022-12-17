@@ -14,7 +14,8 @@
           {% if directive_file and directive_description %}
             <span class="directive_description">{{ directive_description }}</span>:
             <i class="fa fa-download" aria-hidden="true"></i>
-            <a class="directive_file" href="{{ directive_file.url }}" target="_blank" rel="noreferrer">{% trans "Télécharger la directive" %}</a>
+            <a class="directive_file" href="{{ directive_file.url }}" target="_blank"
+               rel="noreferrer">{% trans "Télécharger la directive" %}</a>
             <br>
           {% endif %}
           {% if additional_information %}
@@ -24,7 +25,7 @@
       {% endfor %}
     </div>
   {% endif %}
-  {% if incomplete_steps  %}
+  {% if incomplete_steps %}
     <p>
       {% blocktrans trimmed %}
         Votre demande n'est pas complète mais elle est sauvegardée. Vous pouvez
@@ -33,38 +34,84 @@
       {% endblocktrans %}
     </p>
     <p>
-      <a class="btn btn-primary" href="{{ incomplete_steps|first }}">{% trans "Renseigner les informations manquantes" %}</a>
+      <a class="btn btn-primary"
+         href="{{ incomplete_steps|first }}">{% trans "Renseigner les informations manquantes" %}</a>
     </p>
+  {% endif %}
+
+  {% if should_go_to_payment %}
+    {% if not submission.get_submission_price %}
+      <div class="alert alert-danger mb-4">
+        <div class="mb-4">
+          {% blocktrans trimmed %}
+            Vous devez choisir un tarif à l'étape "Détails"
+          {% endblocktrans %}
+          <hr/>
+        </div>
+        <div class="mb-4">
+          <a href="{% url 'submissions:submission_fields' submission_id=submission.pk %}"
+             class="btn btn-primary">{% trans "Retour" %}</a>
+        </div>
+      </div>
+    {% else %}
+      <div class="alert alert-info mb-4">
+        <div class="mb-4">
+          {% blocktrans trimmed %}
+            Avant de continuer, nous vous demandons de vérifier les détails de votre demande pour vous assurer que tout est correct.
+            Lorsque vous êtes prêt à procéder au paiement, cliquez sur le bouton Payer maintenant pour être redirigé vers l’interface de paiement sécurisée.
+          {% endblocktrans %}
+          <hr/>
+        </div>
+        <div class="mb-4">
+          {% blocktrans trimmed with text=submission.get_submission_price.text amount=submission.get_submission_price.amount currency=submission.get_submission_price.currency %}
+            <p>Vous avez sélectionné <strong>{{ text }}</strong> au prix de
+              <strong>{{ amount }} {{ currency }}</strong>
+            </p>
+          {% endblocktrans %}
+        </div>
+        <div class="mb-4">
+          {% if previous_step.url %}
+            <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
+          {% endif %}
+          <a class="btn btn-primary"
+             href="{% url 'submissions:submission_payment_redirect' pk=submission.pk %}" class="mr-2">
+            {% trans "Payer maintenant" %}
+          </a>
+        </div>
+      </div>
+    {% endif %}
   {% endif %}
   <p>
     {% trans "Vous trouvez ci-dessous un récapitulatif de votre saisie." %}
   </p>
-  {% if not incomplete_steps %}
+  {% if not incomplete_steps and not should_go_to_payment %}
     <form method="post">
       {% csrf_token %}
       {% buttons %}
         {% if previous_step.url %}
           <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
         {% endif %}
-        <a class="btn btn-primary" href="{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}" class="mr-2">
-        {% trans "Envoyer" %}</a>
+        <a class="btn btn-primary"
+           href="{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}" class="mr-2">
+          {% trans "Envoyer" %}</a>
       {% endbuttons %}
     </form>
   {% endif %}
   <div class="row">
     <div class="col">
-        {% submission_summary submission %}
+      {% submission_summary submission %}
     </div>
   </div>
-  {% if not incomplete_steps %}
+  {% if not incomplete_steps and not should_go_to_payment %}
     <form method="post">
       {% csrf_token %}
       {% buttons %}
         {% if previous_step.url %}
           <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
         {% endif %}
-        <a class="btn btn-primary" href="{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}" class="mr-2">
-        {% trans "Envoyer" %}</a>
+        <a class="btn btn-primary"
+           href="{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}" class="mr-2">
+          {% trans "Envoyer" %}</a>
       {% endbuttons %}
     </form>
   {% endif %}

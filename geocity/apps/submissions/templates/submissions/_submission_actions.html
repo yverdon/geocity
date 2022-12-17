@@ -1,5 +1,6 @@
 {% load i18n %}
 {% load bootstrap4 %}
+{% load render_table from django_tables2 %}
 
 <div class="container">
   {% if forms.amend or forms.request_validation or forms.validate or forms.poke %}
@@ -67,6 +68,13 @@
           <li class="nav-item">
             <a class="btn btn-primary btn-action nav-link{% if active_form == 'complementary_documents' %} active{% endif %}" id="documents-tab" data-toggle="tab" href="#documents" role="tab" aria-controls="documents">
                 {% trans "Documents et impressions" %} <span class="badge badge-beta badge-success">Beta</span>
+            </a>
+          </li>
+      {% endif %}
+      {% if transactions_table and online_payment_enabled %}
+          <li class="nav-item">
+            <a class="btn btn-primary btn-action nav-link{% if active_form == 'payments' %} active{% endif %}" id="payments-tab" data-toggle="tab" href="#payments" role="tab" aria-controls="payments">
+                {% trans "Paiement en ligne" %} <span class="badge badge-beta badge-success">Beta</span>
             </a>
           </li>
       {% endif %}
@@ -247,7 +255,7 @@
                         <div class="col-sm-5">
                           {% bootstrap_field form.generate_from_model layout='vertical'%}
                           <button id="id_form-{{ forloop.counter0 }}-print_preview"
-                                  data-link-tpl="{% url 'reports:submission_report_pdf' submission.pk "888888888" "999999999" %}"
+                                  data-link-tpl="{% url 'reports:submission_report_pdf' submission.pk "888888888" "999999999" "000000000" %}"
                                   class="btn btn-primary"
                                   name="preview" disabled>
                             {% trans "Prévisualiser" %}
@@ -294,6 +302,13 @@
           </div>
         {% endif %}
 
+        {% if transactions_table and online_payment_enabled %}
+          <div class='tab-pane{% if active_form == "payments" %} show active{% endif %}' id="payments" role="tabpanel" aria-labelledby="payments-tab">
+            <h4>{% trans "Transactions" %}</h4>
+            <div>
+              {% render_table transactions_table %}
+            </div>
+        {% endif %}
       </div>
     </div>
   </div>

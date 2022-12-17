@@ -665,3 +665,14 @@ LOGGING = {
         },
     },
 }
+
+# Payment processing
+PAYMENT_PROCESSING_TEST_ENVIRONMENT = (
+    os.getenv("PAYMENT_PROCESSING_TEST_ENVIRONMENT", "true").lower() == "true" or DEBUG
+)
+PAYMENT_CURRENCY = os.getenv("PAYMENT_CURRENCY")
+
+# PostFinance Checkout settings
+PF_CHECKOUT_SPACE_ID = os.getenv("PF_CHECKOUT_SPACE_ID")
+PF_CHECKOUT_USER_ID = os.getenv("PF_CHECKOUT_USER_ID")
+PF_CHECKOUT_API_SECRET = os.getenv("PF_CHECKOUT_API_SECRET")

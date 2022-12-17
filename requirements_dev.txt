@@ -23,6 +23,7 @@ beautifulsoup4==4.11.1
 certifi==2022.9.24
     # via
     #   -r requirements.txt
+    #   postfinancecheckout
     #   requests
 cffi==1.15.1
     # via
@@ -266,6 +267,8 @@ pip-tools==6.6.2
     # via -r requirements_dev.in
 platformdirs==2.5.2
     # via virtualenv
+postfinancecheckout==3.2.2
+    # via -r requirements.txt
 pre-commit==2.19.0
     # via -r requirements_dev.in
 prompt-toolkit==3.0.29
@@ -292,8 +295,10 @@ pyparsing==3.0.9
     #   packaging
 python-dateutil==2.8.2
     # via
+    #   -r requirements.txt
     #   faker
     #   freezegun
+    #   postfinancecheckout
 python3-openid==3.2.0
     # via
     #   -r requirements.txt
@@ -325,6 +330,7 @@ six==1.16.0
     # via
     #   -r requirements.txt
     #   html5lib
+    #   postfinancecheckout
     #   python-dateutil
     #   virtualenv
 soupsieve==2.3.2.post1
@@ -356,6 +362,7 @@ urllib3==1.26.13
     # via
     #   -r requirements.txt
     #   docker
+    #   postfinancecheckout
     #   requests
 virtualenv==20.14.1
     # via pre-commit

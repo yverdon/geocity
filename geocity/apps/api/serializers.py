@@ -18,6 +18,8 @@ from geocity.apps.submissions.models import (
     SubmissionGeoTime,
     SubmissionInquiry,
 )
+from geocity.apps.submissions.payments.models import SubmissionPrice
+from geocity.apps.submissions.payments.postfinance.models import PostFinanceTransaction
 
 
 def get_field_value_based_on_field(prop):
@@ -246,11 +248,44 @@ class SubmissionInquirySerializer(serializers.ModelSerializer):
         )
 
 
+class SubmissionPriceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubmissionPrice
+        fields = (
+            "text",
+            "amount",
+            "currency",
+        )
+
+
+class PostFinanceTransactionPrintSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        repr = super(PostFinanceTransactionPrintSerializer, self).to_representation(
+            instance
+        )
+        repr["creation_date"] = instance.creation_date.strftime("%d.%m.%Y")
+        repr["creation_date_year"] = instance.creation_date.strftime("%Y")
+        repr[
+            "line_text"
+        ] = instance.submission_price.submission.get_form_for_payment().name
+        return repr
+
+    class Meta:
+        model = PostFinanceTransaction
+        fields = (
+            "merchant_reference",
+            "amount",
+            "currency",
+            "creation_date",
+        )
+
+
 class SubmissionSerializer(serializers.ModelSerializer):
     administrative_entity = AdministrativeEntitySerializer(read_only=True)
     meta_types = MetaTypesField(source="forms", read_only=True)
     forms_names = FormsNames(source="forms", read_only=True)
     current_inquiry = SubmissionInquirySerializer(read_only=True)
+    submission_price = SubmissionPriceSerializer(read_only=True)
 
     class Meta:
         model = Submission
@@ -263,6 +298,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "meta_types",
             "forms_names",
             "current_inquiry",
+            "submission_price",
         )
 
 
@@ -332,6 +368,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     first_name = serializers.ReadOnlyField(source="user.first_name")
     last_name = serializers.ReadOnlyField(source="user.last_name")
     email = serializers.ReadOnlyField(source="user.email")
+    user_id = serializers.ReadOnlyField(source="user.id")
 
     class Meta:
         model = UserProfile
@@ -340,6 +377,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "last_name",
             "address",
             "zipcode",
+            "user_id",
             "city",
             "company_name",
             "vat_number",
