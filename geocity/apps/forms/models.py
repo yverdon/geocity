@@ -159,14 +159,14 @@ class PaymentSettings(models.Model):
     payment_confirmation_report = models.ForeignKey(
         Report,
         null=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         related_name="confirmation_payment_settings_objects",
         verbose_name=_("Rapport pour la confirmation des paiements"),
     )
     payment_refund_report = models.ForeignKey(
         Report,
         null=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.PROTECT,
         related_name="refund_payment_settings_objects",
         verbose_name=_("Rapport pour le remboursement des paiements"),
     )
@@ -475,28 +475,30 @@ class Form(models.Model):
             conf_report = self.payment_settings.payment_confirmation_report
             refund_report = self.payment_settings.payment_refund_report
 
-            has_doc_types_with_conf_report = conf_report.document_types.filter(
-                parent__form=self.pk
-            )
-            has_doc_types_with_refund_report = refund_report.document_types.filter(
-                parent__form=self.pk
-            )
-            if not has_doc_types_with_conf_report.exists():
-                raise ValidationError(
-                    {
-                        "payment_settings": _(
-                            f"Il faut ajouter une catégorie de document liée à {self.name} dans le modèle d'impression {conf_report.name}"
-                        )
-                    }
+            if conf_report:
+                has_doc_types_with_conf_report = conf_report.document_types.filter(
+                    parent__form=self.pk
                 )
-            if not has_doc_types_with_refund_report.exists():
-                raise ValidationError(
-                    {
-                        "payment_settings": _(
-                            f"Il faut ajouter une catégorie de document liée à {self.name} dans le modèle d'impression {refund_report.name}"
-                        )
-                    }
+                if not has_doc_types_with_conf_report.exists():
+                    raise ValidationError(
+                        {
+                            "payment_settings": _(
+                                f"Il faut ajouter une catégorie de document liée à {self.name} dans le modèle d'impression {conf_report.name}"
+                            )
+                        }
+                    )
+            if refund_report:
+                has_doc_types_with_refund_report = refund_report.document_types.filter(
+                    parent__form=self.pk
                 )
+                if not has_doc_types_with_refund_report.exists():
+                    raise ValidationError(
+                        {
+                            "payment_settings": _(
+                                f"Il faut ajouter une catégorie de document liée à {self.name} dans le modèle d'impression {refund_report.name}"
+                            )
+                        }
+                    )
 
 
 class FormField(models.Model):

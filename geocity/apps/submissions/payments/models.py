@@ -56,6 +56,7 @@ class Transaction(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ("-creation_date",)
 
     def set_refunded(self):
         self.status = self.STATUS_REFUNDED

@@ -208,11 +208,7 @@ def user_is_allowed_to_generate_report(user, submission_id, form_id, report_id):
     children_document_exists = ComplementaryDocumentType.objects.filter(
         parent__in=document_parent_list, reports__id=report_id
     ).exists()
-
-    # FIXME
-    #  - Add children documents in fixtures ?
-    #  - Raise a more specific error ?
-    # if not children_document_exists:
-    #     raise Http404
+    if not children_document_exists:
+        raise Http404
 
     return submission, form

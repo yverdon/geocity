@@ -5,29 +5,31 @@
 {% can_refund_transaction as can_refund %}
 
 {% if can_revert_refund or can_refund %}
-<ul class="list-inline text-left">
-  <li>
-    <div class="form-group">
-      <select class="form-control transactionStatusChangeSelect" id="transactionStatusChangeSelect-{{ record.merchant_reference }}">
-        <option value="">--------</option>
-        {% if can_refund %}
-          {% if record.status != 'to_refund' and record.status != 'refunded' %}
-            <option value="to_refund">{% trans "A rembourser" %}</option>
-          {% endif %}
-          {% if record.status != 'refunded' %}
-            <option value="refunded">{% trans "Remboursé" %}</option>
-          {% endif %}
-        {% endif %}
-        {% if can_revert_refund and record.status != 'paid' %}
-          <option value="paid">{% trans "Payé" %}</option>
-        {% endif %}
-      </select>
-    </div>
-  </li>
-  <li>
-      <button class="btn btn-primary transactionStatusChangeBtn" data-href="{% url 'submissions:change_transaction_status' record.merchant_reference %}" data-merchant-reference="{{ record.merchant_reference }}">
-        <i class="fa fa-save" style="pointer-events: none"></i>
-      </button>
-  </li>
-</ul>
+  {% if record.status != 'failed' %}
+      <ul class="list-inline text-left">
+        <li>
+          <div class="form-group">
+            <select class="form-control transactionStatusChangeSelect" id="transactionStatusChangeSelect-{{ record.merchant_reference }}">
+              <option value="">--------</option>
+              {% if can_refund %}
+                {% if record.status != 'to_refund' and record.status != 'refunded' and record.status != 'failed' %}
+                  <option value="to_refund">{% trans "A rembourser" %}</option>
+                {% endif %}
+                {% if record.status != 'refunded' and record.status != 'failed' %}
+                  <option value="refunded">{% trans "Remboursé" %}</option>
+                {% endif %}
+              {% endif %}
+              {% if can_revert_refund and record.status != 'paid' and record.status != 'failed' %}
+                <option value="paid">{% trans "Payé" %}</option>
+              {% endif %}
+            </select>
+          </div>
+        </li>
+        <li>
+            <button class="btn btn-primary transactionStatusChangeBtn" data-href="{% url 'submissions:change_transaction_status' record.merchant_reference %}" data-merchant-reference="{{ record.merchant_reference }}">
+              <i class="fa fa-save" style="pointer-events: none"></i>
+            </button>
+        </li>
+      </ul>
+    {% endif %}
 {% endif %}
