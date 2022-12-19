@@ -142,14 +142,22 @@ class Command(BaseCommand):
                     form_additional_information,
                     administrative_entity,
                 )
+                self.stdout.write(" • Creating submissions...")
+                self.setup_submission(
+                    entity,
+                    iterations.get("user_iterations"),
+                    administrative_entity,
+                    small_text,
+                )
                 # TODO: Create submissions
                 # TODO: Create reports (with setup_form_and_form_categories ?)
-                # TODO: Setup_homepage
                 # TODO: fill seed_data/demo.py with good data for demo
                 # TODO: Filter integrator field on models with limit_choices_to (wait @sephii answer)
                 # TODO: Remove geocity.apps.reports.signals and make a button on group to create instead of signal
-                # TODO: Filter fields in 1.3 and little admin improvements, admin isn't readable with that amount of data. User integrator to know the administrative entity linked to the data
+                # TODO: Filter fields in 1.3 and little admin improvements, admin isn't readable with that amount of data. Use User integrator to know the administrative entity linked to the data
                 # TODO: Fix group bug, to prevent user from removing group he can't see => non_editable_groups_of_user = user_groups - editor_groups; result = user_groups + non_editable_groups_of_user
+            self.stdout.write("Creating template customizations...")
+            self.create_template_customization()
             self.stdout.write("Setup template customizations...")
             self.setup_homepage()
             self.stdout.write("Seed succeed ✔")
@@ -436,8 +444,146 @@ class Command(BaseCommand):
     def create_form_field(self, field, form_obj, order):
         FormField.objects.get_or_create(field=field, form=form_obj, order=order)
 
-    def create_submissions(self):
-        pass
+    def setup_submission(
+        self, entity, user_iterations, administrative_entity, small_text
+    ):
+        forms = administrative_entity.forms
+        first_form = forms.first()
+        form_no_validation_document = forms.order_by("id")[5]
+        form_no_validation_document.requires_validation_document = False
+        form_no_validation_document.save()
+        last_form = forms.last()
+        department = administrative_entity.departments.filter(is_validator=True).first()
+        another_department = PermitDepartment.objects.get(
+            group__name=f"{entity}-validator"
+        )
+        comment_before_default = (
+            "Ce projet n'est pas admissible, veuillez l'améliorer.",
+        )
+        comment_during_default = ("Les améliorations ont été prise en compte.",)
+        comment_after_default = ("Excellent projet qui bénéficiera à la communauté.",)
+
+        for user_iteration in range(user_iterations):
+            username = f"{entity}-user-{user_iteration}"
+            user = User.objects.get(username=username)
+
+            # Basic submission
+            status = Submission.STATUS_DRAFT
+            submission = self.create_submission(status, administrative_entity, user)
+            self.create_selected_form(submission, first_form)
+
+            # Submission to Classify with no validation document required
+            status = Submission.STATUS_PROCESSING
+            submission = self.create_submission(
+                status, administrative_entity, user, is_public=True
+            )
+            self.create_selected_form(submission, form_no_validation_document)
+            validation_status = SubmissionValidation.STATUS_APPROVED
+            self.create_submission_validation(
+                submission,
+                department,
+                validation_status,
+                comment_before_default,
+                comment_during_default,
+                comment_after_default,
+            )
+
+            # Submission to Classify with mixed objects requiring and not requiring validation document
+            status = Submission.STATUS_PROCESSING
+            submission = self.create_submission(
+                status, administrative_entity, user, is_public=True
+            )
+            self.create_selected_form(submission, first_form)
+            self.create_selected_form(submission, form_no_validation_document)
+            validation_status = SubmissionValidation.STATUS_APPROVED
+            self.create_submission_validation(
+                submission,
+                department,
+                validation_status,
+                comment_before_default,
+                comment_during_default,
+                comment_after_default,
+            )
+
+            # Submission to Classify with validation document required
+            status = Submission.STATUS_PROCESSING
+            submission = self.create_submission(
+                status, administrative_entity, user, is_public=True
+            )
+            self.create_selected_form(submission, first_form)
+            validation_status = SubmissionValidation.STATUS_APPROVED
+            self.create_submission_validation(
+                submission,
+                department,
+                validation_status,
+                comment_before_default,
+                comment_during_default,
+                comment_after_default,
+            )
+
+            # Submission to Classify with validation document required (with another Form)
+            status = Submission.STATUS_PROCESSING
+            submission = self.create_submission(
+                status, administrative_entity, user, is_public=True
+            )
+            self.create_selected_form(submission, last_form)
+            validation_status = SubmissionValidation.STATUS_APPROVED
+            self.create_submission_validation(
+                submission,
+                department,
+                validation_status,
+                comment_before_default,
+                comment_during_default,
+                comment_after_default,
+            )
+
+            # Submission with pending validations
+            status = Submission.STATUS_AWAITING_VALIDATION
+            submission = self.create_submission(
+                status, administrative_entity, user, is_public=True
+            )
+            self.create_selected_form(submission, last_form)
+            self.create_submission_validation(submission, department)
+
+            # Submission to Classify with mixed objects with lots of text for print demo
+            status = Submission.STATUS_PROCESSING
+            submission = self.create_submission(
+                status, administrative_entity, user, is_public=True
+            )
+            self.create_selected_form(submission, first_form)
+            self.create_selected_form(submission, form_no_validation_document)
+            validation_status = SubmissionValidation.STATUS_APPROVED
+            self.create_submission_validation(
+                submission,
+                department,
+                validation_status,
+                small_text,
+                small_text,
+                small_text,
+            )
+            self.create_submission_validation(
+                submission,
+                another_department,
+                validation_status,
+                small_text,
+                small_text,
+                small_text,
+            )
+
+    def create_template_customization(self):
+        TemplateCustomization.objects.create(
+            templatename="geocity",
+            application_title="Geocity",
+            application_subtitle="Demandes en lignes concenrnant le territoire communal",
+            application_description="Demandes en ligne concernant le <b>domaine public</b>",
+        )
+
+        TemplateCustomization.objects.create(
+            templatename="city",
+            application_title="City Admin",
+            application_subtitle="Demandes en lignes",
+            application_description="Demandes concernant l' <i>administration</i>",
+        )
 
     def setup_homepage(self):
         entity_description = ""
@@ -466,7 +612,7 @@ class Command(BaseCommand):
         config.APPLICATION_DESCRIPTION = f"""
         {application_description_css}
         <p>Essayez l'application à l'aide des différents comptes et rôles disponibles (utilisateur / mot de passe):</p>
-            <p>Construction d'un utilisateur : entité-role-nombre</p>
+            <p>Construction d'un utilisateur : <strong>entité-role-nombre</strong></p>
             <p>Mot de passe par defaut <strong>demo</strong></p>
             <p></p>
             <p>Quelques exemples :</p>
@@ -501,16 +647,12 @@ class Command(BaseCommand):
             </table>
             <ul>
             <li><strong>Administrateur</strong>: {list(entities.values())[0]}-superuser / demo</li>
-            <li><strong>Intégrateur</strong>: {list(entities.values())[0]}-integrator-2 / demo</li>
-            <li><strong>Pilote</strong> (secrétariat): {list(entities.values())[0]}-pilot-3 / demo</li>
-            <li><strong>Validateur</strong>: {list(entities.values())[0]}-validator-3 / demo</li>
-            <li><strong>Utilisateur standard</strong>: {list(entities.values())[0]}-user-0 / demo</li>
+            <li><strong>Intégrateur</strong>: {list(entities.values())[1]}-integrator-2 / demo</li>
+            <li><strong>Pilote</strong> (secrétariat): {list(entities.values())[2]}-pilot-3 / demo</li>
+            <li><strong>Validateur</strong>: {list(entities.values())[2]}-validator-3 / demo</li>
+            <li><strong>Utilisateur standard</strong>: {list(entities.values())[3]}-user-0 / demo</li>
             </ul>
         """
-
-    # /////////////////////////////////////
-    # Functions used to make code DRY and readable
-    # /////////////////////////////////////
 
     # /////////////////////////////////////
     # User superuser
@@ -696,7 +838,7 @@ class Command(BaseCommand):
         self.create_user_profile(user, entity)
 
     # /////////////////////////////////////
-    # Generic functions
+    # Generic functions related to user creation
     # /////////////////////////////////////
 
     def create_user(self, username, email, is_staff=False, is_superuser=False):
@@ -770,3 +912,44 @@ class Command(BaseCommand):
             SubmissionWorkflowStatus.objects.get_or_create(
                 status=status_value[0], administrative_entity=administrative_entity
             )
+
+    # /////////////////////////////////////
+    # Submissions
+    # /////////////////////////////////////
+
+    def create_submission(self, status, administrative_entity, user, is_public=False):
+        submission = Submission.objects.create(
+            status=status,
+            administrative_entity=administrative_entity,
+            author=user,
+            is_public=is_public,
+        )
+
+        SubmissionGeoTime.objects.create(
+            submission=submission,
+            starts_at=timezone.now(),
+            ends_at=timezone.now(),
+            geom="GEOMETRYCOLLECTION(MULTILINESTRING((2539096.09997796 1181119.41274907,2539094.37477054 1181134.07701214,2539094.37477054 1181134.07701214)), MULTIPOLYGON(((2539102.56950579 1181128.03878617,2539101.27560022 1181139.2526344,2539111.19554289 1181140.11523811,2539111.62684475 1181134.07701214,2539111.62684475 1181134.07701214,2539102.56950579 1181128.03878617))), MULTIPOINT((2539076.69139448 1181128.47008802)))",
+        )
+        return submission
+
+    def create_selected_form(self, submission, form):
+        SelectedForm.objects.create(submission=submission, form=form)
+
+    def create_submission_validation(
+        self,
+        submission,
+        department,
+        validation_status=SubmissionValidation.STATUS_REQUESTED,
+        comment_before="",
+        comment_during="",
+        comment_after="",
+    ):
+        SubmissionValidation.objects.get_or_create(
+            submission=submission,
+            department=department,
+            validation_status=validation_status,
+            comment_before=comment_before,
+            comment_during=comment_during,
+            comment_after=comment_after,
+        )
