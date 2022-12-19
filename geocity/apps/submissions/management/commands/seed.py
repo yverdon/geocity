@@ -149,7 +149,6 @@ class Command(BaseCommand):
                     administrative_entity,
                     small_text,
                 )
-                # TODO: Create submissions
                 # TODO: Create reports (with setup_form_and_form_categories ?)
                 # TODO: fill seed_data/demo.py with good data for demo
                 # TODO: Filter integrator field on models with limit_choices_to (wait @sephii answer)
@@ -444,9 +443,7 @@ class Command(BaseCommand):
     def create_form_field(self, field, form_obj, order):
         FormField.objects.get_or_create(field=field, form=form_obj, order=order)
 
-    def setup_submission(
-        self, entity, user_iterations, administrative_entity, small_text
-    ):
+    def setup_submission(self, entity, user_iterations, administrative_entity, text):
         forms = administrative_entity.forms
         first_form = forms.first()
         form_no_validation_document = forms.order_by("id")[5]
@@ -550,25 +547,59 @@ class Command(BaseCommand):
             submission = self.create_submission(
                 status, administrative_entity, user, is_public=True
             )
-            self.create_selected_form(submission, first_form)
-            self.create_selected_form(submission, form_no_validation_document)
+            selected_form_1 = self.create_selected_form(submission, first_form)
+            selected_form_2 = self.create_selected_form(
+                submission, form_no_validation_document
+            )
             validation_status = SubmissionValidation.STATUS_APPROVED
             self.create_submission_validation(
                 submission,
                 department,
                 validation_status,
-                small_text,
-                small_text,
-                small_text,
+                text,
+                text,
+                text,
             )
             self.create_submission_validation(
                 submission,
                 another_department,
                 validation_status,
-                small_text,
-                small_text,
-                small_text,
+                text,
+                text,
+                text,
             )
+
+            # Amend properties
+            name = "Commentaire interne"
+            amend_field = self.create_submission_amend_field(
+                name,
+                first_form,
+                form_no_validation_document,
+                is_visible_by_author=False,
+            )
+            self.create_submission_amend_field_value(amend_field, selected_form_1, text)
+            self.create_submission_amend_field_value(amend_field, selected_form_2, text)
+
+            name = "Commentaire visible par le requérant"
+            amend_field = self.create_submission_amend_field(
+                name, first_form, form_no_validation_document, is_visible_by_author=True
+            )
+            self.create_submission_amend_field_value(amend_field, selected_form_1, text)
+            self.create_submission_amend_field_value(amend_field, selected_form_2, text)
+
+            name = "Commentaire interne visible par les validateurs"
+            amend_field = self.create_submission_amend_field(
+                name,
+                first_form,
+                form_no_validation_document,
+                is_visible_by_author=False,
+                is_visible_by_validators=True,
+            )
+            self.create_submission_amend_field_value(amend_field, selected_form_1, text)
+            self.create_submission_amend_field_value(amend_field, selected_form_2, text)
+
+            # Set default values for fields
+            self.set_default_values_for_field(selected_form_1, selected_form_2, text)
 
     def create_template_customization(self):
         TemplateCustomization.objects.create(
@@ -934,7 +965,8 @@ class Command(BaseCommand):
         return submission
 
     def create_selected_form(self, submission, form):
-        SelectedForm.objects.create(submission=submission, form=form)
+        selected_form = SelectedForm.objects.create(submission=submission, form=form)
+        return selected_form
 
     def create_submission_validation(
         self,
@@ -953,3 +985,80 @@ class Command(BaseCommand):
             comment_during=comment_during,
             comment_after=comment_after,
         )
+
+    def create_submission_amend_field(
+        self,
+        name,
+        first_form,
+        second_form,
+        is_visible_by_author=True,
+        is_visible_by_validators=False,
+    ):
+        amend_field = SubmissionAmendField.objects.create(
+            name=name,
+            is_visible_by_author=is_visible_by_author,
+            is_visible_by_validators=is_visible_by_validators,
+        )
+
+        amend_field.forms.set([first_form, second_form])
+        return amend_field
+
+    def create_submission_amend_field_value(self, amend_field, selected_form, text):
+        SubmissionAmendFieldValue.objects.create(
+            field=amend_field,
+            form=selected_form,
+            value=text,
+        )
+
+    def set_default_values_for_field(self, selected_form_1, selected_form_2, text):
+        for field_obj in Field.objects.all():
+            for selected_form in [
+                selected_form_1,
+                selected_form_2,
+            ]:
+                if field_obj.input_type == Field.INPUT_TYPE_DATE:
+                    FieldValue.objects.create(
+                        field=field_obj,
+                        selected_form=selected_form,
+                        value={"val": "01.01.2021"},
+                    )
+                if field_obj.input_type == Field.INPUT_TYPE_ADDRESS:
+                    FieldValue.objects.create(
+                        field=field_obj,
+                        selected_form=selected_form,
+                        value={"val": "Place pestalozzi 2, 1400 Yverdon-les-Bains"},
+                    )
+                if field_obj.input_type == Field.INPUT_TYPE_CHECKBOX:
+                    FieldValue.objects.create(
+                        field=field_obj,
+                        selected_form=selected_form,
+                        value={"val": True},
+                    )
+                if field_obj.input_type == Field.INPUT_TYPE_NUMBER:
+                    FieldValue.objects.create(
+                        field=field_obj,
+                        selected_form=selected_form,
+                        value={"val": 42},
+                    )
+                if field_obj.input_type == Field.INPUT_TYPE_LIST_SINGLE:
+                    FieldValue.objects.create(
+                        field=field_obj,
+                        selected_form=selected_form,
+                        value={"val": "Oui"},
+                    )
+                if field_obj.input_type == Field.INPUT_TYPE_LIST_MULTIPLE:
+                    FieldValue.objects.create(
+                        field=field_obj,
+                        selected_form=selected_form,
+                        value={"val": "Le bon choix"},
+                    )
+                if (
+                    field_obj.input_type == Field.INPUT_TYPE_TEXT
+                    or field_obj.input_type == Field.INPUT_TYPE_REGEX
+                    or field_obj.input_type == Field.INPUT_TYPE_TITLE
+                ):
+                    FieldValue.objects.create(
+                        field=field_obj,
+                        selected_form=selected_form,
+                        value={"val": text},
+                    )
