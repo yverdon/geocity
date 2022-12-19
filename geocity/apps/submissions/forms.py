@@ -1391,7 +1391,6 @@ class SubmissionComplementaryDocumentsForm(forms.ModelForm):
             "description",
             "status",
             "authorised_departments",
-            "is_public",
             "document_type",
         ]
         widgets = {
