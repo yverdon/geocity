@@ -6,6 +6,8 @@ from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.sites.admin import SiteAdmin as BaseSiteAdmin
 from django.contrib.sites.models import Site
+from django.contrib.staticfiles import finders
+from django.core.files import File
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
