@@ -6,6 +6,8 @@ from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.sites.admin import SiteAdmin as BaseSiteAdmin
 from django.contrib.sites.models import Site
+from django.contrib.staticfiles import finders
+from django.core.files import File
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
@@ -14,6 +16,13 @@ from django.utils.translation import gettext_lazy as _
 from knox.models import AuthToken
 
 from geocity.apps.accounts.models import AdministrativeEntity
+from geocity.apps.reports.models import (
+    Report,
+    ReportLayout,
+    SectionAuthor,
+    SectionMap,
+    SectionParagraph,
+)
 from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
 from geocity.fields import GeometryWidget
 
@@ -648,7 +657,12 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 "<int:administrative_entity_id>/create-anonymous-user/",
                 self.admin_site.admin_view(self.create_anonymous_user),
                 name="create_administrative_entity_anonymous_user",
-            )
+            ),
+            path(
+                "<int:administrative_entity_id>/create-default-report/",
+                self.admin_site.admin_view(self.create_default_report),
+                name="create_administrative_entity_default_report",
+            ),
         ] + urls
 
     def create_anonymous_user(self, request, administrative_entity_id):
@@ -662,6 +676,86 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             request, messages.SUCCESS, _("Utilisateur anonyme créé avec succès.")
         )
 
+        return redirect(
+            reverse(
+                "admin:forms_administrativeentityforadminsite_change",
+                kwargs={"object_id": administrative_entity_id},
+            )
+        )
+
+    def create_default_report(self, request, administrative_entity_id):
+        administrative_entity = get_object_or_404(
+            AdministrativeEntity, pk=administrative_entity_id
+        )
+
+        layout, created = ReportLayout.objects.get_or_create(
+            name="default " + administrative_entity.name,
+            margin_top=30,
+            margin_right=10,
+            margin_bottom=20,
+            margin_left=22,
+            integrator=administrative_entity.integrator,
+        )
+
+        _bg_path = finders.find("reports/report-letter-paper-template.png")
+        background_image = open(_bg_path, "rb")
+        layout.background.save(
+            "report-letter-paper.png", File(background_image), save=True
+        )
+        layout.save()
+
+        report, created = Report.objects.get_or_create(
+            name="default " + administrative_entity.name,
+            layout=layout,
+            integrator=administrative_entity.integrator,
+        )
+
+        SectionParagraph.objects.get_or_create(
+            order=1,
+            report=report,
+            title="Example report",
+            content="<p>This is an example report. It could be an approval, or any type of report related to a request.</p>",
+        )
+
+        SectionParagraph.objects.get_or_create(
+            order=2,
+            report=report,
+            title="Demand summary",
+            content="<p>This demand contains the following objects.</p><ul>{% for form in request_data.properties.submission_forms_names.values() %}<li>{{form}}</li>{% endfor %}</ul>",
+        )
+
+        SectionParagraph.objects.get_or_create(
+            order=3,
+            report=report,
+            title="Raw request data",
+            content="<pre>{{request_data}}</pre>",
+        )
+
+        SectionParagraph.objects.get_or_create(
+            order=4,
+            report=report,
+            title="Raw form data",
+            content="<pre>{{form_data}}</pre>",
+        )
+
+        SectionMap.objects.get_or_create(
+            order=5,
+            report=report,
+        )
+
+        SectionAuthor.objects.get_or_create(
+            order=6,
+            report=report,
+        )
+
+        if created:
+            messages.add_message(
+                request, messages.SUCCESS, _("Rapport créé avec succès.")
+            )
+        else:
+            messages.add_message(request, messages.INFO, _("Rapport déjà existant."))
+
+        print(created)
         return redirect(
             reverse(
                 "admin:forms_administrativeentityforadminsite_change",
