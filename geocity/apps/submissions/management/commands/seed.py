@@ -18,8 +18,8 @@ from geocity.apps.forms.models import *
 from geocity.apps.reports.models import *
 from geocity.apps.submissions.models import *
 
-# Change this import to change the data
-from ..seed_data.example import *
+# import seed file
+from ..seed_data.seed import *
 
 
 def strip_accents(text):
@@ -102,14 +102,12 @@ class Command(BaseCommand):
         self.stdout.write("Resetting database...")
         reset_db()
         self.stdout.write("")
-        self.stdout.write("")
         self.stdout.write("░██████╗███████╗███████╗██████╗░")
         self.stdout.write("██╔════╝██╔════╝██╔════╝██╔══██╗")
         self.stdout.write("╚█████╗░█████╗░░█████╗░░██║░░██║")
         self.stdout.write("░╚═══██╗██╔══╝░░██╔══╝░░██║░░██║")
         self.stdout.write("██████╔╝███████╗███████╗██████╔╝")
         self.stdout.write("╚═════╝░╚══════╝╚══════╝╚═════╝░")
-        self.stdout.write("")
         self.stdout.write("")
 
         with transaction.atomic():
@@ -150,7 +148,6 @@ class Command(BaseCommand):
                     small_text,
                 )
                 # TODO: Create reports (with setup_form_and_form_categories ?)
-                # TODO: fill seed_data/demo.py with good data for demo
                 # TODO: Filter integrator field on models with limit_choices_to (wait @sephii answer)
                 # TODO: Remove geocity.apps.reports.signals and make a button on group to create instead of signal
                 # TODO: Filter fields in 1.3 and little admin improvements, admin isn't readable with that amount of data. Use User integrator to know the administrative entity linked to the data
@@ -158,7 +155,7 @@ class Command(BaseCommand):
             self.stdout.write("Creating template customizations...")
             self.create_template_customization()
             self.stdout.write("Setup template customizations...")
-            self.setup_homepage()
+            self.setup_homepage(entities, iterations)
             self.stdout.write("Seed succeed ✔")
 
     def setup_necessary_default_site(self):
@@ -317,7 +314,7 @@ class Command(BaseCommand):
             document_enabled=True,
             publication_enabled=True,
             permanent_publication_enabled=True,
-            services_to_notify=f"yverdon-squad+admin@liip.ch",
+            services_to_notify="",
             additional_information=form_additional_information,
             order=form_order,
             integrator=integrator_group,
@@ -616,26 +613,109 @@ class Command(BaseCommand):
             application_description="Demandes concernant l' <i>administration</i>",
         )
 
-    def setup_homepage(self):
-        entity_description = ""
-        for domain, entity in entities.items():
-            entity_description += f"<li>{entity}</li>"
-
+    def setup_homepage(self, entities, iterations):
         application_description_css = """
         <style>
-        ul {
-            background-color:rgba(255,255,255,0.7);
-        }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
+            .login_container {
+                width: 100vw;
+                position: relative;
+                display: flex;
+                left: calc(-18vw + 50%);
+                background-color:rgba(255,255,255,0.7);
+            }
 
-        td, th {
-            text-align: left;
-            padding: 8px;
-        }
+            table {
+                border-collapse: separate;
+                border-spacing: 0 15px;
+            }
+
+            th, td {
+                width: 150px;
+                text-align: center;
+                padding: 5px;
+            }
+
+            .btn {
+                font-size: smaller;
+            }
         </style>
+        """
+
+        application_description_js = """
+            <script>
+                function login(user, role, entity) {
+                    number = null;
+
+                    if (role && entity) {
+                        element = 'select_' + role + '_' + entity;
+                        number = document.getElementById(element).value;
+                    }
+
+                    document.getElementById("id_username").value = user + number;
+                    document.getElementById("id_password").value = "demo";
+                    document.getElementById("login_button").click();
+                }
+            </script>
+        """
+
+        entity_description = ""
+        login_accounts = ""
+        for domain, entity in entities.items():
+            entity_description += f"<li><b>{entity}</b></li>"
+
+            select_integrator = f"<select id='select_integrator_{entity}'>"
+            for integrator_iteration in range(iterations.get("integrator_iterations")):
+                select_integrator += f"<option value='{integrator_iteration}'>{integrator_iteration}</option>"
+
+            select_pilot = f"<select id='select_pilot_{entity}'>"
+            for pilot_iteration in range(iterations.get("pilot_iterations")):
+                select_pilot += (
+                    f"<option value='{pilot_iteration}'>{pilot_iteration}</option>"
+                )
+
+            select_validator = f"<select id='select_validator_{entity}'>"
+            for validator_iteration in range(iterations.get("validator_iterations")):
+                select_validator += f"<option value='{validator_iteration}'>{validator_iteration}</option>"
+
+            select_user = f"<select id='select_user_{entity}'>"
+            for user_iteration in range(iterations.get("user_iterations")):
+                select_user += (
+                    f"<option value='{user_iteration}'>{user_iteration}</option>"
+                )
+
+            login_accounts += f"<tr><td>{entity}</td>"
+            login_accounts += f"<td><button type='button' class='btn btn-info' onclick=\"login('{entity}-superuser', null, null)\">superuser</button></td>"
+            login_accounts += f"<td><button type='button' class='btn btn-info' onclick=\"login('{entity}-integrator-', 'integrator', '{entity}').value\">integrator</button>{select_integrator}</td>"
+            login_accounts += f"<td><button type='button' class='btn btn-info' onclick=\"login('{entity}-pilot-', 'pilot', '{entity}')\">pilot</button>{select_pilot}</td>"
+            login_accounts += f"<td><button type='button' class='btn btn-info' onclick=\"login('{entity}-validator-', 'validator', '{entity}')\">validator</button>{select_validator}</td>"
+            login_accounts += f"<td><button type='button' class='btn btn-info' onclick=\"login('{entity}-user-', 'user', '{entity}')\">user</button>{select_user}</td></tr>"
+
+        login_example = f"""
+        <ul>
+            <li><strong>Administrateur</strong>: {list(entities.values())[0]}-superuser / demo</li>
+            <li><strong>Intégrateur</strong>: {list(entities.values())[0]}-integrator-2 / demo</li>
+            <li><strong>Pilote</strong> (secrétariat): {list(entities.values())[0]}-pilot-3 / demo</li>
+            <li><strong>Validateur</strong>: {list(entities.values())[0]}-validator-3 / demo</li>
+            <li><strong>Utilisateur standard</strong>: {list(entities.values())[0]}-user-0 / demo</li>
+        </ul>
+        """
+
+        automatic_login = f"""
+        <div class="automatic_login">
+        <h1>Connexion automatique</h1>
+        <p>Cliquer sur un bouton pour se connecter. La liste déroulante permet de se connecter sur un autre utilisateur du même rôle</p>
+        <table>
+            <tr>
+                <th>Entité/Rôle</th>
+                <th>Administrateur</th>
+                <th>Intégrateur</th>
+                <th>Pilote</th>
+                <th>Validateur</th>
+                <th>Utilisateur standard</th>
+            </tr>
+            {login_accounts}
+        </table>
+        </div>
         """
 
         config.APPLICATION_TITLE = "Démo Geocity"
@@ -643,46 +723,15 @@ class Command(BaseCommand):
         config.APPLICATION_DESCRIPTION = f"""
         {application_description_css}
         <p>Essayez l'application à l'aide des différents comptes et rôles disponibles (utilisateur / mot de passe):</p>
-            <p>Construction d'un utilisateur : <strong>entité-role-nombre</strong></p>
-            <p>Mot de passe par defaut <strong>demo</strong></p>
-            <p></p>
-            <p>Quelques exemples :</p>
-            <table>
-                <tr>
-                <th>Entités disponibles</th>
-                <th>Roles disponibles</th>
-                <th>Nombres disponibles</th>
-                </tr>
-                <tr>
-                <td><ul>{entity_description}</ul></td>
-                <td>
-                    <ul>
-                        <li>superuser</li>
-                        <li>integrator</li>
-                        <li>pilot</li>
-                        <li>validator</li>
-                        <li>user</li>
-                    </ul>
-                </td>
-                <td>
-                    <ul>
-                        <li>Aucun</li>
-                        <li>0 à {iterations.get("integrator_iterations")-1}</li>
-                        <li>0 à {iterations.get("pilot_iterations")-1}</li>
-                        <li>0 à {iterations.get("validator_iterations")-1}</li>
-                        <li>0 à {iterations.get("user_iterations")-1}</li>
-                    </ul>
-                </td>
-                </td>
-                </tr>
-            </table>
-            <ul>
-            <li><strong>Administrateur</strong>: {list(entities.values())[0]}-superuser / demo</li>
-            <li><strong>Intégrateur</strong>: {list(entities.values())[1]}-integrator-2 / demo</li>
-            <li><strong>Pilote</strong> (secrétariat): {list(entities.values())[2]}-pilot-3 / demo</li>
-            <li><strong>Validateur</strong>: {list(entities.values())[2]}-validator-3 / demo</li>
-            <li><strong>Utilisateur standard</strong>: {list(entities.values())[3]}-user-0 / demo</li>
-            </ul>
+        <p>Construction d'un utilisateur : <strong>entité-role-nombre</strong></p>
+        <p>Mot de passe par défaut <strong>demo</strong></p>
+        <p></p>
+        <p>Quelques exemples :</p>
+        {login_example}
+        <div class="login_container">
+            {automatic_login}
+        </div>
+        {application_description_js}
         """
 
     # /////////////////////////////////////
@@ -694,7 +743,7 @@ class Command(BaseCommand):
         username = f"{entity}-superuser"
 
         # Define email
-        email = f"{entity}-squad+superuser@{domain}"
+        email = f"{entity}+superuser@{domain}"
 
         # Create user
         user = self.create_user(
@@ -718,7 +767,7 @@ class Command(BaseCommand):
         username = f"{entity}-integrator-{integrator_iteration}"
 
         # Define email
-        email = f"{entity}-squad+integrator-{integrator_iteration}@{domain}"
+        email = f"{entity}+integrator-{integrator_iteration}@{domain}"
 
         # Define group
         group = f"{entity}-integrator"
@@ -758,7 +807,7 @@ class Command(BaseCommand):
         username = f"{entity}-pilot-{pilot_iteration}"
 
         # Define email
-        email = f"{entity}-squad+pilot-{pilot_iteration}@{domain}"
+        email = f"{entity}+pilot-{pilot_iteration}@{domain}"
 
         # Define group
         group = f"{entity}-pilot"
@@ -817,7 +866,7 @@ class Command(BaseCommand):
         username = f"{entity}-validator-{validator_iteration}"
 
         # Define email
-        email = f"{entity}-squad+validator-{validator_iteration}@{domain}"
+        email = f"{entity}+validator-{validator_iteration}@{domain}"
 
         # Define group
         group = f"{entity}-validator"
@@ -860,7 +909,7 @@ class Command(BaseCommand):
         username = f"{entity}-user-{user_iteration}"
 
         # Define email
-        email = f"{entity}-squad+user-{user_iteration}@{domain}"
+        email = f"{entity}+user-{user_iteration}@{domain}"
 
         # Create user
         user = self.create_user(username, email)
@@ -922,7 +971,7 @@ class Command(BaseCommand):
         )
 
     def create_administrative_entity(self, entity, ofs_id, geom):
-        name = f"Démo {entity}"
+        name = f"{entity}"
         administrative_entity = AdministrativeEntity.objects.create(
             name=name,
             ofs_id=ofs_id,
