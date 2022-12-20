@@ -51,7 +51,6 @@ class SubmissionExpirationReminder(CronJobBase):
                         "template": "submission_prolongation_reminder.txt",
                         "submission": submission,
                         "absolute_uri_func": Submission.get_absolute_url,
-                        "forms_list": submission.get_forms_names_list(),
                     }
                     send_email_notification(data)
 
@@ -107,7 +106,6 @@ class SubmissionInquiryClosing(CronJobBase):
                 "submission": inquiry.submission,
                 "absolute_uri_func": inquiry.submission.get_absolute_url,
                 "template": "submission_inquiry_closing.txt",
-                "forms_list": inquiry.submission.get_forms_names_list(),
             }
             send_email_notification(data)
 

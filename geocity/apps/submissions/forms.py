@@ -964,7 +964,6 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                 ),
                 "administrative_entity": submission.administrative_entity,
                 "name": submission.author.get_full_name(),
-                "forms_list": submission.get_forms_names_list(),
             },
         )
 

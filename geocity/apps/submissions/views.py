@@ -558,7 +558,6 @@ class SubmissionDetailView(View):
                 "template": "submission_received.txt",
                 "submission": submission,
                 "absolute_uri_func": self.request.build_absolute_uri,
-                "forms_list": submission.get_forms_names_list(),
             }
             services.send_email_notification(data)
 
@@ -577,7 +576,6 @@ class SubmissionDetailView(View):
                     "template": "submission_received_for_services.txt",
                     "submission": submission,
                     "absolute_uri_func": self.request.build_absolute_uri,
-                    "forms_list": submission.get_forms_names_list(),
                 }
                 services.send_email_notification(data)
 
@@ -655,7 +653,6 @@ class SubmissionDetailView(View):
                         "template": "submission_validated.txt",
                         "submission": self.submission,
                         "absolute_uri_func": self.request.build_absolute_uri,
-                        "forms_list": self.submission.get_forms_names_list(),
                     }
                     services.send_email_notification(data)
             else:
@@ -711,7 +708,6 @@ class SubmissionDetailView(View):
                 "template": "submission_prolongation.txt",
                 "submission": form.instance,
                 "absolute_uri_func": self.request.build_absolute_uri,
-                "forms_list": form.instance.get_forms_names_list(),
             }
             services.send_email_notification(data)
 
@@ -1301,7 +1297,6 @@ def submission_prolongation(request, submission_id):
                 "template": "submission_prolongation_for_services.txt",
                 "submission": form.instance,
                 "absolute_uri_func": request.build_absolute_uri,
-                "forms_list": submission.get_forms_names_list(),
             }
             services.send_email_notification(data)
 
@@ -1709,7 +1704,6 @@ def submission_submit_confirmed(request, submission_id):
                 "template": "submission_submitted_with_mention.txt",
                 "submission": submission,
                 "absolute_uri_func": request.build_absolute_uri,
-                "forms_list": submission.get_forms_names_list(),
             }
             services.send_email_notification(data)
 
@@ -1828,7 +1822,6 @@ def submission_classify(request, submission_id, approve):
                 "template": "submission_classified.txt",
                 "submission": submission,
                 "absolute_uri_func": request.build_absolute_uri,
-                "forms_list": submission.get_forms_names_list(),
             }
             services.send_email_notification(data)
 
@@ -1845,7 +1838,6 @@ def submission_classify(request, submission_id, approve):
                     "template": "submission_classified_for_services.txt",
                     "submission": submission,
                     "absolute_uri_func": request.build_absolute_uri,
-                    "forms_list": submission.get_forms_names_list(),
                 }
                 services.send_email_notification(data)
 

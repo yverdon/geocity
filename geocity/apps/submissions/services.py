@@ -50,7 +50,6 @@ def submit_submission(submission, request):
             "template": "submission_complemented.txt",
             "submission": submission,
             "absolute_uri_func": request.build_absolute_uri,
-            "forms_list": submission.get_forms_names_list(),
         }
         send_email_notification(data)
 
@@ -90,7 +89,6 @@ def submit_submission(submission, request):
             "template": "submission_submitted.txt",
             "submission": submission,
             "absolute_uri_func": request.build_absolute_uri,
-            "forms_list": submission.get_forms_names_list(),
         }
         send_email_notification(data)
 
@@ -100,7 +98,6 @@ def submit_submission(submission, request):
             )
             data["users_to_notify"] = [submission.author.email]
             data["template"] = "submission_acknowledgment.txt"
-            data["forms_list"] = submission.get_forms_names_list()
             send_email_notification(data)
 
     submission.status = models.Submission.STATUS_SUBMITTED_FOR_VALIDATION
@@ -137,7 +134,6 @@ def request_submission_validation(submission, departments, absolute_uri_func):
         "template": "submission_validation_request.txt",
         "submission": submission,
         "absolute_uri_func": absolute_uri_func,
-        "forms_list": submission.get_forms_names_list(),
     }
     send_email_notification(data)
 
@@ -171,7 +167,6 @@ def send_validation_reminder(submission, absolute_uri_func):
         "template": "submission_validation_reminder.txt",
         "submission": submission,
         "absolute_uri_func": absolute_uri_func,
-        "forms_list": submission.get_forms_names_list(),
     }
     send_email_notification(data)
     return pending_validations
@@ -203,7 +198,6 @@ def send_email_notification(data):
             "administrative_entity": data["submission"].administrative_entity,
             "name": data["submission"].author.get_full_name(),
             "submission": data["submission"],
-            "forms_list": data["forms_list"],
         },
     )
 
