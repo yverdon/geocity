@@ -379,11 +379,10 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             author=self.user,
             administrative_entity=department.administrative_entity,
         )
-        form_category = factories.FormCategoryFactory(name="Foo category")
         form = factories.FormWithoutGeometryFactory(
-            category=form_category,
             needs_date=False,
         )
+        form_name = form.name
         submission.forms.set([form])
         self.client.post(
             reverse(
@@ -400,7 +399,10 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(mail.outbox[0].to, ["secretary@geocity.ch"])
         self.assertEqual(
             mail.outbox[0].subject,
-            "La demande de compléments a été traitée (Foo category)",
+            "{} ({})".format(
+                "La demande de compléments a été traitée",
+                form_name,
+            ),
         )
         self.assertIn(
             "La demande de compléments a été traitée",
@@ -421,10 +423,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
                 status=submissions_models.Submission.STATUS_DRAFT,
             )
         ).submission
-        form_category = factories.FormCategoryFactory(name="Foo category")
-        form = factories.FormFactory(
-            category=form_category,
-        )
+        form = factories.FormFactory()
+        form_name = form.name
         submission.forms.set([form])
 
         self.client.post(
@@ -433,7 +433,12 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"submission_id": submission.pk},
             )
         )
-        emails = get_emails("Nouvelle demande (Foo category)")
+        emails = get_emails(
+            "{} ({})".format(
+                "Nouvelle demande",
+                form_name,
+            )
+        )
 
         self.assertEqual(len(emails), 1)
         self.assertEqual(emails[0].to, ["secretariat@yverdon.ch"])
@@ -447,10 +452,8 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
                 status=submissions_models.Submission.STATUS_DRAFT,
             )
         ).submission
-        form_category = factories.FormCategoryFactory(name="Foo category")
-        form = factories.FormFactory(
-            category=form_category,
-        )
+        form = factories.FormFactory()
+        form_name = form.name
         selected_form = factories.SelectedFormFactory(
             submission=submission,
             form=form,
@@ -481,7 +484,10 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
 
         self.assertEqual(
             mail.outbox[0].subject,
-            "Votre service à été mentionné dans une demande (Foo category)",
+            "{} ({})".format(
+                "Votre service à été mentionné dans une demande",
+                form_name,
+            ),
         )
         self.assertIn(
             "Une nouvelle demande mentionnant votre service vient d'être soumise.",
@@ -2347,10 +2353,8 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         )
 
     def test_secretary_email_and_name_are_set_for_the_administrative_entity(self):
-        form_category = factories.FormCategoryFactory(name="Foo category")
-        form = factories.FormFactory(
-            category=form_category,
-        )
+        form = factories.FormFactory()
+        form_name = form.name
         self.submission.forms.set([form])
 
         response = self.client.post(
@@ -2372,7 +2376,10 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         )
         self.assertEqual(
             mail.outbox[0].subject,
-            "Votre annonce a été prise en compte et classée (Foo category)",
+            "{} ({})".format(
+                "Votre annonce a été prise en compte et classée",
+                form_name,
+            ),
         )
         self.assertIn(
             "Nous vous informons que votre annonce a été prise en compte et classée.",
@@ -2380,10 +2387,8 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         )
 
     def test_just_secretary_email_is_set_for_the_administrative_entity(self):
-        form_category = factories.FormCategoryFactory(name="Foo category")
-        form = factories.FormFactory(
-            category=form_category,
-        )
+        form = factories.FormFactory()
+        form_name = form.name
         self.submission.forms.set([form])
         self.administrative_entity_expeditor = (
             submissions_models.AdministrativeEntity.objects.first()
@@ -2412,7 +2417,10 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         self.assertEqual(mail.outbox[0].from_email, "<geocity_rocks@geocity.ch>")
         self.assertEqual(
             mail.outbox[0].subject,
-            "Votre annonce a été prise en compte et classée (Foo category)",
+            "{} ({})".format(
+                "Votre annonce a été prise en compte et classée",
+                form_name,
+            ),
         )
         self.assertIn(
             "Nous vous informons que votre annonce a été prise en compte et classée.",
@@ -2420,10 +2428,8 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         )
 
     def test_no_secretary_email_is_set_for_the_administrative_entity(self):
-        form_category = factories.FormCategoryFactory(name="Foo category")
-        form = factories.FormFactory(
-            category=form_category,
-        )
+        form = factories.FormFactory()
+        form_name = form.name
         self.submission.forms.set([form])
         self.administrative_entity_expeditor = (
             submissions_models.AdministrativeEntity.objects.first()
@@ -2452,7 +2458,10 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         self.assertEqual(mail.outbox[0].from_email, "your_noreply_email")
         self.assertEqual(
             mail.outbox[0].subject,
-            "Votre annonce a été prise en compte et classée (Foo category)",
+            "{} ({})".format(
+                "Votre annonce a été prise en compte et classée",
+                form_name,
+            ),
         )
         self.assertIn(
             "Nous vous informons que votre annonce a été prise en compte et classée.",
