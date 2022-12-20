@@ -76,7 +76,7 @@ def archive_upload_to(instance, filename):
     _, ext = os.path.splitext(filename)
     t = instance.archived_date or datetime.datetime.now()
     archived_date = t.strftime("%d.%m.%Y.%H.%M.%S")
-    return f"{instance.submission.id:02d}_{archived_date}_{slugify(instance.submission.get_categories_names_list())}{ext}"
+    return f"{instance.submission.id:02d}_{archived_date}_{slugify(instance.submission.get_forms_names_list())}{ext}"
 
 
 class ArchiveDocumentFileField(models.FileField):

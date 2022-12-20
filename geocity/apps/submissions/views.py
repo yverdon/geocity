@@ -552,13 +552,12 @@ class SubmissionDetailView(View):
             data = {
                 "subject": "{} ({})".format(
                     _("Votre annonce a été prise en compte et classée"),
-                    submission.get_categories_names_list(),
+                    submission.get_forms_names_list(),
                 ),
                 "users_to_notify": [submission.author.email],
                 "template": "submission_received.txt",
                 "submission": submission,
                 "absolute_uri_func": self.request.build_absolute_uri,
-                "forms_list": submission.get_forms_names_list(),
             }
             services.send_email_notification(data)
 
@@ -571,13 +570,12 @@ class SubmissionDetailView(View):
                         _(
                             "Une annonce a été prise en compte et classée par le secrétariat"
                         ),
-                        submission.get_categories_names_list(),
+                        submission.get_forms_names_list(),
                     ),
                     "users_to_notify": set(mailing_list),
                     "template": "submission_received_for_services.txt",
                     "submission": submission,
                     "absolute_uri_func": self.request.build_absolute_uri,
-                    "forms_list": submission.get_forms_names_list(),
                 }
                 services.send_email_notification(data)
 
@@ -649,13 +647,12 @@ class SubmissionDetailView(View):
                             _(
                                 "Les services chargés de la validation d'une demande ont donné leur préavis"
                             ),
-                            self.submission.get_categories_names_list(),
+                            self.submission.get_forms_names_list(),
                         ),
                         "users_to_notify": self.submission.get_secretary_email(),
                         "template": "submission_validated.txt",
                         "submission": self.submission,
                         "absolute_uri_func": self.request.build_absolute_uri,
-                        "forms_list": self.submission.get_forms_names_list(),
                     }
                     services.send_email_notification(data)
             else:
@@ -705,13 +702,12 @@ class SubmissionDetailView(View):
             data = {
                 "subject": "{} ({})".format(
                     subject,
-                    form.instance.get_categories_names_list(),
+                    form.instance.get_forms_names_list(),
                 ),
                 "users_to_notify": [form.instance.author.email],
                 "template": "submission_prolongation.txt",
                 "submission": form.instance,
                 "absolute_uri_func": self.request.build_absolute_uri,
-                "forms_list": form.instance.get_forms_names_list(),
             }
             services.send_email_notification(data)
 
@@ -1295,13 +1291,12 @@ def submission_prolongation(request, submission_id):
             data = {
                 "subject": "{} ({})".format(
                     _("Une demande de prolongation vient d'être soumise"),
-                    submission.get_categories_names_list(),
+                    submission.get_forms_names_list(),
                 ),
                 "users_to_notify": submission.get_secretary_email(),
                 "template": "submission_prolongation_for_services.txt",
                 "submission": form.instance,
                 "absolute_uri_func": request.build_absolute_uri,
-                "forms_list": submission.get_forms_names_list(),
             }
             services.send_email_notification(data)
 
@@ -1703,13 +1698,12 @@ def submission_submit_confirmed(request, submission_id):
             data = {
                 "subject": "{} ({})".format(
                     _("Votre service à été mentionné dans une demande"),
-                    submission.get_categories_names_list(),
+                    submission.get_forms_names_list(),
                 ),
                 "users_to_notify": set(mailing_list),
                 "template": "submission_submitted_with_mention.txt",
                 "submission": submission,
                 "absolute_uri_func": request.build_absolute_uri,
-                "forms_list": submission.get_forms_names_list(),
             }
             services.send_email_notification(data)
 
@@ -1822,13 +1816,12 @@ def submission_classify(request, submission_id, approve):
             data = {
                 "subject": "{} ({})".format(
                     _("Votre demande a été traitée et classée"),
-                    submission.get_categories_names_list(),
+                    submission.get_forms_names_list(),
                 ),
                 "users_to_notify": [submission.author.email],
                 "template": "submission_classified.txt",
                 "submission": submission,
                 "absolute_uri_func": request.build_absolute_uri,
-                "forms_list": submission.get_forms_names_list(),
             }
             services.send_email_notification(data)
 
@@ -1839,13 +1832,12 @@ def submission_classify(request, submission_id, approve):
                 data = {
                     "subject": "{} ({})".format(
                         _("Une demande a été traitée et classée par le secrétariat"),
-                        submission.get_categories_names_list(),
+                        submission.get_forms_names_list(),
                     ),
                     "users_to_notify": set(mailing_list),
                     "template": "submission_classified_for_services.txt",
                     "submission": submission,
                     "absolute_uri_func": request.build_absolute_uri,
-                    "forms_list": submission.get_forms_names_list(),
                 }
                 services.send_email_notification(data)
 

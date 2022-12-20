@@ -36,10 +36,8 @@ class SubmissionClassifyTestCase(TestCase):
             validation_status=submissions_models.SubmissionValidation.STATUS_APPROVED,
             submission__author__email="user@geocity.com",
         )
-        form_category = factories.FormCategoryFactory(name="Foo category")
-        form = factories.FormFactory(
-            category=form_category,
-        )
+        form = factories.FormFactory()
+        form_name = form.name
         validation.submission.forms.set([form])
 
         self.client.login(username=self.secretariat_user.username, password="password")
@@ -67,7 +65,10 @@ class SubmissionClassifyTestCase(TestCase):
         self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
         self.assertEqual(
             mail.outbox[0].subject,
-            "Votre demande a été traitée et classée (Foo category)",
+            "{} ({})".format(
+                "Votre demande a été traitée et classée",
+                form_name,
+            ),
         )
         self.assertIn(
             "Nous vous informons que votre demande a été traitée et classée.",
@@ -86,10 +87,8 @@ class SubmissionClassifyTestCase(TestCase):
             validation_status=submissions_models.SubmissionValidation.STATUS_REJECTED,
             submission__author__email="user@geocity.com",
         )
-        form_category = factories.FormCategoryFactory(name="Foo category")
-        form = factories.FormFactory(
-            category=form_category,
-        )
+        form = factories.FormFactory()
+        form_name = form.name
         validation.submission.forms.set([form])
 
         self.client.login(username=self.secretariat_user.username, password="password")
@@ -117,7 +116,10 @@ class SubmissionClassifyTestCase(TestCase):
         self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
         self.assertEqual(
             mail.outbox[0].subject,
-            "Votre demande a été traitée et classée (Foo category)",
+            "{} ({})".format(
+                "Votre demande a été traitée et classée",
+                form_name,
+            ),
         )
         self.assertIn(
             "Nous vous informons que votre demande a été traitée et classée.",
@@ -237,20 +239,18 @@ class SubmissionClassifyTestCase(TestCase):
         self.assertIsNotNone(validation.submission.validated_at)
 
     def test_email_to_services_is_sent_when_secretariat_classifies_submission(self):
-        form_category_1 = factories.FormCategoryFactory(name="Foo category")
-        form_category_2 = factories.FormCategoryFactory(name="Bar category")
         form = factories.FormFactory(
             requires_validation_document=False,
             notify_services=True,
             services_to_notify="test-send-1@geocity.ch, test-send-2@geocity.ch, test-i-am-not-an-email,  ,\n\n\n",
-            category=form_category_1,
         )
+        form_name_1 = form.name
         form2 = factories.FormFactory(
             requires_validation_document=False,
             notify_services=True,
             services_to_notify="not-repeated-email@liip.ch, test-send-1@geocity.ch, \n, test-send-2@geocity.ch, test-i-am-not-an-email,  ,",
-            category=form_category_2,
         )
+        form_name_2 = form2.name
         validation = factories.SubmissionValidationFactory(
             submission__administrative_entity=self.administrative_entity,
             submission__status=submissions_models.Submission.STATUS_PROCESSING,
@@ -287,12 +287,12 @@ class SubmissionClassifyTestCase(TestCase):
         )
 
         self.assertIn(
-            "Bar category",
+            form_name_1,
             mail.outbox[0].subject,
         )
 
         self.assertIn(
-            "Foo category",
+            form_name_2,
             mail.outbox[0].subject,
         )
 
