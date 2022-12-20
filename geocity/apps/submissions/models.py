@@ -781,7 +781,8 @@ class Submission(models.Model):
         return (
             ContactType.objects.filter(form_category__in=self.get_form_categories())
             .values_list("type", "is_mandatory")
-            .order_by("-is_mandatory")
+            .distinct()
+            .order_by("-is_mandatory", "type")
         )
 
     def get_missing_required_contact_types(self):
