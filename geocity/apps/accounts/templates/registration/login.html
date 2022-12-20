@@ -48,7 +48,7 @@
           <p>{% trans "Connectez-vous à l'aide de vos identifiants" %}</p>
           <p>{% bootstrap_field form.username show_label=False placeholder="Identifiant" %}</p>
           <p>{% bootstrap_field form.password show_label=False placeholder="Mot de passe" %}</p>
-          <button class="btn btn-primary font-weight-bold left-button" type="submit">{% trans "ME CONNECTER" %}</button>
+          <button id="login_button" class="btn btn-primary font-weight-bold left-button" type="submit">{% trans "ME CONNECTER" %}</button>
           <br>
         </div>
         {# hidden submit button to enable [enter] key #}
