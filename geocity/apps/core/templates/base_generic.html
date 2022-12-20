@@ -101,6 +101,11 @@
                     </form>
                   </div>
                 </li>
+                <li class="nav-item d-flex align-items-center" title="{% trans 'Imprimer cette page' %}">
+                  <a href="javascript:window.print()" class="text-secondary" role="button">
+                    <i class="fa fa-print aria-hidden='true'"></i>
+                  </a>
+                </li>
                 <li class="nav-item d-flex align-items-center login-navbar-desktop">
                     <a class="nav-link dropdown-toggle ml-auto" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                       <i class="fa fa-user"></i>
@@ -127,7 +132,6 @@
                       </form>
                   </div>
                 </li>
-
                 <li class="nav-item d-flex align-items-center login-navbar-mobile">
                    <!-- On mobile -->
                   <div class="collapse navbar-collapse navbar-toggle" id="navbarNavDropdown">
@@ -165,11 +169,6 @@
                 </li>
 
               </ul>
-              <li class="nav-item d-flex align-items-center" title="{% trans 'Imprimer cette page' %}">
-                <a href="javascript:window.print()" class="text-secondary" role="button">
-                  <i class="fa fa-print aria-hidden='true'"></i>
-                </a>
-              </li>
             </div>
           {% endif %}
 
