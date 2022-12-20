@@ -1301,7 +1301,6 @@ class SubmissionAPITestCase(TestCase):
             {"detail": "Vous n'avez pas la permission d'effectuer cette action."},
         )
 
-
     def test_current_user_returns_user_informations(self):
         self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(reverse("current_user"), {})
