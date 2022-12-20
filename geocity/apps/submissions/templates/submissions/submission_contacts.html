@@ -19,7 +19,7 @@
     {{ formset.management_form }}
     <br>
     {% if requires_payment %}
-      <h4>Adresse de facturation si différente de celle de l'auteur</h4>
+      <h4>Adresse de facturation si différente de celle de l'auteur ({{ user.last_name }} {{ user.first_name }})</h4>
       {% bootstrap_form creditorform layout='horizontal' %}
     {% endif %}
     <hr>
