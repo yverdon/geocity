@@ -147,9 +147,6 @@ class Command(BaseCommand):
                     administrative_entity,
                     small_text,
                 )
-                # TODO: Filter integrator field on models with limit_choices_to (wait @sephii answer)
-                # TODO: Filter fields in 1.3 and little admin improvements, admin isn't readable with that amount of data. Use User integrator to know the administrative entity linked to the data
-                # TODO: Fix group bug, to prevent user from removing group he can't see => non_editable_groups_of_user = user_groups - editor_groups; result = user_groups + non_editable_groups_of_user
             self.stdout.write("Creating template customizations...")
             self.create_template_customization()
             self.stdout.write("Setup template customizations...")
