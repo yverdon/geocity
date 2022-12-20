@@ -38,7 +38,7 @@ class ReportsTests(ReportsTestsBase):
 
         # Compare the generated PDF against the expected images
         pdf_bytes = b"".join(response.streaming_content)
-        open("output.pdf", "wb").write(pdf_bytes)  # help debugging
+        # open("output.pdf", "wb").write(pdf_bytes)  # help debugging
         self.assert_pdf_is_as_expected(pdf_bytes)
 
     def test_attach_pdf(self):

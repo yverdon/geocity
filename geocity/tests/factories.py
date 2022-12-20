@@ -586,7 +586,7 @@ class PriceFactory(factory.django.DjangoModelFactory):
 
     text = factory.Faker("name")
     amount = factory.Faker("pyint", min_value=0, max_value=1000)
-    currency = factory.Faker("name")
+    currency = factory.Faker("currency_code")
 
 
 class ComplementaryDocumentFactory(factory.django.DjangoModelFactory):
