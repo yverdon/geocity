@@ -511,7 +511,12 @@ class Submission(models.Model):
 
     def get_categories_names_list(self):
         return ", ".join(
-            list(self.forms.all().values_list("category__name", flat=True).distinct())
+            list(
+                self.forms.all()
+                .values_list("category__name", flat=True)
+                .distinct("category__name")
+                .order_by("category__name")
+            )
         )
 
     def get_forms_names_list(self):
@@ -789,7 +794,8 @@ class Submission(models.Model):
         return (
             ContactType.objects.filter(form_category__in=self.get_form_categories())
             .values_list("type", "is_mandatory")
-            .order_by("-is_mandatory")
+            .distinct()
+            .order_by("-is_mandatory", "type")
         )
 
     def get_missing_required_contact_types(self):
