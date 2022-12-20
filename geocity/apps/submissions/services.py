@@ -44,7 +44,7 @@ def submit_submission(submission, request):
         data = {
             "subject": "{} ({})".format(
                 _("La demande de compléments a été traitée"),
-                submission.get_categories_names_list(),
+                submission.get_forms_names_list(),
             ),
             "users_to_notify": submission.get_secretary_email(),
             "template": "submission_complemented.txt",
@@ -84,7 +84,7 @@ def submit_submission(submission, request):
 
         data = {
             "subject": "{} ({})".format(
-                _("Nouvelle demande"), submission.get_categories_names_list()
+                _("Nouvelle demande"), submission.get_forms_names_list()
             ),
             "users_to_notify": users_to_notify,
             "template": "submission_submitted.txt",
@@ -96,7 +96,7 @@ def submit_submission(submission, request):
 
         if submission.author.userprofile.notify_per_email:
             data["subject"] = "{} ({})".format(
-                _("Votre demande"), submission.get_categories_names_list()
+                _("Votre demande"), submission.get_forms_names_list()
             )
             data["users_to_notify"] = [submission.author.email]
             data["template"] = "submission_acknowledgment.txt"
@@ -131,7 +131,7 @@ def request_submission_validation(submission, departments, absolute_uri_func):
     data = {
         "subject": "{} ({})".format(
             _("Nouvelle demande en attente de validation"),
-            submission.get_categories_names_list(),
+            submission.get_forms_names_list(),
         ),
         "users_to_notify": users_to_notify,
         "template": "submission_validation_request.txt",
@@ -165,7 +165,7 @@ def send_validation_reminder(submission, absolute_uri_func):
     data = {
         "subject": "{} ({})".format(
             _("Demande toujours en attente de validation"),
-            submission.get_categories_names_list(),
+            submission.get_forms_names_list(),
         ),
         "users_to_notify": users_to_notify,
         "template": "submission_validation_reminder.txt",

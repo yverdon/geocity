@@ -45,7 +45,7 @@ class SubmissionExpirationReminder(CronJobBase):
                     data = {
                         "subject": "{} ({})".format(
                             _("Votre autorisation arrive bientôt à échéance"),
-                            submission.get_categories_names_list(),
+                            submission.get_forms_names_list(),
                         ),
                         "users_to_notify": [submission.author.email],
                         "template": "submission_prolongation_reminder.txt",
@@ -98,7 +98,7 @@ class SubmissionInquiryClosing(CronJobBase):
             data = {
                 "subject": "{} ({})".format(
                     _("Fin de l'enquête publique"),
-                    inquiry.submission.get_categories_names_list(),
+                    inquiry.submission.get_forms_names_list(),
                 ),
                 "users_to_notify": [
                     inquiry.submission.author.email,
