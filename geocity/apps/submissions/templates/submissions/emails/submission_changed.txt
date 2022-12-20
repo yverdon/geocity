@@ -1,7 +1,4 @@
-{% load i18n %}{% autoescape off %}{{ forms_list }}
-
-
-{% blocktrans %}Bonjour {{ name }}{% endblocktrans %},
+{% load i18n %}{% autoescape off %}{% blocktrans %}Bonjour {{ name }}{% endblocktrans %},
 
 {% trans "Nous vous informons que votre demande a changé de statut." %}
 

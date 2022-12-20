@@ -509,19 +509,14 @@ class Submission(models.Model):
             submission=self, start_date__lte=today, end_date__gte=today
         ).first()
 
-    def get_categories_names_list(self):
+    def get_forms_names_list(self):
         return ", ".join(
             list(
                 self.forms.all()
-                .values_list("category__name", flat=True)
-                .distinct("category__name")
-                .order_by("category__name")
+                .values_list("name", flat=True)
+                .distinct("name")
+                .order_by("name")
             )
-        )
-
-    def get_forms_names_list(self):
-        return ", ".join(
-            list(self.forms.all().values_list("name", flat=True).distinct())
         )
 
     def archive(self, archivist):

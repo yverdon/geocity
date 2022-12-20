@@ -311,10 +311,8 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             administrative_entity=self.administrative_entity,
             author=user,
         )
-        form_category = factories.FormCategoryFactory(name="Foo category")
-        form = factories.FormFactory(
-            category=form_category,
-        )
+        form = factories.FormFactory()
+        form_name = form.name
         submission.forms.set([form])
         factories.SubmissionGeoTimeFactory(submission=submission)
         response = self.client.post(
@@ -338,7 +336,10 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
         self.assertEqual(
             mail.outbox[0].subject,
-            "Votre annonce a été prise en compte et classée (Foo category)",
+            "{} ({})".format(
+                "Votre annonce a été prise en compte et classée",
+                form_name,
+            ),
         )
         self.assertIn(
             "Nous vous informons que votre annonce a été prise en compte et classée.",
@@ -545,10 +546,8 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
             administrative_entity=self.administrative_entity,
             author=user,
         )
-        form_category = factories.FormCategoryFactory(name="Foo category")
-        form = factories.FormFactory(
-            category=form_category,
-        )
+        form = factories.FormFactory()
+        form_name = form.name
         submission.forms.set([form])
         factories.SubmissionGeoTimeFactory(submission=submission)
         response = self.client.post(
@@ -574,7 +573,10 @@ class SubmissionAmendmentTestCase(LoggedInSecretariatMixin, TestCase):
         self.assertEqual(mail.outbox[0].to, ["user@geocity.com"])
         self.assertEqual(
             mail.outbox[0].subject,
-            f"Votre demande a changé de statut (Foo category)",
+            "{} ({})".format(
+                "Votre demande a changé de statut",
+                form_name,
+            ),
         )
         self.assertIn(
             "Nous vous informons que votre demande a changé de statut.",
