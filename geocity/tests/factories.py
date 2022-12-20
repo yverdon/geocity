@@ -1,6 +1,5 @@
 from datetime import timezone
 
-import factory
 import factory.fuzzy
 import faker
 from django.contrib.auth import get_user_model
@@ -15,6 +14,7 @@ from geocity.apps.accounts import models as accounts_models
 from geocity.apps.accounts.users import get_integrator_permissions
 from geocity.apps.forms import models as forms_models
 from geocity.apps.submissions import models as submissions_models
+from geocity.apps.submissions.payments.postfinance.models import PostFinanceTransaction
 
 
 class UserProfileFactory(factory.django.DjangoModelFactory):
@@ -396,6 +396,17 @@ class SubmissionFactory(factory.django.DjangoModelFactory):
     author = factory.SubFactory(UserFactory)
 
 
+class PostFinanceTransactionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PostFinanceTransaction
+
+    amount = factory.Faker("pyint", min_value=0, max_value=1000)
+    currency = factory.Faker("name")
+    merchant_reference = factory.Faker("name")
+    authorization_timeout_on = factory.Faker("date_time", tzinfo=timezone.utc)
+    payment_url = factory.Faker("uri")
+
+
 class FieldFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = forms_models.Field
@@ -547,6 +558,35 @@ class ParentComplementaryDocumentTypeFactory(ComplementaryDocumentTypeFactory):
 class ChildComplementaryDocumentTypeFactory(ComplementaryDocumentTypeFactory):
     form = None
     parent = factory.SubFactory(ParentComplementaryDocumentTypeFactory)
+
+
+class PaymentSettingsFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = forms_models.PaymentSettings
+
+    name = factory.Faker("name")
+    prices_label = "Prices"
+    internal_account = factory.Faker("name")
+    payment_processor = "PostFinance"
+    space_id = factory.Faker("name")
+    user_id = factory.Faker("name")
+    api_key = factory.Faker("name")
+
+    @factory.post_generation
+    def integrator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        self.integrator = extracted
+
+
+class PriceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = forms_models.Price
+
+    text = factory.Faker("name")
+    amount = factory.Faker("pyint", min_value=0, max_value=1000)
+    currency = factory.Faker("name")
 
 
 class ComplementaryDocumentFactory(factory.django.DjangoModelFactory):

@@ -8,8 +8,9 @@
 {% block content %}
   {% submission_progressbar steps StepType.FIELDS %}
   <h3>{{ config.PROPERTIES_STEP }} </h3>
-  <hr>
+  <hr />
   <form method="post">
+    {% include "submissions/_submission_prices.html" %}
     {% csrf_token %}
     {{ submission_form.media }}
     {% crispy submission_form %}

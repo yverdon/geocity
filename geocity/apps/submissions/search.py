@@ -6,6 +6,7 @@ import operator
 import re
 from typing import Optional
 
+from django.contrib.postgres.aggregates import StringAgg
 from django.contrib.postgres.lookups import Unaccent
 from django.contrib.postgres.search import TrigramSimilarity
 from django.db import connection
@@ -56,6 +57,7 @@ class MatchType(enum.Enum):
     CREATED_AT = "created_at"
     CONTACT = "contact"
     TIME = "time"
+    TRANSACTION = "transaction"
 
 
 @dataclasses.dataclass
@@ -77,6 +79,7 @@ def match_type_label(match_type):
         MatchType.CREATED_AT: _("Date de création"),
         MatchType.CONTACT: _("Contact"),
         MatchType.TIME: _("Date"),
+        MatchType.TRANSACTION: _("ID de transaction"),
     }.get(match_type)
 
 
@@ -286,6 +289,53 @@ def search_fields(search_str, submissions_qs, limit=None):
     ]
 
 
+def search_transactions(search_str, submissions_qs, limit=None):
+    """
+    Search submissions by transaction ID.
+    As we don't use similarity matching for this search criterion, if a submission
+    is found, the match score is 1 (100 %).
+    """
+    qs = (
+        submissions_qs
+        # Add an aggregate of all transactions ids just for information
+        .annotate(
+            transaction_ids=StringAgg(
+                "price__transactions__merchant_reference", delimiter=", "
+            )
+        )
+        .annotate(
+            author_full_name=Concat(
+                "author__first_name",
+                Value(" "),
+                "author__last_name",
+            )
+        )
+        # Actual search (by equality, not by trigram similarity)
+        .filter(price__transactions__merchant_reference=search_str)
+        .values("id", "status", "author_full_name", "created_at", "transaction_ids")
+        .order_by("-created_at")
+    )
+
+    if limit is not None:
+        qs = qs[:limit]
+
+    results = [
+        SearchResult(
+            submission_id=result["id"],
+            submission_status=result["status"],
+            submission_created_at=result["created_at"],
+            author_name=result["author_full_name"],
+            field_label="Transactions IDs",
+            field_value=result["transaction_ids"],
+            score=1.0,
+            match_type=MatchType.TRANSACTION,
+        )
+        for result in qs
+    ]
+
+    return results
+
+
 def search_authors(search_str, submissions_qs, limit=None):
     qs = submissions_qs.annotate(
         author_full_name=Concat(
@@ -453,6 +503,9 @@ def search_submissions(search_str, limit, submissions_qs):
                 )
                 if search_date
                 else []
+            )
+            + search_transactions(
+                search_str, submissions_qs=submissions_qs, limit=limit
             ),
             key=lambda result: result.score,
             reverse=True,

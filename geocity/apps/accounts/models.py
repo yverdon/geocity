@@ -325,7 +325,10 @@ class AdministrativeEntity(models.Model):
         if (
             self.is_single_form_submissions
             and Submission.objects.annotate(forms_count=Count("forms"))
-            .filter(forms_count__gt=1, administrative_entity=self.pk)
+            .filter(
+                administrative_entity_id=self.pk,
+                forms_count__gt=1,
+            )
             .exclude(status=Submission.STATUS_ARCHIVED)
             .exists()
         ):
@@ -335,6 +338,23 @@ class AdministrativeEntity(models.Model):
                         "Impossible tant que des demandes liées à plusieurs "
                         "formulaires sont encore actives dans cette entité "
                         "administrative."
+                    )
+                }
+            )
+
+        if (
+            not self.is_single_form_submissions
+            and Form.objects.filter(
+                requires_online_payment=True, administrative_entities=self
+            ).exists()
+        ):
+            raise ValidationError(
+                {
+                    "is_single_form_submissions": _(
+                        "Il existe encore des formulaires soumis au paiement en ligne "
+                        "dans cette entité administrative. Avant de permettre les "
+                        "demandes à objets multiples, veuillez supprimer ces "
+                        "formulaires ou y désactiver le paiement en ligne."
                     )
                 }
             )

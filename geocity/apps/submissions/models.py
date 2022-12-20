@@ -1,4 +1,5 @@
 import enum
+import logging
 import os
 import tempfile
 import urllib.parse
@@ -12,6 +13,7 @@ from django.contrib.auth.models import Group
 from django.contrib.gis.db import models as geomodels
 from django.contrib.gis.geos import GeometryCollection, MultiPoint, Point
 from django.core.exceptions import SuspiciousOperation
+from django.core.files import File
 from django.core.validators import FileExtensionValidator
 from django.db import models, transaction
 from django.db.models import Count, F, JSONField, Max, Min, ProtectedError, Q, Value
@@ -32,6 +34,7 @@ from geocity.apps.accounts.validators import validate_email
 from geocity.apps.forms.models import Field, Form, FormCategory
 
 from . import fields
+from .payments.models import SubmissionPrice
 
 # Contact types
 CONTACT_TYPE_OTHER = 0
@@ -63,6 +66,7 @@ ACTION_POKE = "poke"
 ACTION_PROLONG = "prolong"
 ACTION_COMPLEMENTARY_DOCUMENTS = "complementary_documents"
 ACTION_REQUEST_INQUIRY = "request_inquiry"
+ACTION_TRANSACTION = "transactins"
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
 ACTIONS = [
@@ -74,6 +78,8 @@ ACTIONS = [
     ACTION_COMPLEMENTARY_DOCUMENTS,
     ACTION_REQUEST_INQUIRY,
 ]
+
+logger = logging.getLogger(__name__)
 
 
 def printed_submission_storage(instance, filename):
@@ -287,6 +293,8 @@ class Submission(models.Model):
             ("classify_submission", _("Classer les demandes de permis")),
             ("edit_submission", _("Éditer les demandes de permis")),
             ("view_private_submission", _("Voir les demandes restreintes")),
+            ("can_refund_transactions", _("Rembourser une transaction")),
+            ("can_revert_refund_transactions", _("Revenir sur un remboursement")),
         ]
         indexes = [models.Index(fields=["created_at"])]
 
@@ -967,6 +975,12 @@ class Submission(models.Model):
                 Submission.STATUS_PROCESSING,
             ],
             "request_inquiry": list(Submission.AMENDABLE_STATUSES),
+            "transactions": [
+                Submission.STATUS_APPROVED,
+                Submission.STATUS_REJECTED,
+                Submission.STATUS_AWAITING_VALIDATION,
+                Submission.STATUS_PROCESSING,
+            ],
         }
 
         available_statuses_for_administrative_entity = (
@@ -1037,6 +1051,147 @@ class Submission(models.Model):
                 comes_from_automatic_geocoding=True,
                 geom=geom,
             )
+
+    def get_form_for_payment(self):
+        """
+        For online payments, only one form can exist on a Submission
+        """
+        if self.forms.count() != 1:
+            logger.warning(
+                f"Multiple forms in the submission ({self.pk}), in an "
+                f"entity set to [single form submission]. Payment feature"
+                f"not available."
+            )
+            return None
+        return self.forms.first()
+
+    def requires_online_payment(self):
+        form_for_payment = self.get_form_for_payment()
+        return form_for_payment and form_for_payment.requires_online_payment
+
+    @property
+    def submission_price(self):
+        return self.get_submission_price()
+
+    def get_submission_price(self):
+        try:
+            return SubmissionPrice.objects.get(submission=self)
+        except SubmissionPrice.DoesNotExist:
+            return None
+
+    def get_transactions(self):
+        # TODO: if more payment processors are implemented, change this to add all transaction types to queryset
+        if self.submission_price is None:
+            return None
+        return self.submission_price.get_transactions()
+
+    def get_history(self):
+        # Transactions history
+        if self.submission_price is None:
+            transactions = []
+        else:
+            transactions = self.submission_price.transactions.all()
+        transaction_versions = []
+        last_status = ""
+        for transaction in transactions:
+            versions = []
+            for version in transaction.history.all():
+                # Include only updates that changed the transaction status
+                if last_status != version.status:
+                    versions.append(version)
+                last_status = version.status
+            transaction_versions += versions
+
+        # Merge with Submission (self) history
+        history = [
+            (event.history_date, event)
+            for event in (*self.history.all(), *transaction_versions)
+        ]
+        history.sort(reverse=True)
+        return history
+
+    def get_last_transaction(self):
+        if self.get_transactions() is None:
+            return None
+        return self.get_transactions().order_by("-updated_date").last()
+
+    def get_submission_payment_attachments(self, pdf_type):
+        pdf_types = {
+            "confirmation": lambda p: p.payment_confirmation_report,
+            "refund": lambda p: p.payment_refund_report,
+        }
+        report_func = pdf_types[pdf_type]
+        form = self.get_form_for_payment()
+        payment_settings = form.payment_settings
+        if not payment_settings or not report_func(payment_settings):
+            return []
+        child_doc_type = None
+        for doc_type in report_func(payment_settings).document_types.all():
+            if doc_type.parent.form.pk == form.pk:
+                child_doc_type = doc_type
+                break
+
+        if not child_doc_type:
+            return []
+
+        comp_doc = (
+            self.get_complementary_documents(self.author)
+            .filter(document_type=child_doc_type)
+            .last()
+        )
+        if not comp_doc:
+            return []
+        return [(comp_doc.name, comp_doc.document.file.read())]
+
+    def generate_and_save_pdf(self, pdf_type, transaction):
+        pdf_types = {
+            "confirmation": (
+                lambda t: t.get_confirmation_pdf(),
+                lambda p: p.payment_confirmation_report,
+                "Facture",
+            ),
+            "refund": (
+                lambda t: t.get_refund_pdf(),
+                lambda p: p.payment_refund_report,
+                "Remboursement",
+            ),
+        }
+        gen_func, report_func, description = pdf_types[pdf_type]
+        file_name, file_bytes = gen_func(transaction)
+        complementary_document_attrs = {
+            "document": File(
+                file_bytes,
+                name=file_name,
+            )
+        }
+        form = self.get_form_for_payment()
+        child_doc_type = None
+        for doc_type in report_func(form.payment_settings).document_types.all():
+            if doc_type.parent.form.pk == form.pk:
+                child_doc_type = doc_type
+                break
+
+        if child_doc_type is None:
+            # Payment settings are not configured correctly, failing silently
+            return None
+        complementary_document_attrs["document_type"] = child_doc_type
+
+        complementary_document_attrs[
+            "description"
+        ] = f"{description} {transaction.merchant_reference}"
+        complementary_document_attrs["owner"] = self.author
+        complementary_document_attrs["submission"] = self
+        complementary_document_attrs[
+            "status"
+        ] = SubmissionComplementaryDocument.STATUS_FINALE
+
+        complementary_document_attrs["is_public"] = False
+        comp_doc = SubmissionComplementaryDocument.objects.create(
+            **complementary_document_attrs
+        )
+
+        comp_doc.authorised_departments.set(PermitDepartment.objects.all())
+        return comp_doc
 
 
 class Contact(models.Model):
