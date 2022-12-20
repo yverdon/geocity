@@ -509,14 +509,14 @@ class Submission(models.Model):
             submission=self, start_date__lte=today, end_date__gte=today
         ).first()
 
-    def get_categories_names_list(self):
-        return ", ".join(
-            list(self.forms.all().values_list("category__name", flat=True).distinct())
-        )
-
     def get_forms_names_list(self):
         return ", ".join(
-            list(self.forms.all().values_list("name", flat=True).distinct())
+            list(
+                self.forms.all()
+                .values_list("name", flat=True)
+                .distinct("name")
+                .order_by("name")
+            )
         )
 
     def archive(self, archivist):
@@ -789,7 +789,8 @@ class Submission(models.Model):
         return (
             ContactType.objects.filter(form_category__in=self.get_form_categories())
             .values_list("type", "is_mandatory")
-            .order_by("-is_mandatory")
+            .distinct()
+            .order_by("-is_mandatory", "type")
         )
 
     def get_missing_required_contact_types(self):

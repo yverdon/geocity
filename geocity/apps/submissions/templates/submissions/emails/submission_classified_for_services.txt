@@ -1,7 +1,4 @@
-{% load i18n %}{% autoescape off %}{{ forms_list }}
-
-
-{% blocktrans %}Bonjour{% endblocktrans %},
+{% load i18n %}{% autoescape off %}{% blocktrans %}Bonjour{% endblocktrans %},
 
 {% trans "Nous vous informons qu'une demande a été traitée et classée par le secrétariat." %}
 

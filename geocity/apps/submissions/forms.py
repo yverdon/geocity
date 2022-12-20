@@ -1017,7 +1017,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             receivers=[submission.author.email],
             subject="{} ({})".format(
                 _("Votre demande a changé de statut"),
-                submission.get_categories_names_list(),
+                submission.get_forms_names_list(),
             ),
             context={
                 "status": dict(submission.STATUS_CHOICES)[submission.status],
@@ -1034,7 +1034,6 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                 ),
                 "administrative_entity": submission.administrative_entity,
                 "name": submission.author.get_full_name(),
-                "forms_list": submission.get_forms_names_list(),
             },
         )
 
@@ -1461,7 +1460,6 @@ class SubmissionComplementaryDocumentsForm(forms.ModelForm):
             "description",
             "status",
             "authorised_departments",
-            "is_public",
             "document_type",
         ]
         widgets = {
