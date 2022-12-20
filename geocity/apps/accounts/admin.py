@@ -15,19 +15,8 @@ from django.urls import path, reverse
 from django.utils.translation import gettext_lazy as _
 from knox.models import AuthToken
 
-<<<<<<< HEAD
 from geocity.apps.accounts.models import AdministrativeEntity, UserProfile
 from geocity.apps.reports.models import Report
-=======
-from geocity.apps.accounts.models import AdministrativeEntity
-from geocity.apps.reports.models import (
-    Report,
-    ReportLayout,
-    SectionAuthor,
-    SectionMap,
-    SectionParagraph,
-)
->>>>>>> f2145dd8 (create report without duplicates on 1.1 admin page)
 from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
 from geocity.fields import GeometryWidget
 
