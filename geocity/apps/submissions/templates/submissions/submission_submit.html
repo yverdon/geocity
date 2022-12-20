@@ -47,7 +47,7 @@
           <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
         {% endif %}
         <a class="btn btn-primary" href="{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}" class="mr-2">
-        {% trans "Envoyer" %}</a>
+        {% trans "Accepter les conditions et envoyer" %}</a>
       {% endbuttons %}
     </form>
   {% endif %}
@@ -64,7 +64,7 @@
           <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
         {% endif %}
         <a class="btn btn-primary" href="{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}" class="mr-2">
-        {% trans "Envoyer" %}</a>
+        {% trans "Accepter les conditions et envoyer" %}</a>
       {% endbuttons %}
     </form>
   {% endif %}
