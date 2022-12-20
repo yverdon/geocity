@@ -7,9 +7,6 @@
     align-items: center;
     justify-content: center;
   }
-  @top-center {
-    content: "Demande n°{{submission.id}}";
-  }
 
   @bottom-center {
     content: "{% now "DATETIME_FORMAT" %}";
