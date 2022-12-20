@@ -147,9 +147,7 @@ class Command(BaseCommand):
                     administrative_entity,
                     small_text,
                 )
-                # TODO: Create reports (with setup_form_and_form_categories ?)
                 # TODO: Filter integrator field on models with limit_choices_to (wait @sephii answer)
-                # TODO: Remove geocity.apps.reports.signals and make a button on group to create instead of signal
                 # TODO: Filter fields in 1.3 and little admin improvements, admin isn't readable with that amount of data. Use User integrator to know the administrative entity linked to the data
                 # TODO: Fix group bug, to prevent user from removing group he can't see => non_editable_groups_of_user = user_groups - editor_groups; result = user_groups + non_editable_groups_of_user
             self.stdout.write("Creating template customizations...")
@@ -644,7 +642,7 @@ class Command(BaseCommand):
         application_description_js = """
             <script>
                 function login(user, role, entity) {
-                    number = null;
+                    number = "";
 
                     if (role && entity) {
                         element = 'select_' + role + '_' + entity;
