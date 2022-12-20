@@ -6,6 +6,8 @@ from django.contrib.auth.forms import UserChangeForm
 from django.contrib.auth.models import Group, Permission, User
 from django.contrib.sites.admin import SiteAdmin as BaseSiteAdmin
 from django.contrib.sites.models import Site
+from django.contrib.staticfiles import finders
+from django.core.files import File
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect
@@ -13,8 +15,19 @@ from django.urls import path, reverse
 from django.utils.translation import gettext_lazy as _
 from knox.models import AuthToken
 
+<<<<<<< HEAD
 from geocity.apps.accounts.models import AdministrativeEntity, UserProfile
 from geocity.apps.reports.models import Report
+=======
+from geocity.apps.accounts.models import AdministrativeEntity
+from geocity.apps.reports.models import (
+    Report,
+    ReportLayout,
+    SectionAuthor,
+    SectionMap,
+    SectionParagraph,
+)
+>>>>>>> f2145dd8 (create report without duplicates on 1.1 admin page)
 from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
 from geocity.fields import GeometryWidget
 
