@@ -99,7 +99,7 @@ def submit_submission(submission, request):
             )
             data["users_to_notify"] = [submission.author.email]
             data["template"] = "submission_acknowledgment.txt"
-            send_email_notification(data)
+            send_email_notification(data, attachments=attachments)
 
     submission.status = models.Submission.STATUS_SUBMITTED_FOR_VALIDATION
     submission.save()
