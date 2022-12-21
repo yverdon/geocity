@@ -338,12 +338,14 @@ def download_archives(archive_ids, user):
 
 def send_refund_email(request, submission):
     data = {
-        "subject": _("Remboursement pour votre demande"),
+        "subject": "{} ({})".format(
+            _("Remboursement de votre demande"),
+            submission.get_forms_names_list(),
+        ),
         "users_to_notify": [submission.author.email],
         "template": "submission_refund.txt",
         "submission": submission,
         "absolute_uri_func": request.build_absolute_uri,
-        "forms_list": submission.get_forms_names_list(),
     }
     send_email_notification(
         data, attachments=submission.get_submission_payment_attachments("refund")
