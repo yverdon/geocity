@@ -343,7 +343,6 @@ def send_refund_email(request, submission):
         "template": "submission_refund.txt",
         "submission": submission,
         "absolute_uri_func": request.build_absolute_uri,
-        "forms_list": submission.get_forms_names_list(),
     }
     send_email_notification(
         data, attachments=submission.get_submission_payment_attachments("refund")
