@@ -389,9 +389,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             )
 
             self.assertEqual(response.status_code, 200)
-            self.assertRedirects(
-                response, "/account/two_factor/?next=/permit-requests/"
-            )
+            self.assertRedirects(response, "/account/two_factor/?next=/submissions/")
             self.assertContains(response, "Activer l'authentification à deux facteurs")
 
         def test_user_of_group_with_mandatory_2FA_setup_can_see_submissions_list(self):
