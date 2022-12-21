@@ -389,7 +389,7 @@ class PriceAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.PaymentSettings)
-class PaymentSettingsAdmin(admin.ModelAdmin):
+class PaymentSettingsAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_display = ["name", "prices_label", "payment_processor"]
     list_filter = ["name", "internal_account", "payment_processor"]
 
