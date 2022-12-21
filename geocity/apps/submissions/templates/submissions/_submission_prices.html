@@ -1,9 +1,8 @@
 {% if submission.requires_online_payment and submission.get_form_for_payment.requires_online_payment %}
-    <div class="card" style="border-radius:0">
+    <div class="card mb-3" style="border-radius:0">
       <div class="card-header">{{ submission.get_form_for_payment.payment_settings.prices_label }}</div>
       <div class="card-body">
         {{ prices_form.as_table }}
       </div>
     </div>
-    <hr />
 {% endif %}
