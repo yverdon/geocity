@@ -10,6 +10,13 @@
   <h3>{{ config.PROPERTIES_STEP }} </h3>
   <hr />
   <form method="post">
+    <fieldset>
+    <legend>
+      {% if submission.requires_online_payment %}
+        {{ submission.get_form_for_payment.name }}
+      {% endif %}
+    </legend>
+    </fieldset>
     {% include "submissions/_submission_prices.html" %}
     {% csrf_token %}
     {{ submission_form.media }}

@@ -315,10 +315,13 @@ class FieldsForm(PartialValidationMixin, forms.Form):
         super().__init__(*args, **kwargs)
 
         fields_per_form = defaultdict(list)
+        payment_forms = set()
         # Create fields
         for form, field in self.get_fields():
             field_name = self.get_field_name(form, field)
             form_name = form.shortname if form.shortname else str(form)
+            if form.requires_online_payment:
+                payment_forms.add(form_name)
             if field.is_value_field():
                 fields_per_form[form_name].append(
                     Field(field_name, title=field.help_text)
@@ -335,6 +338,8 @@ class FieldsForm(PartialValidationMixin, forms.Form):
 
         fieldsets = []
         for work_object_type_str, fieldset_fields in fields_per_form.items():
+            if work_object_type_str in payment_forms:
+                work_object_type_str = ""
             fieldset_fields = [work_object_type_str] + fieldset_fields
             fieldsets.append(Fieldset(*fieldset_fields))
 
