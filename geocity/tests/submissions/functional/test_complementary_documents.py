@@ -193,6 +193,7 @@ class TestComplementaryDocuments(GeocityTestCase):
         self.assertResponseMessageContains(actual, expected)
 
     def test_non_owners_can_not_delete_documents(self):
+        self.login(email="pilot@test.com", group=self.SECRETARIAT)
         document, response = self.prepare_document_test(
             document_args={
                 "status": submissions_models.SubmissionComplementaryDocument.STATUS_FINALE,
@@ -202,7 +203,22 @@ class TestComplementaryDocuments(GeocityTestCase):
         message = [m for m in response.context["messages"]][0]
         actual = (message.message, message.level)
         expected = (
-            "Vous pouvez seulement supprimer vos documents",
+            "Vous pouvez seulement supprimer les documents dont vous êtes propriétaire",
+            messages.ERROR,
+        )
+        self.assertResponseMessageContains(actual, expected)
+
+    def test_author_can_not_delete_its_documents(self):
+        document, response = self.prepare_document_test(
+            document_args={
+                "status": submissions_models.SubmissionComplementaryDocument.STATUS_FINALE,
+            }
+        )
+
+        message = [m for m in response.context["messages"]][0]
+        actual = (message.message, message.level)
+        expected = (
+            "L'auteur d'une soumission ne peut pas supprimer ses propres documents",
             messages.ERROR,
         )
         self.assertResponseMessageContains(actual, expected)
