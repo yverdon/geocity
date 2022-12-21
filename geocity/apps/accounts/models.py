@@ -187,7 +187,8 @@ class AdministrativeEntityManager(models.Manager):
 
     def associated_to_user(self, user):
         """
-        Get the administrative entities associated to a specific user
+        Get the administrative entities associated to a specific user.
+        If the users has entities, he's a trusted user
         """
         return (
             self.get_queryset()
