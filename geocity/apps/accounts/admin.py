@@ -32,9 +32,6 @@ from .users import get_integrator_permissions, get_users_list_for_integrator_adm
 MULTIPLE_INTEGRATOR_ERROR_MESSAGE = _(
     "Un utilisateur ne peut être membre que d'un seul groupe 'Intégrateur'"
 )
-SELF_REMOVE_INTEGRATOR_ERROR_MESSAGE = _(
-    "Un groupe 'Intégrateur' ne peut être retiré. Veuillez contacter un administrateur"
-)
 
 # Allow a user belonging to integrator group to see only objects created by this group
 def filter_for_user(user, qs):
