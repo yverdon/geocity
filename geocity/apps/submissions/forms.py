@@ -337,10 +337,10 @@ class FieldsForm(PartialValidationMixin, forms.Form):
                 field.disabled = True
 
         fieldsets = []
-        for work_object_type_str, fieldset_fields in fields_per_form.items():
-            if work_object_type_str in payment_forms:
-                work_object_type_str = ""
-            fieldset_fields = [work_object_type_str] + fieldset_fields
+        for form_str, fieldset_fields in fields_per_form.items():
+            if form_str in payment_forms:
+                form_str = ""
+            fieldset_fields = [form_str] + fieldset_fields
             fieldsets.append(Fieldset(*fieldset_fields))
 
         self.helper = FormHelper()
