@@ -314,7 +314,7 @@ class TransactionsTable(tables.Table):
         verbose_name=_("Date de modification"), orderable=False
     )
     merchant_reference = tables.Column(
-        verbose_name=_("Référence du marchant"), orderable=False
+        verbose_name=_("Référence du marchand"), orderable=False
     )
     amount = tables.Column(verbose_name=_("Montant"), orderable=False)
     currency = tables.Column(verbose_name=_("Devise"), orderable=False)
