@@ -13,6 +13,7 @@ from django.utils.timezone import get_default_timezone, make_aware
 from freezegun import freeze_time
 
 from geocity.apps.accounts import models as accounts_models
+from geocity.apps.accounts.admin import AdministrativeEntityAdmin
 from geocity.apps.forms import models as forms_models
 from geocity.apps.reports.models import Report
 from geocity.apps.submissions import models as submissions_models
@@ -90,13 +91,6 @@ class ReportsTestsBase(LiveServerTestCase):
 
     def setUp(self):
 
-        # Create the admin entity
-        admin_entity = accounts_models.AdministrativeEntity.objects.create(
-            name="entity",
-            ofs_id=1,
-            geom="SRID=2056;MultiPolygon (((2538512 1181638, 2538447 1180620, 2539787 1180606, 2539784 1181553, 2538512 1181638)))",
-        )
-
         # Create the user
         user = User.objects.create(
             username="user",
@@ -104,6 +98,14 @@ class ReportsTestsBase(LiveServerTestCase):
         )
         group = Group.objects.create(name="group")
         user.groups.set([group])
+
+        # Create the admin entity
+        admin_entity = accounts_models.AdministrativeEntity.objects.create(
+            name="entity",
+            ofs_id=1,
+            integrator=group,
+            geom="SRID=2056;MultiPolygon (((2538512 1181638, 2538447 1180620, 2539787 1180606, 2539784 1181553, 2538512 1181638)))",
+        )
         dept = accounts_models.PermitDepartment.objects.create(
             administrative_entity=admin_entity,
             group=group,
@@ -168,6 +170,10 @@ class ReportsTestsBase(LiveServerTestCase):
         doc_type = submissions_models.ComplementaryDocumentType.objects.create(
             name="child",
             parent=parent_doc_type,
+        )
+
+        AdministrativeEntityAdmin.create_default_report(
+            AdministrativeEntityAdmin, None, admin_entity.pk
         )
 
         # Assign the report (normally, one should have been created automatically)
