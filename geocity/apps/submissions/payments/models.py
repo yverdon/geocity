@@ -94,7 +94,7 @@ class Transaction(models.Model):
         )
         if read:
             output = output.read()
-        return f"facture_{self.merchant_reference}.pdf", output
+        return f"invoice_{self.merchant_reference}.pdf", output
 
     def get_refund_pdf(self, read=False):
         submission = self.submission_price.submission
