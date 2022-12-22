@@ -1,7 +1,4 @@
-{% load i18n %}{% autoescape off %}{{ forms_list }}
-
-
-{% trans "Bonjour," %}
+{% load i18n %}{% autoescape off %}{% trans "Bonjour," %}
 
 {% trans "Une nouvelle demande vient d'être soumise." %}
 

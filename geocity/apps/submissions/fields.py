@@ -34,12 +34,12 @@ class SubmissionFileField(models.FileField):
 
     def generate_filename(self, instance, filename):
         """
-        Override `FileField.generate_filename` to prefix the filename with the id of the permit request. This means such
-        file fields *cannot* be used until the permit request instance has an id (ie. is persisted in the database).
+        Override `FileField.generate_filename` to prefix the filename with the id of the submission. This means such
+        file fields *cannot* be used until the submission instance has an id (ie. is persisted in the database).
         """
         if not instance.pk:
             raise ValueError(
-                "Permit request must be saved before this file field can be used"
+                "Submission must be saved before this file field can be used"
             )
 
         if callable(self.upload_to):
@@ -48,7 +48,7 @@ class SubmissionFileField(models.FileField):
             dirname = datetime.datetime.now().strftime(str(self.upload_to))
             filename = posixpath.join(dirname, filename)
 
-        # Prefix the generated filename with the id of the permit request
+        # Prefix the generated filename with the id of the submission
         filename = posixpath.join(str(instance.pk), filename)
 
         return self.storage.generate_filename(filename)
@@ -76,7 +76,7 @@ def archive_upload_to(instance, filename):
     _, ext = os.path.splitext(filename)
     t = instance.archived_date or datetime.datetime.now()
     archived_date = t.strftime("%d.%m.%Y.%H.%M.%S")
-    return f"{instance.submission.id:02d}_{archived_date}_{slugify(instance.submission.get_categories_names_list())}{ext}"
+    return f"{instance.submission.id:02d}_{archived_date}_{slugify(instance.submission.get_forms_names_list())}{ext}"
 
 
 class ArchiveDocumentFileField(models.FileField):

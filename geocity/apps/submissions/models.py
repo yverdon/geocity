@@ -90,7 +90,7 @@ class GeoTimeInfo(enum.Enum):
 class SubmissionQuerySet(models.QuerySet):
     def filter_for_user(self, user, form_filter=None, ignore_archived=True):
         """
-        Return the list of permit requests this user has access to.
+        Return the list of submissions this user has access to.
         """
         annotate_with = dict(
             starts_at_min=Min("geo_time__starts_at"),
@@ -463,7 +463,7 @@ class Submission(models.Model):
             # What a good sweat!!!
 
             if not self.geo_time.exists():
-                # At this point following the permit request steps, the Geotime object
+                # At this point following the submission steps, the Geotime object
                 # must have been created only if Geometry or Dates are required,
                 # if the form does not need require either, we need to create the object.
                 SubmissionGeoTime.objects.create(submission_id=self.pk)
@@ -501,14 +501,14 @@ class Submission(models.Model):
             submission=self, start_date__lte=today, end_date__gte=today
         ).first()
 
-    def get_categories_names_list(self):
-        return ", ".join(
-            list(self.forms.all().values_list("category__name", flat=True).distinct())
-        )
-
     def get_forms_names_list(self):
         return ", ".join(
-            list(self.forms.all().values_list("name", flat=True).distinct())
+            list(
+                self.forms.all()
+                .values_list("name", flat=True)
+                .distinct("name")
+                .order_by("name")
+            )
         )
 
     def archive(self, archivist):
@@ -781,7 +781,8 @@ class Submission(models.Model):
         return (
             ContactType.objects.filter(form_category__in=self.get_form_categories())
             .values_list("type", "is_mandatory")
-            .order_by("-is_mandatory")
+            .distinct()
+            .order_by("-is_mandatory", "type")
         )
 
     def get_missing_required_contact_types(self):
@@ -1150,7 +1151,7 @@ class SubmissionContact(models.Model):
 
 class FieldValue(models.Model):
     """
-    Value of a property for a selected object in a permit request.
+    Value of a property for a selected object in a submission.
     """
 
     field = models.ForeignKey(

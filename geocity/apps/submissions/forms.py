@@ -313,7 +313,7 @@ class FieldsForm(PartialValidationMixin, forms.Form):
 
     def get_values(self):
         """
-        Return `FieldValue` objects for the current permit request. They're used to set the initial
+        Return `FieldValue` objects for the current submission. They're used to set the initial
         value of the form fields.
         """
         return self.instance.get_fields_values()
@@ -765,7 +765,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             else:
                 STATUS_INQUIRY_IN_PROGRESS = None
 
-            # If an amend property in the permit request can always be amended, some statuses are added to the list
+            # If an amend property in the submission can always be amended, some statuses are added to the list
             if permissions.can_always_be_updated(user, self.instance):
                 filter1 = [
                     tup
@@ -947,7 +947,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             receivers=[submission.author.email],
             subject="{} ({})".format(
                 _("Votre demande a changé de statut"),
-                submission.get_categories_names_list(),
+                submission.get_forms_names_list(),
             ),
             context={
                 "status": dict(submission.STATUS_CHOICES)[submission.status],
@@ -964,7 +964,6 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                 ),
                 "administrative_entity": submission.administrative_entity,
                 "name": submission.author.get_full_name(),
-                "forms_list": submission.get_forms_names_list(),
             },
         )
 
@@ -1391,7 +1390,6 @@ class SubmissionComplementaryDocumentsForm(forms.ModelForm):
             "description",
             "status",
             "authorised_departments",
-            "is_public",
             "document_type",
         ]
         widgets = {

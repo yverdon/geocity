@@ -281,10 +281,8 @@ class SubmissionValidationTestcase(TestCase):
             groups=[secretary_group], email="secretary@geocity.ch"
         )
         validation.submission.administrative_entity.departments.set([department])
-        form_category = factories.FormCategoryFactory(name="Foo category")
-        form = factories.FormFactory(
-            category=form_category,
-        )
+        form = factories.FormFactory()
+        form_name = form.name
         validation.submission.forms.set([form])
 
         validator = factories.ValidatorUserFactory(
@@ -314,7 +312,10 @@ class SubmissionValidationTestcase(TestCase):
         self.assertEqual(mail.outbox[0].to, ["secretary@geocity.ch"])
         self.assertEqual(
             mail.outbox[0].subject,
-            "Les services chargés de la validation d'une demande ont donné leur préavis (Foo category)",
+            "{} ({})".format(
+                "Les services chargés de la validation d'une demande ont donné leur préavis",
+                form_name,
+            ),
         )
         self.assertIn(
             "Les services chargés de la validation d'une demande ont donné leur préavis",
