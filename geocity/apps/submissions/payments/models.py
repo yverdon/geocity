@@ -39,11 +39,11 @@ class Transaction(models.Model):
         _("Statut"),
         max_length=20,
         choices=[
-            (STATUS_UNPAID, _("Pas payé")),
-            (STATUS_PAID, _("Payé")),
+            (STATUS_UNPAID, _("Pas payée")),
+            (STATUS_PAID, _("Payée")),
             (STATUS_TO_REFUND, _("À rembourser")),
-            (STATUS_REFUNDED, _("Remboursé")),
-            (STATUS_FAILED, _("Échoué")),
+            (STATUS_REFUNDED, _("Remboursée")),
+            (STATUS_FAILED, _("Échouée")),
         ],
         default=STATUS_UNPAID,
     )

@@ -176,11 +176,11 @@ class Migration(migrations.Migration):
                     "status",
                     models.CharField(
                         choices=[
-                            ("unpaid", "Pas payé"),
-                            ("paid", "Payé"),
+                            ("unpaid", "Pas payée"),
+                            ("paid", "Payée"),
                             ("to_refund", "À rembourser"),
-                            ("refunded", "Remboursé"),
-                            ("failed", "Échoué"),
+                            ("refunded", "Remboursée"),
+                            ("failed", "Échouée"),
                         ],
                         default="unpaid",
                         max_length=20,
@@ -316,11 +316,11 @@ class Migration(migrations.Migration):
                     "status",
                     models.CharField(
                         choices=[
-                            ("unpaid", "Pas payé"),
-                            ("paid", "Payé"),
+                            ("unpaid", "Pas payée"),
+                            ("paid", "Payée"),
                             ("to_refund", "À rembourser"),
-                            ("refunded", "Remboursé"),
-                            ("failed", "Échoué"),
+                            ("refunded", "Remboursée"),
+                            ("failed", "Échouée"),
                         ],
                         default="unpaid",
                         max_length=20,

@@ -16,11 +16,11 @@
                   <option value="to_refund">{% trans "A rembourser" %}</option>
                 {% endif %}
                 {% if record.status != 'refunded' and record.status != 'failed' %}
-                  <option value="refunded">{% trans "Remboursé" %}</option>
+                  <option value="refunded">{% trans "Remboursée" %}</option>
                 {% endif %}
               {% endif %}
               {% if can_revert_refund and record.status != 'paid' and record.status != 'failed' %}
-                <option value="paid">{% trans "Payé" %}</option>
+                <option value="paid">{% trans "Payée" %}</option>
               {% endif %}
             </select>
           </div>
