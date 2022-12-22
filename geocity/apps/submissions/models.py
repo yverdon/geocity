@@ -1498,8 +1498,8 @@ class ComplementaryDocumentTypeForAdminSite(ComplementaryDocumentType):
     class Meta:
         proxy = True
         app_label = "reports"
-        verbose_name = _("3.2 Catégorie de document")
-        verbose_name_plural = _("3.2 Catégories de document")
+        verbose_name = _("3.2 Type de document")
+        verbose_name_plural = _("3.2 Type de document")
 
 
 class SubmissionAmendField(models.Model):
