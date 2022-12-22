@@ -762,14 +762,13 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             report=report,
         )
 
-        if created:
+        if request and created:
             messages.add_message(
                 request, messages.SUCCESS, _("Rapport créé avec succès.")
             )
-        else:
+        elif request:
             messages.add_message(request, messages.INFO, _("Rapport déjà existant."))
 
-        print(created)
         return redirect(
             reverse(
                 "admin:forms_administrativeentityforadminsite_change",
