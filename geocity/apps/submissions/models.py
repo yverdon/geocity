@@ -1112,6 +1112,7 @@ class ContactType(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
 
     class Meta:
@@ -1458,6 +1459,7 @@ class ComplementaryDocumentType(models.Model):
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
         related_name="document_types",
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
 
     # reverse relationship is manually defined on reports.Report so it shows up on both sides in admin
@@ -1522,6 +1524,7 @@ class SubmissionAmendField(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
 
     class Meta:

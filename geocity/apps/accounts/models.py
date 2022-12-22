@@ -39,6 +39,7 @@ class SiteProfile(models.Model):
         on_delete=models.SET_NULL,
         verbose_name=_("Intégrateur"),
         related_name="site_profiles",
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
 
     class Meta:
@@ -231,6 +232,7 @@ class AdministrativeEntity(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
     additional_searchtext_for_address_field = models.CharField(
         _("Filtre additionnel pour la recherche d'adresse"),

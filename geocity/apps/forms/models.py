@@ -47,6 +47,7 @@ class FormCategory(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
     meta_type = models.IntegerField(
         _("Type générique"), choices=META_TYPE_CHOICES, default=META_TYPE_OTHER
@@ -125,6 +126,7 @@ class Form(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
     category = models.ForeignKey(
         FormCategory,
@@ -324,6 +326,7 @@ class Field(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
     name = models.CharField(_("nom"), max_length=255)
     placeholder = models.CharField(
