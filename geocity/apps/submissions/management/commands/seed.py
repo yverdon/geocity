@@ -164,12 +164,12 @@ class Command(BaseCommand):
         """For each administrative entity, create :
         - Administrative entity
         - 1 super user
-        - 3 integrators
-        - 5 pilots
+        - {integrator_iterations} integrators
+        - {pilot_iterations} pilots
             - With permissions
             - With group
-        - 6 validators
-        - 8 users
+        - {validator_iterations} validators
+        - {user_iterations} users
         """
         # Store ContentType.objects for model Submission and Report to prevent multiple requests
         self.submission_ct = ContentType.objects.get_for_model(Submission)
@@ -218,8 +218,6 @@ class Command(BaseCommand):
     def setup_site_integrator(self, entity):
         group = f"{entity}-integrator"
         integrator = Group.objects.get(name=group)
-        # ComplementaryDocumentType.objects.update(integrator=integrator)
-        # SubmissionAmendField.objects.update(integrator=integrator)
 
         # 1 integrator per site
         SiteProfile.objects.filter(site__name=entity).update(integrator=integrator)
