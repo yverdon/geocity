@@ -18,8 +18,8 @@ from geocity.apps.forms.models import *
 from geocity.apps.reports.models import *
 from geocity.apps.submissions.models import *
 
-# import seed file
-from ..seed_data.seed import *
+# import fixturize file
+from ..fixturize_data.fixturize import *
 
 
 def strip_accents(text):
@@ -151,7 +151,7 @@ class Command(BaseCommand):
             self.create_template_customization()
             self.stdout.write("Setup template customizations...")
             self.setup_homepage(entities, iterations)
-            self.stdout.write("Seed succeed ✔")
+            self.stdout.write("Fixturize succeed ✔")
 
     def setup_necessary_default_site(self):
         Site.objects.get_or_create(domain=settings.DEFAULT_SITE, name="default site")

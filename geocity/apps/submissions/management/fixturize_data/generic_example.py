@@ -1,7 +1,4 @@
-# This file is the one used by commands.seed.
-# Can be modified, the file is in gitignore
-
-# Variables to change the result of the seeder
+# Variables to change the result of the fixturize
 
 # Defines the number of each type of user to create on each entity
 iterations = {
