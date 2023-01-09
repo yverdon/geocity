@@ -1,11 +1,14 @@
-# Variables to change the result of the seeder
+# This file is the one used by commands.fixturize.
+# Can be modified, the file is in gitignore
+
+# Variables to change the result of the fixturize
 
 # Defines the number of each type of user to create on each entity
 iterations = {
-    "integrator_iterations": 2,
-    "pilot_iterations": 3,
-    "validator_iterations": 3,
-    "user_iterations": 3,
+    "integrator_iterations": 3,
+    "pilot_iterations": 5,
+    "validator_iterations": 6,
+    "user_iterations": 8,
 }
 
 # domain:entity
@@ -16,8 +19,11 @@ iterations = {
 #   - ENTITY-validator-ITERATION
 #   - ENTITY-user-ITERATION
 entities = {
-    "ca.ch": "Commune-a",
-    "cb.ch": "Commune-b",
+    "first.ch": "first_entity",
+    "second.ch": "second_entity",
+    "third.ch": "third_entity",
+    "fourth.ch": "fourth_entity",
+    "fifth.ch": "fifth_entity",
 }
 
 # Geometries for the entities

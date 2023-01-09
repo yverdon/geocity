@@ -1,11 +1,11 @@
-# Variables to change the result of the seeder
+# Variables to change the result of the fixturize
 
 # Defines the number of each type of user to create on each entity
 iterations = {
-    "integrator_iterations": 3,
-    "pilot_iterations": 5,
-    "validator_iterations": 6,
-    "user_iterations": 8,
+    "integrator_iterations": 2,
+    "pilot_iterations": 3,
+    "validator_iterations": 3,
+    "user_iterations": 3,
 }
 
 # domain:entity
@@ -16,11 +16,8 @@ iterations = {
 #   - ENTITY-validator-ITERATION
 #   - ENTITY-user-ITERATION
 entities = {
-    "first.ch": "first_entity",
-    "second.ch": "second_entity",
-    "third.ch": "third_entity",
-    "fourth.ch": "fourth_entity",
-    "fifth.ch": "fifth_entity",
+    "ca.ch": "Commune-a",
+    "cb.ch": "Commune-b",
 }
 
 # Geometries for the entities
