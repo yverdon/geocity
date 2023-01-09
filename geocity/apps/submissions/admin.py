@@ -130,6 +130,39 @@ class SubmissionAdmin(admin.ModelAdmin):
 class ComplementaryDocumentTypeAdminForm(forms.ModelForm):
     model = models.ComplementaryDocumentTypeForAdminSite
 
+    def clean_form(self):
+        form = self.cleaned_data["form"]
+        if not self.instance.pk:
+            return form
+        payment_settings_confirmation_reports = self.instance.children.exclude(
+            reports__confirmation_payment_settings_objects=None
+        )
+        payment_settings_refund_reports = self.instance.children.exclude(
+            reports__refund_payment_settings_objects=None
+        )
+        error_msg = ""
+        if (
+            payment_settings_confirmation_reports.exists()
+            and not payment_settings_confirmation_reports.filter(
+                reports__confirmation_payment_settings_objects__form__in=[form]
+            )
+        ):
+            error_msg = _(
+                "Ce type de document est utilisé comme confirmation de paiement dans une configuration de paiement, via un modèle d'impression. Vous devez dé-lier le modèle d'impression de la configuration de paiement afin de pouvoir modifier ce champ."
+            )
+        if (
+            payment_settings_refund_reports.exists()
+            and not payment_settings_refund_reports.filter(
+                reports__refund_payment_settings_objects__form__in=[form]
+            )
+        ):
+            error_msg = _(
+                "Ce type de document est utilisé comme remboursement dans une configuration de paiement, via un modèle d'impression. Vous devez dé-lier le modèle d'impression de la configuration de paiement afin de pouvoir modifier ce champ."
+            )
+        if error_msg:
+            raise forms.ValidationError(error_msg)
+        return form
+
 
 class ComplementaryDocumentTypeInline(admin.TabularInline):
     model = models.ComplementaryDocumentTypeForAdminSite

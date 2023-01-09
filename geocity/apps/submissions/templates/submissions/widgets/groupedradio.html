@@ -1,9 +1,9 @@
 <ul{% if id %} id="{{ id }}"{% endif %}{% if widget.attrs.class %} class="{{ widget.attrs.class }}"{% endif %}>
   {% for group, options, index in widget.optgroups %}
-    <div class="administrative-entity-fieldgroup">
+    <div class="groupedradio-fieldgroup">
     {% for option in options %}
       <div class="input-group">
-        <input type="radio" name="administrative_entity" value="{{option.value}}" id="{{option.attrs.id}}" required="required"
+        <input type="radio" name="{{ option.name }}" value="{{option.value}}" id="{{option.attrs.id}}" required="required"
         {% if option.selected %} checked {% endif %} >
         <label for="{{option.attrs.id}}">{{option.label}}</label>
       </div>

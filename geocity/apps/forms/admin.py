@@ -139,10 +139,18 @@ class FormFieldInline(admin.TabularInline, SortableInlineAdminMixin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
+class FormPricesInline(admin.TabularInline, SortableInlineAdminMixin):
+    model = models.Form.prices.through
+    extra = 1
+    verbose_name = _("Tarif")
+    verbose_name_plural = _("Tarifs")
+
+
 @admin.register(models.Form)
 class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
     form = FormAdminForm
     inlines = [
+        FormPricesInline,
         FormFieldInline,
     ]
     list_display = [
@@ -151,6 +159,8 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         "can_always_update",
         "is_public",
         "requires_payment",
+        "requires_online_payment",
+        "payment_settings",
         "requires_validation_document",
         "is_anonymous",
         "notify_services",
@@ -181,7 +191,6 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                     "administrative_entities",
                     "can_always_update",
                     "is_public",
-                    "requires_payment",
                     "requires_validation_document",
                     "is_anonymous",
                     "integrator",
@@ -228,8 +237,27 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                 )
             },
         ),
+        (
+            _("Paiements"),
+            {
+                "fields": (
+                    "requires_payment",
+                    "requires_online_payment",
+                    "payment_settings",
+                )
+            },
+        ),
     )
-    inlines = [FormFieldInline]
+    jazzmin_section_order = (
+        None,
+        _("Directives - Données personnelles"),
+        _("Planning et localisation"),
+        _("Notifications aux services"),
+        _("Modules complémentaires"),
+        "Champs",
+        _("Paiements"),
+        "Tarifs",
+    )
 
     def sortable_str(self, obj):
         return str(obj) if str(obj) != "" else str(obj.pk)
@@ -308,6 +336,62 @@ class FieldAdminForm(forms.ModelForm):
 
     class Media:
         js = ("js/admin/form_field.js",)
+
+
+class PriceAdminForm(forms.ModelForm):
+    class Meta:
+        model = models.Price
+        fields = ["text", "amount", "currency"]
+
+
+class PriceByEntityListFilter(admin.SimpleListFilter):
+    title = _("Entité administrative")
+    parameter_name = "entity"
+
+    def lookups(self, request, model_admin):
+        entities = AdministrativeEntity.objects.filter(
+            forms__prices__isnull=False
+        ).distinct()
+        return ((entity.pk, entity.name) for entity in entities)
+
+    def queryset(self, request, queryset):
+        if self.value():
+            queryset = queryset.filter(forms__administrative_entities__id=self.value())
+
+        return queryset
+
+
+@admin.register(models.Price)
+class PriceAdmin(admin.ModelAdmin):
+    form = PriceAdminForm
+    list_display = ["text", "amount", "currency", "entities", "form_names"]
+    list_filter = ["text", "amount", PriceByEntityListFilter]
+    readonly_fields = ["currency"]
+    search_fields = [
+        "name",
+    ]
+
+    def entities(self, obj):
+        entities = (
+            AdministrativeEntity.objects.filter(forms__prices=obj)
+            .distinct()
+            .values_list("name", flat=True)
+        )
+        return ", ".join(entities) if entities else "-"
+
+    entities.short_description = _("Entité(s) administrative(s)")
+
+    def form_names(self, obj):
+        form_names = (form.name for form in obj.forms.all())
+        return ", ".join(form_names) if form_names else "-"
+
+    form_names.short_description = _("Form(s)")
+
+
+@admin.register(models.PaymentSettings)
+class PaymentSettingsAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    list_display = ["name", "prices_label", "payment_processor"]
+    list_filter = ["name", "internal_account", "payment_processor"]
 
 
 @admin.register(models.Field)

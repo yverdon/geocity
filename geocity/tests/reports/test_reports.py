@@ -38,6 +38,7 @@ class ReportsTests(ReportsTestsBase):
 
         # Compare the generated PDF against the expected images
         pdf_bytes = b"".join(response.streaming_content)
+        # open("output.pdf", "wb").write(pdf_bytes)  # help debugging
         self.assert_pdf_is_as_expected(pdf_bytes)
 
     def test_attach_pdf(self):
@@ -59,7 +60,7 @@ class ReportsTests(ReportsTestsBase):
         post_data = {
             "form-INITIAL_FORMS": "0",
             "form-TOTAL_FORMS": "1",
-            "form-0-generate_from_model": f"{self.form.pk}/{self.report.pk}/{self.doc_type.pk}",
+            "form-0-generate_from_model": f"{self.form.pk}/{self.report.pk}/{self.doc_type.pk}/0",
             "form-0-document": "",
             "form-0-description": "my document",
             "form-0-status": "0",

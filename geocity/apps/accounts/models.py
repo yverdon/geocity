@@ -10,7 +10,7 @@ from django.core.validators import (
     RegexValidator,
 )
 from django.db import models
-from django.db.models import BooleanField, ExpressionWrapper, Q, UniqueConstraint
+from django.db.models import BooleanField, Count, ExpressionWrapper, Q, UniqueConstraint
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
@@ -259,6 +259,12 @@ class AdministrativeEntity(models.Model):
             )
         ],
     )
+    is_single_form_submissions = models.BooleanField(
+        _("Autoriser uniquement un objet par demande"),
+        default=False,
+        help_text=_("Nécessaire pour l'utilisation du système de paiement en ligne"),
+    )
+
     sites = models.ManyToManyField(
         Site,
         related_name="+",
@@ -296,6 +302,61 @@ class AdministrativeEntity(models.Model):
                 administrative_entity=self,
                 user_id=user.id,
                 zipcode=settings.ANONYMOUS_USER_ZIPCODE,
+            )
+
+    def clean(self):
+        from geocity.apps.forms.models import Form
+        from geocity.apps.submissions.models import Submission
+
+        if (
+            Form.objects.annotate(entities_count=Count("administrative_entities"))
+            .filter(
+                is_public=True, entities_count__gt=1, administrative_entities=self.pk
+            )
+            .exists()
+        ):
+            raise ValidationError(
+                _(
+                    "Des formulaires partagés avec d'autres entités "
+                    "administratives sont encore disponibles."
+                )
+            )
+
+        if (
+            self.is_single_form_submissions
+            and Submission.objects.annotate(forms_count=Count("forms"))
+            .filter(
+                administrative_entity_id=self.pk,
+                forms_count__gt=1,
+            )
+            .exclude(status=Submission.STATUS_ARCHIVED)
+            .exists()
+        ):
+            raise ValidationError(
+                {
+                    "is_single_form_submissions": _(
+                        "Impossible tant que des demandes liées à plusieurs "
+                        "formulaires sont encore actives dans cette entité "
+                        "administrative."
+                    )
+                }
+            )
+
+        if (
+            not self.is_single_form_submissions
+            and Form.objects.filter(
+                requires_online_payment=True, administrative_entities=self
+            ).exists()
+        ):
+            raise ValidationError(
+                {
+                    "is_single_form_submissions": _(
+                        "Il existe encore des formulaires soumis au paiement en ligne "
+                        "dans cette entité administrative. Avant de permettre les "
+                        "demandes à objets multiples, veuillez supprimer ces "
+                        "formulaires ou y désactiver le paiement en ligne."
+                    )
+                }
             )
 
 

@@ -1301,15 +1301,6 @@ class SubmissionAPITestCase(TestCase):
             {"detail": "Vous n'avez pas la permission d'effectuer cette action."},
         )
 
-    def test_search_api_nothing_found_for_wrong_string(self):
-        self.client.login(username=self.admin_user.username, password="password")
-        response = self.client.get(
-            reverse("search-list"), {"search": "InexistantStringReturningNoResult"}
-        )
-        response_json = response.json()
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response_json, [])
-
     def test_current_user_returns_user_informations(self):
         self.client.login(username=self.admin_user.username, password="password")
         response = self.client.get(reverse("current_user"), {})

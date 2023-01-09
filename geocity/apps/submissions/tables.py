@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from django_tables2_column_shifter.tables import ColumnShiftTable
 
 from . import models
+from .payments.models import Transaction
 
 ATTRIBUTES = {
     "th": {
@@ -303,5 +304,35 @@ class ArchivedSubmissionsTable(ColumnShiftTable):
             "submission_id",
             "archived_date",
             "archivist",
+        )
+        template_name = "django_tables2/bootstrap.html"
+
+
+class TransactionsTable(tables.Table):
+    creation_date = tables.Column(verbose_name=_("Date de création"), orderable=False)
+    updated_date = tables.Column(
+        verbose_name=_("Date de modification"), orderable=False
+    )
+    merchant_reference = tables.Column(
+        verbose_name=_("Référence du marchand"), orderable=False
+    )
+    amount = tables.Column(verbose_name=_("Montant"), orderable=False)
+    currency = tables.Column(verbose_name=_("Devise"), orderable=False)
+    status = tables.Column(verbose_name=_("Statut"), orderable=False)
+    actions = tables.TemplateColumn(
+        template_name="tables/_submission_transactions_table_actions.html",
+        verbose_name="",
+        orderable=False,
+    )
+
+    class Meta:
+        model = Transaction
+        fields = (
+            "merchant_reference",
+            "creation_date",
+            "updated_date",
+            "amount",
+            "currency",
+            "status",
         )
         template_name = "django_tables2/bootstrap.html"

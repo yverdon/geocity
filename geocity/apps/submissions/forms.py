@@ -32,7 +32,10 @@ from geocity.apps.accounts.models import (
 )
 from geocity.fields import AddressWidget
 
+from ..forms.models import Price
+from ..reports.services import generate_report_pdf_as_response
 from . import models, permissions, services
+from .payments.models import SubmissionPrice
 
 input_type_mapping = {
     models.Field.INPUT_TYPE_TEXT: forms.CharField,
@@ -57,9 +60,9 @@ def _title_html_representation(prop, for_summary=False):
 def _file_download_html_representation(prop, for_summary=False):
     if not for_summary and prop.file_download:
         description = prop.help_text if prop.help_text else _("Télécharger le fichier")
-        return f"""<strong>{ prop.name }:</strong>
+        return f"""<strong>{prop.name}:</strong>
             <i class="fa fa-download" aria-hidden="true"></i>
-            <a class="file_download" href="{ reverse('submissions:field_file_download', kwargs={'path':prop.file_download}) }" target="_blank" rel="noreferrer">{ description }</a>"""
+            <a class="file_download" href="{reverse('submissions:field_file_download', kwargs={'path': prop.file_download})}" target="_blank" rel="noreferrer">{description}</a>"""
     return ""
 
 
@@ -99,6 +102,10 @@ class GroupedRadioWidget(forms.RadioSelect):
 
 class CheckboxSelectMultipleWidget(forms.CheckboxSelectMultiple):
     template_name = "submissions/widgets/multipleselect.html"
+
+
+class SingleFormRadioSelectWidget(forms.RadioSelect):
+    template_name = "submissions/widgets/categorized_groupedradio.html"
 
 
 class AdministrativeEntityForm(forms.Form):
@@ -214,6 +221,69 @@ class FormsSelectForm(forms.Form):
         return self.instance
 
 
+class FormsSingleSelectForm(FormsSelectForm):
+    selected_forms = forms.ChoiceField(widget=SingleFormRadioSelectWidget())
+
+    @transaction.atomic
+    def save(self):
+        selected_form = models.Form.objects.get(pk=self.cleaned_data["selected_forms"])
+        self.instance.set_selected_forms([selected_form])
+        return self.instance
+
+
+class FormsPriceSelectForm(forms.Form):
+
+    selected_price = forms.ChoiceField(
+        label=False, widget=SingleFormRadioSelectWidget(), required=True
+    )
+
+    def __init__(self, instance, *args, **kwargs):
+        self.instance = instance
+        initial = {}
+        if self.instance.submission_price is not None:
+            initial = {
+                "selected_price": self.instance.submission_price.original_price.pk
+            }
+        super(FormsPriceSelectForm, self).__init__(
+            *args, **{**kwargs, "initial": initial}
+        )
+        if self.instance.status != self.instance.STATUS_DRAFT:
+            self.fields["selected_price"].widget.attrs["disabled"] = "disabled"
+        form_for_payment = self.instance.get_form_for_payment()
+
+        choices = []
+        for price in form_for_payment.prices.order_by("formprice"):
+            choices.append((price.pk, price.str_for_choice()))
+        self.fields["selected_price"].choices = choices
+
+    @transaction.atomic
+    def save(self):
+        selected_price_id = self.cleaned_data["selected_price"]
+        selected_price = Price.objects.get(pk=selected_price_id)
+        price_data = {
+            "amount": selected_price.amount,
+            "currency": selected_price.currency,
+            "text": selected_price.text,
+        }
+        current_submission_price = self.instance.get_submission_price()
+        if current_submission_price is None:
+            SubmissionPrice.objects.create(
+                **{
+                    **price_data,
+                    "original_price": selected_price,
+                    "submission": self.instance,
+                }
+            )
+        else:
+            current_submission_price.amount = price_data["amount"]
+            current_submission_price.text = price_data["text"]
+            current_submission_price.currency = price_data["currency"]
+            current_submission_price.original_price = selected_price
+            current_submission_price.save()
+
+        return self.instance
+
+
 class PartialValidationMixin:
     def __init__(self, *args, **kwargs):
         # Set to `False` to disable required fields validation (useful to allow saving incomplete forms)
@@ -245,10 +315,13 @@ class FieldsForm(PartialValidationMixin, forms.Form):
         super().__init__(*args, **kwargs)
 
         fields_per_form = defaultdict(list)
+        payment_forms = set()
         # Create fields
         for form, field in self.get_fields():
             field_name = self.get_field_name(form, field)
             form_name = form.shortname if form.shortname else str(form)
+            if form.requires_online_payment:
+                payment_forms.add(form_name)
             if field.is_value_field():
                 fields_per_form[form_name].append(
                     Field(field_name, title=field.help_text)
@@ -264,8 +337,10 @@ class FieldsForm(PartialValidationMixin, forms.Form):
                 field.disabled = True
 
         fieldsets = []
-        for work_object_type_str, fieldset_fields in fields_per_form.items():
-            fieldset_fields = [work_object_type_str] + fieldset_fields
+        for form_str, fieldset_fields in fields_per_form.items():
+            if form_str in payment_forms:
+                form_str = ""
+            fieldset_fields = [form_str] + fieldset_fields
             fieldsets.append(Fieldset(*fieldset_fields))
 
         self.helper = FormHelper()
@@ -1408,6 +1483,12 @@ class SubmissionComplementaryDocumentsForm(forms.ModelForm):
         ).all()
         self.fields["authorised_departments"].label = _("Département autorisé")
 
+        # TOFIX: reports that are linked to transaction should not
+        # be able to be generated here but rather through the transactions' tab
+        # For now, we have to get the last transaction, in order for the reports
+        # linked payments to work.
+        last_transaction = self.submission.get_last_transaction()
+
         # TODO: prefetch (to optimize reduce requests count)
         choices = [("", _("Aucune sélection"))]
         for form in self.submission.forms.all():
@@ -1417,12 +1498,20 @@ class SubmissionComplementaryDocumentsForm(forms.ModelForm):
                 doc_types = parent_doc_type.children.all()
                 for doc_type in doc_types:
                     for report in doc_type.reports.all():
-                        subchoices.append(
-                            (
-                                f"{form.pk}/{report.pk}/{doc_type.pk}",
-                                f"{report} / {doc_type}",
+                        if last_transaction is not None:
+                            subchoices.append(
+                                (
+                                    f"{form.pk}/{report.pk}/{doc_type.pk}/{last_transaction.pk}",
+                                    f"{report} / {doc_type}",
+                                )
                             )
-                        )
+                        else:
+                            subchoices.append(
+                                (
+                                    f"{form.pk}/{report.pk}/{doc_type.pk}/0",
+                                    f"{report} / {doc_type}",
+                                )
+                            )
             if subchoices:
                 choices.append((f"{form}", subchoices))
         self.fields["generate_from_model"].choices = choices
@@ -1513,20 +1602,29 @@ class SubmissionComplementaryDocumentsForm(forms.ModelForm):
         if not cleaned_data.get("document"):
             generate_from_model = cleaned_data.get("generate_from_model")
             try:
-                form_pk, report_pk, child_doc_type_pk = generate_from_model.split("/")
+                (
+                    form_pk,
+                    report_pk,
+                    child_doc_type_pk,
+                    transaction_pk,
+                ) = generate_from_model.split("/")
             except ValueError:
                 raise ValidationError(
                     _("Selection invalide pour génération à partir du modèle !")
                 )
 
-            # TODO ugh! Importing a view from a form, really?
-            from geocity.apps.reports.views import report_pdf
-
-            report_response = report_pdf(
-                self.request,
-                self.submission.pk,
-                form_id=form_pk,
-                report_id=report_pk,
+            kwargs = {
+                "form_id": form_pk,
+                "report_id": report_pk,
+            }
+            if self.submission.get_transactions():
+                rel_transaction = (
+                    self.submission.get_transactions().filter(pk=transaction_pk).last()
+                )
+                if rel_transaction is not None:
+                    kwargs.update({"transaction_id": rel_transaction.pk})
+            report_response = generate_report_pdf_as_response(
+                self.request.user, self.submission.pk, **kwargs
             )
             cleaned_data["document"] = File(
                 io.BytesIO(b"".join(report_response.streaming_content)),

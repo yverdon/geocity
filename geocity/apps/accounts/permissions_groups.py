@@ -12,6 +12,8 @@ INTEGRATOR_PERMISSIONS_BY_APP = {
         "field",
         "formfield",
         "contacttypeforadminsite",
+        "paymentsettings",
+        "price",
     ],
     "submissions": [
         "submissionamendfield",
@@ -57,4 +59,6 @@ AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
     "edit_submission",
     "view_private_submission",
     "can_generate_pdf",
+    "can_refund_transactions",
+    "can_revert_refund_transactions",
 ]

@@ -502,6 +502,7 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
             "name",
             "tags",
             "ofs_id",
+            "is_single_form_submissions",
             "sites",
             "expeditor_email",
             "expeditor_name",

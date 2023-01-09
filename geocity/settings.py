@@ -246,6 +246,8 @@ CONSTANCE_CONFIG_FIELDSETS = {
         "ANONYMOUS_CAPTCHA_STEP",
         "LOCATION_STEP",
         "WORKS_OBJECTS_STEP",
+        "FORMS_STEP",
+        "FORMS_SINGLE_STEP",
         "PROPERTIES_STEP",
         "GEO_TIME_STEP",
         "TIME_STEP",
@@ -325,6 +327,8 @@ CONSTANCE_CONFIG = {
     ),
     "LOCATION_STEP": ("Sélectionnez l'entité administrative", "", str),
     "WORKS_OBJECTS_STEP": ("Sélectionnez les objets", "", str),
+    "FORMS_STEP": ("Sélectionnez les objets", "", str),
+    "FORMS_SINGLE_STEP": ("Sélectionnez l'objet", "", str),
     "PROPERTIES_STEP": ("Renseignez les caractéristiques des objets", "", str),
     "GEO_TIME_STEP": ("Renseignez le planning et la localisation", "", str),
     "TIME_STEP": ("Renseignez le planning", "", str),
@@ -661,3 +665,9 @@ LOGGING = {
         },
     },
 }
+
+# Payment processing
+PAYMENT_PROCESSING_TEST_ENVIRONMENT = (
+    os.getenv("PAYMENT_PROCESSING_TEST_ENVIRONMENT", "true").lower() == "true" or DEBUG
+)
+PAYMENT_CURRENCY = os.getenv("PAYMENT_CURRENCY")

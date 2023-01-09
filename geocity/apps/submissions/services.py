@@ -12,7 +12,7 @@ from django.core.exceptions import (
     SuspiciousOperation,
     ValidationError,
 )
-from django.core.mail import send_mass_mail
+from django.core.mail import EmailMessage, get_connection
 from django.db import transaction
 from django.db.models import Q
 from django.http.response import FileResponse
@@ -90,7 +90,8 @@ def submit_submission(submission, request):
             "submission": submission,
             "absolute_uri_func": request.build_absolute_uri,
         }
-        send_email_notification(data)
+        attachments = submission.get_submission_payment_attachments("confirmation")
+        send_email_notification(data, attachments=attachments)
 
         if submission.author.userprofile.notify_per_email:
             data["subject"] = "{} ({})".format(
@@ -98,7 +99,7 @@ def submit_submission(submission, request):
             )
             data["users_to_notify"] = [submission.author.email]
             data["template"] = "submission_acknowledgment.txt"
-            send_email_notification(data)
+            send_email_notification(data, attachments=attachments)
 
     submission.status = models.Submission.STATUS_SUBMITTED_FOR_VALIDATION
     submission.save()
@@ -172,7 +173,7 @@ def send_validation_reminder(submission, absolute_uri_func):
     return pending_validations
 
 
-def send_email_notification(data):
+def send_email_notification(data, attachments=None):
     from_email_name = (
         f'{data["submission"].administrative_entity.expeditor_name} '
         if data["submission"].administrative_entity.expeditor_name
@@ -199,10 +200,11 @@ def send_email_notification(data):
             "name": data["submission"].author.get_full_name(),
             "submission": data["submission"],
         },
+        attachments=attachments,
     )
 
 
-def send_email(template, sender, receivers, subject, context):
+def send_email(template, sender, receivers, subject, context, attachments=None):
     email_content = render_to_string(f"submissions/emails/{template}", context)
     emails = [
         (
@@ -216,7 +218,28 @@ def send_email(template, sender, receivers, subject, context):
     ]
 
     if emails:
-        send_mass_mail(emails, fail_silently=True)
+        send_mass_email(emails, attachments=attachments, fail_silently=True)
+
+
+def send_mass_email(datatuple, attachments=None, fail_silently=False):
+    """
+    Sends multiple emails at once. Since this functionality exists in Django's std library,
+    under the name "send_mass_mail", but has been "frozen" for development,
+    we need to reimplement it here to add the possibility of adding attachments to emails.
+    """
+    connection = get_connection(
+        fail_silently=fail_silently,
+    )
+    messages = []
+    for subject, message, sender, recipient in datatuple:
+        email_msg = EmailMessage(
+            subject, message, sender, recipient, connection=connection
+        )
+        if attachments:
+            for filename, attachment in attachments:
+                email_msg.attach(filename, attachment)
+        messages.append(email_msg)
+    return connection.send_messages(messages)
 
 
 # Validate a file, from checking the first bytes and detecting the kind of the file
@@ -311,3 +334,19 @@ def download_archives(archive_ids, user):
                 for archive in archives:
                     zip_file.write(archive.archive.path, archive.archive.name)
             return FileResponse(open(tmp_file.name, "rb"), filename=filename)
+
+
+def send_refund_email(request, submission):
+    data = {
+        "subject": "{} ({})".format(
+            _("Remboursement de votre demande"),
+            submission.get_forms_names_list(),
+        ),
+        "users_to_notify": [submission.author.email],
+        "template": "submission_refund.txt",
+        "submission": submission,
+        "absolute_uri_func": request.build_absolute_uri,
+    }
+    send_email_notification(
+        data, attachments=submission.get_submission_payment_attachments("refund")
+    )

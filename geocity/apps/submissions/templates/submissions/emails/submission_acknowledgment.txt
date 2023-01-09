@@ -3,7 +3,9 @@
 {% trans "Nous vous confirmons bonne réception de votre demande et vous en remercions." %}
 
 {% trans "Vous pouvez la consulter sur le lien suivant" %}: {{ submission_url }}
-
+{% if submission.requires_online_payment %}
+{% trans "Veuillez trouver ci-joint la facture relative à votre demande." %}
+{% endif %}
 {% trans "Avec nos meilleures salutations," %}
 {% if administrative_entity.custom_signature %}
 {{ administrative_entity.custom_signature }}
