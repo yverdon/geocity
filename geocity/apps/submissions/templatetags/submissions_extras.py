@@ -87,6 +87,7 @@ def submission_summary(context, submission):
 
     return {
         "user": context.request.user,
+        "author": submission.author,
         "creditor": creditor,
         "contacts": contacts,
         "forms_infos": forms_infos,

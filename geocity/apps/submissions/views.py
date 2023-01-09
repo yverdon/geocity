@@ -807,15 +807,28 @@ class SubmissionDetailView(View):
 @check_mandatory_2FA
 def submission_complementary_document_delete(request, pk):
     document = get_object_or_404(models.SubmissionComplementaryDocument.objects, pk=pk)
+    author = document.submission.author
 
     success_url = reverse(
         "submissions:submission_detail",
         kwargs={"submission_id": document.submission_id},
     )
 
+    if author == request.user and not request.user.is_superuser:
+        messages.add_message(
+            request,
+            messages.ERROR,
+            _("L'auteur d'une soumission ne peut pas supprimer ses propres documents"),
+        )
+        return redirect(success_url)
+
     if document.owner != request.user and not request.user.is_superuser:
         messages.add_message(
-            request, messages.ERROR, _("Vous pouvez seulement supprimer vos documents")
+            request,
+            messages.ERROR,
+            _(
+                "Vous pouvez seulement supprimer les documents dont vous êtes propriétaire"
+            ),
         )
         return redirect(success_url)
 
