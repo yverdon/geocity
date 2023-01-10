@@ -147,6 +147,8 @@ class Command(BaseCommand):
                     administrative_entity,
                     small_text,
                 )
+                self.stdout.write(" • Creating default report...")
+                Report.create_default_report(administrative_entity.id)
             self.stdout.write("Creating template customizations...")
             self.create_template_customization()
             self.stdout.write("Setup template customizations...")
