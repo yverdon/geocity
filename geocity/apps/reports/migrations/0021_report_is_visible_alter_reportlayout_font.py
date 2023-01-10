@@ -15,7 +15,11 @@ class Migration(migrations.Migration):
             name="is_visible",
             field=models.BooleanField(
                 default=True,
+<<<<<<< HEAD
                 help_text="Rendre le modèle visible dans la liste des documents et impressions (décocher pour les modèles de confirmation / remboursement de paiement)",
+=======
+                help_text="Cocher si le modèle doit être visible dans la liste des documents et impressions",
+>>>>>>> fb3f9f03 (remove unused code. Add to model a way to hide/show models of documents (YC-1013))
                 verbose_name="Visible",
             ),
         ),
