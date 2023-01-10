@@ -29,15 +29,6 @@ There is some examples in same folder and you can create new ones
 docker-compose run web python manage.py fixturize
 ```
 
-## Another way to load data (replaces fixturize_demo)
-
-Edit file `geocity/apps/submissions/management/commands/seed_data/seed.py`
-There is some examples in same folder and you can create new ones
-
-```bash
-docker-compose run web python manage.py seed
-```
-
 ## Setting up production instance
 
 ### Database

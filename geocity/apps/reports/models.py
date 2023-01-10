@@ -101,6 +101,13 @@ class Report(models.Model):
         verbose_name=_("Groupe des administrateurs"),
         limit_choices_to={"permit_department__is_integrator_admin": True},
     )
+    is_visible = models.BooleanField(
+        _("Visible"),
+        default=True,
+        help_text=_(
+            "Cocher si le modèle doit être visible dans la liste des documents et impressions"
+        ),
+    )
 
     def __str__(self):
         return self.name
