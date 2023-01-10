@@ -188,6 +188,7 @@ class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         ComplementaryDocumentTypeInline,
     ]
     form = ComplementaryDocumentTypeAdminForm
+    fields = ["name", "form", "integrator"]
 
     def get_list_display(self, request):
         if request.user.is_superuser:
