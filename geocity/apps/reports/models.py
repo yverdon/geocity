@@ -39,7 +39,7 @@ class ReportLayout(models.Model):
         blank=True,
         null=True,
         help_text=_(
-            'La liste des polices disponbiles est visible sur <a href="https://fonts.google.com/" target="_blank">Goole Fonts</a>'
+            'La liste des polices disponibles est visible sur <a href="https://fonts.google.com/" target="_blank">Google Fonts</a>'
         ),
     )
 
