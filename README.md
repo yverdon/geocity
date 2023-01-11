@@ -4,6 +4,34 @@
 
 **[Features and user guide](https://github.com/yverdon/geocity/wiki)**
 
+## Contribution guideline
+
+To contribute to the project use **[gitflow](https://www.atlassian.com/fr/git/tutorials/comparing-workflows/gitflow-workflow)**
+
+The default configuration is used in this project, check below
+
+```bash
+git flow init
+Branch name for production releases: [main]
+Branch name for "next release" development: [develop]
+Feature branches? [feature/]
+Release branches? [release/]
+Hotfix branches? [hotfix/]
+Support branches? [support/]
+Version tag prefix? []
+```
+
+To start a new feature use : `git flow feature start feature_branch` instead of `git checkout -b feature_branch`
+
+To finish a feature there's two options:
+
+1. The feature requires a review (most of the cases)
+   - `git flow feature publish feature_branch` then create a PR from `feature_branch` to `main`
+2. The feature doesn't require a review (small commits)
+    - `git flow feature finish feature_branch`
+
+Here is a cheatsheet to use `gitflow` **[gitflow-cheatsheet](https://danielkummer.github.io/git-flow-cheatsheet/)**
+
 ## Setting up full Docker non persistent demo
 
 This will bring up a demo instance with preset fixtures served by the
