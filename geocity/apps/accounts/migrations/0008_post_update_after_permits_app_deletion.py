@@ -5,6 +5,13 @@ from django.db import migrations
 from geocity import settings
 
 
+def create_web_site(apps, schema_editor):
+
+    Site = apps.get_model("sites", "Site")
+
+    Site.objects.update_or_create(domain="web", name="web (internal calls)")
+
+
 def update_site_data(apps, schema_editor):
     """
     Create default Site
@@ -12,8 +19,8 @@ def update_site_data(apps, schema_editor):
     Add default site to each PermitAdministrativeEntity
     """
     Site = apps.get_model("sites", "Site")
-    SiteProfile = apps.get_model("permits", "SiteProfile")
-    PermitAdministrativeEntity = apps.get_model("permits", "PermitAdministrativeEntity")
+    SiteProfile = apps.get_model("accounts", "SiteProfile")
+    PermitAdministrativeEntity = apps.get_model("accounts", "AdministrativeEntity")
 
     if not Site.objects.filter(domain=settings.DEFAULT_SITE).exists():
         Site.objects.get_or_create(domain=settings.DEFAULT_SITE, name="default site")
@@ -32,9 +39,10 @@ def update_site_data(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("permits", "0080_change_site_extension_model"),
+        ("accounts", "0007_merge_20221212_1053"),
     ]
 
     operations = [
         migrations.RunPython(update_site_data),
+        migrations.RunPython(create_web_site),
     ]
