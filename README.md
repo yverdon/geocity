@@ -26,7 +26,7 @@ To start a new feature use : `git flow feature start feature_branch` instead of 
 To finish a feature there's two options:
 
 1. The feature requires a review (most of the cases)
-   - `git flow feature publish feature_branch` then create a PR from `feature_branch` to `main`
+   - `git flow feature publish feature_branch` then create a PR from `feature_branch` to `develop`
 2. The feature doesn't require a review (small commits)
     - `git flow feature finish feature_branch`
 
