@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
             name="is_visible",
             field=models.BooleanField(
                 default=True,
-                help_text="Cocher si le modèle doit être visible dans la liste des documents et impressions",
+                help_text="Rendre le modèle visible dans la liste des documents et impressions (décocher pour les modèles de confirmation / remboursement de paiement)",
                 verbose_name="Visible",
             ),
         ),
