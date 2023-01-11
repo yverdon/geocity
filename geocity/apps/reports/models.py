@@ -105,7 +105,7 @@ class Report(models.Model):
         _("Visible"),
         default=True,
         help_text=_(
-            "Cocher si le modèle doit être visible dans la liste des documents et impressions"
+            "Rendre le modèle visible dans la liste des documents et impressions (décocher pour les modèles de confirmation / remboursement de paiement)"
         ),
     )
 
