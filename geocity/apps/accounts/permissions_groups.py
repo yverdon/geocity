@@ -28,10 +28,6 @@ INTEGRATOR_PERMISSIONS_BY_APP = {
 }
 
 # define permissions required by integrator role
-# TODO this is kept for backwards compatibility with migrations of the legacy `permits`
-# app. Once the final migration of this app has been applied and all associated code of
-# this app has been removed, remove this line
-INTEGRATOR_REQUIRED_MODELS_PERMISSIONS = []
 
 OTHER_PERMISSIONS_CODENAMES = [
     "view_user",

@@ -57,6 +57,7 @@ urlpatterns = [
         "<int:submission_id>/",
         include(submission_urlpatterns + existing_submission_urlpatterns),
     ),
+    # TODO: adapt path name here and in front app
     path(
         "permits-files/<path:path>",
         views.submission_file_download,
