@@ -9,6 +9,7 @@ let update_form_value = function(item, userprofile) {
     } else {
       for (const [key, value] of Object.entries(userprofile)) {
         document.getElementById(`id_form-${item}-${key}`).value = '';
+        document.getElementById(`id_form-${item}-${key}`).readOnly = false;
       }
     }
 
