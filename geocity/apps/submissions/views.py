@@ -1484,6 +1484,21 @@ def submission_contacts(request, submission_id):
     else:
         formset = forms.get_submission_contacts_formset_initiated(submission)
 
+    userprofile = {
+        "email": request.user.email,
+        "first_name": request.user.first_name,
+        "last_name": request.user.last_name,
+        "company_name": request.user.userprofile.company_name,
+        "vat_number": request.user.userprofile.vat_number,
+        "address": request.user.userprofile.address,
+        "zipcode": request.user.userprofile.zipcode,
+        "city": request.user.userprofile.city,
+        "phone": request.user.userprofile.phone_first,
+    }
+
+    if settings.AUTHOR_IBAN_VISIBLE:
+        userprofile["iban"] = request.user.userprofile.iban
+
     return render(
         request,
         "submissions/submission_contacts.html",
@@ -1492,6 +1507,7 @@ def submission_contacts(request, submission_id):
             "creditorform": creditorform,
             "submission": submission,
             "requires_payment": requires_payment,
+            "userprofile": userprofile,
             **steps_context,
         },
     )
