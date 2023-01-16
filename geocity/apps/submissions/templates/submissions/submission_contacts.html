@@ -13,19 +13,22 @@
 {% endblock %}
 
 {% block content %}
+
   {% submission_progressbar steps StepType.ACTORS %}
   <form method="post">
     {% csrf_token %}
     {{ formset.management_form }}
     <br>
     {% if requires_payment %}
-      <h4>Adresse de facturation si différente de celle de l'auteur</h4>
+      <h4>Adresse de facturation si différente de celle de l'auteur ({{ userprofile.last_name }} {{ userprofile.first_name }})</h4>
       {% bootstrap_form creditorform layout='horizontal' %}
     {% endif %}
     <hr>
     <h3>{{ config.ACTORS_STEP }}</h3>
     <div id="forms-container">
         {% for form in formset %}
+            <input id="self_contact_{{ forloop.counter }}" type="checkbox" onclick="update_form_value( '{{ forloop.counter0 }}', {{ userprofile }} )" />
+            <label for="self_contact_{{ forloop.counter }}">{% trans "Reprendre mes informations" %}</label>
            {{ form.media }}
           {% bootstrap_form form layout='horizontal' %}
       <hr>
@@ -38,4 +41,10 @@
       <button class="btn btn-primary">{% trans "Enregistrer et continuer" %}</button>
     {% endbuttons %}
   </form>
+{% endblock %}
+
+
+{% block scripts %}
+  <script src="{% static 'js/submission_contacts.js' %}"></script>
+
 {% endblock %}
