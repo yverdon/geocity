@@ -145,6 +145,15 @@ class FormPricesInline(admin.TabularInline, SortableInlineAdminMixin):
     verbose_name = _("Tarif")
     verbose_name_plural = _("Tarifs")
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        # Display only the fields that belongs to current integrator user
+        if db_field.name == "price":
+            kwargs["queryset"] = filter_for_user(
+                request.user, models.Price.objects.all()
+            )
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 @admin.register(models.Form)
 class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
@@ -254,9 +263,9 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         _("Planning et localisation"),
         _("Notifications aux services"),
         _("Modules complémentaires"),
-        "Champs",
+        _("Champs"),
         _("Paiements"),
-        "Tarifs",
+        _("Tarifs"),
     )
 
     def sortable_str(self, obj):
@@ -341,7 +350,7 @@ class FieldAdminForm(forms.ModelForm):
 class PriceAdminForm(forms.ModelForm):
     class Meta:
         model = models.Price
-        fields = ["text", "amount", "currency"]
+        fields = ["text", "amount", "currency", "integrator"]
 
 
 class PriceByEntityListFilter(admin.SimpleListFilter):
@@ -362,7 +371,7 @@ class PriceByEntityListFilter(admin.SimpleListFilter):
 
 
 @admin.register(models.Price)
-class PriceAdmin(admin.ModelAdmin):
+class PriceAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form = PriceAdminForm
     list_display = ["text", "amount", "currency", "entities", "form_names"]
     list_filter = ["text", "amount", PriceByEntityListFilter]
