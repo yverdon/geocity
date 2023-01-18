@@ -187,7 +187,9 @@ def directives_and_legal(context, submission):
     }
 
 
-@register.inclusion_tag("submissions/_directives_and_legal_cta.html", takes_context=True)
+@register.inclusion_tag(
+    "submissions/_directives_and_legal_cta.html", takes_context=True
+)
 def directives_and_legal_cta(context, submission):
 
     return {
