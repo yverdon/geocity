@@ -12,11 +12,14 @@
     <div class="form-group">
       <button formaction="{% url "admin:create_administrative_entity_anonymous_user" administrative_entity_id=original.pk %}" type="submit" class="btn btn-dark form-control">
         {% translate "Créer l'utilisateur anonyme" %}
+<<<<<<< HEAD
       </button>
     </div>
     <div class="form-group">
       <button formaction="{% url "admin:create_administrative_entity_anonymous_user" administrative_entity_id=original.pk %}" type="submit" class="btn btn-dark form-control">
         {% translate "Créer un format papier par defaut" %}
+=======
+>>>>>>> fef147a7fe6ccd90a34debb4a39942e1bef4a82e
       </button>
     </div>
   {% endif %}
