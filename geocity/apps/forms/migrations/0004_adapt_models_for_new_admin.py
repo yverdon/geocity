@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ("accounts", "0004_adapt_models_for_new_admin"),
         ("submissions", "0004_new_admin_models_and_metadata"),
-        ("forms", "0003_migrate_permits_data"),
+        ("forms", "0002_geom_intersection_enabled_shortname"),
     ]
 
     operations = [

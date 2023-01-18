@@ -9,8 +9,6 @@ class Command(BaseCommand):
 
     help = gettext(
         "Update the permissions for Groups that have is_integrator_admin = True set in the admin."
-        "This command is useful when new models are added to INTEGRATOR_REQUIRED_MODELS_PERMISSIONS in permits/admin.py"
-        "or to INTEGRATOR_REQUIRED_MODELS_PERMISSIONS in reports/admin.py"
     )
 
     def handle(self, *args, **options):

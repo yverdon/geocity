@@ -16,7 +16,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("contenttypes", "0002_remove_content_type_name"),
-        ("permits", "0076_remove_print_v1_models"),
         ("auth", "0012_alter_user_first_name_max_length"),
     ]
 
@@ -34,14 +33,6 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("name", models.CharField(max_length=150)),
-                (
-                    "document_types",
-                    models.ManyToManyField(
-                        blank=True,
-                        related_name="_reports_report_document_types_+",
-                        to="permits.ComplementaryDocumentType",
-                    ),
-                ),
                 (
                     "integrator",
                     models.ForeignKey(
