@@ -29,10 +29,10 @@ class Command(BaseCommand):
             order=1,
             report=report,
             title="",
-            content="""<p><strong>Client Geocity n&deg; :</strong> <strong>{{request_data.properties.author.user_id}}</strong><br />
-Date:&nbsp;{{ transaction_data.creation_date }}<br />
-<strong>Ann&eacute;e:</strong>&nbsp;<strong>{{ transaction_data.creation_date_year }}</strong><br />
-Page: 1/1</p>""",
+            content="""<p><strong>Client n&deg; :&nbsp;{{request_data.properties.author.user_id}}</strong><br />
+Date :&nbsp;{{ transaction_data.creation_date }}<br />
+<strong>Ann&eacute;e :&nbsp;{{ transaction_data.creation_date_year }}</strong><br />
+Page : 1/1</p>""",
         )
         section_paragraph_1.save()
 
@@ -52,7 +52,7 @@ Page: 1/1</p>""",
             order=3,
             report=report,
             title="",
-            content="""<p><strong>FACTURE N&deg;: GEOCITY-{{request_data.id}}</strong></p>
+            content="""<p><strong>FACTURE N&deg; : GEOCITY-{{request_data.id}}</strong></p>
 
 <p>&nbsp;</p>
 
@@ -77,7 +77,7 @@ Pay&eacute; le {{ transaction_data.creation_date }}</p>
 			<td>
 			<p>&nbsp;</p>
 
-			<p>{{ transaction_data.line_text }} -&nbsp; <strong>{{request_data.properties.submission_submission_price.text}}</strong></p>
+			<p>{{ transaction_data.line_text }} : {{request_data.properties.submission_submission_price.text}}</p>
 
 			<p>&nbsp;</p>
 			</td>
@@ -85,9 +85,9 @@ Pay&eacute; le {{ transaction_data.creation_date }}</p>
 			<td style="text-align:right">{{request_data.properties.submission_submission_price.amount}}</td>
 		</tr>
 		<tr>
-			<td><strong>Montant pay&eacute;:</strong></td>
+			<td><strong>Montant pay&eacute;</strong></td>
 			<td>&nbsp;</td>
-			<td style="text-align:right">{{request_data.properties.submission_submission_price.amount}}</td>
+			<td style="text-align:right"><strong>{{request_data.properties.submission_submission_price.amount}}</strong></td>
 		</tr>
 	</tbody>
 </table>
@@ -109,10 +109,10 @@ Pay&eacute; le {{ transaction_data.creation_date }}</p>
             order=1,
             report=report,
             title="",
-            content="""<p><strong>Client Geocity n&deg; :</strong> <strong>{{request_data.properties.author.user_id}}</strong><br />
-Date:&nbsp;{{ transaction_data.creation_date }}<br />
-<strong>Ann&eacute;e:</strong>&nbsp;<strong>{{ transaction_data.creation_date_year }}</strong><br />
-Page: 1/1</p>""",
+            content="""<p><strong>Client n&deg; :&nbsp;{{request_data.properties.author.user_id}}</strong><br />
+Date :&nbsp;{{ transaction_data.creation_date }}<br />
+<strong>Ann&eacute;e :&nbsp;{{ transaction_data.creation_date_year }}</strong><br />
+Page : 1/1</p>""",
         )
         section_paragraph_1.save()
 
@@ -132,7 +132,7 @@ Page: 1/1</p>""",
             order=3,
             report=report,
             title="",
-            content="""<p><strong>REMBOURSEMENT N&deg;: GEOCITY-{{request_data.id}}</strong></p>
+            content="""<p><strong>REMBOURSEMENT N&deg; : GEOCITY-{{request_data.id}}</strong></p>
 
 <p>&nbsp;</p>
 
@@ -157,7 +157,7 @@ Pay&eacute; le {{ transaction_data.creation_date }}</p>
 			<td>
 			<p>&nbsp;</p>
 
-			<p>{{ transaction_data.line_text }} -&nbsp; <strong>{{request_data.properties.submission_submission_price.text}}</strong></p>
+			<p>{{ transaction_data.line_text }} : {{request_data.properties.submission_submission_price.text}}</p>
 
 			<p>&nbsp;</p>
 			</td>
@@ -165,9 +165,9 @@ Pay&eacute; le {{ transaction_data.creation_date }}</p>
 			<td style="text-align:right">-{{request_data.properties.submission_submission_price.amount}}</td>
 		</tr>
 		<tr>
-			<td><strong>Montant rembours&eacute;:</strong></td>
+			<td><strong>Montant rembours&eacute;</strong></td>
 			<td>&nbsp;</td>
-			<td style="text-align:right">-{{request_data.properties.submission_submission_price.amount}}</td>
+			<td style="text-align:right"><strong>-{{request_data.properties.submission_submission_price.amount}}</strong></td>
 		</tr>
 	</tbody>
 </table>
