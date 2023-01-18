@@ -91,6 +91,7 @@ class ReportAdmin(
     filter_horizontal = ("document_types",)
     list_display = [
         "name",
+        "is_visible",
         "layout",
         "integrator",
         "form_",

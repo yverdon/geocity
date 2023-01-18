@@ -13,14 +13,17 @@ from django.urls import path, reverse
 from django.utils.translation import gettext_lazy as _
 from knox.models import AuthToken
 
-from geocity.apps.accounts.models import AdministrativeEntity
+from geocity.apps.accounts.models import AdministrativeEntity, UserProfile
+from geocity.apps.reports.models import Report
 from geocity.apps.submissions.models import Submission, SubmissionWorkflowStatus
 from geocity.fields import GeometryWidget
 
 from . import models, permissions_groups
 from .users import get_integrator_permissions, get_users_list_for_integrator_admin
 
-MULTIPLE_INTEGRATOR_ERROR_MESSAGE = "Un utilisateur membre d'un groupe de type 'Intégrateur' ne peut être que dans un et uniquement un groupe 'Intégrateur'"
+MULTIPLE_INTEGRATOR_ERROR_MESSAGE = _(
+    "Un utilisateur ne peut être membre que d'un seul groupe 'Intégrateur'"
+)
 
 # Allow a user belonging to integrator group to see only objects created by this group
 def filter_for_user(user, qs):
@@ -157,11 +160,8 @@ class UserAdmin(BaseUserAdmin):
         user_being_updated = User.objects.get(
             id=(int(request.resolver_match.kwargs["object_id"]))
         )
-        integrator_group_for_user_being_updated = user_being_updated.groups.filter(
-            permit_department__is_integrator_admin=True
-        )
+        userprofile_being_updated = UserProfile.objects.get(user=user_being_updated)
 
-        # FIXME: Do not allow anonymous user to be set in groups!!!
         if db_field.name == "groups":
             if request.user.is_superuser:
                 kwargs["queryset"] = Group.objects.all()
@@ -172,14 +172,13 @@ class UserAdmin(BaseUserAdmin):
                     ).pk,
                 )
 
-                if integrator_group_for_user_being_updated:
-                    kwargs["queryset"] = (
-                        kwargs["queryset"] | integrator_group_for_user_being_updated
-                    ).distinct()
+            # Do not allow anonymous user to be set in groups!!!
+            if userprofile_being_updated.is_anonymous:
+                kwargs["queryset"] = Group.objects.none()
 
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
-    # Filter users that can be by integrator
+    # Filter users that can be seen by integrator
     def get_queryset(self, request):
         return get_users_list_for_integrator_admin(request.user)
 
@@ -192,8 +191,26 @@ class UserAdmin(BaseUserAdmin):
             for group in form.cleaned_data["groups"]:
                 if group.permit_department.is_integrator_admin:
                     obj.is_staff = True
+        # Prevent integrator from removing groups he hasn't access
+        else:
+            # Groups before editing the user
+            groups_before = Group.objects.filter(user=obj.pk)
 
-        super().save_model(req, obj, form, change)
+            # Groups the integrator has access to
+            editable_groups = Group.objects.filter(
+                permit_department__integrator=req.user.groups.get(
+                    permit_department__is_integrator_admin=True
+                ).pk,
+            ).values("pk")
+
+            # Groups assigned to the user and integrator hasn't access to (= groups before - editable groups)
+            non_editable_groups = groups_before.exclude(pk__in=editable_groups)
+
+            # Groups to keep on user (= groups the integrator has selected + groups the integrator hasn't access to)
+            groups_to_keep = form.cleaned_data["groups"].union(non_editable_groups)
+
+            # Edit cleaned_data to save the groups
+            form.cleaned_data["groups"] = groups_to_keep
 
     def get_urls(self):
         urls = super().get_urls()
@@ -643,7 +660,12 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 "<int:administrative_entity_id>/create-anonymous-user/",
                 self.admin_site.admin_view(self.create_anonymous_user),
                 name="create_administrative_entity_anonymous_user",
-            )
+            ),
+            path(
+                "<int:administrative_entity_id>/create-default-report/",
+                self.admin_site.admin_view(self.create_default_report),
+                name="create_administrative_entity_default_report",
+            ),
         ] + urls
 
     def create_anonymous_user(self, request, administrative_entity_id):
@@ -656,6 +678,23 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         messages.add_message(
             request, messages.SUCCESS, _("Utilisateur anonyme créé avec succès.")
         )
+
+        return redirect(
+            reverse(
+                "admin:forms_administrativeentityforadminsite_change",
+                kwargs={"object_id": administrative_entity_id},
+            )
+        )
+
+    def create_default_report(self, request, administrative_entity_id):
+        created = Report.create_default_report(administrative_entity_id)
+
+        if request and created:
+            messages.add_message(
+                request, messages.SUCCESS, _("Rapport créé avec succès.")
+            )
+        elif request:
+            messages.add_message(request, messages.INFO, _("Rapport déjà existant."))
 
         return redirect(
             reverse(

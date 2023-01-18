@@ -21,6 +21,7 @@ class Command(BaseCommand):
             name="Payment confirmation",
             layout=layout,
             integrator=group,
+            is_visible=False,
         )
         report.save()
 
@@ -100,6 +101,7 @@ Pay&eacute; le {{ transaction_data.creation_date }}</p>
             name="Payment refund",
             layout=layout,
             integrator=group,
+            is_visible=False,
         )
         report.save()
 

@@ -3,16 +3,23 @@
 
 {% block object-tools-items %}
   {% if original.anonymous_user %}
-    <a class="btn btn-dark form-control" href="{% url "admin:auth_user_change" object_id=original.anonymous_user.user_id %}">
-      {% translate "Voir l’utilisateur anonyme" %}
-    </a>
+    <div class="form-group">
+      <a class="btn btn-dark form-control" href="{% url "admin:auth_user_change" object_id=original.anonymous_user.user_id %}">
+        {% translate "Voir l'utilisateur anonyme" %}
+      </a>
+    </div>
   {% else %}
     <div class="form-group">
       <button formaction="{% url "admin:create_administrative_entity_anonymous_user" administrative_entity_id=original.pk %}" type="submit" class="btn btn-dark form-control">
-        {% translate "Créer l’utilisateur anonyme" %}
+        {% translate "Créer l'utilisateur anonyme" %}
       </button>
     </div>
   {% endif %}
+  <div class="form-group">
+    <button formaction="{% url "admin:create_administrative_entity_default_report" administrative_entity_id=original.pk %}" type="submit" class="btn btn-dark form-control">
+      {% translate "Créer un rapport par défaut" %}
+    </button>
+  </div>
   <hr>
   {{ block.super }}
 {% endblock %}

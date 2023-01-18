@@ -9,6 +9,7 @@ from django.contrib.staticfiles import finders
 from django.core.files import File
 from django.core.validators import FileExtensionValidator
 from django.db import models
+from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 from jinja2.sandbox import SandboxedEnvironment
@@ -16,6 +17,7 @@ from knox.models import AuthToken
 from polymorphic.models import PolymorphicModel
 
 from geocity.apps.accounts.fields import AdministrativeEntityFileField
+from geocity.apps.accounts.models import AdministrativeEntity
 
 from .fields import BackgroundFileField
 from .utils import DockerRunFailedError, run_docker_container
@@ -37,7 +39,7 @@ class ReportLayout(models.Model):
         blank=True,
         null=True,
         help_text=_(
-            'La liste des polices disponbiles est visible sur <a href="https://fonts.google.com/" target="_blank">Goole Fonts</a>'
+            'La liste des polices disponibles est visible sur <a href="https://fonts.google.com/" target="_blank">Google Fonts</a>'
         ),
     )
 
@@ -58,6 +60,7 @@ class ReportLayout(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
 
     class Meta:
@@ -96,10 +99,85 @@ class Report(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
+    )
+    is_visible = models.BooleanField(
+        _("Visible"),
+        default=True,
+        help_text=_(
+            "Rendre le modèle visible dans la liste des documents et impressions (décocher pour les modèles de confirmation / remboursement de paiement)"
+        ),
     )
 
     def __str__(self):
         return self.name
+
+    def create_default_report(administrative_entity_id):
+        administrative_entity = get_object_or_404(
+            AdministrativeEntity, pk=administrative_entity_id
+        )
+
+        layout, created = ReportLayout.objects.get_or_create(
+            name="default " + administrative_entity.name,
+            margin_top=30,
+            margin_right=10,
+            margin_bottom=20,
+            margin_left=22,
+            integrator=administrative_entity.integrator,
+        )
+
+        _bg_path = finders.find("reports/report-letter-paper-template.png")
+        background_image = open(_bg_path, "rb")
+        layout.background.save(
+            "report-letter-paper.png", File(background_image), save=True
+        )
+        layout.save()
+
+        report, created = Report.objects.get_or_create(
+            name="default " + administrative_entity.name,
+            layout=layout,
+            integrator=administrative_entity.integrator,
+        )
+
+        SectionParagraph.objects.get_or_create(
+            order=1,
+            report=report,
+            title="Example report",
+            content="<p>This is an example report. It could be an approval, or any type of report related to a request.</p>",
+        )
+
+        SectionParagraph.objects.get_or_create(
+            order=2,
+            report=report,
+            title="Demand summary",
+            content="<p>This demand contains the following objects.</p><ul>{% for form in request_data.properties.submission_forms_names.values() %}<li>{{form}}</li>{% endfor %}</ul>",
+        )
+
+        SectionParagraph.objects.get_or_create(
+            order=3,
+            report=report,
+            title="Raw request data",
+            content="<pre>{{request_data}}</pre>",
+        )
+
+        SectionParagraph.objects.get_or_create(
+            order=4,
+            report=report,
+            title="Raw form data",
+            content="<pre>{{form_data}}</pre>",
+        )
+
+        SectionMap.objects.get_or_create(
+            order=5,
+            report=report,
+        )
+
+        SectionAuthor.objects.get_or_create(
+            order=6,
+            report=report,
+        )
+
+        return created
 
 
 # https://github.com/django-polymorphic/django-polymorphic/issues/229#issuecomment-398434412
