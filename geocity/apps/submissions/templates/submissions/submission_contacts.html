@@ -24,6 +24,8 @@
       {% bootstrap_form creditorform layout='horizontal' %}
     {% endif %}
     <hr>
+    {% directives_and_legal_cta submission %}
+    <br><br>
     <h3>{{ config.ACTORS_STEP }}</h3>
     <div id="forms-container">
         {% for form in formset %}

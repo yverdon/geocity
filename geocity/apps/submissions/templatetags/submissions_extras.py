@@ -177,3 +177,19 @@ def can_revert_refund_transaction(context):
 @register.simple_tag(takes_context=True)
 def can_refund_transaction(context):
     return permissions.can_refund_transaction(context["user"], context["record"])
+
+
+@register.inclusion_tag("submissions/_directives_and_legal.html", takes_context=True)
+def directives_and_legal(context, submission):
+
+    return {
+        "directives": submission.get_submission_directives(),
+    }
+
+
+@register.inclusion_tag("submissions/_directives_and_legal_cta.html", takes_context=True)
+def directives_and_legal_cta(context, submission):
+
+    return {
+        "directives": submission.get_submission_directives(),
+    }

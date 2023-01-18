@@ -363,17 +363,21 @@ h5 {
   border-width: 0 1px 1px 1px;
   border-style: solid;
 }
-
+directives-and-legal-card
 .container {
   padding: 0;
   padding-bottom: 8px;
 }
 
 #legal-infos {
-  border: 1px solid red;
+  border: 1px solid var(--primary-color);;
   padding: 10px 10px 10px 10px;
   margin-bottom: 10px;
-  border-radius: 5px;
+}
+
+#directives-and-legal-card div {
+  margin-top: 5px;
+  padding: 0;
 }
 
 .error-page {
@@ -874,3 +878,4 @@ img.captcha {
   bottom: 0;
   margin-top: 20px;
 }
+
