@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("accounts", "0007_merge_20221212_1053"),
+        ("accounts", "0008_post_update_after_permits_app_deletion"),
     ]
 
     operations = [
