@@ -12,24 +12,11 @@
     <div class="form-group">
       <button formaction="{% url "admin:create_administrative_entity_anonymous_user" administrative_entity_id=original.pk %}" type="submit" class="btn btn-dark form-control">
         {% translate "Créer l'utilisateur anonyme" %}
-<<<<<<< HEAD
       </button>
     </div>
     <div class="form-group">
       <button formaction="{% url "admin:create_administrative_entity_anonymous_user" administrative_entity_id=original.pk %}" type="submit" class="btn btn-dark form-control">
         {% translate "Créer un format papier par defaut" %}
-      </button>
-    </div>
-    <div class="form-group">
-      <button formaction="{% url "admin:create_administrative_entity_anonymous_user" administrative_entity_id=original.pk %}" type="submit" class="btn btn-dark form-control">
-        {% translate "Créer un format papier par defaut" %}
-      </button>
-    </div>
-    <div class="form-group">
-      <button formaction="{% url "admin:create_administrative_entity_anonymous_user" administrative_entity_id=original.pk %}" type="submit" class="btn btn-dark form-control">
-        {% translate "Créer un format papier par defaut" %}
-=======
->>>>>>> f2145dd8 (create report without duplicates on 1.1 admin page)
       </button>
     </div>
   {% endif %}
