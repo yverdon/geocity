@@ -687,14 +687,20 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
         )
 
     def create_default_report(self, request, administrative_entity_id):
-        created = Report.create_default_report(administrative_entity_id)
+        name, created = Report.create_default_report(administrative_entity_id)
 
         if request and created:
             messages.add_message(
-                request, messages.SUCCESS, _("Rapport créé avec succès.")
+                request,
+                messages.SUCCESS,
+                _(f"Modèle d'impression créé avec succès. ({name})"),
             )
         elif request:
-            messages.add_message(request, messages.INFO, _("Rapport déjà existant."))
+            messages.add_message(
+                request,
+                messages.INFO,
+                _(f"Modèle d'impression déjà existant. ({name})"),
+            )
 
         return redirect(
             reverse(

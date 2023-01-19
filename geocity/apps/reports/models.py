@@ -117,8 +117,10 @@ class Report(models.Model):
             AdministrativeEntity, pk=administrative_entity_id
         )
 
+        name = "default " + administrative_entity.name
+
         layout, created = ReportLayout.objects.get_or_create(
-            name="default " + administrative_entity.name,
+            name=name,
             margin_top=30,
             margin_right=10,
             margin_bottom=20,
@@ -134,7 +136,7 @@ class Report(models.Model):
         layout.save()
 
         report, created = Report.objects.get_or_create(
-            name="default " + administrative_entity.name,
+            name=name,
             layout=layout,
             integrator=administrative_entity.integrator,
         )
@@ -177,7 +179,7 @@ class Report(models.Model):
             report=report,
         )
 
-        return created
+        return name, created
 
 
 # https://github.com/django-polymorphic/django-polymorphic/issues/229#issuecomment-398434412
