@@ -2403,10 +2403,15 @@ class OnlinePaymentTestCase(LoggedInUserMixin, TestCase):
         self.payment_settings = factories.PaymentSettingsFactory()
 
         self.secretariat = factories.SecretariatUserFactory()
+        entity.integrator = self.secretariat.groups.first()
+        entity.save()
+
+        Report.create_default_report(entity.id)
 
         report = Report.objects.filter(
             integrator=self.secretariat.groups.first()
         ).first()
+
         report.document_types.set([self.child_type])
         self.payment_settings.payment_confirmation_report = report
         self.payment_settings.payment_refund_report = report
