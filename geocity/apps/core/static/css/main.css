@@ -363,11 +363,6 @@ h5 {
   border-width: 0 1px 1px 1px;
   border-style: solid;
 }
-directives-and-legal-card
-.container {
-  padding: 0;
-  padding-bottom: 8px;
-}
 
 #legal-infos {
   border: 1px solid var(--primary-color);;
@@ -377,7 +372,6 @@ directives-and-legal-card
 
 #directives-and-legal-card div {
   margin-top: 5px;
-  padding: 0;
 }
 
 .error-page {
