@@ -32,7 +32,7 @@ class MyModelViewset(WFS3DescribeModelViewSetMixin, viewsets.ModelViewSet):
     wfs3_geom_lookup = 'geom'  # (one day this will be retrieved automatically from the serializer)
     wfs3_srid = 2056  # (one day this will be retrieved automatically from the DB field)
 
-wfs3_router.register(r"permits", MyModelViewSet, "permits")
+wfs3_router.register(r"submissions", MyModelViewSet, "submissions")
 ```
 
 Add the router to your `urls.py`:

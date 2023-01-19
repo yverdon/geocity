@@ -189,22 +189,48 @@ class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     ]
     form = ComplementaryDocumentTypeAdminForm
     fields = ["name", "form", "integrator"]
-    list_display = [
+
+    def get_list_display(self, request):
+        if request.user.is_superuser:
+            list_display = [
+                "name",
+                "form",
+                "integrator",
+                "types_",
+            ]
+        else:
+            list_display = [
+                "name",
+                "form",
+                "types_",
+            ]
+        return list_display
+
+    # Fields used in search_fields and list_filter
+    integrator_fields = [
         "name",
         "form",
         "integrator",
-        "types_",
+        "form__administrative_entities",
     ]
-    search_fields = [
+    user_fields = [
         "name",
         "form",
-        "integrator",
     ]
-    list_filter = [
-        "name",
-        "form",
-        "integrator",
-    ]
+
+    def get_search_fields(self, request):
+        if request.user.is_superuser:
+            search_fields = self.integrator_fields
+        else:
+            search_fields = self.user_fields
+        return search_fields
+
+    def get_list_filter(self, request):
+        if request.user.is_superuser:
+            list_filter = self.integrator_fields
+        else:
+            list_filter = self.user_fields
+        return list_filter
 
     # List types of documents
     def types_(self, obj):
@@ -259,4 +285,4 @@ class SubmissionInquiryAdmin(admin.ModelAdmin):
         return obj.__str__()
 
     sortable_str.admin_order_field = "name"
-    sortable_str.short_description = _("3.2 Enquêtes public")
+    sortable_str.short_description = _("2.3 Enquêtes public")

@@ -51,6 +51,7 @@ class FormCategory(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
     meta_type = models.IntegerField(
         _("Type générique"), choices=META_TYPE_CHOICES, default=META_TYPE_OTHER
@@ -151,6 +152,7 @@ class PaymentSettings(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
     space_id = models.CharField(_("Space ID"), max_length=255, null=False)
     user_id = models.CharField(_("User ID"), max_length=255, null=False)
@@ -175,8 +177,8 @@ class PaymentSettings(models.Model):
         return f"{self.name} - {self.internal_account}"
 
     class Meta:
-        verbose_name = _("Paramètres de paiement")
-        verbose_name_plural = _("Paramètres de paiement")
+        verbose_name = _("1.6 Paramètres de paiement")
+        verbose_name_plural = _("1.6 Paramètres de paiement")
 
     def clean(self):
         if self.payment_confirmation_report is not None and self.pk is not None:
@@ -215,6 +217,13 @@ class Price(models.Model):
     text = models.CharField(_("Texte"), max_length=255)
     amount = models.DecimalField(_("Montant"), max_digits=6, decimal_places=2)
     currency = models.CharField(_("Devise"), max_length=20, default=default_currency)
+    integrator = models.ForeignKey(
+        Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
+    )
     history = HistoricalRecords()
 
     def __str__(self):
@@ -226,8 +235,8 @@ class Price(models.Model):
         )
 
     class Meta:
-        verbose_name = _("Tarif")
-        verbose_name_plural = _("Tarifs")
+        verbose_name = _("1.7 Tarif")
+        verbose_name_plural = _("1.7 Tarifs")
 
 
 class FormPrice(models.Model):
@@ -257,6 +266,7 @@ class Form(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
     category = models.ForeignKey(
         FormCategory,
@@ -565,6 +575,7 @@ class Field(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
     name = models.CharField(_("nom"), max_length=255)
     placeholder = models.CharField(

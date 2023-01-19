@@ -46,8 +46,16 @@ cp -n .env.example .env
 docker-compose up --build -d --remove-orphans
 # run the migrations
 docker-compose run web scripts/migrate.sh
-# load demo data
-docker-compose run web python manage.py fixturize_demo
+```
+
+**Load demo data**
+
+Edit file `geocity/apps/submissions/management/commands/fixturize_data/fixturize.py`
+There is some examples in same folder and you can create new ones
+
+```bash
+# Load demo data
+docker-compose run web python manage.py fixturize
 ```
 
 ## Setting up production instance
@@ -134,12 +142,6 @@ These tests compare generated PDFs to expected PDFs. To regenerate the expected 
 
 ```bash
 docker-compose run --service-ports --name=web --rm --entrypoint="" -e TEST_UPDATED_EXPECTED_IMAGES=TRUE web python manage.py test --settings=geocity.settings_test --keepdb geocity.tests.reports
-```
-
-### Run the fixturize_demo.py
-
-```bash
-docker-compose exec web python manage.py fixturize_demo
 ```
 
 ### Linting

@@ -1497,7 +1497,7 @@ class SubmissionComplementaryDocumentsForm(forms.ModelForm):
             for parent_doc_type in parent_doc_types:
                 doc_types = parent_doc_type.children.all()
                 for doc_type in doc_types:
-                    for report in doc_type.reports.all():
+                    for report in doc_type.reports.filter(is_visible=True):
                         if last_transaction is not None:
                             subchoices.append(
                                 (

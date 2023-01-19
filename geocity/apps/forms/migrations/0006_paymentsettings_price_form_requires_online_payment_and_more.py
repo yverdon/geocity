@@ -51,8 +51,8 @@ class Migration(migrations.Migration):
                 ),
             ],
             options={
-                "verbose_name": "Paramètres de paiement",
-                "verbose_name_plural": "Paramètres de paiement",
+                "verbose_name": "1.6 Paramètres de paiement",
+                "verbose_name_plural": "1.6 Paramètres de paiement",
             },
         ),
         migrations.CreateModel(
@@ -84,8 +84,8 @@ class Migration(migrations.Migration):
                 ),
             ],
             options={
-                "verbose_name": "Tarif",
-                "verbose_name_plural": "Tarifs",
+                "verbose_name": "1.7 Tarif",
+                "verbose_name_plural": "1.7 Tarifs",
             },
         ),
         migrations.AddField(
