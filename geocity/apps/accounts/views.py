@@ -146,15 +146,28 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
             messages.error(request, _("Une erreur est survenue lors de l'activation"))
         return super().get(request, *args, **kwargs)
 
+    def get_custom_template_values(self, template):
+        return {
+            "application_title": template.application_title
+            if template.application_title
+            else config.APPLICATION_TITLE,
+            "application_subtitle": template.application_subtitle
+            if template.application_subtitle
+            else config.APPLICATION_SUBTITLE,
+            "application_description": template.application_description
+            if template.application_description
+            else config.APPLICATION_DESCRIPTION,
+            "background_image": template.background_image
+            if template.background_image
+            else None,
+        }
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        site_id = get_current_site(self.request).id
 
         context.update(
-            {
-                "social_apps": SocialApp.objects.filter(
-                    sites__id=get_current_site(self.request).id
-                ).all()
-            }
+            {"social_apps": SocialApp.objects.filter(sites__id=site_id).all()}
         )
 
         customization = {
@@ -166,12 +179,20 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
             "contact_url": config.CONTACT_URL,
             "background_image": None,
         }
-        uri = parse.unquote(self.request.build_absolute_uri()).replace("next=/", "")
 
+        uri = parse.unquote(self.request.build_absolute_uri()).replace("next=/", "")
         params_str = (
             parse.urlsplit(uri).query.replace("?", "").replace(settings.PREFIX_URL, "")
         )
 
+        # Custom template defined in current site
+        site_custom_template = models.TemplateCustomization.objects.filter(
+            siteprofile__id=site_id
+        ).first()
+        if site_custom_template:
+            customization = self.get_custom_template_values(site_custom_template)
+
+        # Custom template defined in query strings
         self.request.session["templatename"] = None
         url_qs = ""
 
@@ -181,20 +202,7 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
                 templatename=template_value
             ).first()
             if template:
-                customization = {
-                    "application_title": template.application_title
-                    if template.application_title
-                    else config.APPLICATION_TITLE,
-                    "application_subtitle": template.application_subtitle
-                    if template.application_subtitle
-                    else config.APPLICATION_SUBTITLE,
-                    "application_description": template.application_description
-                    if template.application_description
-                    else config.APPLICATION_DESCRIPTION,
-                    "background_image": template.background_image
-                    if template.background_image
-                    else None,
-                }
+                customization = self.get_custom_template_values(template)
                 self.request.session["templatename"] = template.templatename
                 url_qs = "&template=" + template.templatename
             # use anonymous session
