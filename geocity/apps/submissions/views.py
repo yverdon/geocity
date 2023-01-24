@@ -1736,7 +1736,6 @@ def submission_submit(request, submission_id):
         {
             "submission": submission,
             "should_go_to_payment": should_go_to_payment,
-            "directives": submission.get_submission_directives(),
             "incomplete_steps": incomplete_steps,
             **progress_bar_context(
                 request=request,

@@ -1,0 +1,10 @@
+{% load i18n %}
+{% load bootstrap4 %}
+
+<button class="btn btn-outline-primary" type="button" data-toggle="collapse" data-target="#directives-and-legal-card" aria-expanded="false" aria-controls="directives-and-legal-card">
+  <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+  {% trans "Informations importantes" %}
+</button>
+<div class="collapse" id="directives-and-legal-card">
+  {% include "submissions/_directives_and_legal.html" %}
+</div>

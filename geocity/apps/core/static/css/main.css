@@ -364,16 +364,14 @@ h5 {
   border-style: solid;
 }
 
-.container {
-  padding: 0;
-  padding-bottom: 8px;
-}
-
 #legal-infos {
-  border: 1px solid red;
+  border: 1px solid var(--primary-color);;
   padding: 10px 10px 10px 10px;
   margin-bottom: 10px;
-  border-radius: 5px;
+}
+
+#directives-and-legal-card div {
+  margin-top: 5px;
 }
 
 .error-page {
