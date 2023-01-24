@@ -1132,6 +1132,8 @@ def submission_select_administrative_entity(request, submission_id=None):
         entity_tags=entity_tags,
     )
 
+    print(entities)
+
     if not submission and len(entities) == 1:
         submission = models.Submission.objects.create(
             administrative_entity=entities[0],

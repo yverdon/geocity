@@ -30,7 +30,7 @@ PUBLIC_TYPE_CHOICES = (
     (
         False,
         _(
-            "Restreindre la saisie aux utilisateurs faisant partie de l'entité administrative"
+            "Restreindre la saisie aux utilisateurs autorisés de l'entité administrative"
         ),
     ),
 )

@@ -202,27 +202,12 @@ class FormsSelectForm(forms.Form):
         if form_categories:
             forms_filter &= Q(category__in=form_categories)
 
-        user_administrative_entities = AdministrativeEntity.objects.associated_to_user(
-            self.user
-        )
-
-        user_administrativentity_filter = Q()
-
-        if user_administrative_entities and not user_can_view_private_submission:
-            "User is trusted but can only fill forms thats are related to administrive entities of the groups he/she belongs to"
-            user_administrativentity_filter = Q(
-                administrative_entities__in=user_administrative_entities
-            )
-        elif not user_administrative_entities:
-            "User is NOT trusted and can only fill forms that are public"
-            user_administrativentity_filter = Q(is_public=True)
-
         forms = (
             models.Form.objects.filter(
                 Q(
                     forms_filter,
                     Q(administrative_entities=self.instance.administrative_entity),
-                    user_administrativentity_filter,
+                    # user_administrativentity_filter,
                     is_anonymous=self.user.userprofile.is_temporary,
                 )
                 | Q(pk__in=selected_forms)

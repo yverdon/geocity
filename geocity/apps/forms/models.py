@@ -115,8 +115,34 @@ class FormQuerySet(models.QuerySet):
         if site:
             queryset = queryset.filter(sites=site)
 
-        if not user.has_perm("submissions.view_private_submission"):
+        is_integrator_admin = user.groups.filter(
+            permit_department__is_integrator_admin=True
+        ).exists()
+
+        user_administrative_entities = AdministrativeEntity.objects.associated_to_user(
+            user
+        )
+
+        if (
+            not user.has_perm("submissions.view_private_submission")
+            and not is_integrator_admin
+            or not user_administrative_entities
+        ):
             queryset = queryset.filter(forms__is_public=True)
+
+        if user_administrative_entities and user.has_perm(
+            "submissions.view_private_submission"
+        ):
+            """User is trusted and associated to administrative entities, he can fill private forms for this administrative entity"""
+            queryset = queryset.filter(
+                Q(pk__in=user_administrative_entities) | Q(forms__is_public=True)
+            )
+
+        if is_integrator_admin:
+            "Intgrator admin can fill all forms he has created"
+            queryset = queryset.filter(
+                integrator=user.groups.get(permit_department__is_integrator_admin=True)
+            )
 
         return queryset
 
