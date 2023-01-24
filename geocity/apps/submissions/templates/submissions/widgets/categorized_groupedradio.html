@@ -10,7 +10,7 @@
     <div class="card-text">
       <input type="radio" name="{{ option.name }}" value="{{option.value}}" id="{{option.attrs.id}}" required="required" {% if disabled and not option.selected %} disabled="disabled" {% endif %}
       {% if option.selected %} checked {% endif %} >
-      <label for="{{option.attrs.id}}">{{option.label}}</label>
+      <label for="{{option.attrs.id}}">{{option.label|safe}}</label>
     </div>
   {% endfor %}
   {% if group %}

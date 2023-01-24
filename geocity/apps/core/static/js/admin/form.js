@@ -72,4 +72,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   toggleConditionalFields();
 
+  const maxSubmissions = document.getElementById('id_max_submissions');
+  const maxSubmissionsMessage = document.getElementById('id_max_submissions_message').closest('.form-group.field-max_submissions_message');
+
+  function hideMaxSubmissions() {
+    if (!maxSubmissions.value) {
+      maxSubmissionsMessage.style.display = 'none';
+    } else {
+      maxSubmissionsMessage.style.display = 'block';
+    }
+  }
+
+  maxSubmissions.addEventListener('input', hideMaxSubmissions);
+  hideMaxSubmissions();
 });
