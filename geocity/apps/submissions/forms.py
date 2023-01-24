@@ -202,12 +202,14 @@ class FormsSelectForm(forms.Form):
         if form_categories:
             forms_filter &= Q(category__in=form_categories)
 
+        if not user_can_view_private_submission:
+            forms_filter &= Q(is_public=True)
+
         forms = (
             models.Form.objects.filter(
                 Q(
                     forms_filter,
-                    Q(administrative_entities=self.instance.administrative_entity),
-                    # user_administrativentity_filter,
+                    administrative_entities=self.instance.administrative_entity,
                     is_anonymous=self.user.userprofile.is_temporary,
                 )
                 | Q(pk__in=selected_forms)
@@ -249,6 +251,15 @@ class FormsSelectForm(forms.Form):
         if any([form.has_exceeded_maximum_submissions() for form in selected_forms]):
             raise forms.ValidationError(selected_forms.first().max_submissions_message)
         return self.cleaned_data["selected_forms"]
+
+    @transaction.atomic
+    def save(self):
+        selected_forms = models.Form.objects.filter(
+            pk__in=self.cleaned_data["selected_forms"]
+        )
+        self.instance.set_selected_forms(selected_forms)
+
+        return self.instance
 
     @transaction.atomic
     def save(self):
