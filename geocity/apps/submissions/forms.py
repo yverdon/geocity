@@ -292,6 +292,15 @@ class FormsSelectForm(forms.Form):
 
         return self.instance
 
+    @transaction.atomic
+    def save(self):
+        selected_forms = models.Form.objects.filter(
+            pk__in=self.cleaned_data["selected_forms"]
+        )
+        self.instance.set_selected_forms(selected_forms)
+
+        return self.instance
+
 
 class FormsSingleSelectForm(FormsSelectForm):
     selected_forms = forms.ChoiceField(widget=SingleFormRadioSelectWidget())
