@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("accounts", "0008_post_update_after_permits_app_deletion"),
+        ("accounts", "0008_alter_administrativeentity_integrator_and_more"),
     ]
 
     operations = [
