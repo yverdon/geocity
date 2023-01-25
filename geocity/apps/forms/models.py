@@ -116,21 +116,14 @@ class FormQuerySet(models.QuerySet):
         if site:
             queryset = queryset.filter(sites=site)
 
-<<<<<<< HEAD
         integrator_admin = user.groups.filter(
             permit_department__is_integrator_admin=True
         ).first()
-=======
-        is_integrator_admin = user.groups.filter(
-            permit_department__is_integrator_admin=True
-        ).exists()
->>>>>>> 42de526e (refactor)
 
         user_administrative_entities = AdministrativeEntity.objects.associated_to_user(
             user
         )
 
-<<<<<<< HEAD
         user_can_view_private_submission = user.has_perm(
             "submissions.view_private_submission"
         )
@@ -153,35 +146,19 @@ class FormQuerySet(models.QuerySet):
             ):
                 """Untrusted users or user not granted with view_private_submission can only fill public forms"""
                 queryset = queryset.filter(forms__is_public=True)
-=======
-        if (
-            not user.has_perm("submissions.view_private_submission")
-            and not is_integrator_admin
-            or not user_administrative_entities
-        ):
-            queryset = queryset.filter(forms__is_public=True)
->>>>>>> 42de526e (refactor)
 
-        if user_administrative_entities and user.has_perm(
-            "submissions.view_private_submission"
+        if (
+            user_administrative_entities
+            and user.has_perm("submissions.view_private_submission")
+            and not is_integrator_admin
         ):
             """User is trusted and associated to administrative entities, he can fill private forms for this administrative entity"""
             queryset = queryset.filter(
                 Q(pk__in=user_administrative_entities) | Q(forms__is_public=True)
             )
 
-        if is_integrator_admin:
-
-            "Intgrator admin can fill all forms he has created"
-            integrator = user.groups.filter(
-                permit_department__is_integrator_admin=True
-            ).first()
-            queryset = queryset.filter(
-                Q(integrator=integrator) | Q(forms__is_public=True)
-            )
-
         if user.is_superuser:
-            """Superuser can fill any form for debug purposes, including anonymous ones"""
+            """Superuser can fill any form, including anonymous ones"""
             queryset = (
                 AdministrativeEntity.objects.filter(
                     pk__in=self.values_list("administrative_entities", flat=True)
