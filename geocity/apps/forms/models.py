@@ -103,6 +103,8 @@ class FormQuerySet(models.QuerySet):
         return forms
 
     def get_administrative_entities_with_forms(self, user, site=None):
+
+        """Default queryset, for integrator, can fill all forms except anonymous ones"""
         queryset = (
             AdministrativeEntity.objects.filter(
                 pk__in=self.values_list("administrative_entities", flat=True),
@@ -130,26 +132,18 @@ class FormQuerySet(models.QuerySet):
         ):
             queryset = queryset.filter(forms__is_public=True)
 
-        if user_administrative_entities and user.has_perm(
-            "submissions.view_private_submission"
+        if (
+            user_administrative_entities
+            and user.has_perm("submissions.view_private_submission")
+            and not is_integrator_admin
         ):
             """User is trusted and associated to administrative entities, he can fill private forms for this administrative entity"""
             queryset = queryset.filter(
                 Q(pk__in=user_administrative_entities) | Q(forms__is_public=True)
             )
 
-        if is_integrator_admin:
-
-            "Intgrator admin can fill all forms he has created"
-            integrator = user.groups.filter(
-                permit_department__is_integrator_admin=True
-            ).first()
-            queryset = queryset.filter(
-                Q(integrator=integrator) | Q(forms__is_public=True)
-            )
-
         if user.is_superuser:
-            """Superuser can fill any form for debug purposes, including anonymous ones"""
+            """Superuser can fill any form, including anonymous ones"""
             queryset = (
                 AdministrativeEntity.objects.filter(
                     pk__in=self.values_list("administrative_entities", flat=True)
