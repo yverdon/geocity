@@ -148,6 +148,16 @@ class FormQuerySet(models.QuerySet):
                 Q(integrator=integrator) | Q(forms__is_public=True)
             )
 
+        if user.is_superuser:
+            """Superuser can fill any form for debug purposes, including anonymous ones"""
+            queryset = (
+                AdministrativeEntity.objects.filter(
+                    pk__in=self.values_list("administrative_entities", flat=True)
+                )
+                .order_by("ofs_id", "-name")
+                .distinct()
+            )
+
         return queryset
 
 
