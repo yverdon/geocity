@@ -139,9 +139,13 @@ class FormQuerySet(models.QuerySet):
             )
 
         if is_integrator_admin:
+
             "Intgrator admin can fill all forms he has created"
+            integrator = user.groups.filter(
+                permit_department__is_integrator_admin=True
+            ).first()
             queryset = queryset.filter(
-                integrator=user.groups.get(permit_department__is_integrator_admin=True)
+                Q(integrator=integrator) | Q(forms__is_public=True)
             )
 
         return queryset
