@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
             name="is_public",
             field=models.BooleanField(
                 default=False,
-                verbose_name="Utilisateurs autorisés à remplir ce formulaire ",
+                verbose_name="Formulaire public",
             ),
         ),
     ]
