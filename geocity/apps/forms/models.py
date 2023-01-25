@@ -369,9 +369,7 @@ class Form(models.Model):
         _("Document de validation obligatoire"), default=True
     )
     # TODO: sphinx documentation, to explain is used to make visible/hidden in the list of forms
-    is_public = models.BooleanField(
-        _("Utilisateurs autorisés à remplir ce formulaire "), default=False
-    )
+    is_public = models.BooleanField(_("Formulaire public"), default=False)
     is_anonymous = models.BooleanField(
         _("Demandes anonymes uniquement"),
         default=False,
