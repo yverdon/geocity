@@ -1,3 +1,4 @@
+from colorfield.fields import ColorField
 from django.conf import settings
 from django.contrib.auth.models import Group, User
 from django.contrib.gis.db import models as geomodels
@@ -47,7 +48,7 @@ class SiteProfile(models.Model):
         blank=True,
         default=None,
         on_delete=models.SET_NULL,
-        verbose_name=_("Page de login"),
+        verbose_name=_("Personalisation du site"),
     )
 
     class Meta:
@@ -85,6 +86,27 @@ class TemplateCustomization(models.Model):
     application_description = models.TextField(
         _("Description"), max_length=2048, blank=True
     )
+    general_conditions_url = models.URLField(
+        _("Lien vers les conditions générales"), max_length=512, blank=True
+    )
+    privacy_policy_url = models.URLField(
+        _("Lien vers la politique de confidentialité"), max_length=512, blank=True
+    )
+    contact_url = models.URLField(
+        _("Lien vers le moyen de contact"), max_length=512, blank=True
+    )
+    max_file_upload_size = models.IntegerField(
+        _("Taille maximum des fichiers uploadés"),
+        help_text=_("Taille maximum des fichiers uploadés"),
+        default=10485760,
+    )
+    geocalendar_url = models.URLField(
+        _("URL de l'application calendrier cartographique"), max_length=512, blank=True
+    )
+    enable_geocalendar = models.BooleanField(
+        _("Définit si l'application du calendrier cartographique est utilisée"),
+        default=False,
+    )
     background_image = models.ImageField(
         _("Image de fond"),
         blank=True,
@@ -93,6 +115,15 @@ class TemplateCustomization(models.Model):
             FileExtensionValidator(allowed_extensions=["svg", "png", "jpg", "jpeg"])
         ],
     )
+    background_color = ColorField(_("Couleur de fond"), default="#FFFFFF")
+    login_background_color = ColorField(
+        _("Couleur de fond du login"), default="#FFFFFF"
+    )
+    primary_color = ColorField(_("Couleur primaire"), default="#008c6f")
+    secondary_color = ColorField(_("Couleur secondaire"), default="#01755d")
+    text_color = ColorField(_("Couleur du texte"), default="#000000")
+    title_color = ColorField(_("Couleur du titre"), default="#000000")
+    table_color = ColorField(_("Couleur du tableau"), default="#000000")
 
     class Meta:
         constraints = [

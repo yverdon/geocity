@@ -161,6 +161,7 @@ INSTALLED_APPS = [
     "captcha",
     "ckeditor",
     "jazzmin",
+    "colorfield",
     # django contrib apps
     "django.contrib.admin",
     "django.contrib.auth",
@@ -413,6 +414,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "geocity.context_processors.two_factor_setting",
+                "geocity.apps.accounts.context_processors.site_customization",
                 "geocity.apps.submissions.context_processors.step_type",
             ],
         },
