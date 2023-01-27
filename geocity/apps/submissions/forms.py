@@ -227,6 +227,13 @@ class FormsSelectForm(forms.Form):
                 """Untrusted users or user not granted with view_private_submission can only fill public forms"""
                 forms_filter &= Q(is_public=True)
 
+        if user_administrative_entities and user_can_view_private_submission:
+            """User is trusted and associated to administrative entities,
+            he can fill private forms for this administrative entity"""
+            forms_filter &= Q(
+                administrative_entities__in=user_administrative_entities
+            ) | Q(is_public=True)
+
         forms = (
             models.Form.objects.filter(
                 Q(
