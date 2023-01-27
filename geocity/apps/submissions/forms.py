@@ -202,8 +202,36 @@ class FormsSelectForm(forms.Form):
         if form_categories:
             forms_filter &= Q(category__in=form_categories)
 
-        if not user_can_view_private_submission:
+        integrator_admin = self.user.groups.filter(
+            permit_department__is_integrator_admin=True
+        ).first()
+
+        user_administrative_entities = AdministrativeEntity.objects.associated_to_user(
+            self.user
+        )
+
+        if self.user.is_superuser:
+            forms_filter = forms_filter
+        elif integrator_admin:
+            """An integrator can fill all forms he owns + public ones"""
+            forms_filter &= Q(integrator=integrator_admin) | Q(is_public=True)
+        elif user_administrative_entities and user_can_view_private_submission:
+            """User is trusted and associated to administrative entities,
+            he can fill private forms for those administrative entities
+            if granted permission 'view_private_submission'"""
+            forms_filter &= Q(
+                administrative_entities__in=user_administrative_entities
+            ) | Q(is_public=True)
+        elif not user_can_view_private_submission or not user_administrative_entities:
+            "Untrusted users or user not granted with view_private_submission can only fill public forms"
             forms_filter &= Q(is_public=True)
+
+        if user_administrative_entities and user_can_view_private_submission:
+            """User is trusted and associated to administrative entities,
+            he can fill private forms for this administrative entity"""
+            forms_filter &= Q(
+                administrative_entities__in=user_administrative_entities
+            ) | Q(is_public=True)
 
         forms = (
             models.Form.objects.filter(
