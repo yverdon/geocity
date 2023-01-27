@@ -8,38 +8,50 @@ def site_customization(request):
 
     if template:
         customization = {
-            "PRIMARY_COLOR": template.primary_color
+            "primary_color": template.primary_color
             if template.primary_color
             else config.PRIMARY_COLOR,
-            "SECONDARY_COLOR": template.secondary_color
+            "secondary_color": template.secondary_color
             if template.secondary_color
             else config.SECONDARY_COLOR,
-            "BACKGROUND_COLOR": template.primary_color
-            if template.primary_color
+            "background_color": template.background_color
+            if template.background_color
             else config.BACKGROUND_COLOR,
-            "LOGIN_BACKGROUND_COLOR": template.primary_color
-            if template.primary_color
+            "login_background_color": template.login_background_color
+            if template.login_background_color
             else config.LOGIN_BACKGROUND_COLOR,
-            "TEXT_COLOR": template.primary_color
-            if template.primary_color
+            "text_color": template.text_color
+            if template.text_color
             else config.TEXT_COLOR,
-            "TITLE_COLOR": template.primary_color
-            if template.primary_color
+            "title_color": template.title_color
+            if template.title_color
             else config.TITLE_COLOR,
-            "TABLE_COLOR": template.primary_color
-            if template.primary_color
+            "table_color": template.table_color
+            if template.table_color
             else config.TABLE_COLOR,
+            "application_title": template.application_title
+            if template.application_title
+            else config.APPLICATION_TITLE,
+            "application_subtitle": template.application_subtitle
+            if template.application_subtitle
+            else config.APPLICATION_SUBTITLE,
+            "application_description": template.application_description
+            if template.application_description
+            else config.APPLICATION_DESCRIPTION,
         }
         return customization
 
     customization = {
-        "PRIMARY_COLOR": config.PRIMARY_COLOR,
-        "SECONDARY_COLOR": config.SECONDARY_COLOR,
-        "BACKGROUND_COLOR": config.BACKGROUND_COLOR,
-        "LOGIN_BACKGROUND_COLOR": config.LOGIN_BACKGROUND_COLOR,
-        "TEXT_COLOR": config.TEXT_COLOR,
-        "TITLE_COLOR": config.TITLE_COLOR,
-        "TABLE_COLOR": config.TABLE_COLOR,
+        "primary_color": config.PRIMARY_COLOR,
+        "secondary_color": config.SECONDARY_COLOR,
+        "background_color": config.BACKGROUND_COLOR,
+        "login_background_color": config.LOGIN_BACKGROUND_COLOR,
+        "text_color": config.TEXT_COLOR,
+        "title_color": config.TITLE_COLOR,
+        "table_color": config.TABLE_COLOR,
+        "application_title": config.APPLICATION_TITLE,
+        "application_subtitle": config.APPLICATION_SUBTITLE,
+        "application_description": config.APPLICATION_DESCRIPTION,
     }
 
     return customization
