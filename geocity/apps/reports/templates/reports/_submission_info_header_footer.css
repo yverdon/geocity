@@ -1,4 +1,4 @@
-@page {
+{% comment %} @page {
   @top-center {
     content: "Demande n°{{submission.id}}";
   }
@@ -12,4 +12,4 @@
     align-items: center;
     justify-content: center;
   }
-}
+} {% endcomment %}
