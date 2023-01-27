@@ -99,7 +99,16 @@
   {% if not incomplete_steps and not should_go_to_payment %}
     <p class="font-weight-bold">
       <input type="checkbox" id="chk_accept_terms" name="chk_accept_terms">
-      <label for="chk_accept_terms"> {% trans "J'ai lu et j'accepte les conditions d'utilisation." %}</label><br>
+      <label for="chk_accept_terms"> {% trans "J'ai lu et j'accepte les conditions d'utilisation." %}</label>
+      {% if config.GENERAL_CONDITIONS_URL %}
+        &nbsp;
+        <a href="{{ config.GENERAL_CONDITIONS_URL }}" target="_blank" rel="noreferrer">{% trans "Conditions" %}</a>
+      {% endif %}
+      {% if config.PRIVACY_POLICY_URL %}
+        &nbsp;|&nbsp;
+        <a href="{{ config.PRIVACY_POLICY_URL }}" target="_blank" rel="noreferrer">{% trans "Confidentialité" %}</a>
+      {% endif %}
+      <br>
     </p>
     <form method="post" action="{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}">
       {% csrf_token %}
