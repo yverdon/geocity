@@ -240,6 +240,9 @@ class FormsSelectForm(forms.Form):
 
         self.fields["selected_forms"].choices = forms_by_category
         self.fields["selected_forms"].widget.disabled_choices = disabled_choices
+        self.initial["selected_forms"] = [
+            e for e in self.initial["selected_forms"] if e not in disabled_choices
+        ]
 
     def clean_selected_forms(self):
         selected_forms = models.Form.objects.filter(
