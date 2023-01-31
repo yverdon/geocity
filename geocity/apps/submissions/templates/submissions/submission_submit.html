@@ -65,7 +65,7 @@
             {% trans "Payer maintenant" %}
           </a>
           {% if has_any_form_with_exceeded_submissions %}
-            <span class="text-danger font-weight-bold">
+            <span class="text-danger font-weight-bold mx-2">
              {{ submission.get_maximum_submissions_message }}
             </span>
           {% endif %}

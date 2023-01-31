@@ -11,6 +11,7 @@ from django.core.validators import (
 from django.db import models
 from django.db.models import Q
 from django.utils.safestring import mark_safe
+from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
@@ -428,13 +429,20 @@ class Form(models.Model):
 
         return (
             self.max_submissions
-            and self.submissions.exclude(
-                status__in=[
-                    Submission.STATUS_DRAFT,
-                    Submission.STATUS_REJECTED,
-                    Submission.STATUS_ARCHIVED,
-                ]
-            ).count()
+            and (
+                self.submissions.filter(
+                    ~Q(
+                        status__in=[
+                            Submission.STATUS_DRAFT,
+                            Submission.STATUS_REJECTED,
+                            Submission.STATUS_ARCHIVED,
+                        ]
+                    )
+                    | Q(price__transactions__authorization_timeout_on__gt=now())
+                )
+                .distinct()
+                .count()
+            )
             >= self.max_submissions
         )
 
