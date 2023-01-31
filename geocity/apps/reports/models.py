@@ -2,6 +2,7 @@ import base64
 import re
 from datetime import timedelta
 
+from bs4 import BeautifulSoup
 from ckeditor.fields import RichTextField
 from django.conf import settings
 from django.contrib.auth.models import Group
@@ -406,3 +407,113 @@ class SectionStatus(Section):
 class SectionCreditor(Section):
     class Meta:
         verbose_name = _("Adresse de facturation")
+
+
+class Style(PolymorphicModel):
+    class Location(models.TextChoices):
+        BOTTOM_CENTER = "@bottom-center", _("Pied de page - Centre")
+        BOTTOM_LEFT = "@bottom-left", _("Pied de page - Gauche")
+        BOTTOM_LEFT_CORNER = "@bottom-left-corner", _("Pied de page - Coin gauche")
+        BOTTOM_RIGHT = "@bottom-right", _("Pied de page - Droite")
+        BOTTOM_RIGHT_CORNER = "@bottom-right-corner", _("Pied de page - Coin Droite")
+        LEFT_BOTTOM = "@left-bottom", _("Bordure gauche - Bas de page")
+        LEFT_MIDDLE = "@left-middle", _("Bordure gauche - Milieu de page")
+        LEFT_TOP = "@left-top", _("Bordure gauche - Haut de page")
+        RIGHT_BOTTOM = "@right-bottom", _("Bordure droite - Bas de page")
+        RIGHT_MIDDLE = "@right-middle", _("Bordure droite - Milieu de page")
+        RIGHT_TOP = "@right-top", _("Bordure droite - Haut de page")
+        TOP_CENTER = "@top-center", _("En-tête - Centre")
+        TOP_LEFT = "@top-left", _("En-tête - Gauche")
+        TOP_LEFT_CORNER = "@top-left-corner", _("En-tête - Coin gauche")
+        TOP_RIGHT = "@top-right", _("En-tête - Droite")
+        TOP_RIGHT_CORNER = "@top-right-corner", _("En-tête - Coin Droite")
+
+    report = models.ForeignKey(
+        Report, on_delete=NON_POLYMORPHIC_CASCADE, related_name="styles"
+    )
+
+    location = models.CharField(
+        _("Emplacement"),
+        choices=Location.choices,
+        default=Location.BOTTOM_CENTER,
+        max_length=255,
+    )
+
+    def prepare_context(self, request, base_context):
+        """Subclass this to add elements to the context (make sure to return a copy if you change it)"""
+        return {
+            **base_context,
+            "style": self,
+            "settings": settings,
+        }
+
+    class Meta:
+        verbose_name = _("Style")
+        verbose_name_plural = _("Styles")
+
+    @property
+    def css_class(self):
+        return re.sub("^Style", "style-", self.__class__.__name__).lower()
+
+    def __str__(self):
+        return self._meta.verbose_name
+
+
+class StylePageNumber(Style):
+    class Meta:
+        verbose_name = _("Numéro de page")
+
+
+class StyleDateTime(Style):
+    class Meta:
+        verbose_name = _("Date et heure")
+
+
+class StyleParagraph(Style):
+    content = RichTextField(
+        _("Contenu"),
+        help_text=(
+            _(
+                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}`, celles du formulaire dans `{{form_data}}`, celles des transactions dans `{{transaction_data}}`.'
+            )
+        ),
+    )
+
+    class Meta:
+        verbose_name = _("Texte libre")
+
+    def _render_user_template(self, base_context):
+        # User template have only access to pure json elements for security reasons
+        inner_context = {
+            # TODO rename to `submission_data` (& migrate sections) to match new naming
+            "request_data": base_context["request_data"],
+            "form_data": base_context["form_data"],
+        }
+        if "transaction_data" in base_context:
+            inner_context["transaction_data"] = base_context["transaction_data"]
+
+        env = SandboxedEnvironment()
+        rendered_html = env.from_string(self.content).render(inner_context)
+        result = BeautifulSoup(mark_safe(rendered_html))
+        return result.get_text()
+
+    def prepare_context(self, request, base_context):
+        # Return updated context
+        return {
+            **super().prepare_context(request, base_context),
+            "rendered_content": self._render_user_template(base_context),
+        }
+
+
+class StyleLogo(Style):
+    logo = BackgroundFileField(
+        _("Logo"),
+        null=True,
+        blank=True,
+        upload_to="backgound_paper",
+        help_text=_("Image pour logo (PNG)."),
+        validators=[FileExtensionValidator(allowed_extensions=["png"])],
+    )
+
+    class Meta:
+        verbose_name = _("Logo")

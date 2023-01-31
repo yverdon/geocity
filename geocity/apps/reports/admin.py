@@ -8,7 +8,7 @@ from polymorphic.admin import PolymorphicInlineSupportMixin, StackedPolymorphicI
 from geocity.apps.accounts.admin import IntegratorFilterMixin
 from geocity.apps.submissions.models import ComplementaryDocumentType
 
-from .models import Report, ReportLayout, Section
+from .models import Report, ReportLayout, Section, Style
 
 
 @admin.register(ReportLayout)
@@ -55,6 +55,25 @@ class SectionInline(StackedPolymorphicInline):
     classes = ["polymorphic-jazzmin"]
 
 
+class StyleInline(StackedPolymorphicInline):
+    model = Style
+    # Automatic registration of child inlines
+    # see https://django-polymorphic.readthedocs.io/en/stable/admin.html#inline-models
+    child_inlines = [
+        type(
+            f"{child_model.__class__}Inline",
+            (AlwaysChangedStackedPolymorphicInlineChild,),
+            {"model": child_model},
+        )
+        for child_model in Style.__subclasses__()
+    ]
+
+    class Media:
+        css = {"all": ("css/admin/reports_admin.css",)}
+
+    classes = ["polymorphic-jazzmin"]
+
+
 class ReportAdminForm(forms.ModelForm):
     class Meta:
         model = Report
@@ -97,7 +116,10 @@ class ReportAdmin(
     PolymorphicInlineSupportMixin, IntegratorFilterMixin, admin.ModelAdmin
 ):
     form = ReportAdminForm
-    inlines = (SectionInline,)
+    inlines = [
+        SectionInline,
+        StyleInline,
+    ]
     filter_horizontal = ("document_types",)
     list_display = [
         "name",

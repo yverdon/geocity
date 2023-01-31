@@ -6,9 +6,10 @@
 
     <style>
       {% include "reports/report.css" %}
-      {% comment %} {% if not transaction_data %}
-        {% include "reports/_submission_info_header_footer.css" %}
-      {% endif %} {% endcomment %}
+      {% comment %} meta content (see https://www.quackit.com/css/at-rules/css_top-left-corner_at-rule.cfm) {% endcomment %}
+      @page{
+        {% for rendered_style in rendered_styles %}{{rendered_style}}{% endfor %}
+      }
     </style>
 
     {% if report.layout.font %}
