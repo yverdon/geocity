@@ -96,7 +96,7 @@ def disable_form(form, editable_fields=None):
 class DisabledChoicesMixin:
     @property
     def disabled_choices(self):
-        return self._disabled_choices
+        return getattr(self, "_disabled_choices", [])
 
     @disabled_choices.setter
     def disabled_choices(self, other):
