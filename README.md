@@ -229,7 +229,7 @@ The user belonging to backoffice group can be granted specific permissions:
 - `validate_submission`,"Valider les demandes": allow the user to fill the validation form
 - `classify_submission`,"Classer les demandes" allow the user to accept/reject the requests if validations services have all accepted it
 - `edit_submission`, "Éditer les demandes": allow the user to edit de requests filled by another person
-- `read_submission`, "Consulter les demandes": allow a truster user to only read submissions without any other permission
+- `read_submission`, "Consulter les demandes": allow a trusted user to only read submissions without any other permission
 
 ### Two factor authentication
 
