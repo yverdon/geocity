@@ -31,7 +31,7 @@
     </p>
   {% endif %}
 
-  {% if should_go_to_payment %}
+  {% if not incomplete_steps and should_go_to_payment %}
     {% if not submission.get_submission_price %}
       <div class="alert alert-danger mb-4">
         <div class="mb-4">
