@@ -137,7 +137,9 @@ class SubmissionQuerySet(models.QuerySet):
         if not user.is_superuser:
             qs_filter = Q(author=user)
 
-            if user.has_perm("submissions.amend_submission"):
+            if user.has_perm("submissions.amend_submission") or user.has_perm(
+                "submissions.read_submission"
+            ):
                 qs_filter |= Q(
                     administrative_entity__in=AdministrativeEntity.objects.associated_to_user(
                         user
@@ -288,6 +290,7 @@ class Submission(models.Model):
         verbose_name = _("2.2 Consultation de la demande")
         verbose_name_plural = _("2.2 Consultation des demandes")
         permissions = [
+            ("read_submission", _("Consulter les demandes")),
             ("amend_submission", _("Traiter les demandes de permis")),
             ("validate_submission", _("Valider les demandes de permis")),
             ("classify_submission", _("Classer les demandes de permis")),
