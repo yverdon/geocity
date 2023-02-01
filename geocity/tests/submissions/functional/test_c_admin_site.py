@@ -89,7 +89,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
     ):
         self.group.permit_department.integrator_email_domains = "notalloweddomain.ch"
         self.group.permit_department.save()
-        user = User.objects.create_user(
+
+        user = factories.UserFactory(
             email=f"yverdon-squad+admin@notalloweddomain.ch",
             first_name="nonadminuser",
             last_name="user",
@@ -98,6 +99,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             is_staff=False,
             is_superuser=False,
         )
+
         response = self.client.get(reverse("admin:auth_user_changelist"))
         parser = get_parser(response.content)
         self.assertEqual(response.status_code, 200)
@@ -106,7 +108,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
     def test_integrator_cannot_see_user_if_no_integrator_emails_exceptions_is_configured_by_admin(
         self,
     ):
-        user = User.objects.create_user(
+
+        user = factories.UserFactory(
             email=f"dummyuser@notalloweddomain.ch",
             first_name="nonadminuser",
             last_name="user",
@@ -115,6 +118,7 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             is_staff=False,
             is_superuser=False,
         )
+
         response = self.client.get(reverse("admin:auth_user_changelist"))
         parser = get_parser(response.content)
         self.assertEqual(response.status_code, 200)
@@ -127,7 +131,8 @@ class IntegratorAdminSiteTestCase(LoggedInIntegratorMixin, TestCase):
             "dummyuser@notalloweddomain.ch"
         )
         self.group.permit_department.save()
-        user = User.objects.create_user(
+
+        user = factories.UserFactory(
             email=f"dummyuser@notalloweddomain.ch",
             first_name="nonadminuser",
             last_name="user",
