@@ -1,5 +1,3 @@
-from django.core import mail
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
@@ -9,8 +7,10 @@ from geocity.tests.utils import LoggedInReadonlyTrustedMixin, get_parser
 
 
 class ReadonlySubmissionTestCase(LoggedInReadonlyTrustedMixin, TestCase):
-    def test_trusted_user_with_read_permission_can_read_submission_detail_but_not_secretariat_infos(self):
-        
+    def test_trusted_user_with_read_permission_can_read_submission_detail_but_not_secretariat_infos(
+        self,
+    ):
+
         user = factories.UserFactory()
 
         submission = factories.SubmissionFactory(
@@ -26,17 +26,11 @@ class ReadonlySubmissionTestCase(LoggedInReadonlyTrustedMixin, TestCase):
             )
         )
 
-
         self.assertEqual(response.status_code, 200)
-        self.assertInHTML('Auteur-e', response.content.decode())
+        self.assertInHTML("Auteur-e", response.content.decode())
         # Ensure processing tabs are not visible to this role
         parser = get_parser(response.content)
         self.assertEqual(len(parser.select("#amend-tab")), 0)
         self.assertEqual(len(parser.select("#request-validation")), 0)
         self.assertEqual(len(parser.select("#classify")), 0)
         self.assertEqual(len(parser.select("#documents")), 0)
-
-
-
-
-
