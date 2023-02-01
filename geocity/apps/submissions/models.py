@@ -291,10 +291,10 @@ class Submission(models.Model):
         verbose_name_plural = _("2.2 Consultation des demandes")
         permissions = [
             ("read_submission", _("Consulter les demandes")),
-            ("amend_submission", _("Traiter les demandes de permis")),
-            ("validate_submission", _("Valider les demandes de permis")),
-            ("classify_submission", _("Classer les demandes de permis")),
-            ("edit_submission", _("Éditer les demandes de permis")),
+            ("amend_submission", _("Traiter les demandes")),
+            ("validate_submission", _("Valider les demandes")),
+            ("classify_submission", _("Classer les demandes")),
+            ("edit_submission", _("Éditer les demandes")),
             ("view_private_submission", _("Voir les demandes restreintes")),
             ("can_refund_transactions", _("Rembourser une transaction")),
             ("can_revert_refund_transactions", _("Revenir sur un remboursement")),
