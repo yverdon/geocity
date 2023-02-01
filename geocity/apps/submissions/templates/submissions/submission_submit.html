@@ -2,6 +2,13 @@
 {% load bootstrap4 %}
 {% load i18n %}
 {% load submissions_extras %}
+{% load static %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static 'libs/js/jquery-ui-custom/jquery-ui.min.css' %}">
+{% endblock %}
+
 
 {% block content %}
   {% submission_progressbar steps StepType.SUBMIT %}
