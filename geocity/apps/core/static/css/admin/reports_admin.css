@@ -10,7 +10,7 @@
   visibility: hidden;
 }
 
-.polymorphic-jazzmin .dynamic-sections {
+.polymorphic-jazzmin .dynamic-sections, .dynamic-styles {
   border-bottom: 1px solid var(--gray);
 }
 

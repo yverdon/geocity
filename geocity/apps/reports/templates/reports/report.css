@@ -84,9 +84,7 @@ td, th {
   {% endif %}
   background-size: {{report.layout.width}}mm {{report.layout.height}}mm;
   background-position: -{{report.layout.margin_left}}mm -{{report.layout.margin_top}}mm;
-}
 
-body {
-  font-family: "{{report.layout.font}}";
-  font-size: 12px;
+  font-family: "{{report.layout.font_family}}";
+  font-size: {{report.layout.font_size}}px;
 }

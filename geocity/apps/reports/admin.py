@@ -15,7 +15,8 @@ from .models import Report, ReportLayout, Section, Style
 class ReportLayoutAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_display = [
         "name",
-        "font",
+        "font_family",
+        "font_size",
         "background",
         "integrator",
     ]

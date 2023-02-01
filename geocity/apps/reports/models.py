@@ -30,11 +30,11 @@ class ReportLayout(models.Model):
     name = models.CharField(_("Nom"), max_length=150)
     width = models.PositiveIntegerField(_("Largeur"), default=210)
     height = models.PositiveIntegerField(_("Hauteur"), default=297)
-    margin_top = models.PositiveIntegerField(_("Marge: haut"), default=10)
+    margin_top = models.PositiveIntegerField(_("Marge: haut"), default=25)
     margin_right = models.PositiveIntegerField(_("Marge: droite"), default=10)
-    margin_bottom = models.PositiveIntegerField(_("Marge: bas"), default=10)
+    margin_bottom = models.PositiveIntegerField(_("Marge: bas"), default=15)
     margin_left = models.PositiveIntegerField(_("Marge: gauche"), default=10)
-    font = models.CharField(
+    font_family = models.CharField(
         _("Police"),
         max_length=1024,
         blank=True,
@@ -42,6 +42,11 @@ class ReportLayout(models.Model):
         help_text=_(
             'La liste des polices disponibles est visible sur <a href="https://fonts.google.com/" target="_blank">Google Fonts</a>'
         ),
+    )
+    font_size = models.PositiveIntegerField(
+        _("Taille de la police"),
+        default=12,
+        help_text=_("Taille de la police (en pixels). S'applique a tout le document"),
     )
 
     class Meta:
@@ -439,6 +444,14 @@ class Style(PolymorphicModel):
         max_length=255,
     )
 
+    font_size = models.PositiveIntegerField(
+        _("Taille de la police"),
+        default=10,
+        help_text=_(
+            "Taille de la police (en pixels). S'applique seulement à l'emplacement sélectionné"
+        ),
+    )
+
     def prepare_context(self, request, base_context):
         """Subclass this to add elements to the context (make sure to return a copy if you change it)"""
         return {
@@ -470,13 +483,10 @@ class StyleDateTime(Style):
 
 
 class StyleParagraph(Style):
-    content = RichTextField(
+    content = models.TextField(
         _("Contenu"),
-        help_text=(
-            _(
-                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}`, celles du formulaire dans `{{form_data}}`, celles des transactions dans `{{transaction_data}}`.'
-            )
-        ),
+        help_text=_("Texte à afficher"),
+        max_length=1024,
     )
 
     class Meta:
@@ -494,8 +504,13 @@ class StyleParagraph(Style):
 
         env = SandboxedEnvironment()
         rendered_html = env.from_string(self.content).render(inner_context)
-        result = BeautifulSoup(mark_safe(rendered_html))
-        return result.get_text()
+        result = (
+            BeautifulSoup(mark_safe(rendered_html))
+            .get_text()
+            .replace("\r", " \A ")
+            .replace("\n", " \A ")
+        )
+        return result
 
     def prepare_context(self, request, base_context):
         # Return updated context
@@ -508,11 +523,17 @@ class StyleParagraph(Style):
 class StyleLogo(Style):
     logo = BackgroundFileField(
         _("Logo"),
-        null=True,
-        blank=True,
         upload_to="backgound_paper",
         help_text=_("Image pour logo (PNG)."),
         validators=[FileExtensionValidator(allowed_extensions=["png"])],
+    )
+
+    height = models.PositiveIntegerField(
+        _("Hauteur"),
+        default=60,
+        help_text=_(
+            "Défini la taille de l'image en %. Choisir un nombre compris entre 0 et 100"
+        ),
     )
 
     class Meta:
