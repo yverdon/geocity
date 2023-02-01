@@ -2565,19 +2565,24 @@ class OnlinePaymentTestCase(LoggedInUserMixin, TestCase):
 
         self.parent_type.form.requires_payment = False
         self.parent_type.form.requires_online_payment = True
+        self.parent_type.form.has_geometry_point = False
+        self.parent_type.form.has_geometry_line = False
+        self.parent_type.form.has_geometry_polygon = False
+        self.parent_type.form.needs_date = False
         self.parent_type.form.save()
+
         entity.forms.set([self.parent_type.form])
 
     def _add_fields_to_form(self):
         list_single_field = factories.FieldFactory(
             input_type=submissions_models.Field.INPUT_TYPE_LIST_SINGLE,
             choices="foo\nbar",
-            is_mandatory=True,
+            is_mandatory=False,
         )
         list_multiple_field = factories.FieldFactory(
             input_type=submissions_models.Field.INPUT_TYPE_LIST_MULTIPLE,
             choices="foo\nbar",
-            is_mandatory=True,
+            is_mandatory=False,
         )
         for field in [list_single_field, list_multiple_field]:
             field.forms.set([self.parent_type.form])
@@ -2636,7 +2641,6 @@ class OnlinePaymentTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"submission_id": submission.pk},
             )
         )
-        open("output.html", "wb").write(response.content)
 
         assert "Vous devez choisir un tarif" in response.content.decode()
 
