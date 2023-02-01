@@ -18,15 +18,15 @@
   <form method="post">
     {% csrf_token %}
     {{ formset.management_form }}
-    <br>
+    <h3>{{ config.ACTORS_STEP }}</h3>
+    <hr>
+    {% directives_and_legal_cta submission %}
     {% if requires_payment %}
       <h4>Adresse de facturation si différente de celle de l'auteur ({{ userprofile.first_name }} {{ userprofile.last_name }})</h4>
       {% bootstrap_form creditorform layout='horizontal' %}
+      <hr>
     {% endif %}
-    <hr>
-    {% directives_and_legal_cta submission %}
-    <br><br>
-    <h3>{{ config.ACTORS_STEP }}</h3>
+    <h4>Contacts</h4>
     <div id="forms-container">
         {% for form in formset %}
             <input id="self_contact_{{ forloop.counter }}" type="checkbox" onclick="update_form_value( '{{ forloop.counter0 }}', {{ userprofile }} )" />
