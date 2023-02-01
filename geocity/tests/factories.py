@@ -195,6 +195,31 @@ class SecretariatGroupFactory(GroupFactory):
             self.permissions.add(permission)
 
 
+class ReadonlyGroupFactory(GroupFactory):
+    department = factory.RelatedFactory(PermitDepartmentFactory, "group")
+
+    @factory.post_generation
+    def permissions(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if not extracted:
+            submission_ct = ContentType.objects.get_for_model(
+                submissions_models.Submission
+            )
+            extracted = list(
+                Permission.objects.filter(
+                    codename__in=[
+                        "read_submission",
+                    ],
+                    content_type=submission_ct,
+                )
+            )
+
+        for permission in extracted:
+            self.permissions.add(permission)
+
+
 class ValidatorGroupFactory(GroupFactory):
     department = factory.RelatedFactory(PermitDepartmentFactory, "group")
 
@@ -254,6 +279,19 @@ class SecretariatUserFactory(UserFactory):
 
         if not extracted:
             extracted = [SecretariatGroupFactory()]
+
+        for group in extracted:
+            self.groups.add(group)
+
+
+class ReadonlyUserFactory(UserFactory):
+    @factory.post_generation
+    def groups(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if not extracted:
+            extracted = [ReadonlyGroupFactory()]
 
         for group in extracted:
             self.groups.add(group)
