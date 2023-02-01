@@ -125,6 +125,9 @@ class UserAdmin(BaseUserAdmin):
         "date_joined",
     )
 
+    class Media:
+        js = ("js/admin/user_admin.js",)
+
     def has_add_permission(self, request):
         return False
 
@@ -358,6 +361,9 @@ class GroupAdminForm(forms.ModelForm):
                 "Pour un rôle intégrateur, ajoutez toutes les permissions disponibles"
             ),
         }
+
+    class Media:
+        js = ("js/admin/group_admin.js",)
 
     def clean_permissions(self):
         permissions = self.cleaned_data["permissions"]
