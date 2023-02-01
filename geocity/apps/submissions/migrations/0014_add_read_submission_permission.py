@@ -6,12 +6,25 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('submissions', '0013_alter_complementarydocumenttype_integrator_and_more'),
+        ("submissions", "0013_alter_complementarydocumenttype_integrator_and_more"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='submission',
-            options={'permissions': [('read_submission', 'Consulter les demandes'), ('amend_submission', 'Traiter les demandes de permis'), ('validate_submission', 'Valider les demandes de permis'), ('classify_submission', 'Classer les demandes de permis'), ('edit_submission', 'Éditer les demandes de permis'), ('view_private_submission', 'Voir les demandes restreintes'), ('can_refund_transactions', 'Rembourser une transaction'), ('can_revert_refund_transactions', 'Revenir sur un remboursement')], 'verbose_name': '2.2 Consultation de la demande', 'verbose_name_plural': '2.2 Consultation des demandes'},
+            name="submission",
+            options={
+                "permissions": [
+                    ("read_submission", "Consulter les demandes"),
+                    ("amend_submission", "Traiter les demandes de permis"),
+                    ("validate_submission", "Valider les demandes de permis"),
+                    ("classify_submission", "Classer les demandes de permis"),
+                    ("edit_submission", "Éditer les demandes de permis"),
+                    ("view_private_submission", "Voir les demandes restreintes"),
+                    ("can_refund_transactions", "Rembourser une transaction"),
+                    ("can_revert_refund_transactions", "Revenir sur un remboursement"),
+                ],
+                "verbose_name": "2.2 Consultation de la demande",
+                "verbose_name_plural": "2.2 Consultation des demandes",
+            },
         ),
     ]
