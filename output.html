@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Geocity</title>
+    
+    
+    
+    
+    <link crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" rel="stylesheet">
+    <script crossorigin="anonymous" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script crossorigin="anonymous" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+      <script src="https://use.fontawesome.com/006d51a83c.js"></script>
+      <script
+        type="text/javascript"
+        src="/static/django_tables2_column_shifter/js/django_tables2_column_shifter.min.js">
+      </script>
+      <script src="/static/js/search.js"></script>
+    
+    
+      <link rel="stylesheet" type="text/css" href="/static/css/main.css">
+    
+    <link rel="icon" href="/static/images/favicon.ico" type="image/svg" sizes="16x16">
+    <style>
+      :root {
+      --background-color: #FFFFFF;
+      --primary-color: #008c6f;
+      --secondary-color: #01755d;
+      --text-color: #000000;
+      --title-color: #000000;
+      --table-color: #212529;
+      --login-background-color:#FFFFFF;
+      }
+    </style>
+  </head>
+
+  <body class="d-flex flex-column min-vh-100">
+
+    <header class="header_navigation" id="banner">
+      <!-- Navbar -->
+      
+        <nav class="navbar navbar-expand-md navbar-light bg-light mb-4 sticky-top">
+          <div class="navbar-brand d-flex align-items-center">
+              <img src=/static/images/geocity_normal.svg style="vertical-align:baseline" alt="logo" height="16"/>
+          </div>
+
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-toggle" aria-controls="navbar-toggle" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+
+          
+            <div class="collapse navbar-collapse navbar-toggle">
+              <ul class="navbar-nav mr-auto">
+                <li class="nav-item d-flex align-items-center">
+                    <a href="/submissions/" role="button">
+                      <i class="fa fa-list-ul" aria-hidden="true"></i>
+                      Mes demandes
+                    </a>
+                </li>
+                
+                
+                  
+                    <li class="nav-item d-flex align-items-center">
+                      <a href="https://geocity.ch/app" target="_blank" rel="noreferrer" role="button">
+                        <i class="fa fa-calendar aria-hidden="true"></i>
+                        Calendrier
+                      </a>
+                    </li>
+                  
+
+                  
+              </ul>
+              <ul class="navbar-nav ml-auto">
+                <li class="nav-item d-flex align-items-center">
+                  <div class="global-search-form-container">
+                    <form  class="navbar-form navbar-right" method="get" action="/submissions/search/" id="global-search-form">
+                      <input data-role="search-input" placeholder="Recherche…" type="text" name="search" class="w-100 search-input form-control" autocomplete="off">
+                      <div data-role="search-results" class="search-results-container"></div>
+                    </form>
+                  </div>
+                </li>
+                <li class="nav-item d-flex align-items-center" title="Imprimer cette page">
+                  <a href="javascript:window.print()" class="text-secondary" role="button">
+                    <i class="fa fa-print" aria-hidden="true"></i>&nbsp;Imprimer
+                  </a>
+                </li>
+                <li class="nav-item d-flex align-items-center login-navbar-desktop">
+                    <a class="nav-link dropdown-toggle ml-auto" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <i class="fa fa-user"></i>
+                      <b>tcooper</b>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
+                      
+                      <a class="dropdown-item" href="/profile/edit/">Gérer mon compte</a>
+                      
+                      
+                      <a class="dropdown-item" href="/account/password_change/">Modifier mon mot de passe</a>
+                      
+                      <div class="dropdown-divider"></div>
+                      <form method="post" action="/account/logout/">
+                        <input type="hidden" name="csrfmiddlewaretoken" value="2Bf81Akk61myuYWPZbqMYhp52YSCMB4MdNB5P5bnSTq5Av1b1p2H5yG9MFCqAzKG">
+                        <button class="btn dropdown-item">
+                          Me déconnecter
+                        </button>
+                      </form>
+                  </div>
+                </li>
+                <li class="nav-item d-flex align-items-center login-navbar-mobile">
+                   <!-- On mobile -->
+                  <div class="collapse navbar-collapse navbar-toggle" id="navbarNavDropdown">
+                    <ul class="navbar-nav d-flex d-md-none">
+                      
+                      <li class="nav-item">
+                        <a class="nav-link" href="/profile/edit/">Gérer mon compte</a>
+                      </li>
+                      
+                      
+                      <li class="nav-item">
+                        <a class="nav-link" href="/account/password_change/">Modifier mon mot de passe</a>
+                      </li>
+                      
+                      <div class="dropdown-divider"></div>
+                      <li class="nav-item">
+                        <form method="post" action="/account/logout/">
+                          <input type="hidden" name="csrfmiddlewaretoken" value="2Bf81Akk61myuYWPZbqMYhp52YSCMB4MdNB5P5bnSTq5Av1b1p2H5yG9MFCqAzKG">
+                          <button class="btn btn-block text-left nav-link">
+                            Me déconnecter
+                          </button>
+                        </form>
+                      </li>
+                    </ul>
+                  </div>
+                </li>
+
+              </ul>
+            </div>
+          
+
+        </nav>
+
+      
+    </header>
+
+      
+
+      <div class="container mb-0 px-3 px-md-0">
+        
+  
+
+
+  <ul class="progress-nav mb-4">
+    
+      <li class="progress-nav-item
+        
+        progress-nav-item-enabled
+        progress-nav-item-done
+        
+        ">
+        
+          <a class="progress-nav-link" href="/submissions/971/administrative-entity/">
+        
+
+        <div class="circle">
+          
+          <div class="circle-inner">
+            1
+          </div>
+        </div>
+        <br>
+
+        
+        <span class="step-name">
+          Entité
+        </span>
+
+        
+          </a>
+        
+      </li>
+    
+      <li class="progress-nav-item
+        
+        progress-nav-item-enabled
+        
+        progress-nav-item-partial
+        ">
+        
+          <a class="progress-nav-link" href="/submissions/971/properties/">
+        
+
+        <div class="circle">
+          <div class="pill">2</div>
+          <div class="circle-inner">
+            2
+          </div>
+        </div>
+        <br>
+
+        
+        <span class="step-name">
+          Détails
+        </span>
+
+        
+          </a>
+        
+      </li>
+    
+      <li class="progress-nav-item
+        
+        progress-nav-item-enabled
+        
+        progress-nav-item-partial
+        ">
+        
+          <a class="progress-nav-link" href="/submissions/971/geotime/">
+        
+
+        <div class="circle">
+          <div class="pill">1</div>
+          <div class="circle-inner">
+            3
+          </div>
+        </div>
+        <br>
+
+        
+        <span class="step-name">
+          Planning et localisation
+        </span>
+
+        
+          </a>
+        
+      </li>
+    
+      <li class="progress-nav-item
+         progress-nav-item-active
+        progress-nav-item-enabled
+        
+        progress-nav-item-partial
+        ">
+        
+          <a class="progress-nav-link" href="/submissions/971/submit/">
+        
+
+        <div class="circle">
+          <div class="pill">3</div>
+          <div class="circle-inner">
+            4
+          </div>
+        </div>
+        <br>
+
+        
+        <span class="step-name">
+          Résumé et envoi
+        </span>
+
+        
+          </a>
+        
+      </li>
+    
+  </ul>
+
+
+  <h3>Résumé et envoi</h3>
+  <hr>
+
+  
+
+
+
+
+
+  
+    <p>
+      Votre demande n'est pas complète mais elle est sauvegardée. Vous pouvez revenir dans l'application ultérieurement afin de la compléter. Une fois toutes les informations saisies, vous pourrez l'envoyer.
+    </p>
+    <p>
+      <a class="btn btn-primary"
+         href="/submissions/971/properties/">Renseigner les informations manquantes</a>
+    </p>
+  
+
+  
+    
+      <div class="alert alert-danger mb-4">
+        <div class="mb-4">
+          Vous devez choisir un tarif à l'étape "Détails"
+          <hr/>
+        </div>
+        <div class="mb-4">
+          <a href="/submissions/971/properties/"
+             class="btn btn-primary">Retour</a>
+        </div>
+      </div>
+    
+  
+  <p>
+    Vous trouvez ci-dessous un récapitulatif de votre saisie.
+  </p>
+  
+  <div class="row">
+    <div class="col">
+      
+
+
+
+<div class="container">
+  <div class="row">
+    <div class="col">
+      
+        <h4 class="workObjectHeader"> blood </h4>
+        <div class="container">
+          <dl class="properties-list">
+            
+              
+                <dt> painting </dt>
+                <dd> - </dd>
+              
+            
+              
+                <dt> than </dt>
+                <dd> - </dd>
+              
+            
+
+            
+          </dl>
+        </div>
+
+        
+      
+    </div>
+  </div>
+
+
+  
+
+  <div class="row">
+    <div class="col">
+      
+    </div>
+  </div>
+
+  
+</div>
+
+    </div>
+  </div>
+  
+
+      </div>
+
+      <div class="container-fluid">
+        
+      </div>
+
+      <footer class="flex-shrink-0 py-2 bg-light text-dark mt-auto">
+        <div class="container text-center">
+          <small>
+            &copy; 2023 Geocity
+            &nbsp;|&nbsp;
+            <a href="https://geocity.ch/about" target="_blank" rel="noreferrer">A propos</a>
+            
+            
+            
+          </small>
+        </div>
+      </footer>
+
+      
+
+
+  </body>
+</html>

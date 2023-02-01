@@ -2263,7 +2263,7 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
         )
 
         contacts = list(submission.contacts.all())
-        self.assertEqual(len(contacts), 1, "Expected 1 actor created")
+        self.assertEqual(len(contacts), 1, "Expected 1 contact created")
         self.assertEqual(contacts[0].first_name, "John")
 
     def test_submission_contact_required_cannot_have_empty_field(self):
@@ -2297,7 +2297,7 @@ class SubmissionActorsTestCase(LoggedInUserMixin, TestCase):
         )
 
         submission.refresh_from_db()
-        # Check that no actor was saved for this submission
+        # Check that no userprofile was saved for this submission
         self.assertEqual(submission.contacts.count(), 0)
         # Check that if form not valid, it does not redirect
         self.assertEqual(response.status_code, 200)
