@@ -50,7 +50,7 @@ class SectionInline(StackedPolymorphicInline):
     ]
 
     class Media:
-        css = {"all": ("css/admin/admin.css",)}
+        css = {"all": ("css/admin/report_admin.css",)}
 
     classes = ["polymorphic-jazzmin"]
 
