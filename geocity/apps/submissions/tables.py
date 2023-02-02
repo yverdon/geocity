@@ -223,6 +223,7 @@ class GenericDepartmentSubmissionsTable(DynamicColumnsTable, GenericSubmissionTa
                 request.user.has_perm("submissions.amend_submission")
                 or request.user.has_perm("submissions.validate_submission")
                 or request.user.has_perm("submissions.modify_submission")
+                or request.user.has_perm("submissions.read_submission")
             )
         }
 
