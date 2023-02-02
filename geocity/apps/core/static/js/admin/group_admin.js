@@ -3,6 +3,5 @@
 
 window.addEventListener('load', function () {
     var selector = document.getElementsByClassName("col-sm-7 field-permissions").item(0);
-    console.log(selector);
     selector.className="col-sm-12";
 })
