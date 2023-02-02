@@ -1,4 +1,4 @@
-// Edit css class for selectors (group and permissions)
+// Edit CSS class for selectors
 // They're by default at col-sm-7 and aren't readable cause the box is too small
 
 window.addEventListener('load', function () {
