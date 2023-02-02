@@ -125,6 +125,10 @@ class UserAdmin(BaseUserAdmin):
         "date_joined",
     )
 
+    class Media:
+        js = ("js/admin/admin.js",)
+        css = {"all": ("css/admin/admin.css",)}
+
     def has_add_permission(self, request):
         return False
 
@@ -359,6 +363,10 @@ class GroupAdminForm(forms.ModelForm):
             ),
         }
 
+    class Media:
+        js = ("js/admin/admin.js",)
+        css = {"all": ("css/admin/admin.css",)}
+
     def clean_permissions(self):
         permissions = self.cleaned_data["permissions"]
         integrator_permissions = get_integrator_permissions()
@@ -564,7 +572,7 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
         css = {
             "all": (
                 "https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css",
-                "css/admin.css",
+                "css/admin/admin.css",
             )
         }
 

@@ -50,7 +50,7 @@ class SectionInline(StackedPolymorphicInline):
     ]
 
     class Media:
-        css = {"all": ("css/admin/reports_admin.css",)}
+        css = {"all": ("css/admin/report_admin.css",)}
 
     classes = ["polymorphic-jazzmin"]
 
@@ -108,6 +108,10 @@ class ReportAdmin(
         "layout",
         "integrator",
     ]
+
+    class Media:
+        js = ("js/admin/admin.js",)
+        css = {"all": ("css/admin/admin.css",)}
 
     # List forms using the report in admin list
     def form_(self, obj):
