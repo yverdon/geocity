@@ -46,7 +46,7 @@ class ReportLayout(models.Model):
     font_size = models.PositiveIntegerField(
         _("Taille de la police"),
         default=12,
-        help_text=_("Taille de la police (en pixels). S'applique a tout le document"),
+        help_text=_("Taille de la police (en pixels). S'applique à tout le document"),
     )
 
     class Meta:
