@@ -100,7 +100,7 @@ class Migration(migrations.Migration):
             name="font_size",
             field=models.PositiveIntegerField(
                 default=12,
-                help_text="Taille de la police (en pixels). S'applique a tout le document",
+                help_text="Taille de la police (en pixels). S'applique à tout le document",
                 verbose_name="Taille de la police",
             ),
         ),
