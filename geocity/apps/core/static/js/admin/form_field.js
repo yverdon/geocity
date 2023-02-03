@@ -51,6 +51,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const servicesToNotifyElement = document.getElementById('id_services_to_notify');
     const servicesToNotifyRowElement = servicesToNotifyElement.closest('.form-group');
     const servicesToNotifyLabelElement = servicesToNotifyRowElement.querySelector('label');
+    const messageForNotifiedServicesElement = document.getElementById('id_message_for_notified_services');
+    const messageForNotifiedServicesRowElement = messageForNotifiedServicesElement.closest('.form-group');
+    const messageForNotifiedServicesLabelElement = messageForNotifiedServicesRowElement.querySelector('label');
 
     const isServicesToNotifyPatternVisible = inputType === 'checkbox';
 
@@ -81,6 +84,9 @@ document.addEventListener('DOMContentLoaded', function() {
     servicesToNotifyElement.removeAttribute('required');
     servicesToNotifyRowElement.classList.add(hiddenClass);
     servicesToNotifyLabelElement.classList.remove(requiredClass);
+    messageForNotifiedServicesElement.removeAttribute('required');
+    messageForNotifiedServicesRowElement.classList.add(hiddenClass);
+    messageForNotifiedServicesLabelElement.classList.remove(requiredClass);
 
     fileElement.removeAttribute('required');
     fileRowElement.classList.add(hiddenClass);
@@ -105,6 +111,9 @@ document.addEventListener('DOMContentLoaded', function() {
       servicesToNotifyElement.setAttribute('required', '');
       servicesToNotifyRowElement.classList.remove(hiddenClass);
       servicesToNotifyLabelElement.classList.add(requiredClass);
+      messageForNotifiedServicesElement.setAttribute('required', '');
+      messageForNotifiedServicesRowElement.classList.remove(hiddenClass);
+      messageForNotifiedServicesLabelElement.classList.add(requiredClass);
     }
     else if (isFileVisible) {
       fileElement.setAttribute('required', '');
