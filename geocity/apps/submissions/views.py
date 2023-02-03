@@ -1762,31 +1762,40 @@ def submission_submit_confirmed(request, submission_id):
     if incomplete_steps:
         raise SuspiciousOperation
 
-    services_to_notify = models.FieldValue.objects.filter(
+    services_to_notify_and_message = models.FieldValue.objects.filter(
         selected_form__submission=submission, value={"val": True}
-    ).values_list("field__services_to_notify", flat=True)
+    ).values_list(
+        "field__services_to_notify", "field__message_for_notified_services", named=True
+    )
 
-    if services_to_notify.exists():
-        mailing_list = []
-        for emails in services_to_notify:
-            emails_addresses = emails.replace("\n", ",").split(",")
+    if services_to_notify_and_message.exists():
+        for notification in services_to_notify_and_message:
+            services_to_notify = notification.field__services_to_notify
+            message_for_notified_services = (
+                notification.field__message_for_notified_services
+                if notification.field__message_for_notified_services
+                else None
+            )
+            mailing_list = []
+            emails_addresses = services_to_notify.replace("\n", ",").split(",")
             mailing_list += [
                 ea.strip()
                 for ea in emails_addresses
                 if services.validate_email(ea.strip())
             ]
-        if mailing_list:
-            data = {
-                "subject": "{} ({})".format(
-                    _("Votre service à été mentionné dans une demande"),
-                    submission.get_forms_names_list(),
-                ),
-                "users_to_notify": set(mailing_list),
-                "template": "submission_submitted_with_mention.txt",
-                "submission": submission,
-                "absolute_uri_func": request.build_absolute_uri,
-            }
-            services.send_email_notification(data)
+            if mailing_list:
+                data = {
+                    "subject": "{} ({})".format(
+                        _("Votre service à été mentionné dans une demande"),
+                        submission.get_forms_names_list(),
+                    ),
+                    "users_to_notify": set(mailing_list),
+                    "template": "submission_submitted_with_mention.txt",
+                    "submission": submission,
+                    "absolute_uri_func": request.build_absolute_uri,
+                    "message_for_notified_services": message_for_notified_services,
+                }
+                services.send_email_notification(data)
 
     # Only submit request when it's editable by author, to prevent a "raise SuspiciousOperation"
     # When editing a submission, submit isn't required to save the modifications, as every view saves the updates

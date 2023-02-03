@@ -199,6 +199,7 @@ def send_email_notification(data, attachments=None):
             "administrative_entity": data["submission"].administrative_entity,
             "name": data["submission"].author.get_full_name(),
             "submission": data["submission"],
+            "message_for_notified_services": data.get("message_for_notified_services"),
         },
         attachments=attachments,
     )
