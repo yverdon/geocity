@@ -8,12 +8,22 @@
     {% if request_data.properties.submission_fields %}
         <div class="flex_container" style="padding-top: {{section.padding_top}}px;">
             <div class="flex_item-100">
-                {% for form, fields in request_data.properties.submission_fields.items %}
+                {% if {{section.show_form_name}} %}
                     <h3>{{form}}</h3>
-                    {% for key, field in fields.items %}
-                        <span class="bold">{{key}} : </span>{{field}}<br>
+                {% endif %}
+                {% if {{section.style}} == 0 %}
+                    {% for form, fields in request_data.properties.submission_fields.items %}
+                        {% for key, field in fields.items %}
+                            <span class="bold">{{key}} : </span>{{field}}<br>
+                        {% endfor %}
                     {% endfor %}
-                {% endfor %}
+                {% elif  {{section.style}} == 1 %}
+                    {% for key, field in fields.items %}
+                        <div class="flex_item-40"><span class="bold">{{key}}</span>{{field}}</div>
+                        <div class="flex_item-60">{{field}}</div>
+                    {% endfor %}
+                {% endif %}
+
             </div>
         </div>
     {% else %}

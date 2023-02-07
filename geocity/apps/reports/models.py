@@ -466,6 +466,14 @@ class SectionAuthor(Section):
 
 
 class SectionDetail(Section):
+    STYLE_0 = 0
+    STYLE_1 = 1
+
+    STYLES = (
+        (STYLE_0, _("champ: valeur")),
+        (STYLE_1, _("champ    valeur")),
+    )
+
     title = models.CharField(
         _("Titre"), default="Propriété·s de la demande", blank=True, max_length=2000
     )
@@ -477,6 +485,19 @@ class SectionDetail(Section):
         help_text=_(
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
         ),
+    )
+    show_form_name = models.BooleanField(
+        _("Afficher le nom du formulaire"),
+        default=True,
+        help_text=_(
+            "Cocher cette option affiche le nom du formulaire (objet et type de demande)"
+        ),
+    )
+    style = models.PositiveSmallIntegerField(
+        _("Page"),
+        choices=STYLES,
+        default=STYLE_0,
+        help_text=_("Choisir le style d'affichage"),
     )
 
     class Meta:
