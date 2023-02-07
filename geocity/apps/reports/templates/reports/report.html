@@ -10,6 +10,12 @@
       @page{
         {% for rendered_style in rendered_styles %}{{rendered_style}}{% endfor %}
       }
+      @page :first{
+        {% for rendered_style_first_page in rendered_styles_first_page %}{{rendered_style_first_page}}{% endfor %}
+      }
+      @page :not(:first){
+        {% for rendered_style_not_first_page in rendered_styles_not_first_page %}{{rendered_style_not_first_page}}{% endfor %}
+      }
     </style>
 
     {% if report.layout.font %}

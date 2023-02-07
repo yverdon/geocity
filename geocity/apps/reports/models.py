@@ -603,10 +603,25 @@ class Style(PolymorphicModel):
         TOP_RIGHT = "@top-right", _("En-tête - Droite")
         TOP_RIGHT_CORNER = "@top-right-corner", _("En-tête - Coin Droite")
 
+    ALL_PAGES = 0
+    FIRST_PAGE = 1
+    NOT_FIRST_PAGE = 2
+
+    PAGES = (
+        (ALL_PAGES, _("Toutes les pages")),
+        (FIRST_PAGE, _("Première page")),
+        (NOT_FIRST_PAGE, _("Toutes sauf la première page")),
+    )
+
     report = models.ForeignKey(
         Report, on_delete=NON_POLYMORPHIC_CASCADE, related_name="styles"
     )
-
+    page = models.PositiveSmallIntegerField(
+        _("Page"),
+        choices=PAGES,
+        default=ALL_PAGES,
+        help_text=_("Choix des pages auxquelles doit s'appliquer le style"),
+    )
     location = models.CharField(
         _("Emplacement"),
         choices=Location.choices,

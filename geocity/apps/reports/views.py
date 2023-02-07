@@ -69,16 +69,31 @@ def report_content(request, submission_id, form_id, report_id, **kwargs):
 
     # Render all styles
     rendered_styles = []
-    for style in report.styles.all():
+    for style in report.styles.all().filter(page=0):
         template = f"reports/styles/{style.__class__.__name__.lower()}.html"
         style_context = style.prepare_context(request, base_section_context)
         rendered_styles.append(render_to_string(template, style_context))
+
+    rendered_styles_first_page = []
+    for style in report.styles.all().filter(page=1):
+        template = f"reports/styles/{style.__class__.__name__.lower()}.html"
+        style_context = style.prepare_context(request, base_section_context)
+        rendered_styles_first_page.append(render_to_string(template, style_context))
+
+    rendered_styles_not_first_page = []
+    for style in report.styles.all().filter(page=2):
+        template = f"reports/styles/{style.__class__.__name__.lower()}.html"
+        style_context = style.prepare_context(request, base_section_context)
+        rendered_styles_not_first_page.append(render_to_string(template, style_context))
+
     # Render the report
     context = {
         **base_section_context,
         "report": report,
         "rendered_sections": rendered_sections,
         "rendered_styles": rendered_styles,
+        "rendered_styles_first_page": rendered_styles_first_page,
+        "rendered_styles_not_first_page": rendered_styles_not_first_page,
     }
     return render(request, "reports/report.html", context)
 

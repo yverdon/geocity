@@ -1,5 +1,7 @@
 <div class="section {{section.css_class}}">
-  <div class="title {{section.title_size}}">{% block title %}{% endblock title %}</div>
+  {% if section.title %}
+    <div class="title {{section.title_size}}">{% block title %}{% endblock title %}</div>
+  {% endif %}
   {% block content %}
   {% endblock content %}
 </div>
