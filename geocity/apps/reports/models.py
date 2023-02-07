@@ -494,7 +494,7 @@ class SectionDetail(Section):
         ),
     )
     style = models.PositiveSmallIntegerField(
-        _("Page"),
+        _("Style"),
         choices=STYLES,
         default=STYLE_0,
         help_text=_("Choisir le style d'affichage"),
