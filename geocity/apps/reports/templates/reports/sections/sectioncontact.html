@@ -1,7 +1,10 @@
 {% extends "reports/sections/_section.html" %}
 
+{% block title %}
+    {{section.title}}
+{% endblock %}
+
 {% block content %}
-    <h2>Contact·s</h2>
     {% if request_data.properties.contacts %}
         <div class="flex_container">
             {% for type, contact in request_data.properties.contacts.items %}

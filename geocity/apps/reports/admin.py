@@ -16,7 +16,8 @@ class ReportLayoutAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     list_display = [
         "name",
         "font_family",
-        "font_size",
+        "font_size_section",
+        "font_size_style",
         "background",
         "integrator",
     ]

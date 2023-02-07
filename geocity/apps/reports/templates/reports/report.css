@@ -43,8 +43,18 @@ td, th {
   width: 100%;
 }
 
+.flex_item-40 {
+  width:38%;
+  padding-bottom: 20px;
+}
+
 .flex_item-50 {
   width:48%;
+  padding-bottom: 20px;
+}
+
+.flex_item-60 {
+  width:58%;
   padding-bottom: 20px;
 }
 
@@ -69,6 +79,67 @@ td, th {
   width: 100%;
 }
 
+/* based on https://www.w3schools.com/tags/tag_hn.asp */
+.h1 {
+  display: block;
+  font-size: 2em;
+  margin-top: 0.67em;
+  margin-bottom: 0.67em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
+}
+
+.h2 {
+  display: block;
+  font-size: 1.5em;
+  margin-top: 0.83em;
+  margin-bottom: 0.83em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
+}
+
+.h3 {
+  display: block;
+  font-size: 1.17em;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
+}
+
+.h4 {
+  display: block;
+  font-size: 1em;
+  margin-top: 1.33em;
+  margin-bottom: 1.33em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
+}
+
+.h5 {
+  display: block;
+  font-size: .83em;
+  margin-top: 1.67em;
+  margin-bottom: 1.67em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
+}
+
+.h6 {
+  display: block;
+  font-size: .67em;
+  margin-top: 2.33em;
+  margin-bottom: 2.33em;
+  margin-left: 0;
+  margin-right: 0;
+  font-weight: bold;
+}
+
 /* Overrides from the layout */
 @page {
   /* page size */
@@ -86,5 +157,5 @@ td, th {
   background-position: -{{report.layout.margin_left}}mm -{{report.layout.margin_top}}mm;
 
   font-family: "{{report.layout.font_family}}";
-  font-size: {{report.layout.font_size}}px;
+  font-size: {{report.layout.font_size_section}}px;
 }

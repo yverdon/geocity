@@ -1,0 +1,19 @@
+{% extends "reports/sections/_section.html" %}
+
+{% block content %}
+    <div class="flex_container" style="padding-top: {{section.padding_top}}px;">
+        <div class="flex_item-60">
+        </div>
+        <div class="flex_item-40" style="text-align: left;">
+            {% if section.is_recommended %}
+                <span class="bold">RECOMMANDEE</span><br>
+            {% endif %}
+            {% if submission.author.userprofile.company_name %}
+                {{submission.author.userprofile.company_name}}<br>
+            {% endif %}
+            {{submission.author.last_name}} {{submission.author.first_name}}<br>
+            {{submission.author.userprofile.address}}<br>
+            {{submission.author.userprofile.zipcode}} {{submission.author.userprofile.city}}
+        </div>
+    </div>
+{% endblock %}

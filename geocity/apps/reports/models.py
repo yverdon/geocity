@@ -31,9 +31,9 @@ class ReportLayout(models.Model):
     width = models.PositiveIntegerField(_("Largeur"), default=210)
     height = models.PositiveIntegerField(_("Hauteur"), default=297)
     margin_top = models.PositiveIntegerField(_("Marge: haut"), default=25)
-    margin_right = models.PositiveIntegerField(_("Marge: droite"), default=10)
+    margin_right = models.PositiveIntegerField(_("Marge: droite"), default=15)
     margin_bottom = models.PositiveIntegerField(_("Marge: bas"), default=15)
-    margin_left = models.PositiveIntegerField(_("Marge: gauche"), default=10)
+    margin_left = models.PositiveIntegerField(_("Marge: gauche"), default=15)
     font_family = models.CharField(
         _("Police"),
         max_length=1024,
@@ -43,10 +43,19 @@ class ReportLayout(models.Model):
             'La liste des polices disponibles est visible sur <a href="https://fonts.google.com/" target="_blank">Google Fonts</a>'
         ),
     )
-    font_size = models.PositiveIntegerField(
-        _("Taille de la police"),
+    font_size_section = models.PositiveIntegerField(
+        _("Taille de la police des paragraphes"),
         default=12,
-        help_text=_("Taille de la police (en pixels). S'applique à tout le document"),
+        help_text=_(
+            "Taille de la police (en pixels). S'applique à tous les paragraphes"
+        ),
+    )
+    font_size_style = models.PositiveIntegerField(
+        _("Taille de la police des style"),
+        default=11,
+        help_text=_(
+            "Taille de la police (en pixels). S'applique à tous les style (en-tête, pied de page et bordures)"
+        ),
     )
 
     class Meta:
@@ -59,7 +68,7 @@ class ReportLayout(models.Model):
         blank=True,
         upload_to="backgound_paper",
         help_text=_("Image d'arrière plan (PNG)."),
-        validators=[FileExtensionValidator(allowed_extensions=["png"])],
+        validators=[FileExtensionValidator(allowed_extensions=["svg", "png"])],
     )
     integrator = models.ForeignKey(
         Group,
@@ -127,10 +136,10 @@ class Report(models.Model):
 
         layout, created = ReportLayout.objects.get_or_create(
             name=name,
-            margin_top=30,
-            margin_right=10,
-            margin_bottom=20,
-            margin_left=22,
+            margin_top=25,
+            margin_right=15,
+            margin_bottom=15,
+            margin_left=15,
             integrator=administrative_entity.integrator,
         )
 
@@ -193,6 +202,15 @@ def NON_POLYMORPHIC_CASCADE(collector, field, sub_objs, using):
     return models.CASCADE(collector, field, sub_objs.non_polymorphic(), using)
 
 
+class heading(models.TextChoices):
+    H1 = "h1", _("h1")
+    H2 = "h2", _("h2")
+    H3 = "h3", _("h3")
+    H4 = "h4", _("h4")
+    H5 = "h5", _("h5")
+    H6 = "h6", _("h6")
+
+
 class Section(PolymorphicModel):
     class Meta:
         verbose_name = _("Paragraphe")
@@ -221,6 +239,18 @@ class Section(PolymorphicModel):
 
 
 class SectionMap(Section):
+    title = models.CharField(
+        _("Titre"), default="Localisation·s", blank=True, max_length=2000
+    )
+    title_size = models.CharField(
+        _("Taille des titres"),
+        choices=heading.choices,
+        default=heading.H2,
+        max_length=255,
+        help_text=_(
+            "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
+        ),
+    )
     qgis_project_file = AdministrativeEntityFileField(
         _("Projet QGIS '*.qgs'"),
         validators=[FileExtensionValidator(allowed_extensions=["qgs"])],
@@ -300,6 +330,15 @@ class SectionMap(Section):
 
 class SectionParagraph(Section):
     title = models.CharField(_("Titre"), default="", blank=True, max_length=2000)
+    title_size = models.CharField(
+        _("Taille des titres"),
+        choices=heading.choices,
+        default=heading.H2,
+        max_length=255,
+        help_text=_(
+            "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
+        ),
+    )
     content = RichTextField(
         _("Contenu"),
         help_text=(
@@ -336,6 +375,15 @@ class SectionParagraph(Section):
 
 class SectionParagraphRight(Section):
     title = models.CharField(_("Titre"), default="", blank=True, max_length=2000)
+    title_size = models.CharField(
+        _("Taille des titres"),
+        choices=heading.choices,
+        default=heading.H2,
+        max_length=255,
+        help_text=_(
+            "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
+        ),
+    )
     content = RichTextField(
         _("Contenu"),
         help_text=(
@@ -370,21 +418,73 @@ class SectionParagraphRight(Section):
 
 
 class SectionContact(Section):
+    title = models.CharField(
+        _("Titre"), default="Contact·s", blank=True, max_length=2000
+    )
+    title_size = models.CharField(
+        _("Taille des titres"),
+        choices=heading.choices,
+        default=heading.H2,
+        max_length=255,
+        help_text=_(
+            "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
+        ),
+    )
+
     class Meta:
         verbose_name = _("Contact·s")
 
 
 class SectionAuthor(Section):
+    title = models.CharField(
+        _("Titre"), default="Auteur·e de la demande", blank=True, max_length=2000
+    )
+    title_size = models.CharField(
+        _("Taille des titres"),
+        choices=heading.choices,
+        default=heading.H2,
+        max_length=255,
+        help_text=_(
+            "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
+        ),
+    )
+
     class Meta:
         verbose_name = _("Auteur")
 
 
 class SectionDetail(Section):
+    title = models.CharField(
+        _("Titre"), default="Propriété·s de la demande", blank=True, max_length=2000
+    )
+    title_size = models.CharField(
+        _("Taille des titres"),
+        choices=heading.choices,
+        default=heading.H2,
+        max_length=255,
+        help_text=_(
+            "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
+        ),
+    )
+
     class Meta:
         verbose_name = _("Détail·s")
 
 
 class SectionPlanning(Section):
+    title = models.CharField(
+        _("Titre"), default="Planning", blank=True, max_length=2000
+    )
+    title_size = models.CharField(
+        _("Taille des titres"),
+        choices=heading.choices,
+        default=heading.H2,
+        max_length=255,
+        help_text=_(
+            "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
+        ),
+    )
+
     class Meta:
         verbose_name = _("Planning")
 
@@ -395,23 +495,93 @@ class SectionHorizontalRule(Section):
 
 
 class SectionValidation(Section):
+    title = models.CharField(
+        _("Titre"), default="Commentaire·s des services", blank=True, max_length=2000
+    )
+    title_size = models.CharField(
+        _("Taille des titres"),
+        choices=heading.choices,
+        default=heading.H2,
+        max_length=255,
+        help_text=_(
+            "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
+        ),
+    )
+
     class Meta:
         verbose_name = _("Commentaire·s des services")
 
 
 class SectionAmendProperty(Section):
+    title = models.CharField(
+        _("Titre"), default="Commentaire·s du secrétariat", blank=True, max_length=2000
+    )
+    title_size = models.CharField(
+        _("Taille des titres"),
+        choices=heading.choices,
+        default=heading.H2,
+        max_length=255,
+        help_text=_(
+            "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
+        ),
+    )
+
     class Meta:
         verbose_name = _("Commentaire·s du secrétariat")
 
 
 class SectionStatus(Section):
+    title = models.CharField(
+        _("Titre"), default="Statut de la demande", blank=True, max_length=2000
+    )
+    title_size = models.CharField(
+        _("Taille des titres"),
+        choices=heading.choices,
+        default=heading.H2,
+        max_length=255,
+        help_text=_(
+            "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
+        ),
+    )
+
     class Meta:
         verbose_name = _("Statut")
 
 
 class SectionCreditor(Section):
+    title = models.CharField(
+        _("Titre"), default="Adresse de facturation", blank=True, max_length=2000
+    )
+    title_size = models.CharField(
+        _("Taille des titres"),
+        choices=heading.choices,
+        default=heading.H2,
+        max_length=255,
+        help_text=_(
+            "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
+        ),
+    )
+
     class Meta:
         verbose_name = _("Adresse de facturation")
+
+
+class SectionMailing(Section):
+    is_recommended = models.BooleanField(
+        _("Recommandée"),
+        default=False,
+        help_text=_('Ajoute le texte "RECOMMANDEE" en première ligne'),
+    )
+    padding_top = models.PositiveIntegerField(
+        _("Espace vide au dessus"),
+        default=20,
+        help_text=_(
+            "Espace vide au dessus afin de placer le texte au bon endroit (en pixels). Augmenter la valeur fait descendre le texte"
+        ),
+    )
+
+    class Meta:
+        verbose_name = _("Publipostage")
 
 
 class Style(PolymorphicModel):
@@ -442,14 +612,6 @@ class Style(PolymorphicModel):
         choices=Location.choices,
         default=Location.BOTTOM_CENTER,
         max_length=255,
-    )
-
-    font_size = models.PositiveIntegerField(
-        _("Taille de la police"),
-        default=10,
-        help_text=_(
-            "Taille de la police (en pixels). S'applique seulement à l'emplacement sélectionné"
-        ),
     )
 
     def prepare_context(self, request, base_context):
@@ -525,7 +687,7 @@ class StyleLogo(Style):
         _("Logo"),
         upload_to="backgound_paper",
         help_text=_("Image pour logo (PNG)."),
-        validators=[FileExtensionValidator(allowed_extensions=["png"])],
+        validators=[FileExtensionValidator(allowed_extensions=["svg", "png"])],
     )
 
     height = models.PositiveIntegerField(
