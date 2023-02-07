@@ -326,6 +326,7 @@ class FieldAdminForm(forms.ModelForm):
             "help_text",
             "input_type",
             "services_to_notify",
+            "message_for_notified_services",
             "choices",
             "line_number_for_textarea",
             "regex_pattern",

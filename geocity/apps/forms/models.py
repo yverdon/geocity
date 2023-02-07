@@ -614,6 +614,11 @@ class Field(models.Model):
         blank=True,
         help_text='Veuillez séparer les emails par une virgule ","',
     )
+    message_for_notified_services = models.CharField(
+        _("Message transmis aux services notifiés"),
+        max_length=255,
+        blank=True,
+    )
     file_download = fields.FormFileField(
         _("Fichier"),
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
