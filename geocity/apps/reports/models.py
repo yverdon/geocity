@@ -499,9 +499,22 @@ class SectionDetail(Section):
         default=STYLE_0,
         help_text=_("Choisir le style d'affichage"),
     )
+    undesired_properties = models.CharField(
+        _("Nom de champs a masquer"),
+        max_length=2000,
+        blank=True,
+        null=True,
+        help_text=_(
+            "Liste de champs à masquer, séparés par des points virgules ';' correspondant aux titre des champs (ex: hauteur;largeur)"
+        ),
+    )
 
     class Meta:
         verbose_name = _("Détail·s")
+
+    @property
+    def list_undesired_properties(self):
+        return self.undesired_properties.split(",")
 
 
 class SectionPlanning(Section):

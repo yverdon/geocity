@@ -14,7 +14,9 @@
                 {% if section.style == 0 %}
                     {% for form, fields in request_data.properties.submission_fields.items %}
                         {% for key, field in fields.items %}
-                            <span class="bold">{{key}} : </span>{{field}}<br>
+                            {% if not key in section.undesired_properties %}
+                                <span class="bold">{{key}} : </span>{{field}}<br>
+                            {% endif %}
                         {% endfor %}
                     {% endfor %}
             </div>
@@ -22,8 +24,10 @@
             </div>
                     {% for form, fields in request_data.properties.submission_fields.items %}
                         {% for key, field in fields.items %}
-                            <div class="flex_item-40"><span class="bold">{{key}}</span></div>
-                            <div class="flex_item-60">{{field}}</div>
+                            {% if not key in section.undesired_properties %}
+                                <div class="flex_item-40"><span class="bold">{{key}}</span></div>
+                                <div class="flex_item-60">{{field}}</div>
+                            {% endif %}
                         {% endfor %}
                     {% endfor %}
                 {% endif %}
