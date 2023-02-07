@@ -45,22 +45,18 @@ td, th {
 
 .flex_item-40 {
   width:38%;
-  padding-bottom: 20px;
 }
 
 .flex_item-50 {
   width:48%;
-  padding-bottom: 20px;
 }
 
 .flex_item-60 {
   width:58%;
-  padding-bottom: 20px;
 }
 
 .flex_item-100 {
   width:100%;
-  padding-bottom: 20px;
 }
 
 .section-status {

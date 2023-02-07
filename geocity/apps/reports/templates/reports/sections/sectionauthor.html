@@ -6,7 +6,7 @@
 
 {% block content %}
     {% if submission.author %}
-        <div class="flex_container">
+        <div class="flex_container" style="padding-top: {{section.padding_top}}px;">
             <div class="flex_item-100">
                 <span class="bold">Prénom : </span>{{submission.author.first_name}}<br>
                 <span class="bold">Nom : </span>{{submission.author.last_name}}<br>

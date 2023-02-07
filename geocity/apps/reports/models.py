@@ -221,6 +221,13 @@ class Section(PolymorphicModel):
         Report, on_delete=NON_POLYMORPHIC_CASCADE, related_name="sections"
     )
     order = models.PositiveIntegerField(_("Ordre du paragraphe"), null=True, blank=True)
+    padding_top = models.PositiveIntegerField(
+        _("Espace vide au dessus"),
+        default=0,
+        help_text=_(
+            "Espace vide au dessus afin de placer le texte au bon endroit (en pixels). Augmenter la valeur fait descendre le texte"
+        ),
+    )
     is_new_page = models.BooleanField(
         _("Nouvelle page"),
         default=False,
@@ -572,12 +579,13 @@ class SectionCreditor(Section):
 
 
 class SectionMailing(Section):
+    padding_top = None
     is_recommended = models.BooleanField(
         _("Recommandée"),
         default=False,
         help_text=_('Ajoute le texte "RECOMMANDEE" en première ligne'),
     )
-    padding_top = models.PositiveIntegerField(
+    padding_top_mailing = models.PositiveIntegerField(
         _("Espace vide au dessus"),
         default=20,
         help_text=_(
