@@ -67,7 +67,7 @@ class ReportLayout(models.Model):
         null=True,
         blank=True,
         upload_to="backgound_paper",
-        help_text=_("Image d'arrière plan (PNG)."),
+        help_text=_("Image d'arrière plan (PNG ou SVG)."),
         validators=[FileExtensionValidator(allowed_extensions=["svg", "png"])],
     )
     integrator = models.ForeignKey(
@@ -686,7 +686,7 @@ class StyleLogo(Style):
     logo = BackgroundFileField(
         _("Logo"),
         upload_to="backgound_paper",
-        help_text=_("Image pour logo (PNG)."),
+        help_text=_("Image pour logo (PNG ou SVG)."),
         validators=[FileExtensionValidator(allowed_extensions=["svg", "png"])],
     )
 
