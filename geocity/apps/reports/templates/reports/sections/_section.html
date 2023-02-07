@@ -1,3 +1,6 @@
+{% if section.is_new_page %}
+  <div class="pagebreak"> </div>
+{% endif %}
 <div class="section {{section.css_class}}">
   {% if section.title %}
     <div class="title {{section.title_size}}">{% block title %}{% endblock title %}</div>

@@ -221,6 +221,11 @@ class Section(PolymorphicModel):
         Report, on_delete=NON_POLYMORPHIC_CASCADE, related_name="sections"
     )
     order = models.PositiveIntegerField(_("Ordre du paragraphe"), null=True, blank=True)
+    is_new_page = models.BooleanField(
+        _("Nouvelle page"),
+        default=False,
+        help_text=_("Commencer cette section sur une nouvelle page ?"),
+    )
 
     def prepare_context(self, request, base_context):
         """Subclass this to add elements to the context (make sure to return a copy if you change it)"""
