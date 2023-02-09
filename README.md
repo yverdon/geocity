@@ -30,7 +30,8 @@ Version tag prefix? [v]
 ### New feature
 
 To **start a new feature**:
-    - `git flow feature start feature_branch` *(instead of `git checkout -b feature_branch`)*
+
+- `git flow feature start feature_branch` *(instead of `git checkout -b feature_branch`)*
 
 To **finish a feature**:
 
