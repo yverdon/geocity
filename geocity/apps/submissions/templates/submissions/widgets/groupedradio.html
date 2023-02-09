@@ -5,7 +5,7 @@
       <div class="input-group">
         <input type="radio" name="{{ option.name }}" value="{{option.value}}" id="{{option.attrs.id}}" required="required"
         {% if option.selected %} checked {% endif %} >
-        <label for="{{option.attrs.id}}">{{option.label}}</label>
+        <label for="{{option.attrs.id}}">{{option.label|safe}}</label>
       </div>
     {% endfor %}
     </div>

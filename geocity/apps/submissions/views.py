@@ -1730,12 +1730,17 @@ def submission_submit(request, submission_id):
         and submission.status == models.Submission.STATUS_DRAFT
     )
 
+    has_any_form_with_exceeded_submissions = (
+        submission.has_any_form_with_exceeded_submissions()
+    )
+
     return render(
         request,
         "submissions/submission_submit.html",
         {
             "submission": submission,
             "should_go_to_payment": should_go_to_payment,
+            "has_any_form_with_exceeded_submissions": has_any_form_with_exceeded_submissions,
             "directives": submission.get_submission_directives(),
             "incomplete_steps": incomplete_steps,
             **progress_bar_context(
@@ -1753,6 +1758,13 @@ def submission_submit(request, submission_id):
 def submission_submit_confirmed(request, submission_id):
 
     submission = get_submission_for_edition(request.user, submission_id)
+    if submission.has_any_form_with_exceeded_submissions():
+        messages.add_message(
+            request,
+            messages.ERROR,
+            submission.get_maximum_submissions_message(),
+        )
+        return redirect("submissions:submission_submit", submission_id=submission_id)
 
     incomplete_steps = [
         step.url
@@ -1763,31 +1775,40 @@ def submission_submit_confirmed(request, submission_id):
     if incomplete_steps:
         raise SuspiciousOperation
 
-    services_to_notify = models.FieldValue.objects.filter(
+    services_to_notify_and_message = models.FieldValue.objects.filter(
         selected_form__submission=submission, value={"val": True}
-    ).values_list("field__services_to_notify", flat=True)
+    ).values_list(
+        "field__services_to_notify", "field__message_for_notified_services", named=True
+    )
 
-    if services_to_notify.exists():
-        mailing_list = []
-        for emails in services_to_notify:
-            emails_addresses = emails.replace("\n", ",").split(",")
+    if services_to_notify_and_message.exists():
+        for notification in services_to_notify_and_message:
+            services_to_notify = notification.field__services_to_notify
+            message_for_notified_services = (
+                notification.field__message_for_notified_services
+                if notification.field__message_for_notified_services
+                else None
+            )
+            mailing_list = []
+            emails_addresses = services_to_notify.replace("\n", ",").split(",")
             mailing_list += [
                 ea.strip()
                 for ea in emails_addresses
                 if services.validate_email(ea.strip())
             ]
-        if mailing_list:
-            data = {
-                "subject": "{} ({})".format(
-                    _("Votre service à été mentionné dans une demande"),
-                    submission.get_forms_names_list(),
-                ),
-                "users_to_notify": set(mailing_list),
-                "template": "submission_submitted_with_mention.txt",
-                "submission": submission,
-                "absolute_uri_func": request.build_absolute_uri,
-            }
-            services.send_email_notification(data)
+            if mailing_list:
+                data = {
+                    "subject": "{} ({})".format(
+                        _("Votre service à été mentionné dans une demande"),
+                        submission.get_forms_names_list(),
+                    ),
+                    "users_to_notify": set(mailing_list),
+                    "template": "submission_submitted_with_mention.txt",
+                    "submission": submission,
+                    "absolute_uri_func": request.build_absolute_uri,
+                    "message_for_notified_services": message_for_notified_services,
+                }
+                services.send_email_notification(data)
 
     # Only submit request when it's editable by author, to prevent a "raise SuspiciousOperation"
     # When editing a submission, submit isn't required to save the modifications, as every view saves the updates
@@ -2158,6 +2179,16 @@ class FailTransactionCallback(View):
 class SubmissionPaymentRedirect(View):
     def get(self, request, pk, *args, **kwargs):
         submission = models.Submission.objects.get(pk=pk)
+
+        if submission.has_any_form_with_exceeded_submissions():
+            messages.add_message(
+                request,
+                messages.ERROR,
+                submission.get_maximum_submissions_message(),
+            )
+            return redirect(
+                "submissions:submission_submit", submission_id=submission.pk
+            )
 
         if (
             submission.requires_online_payment()

@@ -183,6 +183,8 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
         "document_enabled",
         "publication_enabled",
         "permanent_publication_enabled",
+        "max_submissions",
+        "max_submissions_message",
     ]
     list_filter = ["administrative_entities"]
     search_fields = [
@@ -201,6 +203,8 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                     "can_always_update",
                     "is_public",
                     "requires_validation_document",
+                    "max_submissions",
+                    "max_submissions_message",
                     "is_anonymous",
                     "integrator",
                 )
@@ -326,6 +330,7 @@ class FieldAdminForm(forms.ModelForm):
             "help_text",
             "input_type",
             "services_to_notify",
+            "message_for_notified_services",
             "choices",
             "line_number_for_textarea",
             "regex_pattern",

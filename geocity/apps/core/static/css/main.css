@@ -147,12 +147,16 @@ input:focus {
 	color: var(--table-color);
 }
 
-.table tr:nth-child(odd) td{
+.table tr:nth-child(odd) td {
   background-color: white;
 }
 
-.table tr:nth-child(even) td{
+.table tr:nth-child(even) td {
   background-color: rgb(245, 245, 245);
+}
+
+.table td {
+  vertical-align: baseline;
 }
 
 .page-item.active .page-link {
@@ -364,16 +368,10 @@ h5 {
   border-style: solid;
 }
 
-.container {
-  padding: 0;
-  padding-bottom: 8px;
-}
-
 #legal-infos {
-  border: 1px solid red;
+  border: 1px solid var(--primary-color);;
   padding: 10px 10px 10px 10px;
   margin-bottom: 10px;
-  border-radius: 5px;
 }
 
 .error-page {

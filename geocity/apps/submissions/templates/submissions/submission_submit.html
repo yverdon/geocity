@@ -2,29 +2,21 @@
 {% load bootstrap4 %}
 {% load i18n %}
 {% load submissions_extras %}
+{% load static %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static 'libs/js/jquery-ui-custom/jquery-ui.min.css' %}">
+{% endblock %}
+
 
 {% block content %}
   {% submission_progressbar steps StepType.SUBMIT %}
   <h3>{% trans "Résumé et envoi" %}</h3>
   <hr>
-  {% if directives %}
-    <div id="legal-infos">
-      {% for directive_file, directive_description, additional_information in directives %}
-        <div{% if not forloop.last %} class="mb-3"{% endif %}>
-          {% if directive_file and directive_description %}
-            <span class="directive_description">{{ directive_description }}</span>:
-            <i class="fa fa-download" aria-hidden="true"></i>
-            <a class="directive_file" href="{{ directive_file.url }}" target="_blank"
-               rel="noreferrer">{% trans "Télécharger la directive" %}</a>
-            <br>
-          {% endif %}
-          {% if additional_information %}
-            <span class="additional_information">{{ additional_information|safe }}</span>
-          {% endif %}
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
+
+  {% directives_and_legal submission %}
+
   {% if incomplete_steps %}
     <p>
       {% blocktrans trimmed %}
@@ -39,7 +31,7 @@
     </p>
   {% endif %}
 
-  {% if should_go_to_payment %}
+  {% if not incomplete_steps and should_go_to_payment %}
     {% if not submission.get_submission_price %}
       <div class="alert alert-danger mb-4">
         <div class="mb-4">
@@ -73,10 +65,17 @@
           {% if previous_step.url %}
             <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
           {% endif %}
-          <a class="btn btn-primary"
-             href="{% url 'submissions:submission_payment_redirect' pk=submission.pk %}" class="mr-2">
+          <a class="btn btn-primary{% if has_any_form_with_exceeded_submissions %} ui-state-disabled{% endif %}"
+           href="{% if has_any_form_with_exceeded_submissions %}#
+{% else %}{% url 'submissions:submission_payment_redirect' pk=submission.pk %}
+{% endif %}" class="mr-2">
             {% trans "Payer maintenant" %}
           </a>
+          {% if has_any_form_with_exceeded_submissions %}
+            <span class="text-danger font-weight-bold mx-2">
+             {{ submission.get_maximum_submissions_message }}
+            </span>
+          {% endif %}
         </div>
       </div>
     {% endif %}
@@ -91,9 +90,16 @@
         {% if previous_step.url %}
           <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
         {% endif %}
-        <a class="btn btn-primary"
-           href="{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}" class="mr-2">
+        <a class="btn btn-primary{% if has_any_form_with_exceeded_submissions %} ui-state-disabled{% endif %}"
+           href="{% if has_any_form_with_exceeded_submissions %}#
+{% else %}{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}
+{% endif %}" class="mr-2">
           {% trans "Envoyer" %}</a>
+          {% if has_any_form_with_exceeded_submissions %}
+            <span class="text-danger font-weight-bold mx-2">
+              {{ submission.get_maximum_submissions_message }}
+            </span>
+          {% endif %}
       {% endbuttons %}
     </form>
   {% endif %}
@@ -109,9 +115,16 @@
         {% if previous_step.url %}
           <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
         {% endif %}
-        <a class="btn btn-primary"
-           href="{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}" class="mr-2">
+        <a class="btn btn-primary{% if has_any_form_with_exceeded_submissions %} ui-state-disabled{% endif %}"
+           href="{% if has_any_form_with_exceeded_submissions %}#
+{% else %}{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}
+{% endif %}" class="mr-2">
           {% trans "Envoyer" %}</a>
+          {% if has_any_form_with_exceeded_submissions %}
+            <span class="text-danger font-weight-bold mx-2">
+              {{ submission.get_maximum_submissions_message }}
+            </span>
+          {% endif %}
       {% endbuttons %}
     </form>
   {% endif %}

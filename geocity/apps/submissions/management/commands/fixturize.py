@@ -935,8 +935,8 @@ class Command(BaseCommand):
             address="Place Pestalozzi 2",
             zipcode=1234,
             city=entity,
-            phone_first="000 00 00 00",
-            phone_second="000 00 00 00",
+            phone_first="012 345 67 89",
+            phone_second="012 345 67 89",
         )
 
     def create_group(self, username):

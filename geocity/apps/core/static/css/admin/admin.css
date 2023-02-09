@@ -6,3 +6,7 @@
 #id_tags {
     width: 758px;
 }
+
+.selector select {
+    overflow-x: auto;
+}

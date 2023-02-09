@@ -119,6 +119,108 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
             1,
         )
 
+    def test_cant_select_exceeded_submissions_single_forms_step(self):
+        submission = factories.SubmissionFactory(
+            author=self.user,
+            administrative_entity__is_single_form_submissions=True,
+        )
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
+
+        self.client.post(
+            reverse(
+                "submissions:submission_select_forms",
+                kwargs={"submission_id": submission.pk},
+            ),
+            data={
+                "forms-selected_forms": forms_models.Form.objects.values_list(
+                    "pk", flat=True
+                )
+            },
+        )
+
+        submission.status = submissions_models.Submission.STATUS_APPROVED
+        submission.save()
+
+        for form in submission.forms.all():
+            form.max_submissions = 1
+            form.save()
+
+        new_submission = factories.SubmissionFactory(
+            author=self.user, administrative_entity=submission.administrative_entity
+        )
+
+        response = self.client.post(
+            reverse(
+                "submissions:submission_select_forms",
+                kwargs={"submission_id": new_submission.pk},
+            ),
+            data={
+                "forms-selected_forms": forms_models.Form.objects.values_list(
+                    "pk", flat=True
+                )
+            },
+        )
+
+        self.assertIn("Ce formulaire est désactivé", response.content.decode())
+
+    def test_form_cant_be_submitted_if_exceeded_submissions_in_between(self):
+        submission = factories.SubmissionGeoTimeFactory(
+            submission=factories.SubmissionFactory(
+                author=self.user,
+                status=submissions_models.Submission.STATUS_DRAFT,
+            )
+        ).submission
+        form = factories.FormFactory()
+        selected_form = factories.SelectedFormFactory(
+            submission=submission,
+            form=form,
+        )
+
+        field = factories.FieldFactory(
+            services_to_notify="test-send-1@geocity.ch, test-send-2@geocity.ch, test-i-am-not-an-email,  ,\n\n\n",
+            input_type=submissions_models.Field.INPUT_TYPE_CHECKBOX,
+        )
+
+        field.forms.set(submission.forms.all())
+        factories.FieldValueFactory(
+            field=field,
+            selected_form=selected_form,
+            value={"val": True},
+        )
+
+        submission.status = submissions_models.Submission.STATUS_APPROVED
+        submission.save()
+
+        for sub_form in submission.forms.all():
+            sub_form.max_submissions = 1
+            sub_form.save()
+
+        new_submission = factories.SubmissionGeoTimeFactory(
+            submission=factories.SubmissionFactory(
+                author=self.user,
+                status=submissions_models.Submission.STATUS_DRAFT,
+                administrative_entity=submission.administrative_entity,
+            )
+        ).submission
+        selected_form = factories.SelectedFormFactory(
+            submission=new_submission,
+            form=form,
+        )
+        factories.FieldValueFactory(
+            field=field,
+            selected_form=selected_form,
+            value={"val": True},
+        )
+
+        response = self.client.get(
+            reverse(
+                "submissions:submission_submit",
+                kwargs={"submission_id": new_submission.pk},
+            )
+        )
+
+        self.assertIn("Ce formulaire est désactivé", response.content.decode())
+
     def test_categories_step_submit_redirects_to_detail_if_logged_as_backoffice(self):
 
         secretary_group = factories.GroupFactory(name="Secrétariat")
@@ -154,6 +256,45 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"submission_id": submission.pk},
             ),
         )
+
+    def test_cant_select_exceeded_submissions_forms_step_submit(self):
+        submission = factories.SubmissionFactory(author=self.user)
+        submission.administrative_entity.forms.set(forms_models.Form.objects.all())
+        self.client.post(
+            reverse(
+                "submissions:submission_select_forms",
+                kwargs={"submission_id": submission.pk},
+            ),
+            data={
+                "forms-selected_forms": forms_models.Form.objects.values_list(
+                    "pk", flat=True
+                )
+            },
+        )
+        submission.status = submissions_models.Submission.STATUS_APPROVED
+        submission.save()
+
+        for form in submission.forms.all():
+            form.max_submissions = 1
+            form.save()
+
+        new_submission = factories.SubmissionFactory(
+            author=self.user, administrative_entity=submission.administrative_entity
+        )
+
+        response = self.client.post(
+            reverse(
+                "submissions:submission_select_forms",
+                kwargs={"submission_id": new_submission.pk},
+            ),
+            data={
+                "forms-selected_forms": forms_models.Form.objects.values_list(
+                    "pk", flat=True
+                )
+            },
+        )
+
+        self.assertIn("Ce formulaire est désactivé", response.content.decode())
 
     def test_categories_step_submit_redirects_to_detail_if_logged_as_integrator_admin(
         self,
@@ -2424,19 +2565,24 @@ class OnlinePaymentTestCase(LoggedInUserMixin, TestCase):
 
         self.parent_type.form.requires_payment = False
         self.parent_type.form.requires_online_payment = True
+        self.parent_type.form.has_geometry_point = False
+        self.parent_type.form.has_geometry_line = False
+        self.parent_type.form.has_geometry_polygon = False
+        self.parent_type.form.needs_date = False
         self.parent_type.form.save()
+
         entity.forms.set([self.parent_type.form])
 
     def _add_fields_to_form(self):
         list_single_field = factories.FieldFactory(
             input_type=submissions_models.Field.INPUT_TYPE_LIST_SINGLE,
             choices="foo\nbar",
-            is_mandatory=True,
+            is_mandatory=False,
         )
         list_multiple_field = factories.FieldFactory(
             input_type=submissions_models.Field.INPUT_TYPE_LIST_MULTIPLE,
             choices="foo\nbar",
-            is_mandatory=True,
+            is_mandatory=False,
         )
         for field in [list_single_field, list_multiple_field]:
             field.forms.set([self.parent_type.form])
@@ -2495,7 +2641,6 @@ class OnlinePaymentTestCase(LoggedInUserMixin, TestCase):
                 kwargs={"submission_id": submission.pk},
             )
         )
-        open("output.html", "wb").write(response.content)
 
         assert "Vous devez choisir un tarif" in response.content.decode()
 

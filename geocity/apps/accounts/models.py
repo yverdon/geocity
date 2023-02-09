@@ -41,10 +41,22 @@ class SiteProfile(models.Model):
         related_name="site_profiles",
         limit_choices_to={"permit_department__is_integrator_admin": True},
     )
+    custom_template = models.ForeignKey(
+        "TemplateCustomization",
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Page de login"),
+    )
 
     class Meta:
-        verbose_name = _("Configuration de l'intégrateur")
-        verbose_name_plural = _("Configuration de l'intégrateur")
+        verbose_name = _(
+            "Paramètres complémentaires (à définir après avoir créé le site)"
+        )
+        verbose_name_plural = _(
+            "Paramètres complémentaires (à définir après avoir créé le site)"
+        )
 
 
 @receiver(post_save, sender=Site)
