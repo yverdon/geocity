@@ -8,6 +8,8 @@
 
 Use [Gitflow](https://www.atlassian.com/fr/git/tutorials/comparing-workflows/gitflow-workflow) to contribute to the project.
 
+### Configuration
+
 The default configuration is used in this project except for "Version tag prefix", check below:
 
 ```bash
@@ -25,17 +27,19 @@ Version tag prefix? [v]
 
 [Here](https://danielkummer.github.io/git-flow-cheatsheet/) is a cheatsheet to use Gitflow.
 
-To **start a new feature** use : `git flow feature start feature_branch` *(instead of `git checkout -b feature_branch`)*
+### New feature
 
-To **finish a feature** there's two options:
+To **start a new feature**:
+    - `git flow feature start feature_branch` *(instead of `git checkout -b feature_branch`)*
 
-1. The feature requires a review *(most of the cases)*
-   - `git flow feature publish feature_branch`
-   - Then create a PR from `feature/feature_branch` into `develop`
-2. The feature doesn't require a review *(small commits)*
-    - `git flow feature finish feature_branch`
+To **finish a feature**:
 
-To **make a release** there's many steps :
+1. `git flow feature publish feature_branch`
+2. Then create a [PR](https://github.com/yverdon/geocity/compare) from `feature/feature_branch` into `develop`
+
+### New release
+
+To **make a release** there's many steps:
 
 1. Develop needs to be up to date
    - `git checkout develop`
@@ -44,29 +48,28 @@ To **make a release** there's many steps :
 2. Create the release
    - `git flow release start x.x.x`
    - `git flow release publish x.x.x`
-   - Create a **draft** pull request to be able to see the differences with main
+   - Create a **draft** pull request to be able to see the differences with `main`
 
 3. Test and fix
-   - `git flow release track x.x.x` (used to track the release if you aren't the owner of it)
+   - `git flow release track x.x.x` *(used to track the release if you aren't the owner of it)*
    - Squash migrations
    - Fix some issues
-   - Change version number if set in any file of the project.
+   - Change version number if set in any file of the project
    - Test on a pre-prod instance
 
-4. Finish the release **once everything is ok**
+4. Finish the release **once everything is okay**
    - `git flow release finish x.x.x`
    - Vim will open with some text, write a comment or uncomment the version number. **A modification is necessary**
    - `git push origin --tags`
 
-5. Verify everything is ok
-   - Check on github if the last commit for **main** is release/x.x.x
-   - Check on github if the last commit for **develop** is release/x.x.x
+5. Verify everything is okay
+   - Check on GitHub if the last commit for **main** is `release/x.x.x`
    - If there's a mistake, make a `git push` on the branch with the missing commit
 
-Note :
+Note:
 
 - "x.x.x" represents the version, [here](https://semver.org/) is a semantic versioning guide
-- Command line is used instead of the pull request to prevent main and develop from diverging
+- Command line is used instead of the pull request to prevent main and develop diverging
 
 ## Setting up full Docker non persistent demo
 
