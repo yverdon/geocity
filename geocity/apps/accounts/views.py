@@ -226,22 +226,23 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
             else reverse("submissions:submission_select_administrative_entity")
         )
 
-        # TODO: Implement logic after watching with @Remi how it is supposed to work. Cleanup unused code from https://github.com/yverdon/geocity/pull/632
+        # TODO: Improve, this is a minor case, try to keep argument into accounts:profile even when it's the first time
         # IF no 2fa -> retired to url_value
-        # OR 2fa and not totpdevice_set and not any group 2fa mandatory -> url value
-        # ELIF user has totpdevice -> reverse("accounts:profile") with the parameters. Cause the parameters work when there's a TOTP already registered
-        # ELSE (2fa is turned off) -> reverse("accounts:profile") without the parameters
+        # OR has qs_dict and 2fa and not totpdevice_set and not any group 2fa mandatory -> url value
         if (
             not settings.ENABLE_2FA
-            or settings.ENABLE_2FA
+            or qs_dict
+            and settings.ENABLE_2FA
             and not (
                 self.request.user.totpdevice_set.exists()
                 and is_2FA_mandatory(self.request.user)
             )
         ):
             return url_value
+        # User has TOTP defined
         elif self.request.user.totpdevice_set.exists():
             return reverse("accounts:profile") + filter_qs
+        # No 2fa or TOTP not defined
         else:
             return reverse("accounts:profile")
 
