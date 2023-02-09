@@ -8,7 +8,7 @@
 
 Use [Gitflow](https://www.atlassian.com/fr/git/tutorials/comparing-workflows/gitflow-workflow) to contribute to the project.
 
-The default configuration is used in this project, check below:
+The default configuration is used in this project except for "Version tag prefix", check below:
 
 ```bash
 git flow init
@@ -18,8 +18,12 @@ Feature branches? [feature/]
 Release branches? [release/]
 Hotfix branches? [hotfix/]
 Support branches? [support/]
-Version tag prefix? []
+Version tag prefix? [v]
 ```
+
+:warning: "If your "Version tag prefix" isn't set, edit it in `.git/config:`
+
+[Here](https://danielkummer.github.io/git-flow-cheatsheet/) is a cheatsheet to use Gitflow.
 
 To **start a new feature** use : `git flow feature start feature_branch` *(instead of `git checkout -b feature_branch`)*
 
@@ -31,7 +35,35 @@ To **finish a feature** there's two options:
 2. The feature doesn't require a review *(small commits)*
     - `git flow feature finish feature_branch`
 
-[Here](https://danielkummer.github.io/git-flow-cheatsheet/) is a cheatsheet to use Gitflow.
+To **make a release** there's many steps :
+
+1. Develop needs to be up to date
+   - `git checkout develop`
+   - `git pull`
+
+2. Create the release
+   - `git flow release start x.x.x`
+   - `git flow release publish x.x.x`
+   - Create a **draft** pull request to be able to see the differences with main
+
+3. Test and fix
+   - `git flow release track x.x.x` (used to track the release if you aren't the owner of it)
+   - Squash migrations
+   - Fix some issues
+   - Change version number if set in any file of the project.
+   - Test on a pre-prod instance
+
+4. Finish the release **once everything is ok**
+   - `git flow release finish x.x.x`
+   - Vim will open with some text, write a comment or uncomment the version number. **A modification is necessary**
+   - `git push origin --tags`
+
+5. Verify everything is ok
+   - Check on github if the last commit for **main** is release/x.x.x
+   - Check on github if the last commit for **develop** is release/x.x.x
+   - If there's a mistake, make a `git push` on the branch with the missing commit
+
+Note that "x.x.x" represents the version, [here](https://semver.org/) is a semantic versioning guide
 
 ## Setting up full Docker non persistent demo
 
