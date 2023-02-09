@@ -63,7 +63,10 @@ To **make a release** there's many steps :
    - Check on github if the last commit for **develop** is release/x.x.x
    - If there's a mistake, make a `git push` on the branch with the missing commit
 
-Note that "x.x.x" represents the version, [here](https://semver.org/) is a semantic versioning guide
+Note :
+
+- "x.x.x" represents the version, [here](https://semver.org/) is a semantic versioning guide
+- Command line is used instead of the pull request to prevent main and develop from diverging
 
 ## Setting up full Docker non persistent demo
 
