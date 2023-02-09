@@ -1120,32 +1120,39 @@ class Submission(models.Model):
         return self.get_transactions().order_by("-updated_date").last()
 
     def get_submission_payment_attachments(self, pdf_type):
-        pdf_types = {
-            "confirmation": lambda p: p.payment_confirmation_report,
-            "refund": lambda p: p.payment_refund_report,
-        }
-        report_func = pdf_types[pdf_type]
-        form = self.get_form_for_payment()
-        payment_settings = form.payment_settings
-        if not payment_settings or not report_func(payment_settings):
-            return []
-        child_doc_type = None
-        for doc_type in report_func(payment_settings).document_types.all():
-            if doc_type.parent.form.pk == form.pk:
-                child_doc_type = doc_type
-                break
+        try:
+            pdf_types = {
+                "confirmation": lambda p: p.payment_confirmation_report,
+                "refund": lambda p: p.payment_refund_report,
+            }
+            report_func = pdf_types[pdf_type]
+            form = self.get_form_for_payment()
 
-        if not child_doc_type:
-            return []
+            payment_settings = None
+            if form.payment_settings:
+                payment_settings = form.payment_settings
 
-        comp_doc = (
-            self.get_complementary_documents(self.author)
-            .filter(document_type=child_doc_type)
-            .last()
-        )
-        if not comp_doc:
+            if not payment_settings or not report_func(payment_settings):
+                return []
+            child_doc_type = None
+            for doc_type in report_func(payment_settings).document_types.all():
+                if doc_type.parent.form.pk == form.pk:
+                    child_doc_type = doc_type
+                    break
+
+            if not child_doc_type:
+                return []
+
+            comp_doc = (
+                self.get_complementary_documents(self.author)
+                .filter(document_type=child_doc_type)
+                .last()
+            )
+            if not comp_doc:
+                return []
+            return [(comp_doc.name, comp_doc.document.file.read())]
+        except:
             return []
-        return [(comp_doc.name, comp_doc.document.file.read())]
 
     def generate_and_save_pdf(self, pdf_type, transaction):
         pdf_types = {
