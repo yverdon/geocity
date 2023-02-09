@@ -93,6 +93,26 @@ def disable_form(form, editable_fields=None):
         form.disabled = True
 
 
+class DisabledChoicesMixin:
+    @property
+    def disabled_choices(self):
+        return getattr(self, "_disabled_choices", [])
+
+    @disabled_choices.setter
+    def disabled_choices(self, other):
+        self._disabled_choices = other
+
+    def create_option(
+        self, name, value, label, selected, index, subindex=None, attrs=None
+    ):
+        option = super().create_option(
+            name, value, label, selected, index, subindex, attrs
+        )
+        if value in self.disabled_choices:
+            option["attrs"]["disabled"] = "disabled"
+        return option
+
+
 class GroupedRadioWidget(forms.RadioSelect):
     template_name = "submissions/widgets/groupedradio.html"
 
@@ -100,11 +120,12 @@ class GroupedRadioWidget(forms.RadioSelect):
         css = {"all": ("customWidgets/GroupedRadio/groupedradio.css",)}
 
 
-class CheckboxSelectMultipleWidget(forms.CheckboxSelectMultiple):
+class CheckboxSelectMultipleWidget(DisabledChoicesMixin, forms.CheckboxSelectMultiple):
     template_name = "submissions/widgets/multipleselect.html"
+    option_template_name = "submissions/widgets/checkbox_option.html"
 
 
-class SingleFormRadioSelectWidget(forms.RadioSelect):
+class SingleFormRadioSelectWidget(DisabledChoicesMixin, forms.RadioSelect):
     template_name = "submissions/widgets/categorized_groupedradio.html"
 
 
@@ -202,14 +223,34 @@ class FormsSelectForm(forms.Form):
         for form in forms:
             forms_by_category_dict.setdefault(form.category, []).append(form)
 
-        forms_by_category = [
-            (category, [(form.pk, form.name) for form in forms])
-            for category, forms in sorted(
-                forms_by_category_dict.items(), key=lambda item: slugify(item[0].name)
-            )
-        ]
+        forms_by_category = []
+        disabled_choices = set()
+        for category, forms in sorted(
+            forms_by_category_dict.items(), key=lambda item: slugify(item[0].name)
+        ):
+            forms_list = []
+            for form in forms:
+                form_name = form.name
+                if form.has_exceeded_maximum_submissions():
+                    form_name = f"{form_name} <span class='px-5 text-danger'>{form.max_submissions_message}</span>"
+                    disabled_choices.add(form.pk)
+                forms_list.append((form.pk, form_name))
+
+            forms_by_category.append((category, forms_list))
 
         self.fields["selected_forms"].choices = forms_by_category
+        self.fields["selected_forms"].widget.disabled_choices = disabled_choices
+        self.initial["selected_forms"] = [
+            e for e in self.initial["selected_forms"] if e not in disabled_choices
+        ]
+
+    def clean_selected_forms(self):
+        selected_forms = models.Form.objects.filter(
+            pk__in=self.cleaned_data["selected_forms"]
+        )
+        if any([form.has_exceeded_maximum_submissions() for form in selected_forms]):
+            raise forms.ValidationError(selected_forms.first().max_submissions_message)
+        return self.cleaned_data["selected_forms"]
 
     @transaction.atomic
     def save(self):
@@ -223,6 +264,12 @@ class FormsSelectForm(forms.Form):
 
 class FormsSingleSelectForm(FormsSelectForm):
     selected_forms = forms.ChoiceField(widget=SingleFormRadioSelectWidget())
+
+    def clean_selected_forms(self):
+        selected_form = models.Form.objects.get(pk=self.cleaned_data["selected_forms"])
+        if selected_form.has_exceeded_maximum_submissions():
+            raise forms.ValidationError(selected_form.max_submissions_message)
+        return self.cleaned_data["selected_forms"]
 
     @transaction.atomic
     def save(self):
@@ -316,6 +363,7 @@ class FieldsForm(PartialValidationMixin, forms.Form):
 
         fields_per_form = defaultdict(list)
         payment_forms = set()
+
         # Create fields
         for form, field in self.get_fields():
             field_name = self.get_field_name(form, field)

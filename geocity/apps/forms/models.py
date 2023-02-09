@@ -11,6 +11,7 @@ from django.core.validators import (
 from django.db import models
 from django.db.models import Q
 from django.utils.safestring import mark_safe
+from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
@@ -389,7 +390,18 @@ class Form(models.Model):
     prices = models.ManyToManyField(
         "Price", verbose_name=_("tarifs"), related_name="forms", through=FormPrice
     )
-
+    max_submissions = models.PositiveIntegerField(
+        _("Nombre maximum de demandes"), null=True, blank=True
+    )
+    max_submissions_message = models.CharField(
+        _("Message lorsque le nombre maximal est atteint"),
+        max_length=300,
+        default=_(
+            "Ce formulaire est désactivé car le nombre maximal de soumissions a été atteint."
+        ),
+        null=True,
+        blank=True,
+    )
     # All objects
     objects = FormQuerySet().as_manager()
 
@@ -412,7 +424,37 @@ class Form(models.Model):
             or self.has_geometry_polygon
         )
 
+    def has_exceeded_maximum_submissions(self):
+        from ..submissions.models import Submission
+
+        return (
+            self.max_submissions
+            and (
+                self.submissions.filter(
+                    ~Q(
+                        status__in=[
+                            Submission.STATUS_DRAFT,
+                            Submission.STATUS_REJECTED,
+                            Submission.STATUS_ARCHIVED,
+                        ]
+                    )
+                    | Q(price__transactions__authorization_timeout_on__gt=now())
+                )
+                .distinct()
+                .count()
+            )
+            >= self.max_submissions
+        )
+
     def clean(self):
+        if self.max_submissions is not None and self.max_submissions < 1:
+            raise ValidationError(
+                {
+                    "max_submissions": _(
+                        "Le nombre maximum de demandes doit être supérieur à 0."
+                    )
+                }
+            )
         if bool(self.directive_description) ^ bool(self.directive):
             raise ValidationError(
                 {

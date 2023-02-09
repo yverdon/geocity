@@ -1730,12 +1730,18 @@ def submission_submit(request, submission_id):
         and submission.status == models.Submission.STATUS_DRAFT
     )
 
+    has_any_form_with_exceeded_submissions = (
+        submission.has_any_form_with_exceeded_submissions()
+    )
+
     return render(
         request,
         "submissions/submission_submit.html",
         {
             "submission": submission,
             "should_go_to_payment": should_go_to_payment,
+            "has_any_form_with_exceeded_submissions": has_any_form_with_exceeded_submissions,
+            "directives": submission.get_submission_directives(),
             "incomplete_steps": incomplete_steps,
             **progress_bar_context(
                 request=request,
@@ -1752,6 +1758,13 @@ def submission_submit(request, submission_id):
 def submission_submit_confirmed(request, submission_id):
 
     submission = get_submission_for_edition(request.user, submission_id)
+    if submission.has_any_form_with_exceeded_submissions():
+        messages.add_message(
+            request,
+            messages.ERROR,
+            submission.get_maximum_submissions_message(),
+        )
+        return redirect("submissions:submission_submit", submission_id=submission_id)
 
     incomplete_steps = [
         step.url
@@ -2166,6 +2179,16 @@ class FailTransactionCallback(View):
 class SubmissionPaymentRedirect(View):
     def get(self, request, pk, *args, **kwargs):
         submission = models.Submission.objects.get(pk=pk)
+
+        if submission.has_any_form_with_exceeded_submissions():
+            messages.add_message(
+                request,
+                messages.ERROR,
+                submission.get_maximum_submissions_message(),
+            )
+            return redirect(
+                "submissions:submission_submit", submission_id=submission.pk
+            )
 
         if (
             submission.requires_online_payment()

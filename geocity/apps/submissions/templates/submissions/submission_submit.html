@@ -2,6 +2,13 @@
 {% load bootstrap4 %}
 {% load i18n %}
 {% load submissions_extras %}
+{% load static %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static 'libs/js/jquery-ui-custom/jquery-ui.min.css' %}">
+{% endblock %}
+
 
 {% block content %}
   {% submission_progressbar steps StepType.SUBMIT %}
@@ -24,7 +31,7 @@
     </p>
   {% endif %}
 
-  {% if should_go_to_payment %}
+  {% if not incomplete_steps and should_go_to_payment %}
     {% if not submission.get_submission_price %}
       <div class="alert alert-danger mb-4">
         <div class="mb-4">
@@ -58,10 +65,17 @@
           {% if previous_step.url %}
             <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
           {% endif %}
-          <a class="btn btn-primary"
-             href="{% url 'submissions:submission_payment_redirect' pk=submission.pk %}" class="mr-2">
+          <a class="btn btn-primary{% if has_any_form_with_exceeded_submissions %} ui-state-disabled{% endif %}"
+           href="{% if has_any_form_with_exceeded_submissions %}#
+{% else %}{% url 'submissions:submission_payment_redirect' pk=submission.pk %}
+{% endif %}" class="mr-2">
             {% trans "Payer maintenant" %}
           </a>
+          {% if has_any_form_with_exceeded_submissions %}
+            <span class="text-danger font-weight-bold mx-2">
+             {{ submission.get_maximum_submissions_message }}
+            </span>
+          {% endif %}
         </div>
       </div>
     {% endif %}
@@ -76,9 +90,16 @@
         {% if previous_step.url %}
           <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
         {% endif %}
-        <a class="btn btn-primary"
-           href="{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}" class="mr-2">
+        <a class="btn btn-primary{% if has_any_form_with_exceeded_submissions %} ui-state-disabled{% endif %}"
+           href="{% if has_any_form_with_exceeded_submissions %}#
+{% else %}{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}
+{% endif %}" class="mr-2">
           {% trans "Envoyer" %}</a>
+          {% if has_any_form_with_exceeded_submissions %}
+            <span class="text-danger font-weight-bold mx-2">
+              {{ submission.get_maximum_submissions_message }}
+            </span>
+          {% endif %}
       {% endbuttons %}
     </form>
   {% endif %}
@@ -94,9 +115,16 @@
         {% if previous_step.url %}
           <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
         {% endif %}
-        <a class="btn btn-primary"
-           href="{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}" class="mr-2">
+        <a class="btn btn-primary{% if has_any_form_with_exceeded_submissions %} ui-state-disabled{% endif %}"
+           href="{% if has_any_form_with_exceeded_submissions %}#
+{% else %}{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}
+{% endif %}" class="mr-2">
           {% trans "Envoyer" %}</a>
+          {% if has_any_form_with_exceeded_submissions %}
+            <span class="text-danger font-weight-bold mx-2">
+              {{ submission.get_maximum_submissions_message }}
+            </span>
+          {% endif %}
       {% endbuttons %}
     </form>
   {% endif %}
