@@ -21,7 +21,7 @@ Support branches? [support/]
 Version tag prefix? [v]
 ```
 
-:warning: "If your "Version tag prefix" isn't set, edit it in `.git/config:`
+:warning: If your "Version tag prefix" isn't set, edit it in `.git/config:`
 
 [Here](https://danielkummer.github.io/git-flow-cheatsheet/) is a cheatsheet to use Gitflow.
 
