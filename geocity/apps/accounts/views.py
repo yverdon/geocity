@@ -36,7 +36,6 @@ from geocity.apps.accounts.decorators import (
 from geocity.fields import PrivateFileSystemStorage
 
 from . import forms, models
-from .users import is_2FA_mandatory
 
 
 @require_POST
@@ -226,24 +225,30 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
             else reverse("submissions:submission_select_administrative_entity")
         )
 
-        # TODO: Improve, this is a minor case, try to keep argument into accounts:profile even when it's the first time
+        # TODO: FIX problem user no 2fa goes to 404 not found while using get parameters or following a link
         # IF no 2fa -> retired to url_value
         # OR has qs_dict and 2fa and not totpdevice_set and not any group 2fa mandatory -> url value
-        if not settings.ENABLE_2FA or (
-            qs_dict
-            and settings.ENABLE_2FA
-            and not (
-                self.request.user.totpdevice_set.exists()
-                and is_2FA_mandatory(self.request.user)
-            )
-        ):
-            return url_value
-        # User has TOTP defined
-        elif self.request.user.totpdevice_set.exists():
-            return reverse("accounts:profile") + filter_qs
-        # No 2fa or TOTP not defined
-        else:
-            return reverse("accounts:profile")
+        # if not settings.ENABLE_2FA or (
+        #     qs_dict
+        #     and settings.ENABLE_2FA
+        #     and not (
+        #         self.request.user.totpdevice_set.exists()
+        #         and is_2FA_mandatory(self.request.user)
+        #     )
+        # ):
+        #     return url_value
+        # # User has TOTP defined
+        # elif self.request.user.totpdevice_set.exists():
+        #     return reverse("accounts:profile") + filter_qs
+        # # No 2fa or TOTP not defined
+        # else:
+        #     return reverse("accounts:profile")
+
+        return (
+            reverse("accounts:profile") + filter_qs
+            if settings.ENABLE_2FA and not self.request.user.totpdevice_set.exists()
+            else url_value
+        )
 
 
 class ActivateAccountView(View):
