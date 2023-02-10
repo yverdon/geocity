@@ -56,6 +56,16 @@ class SectionInline(StackedPolymorphicInline):
 
 
 class ReportAdminForm(forms.ModelForm):
+    class Meta:
+        model = Report
+        fields = [
+            "name",
+            "layout",
+            "document_types",
+            "is_visible",
+            "integrator",
+        ]
+
     def clean_document_types(self):
         doc_types = self.cleaned_data["document_types"]
         error_message = ""
