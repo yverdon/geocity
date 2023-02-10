@@ -402,8 +402,26 @@ class PriceAdmin(IntegratorFilterMixin, admin.ModelAdmin):
     form_names.short_description = _("Form(s)")
 
 
+class PaymentSettingsForm(forms.ModelForm):
+    class Meta:
+        model = models.PaymentSettings
+        fields = [
+            "name",
+            "prices_label",
+            "payment_confirmation_report",
+            "payment_refund_report",
+            "internal_account",
+            "payment_processor",
+            "space_id",
+            "user_id",
+            "api_key",
+            "integrator",
+        ]
+
+
 @admin.register(models.PaymentSettings)
 class PaymentSettingsAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    form = PaymentSettingsForm
     list_display = ["name", "prices_label", "payment_processor"]
     list_filter = ["name", "internal_account", "payment_processor"]
 
