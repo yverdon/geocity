@@ -227,14 +227,15 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
         )
 
         is_2fa_disabled = not settings.ENABLE_2FA
-        user_with_totpdevice = self.request.user.totpdevice_set.exists()
-        untrusted_user_without_totpdevice_and_not_required = not (
-            user_with_totpdevice and is_2FA_mandatory(self.request.user)
-        )
 
         # 2fa is disabled
         if is_2fa_disabled:
             return url_value
+
+        user_with_totpdevice = self.request.user.totpdevice_set.exists()
+        untrusted_user_without_totpdevice_and_not_required = not (
+            user_with_totpdevice and is_2FA_mandatory(self.request.user)
+        )
 
         # 2fa is disabled (otherwise he would have been catch before)
         # the user has a totp device so he dont needs to go to accounts:profile
