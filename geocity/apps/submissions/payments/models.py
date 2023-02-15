@@ -1,3 +1,4 @@
+from django.core.exceptions import SuspiciousOperation
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
@@ -87,6 +88,8 @@ class Transaction(models.Model):
     def get_confirmation_pdf(self, read=False):
         submission = self.submission_price.submission
         form = submission.get_form_for_payment()
+        if not form or not form.payment_settings:
+            raise SuspiciousOperation
         payment_settings = form.payment_settings
         report = payment_settings.payment_confirmation_report
         output = generate_report_pdf(
@@ -99,6 +102,8 @@ class Transaction(models.Model):
     def get_refund_pdf(self, read=False):
         submission = self.submission_price.submission
         form = submission.get_form_for_payment()
+        if not form or not form.payment_settings:
+            raise SuspiciousOperation
         payment_settings = form.payment_settings
         report = payment_settings.payment_refund_report
         output = generate_report_pdf(
