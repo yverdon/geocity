@@ -73,7 +73,7 @@ class PostFinanceCheckoutProcessor(PaymentProcessor):
         )
 
         # If the form is None interrupt payment flow
-        if not submission.get_form_for_payment() or not submission.requires_payment():
+        if not submission.get_form_for_payment() or not submission.requires_payment:
             raise SuspiciousOperation
 
         internal_account = (
