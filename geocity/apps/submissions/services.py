@@ -90,7 +90,12 @@ def submit_submission(submission, request):
             "submission": submission,
             "absolute_uri_func": request.build_absolute_uri,
         }
-        attachments = submission.get_submission_payment_attachments("confirmation")
+
+        # Check if submission requires payment
+        attachments = []
+        if submission.requires_payment:
+            attachments = submission.get_submission_payment_attachments("confirmation")
+
         send_email_notification(data, attachments=attachments)
 
         if submission.author.userprofile.notify_per_email:

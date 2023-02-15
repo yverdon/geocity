@@ -1126,11 +1126,13 @@ class Submission(models.Model):
         }
         report_func = pdf_types[pdf_type]
         form = self.get_form_for_payment()
-        payment_settings = form.payment_settings
-        if not payment_settings or not report_func(payment_settings):
+
+        if not form or (
+            not form.payment_settings or not report_func(form.payment_settings)
+        ):
             return []
         child_doc_type = None
-        for doc_type in report_func(payment_settings).document_types.all():
+        for doc_type in report_func(form.payment_settings).document_types.all():
             if doc_type.parent.form.pk == form.pk:
                 child_doc_type = doc_type
                 break
@@ -1170,6 +1172,8 @@ class Submission(models.Model):
         }
         form = self.get_form_for_payment()
         child_doc_type = None
+        if not form or not form.payment_settings:
+            return None
         for doc_type in report_func(form.payment_settings).document_types.all():
             if doc_type.parent.form.pk == form.pk:
                 child_doc_type = doc_type

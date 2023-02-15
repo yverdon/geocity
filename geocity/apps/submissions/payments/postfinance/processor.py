@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.exceptions import SuspiciousOperation
 from django.urls import reverse
 from django.utils import timezone
 from postfinancecheckout import (
@@ -70,6 +71,10 @@ class PostFinanceCheckoutProcessor(PaymentProcessor):
         transaction_payment_page_service = (
             self._get_transaction_payment_page_service_api()
         )
+
+        # If the form is None interrupt payment flow
+        if not submission.get_form_for_payment() or not submission.requires_payment:
+            raise SuspiciousOperation
 
         internal_account = (
             submission.get_form_for_payment().payment_settings.internal_account
