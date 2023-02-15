@@ -625,7 +625,7 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         )
         emails = get_emails(
             "{} ({})".format(
-                "Nouvelle demande",
+                "Nouvelle demande/annonce",
                 form_name,
             )
         )
@@ -675,12 +675,12 @@ class SubmissionTestCase(LoggedInUserMixin, TestCase):
         self.assertEqual(
             mail.outbox[0].subject,
             "{} ({})".format(
-                "Votre service à été mentionné dans une demande",
+                "Votre service à été mentionné dans une demande/annonce",
                 form_name,
             ),
         )
         self.assertIn(
-            "Une nouvelle demande mentionnant votre service vient d'être soumise.",
+            "Une nouvelle demande/annonce mentionnant votre service vient d'être soumise.",
             mail.outbox[0].message().as_string(),
         )
 
@@ -2689,12 +2689,12 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         self.assertEqual(
             mail.outbox[0].subject,
             "{} ({})".format(
-                "Votre annonce a été prise en compte et classée",
+                "Votre demande/annonce a été prise en compte et classée",
                 form_name,
             ),
         )
         self.assertIn(
-            "Nous vous informons que votre annonce a été prise en compte et classée.",
+            "Nous vous informons que votre demande/annonce a été prise en compte et classée.",
             mail.outbox[0].message().as_string(),
         )
 
@@ -2730,12 +2730,12 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         self.assertEqual(
             mail.outbox[0].subject,
             "{} ({})".format(
-                "Votre annonce a été prise en compte et classée",
+                "Votre demande/annonce a été prise en compte et classée",
                 form_name,
             ),
         )
         self.assertIn(
-            "Nous vous informons que votre annonce a été prise en compte et classée.",
+            "Nous vous informons que votre demande/annonce a été prise en compte et classée.",
             mail.outbox[0].message().as_string(),
         )
 
@@ -2771,12 +2771,12 @@ class AdministrativeEntitySecretaryEmailTestcase(TestCase):
         self.assertEqual(
             mail.outbox[0].subject,
             "{} ({})".format(
-                "Votre annonce a été prise en compte et classée",
+                "Votre demande/annonce a été prise en compte et classée",
                 form_name,
             ),
         )
         self.assertIn(
-            "Nous vous informons que votre annonce a été prise en compte et classée.",
+            "Nous vous informons que votre demande/annonce a été prise en compte et classée.",
             mail.outbox[0].message().as_string(),
         )
 
