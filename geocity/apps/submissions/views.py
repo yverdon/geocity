@@ -572,7 +572,7 @@ class SubmissionDetailView(View):
             # Notify the submission author
             data = {
                 "subject": "{} ({})".format(
-                    _("Votre annonce a été prise en compte et classée"),
+                    _("Votre demande/annonce a été prise en compte et classée"),
                     submission.get_forms_names_list(),
                 ),
                 "users_to_notify": [submission.author.email],
@@ -589,7 +589,7 @@ class SubmissionDetailView(View):
                 data = {
                     "subject": "{} ({})".format(
                         _(
-                            "Une annonce a été prise en compte et classée par le secrétariat"
+                            "Une demande/annonce a été prise en compte et classée par le secrétariat"
                         ),
                         submission.get_forms_names_list(),
                     ),
@@ -1799,7 +1799,7 @@ def submission_submit_confirmed(request, submission_id):
             if mailing_list:
                 data = {
                     "subject": "{} ({})".format(
-                        _("Votre service à été mentionné dans une demande"),
+                        _("Votre service à été mentionné dans une demande/annonce"),
                         submission.get_forms_names_list(),
                     ),
                     "users_to_notify": set(mailing_list),
