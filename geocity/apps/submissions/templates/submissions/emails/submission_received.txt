@@ -1,6 +1,6 @@
 {% load i18n %}{% autoescape off %}{% blocktrans %}Bonjour {{ name }}{% endblocktrans %},
 
-{% trans "Nous vous informons que votre annonce a été prise en compte et classée." %}
+{% trans "Nous vous informons que votre demande/annonce a été prise en compte et classée." %}
 
 {% trans "Vous pouvez la consulter sur le lien suivant" %}: {{ submission_url }}
 

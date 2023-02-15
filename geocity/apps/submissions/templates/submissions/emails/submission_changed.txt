@@ -1,6 +1,6 @@
 {% load i18n %}{% autoescape off %}{% blocktrans %}Bonjour {{ name }}{% endblocktrans %},
 
-{% trans "Nous vous informons que votre demande a changé de statut." %}
+{% trans "Nous vous informons que votre demande/annonce a changé de statut." %}
 
 {% trans "Nouveau statut:" %} {{ status }}
 {% if reason %}
