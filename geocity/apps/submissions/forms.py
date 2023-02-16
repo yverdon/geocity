@@ -1799,10 +1799,10 @@ def get_submission_contacts_formset_initiated(submission, data=None):
     Return PermitActorFormSet with initial values set
     """
 
-    # Queryset with all configured actor type for this submission
+    # Queryset with all configured contact types for this submission
     configured_contact_types = submission.get_contacts_types()
 
-    # Get actor type that are not filled yet for the submission
+    # Get contact types that are not filled yet for the submission
     missing_contact_types = submission.filter_only_missing_contact_types(
         configured_contact_types
     )

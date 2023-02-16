@@ -147,6 +147,7 @@ class UserAdmin(BaseUserAdmin):
             return [
                 "is_superuser",
                 "is_sociallogin",
+                "user_permissions",
             ]
         else:
             return [
@@ -359,7 +360,7 @@ class GroupAdminForm(forms.ModelForm):
         fields = "__all__"
         help_texts = {
             "permissions": _(
-                "Pour un rôle intégrateur, ajoutez toutes les permissions disponibles"
+                "Pour un rôle intégrateur, les permissions sont configurées automatiquement quelles que soient les valeurs saisies"
             ),
         }
 
@@ -368,23 +369,29 @@ class GroupAdminForm(forms.ModelForm):
         css = {"all": ("css/admin/admin.css",)}
 
     def clean_permissions(self):
+
         permissions = self.cleaned_data["permissions"]
-        integrator_permissions = get_integrator_permissions()
 
         if "permit_department-0-is_integrator_admin" in self.data.keys():
-            permissions = permissions.union(integrator_permissions)
-        else:
-            permissions = permissions.difference(
-                integrator_permissions.exclude(
-                    codename__in=permissions_groups.AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
-                )
+            # Group in integrator. Permission for this type are defined in model
+            return get_integrator_permissions()
+        elif (
+            "permit_department-0-is_backoffice" in self.data.keys()
+            or "permit_department-0-is_validator" in self.data.keys()
+        ) and not "permit_department-0-is_integrator_admin" in self.data.keys():
+            # Group is validator or pilot but not integrator
+            permissions_for_trusted_users = Permission.objects.filter(
+                codename__in=permissions_groups.AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
             )
-        return permissions
+            return permissions_for_trusted_users & permissions
+        else:
+            # Group has no specific permission
+            return []
 
 
 class UserInline(admin.TabularInline):
     model = Group.user_set.through
-    can_delete = False
+    can_delete = True
     extra = 0
     verbose_name = _("Utilisateur membre du groupe")
     verbose_name_plural = _("Utilisateurs membres du groupe")
@@ -481,6 +488,7 @@ class GroupAdmin(admin.ModelAdmin):
                     permit_department__is_integrator_admin=True
                 ).pk
             ):
+
                 integrator_permissions = Permission.objects.filter(
                     codename__in=permissions_groups.AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
                 )

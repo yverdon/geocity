@@ -97,6 +97,15 @@ class FormAdminForm(forms.ModelForm):
 
         super().__init__(*args, **kwargs)
 
+    # TODO: remove this once M2M relation is removed in model
+    def clean_administrative_entities(self):
+        administrative_entities = self.cleaned_data["administrative_entities"]
+        if len(administrative_entities) > 1:
+            raise forms.ValidationError(
+                _("Une seule entité administrative peut être sélectionnée")
+            )
+        return administrative_entities
+
     def clean_days_before_reminder(self):
         if (
             self.cleaned_data["expiration_reminder"]
