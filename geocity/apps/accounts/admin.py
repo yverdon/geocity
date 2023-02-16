@@ -356,7 +356,7 @@ class GroupAdminForm(forms.ModelForm):
         fields = "__all__"
         help_texts = {
             "permissions": _(
-                "Pour un rôle intégrateur, les permissions sont configurées automatiquement quelques soient les valeurs saisies"
+                "Pour un rôle intégrateur, les permissions sont configurées automatiquement quelles que soient les valeurs saisies"
             ),
         }
 
@@ -371,7 +371,7 @@ class GroupAdminForm(forms.ModelForm):
             "permit_department-0-is_backoffice" in self.data.keys()
             or "permit_department-0-is_validator" in self.data.keys()
         ) and not "permit_department-0-is_integrator_admin" in self.data.keys():
-            # Group is validator, pilot but not integrator
+            # Group is validator or pilot but not integrator
             permissions_for_trusted_users = Permission.objects.filter(
                 codename__in=permissions_groups.AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
             )

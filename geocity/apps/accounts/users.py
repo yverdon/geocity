@@ -75,9 +75,10 @@ def get_users_list_for_integrator_admin(user):
         User.objects.annotate(
             email_domain=Substr("email", StrIndex("email", Value("@")) + 1),
         )
+        # hide anynomous user not belonging to the actual integrator
         .filter(
-            Q(is_superuser=False),  # par superuser
-            Q(email_domain__in=email_domains) | Q(email__in=emails),  # email autorise
+            Q(is_superuser=False),
+            Q(email_domain__in=email_domains) | Q(email__in=emails),
             Q(groups__permit_department__integrator=user_integrator_group.pk)
             | Q(groups__isnull=True),
         )
@@ -90,6 +91,7 @@ def get_users_list_for_integrator_admin(user):
         )
     )
 
+    # Used to remove anonymous users from the list
     anonymous_users = []
     for user in qs:
         if (
