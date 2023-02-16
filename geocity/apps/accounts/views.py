@@ -36,6 +36,7 @@ from geocity.apps.accounts.decorators import (
 from geocity.fields import PrivateFileSystemStorage
 
 from . import forms, models
+from .users import is_2FA_mandatory
 
 
 @require_POST
@@ -225,14 +226,31 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
             else reverse("submissions:submission_select_administrative_entity")
         )
 
-        if "next" in qs_dict:
-            qs_dict.pop("next")
+        is_2fa_disabled = not settings.ENABLE_2FA
 
-        return (
-            reverse("accounts:profile") + filter_qs
-            if settings.ENABLE_2FA and not self.request.user.totpdevice_set.exists()
-            else url_value
+        # 2fa is disabled
+        if is_2fa_disabled:
+            return url_value
+
+        user_with_totpdevice = self.request.user.totpdevice_set.exists()
+        untrusted_user_without_totpdevice_and_not_required = not (
+            user_with_totpdevice and is_2FA_mandatory(self.request.user)
         )
+
+        # 2fa is disabled (otherwise he would have been catch before)
+        # the user has a totp device so he dont needs to go to accounts:profile
+        # or user has no totp device and isn't in a group that requires 2fa and has a redirect (qs_dict)
+        if (
+            user_with_totpdevice
+            or untrusted_user_without_totpdevice_and_not_required
+            and qs_dict
+        ):
+            return url_value
+        # user has a 2fa mandatory
+        # has no redirect (qs_dict)
+        # has no totp device otherwise he would have been catch in the other conditions
+        else:
+            return reverse("accounts:profile") + filter_qs
 
 
 class ActivateAccountView(View):
