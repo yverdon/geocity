@@ -5,9 +5,15 @@
 {% endblock %}
 
 {% block content %}
-  <div class="flex_container">
-      <div class="flex_item-100">
-          {{rendered_content}}
-      </div>
-  </div>
+    <div class="flex_container">
+        {% if section.is_justified %}
+            <div class="flex_item-100" style="text-align:justify; text-justify: inter-character;">
+                {{rendered_content}}
+            </div>
+        {% else %}
+            <div class="flex_item-100">
+                {{rendered_content}}
+            </div>
+        {% endif %}
+    </div>
 {% endblock %}

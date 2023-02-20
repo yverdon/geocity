@@ -1,6 +1,6 @@
 import base64
 import re
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from bs4 import BeautifulSoup
 from ckeditor.fields import RichTextField
@@ -22,6 +22,12 @@ from geocity.apps.accounts.models import AdministrativeEntity
 
 from .fields import BackgroundFileField
 from .utils import DockerRunFailedError, run_docker_container
+
+now = datetime.now()
+date = [
+    now.strftime("%d.%m.%Y"),
+    now.strftime("%d/%m/%Y, %H:%M:%S"),
+]  # https://www.programiz.com/python-programming/datetime/strftime
 
 
 class ReportLayout(models.Model):
@@ -67,8 +73,8 @@ class ReportLayout(models.Model):
         null=True,
         blank=True,
         upload_to="backgound_paper",
-        help_text=_("Image d'arrière plan (PNG ou SVG)."),
-        validators=[FileExtensionValidator(allowed_extensions=["svg", "png"])],
+        help_text=_("Image d'arrière plan (PNG)."),
+        validators=[FileExtensionValidator(allowed_extensions=["png"])],
     )
     integrator = models.ForeignKey(
         Group,
@@ -351,6 +357,11 @@ class SectionParagraph(Section):
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
         ),
     )
+    is_justified = models.BooleanField(
+        _("Texte justifié"),
+        default=True,
+        help_text=_("Justifier le texte ?"),
+    )
     content = RichTextField(
         _("Contenu"),
         help_text=(
@@ -369,6 +380,7 @@ class SectionParagraph(Section):
             # TODO rename to `submission_data` (& migrate sections) to match new naming
             "request_data": base_context["request_data"],
             "form_data": base_context["form_data"],
+            "date": date,  # To use : {{date[0]}} / {{date[1]}} / etc..
         }
         if "transaction_data" in base_context:
             inner_context["transaction_data"] = base_context["transaction_data"]
@@ -396,6 +408,11 @@ class SectionParagraphRight(Section):
             "S'applique au titre des tous les paragraphes. h1 taille la plus grande, h6 la plus petite"
         ),
     )
+    is_justified = models.BooleanField(
+        _("Texte justifié"),
+        default=True,
+        help_text=_("Justifier le texte ?"),
+    )
     content = RichTextField(
         _("Contenu"),
         help_text=(
@@ -414,6 +431,7 @@ class SectionParagraphRight(Section):
             # TODO rename to `submission_data` (& migrate sections) to match new naming
             "request_data": base_context["request_data"],
             "form_data": base_context["form_data"],
+            "date": date,  # To use : {{date[0]}} / {{date[1]}} / etc..
         }
         if "transaction_data" in base_context:
             inner_context["transaction_data"] = base_context["transaction_data"]
@@ -748,8 +766,8 @@ class StyleLogo(Style):
     logo = BackgroundFileField(
         _("Logo"),
         upload_to="backgound_paper",
-        help_text=_("Image pour logo (PNG ou SVG)."),
-        validators=[FileExtensionValidator(allowed_extensions=["svg", "png"])],
+        help_text=_("Image pour logo (PNG)."),
+        validators=[FileExtensionValidator(allowed_extensions=["png"])],
     )
 
     height = models.PositiveIntegerField(
