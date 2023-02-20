@@ -128,7 +128,6 @@ class FormQuerySet(models.QuerySet):
         if not user.is_superuser:
             if integrator_admin:
                 """An integrator can fill all forms he owns + public ones"""
-
                 queryset = queryset.filter(
                     Q(integrator=integrator_admin) | Q(forms__is_public=True)
                 )
@@ -138,7 +137,6 @@ class FormQuerySet(models.QuerySet):
                 """User is trusted and associated to administrative entities,
                 he can fill private forms for those administrative entities
                 if granted permission 'view_private_submission'"""
-
                 queryset = queryset.filter(
                     Q(pk__in=user_administrative_entities) | Q(forms__is_public=True)
                 )
@@ -147,7 +145,6 @@ class FormQuerySet(models.QuerySet):
                 or not user_administrative_entities
             ):
                 """Untrusted users or user not granted with view_private_submission can only fill public forms"""
-
                 queryset = queryset.filter(forms__is_public=True)
 
         return queryset
