@@ -160,8 +160,7 @@ class FormQuerySet(models.QuerySet):
                     Q(pk__in=user_administrative_entities) | Q(forms__is_public=True)
                 )
             elif (
-                not user.has_perm("submissions.view_private_submission")
-                or not user_administrative_entities
+                not user_can_view_private_submission or not user_administrative_entities
             ):
                 """Untrusted users or user not granted with view_private_submission can only fill public forms"""
                 queryset = queryset.filter(forms__is_public=True)
