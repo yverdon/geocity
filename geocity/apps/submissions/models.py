@@ -904,12 +904,23 @@ class Submission(models.Model):
         )
 
     def get_submission_directives(self):
-        return [
+
+        entity_directives = [
+            (
+                self.administrative_entity.directive,
+                self.administrative_entity.directive_description,
+                self.administrative_entity.additional_information,
+            )
+        ]
+
+        form_directives = [
             (obj.directive, obj.directive_description, obj.additional_information)
             for obj in self.forms.exclude(
                 directive="", directive_description="", additional_information=""
             )
         ]
+
+        return entity_directives + form_directives
 
     @transaction.atomic
     def set_administrative_entity(self, administrative_entity):
