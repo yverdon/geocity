@@ -226,7 +226,11 @@ class FormAdmin(SortableAdminMixin, IntegratorFilterMixin, admin.ModelAdmin):
                     "directive",
                     "directive_description",
                     "additional_information",
-                )
+                ),
+                "description": _(
+                    """Saisir ici les directives et informations obligatoires concernant la protection des données personnelles.
+                    Note: si ces informations ont une portée globale pour toute l'entité, cette information peut être saisie à l'étape 1.1 Entité administrative"""
+                ),
             },
         ),
         (

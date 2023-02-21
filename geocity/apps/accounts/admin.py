@@ -622,13 +622,17 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
             },
         ),
         (
-            _("Directives"),
+            _("Directives - Données personnelles"),
             {
                 "fields": (
                     "directive",
                     "directive_description",
                     "additional_information",
-                )
+                ),
+                "description": _(
+                    """Saisir ici les directives et informations obligatoires concernant la protection des données personnelles
+                    ayant une portée globale pour toute l'entité administrative. Pour une gestion plus fine, ces informations peuvent être saisies à l'étape 1.4 Formulaires"""
+                ),
             },
         ),
     )
