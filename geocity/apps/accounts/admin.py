@@ -597,6 +597,41 @@ class SubmissionWorkflowStatusInline(admin.TabularInline):
 
 @admin.register(models.AdministrativeEntityForAdminSite)
 class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "name",
+                    "tags",
+                    "ofs_id",
+                    "is_single_form_submissions",
+                    "sites",
+                    "expeditor_email",
+                    "expeditor_name",
+                    "custom_signature",
+                    "link",
+                    "archive_link",
+                    "general_informations",
+                    "phone",
+                    "additional_searchtext_for_address_field",
+                    "geom",
+                    "integrator",
+                )
+            },
+        ),
+        (
+            _("Directives"),
+            {
+                "fields": (
+                    "directive",
+                    "directive_description",
+                    "additional_information",
+                )
+            },
+        ),
+    )
     # Pass the user from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs):
         Form = super().get_form(request, obj, **kwargs)
