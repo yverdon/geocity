@@ -544,6 +544,9 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
             "archive_link",
             "general_informations",
             "phone",
+            "directive",
+            "directive_description",
+            "additional_information",
             "additional_searchtext_for_address_field",
             "geom",
             "integrator",
@@ -594,6 +597,45 @@ class SubmissionWorkflowStatusInline(admin.TabularInline):
 
 @admin.register(models.AdministrativeEntityForAdminSite)
 class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "name",
+                    "tags",
+                    "ofs_id",
+                    "is_single_form_submissions",
+                    "sites",
+                    "expeditor_email",
+                    "expeditor_name",
+                    "custom_signature",
+                    "link",
+                    "archive_link",
+                    "general_informations",
+                    "phone",
+                    "additional_searchtext_for_address_field",
+                    "geom",
+                    "integrator",
+                )
+            },
+        ),
+        (
+            _("Directives - Données personnelles"),
+            {
+                "fields": (
+                    "directive",
+                    "directive_description",
+                    "additional_information",
+                ),
+                "description": _(
+                    """Saisir ici les directives et informations obligatoires concernant la protection des données personnelles
+                    ayant une portée globale pour toute l'entité administrative. Pour une gestion plus fine, ces informations peuvent être saisies à l'étape 1.4 Formulaires"""
+                ),
+            },
+        ),
+    )
     # Pass the user from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs):
         Form = super().get_form(request, obj, **kwargs)
