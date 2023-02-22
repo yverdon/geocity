@@ -34,6 +34,18 @@
     </p>
   {% endif %}
 
+  {% if not incomplete_steps %}
+    <div id="legal-infos">
+      <h5>{% trans "Volet de transmission" %}</h5>
+      <div class="additional_information">{{ signature_sheet_description|safe }}</div>
+      <br>
+      <i class="fa fa-download" aria-hidden="true"></i>
+      <a class="directive_file" href="{{ signature_sheet.url }}" target="_blank"
+        rel="noreferrer">{% trans "Télécharger le volet de transmission" %}
+      </a>
+    </div>
+  {% endif %}
+
   {% if not incomplete_steps and should_go_to_payment %}
     {% if not submission.get_submission_price %}
       <div class="alert alert-danger mb-4">

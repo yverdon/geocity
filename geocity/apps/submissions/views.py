@@ -1742,6 +1742,8 @@ def submission_submit(request, submission_id):
             "should_go_to_payment": should_go_to_payment,
             "has_any_form_with_exceeded_submissions": has_any_form_with_exceeded_submissions,
             "directives": submission.get_submission_directives(),
+            "signature_sheet": submission.administrative_entity.signature_sheet,
+            "signature_sheet_description": submission.administrative_entity.signature_sheet_description,
             "incomplete_steps": incomplete_steps,
             **progress_bar_context(
                 request=request,

@@ -635,6 +635,21 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 ),
             },
         ),
+        (
+            _("Volet de transmission"),
+            {
+                "fields": (
+                    "signature_sheet",
+                    "signature_sheet_description",
+                ),
+                "description": _(
+                    """Le volet de transmission permet au requérant de télécharger un fichier et de le signer pour envoi par poste, avant
+                    l'envoi définitif de sa demande.
+                    La loi exige la forme papier pour certaines thématiques (par exemple la loi cantonale vaudoise sur l'aménagement du territoire).
+                    Les deux champs doivent obligatoirement être remplis pour que ces informations s'affichent."""
+                ),
+            },
+        ),
     )
     # Pass the user from ModelAdmin to ModelForm
     def get_form(self, request, obj=None, **kwargs):

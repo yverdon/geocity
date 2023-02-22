@@ -296,7 +296,14 @@ class AdministrativeEntity(models.Model):
         _("description de la directive"), max_length=200, blank=True
     )
     additional_information = models.TextField(_("autre information"), blank=True)
-
+    signature_sheet = AdministrativeEntityFileField(
+        _("Volet de transmission"),
+        validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
+        blank=True,
+    )
+    signature_sheet_description = models.TextField(
+        _("Texte explicatif relatif au volet de transmission"), blank=True
+    )
     objects = AdministrativeEntityManager()
 
     class Meta:
