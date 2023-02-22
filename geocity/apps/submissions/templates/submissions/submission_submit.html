@@ -21,14 +21,14 @@
   {% directives_and_legal submission %}
 
 
-  {% if signature_sheet and signature_sheet_description %}
+  {% if submission.administrative_entity.signature_sheet and submission.administrative_entity.signature_sheet_description %}
   <div id="legal-infos">
     <h5>{% trans "Volet de transmission" %}</h5>
-    <div class="additional_information">{{ signature_sheet_description|safe }}</div>
+    <div class="additional_information">{{ submission.administrative_entity.signature_sheet_description|safe }}</div>
     <br>
     <i class="fa fa-download" aria-hidden="true"></i>
-    <a class="directive_file" href="{{ signature_sheet.url }}" target="_blank"
-      rel="noreferrer">{% trans "Télécharger le volet de transmission" %}
+    <a class="directive_file" href="{{ submission.administrative_entity.signature_sheet.url }}" target="_blank"
+      rel="noreferrer">{% trans "Télécharger le volet de transmission pour impression et signature" %}
     </a>
   </div>
   {% endif %}
