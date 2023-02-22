@@ -547,6 +547,8 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
             "directive",
             "directive_description",
             "additional_information",
+            "signature_sheet",
+            "signature_sheet_description",
             "additional_searchtext_for_address_field",
             "geom",
             "integrator",
@@ -586,6 +588,23 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
                 "css/admin/admin.css",
             )
         }
+
+    def clean(self):
+        signature_sheet = self.cleaned_data["signature_sheet"]
+        signature_sheet_description = self.cleaned_data["signature_sheet_description"]
+
+        if (
+            signature_sheet
+            and not signature_sheet_description
+            or signature_sheet_description
+            and not signature_sheet
+        ):
+            raise forms.ValidationError(
+                _(
+                    "Les champs Volet de transmission et Texte explicatif relatif au volet de transmission doivent être remplis ou tous deux vides."
+                )
+            )
+        return self.cleaned_data
 
 
 class SubmissionWorkflowStatusInline(admin.TabularInline):
