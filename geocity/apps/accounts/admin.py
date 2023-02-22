@@ -217,6 +217,8 @@ class UserAdmin(BaseUserAdmin):
             # Edit cleaned_data to save the groups
             form.cleaned_data["groups"] = groups_to_keep
 
+        super().save_model(req, obj, form, change)
+
     def get_urls(self):
         urls = super().get_urls()
 
