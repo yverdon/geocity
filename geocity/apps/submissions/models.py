@@ -905,13 +905,20 @@ class Submission(models.Model):
 
     def get_submission_directives(self):
 
-        entity_directives = [
-            (
-                self.administrative_entity.directive,
-                self.administrative_entity.directive_description,
-                self.administrative_entity.additional_information,
+        entity = self.administrative_entity
+        entity_directives = []
+        if (
+            entity.directive
+            or entity.directive_description
+            or entity.additional_information
+        ):
+            entity_directives.append(
+                (
+                    entity.directive,
+                    entity.directive_description,
+                    entity.additional_information,
+                )
             )
-        ]
 
         form_directives = [
             (obj.directive, obj.directive_description, obj.additional_information)
