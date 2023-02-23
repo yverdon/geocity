@@ -1,7 +1,7 @@
-version: "3"
+version: "3.5"
 
 volumes:
-    gmsdata:
+    static_root:
 
 services:
     web: # Name of this container should not be changed
@@ -69,6 +69,8 @@ services:
             - ISOLATED_NETWORK_NAME
             - DEFAULT_SITE
             - AUTHOR_IBAN_VISIBLE
+            - PAYMENT_PROCESSING_TEST_ENVIRONMENT
+            - PAYMENT_CURRENCY
         ports:
             - "${DJANGO_DOCKER_PORT}:9000"
         networks:
@@ -97,8 +99,6 @@ services:
         # networks:
         #     - isolated
 
-volumes:
-    static_root:
 
 networks:
     # Use this for containers that should only be able to communicate with Django

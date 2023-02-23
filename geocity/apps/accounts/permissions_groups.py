@@ -12,24 +12,22 @@ INTEGRATOR_PERMISSIONS_BY_APP = {
         "field",
         "formfield",
         "contacttypeforadminsite",
+        "paymentsettings",
+        "price",
     ],
     "submissions": [
         "submissionamendfield",
         "submissionworkflowstatus",
-        "complementarydocumenttype",
     ],
     "reports": [
         "report",
+        "complementarydocumenttypeforadminsite",
         "reportlayout",
         "section",
     ],
 }
 
 # define permissions required by integrator role
-# TODO this is kept for backwards compatibility with migrations of the legacy `permits`
-# app. Once the final migration of this app has been applied and all associated code of
-# this app has been removed, remove this line
-INTEGRATOR_REQUIRED_MODELS_PERMISSIONS = []
 
 OTHER_PERMISSIONS_CODENAMES = [
     "view_user",
@@ -51,10 +49,13 @@ if not settings.ALLOW_REMOTE_USER_AUTH:
     ]
 
 AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
+    "read_submission",
     "amend_submission",
     "validate_submission",
     "classify_submission",
     "edit_submission",
     "view_private_submission",
     "can_generate_pdf",
+    "can_refund_transactions",
+    "can_revert_refund_transactions",
 ]

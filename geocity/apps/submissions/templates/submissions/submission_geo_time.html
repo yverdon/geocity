@@ -11,6 +11,7 @@
   {% submission_progressbar steps StepType.GEO_TIME %}
   <h3>{{ geo_title }}</h3>
   <hr>
+  {% directives_and_legal_cta submission %}
   <form method="post">
     <div data-geo-time-role="forms" data-nb-forms="{{ formset.forms|length }}" data-permit-duration-max="{{ permit_request.max_validity }}">
       {% for form in formset.forms %}

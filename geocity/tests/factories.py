@@ -1,6 +1,5 @@
 from datetime import timezone
 
-import factory
 import factory.fuzzy
 import faker
 from django.contrib.auth import get_user_model
@@ -15,6 +14,7 @@ from geocity.apps.accounts import models as accounts_models
 from geocity.apps.accounts.users import get_integrator_permissions
 from geocity.apps.forms import models as forms_models
 from geocity.apps.submissions import models as submissions_models
+from geocity.apps.submissions.payments.postfinance.models import PostFinanceTransaction
 
 
 class UserProfileFactory(factory.django.DjangoModelFactory):
@@ -26,9 +26,7 @@ class UserProfileFactory(factory.django.DjangoModelFactory):
     city = factory.Faker("city")
     phone_first = Truncator(factory.Faker("phone_number")).chars(19)
     phone_second = Truncator(factory.Faker("phone_number")).chars(19)
-    user = factory.SubFactory(
-        "geocity.apps.permits.tests.factories.UserFactory", actor=None
-    )
+    user = factory.SubFactory("geocity.tests.factories.UserFactory", actor=None)
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -58,11 +56,23 @@ class SuperUserFactory(factory.django.DjangoModelFactory):
     email = factory.Faker("email")
     password = "password"
     is_superuser = True
+    is_staff = True
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
         manager = cls._get_manager(model_class)
         return manager.create_superuser(*args, **kwargs)
+
+    @factory.post_generation
+    def groups(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if not extracted:
+            extracted = [SuperUserGroupFactory()]
+
+        for group in extracted:
+            self.groups.add(group)
 
 
 class AdministrativeEntityFactory(factory.django.DjangoModelFactory):
@@ -185,6 +195,31 @@ class SecretariatGroupFactory(GroupFactory):
             self.permissions.add(permission)
 
 
+class ReadonlyGroupFactory(GroupFactory):
+    department = factory.RelatedFactory(PermitDepartmentFactory, "group")
+
+    @factory.post_generation
+    def permissions(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if not extracted:
+            submission_ct = ContentType.objects.get_for_model(
+                submissions_models.Submission
+            )
+            extracted = list(
+                Permission.objects.filter(
+                    codename__in=[
+                        "read_submission",
+                    ],
+                    content_type=submission_ct,
+                )
+            )
+
+        for permission in extracted:
+            self.permissions.add(permission)
+
+
 class ValidatorGroupFactory(GroupFactory):
     department = factory.RelatedFactory(PermitDepartmentFactory, "group")
 
@@ -221,6 +256,21 @@ class IntegratorGroupFactory(GroupFactory):
             self.permissions.add(permission)
 
 
+class SuperUserGroupFactory(GroupFactory):
+    department = factory.RelatedFactory(IntegratorPermitDepartmentFactory, "group")
+
+    @factory.post_generation
+    def permissions(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if not extracted:
+            extracted = list(Permission.objects.all())
+
+        for permission in extracted:
+            self.permissions.add(permission)
+
+
 class SecretariatUserFactory(UserFactory):
     @factory.post_generation
     def groups(self, create, extracted, **kwargs):
@@ -229,6 +279,19 @@ class SecretariatUserFactory(UserFactory):
 
         if not extracted:
             extracted = [SecretariatGroupFactory()]
+
+        for group in extracted:
+            self.groups.add(group)
+
+
+class ReadonlyUserFactory(UserFactory):
+    @factory.post_generation
+    def groups(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if not extracted:
+            extracted = [ReadonlyGroupFactory()]
 
         for group in extracted:
             self.groups.add(group)
@@ -369,6 +432,17 @@ class SubmissionFactory(factory.django.DjangoModelFactory):
     author = factory.SubFactory(UserFactory)
 
 
+class PostFinanceTransactionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = PostFinanceTransaction
+
+    amount = factory.Faker("pyint", min_value=0, max_value=1000)
+    currency = factory.Faker("name")
+    merchant_reference = factory.Faker("name")
+    authorization_timeout_on = factory.Faker("date_time", tzinfo=timezone.utc)
+    payment_url = factory.Faker("uri")
+
+
 class FieldFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = forms_models.Field
@@ -377,6 +451,7 @@ class FieldFactory(factory.django.DjangoModelFactory):
     placeholder = factory.Faker("word")
     help_text = factory.Faker("word")
     input_type = forms_models.Field.INPUT_TYPE_TEXT
+    is_public_when_permitrequest_is_public = True
 
     @factory.post_generation
     def integrator(self, create, extracted, **kwargs):
@@ -519,6 +594,35 @@ class ParentComplementaryDocumentTypeFactory(ComplementaryDocumentTypeFactory):
 class ChildComplementaryDocumentTypeFactory(ComplementaryDocumentTypeFactory):
     form = None
     parent = factory.SubFactory(ParentComplementaryDocumentTypeFactory)
+
+
+class PaymentSettingsFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = forms_models.PaymentSettings
+
+    name = factory.Faker("name")
+    prices_label = "Prices"
+    internal_account = factory.Faker("name")
+    payment_processor = "PostFinance"
+    space_id = factory.Faker("name")
+    user_id = factory.Faker("name")
+    api_key = factory.Faker("name")
+
+    @factory.post_generation
+    def integrator(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        self.integrator = extracted
+
+
+class PriceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = forms_models.Price
+
+    text = factory.Faker("name")
+    amount = factory.Faker("pyint", min_value=0, max_value=1000)
+    currency = factory.Faker("currency_code")
 
 
 class ComplementaryDocumentFactory(factory.django.DjangoModelFactory):

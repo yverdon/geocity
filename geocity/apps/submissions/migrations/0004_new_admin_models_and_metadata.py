@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("submissions", "0003_migrate_permits_data"),
+        ("submissions", "0002_submission_ends_at_starts_at"),
     ]
 
     operations = [

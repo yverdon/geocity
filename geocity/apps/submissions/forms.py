@@ -32,7 +32,10 @@ from geocity.apps.accounts.models import (
 )
 from geocity.fields import AddressWidget
 
+from ..forms.models import Price
+from ..reports.services import generate_report_pdf_as_response
 from . import models, permissions, services
+from .payments.models import SubmissionPrice
 
 input_type_mapping = {
     models.Field.INPUT_TYPE_TEXT: forms.CharField,
@@ -57,9 +60,9 @@ def _title_html_representation(prop, for_summary=False):
 def _file_download_html_representation(prop, for_summary=False):
     if not for_summary and prop.file_download:
         description = prop.help_text if prop.help_text else _("Télécharger le fichier")
-        return f"""<strong>{ prop.name }:</strong>
+        return f"""<strong>{prop.name}:</strong>
             <i class="fa fa-download" aria-hidden="true"></i>
-            <a class="file_download" href="{ reverse('submissions:field_file_download', kwargs={'path':prop.file_download}) }" target="_blank" rel="noreferrer">{ description }</a>"""
+            <a class="file_download" href="{reverse('submissions:field_file_download', kwargs={'path': prop.file_download})}" target="_blank" rel="noreferrer">{description}</a>"""
     return ""
 
 
@@ -90,6 +93,26 @@ def disable_form(form, editable_fields=None):
         form.disabled = True
 
 
+class DisabledChoicesMixin:
+    @property
+    def disabled_choices(self):
+        return getattr(self, "_disabled_choices", [])
+
+    @disabled_choices.setter
+    def disabled_choices(self, other):
+        self._disabled_choices = other
+
+    def create_option(
+        self, name, value, label, selected, index, subindex=None, attrs=None
+    ):
+        option = super().create_option(
+            name, value, label, selected, index, subindex, attrs
+        )
+        if value in self.disabled_choices:
+            option["attrs"]["disabled"] = "disabled"
+        return option
+
+
 class GroupedRadioWidget(forms.RadioSelect):
     template_name = "submissions/widgets/groupedradio.html"
 
@@ -97,8 +120,13 @@ class GroupedRadioWidget(forms.RadioSelect):
         css = {"all": ("customWidgets/GroupedRadio/groupedradio.css",)}
 
 
-class CheckboxSelectMultipleWidget(forms.CheckboxSelectMultiple):
+class CheckboxSelectMultipleWidget(DisabledChoicesMixin, forms.CheckboxSelectMultiple):
     template_name = "submissions/widgets/multipleselect.html"
+    option_template_name = "submissions/widgets/checkbox_option.html"
+
+
+class SingleFormRadioSelectWidget(DisabledChoicesMixin, forms.RadioSelect):
+    template_name = "submissions/widgets/categorized_groupedradio.html"
 
 
 class AdministrativeEntityForm(forms.Form):
@@ -195,14 +223,34 @@ class FormsSelectForm(forms.Form):
         for form in forms:
             forms_by_category_dict.setdefault(form.category, []).append(form)
 
-        forms_by_category = [
-            (category, [(form.pk, form.name) for form in forms])
-            for category, forms in sorted(
-                forms_by_category_dict.items(), key=lambda item: slugify(item[0].name)
-            )
-        ]
+        forms_by_category = []
+        disabled_choices = set()
+        for category, forms in sorted(
+            forms_by_category_dict.items(), key=lambda item: slugify(item[0].name)
+        ):
+            forms_list = []
+            for form in forms:
+                form_name = form.name
+                if form.has_exceeded_maximum_submissions():
+                    form_name = f"{form_name} <span class='px-5 text-danger'>{form.max_submissions_message}</span>"
+                    disabled_choices.add(form.pk)
+                forms_list.append((form.pk, form_name))
+
+            forms_by_category.append((category, forms_list))
 
         self.fields["selected_forms"].choices = forms_by_category
+        self.fields["selected_forms"].widget.disabled_choices = disabled_choices
+        self.initial["selected_forms"] = [
+            e for e in self.initial["selected_forms"] if e not in disabled_choices
+        ]
+
+    def clean_selected_forms(self):
+        selected_forms = models.Form.objects.filter(
+            pk__in=self.cleaned_data["selected_forms"]
+        )
+        if any([form.has_exceeded_maximum_submissions() for form in selected_forms]):
+            raise forms.ValidationError(selected_forms.first().max_submissions_message)
+        return self.cleaned_data["selected_forms"]
 
     @transaction.atomic
     def save(self):
@@ -210,6 +258,75 @@ class FormsSelectForm(forms.Form):
             pk__in=self.cleaned_data["selected_forms"]
         )
         self.instance.set_selected_forms(selected_forms)
+
+        return self.instance
+
+
+class FormsSingleSelectForm(FormsSelectForm):
+    selected_forms = forms.ChoiceField(widget=SingleFormRadioSelectWidget())
+
+    def clean_selected_forms(self):
+        selected_form = models.Form.objects.get(pk=self.cleaned_data["selected_forms"])
+        if selected_form.has_exceeded_maximum_submissions():
+            raise forms.ValidationError(selected_form.max_submissions_message)
+        return self.cleaned_data["selected_forms"]
+
+    @transaction.atomic
+    def save(self):
+        selected_form = models.Form.objects.get(pk=self.cleaned_data["selected_forms"])
+        self.instance.set_selected_forms([selected_form])
+        return self.instance
+
+
+class FormsPriceSelectForm(forms.Form):
+
+    selected_price = forms.ChoiceField(
+        label=False, widget=SingleFormRadioSelectWidget(), required=True
+    )
+
+    def __init__(self, instance, *args, **kwargs):
+        self.instance = instance
+        initial = {}
+        if self.instance.submission_price is not None:
+            initial = {
+                "selected_price": self.instance.submission_price.original_price.pk
+            }
+        super(FormsPriceSelectForm, self).__init__(
+            *args, **{**kwargs, "initial": initial}
+        )
+        if self.instance.status != self.instance.STATUS_DRAFT:
+            self.fields["selected_price"].widget.attrs["disabled"] = "disabled"
+        form_for_payment = self.instance.get_form_for_payment()
+
+        choices = []
+        for price in form_for_payment.prices.order_by("formprice"):
+            choices.append((price.pk, price.str_for_choice()))
+        self.fields["selected_price"].choices = choices
+
+    @transaction.atomic
+    def save(self):
+        selected_price_id = self.cleaned_data["selected_price"]
+        selected_price = Price.objects.get(pk=selected_price_id)
+        price_data = {
+            "amount": selected_price.amount,
+            "currency": selected_price.currency,
+            "text": selected_price.text,
+        }
+        current_submission_price = self.instance.get_submission_price()
+        if current_submission_price is None:
+            SubmissionPrice.objects.create(
+                **{
+                    **price_data,
+                    "original_price": selected_price,
+                    "submission": self.instance,
+                }
+            )
+        else:
+            current_submission_price.amount = price_data["amount"]
+            current_submission_price.text = price_data["text"]
+            current_submission_price.currency = price_data["currency"]
+            current_submission_price.original_price = selected_price
+            current_submission_price.save()
 
         return self.instance
 
@@ -245,10 +362,14 @@ class FieldsForm(PartialValidationMixin, forms.Form):
         super().__init__(*args, **kwargs)
 
         fields_per_form = defaultdict(list)
+        payment_forms = set()
+
         # Create fields
         for form, field in self.get_fields():
             field_name = self.get_field_name(form, field)
             form_name = form.shortname if form.shortname else str(form)
+            if form.requires_online_payment:
+                payment_forms.add(form_name)
             if field.is_value_field():
                 fields_per_form[form_name].append(
                     Field(field_name, title=field.help_text)
@@ -264,8 +385,10 @@ class FieldsForm(PartialValidationMixin, forms.Form):
                 field.disabled = True
 
         fieldsets = []
-        for work_object_type_str, fieldset_fields in fields_per_form.items():
-            fieldset_fields = [work_object_type_str] + fieldset_fields
+        for form_str, fieldset_fields in fields_per_form.items():
+            if form_str in payment_forms:
+                form_str = ""
+            fieldset_fields = [form_str] + fieldset_fields
             fieldsets.append(Fieldset(*fieldset_fields))
 
         self.helper = FormHelper()
@@ -313,7 +436,7 @@ class FieldsForm(PartialValidationMixin, forms.Form):
 
     def get_values(self):
         """
-        Return `FieldValue` objects for the current permit request. They're used to set the initial
+        Return `FieldValue` objects for the current submission. They're used to set the initial
         value of the form fields.
         """
         return self.instance.get_fields_values()
@@ -753,7 +876,19 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                     self.instance.administrative_entity
                 )
             )
-            # If an amend property in the permit request can always be amended, some statuses are added to the list
+
+            # Add STATUS_INQUIRY_IN_PROGRESS when any form of submission can be STATUS_INQUIRY_IN_PROGRESS
+            permanent_publication_enabled = self.instance.forms.filter(
+                permanent_publication_enabled=False
+            ).exists()
+            if not permanent_publication_enabled:
+                STATUS_INQUIRY_IN_PROGRESS = (
+                    models.Submission.STATUS_INQUIRY_IN_PROGRESS
+                )
+            else:
+                STATUS_INQUIRY_IN_PROGRESS = None
+
+            # If an amend property in the submission can always be amended, some statuses are added to the list
             if permissions.can_always_be_updated(user, self.instance):
                 filter1 = [
                     tup
@@ -761,7 +896,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                     if any(i in tup for i in models.Submission.AMENDABLE_STATUSES)
                     or models.Submission.STATUS_APPROVED in tup
                     or models.Submission.STATUS_REJECTED in tup
-                    or models.Submission.STATUS_INQUIRY_IN_PROGRESS in tup
+                    or STATUS_INQUIRY_IN_PROGRESS in tup
                 ]
             else:
                 filter1 = [
@@ -769,7 +904,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                     for tup in models.Submission.STATUS_CHOICES
                     if any(i in tup for i in models.Submission.AMENDABLE_STATUSES)
                     # Add curent status even if this one cannot be changed (otherwise the wrong status is selected in the disabled dropdown)
-                    or self.instance.status in tup
+                    or self.instance.status in tup or STATUS_INQUIRY_IN_PROGRESS in tup
                 ]
 
             filter2 = [
@@ -794,6 +929,10 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                     ]
 
                     self.fields["status"].choices = tuple(all_statuses_tuple)
+
+            # A permit that is anonymous cannot be notified
+            if self.instance.forms.filter(is_anonymous=True).exists():
+                self.fields["notify_author"].disabled = True
 
             if not config.ENABLE_GEOCALENDAR:
                 self.fields["shortname"].widget = forms.HiddenInput()
@@ -931,7 +1070,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             receivers=[submission.author.email],
             subject="{} ({})".format(
                 _("Votre demande a changé de statut"),
-                submission.get_categories_names_list(),
+                submission.get_forms_names_list(),
             ),
             context={
                 "status": dict(submission.STATUS_CHOICES)[submission.status],
@@ -948,7 +1087,6 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
                 ),
                 "administrative_entity": submission.administrative_entity,
                 "name": submission.author.get_full_name(),
-                "forms_list": submission.get_forms_names_list(),
             },
         )
 
@@ -1375,7 +1513,6 @@ class SubmissionComplementaryDocumentsForm(forms.ModelForm):
             "description",
             "status",
             "authorised_departments",
-            "is_public",
             "document_type",
         ]
         widgets = {
@@ -1394,6 +1531,12 @@ class SubmissionComplementaryDocumentsForm(forms.ModelForm):
         ).all()
         self.fields["authorised_departments"].label = _("Département autorisé")
 
+        # TOFIX: reports that are linked to transaction should not
+        # be able to be generated here but rather through the transactions' tab
+        # For now, we have to get the last transaction, in order for the reports
+        # linked payments to work.
+        last_transaction = self.submission.get_last_transaction()
+
         # TODO: prefetch (to optimize reduce requests count)
         choices = [("", _("Aucune sélection"))]
         for form in self.submission.forms.all():
@@ -1402,13 +1545,21 @@ class SubmissionComplementaryDocumentsForm(forms.ModelForm):
             for parent_doc_type in parent_doc_types:
                 doc_types = parent_doc_type.children.all()
                 for doc_type in doc_types:
-                    for report in doc_type.reports.all():
-                        subchoices.append(
-                            (
-                                f"{form.pk}/{report.pk}/{doc_type.pk}",
-                                f"{report} / {doc_type}",
+                    for report in doc_type.reports.filter(is_visible=True):
+                        if last_transaction is not None:
+                            subchoices.append(
+                                (
+                                    f"{form.pk}/{report.pk}/{doc_type.pk}/{last_transaction.pk}",
+                                    f"{report} / {doc_type}",
+                                )
                             )
-                        )
+                        else:
+                            subchoices.append(
+                                (
+                                    f"{form.pk}/{report.pk}/{doc_type.pk}/0",
+                                    f"{report} / {doc_type}",
+                                )
+                            )
             if subchoices:
                 choices.append((f"{form}", subchoices))
         self.fields["generate_from_model"].choices = choices
@@ -1499,20 +1650,29 @@ class SubmissionComplementaryDocumentsForm(forms.ModelForm):
         if not cleaned_data.get("document"):
             generate_from_model = cleaned_data.get("generate_from_model")
             try:
-                form_pk, report_pk, child_doc_type_pk = generate_from_model.split("/")
+                (
+                    form_pk,
+                    report_pk,
+                    child_doc_type_pk,
+                    transaction_pk,
+                ) = generate_from_model.split("/")
             except ValueError:
                 raise ValidationError(
                     _("Selection invalide pour génération à partir du modèle !")
                 )
 
-            # TODO ugh! Importing a view from a form, really?
-            from geocity.apps.reports.views import report_pdf
-
-            report_response = report_pdf(
-                self.request,
-                self.submission.pk,
-                form_id=form_pk,
-                report_id=report_pk,
+            kwargs = {
+                "form_id": form_pk,
+                "report_id": report_pk,
+            }
+            if self.submission.get_transactions():
+                rel_transaction = (
+                    self.submission.get_transactions().filter(pk=transaction_pk).last()
+                )
+                if rel_transaction is not None:
+                    kwargs.update({"transaction_id": rel_transaction.pk})
+            report_response = generate_report_pdf_as_response(
+                self.request.user, self.submission.pk, **kwargs
             )
             cleaned_data["document"] = File(
                 io.BytesIO(b"".join(report_response.streaming_content)),

@@ -8,8 +8,17 @@
 {% block content %}
   {% submission_progressbar steps StepType.FIELDS %}
   <h3>{{ config.PROPERTIES_STEP }} </h3>
-  <hr>
+  <hr />
+  {% directives_and_legal_cta submission %}
   <form method="post">
+    <fieldset>
+    <legend>
+      {% if submission.requires_online_payment %}
+        {{ submission.get_form_for_payment.name }}
+      {% endif %}
+    </legend>
+    </fieldset>
+    {% include "submissions/_submission_prices.html" %}
     {% csrf_token %}
     {{ submission_form.media }}
     {% crispy submission_form %}

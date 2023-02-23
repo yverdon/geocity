@@ -1,4 +1,5 @@
 import enum
+import logging
 import os
 import tempfile
 import urllib.parse
@@ -12,6 +13,7 @@ from django.contrib.auth.models import Group
 from django.contrib.gis.db import models as geomodels
 from django.contrib.gis.geos import GeometryCollection, MultiPoint, Point
 from django.core.exceptions import SuspiciousOperation
+from django.core.files import File
 from django.core.validators import FileExtensionValidator
 from django.db import models, transaction
 from django.db.models import Count, F, JSONField, Max, Min, ProtectedError, Q, Value
@@ -27,12 +29,12 @@ from pdf2image import convert_from_path
 from PIL import Image
 from simple_history.models import HistoricalRecords
 
-from geocity.apps.accounts import users
 from geocity.apps.accounts.models import AdministrativeEntity, PermitDepartment, User
 from geocity.apps.accounts.validators import validate_email
 from geocity.apps.forms.models import Field, Form, FormCategory
 
 from . import fields
+from .payments.models import SubmissionPrice
 
 # Contact types
 CONTACT_TYPE_OTHER = 0
@@ -64,6 +66,7 @@ ACTION_POKE = "poke"
 ACTION_PROLONG = "prolong"
 ACTION_COMPLEMENTARY_DOCUMENTS = "complementary_documents"
 ACTION_REQUEST_INQUIRY = "request_inquiry"
+ACTION_TRANSACTION = "transactins"
 # If you add an action here, make sure you also handle it in `views.get_form_for_action`,  `views.handle_form_submission`
 # and services.get_actions_for_administrative_entity
 ACTIONS = [
@@ -75,6 +78,8 @@ ACTIONS = [
     ACTION_COMPLEMENTARY_DOCUMENTS,
     ACTION_REQUEST_INQUIRY,
 ]
+
+logger = logging.getLogger(__name__)
 
 
 def printed_submission_storage(instance, filename):
@@ -91,7 +96,7 @@ class GeoTimeInfo(enum.Enum):
 class SubmissionQuerySet(models.QuerySet):
     def filter_for_user(self, user, form_filter=None, ignore_archived=True):
         """
-        Return the list of permit requests this user has access to.
+        Return the list of submissions this user has access to.
         """
         annotate_with = dict(
             starts_at_min=Min("geo_time__starts_at"),
@@ -132,9 +137,11 @@ class SubmissionQuerySet(models.QuerySet):
         if not user.is_superuser:
             qs_filter = Q(author=user)
 
-            if user.has_perm("submissions.amend_submission"):
+            if user.has_perm("submissions.amend_submission") or user.has_perm(
+                "submissions.read_submission"
+            ):
                 qs_filter |= Q(
-                    administrative_entity__in=users.get_administrative_entities_associated_to_user(
+                    administrative_entity__in=AdministrativeEntity.objects.associated_to_user(
                         user
                     ),
                 ) & ~Q(status=Submission.STATUS_DRAFT)
@@ -179,7 +186,6 @@ class Submission(models.Model):
         STATUS_PROCESSING,
         STATUS_AWAITING_SUPPLEMENT,
         STATUS_RECEIVED,
-        STATUS_INQUIRY_IN_PROGRESS,
     }
 
     # Statuses that can be edited by pilot service if granted permission "edit_submission"
@@ -195,6 +201,12 @@ class Submission(models.Model):
         STATUS_APPROVED,
         STATUS_PROCESSING,
         STATUS_AWAITING_SUPPLEMENT,
+    }
+
+    # Statuses of submission visible in calendar (api => submissions_details)
+    VISIBLE_IN_CALENDAR_STATUSES = {
+        STATUS_APPROVED,
+        STATUS_INQUIRY_IN_PROGRESS,
     }
 
     PROLONGATION_STATUS_PENDING = 0
@@ -241,9 +253,6 @@ class Submission(models.Model):
     contacts = models.ManyToManyField(
         "Contact", related_name="+", through="SubmissionContact"
     )
-    intersected_geometries = models.TextField(
-        _("Entités géométriques concernées"), max_length=1024, null=True
-    )
     validation_pdf = fields.SubmissionFileField(
         _("pdf de validation"),
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
@@ -278,14 +287,17 @@ class Submission(models.Model):
     objects = SubmissionQuerySet().as_manager()
 
     class Meta:
-        verbose_name = _("2.3 Consultation de la demande")
-        verbose_name_plural = _("2.3 Consultation des demandes")
+        verbose_name = _("2.2 Consultation de la demande")
+        verbose_name_plural = _("2.2 Consultation des demandes")
         permissions = [
-            ("amend_submission", _("Traiter les demandes de permis")),
-            ("validate_submission", _("Valider les demandes de permis")),
-            ("classify_submission", _("Classer les demandes de permis")),
-            ("edit_submission", _("Éditer les demandes de permis")),
+            ("read_submission", _("Consulter les demandes")),
+            ("amend_submission", _("Traiter les demandes")),
+            ("validate_submission", _("Valider les demandes")),
+            ("classify_submission", _("Classer les demandes")),
+            ("edit_submission", _("Éditer les demandes")),
             ("view_private_submission", _("Voir les demandes restreintes")),
+            ("can_refund_transactions", _("Rembourser une transaction")),
+            ("can_revert_refund_transactions", _("Revenir sur un remboursement")),
         ]
         indexes = [models.Index(fields=["created_at"])]
 
@@ -462,7 +474,7 @@ class Submission(models.Model):
             # What a good sweat!!!
 
             if not self.geo_time.exists():
-                # At this point following the permit request steps, the Geotime object
+                # At this point following the submission steps, the Geotime object
                 # must have been created only if Geometry or Dates are required,
                 # if the form does not need require either, we need to create the object.
                 SubmissionGeoTime.objects.create(submission_id=self.pk)
@@ -500,14 +512,14 @@ class Submission(models.Model):
             submission=self, start_date__lte=today, end_date__gte=today
         ).first()
 
-    def get_categories_names_list(self):
-        return ", ".join(
-            list(self.forms.all().values_list("category__name", flat=True).distinct())
-        )
-
     def get_forms_names_list(self):
         return ", ".join(
-            list(self.forms.all().values_list("name", flat=True).distinct())
+            list(
+                self.forms.all()
+                .values_list("name", flat=True)
+                .distinct("name")
+                .order_by("name")
+            )
         )
 
     def archive(self, archivist):
@@ -541,16 +553,6 @@ class Submission(models.Model):
     @property
     def is_archived(self):
         return self.status == self.STATUS_ARCHIVED
-
-    @property
-    def has_geom_intersection_enabled(self):
-        """
-        Check if there is any work_object_types with has_geom_intersection_enabled
-        """
-        has_geom_intersection_enabled = self.forms.filter(
-            has_geom_intersection_enabled=True
-        ).exists()
-        return has_geom_intersection_enabled
 
     @property
     def complementary_documents(self):
@@ -790,7 +792,8 @@ class Submission(models.Model):
         return (
             ContactType.objects.filter(form_category__in=self.get_form_categories())
             .values_list("type", "is_mandatory")
-            .order_by("-is_mandatory")
+            .distinct()
+            .order_by("-is_mandatory", "type")
         )
 
     def get_missing_required_contact_types(self):
@@ -976,6 +979,12 @@ class Submission(models.Model):
                 Submission.STATUS_PROCESSING,
             ],
             "request_inquiry": list(Submission.AMENDABLE_STATUSES),
+            "transactions": [
+                Submission.STATUS_APPROVED,
+                Submission.STATUS_REJECTED,
+                Submission.STATUS_AWAITING_VALIDATION,
+                Submission.STATUS_PROCESSING,
+            ],
         }
 
         available_statuses_for_administrative_entity = (
@@ -1003,33 +1012,6 @@ class Submission(models.Model):
 
     def get_selected_forms(self):
         return SelectedForm.objects.filter(submission=self)
-
-    def get_intersected_geometries(self):
-        intersected_geometries = ""
-
-        if self.has_geom_intersection_enabled:
-
-            intersected_geometries_ids = []
-            geotimes = self.geo_time.all()
-
-            for geo_time in geotimes:
-
-                # Django GIS GEOS API does not support intersection with GeometryCollection
-                # For this reason, we have to iterate over collection content
-                for geom in geo_time.geom:
-                    results = (
-                        GeomLayer.objects.filter(geom__intersects=geom)
-                        .exclude(pk__in=intersected_geometries_ids)
-                        .distinct()
-                    )
-                    for result in results:
-                        intersected_geometries_ids.append(result.pk)
-                        intersected_geometries += f"""
-                            {result.pk}: {result.layer_name} ; {result.description} ;
-                            {result.source_id} ; {result.source_subid} <br>
-                            """
-
-        return intersected_geometries
 
     def reverse_geocode_and_store_address_geometry(self, to_geocode_addresses):
         # Delete the previous geocoded geometries
@@ -1073,6 +1055,159 @@ class Submission(models.Model):
                 comes_from_automatic_geocoding=True,
                 geom=geom,
             )
+
+    def get_form_for_payment(self):
+        """
+        For online payments, only one form can exist on a Submission
+        """
+        if self.forms.count() != 1:
+            logger.warning(
+                f"Multiple forms in the submission ({self.pk}), in an "
+                f"entity set to [single form submission]. Payment feature"
+                f"not available."
+            )
+            return None
+        return self.forms.first()
+
+    def requires_online_payment(self):
+        form_for_payment = self.get_form_for_payment()
+        return form_for_payment and form_for_payment.requires_online_payment
+
+    @property
+    def submission_price(self):
+        return self.get_submission_price()
+
+    def get_submission_price(self):
+        try:
+            return SubmissionPrice.objects.get(submission=self)
+        except SubmissionPrice.DoesNotExist:
+            return None
+
+    def get_transactions(self):
+        # TODO: if more payment processors are implemented, change this to add all transaction types to queryset
+        if self.submission_price is None:
+            return None
+        return self.submission_price.get_transactions()
+
+    def get_history(self):
+        # Transactions history
+        if self.submission_price is None:
+            transactions = []
+        else:
+            transactions = self.submission_price.transactions.all()
+        transaction_versions = []
+        last_status = ""
+        for transaction in transactions:
+            versions = []
+            for version in transaction.history.all():
+                # Include only updates that changed the transaction status
+                if last_status != version.status:
+                    versions.append(version)
+                last_status = version.status
+            transaction_versions += versions
+
+        # Merge with Submission (self) history
+        history = [
+            (event.history_date, event)
+            for event in (*self.history.all(), *transaction_versions)
+        ]
+        history.sort(reverse=True)
+        return history
+
+    def get_last_transaction(self):
+        if self.get_transactions() is None:
+            return None
+        return self.get_transactions().order_by("-updated_date").last()
+
+    def get_submission_payment_attachments(self, pdf_type):
+        pdf_types = {
+            "confirmation": lambda p: p.payment_confirmation_report,
+            "refund": lambda p: p.payment_refund_report,
+        }
+        report_func = pdf_types[pdf_type]
+        form = self.get_form_for_payment()
+
+        if not form or (
+            not form.payment_settings or not report_func(form.payment_settings)
+        ):
+            return []
+        child_doc_type = None
+        for doc_type in report_func(form.payment_settings).document_types.all():
+            if doc_type.parent.form.pk == form.pk:
+                child_doc_type = doc_type
+                break
+
+        if not child_doc_type:
+            return []
+
+        comp_doc = (
+            self.get_complementary_documents(self.author)
+            .filter(document_type=child_doc_type)
+            .last()
+        )
+        if not comp_doc:
+            return []
+        return [(comp_doc.name, comp_doc.document.file.read())]
+
+    def generate_and_save_pdf(self, pdf_type, transaction):
+        pdf_types = {
+            "confirmation": (
+                lambda t: t.get_confirmation_pdf(),
+                lambda p: p.payment_confirmation_report,
+                "Facture",
+            ),
+            "refund": (
+                lambda t: t.get_refund_pdf(),
+                lambda p: p.payment_refund_report,
+                "Remboursement",
+            ),
+        }
+        gen_func, report_func, description = pdf_types[pdf_type]
+        file_name, file_bytes = gen_func(transaction)
+        complementary_document_attrs = {
+            "document": File(
+                file_bytes,
+                name=file_name,
+            )
+        }
+        form = self.get_form_for_payment()
+        child_doc_type = None
+        if not form or not form.payment_settings:
+            return None
+        for doc_type in report_func(form.payment_settings).document_types.all():
+            if doc_type.parent.form.pk == form.pk:
+                child_doc_type = doc_type
+                break
+
+        if child_doc_type is None:
+            # Payment settings are not configured correctly, failing silently
+            return None
+        complementary_document_attrs["document_type"] = child_doc_type
+
+        complementary_document_attrs[
+            "description"
+        ] = f"{description} {transaction.merchant_reference}"
+        complementary_document_attrs["owner"] = self.author
+        complementary_document_attrs["submission"] = self
+        complementary_document_attrs[
+            "status"
+        ] = SubmissionComplementaryDocument.STATUS_FINALE
+
+        complementary_document_attrs["is_public"] = False
+        comp_doc = SubmissionComplementaryDocument.objects.create(
+            **complementary_document_attrs
+        )
+
+        comp_doc.authorised_departments.set(PermitDepartment.objects.all())
+        return comp_doc
+
+    def has_any_form_with_exceeded_submissions(self):
+        return any(form.has_exceeded_maximum_submissions() for form in self.forms.all())
+
+    def get_maximum_submissions_message(self):
+        for form in self.forms.all():
+            if form.has_exceeded_maximum_submissions():
+                return form.max_submissions_message
 
 
 class Contact(models.Model):
@@ -1147,6 +1282,7 @@ class ContactType(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
 
     class Meta:
@@ -1186,7 +1322,7 @@ class SubmissionContact(models.Model):
 
 class FieldValue(models.Model):
     """
-    Value of a property for a selected object in a permit request.
+    Value of a property for a selected object in a submission.
     """
 
     field = models.ForeignKey(
@@ -1260,29 +1396,6 @@ class SubmissionGeoTime(models.Model):
         ]
 
 
-class GeomLayer(models.Model):
-    """
-    Geometric entities that might be touched by the PermitRequest
-    """
-
-    layer_name = models.CharField(
-        _("Nom de la couche source"), max_length=128, blank=True
-    )
-    description = models.CharField(_("Commentaire"), max_length=1024, blank=True)
-    source_id = models.CharField(_("Id entité"), max_length=128, blank=True)
-    source_subid = models.CharField(
-        _("Id entité secondaire"), max_length=128, blank=True
-    )
-    external_link = models.URLField(_("Lien externe"), blank=True)
-    geom = geomodels.MultiPolygonField(_("Géométrie"), null=True, srid=2056)
-
-    class Meta:
-        verbose_name = _("3.4 Consultation de l'entité géographique à intersecter")
-        verbose_name_plural = _(
-            "3.4 Consultation des entités géographiques à intersecter"
-        )
-
-
 class SubmissionWorkflowStatusQuerySet(models.QuerySet):
     def get_statuses_for_administrative_entity(self, administrative_entity):
         """
@@ -1332,7 +1445,7 @@ class ArchivedSubmissionQuerySet(models.QuerySet):
 
         qs_filter = Q(archivist=user)
         qs_filter |= Q(
-            submission__administrative_entity__in=users.get_administrative_entities_associated_to_user(
+            submission__administrative_entity__in=AdministrativeEntity.objects.associated_to_user(
                 user
             )
         )
@@ -1392,8 +1505,8 @@ class SubmissionInquiry(models.Model):
     )
 
     class Meta:
-        verbose_name = _("2.4 Enquête publique")
-        verbose_name_plural = _("2.4 Enquêtes publiques")
+        verbose_name = _("2.3 Enquête publique")
+        verbose_name_plural = _("2.3 Enquêtes publiques")
 
     @classmethod
     def get_current_inquiry(cls, submission):
@@ -1479,6 +1592,19 @@ class SubmissionComplementaryDocument(models.Model):
         return self.document.name
 
 
+class ChildrenFormManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(parent__isnull=False)
+
+    def associated_to_parent(self, parent):
+        """
+        Get the complementary document types associated the parent
+        """
+        return self.get_queryset().filter(
+            parent=parent,
+        )
+
+
 class ComplementaryDocumentType(models.Model):
     name = models.CharField(_("nom"), max_length=255)
     parent = models.ForeignKey(
@@ -1503,6 +1629,7 @@ class ComplementaryDocumentType(models.Model):
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
         related_name="document_types",
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
 
     # reverse relationship is manually defined on reports.Report so it shows up on both sides in admin
@@ -1516,6 +1643,11 @@ class ComplementaryDocumentType(models.Model):
         through="reports.report_document_types",
     )
 
+    objects = models.Manager()
+
+    # Only children objects
+    children_objects = ChildrenFormManager()
+
     class Meta:
         constraints = [
             models.CheckConstraint(
@@ -1524,11 +1656,20 @@ class ComplementaryDocumentType(models.Model):
                 name="complementary_document_type_restrict_form_link_to_parents",
             )
         ]
-        verbose_name = _("2.2 Type de document")
-        verbose_name_plural = _("2.2 Types de document")
+        verbose_name = _("3.2 Catégorie de document")
+        verbose_name_plural = _("3.2 Catégories de document")
 
     def __str__(self):
         return self.name
+
+
+# Change the app_label in order to regroup models under the same app in admin
+class ComplementaryDocumentTypeForAdminSite(ComplementaryDocumentType):
+    class Meta:
+        proxy = True
+        app_label = "reports"
+        verbose_name = _("3.2 Type de document")
+        verbose_name_plural = _("3.2 Type de document")
 
 
 class SubmissionAmendField(models.Model):
@@ -1553,6 +1694,7 @@ class SubmissionAmendField(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
 
     class Meta:

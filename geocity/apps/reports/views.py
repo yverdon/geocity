@@ -1,60 +1,17 @@
-from datetime import timedelta
-
 from django.contrib.auth.decorators import login_required
-from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
-from django.urls import reverse
-from django.utils import timezone
-from knox.models import AuthToken
 from rest_framework.decorators import api_view
 
 from geocity.apps.accounts.decorators import permanent_user_required
-from geocity.apps.api.serializers import SubmissionPrintSerializer
-from geocity.apps.forms.models import Form
-from geocity.apps.submissions import services
-from geocity.apps.submissions.models import ComplementaryDocumentType, Submission
+from geocity.apps.api.serializers import (
+    PostFinanceTransactionPrintSerializer,
+    SubmissionPrintSerializer,
+)
+from geocity.apps.submissions import permissions, services
 
 from .models import Report
-from .utils import run_docker_container
-
-
-def user_is_allowed_to_generate_report(request, submission_id, form_id, report_id):
-
-    # Check that user has permission to generate pdf
-    if not (
-        request.user.has_perm("reports.can_generate_pdf") or request.user.is_superuser
-    ):
-        raise Http404
-
-    # Check that user is allowed to see the current permit_request
-    permit_request = get_object_or_404(
-        Submission.objects.filter_for_user(request.user), pk=submission_id
-    )
-
-    # Check the current form_id is allowed for user
-    # The form list is associated to a submission, thus a user that have
-    # access to the submission, also has access to all forms associated with it
-    if int(form_id) not in permit_request.forms.values_list("pk", flat=True):
-        raise Http404
-
-    form = get_object_or_404(Form, pk=form_id)
-
-    # Check the user is allowed to use this report template
-
-    # List parents documents for a given form
-    document_parent_list = ComplementaryDocumentType.objects.filter(
-        form_id=form_id, parent__isnull=True
-    )
-
-    # Check if there's a children document with the same report id as the request
-    children_document_exists = ComplementaryDocumentType.objects.filter(
-        parent__in=document_parent_list, reports__id=report_id
-    ).exists()
-    if not children_document_exists:
-        raise Http404
-
-    return permit_request, form
+from .services import generate_report_pdf_as_response
 
 
 # TODO: instead of taking Submission and Form arguments, we should take
@@ -62,13 +19,13 @@ def user_is_allowed_to_generate_report(request, submission_id, form_id, report_i
 @api_view(["GET"])  # pretend it's a DRF view, so we get token auth
 @login_required
 @permanent_user_required
-def report_content(request, submission_id, form_id, report_id):
+def report_content(request, submission_id, form_id, report_id, **kwargs):
     """This views returns the content of a report in HTML. It is mainly meant to be rendered
     to PDF (but could also work as a PDF)"""
 
     # Ensure user is allowed to generate pdf
-    submission, form = user_is_allowed_to_generate_report(
-        request, submission_id, form_id, report_id
+    submission, form = permissions.user_is_allowed_to_generate_report(
+        request.user, submission_id, form_id, report_id
     )
 
     report = get_object_or_404(Report, pk=report_id)
@@ -86,6 +43,22 @@ def report_content(request, submission_id, form_id, report_id):
             "amend_properties": amend_props,
         },
     }
+
+    transaction = None
+    if kwargs.get("transaction_id"):
+        transaction = (
+            submission.get_transactions()
+            .filter(pk=kwargs.get("transaction_id"))
+            .first()
+        )
+    if transaction is not None:
+        base_section_context.update(
+            {
+                "transaction_data": PostFinanceTransactionPrintSerializer(
+                    transaction
+                ).data
+            }
+        )
 
     # Render all sections
     rendered_sections = []
@@ -107,46 +80,16 @@ def report_content(request, submission_id, form_id, report_id):
 # in SelectedForm, which already joins both, so they are consistent.
 @login_required
 @permanent_user_required
-def report_pdf(request, submission_id, form_id, report_id):
-
-    # Ensure user is allowed to generate pdf
-    user_is_allowed_to_generate_report(request, submission_id, form_id, report_id)
-
-    authtoken, token = AuthToken.objects.create(
-        request.user, expiry=timedelta(minutes=5)
+def report_pdf(request, submission_id, form_id, report_id, **kwargs):
+    permissions.user_is_allowed_to_generate_report(
+        request.user,
+        submission_id,
+        form_id,
+        report_id,
     )
-
-    url = reverse(
-        "reports:submission_report_content",
-        kwargs={
-            "submission_id": submission_id,
-            "form_id": form_id,
-            "report_id": report_id,
-        },
+    return generate_report_pdf_as_response(
+        request.user, submission_id, form_id, report_id, kwargs.get("transaction_id")
     )
-
-    commands = [
-        f"http://web:9000{url}",
-        "/io/output.pdf",
-        token,
-    ]
-
-    output = run_docker_container(
-        "geocity_pdf",
-        commands,
-        file_output="/io/output.pdf",
-    )
-
-    authtoken.delete()
-
-    now = timezone.now()
-
-    response = FileResponse(
-        output, filename=f"autogenerated_report_{now:%Y-%m-%d}.pdf", as_attachment=False
-    )
-    # response["Content-Disposition"] = 'inline; filename="report.pdf"'
-    response["Content-Type"] = "application/pdf"
-    return response
 
 
 @api_view(["GET"])  # pretend it's a DRF view, so we get token auth

@@ -101,7 +101,7 @@ def export(args):
             print(" invalid !")
             # show contents of the response
             r = requests.get(
-                f"http://web:9000/wfs3/collections/permits/items/{submission_id}",
+                f"http://web:9000/wfs3/collections/submissions/items/{submission_id}",
                 headers={"Authorization": f"Token {token}"},
             )
             print(f"response code: {r.status_code}")

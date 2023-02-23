@@ -10,7 +10,7 @@ from django.core.validators import (
     RegexValidator,
 )
 from django.db import models
-from django.db.models import BooleanField, ExpressionWrapper, Q, UniqueConstraint
+from django.db.models import BooleanField, Count, ExpressionWrapper, Q, UniqueConstraint
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
@@ -39,11 +39,24 @@ class SiteProfile(models.Model):
         on_delete=models.SET_NULL,
         verbose_name=_("Intégrateur"),
         related_name="site_profiles",
+        limit_choices_to={"permit_department__is_integrator_admin": True},
+    )
+    custom_template = models.ForeignKey(
+        "TemplateCustomization",
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Page de login"),
     )
 
     class Meta:
-        verbose_name = _("Configuration de l'intégrateur")
-        verbose_name_plural = _("Configuration de l'intégrateur")
+        verbose_name = _(
+            "Paramètres complémentaires (à définir après avoir créé le site)"
+        )
+        verbose_name_plural = _(
+            "Paramètres complémentaires (à définir après avoir créé le site)"
+        )
 
 
 @receiver(post_save, sender=Site)
@@ -185,6 +198,19 @@ class AdministrativeEntityManager(models.Manager):
     def public(self):
         return self.get_queryset().filter(anonymous_user__isnull=False)
 
+    def associated_to_user(self, user):
+        """
+        Get the administrative entities associated to a specific user.
+        If the users has entities, he's a trusted user
+        """
+        return (
+            self.get_queryset()
+            .filter(
+                departments__group__in=user.groups.all(),
+            )
+            .order_by("ofs_id", "-name")
+        )
+
 
 class AdministrativeEntity(models.Model):
     name = models.CharField(_("name"), max_length=128)
@@ -218,6 +244,7 @@ class AdministrativeEntity(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
     additional_searchtext_for_address_field = models.CharField(
         _("Filtre additionnel pour la recherche d'adresse"),
@@ -247,6 +274,12 @@ class AdministrativeEntity(models.Model):
             )
         ],
     )
+    is_single_form_submissions = models.BooleanField(
+        _("Autoriser uniquement un objet par demande"),
+        default=False,
+        help_text=_("Nécessaire pour l'utilisation du système de paiement en ligne"),
+    )
+
     sites = models.ManyToManyField(
         Site,
         related_name="+",
@@ -286,14 +319,69 @@ class AdministrativeEntity(models.Model):
                 zipcode=settings.ANONYMOUS_USER_ZIPCODE,
             )
 
+    def clean(self):
+        from geocity.apps.forms.models import Form
+        from geocity.apps.submissions.models import Submission
+
+        if (
+            Form.objects.annotate(entities_count=Count("administrative_entities"))
+            .filter(
+                is_public=True, entities_count__gt=1, administrative_entities=self.pk
+            )
+            .exists()
+        ):
+            raise ValidationError(
+                _(
+                    "Des formulaires partagés avec d'autres entités "
+                    "administratives sont encore disponibles."
+                )
+            )
+
+        if (
+            self.is_single_form_submissions
+            and Submission.objects.annotate(forms_count=Count("forms"))
+            .filter(
+                administrative_entity_id=self.pk,
+                forms_count__gt=1,
+            )
+            .exclude(status=Submission.STATUS_ARCHIVED)
+            .exists()
+        ):
+            raise ValidationError(
+                {
+                    "is_single_form_submissions": _(
+                        "Impossible tant que des demandes liées à plusieurs "
+                        "formulaires sont encore actives dans cette entité "
+                        "administrative."
+                    )
+                }
+            )
+
+        if (
+            not self.is_single_form_submissions
+            and Form.objects.filter(
+                requires_online_payment=True, administrative_entities=self
+            ).exists()
+        ):
+            raise ValidationError(
+                {
+                    "is_single_form_submissions": _(
+                        "Il existe encore des formulaires soumis au paiement en ligne "
+                        "dans cette entité administrative. Avant de permettre les "
+                        "demandes à objets multiples, veuillez supprimer ces "
+                        "formulaires ou y désactiver le paiement en ligne."
+                    )
+                }
+            )
+
 
 # Change the app_label in order to regroup models under the same app in admin
 class AdministrativeEntityForAdminSite(AdministrativeEntity):
     class Meta:
         proxy = True
         app_label = "forms"
-        verbose_name = _("1.1 Entité administrative (commune, organisation)")
-        verbose_name_plural = _("1.1 Entités administratives (commune, organisation)")
+        verbose_name = _("1.1 Entité administrative")
+        verbose_name_plural = _("1.1 Entités administratives")
 
 
 class UserProfileManager(models.Manager):
@@ -439,7 +527,7 @@ class UserProfile(models.Model):
     @cached_property
     def is_temporary(self):
         """
-        UserProfile created when starting an anonymous permit request,
+        UserProfile created when starting an anonymous submission,
         then deleted at the submission (replaced by an anonymous user).
         """
         return self.user and self.user.username.startswith(

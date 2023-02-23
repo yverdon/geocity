@@ -32,6 +32,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
 from django.views import View
@@ -57,7 +58,13 @@ from geocity.apps.forms.models import Field, Form
 
 from . import filters, forms, models, permissions, services, tables
 from .exceptions import BadSubmissionStatus, NonProlongableSubmission
+from .payments.services import (
+    get_payment_processor,
+    get_transaction_from_id,
+    get_transaction_from_merchant_reference,
+)
 from .search import search_result_to_json, search_submissions
+from .services import send_refund_email
 from .shortcuts import get_submission_for_user_or_404
 from .steps import (
     StepType,
@@ -69,7 +76,11 @@ from .steps import (
     get_selectable_categories,
     get_selectable_entities,
 )
-from .tables import CustomFieldValueAccessibleSubmission, get_custom_dynamic_table
+from .tables import (
+    CustomFieldValueAccessibleSubmission,
+    TransactionsTable,
+    get_custom_dynamic_table,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -233,20 +244,28 @@ class SubmissionDetailView(View):
         can_validate_submission = permissions.can_validate_submission(
             self.request.user, self.submission
         )
-        history = (
-            self.submission.history.all()
-            if permissions.has_permission_to_amend_submission(
+
+        history = []
+        # Prepare history for the submission and transaction(s)
+        if (
+            permissions.has_permission_to_amend_submission(
                 self.request.user, self.submission
             )
             or can_validate_submission
-            else None
-        )
+        ):
+            history = self.submission.get_history()
+
         prolongation_enabled = (
             self.submission.get_selected_forms().aggregate(
                 Sum("form__permit_duration")
             )["form__permit_duration__sum"]
             is not None
         )
+        transactions_table = None
+        if self.submission.requires_online_payment():
+            transactions_table = TransactionsTable(
+                data=self.submission.get_transactions()
+            )
 
         return {
             **kwargs,
@@ -266,6 +285,8 @@ class SubmissionDetailView(View):
                 "directives": self.submission.get_submission_directives(),
                 "prolongation_enabled": prolongation_enabled,
                 "document_enabled": self.submission.has_document_enabled(),
+                "online_payment_enabled": self.submission.requires_online_payment(),
+                "transactions_table": transactions_table,
                 "publication_enabled": self.submission.forms.filter(
                     publication_enabled=True
                 ).count()
@@ -447,7 +468,7 @@ class SubmissionDetailView(View):
 
         if rest:
             logger.error(
-                "User %s is a member of more than 1 validation group for permit request %s. This is not"
+                "User %s is a member of more than 1 validation group for submission %s. This is not"
                 " implemented yet.",
                 self.request.user,
                 self.submission,
@@ -552,13 +573,12 @@ class SubmissionDetailView(View):
             data = {
                 "subject": "{} ({})".format(
                     _("Votre annonce a été prise en compte et classée"),
-                    submission.get_categories_names_list(),
+                    submission.get_forms_names_list(),
                 ),
                 "users_to_notify": [submission.author.email],
                 "template": "submission_received.txt",
                 "submission": submission,
                 "absolute_uri_func": self.request.build_absolute_uri,
-                "forms_list": submission.get_forms_names_list(),
             }
             services.send_email_notification(data)
 
@@ -571,13 +591,12 @@ class SubmissionDetailView(View):
                         _(
                             "Une annonce a été prise en compte et classée par le secrétariat"
                         ),
-                        submission.get_categories_names_list(),
+                        submission.get_forms_names_list(),
                     ),
                     "users_to_notify": set(mailing_list),
                     "template": "submission_received_for_services.txt",
                     "submission": submission,
                     "absolute_uri_func": self.request.build_absolute_uri,
-                    "forms_list": submission.get_forms_names_list(),
                 }
                 services.send_email_notification(data)
 
@@ -649,13 +668,12 @@ class SubmissionDetailView(View):
                             _(
                                 "Les services chargés de la validation d'une demande ont donné leur préavis"
                             ),
-                            self.submission.get_categories_names_list(),
+                            self.submission.get_forms_names_list(),
                         ),
                         "users_to_notify": self.submission.get_secretary_email(),
                         "template": "submission_validated.txt",
                         "submission": self.submission,
                         "absolute_uri_func": self.request.build_absolute_uri,
-                        "forms_list": self.submission.get_forms_names_list(),
                     }
                     services.send_email_notification(data)
             else:
@@ -705,13 +723,12 @@ class SubmissionDetailView(View):
             data = {
                 "subject": "{} ({})".format(
                     subject,
-                    form.instance.get_categories_names_list(),
+                    form.instance.get_forms_names_list(),
                 ),
                 "users_to_notify": [form.instance.author.email],
                 "template": "submission_prolongation.txt",
                 "submission": form.instance,
                 "absolute_uri_func": self.request.build_absolute_uri,
-                "forms_list": form.instance.get_forms_names_list(),
             }
             services.send_email_notification(data)
 
@@ -790,15 +807,28 @@ class SubmissionDetailView(View):
 @check_mandatory_2FA
 def submission_complementary_document_delete(request, pk):
     document = get_object_or_404(models.SubmissionComplementaryDocument.objects, pk=pk)
+    author = document.submission.author
 
     success_url = reverse(
         "submissions:submission_detail",
         kwargs={"submission_id": document.submission_id},
     )
 
+    if author == request.user and not request.user.is_superuser:
+        messages.add_message(
+            request,
+            messages.ERROR,
+            _("L'auteur d'une soumission ne peut pas supprimer ses propres documents"),
+        )
+        return redirect(success_url)
+
     if document.owner != request.user and not request.user.is_superuser:
         messages.add_message(
-            request, messages.ERROR, _("Vous pouvez seulement supprimer vos documents")
+            request,
+            messages.ERROR,
+            _(
+                "Vous pouvez seulement supprimer les documents dont vous êtes propriétaire"
+            ),
         )
         return redirect(success_url)
 
@@ -1055,9 +1085,9 @@ def anonymous_submission(request):
     if not anonymous_forms:
         raise Http404
 
-    # Permit request page
+    # Submission page
 
-    # Never create a second permit request for the same temp_author
+    # Never create a second submission for the same temp_author
     submission, _ = models.Submission.objects.get_or_create(
         administrative_entity=entity,
         author=request.user,
@@ -1182,6 +1212,13 @@ def submission_select_forms(request, submission_id):
         current_step_type=StepType.FORMS,
     )
 
+    if submission.administrative_entity.is_single_form_submissions:
+        form_class = forms.FormsSingleSelectForm
+        steps_context["current_step_title"] = config.FORMS_SINGLE_STEP
+    else:
+        form_class = forms.FormsSelectForm
+        steps_context["current_step_title"] = config.FORMS_STEP
+
     categories_filters = request.GET.getlist("typefilter")
     if categories_filters:
         selectable_categories = models.FormCategory.objects.filter_by_tags(
@@ -1191,7 +1228,7 @@ def submission_select_forms(request, submission_id):
         selectable_categories = None
 
     if request.method == "POST":
-        forms_selection_form = forms.FormsSelectForm(
+        forms_selection_form = form_class(
             data=request.POST,
             instance=submission,
             user=request.user,
@@ -1204,7 +1241,7 @@ def submission_select_forms(request, submission_id):
 
             return redirect(get_next_step(steps, StepType.FORMS).url)
     else:
-        forms_selection_form = forms.FormsSelectForm(
+        forms_selection_form = form_class(
             instance=submission,
             user=request.user,
             form_categories=selectable_categories,
@@ -1235,18 +1272,36 @@ def submission_fields(request, submission_id):
         submission=submission,
         current_step_type=StepType.FIELDS,
     )
+    prices_form = None
+    requires_online_payment = False
+
+    if submission.requires_online_payment():
+        form_payment = submission.get_form_for_payment()
+        if form_payment is not None:
+            requires_online_payment = form_payment.requires_online_payment
 
     if request.method == "POST":
         # Disable `required` fields validation to allow partial save
         form = forms.FieldsForm(
             instance=submission, data=request.POST, enable_required=False
         )
-        if form.is_valid():
+        prices_form_valid = True
+        if requires_online_payment:
+            prices_form = forms.FormsPriceSelectForm(
+                instance=submission, data=request.POST
+            )
+            if prices_form.is_valid():
+                prices_form.save()
+            else:
+                prices_form_valid = False
+        if form.is_valid() and prices_form_valid:
             form.save()
 
             return redirect(get_next_step(steps_context["steps"], StepType.FIELDS).url)
     else:
         form = forms.FieldsForm(instance=submission, enable_required=False)
+        if requires_online_payment:
+            prices_form = forms.FormsPriceSelectForm(instance=submission)
 
     return render(
         request,
@@ -1254,6 +1309,7 @@ def submission_fields(request, submission_id):
         {
             "submission": submission,
             "submission_form": form,
+            "prices_form": prices_form,
             **steps_context,
         },
     )
@@ -1295,13 +1351,12 @@ def submission_prolongation(request, submission_id):
             data = {
                 "subject": "{} ({})".format(
                     _("Une demande de prolongation vient d'être soumise"),
-                    submission.get_categories_names_list(),
+                    submission.get_forms_names_list(),
                 ),
                 "users_to_notify": submission.get_secretary_email(),
                 "template": "submission_prolongation_for_services.txt",
                 "submission": form.instance,
                 "absolute_uri_func": request.build_absolute_uri,
-                "forms_list": submission.get_forms_names_list(),
             }
             services.send_email_notification(data)
 
@@ -1350,7 +1405,7 @@ def submission_prolongation(request, submission_id):
 @check_mandatory_2FA
 def submission_appendices(request, submission_id):
     """
-    Step to upload appendices for the given permit request.
+    Step to upload appendices for the given submission.
     """
     submission = get_submission_for_edition(request.user, submission_id)
     steps_context = progress_bar_context(
@@ -1429,6 +1484,21 @@ def submission_contacts(request, submission_id):
     else:
         formset = forms.get_submission_contacts_formset_initiated(submission)
 
+    userprofile = {
+        "email": request.user.email,
+        "first_name": request.user.first_name,
+        "last_name": request.user.last_name,
+        "company_name": request.user.userprofile.company_name,
+        "vat_number": request.user.userprofile.vat_number,
+        "address": request.user.userprofile.address,
+        "zipcode": request.user.userprofile.zipcode,
+        "city": request.user.userprofile.city,
+        "phone": request.user.userprofile.phone_first,
+    }
+
+    if settings.AUTHOR_IBAN_VISIBLE:
+        userprofile["iban"] = request.user.userprofile.iban
+
     return render(
         request,
         "submissions/submission_contacts.html",
@@ -1437,6 +1507,7 @@ def submission_contacts(request, submission_id):
             "creditorform": creditorform,
             "submission": submission,
             "requires_payment": requires_payment,
+            "userprofile": userprofile,
             **steps_context,
         },
     )
@@ -1654,11 +1725,22 @@ def submission_submit(request, submission_id):
         services.submit_submission(submission, request)
         return redirect("submissions:submissions_list")
 
+    should_go_to_payment = (
+        submission.requires_online_payment()
+        and submission.status == models.Submission.STATUS_DRAFT
+    )
+
+    has_any_form_with_exceeded_submissions = (
+        submission.has_any_form_with_exceeded_submissions()
+    )
+
     return render(
         request,
         "submissions/submission_submit.html",
         {
             "submission": submission,
+            "should_go_to_payment": should_go_to_payment,
+            "has_any_form_with_exceeded_submissions": has_any_form_with_exceeded_submissions,
             "directives": submission.get_submission_directives(),
             "incomplete_steps": incomplete_steps,
             **progress_bar_context(
@@ -1676,6 +1758,13 @@ def submission_submit(request, submission_id):
 def submission_submit_confirmed(request, submission_id):
 
     submission = get_submission_for_edition(request.user, submission_id)
+    if submission.has_any_form_with_exceeded_submissions():
+        messages.add_message(
+            request,
+            messages.ERROR,
+            submission.get_maximum_submissions_message(),
+        )
+        return redirect("submissions:submission_submit", submission_id=submission_id)
 
     incomplete_steps = [
         step.url
@@ -1686,32 +1775,40 @@ def submission_submit_confirmed(request, submission_id):
     if incomplete_steps:
         raise SuspiciousOperation
 
-    services_to_notify = models.FieldValue.objects.filter(
+    services_to_notify_and_message = models.FieldValue.objects.filter(
         selected_form__submission=submission, value={"val": True}
-    ).values_list("field__services_to_notify", flat=True)
+    ).values_list(
+        "field__services_to_notify", "field__message_for_notified_services", named=True
+    )
 
-    if services_to_notify.exists():
-        mailing_list = []
-        for emails in services_to_notify:
-            emails_addresses = emails.replace("\n", ",").split(",")
+    if services_to_notify_and_message.exists():
+        for notification in services_to_notify_and_message:
+            services_to_notify = notification.field__services_to_notify
+            message_for_notified_services = (
+                notification.field__message_for_notified_services
+                if notification.field__message_for_notified_services
+                else None
+            )
+            mailing_list = []
+            emails_addresses = services_to_notify.replace("\n", ",").split(",")
             mailing_list += [
                 ea.strip()
                 for ea in emails_addresses
                 if services.validate_email(ea.strip())
             ]
-        if mailing_list:
-            data = {
-                "subject": "{} ({})".format(
-                    _("Votre service à été mentionné dans une demande"),
-                    submission.get_categories_names_list(),
-                ),
-                "users_to_notify": set(mailing_list),
-                "template": "submission_submitted_with_mention.txt",
-                "submission": submission,
-                "absolute_uri_func": request.build_absolute_uri,
-                "forms_list": submission.get_forms_names_list(),
-            }
-            services.send_email_notification(data)
+            if mailing_list:
+                data = {
+                    "subject": "{} ({})".format(
+                        _("Votre service à été mentionné dans une demande"),
+                        submission.get_forms_names_list(),
+                    ),
+                    "users_to_notify": set(mailing_list),
+                    "template": "submission_submitted_with_mention.txt",
+                    "submission": submission,
+                    "absolute_uri_func": request.build_absolute_uri,
+                    "message_for_notified_services": message_for_notified_services,
+                }
+                services.send_email_notification(data)
 
     # Only submit request when it's editable by author, to prevent a "raise SuspiciousOperation"
     # When editing a submission, submit isn't required to save the modifications, as every view saves the updates
@@ -1724,7 +1821,7 @@ def submission_submit_confirmed(request, submission_id):
         | Q(permit_department__is_integrator_admin=True),
     )
 
-    # Backoffice and integrators creating a permit request for their own administrative
+    # Backoffice and integrators creating a submission for their own administrative
     # entity, are directly redirected to the permit detail
     # Same flow for requests when submission can't be edited by author
     if (
@@ -1739,7 +1836,7 @@ def submission_submit_confirmed(request, submission_id):
                 anonymous_user = submission.administrative_entity.anonymous_user
             except ObjectDoesNotExist:
                 # Might happen only if the entity's anonymous user has been removed
-                # between the creation and the submission of the permit request
+                # between the creation and the submission of the submission
                 raise Http404
             else:
                 submission.author = anonymous_user.user
@@ -1822,13 +1919,12 @@ def submission_classify(request, submission_id, approve):
             data = {
                 "subject": "{} ({})".format(
                     _("Votre demande a été traitée et classée"),
-                    submission.get_categories_names_list(),
+                    submission.get_forms_names_list(),
                 ),
                 "users_to_notify": [submission.author.email],
                 "template": "submission_classified.txt",
                 "submission": submission,
                 "absolute_uri_func": request.build_absolute_uri,
-                "forms_list": submission.get_forms_names_list(),
             }
             services.send_email_notification(data)
 
@@ -1839,13 +1935,12 @@ def submission_classify(request, submission_id, approve):
                 data = {
                     "subject": "{} ({})".format(
                         _("Une demande a été traitée et classée par le secrétariat"),
-                        submission.get_categories_names_list(),
+                        submission.get_forms_names_list(),
                     ),
                     "users_to_notify": set(mailing_list),
                     "template": "submission_classified_for_services.txt",
                     "submission": submission,
                     "absolute_uri_func": request.build_absolute_uri,
-                    "forms_list": submission.get_forms_names_list(),
                 }
                 services.send_email_notification(data)
 
@@ -1914,7 +2009,9 @@ def submissions_search(request):
     terms = request.GET.get("search")
 
     if len(terms) >= 2:
-        submissions = models.Submission.objects.filter_for_user(request.user)
+        submissions = models.Submission.objects.filter_for_user(
+            request.user
+        ).prefetch_related("price__transactions")
         results = search_submissions(
             search_str=terms, submissions_qs=submissions, limit=5
         )
@@ -1946,3 +2043,161 @@ def administrative_entities_geojson(request, administrative_entity_id):
     )
 
     return JsonResponse(geojson, safe=False)
+
+
+@method_decorator(login_required, name="dispatch")
+@method_decorator(check_mandatory_2FA, name="dispatch")
+class ChangeTransactionStatus(View):
+    permission_error_message = _(
+        "Vous n'avez pas les permissions pour changer le statut de cette transaction"
+    )
+    not_exist_error_message = _("La transaction demandée n'existe pas")
+
+    def get(self, request, *args, **kwargs):
+        try:
+            merchant_reference = kwargs.get("merchant_reference")
+            new_status = request.GET.get("new_status")
+
+            transaction = get_transaction_from_merchant_reference(merchant_reference)
+            submission = transaction.submission_price.submission
+            if not permissions.user_has_permission_to_change_transaction_status(
+                request.user, transaction, new_status
+            ):
+                raise PermissionDenied
+
+            transaction.set_new_status(new_status)
+
+            if new_status == transaction.STATUS_REFUNDED:
+                submission.generate_and_save_pdf("refund", transaction)
+                send_refund_email(request, submission)
+
+            redirect_page = reverse_lazy(
+                "submissions:submission_detail",
+                kwargs={"submission_id": submission.pk},
+            )
+            redirect_page = f"{redirect_page}?prev_active_form=payments"
+
+            new_status_display = transaction.get_status_display().lower()
+            merchant_site = transaction.CHECKOUT_PROCESSOR_ID
+
+            messages.success(
+                request,
+                mark_safe(
+                    _(
+                        """Le statut de la transaction {merchant_reference} a été mis à jour en
+                    <strong>{new_status_display}</strong>
+                    """
+                    ).format(
+                        new_status_display=new_status_display,
+                        merchant_reference=merchant_reference,
+                    )
+                ),
+            )
+            if transaction.requires_action_on_merchant_site(new_status):
+                messages.warning(
+                    request,
+                    _(
+                        "Ne pas oublier d'également mettre à jour la transaction dans {merchant_site}"
+                    ).format(merchant_site=merchant_site),
+                )
+            return redirect(redirect_page)
+        except PermissionDenied:
+            error_message = self.permission_error_message
+        except ObjectDoesNotExist:
+            error_message = self.not_exist_error_message
+
+        messages.error(request, error_message)
+
+        return redirect(reverse_lazy("submissions:submissions_list"))
+
+
+@method_decorator(login_required, name="dispatch")
+class ConfirmTransactionCallback(View):
+    def get(self, request, pk, *args, **kwargs):
+        transaction = get_transaction_from_id(pk)
+        submission = transaction.submission_price.submission
+
+        submission.generate_and_save_pdf("confirmation", transaction)
+
+        if (
+            not request.user == submission.author
+            or not transaction.status == transaction.STATUS_UNPAID
+        ):
+            raise PermissionDenied
+
+        processor = get_payment_processor(submission.get_form_for_payment())
+        if processor.is_transaction_authorized(transaction):
+            transaction.set_paid()
+            submission_submit_confirmed(request, submission.pk)
+
+            return render(
+                request,
+                "submissions/submission_payment_callback_confirm.html",
+                {
+                    "submission": submission,
+                },
+            )
+
+        transaction.set_failed()
+        return render(
+            request,
+            "submissions/submission_payment_callback_fail.html",
+            {
+                "submission": submission,
+                "submission_url": reverse(
+                    "submissions:submission_submit",
+                    kwargs={"submission_id": submission.pk},
+                ),
+            },
+        )
+
+
+@method_decorator(login_required, name="dispatch")
+class FailTransactionCallback(View):
+    def get(self, request, pk, *args, **kwargs):
+        transaction = get_transaction_from_id(pk)
+        submission = transaction.submission_price.submission
+        if not request.user == submission.author:
+            raise PermissionDenied
+
+        transaction.set_failed()
+
+        return render(
+            request,
+            "submissions/submission_payment_callback_fail.html",
+            {
+                "submission": submission,
+                "submission_url": reverse(
+                    "submissions:submission_fields",
+                    kwargs={"submission_id": submission.pk},
+                ),
+            },
+        )
+
+
+@method_decorator(login_required, name="dispatch")
+class SubmissionPaymentRedirect(View):
+    def get(self, request, pk, *args, **kwargs):
+        submission = models.Submission.objects.get(pk=pk)
+
+        if submission.has_any_form_with_exceeded_submissions():
+            messages.add_message(
+                request,
+                messages.ERROR,
+                submission.get_maximum_submissions_message(),
+            )
+            return redirect(
+                "submissions:submission_submit", submission_id=submission.pk
+            )
+
+        if (
+            submission.requires_online_payment()
+            and submission.status == models.Submission.STATUS_DRAFT
+        ) or request.user != submission.author:
+            processor = get_payment_processor(submission.get_form_for_payment())
+            payment_url = processor.create_transaction_and_return_payment_page_url(
+                submission, request
+            )
+            return redirect(payment_url)
+
+        return redirect(reverse_lazy("submissions:submissions_list"))

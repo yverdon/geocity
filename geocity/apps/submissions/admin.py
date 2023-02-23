@@ -1,5 +1,7 @@
 from django import forms
 from django.contrib import admin
+from django.utils.html import format_html_join
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from geocity.apps.accounts.admin import IntegratorFilterMixin, filter_for_user
@@ -126,23 +128,127 @@ class SubmissionAdmin(admin.ModelAdmin):
 
 
 class ComplementaryDocumentTypeAdminForm(forms.ModelForm):
-    model = models.ComplementaryDocumentType
+    model = models.ComplementaryDocumentTypeForAdminSite
 
-    def clean(self):
-        cleaned_data = super(ComplementaryDocumentTypeAdminForm, self).clean()
-        if cleaned_data["parent"] and cleaned_data["form"]:
-            raise forms.ValidationError(
-                _("Seul les types parents peuvent être lié a un Work Object Type")
+    def clean_form(self):
+        form = self.cleaned_data["form"]
+        if not self.instance.pk:
+            return form
+        payment_settings_confirmation_reports = self.instance.children.exclude(
+            reports__confirmation_payment_settings_objects=None
+        )
+        payment_settings_refund_reports = self.instance.children.exclude(
+            reports__refund_payment_settings_objects=None
+        )
+        error_msg = ""
+        if (
+            payment_settings_confirmation_reports.exists()
+            and not payment_settings_confirmation_reports.filter(
+                reports__confirmation_payment_settings_objects__form__in=[form]
             )
+        ):
+            error_msg = _(
+                "Ce type de document est utilisé comme confirmation de paiement dans une configuration de paiement, via un modèle d'impression. Vous devez dé-lier le modèle d'impression de la configuration de paiement afin de pouvoir modifier ce champ."
+            )
+        if (
+            payment_settings_refund_reports.exists()
+            and not payment_settings_refund_reports.filter(
+                reports__refund_payment_settings_objects__form__in=[form]
+            )
+        ):
+            error_msg = _(
+                "Ce type de document est utilisé comme remboursement dans une configuration de paiement, via un modèle d'impression. Vous devez dé-lier le modèle d'impression de la configuration de paiement afin de pouvoir modifier ce champ."
+            )
+        if error_msg:
+            raise forms.ValidationError(error_msg)
+        return form
 
-        return cleaned_data
 
-
-@admin.register(models.ComplementaryDocumentType)
-class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+class ComplementaryDocumentTypeInline(admin.TabularInline):
+    model = models.ComplementaryDocumentTypeForAdminSite
     form = ComplementaryDocumentTypeAdminForm
 
-    fields = ["name", "parent", "form", "integrator"]
+    fields = ["name"]
+
+    verbose_name = _("Type de document")
+    verbose_name_plural = _("Type de documents")
+
+    # Defines the number of extra forms to by default. Default is set to 3
+    # https://docs.djangoproject.com/en/4.1/ref/contrib/admin/#django.contrib.admin.InlineModelAdmin.extra
+    extra = 1
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(parent__isnull=False)
+
+
+@admin.register(models.ComplementaryDocumentTypeForAdminSite)
+class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
+    inlines = [
+        ComplementaryDocumentTypeInline,
+    ]
+    form = ComplementaryDocumentTypeAdminForm
+    fields = ["name", "form", "integrator"]
+
+    def get_list_display(self, request):
+        if request.user.is_superuser:
+            list_display = [
+                "name",
+                "form",
+                "integrator",
+                "types_",
+            ]
+        else:
+            list_display = [
+                "name",
+                "form",
+                "types_",
+            ]
+        return list_display
+
+    # Fields used in search_fields and list_filter
+    integrator_fields = [
+        "name",
+        "form",
+        "integrator",
+        "form__administrative_entities",
+    ]
+    user_fields = [
+        "name",
+        "form",
+    ]
+
+    def get_search_fields(self, request):
+        if request.user.is_superuser:
+            search_fields = self.integrator_fields
+        else:
+            search_fields = self.user_fields
+        return search_fields
+
+    def get_list_filter(self, request):
+        if request.user.is_superuser:
+            list_filter = self.integrator_fields
+        else:
+            list_filter = self.user_fields
+        return list_filter
+
+    # List types of documents
+    def types_(self, obj):
+        list_content = format_html_join(
+            "",
+            "<li>{}</li>",
+            [
+                [d]
+                for d in models.ComplementaryDocumentType.children_objects.associated_to_parent(
+                    obj
+                ).values_list(
+                    "name", flat=True
+                )
+            ],
+        )
+        return mark_safe(f"<ul>{list_content}</ul>")
+
+    types_.short_description = _("Type de document")
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "form":
@@ -166,6 +272,10 @@ class ComplementaryDocumentTypeAdmin(IntegratorFilterMixin, admin.ModelAdmin):
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(parent__isnull=True)
+
 
 @admin.register(models.SubmissionInquiry)
 class SubmissionInquiryAdmin(admin.ModelAdmin):
@@ -175,4 +285,4 @@ class SubmissionInquiryAdmin(admin.ModelAdmin):
         return obj.__str__()
 
     sortable_str.admin_order_field = "name"
-    sortable_str.short_description = _("3.2 Enquêtes public")
+    sortable_str.short_description = _("2.3 Enquêtes public")

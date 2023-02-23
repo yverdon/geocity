@@ -22,7 +22,7 @@ from . import permissions, serializers
 
 class SubmissionGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    Events request endpoint Usage:
+    Events request endpoint usage:
         1.- /rest/events/?show_only_future=true (past events get filtered out)
         2.- /rest/events/?starts_at=2022-01-01
         3.- /rest/events/?ends_at=2020-01-01
@@ -97,7 +97,7 @@ class SubmissionGeoTimeViewSet(viewsets.ReadOnlyModelViewSet):
 
 class CurrentUserAPIView(RetrieveAPIView):
     """
-    Current user endpoint Usage:
+    Current user endpoint usage:
         /rest/current_user/     shows current user
     """
 
@@ -125,7 +125,7 @@ class CurrentUserAPIView(RetrieveAPIView):
 
 class SubmissionViewSet(WFS3DescribeModelViewSetMixin, viewsets.ReadOnlyModelViewSet):
     """
-    Permit request endpoint Usage:
+    Submission endpoint usage:
         1.- /rest/submissions/?submission_id=1
         2.- /rest/submissions/?form=1
         3.- /rest/submissions/?status=0
@@ -256,7 +256,60 @@ class SubmissionDetailsViewSet(
     def get_queryset(self, geom_type=None):
         """
         This view should return a list of submissions for which the logged user has
-        view permissions
+        view permissions.
+
+        # TODO: In another story, implement the difference between anonymous and user. Group public/private with inquiry status in the same section of form or add buttons to make public permanent
+        # TODO: Update test_api_submissions_details_user
+        +---------+---------------------------++---------+---------++---------+---------++---------+---------++---------------------------------------------------------------------------------+
+        |         |                           || Public  | Private || Public  | Private || Public  | Private ||                                                                                 |
+        + Status  + Status name               ++---------+---------++---------+---------++---------+---------++ Comment                                                                         +
+        |         |                           || Anonym. | Anonym. || User    | User    || Trusted | Trusted ||                                                                                 |
+        +=========+===========================++=========+=========++=========+=========++=========+=========++=================================================================================+
+        |         |                           ||         |         ||         |         ||         |         ||                                                                                 |
+        |    0    | DRAFT                     ||    X    |    X    ||    X    |    X    ||    X    |    X    ||                                                                                 |
+        |         |                           ||         |         ||         |         ||         |         ||                                                                                 |
+        +---------+---------------------------++---------+---------++---------+---------++---------+---------++---------------------------------------------------------------------------------+
+        |         |                           ||         |         ||         |         ||         |         ||                                                                                 |
+        |    1    | SUBMITTED_FOR_VALIDATION  ||    X    |    X    ||    X    |    X    ||    X    |    X    ||                                                                                 |
+        |         |                           ||         |         ||         |         ||         |         ||                                                                                 |
+        +---------+---------------------------++---------+---------++---------+---------++---------+---------++---------------------------------------------------------------------------------+
+        |         |                           ||         |         ||         |         ||         |         || Private user shows his own requests                                             |
+        |    2    | APPROVED                  ||    /    |    X    ||    /    |    /    ||    /    |    /    || Private trusted shows based on administrative entity of group                   |
+        |         |                           ||         |         ||         |         ||         |         ||                                                                                 |
+        +---------+---------------------------++---------+---------++---------+---------++---------+---------++---------------------------------------------------------------------------------+
+        |         |                           ||         |         ||         |         ||         |         ||                                                                                 |
+        |    3    | PROCESSING                ||    X    |    X    ||    X    |    X    ||    X    |    X    ||                                                                                 |
+        |         |                           ||         |         ||         |         ||         |         ||                                                                                 |
+        +---------+---------------------------++---------+---------++---------+---------++---------+---------++---------------------------------------------------------------------------------+
+        |         |                           ||         |         ||         |         ||         |         ||                                                                                 |
+        |    4    | AWAITING_SUPPLEMENT       ||    X    |    X    ||    X    |    X    ||    X    |    X    ||                                                                                 |
+        |         |                           ||         |         ||         |         ||         |         ||                                                                                 |
+        +---------+---------------------------++---------+---------++---------+---------++---------+---------++---------------------------------------------------------------------------------+
+        |         |                           ||         |         ||         |         ||         |         ||                                                                                 |
+        |    5    | AWAITING_VALIDATION       ||    X    |    X    ||    X    |    X    ||    X    |    X    ||                                                                                 |
+        |         |                           ||         |         ||         |         ||         |         ||                                                                                 |
+        +---------+---------------------------++---------+---------++---------+---------++---------+---------++---------------------------------------------------------------------------------+
+        |         |                           ||         |         ||         |         ||         |         ||                                                                                 |
+        |    6    | REJECTED                  ||    X    |    X    ||    X    |    X    ||    X    |    X    ||                                                                                 |
+        |         |                           ||         |         ||         |         ||         |         ||                                                                                 |
+        +---------+---------------------------++---------+---------++---------+---------++---------+---------++---------------------------------------------------------------------------------+
+        |         |                           ||         |         ||         |         ||         |         ||                                                                                 |
+        |    7    | RECEIVED                  ||    X    |    X    ||    X    |    X    ||    X    |    X    ||                                                                                 |
+        |         |                           ||         |         ||         |         ||         |         ||                                                                                 |
+        +---------+---------------------------++---------+---------++---------+---------++---------+---------++---------------------------------------------------------------------------------+
+        |         |                           ||                   ||                   ||                   ||                                                                                 |
+        |    8    | INQUIRY_IN_PROGRESS       ||    ///////////    ||    ///////////    ||    ///////////    ||                                                                                 |
+        |         |                           ||                   ||                   ||                   ||                                                                                 |
+        +---------+---------------------------++---------+---------++---------+---------++---------+---------++---------------------------------------------------------------------------------+
+        |         |                           ||         |         ||         |         ||         |         ||                                                                                 |
+        |    9    | ARCHIVED                  ||    X    |    X    ||    X    |    X    ||    X    |    X    ||                                                                                 |
+        |         |                           ||         |         ||         |         ||         |         ||                                                                                 |
+        +---------+---------------------------++---------+---------++---------+---------++---------+---------++---------------------------------------------------------------------------------+
+        / = Should show
+        X = Should not show
+        Anonym. = Any non logged user. Anonym. = Anonymous
+        User = Logged user, based on his submissions
+        Trusted = Logged user, based on group in the same administrative entity as the submission
         """
         # Only take user with session authentication
         user = (
@@ -286,11 +339,14 @@ class SubmissionDetailsViewSet(
                         user,
                     )
                 )
+                & Q(status__in=Submission.VISIBLE_IN_CALENDAR_STATUSES)
                 | Q(is_public=True)
+                & Q(status__in=Submission.VISIBLE_IN_CALENDAR_STATUSES)
             )
         else:
             qs = Submission.objects.filter(base_filter).filter(
-                Q(is_public=True) | Q(status=Submission.STATUS_INQUIRY_IN_PROGRESS)
+                Q(is_public=True)
+                & Q(status__in=Submission.VISIBLE_IN_CALENDAR_STATUSES)
             )
 
         return qs
@@ -321,7 +377,7 @@ def submission_view_set_subset_factory(geom_type_name):
 
     class ViewSet(SubmissionViewSet):
         """
-        Submissions endpoint Usage:
+        Submissions endpoint usage:
             1.- /rest/submissions/?submission_id=1
             2.- /rest/submissions/?form=1
             3.- /rest/submissions/?status=0
@@ -347,7 +403,7 @@ def submission_view_set_subset_factory(geom_type_name):
 
 class SearchViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    Search endpoint Usage:
+    Search endpoint usage:
         1.- /rest/search/?search=my_search
         2.- /rest/search/?search=my_search&limit=10
         3.- Some examples, not all cases are represented :

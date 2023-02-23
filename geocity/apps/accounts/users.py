@@ -24,23 +24,6 @@ def has_profile(user):
     return True
 
 
-def get_administrative_entities_associated_to_user(user):
-    return models.AdministrativeEntity.objects.filter(
-        departments__group__in=user.groups.all(),
-    ).order_by("ofs_id", "-name")
-
-
-def get_administrative_entities_associated_to_user_as_list(user):
-    return (
-        models.AdministrativeEntity.objects.filter(
-            departments__group__in=user.groups.all(),
-        )
-        .values_list("id", flat=True)
-        .order_by("ofs_id", "-name")
-        .distinct()
-    )
-
-
 def get_departments(user):
     return models.PermitDepartment.objects.filter(group__in=user.groups.all())
 

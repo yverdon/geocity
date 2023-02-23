@@ -90,16 +90,6 @@
 
   {% endif %}
 
-
-  <div class="row">
-    <div class="col">
-      {% if intersected_geometries %}
-        <h4>{% trans "Éléments géographiques touchés par la demande (automatique)" %}</h4>
-        {{ intersected_geometries|safe }}
-      {% endif %}
-    </div>
-  </div>
-
   <div class="row">
     <div class="col">
       {% for geo_time_form in geo_time_formset %}
@@ -126,7 +116,7 @@
                 </div>
                 <div class="col-2 text-right">
                   <a class="align-middle" href="{% url 'submissions:complementary_documents_download' document.name %}"><i class="fa fa-download" aria-hidden="true"></i></a>
-                  {% if user == document.owner or user.is_superuser %}
+                  {% if user == document.owner and user != author or user.is_superuser %}
                     <form class="d-inline-block" method="post" action="{% url 'submissions:complementary_documents_delete' pk=document.id %}">
                       {% csrf_token %}
                       <button class="btn btn-link text-danger p-0" type="submit">
@@ -137,7 +127,7 @@
                 </div>
             </dd>
 
-            <dt>{% trans "Status" %}</dt>
+            <dt>{% trans "Statut" %}</dt>
             <dd>{{ document.get_status_display }}</dd>
 
             <dt>{% trans "Description" %}</dt>

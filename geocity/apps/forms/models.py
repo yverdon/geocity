@@ -1,5 +1,6 @@
 import collections
 
+from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.core.validators import (
@@ -9,12 +10,16 @@ from django.core.validators import (
 )
 from django.db import models
 from django.db.models import Q
+from django.utils.safestring import mark_safe
+from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
+from simple_history.models import HistoricalRecords
 from taggit.managers import TaggableManager
 
 from geocity.apps.accounts.fields import AdministrativeEntityFileField
 from geocity.apps.accounts.models import AdministrativeEntity
 
+from ..reports.models import Report
 from . import fields
 
 
@@ -47,6 +52,7 @@ class FormCategory(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
     meta_type = models.IntegerField(
         _("Type générique"), choices=META_TYPE_CHOICES, default=META_TYPE_OTHER
@@ -115,6 +121,142 @@ class FormQuerySet(models.QuerySet):
         return queryset
 
 
+def default_currency():
+    return settings.PAYMENT_CURRENCY
+
+
+class PaymentSettings(models.Model):
+    name = models.CharField(_("Nom des paramètres"), max_length=255)
+    prices_label = models.CharField(
+        _("Label pour les tarifs"),
+        max_length=255,
+        default=_("Tarifs"),
+        help_text=_(
+            "Texte affiché à l'utilisateur comme en-têtes des prix (p. ex.: 'Tarifs')"
+        ),
+    )
+    internal_account = models.CharField(
+        _("Compte interne"),
+        max_length=255,
+        help_text=_("Compte interne de comptabilité utilisé pour les paiements"),
+    )
+    payment_processor = models.CharField(
+        _("Processeur de paiement"),
+        max_length=255,
+        choices=[
+            ("PostFinance", "PostFinance Checkout"),
+        ],
+        default="PostFinance",
+    )
+    integrator = models.ForeignKey(
+        Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
+    )
+    space_id = models.CharField(_("Space ID"), max_length=255, null=False)
+    user_id = models.CharField(_("User ID"), max_length=255, null=False)
+    api_key = models.CharField(_("API key"), max_length=255, null=False)
+
+    payment_confirmation_report = models.ForeignKey(
+        Report,
+        null=True,
+        on_delete=models.PROTECT,
+        related_name="confirmation_payment_settings_objects",
+        verbose_name=_("Rapport pour la confirmation des paiements"),
+    )
+    payment_refund_report = models.ForeignKey(
+        Report,
+        null=True,
+        on_delete=models.PROTECT,
+        related_name="refund_payment_settings_objects",
+        verbose_name=_("Rapport pour le remboursement des paiements"),
+    )
+
+    def __str__(self):
+        return f"{self.name} - {self.internal_account}"
+
+    class Meta:
+        verbose_name = _("1.6 Paramètres de paiement")
+        verbose_name_plural = _("1.6 Paramètres de paiement")
+
+    def clean(self):
+        if self.payment_confirmation_report is not None and self.pk is not None:
+            for form in self.form_set.all():
+                has_doc_types_with_form = (
+                    self.payment_confirmation_report.document_types.filter(
+                        parent__form=form.pk
+                    )
+                )
+                if not has_doc_types_with_form:
+                    raise ValidationError(
+                        {
+                            "payment_confirmation_report": _(
+                                f"Il faut ajouter une catégorie de document liée à {form.name} dans le modèle d'impression {self.payment_confirmation_report.name}"
+                            )
+                        }
+                    )
+        if self.payment_refund_report is not None and self.pk is not None:
+            for form in self.form_set.all():
+                has_doc_types_with_form = (
+                    self.payment_refund_report.document_types.filter(
+                        parent__form=form.pk
+                    )
+                )
+                if not has_doc_types_with_form:
+                    raise ValidationError(
+                        {
+                            "payment_refund_report": _(
+                                f"Il faut ajouter une catégorie de document liée à {form.name} dans le modèle d'impression {self.payment_refund_report.name}"
+                            )
+                        }
+                    )
+
+
+class Price(models.Model):
+    text = models.CharField(_("Texte"), max_length=255)
+    amount = models.DecimalField(_("Montant"), max_digits=6, decimal_places=2)
+    currency = models.CharField(_("Devise"), max_length=20, default=default_currency)
+    integrator = models.ForeignKey(
+        Group,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
+    )
+    history = HistoricalRecords()
+
+    def __str__(self):
+        return f"{self.text} - {self.amount:6.2f} {self.currency}"
+
+    def str_for_choice(self):
+        return mark_safe(
+            f"<strong>{self.text}</strong> - {self.amount:6.2f} {self.currency}"
+        )
+
+    class Meta:
+        verbose_name = _("1.7 Tarif")
+        verbose_name_plural = _("1.7 Tarifs")
+
+
+class FormPrice(models.Model):
+    price = models.ForeignKey(
+        "Price", on_delete=models.CASCADE, verbose_name=_("Tarif")
+    )
+    form = models.ForeignKey(
+        "Form", on_delete=models.CASCADE, verbose_name=_("Formulaire")
+    )
+
+    order = models.PositiveSmallIntegerField(
+        _("Position dans les tarifs"), default=0, db_index=True
+    )
+
+    class Meta:
+        unique_together = ("price", "form")
+        ordering = ("order", "price")
+
+
 class Form(models.Model):
     """
     Represents a works object for a specific works type.
@@ -125,6 +267,7 @@ class Form(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
     category = models.ForeignKey(
         FormCategory,
@@ -168,9 +311,30 @@ class Form(models.Model):
     requires_payment = models.BooleanField(
         _("Demande soumise à des frais"), default=True
     )
+
+    requires_online_payment = models.BooleanField(
+        _("Soumis au paiement en ligne"),
+        default=False,
+        help_text=mark_safe(
+            _(
+                "Requiert la présence de <strong>paramètres de paiement</strong>, "
+                "d'au moins un <strong>tarif</strong>, et de <strong>ne pas être "
+                "soumis à des frais</strong>."
+            )
+        ),
+    )
+    payment_settings = models.ForeignKey(
+        "PaymentSettings",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        verbose_name=_("Paramètres de paiement"),
+    )
+
     requires_validation_document = models.BooleanField(
         _("Document de validation obligatoire"), default=True
     )
+    # TODO: sphinx documentation, to explain is used to make visible/hidden in the list of forms
     is_public = models.BooleanField(_("Visibilité "), default=False)
     is_anonymous = models.BooleanField(
         _("Demandes anonymes uniquement"),
@@ -214,9 +378,6 @@ class Form(models.Model):
         ),
         blank=True,
     )
-    has_geom_intersection_enabled = models.BooleanField(
-        _("Activer l'intersection de géométries"), default=False
-    )
 
     name = models.CharField(_("nom"), max_length=255)
     order = models.PositiveIntegerField(
@@ -226,7 +387,21 @@ class Form(models.Model):
     wms_layers_order = models.PositiveIntegerField(
         _("Ordre de(s) couche(s)"), default=1
     )
-
+    prices = models.ManyToManyField(
+        "Price", verbose_name=_("tarifs"), related_name="forms", through=FormPrice
+    )
+    max_submissions = models.PositiveIntegerField(
+        _("Nombre maximum de demandes"), null=True, blank=True
+    )
+    max_submissions_message = models.CharField(
+        _("Message lorsque le nombre maximal est atteint"),
+        max_length=300,
+        default=_(
+            "Ce formulaire est désactivé car le nombre maximal de soumissions a été atteint."
+        ),
+        null=True,
+        blank=True,
+    )
     # All objects
     objects = FormQuerySet().as_manager()
 
@@ -249,7 +424,37 @@ class Form(models.Model):
             or self.has_geometry_polygon
         )
 
+    def has_exceeded_maximum_submissions(self):
+        from ..submissions.models import Submission
+
+        return (
+            self.max_submissions
+            and (
+                self.submissions.filter(
+                    ~Q(
+                        status__in=[
+                            Submission.STATUS_DRAFT,
+                            Submission.STATUS_REJECTED,
+                            Submission.STATUS_ARCHIVED,
+                        ]
+                    )
+                    | Q(price__transactions__authorization_timeout_on__gt=now())
+                )
+                .distinct()
+                .count()
+            )
+            >= self.max_submissions
+        )
+
     def clean(self):
+        if self.max_submissions is not None and self.max_submissions < 1:
+            raise ValidationError(
+                {
+                    "max_submissions": _(
+                        "Le nombre maximum de demandes doit être supérieur à 0."
+                    )
+                }
+            )
         if bool(self.directive_description) ^ bool(self.directive):
             raise ValidationError(
                 {
@@ -260,6 +465,92 @@ class Form(models.Model):
                     else _("Ce champ est obligatoire lorsqu’une directive est définie.")
                 }
             )
+
+        if (
+            self.requires_online_payment
+            and not self.administrative_entities.first().is_single_form_submissions
+        ):
+            raise ValidationError(
+                {
+                    "requires_online_payment": _(
+                        "Ne peut pas être coché, car l'entité administrative accepte "
+                        "les demandes sur plusieurs objets."
+                    )
+                }
+            )
+
+        if self.requires_online_payment and not self.payment_settings:
+            raise ValidationError(
+                {
+                    "requires_online_payment": _(
+                        "Nécessite que des paramètres de paiement soient sélectionnés."
+                    )
+                }
+            )
+
+        if self.requires_online_payment and self.requires_payment:
+            raise ValidationError(
+                {
+                    "requires_online_payment": mark_safe(
+                        _(
+                            "Les demandes <strong>soumises à des frais</strong> ne peuvent "
+                            "pas offrir le <strong>paiement en ligne</strong>. "
+                            "Veuillez choisir une des deux options."
+                        )
+                    )
+                }
+            )
+        if (
+            self.requires_online_payment
+            and settings.SESSION_COOKIE_SAMESITE.lower() != "lax"
+        ):
+            raise ValidationError(
+                {
+                    "requires_online_payment": mark_safe(
+                        _(
+                            """Cette instance de Geocity n'est pas configurée correctement pour le
+                            paiement en ligne. <strong>SESSION_COOKIE_SAMESITE</strong> doit être <strong>Lax</strong>"""
+                        )
+                    )
+                }
+            )
+
+        if self.requires_online_payment and not self.prices.exists():
+            raise ValidationError(
+                {
+                    "requires_online_payment": mark_safe(
+                        _("Nécessite l'existence d'au moins un <strong>tarif</strong>.")
+                    )
+                }
+            )
+        if self.payment_settings:
+            conf_report = self.payment_settings.payment_confirmation_report
+            refund_report = self.payment_settings.payment_refund_report
+
+            if conf_report:
+                has_doc_types_with_conf_report = conf_report.document_types.filter(
+                    parent__form=self.pk
+                )
+                if not has_doc_types_with_conf_report.exists():
+                    raise ValidationError(
+                        {
+                            "payment_settings": _(
+                                f"Il faut ajouter une catégorie de document liée à {self.name} dans le modèle d'impression {conf_report.name}"
+                            )
+                        }
+                    )
+            if refund_report:
+                has_doc_types_with_refund_report = refund_report.document_types.filter(
+                    parent__form=self.pk
+                )
+                if not has_doc_types_with_refund_report.exists():
+                    raise ValidationError(
+                        {
+                            "payment_settings": _(
+                                f"Il faut ajouter une catégorie de document liée à {self.name} dans le modèle d'impression {refund_report.name}"
+                            )
+                        }
+                    )
 
 
 class FormField(models.Model):
@@ -326,6 +617,7 @@ class Field(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
     name = models.CharField(_("nom"), max_length=255)
     placeholder = models.CharField(
@@ -363,6 +655,11 @@ class Field(models.Model):
         _("Emails des services à notifier"),
         blank=True,
         help_text='Veuillez séparer les emails par une virgule ","',
+    )
+    message_for_notified_services = models.CharField(
+        _("Message transmis aux services notifiés"),
+        max_length=255,
+        blank=True,
     )
     file_download = fields.FormFileField(
         _("Fichier"),

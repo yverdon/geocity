@@ -2,29 +2,22 @@
 {% load bootstrap4 %}
 {% load i18n %}
 {% load submissions_extras %}
+{% load static %}
+
+{% block stylesheets %}
+  {{ block.super }}
+  <link rel="stylesheet" type="text/css" href="{% static 'libs/js/jquery-ui-custom/jquery-ui.min.css' %}">
+{% endblock %}
+
 
 {% block content %}
   {% submission_progressbar steps StepType.SUBMIT %}
   <h3>{% trans "Résumé et envoi" %}</h3>
   <hr>
-  {% if directives %}
-    <div id="legal-infos">
-      {% for directive_file, directive_description, additional_information in directives %}
-        <div{% if not forloop.last %} class="mb-3"{% endif %}>
-          {% if directive_file and directive_description %}
-            <span class="directive_description">{{ directive_description }}</span>:
-            <i class="fa fa-download" aria-hidden="true"></i>
-            <a class="directive_file" href="{{ directive_file.url }}" target="_blank" rel="noreferrer">{% trans "Télécharger la directive" %}</a>
-            <br>
-          {% endif %}
-          {% if additional_information %}
-            <span class="additional_information">{{ additional_information|safe }}</span>
-          {% endif %}
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
-  {% if incomplete_steps  %}
+
+  {% directives_and_legal submission %}
+
+  {% if incomplete_steps %}
     <p>
       {% blocktrans trimmed %}
         Votre demande n'est pas complète mais elle est sauvegardée. Vous pouvez
@@ -32,27 +25,107 @@
         toutes les informations saisies, vous pourrez l'envoyer.
       {% endblocktrans %}
     </p>
+    <p>
+      <a class="btn btn-primary"
+         href="{{ incomplete_steps|first }}">{% trans "Renseigner les informations manquantes" %}</a>
+    </p>
+  {% endif %}
+
+  {% if not incomplete_steps and should_go_to_payment %}
+    {% if not submission.get_submission_price %}
+      <div class="alert alert-danger mb-4">
+        <div class="mb-4">
+          {% blocktrans trimmed %}
+            Vous devez choisir un tarif à l'étape "Détails"
+          {% endblocktrans %}
+          <hr/>
+        </div>
+        <div class="mb-4">
+          <a href="{% url 'submissions:submission_fields' submission_id=submission.pk %}"
+             class="btn btn-primary">{% trans "Retour" %}</a>
+        </div>
+      </div>
+    {% else %}
+      <div class="alert alert-info mb-4">
+        <div class="mb-4">
+          {% blocktrans trimmed %}
+            Avant de continuer, nous vous demandons de vérifier les détails de votre demande pour vous assurer que tout est correct.
+            Lorsque vous êtes prêt à procéder au paiement, cliquez sur le bouton Payer maintenant pour être redirigé vers l’interface de paiement sécurisée.
+          {% endblocktrans %}
+          <hr/>
+        </div>
+        <div class="mb-4">
+          {% blocktrans trimmed with text=submission.get_submission_price.text amount=submission.get_submission_price.amount currency=submission.get_submission_price.currency %}
+            <p>Vous avez sélectionné <strong>{{ text }}</strong> au prix de
+              <strong>{{ amount }} {{ currency }}</strong>
+            </p>
+          {% endblocktrans %}
+        </div>
+        <div class="mb-4">
+          {% if previous_step.url %}
+            <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
+          {% endif %}
+          <a class="btn btn-primary{% if has_any_form_with_exceeded_submissions %} ui-state-disabled{% endif %}"
+           href="{% if has_any_form_with_exceeded_submissions %}#
+{% else %}{% url 'submissions:submission_payment_redirect' pk=submission.pk %}
+{% endif %}" class="mr-2">
+            {% trans "Payer maintenant" %}
+          </a>
+          {% if has_any_form_with_exceeded_submissions %}
+            <span class="text-danger font-weight-bold mx-2">
+             {{ submission.get_maximum_submissions_message }}
+            </span>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
   {% endif %}
   <p>
-    {% trans "Vous trouverez ci-dessous un récapitulatif de votre saisie." %}
+    {% trans "Vous trouvez ci-dessous un récapitulatif de votre saisie." %}
   </p>
-  <form method="post">
-    {% csrf_token %}
-    {% buttons %}
-      {% if incomplete_steps %}
-        <a class="btn btn-primary" href="{{ incomplete_steps|first }}">{% trans "Renseigner les informations manquantes" %}</a>
-      {% else %}
+  {% if not incomplete_steps and not should_go_to_payment %}
+    <form method="post">
+      {% csrf_token %}
+      {% buttons %}
         {% if previous_step.url %}
           <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
         {% endif %}
-        <a class="btn btn-primary" href="{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}" class="mr-2">
-        {% trans "Envoyer" %}</a>
-      {% endif %}
-    {% endbuttons %}
-  </form>
+        <a class="btn btn-primary{% if has_any_form_with_exceeded_submissions %} ui-state-disabled{% endif %}"
+           href="{% if has_any_form_with_exceeded_submissions %}#
+{% else %}{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}
+{% endif %}" class="mr-2">
+          {% trans "Envoyer" %}</a>
+          {% if has_any_form_with_exceeded_submissions %}
+            <span class="text-danger font-weight-bold mx-2">
+              {{ submission.get_maximum_submissions_message }}
+            </span>
+          {% endif %}
+      {% endbuttons %}
+    </form>
+  {% endif %}
   <div class="row">
     <div class="col">
-        {% submission_summary submission %}
+      {% submission_summary submission %}
     </div>
   </div>
+  {% if not incomplete_steps and not should_go_to_payment %}
+    <form method="post">
+      {% csrf_token %}
+      {% buttons %}
+        {% if previous_step.url %}
+          <a href="{{ previous_step.url }}" class="mr-2">{% trans "Retour" %}</a>
+        {% endif %}
+        <a class="btn btn-primary{% if has_any_form_with_exceeded_submissions %} ui-state-disabled{% endif %}"
+           href="{% if has_any_form_with_exceeded_submissions %}#
+{% else %}{% url 'submissions:submission_submit_confirmed' submission_id=submission.pk %}
+{% endif %}" class="mr-2">
+          {% trans "Envoyer" %}</a>
+          {% if has_any_form_with_exceeded_submissions %}
+            <span class="text-danger font-weight-bold mx-2">
+              {{ submission.get_maximum_submissions_message }}
+            </span>
+          {% endif %}
+      {% endbuttons %}
+    </form>
+  {% endif %}
 {% endblock %}

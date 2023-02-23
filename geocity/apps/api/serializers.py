@@ -9,7 +9,6 @@ from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
 from geocity import geometry, settings
-from geocity.apps.accounts import users
 from geocity.apps.accounts.models import AdministrativeEntity, UserProfile
 from geocity.apps.submissions import search
 from geocity.apps.submissions.models import (
@@ -19,6 +18,8 @@ from geocity.apps.submissions.models import (
     SubmissionGeoTime,
     SubmissionInquiry,
 )
+from geocity.apps.submissions.payments.models import SubmissionPrice
+from geocity.apps.submissions.payments.postfinance.models import PostFinanceTransaction
 
 
 def get_field_value_based_on_field(prop):
@@ -31,7 +32,10 @@ def get_field_value_based_on_field(prop):
 
 
 def get_form_fields(
-    value, administrative_entities_associated_to_user_list=None, value_with_type=False
+    value,
+    administrative_entities_associated_to_user_list=None,
+    current_user=None,
+    value_with_type=False,
 ):
     """
     Return form fields in a list for the api, in a dict for backend
@@ -49,6 +53,7 @@ def get_form_fields(
         "form__category__name",
         "field_values__field__is_public_when_permitrequest_is_public",
         "submission__administrative_entity",
+        "submission__author",
     )
 
     wot_properties = dict()
@@ -96,10 +101,15 @@ def get_form_fields(
 
                 # Show fields_values only when the current submission__administrative_entity
                 # is one of the administrative_entities associated to the user
+                # or user is the submission__author
                 # or show field_values that are designed as public in a public permit_request
                 if prop["field_values__field__input_type"] == "file" and (
-                    prop["submission__administrative_entity"]
-                    in administrative_entities_associated_to_user_list
+                    (
+                        administrative_entities_associated_to_user_list
+                        and prop["submission__administrative_entity"]
+                        in administrative_entities_associated_to_user_list
+                    )
+                    or (current_user and prop["submission__author"] == current_user.id)
                     or prop[
                         "field_values__field__is_public_when_permitrequest_is_public"
                     ]
@@ -117,8 +127,12 @@ def get_form_fields(
                             }
                         )
                 elif prop["field_values__value__val"] and (
-                    prop["submission__administrative_entity"]
-                    in administrative_entities_associated_to_user_list
+                    (
+                        administrative_entities_associated_to_user_list
+                        and prop["submission__administrative_entity"]
+                        in administrative_entities_associated_to_user_list
+                    )
+                    or (current_user and prop["submission__author"] == current_user.id)
                     or prop[
                         "field_values__field__is_public_when_permitrequest_is_public"
                     ]
@@ -234,15 +248,44 @@ class SubmissionInquirySerializer(serializers.ModelSerializer):
         )
 
 
+class SubmissionPriceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubmissionPrice
+        fields = (
+            "text",
+            "amount",
+            "currency",
+        )
+
+
+class PostFinanceTransactionPrintSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        repr = super(PostFinanceTransactionPrintSerializer, self).to_representation(
+            instance
+        )
+        repr["creation_date"] = instance.creation_date.strftime("%d.%m.%Y")
+        repr["creation_date_year"] = instance.creation_date.strftime("%Y")
+        repr[
+            "line_text"
+        ] = instance.submission_price.submission.get_form_for_payment().name
+        return repr
+
+    class Meta:
+        model = PostFinanceTransaction
+        fields = (
+            "merchant_reference",
+            "amount",
+            "currency",
+            "creation_date",
+        )
+
+
 class SubmissionSerializer(serializers.ModelSerializer):
     administrative_entity = AdministrativeEntitySerializer(read_only=True)
     meta_types = MetaTypesField(source="forms", read_only=True)
     forms_names = FormsNames(source="forms", read_only=True)
-    intersected_geometries = serializers.SerializerMethodField()
     current_inquiry = SubmissionInquirySerializer(read_only=True)
-
-    def get_intersected_geometries(self, obj):
-        return obj.intersected_geometries if obj.intersected_geometries else ""
+    submission_price = SubmissionPriceSerializer(read_only=True)
 
     class Meta:
         model = Submission
@@ -253,9 +296,9 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "administrative_entity",
             "forms",
             "meta_types",
-            "intersected_geometries",
             "forms_names",
             "current_inquiry",
+            "submission_price",
         )
 
 
@@ -279,13 +322,16 @@ class FieldsValuesSerializer(serializers.RelatedField):
 
         if user_is_authenticated:
             administrative_entities_associated_to_user_list = (
-                users.get_administrative_entities_associated_to_user_as_list(
-                    request.user
-                )
+                AdministrativeEntity.objects.associated_to_user(request.user)
+                .values_list("id", flat=True)
+                .distinct()
             )
 
         fields = get_form_fields(
-            value, administrative_entities_associated_to_user_list, value_with_type=True
+            value,
+            administrative_entities_associated_to_user_list,
+            current_user,
+            value_with_type=True,
         )
         return fields
 
@@ -322,6 +368,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     first_name = serializers.ReadOnlyField(source="user.first_name")
     last_name = serializers.ReadOnlyField(source="user.last_name")
     email = serializers.ReadOnlyField(source="user.email")
+    user_id = serializers.ReadOnlyField(source="user.id")
 
     class Meta:
         model = UserProfile
@@ -330,6 +377,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "last_name",
             "address",
             "zipcode",
+            "user_id",
             "city",
             "company_name",
             "vat_number",

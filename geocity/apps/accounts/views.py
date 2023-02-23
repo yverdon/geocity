@@ -21,7 +21,7 @@ from django.views import View
 from django.views.decorators.http import require_POST
 
 if settings.ENABLE_2FA:
-    from two_factor.views import LoginView
+    from two_factor.views import LoginView, ProfileView
 else:
     from django.contrib.auth.views import LoginView
 
@@ -36,6 +36,7 @@ from geocity.apps.accounts.decorators import (
 from geocity.fields import PrivateFileSystemStorage
 
 from . import forms, models
+from .users import is_2FA_mandatory
 
 
 @require_POST
@@ -68,6 +69,21 @@ def lockout_view(request):
     )
 
 
+def update_context_with_filters(context, params_str, url_qs):
+    if "entityfilter" in parse.parse_qs(params_str).keys():
+        for value in parse.parse_qs(params_str)["entityfilter"]:
+            url_qs += "&entityfilter=" + value
+
+    if "typefilter" in parse.parse_qs(params_str).keys():
+        for value in parse.parse_qs(params_str)["typefilter"]:
+            url_qs += "&typefilter=" + value
+
+    if url_qs:
+        context.update({"query_string": url_qs[1:]})
+
+    return context
+
+
 class SetCurrentSiteMixin:
     def __init__(self, *args, **kwargs):
         super.__init__(*args, **kwargs)
@@ -92,6 +108,27 @@ class CustomPasswordResetView(PasswordResetView):
         return context
 
 
+# Create this class to simulate ProfileView in a non 2FA context
+class FakeView:
+    pass
+
+
+if not settings.ENABLE_2FA:
+    ProfileView = FakeView
+
+
+class Custom2FAProfileView(ProfileView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        url_qs = ""
+        uri = parse.unquote(self.request.build_absolute_uri()).replace("next=/", "")
+        params_str = (
+            parse.urlsplit(uri).query.replace("?", "").replace(settings.PREFIX_URL, "")
+        )
+
+        return update_context_with_filters(context, params_str, url_qs)
+
+
 class CustomLoginView(LoginView, SetCurrentSiteMixin):
     def get(self, request, *args, **kwargs):
         successful = request.GET.get("success")
@@ -110,15 +147,28 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
             messages.error(request, _("Une erreur est survenue lors de l'activation"))
         return super().get(request, *args, **kwargs)
 
+    def get_custom_template_values(self, template):
+        return {
+            "application_title": template.application_title
+            if template.application_title
+            else config.APPLICATION_TITLE,
+            "application_subtitle": template.application_subtitle
+            if template.application_subtitle
+            else config.APPLICATION_SUBTITLE,
+            "application_description": template.application_description
+            if template.application_description
+            else config.APPLICATION_DESCRIPTION,
+            "background_image": template.background_image
+            if template.background_image
+            else None,
+        }
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        site_id = get_current_site(self.request).id
 
         context.update(
-            {
-                "social_apps": SocialApp.objects.filter(
-                    sites__id=get_current_site(self.request).id
-                ).all()
-            }
+            {"social_apps": SocialApp.objects.filter(sites__id=site_id).all()}
         )
 
         customization = {
@@ -127,14 +177,23 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
             "application_description": config.APPLICATION_DESCRIPTION,
             "general_conditions_url": config.GENERAL_CONDITIONS_URL,
             "privacy_policy_url": config.PRIVACY_POLICY_URL,
+            "contact_url": config.CONTACT_URL,
             "background_image": None,
         }
-        uri = parse.unquote(self.request.build_absolute_uri()).replace("next=/", "")
 
+        uri = parse.unquote(self.request.build_absolute_uri()).replace("next=/", "")
         params_str = (
             parse.urlsplit(uri).query.replace("?", "").replace(settings.PREFIX_URL, "")
         )
 
+        # Custom template defined in current site
+        site_custom_template = models.TemplateCustomization.objects.filter(
+            siteprofile__id=site_id
+        ).first()
+        if site_custom_template:
+            customization = self.get_custom_template_values(site_custom_template)
+
+        # Custom template defined in query strings
         self.request.session["templatename"] = None
         url_qs = ""
 
@@ -144,55 +203,54 @@ class CustomLoginView(LoginView, SetCurrentSiteMixin):
                 templatename=template_value
             ).first()
             if template:
-                customization = {
-                    "application_title": template.application_title
-                    if template.application_title
-                    else config.APPLICATION_TITLE,
-                    "application_subtitle": template.application_subtitle
-                    if template.application_subtitle
-                    else config.APPLICATION_SUBTITLE,
-                    "application_description": template.application_description
-                    if template.application_description
-                    else config.APPLICATION_DESCRIPTION,
-                    "background_image": template.background_image
-                    if template.background_image
-                    else None,
-                }
+                customization = self.get_custom_template_values(template)
                 self.request.session["templatename"] = template.templatename
                 url_qs = "&template=" + template.templatename
             # use anonymous session
             self.request.session["template"] = template_value
         context.update({"customization": customization})
-        if "entityfilter" in parse.parse_qs(params_str).keys():
-            for value in parse.parse_qs(params_str)["entityfilter"]:
-                url_qs += "&entityfilter=" + value
 
-        if "typefilter" in parse.parse_qs(params_str).keys():
-            for value in parse.parse_qs(params_str)["typefilter"]:
-                url_qs += "&typefilter=" + value
-        if url_qs:
-            context.update({"query_string": url_qs[1:]})
-
-        return context
+        return update_context_with_filters(context, params_str, url_qs)
 
     def get_success_url(self):
 
         qs_dict = parse.parse_qs(self.request.META["QUERY_STRING"])
-
+        filter_qs = (
+            qs_dict["next"][0].replace(settings.PREFIX_URL, "").replace("/", "")
+            if "next" in qs_dict
+            else ""
+        )
         url_value = (
             qs_dict["next"][0]
             if "next" in qs_dict
             else reverse("submissions:submission_select_administrative_entity")
         )
 
-        if "next" in qs_dict:
-            qs_dict.pop("next")
+        is_2fa_disabled = not settings.ENABLE_2FA
 
-        return (
-            reverse("accounts:profile")
-            if settings.ENABLE_2FA and not self.request.user.totpdevice_set.exists()
-            else url_value
+        # 2fa is disabled
+        if is_2fa_disabled:
+            return url_value
+
+        user_with_totpdevice = self.request.user.totpdevice_set.exists()
+        untrusted_user_without_totpdevice_and_not_required = not (
+            user_with_totpdevice and is_2FA_mandatory(self.request.user)
         )
+
+        # 2fa is disabled (otherwise he would have been catch before)
+        # the user has a totp device so he dont needs to go to accounts:profile
+        # or user has no totp device and isn't in a group that requires 2fa and has a redirect (qs_dict)
+        if (
+            user_with_totpdevice
+            or untrusted_user_without_totpdevice_and_not_required
+            and qs_dict
+        ):
+            return url_value
+        # user has a 2fa mandatory
+        # has no redirect (qs_dict)
+        # has no totp device otherwise he would have been catch in the other conditions
+        else:
+            return reverse("accounts:profile") + filter_qs
 
 
 class ActivateAccountView(View):

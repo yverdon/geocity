@@ -57,6 +57,7 @@ urlpatterns = [
         "<int:submission_id>/",
         include(submission_urlpatterns + existing_submission_urlpatterns),
     ),
+    # TODO: adapt path name here and in front app
     path(
         "permits-files/<path:path>",
         views.submission_file_download,
@@ -109,5 +110,25 @@ urlpatterns = [
         "archives/bulk-download",
         views.ArchivedSubmissionBulkDownloadView.as_view(),
         name="archived_submission_bulk_download",
+    ),
+    path(
+        "transactions/<str:merchant_reference>/change-status",
+        views.ChangeTransactionStatus.as_view(),
+        name="change_transaction_status",
+    ),
+    path(
+        "transactions/confirm/<int:pk>",
+        views.ConfirmTransactionCallback.as_view(),
+        name="confirm_transaction",
+    ),
+    path(
+        "transactions/fail/<int:pk>",
+        views.FailTransactionCallback.as_view(),
+        name="fail_transaction",
+    ),
+    path(
+        "payment/<int:pk>",
+        views.SubmissionPaymentRedirect.as_view(),
+        name="submission_payment_redirect",
     ),
 ]

@@ -21,3 +21,4 @@ env.backup
 /geocity/tests/reports/data/*/*.generated.*
 /geocity/tests/reports/data/*/*.result.*
 /_dev_volumes/
+/geocity/apps/submissions/management/fixturize_data/fixturize.py

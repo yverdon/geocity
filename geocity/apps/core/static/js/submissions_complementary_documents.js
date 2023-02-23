@@ -119,9 +119,10 @@ let setUpDocumentManagement = function(){
         for(let childDocTypeInput of childDocTypeInputs)
           childDocTypeInput.disabled=true;
         previewBtn.onclick = (event) => {
-          let [wot_pk, report_pk, doc_type_pk] = reportInput.value.split("/");
+          let [wot_pk, report_pk, doc_type_pk, transaction_pk] = reportInput.value.split("/");
           let url = previewBtn.dataset.linkTpl.replace("888888888", wot_pk)
-                                              .replace("999999999", report_pk);
+                                              .replace("999999999", report_pk)
+                                              .replace("000000000", transaction_pk);
           window.open(url, "_blank");
           return false;
         };

@@ -21,7 +21,7 @@
       <script src="{% static "js/search.js" %}"></script>
     {% endblock %}
     {% block stylesheets %}
-      <link rel="stylesheet" type="text/css" href="{% static 'css/permits.css' %}">
+      <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
     {% endblock %}
     <link rel="icon" href="{% static 'images/favicon.ico'%}" type="image/svg" sizes="16x16">
     <style>
@@ -101,6 +101,11 @@
                     </form>
                   </div>
                 </li>
+                <li class="nav-item d-flex align-items-center" title="{% trans 'Imprimer cette page' %}">
+                  <a href="javascript:window.print()" class="text-secondary" role="button">
+                    <i class="fa fa-print" aria-hidden="true"></i>&nbsp;{% trans "Imprimer" %}
+                  </a>
+                </li>
                 <li class="nav-item d-flex align-items-center login-navbar-desktop">
                     <a class="nav-link dropdown-toggle ml-auto" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                       <i class="fa fa-user"></i>
@@ -127,7 +132,6 @@
                       </form>
                   </div>
                 </li>
-
                 <li class="nav-item d-flex align-items-center login-navbar-mobile">
                    <!-- On mobile -->
                   <div class="collapse navbar-collapse navbar-toggle" id="navbarNavDropdown">
@@ -181,6 +185,8 @@
               alert-danger
               {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
               alert-success
+              {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+              alert-warning
               {% elif message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
               alert-info
               {% endif %}
@@ -200,7 +206,13 @@
       <footer class="flex-shrink-0 py-2 bg-light text-dark mt-auto">
         <div class="container text-center">
           <small>
-            <a href="https://geocity.ch/about" target="_blank" rel="noreferrer">{% trans "Découvrir Geocity" %}</a>
+            &copy; {% now "Y" %} Geocity
+            &nbsp;|&nbsp;
+            <a href="https://geocity.ch/about" target="_blank" rel="noreferrer">{% trans "A propos" %}</a>
+            {% if config.CONTACT_URL %}
+              &nbsp;|&nbsp;
+              <a href="{{ config.CONTACT_URL }}" target="_blank" rel="noreferrer">{% trans "Contact" %}</a>
+            {% endif %}
             {% if config.GENERAL_CONDITIONS_URL %}
               &nbsp;|&nbsp;
               <a href="{{ config.GENERAL_CONDITIONS_URL }}" target="_blank" rel="noreferrer">{% trans "Conditions" %}</a>

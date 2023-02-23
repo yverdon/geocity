@@ -23,7 +23,7 @@ JAZZMIN_SETTINGS = {
     # Welcome text on the login screen
     "welcome_sign": "Bienvenue sur le site d'administration de Geocity",
     # Copyright on the footer
-    "copyright": "Geocity-asso",
+    "copyright": "Geocity",
     # List of model admins to search from the search bar, search bar omitted if excluded
     # If you want to use a single search field you dont need to use a list, you can use a simple string
     "search_model": ["auth.User", "auth.Group"],
@@ -39,9 +39,13 @@ JAZZMIN_SETTINGS = {
             "name": "Home",
             "url": "admin:index",
         },
+        {
+            "name": "Site",
+            "url": "submissions:submission_select_administrative_entity",
+        },
         # external url that opens in a new window (Permissions can be added)
         {
-            "name": "Support",
+            "name": "Documentation",
             "url": "https://github.com/yverdon/geocity/wiki",
             "new_window": True,
         },
@@ -86,6 +90,8 @@ JAZZMIN_SETTINGS = {
         "django_cron.CronJobLog": "fas fa-tasks",
         "forms.AdministrativeEntityForAdminSite": "fas fa-landmark",
         "forms.ContactTypeForAdminSite": "fas fa-address-card",
+        "forms.PaymentSettings": "fas fa-shopping-cart",
+        "forms.Price": "fas fa-coins",
         "forms.Field": "fas fa-list-ol",
         "forms.Form": "fas fa-book",
         "forms.FormCategory": "fas fa-object-ungroup",
@@ -93,7 +99,7 @@ JAZZMIN_SETTINGS = {
         "reports.Report": "fas fa-print",
         "reports.ReportLayout": "fas fa-file-alt",
         "sites.Site": "fas fa-sitemap",
-        "submissions.ComplementaryDocumentType": "fas fa-copy",
+        "reports.ComplementaryDocumentTypeForAdminSite": "fas fa-copy",
         "submissions.Submission": "fas fa-search",
         "submissions.SubmissionAmendField": "fas fa-list-alt",
         "submissions.SubmissionInquiry": "fas fa-calendar",

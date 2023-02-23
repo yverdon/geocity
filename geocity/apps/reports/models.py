@@ -9,6 +9,7 @@ from django.contrib.staticfiles import finders
 from django.core.files import File
 from django.core.validators import FileExtensionValidator
 from django.db import models
+from django.shortcuts import get_object_or_404
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 from jinja2.sandbox import SandboxedEnvironment
@@ -16,6 +17,7 @@ from knox.models import AuthToken
 from polymorphic.models import PolymorphicModel
 
 from geocity.apps.accounts.fields import AdministrativeEntityFileField
+from geocity.apps.accounts.models import AdministrativeEntity
 
 from .fields import BackgroundFileField
 from .utils import DockerRunFailedError, run_docker_container
@@ -37,7 +39,7 @@ class ReportLayout(models.Model):
         blank=True,
         null=True,
         help_text=_(
-            'La liste des polices disponbiles est visible sur <a href="https://fonts.google.com/" target="_blank">Goole Fonts</a>'
+            'La liste des polices disponibles est visible sur <a href="https://fonts.google.com/" target="_blank">Google Fonts</a>'
         ),
     )
 
@@ -58,6 +60,7 @@ class ReportLayout(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
     )
 
     class Meta:
@@ -69,14 +72,14 @@ class ReportLayout(models.Model):
 
 
 class Report(models.Model):
-    """Report definition, allowing to generate reports for permit requests"""
+    """Report definition, allowing to generate reports for submissions"""
 
     class Meta:
         permissions = [
             ("can_generate_pdf", _("Générer des documents pdf")),
         ]
-        verbose_name = _("3.2 Modèle d'impression")
-        verbose_name_plural = _("3.2 Modèles d'impression")
+        verbose_name = _("3.3 Modèle d'impression")
+        verbose_name_plural = _("3.3 Modèles d'impression")
 
     name = models.CharField(_("Nom"), max_length=150)
     layout = models.ForeignKey(
@@ -96,10 +99,87 @@ class Report(models.Model):
         null=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Groupe des administrateurs"),
+        limit_choices_to={"permit_department__is_integrator_admin": True},
+    )
+    is_visible = models.BooleanField(
+        _("Visible"),
+        default=True,
+        help_text=_(
+            "Rendre le modèle visible dans la liste des documents et impressions (décocher pour les modèles de confirmation / remboursement de paiement)"
+        ),
     )
 
     def __str__(self):
         return self.name
+
+    def create_default_report(administrative_entity_id):
+        administrative_entity = get_object_or_404(
+            AdministrativeEntity, pk=administrative_entity_id
+        )
+
+        name = "default " + administrative_entity.name
+
+        layout, created = ReportLayout.objects.get_or_create(
+            name=name,
+            margin_top=30,
+            margin_right=10,
+            margin_bottom=20,
+            margin_left=22,
+            integrator=administrative_entity.integrator,
+        )
+
+        _bg_path = finders.find("reports/report-letter-paper-template.png")
+        background_image = open(_bg_path, "rb")
+        layout.background.save(
+            "report-letter-paper.png", File(background_image), save=True
+        )
+        layout.save()
+
+        report, created = Report.objects.get_or_create(
+            name=name,
+            layout=layout,
+            integrator=administrative_entity.integrator,
+        )
+
+        SectionParagraph.objects.get_or_create(
+            order=1,
+            report=report,
+            title="Example report",
+            content="<p>This is an example report. It could be an approval, or any type of report related to a request.</p>",
+        )
+
+        SectionParagraph.objects.get_or_create(
+            order=2,
+            report=report,
+            title="Demand summary",
+            content="<p>This demand contains the following objects.</p><ul>{% for form in request_data.properties.submission_forms_names.values() %}<li>{{form}}</li>{% endfor %}</ul>",
+        )
+
+        SectionParagraph.objects.get_or_create(
+            order=3,
+            report=report,
+            title="Raw request data",
+            content="<pre>{{request_data}}</pre>",
+        )
+
+        SectionParagraph.objects.get_or_create(
+            order=4,
+            report=report,
+            title="Raw form data",
+            content="<pre>{{form_data}}</pre>",
+        )
+
+        SectionMap.objects.get_or_create(
+            order=5,
+            report=report,
+        )
+
+        SectionAuthor.objects.get_or_create(
+            order=6,
+            report=report,
+        )
+
+        return name, created
 
 
 # https://github.com/django-polymorphic/django-polymorphic/issues/229#issuecomment-398434412
@@ -218,7 +298,7 @@ class SectionParagraph(Section):
         _("Contenu"),
         help_text=(
             _(
-                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}` et celles du formulaire dans `{{form_data}}`.'
+                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}`, celles du formulaire dans `{{form_data}}`, celles des transactions dans `{{transaction_data}}`.'
             )
         ),
     )
@@ -233,6 +313,44 @@ class SectionParagraph(Section):
             "request_data": base_context["request_data"],
             "form_data": base_context["form_data"],
         }
+        if "transaction_data" in base_context:
+            inner_context["transaction_data"] = base_context["transaction_data"]
+
+        env = SandboxedEnvironment()
+        rendered_html = env.from_string(self.content).render(inner_context)
+        return mark_safe(rendered_html)
+
+    def prepare_context(self, request, base_context):
+        # Return updated context
+        return {
+            **super().prepare_context(request, base_context),
+            "rendered_content": self._render_user_template(base_context),
+        }
+
+
+class SectionParagraphRight(Section):
+    title = models.CharField(_("Titre"), default="", blank=True, max_length=2000)
+    content = RichTextField(
+        _("Contenu"),
+        help_text=(
+            _(
+                'Il est possible d\'inclure des variables et de la logique avec la <a href="https://jinja.palletsprojects.com/en/3.1.x/templates/">syntaxe Jinja</a>. Les variables de la demande sont accessible dans `{{request_data}}`, celles du formulaire dans `{{form_data}}`, celles des transactions dans `{{transaction_data}}`.'
+            )
+        ),
+    )
+
+    class Meta:
+        verbose_name = _("Paragraphe libre aligné à droite")
+
+    def _render_user_template(self, base_context):
+        # User template have only access to pure json elements for security reasons
+        inner_context = {
+            # TODO rename to `submission_data` (& migrate sections) to match new naming
+            "request_data": base_context["request_data"],
+            "form_data": base_context["form_data"],
+        }
+        if "transaction_data" in base_context:
+            inner_context["transaction_data"] = base_context["transaction_data"]
         env = SandboxedEnvironment()
         rendered_html = env.from_string(self.content).render(inner_context)
         return mark_safe(rendered_html)

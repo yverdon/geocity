@@ -5,12 +5,12 @@
 
 {% block content %}
   {% submission_progressbar steps StepType.FORMS %}
-  {# TODO rename this to FORMS_STEP #}
-  <h3>{{ config.WORKS_OBJECTS_STEP }}</h3>
+  <h3>{{ current_step_title }}</h3>
 
   {% if typefilter and not user.userprofile.is_temporary %}
-    {% trans "La liste ci-dessous est filtrée," %}<a class="ml-2" href="{% url 'submissions:submission_select_forms' submission_id=submission.pk %}"><b>{% trans "Voir toutes les possibilités" %}</b></a>
+    {% trans "La liste ci-dessous est filtrée," %} <a href="{% url 'submissions:submission_select_forms' submission_id=submission.pk %}"><b>{% trans "voir toutes les possibilités" %}</b></a>
   {% endif %}
+
   <hr>
   <form method="post">
     {% csrf_token %}
