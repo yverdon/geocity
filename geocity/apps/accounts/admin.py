@@ -217,6 +217,8 @@ class UserAdmin(BaseUserAdmin):
             # Edit cleaned_data to save the groups
             form.cleaned_data["groups"] = groups_to_keep
 
+        super().save_model(req, obj, form, change)
+
     def get_urls(self):
         urls = super().get_urls()
 
@@ -371,22 +373,47 @@ class GroupAdminForm(forms.ModelForm):
     def clean_permissions(self):
 
         permissions = self.cleaned_data["permissions"]
-
+        permissions_for_trusted_users = Permission.objects.filter(
+            codename__in=permissions_groups.AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
+        )
+        default_permissions_for_pilot = Permission.objects.filter(
+            codename__in=permissions_groups.DEFAULT_PILOT_PERMISSION_CODENAMES
+        )
+        default_permissions_for_validator = Permission.objects.filter(
+            codename__in=permissions_groups.DEFAULT_VALIDATOR_PERMISSION_CODENAMES
+        )
         if "permit_department-0-is_integrator_admin" in self.data.keys():
             # Group in integrator. Permission for this type are defined in model
             return get_integrator_permissions()
         elif (
             "permit_department-0-is_backoffice" in self.data.keys()
+        ) and not "permit_department-0-is_integrator_admin" in self.data.keys():
+            # Group is pilot but not integrator
+            return (
+                permissions_for_trusted_users & permissions
+                | default_permissions_for_pilot
+            )
+        elif (
+            "permit_department-0-is_validator" in self.data.keys()
+        ) and not "permit_department-0-is_integrator_admin" in self.data.keys():
+            # Group is validator but not integrator
+            return (
+                permissions_for_trusted_users & permissions
+                | default_permissions_for_validator
+            )
+        elif (
+            "permit_department-0-is_backoffice" in self.data.keys()
             or "permit_department-0-is_validator" in self.data.keys()
         ) and not "permit_department-0-is_integrator_admin" in self.data.keys():
             # Group is validator or pilot but not integrator
-            permissions_for_trusted_users = Permission.objects.filter(
-                codename__in=permissions_groups.AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES
+            return (
+                permissions_for_trusted_users & permissions
+                | default_permissions_for_validator
+                | default_permissions_for_pilot
             )
-            return permissions_for_trusted_users & permissions
         else:
-            # Group has no specific permission
-            return []
+            # Group has no specific permission defined by checkbox (not pilot or validator or integrator)
+            return permissions_for_trusted_users & permissions
 
 
 class UserInline(admin.TabularInline):

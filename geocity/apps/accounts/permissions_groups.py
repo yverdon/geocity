@@ -59,3 +59,16 @@ AVAILABLE_FOR_INTEGRATOR_PERMISSION_CODENAMES = [
     "can_refund_transactions",
     "can_revert_refund_transactions",
 ]
+
+DEFAULT_PILOT_PERMISSION_CODENAMES = [
+    "read_submission",
+    "amend_submission",
+    "classify_submission",
+    "view_private_submission",
+    "can_generate_pdf",
+]
+
+DEFAULT_VALIDATOR_PERMISSION_CODENAMES = [
+    "read_submission",
+    "validate_submission",
+]
