@@ -80,7 +80,8 @@ def get_users_list_for_integrator_admin(user):
             Q(is_superuser=False),
             Q(email_domain__in=email_domains) | Q(email__in=emails),
             Q(groups__permit_department__integrator=user_integrator_group.pk)
-            | Q(groups__isnull=True),
+            | Q(groups__isnull=True)
+            | Q(groups__permit_department__is_integrator_admin=True),
         )
         .exclude()
         .distinct()
