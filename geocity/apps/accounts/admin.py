@@ -574,6 +574,8 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
             "directive",
             "directive_description",
             "additional_information",
+            "signature_sheet",
+            "signature_sheet_description",
             "additional_searchtext_for_address_field",
             "geom",
             "integrator",
@@ -613,6 +615,23 @@ class AdministrativeEntityAdminForm(forms.ModelForm):
                 "css/admin/admin.css",
             )
         }
+
+    def clean(self):
+        signature_sheet = self.cleaned_data["signature_sheet"]
+        signature_sheet_description = self.cleaned_data["signature_sheet_description"]
+
+        if (
+            signature_sheet
+            and not signature_sheet_description
+            or signature_sheet_description
+            and not signature_sheet
+        ):
+            raise forms.ValidationError(
+                _(
+                    "Les champs Volet de transmission et Texte explicatif relatif au volet de transmission doivent être remplis ou tous deux vides."
+                )
+            )
+        return self.cleaned_data
 
 
 class SubmissionWorkflowStatusInline(admin.TabularInline):
@@ -659,6 +678,21 @@ class AdministrativeEntityAdmin(IntegratorFilterMixin, admin.ModelAdmin):
                 "description": _(
                     """Saisir ici les directives et informations obligatoires concernant la protection des données personnelles
                     ayant une portée globale pour toute l'entité administrative. Pour une gestion plus fine, ces informations peuvent être saisies à l'étape 1.4 Formulaires"""
+                ),
+            },
+        ),
+        (
+            _("Volet de transmission"),
+            {
+                "fields": (
+                    "signature_sheet",
+                    "signature_sheet_description",
+                ),
+                "description": _(
+                    """Le volet de transmission permet au requérant de télécharger un fichier et de le signer pour envoi par poste, avant
+                    l'envoi définitif de sa demande.
+                    La loi exige la forme papier pour certaines thématiques (par exemple la loi cantonale vaudoise sur l'aménagement du territoire).
+                    Les deux champs doivent obligatoirement être remplis pour que ces informations s'affichent."""
                 ),
             },
         ),

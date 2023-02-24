@@ -4,6 +4,7 @@
 {% if directives %}
 
 <div id="legal-infos">
+  <h5>{% trans "Informations importantes" %}</h5>
   {% for directive_file, directive_description, additional_information in directives %}
     <div{% if not forloop.last %} class="mb-3"{% endif %}>
       {% if directive_file and directive_description %}
