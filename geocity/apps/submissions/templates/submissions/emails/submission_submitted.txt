@@ -1,6 +1,6 @@
 {% load i18n %}{% autoescape off %}{% trans "Bonjour," %}
 
-{% trans "Une nouvelle demande vient d'être soumise." %}
+{% trans "Une nouvelle demande/annonce vient d'être soumise." %}
 
 {% trans "Vous pouvez la consulter sur le lien suivant" %}: {{ submission_url }}
 

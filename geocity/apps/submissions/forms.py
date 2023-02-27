@@ -1069,7 +1069,7 @@ class SubmissionAdditionalInformationForm(forms.ModelForm):
             sender=sender,
             receivers=[submission.author.email],
             subject="{} ({})".format(
-                _("Votre demande a changé de statut"),
+                _("Votre demande/annonce a changé de statut"),
                 submission.get_forms_names_list(),
             ),
             context={
