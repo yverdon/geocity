@@ -295,7 +295,7 @@ class Submission(models.Model):
             ("validate_submission", _("Valider les demandes")),
             ("classify_submission", _("Classer les demandes")),
             ("edit_submission", _("Éditer les demandes")),
-            ("view_private_submission", _("Voir les demandes restreintes")),
+            ("view_private_form", _("Voir les demandes restreintes")),
             ("can_refund_transactions", _("Rembourser une transaction")),
             ("can_revert_refund_transactions", _("Revenir sur un remboursement")),
         ]

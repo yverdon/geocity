@@ -15,8 +15,8 @@ class SubmissionSelectFormsTestCase(TestCase):
         - forms : One private and wo public (prevents from automatically redirect when only 1 form found)
         """
 
-        self.view_private_submission_permission = Permission.objects.get(
-            codename="view_private_submission", content_type__app_label="submissions"
+        self.view_private_form_permission = Permission.objects.get(
+            codename="view_private_form", content_type__app_label="submissions"
         )
         # ///////////////////////////
         # First entity
@@ -205,7 +205,7 @@ class SubmissionSelectFormsTestCase(TestCase):
 
         # User should not have this perm to make the test work properly via group
         self.assertFalse(
-            self.first_entity_pilot.has_perm("submissions.view_private_submission")
+            self.first_entity_pilot.has_perm("submissions.view_private_form")
         )
 
         # Contains only two elements. The 2 public are visible and the private is hidden
@@ -220,14 +220,14 @@ class SubmissionSelectFormsTestCase(TestCase):
     # Public are shown, private are shown only for his entity, other entities private aren't shown
     def test_pilot_can_see_private_forms_with_perms_of_his_entity(self):
         # Own entity
-        # Show everything with submissions.view_private_submission
+        # Show everything with submissions.view_private_form
 
         # Add permissions to view private submissions
         self.first_entity_pilot_group.permissions.set(
-            [self.view_private_submission_permission]
+            [self.view_private_form_permission]
         )
         self.assertTrue(
-            self.first_entity_pilot.has_perm("submissions.view_private_submission")
+            self.first_entity_pilot.has_perm("submissions.view_private_form")
         )
 
         self.client.login(username=self.first_entity_pilot, password="password")
@@ -257,7 +257,7 @@ class SubmissionSelectFormsTestCase(TestCase):
         self.assertIn(self.first_entity_private_form.name, content)
 
         # Other entity
-        # Show only public with submissions.view_private_submission
+        # Show only public with submissions.view_private_form
         second_entity_submission = factories.SubmissionFactory(
             author=self.first_entity_pilot,
             administrative_entity=self.second_entity_administrative_entity,
@@ -304,7 +304,7 @@ class SubmissionSelectFormsTestCase(TestCase):
 
         # User should not have this perm to make the test work properly via group
         self.assertFalse(
-            self.first_entity_validator.has_perm("submissions.view_private_submission")
+            self.first_entity_validator.has_perm("submissions.view_private_form")
         )
 
         # Contains only two elements. The 2 public are visible and the private is hidden
@@ -319,14 +319,14 @@ class SubmissionSelectFormsTestCase(TestCase):
     # Public are shown, private are shown only for his entity, other entities private aren't shown
     def test_validator_can_see_private_forms_with_perms_of_his_entity(self):
         # Own entity
-        # Show everything with submissions.view_private_submission
+        # Show everything with submissions.view_private_form
 
         # Add permissions to view private submissions
         self.first_entity_validator_group.permissions.set(
-            [self.view_private_submission_permission]
+            [self.view_private_form_permission]
         )
         self.assertTrue(
-            self.first_entity_validator.has_perm("submissions.view_private_submission")
+            self.first_entity_validator.has_perm("submissions.view_private_form")
         )
 
         self.client.login(username=self.first_entity_validator, password="password")
@@ -356,7 +356,7 @@ class SubmissionSelectFormsTestCase(TestCase):
         self.assertIn(self.first_entity_private_form.name, content)
 
         # Other entity
-        # Show only public with submissions.view_private_submission
+        # Show only public with submissions.view_private_form
         second_entity_submission = factories.SubmissionFactory(
             author=self.first_entity_validator,
             administrative_entity=self.second_entity_administrative_entity,
@@ -387,7 +387,7 @@ class SubmissionSelectFormsTestCase(TestCase):
         # Remove permissions, cause integrator don't need permissions to see private
         self.first_entity_integrator_group.permissions.clear()
         self.assertFalse(
-            self.first_entity_integrator.has_perm("submissions.view_private_submission")
+            self.first_entity_integrator.has_perm("submissions.view_private_form")
         )
 
         self.client.login(username=self.first_entity_integrator, password="password")

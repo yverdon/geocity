@@ -91,7 +91,7 @@ class FormQuerySet(models.QuerySet):
         """
         forms = self.filter(administrative_entities=administrative_entity)
 
-        if not user.has_perm("submissions.view_private_submission"):
+        if not user.has_perm("submissions.view_private_form"):
             forms = forms.filter(is_public=True)
 
         if limit_to_categories:
@@ -124,8 +124,8 @@ class FormQuerySet(models.QuerySet):
             user
         )
 
-        user_can_view_private_submission = user.has_perm(
-            "submissions.view_private_submission"
+        user_can_view_private_form = user.has_perm(
+            "submissions.view_private_form"
         )
 
         if not user.is_superuser:
@@ -134,35 +134,35 @@ class FormQuerySet(models.QuerySet):
                 queryset = queryset.filter(
                     Q(integrator=integrator_admin) | Q(forms__is_public=True)
                 )
-            elif user_administrative_entities and user_can_view_private_submission:
+            elif user_administrative_entities and user_can_view_private_form:
                 """User is trusted and associated to administrative entities,
                 he can fill private forms for those administrative entities
-                if granted permission 'view_private_submission'"""
+                if granted permission 'view_private_form'"""
                 queryset = queryset.filter(
                     Q(pk__in=user_administrative_entities) | Q(forms__is_public=True)
                 )
             elif (
-                not user_can_view_private_submission or not user_administrative_entities
+                not user_can_view_private_form or not user_administrative_entities
             ):
-                """Untrusted users or user not granted with view_private_submission can only fill public forms"""
+                """Untrusted users or user not granted with view_private_form can only fill public forms"""
                 queryset = queryset.filter(forms__is_public=True)
 
                 queryset = queryset.filter(
                     Q(integrator=integrator_admin) | Q(forms__is_public=True)
                 )
             elif user_administrative_entities and user.has_perm(
-                "submissions.view_private_submission"
+                "submissions.view_private_form"
             ):
                 """User is trusted and associated to administrative entities,
                 he can fill private forms for those administrative entities
-                if granted permission 'view_private_submission'"""
+                if granted permission 'view_private_form'"""
                 queryset = queryset.filter(
                     Q(pk__in=user_administrative_entities) | Q(forms__is_public=True)
                 )
             elif (
-                not user_can_view_private_submission or not user_administrative_entities
+                not user_can_view_private_form or not user_administrative_entities
             ):
-                """Untrusted users or user not granted with view_private_submission can only fill public forms"""
+                """Untrusted users or user not granted with view_private_form can only fill public forms"""
                 queryset = queryset.filter(forms__is_public=True)
 
         return queryset
