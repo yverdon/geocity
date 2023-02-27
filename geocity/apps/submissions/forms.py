@@ -193,9 +193,7 @@ class FormsSelectForm(forms.Form):
         initial = {"selected_forms": selected_forms}
 
         super().__init__(*args, **{**kwargs, "initial": initial})
-        user_can_view_private_form = self.user.has_perm(
-            "submissions.view_private_form"
-        )
+        user_can_view_private_form = self.user.has_perm("submissions.view_private_form")
 
         forms_filter = Q()
 
@@ -221,9 +219,7 @@ class FormsSelectForm(forms.Form):
                 forms_filter &= Q(
                     administrative_entities__in=user_administrative_entities
                 ) | Q(is_public=True)
-            elif (
-                not user_can_view_private_form or not user_administrative_entities
-            ):
+            elif not user_can_view_private_form or not user_administrative_entities:
                 """Untrusted users or user not granted with view_private_form can only fill public forms"""
                 forms_filter &= Q(is_public=True)
 
