@@ -21,7 +21,7 @@ from taggit.managers import TaggableManager
 
 from .fields import AdministrativeEntityFileField
 
-# Controls who can fill each Form. Anonymous subimissions can be filled by anyone
+# Controls who can fill each Form. Anonymous forms can be filled by anyone
 PUBLIC_TYPE_CHOICES = (
     (
         True,

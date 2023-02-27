@@ -145,8 +145,6 @@ class FormQuerySet(models.QuerySet):
                 not user_can_view_private_form or not user_administrative_entities
             ):
                 """Untrusted users or user not granted with view_private_form can only fill public forms"""
-                queryset = queryset.filter(forms__is_public=True)
-
                 queryset = queryset.filter(
                     Q(integrator=integrator_admin) | Q(forms__is_public=True)
                 )
