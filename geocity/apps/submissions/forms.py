@@ -1193,13 +1193,13 @@ class SubmissionGeoTimeForm(forms.ModelForm):
         ):
             del self.fields["geom"]
 
-        else:
-            self.fields["geom"].widget.attrs["options"] = self.get_widget_options(
-                self.submission
-            )
-            self.fields["geom"].widget.attrs["options"][
-                "edit_geom"
-            ] = not disable_fields
+        # else:
+        #     self.fields["geom"].widget.attrs["options"] = self.get_widget_options(
+        #         self.submission
+        #     )
+        #     self.fields["geom"].widget.attrs["options"][
+        #         "edit_geom"
+        #     ] = not disable_fields
         if (
             not config.ENABLE_GEOCALENDAR
             or self.instance.comes_from_automatic_geocoding

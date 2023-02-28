@@ -78,36 +78,10 @@ class AddressWidget(forms.TextInput):
 
 
 class AdvancedGeometryWidget(forms.TextInput):
-    template_name = 'advancedgeometrywidget/advancedgeometrywidget.html'
+    template_name = "advancedgeometrywidget/advancedgeometrywidget.html"
+
     @property
     def media(self):
         return forms.Media(
-            # css={
-            #     "all": (
-            #         "customWidgets/RemoteAutocomplete/remoteautocomplete.css",
-            #         "libs/js/jquery-ui-custom/jquery-ui.min.css",
-            #     )
-            # },
-            js=(
-                "libs/js/advanced-geometry-edition/geocity-wc-map.js",
-            ),
-        )
-
-    def __init__(self, attrs=None, autocomplete_options=None):
-        autocomplete_options = {
-            "apiurl": settings.LOCATIONS_SEARCH_API,
-            "apiurl_detail": settings.LOCATIONS_SEARCH_API_DETAILS,
-            "origins": "address",
-            "zipcode_field": "zipcode",
-            "city_field": "city",
-            "placeholder": gettext("ex: Place Pestalozzi 2, 1400 Yverdon"),
-            "single_contact": True,
-            "single_address_field": False,
-            **(autocomplete_options or {}),
-        }
-        super().__init__(
-            {
-                **(attrs or {}),
-                "data_remote_autocomplete": json.dumps(autocomplete_options),
-            }
+            js=("libs/js/advanced-geometry-edition/geocity-wc-map.js",),
         )

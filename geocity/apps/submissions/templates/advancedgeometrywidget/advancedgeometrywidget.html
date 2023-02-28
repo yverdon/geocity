@@ -1,9 +1,5 @@
-{% load i18n l10n %}
-{% load static %}
-{% load submissions_extras %}
-
 <div style="width: 100%; height: 80vh;margin-left: auto;margin-right: auto">
-    <openlayers-element  options='{ "enableDraw": false, 
+    <openlayers-element  options='{ "enableDraw": false,
                                     "information": { "duration": 5000, "title": "Signaler un éclairage public", "content": "Sélectionnez un lampadaire défectueux présent dans l’espace public de la ville." },
                                     "enableGeolocation": true,
                                     "enableCenterButton": true,
@@ -86,7 +82,7 @@ window.addEventListener('position-selected', (event) => {
         button.style.opacity = 1;
         this.toSendEvent = event.detail;
     } else {
-        
+
         button.disabled = true;
         button.style.opacity = 0.5;
     }
